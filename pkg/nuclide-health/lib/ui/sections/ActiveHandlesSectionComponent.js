@@ -68,7 +68,7 @@ export default class ActiveHandlesSectionComponent extends React.Component {
         <HandlesTableComponent
           key={1}
           title="Processes"
-          handles={handlesByType['childprocess']}
+          handles={handlesByType.childprocess}
           keyed={process => process.pid}
           columns={[{
             title: 'Name',
@@ -99,7 +99,7 @@ export default class ActiveHandlesSectionComponent extends React.Component {
         <HandlesTableComponent
           key={2}
           title="TLS Sockets"
-          handles={handlesByType['tlssocket']}
+          handles={handlesByType.tlssocket}
           keyed={socket => socket.localPort}
           columns={[{
             title: 'Host',
@@ -118,7 +118,7 @@ export default class ActiveHandlesSectionComponent extends React.Component {
         <HandlesTableComponent
           key={3}
           title="Other handles"
-          handles={handlesByType['other']}
+          handles={handlesByType.other}
           keyed={(handle, h) => h}
           columns={[{
             title: 'Type',

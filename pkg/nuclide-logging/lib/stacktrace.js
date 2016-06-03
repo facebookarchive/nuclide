@@ -92,7 +92,7 @@ function createHookedPrepareStackTrace(
 
 function structuredStackTraceHook(error: Error, frames: Array<node$CallSite>): void {
   // $FlowFixMe
-  error['stackTrace'] = frames.map(frame => {
+  error.stackTrace = frames.map(frame => {
     return {
       functionName: frame.getFunctionName(),
       methodName: frame.getMethodName(),

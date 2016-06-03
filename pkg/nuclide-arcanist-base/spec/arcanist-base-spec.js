@@ -19,10 +19,10 @@ import {uncachedRequire} from '../../nuclide-test-helpers';
 temp.track();
 
 const rootConfig = {
-  'project_id': 'project1',
+  project_id: 'project1',
 };
 const nestedConfig = {
-  'project_id': 'project-nested',
+  project_id: 'project-nested',
 };
 
 describe('nuclide-arcanist-base', () => {
@@ -207,7 +207,7 @@ describe('nuclide-arcanist-base', () => {
     it('should return the lints', () => {
       waitsForPromise(async () => {
         setResult({
-          'path1': [fakeLint],
+          path1: [fakeLint],
         });
         const lints = await arcanistBaseService.findDiagnostics(['/fake/path/one/path1'], []);
         expect(lints).toEqual([fakeLintResult]);
@@ -216,7 +216,7 @@ describe('nuclide-arcanist-base', () => {
 
     it('should return the lints even when they are in separate JSON objects', () => {
       waitsForPromise(async () => {
-        const fakeArcResult = {'path1': [fakeLint]};
+        const fakeArcResult = {path1: [fakeLint]};
         setResult(fakeArcResult, fakeArcResult);
         const lints = await arcanistBaseService.findDiagnostics(['/fake/path/one/path1'], []);
         expect(lints).toEqual([fakeLintResult, fakeLintResult]);

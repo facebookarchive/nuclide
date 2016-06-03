@@ -30,9 +30,9 @@ export default class HealthPaneItemComponent extends React.Component {
   render(): React.Element {
 
     const sections = {
-      'Stats':
+      Stats:
         <BasicStatsSectionComponent {...this.props} />,
-      'Handles':
+      Handles:
         <ActiveHandlesSectionComponent activeHandleObjects={this.props.activeHandleObjects} />,
     };
 

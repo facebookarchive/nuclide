@@ -44,7 +44,7 @@ class _Task {
     // The Flow error on the following line is due to a bug in Flow:
     // https://github.com/facebook/flow/issues/428.
     child.on('message', response => {
-      const id = response['id'];
+      const id = response.id;
       this._emitter.emit(id, response);
     });
     child.on('error', buffer => {
@@ -104,9 +104,9 @@ class _Task {
       // Ensure the response listener is set up before the request is sent.
       this._emitter.once(requestId, response => {
         this._emitter.removeListener('error', errListener);
-        const err = response['error'];
+        const err = response.error;
         if (!err) {
-          resolve(response['result']);
+          resolve(response.result);
         } else {
           // Need to synthesize an Error object from its JSON representation.
           const error = new Error();

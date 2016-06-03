@@ -89,7 +89,7 @@ global.fakeClearInterval = fakeClearInterval;
 global.advanceClock = advanceClock;
 jasmine.useRealClock = useRealClock;
 const attributes = {};
-attributes['get'] = function() { return now; };
+attributes.get = function() { return now; };
 Object.defineProperty(global, 'now', attributes);
 
 /**

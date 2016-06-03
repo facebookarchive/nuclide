@@ -32,7 +32,7 @@ function validateStructuredStackTraceCreated(e: Error): void {
 describe('stacktrace hook', () => {
   afterEach(() => {
     // $FlowFixMe
-    delete Error['prepareStackTrace'];
+    delete Error.prepareStackTrace;
     __test__.resetPrepareStackTraceHooked();
   });
 

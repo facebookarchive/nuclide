@@ -101,7 +101,7 @@ export default async function runCommand(args: Array<string>): Promise<ExitCode>
 // TODO(mbolin): Consider using fs-plus to ensure this handles ~ in fileName correctly.
 function resolvePath(fileName): string {
   if (!path.isAbsolute(fileName)) {
-    const pwd = process.env['PWD'];
+    const pwd = process.env.PWD;
     invariant(pwd);
     return path.join(pwd, fileName);
   } else {

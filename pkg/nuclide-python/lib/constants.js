@@ -13,13 +13,13 @@ export const GRAMMAR_SET = new Set(['source.python']);
 export const PACKAGE_NAME = 'nuclide-python';
 // Type mappings between Jedi types and autocomplete-plus types used for styling.
 export const TYPES = {
-  'module': 'import',
-  'class': 'class',
-  'instance': 'variable',
-  'function': 'function',
-  'generator': 'generator',
-  'statement': 'variable',
-  'import': 'import',
-  'param': 'variable',
-  'property': 'property',
+  module: 'import',
+  class: 'class',
+  instance: 'variable',
+  function: 'function',
+  generator: 'generator',
+  statement: 'variable',
+  import: 'import',
+  param: 'variable',
+  property: 'property',
 };

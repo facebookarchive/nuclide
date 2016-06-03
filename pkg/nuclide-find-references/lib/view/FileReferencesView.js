@@ -87,9 +87,9 @@ const FileReferencesView = React.createClass({
       );
     });
     const outerClassName = classnames('nuclide-find-references-file list-nested-item', {
-      'collapsed': !this.state.isExpanded,
-      'expanded': this.state.isExpanded,
-      'selected': this.props.isSelected,
+      collapsed: !this.state.isExpanded,
+      expanded: this.state.isExpanded,
+      selected: this.props.isSelected,
     });
 
     return (

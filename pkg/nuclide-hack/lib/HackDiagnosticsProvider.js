@@ -52,8 +52,8 @@ function extractRange(message: SingleHackMessage): atom$Range {
   // It's unclear why the 1-based to 0-based indexing works the way that it
   // does, but this has the desired effect in the UI, in practice.
   return new Range(
-    [message['line'] - 1, message['start'] - 1],
-    [message['line'] - 1, message['end']]
+    [message.line - 1, message.start - 1],
+    [message.line - 1, message.end]
   );
 }
 
@@ -61,8 +61,8 @@ function extractRange(message: SingleHackMessage): atom$Range {
 function hackMessageToTrace(traceError: SingleHackMessage): Object {
   return {
     type: 'Trace',
-    text: traceError['descr'],
-    filePath: traceError['path'],
+    text: traceError.descr,
+    filePath: traceError.path,
     range: extractRange(traceError),
   };
 }
@@ -172,7 +172,7 @@ class HackDiagnosticsProvider {
 
     const filePathToMessages = new Map();
     for (const diagnostic of fileDiagnostics) {
-      const path = diagnostic['filePath'];
+      const path = diagnostic.filePath;
       let diagnosticArray = filePathToMessages.get(path);
       if (!diagnosticArray) {
         diagnosticArray = [];

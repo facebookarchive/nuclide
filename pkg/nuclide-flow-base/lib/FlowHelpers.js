@@ -43,32 +43,32 @@ function insertAutocompleteToken(contents: string, line: number, col: number): s
  */
 function processAutocompleteItem(replacementPrefix: string, flowItem: Object): Object {
   // Truncate long types for readability
-  const description = flowItem['type'].length < 80
-    ? flowItem['type']
-    : flowItem['type'].substring(0, 80) + ' ...';
+  const description = flowItem.type.length < 80
+    ? flowItem.type
+    : flowItem.type.substring(0, 80) + ' ...';
   let result = {
     description,
-    displayText: flowItem['name'],
+    displayText: flowItem.name,
     replacementPrefix,
   };
-  const funcDetails = flowItem['func_details'];
+  const funcDetails = flowItem.func_details;
   if (funcDetails) {
     // The parameters in human-readable form for use on the right label.
-    const rightParamStrings = funcDetails['params']
-      .map(param => `${param['name']}: ${param['type']}`);
-    const snippetString = getSnippetString(funcDetails['params'].map(param => param['name']));
+    const rightParamStrings = funcDetails.params
+      .map(param => `${param.name}: ${param.type}`);
+    const snippetString = getSnippetString(funcDetails.params.map(param => param.name));
     result = {
       ...result,
-      leftLabel: funcDetails['return_type'],
+      leftLabel: funcDetails.return_type,
       rightLabel: `(${rightParamStrings.join(', ')})`,
-      snippet: `${flowItem['name']}(${snippetString})`,
+      snippet: `${flowItem.name}(${snippetString})`,
       type: 'function',
     };
   } else {
     result = {
       ...result,
-      rightLabel: flowItem['type'],
-      text: flowItem['name'],
+      rightLabel: flowItem.type,
+      text: flowItem.name,
     };
   }
   return result;

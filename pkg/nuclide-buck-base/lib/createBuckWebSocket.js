@@ -33,16 +33,16 @@ export default function createBuckWebSocket(
         return;
       }
 
-      const type = message['type'];
+      const type = message.type;
       if (buildId === null) {
         if (type === 'BuildStarted') {
-          buildId = message['buildId'];
+          buildId = message.buildId;
         } else {
           return;
         }
       }
 
-      if (buildId !== message['buildId']) {
+      if (buildId !== message.buildId) {
         return;
       }
 

@@ -232,10 +232,10 @@ function hackRangeToAtomRange(position: HackRange): atom$Range {
 const xhpCharRegex = /[\w:-]/;
 
 const stringToSymbolType = {
-  'class': SymbolType.CLASS,
-  'function': SymbolType.FUNCTION,
-  'method': SymbolType.METHOD,
-  'local': SymbolType.LOCAL,
+  class: SymbolType.CLASS,
+  function: SymbolType.FUNCTION,
+  method: SymbolType.METHOD,
+  local: SymbolType.LOCAL,
 };
 
 // Symbol types we can get references for.

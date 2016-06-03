@@ -19,7 +19,7 @@ class TestClassTreeNode extends LazyTreeNode {
   }
 
   getLabel(): string {
-    return this.getItem()['name'];
+    return this.getItem().name;
   }
 
 }

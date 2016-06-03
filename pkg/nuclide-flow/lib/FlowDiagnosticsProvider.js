@@ -77,7 +77,7 @@ function extractPath(message: MessageComponent): NuclideUri | void {
 function flowMessageToTrace(message: MessageComponent): Trace {
   return {
     type: 'Trace',
-    text: message['descr'],
+    text: message.descr,
     filePath: extractPath(message),
     range: extractRange(message),
   };
@@ -94,8 +94,8 @@ function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
   const diagnosticMessage: FileDiagnosticMessage = {
     scope: 'file',
     providerName: 'Flow',
-    type: diagnostic['level'] === 'error' ? 'Error' : 'Warning',
-    text: flowMessage['descr'],
+    type: diagnostic.level === 'error' ? 'Error' : 'Warning',
+    text: flowMessage.descr,
     filePath: path,
     range: extractRange(flowMessage),
   };
@@ -250,7 +250,7 @@ class FlowDiagnosticsProvider {
     filePathToMessages.set(currentFile, []);
 
     for (const diagnostic of fileDiagnostics) {
-      const path = diagnostic['filePath'];
+      const path = diagnostic.filePath;
       let diagnosticArray = filePathToMessages.get(path);
       if (!diagnosticArray) {
         diagnosticArray = [];

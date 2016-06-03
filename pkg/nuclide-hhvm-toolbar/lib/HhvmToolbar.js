@@ -146,8 +146,8 @@ class HhvmToolbar extends React.Component {
 
   _handleDropdownChange(newIndex: number) {
     const debugTarget = this._getDebugTarget(newIndex, this.props.targetFilePath);
-    if (this.refs['debugTarget']) {
-      this.refs['debugTarget'].setText(debugTarget);
+    if (this.refs.debugTarget) {
+      this.refs.debugTarget.setText(debugTarget);
     }
     this.setState({selectedIndex: newIndex});
   }
@@ -159,7 +159,7 @@ class HhvmToolbar extends React.Component {
     // TODO: is this.props.targetFilePath best one for targetUri?
     let processInfo = null;
     if (this._isDebugScript(this.state.selectedIndex)) {
-      const scriptTarget = this.refs['debugTarget'].getText();
+      const scriptTarget = this.refs.debugTarget.getText();
       const {LaunchProcessInfo} = require('../../nuclide-debugger-hhvm/lib/LaunchProcessInfo');
       processInfo = new LaunchProcessInfo(this.props.targetFilePath, scriptTarget);
     } else {

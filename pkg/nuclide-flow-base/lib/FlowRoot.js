@@ -84,12 +84,12 @@ export class FlowRoot {
         return null;
       }
       const json = parseJSON(args, result.stdout);
-      if (json['path']) {
+      if (json.path) {
         return {
-          file: json['path'],
+          file: json.path,
           point: {
-            line: json['line'] - 1,
-            column: json['start'] - 1,
+            line: json.line - 1,
+            column: json.start - 1,
           },
         };
       } else {
@@ -253,8 +253,8 @@ export class FlowRoot {
     } catch (e) {
       return null;
     }
-    const type = json['type'];
-    const rawType = json['raw_type'];
+    const type = json.type;
+    const rawType = json.raw_type;
     if (!type || type === '(unknown)' || type === '') {
       if (type === '') {
         // This should not happen. The Flow team believes it's an error in Flow

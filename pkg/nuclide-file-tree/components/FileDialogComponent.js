@@ -139,7 +139,7 @@ class FileDialogComponent extends React.Component {
   }
 
   _handleDocumentClick(event: Event): void {
-    const dialog = this.refs['dialog'];
+    const dialog = this.refs.dialog;
     // If the click did not happen on the dialog or on any of its descendants,
     // the click was elsewhere on the document and should close the modal.
     if (event.target !== dialog && !dialog.contains(event.target)) {

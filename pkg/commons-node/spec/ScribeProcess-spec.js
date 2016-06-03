@@ -36,7 +36,7 @@ describe('scribe_cat test suites', () => {
     waitsForPromise(async () => {
       tempDir = await fsPromise.tempdir();
       originalCommand = __test__.setScribeCatCommand(scribeCatMockCommandPath);
-      process.env['SCRIBE_MOCK_PATH'] = tempDir;
+      process.env.SCRIBE_MOCK_PATH = tempDir;
     });
   });
 

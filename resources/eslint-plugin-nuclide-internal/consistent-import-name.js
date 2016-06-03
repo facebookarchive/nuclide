@@ -19,48 +19,48 @@
 
 const ALLOWED_NAMES_BY_MODULE = {
   // Node builtins
-  'assert': ['assert', 'invariant'],
-  'buffer': ['Buffer'],
-  'child_process': ['child_process'],
-  'cluster': ['cluster'],
-  'crypto': ['crypto'],
-  'dgram': ['dgram'],
-  'dns': ['dns'],
-  'domain': ['domain'],
+  assert: ['assert', 'invariant'],
+  buffer: ['Buffer'],
+  child_process: ['child_process'],
+  cluster: ['cluster'],
+  crypto: ['crypto'],
+  dgram: ['dgram'],
+  dns: ['dns'],
+  domain: ['domain'],
   // flow doesn't like `import EventEmitter from 'EventEmitter';`
   // 'events': ['EventEmitter'],
-  'fs': ['fs'],
-  'http': ['http'],
-  'https': ['https'],
+  fs: ['fs'],
+  http: ['http'],
+  https: ['https'],
   // 'net': ['net'],
-  'os': ['os'],
+  os: ['os'],
   // "path" is a really common name, so "pathModule" is the collision escape
   // hatch. There is precedent in Node core for "pathModule"
   // https://github.com/nodejs/node/blob/v5.10.1/lib/fs.js#L8
-  'path': ['path', 'pathModule'],
-  'punycode': ['punycode'],
-  'querystring': ['querystring'],
-  'readline': ['readline'],
-  'stream': ['Stream'],
-  'string_decoder': ['string_decoder'],
-  'tls': ['tls'],
-  'tty': ['tty'],
-  'url': ['url'],
-  'util': ['util'],
-  'v8': ['v8'],
-  'vm': ['vm'],
-  'zli': ['zli'],
+  path: ['path', 'pathModule'],
+  punycode: ['punycode'],
+  querystring: ['querystring'],
+  readline: ['readline'],
+  stream: ['Stream'],
+  string_decoder: ['string_decoder'],
+  tls: ['tls'],
+  tty: ['tty'],
+  url: ['url'],
+  util: ['util'],
+  v8: ['v8'],
+  vm: ['vm'],
+  zli: ['zli'],
 
   // Atom builtins
-  'shell': ['shell'],
-  'remote': ['remote'],
-  'ipc': ['ipc'],
+  shell: ['shell'],
+  remote: ['remote'],
+  ipc: ['ipc'],
 
   // node_modules
   // 'rx': ['Rx'],
   // 'temp': ['temp'],
-  'uuid': ['uuid'],
-  'ws': ['WS'],
+  uuid: ['uuid'],
+  ws: ['WS'],
 };
 
 function prettyNames(namesList) {

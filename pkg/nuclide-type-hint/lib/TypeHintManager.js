@@ -58,8 +58,8 @@ class TypeHintManager {
     invariant(hint != null);
     // We track the timing above, but we still want to know the number of popups that are shown.
     track('type-hint-popup', {
-      'scope': scopeName,
-      'message': hint,
+      scope: scopeName,
+      message: hint,
     });
     return {
       component: makeTypeHintComponent(hintTree || hint, grammar),

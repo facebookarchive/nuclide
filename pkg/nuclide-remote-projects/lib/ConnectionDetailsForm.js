@@ -90,7 +90,7 @@ export default class ConnectionDetailsForm extends React.Component {
         selectedAuthMethodIndex: passwordAuthMethodIndex,
       },
       () => {
-        ReactDOM.findDOMNode(this.refs['password']).focus();
+        ReactDOM.findDOMNode(this.refs.password).focus();
       }
     );
   }
@@ -104,7 +104,7 @@ export default class ConnectionDetailsForm extends React.Component {
       () => {
         // when setting this immediately, Atom will unset the focus...
         setTimeout(() => {
-          ReactDOM.findDOMNode(this.refs['pathToPrivateKey']).focus();
+          ReactDOM.findDOMNode(this.refs.pathToPrivateKey).focus();
         }, 0);
       }
     );
@@ -231,7 +231,7 @@ export default class ConnectionDetailsForm extends React.Component {
       event => this.props.onCancel()
     ));
 
-    this.refs['username'].focus();
+    this.refs.username.focus();
   }
 
   componentWillUnmount() {
@@ -306,7 +306,7 @@ export default class ConnectionDetailsForm extends React.Component {
   }
 
   clearPassword(): void {
-    const passwordInput = this.refs['password'];
+    const passwordInput = this.refs.password;
     if (passwordInput) {
       passwordInput.value = '';
     }

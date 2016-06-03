@@ -89,7 +89,7 @@ class FileTreeSidebarComponent extends React.Component {
     // Delegate focus to the FileTree component if this component gains focus because the FileTree
     // matches the selectors targeted by themes to show the containing panel has focus.
     if (event.target === ReactDOM.findDOMNode(this)) {
-      ReactDOM.findDOMNode(this.refs['fileTree']).focus();
+      ReactDOM.findDOMNode(this.refs.fileTree).focus();
     }
   }
 
@@ -143,7 +143,7 @@ class FileTreeSidebarComponent extends React.Component {
   }
 
   _onViewChange(): void {
-    const node = ReactDOM.findDOMNode(this.refs['scroller']);
+    const node = ReactDOM.findDOMNode(this.refs.scroller);
     const {clientHeight, scrollTop} = node;
 
     if (clientHeight !== this.state.scrollerHeight || scrollTop !== this.state.scrollerScrollTop) {
@@ -158,7 +158,7 @@ class FileTreeSidebarComponent extends React.Component {
       return;  // Already in the view
     }
 
-    const node = ReactDOM.findDOMNode(this.refs['scroller']);
+    const node = ReactDOM.findDOMNode(this.refs.scroller);
     if (node == null) {
       return;
     }

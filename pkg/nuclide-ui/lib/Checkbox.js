@@ -67,7 +67,7 @@ export class Checkbox extends React.Component {
    * @see https://www.w3.org/TR/html5/forms.html#the-input-element
    */
   _setIndeterminate(): void {
-    ReactDOM.findDOMNode(this.refs['input']).indeterminate = this.props.indeterminate;
+    ReactDOM.findDOMNode(this.refs.input).indeterminate = this.props.indeterminate;
   }
 
   render(): React.Element {

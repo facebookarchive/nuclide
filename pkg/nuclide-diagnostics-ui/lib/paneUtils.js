@@ -58,8 +58,8 @@ function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): numb
 }
 
 const messageLevelRank: {[key: MessageType]: number} = {
-  'Error': 0,
-  'Warning': 1,
+  Error: 0,
+  Warning: 1,
 };
 
 function compareMessagesByLevel(a: DiagnosticMessage, b: DiagnosticMessage): number {

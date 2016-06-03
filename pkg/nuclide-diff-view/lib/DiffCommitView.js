@@ -54,7 +54,7 @@ class DiffCommitView extends React.Component {
   }
 
   _setCommitMessage(): void {
-    this.refs['message'].getTextBuffer().setText(this.props.commitMessage || '');
+    this.refs.message.getTextBuffer().setText(this.props.commitMessage || '');
   }
 
   render(): React.Element {
@@ -129,7 +129,7 @@ class DiffCommitView extends React.Component {
   }
 
   _getCommitMessage(): string {
-    return this.refs['message'].getTextBuffer().getText();
+    return this.refs.message.getTextBuffer().getText();
   }
 
   _onToggleAmend(isChecked: boolean): void {

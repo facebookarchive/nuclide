@@ -268,7 +268,7 @@ class ConnectionDialog extends React.Component {
         // TODO(mbolin): Tell user to fill out all of the fields.
       }
     } else if (mode === REQUEST_AUTHENTICATION_DETAILS) {
-      const authenticationPrompt = this.refs['authentication'];
+      const authenticationPrompt = this.refs.authentication;
       const password = authenticationPrompt.getPassword();
 
       this.state.finish([password]);

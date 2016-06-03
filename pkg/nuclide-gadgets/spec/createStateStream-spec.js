@@ -48,7 +48,7 @@ describe('createStateStream', () => {
     const initialState = Immutable.Map({
       gadgets: Immutable.Map({
         'gadget-id-value': {gadgetId},
-        other: {gadgetId: 'other'},
+        'other': {gadgetId: 'other'},
       }),
     });
     const state$ = createStateStream(action$, initialState);

@@ -75,7 +75,7 @@ const FileSystemActions = {
     const hgRepository = FileTreeHgHelpers.getHgRepositoryForNode(node);
     const additionalOptions = {};
     if (hgRepository != null) {
-      additionalOptions['addToVCS'] = 'Add the new file to version control.';
+      additionalOptions.addToVCS = 'Add the new file to version control.';
     }
     this._openAddDialog(
       'file',
@@ -230,7 +230,7 @@ const FileSystemActions = {
     const hgRepository = FileTreeHgHelpers.getHgRepositoryForNode(node);
     const additionalOptions = {};
     if (hgRepository !== null) {
-      additionalOptions['addToVCS'] = 'Add the new file to version control.';
+      additionalOptions.addToVCS = 'Add the new file to version control.';
     }
     this._openDialog({
       iconClassName: 'icon-arrow-right',

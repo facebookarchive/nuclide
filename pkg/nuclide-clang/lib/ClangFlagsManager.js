@@ -276,7 +276,7 @@ class ClangFlagsManager {
       throw error;
     }
     const buckProjectRoot = await buckProject.getPath();
-    let pathToCompilationDatabase = buildReport['results'][buildTarget]['output'];
+    let pathToCompilationDatabase = buildReport.results[buildTarget].output;
     pathToCompilationDatabase = path.join(
         buckProjectRoot,
         pathToCompilationDatabase);

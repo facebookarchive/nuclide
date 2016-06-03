@@ -48,12 +48,12 @@ describe('debugger-hhvm-proxy FileCache', () => {
         observableSpy,
         'Debugger.scriptParsed',
         {
-          'scriptId': filepath,
-          'url': sourceFileUrl,
-          'startLine': 0,
-          'startColumn': 0,
-          'endLine': 0,
-          'endColumn': 0,
+          scriptId: filepath,
+          url: sourceFileUrl,
+          startLine: 0,
+          startColumn: 0,
+          endLine: 0,
+          endColumn: 0,
         });
       const source = await cache.getFileSource(filepath);
       expect(source).toBe('<?hh\n');
@@ -68,12 +68,12 @@ describe('debugger-hhvm-proxy FileCache', () => {
         observableSpy,
         'Debugger.scriptParsed',
         {
-          'scriptId': filepath,
-          'url': noSourceFileUrl,
-          'startLine': 0,
-          'startColumn': 0,
-          'endLine': 0,
-          'endColumn': 0,
+          scriptId: filepath,
+          url: noSourceFileUrl,
+          startLine: 0,
+          startColumn: 0,
+          endLine: 0,
+          endColumn: 0,
         });
       const source = await cache.getFileSource(filepath);
       expect(source).toBe('<?hh\n');

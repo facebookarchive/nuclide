@@ -47,7 +47,7 @@ class DiagnosticsPanel extends React.Component {
   }
 
   getHeight(): number {
-    return this.refs['panel'].getLength();
+    return this.refs.panel.getLength();
   }
 
   render(): React.Element {

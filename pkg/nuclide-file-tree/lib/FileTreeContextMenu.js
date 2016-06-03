@@ -266,20 +266,20 @@ class FileTreeContextMenu {
         },
         submenu: [
           {
-            'label': 'Up',
-            'command': 'nuclide-file-tree:open-selected-entry-up',
+            label: 'Up',
+            command: 'nuclide-file-tree:open-selected-entry-up',
           },
           {
-            'label': 'Down',
-            'command': 'nuclide-file-tree:open-selected-entry-down',
+            label: 'Down',
+            command: 'nuclide-file-tree:open-selected-entry-down',
           },
           {
-            'label': 'Left',
-            'command': 'nuclide-file-tree:open-selected-entry-left',
+            label: 'Left',
+            command: 'nuclide-file-tree:open-selected-entry-left',
           },
           {
-            'label': 'Right',
-            'command': 'nuclide-file-tree:open-selected-entry-right',
+            label: 'Right',
+            command: 'nuclide-file-tree:open-selected-entry-right',
           },
         ],
       },

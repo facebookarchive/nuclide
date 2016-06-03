@@ -395,8 +395,8 @@ class FileTreeController {
           (nodes.size > 1 ? 'items?' : 'item?');
       atom.confirm({
         buttons: {
-          'Delete': () => { this._actions.deleteSelectedNodes(); },
-          'Cancel': () => {},
+          Delete: () => { this._actions.deleteSelectedNodes(); },
+          Cancel: () => {},
         },
         detailedMessage: `You are deleting:${os.EOL}${selectedPaths.join(os.EOL)}`,
         message,

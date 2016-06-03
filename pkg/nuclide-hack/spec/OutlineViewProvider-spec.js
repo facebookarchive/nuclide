@@ -16,60 +16,60 @@ describe('outlineFromHackIdeOutline', () => {
     const actualOutline = outlineFromHackIdeOutline(
       [
         {
-          'name': 'f',
-          'representativeName': 'f',
-          'modifiers': [],
-          'span': {
-            'line_start': 3,
-            'line_end': 4,
-            'char_start': 1,
-            'char_end': 1,
-            'filename': '',
+          name: 'f',
+          representativeName: 'f',
+          modifiers: [],
+          span: {
+            line_start: 3,
+            line_end: 4,
+            char_start: 1,
+            char_end: 1,
+            filename: '',
           },
-          'kind': 'function',
-          'params': [
+          kind: 'function',
+          params: [
             {
-              'kind': 'param',
-              'position': {
-                'filename': '',
-                'char_end': 17,
-                'char_start': 16,
-                'line': 3,
+              kind: 'param',
+              position: {
+                filename: '',
+                char_end: 17,
+                char_start: 16,
+                line: 3,
               },
-              'modifiers': [],
-              'span': {
-                'line_start': 3,
-                'line_end': 3,
-                'char_start': 12,
-                'char_end': 17,
-                'filename': '',
+              modifiers: [],
+              span: {
+                line_start: 3,
+                line_end: 3,
+                char_start: 12,
+                char_end: 17,
+                filename: '',
               },
-              'name': '$x',
+              name: '$x',
             },
             {
-              'kind': 'param',
-              'position': {
-                'filename': '',
-                'char_end': 21,
-                'char_start': 20,
-                'line': 3,
+              kind: 'param',
+              position: {
+                filename: '',
+                char_end: 21,
+                char_start: 20,
+                line: 3,
               },
-              'modifiers': [],
-              'span': {
-                'line_start': 3,
-                'line_end': 3,
-                'char_start': 20,
-                'char_end': 21,
-                'filename': '',
+              modifiers: [],
+              span: {
+                line_start: 3,
+                line_end: 3,
+                char_start: 20,
+                char_end: 21,
+                filename: '',
               },
-              'name': '$y',
+              name: '$y',
             },
           ],
-          'position': {
-            'filename': '',
-            'char_end': 10,
-            'line': 3,
-            'char_start': 10,
+          position: {
+            filename: '',
+            char_end: 10,
+            line: 3,
+            char_start: 10,
           },
         },
       ]
@@ -116,7 +116,7 @@ describe('outlineFromHackIdeOutline', () => {
                 value: ')',
               },
             ],
-            'representativeName': 'f',
+            representativeName: 'f',
             startPosition: {
               row: 2,
               column: 9,
@@ -135,143 +135,143 @@ describe('outlineFromHackIdeOutline', () => {
     const actualOutline = outlineFromHackIdeOutline(
       [
         {
-          'name': 'D',
-          'children': [
+          name: 'D',
+          children: [
             {
-              'position': {
-                'filename': '',
-                'char_end': 14,
-                'char_start': 14,
-                'line': 11,
+              position: {
+                filename: '',
+                char_end: 14,
+                char_start: 14,
+                line: 11,
               },
-              'kind': 'typeconst',
-              'name': 'Y',
-              'modifiers': [],
-              'span': {
-                'char_end': 20,
-                'filename': '',
-                'line_end': 11,
-                'char_start': 3,
-                'line_start': 11,
+              kind: 'typeconst',
+              name: 'Y',
+              modifiers: [],
+              span: {
+                char_end: 20,
+                filename: '',
+                line_end: 11,
+                char_start: 3,
+                line_start: 11,
               },
             },
             {
-              'kind': 'property',
-              'position': {
-                'char_start': 39,
-                'line': 12,
-                'char_end': 40,
-                'filename': '',
+              kind: 'property',
+              position: {
+                char_start: 39,
+                line: 12,
+                char_end: 40,
+                filename: '',
               },
-              'modifiers': [
+              modifiers: [
                 'private',
               ],
-              'span': {
-                'line_end': 12,
-                'char_start': 39,
-                'char_end': 40,
-                'filename': '',
-                'line_start': 12,
+              span: {
+                line_end: 12,
+                char_start: 39,
+                char_end: 40,
+                filename: '',
+                line_start: 12,
               },
-              'name': 'x',
+              name: 'x',
             },
             {
-              'name': '__construct',
-              'modifiers': [
+              name: '__construct',
+              modifiers: [
                 'public',
               ],
-              'span': {
-                'char_end': 3,
-                'filename': '',
-                'line_end': 14,
-                'char_start': 3,
-                'line_start': 12,
+              span: {
+                char_end: 3,
+                filename: '',
+                line_end: 14,
+                char_start: 3,
+                line_start: 12,
               },
-              'position': {
-                'char_start': 19,
-                'line': 12,
-                'filename': '',
-                'char_end': 29,
+              position: {
+                char_start: 19,
+                line: 12,
+                filename: '',
+                char_end: 29,
               },
-              'kind': 'method',
-              'params': [
+              kind: 'method',
+              params: [
                 {
-                  'position': {
-                    'filename': '',
-                    'char_end': 40,
-                    'char_start': 39,
-                    'line': 12,
+                  position: {
+                    filename: '',
+                    char_end: 40,
+                    char_start: 39,
+                    line: 12,
                   },
-                  'kind': 'param',
-                  'name': '$x',
-                  'modifiers': [
+                  kind: 'param',
+                  name: '$x',
+                  modifiers: [
                     'private',
                   ],
-                  'span': {
-                    'line_start': 12,
-                    'char_start': 39,
-                    'line_end': 12,
-                    'filename': '',
-                    'char_end': 40,
+                  span: {
+                    line_start: 12,
+                    char_start: 39,
+                    line_end: 12,
+                    filename: '',
+                    char_end: 40,
                   },
                 },
               ],
             },
             {
-              'modifiers': [
+              modifiers: [
                 'abstract',
               ],
-              'span': {
-                'line_start': 15,
-                'char_end': 18,
-                'filename': '',
-                'line_end': 15,
-                'char_start': 18,
+              span: {
+                line_start: 15,
+                char_end: 18,
+                filename: '',
+                line_end: 15,
+                char_start: 18,
               },
-              'name': 'Z',
-              'kind': 'const',
-              'position': {
-                'filename': '',
-                'char_end': 18,
-                'line': 15,
-                'char_start': 18,
+              name: 'Z',
+              kind: 'const',
+              position: {
+                filename: '',
+                char_end: 18,
+                line: 15,
+                char_start: 18,
               },
             },
             {
-              'kind': 'const',
-              'position': {
-                'char_end': 9,
-                'filename': '',
-                'char_start': 9,
-                'line': 16,
+              kind: 'const',
+              position: {
+                char_end: 9,
+                filename: '',
+                char_start: 9,
+                line: 16,
               },
-              'name': 'X',
-              'modifiers': [],
-              'span': {
-                'char_start': 9,
-                'line_end': 16,
-                'filename': '',
-                'char_end': 14,
-                'line_start': 16,
+              name: 'X',
+              modifiers: [],
+              span: {
+                char_start: 9,
+                line_end: 16,
+                filename: '',
+                char_end: 14,
+                line_start: 16,
               },
             },
           ],
-          'span': {
-            'filename': '',
-            'char_end': 1,
-            'char_start': 1,
-            'line_end': 17,
-            'line_start': 10,
+          span: {
+            filename: '',
+            char_end: 1,
+            char_start: 1,
+            line_end: 17,
+            line_start: 10,
           },
-          'modifiers': [
+          modifiers: [
             'abstract',
           ],
-          'kind': 'class',
-          'position': {
-            'char_start': 16,
-            'line': 10,
-            'filename': '',
-            'char_end': 16,
+          kind: 'class',
+          position: {
+            char_start: 16,
+            line: 10,
+            filename: '',
+            char_end: 16,
           },
         },
       ]
@@ -287,7 +287,7 @@ describe('outlineFromHackIdeOutline', () => {
               {kind: 'whitespace', value: ' '},
               {kind: 'class-name', value: 'D'},
             ],
-            'representativeName': 'D',
+            representativeName: 'D',
             startPosition: {row: 9, column: 15},
             endPosition: {row: 16, column: 0},
             children: [
@@ -299,7 +299,7 @@ describe('outlineFromHackIdeOutline', () => {
                   {kind: 'whitespace', value: ' '},
                   {kind: 'class-name', value: 'Y'},
                 ],
-                'representativeName': 'Y',
+                representativeName: 'Y',
                 startPosition: {row: 10, column: 13},
                 endPosition: {row: 10, column: 19},
                 children: [],
@@ -312,7 +312,7 @@ describe('outlineFromHackIdeOutline', () => {
                   {kind: 'whitespace', value: ' '},
                   {kind: 'method', value: 'x'},
                 ],
-                'representativeName': 'x',
+                representativeName: 'x',
                 startPosition: {row: 11, column: 38},
                 endPosition: {row: 11, column: 39},
                 children: [],
@@ -330,7 +330,7 @@ describe('outlineFromHackIdeOutline', () => {
                   {kind: 'plain', value: '$x'},
                   {kind: 'plain', value: ')'},
                 ],
-                'representativeName': '__construct',
+                representativeName: '__construct',
                 startPosition: {row: 11, column: 18},
                 endPosition: {row: 13, column: 2},
                 children: [],
@@ -343,7 +343,7 @@ describe('outlineFromHackIdeOutline', () => {
                   {kind: 'whitespace', value: ' '},
                   {kind: 'method', value: 'Z'},
                 ],
-                'representativeName': 'Z',
+                representativeName: 'Z',
                 startPosition: {row: 14, column: 17},
                 endPosition: {row: 14, column: 17},
                 children: [],
@@ -354,7 +354,7 @@ describe('outlineFromHackIdeOutline', () => {
                   {kind: 'whitespace', value: ' '},
                   {kind: 'method', value: 'X'},
                 ],
-                'representativeName': 'X',
+                representativeName: 'X',
                 startPosition: {row: 15, column: 8},
                 endPosition: {row: 15, column: 13},
                 children: [],
@@ -370,44 +370,44 @@ describe('outlineFromHackIdeOutline', () => {
     const actualOutline = outlineFromHackIdeOutline(
       [
         {
-          'position': {
-            'filename': '',
-            'char_end': 7,
-            'char_start': 7,
-            'line': 19,
+          position: {
+            filename: '',
+            char_end: 7,
+            char_start: 7,
+            line: 19,
           },
-          'kind': 'trait',
-          'children': [
+          kind: 'trait',
+          children: [
             {
-              'name': 'f',
-              'span': {
-                'char_start': 3,
-                'line_end': 22,
-                'filename': '',
-                'char_end': 3,
-                'line_start': 20,
+              name: 'f',
+              span: {
+                char_start: 3,
+                line_end: 22,
+                filename: '',
+                char_end: 3,
+                line_start: 20,
               },
-              'modifiers': [
+              modifiers: [
                 'public',
               ],
-              'position': {
-                'char_start': 19,
-                'line': 20,
-                'filename': '',
-                'char_end': 19,
+              position: {
+                char_start: 19,
+                line: 20,
+                filename: '',
+                char_end: 19,
               },
-              'kind': 'method',
-              'params': [],
+              kind: 'method',
+              params: [],
             },
           ],
-          'name': 'T',
-          'modifiers': [],
-          'span': {
-            'char_start': 1,
-            'line_end': 23,
-            'filename': '',
-            'char_end': 1,
-            'line_start': 19,
+          name: 'T',
+          modifiers: [],
+          span: {
+            char_start: 1,
+            line_end: 23,
+            filename: '',
+            char_end: 1,
+            line_start: 19,
           },
         },
       ]
@@ -430,7 +430,7 @@ describe('outlineFromHackIdeOutline', () => {
                 value: 'T',
               },
             ],
-            'representativeName': 'T',
+            representativeName: 'T',
             startPosition: {
               row: 18,
               column: 6,
@@ -471,7 +471,7 @@ describe('outlineFromHackIdeOutline', () => {
                     value: ')',
                   },
                 ],
-                'representativeName': 'f',
+                representativeName: 'f',
                 startPosition: {
                   row: 19,
                   column: 18,
@@ -493,23 +493,23 @@ describe('outlineFromHackIdeOutline', () => {
     const actualOutline = outlineFromHackIdeOutline(
       [
         {
-          'kind': 'interface',
-          'position': {
-            'line': 25,
-            'char_start': 11,
-            'filename': '',
-            'char_end': 11,
+          kind: 'interface',
+          position: {
+            line: 25,
+            char_start: 11,
+            filename: '',
+            char_end: 11,
           },
-          'span': {
-            'filename': '',
-            'char_end': 14,
-            'char_start': 1,
-            'line_end': 25,
-            'line_start': 25,
+          span: {
+            filename: '',
+            char_end: 14,
+            char_start: 1,
+            line_end: 25,
+            line_start: 25,
           },
-          'modifiers': [],
-          'name': 'I',
-          'children': [],
+          modifiers: [],
+          name: 'I',
+          children: [],
         },
       ]
     );
@@ -531,7 +531,7 @@ describe('outlineFromHackIdeOutline', () => {
                 value: 'I',
               },
             ],
-            'representativeName': 'I',
+            representativeName: 'I',
             startPosition: {
               row: 24,
               column: 10,
@@ -551,42 +551,42 @@ describe('outlineFromHackIdeOutline', () => {
     const actualOutline = outlineFromHackIdeOutline(
       [
         {
-          'name': 'En',
-          'children': [
+          name: 'En',
+          children: [
             {
-              'kind': 'const',
-              'position': {
-                'line': 28,
-                'char_start': 3,
-                'filename': '',
-                'char_end': 3,
+              kind: 'const',
+              position: {
+                line: 28,
+                char_start: 3,
+                filename: '',
+                char_end: 3,
               },
-              'span': {
-                'filename': '',
-                'char_end': 7,
-                'char_start': 3,
-                'line_end': 28,
-                'line_start': 28,
+              span: {
+                filename: '',
+                char_end: 7,
+                char_start: 3,
+                line_end: 28,
+                line_start: 28,
               },
-              'modifiers': [],
-              'name': 'C',
+              modifiers: [],
+              name: 'C',
             },
           ],
-          'span': {
-            'line_start': 27,
-            'line_end': 29,
-            'char_start': 1,
-            'char_end': 1,
-            'filename': '',
+          span: {
+            line_start: 27,
+            line_end: 29,
+            char_start: 1,
+            char_end: 1,
+            filename: '',
           },
-          'modifiers': [],
-          'position': {
-            'char_end': 7,
-            'filename': '',
-            'char_start': 6,
-            'line': 27,
+          modifiers: [],
+          position: {
+            char_end: 7,
+            filename: '',
+            char_start: 6,
+            line: 27,
           },
-          'kind': 'enum',
+          kind: 'enum',
         },
       ]
     );
@@ -608,7 +608,7 @@ describe('outlineFromHackIdeOutline', () => {
                 value: 'En',
               },
             ],
-            'representativeName': 'En',
+            representativeName: 'En',
             startPosition:
             {
               row: 26,
@@ -634,7 +634,7 @@ describe('outlineFromHackIdeOutline', () => {
                     value: 'C',
                   },
                 ],
-                'representativeName': 'C',
+                representativeName: 'C',
                 startPosition: {
                   row: 27,
                   column: 2,

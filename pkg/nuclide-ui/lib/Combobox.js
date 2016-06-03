@@ -101,7 +101,7 @@ export class Combobox extends React.Component {
       atom.commands.add(node, 'core:move-down', this._handleMoveDown),
       atom.commands.add(node, 'core:cancel', this._handleCancel),
       atom.commands.add(node, 'core:confirm', this._handleConfirm),
-      this.refs['freeformInput'].onDidChange(this._handleTextInputChange)
+      this.refs.freeformInput.onDidChange(this._handleTextInputChange)
     );
     this.requestUpdate();
   }
@@ -153,7 +153,7 @@ export class Combobox extends React.Component {
   }
 
   selectValue(newValue: string, didRenderCallback?: () => void) {
-    this.refs['freeformInput'].setText(newValue);
+    this.refs.freeformInput.setText(newValue);
     this.setState({
       textInput: newValue,
       selectedIndex: -1,
@@ -165,7 +165,7 @@ export class Combobox extends React.Component {
   }
 
   getText(): string {
-    return this.refs['freeformInput'].getText();
+    return this.refs.freeformInput.getText();
   }
 
   // TODO use native (fuzzy/strict - configurable?) filter provider
@@ -230,7 +230,7 @@ export class Combobox extends React.Component {
     this.selectValue(selectedValue, () => {
       // Focus the input again because the click will cause the input to blur. This mimics native
       // <select> behavior by keeping focus in the form being edited.
-      const input = ReactDOM.findDOMNode(this.refs['freeformInput']);
+      const input = ReactDOM.findDOMNode(this.refs.freeformInput);
       if (input) {
         input.focus();
       }
@@ -274,7 +274,7 @@ export class Combobox extends React.Component {
   }
 
   _scrollSelectedOptionIntoViewIfNeeded(): void {
-    const selectedOption = ReactDOM.findDOMNode(this.refs['selectedOption']);
+    const selectedOption = ReactDOM.findDOMNode(this.refs.selectedOption);
     if (selectedOption) {
       selectedOption.scrollIntoViewIfNeeded();
     }

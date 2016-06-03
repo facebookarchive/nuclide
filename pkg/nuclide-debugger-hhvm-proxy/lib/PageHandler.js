@@ -38,16 +38,16 @@ class PageHandler extends Handler {
           // For now, return a dummy resource tree so various initializations in
           // client happens.
           {
-            'frameTree': {
-              'childFrames': [],
-              'resources': [],
-              'frame': {
-                'id': DUMMY_FRAME_ID,
-                'loaderId': 'Loader.0',
-                'mimeType': '',
-                'name': 'HHVM',
-                'securityOrigin': '',
-                'url': 'hhvm:///',
+            frameTree: {
+              childFrames: [],
+              resources: [],
+              frame: {
+                id: DUMMY_FRAME_ID,
+                loaderId: 'Loader.0',
+                mimeType: '',
+                name: 'HHVM',
+                securityOrigin: '',
+                url: 'hhvm:///',
               },
             },
           });

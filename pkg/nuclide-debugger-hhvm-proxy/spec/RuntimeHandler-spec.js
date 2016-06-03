@@ -50,10 +50,10 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
       observableSpy,
       'Runtime.executionContextCreated',
       {
-        'context': {
-          'id': 1,
-          'frameId': 'Frame.0',
-          'name': 'hhvm: TODO: mangle in pid, idekey, script from connection',
+        context: {
+          id: 1,
+          frameId: 'Frame.0',
+          name: 'hhvm: TODO: mangle in pid, idekey, script from connection',
         },
       });
   });

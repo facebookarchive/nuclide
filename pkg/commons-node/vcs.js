@@ -21,7 +21,7 @@ const vcsInfoCache: {[src: string]: VcsInfo} = {};
 
 async function findVcsHelper(src: string): Promise<VcsInfo> {
   const options = {
-    'cwd': path.dirname(src),
+    cwd: path.dirname(src),
   };
   const hgResult = await asyncExecute('hg', ['root'], options);
   if (hgResult.exitCode === 0) {

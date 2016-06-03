@@ -126,7 +126,7 @@ export default class QuickSelectionComponent extends React.Component {
             resultsByService: newResults,
           },
           () => {
-            setImmediate(() => this.setQuery(this.refs['queryInput'].getText()));
+            setImmediate(() => this.setQuery(this.refs.queryInput.getText()));
             this._updateQueryHandler();
             this._emitter.emit('items-changed', newResults);
           }
@@ -261,7 +261,7 @@ export default class QuickSelectionComponent extends React.Component {
 
   _updateResults(activeProviderName: string): void {
     const updatedResults = searchResultManager.getResults(
-      this.refs['queryInput'].getText(),
+      this.refs.queryInput.getText(),
       activeProviderName
     );
     const [topProviderName] = sortServiceNames(Object.keys(updatedResults));
@@ -432,10 +432,10 @@ export default class QuickSelectionComponent extends React.Component {
 
   // Update the scroll position of the list view to ensure the selected item is visible.
   _updateScrollPosition(): void {
-    if (!(this.refs && this.refs['selectionList'])) {
+    if (!(this.refs && this.refs.selectionList)) {
       return;
     }
-    const listNode = ReactDOM.findDOMNode(this.refs['selectionList']);
+    const listNode = ReactDOM.findDOMNode(this.refs.selectionList);
     const selectedNode = listNode.getElementsByClassName('selected')[0];
     // false is passed for @centerIfNeeded parameter, which defaults to true.
     // Passing false causes the minimum necessary scroll to occur, so the selection sticks to the
@@ -547,7 +547,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   getInputTextEditor(): atom$TextEditorElement {
-    return ReactDOM.findDOMNode(this.refs['queryInput']);
+    return ReactDOM.findDOMNode(this.refs.queryInput);
   }
 
   clear(): void {
@@ -572,7 +572,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _getTextEditor(): TextEditor {
-    return this.refs['queryInput'].getTextEditor();
+    return this.refs.queryInput.getTextEditor();
   }
 
   /**
@@ -584,7 +584,7 @@ export default class QuickSelectionComponent extends React.Component {
     if (providerName !== this.props.activeProvider.name) {
       QuickSelectionActions.changeActiveProvider(providerName);
     }
-    this.refs['queryInput'].focus();
+    this.refs.queryInput.focus();
   }
 
   _renderTabs(): React.Element {
@@ -675,7 +675,7 @@ export default class QuickSelectionComponent extends React.Component {
               className={classnames({
                 'quick-open-result-item': true,
                 'list-item': true,
-                selected: isSelected,
+                'selected': isSelected,
               })}
               key={serviceName + dirName + itemIndex}
               onMouseDown={this._boundSelect}

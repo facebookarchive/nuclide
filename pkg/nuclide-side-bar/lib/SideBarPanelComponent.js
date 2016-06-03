@@ -23,7 +23,7 @@ export default class SideBarPanelComponent extends React.Component {
   };
 
   focus() {
-    ReactDOM.findDOMNode(this.refs['child']).focus();
+    ReactDOM.findDOMNode(this.refs.child).focus();
   }
 
   render() {

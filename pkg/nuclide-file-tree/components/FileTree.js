@@ -120,7 +120,7 @@ export class FileTree extends React.Component {
   }
 
   _measureHeights(): void {
-    const measuredComponent = this.refs['measured'];
+    const measuredComponent = this.refs.measured;
     if (measuredComponent == null) {
       return;
     }

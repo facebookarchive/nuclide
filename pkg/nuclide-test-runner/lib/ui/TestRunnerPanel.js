@@ -93,7 +93,7 @@ class TestRunnerPanel extends React.Component {
     this.renderTree();
     this.renderConsole();
 
-    ReactDOM.findDOMNode(this.refs['paneContainer']).appendChild(
+    ReactDOM.findDOMNode(this.refs.paneContainer).appendChild(
       atom.views.getView(this._paneContainer)
     );
   }

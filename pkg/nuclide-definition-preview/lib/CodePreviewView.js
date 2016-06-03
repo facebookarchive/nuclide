@@ -117,7 +117,7 @@ export class CodePreviewView extends ObservingComponent<PreviewContent> {
   }
 
   getEditor(): atom$TextEditor {
-    return this.refs['editor'].getModel();
+    return this.refs.editor.getModel();
   }
 
   _scrollToRow(row: number): void {

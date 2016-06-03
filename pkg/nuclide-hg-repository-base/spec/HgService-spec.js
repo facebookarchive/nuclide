@@ -41,12 +41,12 @@ describe('HgService', () => {
     const testHgStatusOutput = {
       stdout: JSON.stringify([
         {
-          'path': relativize(PATH_1),
-          'status': StatusCodeId.MODIFIED,
+          path: relativize(PATH_1),
+          status: StatusCodeId.MODIFIED,
         },
         {
-          'path': relativize(PATH_2),
-          'status': StatusCodeId.ADDED,
+          path: relativize(PATH_2),
+          status: StatusCodeId.ADDED,
         },
       ]),
     };

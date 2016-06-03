@@ -41,7 +41,7 @@ describe('TestSuiteModel', () => {
   it('maps test class IDs from a Array<TestClassSummary>', () => {
     const model = new TestSuiteModel(testClassSummaries);
     const testClassSummary = testClassSummaries[0];
-    expect(model.testClasses.get(testClassSummary['id'])).toBe(testClassSummary);
+    expect(model.testClasses.get(testClassSummary.id)).toBe(testClassSummary);
   });
 
   it('calculates progress percent', () => {

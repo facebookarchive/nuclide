@@ -35,12 +35,12 @@ class FileCache {
         this._callback.getServerMessageObservable(),
         'Debugger.scriptParsed',
         {
-          'scriptId': filepath,
-          'url': fileUrl,
-          'startLine': 0,
-          'startColumn': 0,
-          'endLine': 0,
-          'endColumn': 0,
+          scriptId: filepath,
+          url: fileUrl,
+          startLine: 0,
+          startColumn: 0,
+          endLine: 0,
+          endColumn: 0,
         });
     }
     const result = this._files.get(filepath);

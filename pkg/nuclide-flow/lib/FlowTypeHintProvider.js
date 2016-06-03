@@ -103,14 +103,14 @@ const ARRAY = 'ArrT';
 const FUNCTION = 'FunT';
 
 function jsonToTree(json: Object): HintTree {
-  const kind = json['kind'];
+  const kind = json.kind;
   switch (kind) {
     case OBJECT:
-      const propTypes = json['type']['propTypes'];
+      const propTypes = json.type.propTypes;
       const children = [];
       for (const prop of propTypes) {
-        const propName = prop['name'];
-        const childTree = jsonToTree(prop['type']);
+        const propName = prop.name;
+        const childTree = jsonToTree(prop.type);
         // Instead of making single child node just for the type name, we'll graft the type onto the
         // end of the property name.
         children.push({
@@ -135,7 +135,7 @@ function jsonToTree(json: Object): HintTree {
         value: 'boolean',
       };
     case MAYBE:
-      const childTree = jsonToTree(json['type']);
+      const childTree = jsonToTree(json.type);
       return {
         value: `?${childTree.value}`,
         children: childTree.children,
@@ -145,14 +145,14 @@ function jsonToTree(json: Object): HintTree {
         value: 'Object',
       };
     case ARRAY:
-      const elemType = jsonToTree(json['elemType']);
+      const elemType = jsonToTree(json.elemType);
       return {
         value: `Array<${elemType.value}>`,
         children: elemType.children,
       };
     case FUNCTION:
-      const paramNames = json['funType']['paramNames'];
-      const paramTypes = json['funType']['paramTypes'];
+      const paramNames = json.funType.paramNames;
+      const paramTypes = json.funType.paramTypes;
       invariant(Array.isArray(paramNames));
       const parameters = paramNames.map((name, i) => {
         const type = jsonToTree(paramTypes[i]);
@@ -161,7 +161,7 @@ function jsonToTree(json: Object): HintTree {
           children: type.children,
         };
       });
-      const returnType = jsonToTree(json['funType']['returnType']);
+      const returnType = jsonToTree(json.funType.returnType);
       return {
         value: 'Function',
         children: [

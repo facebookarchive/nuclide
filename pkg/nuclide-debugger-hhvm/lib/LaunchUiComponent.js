@@ -100,7 +100,7 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _handleLaunchButtonClick(): void {
-    const scriptPath = this.refs['scriptPath'].getText().trim();
+    const scriptPath = this.refs.scriptPath.getText().trim();
     const processInfo = new LaunchProcessInfo(this.props.targetUri, scriptPath);
     consumeFirstProvider('nuclide-debugger.remote')
       .then(debuggerService => debuggerService.startDebugging(processInfo));

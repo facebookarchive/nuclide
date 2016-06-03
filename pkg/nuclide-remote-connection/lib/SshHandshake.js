@@ -183,7 +183,7 @@ export class SshHandshake {
 
     if (config.authMethod === SupportedMethods.SSL_AGENT) {
       // Point to ssh-agent's socket for ssh-agent-based authentication.
-      let agent = process.env['SSH_AUTH_SOCK'];
+      let agent = process.env.SSH_AUTH_SOCK;
       if (!agent && /^win/.test(process.platform)) {
         // #100: On Windows, fall back to pageant.
         agent = 'pageant';

@@ -290,7 +290,7 @@ class DefineWorkingSetButton extends React.Component {
         })}
         onClick={onClick}>
         <span className={classnames({
-          icon: true,
+          'icon': true,
           'icon-plus': !isActive,
           'icon-dash': isActive,
           'nuclide-file-tree-toolbar-icon': true,

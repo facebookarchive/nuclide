@@ -31,7 +31,7 @@ export function flowStatusOutputToDiagnostics(
   root: string,
   statusOutput: Object,
 ): Diagnostics {
-  if (statusOutput['flowVersion'] != null) {
+  if (statusOutput.flowVersion != null) {
     return newFlowStatusOutputToDiagnostics(root, statusOutput);
   } else {
     return oldFlowStatusOutputToDiagnostics(root, statusOutput);
@@ -42,15 +42,15 @@ export function oldFlowStatusOutputToDiagnostics(
   root: string,
   statusOutput: OldFlowStatusOutput,
 ): Diagnostics {
-  const errors: Array<OldFlowStatusError> = statusOutput['errors'];
+  const errors: Array<OldFlowStatusError> = statusOutput.errors;
   const messages: Array<Diagnostic> = errors.map((flowStatusError: OldFlowStatusError) => {
     const flowMessageComponents: Array<OldFlowStatusErrorMessageComponent> =
-      flowStatusError['message'];
-    const level = flowMessageComponents[0]['level'];
+      flowStatusError.message;
+    const level = flowMessageComponents[0].level;
 
     const messageComponents: Array<MessageComponent> =
       flowMessageComponents.map(flowMessageComponentToMessageComponent);
-    const operation = flowStatusError['operation'];
+    const operation = flowStatusError.operation;
     if (operation != null) {
       // The operation field provides additional context. I don't fully understand the motivation
       // behind separating it out, but prepending it with 'See also: ' and adding it to the end of

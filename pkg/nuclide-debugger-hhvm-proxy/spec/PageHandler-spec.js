@@ -40,16 +40,16 @@ describe('debugger-hhvm-proxy PageHandler', () => {
   it('getResourceTree', () => {
     handler.handleMethod(3, 'getResourceTree');
     expect(clientCallback.replyToCommand).toHaveBeenCalledWith(3, {
-      'frameTree': {
-        'childFrames': [],
-        'resources': [],
-        'frame': {
-          'id': 'Frame.0',
-          'loaderId': 'Loader.0',
-          'mimeType': '',
-          'name': 'HHVM',
-          'securityOrigin': '',
-          'url': 'hhvm:///',
+      frameTree: {
+        childFrames: [],
+        resources: [],
+        frame: {
+          id: 'Frame.0',
+          loaderId: 'Loader.0',
+          mimeType: '',
+          name: 'HHVM',
+          securityOrigin: '',
+          url: 'hhvm:///',
         },
       },
     }, undefined);

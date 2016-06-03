@@ -217,8 +217,8 @@ export class DatatipManager {
         const {pinnable, component, range} = datatip;
         // We track the timing above, but we still want to know the number of popups that are shown.
         track('datatip-popup', {
-          'scope': scopeName,
-          'providerName': name,
+          scope: scopeName,
+          providerName: name,
           rangeStartRow: String(range.start.row),
           rangeStartColumn: String(range.start.column),
           rangeEndRow: String(range.end.row),

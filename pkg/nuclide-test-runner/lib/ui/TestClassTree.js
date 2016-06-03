@@ -36,7 +36,7 @@ class TestClassTree extends React.Component {
           roots.push(new TestClassTreeNode(testClass));
         }
       }
-      this.refs['tree'].setRoots(roots);
+      this.refs.tree.setRoots(roots);
     }
 
     (this: any).rowClassNameForNode = this.rowClassNameForNode.bind(this);
@@ -77,12 +77,12 @@ class TestClassTree extends React.Component {
     }
 
     const item = node.getItem();
-    const testRun = this.props.testSuiteModel.testRuns.get(item['id']);
+    const testRun = this.props.testSuiteModel.testRuns.get(item.id);
     if (testRun) {
-      if (testRun['numFailures'] > 0) {
+      if (testRun.numFailures > 0) {
         // Red/error if the test class had errors.
         return 'status-removed';
-      } else if (testRun['numSkipped'] > 0) {
+      } else if (testRun.numSkipped > 0) {
         // Yellow/warning if the class skipped tests.
         return 'status-modified';
       } else {

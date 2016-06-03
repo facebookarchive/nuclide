@@ -205,7 +205,7 @@ export default class DiffViewTree extends React.Component {
         );
       })
     );
-    const treeRoot = this.refs['tree'];
+    const treeRoot = this.refs.tree;
     const noOp = () => {};
     const selectFileNode = () => {
       treeRoot.selectNodeKey(this.props.activeFilePath).then(noOp, noOp);

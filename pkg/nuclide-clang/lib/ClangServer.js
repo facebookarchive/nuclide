@@ -105,5 +105,4 @@ export default class ClangServer extends RpcProcess<Object, any> {
       }
     }
   }
-
 }

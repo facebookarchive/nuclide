@@ -97,9 +97,9 @@ class SuggestionList extends React.Component {
 
     // Prevent scrolling the editor when scrolling the suggestion list.
     const stopPropagation = event => event.stopPropagation();
-    ReactDOM.findDOMNode(this.refs['scroller']).addEventListener('mousewheel', stopPropagation);
+    ReactDOM.findDOMNode(this.refs.scroller).addEventListener('mousewheel', stopPropagation);
     this._subscriptions.add(new Disposable(() => {
-      ReactDOM.findDOMNode(this.refs['scroller'])
+      ReactDOM.findDOMNode(this.refs.scroller)
         .removeEventListener('mousewheel', stopPropagation);
     }));
 
@@ -204,7 +204,7 @@ class SuggestionList extends React.Component {
   }
 
   _updateScrollPosition() {
-    const listNode = ReactDOM.findDOMNode(this.refs['selectionList']);
+    const listNode = ReactDOM.findDOMNode(this.refs.selectionList);
     const selectedNode = listNode.getElementsByClassName('selected')[0];
     selectedNode.scrollIntoViewIfNeeded(false);
   }

@@ -86,7 +86,7 @@ class DiffPublishView extends React.Component {
 
   _onPublishUpdate(message: Object): void {
     this._textBuffer.append(message.text);
-    const updatesEditor = this.refs['publishUpdates'];
+    const updatesEditor = this.refs.publishUpdates;
     if (updatesEditor != null) {
       updatesEditor.getElement().scrollToBottom();
     }
@@ -114,7 +114,7 @@ class DiffPublishView extends React.Component {
   }
 
   _setPublishText(): void {
-    const messageEditor = this.refs['message'];
+    const messageEditor = this.refs.message;
     if (messageEditor != null) {
       messageEditor.getTextBuffer().setText(this.props.message || '');
     }
@@ -126,7 +126,7 @@ class DiffPublishView extends React.Component {
   }
 
   _getPublishMessage(): ?string {
-    const messageEditor = this.refs['message'];
+    const messageEditor = this.refs.message;
     if (messageEditor != null) {
       return messageEditor.getTextBuffer().getText();
     } else {

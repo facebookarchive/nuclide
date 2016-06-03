@@ -175,7 +175,7 @@ export class PanelComponent extends React.Component {
   }
 
   focus(): void {
-    this.refs['child'].focus();
+    this.refs.child.focus();
   }
 
   getChildComponent(): React.Component {
@@ -199,7 +199,7 @@ export class PanelComponent extends React.Component {
   }
 
   _handleMouseMove(event: SyntheticMouseEvent): void {
-    const containerEl = ReactDOM.findDOMNode(this.refs['container']);
+    const containerEl = ReactDOM.findDOMNode(this.refs.container);
     let length = 0;
     if (this.props.dock === 'left') {
       length = event.pageX - containerEl.getBoundingClientRect().left;
@@ -227,8 +227,8 @@ export class PanelComponent extends React.Component {
     this.setState({length: 0});
     this.forceUpdate(() => {
       let length = 0;
-      const childNode = ReactDOM.findDOMNode(this.refs['child']);
-      const handle = ReactDOM.findDOMNode(this.refs['handle']);
+      const childNode = ReactDOM.findDOMNode(this.refs.child);
+      const handle = ReactDOM.findDOMNode(this.refs.handle);
       if (this.props.dock === 'left' || this.props.dock === 'right') {
         length = childNode.offsetWidth + handle.offsetWidth;
       } else if (this.props.dock === 'bottom') {

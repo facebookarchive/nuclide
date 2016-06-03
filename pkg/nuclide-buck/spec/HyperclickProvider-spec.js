@@ -65,7 +65,7 @@ describe('HyperclickProvider', () => {
         'non-existing-target': -1,
       },
       'Apps/BUCK.test': {
-        'test_target123': 1,
+        test_target123: 1,
       },
       'Libraries/TestLib1/BUCK.test': {
         'target_with_no_trailling_comma': 1,

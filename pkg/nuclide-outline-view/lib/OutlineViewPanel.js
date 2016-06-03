@@ -127,7 +127,7 @@ class OutlineViewPanel {
         initialLength={initialWidth}
         noScroll
         onResize={onResize}>
-        <div style={{display: 'flex', flexDirection: 'column', 'width': '100%'}}>
+        <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
           <OutlineViewHeader />
           <PanelComponentScroller>
             <OutlineView outlines={outlines} />

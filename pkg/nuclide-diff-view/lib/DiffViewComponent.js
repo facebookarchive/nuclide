@@ -156,7 +156,7 @@ class DiffViewComponent extends React.Component {
       this._destroyPaneDisposable(this._bottomRightPane),
     );
 
-    ReactDOM.findDOMNode(this.refs['paneContainer']).appendChild(
+    ReactDOM.findDOMNode(this.refs.paneContainer).appendChild(
       atom.views.getView(this._paneContainer),
     );
 

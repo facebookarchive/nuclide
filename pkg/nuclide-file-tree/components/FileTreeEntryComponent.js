@@ -161,9 +161,9 @@ export class FileTreeEntryComponent extends React.Component {
     const deep = event.altKey;
     if (
       node.isContainer &&
-      ReactDOM.findDOMNode(this.refs['arrowContainer']).contains(event.target) &&
+      ReactDOM.findDOMNode(this.refs.arrowContainer).contains(event.target) &&
       event.clientX < ReactDOM.findDOMNode(
-        this.refs['pathContainer']
+        this.refs.pathContainer
       ).getBoundingClientRect().left
     ) {
       this._toggleNodeExpanded(deep);

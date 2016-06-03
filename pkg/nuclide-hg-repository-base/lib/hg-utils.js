@@ -19,17 +19,17 @@ import {getLogger} from '../../nuclide-logging';
  *   - TTY_OUTPUT set if the command should be run as if it were attached to a tty.
  */
 export async function hgAsyncExecute(args: Array<string>, options: any): Promise<any> {
-  if (!options['NO_HGPLAIN']) {
+  if (!options.NO_HGPLAIN) {
     // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
     if (options.env) {
-      options.env['HGPLAIN'] = 1;
+      options.env.HGPLAIN = 1;
     } else {
-      options.env = {...process.env || {}, 'HGPLAIN': 1};
+      options.env = {...process.env || {}, HGPLAIN: 1};
     }
   }
 
   let cmd;
-  if (options['TTY_OUTPUT']) {
+  if (options.TTY_OUTPUT) {
     cmd = 'script';
     args = createArgsForScriptCommand('hg', args);
   } else {

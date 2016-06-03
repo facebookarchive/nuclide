@@ -77,7 +77,7 @@ export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
 
 export async function findArcProjectIdOfPath(fileName: NuclideUri): Promise<?string> {
   const project = await readArcConfig(fileName);
-  return project ? project['project_id'] : null;
+  return project ? project.project_id : null;
 }
 
 export async function getProjectRelativePath(fileName: NuclideUri): Promise<?string> {
@@ -156,7 +156,7 @@ function _callArcDiff(
         throw new Error('Failed to find Arcanist config.  Is this project set up for Arcanist?');
       }
       const options = {
-        'cwd': arcConfigDir,
+        cwd: arcConfigDir,
       };
       return scriptSafeSpawnAndObserveOutput('arc', args, options);
     }).share();
@@ -244,22 +244,22 @@ function convertLints(
 ): Array<ArcDiagnostic> {
   return lints.map(lint => {
     // Choose an appropriate level based on lint['severity'].
-    const severity = lint['severity'];
+    const severity = lint.severity;
     const level = severity === 'error' ? 'Error' : 'Warning';
 
-    const line = lint['line'];
+    const line = lint.line;
     // Sometimes the linter puts in global errors on line 0, which will result
     // in a negative index. We offset those back to the first line.
-    const col = Math.max(0, lint['char'] - 1);
+    const col = Math.max(0, lint.char - 1);
     const row = Math.max(0, line - 1);
 
     const diagnostic: ArcDiagnostic = {
       type: level,
-      text: lint['description'],
+      text: lint.description,
       filePath: pathToFile,
       row,
       col,
-      code: lint['code'],
+      code: lint.code,
     };
     if (lint.original != null) {
       diagnostic.original = lint.original;

@@ -60,10 +60,10 @@ export class RuntimeHandler extends Handler {
   _notifyExecutionContext(id: number): void {
     this.sendMethod('Runtime.executionContextCreated',
       {
-        'context': {
-          'id': 1,
-          'frameId': DUMMY_FRAME_ID,
-          'name': 'hhvm: TODO: mangle in pid, idekey, script from connection',
+        context: {
+          id: 1,
+          frameId: DUMMY_FRAME_ID,
+          name: 'hhvm: TODO: mangle in pid, idekey, script from connection',
         },
       });
     this.replyToCommand(id, {});

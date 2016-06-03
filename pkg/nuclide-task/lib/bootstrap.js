@@ -13,10 +13,10 @@ var isBootstrapped = false;
 var messagesToProcess = [];
 
 function processMessage(message) {
-  var action = message['action'];
+  var action = message.action;
   if (action === 'bootstrap') {
     if (!isBootstrapped) {
-      var transpiler = message['transpiler'];
+      var transpiler = message.transpiler;
       require(transpiler);
       messagesToProcess.forEach(processMessage);
       messagesToProcess = null;
@@ -32,13 +32,13 @@ function processMessage(message) {
 
   if (action === 'request') {
     // Look up the service function.
-    var file = message['file'];
+    var file = message.file;
     var exports = require(file);
-    var method = message['method'];
+    var method = message.method;
     var service = method ? exports[method] : exports;
 
     // Invoke the service.
-    var args = message['args'] || [];
+    var args = message.args || [];
     var output;
     var error;
     try {
@@ -48,7 +48,7 @@ function processMessage(message) {
     }
 
     // Send back the result.
-    var id = message['id'];
+    var id = message.id;
 
     function sendSuccessResponse(result) {
       process.send({

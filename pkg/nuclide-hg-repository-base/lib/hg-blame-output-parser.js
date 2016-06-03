@@ -39,11 +39,11 @@ function parseHgBlameOutput(output: string): Map<string, string> {
     return results;
   }
   arrayOfLineDescriptions.forEach((lineDescription, index) => {
-    let changeSetId: ?string = lineDescription['node'];
+    let changeSetId: ?string = lineDescription.node;
     if (changeSetId != null) {
       changeSetId = changeSetId.substring(0, CHANGE_SET_ID_PREFIX_LENGTH);
     }
-    results.set(index.toString(), `${lineDescription['user']} ${changeSetId}`);
+    results.set(index.toString(), `${lineDescription.user} ${changeSetId}`);
   });
 
   return results;
