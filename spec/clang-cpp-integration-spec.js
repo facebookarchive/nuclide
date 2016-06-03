@@ -1,0 +1,170 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+import {
+  busySignal,
+  copyFixture,
+  dispatchKeyboardEvent,
+  waitsForFile,
+  waitsForFilePosition,
+} from '../pkg/nuclide-integration-test-helpers';
+import {describeRemotableTest} from './utils/remotable-tests';
+
+function getAutocompleteData(node) {
+  return {
+    text: node.querySelector('.word').innerText,
+    type: node.querySelector('.left-label').innerText,
+    kind: node.querySelector('.right-label').innerText,
+  };
+}
+
+function getOutlineData(node) {
+  return {
+    name: node.innerText,
+    classes: node.className.split(' ').sort(),
+  };
+}
+
+/**
+ * This is a full integration test for (local) Objective-C support in Nuclide.
+ * After loading a test Buck project, this tests:
+ *
+ * 1. autocompletion support
+ * 2. diagnostics for errors
+ * 3. outline view
+ * 4. type datatips
+ * 5. go-to-definition with Hyperclick
+ */
+describeRemotableTest('Clang Integration Test (C++)', context => {
+  it('supports all language features', () => {
+    let testDir: string;
+    let textEditor: atom$TextEditor;
+    let textEditorView: HTMLElement;
+    waitsForPromise({timeout: 60000}, async () => {
+      testDir = await copyFixture('cpp_project');
+      await context.setProject(testDir);
+      textEditor = await atom.workspace.open(context.getProjectRelativePath('test.cpp'));
+      textEditorView = atom.views.getView(textEditor);
+    });
+
+    waitsForFile('test.cpp');
+
+    waitsFor('compilation to begin', 10000, () => {
+      return busySignal.isBusy();
+    });
+
+    waitsFor('compilation to finish', 30000, () => {
+      return !busySignal.isBusy();
+    });
+
+    runs(() => {
+      // Trigger autocompletion.
+      textEditor.setCursorBufferPosition([12, 0]);
+      textEditor.insertText('t.');
+      textEditor.insertText('m');
+    });
+
+    let autocompleteMenuView: HTMLElement;
+    waitsFor('autocomplete suggestions to render', 10000, () => {
+      autocompleteMenuView = textEditorView.querySelector('.autocomplete-plus');
+      if (autocompleteMenuView != null) {
+        return autocompleteMenuView.querySelector('.right-label');
+      }
+      return null;
+    });
+
+    runs(() => {
+      const items = autocompleteMenuView.querySelectorAll('li');
+      expect(items.length).toBeGreaterThan(1);
+      expect(getAutocompleteData(items[0])).toEqual({
+        text: 'method()',
+        type: 'void',
+        kind: 'CXXMethod',
+      });
+      expect(getAutocompleteData(items[1])).toEqual({
+        text: 'member',
+        type: 'int',
+        kind: 'Field',
+      });
+
+      // Confirm autocomplete.
+      dispatchKeyboardEvent('enter', document.activeElement);
+      expect(textEditorView.querySelector('.autocomplete-plus')).not.toExist();
+      const lineText = textEditor.lineTextForBufferRow(textEditor.getCursorBufferPosition().row);
+      expect(lineText).toBe('t.method()}');
+
+      // This is a clear syntax error, so we should get an error on save.
+      textEditor.save();
+    });
+
+    waitsFor('error to show up in diagnostics', 10000, () => {
+      const errors = atom.views.getView(atom.workspace)
+        .querySelector('.nuclide-diagnostics-highlight-group > :first-child');
+      if (errors instanceof HTMLElement) {
+        return errors.innerText.trim() === '1';
+      }
+    });
+
+    runs(() => {
+      // Keyboard shortcut for outline view.
+      dispatchKeyboardEvent('o', document.activeElement, {alt: true});
+    });
+
+    let names;
+    waitsFor('outline view to load', 10000, () => {
+      names = atom.views.getView(atom.workspace)
+        .querySelectorAll('.nuclide-outline-view-item .name');
+      return names.length > 0;
+    });
+
+    runs(() => {
+      expect(names.length).toBe(4);
+      expect(getOutlineData(names[0])).toEqual({
+        name: 'TestClass<T>',
+        classes: ['class', 'entity', 'name'],
+      });
+      expect(getOutlineData(names[1])).toEqual({
+        name: 'member',
+        classes: ['class', 'entity', 'name'],
+      });
+      expect(getOutlineData(names[2])).toEqual({
+        name: 'method',
+        classes: ['entity', 'function', 'name'],
+      });
+      expect(getOutlineData(names[3])).toEqual({
+        name: 'main',
+        classes: ['entity', 'function', 'name'],
+      });
+
+      // Trigger a datatip on t
+      textEditor.setCursorBufferPosition([11, 17]);
+      atom.commands.dispatch(textEditorView, 'nuclide-datatip:toggle');
+    });
+
+    let datatip;
+    waitsFor('datatip to appear for TestClass', () => {
+      datatip = atom.views.getView(atom.workspace)
+        .querySelector('.nuclide-datatip-content atom-text-editor');
+      return datatip;
+    });
+
+    runs(() => {
+      expect(datatip.getModel().getText()).toBe('TestClass<int>');
+
+      // Hyperclick on TestClass
+      textEditor.setCursorBufferPosition([11, 10]);
+      // hyperclick:confirm-cursor
+      dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
+    });
+
+    waitsForFilePosition('test.cpp', 3, 6);
+  });
+});

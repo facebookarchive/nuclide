@@ -179,7 +179,8 @@ export function compile(
     serverManager.reset(src);
   }
   const doCompile = async () => {
-    const server = await serverManager.getClangServer(src, contents, defaultFlags);
+    // Note: restarts the server if the flags changed.
+    const server = await serverManager.getClangServer(src, contents, defaultFlags, true);
     if (server != null) {
       return server.call('compile', {contents})
         .then(result => ({
