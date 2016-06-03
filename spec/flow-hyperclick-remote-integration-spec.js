@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import {describeLocal} from './utils/remotable-tests';
+import {describeRemote} from './utils/remotable-tests';
 import {runTest} from './utils/flow-hyperclick-common';
 
-describeLocal('Flow Hyperclick', context => {
+describeRemote('Flow Hyperclick', context => {
   runTest(context);
 });
