@@ -26,6 +26,7 @@ describe('HyperclickProvider', () => {
     it('searches //Apps/TestApp/BUCK.test', () => {
       const buckProject: BuckProject = Object.create(BuckProject.prototype);
       spyOn(buckProject, 'getPath').andReturn(Promise.resolve(projectPath));
+      spyOn(buckProject, 'getBuckConfig').andReturn(Promise.resolve(null));
       waitsForPromise(async () => {
         let target = await parseTarget(
             [':target1', null, 'target1'],
