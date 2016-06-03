@@ -12,34 +12,18 @@
 import type {TestContext} from './remotable-tests';
 
 import {
-  busySignal,
-  copyFixture,
   dispatchKeyboardEvent,
   waitsForFilePosition,
 } from '../../pkg/nuclide-integration-test-helpers';
 
+import {setup} from './flow-common';
+
 export function runTest(context: TestContext) {
   it('tests flow hyperclick example', () => {
-    let textEditor: atom$TextEditor = (null : any);
+    const editorPromise = setup(context);
 
-    waitsForPromise({timeout: 240000}, async () => {
-      const flowProjectPath = await copyFixture('flow_project_1');
-
-      // Add this directory as an atom project.
-      await context.setProject(flowProjectPath);
-      // Open a file in the flow project we copied, and get reference to the editor's HTML.
-      textEditor = await atom.workspace.open(context.getProjectRelativePath('main.js'));
-    });
-
-    waitsFor('spinner to start', 10000, () => {
-      return busySignal.isBusy();
-    });
-
-    waitsFor('spinner to stop', 30000, () => {
-      return !busySignal.isBusy();
-    });
-
-    runs(() => {
+    waitsForPromise(async () => {
+      const textEditor: atom$TextEditor = await editorPromise;
       textEditor.setCursorBufferPosition([14, 13]);
       // shortcut key for hyperclick:confirm-cursor
       dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
