@@ -9,31 +9,26 @@
  * the root directory of this source tree.
  */
 
-import {
-  activateAllPackages,
-  copyMercurialFixture,
-  jasmineIntegrationTestSetup,
-  deactivateAllPackages,
-  setLocalProject,
-} from '../pkg/nuclide-integration-test-helpers';
-import path from 'path';
+import type {TestContext} from './utils/remotable-tests';
 
-describe('Blame gutter integration test', () => {
+import {copyMercurialFixture} from '../pkg/nuclide-integration-test-helpers';
+import {describeRemotableTest} from './utils/remotable-tests';
+
+
+describeRemotableTest('Blame gutter integration test', (context: TestContext) => {
   it('renders the blame gutter', () => {
     let textEditorView: HTMLElement = (null : any);
     let blameGutter: HTMLElement = (null : any);
     let blameEntries: Array<HTMLElement> = (null : any);
 
     waitsForPromise({timeout: 60000}, async () => {
-      jasmineIntegrationTestSetup();
-      // Activate atom packages.
-      await activateAllPackages();
       // Copy mercurial project to temporary directory.
       const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
       // Add this directory as a new project in atom.
-      setLocalProject(repoPath);
+      await context.setProject(repoPath);
       // Open the test.txt file in the repo.
-      const textEditor = await atom.workspace.open(path.join(repoPath, 'test.txt'));
+      const filePath = context.getProjectRelativePath('test.txt');
+      const textEditor = await atom.workspace.open(filePath);
       textEditorView = atom.views.getView(textEditor);
       // Simulate 'Toggle blame' click in context menu.
       atom.commands.dispatch(textEditorView, 'nuclide-blame:toggle-blame');
@@ -66,8 +61,6 @@ describe('Blame gutter integration test', () => {
           expect(commitHash).toBe('c1c23528');
         }
       });
-
-      deactivateAllPackages();
     });
   });
 });
