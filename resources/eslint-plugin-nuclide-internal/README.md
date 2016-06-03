@@ -28,3 +28,23 @@ As part of your commit which changes these lint rules, you should bump the versi
 `package.json` in this directory. That way, `apm install` in Nuclide will re-install these files. If
 you don't bump the version, other developers will be running the previous version until they remove
 and re-install their `node_modules` directory.
+
+### Pro-tips
+
+* To run a single rule in isolation:
+
+```sh
+./node_modules/.bin/eslint \
+  --no-eslintrc \
+  --parser=babel-eslint \
+  --rulesdir=resources/eslint-plugin-nuclide-internal \
+  --rule='consistent-import-name: 1' \
+  -- file.js
+```
+
+* Direct symlinking:
+
+```sh
+rm -rf node_modules/eslint-plugin-nuclide-internal
+ln -s ../resources/eslint-plugin-nuclide-internal node_modules
+```
