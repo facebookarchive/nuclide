@@ -14,8 +14,18 @@ import {absolute, existsSync, moveSync} from 'fs-plus';
 import {fixtures} from '../../nuclide-test-helpers';
 import path from 'path';
 
+function getTestDir(): string {
+  const {testPaths} = atom.getLoadSettings();
+  const specPath = testPaths[0];
+  // This happens when we run all the specs at once.
+  if (path.basename(specPath) === 'spec') {
+    return specPath;
+  }
+  return path.dirname(specPath);
+}
+
 /*
- * Copies a specified subdirectory of integration-test-helpers/spec/fixtures to a temporary
+ * Copies a specified subdirectory of spec/fixtures to a temporary
  * location.  The fixtureName parameter must contain a directory named .hg-rename.  After the
  * directory specified by fixtureName is copied, its .hg-rename folder will be renamed to .hg, so
  * that it can act as a mercurial repository.
@@ -25,7 +35,7 @@ import path from 'path';
  * @returns the path to the temporary directory that this function creates.
  */
 export async function copyMercurialFixture(fixtureName: string): Promise<string> {
-  const repo = await fixtures.copyFixture(fixtureName, path.join(__dirname, '../spec'));
+  const repo = await fixtures.copyFixture(fixtureName, getTestDir());
   const pathToHg = path.join(repo, '.hg-rename');
   invariant(existsSync(pathToHg), `Directory: ${pathToHg} was not found.`);
   moveSync(pathToHg, path.join(repo, '.hg'));
@@ -45,14 +55,13 @@ export function setLocalProject(projectPath: string | Array<string>): void {
 }
 
 /*
- * Copies a specified subdirectory of integration-test-helpers/spec/fixtures
- * to a temporary location.
+ * Copies a specified subdirectory of spec/fixtures to a temporary location.
  *
  * @param fixtureName The name of the subdirectory of the fixtures/ directory within the
  * nuclide-test-helpers package directory that should be copied.
  * @returns the path to the temporary directory that this function creates.
  */
 export async function copyFixture(fixtureName: string): Promise<string> {
-  const fixturePath = await fixtures.copyFixture(fixtureName, path.join(__dirname, '../spec'));
+  const fixturePath = await fixtures.copyFixture(fixtureName, getTestDir());
   return absolute(fixturePath);
 }

@@ -1374,6 +1374,7 @@ type AtomGlobal = {
   getConfigDirPath(): string;
   showSaveDialogSync(options: Object): string;
   loadState(): Promise<?Object>;
+  getLoadSettings(): Object;
 };
 
 declare var atom: AtomGlobal;
