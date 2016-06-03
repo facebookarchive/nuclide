@@ -11,24 +11,17 @@
 
 import type {TestContext} from './remotable-tests';
 
-import {
-  dispatchKeyboardEvent,
-  waitsForFilePosition,
-} from '../../pkg/nuclide-integration-test-helpers';
-
 import {setup} from './flow-common';
+import {waitsForHyperclickResult} from './hyperclick-common';
 
 export function runTest(context: TestContext) {
   it('tests flow hyperclick example', () => {
-    const editorPromise = setup(context);
+    setup(context);
 
-    waitsForPromise(async () => {
-      const textEditor: atom$TextEditor = await editorPromise;
-      textEditor.setCursorBufferPosition([14, 13]);
-      // shortcut key for hyperclick:confirm-cursor
-      dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
-    });
-
-    waitsForFilePosition('Foo.js', 11, 2);
+    waitsForHyperclickResult(
+      [14, 13],
+      'Foo.js',
+      [11, 2],
+    );
   });
 }
