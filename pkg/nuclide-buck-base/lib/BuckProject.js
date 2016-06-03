@@ -118,7 +118,7 @@ export class BuckProject {
       }
       return path.join(this._rootPath, result[0]);
     } catch (e) {
-      logger.error(`No build file for target ${targetName}`, e);
+      logger.error(`No build file for target "${targetName}" ${e}`);
       return null;
     }
   }
