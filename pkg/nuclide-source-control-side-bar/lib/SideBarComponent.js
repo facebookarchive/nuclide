@@ -202,23 +202,15 @@ export default class SideBarComponent extends React.Component {
   }
 
   _handleRepoGearClick(repo: atom$Repository, event: SyntheticMouseEvent): void {
-    const menu = Menu.buildFromTemplate([
-      {
-        click: () => {
-          this.setState({
-            activeModalComponent: (
-              <CreateBookmarkModalComponent
-                onCancel={() => { this.setState({activeModalComponent: null}); }}
-                onCreate={this._confirmCreateBookmark}
-                repo={repo}
-              />
-            ),
-          });
-        },
-        label: 'Create bookmark...',
-      },
-    ]);
-    menu.popup(remote.getCurrentWindow(), event.clientX, event.clientY);
+    this.setState({
+      activeModalComponent: (
+        <CreateBookmarkModalComponent
+          onCancel={() => { this.setState({activeModalComponent: null}); }}
+          onCreate={this._confirmCreateBookmark}
+          repo={repo}
+        />
+      ),
+    });
   }
 
   _handleUncommittedChangesClick(repository: atom$Repository): void {

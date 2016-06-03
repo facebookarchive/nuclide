@@ -82,6 +82,7 @@ export default class RepositorySectionComponent extends React.Component {
             className="btn btn-sm icon icon-plus"
             onClick={this._handleRepoGearClick}
             style={{marginTop: '6px', position: 'absolute', right: '10px'}}
+            title="Create bookmark..."
           />
         );
       } else if (repository.getType() === 'git') {
@@ -173,9 +174,9 @@ export default class RepositorySectionComponent extends React.Component {
     return (
       <li>
         {separator}
-        <h5 className="text-highlight nuclide-source-control-side-bar--repo-header">
+        <h6 className="text-highlight nuclide-source-control-side-bar--repo-header">
           {this.props.title}
-        </h5>
+        </h6>
         <ul className="list-group">
           <li
             className={uncommittedChangesClassName}
