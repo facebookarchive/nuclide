@@ -20,13 +20,6 @@ function hgRepositoryForPath(filePath: string): HgRepositoryClient {
   return (repository: any);
 }
 
-// In the using tests, we mock `watchman` sending updates after the files are changed.
-// This is to avoid the dependency on `watchman` existing and working on test machines.
-export function refreshRepositoryStatuses(filePath: string): void {
-  hgRepositoryForPath(filePath)._serializedRefreshStatusesCache();
-}
-
-
 export function waitsForRepositoryReady(filePath: string): Promise<void> {
   return hgRepositoryForPath(filePath)._initializationPromise;
 }
