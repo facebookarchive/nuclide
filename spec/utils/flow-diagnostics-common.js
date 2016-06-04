@@ -21,6 +21,10 @@ import {
   doGutterDiagnosticsExist,
   waitsForGutterDiagnostics,
   expectGutterDiagnosticToContain,
+  waitsForStatusBarItem,
+  clickStatusBarItem,
+  isDiagnosticsPanelShowing,
+  getPanelDiagnosticElements,
 } from './diagnostics-common';
 
 import {setup} from './flow-common';
@@ -28,9 +32,16 @@ import {setup} from './flow-common';
 export function runTest(context: TestContext) {
   it('tests for flow ', () => {
     const textEditorPromise = setup(context);
+    let textEditor: atom$TextEditor;
+
+    waitsForStatusBarItem();
+    runs(() => {
+      clickStatusBarItem();
+      expect(isDiagnosticsPanelShowing()).toBeTruthy();
+    });
 
     waitsForPromise(async () => {
-      const textEditor = await textEditorPromise;
+      textEditor = await textEditorPromise;
       // Change `bar` to `baz`
       textEditor.setTextInBufferRange(new Range([14, 12], [14, 13]), 'z');
 
@@ -43,8 +54,23 @@ export function runTest(context: TestContext) {
 
     runs(() => {
       // This may need to be updated if Flow changes error text
-      const expectedText = 'property `baz`\nProperty not found in\nFoo';
-      expectGutterDiagnosticToContain(expectedText);
+      const expectedGutterText = 'property `baz`\nProperty not found in\nFoo';
+      expectGutterDiagnosticToContain(expectedGutterText);
+
+      // The text is rendered slightly differently in the gutter and the panel
+      const expectedPanelText = 'property `baz` Property not found in Foo';
+
+      const diagnosticElements = getPanelDiagnosticElements();
+      expect(diagnosticElements.length).toBe(1);
+      const diagnosticElement = diagnosticElements[0];
+      expect(diagnosticElement.innerText).toContain(expectedPanelText);
+
+      textEditor.setCursorBufferPosition([0, 0]);
+      diagnosticElement.click();
+    });
+
+    waitsFor(() => {
+      return textEditor.getCursorBufferPosition().isEqual([14, 0]);
     });
   });
 }
