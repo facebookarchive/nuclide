@@ -25,7 +25,7 @@ import fsPromise from '../../commons-node/fsPromise';
  */
 export async function queryFuzzyFile(
   rootDirectory: NuclideUri,
-  queryString: string
+  queryString: string,
 ): Promise<Array<FileSearchResult>> {
   const search = await fileSearchForDirectory(rootDirectory);
   return search.query(queryString);
@@ -36,7 +36,7 @@ export async function queryFuzzyFile(
  *   specified directory.
  */
 export function isFuzzySearchAvailableFor(
-  rootDirectory: NuclideUri
+  rootDirectory: NuclideUri,
 ): Promise<boolean> {
   return fsPromise.exists(rootDirectory);
 }

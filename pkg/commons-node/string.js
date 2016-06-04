@@ -43,7 +43,7 @@ const formats = [
 
 export function relativeDate(
   input: number | Date,
-  reference?: number | Date
+  reference?: number | Date,
 ): string {
   if (input instanceof Date) {
     input = input.getTime();

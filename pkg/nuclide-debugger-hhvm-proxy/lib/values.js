@@ -140,7 +140,7 @@ function convertObjectValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Ru
 
 function getAggregateRemoteObjectId(
   contextId: ObjectId,
-  dbgpProperty: DbgpProperty
+  dbgpProperty: DbgpProperty,
 ): Runtime$RemoteObjectId {
   // If the DbgpProperty represents an empty array or object, the `pagesize` and `numchildren`
   // will be omitted so we handle this "zero" case specially.

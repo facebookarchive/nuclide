@@ -188,7 +188,7 @@ export class TypeRegistry {
   _registerKind(
     kind: string,
     marshaller: Transformer,
-    unmarshaller: Transformer
+    unmarshaller: Transformer,
   ): void {
     invariant(!this._kindMarshallers.has(kind));
     this._kindMarshallers.set(kind, {marshaller, unmarshaller});
@@ -251,7 +251,7 @@ export class TypeRegistry {
   marshalArguments(
     context: ObjectRegistry,
     args: Array<any>,
-    argTypes: Array<Type>
+    argTypes: Array<Type>,
   ): Promise<Array<any>> {
     return Promise.all(args.map((arg, i) => this.marshal(context, arg, argTypes[i])));
   }
@@ -269,7 +269,7 @@ export class TypeRegistry {
   unmarshalArguments(
     context: ObjectRegistry,
     args: Array<any>,
-    argTypes: Array<Type>
+    argTypes: Array<Type>,
   ): Promise<Array<any>> {
     return Promise.all(args.map((arg, i) => this.unmarshal(context, arg, argTypes[i])));
   }

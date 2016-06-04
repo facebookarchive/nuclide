@@ -76,7 +76,7 @@ async function doGetBlameForEditor(editor: atom$TextEditor): Promise<BlameForEdi
  */
 function formatBlameInfo(
   rawBlameData: Map<string, string>,
-  useShortName: boolean
+  useShortName: boolean,
 ): BlameForEditor {
   const extractAuthor = useShortName ? shortNameForAuthor : identity;
 

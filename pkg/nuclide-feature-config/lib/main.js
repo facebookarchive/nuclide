@@ -29,7 +29,7 @@ module.exports = {
       excludeSources?: Array<string>;
       sources?: Array<string>;
       scope?: Object;
-    }
+    },
   ): mixed {
     return atom.config.get(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
   },
@@ -39,7 +39,7 @@ module.exports = {
    * `atom.config.getSchema`.
    */
   getSchema(
-    keyPath: string
+    keyPath: string,
   ): atom$ConfigSchema {
     return atom.config.getSchema(formatKeyPath(keyPath));
   },
@@ -51,7 +51,7 @@ module.exports = {
   observe(
     keyPath: string,
     optionsOrCallback: (Object | (value: any) => void),
-    callback?: (value: any) => mixed
+    callback?: (value: any) => mixed,
   ): IDisposable {
     return atom.config.observe(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
   },
@@ -74,7 +74,7 @@ module.exports = {
   onDidChange(
     keyPath: string,
     optionsOrCallback: (Object | (event: Object) => void),
-    callback?: (event: Object) => void
+    callback?: (event: Object) => void,
   ): IDisposable {
     return atom.config.onDidChange(
       formatKeyPath(keyPath),
@@ -92,7 +92,7 @@ module.exports = {
     options?: {
       scopeSelector?: string;
       source?: string;
-    }
+    },
   ): boolean {
     return atom.config.set(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
   },
@@ -103,7 +103,7 @@ module.exports = {
    */
   setSchema(
     keyPath: string,
-    schema: Object
+    schema: Object,
   ): void {
     return atom.config.setSchema(
       formatKeyPath(keyPath),
@@ -120,7 +120,7 @@ module.exports = {
     options?: {
       scopeSelector?: string;
       source?: string;
-    }
+    },
   ): void {
     return atom.config.unset(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
   },

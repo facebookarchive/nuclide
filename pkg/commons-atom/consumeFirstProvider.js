@@ -16,7 +16,7 @@
 
 export default function consumeFirstProvider(
   keyPath: string,
-  version: string = '0.0.0'
+  version: string = '0.0.0',
 ): Promise {
   return new Promise((resolve, reject) => {
     const subscription =

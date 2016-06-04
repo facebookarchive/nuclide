@@ -81,7 +81,7 @@ function loadDefinitions(definitionPath: string): Definitions {
 export function getProxy(
   serviceName: string,
   definitionPath: string,
-  clientObject: RpcContext
+  clientObject: RpcContext,
 ): any {
   if (!proxiesCache.has(definitionPath)) {
     proxiesCache.set(definitionPath, createProxyFactory(serviceName, definitionPath));
@@ -94,7 +94,7 @@ export function getProxy(
 
 export function createProxyFactory(
   serviceName: string,
-  definitionPath: string
+  definitionPath: string,
 ): ProxyFactory {
   // Transpile this code (since it will use anonymous classes and arrow functions).
   const defs = getDefinitions(definitionPath);

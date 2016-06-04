@@ -60,7 +60,7 @@ const CONFIG: Array<ConfigEntry> = [
 function getDeclaredTypes(
   root: Collection,
   options: SourceOptions,
-  filters?: ?Array<(path: NodePath) => boolean>
+  filters?: ?Array<(path: NodePath) => boolean>,
 ): Set<string> {
   // Start with the built in types that are always declared.
   const {moduleMap} = options;

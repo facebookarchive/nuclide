@@ -184,7 +184,7 @@ export class FileTreeNode {
   * of FileTreeNode instances
   */
   static childrenFromArray(
-    children: Array<FileTreeNode>
+    children: Array<FileTreeNode>,
   ): Immutable.OrderedMap<string, FileTreeNode> {
     return new Immutable.OrderedMap(children.map(child => [child.name, child]));
   }
@@ -666,7 +666,7 @@ export class FileTreeNode {
     uri: NuclideUri,
     rootUri: NuclideUri,
     repo: ?atom$Repository,
-    conf: StoreConfigData
+    conf: StoreConfigData,
   ): boolean {
     if (
       repo != null &&
@@ -752,7 +752,7 @@ export class FileTreeNode {
   newNode(
     props: ImmutableNodeSettableFields,
     conf: StoreConfigData,
-    derivedChange: boolean = true
+    derivedChange: boolean = true,
   ): FileTreeNode {
     return new FileTreeNode({
       ...this._buildOptions(),

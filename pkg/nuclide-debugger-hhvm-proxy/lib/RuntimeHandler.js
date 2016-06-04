@@ -23,7 +23,7 @@ export class RuntimeHandler extends Handler {
 
   constructor(
     clientCallback: ClientCallback,
-    connectionMultiplexer: ConnectionMultiplexer
+    connectionMultiplexer: ConnectionMultiplexer,
   ) {
     super('Runtime', clientCallback);
     this._connectionMultiplexer = connectionMultiplexer;

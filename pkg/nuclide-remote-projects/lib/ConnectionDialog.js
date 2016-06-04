@@ -273,7 +273,7 @@ class ConnectionDialog extends React.Component {
 
   requestAuthentication(
     instructions: {echo: boolean; prompt: string},
-    finish: (answers: Array<string>) => void
+    finish: (answers: Array<string>) => void,
   ) {
     this.setState({
       mode: REQUEST_AUTHENTICATION_DETAILS,

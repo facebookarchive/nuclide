@@ -55,7 +55,7 @@ export class ObjectRegistry {
   constructor(
     kind: RegistryKind,
     serviceRegistry: ServiceRegistry,
-    context: RpcContext
+    context: RpcContext,
   ) {
     this._delta = (kind === 'server') ? 1 : -1;
     this._nextObjectId = this._delta;

@@ -210,7 +210,7 @@ export class FileTree extends React.Component {
 
 function findFirstNodeToRender(
   roots: OrderedMap<mixed, FileTreeNode>,
-  firstToRender: number
+  firstToRender: number,
 ): ?FileTreeNode {
   let skipped = 0;
 

@@ -35,7 +35,7 @@ const separatorRegex = new RegExp('\\' + path.sep, 'g');
 function addAllParentDirectoriesToCache(
     directories: Map<string, number>,
     modifiedPath: string,
-    pathPrefixToSkip: ?string
+    pathPrefixToSkip: ?string,
   ) {
   computeAllParentDirectories(
     directories,
@@ -51,7 +51,7 @@ function addAllParentDirectoriesToCache(
 function removeAllParentDirectoriesFromCache(
     directories: Map<string, number>,
     modifiedPath: string,
-    pathPrefixToSkip: ?string
+    pathPrefixToSkip: ?string,
   ) {
   computeAllParentDirectories(
     directories,
@@ -71,7 +71,7 @@ function computeAllParentDirectories(
     directories: Map<string, number>,
     modifiedPath: string,
     pathPrefixToSkip: ?string,
-    operation: DirectoriesCacheOperation
+    operation: DirectoriesCacheOperation,
   ) {
   // Reset the regex so it will start the next search at the beginning of the string.
   separatorRegex.lastIndex = 0;

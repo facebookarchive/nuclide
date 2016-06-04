@@ -17,7 +17,7 @@ import getJSXIdentifiers from './getJSXIdentifiers';
 
 function getUndeclaredJSXIdentifiers(
   root: Collection,
-  options: SourceOptions
+  options: SourceOptions,
 ): Set<string> {
   const declaredIdentifiers = getDeclaredIdentifiers(root, options);
   const jsxIdentifiers = getJSXIdentifiers(root);

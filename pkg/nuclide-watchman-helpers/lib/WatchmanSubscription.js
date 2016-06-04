@@ -39,7 +39,7 @@ class WatchmanSubscription extends EventEmitter {
       subscriptionPath: string,
       subscriptionName: string,
       subscriptionCount: number,
-      subscriptionOptions: WatchmanSubscriptionOptions
+      subscriptionOptions: WatchmanSubscriptionOptions,
       ) {
     super();
     this.root = subscriptionRoot;

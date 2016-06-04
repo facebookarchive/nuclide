@@ -134,7 +134,7 @@ export function flowFindDefinition(
   file: NuclideUri,
   currentContents: string,
   line: number,
-  column: number
+  column: number,
 ): Promise<?Loc> {
   return getRootContainer().runWithRoot(
     file,
@@ -149,7 +149,7 @@ export function flowFindDefinition(
 
 export function flowFindDiagnostics(
   file: NuclideUri,
-  currentContents: ?string
+  currentContents: ?string,
 ): Promise<?Diagnostics> {
   return getRootContainer().runWithRoot(
     file,

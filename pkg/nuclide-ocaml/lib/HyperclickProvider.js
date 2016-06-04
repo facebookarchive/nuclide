@@ -27,7 +27,7 @@ module.exports = {
   async getSuggestionForWord(
     textEditor: atom$TextEditor,
     text: string,
-    range: atom$Range
+    range: atom$Range,
   ): Promise<?HyperclickSuggestion> {
     const {getServiceByNuclideUri} = require('../../nuclide-client');
 

@@ -385,7 +385,7 @@ class SearchResultManager {
     query: string,
     result: Array<FileResult>,
     directory: string,
-    provider: Object
+    provider: Object,
   ): void {
     this.cacheResult(...arguments);
     this._emitter.emit(RESULTS_CHANGED);

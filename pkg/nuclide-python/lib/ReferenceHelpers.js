@@ -22,7 +22,7 @@ export default class ReferenceHelpers {
   @trackTiming('python.get-references')
   static async getReferences(
     editor: TextEditor,
-    position: atom$Point
+    position: atom$Point,
   ): Promise<?FindReferencesReturn> {
     const src = editor.getPath();
     if (!src) {

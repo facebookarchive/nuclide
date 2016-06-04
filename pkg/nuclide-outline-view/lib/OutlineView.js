@@ -188,7 +188,7 @@ function renderTextToken(token: TextToken, index: number): React.Element {
 
 function renderTrees(
   editor: atom$TextEditor,
-  outlines: Array<OutlineTreeForUi>
+  outlines: Array<OutlineTreeForUi>,
 ): ?React.Element {
   if (outlines.length === 0) {
     return null;

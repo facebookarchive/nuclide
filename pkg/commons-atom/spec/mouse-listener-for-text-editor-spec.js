@@ -54,7 +54,7 @@ describe('mouseListenerForTextEditor', () => {
    * Adapted from https://github.com/atom/atom/blob/5272584d2910e5b3f2b0f309aab4775eb0f779a6/spec/text-editor-component-spec.coffee#L2845
    */
   function clientCoordinatesForScreenPosition(
-    screenPosition: Point
+    screenPosition: Point,
   ): {clientX: number; clientY: number} {
     invariant(textEditorView);
     const positionOffset = textEditorView.pixelPositionForScreenPosition(screenPosition);

@@ -67,13 +67,13 @@ export class WorkingSetsStore {
   }
 
   subscribeToDefinitions(
-    callback: (definitions: ApplicabilitySortedDefinitions) => mixed
+    callback: (definitions: ApplicabilitySortedDefinitions) => mixed,
   ): IDisposable {
     return this._emitter.on(NEW_DEFINITIONS_EVENT, callback);
   }
 
   onSaveDefinitions(
-    callback: (definitions: Array<WorkingSetDefinition>) => mixed
+    callback: (definitions: Array<WorkingSetDefinition>) => mixed,
   ): IDisposable {
     return this._emitter.on(SAVE_DEFINITIONS_EVENT, callback);
   }
@@ -114,7 +114,7 @@ export class WorkingSetsStore {
   _setDefinitions(
     applicable: Array<WorkingSetDefinition>,
     notApplicable: Array<WorkingSetDefinition>,
-    definitions: Array<WorkingSetDefinition>
+    definitions: Array<WorkingSetDefinition>,
   ): void {
     const somethingHasChanged =
       !arrayEqual(this._applicableDefinitions, applicable) ||

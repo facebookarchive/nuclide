@@ -334,7 +334,7 @@ export class FlowProcess {
    */
   static async execFlowClient(
     args: Array<any>,
-    options?: Object = {}
+    options?: Object = {},
   ): Promise<?process$asyncExecuteRet> {
     args = [
       ...args,

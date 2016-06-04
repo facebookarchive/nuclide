@@ -51,7 +51,7 @@ const ClangCursorToAutocompletionTypes = Object.freeze({
 function getCompletionBody(
   completion: ClangCompletion,
   columnOffset: number,
-  indentation: number
+  indentation: number,
 ): string {
   const inlineBody = getCompletionBodyInline(completion);
   const multiLineBody =
@@ -66,7 +66,7 @@ function getCompletionBody(
 function getCompletionBodyMultiLine(
   completion: ClangCompletion,
   columnOffset: number,
-  indentation: number
+  indentation: number,
 ): ?string {
   // Filter out whitespace chunks.
   const chunks = completion.chunks.filter(chunk => chunk.spelling.trim());
@@ -116,7 +116,7 @@ function _convertArgsToMultiLineSnippet(
     text: string;
     placeholder: string;
     offset: number;
-  }>
+  }>,
 ): string {
   // We have two types of multine line method calls.
   //
@@ -180,7 +180,7 @@ export default class AutocompleteHelpers {
 
   @trackTiming('nuclide-clang-atom.autocomplete')
   static async getAutocompleteSuggestions(
-    request: atom$AutocompleteRequest
+    request: atom$AutocompleteRequest,
   ): Promise<Array<atom$AutocompleteSuggestion>> {
     const {editor, bufferPosition: {row, column}, activatedManually} = request;
     const prefix = getCompletionPrefix(editor);

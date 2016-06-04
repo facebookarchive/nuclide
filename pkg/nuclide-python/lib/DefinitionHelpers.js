@@ -23,7 +23,7 @@ export default class DefinitionHelpers {
   @trackTiming('python.get-definition')
   static async getDefinition(
     editor: TextEditor,
-    position: atom$Point
+    position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
     invariant(GRAMMAR_SET.has(editor.getGrammar().scopeName));
 

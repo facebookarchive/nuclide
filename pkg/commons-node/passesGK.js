@@ -17,7 +17,7 @@ let gatekeeper = undefined;
  */
 export default async function passesGK(
   gatekeeperName: string,
-  timeout?: number
+  timeout?: number,
 ): Promise<boolean> {
   // Only do the expensive require once.
   if (gatekeeper === undefined) {

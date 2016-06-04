@@ -62,7 +62,7 @@ async function findDiagnostics(
 }
 
 function createPhabricatorRevision(
-  filePath: NuclideUri
+  filePath: NuclideUri,
 ): Observable<{stderr?: string; stdout?: string;}> {
   return getService(filePath)
     .createPhabricatorRevision(filePath)

@@ -75,7 +75,7 @@ const CONFIG: Array<ConfigEntry> = [
 function getDeclaredIdentifiers(
   root: Collection,
   options: SourceOptions,
-  filters?: ?Array<(path: NodePath) => boolean>
+  filters?: ?Array<(path: NodePath) => boolean>,
 ): Set<string> {
   // Start with the globals since they are always "declared" and safe to use.
   const {moduleMap} = options;

@@ -33,7 +33,7 @@ export function waitsForFilePosition(
   filename: string,
   row: number,
   column: number,
-  timeoutMs: number = 10000
+  timeoutMs: number = 10000,
 ): void {
   waitsFor(`${filename} to become active at ${row}:${column}`, timeoutMs, () => {
     const editor = atom.workspace.getActiveTextEditor();

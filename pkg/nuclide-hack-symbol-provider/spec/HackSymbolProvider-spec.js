@@ -174,7 +174,7 @@ function createDummyHackService(): any {
   return {
     queryHack(
       rootDirectory: NuclideUri,
-      queryString: string
+      queryString: string,
     ): Promise<Array<HackSearchPosition>> {
       throw new Error('replace with implementation for testing');
     },

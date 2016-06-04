@@ -47,7 +47,7 @@ export async function locate(
   path: NuclideUri,
   line: number,
   col: number,
-  kind: string
+  kind: string,
 ): Promise<?{
   file: NuclideUri;
   pos: {
@@ -76,7 +76,7 @@ export async function complete(
   path: NuclideUri,
   line: number,
   col: number,
-  prefix: string
+  prefix: string,
 ): Promise<any> {
   const instance = await getInstance(path);
   return instance ? instance.complete(path, line, col, prefix) : null;
@@ -95,7 +95,7 @@ export async function errors(
  */
 export async function runSingleCommand(
   path: NuclideUri,
-  command: mixed
+  command: mixed,
 ): Promise<any> {
   const instance = await getInstance(path);
   return instance ? instance.runSingleCommand(command) : null;

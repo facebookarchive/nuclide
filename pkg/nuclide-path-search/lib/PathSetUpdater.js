@@ -52,7 +52,7 @@ export default class PathSetUpdater {
    */
   async startUpdatingPathSet(
     pathSet: PathSet,
-    localDirectory: string
+    localDirectory: string,
   ): Promise<Disposable> {
     const subscription = await this._addWatchmanSubscription(localDirectory);
     this._pathSetToSubscription.set(pathSet, subscription);

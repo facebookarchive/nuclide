@@ -21,7 +21,7 @@ import getNonDeclarationTypes from './getNonDeclarationTypes';
  */
 function getUndeclaredTypes(
   root: Collection,
-  options: SourceOptions
+  options: SourceOptions,
 ): Set<string> {
   const declaredIdentifiers = getDeclaredIdentifiers(root, options);
   const declaredTypes = getDeclaredTypes(root, options);

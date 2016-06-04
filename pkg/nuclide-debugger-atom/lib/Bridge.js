@@ -175,7 +175,7 @@ class Bridge {
   async _cachedSendCommand<T>(
     cache: Map<string, Deferred<?T>>,
     command: string,
-    value: string
+    value: string,
   ): Promise<?T> {
     const webview = this._webview;
     if (webview == null) {

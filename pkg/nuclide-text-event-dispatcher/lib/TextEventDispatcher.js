@@ -75,7 +75,7 @@ class TextCallbackContainer<CallbackArg> {
   addCallback(
       grammarScopes: Iterable<string> | 'all',
       events: Iterable<Event>,
-      callback: (arg: CallbackArg) => mixed
+      callback: (arg: CallbackArg) => mixed,
       ): void {
     if (grammarScopes === 'all') {
       this._addToEventMap(this._allGrammarCallbacks, events, callback);
@@ -96,7 +96,7 @@ class TextCallbackContainer<CallbackArg> {
   removeCallback(
       grammarScopes: Iterable<string> | 'all',
       events: Iterable<Event>,
-      callback: (arg: CallbackArg) => mixed
+      callback: (arg: CallbackArg) => mixed,
       ): void {
     if (grammarScopes === 'all') {
       this._removeFromEventMap(this._allGrammarCallbacks, events, callback);

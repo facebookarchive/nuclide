@@ -69,7 +69,7 @@ function getLogger() {
  */
 function createProcessOutputView(
   uri: string,
-  openOptions: CreateProcessOutputViewOptions
+  openOptions: CreateProcessOutputViewOptions,
 ): HTMLElement {
   const processOutputStore = openOptions[PROCESS_OUTPUT_STORE_KEY];
   const processOutputHandler = openOptions[PROCESS_OUTPUT_HANDLER_KEY];

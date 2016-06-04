@@ -20,7 +20,7 @@ import getNonDeclarationIdentifiers from './getNonDeclarationIdentifiers';
  */
 function getUndeclaredIdentifiers(
   root: Collection,
-  options: SourceOptions
+  options: SourceOptions,
 ): Set<string> {
   const declared = getDeclaredIdentifiers(root, options);
   const undeclared = getNonDeclarationIdentifiers(root);

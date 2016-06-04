@@ -48,7 +48,7 @@ type TreeComponentState = {
 function toggleSetHas(
     set: Set<string>,
     value: string,
-    forceHas?: ?boolean
+    forceHas?: ?boolean,
 ): boolean {
   let added;
 

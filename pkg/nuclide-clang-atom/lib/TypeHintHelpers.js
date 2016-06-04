@@ -23,7 +23,7 @@ export default class TypeHintHelpers {
   @trackTiming('nuclide-clang-atom.typeHint')
   static async typeHint(
     editor: atom$TextEditor,
-    position: atom$Point
+    position: atom$Point,
   ): Promise<?TypeHint> {
     const decl = await getDeclaration(editor, position.row, position.column);
     if (decl == null) {

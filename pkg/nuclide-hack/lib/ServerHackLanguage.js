@@ -56,7 +56,7 @@ export class ServerHackLanguage {
   async getCompletions(
     filePath: NuclideUri,
     contents: string,
-    offset: number
+    offset: number,
   ): Promise<Array<CompletionResult>> {
     const markedContents = markFileForCompletion(contents, offset);
     let completions = [];
@@ -137,7 +137,7 @@ export class ServerHackLanguage {
     contents: string,
     lineNumber: number,
     column: number,
-    lineText: string
+    lineText: string,
   ): Promise<Array<DefinitionResult>> {
     const definitionResult = await this._hackService.getIdentifierDefinition(
       filePath, contents, lineNumber, column
@@ -150,7 +150,7 @@ export class ServerHackLanguage {
     filePath: NuclideUri,
     contents: string,
     lineNumber: number,
-    column: number
+    column: number,
   ): Promise<Array<Definition>> {
     const definitions =
       await this._hackService.getDefinition(filePath, contents, lineNumber, column);
@@ -189,7 +189,7 @@ export class ServerHackLanguage {
     filePath: NuclideUri,
     contents: string,
     line: number,
-    column: number
+    column: number,
   ): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
     const getMethodNameResult =
       await this._hackService.getMethodName(filePath, contents, line + 1, column + 1);

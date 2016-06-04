@@ -17,7 +17,7 @@ const TREE_API_DATA_PATH = 'data-path';
  * This can only be useful for other `ui/tree` usages, like the `DiffViewTree`.
  */
 export default function uiTreePath(
-  event: Event | {currentTarget: EventTarget}
+  event: Event | {currentTarget: EventTarget},
 ): string {
   // Event target isn't necessarily an HTMLElement,
   // but that's guaranteed in the usages here.

@@ -17,7 +17,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 module.exports = class MockHgService {
   fetchStatuses(
     filePaths: Array<NuclideUri>,
-    options: ?any
+    options: ?any,
   ): Promise<Map<string, StatusCodeIdValue>> {
     return Promise.resolve(new Map());
   }

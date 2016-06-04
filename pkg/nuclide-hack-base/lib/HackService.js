@@ -164,7 +164,7 @@ const HH_CLIENT_MAX_TRIES = 10;
 
 export async function getDiagnostics(
   file: NuclideUri,
-  currentContents?: string
+  currentContents?: string,
 ): Promise<?HackDiagnosticsResult> {
   const hhResult = await retryLimit(
     () => callHHClient(
@@ -201,7 +201,7 @@ export async function getDiagnostics(
 
 export async function getCompletions(
   file: NuclideUri,
-  markedContents: string
+  markedContents: string,
 ): Promise<?HackCompletionsResult> {
   const hhResult = await callHHClient(
     /*args*/ ['--auto-complete'],
@@ -354,7 +354,7 @@ function selectDefinitionSearchResults(
  */
 export async function queryHack(
   rootDirectory: NuclideUri,
-  queryString: string
+  queryString: string,
 ): Promise<Array<HackSearchPosition>> {
   let searchPostfix;
   switch (queryString[0]) {
@@ -401,7 +401,7 @@ export async function getTypedRegions(filePath: NuclideUri):
 
 export async function getIdeOutline(
   filePath: NuclideUri,
-  contents: string
+  contents: string,
 ): Promise<?HackIdeOutline> {
   const hhResult = await callHHClient(
     /*args*/ ['--ide-outline'],

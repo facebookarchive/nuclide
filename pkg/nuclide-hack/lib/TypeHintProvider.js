@@ -26,7 +26,7 @@ module.exports = class TypeHintProvider {
 
 async function typeHintFromEditor(
   editor: atom$TextEditor,
-  position: atom$Point
+  position: atom$Point,
 ): Promise<?TypeHint> {
   const filePath = editor.getPath();
   const hackLanguage = await getHackLanguageForUri(filePath);

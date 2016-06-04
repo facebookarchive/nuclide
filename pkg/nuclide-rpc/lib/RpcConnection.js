@@ -63,7 +63,7 @@ export class RpcConnection<TransportType: Transport> {
   constructor(
     kind: RpcConnectionKind,
     serviceRegistry: ServiceRegistry,
-    transport: TransportType
+    transport: TransportType,
   ) {
     this._emitter = new EventEmitter();
     this._transport = transport;
@@ -76,7 +76,7 @@ export class RpcConnection<TransportType: Transport> {
   // Creates a connection on the server side.
   static createServer(
     serviceRegistry: ServiceRegistry,
-    transport: TransportType
+    transport: TransportType,
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'server',
@@ -86,7 +86,7 @@ export class RpcConnection<TransportType: Transport> {
 
   // Creates a client side connection to a server on another machine.
   static createRemote(
-    hostname: string, transport: TransportType, services: Array<ConfigEntry>
+    hostname: string, transport: TransportType, services: Array<ConfigEntry>,
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
@@ -97,7 +97,7 @@ export class RpcConnection<TransportType: Transport> {
   // Creates a client side connection to a server on the same machine.
   static createLocal(
     transport: TransportType,
-    services: Array<ConfigEntry>
+    services: Array<ConfigEntry>,
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
@@ -154,7 +154,7 @@ export class RpcConnection<TransportType: Transport> {
     objectId: number,
     methodName: string,
     returnType: ReturnType,
-    args: Array<any>
+    args: Array<any>,
   ): any {
     return this._sendMessageAndListenForResult(
       createCallMethodMessage(methodName, objectId, this._generateRequestId(), args),
@@ -175,7 +175,7 @@ export class RpcConnection<TransportType: Transport> {
     interfaceName: string,
     thisArg: Object,
     unmarshalledArgs: Array<any>,
-    argTypes: Array<Type>
+    argTypes: Array<Type>,
   ): void {
     const idPromise = (async () => {
       const marshalledArgs = await this._getTypeRegistry().marshalArguments(
@@ -222,7 +222,7 @@ export class RpcConnection<TransportType: Transport> {
   _sendMessageAndListenForResult(
     message: RequestMessage,
     returnType: ReturnType,
-    timeoutMessage: string
+    timeoutMessage: string,
   ): any {
     switch (returnType) {
       case 'void':
@@ -287,7 +287,7 @@ export class RpcConnection<TransportType: Transport> {
     requestId: number,
     timingTracker: TimingTracker,
     candidate: any,
-    type: Type
+    type: Type,
   ): void {
     let returnVal = candidate;
     // Ensure that the return value is a promise.
@@ -358,7 +358,7 @@ export class RpcConnection<TransportType: Transport> {
   async _callFunction(
     requestId: number,
     timingTracker: TimingTracker,
-    call: CallRemoteFunctionMessage
+    call: CallRemoteFunctionMessage,
   ): Promise<boolean> {
     const {
       localImplementation,
@@ -377,7 +377,7 @@ export class RpcConnection<TransportType: Transport> {
   async _callMethod(
     requestId: number,
     timingTracker: TimingTracker,
-    call: CallRemoteMethodMessage
+    call: CallRemoteMethodMessage,
   ): Promise<boolean> {
     const object = this._objectRegistry.unmarshal(call.objectId);
     invariant(object != null);
@@ -401,7 +401,7 @@ export class RpcConnection<TransportType: Transport> {
   async _callConstructor(
     requestId: number,
     timingTracker: TimingTracker,
-    constructorMessage: CreateRemoteObjectMessage
+    constructorMessage: CreateRemoteObjectMessage,
   ): Promise<void> {
     const classDefinition = this._getClassDefinition(constructorMessage.interface);
     invariant(classDefinition != null);

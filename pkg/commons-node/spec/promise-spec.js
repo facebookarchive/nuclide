@@ -542,7 +542,7 @@ describe('promises::RequestSerializer()', () => {
 
 async function captureParallelismHistory(
   asyncFunction: (...args: Array<any>) => Promise<mixed>,
-  args: Array<mixed>
+  args: Array<mixed>,
 ): Promise<{result: mixed; parallelismHistory: Array<number>}> {
   const parallelismHistory = [];
   let parralelism = 0;

@@ -44,7 +44,7 @@ const ExactStringMatchProvider = {
 function querySingleProvider(
   searchResultManager: any,
   query: string,
-  providerName: string
+  providerName: string,
 ): Promise<Object> {
   return new Promise((resolve, reject) => {
     searchResultManager.on(searchResultManager.RESULTS_CHANGED, () => {

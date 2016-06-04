@@ -91,7 +91,7 @@ export default class HgRepositoryClientAsync {
 
   // TODO This is a stub.
   getCachedUpstreamAheadBehindCount(
-    path: ?NuclideUri
+    path: ?NuclideUri,
   ): Promise<{ahead: number; behind: number;}> {
     return Promise.resolve(this._client.getCachedUpstreamAheadBehindCount(path));
   }

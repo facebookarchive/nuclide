@@ -107,7 +107,7 @@ class DiagnosticStore {
 
   _updateFileMessages(
       diagnosticProvider: DiagnosticProvider,
-      newFilePathsToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>>
+      newFilePathsToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>>,
     ): void {
     let fileToMessages = this._providerToFileToMessages.get(diagnosticProvider);
     if (!fileToMessages) {
@@ -141,7 +141,7 @@ class DiagnosticStore {
 
   _updateProjectMessages(
     diagnosticProvider: DiagnosticProvider,
-    projectMessages: Array<ProjectDiagnosticMessage>
+    projectMessages: Array<ProjectDiagnosticMessage>,
   ): void {
     this._providerToProjectDiagnostics.set(diagnosticProvider, projectMessages);
     this._emitProjectMessages();
@@ -158,7 +158,7 @@ class DiagnosticStore {
    */
   invalidateMessages(
       diagnosticProvider: DiagnosticProvider,
-      invalidationMessage: InvalidationMessage
+      invalidationMessage: InvalidationMessage,
     ): void {
     if (invalidationMessage.scope === 'file') {
       this._invalidateFileMessagesForProvider(diagnosticProvider, invalidationMessage.filePaths);
@@ -173,7 +173,7 @@ class DiagnosticStore {
 
   _invalidateFileMessagesForProvider(
     diagnosticProvider: DiagnosticProvider,
-    pathsToRemove: Iterable<NuclideUri>
+    pathsToRemove: Iterable<NuclideUri>,
   ): void {
     const fileToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
     for (const filePath of pathsToRemove) {
@@ -240,7 +240,7 @@ class DiagnosticStore {
    */
   onFileMessagesDidUpdate(
       callback: (update: FileMessageUpdate) => mixed,
-      filePath: NuclideUri
+      filePath: NuclideUri,
     ): IDisposable {
     // Use the filePath as the event name.
     const emitterDisposable = this._fileChangeEmitter.on(filePath, callback);
@@ -277,7 +277,7 @@ class DiagnosticStore {
    *   project-scope messages.
    */
   onProjectMessagesDidUpdate(
-    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed
+    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
   ): IDisposable {
     const emitterDisposable = this._nonFileChangeEmitter.on(PROJECT_MESSAGE_CHANGE_EVENT, callback);
     this._projectListenersCount += 1;

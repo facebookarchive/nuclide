@@ -60,7 +60,7 @@ function addReferenceGroup(
   groups: Array<ReferenceGroup>,
   references: Array<Reference>,
   startLine: number,
-  endLine: number
+  endLine: number,
 ) {
   if (references.length) {
     groups.push({references, startLine, endLine});
@@ -84,7 +84,7 @@ class FindReferencesModel {
     basePath: NuclideUri,
     symbolName: string,
     references: Array<Reference>,
-    options?: FindReferencesOptions
+    options?: FindReferencesOptions,
   ) {
     this._basePath = basePath;
     this._symbolName = symbolName;
@@ -102,7 +102,7 @@ class FindReferencesModel {
    */
   async getFileReferences(
     offset: number,
-    limit: number
+    limit: number,
   ): Promise<Array<FileReferences>> {
     const fileReferences: Array<?FileReferences> = await Promise.all(
       this._references.slice(offset, offset + limit).map(
@@ -181,7 +181,7 @@ class FindReferencesModel {
    * Fetch file previews and expand line ranges with context.
    */
   async _makeFileReferences(
-    fileReferences: [string, Array<ReferenceGroup>]
+    fileReferences: [string, Array<ReferenceGroup>],
   ): Promise<?FileReferences> {
     const uri = fileReferences[0];
     let refGroups = fileReferences[1];

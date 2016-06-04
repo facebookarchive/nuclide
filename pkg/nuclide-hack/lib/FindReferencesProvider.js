@@ -66,7 +66,7 @@ async function doFindReferences(
 async function findReferences(
   editor: atom$TextEditor,
   line: number,
-  column: number
+  column: number,
 ): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
   const filePath = editor.getPath();
   const hackLanguage = await getHackLanguageForUri(filePath);

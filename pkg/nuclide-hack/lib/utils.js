@@ -70,7 +70,7 @@ const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
 export function getIdentifierAndRange(
   editor: atom$TextEditor,
-  position: atom$Point
+  position: atom$Point,
 ): ?{id: string; range: atom$Range} {
   const matchData = wordAtPosition(editor, position, HACK_WORD_REGEX);
   return (matchData == null || matchData.wordMatch.length === 0) ? null

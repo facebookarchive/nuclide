@@ -41,7 +41,7 @@ export type HackCoverageResult = {
 };
 
 export function convertTypedRegionsToCoverageResult(
-  regions: ?Array<HackTypedRegion>
+  regions: ?Array<HackTypedRegion>,
 ): ?HackCoverageResult {
   if (regions == null) {
     return null;

@@ -84,7 +84,7 @@ export const HackSymbolProvider: Provider = {
 
   async executeQuery(
     query: string,
-    directory?: atom$Directory
+    directory?: atom$Directory,
   ): Promise<Array<FileResult>> {
     if (query.length === 0 || directory == null) {
       return [];

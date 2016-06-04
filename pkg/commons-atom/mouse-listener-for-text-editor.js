@@ -160,7 +160,7 @@ class TextEditorMouseListener {
  * to the last position on each line.
  */
 export default function mouseListenerForTextEditor(
-  textEditor: TextEditor
+  textEditor: TextEditor,
 ): TextEditorMouseListener {
   // $FlowFixMe
   atom.nuclide = atom.nuclide || {};

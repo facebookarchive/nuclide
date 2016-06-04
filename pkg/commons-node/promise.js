@@ -281,7 +281,7 @@ export class Deferred<T> {
 export function asyncFind<T, U>(
   items: Array<T>,
   test: (t: T) => ?Promise<U>,
-  thisArg?: mixed
+  thisArg?: mixed,
 ): Promise<?U> {
   return new Promise((resolve, reject) => {
     // Create a local copy of items to defend against the caller modifying the
@@ -309,7 +309,7 @@ export function asyncFind<T, U>(
 }
 
 export function denodeify(
-  f: (...args: Array<any>) => any
+  f: (...args: Array<any>) => any,
 ): (...args: Array<any>) => Promise<any> {
   return function(...args: Array<any>) {
     return new Promise((resolve, reject) => {
@@ -344,7 +344,7 @@ export function denodeify(
 export function asyncLimit<T, V>(
   array: Array<T>,
   limit: number,
-  mappingFunction: (item: T) => Promise<V>
+  mappingFunction: (item: T) => Promise<V>,
 ): Promise<Array<V>> {
   const result: Array<V> = new Array(array.length);
   let parallelPromises = 0;
@@ -401,7 +401,7 @@ export function asyncLimit<T, V>(
 export async function asyncFilter<T>(
   array: Array<T>,
   filterFunction: (item: T) => Promise<boolean>,
-  limit?: number
+  limit?: number,
 ): Promise<Array<T>> {
   const filteredList = [];
   await asyncLimit(array, limit || array.length, async (item: T) => {
@@ -415,7 +415,7 @@ export async function asyncFilter<T>(
 export async function asyncObjFilter<T>(
   obj: {[key: string]: T},
   filterFunction: (item: T, key: string) => Promise<boolean>,
-  limit?: number
+  limit?: number,
 ): Promise<{[key: string]: T}> {
   const keys = Object.keys(obj);
   const filteredObj = {};
@@ -452,7 +452,7 @@ export async function asyncObjFilter<T>(
 export async function asyncSome<T>(
   array: Array<T>,
   someFunction: (item: T) => Promise<boolean>,
-  limit?: number
+  limit?: number,
 ): Promise<boolean> {
   let resolved = false;
   await asyncLimit(array, limit || array.length, async (item: T) => {

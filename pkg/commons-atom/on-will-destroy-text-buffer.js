@@ -12,7 +12,7 @@
 import invariant from 'assert';
 
 export default function onWillDestroyTextBuffer(
-  callback: (buffer: atom$TextBuffer) => mixed
+  callback: (buffer: atom$TextBuffer) => mixed,
 ): IDisposable {
   return atom.workspace.onWillDestroyPaneItem(({item}) => {
     if (!atom.workspace.isTextEditor(item)) {

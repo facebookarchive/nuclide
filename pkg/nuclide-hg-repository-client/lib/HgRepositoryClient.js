@@ -621,7 +621,7 @@ export class HgRepositoryClient {
    * returned, given the passed-in options for ::getStatuses.
    */
   _getPredicateForRelevantStatuses(
-    options: ?HgStatusCommandOptions
+    options: ?HgStatusCommandOptions,
   ): (code: StatusCodeIdValue) => boolean {
     const hgStatusOption = this._getStatusOption(options);
 

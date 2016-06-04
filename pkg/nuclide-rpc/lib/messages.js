@@ -100,7 +100,7 @@ export function decodeError(message: Object, encodedError: ?(Object | string)): 
 export function createCallFunctionMessage(
   functionName: string,
   requestId: number,
-  args: Array<any>
+  args: Array<any>,
 ): CallRemoteFunctionMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
@@ -115,7 +115,7 @@ export function createCallMethodMessage(
   methodName: string,
   objectId: number,
   requestId: number,
-  args: Array<any>
+  args: Array<any>,
 ): CallRemoteMethodMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
@@ -130,7 +130,7 @@ export function createCallMethodMessage(
 export function createNewObjectMessage(
   interfaceName: string,
   requestId: number,
-  args: Array<any>
+  args: Array<any>,
 ): CreateRemoteObjectMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,

@@ -18,7 +18,7 @@ import type {ClientCallback} from './ClientCallback';
 // Handles all 'Page.*' Chrome dev tools messages
 class PageHandler extends Handler {
   constructor(
-    clientCallback: ClientCallback
+    clientCallback: ClientCallback,
   ) {
     super('Page', clientCallback);
   }

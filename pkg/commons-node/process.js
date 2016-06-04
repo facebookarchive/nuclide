@@ -225,7 +225,7 @@ export async function forkWithExecEnvironment(
  */
 export function createArgsForScriptCommand(
   command: string,
-  args?: Array<string> = []
+  args?: Array<string> = [],
 ): Array<string> {
   if (process.platform === 'darwin') {
     // On OS X, script takes the program to run and its arguments as varargs at the end.
@@ -413,7 +413,7 @@ export function observeProcess(
 export function asyncExecute(
   command: string,
   args: Array<string>,
-  options: ?AsyncExecuteOptions = {}
+  options: ?AsyncExecuteOptions = {},
 ): Promise<process$asyncExecuteRet> {
   // Clone passed in options so this function doesn't modify an object it doesn't own.
   const localOptions = {...options};
@@ -557,7 +557,7 @@ export function asyncExecute(
 export async function checkOutput(
   command: string,
   args: Array<string>,
-  options: ?AsyncExecuteOptions = {}
+  options: ?AsyncExecuteOptions = {},
 ): Promise<process$asyncExecuteRet> {
   const result = await asyncExecute(command, args, options);
   if (result.exitCode !== 0) {

@@ -97,7 +97,7 @@ export class RemoteConnection {
   static async createConnectionBySavedConfig(
     host: string,
     cwd: string,
-    displayTitle: string
+    displayTitle: string,
   ): Promise<?RemoteConnection> {
     const connectionConfig = getConnectionConfig(host);
     if (!connectionConfig) {

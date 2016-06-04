@@ -36,7 +36,7 @@ type ShowVariableMode = 'none' | 'constants' | 'all';
 
 function itemToOutlineTree(
   mode: ShowVariableMode,
-  item: JediOutlineItem
+  item: JediOutlineItem,
 ): ?OutlineTree {
   switch (item.kind) {
     case 'class':
@@ -50,7 +50,7 @@ function itemToOutlineTree(
 
 function itemsToOutline(
   mode: ShowVariableMode,
-  items: ?Array<JediOutlineItem>
+  items: ?Array<JediOutlineItem>,
 ): Array<OutlineTree> {
   if (!items || items.length === 0) {
     return [];
@@ -66,7 +66,7 @@ function itemsToOutline(
 
 function classToOutlineTree(
   mode: ShowVariableMode,
-  item: JediClassItem
+  item: JediClassItem,
 ): OutlineTree {
   return {
     tokenizedText: [
@@ -98,7 +98,7 @@ function functionToOutlineTree(item: JediFunctionItem): OutlineTree {
 
 function statementToOutlineTree(
   mode: ShowVariableMode,
-  item: JediStatementItem
+  item: JediStatementItem,
 ): ?OutlineTree {
   if (mode === 'none') {
     return null;
@@ -163,7 +163,7 @@ function itemToPositions(item: JediOutlineItem): {
 export async function generateOutline(
   src: NuclideUri,
   contents: string,
-  mode: ShowVariableMode
+  mode: ShowVariableMode,
 ): Promise<?Outline> {
   const service = await getServiceByNuclideUri('JediService', src);
   if (!service) {

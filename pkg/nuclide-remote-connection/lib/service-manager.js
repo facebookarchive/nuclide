@@ -69,7 +69,7 @@ function getlocalService(serviceName: string): Object {
  */
 function getServiceByNuclideUri(
   serviceName: string,
-  nuclideUri: ?NuclideUri = null
+  nuclideUri: ?NuclideUri = null,
 ): ?any {
   const hostname = (nuclideUri && isRemote(nuclideUri)) ?
     getHostname(nuclideUri) :

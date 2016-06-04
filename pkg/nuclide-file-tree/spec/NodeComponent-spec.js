@@ -24,7 +24,7 @@ import {
 function renderEntryComponentIntoDocument(
   componentKlass: Object,
   props: Object = {},
-  conf: Object = {}
+  conf: Object = {},
 ): HTMLElement {
   const nodeProps = {
     isExpanded: false,

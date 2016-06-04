@@ -53,7 +53,7 @@ let fileSearchers: any = Object.create(null);
 // TODO (mikeo): Make this another search provider
 async function doSearchDirectory(
   directoryUri: string,
-  query: string
+  query: string,
 ): Promise<Array<FileSearchResult>> {
   let search = fileSearchers[directoryUri];
   if (search === undefined) {
@@ -98,7 +98,7 @@ async function getSearchProviders(cwd: string): Promise<Array<ProviderInfo>> {
 async function doSearchQuery(
   cwd: string,
   provider: string,
-  query: string
+  query: string,
 ): Promise<SearchResponse> {
   invariant(providers);
   const currentProvider: ?SearchProvider = providers[provider];

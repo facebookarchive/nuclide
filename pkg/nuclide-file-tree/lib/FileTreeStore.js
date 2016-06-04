@@ -608,7 +608,7 @@ export class FileTreeStore {
 
   _vcsStatusesAreDifferent(
     rootKey: NuclideUri,
-    newVcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue}
+    newVcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
   ): boolean {
     const currentStatuses = this._conf.vcsStatuses[rootKey];
     if (currentStatuses == null || newVcsStatuses == null) {

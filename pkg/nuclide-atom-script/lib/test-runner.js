@@ -66,7 +66,7 @@ const outputConsole = new Console(
 );
 
 export default async function runTest(
-  params: TestRunnerParams
+  params: TestRunnerParams,
 ): Promise<ExitCode> {
   let exitCode = 0;
   try {

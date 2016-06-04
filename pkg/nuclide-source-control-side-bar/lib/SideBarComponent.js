@@ -150,7 +150,7 @@ export default class SideBarComponent extends React.Component {
   _handleBookmarkContextMenu(
     bookmark: BookmarkInfo,
     repository: atom$Repository,
-    event: SyntheticMouseEvent
+    event: SyntheticMouseEvent,
   ): void {
     const menu = Menu.buildFromTemplate([
       {

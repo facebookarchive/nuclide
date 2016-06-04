@@ -81,7 +81,7 @@ function findHackPrefix(editor: atom$TextEditor): string {
 
 async function fetchCompletionsForEditor(
   editor: atom$TextEditor,
-  prefix: string
+  prefix: string,
 ): Promise<Array<CompletionResult>> {
   const hackLanguage = await getHackLanguageForUri(editor.getPath());
   const filePath = editor.getPath();

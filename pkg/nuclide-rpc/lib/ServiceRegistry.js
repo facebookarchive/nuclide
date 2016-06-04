@@ -55,7 +55,7 @@ export class ServiceRegistry {
   constructor(
     marshalUri: (uri: NuclideUri) => string,
     unmarshalUri: (value: string) => NuclideUri,
-    services: Array<ConfigEntry>
+    services: Array<ConfigEntry>,
   ) {
     this._typeRegistry = new TypeRegistry();
     this._functionsByName = new Map();
@@ -78,7 +78,7 @@ export class ServiceRegistry {
 
   // Create service registry for connections to a remote machine.
   static createRemote(
-    hostname: string, services: Array<ConfigEntry>
+    hostname: string, services: Array<ConfigEntry>,
   ): ServiceRegistry {
     return new ServiceRegistry(
         remoteUri => getPath(remoteUri),

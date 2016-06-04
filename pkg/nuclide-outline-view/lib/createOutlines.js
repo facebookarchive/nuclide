@@ -97,7 +97,7 @@ function highlightCurrentNode(outline: OutlineForUi, cursorLocation: atom$Point)
 
 function highlightCurrentNodeInTrees(
   outlineTrees: Array<OutlineTreeForUi>,
-  cursorLocation: atom$Point
+  cursorLocation: atom$Point,
 ): Array<OutlineTreeForUi> {
   return outlineTrees.map(tree => {
     return {

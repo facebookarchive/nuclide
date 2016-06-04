@@ -152,7 +152,7 @@ export class DebuggerRpcService {
   }
 
   async _startDebugging(
-    inferiorArguments: LaunchAttachArgsType
+    inferiorArguments: LaunchAttachArgsType,
   ): Promise<DebuggerConnection> {
     const lldbProcess = this._spawnPythonBackend();
     this._registerIpcChannel(lldbProcess);
@@ -216,7 +216,7 @@ export class DebuggerRpcService {
 
   _sendArgumentsToPythonBackend(
     child: child_process$ChildProcess,
-    args: LaunchAttachArgsType
+    args: LaunchAttachArgsType,
   ): void {
     const ARGUMENT_INPUT_FD = 3;
     /* $FlowFixMe - update Flow defs for ChildProcess */

@@ -19,7 +19,7 @@ class Handler {
 
   constructor(
     domain: string,
-    clientCallback: ClientCallback
+    clientCallback: ClientCallback,
   ) {
     this._domain = domain;
     this._clientCallback = clientCallback;

@@ -12,7 +12,7 @@
 import {Range} from 'atom';
 
 export function defaultWordRegExpForEditor(
-  textEditor: atom$TextEditor
+  textEditor: atom$TextEditor,
 ): ?RegExp {
   const lastCursor = textEditor.getLastCursor();
   if (!lastCursor) {
@@ -30,7 +30,7 @@ type WordTextAndRange = {text: string; range: Range};
 export function getWordTextAndRange(
   textEditor: TextEditor,
   position: atom$Point,
-  wordRegExp?: ?RegExp
+  wordRegExp?: ?RegExp,
 ): WordTextAndRange {
   let textAndRange: ?WordTextAndRange = null;
 

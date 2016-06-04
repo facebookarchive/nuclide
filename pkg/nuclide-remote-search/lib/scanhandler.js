@@ -74,7 +74,7 @@ function searchInSubdir(
   matchesByFile: Map<string, Array<search$Match>>,
   directory: string,
   subdir: string,
-  regex: RegExp
+  regex: RegExp,
 ): Observable<search$FileResult> {
   // Try running search commands, falling through to the next if there is an error.
   const vcsargs = (regex.ignoreCase ? ['-i'] : []).concat(['-n', regex.source]);

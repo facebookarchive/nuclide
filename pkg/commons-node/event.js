@@ -20,7 +20,7 @@ import {Observable} from 'rxjs';
 export function attachEvent(
   emitter: events$EventEmitter,
   eventName: string,
-  callback: Function
+  callback: Function,
 ): Disposable {
   emitter.addListener(eventName, callback);
   return new Disposable(() => {

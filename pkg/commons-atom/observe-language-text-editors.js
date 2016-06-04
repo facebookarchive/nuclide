@@ -101,7 +101,7 @@ class LanguageTextEditorsListener {
 export default function observeLanguageTextEditors(
   grammarScopes: Array<string>,
   fn: (textEditor: TextEditor) => void,
-  cleanupFn?: (textEditor: TextEditor) => void
+  cleanupFn?: (textEditor: TextEditor) => void,
 ): IDisposable {
   const subscriptions = new CompositeDisposable();
   const listener = new LanguageTextEditorsListener(new Set(grammarScopes));

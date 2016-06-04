@@ -26,7 +26,7 @@ import type {DbgpProperty} from './DbgpSocket';
 
 function convertProperties(
   id: ObjectId,
-  properties: Array<DbgpProperty>
+  properties: Array<DbgpProperty>,
 ): Array<Runtime$PropertyDescriptor> {
   logger.log('Got properties: ' + JSON.stringify(properties));
   return properties.map(property => convertProperty(id, property));

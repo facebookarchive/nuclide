@@ -45,7 +45,7 @@ class BreakpointDisplayController {
   constructor(
       delegate: BreakpointDisplayControllerDelegate,
       breakpointStore: BreakpointStore,
-      editor: atom$TextEditor
+      editor: atom$TextEditor,
   ) {
     this._delegate = delegate;
     this._disposables = new CompositeDisposable();

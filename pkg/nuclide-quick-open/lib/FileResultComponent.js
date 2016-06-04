@@ -40,7 +40,7 @@ class FileResultComponent {
   static getComponentForItem(
     item: FileResult,
     serviceName: string,
-    dirName: string
+    dirName: string,
   ): React.Element {
     // Trim the `dirName` off the `filePath` since that's shown by the group
     let filePath = item.path;

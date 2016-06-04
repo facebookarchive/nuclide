@@ -134,7 +134,7 @@ class ServerConnection {
   createDirectory(
     uri: NuclideUri,
     hgRepositoryDescription: ?HgRepositoryDescription,
-    symlink: boolean = false
+    symlink: boolean = false,
   ): RemoteDirectory {
     let {path} = parseRemoteUri(uri);
     path = posixPath.normalize(path);

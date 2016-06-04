@@ -14,7 +14,7 @@ import dns from 'dns';
 type DnsFamily = 4 | 6;
 
 export default async function lookupPreferIpv6(
-  host: string
+  host: string,
 ): Promise<string> {
   try {
     return await lookup(host, 6);

@@ -212,7 +212,7 @@ class FileTreeActions {
   openSelectedEntrySplit(
     nodeKey: string,
     orientation: atom$PaneSplitOrientation,
-    side: atom$PaneSplitSide
+    side: atom$PaneSplitSide,
   ): void {
     const pane = atom.workspace.getActivePane();
     atom.workspace.openURIInPane(

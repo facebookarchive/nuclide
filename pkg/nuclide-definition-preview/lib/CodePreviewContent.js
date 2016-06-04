@@ -31,7 +31,7 @@ export type CodePreviewContent = {
 
 async function contentOfEditor(
   definitionService: DefinitionService,
-  editorPosition: ?EditorPosition
+  editorPosition: ?EditorPosition,
 ): Promise<?CodePreviewContent> {
   if (editorPosition == null) {
     return null;

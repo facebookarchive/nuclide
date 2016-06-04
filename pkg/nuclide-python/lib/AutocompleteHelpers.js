@@ -34,7 +34,7 @@ export default class AutocompleteHelpers {
 
   @trackTiming('nuclide-python:getAutocompleteSuggestions')
   static async getAutocompleteSuggestions(
-    request: atom$AutocompleteRequest
+    request: atom$AutocompleteRequest,
   ): Promise<Array<atom$AutocompleteSuggestion>> {
     const {editor, activatedManually, prefix} = request;
 

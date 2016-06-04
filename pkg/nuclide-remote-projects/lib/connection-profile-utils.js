@@ -91,7 +91,7 @@ type ConnectionProfileChange = {
  * @return Disposable that can be disposed to stop listening for changes.
  */
 export function onSavedConnectionProfilesDidChange(
-  callback: (newProfiles: ?Array<NuclideRemoteConnectionProfile>) => mixed
+  callback: (newProfiles: ?Array<NuclideRemoteConnectionProfile>) => mixed,
 ): IDisposable {
   return atom.config.onDidChange(
     CONNECTION_PROFILES_KEY,
@@ -122,7 +122,7 @@ export function getSavedConnectionConfig(): ?NuclideSavedConnectionDialogConfig 
  */
 export function saveConnectionConfig(
   config: SshConnectionConfiguration,
-  lastOfficialRemoteServerCommand: string
+  lastOfficialRemoteServerCommand: string,
 ): void {
   // Don't store user's password.
   const updatedConfig = {...config, password: ''};
@@ -178,7 +178,7 @@ function prepareSavedConnectionProfilesForDisplay(
 }
 
 function prepareConnectionProfilesForSaving(
-  connectionProfiles: Array<NuclideRemoteConnectionProfile>
+  connectionProfiles: Array<NuclideRemoteConnectionProfile>,
 ): void {
   // If a connection profile has a default remote server command, replace it with
   // an empty string. This indicates that this server command should be filled in

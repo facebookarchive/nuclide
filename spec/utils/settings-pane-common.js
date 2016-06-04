@@ -38,7 +38,7 @@ function testSettingsComponent(
   value: mixed,
   tmpValue: mixed,
   getValue: elementGetValue,
-  setValue: elementSetValue
+  setValue: elementSetValue,
 ) {
   // DOM and config match
   expect(valueToString(getValue(element))).toEqual(valueToString(value));

@@ -238,7 +238,7 @@ export class BuckProject {
   install(
     buildTargets: Array<string>,
     simulator: ?string,
-    runOptions: ?BuckRunOptions
+    runOptions: ?BuckRunOptions,
   ): Promise<any> {
     return this._build(buildTargets, {install: true, simulator, runOptions});
   }
@@ -287,7 +287,7 @@ export class BuckProject {
    *   onCompleted: Only called if the build completes successfully.
    */
   buildWithOutput(
-    buildTargets: Array<string>
+    buildTargets: Array<string>,
   ): Observable<{stderr?: string; stdout?: string;}> {
     return this._buildWithOutput(buildTargets, {});
   }
@@ -304,7 +304,7 @@ export class BuckProject {
    *   onCompleted: Only called if the build completes successfully.
    */
   testWithOutput(
-    buildTargets: Array<string>
+    buildTargets: Array<string>,
   ): Observable<{stderr?: string; stdout?: string;}> {
     return this._buildWithOutput(buildTargets, {test: true});
   }

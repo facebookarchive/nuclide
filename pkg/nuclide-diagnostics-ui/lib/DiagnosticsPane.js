@@ -50,7 +50,7 @@ function typeColumnCellDataGetter(cellDataKey: 'type', diagnostic: DiagnosticMes
 
 function sourceColumnCellDataGetter(
   cellDataKey: 'providerName',
-  diagnostic: DiagnosticMessage
+  diagnostic: DiagnosticMessage,
 ): string {
   return diagnostic.providerName;
 }
@@ -73,7 +73,7 @@ function typeColumnCellRenderer(text: string): React.Element {
 /** @return text and a boolean indicating whether it is plaintext or HTML. */
 function messageColumnCellDataGetter(
   cellDataKey: 'message',
-  diagnostic: DiagnosticMessage
+  diagnostic: DiagnosticMessage,
 ): textAndType {
   let text = '';
   let isPlainText = true;
@@ -106,7 +106,7 @@ function messageColumnCellRenderer(message: textAndType): React.Element {
 function onRowClick(
   event: SyntheticMouseEvent,
   rowIndex: number,
-  rowData: DiagnosticMessage
+  rowData: DiagnosticMessage,
 ): void {
   if (rowData.scope !== 'file' || rowData.filePath == null) {
     return;

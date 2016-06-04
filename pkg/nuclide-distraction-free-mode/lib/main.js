@@ -99,7 +99,7 @@ export function serialize(): DistractionFreeModeState {
 }
 
 export function consumeDistractionFreeModeProvider(
-  provider: DistractionFreeModeProvider
+  provider: DistractionFreeModeProvider,
 ): IDisposable {
   invariant(activation != null);
   return activation.consumeDistractionFreeModeProvider(provider);

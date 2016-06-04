@@ -46,7 +46,7 @@ export class DebuggerHandler extends Handler {
 
   constructor(
     clientCallback: ClientCallback,
-    connectionMultiplexer: ConnectionMultiplexer
+    connectionMultiplexer: ConnectionMultiplexer,
   ) {
     super('Debugger', clientCallback);
 

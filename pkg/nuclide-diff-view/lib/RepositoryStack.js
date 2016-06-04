@@ -421,19 +421,19 @@ export default class RepositoryStack {
   }
 
   onDidUpdateDirtyFileChanges(
-    callback: () => void
+    callback: () => void,
   ): IDisposable {
     return this._emitter.on(UPDATE_DIRTY_FILES_EVENT, callback);
   }
 
   onDidUpdateSelectedFileChanges(
-    callback: () => void
+    callback: () => void,
   ): IDisposable {
     return this._emitter.on(UPDATE_SELECTED_FILE_CHANGES_EVENT, callback);
   }
 
   onDidChangeRevisions(
-    callback: (revisionsState: RevisionsState) => void
+    callback: (revisionsState: RevisionsState) => void,
   ): IDisposable {
     return this._emitter.on(CHANGE_REVISIONS_EVENT, callback);
   }

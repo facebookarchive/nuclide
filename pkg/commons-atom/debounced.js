@@ -37,7 +37,7 @@ const DEFAULT_POSITION_DEBOUNCE_INTERVAL_MS = 300;
  */
 export function onWorkspaceDidStopChangingActivePaneItem(
   callback: (item: mixed) => any,
-  debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS
+  debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
 ): IDisposable {
   const debouncedFunction = debounce(callback, debounceInterval, /* immediate */ false);
   return atom.workspace.onDidChangeActivePaneItem(debouncedFunction);

@@ -226,7 +226,7 @@ class FlowDiagnosticsProvider {
 
   _processDiagnostics(
     diagnostics: Array<Diagnostic>,
-    currentFile: string
+    currentFile: string,
   ): DiagnosticProviderUpdate {
 
     // convert array messages to Error Objects with Traces

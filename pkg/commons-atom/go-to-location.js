@@ -18,7 +18,7 @@ export async function goToLocation(
   file: string,
   line?: number,
   column?: number,
-  center?: boolean = true
+  center?: boolean = true,
 ): Promise<atom$TextEditor> {
   const editor = await atom.workspace.open(file, {
     initialLine: line,
@@ -41,7 +41,7 @@ export function goToLocationInEditor(
   editor: atom$TextEditor,
   line: number,
   column: number,
-  center: boolean = true
+  center: boolean = true,
 ): void {
   editor.setCursorBufferPosition([line, column]);
   if (center) {

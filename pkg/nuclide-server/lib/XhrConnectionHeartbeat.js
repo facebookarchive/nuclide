@@ -119,7 +119,7 @@ export class XhrConnectionHeartbeat {
   }
 
   onHeartbeatError(
-    callback: (arg: {code: string; originalCode: string; message: string}) => mixed
+    callback: (arg: {code: string; originalCode: string; message: string}) => mixed,
   ): IDisposable {
     return this._emitter.on('heartbeat.error', callback);
   }

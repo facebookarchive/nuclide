@@ -41,7 +41,7 @@ const npmHyperclickProvider = {
 function getSuggestionForWord(
   textEditor: atom$TextEditor,
   text: string,
-  range: atom$Range
+  range: atom$Range,
 ): Promise<?HyperclickSuggestion> {
 
   if (text === '' || !isPackageJson(textEditor)) {
