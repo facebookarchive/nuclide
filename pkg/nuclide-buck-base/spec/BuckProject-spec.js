@@ -26,6 +26,12 @@ function copyProject(projectInFixturesDirectory: string) {
 // Disable buckd so it doesn't linger around after the test.
 process.env.NO_BUCKD = '1';
 
+beforeEach(() => {
+  // This timeout covers the average case. Blocks that need more time specify it
+  // themselves.
+  jasmine.getEnv().defaultTimeoutInterval = 10000;
+});
+
 describe('BuckProject (test-project-with-failing-targets)', () => {
   const projectDir = copyProject('test-project-with-failing-targets');
   const buckProject = new BuckProject({rootPath: projectDir});
