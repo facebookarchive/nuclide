@@ -18,7 +18,7 @@ import {
 } from '../pkg/nuclide-integration-test-helpers';
 import path from 'path';
 import fs from 'fs';
-import {triggerWatchmanHgChange} from './utils/diff-view-utils';
+import {refreshRepositoryStatuses} from './utils/diff-view-utils';
 
 const NO_FILE_SELECTED_TITLE = 'No file selected...No file selected';
 
@@ -112,7 +112,7 @@ describe('Diff View Commit Mode Integration Test', () => {
       // TODO(most): edit the file in a text editor and in the diff view, save
       // and make sure they sync and update the markers/offsets correctly.
       fs.appendFileSync(filePath, '\nnew_line_1\nnew_line_2');
-      triggerWatchmanHgChange(filePath);
+      refreshRepositoryStatuses(filePath);
     });
 
     waitsFor('repo diff status to update', 5000, () => {

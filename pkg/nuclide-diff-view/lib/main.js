@@ -429,6 +429,10 @@ module.exports = {
   },
 
   deactivate(): void {
+    if (changeCountElement != null) {
+      ReactDOM.unmountComponentAtNode(changeCountElement);
+      changeCountElement = null;
+    }
     uiProviders.splice(0);
     if (subscriptions != null) {
       subscriptions.dispose();

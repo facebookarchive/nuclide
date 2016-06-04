@@ -14,11 +14,19 @@ import type {HgRepositoryClient} from '../../pkg/nuclide-hg-repository-client';
 import invariant from 'assert';
 import {repositoryForPath} from '../../pkg/nuclide-hg-git-bridge';
 
-// In this test, we only mock `watchman` sending updates after the files are changed.
-// This is to avoid the dependency on `watchman` existing and working on test machines.
-export function triggerWatchmanHgChange(filePath: string): void {
+function hgRepositoryForPath(filePath: string): HgRepositoryClient {
   const repository = repositoryForPath(filePath);
   invariant(repository != null && repository.getType() === 'hg', 'non-hg repository');
-  const hgRepository: HgRepositoryClient = (repository: any);
-  hgRepository._service._filesDidChangeObserver.next([filePath]);
+  return (repository: any);
+}
+
+// In the using tests, we mock `watchman` sending updates after the files are changed.
+// This is to avoid the dependency on `watchman` existing and working on test machines.
+export function refreshRepositoryStatuses(filePath: string): void {
+  hgRepositoryForPath(filePath)._serializedRefreshStatusesCache();
+}
+
+
+export function waitsForRepositoryReady(filePath: string): Promise<void> {
+  return hgRepositoryForPath(filePath)._initializationPromise;
 }

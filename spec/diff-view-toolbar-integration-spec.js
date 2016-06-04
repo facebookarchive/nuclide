@@ -9,39 +9,27 @@
  * the root directory of this source tree.
  */
 
-import {
-  activateAllPackages,
-  copyMercurialFixture,
-  jasmineIntegrationTestSetup,
-  deactivateAllPackages,
-  setLocalProject,
-} from '../pkg/nuclide-integration-test-helpers';
-import path from 'path';
-import invariant from 'assert';
-import {triggerWatchmanHgChange} from './utils/diff-view-utils';
+import type {TestContext} from './utils/remotable-tests';
 
-describe('Diff View Toolbar Button Test', () => {
+import {describeRemotableTest} from './utils/remotable-tests';
+import {waitsForRepositoryReady} from './utils/diff-view-utils';
+import {copyMercurialFixture} from '../pkg/nuclide-integration-test-helpers';
+import invariant from 'assert';
+
+describeRemotableTest('Diff View Toolbar Button Test', (context: TestContext) => {
 
   let repoPath: string = (null: any);
   let filePath: string = (null: any);
 
   beforeEach(() => {
-    waitsForPromise({timeout: 60000}, async () => {
-      jasmineIntegrationTestSetup();
-      // Activate atom packages.
-      await activateAllPackages();
+    waitsForPromise({timeout: 10000}, async () => {
       // Copy mercurial project to temporary directory.
-      repoPath = await copyMercurialFixture('hg_repo_2', __dirname);
-      // Add this directory as a new project in atom.
-      setLocalProject(repoPath);
+      repoPath = await copyMercurialFixture('hg_repo_2');
+      await context.setProject(repoPath);
       // Open the test.txt file in the repo.
-      filePath = path.join(repoPath, 'test.txt');
+      filePath = context.getProjectRelativePath('test.txt');
       await atom.workspace.open(filePath);
     });
-  });
-
-  afterEach(() => {
-    deactivateAllPackages();
   });
 
   it('tests diff files count', () => {
@@ -56,14 +44,20 @@ describe('Diff View Toolbar Button Test', () => {
       return getDiffCountElement() != null;
     });
 
+    waitsForPromise(
+      {label: 'repository ready'},
+      () => waitsForRepositoryReady(filePath),
+    );
+
     runs(() => {
       // Initially we have no changed files so the diff view tool-bar counter should be empty.
       expect(getDiffCountElement().innerText).toEqual('');
-
       textEditor.setText('cg');
-      textEditor.save();
-      triggerWatchmanHgChange(filePath);
     });
+
+    // local saves are synchronous, while remote saves return a promise.
+    // Wrapping the result in a promise would wait for saving, regardless of the environment.
+    waitsForPromise(() => Promise.resolve(textEditor.save()));
 
     waitsFor('uncommited file changes tool-bar counter to update', 10000, () => {
       return getDiffCountElement().innerText;
