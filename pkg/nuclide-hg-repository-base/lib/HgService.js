@@ -179,6 +179,7 @@ export class HgService {
   _hgActiveBookmarkDidChangeObserver: Subject;
   _hgBookmarksDidChangeObserver: Subject;
   _hgRepoStateDidChangeObserver: Subject;
+  _watchmanSubscriptionPromise: Promise<void>;
 
   constructor(workingDirectory: string) {
     this._workingDirectory = workingDirectory;
@@ -187,9 +188,11 @@ export class HgService {
     this._hgBookmarksDidChangeObserver = new Subject();
     this._hgRepoStateDidChangeObserver = new Subject();
     this._lockFileHeld = false;
-    this._subscribeToWatchman().catch(error => {
-      logger.error('Failed to subscribe to watchman error: ', error);
-    });
+    this._watchmanSubscriptionPromise = this._subscribeToWatchman();
+  }
+
+  waitForWatchmanSubscriptions(): Promise<void> {
+    return this._watchmanSubscriptionPromise;
   }
 
   async dispose(): Promise<void> {

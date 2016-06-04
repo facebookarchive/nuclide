@@ -88,6 +88,7 @@ export class HgRepositoryClient {
   _path: string;
   _workingDirectory: atom$Directory | RemoteDirectory;
   _projectDirectory: atom$Directory;
+  _initializationPromise: Promise<void>;
   _originURL: ?string;
   _service: HgService;
   _emitter: Emitter;
@@ -175,6 +176,10 @@ export class HgRepositoryClient {
       // Otherwise, will schedule an async call when it's done.
       serializedUpdateChangedPaths();
     };
+    this._initializationPromise = this._service.waitForWatchmanSubscriptions();
+    this._initializationPromise.catch(error => {
+      atom.notifications.addWarning('Mercurial: failed to subscribe to watchman!');
+    });
     // Get updates that tell the HgRepositoryClient when to clear its caches.
     this._service.observeFilesDidChange().subscribe(onFilesChanges);
     this._service.observeHgRepoStateDidChange()

@@ -15,6 +15,11 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 // This class is meant to be stubbed out.
 module.exports = class MockHgService {
+
+  waitForWatchmanSubscriptions(): Promise<void> {
+    return Promise.resolve();
+  }
+
   fetchStatuses(
     filePaths: Array<NuclideUri>,
     options: ?any,
