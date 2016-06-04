@@ -101,10 +101,21 @@ class RemoteTestContext {
   }
 }
 
-function getDescribeFunction(forceDescribe: boolean): Function {
-  // TODO guard against `fdescribe` usages in prod.
+function getDescribeFunction(focus: boolean): Function {
+  // Guard against `fdescribe` usages in prod.
+  if (focus && process.env.SANDCASTLE === '1') {
+    // $FlowIgnore usage of `fdescribe`.
+    fdescribe('Invalid usage of `focus` in production', () => {
+      it('`fdescribe` not allowed in production', () => {
+        throw new Error(
+          'Expected `focus` to be `false`, but it was `true` in production',
+        );
+      });
+    });
+    return describe;
+  }
   // $FlowIgnore usage of `fdescribe`.
-  return forceDescribe ? fdescribe : describe;
+  return focus ? fdescribe : describe;
 }
 
 // This function can be used in place of jasmine's describe.
@@ -118,18 +129,18 @@ function getDescribeFunction(forceDescribe: boolean): Function {
 export function describeRemotableTest(
   testName: string,
   testDescription: (context: TestContext) => void,
-  forceDescribe?: boolean = false,
+  focus?: boolean = false,
 ): void {
-  describeLocal(testName, testDescription, forceDescribe);
-  describeRemote(testName, testDescription, forceDescribe);
+  describeLocal(testName, testDescription, focus);
+  describeRemote(testName, testDescription, focus);
 }
 
 export function describeRemote(
   testName: string,
   testDescription: (context: TestContext) => void,
-  forceDescribe?: boolean = false,
+  focus?: boolean = false,
 ): void {
-  getDescribeFunction(forceDescribe)('Remote ' + testName, () => {
+  getDescribeFunction(focus)('Remote ' + testName, () => {
     testDescription(new RemoteTestContext());
   });
 }
@@ -137,9 +148,9 @@ export function describeRemote(
 export function describeLocal(
   testName: string,
   testDescription: (context: TestContext) => void,
-  forceDescribe?: boolean = false,
+  focus?: boolean = false,
 ): void {
-  getDescribeFunction(forceDescribe)('Local ' + testName, () => {
+  getDescribeFunction(focus)('Local ' + testName, () => {
     testDescription(new LocalTestContext());
   });
 }
