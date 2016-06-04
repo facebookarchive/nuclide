@@ -27,7 +27,7 @@ import invariant from 'assert';
 
 describe('Mercurial Repository Integration Tests', () => {
   beforeEach(() => {
-    waitsForPromise({timeout: 240000}, async () => {
+    waitsForPromise(async () => {
       jasmineIntegrationTestSetup();
       await activateAllPackages();
     });
@@ -55,7 +55,7 @@ describe('Mercurial Repository Integration Tests', () => {
   });
 
   it('can commit changes', () => {
-    waitsForPromise(async () => {
+    waitsForPromise({timeout: 15000}, async () => {
       const repoPath = await copyMercurialFixture('hg_repo_1');
       const filePath = path.join(repoPath, 'test.txt');
       atom.project.setPaths([repoPath]);
@@ -74,7 +74,7 @@ describe('Mercurial Repository Integration Tests', () => {
   });
 
   it('can amend changes', () => {
-    waitsForPromise(async () => {
+    waitsForPromise({timeout: 20000}, async () => {
       const repoPath = await copyMercurialFixture('hg_repo_1');
       const filePath = path.join(repoPath, 'test.txt');
       atom.project.setPaths([repoPath]);
