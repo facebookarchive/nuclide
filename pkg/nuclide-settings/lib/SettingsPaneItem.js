@@ -132,7 +132,7 @@ export default class NuclideSettingsPaneItem extends React.Component {
     Object.keys(configData).sort().forEach(categoryName => {
       const packages = configData[categoryName];
       elements.push(
-        <SettingsCategory name={categoryName} packages={packages} />
+        <SettingsCategory key={categoryName} name={categoryName} packages={packages} />
       );
     });
 

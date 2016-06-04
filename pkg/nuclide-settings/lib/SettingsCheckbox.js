@@ -11,6 +11,7 @@
 
 import type {SettingsPropsDefault} from './types';
 
+import {normalizeIdentifier} from './settings-utils';
 import {React} from 'react-for-atom';
 
 type Props = SettingsPropsDefault & {
@@ -35,15 +36,17 @@ export default class SettingsCheckbox extends React.Component {
 
   render(): React.Element {
     const keyPath = this.props.keyPath;
+    const id = normalizeIdentifier(keyPath);
     const title = this.props.title;
     const description = this.props.description;
     const value = this.props.value;
 
     return (
       <div className="checkbox">
-        <label htmlFor={keyPath}>
+        <label htmlFor={id}>
           <input
             checked={value}
+            id={id}
             onChange={this._onChanged}
             type="checkbox"
           />

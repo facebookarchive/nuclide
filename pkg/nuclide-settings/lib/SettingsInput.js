@@ -12,8 +12,14 @@
 import type {SettingsPropsDefault} from './types';
 
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
-import featureConfig from '../../nuclide-feature-config';
 import {React} from 'react-for-atom';
+import {
+  isDefaultConfigValue,
+  getDefaultConfigValueString,
+  normalizeIdentifier,
+  parseValue,
+  valueToString,
+} from './settings-utils';
 
 type Props = SettingsPropsDefault & {
   type: string;
@@ -88,13 +94,14 @@ export default class SettingsInput extends React.Component {
   componentDidUpdate(prevProps: Object, prevState: Object): void {
     const input = this.refs[this.props.keyPath];
     const value = this._getValue();
-    if (prevProps.value !== this.props.value && input.getText() !== value) {
+    if (input.getText() !== value) {
       this._updateInput(input, value);
     }
   }
 
   render(): React.Element {
     const keyPath = this.props.keyPath;
+    const id = normalizeIdentifier(keyPath);
     const title = this.props.title;
     const description = this.props.description;
     const value = this._getValue();
@@ -110,6 +117,7 @@ export default class SettingsInput extends React.Component {
           <div className="editor-container">
             <subview>
               <AtomInput
+                className={id}
                 initialValue={value}
                 onDidChange={this._onChanged}
                 onFocus={this._onFocus}
@@ -123,47 +131,5 @@ export default class SettingsInput extends React.Component {
         </div>
       </div>
     );
-  }
-}
-
-function getConfigValueString(keyPath: string): string {
-  const value = featureConfig.get(keyPath);
-  return valueToString(value);
-}
-
-function isDefaultConfigValue(keyPath: string, value: ?any): boolean {
-  const defaultValue = getDefaultConfigValueString(keyPath);
-  if (value) {
-    value = valueToString(value);
-  } else {
-    value = getConfigValueString(keyPath);
-  }
-  return !value || defaultValue === value;
-}
-
-function getDefaultConfigValueString(keyPath: string): string {
-  const params = {excludeSources: [atom.config.getUserConfigPath()]};
-  return valueToString(featureConfig.get(keyPath, params));
-}
-
-function parseValue(type: string, value: any): any {
-  let result = value;
-  if (type === 'number') {
-    const floatValue = parseFloat(value);
-    if (!isNaN(floatValue)) {
-      result = floatValue;
-    }
-  } else if (type === 'array') {
-    const arrayValue = (value ? value : '').split(',');
-    result = arrayValue.filter(item => Boolean(item)).map(item => item.trim());
-  }
-  return result;
-}
-
-function valueToString(value: any): string {
-  if (Array.isArray(value)) {
-    return value.join(', ');
-  } else {
-    return value != null ? value.toString() : '';
   }
 }

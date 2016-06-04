@@ -10,6 +10,7 @@
  */
 
 import featureConfig from '../../nuclide-feature-config';
+import {normalizeIdentifier} from './settings-utils';
 import {React} from 'react-for-atom';
 import type {SettingsPropsDefault} from './types';
 
@@ -35,6 +36,7 @@ export default class SettingsSelect extends React.Component {
 
   render(): React.Element {
     const keyPath = this.props.keyPath;
+    const id = normalizeIdentifier(keyPath);
     const title = this.props.title;
     const description = this.props.description;
     const value = this.props.value;
@@ -56,6 +58,7 @@ export default class SettingsSelect extends React.Component {
         </label>
         <select
           className="form-control"
+          id={id}
           onChange={this._onChanged}
           value={value}>
           {optionElements}
