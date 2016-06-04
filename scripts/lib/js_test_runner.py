@@ -10,10 +10,12 @@ import os
 import re
 import subprocess
 import time
+import threading
 from datetime import datetime
 
 import utils
 
+MAX_RUN_TIME_IN_SECONDS = 120
 MAX_WORKERS = max(1, multiprocessing.cpu_count() - 1)
 
 class JsTestRunner(object):
@@ -50,7 +52,7 @@ class JsTestRunner(object):
         # Integration tests only run serially:
         for spec_file in spec_files:
             run_test(
-                ['atom', '--dev', '--test', '--v=-3', '--timeout=60', spec_file],
+                ['atom', '--dev', '--test', '--v=-3', spec_file],
                 nuclide_dir,
                 os.path.basename(spec_file),
                 retryable=True,
@@ -99,7 +101,7 @@ class JsTestRunner(object):
                 retryable = False
             elif test_runner == 'apm':
                 # https://github.com/atom/apm/blob/v1.9.2/src/test.coffee#L37
-                test_cmd = ['atom', '--dev', '--test', '--v=-3', '--timeout=60', 'spec']
+                test_cmd = ['atom', '--dev', '--test', '--v=-3', 'spec']
                 retryable = True
             else:
                 raise Exception('Unknown test runner "%s"' % test_runner)
@@ -164,15 +166,25 @@ def run_test(
         stderr=subprocess.STDOUT,
         shell=False)
     stdout = []
-    for line in iter(proc.stdout.readline, ''):
-        # line is a bytes string literal in Python 3.
-        logging.info('[%s %s]: %s', test_cmd[0], name, line.rstrip().decode('utf-8'))
-        stdout.append(line)
-    proc.wait()
+    timer = threading.Timer(
+        MAX_RUN_TIME_IN_SECONDS,
+        lambda proc: proc.kill(),
+        [proc],
+    )
+    try:
+        timer.start()
+        for line in iter(proc.stdout.readline, ''):
+            # line is a bytes string literal in Python 3.
+            logging.info('[%s %s]: %s', test_cmd[0], name, line.rstrip().decode('utf-8'))
+            stdout.append(line)
+        proc.wait()
+    finally:
+        timer.cancel()
 
     if proc.returncode:
         logging.info(
-            'TEST FAILED: %s (exit code: %d)\nstdout:\n%s',
+            'TEST %s: %s (exit code: %d)\nstdout:\n%s',
+            'FAILED' if timer.is_alive() else 'TIMED OUT',
             name,
             proc.returncode,
             '\n'.join(stdout),
