@@ -19,7 +19,7 @@ supported and stability is not guaranteed.
 
 ## Quick Install
 
-Assuming you have met all the prerequisites for your platform, culminating with **Atom 1.4.0 or
+Assuming you have met all the prerequisites for your platform, culminating with **Atom 1.7.4 or
 greater** being installed, the easiest way to install Nuclide is either at the command line:
 
 ```bash
@@ -43,7 +43,7 @@ prerequisites.
 
 ### Prerequisites
 
-Nuclide requires Atom 1.4.0+. You can follow the [instructions on the Atom website](https://atom.io/docs/v0.191.0/getting-started-installing-atom#atom-on-mac). Essentially,
+Nuclide requires Atom 1.7.4+. You can follow the [instructions on the Atom website](https://atom.io/docs/v0.191.0/getting-started-installing-atom#atom-on-mac). Essentially,
 if you go to Atom.io, there will be direct link to download Atom.
 
 ### Installation
@@ -68,7 +68,7 @@ Or you can go through the Atom Packages UI to install Atom:
 
 ### Prerequisites
 
-Nuclide requires Atom 1.4.0+ (which requires Git). There are [instructions on the Atom website](https://atom.io/download/deb#atom-on-linux)
+Nuclide requires Atom 1.7.4+ (which requires Git). There are [instructions on the Atom website](https://atom.io/download/deb#atom-on-linux)
 to install Atom, but it doesn't mention the Git requirement.
 
 Instead, follow the command line process below which shows you the installation of all the

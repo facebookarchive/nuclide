@@ -32,7 +32,7 @@ However, if you are compiling your project with [Buck](http://buckbuild.com), yo
 
 ## Running Applications
 
-Currently, the easiest way to build and run a native iOS application is from XCode itself.
+Currently, the easiest way to build and run a native iOS application is from Xcode itself.
 You can also use the command-line tools such as `xcodebuild`, etc.
 
 ### Buck Integration

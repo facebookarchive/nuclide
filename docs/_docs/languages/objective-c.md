@@ -149,8 +149,8 @@ applications. This section discusses the latter.
 Currently, debugging Objective-C applications requires compiling your program with
 [Buck](https://buckbuild.com/).
 
-> Optimally it would be nice to run the application directly from XCode and attach to the
-> simulator process associated with that XCode project. However, due to `lldb` process conflict
+> Optimally it would be nice to run the application directly from Xcode and attach to the
+> simulator process associated with that Xcode project. However, due to `lldb` process conflict
 > issues, this is currently not possible.
 
 ### Open your Project
