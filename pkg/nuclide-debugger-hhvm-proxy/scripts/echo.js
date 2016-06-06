@@ -15,6 +15,9 @@
 //
 // After starting this script, run start-hhvm-client.sh to launch hhvm with xdebug enabled.
 
+// Matches an xdebug command name, e.g. matches 'eval' in 'eval -i 3 -- data'.
+var COMMAND_NAME_MATCHER = /^(\w+)/;
+
 var port = process.argv[2] || 9000;
 
 console.log('Attempting to connect on port: ' + port);
@@ -35,6 +38,7 @@ var server = net.createServer(
       var components = data.toString().split('\x00');
       console.log('components count: ' + components.length);
       console.log('message content length: ' + components[1].length);
+      process.stdout.write(DBG_PROMPT_TEXT);
     });
   });
 
@@ -53,16 +57,24 @@ var commandId = 0;
 var DBG_PROMPT_TEXT = 'xdebug> ';
 process.stdout.write(DBG_PROMPT_TEXT);
 rl.on('line', function(line) {
-  if (socket) {
-    line = line.trim();
-    if (line) {
-      ++commandId;
-      line += (' -i ' + commandId);
-      console.log('local: ' + line);
-      socket.write(line + '\0', undefined /* encoding */, function() {
-        console.log('finished writing: ' + line);
-      });
-    }
-  }
   process.stdout.write(DBG_PROMPT_TEXT);
+  if (socket == null) {
+    return;
+  }
+  line = line.trim();
+  if (!line) {
+    return;
+  }
+  var matches = COMMAND_NAME_MATCHER.exec(line);
+  if (matches == null) {
+    return;
+  }
+  ++commandId;
+  var match = matches[0];
+  var lineEnd = line.substring(match.length + 1); // + 1 for the leading space.
+  var lineWithId = `${match} -i ${commandId} ${lineEnd}`.trim();
+  console.log('local: ' + lineWithId);
+  socket.write(lineWithId + '\0', undefined /* encoding */, function() {
+    console.log('finished writing: ' + lineWithId);
+  });
 });
