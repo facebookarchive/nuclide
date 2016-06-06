@@ -44,6 +44,7 @@ const CONNECTING = 'connecting';
 const CONNECTED = 'connected';
 const CLOSED = 'closed';
 
+let lastServiceObjectDispose = null;
 
 /**
  * Proxy for converting between Chrome dev tools debugger
@@ -69,6 +70,10 @@ export class HhvmDebuggerProxyService {
   _disposables: CompositeDisposable;
 
   constructor() {
+    if (lastServiceObjectDispose != null) {
+      lastServiceObjectDispose();
+    }
+    lastServiceObjectDispose = this.dispose.bind(this);
     this._state = INITIAL;
     this._translator = null;
     this._disposables = new CompositeDisposable();
