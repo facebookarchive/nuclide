@@ -72,6 +72,14 @@ class RemoteControlService {
     await model.getActions().startDebugging(processInfo);
   }
 
+  toggleBreakpoint(filePath: string, line: number): void {
+    const model = this._getModel();
+    if (model == null) {
+      throw new Error('Package is not activated.');
+    }
+    model.getBreakpointStore().toggleBreakpoint(filePath, line);
+  }
+
   isInDebuggingMode(providerName: string): boolean {
     const model = this._getModel();
     if (model == null) {
