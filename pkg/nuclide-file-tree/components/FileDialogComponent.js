@@ -61,7 +61,7 @@ class FileDialogComponent extends React.Component {
     this._subscriptions = new CompositeDisposable();
     (this: any)._close = this._close.bind(this);
     (this: any)._confirm = this._confirm.bind(this);
-    (this: any)._handleDocumentClick = this._handleDocumentClick.bind(this);
+    (this: any)._handleDocumentMouseDown = this._handleDocumentMouseDown.bind(this);
     this.state = {
       options: {},
     };
@@ -87,12 +87,12 @@ class FileDialogComponent extends React.Component {
       const selectionEnd = selectionStart + name.length;
       input.getTextEditor().setSelectedBufferRange([[0, selectionStart], [0, selectionEnd]]);
     }
-    document.addEventListener('click', this._handleDocumentClick);
+    document.addEventListener('mousedown', this._handleDocumentMouseDown);
   }
 
   componentWillUnmount(): void {
     this._subscriptions.dispose();
-    document.removeEventListener('click', this._handleDocumentClick);
+    document.removeEventListener('mousedown', this._handleDocumentMouseDown);
   }
 
   render(): React.Element {
@@ -138,7 +138,7 @@ class FileDialogComponent extends React.Component {
     this.setState({options});
   }
 
-  _handleDocumentClick(event: Event): void {
+  _handleDocumentMouseDown(event: Event): void {
     const dialog = this.refs.dialog;
     // If the click did not happen on the dialog or on any of its descendants,
     // the click was elsewhere on the document and should close the modal.

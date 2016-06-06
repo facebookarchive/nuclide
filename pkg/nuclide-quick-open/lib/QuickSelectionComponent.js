@@ -164,11 +164,11 @@ export default class QuickSelectionComponent extends React.Component {
     );
 
     // Close quick open if user clicks outside the frame.
-    const outerClickHandler = e => this.onOuterClick(e);
-    document.addEventListener('click', outerClickHandler);
+    const documentMouseDownHandler = e => this.handleDocumentMouseDown(e);
+    document.addEventListener('mousedown', documentMouseDownHandler);
     this._subscriptions.add({
       dispose() {
-        document.removeEventListener('click', outerClickHandler);
+        document.removeEventListener('mousedown', documentMouseDownHandler);
       },
     });
 
@@ -214,16 +214,13 @@ export default class QuickSelectionComponent extends React.Component {
     this.onUserDidChangeSelection();
   }
 
-  onOuterClick(event: SyntheticMouseEvent): void {
-    // Close the quick open pane when a user clicks outside of it.
-    this.props.onBlur();
-  }
-
-  onClick(event: SyntheticMouseEvent): void {
-    // Prevent quick open pane from being closed when a user clicks inside the pane,
-    // by stopping the click event from propagating further and triggering onOuterClick.
-    event.stopPropagation();
-    event.nativeEvent.stopImmediatePropagation();
+  handleDocumentMouseDown(event: SyntheticMouseEvent): void {
+    const modal = this.refs.modal;
+    // If the click did not happen on the modal or on any of its descendants,
+    // the click was elsewhere on the document and should close the modal.
+    if (event.target !== modal && !modal.contains(event.target)) {
+      this.props.onBlur();
+    }
   }
 
   onCancellation(callback: () => void): IDisposable {
@@ -741,7 +738,7 @@ export default class QuickSelectionComponent extends React.Component {
       );
     }
     return (
-      <div className="select-list omnisearch-modal" ref="modal" onClick={this.onClick}>
+      <div className="select-list omnisearch-modal" ref="modal">
         <AtomInput ref="queryInput" placeholderText={promptText} />
         {this._renderTabs()}
         <div className="omnisearch-results" style={{maxHeight: this.props.maxScrollableAreaHeight}}>
