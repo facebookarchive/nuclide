@@ -25,6 +25,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 import utils
 from dependencies import check_dependencies
 from js_test_runner import JsTestRunner
+from lint_py_headers import LintPyHeaders
 from package_manager import PackageManager, NUCLIDE_PATH
 
 # Supress stack traces when stopped by CTRL+C.
@@ -80,6 +81,14 @@ def run(name, cmd):
         end = datetime.now()
         logging.info('Finished %s (%s seconds)', name, (end - start).seconds)
 
+def lint_py_headers():
+    print('Linting python file license headers.')
+    errors = LintPyHeaders().get_errors()
+    for lint_error in errors:
+        print(lint_error, file=sys.stderr)
+    if errors:
+        raise utils.TestFailureError('FAILED: Python file license header lint.')
+
 # Some tests compare created files and all their properties to an oracle. If
 # they are created with a different umask, then the permissions are different
 # and the tests fail.
@@ -113,6 +122,7 @@ else:
     if not options.no_module_cycle_check:
         run('module_cycle_check', ['scripts/dev/module_cycle_check'])
     try:
+        lint_py_headers()
         test_runner.run_unit_tests()
     except utils.TestFailureError as err:
         logging.info(err)
