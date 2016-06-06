@@ -9,9 +9,19 @@
  * the root directory of this source tree.
  */
 
-import {describeLocal} from './utils/remotable-tests';
-import {runTest} from './utils/flow-hyperclick-common';
+import {describeRemotableTest} from './utils/remotable-tests';
 
-describeLocal('Flow Hyperclick', context => {
-  runTest(context);
+import {setup} from './utils/flow-common';
+import {waitsForHyperclickResult} from './utils/hyperclick-common';
+
+describeRemotableTest('Flow Hyperclick', context => {
+  it('tests flow hyperclick example', () => {
+    setup(context);
+
+    waitsForHyperclickResult(
+      [14, 13],
+      'Foo.js',
+      [11, 2],
+    );
+  });
 });
