@@ -14,7 +14,7 @@ import pollFor from './pollFor';
 export async function fileTreeHasFinishedLoading(maxWaitTime: number = 1000): Promise<void> {
   await pollFor(
     () => {
-      const cssSelector = '.nuclide-file-tree .list-tree.has-collapsable-children li.loading';
+      const cssSelector = '.nuclide-file-tree .list-tree.has-collapsable-children .loading';
       return document.body.querySelectorAll(cssSelector).length === 0;
     },
     'File tree did not finish loading',
