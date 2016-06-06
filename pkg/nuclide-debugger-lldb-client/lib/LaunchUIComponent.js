@@ -56,7 +56,13 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
           placeholderText="Working directory for the launched executable"
           onConfirm={this._handleLaunchClick}
         />
-        <Button tabIndex="14" onClick={this._handleLaunchClick}>Launch</Button>
+        <div style={{display: 'flex', flexDirection: 'row-reverse'}}>
+          <Button
+            tabIndex="14"
+            onClick={this._handleLaunchClick}>
+            Launch
+          </Button>
+        </div>
       </div>
     );
   }
