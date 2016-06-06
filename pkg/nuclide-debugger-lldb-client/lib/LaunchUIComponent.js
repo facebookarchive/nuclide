@@ -34,6 +34,13 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
     (this: any)._cancelClick = this._cancelClick.bind(this);
   }
 
+  componentDidMount(): void {
+    const launchExecutableInput = this.refs.launchExecutable;
+    if (launchExecutableInput != null) {
+      launchExecutableInput.focus();
+    }
+  }
+
   render(): React.Element {
     // TODO: smart fill the working directory textbox.
     // TODO: make tab stop between textbox work.
