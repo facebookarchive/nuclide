@@ -87,7 +87,7 @@ class RemoteTestContext {
 
   async setProject(localProjectPath: string): Promise<void> {
     invariant(this._remoteProjectPath == null, 'Call setProject exactly once');
-    await startNuclideServer();
+    startNuclideServer();
     const connection = await addRemoteProject(localProjectPath);
     invariant(connection != null, 'connection was not established');
     this._connection = connection;

@@ -33,7 +33,7 @@ describe('Remote clipboard path integration test', () => {
       // Copy mercurial project to temp directory.
       const repoPath = await copyMercurialFixture('hg_repo_1');
       // Start the Nuclide server and add a remote project.
-      await startNuclideServer();
+      startNuclideServer();
       const connection = await addRemoteProject(repoPath);
       invariant(connection != null, 'connection was not established');
       // Open a remote file in the project.
