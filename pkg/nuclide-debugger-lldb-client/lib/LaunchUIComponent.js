@@ -14,7 +14,11 @@ import type {LaunchAttachActions} from './LaunchAttachActions';
 
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
-import {Button} from '../../nuclide-ui/lib/Button';
+import {
+  Button,
+  ButtonTypes,
+} from '../../nuclide-ui/lib/Button';
+import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
 
 type PropsType = {
   store: LaunchAttachStore;
@@ -27,6 +31,7 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
   constructor(props: PropsType) {
     super(props);
     (this: any)._handleLaunchClick = this._handleLaunchClick.bind(this);
+    (this: any)._cancelClick = this._cancelClick.bind(this);
   }
 
   render(): React.Element {
@@ -57,13 +62,28 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
           onConfirm={this._handleLaunchClick}
         />
         <div style={{display: 'flex', flexDirection: 'row-reverse'}}>
-          <Button
-            tabIndex="14"
-            onClick={this._handleLaunchClick}>
-            Launch
-          </Button>
+          <ButtonGroup>
+            <Button
+              tabIndex="15"
+              onClick={this._cancelClick}>
+              Cancel
+            </Button>
+            <Button
+              buttonType={ButtonTypes.PRIMARY}
+              tabIndex="14"
+              onClick={this._handleLaunchClick}>
+              Launch
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
+    );
+  }
+
+  _cancelClick(): void {
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-debugger:toggle-launch-attach'
     );
   }
 
