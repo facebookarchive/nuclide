@@ -1,5 +1,23 @@
 # Nuclide Changelog
 
+## v0.142.0
+
+**General**
+
+* Fixed: file-tree could spontaneously collapse on a flaky network.
+* New Settings UI Pane (cmd-option-, or Nuclide Settings: Show from the command palette)
+
+**Source Control**
+
+* Diff View is now much faster showing the changed files.
+
+**Python**
+
+* Code formatting on local or remote using pyfmt or yapf, accessible using standard controls (context menu, cmd/ctrl+shift+c, or Edit→Text→Format Code). This will use rules from the nearest .style.yapf, or if not available use yapf's default (pep8). Currently pyfmt or yapf must be in the system path - the path to binary will be configurable in the near future.
+* Find references, will only find results within the current file and PYTHONPATH at the moment.
+
+
+
 ## v0.141.0
 
 * Hotfix for Python httplib server compatibility issues.
