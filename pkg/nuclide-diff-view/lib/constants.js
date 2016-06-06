@@ -109,3 +109,5 @@ export const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = 
   [FileChangeStatus.REMOVED]: '[D] ',
   [FileChangeStatus.UNTRACKED]: '[?] ',
 });
+
+export const NON_MERCURIAL_REPO_DISPLAY_NAME = '[X] Non-Mercurial Repository';

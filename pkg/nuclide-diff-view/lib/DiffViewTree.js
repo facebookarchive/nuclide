@@ -19,7 +19,10 @@ import {TreeRootComponent} from '../../nuclide-ui/lib/TreeRootComponent';
 import DiffViewTreeNode from './DiffViewTreeNode';
 import remoteUri from '../../nuclide-remote-uri';
 import Immutable from 'immutable';
-import {FileChangeStatus} from './constants';
+import {
+  FileChangeStatus,
+  NON_MERCURIAL_REPO_DISPLAY_NAME,
+} from './constants';
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 
@@ -221,7 +224,7 @@ export default class DiffViewTree extends React.Component {
 
     const repository = repositoryForPath(rootPath);
     if (repository == null || repository.getType() !== 'hg') {
-      const nodeName = '[X] Non-Mercurial Repository';
+      const nodeName = NON_MERCURIAL_REPO_DISPLAY_NAME;
       childNodes.push(
         new DiffViewTreeNode({filePath: nodeName}, rootNode, false, noChildrenFetcher)
       );
