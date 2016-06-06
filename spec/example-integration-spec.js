@@ -41,6 +41,8 @@ describe('Example Integration Test', () => {
       // Some easy examples:
       // Want to click a button?  Just do
       //
+      // const workspaceView = atom.views.getView(atom.workspace);
+      //
       // const buttonView = workspaceView.querySelector('css-selector-goes-here');
       // buttonView.click();
       //
