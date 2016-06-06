@@ -46,13 +46,14 @@ class DebuggerStore:
         '''
         if basepath == '.':
             target = self._debugger.GetSelectedTarget()
-            executable_dir_path = target.executable.GetDirectory()
-            executable_dir_path = os.path.realpath(
-                os.path.normpath(os.path.expanduser(executable_dir_path)))
+            executable_file_path = target.executable.fullpath
+            log_debug('executable_file_path: %s' % executable_file_path)
+            executable_file_path = os.path.realpath(
+                os.path.normpath(os.path.expanduser(executable_file_path)))
             BUCK_OUTPUT_IDENTIFY_REGEX = '/buck-out/gen/'
-            search_result = re.search(BUCK_OUTPUT_IDENTIFY_REGEX, executable_dir_path)
+            search_result = re.search(BUCK_OUTPUT_IDENTIFY_REGEX, executable_file_path)
             if search_result:
-                basepath = executable_dir_path[:search_result.start()]
+                basepath = executable_file_path[:search_result.start()]
         return basepath
 
     @property
