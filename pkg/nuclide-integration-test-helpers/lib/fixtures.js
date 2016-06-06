@@ -65,3 +65,16 @@ export async function copyFixture(fixtureName: string): Promise<string> {
   const fixturePath = await fixtures.copyFixture(fixtureName, getTestDir());
   return absolute(fixturePath);
 }
+
+/*
+ * Extracts a specified .tar.gz archive from integration-test-helpers/spec/fixtures directory
+ * to a temporary location.
+ *
+ * @param fixtureName The name of the archive to extract within the fixtures/ directory
+ * without the .tar.gz extension
+ * @returns the path to the temporary directory that this function creates.
+ */
+export async function extractTarGzFixture(fixtureName: string): Promise<string> {
+  const fixturePath = await fixtures.extractTarGzFixture(fixtureName, getTestDir());
+  return absolute(fixturePath);
+}

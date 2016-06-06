@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import {dispatchKeyboardEvent} from './event';
-import {copyFixture, copyMercurialFixture, setLocalProject} from './fixtures';
+import {copyFixture, extractTarGzFixture, copyMercurialFixture, setLocalProject} from './fixtures';
 import {activateAllPackages, deactivateAllPackages} from './package-utils';
 import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
 import {waitsForFile, waitsForFilePosition} from './waitsForFile';
@@ -60,6 +60,7 @@ export {
   copyMercurialFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
+  extractTarGzFixture,
   fileTreeHasFinishedLoading,
   getVisibleEntryFromFileTree,
   pollFor,

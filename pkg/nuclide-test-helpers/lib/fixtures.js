@@ -12,6 +12,7 @@
 import fse from 'fs-extra';
 import path from 'path';
 import {mkdir} from './tempdir';
+import {checkOutput} from '../../commons-node/process';
 
 /**
  * When called from a file in a spec/ directory that has a subdirectory named fixtures/, it copies
@@ -40,6 +41,29 @@ async function copyFixture(fixtureName: string, dirname: string): Promise<string
   return tempDir;
 }
 
+/**
+ * When called from a file in a spec/ directory that has a subdirectory named fixtures/, it extracts
+ * the specified fixtureName .tar.gz archive into a temp directory.
+ * The temp directory will be deleted automatically when the current process exits.
+ *
+ * @param fixtureName The name of the archive file without the .tar.gz extension that should be
+ * extracted.
+ * @param dirname The calling function should call `__dirname` as this argument. This should
+ *   correspond to the spec/ directory with a fixtures/ subdirectory.
+ */
+async function extractTarGzFixture(fixtureName: string, dirname: string): Promise<string> {
+  const tempDir = await mkdir(fixtureName);
+
+  const fixtureArchive = path.join(dirname, 'fixtures', `${fixtureName}.tar.gz`);
+  const {stderr} = await checkOutput('tar', ['-xf', fixtureArchive], {cwd: tempDir});
+  if (stderr !== '') {
+    throw new Error(stderr);
+  }
+
+  return tempDir;
+}
+
 module.exports = {
   copyFixture,
+  extractTarGzFixture,
 };
