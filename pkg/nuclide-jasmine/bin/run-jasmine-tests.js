@@ -18,8 +18,14 @@
 // but neglects to respect the exit code, so we beat it the to the punch.
 process.once('exit', code => {
   // jasmine-node is swallowing temp's exit handler, so force a cleanup.
-  const temp = require('temp');
-  temp.cleanupSync();
+  try {
+    const temp = require('temp');
+    temp.cleanupSync();
+  } catch (err) {
+    if (err && err.message !== 'not tracking') {
+      console.log(`temp.cleanup() failed. ${err}`);
+    }
+  }
   process.exit(code);
 });
 
