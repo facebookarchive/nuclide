@@ -15,6 +15,12 @@ import sys
 import time
 
 
+class TestFailureError(Exception):
+    def __init__(self, message, code=1):
+        Exception.__init__(self, message)
+        self.code = code
+
+
 def check_output(*popenargs, **kwargs):
     """
     This is a subprocess.check_output() implementation from Python 2.7

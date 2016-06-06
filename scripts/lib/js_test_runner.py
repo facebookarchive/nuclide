@@ -60,7 +60,7 @@ class JsTestRunner(object):
             )
 
         end = datetime.now()
-        logging.info('Integration tests took %s seconds.', (end - start).seconds)
+        logging.info('Finished integration tests (%s seconds)', (end - start).seconds)
 
 
     def run_unit_tests(self):
@@ -126,7 +126,7 @@ class JsTestRunner(object):
                 if not async_result.successful():
                     raise async_result.get()
             end = datetime.now()
-            logging.info('Parallel tests took %s seconds.', (end - start).seconds)
+            logging.info('Finished parallel tests (%s seconds)', (end - start).seconds)
 
         if len(serial_tests):
             logging.info('Running %s tests serially...', len(serial_tests))
@@ -134,19 +134,19 @@ class JsTestRunner(object):
             for test_args in serial_tests:
                 run_test(*test_args)
             end = datetime.now()
-            logging.info('Serial tests took %s seconds.', (end - start).seconds)
+            logging.info('Finished serial tests (%s seconds)', (end - start).seconds)
 
     @utils.retryable(num_retries=2, sleep_time=10, exponential=True)
     def install_third_party_packages(self):
         # TODO(asuarez): Figure out a way to better declare the 3rd-party
         # packages that are absolutely needed during integration tests.
-        install_cmd = ['apm', 'install', 'tool-bar']
-        logging.info('Running %s...', ' '.join(install_cmd))
+        install_cmd = ['apm', '--no-color', 'install', 'tool-bar']
+        logging.info('Running `%s`...', ' '.join(install_cmd))
         start = datetime.now()
         nuclide_dir = self._package_manager.get_nuclide_path()
         subprocess.check_call(install_cmd, cwd=nuclide_dir)
         end = datetime.now()
-        logging.info('%s took %s seconds.', ' '.join(install_cmd), (end - start).seconds)
+        logging.info('Finished `%s` (%s seconds)', ' '.join(install_cmd), (end - start).seconds)
 
 
 def run_test(
@@ -158,6 +158,7 @@ def run_test(
 ):
     """Run test_cmd in the given pkg_path."""
     logging.info('Running `%s` in %s...', ' '.join(test_cmd), pkg_path)
+    start = datetime.now()
 
     proc = subprocess.Popen(
         test_cmd,
@@ -171,6 +172,7 @@ def run_test(
         lambda proc: proc.kill(),
         [proc],
     )
+
     try:
         timer.start()
         for line in iter(proc.stdout.readline, ''):
@@ -181,24 +183,29 @@ def run_test(
     finally:
         timer.cancel()
 
+    end = datetime.now()
+
     if proc.returncode:
         logging.info(
             'TEST %s: %s (exit code: %d)\nstdout:\n%s',
-            'FAILED' if timer.is_alive() else 'TIMED OUT',
+            'ERROR' if timer.is_alive() else 'TIMED OUT',
             name,
             proc.returncode,
-            '\n'.join(stdout),
+            ''.join(stdout).rstrip(),
         )
-        if retryable and is_retryable_error('\n'.join(stdout)):
+        if retryable and is_retryable_error(''.join(stdout)):
             logging.info('RETRYING TEST: %s', name)
             time.sleep(3)
             run_test(test_cmd, pkg_path, name, False, continue_on_errors)
             return
         if not continue_on_errors:
-            raise Exception('TEST FAILED: %s %s (exit code: %d)' %
-                            (test_cmd[0], name, proc.returncode))
+            raise utils.TestFailureError(
+                'TEST FAILED: %s %s (exit code: %d)' %
+                (test_cmd[0], name, proc.returncode),
+                proc.returncode,
+            )
     else:
-        logging.info('TEST PASSED: %s', name)
+        logging.info('TEST PASSED: %s (%s seconds)', name, (end - start).seconds)
 
 def is_retryable_error(output):
     errors = [

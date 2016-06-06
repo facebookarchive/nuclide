@@ -6,6 +6,8 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
+from __future__ import print_function
+
 import logging
 import optparse
 import os
@@ -20,9 +22,18 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 # Add the lib/ directory to $PYTHONPATH so library code can be imported.
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
+import utils
 from dependencies import check_dependencies
 from js_test_runner import JsTestRunner
 from package_manager import PackageManager, NUCLIDE_PATH
+
+# Supress stack traces when stopped by CTRL+C.
+def keyboard_interrupt(exctype, value, traceback):
+    if exctype == KeyboardInterrupt:
+        print()
+    else:
+        sys.__excepthook__(exctype, value, traceback)
+sys.excepthook = keyboard_interrupt
 
 # Parse the command-line arguments.
 parser = optparse.OptionParser(
@@ -62,12 +73,12 @@ def run(name, cmd):
         start = datetime.now()
         logging.info('Running %s...', name)
         subprocess.check_call(cmd, cwd=NUCLIDE_PATH)
-    except (subprocess.CalledProcessError, KeyboardInterrupt):
+    except subprocess.CalledProcessError as err:
         logging.info('FAILED: %s', name)
-        sys.exit(1)
-    finally:
+        sys.exit(err.returncode)
+    else:
         end = datetime.now()
-        logging.info('%s took %s seconds.', name, (end - start).seconds)
+        logging.info('Finished %s (%s seconds)', name, (end - start).seconds)
 
 # Some tests compare created files and all their properties to an oracle. If
 # they are created with a different umask, then the permissions are different
@@ -89,7 +100,11 @@ if not options.no_version:
 
 if options.run_integration_tests:
     run('transpile', ['scripts/dev/release_transpile.js'])
-    test_runner.run_integration_tests()
+    try:
+        test_runner.run_integration_tests()
+    except utils.TestFailureError as err:
+        logging.info(err)
+        sys.exit(err.code)
 else:
     run('lint_packages', ['scripts/dev/lint_packages'])
     run('eslint', ['node_modules/.bin/eslint', '--max-warnings=0', '.'])
@@ -97,4 +112,8 @@ else:
     run('transpile', ['scripts/dev/release_transpile.js'])
     if not options.no_module_cycle_check:
         run('module_cycle_check', ['scripts/dev/module_cycle_check'])
-    test_runner.run_unit_tests()
+    try:
+        test_runner.run_unit_tests()
+    except utils.TestFailureError as err:
+        logging.info(err)
+        sys.exit(err.code)
