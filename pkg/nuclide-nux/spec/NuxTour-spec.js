@@ -82,9 +82,6 @@ describe('NuxTour', () => {
     nuxStore.addNewNux(generateTestNuxTour(NUX_SAMPLE_OUTLINE_VIEW_TOUR));
 
     expect(nuxStore._nuxList.length).toBe(1);
-    expect(nuxManager._readyToDisplayNuxList.length).toBe(0);
-    expect(nuxManager._pendingNuxList.length).toBe(0);
-    expect(nuxManager._activeNuxTour != null).toBeTruthy();
   });
 
   it('creates a NuxTour that waits for a trigger', () => {

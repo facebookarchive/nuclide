@@ -147,11 +147,7 @@ export class NuxManager {
     nuxTour.setNuxCompleteCallback(
         this._handleNuxCompleted.bind(this, nuxTourModel)
     );
-    if (nuxTourModel.trigger != null) {
-      this._pendingNuxList.push(nuxTour);
-    } else {
-      this._emitter.emit('nuxTourReady', nuxTour);
-    }
+    this._pendingNuxList.push(nuxTour);
   }
 
   // Handles triggered NUXes that are ready to be displayed
@@ -181,6 +177,20 @@ export class NuxManager {
       this._pendingNuxList.splice(i--, 1);
       this._emitter.emit('nuxTourReady', nuxToCheck);
     }
+  }
+
+  tryTriggerNux(id: string): void {
+    const nuxToTrigger = this._pendingNuxList.find(nux => { nux.getID() === id; });
+    if (nuxToTrigger == null) {
+      throw new Error('Please enter a valid ID of a registered NUX.');
+    }
+    if (nuxToTrigger.completed) {
+      //TODO [ @rageandqq | 05-27-16 ]: Inform the package more gracefully
+      throw new Error('You cannot trigger a NUX that has already been viewed!');
+    }
+    // Remove from pending list
+    this._removeNuxFromList(this._pendingNuxList, id);
+    this._emitter.emit('nuxTourReady', nuxToTrigger);
   }
 
   dispose() : void {
