@@ -17,7 +17,12 @@ import {
 
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {RegisterNux} from '../../nuclide-nux/lib/main';
+import type {
+  RegisterNux,
+  TriggerNux,
+} from '../../nuclide-nux/lib/main';
+
+const SAMPLE_NUX_ID = 'sample-nux-example.sample-nux-id';
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -91,7 +96,11 @@ function generateTestNuxTour(
 
 export function consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
   invariant(activation != null);
-  const disposable = addNewNux(generateTestNuxTour('example-nux', 2));
+  const disposable = addNewNux(generateTestNuxTour(SAMPLE_NUX_ID, 2));
   activation.addDisposable(disposable);
   return disposable;
+}
+
+export function consumeTriggerNuxService(tryTriggerNux: TriggerNux): void {
+  tryTriggerNux(SAMPLE_NUX_ID);
 }
