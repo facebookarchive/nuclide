@@ -16,10 +16,9 @@ import type {
   NuxTourModel,
 } from './NuxModel';
 
-import {
-  NUX_SAVED_STORE,
-  NUX_SAMPLE_OUTLINE_VIEW_TOUR,
-} from './main';
+const NUX_NAMESPACE = 'nuclide-nux';
+export const NUX_SAVED_STORE = `${NUX_NAMESPACE}.saved-nux-data-store`;
+export const NUX_SAMPLE_OUTLINE_VIEW_TOUR = `${NUX_NAMESPACE}.outline-view-tour`;
 
 export class NuxStore {
   _emitter: atom$Emitter;

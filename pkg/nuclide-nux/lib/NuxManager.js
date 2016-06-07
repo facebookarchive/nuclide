@@ -17,10 +17,12 @@ import {
 } from 'atom';
 import passesGK from '../../commons-node/passesGK';
 
-import {NuxStore} from './NuxStore';
+import {
+  NuxStore,
+  NUX_SAMPLE_OUTLINE_VIEW_TOUR,
+} from './NuxStore';
 import {NuxTour} from './NuxTour';
 import {NuxView} from './NuxView';
-import {NUX_SAMPLE_OUTLINE_VIEW_TOUR} from './main';
 
 import type {NuxTourModel} from './NuxModel';
 

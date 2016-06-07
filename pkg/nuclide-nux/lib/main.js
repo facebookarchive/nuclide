@@ -10,20 +10,30 @@
  */
 
 import {CompositeDisposable} from 'atom';
-
-const NUX_NAMESPACE = 'nuclide-nux';
-export const NUX_SAVED_STORE = `${NUX_NAMESPACE}.saved-nux-data-store`;
-export const NUX_SAMPLE_OUTLINE_VIEW_TOUR = `${NUX_NAMESPACE}.outline-view-tour`;
+import {NuxManager} from './NuxManager';
+import {NuxStore} from './NuxStore';
 
 class Activation {
   _disposables: CompositeDisposable;
+  _nuxStore: NuxStore;
+  _nuxManager: NuxManager;
 
   constructor(): void {
     this._disposables = new CompositeDisposable();
+    this._nuxStore = new NuxStore(/* shouldSeedNux */ true);
+    this._nuxManager = new NuxManager(this._nuxStore);
+
+    this._disposables.add(this._nuxStore);
+    this._disposables.add(this._nuxManager);
   }
 
   dispose(): void {
+    this._serializeAndPersist();
     this._disposables.dispose();
+  }
+
+  _serializeAndPersist(): void {
+    this._nuxStore.serialize();
   }
 }
 

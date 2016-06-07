@@ -12,11 +12,11 @@
 import {CompositeDisposable} from 'atom';
 
 import {NuxManager} from '../lib/NuxManager';
-import {NuxStore} from '../lib/NuxStore';
 import {
+  NuxStore,
   NUX_SAVED_STORE,
   NUX_SAMPLE_OUTLINE_VIEW_TOUR,
-} from '../lib/main';
+} from '../lib/NuxStore';
 
 import type {NuxTourModel} from '../lib/NuxModel';
 
