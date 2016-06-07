@@ -39,6 +39,7 @@ const AnalyticsEvents = Object.freeze({
 });
 
 const GK_DEBUGGER_THREADS_WINDOW = 'nuclide_debugger_threads_window';
+const GK_DEBUGGER_CONSOLE_WINDOW = 'nuclide_debugger_console_window';
 
 /**
  * Flux style action creator for actions that affect the debugger.
@@ -64,10 +65,12 @@ class DebuggerActions {
     this.setError(null);
     this._handleDebugModeStart();
     this._setDebuggerMode(DebuggerMode.STARTING);
-    this._registerConsole();
     try {
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
       const debuggerInstance = await processInfo.debug();
+      if (await passesGK(GK_DEBUGGER_CONSOLE_WINDOW)) {
+        this._registerConsole();
+      }
       const supportThreadsWindow = processInfo.supportThreads()
         && await passesGK(GK_DEBUGGER_THREADS_WINDOW);
       this._store.getSettings().set('SupportThreadsWindow', supportThreadsWindow);
