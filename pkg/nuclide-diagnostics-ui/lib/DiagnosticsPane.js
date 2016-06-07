@@ -123,7 +123,7 @@ function onRowClick(
 }
 
 type CellProps = {
-  children?: React.Element;
+  children?: mixed;
   style?: Object;
   title?: string;
 };

@@ -12,7 +12,7 @@
 import {React} from 'react-for-atom';
 
 type Props = {
-  children?: React.Element;
+  children?: mixed;
 };
 
 export const ToolbarCenter = (props: Props) => {

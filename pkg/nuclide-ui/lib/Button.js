@@ -28,7 +28,7 @@ type Props = {
   size?: ButtonSize;
   className?: string;
   /** The button's content; generally a string. */
-  children?: React.Element;
+  children?: mixed;
   /** Allows specifying an element other than `button` to be used as the wrapper node. */
   wrapperElement?: ButtonNodeName;
 };

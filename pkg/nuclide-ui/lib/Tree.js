@@ -13,7 +13,7 @@ import {React} from 'react-for-atom';
 import classnames from 'classnames';
 
 type TreeItemProps = {
-  children?: ?React.Element;
+  children?: mixed;
   className?: string;
   selected?: boolean;
 };
@@ -45,7 +45,7 @@ export const TreeItem = (props: TreeItemProps) => {
 
 type NestedTreeItemProps = {
   title: ?React.Element;
-  children?: ?React.Element;
+  children?: mixed;
   className?: string;
   selected?: boolean;
   collapsed?: boolean;
@@ -82,7 +82,7 @@ export const NestedTreeItem = (props: NestedTreeItemProps) => {
 type TreeListProps = {
   className?: string;
   /* typically, instances of TreeItem or NestedTreeItem. */
-  children?: ?React.Element;
+  children?: mixed;
   showArrows?: boolean;
 };
 export const TreeList = (props: TreeListProps) => (
@@ -96,4 +96,3 @@ export const TreeList = (props: TreeListProps) => (
     {props.children}
   </ul>
 );
-

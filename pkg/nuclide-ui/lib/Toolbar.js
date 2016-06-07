@@ -13,7 +13,7 @@ import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
-  children?: React.Element;
+  children?: mixed;
   location?: 'top' | 'bottom';
 };
 
