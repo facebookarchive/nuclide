@@ -34,3 +34,9 @@ export type NuxTriggerModel = {
 
 // TODO: [ @rageandqq | 05-23-16 ]: Add more trigger types as use cases are developed
 export type NuxTriggerType = 'editor' | null;
+
+// Represents the 'viewed' state of a NUX
+export type NuxStateModel = {
+  id: string;
+  completed: boolean;
+};
