@@ -126,6 +126,7 @@ describe('createStateStream', () => {
           level: 'info',
           text: 'test',
           scopeName: null,
+          result: null,
         }];
         const initialState = {
           ...emptyAppState,
@@ -228,7 +229,7 @@ function createDummyExecutor(id: string): Executor {
   return {
     id,
     name: id,
-    execute: (code: string) => {},
+    send: (code: string) => {},
     output: Rx.Observable.create(observer => {}),
   };
 }

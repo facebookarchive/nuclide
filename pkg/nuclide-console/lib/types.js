@@ -10,6 +10,7 @@
  */
 
 import type Rx from 'rxjs';
+import type {EvaluationResult, ExpansionResult} from '../../nuclide-debugger-atom/lib/Bridge';
 
 export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | Color;
 type Color = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'violet';
@@ -22,15 +23,13 @@ export type Message = {
   level: Level;
 };
 
-// Represents the result of an executor executing code.
-type Response = Message;
-
 // A normalized type used internally to represent all possible kinds of messages. Responses and
 // Messages are transformed into these.
 export type Record = Message & {
   kind: MessageKind;
   sourceId: string;
   scopeName: ?string;
+  result: ?EvaluationResult;
 };
 
 export type AppState = {
@@ -62,9 +61,11 @@ export type OutputService = {
 export type Executor = {
   id: string;
   name: string;
-  execute(code: string): void;
-  output: Rx.Observable<Response>;
+  send(message: string): void;
+  output: Rx.Observable<Message> | Rx.Observable<{result: EvaluationResult}>;
   scopeName?: string;
+  getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>;
+  renderValue?: ReactClass;
 };
 
 export type RegisterExecutorFunction = (executor: Executor) => IDisposable;

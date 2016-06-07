@@ -78,7 +78,7 @@ class Activation {
           const executors = this._state$.getValue().executors;
           const executor = executors.get(executorId);
           invariant(executor);
-          executor.execute(code);
+          executor.send(code);
         })
       ),
     );

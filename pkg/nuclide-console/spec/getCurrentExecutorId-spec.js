@@ -46,7 +46,7 @@ function createDummyExecutor(id: string): Executor {
   return {
     id,
     name: id,
-    execute: (code: string) => {},
+    send: (code: string) => {},
     output: Rx.Observable.create(observer => {}),
   };
 }

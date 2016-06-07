@@ -35,7 +35,7 @@ export function consumeRegisterExecutor(registerExecutor: RegisterExecutorFuncti
     registerExecutor({
       id: 'echo',
       name: 'Echo',
-      execute(code: string): void {
+      send(code: string): void {
         messages.next({
           level: 'log',
           text: code,
