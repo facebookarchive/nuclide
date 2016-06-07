@@ -47,7 +47,9 @@ class FileDialogComponent extends React.Component {
     additionalOptions: PropTypes.objectOf(PropTypes.string),
   };
 
-  static defaultProps = {
+  static defaultProps: {
+    additionalOptions: Object;
+  } = {
     additionalOptions: {},
   };
 

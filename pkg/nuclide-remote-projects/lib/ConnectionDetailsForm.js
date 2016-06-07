@@ -27,6 +27,10 @@ const authMethods = [
   SupportedMethods.PRIVATE_KEY,
 ];
 
+type DefaultProps = {
+  autoFocus: boolean;
+};
+
 type Props = {
   autoFocus: boolean;
   initialUsername: string;
@@ -52,7 +56,7 @@ type State = {
 
 /** Component to prompt the user for connection details. */
 export default class ConnectionDetailsForm extends React.Component {
-  static defaultProps = {
+  static defaultProps: DefaultProps = {
     autoFocus: true,
   };
 

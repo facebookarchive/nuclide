@@ -16,6 +16,13 @@ import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import invariant from 'assert';
 import {React} from 'react-for-atom';
 
+type DefaultProps = {
+  className: string;
+  disabled: boolean;
+  onSelectedSimulatorChange: (simulator: string) => void;
+  title: string;
+};
+
 class SimulatorDropdown extends React.Component {
   _deviceSubscription: ?rx$ISubscription;
 
@@ -26,7 +33,7 @@ class SimulatorDropdown extends React.Component {
     onSelectedSimulatorChange: React.PropTypes.func.isRequired,
   };
 
-  static defaultProps = {
+  static defaultProps: DefaultProps = {
     className: '',
     disabled: false,
     title: 'Choose a device',

@@ -15,6 +15,13 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 
+type DefaultProps = {
+  disabled: boolean;
+  indeterminate: boolean;
+  label: string;
+  onClick: (event: SyntheticEvent) => mixed;
+};
+
 type Props = {
   checked: boolean;
   disabled: boolean;
@@ -31,11 +38,11 @@ type Props = {
 export class Checkbox extends React.Component {
   props: Props;
 
-  static defaultProps = {
+  static defaultProps: DefaultProps = {
     disabled: false,
     indeterminate: false,
     label: '',
-    onClick(event): mixed {},
+    onClick(event) {},
   };
 
   constructor(props: Object) {

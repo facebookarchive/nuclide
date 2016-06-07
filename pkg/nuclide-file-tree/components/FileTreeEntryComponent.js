@@ -242,7 +242,7 @@ export class FileTreeEntryComponent extends React.Component {
     }
   }
 
-  _checkboxOnClick(event: Event): void {
+  _checkboxOnClick(event: SyntheticEvent): void {
     event.stopPropagation();
   }
 }

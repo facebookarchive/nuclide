@@ -12,6 +12,16 @@
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
+type DefaultProps = {
+  className: string;
+  disabled: boolean;
+  isFlat: boolean;
+  onChange: (value: any) => void;
+  options: Array<{label: React.Children; value: any}>;
+  value: any;
+  title: string;
+};
+
 type Props = {
   className: string;
   disabled: boolean;
@@ -33,13 +43,13 @@ type Props = {
 export class Dropdown extends React.Component {
   props: Props;
 
-  static defaultProps = {
+  static defaultProps: DefaultProps = {
     className: '',
     disabled: false,
     isFlat: false,
+    onChange(value: any) {},
     options: [],
-    onChange: (value: any) => {},
-    value: (null: any),
+    value: null,
     title: '',
   };
 

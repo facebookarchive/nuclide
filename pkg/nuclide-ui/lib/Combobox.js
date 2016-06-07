@@ -20,6 +20,14 @@ import {CompositeDisposable} from 'atom';
 import {AtomInput} from './AtomInput';
 import {React, ReactDOM} from 'react-for-atom';
 
+type DefaultProps = {
+  className: string;
+  maxOptionCount: number;
+  onChange: (newValue: string) => mixed;
+  onSelect: (newValue: string) => mixed;
+  width: number;
+};
+
 type State = {
   error: ?Error;
   filteredOptions: Array<Object>;
@@ -62,7 +70,7 @@ export class Combobox extends React.Component {
     width: React.PropTypes.number,
   };
 
-  static defaultProps = {
+  static defaultProps: DefaultProps = {
     className: '',
     maxOptionCount: 10,
     onChange: (newValue: string) => {},

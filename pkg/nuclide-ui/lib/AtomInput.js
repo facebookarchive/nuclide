@@ -14,6 +14,17 @@ import classNames from 'classnames';
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 
+type DefaultProps = {
+  disabled: boolean;
+  initialValue: string;
+  tabIndex: string;
+  onClick: (event: SyntheticMouseEvent) => mixed;
+  onDidChange: (text: string) => mixed;
+  onFocus: () => mixed;
+  onBlur: () => mixed;
+  unstyled: boolean;
+};
+
 type Props = {
   className?: string;
   disabled: boolean;
@@ -28,7 +39,7 @@ type Props = {
   onBlur: () => mixed;
   size?: 'xs' | 'sm' | 'lg';
   unstyled: boolean;
-  width: ?number;
+  width?: number;
 };
 
 type State = {
@@ -44,7 +55,7 @@ export class AtomInput extends React.Component {
 
   _disposables: ?CompositeDisposable;
 
-  static defaultProps = {
+  static defaultProps: DefaultProps = {
     disabled: false,
     initialValue: '',
     tabIndex: '0', // Default to all <AtomInput /> components being in tab order
@@ -53,7 +64,6 @@ export class AtomInput extends React.Component {
     onFocus: () => {},
     onBlur: () => {},
     unstyled: false,
-    width: null,
   };
 
   constructor(props: Props) {

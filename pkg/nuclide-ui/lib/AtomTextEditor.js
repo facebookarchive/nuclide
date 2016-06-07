@@ -18,7 +18,6 @@ import {
 } from 'react-for-atom';
 import {TextBuffer} from 'atom';
 
-const {PropTypes} = React;
 const doNothing = () => {};
 
 function setupTextEditor(props: Object): atom$TextEditor {
@@ -69,28 +68,37 @@ function setupTextEditor(props: Object): atom$TextEditor {
   return textEditor;
 }
 
+type DefaultProps = {
+  autoGrow: boolean;
+  gutterHidden: boolean;
+  lineNumberGutterVisible: boolean;
+  readOnly: boolean;
+  syncTextContents: boolean;
+};
+
+type Props = {
+  autoGrow: boolean;
+  className?: string;
+  gutterHidden: boolean;
+  grammar?: ?Object;
+  path?: string;
+  readOnly: boolean;
+  textBuffer?: TextBuffer;
+  syncTextContents: boolean;
+};
+
 export class AtomTextEditor extends React.Component {
-  state: void;
-  _textEditorElement: ?atom$TextEditorElement;
-
-  static propTypes = {
-    className: PropTypes.string,
-    gutterHidden: PropTypes.bool.isRequired,
-    grammar: PropTypes.object,
-    path: PropTypes.string,
-    readOnly: PropTypes.bool.isRequired,
-    textBuffer: PropTypes.instanceOf(TextBuffer),
-    syncTextContents: PropTypes.bool.isRequired,
-    autoGrow: PropTypes.bool.isRequired,
-  };
-
-  static defaultProps = {
+  static defaultProps: DefaultProps = {
     gutterHidden: false,
     lineNumberGutterVisible: true,
     readOnly: false,
     autoGrow: false,
     syncTextContents: true,
   };
+
+  props: Props;
+
+  _textEditorElement: ?atom$TextEditorElement;
 
   componentDidMount(): void {
     this._updateTextEditor(setupTextEditor(this.props));

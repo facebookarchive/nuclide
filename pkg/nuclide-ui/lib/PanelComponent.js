@@ -15,6 +15,27 @@ import {React, ReactDOM} from 'react-for-atom';
 
 const MINIMUM_LENGTH = 100;
 
+type DefaultProps = {
+  hidden: boolean;
+  initialLength: number;
+  noScroll: boolean;
+  onResize: (width: number) => mixed;
+};
+
+type Props = {
+  children?: mixed;
+  dock: 'left' | 'bottom' | 'right';
+  hidden: boolean;
+  initialLength: number;
+  /*
+   * When `true`, this component does not wrap its children in a scrolling container and instead
+   * provides a simple container with visible (the default in CSS) overflow. Default: false.
+   */
+  noScroll: boolean;
+  onResize: (width: number) => mixed;
+  overflowX?: string;
+};
+
 type State = {
   isResizing: boolean;
   length: number;
@@ -29,23 +50,9 @@ export class PanelComponent extends React.Component {
   _isMounted: boolean;
   _resizeSubscriptions: CompositeDisposable;
 
+  props: Props;
   state: State;
-
-  static propTypes = {
-    children: React.PropTypes.element.isRequired,
-    dock: React.PropTypes.oneOf(['left', 'bottom', 'right']).isRequired,
-    hidden: React.PropTypes.bool.isRequired,
-    initialLength: React.PropTypes.number.isRequired,
-    /*
-     * When `true`, this component does not wrap its children in a scrolling container and instead
-     * provides a simple container with visible (the default in CSS) overflow. Default: false.
-     */
-    noScroll: React.PropTypes.bool.isRequired,
-    onResize: React.PropTypes.func.isRequired,
-    overflowX: React.PropTypes.string,
-  };
-
-  static defaultProps = {
+  static defaultProps: DefaultProps = {
     hidden: false,
     initialLength: 200,
     noScroll: false,

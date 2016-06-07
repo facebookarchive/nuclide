@@ -11,6 +11,10 @@
 
 import {React} from 'react-for-atom';
 
+type DefaultProps = {
+  width: string;
+};
+
 type Props = {
   width?: string;
 };
@@ -19,7 +23,7 @@ export default class HhvmIcon extends React.Component {
 
   props: Props;
 
-  static defaultProps = {
+  static defaultProps: DefaultProps = {
     width: '16px',
   };
 
@@ -41,4 +45,4 @@ export default class HhvmIcon extends React.Component {
     );
   }
 
- }
+}

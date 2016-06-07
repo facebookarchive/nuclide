@@ -33,6 +33,10 @@ import {
 
 const logger = require('../../nuclide-logging').getLogger();
 
+type DefaultProps = {
+  indexOfInitiallySelectedConnectionProfile: number;
+};
+
 type Props = {
   // The list of connection profiles that will be displayed.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>;
@@ -70,12 +74,12 @@ const WAITING_FOR_AUTHENTICATION = 4;
  * server.
  */
 export default class ConnectionDialog extends React.Component {
-  props: Props;
-  state: State;
-
-  static defaultProps = {
+  static defaultProps: DefaultProps = {
     indexOfInitiallySelectedConnectionProfile: -1,
   };
+
+  props: Props;
+  state: State;
 
   constructor(props: Props) {
     super(props);
