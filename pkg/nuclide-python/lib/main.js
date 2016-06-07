@@ -27,6 +27,7 @@ export function activate() {
 export function createAutocompleteProvider(): atom$AutocompleteProvider {
   return {
     selector: '.source.python',
+    disableForSelector: '.source.python .comment, .source.python .string',
     inclusionPriority: 5,
     suggestionPriority: 5,  // Higher than the snippets provider.
     getSuggestions(request) {
