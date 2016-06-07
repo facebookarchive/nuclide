@@ -9,15 +9,18 @@
  * the root directory of this source tree.
  */
 
-import type {Level, Record} from '../types';
+import type {Level, Record, Executor} from '../types';
 
 import CodeBlock from './CodeBlock';
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
+import {LazyNestedValueComponent} from '../../../nuclide-ui/lib/LazyNestedValueComponent';
+import SimpleValueComponent from '../../../nuclide-ui/lib/SimpleValueComponent';
 
 type Props = {
   record: Record;
   showSourceLabel: boolean;
+  getExecutor: (id: string) => ?Executor;
 };
 
 export default class RecordView extends React.Component {
@@ -50,7 +53,7 @@ export default class RecordView extends React.Component {
         {icon}
         <div className="nuclide-console-record-content-wrapper">
           {sourceLabel}
-          {renderContent(record)}
+          {renderContent(record, this.props.getExecutor)}
         </div>
       </div>
     );
@@ -67,9 +70,27 @@ function getHighlightClassName(level: Level): string {
   }
 }
 
-function renderContent(record: Record): React.Element {
+function renderContent(record: Record, getExecutor: (id: string) => ?Executor): React.Element {
   if (record.kind === 'request') {
     return <CodeBlock text={record.text} scopeName={record.scopeName} />;
+  } else if (record.kind === 'response') {
+    const {sourceId} = record;
+    let simpleValueComponent = SimpleValueComponent;
+    let getProperties;
+    const executor = getExecutor(sourceId);
+    if (executor != null) {
+      if (executor.renderValue != null) {
+        simpleValueComponent = executor.renderValue;
+      }
+      getProperties = executor.getProperties;
+    }
+    return (
+      <LazyNestedValueComponent
+        evaluationResult={record.result}
+        fetchChildren={getProperties}
+        simpleValueComponent={simpleValueComponent}
+      />
+    );
   }
 
   // If there's not text, use a space to make sure the row doesn't collapse.

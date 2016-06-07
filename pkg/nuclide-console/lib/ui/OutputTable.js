@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Record} from '../types';
+import type {Record, Executor} from '../types';
 
 import {React} from 'react-for-atom';
 import RecordView from './RecordView';
@@ -17,6 +17,7 @@ import RecordView from './RecordView';
 type Props = {
   records: Array<Record>;
   showSourceLabels: boolean;
+  getExecutor: (id: string) => ?Executor;
 };
 
 export default class OutputTable extends React.Component {
@@ -36,6 +37,7 @@ export default class OutputTable extends React.Component {
     return (
       <RecordView
         key={index}
+        getExecutor={this.props.getExecutor}
         record={record}
         showSourceLabel={this.props.showSourceLabels}
       />

@@ -47,6 +47,7 @@ export default class Console extends React.Component {
       selectedSourceId: props.initialSelectedSourceId,
     };
     (this: any)._selectSource = this._selectSource.bind(this);
+    (this: any)._getExecutor = this._getExecutor.bind(this);
     (this: any)._updateFilterText = this._updateFilterText.bind(this);
     (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
   }
@@ -102,6 +103,10 @@ export default class Console extends React.Component {
 
   _updateFilterText(filterText: string): void {
     this.setState({filterText});
+  }
+
+  _getExecutor(id: string): ?Executor {
+    return this.props.executors.get(id);
   }
 
 }

@@ -129,6 +129,7 @@ export default class ConsoleView extends React.Component {
             <OutputTable
               records={this.props.records}
               showSourceLabels={!this.props.selectedSourceId}
+              getExecutor={id => this.props.executors.get(id)}
             />
           </div>
           <UnseenMessagesNotification
