@@ -168,7 +168,7 @@ declare class atom$Decoration {
 }
 
 declare class atom$Disposable {
-  constructor(disposalAction: (...args: any[]) => any): void;
+  constructor(disposalAction?: (...args: any[]) => any): void;
   dispose(): void;
 }
 

@@ -16,11 +16,13 @@ import type {
 } from '../../nuclide-debugger-interfaces/service';
 import type DebuggerInstance from './DebuggerInstance';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
+import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
 
 import {Disposable} from 'atom';
 import {EventEmitter} from 'events';
 import Constants from './Constants';
 import {DebuggerSettings} from './DebuggerSettings';
+import invariant from 'assert';
 
 export type DebuggerModeType = 'starting' | 'running' | 'paused' | 'stopping' | 'stopped';
 const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
@@ -48,6 +50,8 @@ class DebuggerStore {
   _processSocket: ?string;
   _debuggerMode: DebuggerModeType;
   _onLoaderBreakpointResume: () => void;
+  _registerExecutor: ?() => IDisposable;
+  _consoleDisposable: ?IDisposable;
   loaderBreakpointResumePromise: Promise<void>;
 
   constructor(dispatcher: Dispatcher) {
@@ -62,6 +66,8 @@ class DebuggerStore {
     this._evaluationExpressionProviders = new Set();
     this._processSocket = null;
     this._debuggerMode = DebuggerMode.STOPPED;
+    this._registerExecutor = null;
+    this._consoleDisposable = null;
     this.loaderBreakpointResumePromise = new Promise(resolve => {
       this._onLoaderBreakpointResume = resolve;
     });
@@ -77,6 +83,10 @@ class DebuggerStore {
 
   loaderBreakpointResumed(): void {
     this._onLoaderBreakpointResume(); // Resolves onLoaderBreakpointResumePromise.
+  }
+
+  getConsoleExecutorFunction(): ?RegisterExecutorFunction {
+    return this._registerExecutor;
   }
 
   getDebuggerInstance(): ?DebuggerInstance {
@@ -179,6 +189,25 @@ class DebuggerStore {
           return;
         }
         this._evaluationExpressionProviders.delete(payload.data);
+        break;
+      case Constants.Actions.ADD_REGISTER_EXECUTOR:
+        invariant(this._registerExecutor == null);
+        this._registerExecutor = payload.data;
+        break;
+      case Constants.Actions.REMOVE_REGISTER_EXECUTOR:
+        invariant(this._registerExecutor === payload.data);
+        this._registerExecutor = null;
+        break;
+      case Constants.Actions.REGISTER_CONSOLE:
+        if (this._registerExecutor != null) {
+          this._consoleDisposable = this._registerExecutor();
+        }
+        break;
+      case Constants.Actions.UNREGISTER_CONSOLE:
+        if (this._consoleDisposable != null) {
+          this._consoleDisposable.dispose();
+          this._consoleDisposable = null;
+        }
         break;
       default:
         return;

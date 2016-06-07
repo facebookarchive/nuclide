@@ -64,6 +64,7 @@ class DebuggerActions {
     this.setError(null);
     this._handleDebugModeStart();
     this._setDebuggerMode(DebuggerMode.STARTING);
+    this._registerConsole();
     try {
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
       const debuggerInstance = await processInfo.debug();
@@ -130,6 +131,7 @@ class DebuggerActions {
       return;
     }
     this._setDebuggerMode(DebuggerMode.STOPPING);
+    this._unregisterConsole();
     const debuggerInstance = this._store.getDebuggerInstance();
     if (debuggerInstance != null) {
       debuggerInstance.dispose();
@@ -145,6 +147,32 @@ class DebuggerActions {
 
     invariant(this._store.getDebuggerInstance() === null);
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:hide');
+  }
+
+  _registerConsole(): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.REGISTER_CONSOLE,
+    });
+  }
+
+  _unregisterConsole(): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.UNREGISTER_CONSOLE,
+    });
+  }
+
+  addConsoleRegisterFunction(registerExecutor: () => IDisposable): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.ADD_REGISTER_EXECUTOR,
+      data: registerExecutor,
+    });
+  }
+
+  removeConsoleRegisterFunction(registerExecutor: () => IDisposable): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.REMOVE_REGISTER_EXECUTOR,
+      data: registerExecutor,
+    });
   }
 
   addService(service: nuclide_debugger$Service) {

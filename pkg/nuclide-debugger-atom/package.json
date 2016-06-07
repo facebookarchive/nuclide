@@ -18,6 +18,11 @@
     }
   },
   "consumedServices": {
+    "nuclide.registerExecutor": {
+      "versions": {
+        "0.0.0": "consumeRegisterExecutor"
+      }
+    },
     "nuclide-datatip.provider": {
       "versions": {
         "0.0.0": "consumeDatatipService"

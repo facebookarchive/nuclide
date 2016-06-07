@@ -20,7 +20,13 @@ import type {
   DatatipService,
 } from '../../nuclide-datatip/lib/types';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
+import type {EvaluationResult} from './Bridge';
+import type {Observable} from 'rxjs';
+import type {WatchExpressionStore} from './WatchExpressionStore';
 
+import {DisposableSubscription} from '../../commons-node/stream';
+import {Subject} from 'rxjs';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
@@ -362,6 +368,47 @@ export function deactivate() {
   }
   if (toolBar) {
     toolBar.removeItems();
+  }
+}
+
+function registerConsoleExecutor(
+  watchExpressionStore: WatchExpressionStore,
+  registerExecutor: RegisterExecutorFunction,
+): IDisposable {
+  const disposables = new CompositeDisposable();
+  const rawOutput: Subject<?EvaluationResult> = new Subject();
+  const send = expression => {
+    disposables.add(new DisposableSubscription(
+      watchExpressionStore.evaluateWatchExpression(expression).subscribe(rawOutput),
+    ));
+  };
+  const output: Observable<{result: EvaluationResult}> = rawOutput
+    .filter(result => result != null)
+    .map(result => {
+      invariant(result != null);
+      return {result};
+    });
+  disposables.add(registerExecutor({
+    id: 'debugger',
+    name: 'Debugger',
+    send,
+    output,
+    getProperties: watchExpressionStore.getProperties.bind(watchExpressionStore),
+  }));
+  return disposables;
+}
+
+export function consumeRegisterExecutor(registerExecutor: RegisterExecutorFunction): IDisposable {
+  if (activation != null) {
+    const model = activation.getModel();
+    const register = () => registerConsoleExecutor(
+      model.getWatchExpressionStore(),
+      registerExecutor,
+    );
+    model.getActions().addConsoleRegisterFunction(register);
+    return new Disposable(() => model.getActions().removeConsoleRegisterFunction(register));
+  } else {
+    return new Disposable();
   }
 }
 
