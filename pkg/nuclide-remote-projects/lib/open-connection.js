@@ -109,22 +109,22 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
       let newProfilePanel = null;
 
       // Props
-      const closeNewProfileForm = () => {
+      function closeNewProfileForm(newProfile?: NuclideRemoteConnectionProfile) {
         newProfileForm = null;
         ReactDOM.unmountComponentAtNode(hostElementForNewProfileForm);
         if (newProfilePanel != null) {
           newProfilePanel.destroy();
           newProfilePanel = null;
         }
-        openBaseDialog();
-      };
+        openBaseDialog(newProfile);
+      }
 
-      const onSave = (newProfile: NuclideRemoteConnectionProfile) => {
+      function onSave(newProfile: NuclideRemoteConnectionProfile) {
         // Don't include the default connection profile.
         const userCreatedProfiles = compositeConnectionProfiles.slice(1).concat(newProfile);
         saveConnectionProfiles(userCreatedProfiles);
-        closeNewProfileForm();
-      };
+        closeNewProfileForm(newProfile);
+      }
 
       const initialDialogProps = {
         onCancel: closeNewProfileForm,
@@ -141,16 +141,25 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
       );
     }
 
-    function openBaseDialog() {
+    function openBaseDialog(selectedProfile?: NuclideRemoteConnectionProfile) {
       const hostEl = document.createElement('div');
+      let indexOfInitiallySelectedConnectionProfile;
+      if (selectedProfile == null) {
+        // Select the default connection profile, which is always index 0.
+        indexOfInitiallySelectedConnectionProfile = 0;
+      } else {
+        const selectedDisplayTitle = selectedProfile.displayTitle;
+        indexOfInitiallySelectedConnectionProfile =
+          compositeConnectionProfiles.findIndex(
+            profile => profile.displayTitle === selectedDisplayTitle);
+      }
 
       // The connection profiles could change, but the rest of the props passed
       // to the ConnectionDialog will not.
       // Note: the `cleanupSubscriptionFunc` is called when the dialog closes:
       // `onConnect`, `onError`, or `onCancel`.
       const baseDialogProps = {
-        // Select the default connection profile, which should always be index 0.
-        indexOfInitiallySelectedConnectionProfile: 0,
+        indexOfInitiallySelectedConnectionProfile,
         onAddProfileClicked,
         onDeleteProfileClicked,
         onConnect: async (connection, config) => {
