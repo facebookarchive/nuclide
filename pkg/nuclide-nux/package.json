@@ -9,5 +9,12 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "providedServices": {
+    "nux-register": {
+      "versions": {
+        "0.0.0": "provideRegisterNuxService"
+      }
+    }
+  },
   "private": false
 }

@@ -18,10 +18,7 @@ import {
 } from 'atom';
 import passesGK from '../../commons-node/passesGK';
 
-import {
-  NuxStore,
-  NUX_SAMPLE_OUTLINE_VIEW_TOUR,
-} from './NuxStore';
+import {NuxStore} from './NuxStore';
 import {NuxTour} from './NuxTour';
 import {NuxView} from './NuxView';
 
@@ -144,15 +141,16 @@ export class NuxManager {
       nuxTour,
       nuxTourModel,
     } = value;
-    if (nuxTourModel.id === NUX_SAMPLE_OUTLINE_VIEW_TOUR && passesGK(GK_NUX_OUTLINE_VIEW)) {
-      nuxTour.setNuxCompleteCallback(
-          this._handleNuxCompleted.bind(this, nuxTourModel)
-      );
-      if (nuxTourModel.trigger != null) {
-        this._pendingNuxList.push(nuxTour);
-      } else {
-        this._emitter.emit('nuxTourReady', nuxTour);
-      }
+    if (!passesGK(GK_NUX_OUTLINE_VIEW)) {
+      return;
+    }
+    nuxTour.setNuxCompleteCallback(
+        this._handleNuxCompleted.bind(this, nuxTourModel)
+    );
+    if (nuxTourModel.trigger != null) {
+      this._pendingNuxList.push(nuxTour);
+    } else {
+      this._emitter.emit('nuxTourReady', nuxTour);
     }
   }
 

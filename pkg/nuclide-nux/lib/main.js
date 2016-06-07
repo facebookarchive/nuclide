@@ -9,9 +9,16 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
+import {
+  CompositeDisposable,
+  Disposable,
+} from 'atom';
 import {NuxManager} from './NuxManager';
 import {NuxStore} from './NuxStore';
+
+import type {NuxTourModel} from './NuxModel';
+
+export type RegisterNux = ((nux: NuxTourModel) => Disposable);
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -35,6 +42,10 @@ class Activation {
   _serializeAndPersist(): void {
     this._nuxStore.serialize();
   }
+
+  addNewNux(nux: NuxTourModel): Disposable {
+    return this._nuxManager.addNewNux(nux);
+  }
 }
 
 let activation: ?Activation = null;
@@ -50,4 +61,16 @@ export function deactivate(): void {
     activation.dispose();
     activation = null;
   }
+}
+
+export function provideRegisterNuxService(): RegisterNux {
+  return ((nux: NuxTourModel): Disposable => {
+    if (activation == null) {
+      throw new Error('An error occurred when instantiating the NUX package.');
+    }
+    if (nux == null) {
+      throw new Error('Cannot register a "null" NuxTour.');
+    }
+    return activation.addNewNux(nux);
+  });
 }
