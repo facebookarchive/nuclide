@@ -51,6 +51,7 @@ export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer
     return buffer;
   } catch (error) {
     atom.project.removeBuffer(buffer);
+    error._nuclideTextBufferRemnant = buffer;
     throw error;
   }
 }

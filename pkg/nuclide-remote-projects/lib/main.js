@@ -180,7 +180,22 @@ async function createEditorForNuclide(
   uri: NuclideUri,
 ): Promise<TextEditor> {
   try {
-    const buffer = await loadBufferForUri(uri);
+    let buffer;
+    try {
+      buffer = await loadBufferForUri(uri);
+    } catch (err) {
+      // Suppress ENOENT errors which occur if the file doesn't exist.
+      // This is the same thing Atom does when opening a file (given a URI) that doesn't exist.
+      if (err.code !== 'ENOENT' || err._nuclideTextBufferRemnant == null) {
+        throw err;
+      }
+      // If `loadBufferForURI` fails, then the buffer is removed from Atom's list of buffers.
+      // Additionally, `buffer` will still be null. So, the NuclideTextBuffer is passed through
+      // the exception handling control flow for this special case. The buffer is also added back
+      // to the internal list for consistency's sake.
+      buffer = err._nuclideTextBufferRemnant;
+      atom.project.addBuffer(buffer);
+    }
     return atom.workspace.buildTextEditor({buffer});
   } catch (err) {
     logger.warn('buffer load issue:', err);
