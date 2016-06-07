@@ -84,7 +84,7 @@ describe('NuxTour', () => {
     expect(nuxStore._nuxList.length).toBe(1);
     expect(nuxManager._readyToDisplayNuxList.length).toBe(0);
     expect(nuxManager._pendingNuxList.length).toBe(0);
-    expect(nuxManager._isTourActive).toBeTruthy();
+    expect(nuxManager._activeNuxTour != null).toBeTruthy();
   });
 
   it('creates a NuxTour that waits for a trigger', () => {
@@ -102,6 +102,6 @@ describe('NuxTour', () => {
     expect(nuxStore._nuxList.length).toBe(1);
     expect(nuxManager._readyToDisplayNuxList.length).toBe(0);
     expect(nuxManager._pendingNuxList.length).toBe(1);
-    expect(nuxManager._isTourActive).toBeFalsy();
+    expect(nuxManager._activeNuxTour != null).toBeFalsy();
   });
 });

@@ -49,6 +49,14 @@ export class NuxTour {
     }
   }
 
+  // Force the NUX tour to end. Used when a package or the NUX framework is deactivated.
+  forceEnd(): void {
+    this._track(false, 'NuxTour was forcibly ended.');
+    this._nuxList[this._currentStep].dispose();
+    // Skip remaining NUXes. No disposal is needed since they are lazily instantiated.
+    this._onNuxComplete(false);
+  }
+
   _nextStep(): void {
     if (this._currentStep < this._nuxList.length - 1) {
       this._track(true);
@@ -62,8 +70,10 @@ export class NuxTour {
     }
   }
 
-  _onNuxComplete(): void {
-    this._track(true);
+  _onNuxComplete(
+    completionSuccesful: boolean = true,
+  ): void {
+    this._track(completionSuccesful);
     if (this._callback != null) {
       this._callback();
     }
@@ -94,5 +104,9 @@ export class NuxTour {
 
   getTriggerType(): NuxTriggerType {
     return this._trigger != null ? this._trigger.triggerType : null;
+  }
+
+  getID(): string {
+    return this._id;
   }
 }

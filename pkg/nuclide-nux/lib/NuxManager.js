@@ -12,6 +12,7 @@
 import invariant from 'assert';
 import {
   CompositeDisposable,
+  Disposable,
   Emitter,
   TextEditor,
 } from 'atom';
@@ -32,7 +33,7 @@ export class NuxManager {
   _nuxStore: NuxStore;
   _disposables: CompositeDisposable;
   _emitter: atom$Emitter;
-  _isTourActive: boolean;
+  _activeNuxTour: ?NuxTour;
   // Registered NUXes that are waiting to be triggered
   _pendingNuxList: Array<NuxTour>;
   // Triggered NUXes that are waiting to be displayed
@@ -48,7 +49,7 @@ export class NuxManager {
 
     this._pendingNuxList = [];
     this._readyToDisplayNuxList = [];
-    this._isTourActive = false;
+    this._activeNuxTour = null;
 
     this._emitter.on('newTour', this._handleNewTour.bind(this));
     this._emitter.on('nuxTourReady', this._handleReadyTour.bind(this));
@@ -61,6 +62,37 @@ export class NuxManager {
     );
 
     this._nuxStore.initialize();
+  }
+
+  // Routes new NUX through the NuxStore so that the store can deal with
+  // registering of previously completed or existing NUXes.
+  addNewNux(nux: NuxTourModel): Disposable {
+    this._nuxStore.addNewNux(nux);
+    return new Disposable(() => {
+      this._removeNux(nux.id);
+    });
+  }
+
+  _removeNux(id: string): void {
+    if (this._activeNuxTour != null && this._activeNuxTour.getID() === id) {
+      // TODO: End active NUX
+      this._activeNuxTour.forceEnd();
+      return;
+    }
+    this._removeNuxFromList(this._pendingNuxList, id);
+    this._removeNuxFromList(this._readyToDisplayNuxList, id);
+  }
+
+  _removeNuxFromList(
+    list: Array<NuxTour>,
+    id: string,
+  ): void {
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].getID() === id) {
+        list.splice(i--, 1);
+        return;
+      }
+    }
   }
 
   // Handles new NUXes emitted from the store
@@ -97,7 +129,7 @@ export class NuxManager {
   }
 
   _handleNuxCompleted(nuxTourModel: NuxTourModel): void {
-    this._isTourActive = false;
+    this._activeNuxTour = null;
     this._nuxStore.onNuxCompleted(nuxTourModel);
     if (this._readyToDisplayNuxList.length === 0) {
       return;
@@ -126,8 +158,8 @@ export class NuxManager {
 
   // Handles triggered NUXes that are ready to be displayed
   _handleReadyTour(nuxTour: NuxTour) {
-    if (!this._isTourActive) {
-      this._isTourActive = true;
+    if (this._activeNuxTour == null) {
+      this._activeNuxTour = nuxTour;
       nuxTour.begin();
     } else {
       this._readyToDisplayNuxList.push(nuxTour);
