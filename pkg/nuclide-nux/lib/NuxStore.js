@@ -71,12 +71,29 @@ export class NuxStore {
       completionPredicate: null,
       completed: false,
     };
+
+    const isJavaScriptFile = editor => {
+      if (editor == null) {
+        return false;
+      }
+      const path = editor.getPath();
+      if (path == null) {
+        return false;
+      }
+      return path.endsWith('.js');
+    };
+    const nuxTriggerModel = {
+      triggerType: 'editor',
+      triggerCallback: isJavaScriptFile,
+    };
+
     const sampleOutlineNuxTour = {
       completed: false,
       id: NUX_SAMPLE_OUTLINE_VIEW_TOUR,
       nuxList: [nuxTriggerOutline, nuxOutlineView],
-      trigger: null,
+      trigger: nuxTriggerModel,
     };
+
     return sampleOutlineNuxTour;
   }
 
