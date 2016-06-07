@@ -20,6 +20,26 @@ import {RadioGroup} from '../../nuclide-ui/lib/RadioGroup';
 import {React, ReactDOM} from 'react-for-atom';
 import {SshHandshake} from '../../nuclide-remote-connection';
 
+const {SupportedMethods} = SshHandshake;
+const authMethods = [
+  SupportedMethods.PASSWORD,
+  SupportedMethods.SSL_AGENT,
+  SupportedMethods.PRIVATE_KEY,
+];
+
+type Props = {
+  autoFocus: boolean;
+  initialUsername: string;
+  initialServer: string;
+  initialCwd: string;
+  initialRemoteServerCommand: string;
+  initialSshPort: string;
+  initialPathToPrivateKey: string;
+  initialAuthMethod: $Enum<typeof SupportedMethods>;
+  onConfirm: Function;
+  onCancel: Function;
+};
+
 type State = {
   cwd: string;
   pathToPrivateKey: string;
@@ -30,31 +50,18 @@ type State = {
   username: string;
 };
 
-const {SupportedMethods} = SshHandshake;
-const authMethods = [
-  SupportedMethods.PASSWORD,
-  SupportedMethods.SSL_AGENT,
-  SupportedMethods.PRIVATE_KEY,
-];
-
 /** Component to prompt the user for connection details. */
 export default class ConnectionDetailsForm extends React.Component {
-  state: State;
-  static propTypes = {
-    initialUsername: React.PropTypes.string,
-    initialServer: React.PropTypes.string,
-    initialCwd: React.PropTypes.string,
-    initialRemoteServerCommand: React.PropTypes.string,
-    initialSshPort: React.PropTypes.string,
-    initialPathToPrivateKey: React.PropTypes.string,
-    initialAuthMethod: React.PropTypes.oneOf(Object.keys(SupportedMethods)),
-    onConfirm: React.PropTypes.func.isRequired,
-    onCancel: React.PropTypes.func.isRequired,
+  static defaultProps = {
+    autoFocus: true,
   };
+
+  props: Props;
+  state: State;
 
   _disposables: ?CompositeDisposable;
 
-  constructor(props: any) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       username: props.initialUsername,
@@ -231,7 +238,9 @@ export default class ConnectionDetailsForm extends React.Component {
       event => this.props.onCancel()
     ));
 
-    this.refs.username.focus();
+    if (this.props.autoFocus) {
+      this.refs.username.focus();
+    }
   }
 
   componentWillUnmount() {

@@ -69,7 +69,7 @@ const WAITING_FOR_AUTHENTICATION = 4;
  * Component that manages the state transitions as the user connects to a
  * server.
  */
-class ConnectionDialog extends React.Component {
+export default class ConnectionDialog extends React.Component {
   props: Props;
   state: State;
 
@@ -311,5 +311,3 @@ class ConnectionDialog extends React.Component {
     this.setState({indexOfSelectedConnectionProfile});
   }
 }
-
-module.exports = ConnectionDialog;

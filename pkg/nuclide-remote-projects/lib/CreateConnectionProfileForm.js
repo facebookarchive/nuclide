@@ -72,6 +72,7 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
       // Hitting escape when this panel has focus should cancel the dialog.
       atom.commands.add(root, 'core:cancel', this._clickCancel)
     );
+    this.refs['profile-name'].focus();
   }
 
   componentWillUnmount(): void {
@@ -97,7 +98,7 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
           />
         </div>
         <ConnectionDetailsForm
-          ref="connection-details"
+          autoFocus={false}
           initialUsername={initialFields.username}
           initialServer={initialFields.server}
           initialCwd={initialFields.cwd}
@@ -107,6 +108,7 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
           initialAuthMethod={initialFields.authMethod}
           onConfirm={emptyFunction}
           onCancel={emptyFunction}
+          ref="connection-details"
         />
         <div className="text-right">
           <ButtonGroup>
