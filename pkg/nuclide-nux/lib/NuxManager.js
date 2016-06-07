@@ -180,7 +180,7 @@ export class NuxManager {
   }
 
   tryTriggerNux(id: string): void {
-    const nuxToTrigger = this._pendingNuxList.find(nux => { nux.getID() === id; });
+    const nuxToTrigger = this._pendingNuxList.find(nux => nux.getID() === id);
     if (nuxToTrigger == null) {
       throw new Error('Please enter a valid ID of a registered NUX.');
     }

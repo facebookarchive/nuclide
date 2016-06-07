@@ -14,6 +14,11 @@
       "versions": {
         "0.0.0": "provideRegisterNuxService"
       }
+    },
+    "nux-trigger": {
+      "versions": {
+        "0.0.0": "provideTriggerNuxService"
+      }
     }
   },
   "private": false
