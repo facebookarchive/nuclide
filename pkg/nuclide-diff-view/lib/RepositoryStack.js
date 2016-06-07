@@ -48,6 +48,7 @@ export default class RepositoryStack {
   _selectedCompareCommitId: ?number;
   _isActive: boolean;
   _serializedUpdateStackState: () => Promise<void>;
+  _serializedUpdateSelectedFileChanges: () => Promise<void>;
   _revisionIdToFileChanges: LRUCache<number, RevisionFileChanges>;
   _diffOption: DiffOptionType;
 
@@ -65,6 +66,9 @@ export default class RepositoryStack {
 
     this._serializedUpdateStackState = serializeAsyncCall(
       () => this._tryUpdateStackState(),
+    );
+    this._serializedUpdateSelectedFileChanges = serializeAsyncCall(
+      () => this._updateSelectedFileChanges(),
     );
     const debouncedSerializedUpdateStackState = debounce(
       this._serializedUpdateStackState,
@@ -90,7 +94,7 @@ export default class RepositoryStack {
       return;
     }
     this._diffOption = diffOption;
-    this._updateSelectedFileChanges().catch(notifyInternalError);
+    this._serializedUpdateSelectedFileChanges().catch(notifyInternalError);
   }
 
   activate(): void {
@@ -116,7 +120,7 @@ export default class RepositoryStack {
       if (!this._isActive) {
         return;
       }
-      await this._updateSelectedFileChanges();
+      await this._serializedUpdateSelectedFileChanges();
     } catch (error) {
       notifyInternalError(error);
     }
@@ -413,11 +417,7 @@ export default class RepositoryStack {
       this._diffOption === DiffOption.COMPARE_COMMIT,
       'Invalid Diff Option at setRevision time!',
     );
-    await this._updateSelectedChangesToCommit(
-      revisionsState,
-      revision.id,
-    );
-    this._emitter.emit(UPDATE_SELECTED_FILE_CHANGES_EVENT);
+    await this._serializedUpdateSelectedFileChanges().catch(notifyInternalError);
   }
 
   onDidUpdateDirtyFileChanges(
