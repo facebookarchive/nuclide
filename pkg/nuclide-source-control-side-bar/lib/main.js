@@ -20,7 +20,6 @@ import Commands from './Commands';
 import {CompositeDisposable, Disposable} from 'atom';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import passesGK from '../../commons-node/passesGK';
 import Rx from 'rxjs';
 import SideBarComponent from './SideBarComponent';
 import {track} from '../../nuclide-analytics';
@@ -77,45 +76,34 @@ export function activate(rawState: Object): void {
 }
 
 export function consumeNuclideSideBar(sideBar: NuclideSideBarService): IDisposable {
-  let localSidebar = sideBar;
   let serviceDisposable;
 
-  passesGK('nuclide_source_control_side_bar', 5000).then(inGk => {
-    // If the side-bar went away while waiting for a GK response, do nothing.
-    if (!inGk || localSidebar == null) {
-      return;
-    }
+  sideBar.registerView({
+    getComponent() {
+      const props = states.map(state => ({
+        createBookmark: commands.createBookmark,
+        deleteBookmark: commands.deleteBookmark,
+        projectBookmarks: state.projectBookmarks,
+        projectDirectories: state.projectDirectories,
+        projectRepositories: state.projectRepositories,
+        updateToBookmark: commands.updateToBookmark,
+      }));
 
-    localSidebar.registerView({
-      getComponent() {
-        const props = states.map(state => ({
-          createBookmark: commands.createBookmark,
-          deleteBookmark: commands.deleteBookmark,
-          projectBookmarks: state.projectBookmarks,
-          projectDirectories: state.projectDirectories,
-          projectRepositories: state.projectRepositories,
-          updateToBookmark: commands.updateToBookmark,
-        }));
-
-        track('scsidebar-show');
-        return bindObservableAsProps(props, SideBarComponent);
-      },
-      onDidShow() {},
-      title: 'Source Control',
-      toggleCommand: 'nuclide-source-control-side-bar:toggle',
-      viewId: 'nuclide-source-control-side-bar',
-    });
-
-    serviceDisposable = new Disposable(() => {
-      if (localSidebar != null) {
-        localSidebar.destroyView('nuclide-source-control-side-bar');
-      }
-    });
-    disposables.add(serviceDisposable);
+      track('scsidebar-show');
+      return bindObservableAsProps(props, SideBarComponent);
+    },
+    onDidShow() {},
+    title: 'Source Control',
+    toggleCommand: 'nuclide-source-control-side-bar:toggle',
+    viewId: 'nuclide-source-control-side-bar',
   });
 
+  serviceDisposable = new Disposable(() => {
+    sideBar.destroyView('nuclide-source-control-side-bar');
+  });
+  disposables.add(serviceDisposable);
+
   return new Disposable(() => {
-    localSidebar = null;
     if (serviceDisposable != null) {
       disposables.remove(serviceDisposable);
       serviceDisposable = null;
