@@ -37,34 +37,32 @@ describe('Settings View Integration Test', () => {
         return document.querySelector('.settings-gadgets-pane');
       });
 
-      runs(() => {
-        // Checkbox
-        const showHomeKeyPath = 'nuclide-home.showHome';
-        const showHomeValue = Boolean(featureConfig.get(showHomeKeyPath));
-        testSettingsCheckbox(showHomeKeyPath, showHomeValue);
+      // Checkbox
+      const showHomeKeyPath = 'nuclide-home.showHome';
+      const showHomeValue = Boolean(featureConfig.get(showHomeKeyPath));
+      testSettingsCheckbox(showHomeKeyPath, showHomeValue);
 
-        // Select
-        const ratingKeyPath = 'fb-rating.rating';
-        const ratingValue = featureConfig.get(ratingKeyPath);
-        const tmpRatingValue = String(ratingValue + 1);
-        testSettingsSelect(ratingKeyPath, ratingValue, tmpRatingValue);
+      // Select
+      const ratingKeyPath = 'fb-rating.rating';
+      const ratingValue = featureConfig.get(ratingKeyPath);
+      const tmpRatingValue = String(ratingValue + 1);
+      testSettingsSelect(ratingKeyPath, ratingValue, tmpRatingValue);
 
-        // Input (string)
-        const timeoutKeyPath = 'nuclide-health.analyticsTimeout';
-        const timeoutValue =
-          featureConfig.get(timeoutKeyPath) || getDefaultConfigValue(timeoutKeyPath);
-        const tmpTimeoutValue = timeoutValue + 1;
-        testSettingsInput(timeoutKeyPath, timeoutValue, tmpTimeoutValue);
+      // Input (string)
+      const timeoutKeyPath = 'nuclide-health.analyticsTimeout';
+      const timeoutValue =
+        featureConfig.get(timeoutKeyPath) || getDefaultConfigValue(timeoutKeyPath);
+      const tmpTimeoutValue = timeoutValue + 1;
+      testSettingsInput(timeoutKeyPath, timeoutValue, tmpTimeoutValue);
 
-        // Input (array)
-        const clangFlagsKeyPath = 'nuclide-clang-atom.defaultFlags';
-        let clangFlagsValue = featureConfig.get(clangFlagsKeyPath);
-        if (!clangFlagsValue || !clangFlagsValue.length) {
-          clangFlagsValue = getDefaultConfigValue(clangFlagsKeyPath);
-        }
-        const tmpClangFlagsValue = ['-E', '-g'];
-        testSettingsInput(clangFlagsKeyPath, clangFlagsValue, tmpClangFlagsValue);
-      });
+      // Input (array)
+      const clangFlagsKeyPath = 'nuclide-clang-atom.defaultFlags';
+      let clangFlagsValue = featureConfig.get(clangFlagsKeyPath);
+      if (!clangFlagsValue || !clangFlagsValue.length) {
+        clangFlagsValue = getDefaultConfigValue(clangFlagsKeyPath);
+      }
+      const tmpClangFlagsValue = ['-E', '-g'];
+      testSettingsInput(clangFlagsKeyPath, clangFlagsValue, tmpClangFlagsValue);
 
       // Deactivate nuclide packages.
       deactivateAllPackages();

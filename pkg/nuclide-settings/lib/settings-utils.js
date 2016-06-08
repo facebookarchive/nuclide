@@ -41,7 +41,9 @@ export function getDefaultConfigValueString(keyPath: string): string {
 
 export function parseValue(type: string, value: any): any {
   let result = value;
-  if (type === 'number') {
+  if (value === '') {
+    result = undefined;
+  } else if (type === 'number') {
     const floatValue = parseFloat(value);
     if (!isNaN(floatValue)) {
       result = floatValue;
