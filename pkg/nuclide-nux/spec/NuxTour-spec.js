@@ -43,7 +43,6 @@ describe('NuxTour', () => {
     };
   }
 
-
   let nuxStore;
   let disposables: CompositeDisposable;
   let nuclideNuxState;
@@ -71,9 +70,8 @@ describe('NuxTour', () => {
     nuxStore.addNewNux(generateTestNuxTour('a'));
     nuxStore.addNewNux(generateTestNuxTour('b'));
 
-    expect(nuxStore._nuxList.length).toBe(2);
+    expect(nuxStore._nuxMap.size).toBe(2);
   });
-
 
   it('creates a NuxTour from a NuxTourModel', () => {
     const nuxManager = new NuxManager(nuxStore);
@@ -81,7 +79,7 @@ describe('NuxTour', () => {
 
     nuxStore.addNewNux(generateTestNuxTour(NUX_SAMPLE_OUTLINE_VIEW_TOUR));
 
-    expect(nuxStore._nuxList.length).toBe(1);
+    expect(nuxStore._nuxMap.size).toBe(1);
   });
 
   it('creates a NuxTour that waits for a trigger', () => {
@@ -96,7 +94,7 @@ describe('NuxTour', () => {
     nuxStore.addNewNux(nuxTour);
 
 
-    expect(nuxStore._nuxList.length).toBe(1);
+    expect(nuxStore._nuxMap.size).toBe(1);
     expect(nuxManager._readyToDisplayNuxList.length).toBe(0);
     expect(nuxManager._pendingNuxList.length).toBe(1);
     expect(nuxManager._activeNuxTour != null).toBeFalsy();

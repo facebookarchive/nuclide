@@ -12,7 +12,6 @@
 import {Emitter} from 'atom';
 
 import type {
-  NuxStateModel,
   NuxTourModel,
 } from './NuxModel';
 
@@ -23,14 +22,15 @@ export const NUX_SAMPLE_OUTLINE_VIEW_TOUR = `${NUX_NAMESPACE}.outline-view-tour`
 export class NuxStore {
   _emitter: atom$Emitter;
   _shouldSeedNux: boolean;
-  _nuxList: Array<NuxStateModel>;
+  // Maps a Nux's unique ID to the boolean representing its viewed state
+  _nuxMap: Map<string, boolean>;
 
   constructor(
     shouldSeedNux: boolean = false,
   ): void {
     this._shouldSeedNux = shouldSeedNux;
 
-    this._nuxList = [];
+    this._nuxMap = new Map();
     this._emitter = new Emitter();
   }
 
@@ -42,7 +42,9 @@ export class NuxStore {
   // If none exist, will attempt to seed a NUX iff `_seedNux` is true.
   initialize(): void {
     // TODO [ @rageandqq | 05-25-16 ]: Replace with `IndexedDB` since `localStorage` is blocking
-    this._nuxList = JSON.parse(window.localStorage.getItem(NUX_SAVED_STORE)) || [];
+    this._nuxMap = new Map(
+      JSON.parse(window.localStorage.getItem(NUX_SAVED_STORE))
+    );
     if (this._shouldSeedNux) {
       this.addNewNux(this._createSampleNux());
     }
@@ -97,14 +99,14 @@ export class NuxStore {
   }
 
   addNewNux(nux: NuxTourModel) {
-    const nuxState = this._nuxList.find(n => n.id === nux.id);
-    if (nuxState != null && nuxState.completed) {
+    const nuxState = this._nuxMap.get(nux.id);
+    if (nuxState) {
       return;
     }
-    this._nuxList.push({
-      id: nux.id,
-      completed: false,
-    });
+    this._nuxMap.set(
+      nux.id,
+      false,
+    );
     this._emitter.emit('newNux', nux);
   }
 
@@ -116,7 +118,8 @@ export class NuxStore {
     // TODO [ @rageandqq | 05-25-16 ]: Replace with `IndexedDB` since `localStorage` is blocking
     window.localStorage.setItem(
       NUX_SAVED_STORE,
-      JSON.stringify(this._nuxList),
+      // $FlowIgnore -- Flow thinks the spread operator is incompatible with Maps
+      JSON.stringify([...this._nuxMap]),
     );
   }
 
@@ -128,11 +131,13 @@ export class NuxStore {
   }
 
   onNuxCompleted(nuxModel: NuxTourModel): void {
-    const nuxToMark = this._nuxList.find(tour => tour.id === nuxModel.id);
-    if (nuxToMark == null) {
+    if (!this._nuxMap.has(nuxModel.id)) {
       return;
     }
-    nuxToMark.completed = true;
+    this._nuxMap.set(
+      nuxModel.id,
+      /* completed */ true,
+    );
     this._saveNuxState();
   }
 }
