@@ -44,6 +44,17 @@ describe('AtomInput', () => {
         [0, initialValue.length]);
   });
 
+  it('onDidChange() does not fire initially', () => {
+    const initialValue = 'some text';
+    const onDidChange = jasmine.createSpy('onDidChange');
+    reactElement = createWithProps({
+      initialValue,
+      onDidChange,
+    });
+
+    expect(onDidChange).not.toHaveBeenCalled();
+  });
+
   it('onDidChange() is fired when the text changes', () => {
     const initialValue = 'some text';
     reactElement = createWithProps({initialValue});

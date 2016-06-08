@@ -80,10 +80,6 @@ export class AtomInput extends React.Component {
     // setState({value}) in response to onDidChange() causes another change
     // event.
     const textEditor = this.getTextEditor();
-    disposables.add(textEditor.onDidChange(() => {
-      this.setState({value: textEditor.getText()});
-      this.props.onDidChange.call(null, textEditor.getText());
-    }));
     const textEditorElement = this._getTextEditorElement();
     disposables.add(
       atom.commands.add(textEditorElement, {
@@ -113,6 +109,12 @@ export class AtomInput extends React.Component {
     // the text editor. (see focus-related spec in AtomInput-spec.js)
     this.setText(this.state.value);
     this.getTextEditor().moveToBeginningOfLine();
+
+    // Begin listening for changes only after initial value is set.
+    disposables.add(textEditor.onDidChange(() => {
+      this.setState({value: textEditor.getText()});
+      this.props.onDidChange.call(null, textEditor.getText());
+    }));
 
     this._updateWidth();
   }
