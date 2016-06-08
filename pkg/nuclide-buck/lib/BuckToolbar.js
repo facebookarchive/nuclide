@@ -159,7 +159,7 @@ class BuckToolbar extends React.Component {
     return (
       <div>
         <Combobox
-          className="inline-block"
+          className="inline-block nuclide-buck-target-combobox"
           ref="buildTarget"
           formatRequestOptionsErrorMessage={formatRequestOptionsErrorMessage}
           requestOptions={this._requestOptions}
