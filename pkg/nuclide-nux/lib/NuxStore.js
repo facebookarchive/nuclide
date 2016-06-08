@@ -54,7 +54,7 @@ export class NuxStore {
     const nuxTriggerOutline = {
       content: 'Check out the new Outline View!',
       isCustomContent: false,
-      selector: '.icon-list-unordered',
+      selector: '.nuclide-outline-view-toolbar-button',
       selectorFunction: null,
       position: 'auto',
       displayPredicate: null,

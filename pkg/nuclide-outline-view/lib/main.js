@@ -173,12 +173,14 @@ class Activation {
 
   consumeToolBar(getToolBar: GetToolBar): void {
     const toolBar = getToolBar('nuclide-outline-view');
-    toolBar.addButton({
+    const toolBarButtonView = toolBar.addButton({
       icon: 'list-unordered',
       callback: 'nuclide-outline-view:toggle',
       tooltip: 'Toggle Outline View',
       priority: 350, // Between diff view and test runner
     });
+    // Class added is not defined elsewhere, and is just used to mark the toolbar button
+    toolBarButtonView.element.classList.add('nuclide-outline-view-toolbar-button');
     this._disposables.add(new Disposable(() => {
       toolBar.removeItems();
     }));
