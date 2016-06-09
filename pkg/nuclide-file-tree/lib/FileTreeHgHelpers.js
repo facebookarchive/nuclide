@@ -22,7 +22,10 @@ import {
   getPath,
   join,
 } from '../../nuclide-remote-uri';
+import {triggerAfterWait} from '../../commons-node/promise';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
+
+const MOVE_TIMEOUT = 10000;
 
 function getHgRepositoryForNode(node: FileTreeNode): ?HgRepositoryClient {
   const repository = node.repo;
@@ -84,27 +87,58 @@ async function renameNode(node: FileTreeNode, destPath: NuclideUri): Promise<voi
 }
 
 /**
+ * Lock on move to prevent concurrent moves, which may lead to race conditions
+ * with the hg wlock.
+ */
+let isMoving = false;
+
+function resetIsMoving() {
+  isMoving = false;
+}
+
+/**
  * Moves an array of nodes into the destPath, ignoring nodes that cannot be moved.
+ * This wrapper prevents concurrent move operations.
  */
 async function moveNodes(nodes: Array<FileTreeNode>, destPath: NuclideUri): Promise<void> {
-  const filteredNodes = nodes.filter(node => isValidRename(node, destPath));
-  // Collapse paths that are in the same subtree, keeping only the subtree root.
-  const paths = collapse(filteredNodes.map(node =>
-    FileTreeHelpers.keyToPath(node.uri)
-  ));
-
-  if (paths.length === 0) {
+  if (isMoving) {
     return;
   }
+  isMoving = true;
 
-  // Need to update the paths in editors before the rename to prevent them from closing
-  // In case of an error - undo the editor paths rename
-  paths.forEach(path => {
-    const newPath = join(destPath, basename(path));
-    FileTreeHelpers.updatePathInOpenedEditors(path, newPath);
-  });
+  // Reset isMoving to false whenever move operation completes, errors, or times out.
+  await triggerAfterWait(
+    _moveNodesUnprotected(nodes, destPath),
+    MOVE_TIMEOUT,
+    resetIsMoving, /* timeoutFn */
+    resetIsMoving, /* cleanupFn */
+  );
+}
+
+async function _moveNodesUnprotected(
+  nodes: Array<FileTreeNode>,
+  destPath: NuclideUri,
+): Promise<void> {
+  let paths = [];
 
   try {
+    const filteredNodes = nodes.filter(node => isValidRename(node, destPath));
+    // Collapse paths that are in the same subtree, keeping only the subtree root.
+    paths = collapse(filteredNodes.map(node =>
+      FileTreeHelpers.keyToPath(node.uri)
+    ));
+
+    if (paths.length === 0) {
+      return;
+    }
+
+    // Need to update the paths in editors before the rename to prevent them from closing
+    // In case of an error - undo the editor paths rename
+    paths.forEach(path => {
+      const newPath = join(destPath, basename(path));
+      FileTreeHelpers.updatePathInOpenedEditors(path, newPath);
+    });
+
     const service = getFileSystemServiceByNuclideUri(paths[0]);
     await service.move(paths.map(p => getPath(p)), getPath(destPath));
 
