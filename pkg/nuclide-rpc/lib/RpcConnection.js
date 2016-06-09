@@ -195,6 +195,20 @@ export class RpcConnection<TransportType: Transport> {
     return this._getTypeRegistry().unmarshal(this._objectRegistry, value, type);
   }
 
+  marshalArguments(
+    args: Array<any>,
+    argTypes: Array<Parameter>,
+  ): Promise<Array<any>> {
+    return this._getTypeRegistry().marshalArguments(this._objectRegistry, args, argTypes);
+  }
+
+  unmarshalArguments(
+    args: Array<any>,
+    argTypes: Array<Parameter>,
+  ): Promise<Array<any>> {
+    return this._getTypeRegistry().unmarshalArguments(this._objectRegistry, args, argTypes);
+  }
+
   /**
    * Call a remote function, through the service framework.
    * @param functionName - The name of the remote function to invoke.

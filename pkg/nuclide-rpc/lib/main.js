@@ -42,6 +42,14 @@ export type RpcContext = {
   disposeRemoteObject(object: Object): Promise<void>;
   marshal(value: any, type: Type): any;
   unmarshal(value: any, type: Type): any;
+  marshalArguments(
+    args: Array<any>,
+    argTypes: Array<Parameter>
+  ): Promise<Array<any>>;
+  unmarshalArguments(
+    args: Array<any>,
+    argTypes: Array<Parameter>
+  ): Promise<Array<any>>;
 };
 
 export type ProxyFactory = (context: RpcContext) => Object;

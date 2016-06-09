@@ -153,6 +153,7 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
 function generateArgumentConversionPromise(argumentTypes: Array<Parameter>): Array<any> {
   // Convert all of the arguments into marshaled form.
   const args = argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+  // Promise.all([transform(arg0, type0), ...])
   return t.callExpression(promiseDotAllExpression,
     [t.arrayExpression(
       args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i].type, true))
