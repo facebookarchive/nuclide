@@ -83,9 +83,11 @@ export class NuxStore {
       }
       return path.endsWith('.js');
     };
+    const isOutlineViewClosed = () => document.querySelector('.nuclide-outline-view') == null;
+    const triggerCallback = editor => isOutlineViewClosed() && isJavaScriptFile(editor);
     const nuxTriggerModel = {
       triggerType: 'editor',
-      triggerCallback: isJavaScriptFile,
+      triggerCallback,
     };
 
     const sampleOutlineNuxTour = {
