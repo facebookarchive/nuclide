@@ -260,21 +260,7 @@
             "kind": "function",
             "argumentTypes": [
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "ValueTypes.def",
-                        "line": 15
-                    },
-                    "kind": "named",
-                    "name": "ValueTypeA"
-                },
-                {
-                    "location": {
-                        "type": "source",
-                        "fileName": "ValueTypes.def",
-                        "line": 15
-                    },
-                    "kind": "nullable",
+                    "name": "arg0",
                     "type": {
                         "location": {
                             "type": "source",
@@ -282,7 +268,27 @@
                             "line": 15
                         },
                         "kind": "named",
-                        "name": "ValueTypeB"
+                        "name": "ValueTypeA"
+                    }
+                },
+                {
+                    "name": "arg1",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "ValueTypes.def",
+                            "line": 15
+                        },
+                        "kind": "nullable",
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "ValueTypes.def",
+                                "line": 15
+                            },
+                            "kind": "named",
+                            "name": "ValueTypeB"
+                        }
                     }
                 }
             ],
@@ -322,21 +328,7 @@
             "kind": "function",
             "argumentTypes": [
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "ValueTypes.def",
-                        "line": 17
-                    },
-                    "kind": "named",
-                    "name": "ValueTypeA"
-                },
-                {
-                    "location": {
-                        "type": "source",
-                        "fileName": "ValueTypes.def",
-                        "line": 17
-                    },
-                    "kind": "array",
+                    "name": "arg0",
                     "type": {
                         "location": {
                             "type": "source",
@@ -344,7 +336,27 @@
                             "line": 17
                         },
                         "kind": "named",
-                        "name": "ValueTypeB"
+                        "name": "ValueTypeA"
+                    }
+                },
+                {
+                    "name": "arg1",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "ValueTypes.def",
+                            "line": 17
+                        },
+                        "kind": "array",
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "ValueTypes.def",
+                                "line": 17
+                            },
+                            "kind": "named",
+                            "name": "ValueTypeB"
+                        }
                     }
                 }
             ],
@@ -419,13 +431,16 @@
             "kind": "function",
             "argumentTypes": [
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "ValueTypes.def",
-                        "line": 23
-                    },
-                    "kind": "named",
-                    "name": "fs.Stats"
+                    "name": "arg0",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "ValueTypes.def",
+                            "line": 23
+                        },
+                        "kind": "named",
+                        "name": "fs.Stats"
+                    }
                 }
             ],
             "returnType": {

@@ -16,6 +16,7 @@ import type {
   FunctionDefinition,
   AliasDefinition,
   Definitions,
+  Parameter,
   FunctionType,
   InterfaceDefinition,
   Type,
@@ -449,36 +450,50 @@ class FileParser {
     };
   }
 
-  _parseInterfaceParameter(param: Object): Type {
+  _parseInterfaceParameter(param: Object): Parameter {
     if (!param.typeAnnotation) {
       throw this._error(param, `Parameter ${param.name} doesn't have type annotation.`);
     } else {
+      const name = param.name;
       const type = this._parseTypeAnnotation(param.typeAnnotation);
       if (param.optional && type.kind !== 'nullable') {
         return {
-          location: this._locationOfNode(param),
-          kind: 'nullable',
-          type,
+          name,
+          type: {
+            location: this._locationOfNode(param),
+            kind: 'nullable',
+            type,
+          },
         };
       } else {
-        return type;
+        return {
+          name,
+          type,
+        };
       }
     }
   }
 
-  _parseParameter(param: Object): Type {
+  _parseParameter(param: Object): Parameter {
     if (!param.typeAnnotation) {
       throw this._error(param, `Parameter ${param.name} doesn't have type annotation.`);
     } else {
+      const name = param.name;
       const type = this._parseTypeAnnotation(param.typeAnnotation.typeAnnotation);
       if (param.optional && type.kind !== 'nullable') {
         return {
-          location: this._locationOfNode(param),
-          kind: 'nullable',
-          type,
+          name,
+          type: {
+            location: this._locationOfNode(param),
+            kind: 'nullable',
+            type,
+          },
         };
       } else {
-        return type;
+        return {
+          name,
+          type,
+        };
       }
     }
   }

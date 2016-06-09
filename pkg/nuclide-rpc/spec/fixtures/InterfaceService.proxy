@@ -33,19 +33,7 @@ module.exports = _client => {
     }
     constructor(arg0, arg1) {
       _client.createRemoteObject("Vector2", this, [arg0, arg1], [{
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 2
-        },
-        kind: "number"
-      }, {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 2
-        },
-        kind: "nullable",
+        name: "x",
         type: {
           location: {
             type: "source",
@@ -53,6 +41,24 @@ module.exports = _client => {
             line: 2
           },
           kind: "number"
+        }
+      }, {
+        name: "y",
+        type: {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 2
+          },
+          kind: "nullable",
+          type: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 2
+            },
+            kind: "number"
+          }
         }
       }])
     }

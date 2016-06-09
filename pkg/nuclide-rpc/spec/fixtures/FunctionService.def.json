@@ -58,20 +58,26 @@
             "kind": "function",
             "argumentTypes": [
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "FunctionService.def",
-                        "line": 1
-                    },
-                    "kind": "string"
+                    "name": "arg1",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "FunctionService.def",
+                            "line": 1
+                        },
+                        "kind": "string"
+                    }
                 },
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "FunctionService.def",
-                        "line": 1
-                    },
-                    "kind": "boolean"
+                    "name": "arg2",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "FunctionService.def",
+                            "line": 1
+                        },
+                        "kind": "boolean"
+                    }
                 }
             ],
             "returnType": {
@@ -177,37 +183,43 @@
             "kind": "function",
             "argumentTypes": [
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "FunctionService.def",
-                        "line": 7
-                    },
-                    "kind": "nullable",
+                    "name": "p1",
                     "type": {
                         "location": {
                             "type": "source",
                             "fileName": "FunctionService.def",
                             "line": 7
                         },
-                        "kind": "named",
-                        "name": "Object"
+                        "kind": "nullable",
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "FunctionService.def",
+                                "line": 7
+                            },
+                            "kind": "named",
+                            "name": "Object"
+                        }
                     }
                 },
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "FunctionService.def",
-                        "line": 7
-                    },
-                    "kind": "nullable",
+                    "name": "p2",
                     "type": {
                         "location": {
                             "type": "source",
                             "fileName": "FunctionService.def",
                             "line": 7
                         },
-                        "kind": "named",
-                        "name": "Object"
+                        "kind": "nullable",
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "FunctionService.def",
+                                "line": 7
+                            },
+                            "kind": "named",
+                            "name": "Object"
+                        }
                     }
                 }
             ],

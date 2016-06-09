@@ -20,6 +20,7 @@ import type {
   ObjectField,
   UnionType,
   Location,
+  Parameter,
 } from './types';
 import {
   builtinLocation,
@@ -251,9 +252,9 @@ export class TypeRegistry {
   marshalArguments(
     context: ObjectRegistry,
     args: Array<any>,
-    argTypes: Array<Type>,
+    argTypes: Array<Parameter>,
   ): Promise<Array<any>> {
-    return Promise.all(args.map((arg, i) => this.marshal(context, arg, argTypes[i])));
+    return Promise.all(args.map((arg, i) => this.marshal(context, arg, argTypes[i].type)));
   }
 
   /**
@@ -269,9 +270,9 @@ export class TypeRegistry {
   unmarshalArguments(
     context: ObjectRegistry,
     args: Array<any>,
-    argTypes: Array<Type>,
+    argTypes: Array<Parameter>,
   ): Promise<Array<any>> {
-    return Promise.all(args.map((arg, i) => this.unmarshal(context, arg, argTypes[i])));
+    return Promise.all(args.map((arg, i) => this.unmarshal(context, arg, argTypes[i].type)));
   }
 
   _unmarshal(context: ObjectRegistry, value: any, type: Type): any {

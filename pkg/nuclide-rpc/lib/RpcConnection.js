@@ -10,7 +10,7 @@
  */
 
 import type {ConfigEntry, Transport} from './index';
-import type {ReturnType, Type} from './types';
+import type {ReturnType, Type, Parameter} from './types';
 import type {TypeRegistry} from './TypeRegistry';
 import type {
   ResponseMessage,
@@ -243,7 +243,7 @@ export class RpcConnection<TransportType: Transport> {
     interfaceName: string,
     thisArg: Object,
     unmarshalledArgs: Array<any>,
-    argTypes: Array<Type>,
+    argTypes: Array<Parameter>,
   ): void {
     const idPromise = (async () => {
       const marshalledArgs = await this._getTypeRegistry().marshalArguments(

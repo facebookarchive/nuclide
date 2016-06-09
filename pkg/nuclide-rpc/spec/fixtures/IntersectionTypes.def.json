@@ -309,13 +309,16 @@
             "kind": "function",
             "argumentTypes": [
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "IntersectionTypes.def",
-                        "line": 13
-                    },
-                    "kind": "named",
-                    "name": "Baz"
+                    "name": "baz",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "IntersectionTypes.def",
+                            "line": 13
+                        },
+                        "kind": "named",
+                        "name": "Baz"
+                    }
                 }
             ],
             "returnType": {

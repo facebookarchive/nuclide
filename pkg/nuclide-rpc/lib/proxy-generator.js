@@ -18,6 +18,7 @@ import type {
   NamedType,
   Type,
   InterfaceDefinition,
+  Parameter,
 } from './types';
 
 const promiseDotAllExpression = t.memberExpression(t.identifier('Promise'), t.identifier('all'));
@@ -149,12 +150,12 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
  * @param argumentTypes - An array of the types of the function's arguments.
  * @returns An expression representing a promise that resolves to an array of the arguments.
  */
-function generateArgumentConversionPromise(argumentTypes: Array<Type>): Array<any> {
+function generateArgumentConversionPromise(argumentTypes: Array<Parameter>): Array<any> {
   // Convert all of the arguments into marshaled form.
   const args = argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
   return t.callExpression(promiseDotAllExpression,
     [t.arrayExpression(
-      args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i], true))
+      args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i].type, true))
     )]
   );
 }
@@ -226,7 +227,7 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
  * @param constructorArgs - The types of the arguments to the constructor.
  * @returns A MethodDefinition node that can be added to a ClassBody.
  */
-function generateRemoteConstructor(className: string, constructorArgs: Array<Type>) {
+function generateRemoteConstructor(className: string, constructorArgs: Array<Parameter>) {
 
   // arg0, .... argN
   const args = constructorArgs.map((arg, i) => t.identifier(`arg${i}`));

@@ -27,12 +27,17 @@ export type FunctionDefinition = {
   type: FunctionType;
 };
 
+export type Parameter = {
+  name: string;
+  type: Type;
+};
+
 // An interface class.
 export type InterfaceDefinition = {
   kind: 'interface';
   name: string;
   location: Location;
-  constructorArgs: ?Array<Type>;
+  constructorArgs: ?Array<Parameter>;
   instanceMethods: Map<string, FunctionType>;
   staticMethods: Map<string, FunctionType>;
 };
@@ -59,7 +64,7 @@ export type NullableType = { location: Location; kind: 'nullable'; type: Type };
 export type FunctionType = {
   location: Location;
   kind: 'function';
-  argumentTypes: Array<Type>;
+  argumentTypes: Array<Parameter>;
   returnType: Type;
 };
 

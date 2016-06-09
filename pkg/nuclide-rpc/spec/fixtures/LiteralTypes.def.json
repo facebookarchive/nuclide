@@ -112,31 +112,40 @@
             "kind": "function",
             "argumentTypes": [
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "LiteralTypes.def",
-                        "line": 5
-                    },
-                    "kind": "string-literal",
-                    "value": "v"
+                    "name": "s",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "LiteralTypes.def",
+                            "line": 5
+                        },
+                        "kind": "string-literal",
+                        "value": "v"
+                    }
                 },
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "LiteralTypes.def",
-                        "line": 5
-                    },
-                    "kind": "number-literal",
-                    "value": 42
+                    "name": "n",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "LiteralTypes.def",
+                            "line": 5
+                        },
+                        "kind": "number-literal",
+                        "value": 42
+                    }
                 },
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "LiteralTypes.def",
-                        "line": 5
-                    },
-                    "kind": "boolean-literal",
-                    "value": true
+                    "name": "b",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "LiteralTypes.def",
+                            "line": 5
+                        },
+                        "kind": "boolean-literal",
+                        "value": true
+                    }
                 }
             ],
             "returnType": {

@@ -178,22 +178,28 @@
             "kind": "function",
             "argumentTypes": [
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "UnionTypes.def",
-                        "line": 6
-                    },
-                    "kind": "named",
-                    "name": "SSU"
+                    "name": "s",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "UnionTypes.def",
+                            "line": 6
+                        },
+                        "kind": "named",
+                        "name": "SSU"
+                    }
                 },
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "UnionTypes.def",
-                        "line": 6
-                    },
-                    "kind": "named",
-                    "name": "MixedUnion"
+                    "name": "m",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "UnionTypes.def",
+                            "line": 6
+                        },
+                        "kind": "named",
+                        "name": "MixedUnion"
+                    }
                 }
             ],
             "returnType": {
@@ -441,13 +447,16 @@
             "kind": "function",
             "argumentTypes": [
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "UnionTypes.def",
-                        "line": 20
-                    },
-                    "kind": "named",
-                    "name": "Location"
+                    "name": "loc",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "UnionTypes.def",
+                            "line": 20
+                        },
+                        "kind": "named",
+                        "name": "Location"
+                    }
                 }
             ],
             "returnType": {
@@ -5209,13 +5218,16 @@
             "kind": "function",
             "argumentTypes": [
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "UnionTypes.def",
-                        "line": 111
-                    },
-                    "kind": "named",
-                    "name": "Type"
+                    "name": "type",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "UnionTypes.def",
+                            "line": 111
+                        },
+                        "kind": "named",
+                        "name": "Type"
+                    }
                 }
             ],
             "returnType": {
@@ -5391,13 +5403,16 @@
             "kind": "function",
             "argumentTypes": [
                 {
-                    "location": {
-                        "type": "source",
-                        "fileName": "UnionTypes.def",
-                        "line": 116
-                    },
-                    "kind": "named",
-                    "name": "MultipleDiscriminantUnion"
+                    "name": "mdu",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "UnionTypes.def",
+                            "line": 116
+                        },
+                        "kind": "named",
+                        "name": "MultipleDiscriminantUnion"
+                    }
                 }
             ],
             "returnType": {

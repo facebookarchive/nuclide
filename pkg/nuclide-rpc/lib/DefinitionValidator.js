@@ -106,7 +106,7 @@ export function validateDefinitions(definitions: Definitions): void {
         type.types.forEach(checkTypeForMissingNames);
         break;
       case 'function':
-        type.argumentTypes.forEach(checkTypeForMissingNames);
+        type.argumentTypes.forEach(parameter => checkTypeForMissingNames(parameter.type));
         checkTypeForMissingNames(type.returnType);
         break;
       case 'named':
@@ -222,7 +222,7 @@ export function validateDefinitions(definitions: Definitions): void {
           break;
         case 'interface':
           if (definition.constructorArgs != null) {
-            definition.constructorArgs.forEach(validateType);
+            definition.constructorArgs.forEach(parameter => validateType(parameter.type));
           }
           definition.instanceMethods.forEach(validateType);
           definition.staticMethods.forEach(validateType);
@@ -455,7 +455,7 @@ export function validateDefinitions(definitions: Definitions): void {
         validateIntersectionType(type);
         break;
       case 'function':
-        type.argumentTypes.forEach(validateType);
+        type.argumentTypes.forEach(parameter => validateType(parameter.type));
         validateReturnType(type, resolvePossiblyNamedType(type.returnType));
         break;
       case 'named':
@@ -536,7 +536,9 @@ export function validateDefinitions(definitions: Definitions): void {
         canonicalizeIntersection(type);
         break;
       case 'function':
-        cannonicalizeTypeArray(type.argumentTypes);
+        type.argumentTypes.forEach(parameter => {
+          cannonicalizeType(parameter.type);
+        });
         type.returnType = resolvePossiblyNamedType(type.returnType);
         cannonicalizeType(type.returnType);
         break;
@@ -629,7 +631,7 @@ export function validateDefinitions(definitions: Definitions): void {
           break;
         case 'interface':
           if (definition.constructorArgs != null) {
-            definition.constructorArgs.forEach(operation);
+            definition.constructorArgs.forEach(parameter => operation(parameter.type));
           }
           definition.instanceMethods.forEach(operation);
           definition.staticMethods.forEach(operation);

@@ -22,6 +22,7 @@ import type {
   Definitions,
   ReturnKind,
   Type,
+  Parameter,
 } from './types';
 
 export type RpcContext = {
@@ -36,7 +37,7 @@ export type RpcContext = {
     interfaceName: string,
     thisArg: Object,
     unmarshalledArgs: Array<any>,
-    argTypes: Array<Type>
+    argTypes: Array<Parameter>
   ): void;
   disposeRemoteObject(object: Object): Promise<void>;
   marshal(value: any, type: Type): any;

@@ -44,20 +44,7 @@
     "Vector2": {
         "constructorArgs": [
             {
-                "location": {
-                    "type": "source",
-                    "fileName": "InterfaceService.def",
-                    "line": 2
-                },
-                "kind": "number"
-            },
-            {
-                "location": {
-                    "type": "source",
-                    "fileName": "InterfaceService.def",
-                    "line": 2
-                },
-                "kind": "nullable",
+                "name": "x",
                 "type": {
                     "location": {
                         "type": "source",
@@ -65,6 +52,25 @@
                         "line": 2
                     },
                     "kind": "number"
+                }
+            },
+            {
+                "name": "y",
+                "type": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 2
+                    },
+                    "kind": "nullable",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "InterfaceService.def",
+                            "line": 2
+                        },
+                        "kind": "number"
+                    }
                 }
             }
         ],
@@ -147,22 +153,28 @@
                 "kind": "function",
                 "argumentTypes": [
                     {
-                        "location": {
-                            "type": "source",
-                            "fileName": "InterfaceService.def",
-                            "line": 3
-                        },
-                        "kind": "named",
-                        "name": "Vector2"
+                        "name": "a",
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "InterfaceService.def",
+                                "line": 3
+                            },
+                            "kind": "named",
+                            "name": "Vector2"
+                        }
                     },
                     {
-                        "location": {
-                            "type": "source",
-                            "fileName": "InterfaceService.def",
-                            "line": 3
-                        },
-                        "kind": "named",
-                        "name": "Vector2"
+                        "name": "b",
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "InterfaceService.def",
+                                "line": 3
+                            },
+                            "kind": "named",
+                            "name": "Vector2"
+                        }
                     }
                 ],
                 "returnType": {
@@ -231,12 +243,30 @@
                 "kind": "function",
                 "argumentTypes": [
                     {
-                        "location": {
-                            "type": "source",
-                            "fileName": "InterfaceService.def",
-                            "line": 31
+                        "name": {
+                            "type": "Identifier",
+                            "start": 642,
+                            "end": 643,
+                            "loc": {
+                                "start": {
+                                    "line": 31,
+                                    "column": 4
+                                },
+                                "end": {
+                                    "line": 31,
+                                    "column": 5
+                                }
+                            },
+                            "name": "a"
                         },
-                        "kind": "number"
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "InterfaceService.def",
+                                "line": 31
+                            },
+                            "kind": "number"
+                        }
                     }
                 ],
                 "returnType": {
