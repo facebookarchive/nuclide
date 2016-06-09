@@ -31,8 +31,11 @@ import {
   HgStatusOption,
 } from '../../nuclide-hg-repository-base/lib/hg-constants';
 import {serializeAsyncCall} from '../../commons-node/promise';
+import debounce from '../../commons-node/debounce';
 import fsSync from '../../commons-node/fsSync';
 import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
+
+const STATUS_DEBOUNCE_DELAY_MS = 300;
 
 type HgRepositoryOptions = {
   /** The origin URL of this repository. */
@@ -124,8 +127,9 @@ export class HgRepositoryClient {
     this._hgDiffCacheFilesUpdating = new Set();
     this._hgDiffCacheFilesToClear = new Set();
 
-    this._serializedRefreshStatusesCache = serializeAsyncCall(
-      this._refreshStatusesOfAllFilesInCache.bind(this),
+    this._serializedRefreshStatusesCache = debounce(
+      serializeAsyncCall(this._refreshStatusesOfAllFilesInCache.bind(this)),
+      STATUS_DEBOUNCE_DELAY_MS,
     );
 
     this._disposables[EDITOR_SUBSCRIPTION_NAME] = atom.workspace.observeTextEditors(editor => {
@@ -166,10 +170,13 @@ export class HgRepositoryClient {
     // Regardless of how frequently the service sends file change updates,
     // Only one batched status update can be running at any point of time.
     const toUpdateChangedPaths = [];
-    const serializedUpdateChangedPaths = serializeAsyncCall(() => {
-      // Send a batched update and clear the pending changes.
-      return this._updateChangedPaths(toUpdateChangedPaths.splice(0));
-    });
+    const serializedUpdateChangedPaths = debounce(
+      serializeAsyncCall(() => {
+        // Send a batched update and clear the pending changes.
+        return this._updateChangedPaths(toUpdateChangedPaths.splice(0));
+      }),
+      STATUS_DEBOUNCE_DELAY_MS,
+    );
     const onFilesChanges = (changedPaths: Array<NuclideUri>) => {
       toUpdateChangedPaths.push(...changedPaths);
       // Will trigger an update immediately if no other async call is active.

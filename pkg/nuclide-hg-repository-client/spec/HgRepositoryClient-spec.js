@@ -273,14 +273,11 @@ describe('HgRepositoryClient', () => {
         // > MAX_INDIVIDUAL_CHANGED_PATHS. If MAX_INDIVIDUAL_CHANGED_PATHS changes,
         // this test needs to be updated.
         expect(mockUpdate.length).toBeGreaterThan(MAX_INDIVIDUAL_CHANGED_PATHS);
-        spyOn(repo, '_updateStatuses');
+        spyOn(repo, '_serializedRefreshStatusesCache');
 
         waitsForPromise(async () => {
           await repo._updateChangedPaths(mockUpdate);
-          expect(repo._updateStatuses).toHaveBeenCalledWith(
-            [repo.getProjectDirectory()],
-            {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
-          );
+          expect(repo._serializedRefreshStatusesCache).toHaveBeenCalled();
         });
       }
     );
