@@ -130,8 +130,8 @@ export class ObjectRegistry {
     await object.dispose();
   }
 
-  disposeSubscription(requestId: number): void {
-    const subscription = this.removeSubscription(requestId);
+  disposeSubscription(id: number): void {
+    const subscription = this.removeSubscription(id);
     if (subscription != null) {
       subscription.unsubscribe();
     }
@@ -174,14 +174,14 @@ export class ObjectRegistry {
     return objectId;
   }
 
-  addSubscription(requestId: number, subscription: rx$ISubscription): void {
-    this._subscriptions.set(requestId, subscription);
+  addSubscription(id: number, subscription: rx$ISubscription): void {
+    this._subscriptions.set(id, subscription);
   }
 
-  removeSubscription(requestId: number): ?rx$ISubscription {
-    const subscription = this._subscriptions.get(requestId);
+  removeSubscription(id: number): ?rx$ISubscription {
+    const subscription = this._subscriptions.get(id);
     if (subscription != null) {
-      this._subscriptions.delete(requestId);
+      this._subscriptions.delete(id);
     }
     return subscription;
   }

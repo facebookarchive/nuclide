@@ -112,8 +112,8 @@ class Call {
     if (!this._complete) {
       this._complete = true;
       this._reject(new Error(
-        `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for requestId: ` +
-        `${this._message.requestId}, ${this._timeoutMessage}.`
+        `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for id: ` +
+        `${this._message.id}, ${this._timeoutMessage}.`
       ));
     }
   }
@@ -270,7 +270,7 @@ export class RpcConnection<TransportType: Transport> {
       const message: DisposeRemoteObjectMessage = {
         protocol: SERVICE_FRAMEWORK3_PROTOCOL,
         type: 'DisposeObject',
-        requestId: this._generateRequestId(),
+        id: this._generateRequestId(),
         objectId,
       };
       return await this._sendMessageAndListenForResult(
@@ -281,10 +281,10 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   /**
-   * Helper function that listens for a result for the given requestId.
+   * Helper function that listens for a result for the given id.
    * @param returnType - Determines the type of messages we should subscribe to, and what this
    *   function should return.
-   * @param requestId - The id of the request who's result we are listening for.
+   * @param id - The id of the request who's result we are listening for.
    * @returns Depending on the expected return type, this function either returns undefined, a
    *   Promise, or an Observable.
    */
@@ -301,7 +301,7 @@ export class RpcConnection<TransportType: Transport> {
         // Listen for a single message, and resolve or reject a promise on that message.
         return new Promise((resolve, reject) => {
           this._transport.send(message);
-          this._calls.set(message.requestId, new Call(
+          this._calls.set(message.id, new Call(
             message,
             timeoutMessage,
             resolve,
@@ -309,18 +309,18 @@ export class RpcConnection<TransportType: Transport> {
           ));
 
           setTimeout(() => {
-            const call = this._calls.get(message.requestId);
+            const call = this._calls.get(message.id);
             if (call != null) {
-              this._calls.delete(message.requestId);
+              this._calls.delete(message.id);
               call.timeout();
             }
           }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
         });
       case 'observable':
-        let subscriptions = this._subscriptions.get(message.requestId);
+        let subscriptions = this._subscriptions.get(message.id);
         if (subscriptions == null) {
           subscriptions = new Set();
-          this._subscriptions.set(message.requestId, subscriptions);
+          this._subscriptions.set(message.id, subscriptions);
         }
         const observable = Observable.create(observer => {
           const subscription = new Subscription(message, observer);
@@ -338,7 +338,7 @@ export class RpcConnection<TransportType: Transport> {
               if (subscriptions.size === 0) {
                 // Send a message to server to call the dispose function of
                 // the remote Observable subscription.
-                this._transport.send(createDisposeMessage(message.requestId));
+                this._transport.send(createDisposeMessage(message.id));
               }
             },
           };
@@ -351,7 +351,7 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   _returnPromise(
-    requestId: number,
+    id: number,
     timingTracker: TimingTracker,
     candidate: any,
     type: Type,
@@ -370,15 +370,15 @@ export class RpcConnection<TransportType: Transport> {
 
     // Send the result of the promise across the socket.
     returnVal.then(result => {
-      this._transport.send(createPromiseMessage(requestId, result));
+      this._transport.send(createPromiseMessage(id, result));
       timingTracker.onSuccess();
     }, error => {
-      this._transport.send(createErrorMessage(requestId, error));
+      this._transport.send(createErrorMessage(id, error));
       timingTracker.onError(error == null ? new Error() : error);
     });
   }
 
-  _returnObservable(requestId: number, returnVal: any, elementType: Type): void {
+  _returnObservable(id: number, returnVal: any, elementType: Type): void {
     let result: Observable;
     // Ensure that the return value is an observable.
     if (!isObservable(returnVal)) {
@@ -394,27 +394,27 @@ export class RpcConnection<TransportType: Transport> {
 
     // Send the next, error, and completion events of the observable across the socket.
     const subscription = result.subscribe(data => {
-      this._transport.send(createNextMessage(requestId, data));
+      this._transport.send(createNextMessage(id, data));
     }, error => {
-      this._transport.send(createObserveErrorMessage(requestId, error));
-      this._objectRegistry.removeSubscription(requestId);
+      this._transport.send(createObserveErrorMessage(id, error));
+      this._objectRegistry.removeSubscription(id);
     }, completed => {
-      this._transport.send(createCompletedMessage(requestId));
-      this._objectRegistry.removeSubscription(requestId);
+      this._transport.send(createCompletedMessage(id));
+      this._objectRegistry.removeSubscription(id);
     });
-    this._objectRegistry.addSubscription(requestId, subscription);
+    this._objectRegistry.addSubscription(id, subscription);
   }
 
   // Returns true if a promise was returned.
-  _returnValue(requestId: number, timingTracker: TimingTracker, value: any, type: Type): boolean {
+  _returnValue(id: number, timingTracker: TimingTracker, value: any, type: Type): boolean {
     switch (type.kind) {
       case 'void':
         break; // No need to send anything back to the user.
       case 'promise':
-        this._returnPromise(requestId, timingTracker, value, type.type);
+        this._returnPromise(id, timingTracker, value, type.type);
         return true;
       case 'observable':
-        this._returnObservable(requestId, value, type.type);
+        this._returnObservable(id, value, type.type);
         break;
       default:
         throw new Error(`Unkown return type ${type.kind}.`);
@@ -423,7 +423,7 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   async _callFunction(
-    requestId: number,
+    id: number,
     timingTracker: TimingTracker,
     call: CallRemoteFunctionMessage,
   ): Promise<boolean> {
@@ -435,14 +435,14 @@ export class RpcConnection<TransportType: Transport> {
       this._objectRegistry, call.args, type.argumentTypes);
 
     return this._returnValue(
-      requestId,
+      id,
       timingTracker,
       localImplementation.apply(this, marshalledArgs),
       type.returnType);
   }
 
   async _callMethod(
-    requestId: number,
+    id: number,
     timingTracker: TimingTracker,
     call: CallRemoteMethodMessage,
   ): Promise<boolean> {
@@ -459,14 +459,14 @@ export class RpcConnection<TransportType: Transport> {
       this._objectRegistry, call.args, type.argumentTypes);
 
     return this._returnValue(
-      requestId,
+      id,
       timingTracker,
       object[call.method].apply(object, marshalledArgs),
       type.returnType);
   }
 
   async _callConstructor(
-    requestId: number,
+    id: number,
     timingTracker: TimingTracker,
     constructorMessage: CreateRemoteObjectMessage,
   ): Promise<void> {
@@ -488,7 +488,7 @@ export class RpcConnection<TransportType: Transport> {
     // Return the object, which will automatically be converted to an id through the
     // marshalling system.
     this._returnPromise(
-      requestId,
+      id,
       timingTracker,
       Promise.resolve(newObject),
       {
@@ -525,19 +525,19 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   _handleResponseMessage(message: ResponseMessage): void {
-    const requestId = message.requestId;
+    const id = message.id;
     switch (message.type) {
       case 'PromiseMessage': {
         const {result} = message;
-        const call = this._calls.get(requestId);
+        const call = this._calls.get(id);
         if (call != null) {
-          this._calls.delete(requestId);
+          this._calls.delete(id);
           call.resolve(result);
         }
         break;
       }
       case 'ObservableMessage': {
-        const subscriptions = this._subscriptions.get(requestId);
+        const subscriptions = this._subscriptions.get(id);
         invariant(subscriptions != null);
         const {result} = message;
         subscriptions.forEach(subscription => {
@@ -553,9 +553,9 @@ export class RpcConnection<TransportType: Transport> {
         break;
       }
       case 'ErrorMessage': {
-        const errorCall = this._calls.get(requestId);
+        const errorCall = this._calls.get(id);
         if (errorCall != null) {
-          this._calls.delete(requestId);
+          this._calls.delete(id);
           const {error} = message;
           errorCall.reject(error);
         }
@@ -567,7 +567,7 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   async _handleRequestMessage(message: RequestMessage): Promise<void> {
-    const requestId = message.requestId;
+    const id = message.id;
 
     // Track timings of all function calls, method calls, and object creations.
     // Note: for Observables we only track how long it takes to create the initial Observable.
@@ -581,22 +581,22 @@ export class RpcConnection<TransportType: Transport> {
       let returnedPromise = false;
       switch (message.type) {
         case 'FunctionCall':
-          returnedPromise = await this._callFunction(requestId, timingTracker, message);
+          returnedPromise = await this._callFunction(id, timingTracker, message);
           break;
         case 'MethodCall':
-          returnedPromise = await this._callMethod(requestId, timingTracker, message);
+          returnedPromise = await this._callMethod(id, timingTracker, message);
           break;
         case 'NewObject':
-          await this._callConstructor(requestId, timingTracker, message);
+          await this._callConstructor(id, timingTracker, message);
           returnedPromise = true;
           break;
         case 'DisposeObject':
           await this._objectRegistry.disposeObject(message.objectId);
-          this._returnPromise(requestId, timingTracker, Promise.resolve(), voidType);
+          this._returnPromise(id, timingTracker, Promise.resolve(), voidType);
           returnedPromise = true;
           break;
         case 'DisposeObservable':
-          this._objectRegistry.disposeSubscription(requestId);
+          this._objectRegistry.disposeSubscription(id);
           break;
         default:
           throw new Error(`Unkown message type ${message.type}`);
@@ -607,7 +607,7 @@ export class RpcConnection<TransportType: Transport> {
     } catch (e) {
       logger.error(e != null ? e.message : e);
       timingTracker.onError(e == null ? new Error() : e);
-      this._transport.send(createErrorMessage(requestId, e));
+      this._transport.send(createErrorMessage(id, e));
     }
   }
 
