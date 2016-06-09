@@ -12,7 +12,6 @@
 import type {FileTreeNode} from './FileTreeNode';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {RemoteFile} from '../../nuclide-remote-connection';
-import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import FileDialogComponent from '../components/FileDialogComponent';
 import FileTreeHelpers from './FileTreeHelpers';
@@ -138,22 +137,13 @@ const FileSystemActions = {
 
     // Need to update the paths in editors before the rename to prevent them from closing
     // In case of an error - undo the editor paths rename
-    this._updatePathInOpenedEditors(node.uri, newPath);
+    FileTreeHelpers.updatePathInOpenedEditors(node.uri, newPath);
     try {
       await FileTreeHgHelpers.renameNode(node, newPath);
     } catch (err) {
-      this._updatePathInOpenedEditors(newPath, node.uri);
+      FileTreeHelpers.updatePathInOpenedEditors(newPath, node.uri);
       throw err;
     }
-  },
-
-  _updatePathInOpenedEditors(oldPath: NuclideUri, newPath: NuclideUri): void {
-    atom.workspace.getTextEditors().forEach(editor => {
-      const buffer = editor.getBuffer();
-      if (buffer.getPath() === oldPath) {
-        buffer.setPath(newPath);
-      }
-    });
   },
 
   async _onConfirmDuplicate(

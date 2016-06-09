@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../nuclide-remote-uri';
+
 import {Directory as LocalDirectory} from 'atom';
 import {File as LocalFile} from 'atom';
 import {
@@ -16,7 +18,7 @@ import {
   RemoteDirectory,
   RemoteFile,
 } from '../../nuclide-remote-connection';
-import RemoteUri from '../../nuclide-remote-uri';
+import RemoteUri, {getPath} from '../../nuclide-remote-uri';
 
 import url from 'url';
 import crypto from 'crypto';
@@ -166,6 +168,17 @@ function buildHashKey(nodeKey: string): string {
   return crypto.createHash('MD5').update(nodeKey).digest('base64');
 }
 
+function updatePathInOpenedEditors(oldPath: NuclideUri, newPath: NuclideUri): void {
+  atom.workspace.getTextEditors().forEach(editor => {
+    const buffer = editor.getBuffer();
+    if (buffer.getPath() === oldPath) {
+      // setPath will append the hostname when given the local path, so we
+      // strip off the hostname here to avoid including it twice in the path.
+      buffer.setPath(getPath(newPath));
+    }
+  });
+}
+
 module.exports = {
   dirPathToKey,
   isDirKey,
@@ -181,4 +194,5 @@ module.exports = {
   isLocalEntry,
   isContextClick,
   buildHashKey,
+  updatePathInOpenedEditors,
 };
