@@ -1185,12 +1185,22 @@ declare class atom$TextBuffer {
   static deserialize: (state: Object, params: Object) => mixed;
 
   // Events
+  onWillChange(callback: () => mixed): IDisposable;
   onDidChange(callback: () => mixed): IDisposable;
-  onDidDestroy(callback: () => mixed): IDisposable;
   onDidStopChanging(callback: () => mixed): IDisposable;
-  onDidSave(callback: () => mixed): IDisposable;
-  onDidReload(callback: () => mixed): IDisposable;
+  onDidConflict(callback: () => mixed): IDisposable;
   onDidChangeModified(callback: () => mixed): IDisposable;
+  onDidUpdateMarkers(callback: () => mixed): IDisposable;
+  onDidCreateMarker(callback: () => mixed): IDisposable;
+  onDidChangePath(callback: () => mixed): IDisposable;
+  onDidChangeEncoding(callback: () => mixed): IDisposable;
+  onWillSave(callback: () => mixed): IDisposable;
+  onDidSave(callback: () => mixed): IDisposable;
+  onDidDelete(callback: () => mixed): IDisposable;
+  onWillReload(callback: () => mixed): IDisposable;
+  onDidReload(callback: () => mixed): IDisposable;
+  onDidDestroy(callback: () => mixed): IDisposable;
+  onWillThrowWatchError(callback: () => mixed): IDisposable;
 
   // File Details
   setPath(filePath: string): void;
