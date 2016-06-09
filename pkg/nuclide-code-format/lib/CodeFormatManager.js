@@ -12,11 +12,13 @@
 import type {CodeFormatProvider} from './types';
 
 import {CompositeDisposable, Range} from 'atom';
+import {getFormatOnSave} from './config';
 
 class CodeFormatManager {
 
   _subscriptions: ?CompositeDisposable;
   _codeFormatProviders: Array<CodeFormatProvider>;
+  _pendingFormats: Map<atom$TextEditor, boolean>;
 
   constructor() {
     const subscriptions = this._subscriptions = new CompositeDisposable();
@@ -26,22 +28,76 @@ class CodeFormatManager {
       // Atom doesn't accept in-command modification of the text editor contents.
       () => process.nextTick(this._formatCodeInActiveTextEditor.bind(this))
     ));
+    subscriptions.add(atom.workspace.observeTextEditors(this._addEditor.bind(this)));
     this._codeFormatProviders = [];
+    this._pendingFormats = new Map();
   }
 
-  async _formatCodeInActiveTextEditor(): Promise {
-    const editor = atom.workspace.getActiveTextEditor();
-    if (!editor) {
-      atom.notifications.addError('No active text editor to format its code!');
+  _addEditor(editor: atom$TextEditor): void {
+    if (!this._subscriptions) {
       return;
     }
 
+    this._subscriptions.add(editor.getBuffer().onDidSave(async () => {
+      if (getFormatOnSave() && !this._pendingFormats.get(editor)) {
+        // Because formatting code is async, we need to resave the file once
+        // we're done formatting, but prevent resaving from retriggering the
+        // onDidSave callback, which would be an infinite cycle.
+        this._pendingFormats.set(editor, true);
+        try {
+          const didFormat = await this._formatCodeInTextEditor(editor, false);
+          if (didFormat) {
+            editor.save();
+          }
+        } finally {
+          this._pendingFormats.delete(editor);
+        }
+      }
+    }));
+
+    editor.onDidDestroy(() => {
+      this._pendingFormats.delete(editor);
+    });
+  }
+
+  // Checks whether contents have changed in the buffer post-format, displaying
+  // an atom error and returning true if so.
+  _contentsHaveChanged(before: string, after: string, displayErrors: boolean): boolean {
+    const changed = before !== after;
+    if (changed && displayErrors) {
+      atom.notifications.addError(
+        'The file contents were changed before formatting was complete.'
+      );
+    }
+    return changed;
+  }
+
+  // Formats code in the active editor, returning whether or not the code
+  // formatted successfully.
+  async _formatCodeInActiveTextEditor(): Promise<boolean> {
+    const editor = atom.workspace.getActiveTextEditor();
+    if (!editor) {
+      atom.notifications.addError('No active text editor to format its code!');
+      return false;
+    }
+
+    return await this._formatCodeInTextEditor(editor);
+  }
+
+  // Formats code in the editor specified, returning whether or not the code
+  // formatted successfully.
+  async _formatCodeInTextEditor(
+    editor: atom$TextEditor,
+    displayErrors: boolean = true,
+  ): Promise<boolean> {
     const {scopeName} = editor.getGrammar();
     const matchingProviders = this._getMatchingProvidersForScopeName(scopeName);
 
     if (!matchingProviders.length) {
-      atom.notifications.addError('No Code-Format providers registered for scope: ' + scopeName);
-      return;
+      if (displayErrors) {
+        atom.notifications.addError('No Code-Format providers registered for scope: ' + scopeName);
+      }
+      return false;
     }
 
     const buffer = editor.getBuffer();
@@ -60,15 +116,24 @@ class CodeFormatManager {
           [selectionEnd.row + 1, 0],
       );
     }
+    const contents = editor.getText();
 
     const provider = matchingProviders[0];
     if (provider.formatCode != null &&
       (!selectionRangeEmpty || provider.formatEntireFile == null)) {
-      const codeReplacement = await provider.formatCode(editor, formatRange);
+      const formatted = await provider.formatCode(editor, formatRange);
+      // Contents have changed since the time of triggering format code.
+      if (this._contentsHaveChanged(contents, editor.getText(), displayErrors)) {
+        return false;
+      }
       // TODO(most): save cursor location.
-      editor.setTextInBufferRange(formatRange, codeReplacement);
+      editor.setTextInBufferRange(formatRange, formatted);
     } else if (provider.formatEntireFile != null) {
       const {newCursor, formatted} = await provider.formatEntireFile(editor, formatRange);
+      // Contents have changed since the time of triggering format code.
+      if (this._contentsHaveChanged(contents, editor.getText(), displayErrors)) {
+        return false;
+      }
       buffer.setTextViaDiff(formatted);
 
       const newPosition = (newCursor != null)
@@ -81,6 +146,8 @@ class CodeFormatManager {
     } else {
       throw new Error('code-format providers must implement formatCode or formatEntireFile');
     }
+
+    return true;
   }
 
   _getMatchingProvidersForScopeName(scopeName: string): Array<CodeFormatProvider> {
@@ -104,6 +171,7 @@ class CodeFormatManager {
       this._subscriptions = null;
     }
     this._codeFormatProviders = [];
+    this._pendingFormats.clear();
   }
 }
 
