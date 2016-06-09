@@ -691,8 +691,10 @@ export class HgService {
   async _runSimpleInWorkingDirectory(
     action: string,
     args: Array<string>,
+    opts: child_process$spawnOpts = {},
   ): Promise<void> {
     const options = {
+      ...opts,
       cwd: this._workingDirectory,
     };
     const cmd = [action].concat(args);
