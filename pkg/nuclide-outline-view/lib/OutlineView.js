@@ -81,14 +81,6 @@ export class OutlineView extends React.Component {
       </div>
     );
   }
-
-  getTitle(): string {
-    return 'Outline View';
-  }
-
-  getIconName(): string {
-    return 'list-unordered';
-  }
 }
 
 type OutlineViewComponentProps = {
