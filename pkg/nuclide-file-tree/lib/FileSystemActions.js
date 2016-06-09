@@ -36,7 +36,7 @@ import pathModule from 'path';
 let atomPanel: ?Object;
 let dialogComponent: ?React.Component;
 
-const FileSystemActions = {
+class FileSystemActions {
   openAddFolderDialog(onDidConfirm: (filePath: ?string) => mixed): void {
     const node = this._getSelectedContainerNode();
     if (!node) {
@@ -69,7 +69,7 @@ const FileSystemActions = {
         }
       },
     );
-  },
+  }
 
   openAddFileDialog(onDidConfirm: (filePath: ?string) => mixed): void {
     const node = this._getSelectedContainerNode();
@@ -116,7 +116,7 @@ const FileSystemActions = {
       },
       additionalOptions,
     );
-  },
+  }
 
   _getHgRepositoryForPath(filePath: string): ?HgRepositoryClient {
     const repository = repositoryForPath(filePath);
@@ -124,7 +124,7 @@ const FileSystemActions = {
       return ((repository: any): HgRepositoryClient);
     }
     return null;
-  },
+  }
 
   async _onConfirmRename(
     node: FileTreeNode,
@@ -146,7 +146,7 @@ const FileSystemActions = {
     }
 
     await FileTreeHgHelpers.renameNode(node, newPath);
-  },
+  }
 
   async _onConfirmDuplicate(
     file: File | RemoteFile,
@@ -166,7 +166,7 @@ const FileSystemActions = {
       return;
     }
     const hgRepository = this._getHgRepositoryForPath(newPath);
-    if (hgRepository !== null && addToVCS) {
+    if (hgRepository != null && addToVCS) {
       try {
         await hgRepository.addAll([newPath]);
       } catch (e) {
@@ -178,7 +178,7 @@ const FileSystemActions = {
       }
       onDidConfirm(newPath);
     }
-  },
+  }
 
   openRenameDialog(): void {
     const store = FileTreeStore.getInstance();
@@ -204,7 +204,7 @@ const FileSystemActions = {
       onClose: this._closeDialog,
       selectBasename: true,
     });
-  },
+  }
 
   openDuplicateDialog(onDidConfirm: (filePath: ?string) => mixed): void {
     const store = FileTreeStore.getInstance();
@@ -248,7 +248,7 @@ const FileSystemActions = {
       selectBasename: true,
       additionalOptions,
     });
-  },
+  }
 
   _getSelectedContainerNode(): ?FileTreeNode {
     const store = FileTreeStore.getInstance();
@@ -259,7 +259,7 @@ const FileSystemActions = {
      */
     const node = store.getSelectedNodes().first();
     return node.isContainer ? node : node.parent;
-  },
+  }
 
   _openAddDialog(
     entryType: string,
@@ -274,7 +274,7 @@ const FileSystemActions = {
       onClose: this._closeDialog,
       additionalOptions,
     });
-  },
+  }
 
   _openDialog(props: Object): void {
     this._closeDialog();
@@ -284,7 +284,7 @@ const FileSystemActions = {
       <FileDialogComponent {...props} />,
       dialogHostElement
     );
-  },
+  }
 
   _closeDialog(): void {
     if (atomPanel != null) {
@@ -296,7 +296,7 @@ const FileSystemActions = {
       atomPanel.destroy();
       atomPanel = null;
     }
-  },
-};
+  }
+}
 
-module.exports = FileSystemActions;
+module.exports = new FileSystemActions();
