@@ -59,7 +59,7 @@ export type ResponseMessage =
 
 export type ErrorResponseMessage = {
   protocol: 'service_framework3_rpc';
-  type: 'ErrorMessage';
+  type: 'error-response';
   id: number;
   error: any;
 };
@@ -197,10 +197,10 @@ export function createDisposeMessage(id: number): DisposeObservableMessage {
   };
 }
 
-export function createErrorMessage(id: number, error: any): ErrorResponseMessage {
+export function createErrorResponseMessage(id: number, error: any): ErrorResponseMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
-    type: 'ErrorMessage',
+    type: 'error-response',
     id,
     error: formatError(error),
   };

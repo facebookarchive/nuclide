@@ -38,7 +38,7 @@ import {
   createNewObjectMessage,
   createDisposeMessage,
   createPromiseMessage,
-  createErrorMessage,
+  createErrorResponseMessage,
   createNextMessage,
   createCompletedMessage,
   createObserveErrorMessage,
@@ -373,7 +373,7 @@ export class RpcConnection<TransportType: Transport> {
       this._transport.send(createPromiseMessage(id, result));
       timingTracker.onSuccess();
     }, error => {
-      this._transport.send(createErrorMessage(id, error));
+      this._transport.send(createErrorResponseMessage(id, error));
       timingTracker.onError(error == null ? new Error() : error);
     });
   }
@@ -509,7 +509,7 @@ export class RpcConnection<TransportType: Transport> {
     switch (message.type) {
       case 'PromiseMessage':
       case 'ObservableMessage':
-      case 'ErrorMessage':
+      case 'error-response':
         this._handleResponseMessage(message);
         break;
       case 'call':
@@ -552,7 +552,7 @@ export class RpcConnection<TransportType: Transport> {
         });
         break;
       }
-      case 'ErrorMessage': {
+      case 'error-response': {
         const errorCall = this._calls.get(id);
         if (errorCall != null) {
           this._calls.delete(id);
@@ -607,7 +607,7 @@ export class RpcConnection<TransportType: Transport> {
     } catch (e) {
       logger.error(e != null ? e.message : e);
       timingTracker.onError(e == null ? new Error() : e);
-      this._transport.send(createErrorMessage(id, e));
+      this._transport.send(createErrorResponseMessage(id, e));
     }
   }
 
