@@ -81,12 +81,17 @@ class Activation {
       atom.contextMenu.add({
         'atom-text-editor': [
           {
-            label: CONTEXT_MENU_LABEL,
-            command: 'nuclide-vcs-log:show-log-for-active-editor',
-            shouldDisplay(): boolean {
-              const uri = getActiveTextEditorURI();
-              return getRepositoryWithLogMethodForPath(uri) != null;
-            },
+            label: 'Source Control',
+            submenu: [
+              {
+                label: CONTEXT_MENU_LABEL,
+                command: 'nuclide-vcs-log:show-log-for-active-editor',
+                shouldDisplay(): boolean {
+                  const uri = getActiveTextEditorURI();
+                  return getRepositoryWithLogMethodForPath(uri) != null;
+                },
+              },
+            ],
           },
         ],
       }),
