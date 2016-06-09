@@ -40,7 +40,7 @@ import {
   createPromiseMessage,
   createErrorResponseMessage,
   createNextMessage,
-  createCompletedMessage,
+  createCompleteMessage,
   createObserveErrorMessage,
   decodeError,
 } from './messages';
@@ -399,7 +399,7 @@ export class RpcConnection<TransportType: Transport> {
       this._transport.send(createObserveErrorMessage(id, error));
       this._objectRegistry.removeSubscription(id);
     }, completed => {
-      this._transport.send(createCompletedMessage(id));
+      this._transport.send(createCompleteMessage(id));
       this._objectRegistry.removeSubscription(id);
     });
     this._objectRegistry.addSubscription(id, subscription);
@@ -508,8 +508,10 @@ export class RpcConnection<TransportType: Transport> {
 
     switch (message.type) {
       case 'PromiseMessage':
-      case 'ObservableMessage':
       case 'error-response':
+      case 'next':
+      case 'complete':
+      case 'error':
         this._handleResponseMessage(message);
         break;
       case 'call':
@@ -536,20 +538,24 @@ export class RpcConnection<TransportType: Transport> {
         }
         break;
       }
-      case 'ObservableMessage': {
+      case 'next': {
         const subscriptions = this._subscriptions.get(id);
         invariant(subscriptions != null);
-        const {result} = message;
-        subscriptions.forEach(subscription => {
-          if (result.type === 'next') {
-            subscription.next(result.data);
-          } else if (result.type === 'error') {
-            subscription.error(result.error);
-          } else {
-            invariant(result.type === 'completed');
-            subscription.complete();
-          }
-        });
+        const {value} = message;
+        subscriptions.forEach(subscription => subscription.next(value));
+        break;
+      }
+      case 'complete': {
+        const subscriptions = this._subscriptions.get(id);
+        invariant(subscriptions != null);
+        subscriptions.forEach(subscription => subscription.complete());
+        break;
+      }
+      case 'error': {
+        const subscriptions = this._subscriptions.get(id);
+        invariant(subscriptions != null);
+        const {error} = message;
+        subscriptions.forEach(subscription => subscription.error(error));
         break;
       }
       case 'error-response': {

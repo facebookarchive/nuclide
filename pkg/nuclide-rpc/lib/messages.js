@@ -54,8 +54,8 @@ export type DisposeObservableMessage = {
 };
 
 // Encodes the structure of messages that can be sent from the server to the client.
-export type ResponseMessage =
-  PromiseResponseMessage | ErrorResponseMessage | ObservableResponseMessage;
+export type ResponseMessage = PromiseResponseMessage | ErrorResponseMessage
+  | NextMessage | CompleteMessage | ErrorMessage;
 
 export type ErrorResponseMessage = {
   protocol: 'service_framework3_rpc';
@@ -71,18 +71,25 @@ export type PromiseResponseMessage = {
   result: any;
 };
 
-export type ObservableResponseMessage = {
+export type NextMessage = {
   protocol: 'service_framework3_rpc';
-  type: 'ObservableMessage';
+  type: 'next';
   id: number;
-  result: ObservableResult;
+  value: any;
 };
 
-export type ObservableResult =
-  { type: 'completed'; } |
-  { type: 'next'; data: any } |
-  { type: 'error'; error: any};
+export type CompleteMessage = {
+  protocol: 'service_framework3_rpc';
+  type: 'complete';
+  id: number;
+};
 
+export type ErrorMessage = {
+  protocol: 'service_framework3_rpc';
+  type: 'error';
+  id: number;
+  error: any;
+};
 
 // TODO: This should be a custom marshaller registered in the TypeRegistry
 export function decodeError(message: Object, encodedError: ?(Object | string)): ?(Error | string) {
@@ -153,39 +160,32 @@ export function createPromiseMessage(id: number, result: any): PromiseResponseMe
   };
 }
 
-export function createNextMessage(id: number, data: any): ObservableResponseMessage {
+export function createNextMessage(id: number, value: any): NextMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
-    type: 'ObservableMessage',
+    type: 'next',
     id,
-    result: {
-      type: 'next',
-      data,
-    },
+    value,
   };
 }
 
-export function createCompletedMessage(id: number): ObservableResponseMessage {
+export function createCompleteMessage(id: number): CompleteMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
-    type: 'ObservableMessage',
+    type: 'complete',
     id,
-    result: {type: 'completed'},
   };
 }
 
 export function createObserveErrorMessage(
   id: number,
   error: any,
-): ObservableResponseMessage {
+): ErrorMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
-    type: 'ObservableMessage',
+    type: 'error',
     id,
-    result: {
-      type: 'error',
-      error: formatError(error),
-    },
+    error: formatError(error),
   };
 }
 
