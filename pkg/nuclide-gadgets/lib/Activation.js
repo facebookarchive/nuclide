@@ -63,7 +63,6 @@ class Activation {
 
       // Keep the atom commands up to date with the registered gadgets.
       syncAtomCommands(
-        // $FlowFixMe(matthewwithanm): gadgetsMap is mixed because the state is an untyped Immutable.Map. It should be a record!
         gadget$.map(gadgetsMap => new Set(gadgetsMap.values())),
         // $FlowFixMe(matthewwithanm)
         gadget => createAtomCommands(gadget, commands),

@@ -1,17 +1,17 @@
-// flow-typed signature: 888dbaffed291bc244b3a8ca8126d3c5
-// flow-typed version: 51747c140d/rxjs_v5.0.x/flow_>=v0.25.0
+// flow-typed signature: 626f35d1b030a6a427a4ccf8d95e4f83
+// flow-typed version: 6378198de1/rxjs_v5.0.x/flow_>=v0.25.0
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
 // FIXME(samgoldman) Remove this once Subject<T> can mixin Observer<T>
-interface rx$IObserver<T> {
+interface rx$IObserver<-T> {
   next(value: T): mixed;
   error(error: any): mixed;
   complete(): mixed;
 }
 
 // FIXME: Technically at least one of these is required.
-interface PartialObserver<T> {
+interface PartialObserver<-T> {
   next?: (value: T) => mixed;
   error?: (error: any) => mixed;
   complete?: () => mixed;
@@ -24,7 +24,7 @@ interface rx$ISubscription {
 type TeardownLogic = rx$ISubscription | () => void;
 
 declare module 'rxjs' {
-  declare class Observable<T> {
+  declare class Observable<+T> {
     // This is actually variadic, but we only support one or two other observables.
     static combineLatest<T, U>(t: Observable<T>, u: Observable<U>): Observable<[T, U]>;
     static combineLatest<T, U, V>(
@@ -93,6 +93,8 @@ declare module 'rxjs' {
 
     buffer(bufferBoundaries: Observable<any>): Observable<Array<T>>;
 
+    cache(bufferSize?: number, windowTime?: number): Observable<T>;
+
     catch<U>(selector: (err: any, caught: Observable<T>) => Observable<U>): Observable<U>;
 
     // This is actually variadic, but we only support one or two other observables.
@@ -109,6 +111,8 @@ declare module 'rxjs' {
     ): Observable<W>;
 
     // This is actually variadic, but we only support one or two other observables.
+    withLatestFrom<U>(u: Observable<U>): Observable<[T, U]>;
+    withLatestFrom<U, V>(u: Observable<U>, v: Observable<V>): Observable<[T, U, V]>;
     withLatestFrom<U, V>(
       u: Observable<U>,
       resultSelector: (t: T, u: U) => V,
