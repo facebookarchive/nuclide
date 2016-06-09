@@ -43,6 +43,10 @@ module.exports = class MockHgService {
     return Promise.resolve();
   }
 
+  observeHgConflictStateDidChange(): Observable<void> {
+    return new Subject();
+  }
+
   fetchDiffInfo(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
     return Promise.resolve(null);
   }

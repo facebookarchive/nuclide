@@ -16,6 +16,7 @@ import type {
   HgStatusOptionValue,
   LineDiff,
   RevisionInfo,
+  MergeConflict,
   RevisionFileChanges,
   StatusCodeIdValue,
   StatusCodeNumberValue,
@@ -54,6 +55,7 @@ type HgRepositoryOptions = {
  *
  */
 
+const DID_CHANGE_CONFLICT_STATE = 'did-change-conflict-state';
 const EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
 export const MAX_INDIVIDUAL_CHANGED_PATHS = 1;
 
@@ -106,6 +108,7 @@ export class HgRepositoryClient {
 
   _activeBookmark: ?string;
   _serializedRefreshStatusesCache: () => Promise<void>;
+  _isInConflict: boolean;
   async: HgRepositoryClientAsync;
 
   constructor(repoPath: string, hgService: HgService, options: HgRepositoryOptions) {
@@ -116,6 +119,7 @@ export class HgRepositoryClient {
     this._projectDirectory = options.projectRootDirectory;
     this._originURL = options.originURL;
     this._service = hgService;
+    this._isInConflict = false;
 
     this._emitter = new Emitter();
     this._disposables = {};
@@ -195,6 +199,8 @@ export class HgRepositoryClient {
       .subscribe(this.fetchActiveBookmark.bind(this));
     this._service.observeBookmarksDidChange()
       .subscribe(() => { this._emitter.emit('did-change-bookmarks'); });
+    this._service.observeHgConflictStateDidChange()
+      .subscribe(this._conflictStateChanged.bind(this));
   }
 
   destroy() {
@@ -204,6 +210,11 @@ export class HgRepositoryClient {
       this._disposables[key].dispose();
     });
     this._service.dispose();
+  }
+
+  _conflictStateChanged(isInConflict: boolean): void {
+    this._isInConflict = isInConflict;
+    this._emitter.emit(DID_CHANGE_CONFLICT_STATE);
   }
 
   /**
@@ -224,6 +235,10 @@ export class HgRepositoryClient {
 
   onDidChangeStatuses(callback: () => mixed): IDisposable {
     return this._emitter.on('did-change-statuses', callback);
+  }
+
+  onDidChangeConflictState(callback: () => mixed): IDisposable {
+    return this._emitter.on(DID_CHANGE_CONFLICT_STATE, callback);
   }
 
   /**
@@ -322,6 +337,11 @@ export class HgRepositoryClient {
   // TODO This is a stub.
   getReferenceTarget(reference: string, path: ?NuclideUri): ?string {
     return null;
+  }
+
+  // Added for conflict detection.
+  isInConflict(): boolean {
+    return this._isInConflict;
   }
 
 
@@ -751,6 +771,14 @@ export class HgRepositoryClient {
    */
   fetchActiveBookmark(): Promise<string> {
     return this.async.getShortHead();
+  }
+
+  fetchMergeConflicts(): Promise<Array<MergeConflict>> {
+    return this._service.fetchMergeConflicts();
+  }
+
+  resolveConflictedFile(filePath: NuclideUri): Promise<void> {
+    return this._service.resolveConflictedFile(filePath);
   }
 
   /**

@@ -15,6 +15,7 @@ import type {
   StatusCodeIdValue,
   StatusCodeNumberValue,
   HgStatusOptionValue,
+  MergeConflictStatusValue,
 } from './HgService';
 
 const StatusCodeId = Object.freeze({
@@ -25,6 +26,7 @@ const StatusCodeId = Object.freeze({
   MISSING: '!', // (deleted by non-hg command, but still tracked)
   REMOVED: 'R',
   UNTRACKED: '?',
+  UNRESOLVED: 'U',
 });
 
 // This is to work around flow's missing support of enums.
@@ -38,6 +40,7 @@ const StatusCodeNumber = Object.freeze({
   MISSING: 5,
   REMOVED: 6,
   UNTRACKED: 7,
+  UNRESOLVED: 8,
 });
 
 // This is to work around flow's missing support of enums.
@@ -51,16 +54,30 @@ const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = 
   [StatusCodeId.MISSING]: StatusCodeNumber.MISSING,
   [StatusCodeId.REMOVED]: StatusCodeNumber.REMOVED,
   [StatusCodeId.UNTRACKED]: StatusCodeNumber.UNTRACKED,
+  [StatusCodeId.UNRESOLVED]: StatusCodeNumber.UNRESOLVED,
 };
 
-const HgStatusOption: {[key: string]: HgStatusOptionValue} = Object.freeze({
+const HgStatusOption = Object.freeze({
   ONLY_NON_IGNORED: 1,  // only the output of `hg status`
   ONLY_IGNORED: 2,      // only the output of `hg status --ignored`
   ALL_STATUSES: 3,      // the output of `hg status --all`
 });
 
+// This is to work around flow's missing support of enums.
+(HgStatusOption: {[key: string]: HgStatusOptionValue});
+
+const MergeConflictStatus = Object.freeze({
+  BOTH_CHANGED: 'both changed',
+  DELETED_IN_THEIRS: 'deleted in theirs',
+  DELETED_IN_OURS: 'deleted in ours',
+});
+
+// This is to work around flow's missing support of enums.
+(MergeConflictStatus: { [key: string]: MergeConflictStatusValue });
+
 module.exports = {
   HgStatusOption,
+  MergeConflictStatus,
   StatusCodeId,
   StatusCodeIdToNumber,
   StatusCodeNumber,

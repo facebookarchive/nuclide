@@ -11,7 +11,11 @@
 
 import path from 'path';
 import {HgService} from '../lib/HgService';
-import {HgStatusOption, StatusCodeId} from '../lib/hg-constants';
+import {
+  StatusCodeId,
+  HgStatusOption,
+  MergeConflictStatus,
+} from '../lib/hg-constants';
 import invariant from 'assert';
 import fsPromise from '../../commons-node/fsPromise';
 
@@ -371,6 +375,119 @@ describe('HgService', () => {
             'Temporary file should not exist and removal should not have been attempted',
           );
         });
+      });
+    });
+  });
+
+  describe('::fetchMergeConflicts()', () => {
+
+    const relativePath1 = relativize(PATH_1);
+    const relativePath2 = relativize(PATH_2);
+
+    beforeEach(() => {
+      spyOn(hgService, '_checkOrigFile').andCallFake(relativePath => {
+        return relativePath === relativePath1;
+      });
+      spyOn(hgService, '_hgAsyncExecute').andReturn({
+        stdout: JSON.stringify([
+          {path: relativePath1, status: StatusCodeId.UNRESOLVED},
+          {path: relativePath2, status: StatusCodeId.UNRESOLVED},
+          {path: '/abc', status: 'something'},
+        ]),
+      });
+    });
+
+    it('fetches merge conflicts', () => {
+      waitsForPromise(async () => {
+        const mergeConflicts = await hgService.fetchMergeConflicts();
+        expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
+          ['resolve', '--list', '-Tjson'],
+          {cwd: TEST_WORKING_DIRECTORY},
+        );
+        expect(mergeConflicts.length).toBe(2);
+        expect(mergeConflicts[0]).toEqual(
+          {path: relativePath1, message: MergeConflictStatus.BOTH_CHANGED},
+        );
+        expect(mergeConflicts[1]).toEqual(
+          {path: relativePath2, message: MergeConflictStatus.DELETED_IN_THEIRS},
+        );
+      });
+    });
+  });
+
+  describe('::resolveConflictedFile()', () => {
+
+    beforeEach(() => {
+      spyOn(hgService, '_hgAsyncExecute');
+    });
+
+    it('calls hg resolve', () => {
+      waitsForPromise(async () => {
+        await hgService.resolveConflictedFile(PATH_1);
+        expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
+          ['resolve', '-m', PATH_1],
+          {cwd: TEST_WORKING_DIRECTORY},
+        );
+      });
+    });
+  });
+
+  describe('::_checkConflictChange', () => {
+    let mergeConflicts;
+
+    beforeEach(() => {
+      mergeConflicts = [];
+      spyOn(hgService, '_updateStateFilesExistence');
+      spyOn(hgService, 'fetchMergeConflicts').andCallFake(() => mergeConflicts);
+    });
+
+    it('reports no conflicts when lock is held', () => {
+      hgService._lockFileHeld = true;
+      hgService._isRebasing = false;
+      waitsForPromise(async () => {
+        await hgService._checkConflictChange();
+        expect(hgService._isInConflict).toBeFalsy();
+      });
+    });
+
+    it('reports no conflicts even when lock not held but is rebasing', () => {
+      hgService._lockFileHeld = false;
+      hgService._isRebasing = true;
+      waitsForPromise(async () => {
+        await hgService._checkConflictChange();
+        expect(hgService._isInConflict).toBeFalsy();
+      });
+    });
+
+    it('reports no conflicts even when lock not held + rebasing, but no conflicts found', () => {
+      hgService._lockFileHeld = false;
+      hgService._isRebasing = true;
+      waitsForPromise(async () => {
+        await hgService._checkConflictChange();
+        expect(hgService._isInConflict).toBeFalsy();
+      });
+    });
+
+    it('reports conflicts when lock not held + rebasing + conflicts found', () => {
+      hgService._lockFileHeld = false;
+      hgService._isRebasing = true;
+      mergeConflicts = [{path: PATH_1, status: StatusCodeId.UNRESOLVED}];
+      waitsForPromise(async () => {
+        await hgService._checkConflictChange();
+        expect(hgService._isInConflict).toBeTruthy();
+      });
+    });
+
+    it('exits of conflict state when rebasing is done', () => {
+      hgService._lockFileHeld = false;
+      hgService._isRebasing = true;
+      mergeConflicts = [{path: PATH_1, status: StatusCodeId.UNRESOLVED}];
+      waitsForPromise(async () => {
+        await hgService._checkConflictChange();
+        expect(hgService._isInConflict).toBeTruthy();
+        hgService._isRebasing = false;
+        await hgService._checkConflictChange();
+        expect(hgService._isInConflict).toBeFalsy();
       });
     });
   });

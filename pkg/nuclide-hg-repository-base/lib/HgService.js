@@ -15,7 +15,11 @@ import path from 'path';
 import fs from 'fs';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 
-import {HgStatusOption} from './hg-constants';
+import {
+  HgStatusOption,
+  MergeConflictStatus,
+  StatusCodeId,
+} from './hg-constants';
 import {Observable, Subject} from 'rxjs';
 import {parseHgBlameOutput} from './hg-blame-output-parser';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
@@ -31,6 +35,7 @@ import {
 } from './hg-revision-state-helpers';
 import {hgAsyncExecute} from './hg-utils';
 import fsPromise from '../../commons-node/fsPromise';
+import debounce from '../../commons-node/debounce';
 import {getPath} from '../../nuclide-remote-uri';
 
 import {readArcConfig} from '../../nuclide-arcanist-base';
@@ -44,6 +49,7 @@ const WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-
 const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
 const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS = 'hg-repository-watchman-subscription-hgbookmarks';
 const WATCHMAN_HG_DIR_STATE = 'hg-repository-watchman-subscription-dirstate';
+const CHECK_CONFLICT_DELAY_MS = 500;
 
 // If Watchman reports that many files have changed, it's not really useful to report this.
 // This is typically caused by a large rebase or a Watchman re-crawl.
@@ -63,7 +69,9 @@ const COMMIT_MESSAGE_STRIP_LINE = /^HG:.*(\n|$)/gm;
  * These are status codes used by Mercurial's output.
  * Documented in http://selenic.com/hg/help/status.
  */
-export type StatusCodeIdValue = 'A' | 'C' | 'I' | 'M' | '!' | 'R' | '?';
+export type StatusCodeIdValue = 'A' | 'C' | 'I' | 'M' | '!' | 'R' | '?' | 'U';
+
+export type MergeConflictStatusValue = 'both changed' | 'deleted in theirs' | 'deleted in ours';
 
 /**
  * Internally, the HgRepository uses the string StatusCodeId to do bookkeeping.
@@ -73,7 +81,7 @@ export type StatusCodeIdValue = 'A' | 'C' | 'I' | 'M' | '!' | 'R' | '?';
  * The numbers themselves should not matter; they are meant to be passed
  * to ::isStatusNew/::isStatusModified to be interpreted.
  */
-export type StatusCodeNumberValue = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type StatusCodeNumberValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export type HgStatusOptionValue = 1 | 2 | 3;
 
@@ -144,6 +152,13 @@ export type VcsLogResponse = {
   entries: Array<VcsLogEntry>;
 };
 
+export type MergeConflict = {
+  path: NuclideUri;
+  message: MergeConflictStatusValue;
+};
+
+export type CheckoutSideName = 'ours' | 'theirs';
+
 async function getForkBaseName(directoryPath: string): Promise<string> {
   const arcConfig = await readArcConfig(directoryPath);
   if (arcConfig != null) {
@@ -171,6 +186,10 @@ function getPrimaryWatchmanSubscriptionRefinements(): Array<mixed> {
 
 export class HgService {
   _lockFileHeld: boolean;
+  _lockFilePath: string;
+  _isRebasing: boolean;
+  _isInConflict: boolean;
+  _rebaseStateFilePath: string;
   _watchmanClient: ?WatchmanClient;
   _hgDirWatcher: ?fs.FSWatcher;
 
@@ -180,6 +199,8 @@ export class HgService {
   _hgBookmarksDidChangeObserver: Subject;
   _hgRepoStateDidChangeObserver: Subject;
   _watchmanSubscriptionPromise: Promise<void>;
+  _hgConflictStateDidChangeObserver: Subject<boolean>;
+  _debouncedCheckConflictChange: () => void;
 
   constructor(workingDirectory: string) {
     this._workingDirectory = workingDirectory;
@@ -187,7 +208,18 @@ export class HgService {
     this._hgActiveBookmarkDidChangeObserver = new Subject();
     this._hgBookmarksDidChangeObserver = new Subject();
     this._hgRepoStateDidChangeObserver = new Subject();
+    this._hgConflictStateDidChangeObserver = new Subject();
     this._lockFileHeld = false;
+    this._lockFilePath = path.join(workingDirectory, '.hg', 'wlock');
+    this._rebaseStateFilePath = path.join(workingDirectory, '.hg', 'rebasestate');
+    this._isRebasing = false;
+    this._isInConflict = false;
+    this._debouncedCheckConflictChange = debounce(
+      () => {
+        this._checkConflictChange();
+      },
+      CHECK_CONFLICT_DELAY_MS,
+    );
     this._watchmanSubscriptionPromise = this._subscribeToWatchman();
   }
 
@@ -200,6 +232,7 @@ export class HgService {
     this._hgRepoStateDidChangeObserver.complete();
     this._hgActiveBookmarkDidChangeObserver.complete();
     this._hgBookmarksDidChangeObserver.complete();
+    this._hgConflictStateDidChangeObserver.complete();
     if (this._hgDirWatcher != null) {
       this._hgDirWatcher.close();
       this._hgDirWatcher = null;
@@ -259,14 +292,6 @@ export class HgService {
   }
 
   async _subscribeToWatchman(): Promise<void> {
-    const lockFileChange = exists => {
-      if (exists) {
-        this._lockFileHeld = true;
-      } else {
-        this._lockFileHeld = false;
-      }
-    };
-
     // Using a local variable here to allow better type refinement.
     const watchmanClient = new WatchmanClient();
     this._watchmanClient = watchmanClient;
@@ -307,18 +332,15 @@ export class HgService {
     // a stable filesystem (not respecting `defer_vcs` option) and
     // that doesn't happen with big mercurial updates (the primary use of state file watchers).
     // Hence, we here use node's filesystem watchers instead.
-    const lockFilePath = path.join(workingDirectory, '.hg', 'wslock');
     try {
       this._hgDirWatcher = fs.watch(path.join(workingDirectory, '.hg'), (event, fileName) => {
-        if (fileName === 'wslock') {
-          // The synchronous exist check is used to avoid the race condition of
-          // fast updates, when the watcher is called twice as the file is created/removed.
-          // That may lead to a sequence calls: lockFileChange(false) then lockFileChange(true),
-          // stopping future events from being sent to the client.
-          lockFileChange(fs.existsSync(lockFilePath));
+        if (fileName === 'wlock') {
+          this._debouncedCheckConflictChange();
+        } else if (fileName === 'rebasestate') {
+          this._debouncedCheckConflictChange();
         }
       });
-      logger.debug('Node watcher created for wslock files.');
+      logger.debug('Node watcher created for wlock files.');
     } catch (error) {
       getLogger().error('Error when creating node watcher for hg state files', error);
     }
@@ -385,6 +407,34 @@ export class HgService {
     this._filesDidChangeObserver.next(changedFiles);
   }
 
+  async _updateStateFilesExistence(): Promise<void> {
+    const [lockExists, rebaseStateExists] = await Promise.all([
+      fsPromise.exists(this._lockFilePath),
+      fsPromise.exists(this._rebaseStateFilePath),
+    ]);
+    this._lockFileHeld = lockExists;
+    this._isRebasing = rebaseStateExists;
+  }
+
+  async _checkConflictChange(): Promise<void> {
+    await this._updateStateFilesExistence();
+    if (this._isInConflict) {
+      if (!this._isRebasing) {
+        this._isInConflict = false;
+        this._hgConflictStateDidChangeObserver.next(false);
+      }
+      return;
+    }
+    // Detect if we are not in a conflict.
+    if (!this._lockFileHeld && this._isRebasing) {
+      const mergeConflicts = await this.fetchMergeConflicts();
+      if (mergeConflicts.length > 0) {
+        this._isInConflict = true;
+        this._hgConflictStateDidChangeObserver.next(true);
+      }
+    }
+  }
+
   _emitHgRepoStateChanged(): void {
     this._hgRepoStateDidChangeObserver.next();
   }
@@ -412,6 +462,14 @@ export class HgService {
    */
   observeHgRepoStateDidChange(): Observable<void> {
     return this._hgRepoStateDidChangeObserver;
+  }
+
+  /**
+   * Observes when a Mercurial repository enters and exits a rebase state.
+   */
+  observeHgConflictStateDidChange(): Observable<boolean> {
+    this._checkConflictChange();
+    return this._hgConflictStateDidChangeObserver;
   }
 
   /**
@@ -793,4 +851,38 @@ export class HgService {
     const entries = JSON.parse(result.stdout);
     return {entries};
   }
+
+  async fetchMergeConflicts(): Promise<Array<MergeConflict>> {
+    const {stdout} = await this._hgAsyncExecute(['resolve', '--list', '-Tjson'], {
+      cwd: this._workingDirectory,
+    });
+    const fileListStatuses = JSON.parse(stdout);
+    const conflictedFiles = fileListStatuses.filter(fileStatus => {
+      return fileStatus.status === StatusCodeId.UNRESOLVED;
+    });
+    const conflicts = await Promise.all(conflictedFiles.map(async conflictedFile => {
+      let message;
+      // Heuristic: If the `.orig` file doesn't exist, then it's deleted by the rebasing commit.
+      if (await this._checkOrigFile(conflictedFile.path)) {
+        message = MergeConflictStatus.BOTH_CHANGED;
+      } else {
+        message = MergeConflictStatus.DELETED_IN_THEIRS;
+      }
+      return {
+        path: conflictedFile.path,
+        message,
+      };
+    }));
+    return conflicts;
+  }
+
+  _checkOrigFile(filePath: string): Promise<boolean> {
+    const origFilePath = path.join(this._workingDirectory, filePath + '.orig');
+    return fsPromise.exists(origFilePath);
+  }
+
+  resolveConflictedFile(filePath: NuclideUri): Promise<void> {
+    return this._runSimpleInWorkingDirectory('resolve', ['-m', filePath]);
+  }
+
 }
