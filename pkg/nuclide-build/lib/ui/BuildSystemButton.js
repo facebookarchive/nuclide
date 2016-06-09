@@ -63,6 +63,7 @@ export class BuildSystemButton extends React.Component {
           style={{display: 'flex'}}>
           {Icon ? <Icon /> : null}
         </div>
+        <div className="icon icon-triangle-down nuclide-build-system-button-arrow" />
       </button>
     );
   }

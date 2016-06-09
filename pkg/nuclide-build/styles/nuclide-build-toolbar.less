@@ -78,7 +78,11 @@
   align-items: center;
 }
 
-.nuclide-build-system-button {
+// Ramp up the specificity to override normal .btn padding.
+.btn.nuclide-build-system-button {
+  align-items: center;
+  padding-right: 0;
+
   .icon-path-fill {
     fill: @text-color;
   }
@@ -98,4 +102,15 @@
 // The shortcut toolbar (suda/tool-bar) button
 .nuclide-build-tool-bar-button[hidden] {
   display: none;
+}
+
+.nuclide-build-system-button-arrow {
+  padding: 0 0.8em;
+
+  &:before {
+    font-size: 11px;
+    margin: 0;
+    padding: 0;
+    width: initial;
+  }
 }
