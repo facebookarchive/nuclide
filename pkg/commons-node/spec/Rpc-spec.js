@@ -46,7 +46,7 @@ describe('Rpc', () => {
 
   it('should reject a pending call when the response contains an error', () => {
     waitsForPromise(async () => {
-      const transport = new MockTransport(['{"type":"response","id":1,"error":"error1"}']);
+      const transport = new MockTransport(['{"type":"error-response","id":1,"error":"error1"}']);
       const rpc = new Rpc('TestRPC', transport);
       const result = rpc.call('m', []);
       expect(transport.sentMessages).toEqual(['{"type":"call","id":1,"method":"m","args":[]}']);

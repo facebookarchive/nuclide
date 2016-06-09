@@ -18,6 +18,7 @@ const logger = getLogger();
 
 const CALL_MESSAGE_TYPE = 'call';
 const RESPONSE_MESSAGE_TYPE = 'response';
+const ERROR_RESPONSE_MESSAGE_TYPE = 'error-response';
 
 type CallMessage<T> = {
   type: 'call';
@@ -34,8 +35,13 @@ type ResponseError = {
 type ResponseMessage<T> = {
   type: 'response';
   id: number;
-  result?: T;
-  error?: ResponseError;
+  result: T;
+};
+
+type ErrorResponseMessage = {
+  type: 'error-response';
+  id: number;
+  error: ResponseError;
 };
 
 type CallResolver<T> = {
@@ -55,7 +61,13 @@ export function createCallMessage<T>(id: number, method: string, args: T): CallM
 export function isValidResponseMessage(obj: any): boolean {
   return obj.type === RESPONSE_MESSAGE_TYPE
     && typeof obj.id === 'number'
-    && ((obj.result === undefined) !== (obj.error === undefined));
+    && 'result' in obj;
+}
+
+export function isValidErrorResponseMessage(obj: any): boolean {
+  return obj.type === ERROR_RESPONSE_MESSAGE_TYPE
+    && typeof obj.id === 'number'
+    && 'error' in obj;
 }
 
 interface Transport {
@@ -131,33 +143,43 @@ export class Rpc<TReq, TRes> {
       return;
     }
 
-    if (!isValidResponseMessage(messageObject)) {
-      logger.error(`${this._name} - error: received invalid RPC response.`);
-      return;
-    }
-    const response: ResponseMessage = messageObject;
-    const {id, result, error} = response;
+    if (isValidResponseMessage(messageObject)) {
+      const response: ResponseMessage = messageObject;
+      const {id, result} = response;
 
-    const inProgress = this._inProgress.get(id);
-    if (inProgress == null) {
-      logger.error(`${this._name} - error: received RPC response with invalid index.`);
-      return;
-    }
+      const inProgress = this._inProgress.get(id);
+      if (inProgress == null) {
+        logger.error(`${this._name} - error: received RPC response with invalid index.`);
+        return;
+      }
 
-    const {resolve, reject} = inProgress;
-    this._inProgress.delete(id);
-    if (error !== undefined) {
-      // Stringify the error only if it's not already a string, to avoid extra
-      // double quotes around strings.
-      const errStr = (typeof error === 'string') ? error : JSON.stringify(error);
-      logger.error(`${this._name} - error from RPC ${id}: ${errStr}`);
-      reject(new Error(errStr));
-    } else {
+      this._inProgress.delete(id);
       invariant(
         result !== undefined,
         `${this._name} - neither result or error received in response`,
       );
-      resolve(result);
+      inProgress.resolve(result);
+    } else if (isValidErrorResponseMessage(messageObject)) {
+      const response: ErrorResponseMessage = messageObject;
+      const {id, error} = response;
+
+      const inProgress = this._inProgress.get(id);
+      if (inProgress == null) {
+        logger.error(`${this._name} - error: received RPC response with invalid index.`);
+        return;
+      }
+
+      this._inProgress.delete(id);
+      if (error !== undefined) {
+        // Stringify the error only if it's not already a string, to avoid extra
+        // double quotes around strings.
+        const errStr = (typeof error === 'string') ? error : JSON.stringify(error);
+        logger.error(`${this._name} - error from RPC ${id}: ${errStr}`);
+        inProgress.reject(new Error(errStr));
+      }
+    } else {
+      logger.error(`${this._name} - error: received invalid RPC response.`);
+      return;
     }
   }
 

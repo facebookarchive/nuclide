@@ -75,9 +75,11 @@ class JediServer:
             elif method == 'get_outline':
                 res['result']['items'] = outline.get_outline(self.src, data['contents'])
             else:
+                res['type'] = 'error-response'
                 del res['result']
                 res['error'] = 'Unknown method to jediserver.py: %s.' % method
         except:
+            res['type'] = 'error-response'
             del res['result']
             res['error'] = traceback.format_exc()
 

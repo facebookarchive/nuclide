@@ -186,12 +186,13 @@ class Server:
                          method, time.time() - start_time)
 
         response = {
-            'type': 'response',
             'id': reqid,
         }
         if error is not None:
+            response['type'] = 'error-response'
             response['error'] = error
         else:
+            response['type'] = 'response'
             response['result'] = result
         return response
 

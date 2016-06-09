@@ -33,6 +33,7 @@ class DummyIOServer:
         if method == 'kill':
             sys.exit(0)
         elif method == 'error':
+            res['type'] = 'error-response'
             res['error'] = 'Command to error received'
         else:
             res['result'] = {
