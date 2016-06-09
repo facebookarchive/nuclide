@@ -441,9 +441,11 @@ export function asyncExecute(
         });
       });
 
-      firstChild.stderr.on('data', data => {
-        firstChildStderr += data;
-      });
+      if (firstChild.stderr != null) {
+        firstChild.stderr.on('data', data => {
+          firstChildStderr += data;
+        });
+      }
 
       lastChild = child_process.spawn(
         localOptions.pipedCommand,
@@ -455,10 +457,13 @@ export function asyncExecute(
       // This is not how UNIX pipes work: if the reader closes, the writer needs
       // to also close (otherwise the writer process may hang.)
       // We have to manually close the writer in this case.
-      lastChild.stdin.on('error', () => {
-        firstChild.stdout.emit('end');
-      });
-      firstChild.stdout.pipe(lastChild.stdin);
+      if (lastChild.stdin != null && firstChild.stdout != null) {
+        lastChild.stdin.on('error', () => {
+          firstChild.stdout.emit('end');
+        });
+        firstChild.stdout.pipe(lastChild.stdin);
+      }
+
     } else {
       lastChild = child_process.spawn(command, args, localOptions);
       monitorStreamErrors(lastChild, command, args, localOptions);
@@ -508,14 +513,18 @@ export function asyncExecute(
       }
     });
 
-    lastChild.stderr.on('data', data => {
-      stderr += data;
-    });
-    lastChild.stdout.on('data', data => {
-      stdout += data;
-    });
+    if (lastChild.stderr != null) {
+      lastChild.stderr.on('data', data => {
+        stderr += data;
+      });
+    }
+    if (lastChild.stdout != null) {
+      lastChild.stdout.on('data', data => {
+        stdout += data;
+      });
+    }
 
-    if (typeof localOptions.stdin === 'string') {
+    if (typeof localOptions.stdin === 'string' && firstChild.stdin != null) {
       // Note that the Node docs have this scary warning about stdin.end() on
       // http://nodejs.org/api/child_process.html#child_process_child_stdin:
       //
