@@ -737,12 +737,6 @@ export class HgService {
     const opts = {};
     if (after) {
       args.unshift('--after');
-      // TODO (tyangliu): Ignore stdio streams for now to silence EBADF error.
-      // Figure out what is causing these errors; seems to be some kind of
-      // fs race condition, since adding a 10ms sleep before calling rename
-      // nearly eliminates the error, whereas the error still happens with
-      // a 1ms sleep.
-      opts.stdio = 'ignore';
     }
     await this._runSimpleInWorkingDirectory('rename', args, opts);
   }

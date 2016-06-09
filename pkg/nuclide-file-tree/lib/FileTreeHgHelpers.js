@@ -150,6 +150,14 @@ async function _moveNodesUnprotected(
     }
     await hgRepository.rename(paths, destPath, true /* after */);
   } catch (e) {
+    // Note: hack to silence errors from hg rename calls that don't include
+    // any tracked files (which should have been moved successfully by the fs service),
+    // avoiding the need to perform potentially slow hg pre-checks. - tyangliu
+    if (e.message.endsWith('abort: no files to copy\n')) {
+      return;
+    }
+
+    // Restore old editor paths upon error.
     paths.forEach(path => {
       const newPath = join(destPath, basename(path));
       FileTreeHelpers.updatePathInOpenedEditors(newPath, path);
