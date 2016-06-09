@@ -14,6 +14,7 @@ import fs from 'fs';
 import path from 'path';
 
 import ClangServer from '../lib/ClangServer';
+import {getServiceRegistry} from '../lib/ClangServerManager';
 
 const TEST_FILE = path.join(__dirname, 'fixtures', 'outline.cpp');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE, 'utf8');
@@ -21,10 +22,10 @@ const FILE_CONTENTS = fs.readFileSync(TEST_FILE, 'utf8');
 describe('ClangServer', () => {
   it('can return outline data', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(TEST_FILE, ['-x', 'c++']);
-      const response = await server.call('get_outline', {
-        contents: FILE_CONTENTS,
-      });
+      const server = new ClangServer(TEST_FILE, getServiceRegistry(), ['-x', 'c++']);
+      const response = await server.get_outline(
+        FILE_CONTENTS,
+      );
       invariant(response != null);
       expect(response).toEqual([
         {

@@ -15,6 +15,7 @@ import type {
   ClangDeclaration,
   ClangOutlineTree,
 } from '../../nuclide-clang/lib/rpc-types';
+import typeof * as ClangService from '../../nuclide-clang';
 
 import featureConfig from '../../nuclide-feature-config';
 import invariant from 'assert';
@@ -40,10 +41,13 @@ module.exports = {
     clean: boolean,
   ): Promise<?ClangCompileResult> {
     const src = editor.getPath();
+    if (src == null) {
+      return null;
+    }
     const contents = editor.getText();
 
     const defaultFlags = getDefaultFlags();
-    const service = getServiceByNuclideUri('ClangService', src);
+    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
     invariant(service);
 
     return service
@@ -53,6 +57,9 @@ module.exports = {
 
   async getCompletions(editor: atom$TextEditor, prefix: string): Promise<?Array<ClangCompletion>> {
     const src = editor.getPath();
+    if (src == null) {
+      return null;
+    }
     const cursor = editor.getLastCursor();
 
     const line = cursor.getBufferRow();
@@ -60,7 +67,7 @@ module.exports = {
     const tokenStartColumn = column - prefix.length;
 
     const defaultFlags = getDefaultFlags();
-    const service = getServiceByNuclideUri('ClangService', src);
+    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
     invariant(service);
 
     return service
@@ -85,9 +92,12 @@ module.exports = {
     column: number,
   ): Promise<?ClangDeclaration> {
     const src = editor.getPath();
+    if (src == null) {
+      return null;
+    }
     const defaultFlags = getDefaultFlags();
 
-    const service = getServiceByNuclideUri('ClangService', src);
+    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
     invariant(service);
 
     return service
@@ -96,36 +106,44 @@ module.exports = {
 
   async getOutline(editor: atom$TextEditor): Promise<?Array<ClangOutlineTree>> {
     const src = editor.getPath();
+    if (src == null) {
+      return null;
+    }
     const defaultFlags = getDefaultFlags();
 
-    const service = getServiceByNuclideUri('ClangService', src);
+    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
     invariant(service);
 
     return service
         .getOutline(src, editor.getText(), defaultFlags);
   },
 
-  formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{
+  async formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{
     newCursor?: number;
     formatted: string;
   }> {
     const fileUri = editor.getPath();
     const buffer = editor.getBuffer();
     const cursor = buffer.characterIndexForPosition(editor.getLastCursor().getBufferPosition());
+    if (fileUri == null) {
+      return {
+        formatted: editor.getText(),
+      };
+    }
     const startIndex = buffer.characterIndexForPosition(range.start);
     const endIndex = buffer.characterIndexForPosition(range.end);
 
-    const service = getServiceByNuclideUri('ClangService', fileUri);
+    const service: ?ClangService = getServiceByNuclideUri('ClangService', fileUri);
     invariant(service);
 
-    return service
-        .formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex);
+    return {...(await service
+        .formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex))};
   },
 
   reset(editor: atom$TextEditor) {
     const src = editor.getPath();
     if (src != null) {
-      const service = getServiceByNuclideUri('ClangService', src);
+      const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
       invariant(service);
       return service.reset(src);
     }

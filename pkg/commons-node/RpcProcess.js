@@ -11,8 +11,9 @@
 
 import type {Subscription} from 'rxjs';
 import type {ProcessMessage} from './process';
+import type {ServiceRegistry} from '../nuclide-rpc';
 
-import {StreamTransport, Rpc} from './Rpc';
+import {StreamTransport, RpcConnection} from '../nuclide-rpc';
 import {getOutputStream} from './process';
 import {serializeAsyncCall} from './promise';
 import {getLogger} from '../nuclide-logging';
@@ -35,22 +36,24 @@ const logger = getLogger();
  * - Note that stdin, stdout, and stderr must be piped, done by node by default.
  *   Don't override the stdio to close off any of these streams in the constructor opts.
  */
-export default class RpcProcess<TReq, TResp> {
+export default class RpcProcess {
   _name: string;
   _disposed: boolean;
   _process: ?child_process$ChildProcess;
-  _rpc: ?Rpc<TReq, TResp>;
   _subscription: ?Subscription;
-
   _ensureProcess: () => Promise<void>;
+  _serviceRegistry: ServiceRegistry;
+  _rpcConnection: ?RpcConnection<StreamTransport>;
 
   /**
    * @param name           a name for this server, used to tag log entries
    * @param createProcess  a function to used create the child process when needed,
    *                       both during initialization and on restart
    */
-  constructor(name: string, createProcess: ProcessMaker) {
+  constructor(name: string, serviceRegistry: ServiceRegistry, createProcess: ProcessMaker) {
     this._name = name;
+    this._serviceRegistry = serviceRegistry;
+    this._rpcConnection = null;
     this._disposed = false;
     this._ensureProcess = serializeAsyncCall(() =>
       this._ensureProcessImpl(createProcess)
@@ -61,33 +64,16 @@ export default class RpcProcess<TReq, TResp> {
     return this._name;
   }
 
-  /**
-   * Perform an asynchronous call on the child process. The returned promise
-   * will resolve upon receiving a stdout response from the child process marked
-   * the id of the request. The promise will be rejected if any errors occur.
-   *
-   * @param  method  method name to call
-   * @param  args    arbitrary payload to be sent with the request
-   * @return         arbitrary payload, received as a response from the
-   *                 child process.
-   */
-  async call(method: string, args: TReq): Promise<TResp> {
-    invariant(
-      !this._disposed,
-      `${this._name} - Attempting to call on disposed connection: ${args}`
-    );
-
-    await this._ensureProcess();
-    invariant(this._process, 'process is null');
-    invariant(this._rpc, 'rpc is null');
-
-    return this._rpc.call(method, args);
-  }
-
   dispose(): void {
     logger.info(`${this._name} - disposing connection.`);
     this._disposed = true;
     this._cleanup();
+  }
+
+  async getService(serviceName: string): Promise<Object> {
+    await this._ensureProcess();
+    invariant(this._rpcConnection != null);
+    return this._rpcConnection.getService(serviceName);
   }
 
   /**
@@ -106,7 +92,10 @@ export default class RpcProcess<TReq, TResp> {
         logger.error(`${this._name} - error writing data: `, error);
       });
 
-      this._rpc = new Rpc(this._name, new StreamTransport(proc.stdin, proc.stdout));
+      this._rpcConnection = new RpcConnection(
+        'client',
+        this._serviceRegistry,
+        new StreamTransport(proc.stdin, proc.stdout));
       this._subscription = getOutputStream(proc)
         .subscribe(this._onProcessMessage.bind(this));
       this._process = proc;
@@ -154,9 +143,9 @@ export default class RpcProcess<TReq, TResp> {
       this._subscription.unsubscribe();
       this._subscription = null;
     }
-    if (this._rpc != null) {
-      this._rpc.dispose();
-      this._rpc = null;
+    if (this._rpcConnection != null) {
+      this._rpcConnection.dispose();
+      this._rpcConnection = null;
     }
     if (this._process != null && shouldKill) {
       this._process.kill();

@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import typeof * as PythonService from '../../nuclide-python-base';
 import type {FindReferencesReturn} from '../../nuclide-find-references';
 
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -37,7 +38,7 @@ export default class ReferenceHelpers {
     const line = position.row;
     const column = position.column;
 
-    const service = await getServiceByNuclideUri('PythonService', src);
+    const service: ?PythonService = await getServiceByNuclideUri('PythonService', src);
     if (!service) {
       return null;
     }

@@ -38,7 +38,7 @@ describe('PythonService', () => {
         } catch (e) {
           // Python process should respond with a Traceback for what went wrong while
           // processing the request.
-          expect(e.message.startsWith('Traceback')).toBeTruthy();
+          expect(e.startsWith('Traceback')).toBeTruthy();
         }
       });
     });
@@ -96,7 +96,7 @@ describe('PythonService', () => {
         } catch (e) {
           // Python process should respond with a Traceback for what went wrong while
           // processing the request.
-          expect(e.toString().startsWith('Error: Traceback')).toBeTruthy();
+          expect(e.startsWith('Traceback')).toBeTruthy();
         }
       });
     });

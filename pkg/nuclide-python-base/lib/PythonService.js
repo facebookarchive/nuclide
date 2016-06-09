@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import typeof * as JediService from './JediService';
 
 import path from 'path';
 import {asyncExecute} from '../../commons-node/process';
@@ -142,15 +143,15 @@ function getFormatterPath() {
   return formatterPath;
 }
 
-async function getJediServer(src: NuclideUri): Promise<JediServer> {
+async function getJediServer(src: NuclideUri): Promise<JediService> {
   let server = jediServers.get(src);
-  if (server != null) {
-    return server;
+  if (server == null) {
+    // Create a JediServer using default python path.
+    server = new JediServer(src, await getPythonPath());
+    jediServers.set(src, server);
   }
-  // Create a JediServer using default python path.
-  server = new JediServer(src, await getPythonPath());
-  jediServers.set(src, server);
-  return server;
+
+  return await server.getService();
 }
 
 export async function getCompletions(
@@ -160,14 +161,12 @@ export async function getCompletions(
   column: number,
 ): Promise<?JediCompletionsResult> {
   const server = await getJediServer(src);
-  return server.call(
-    'get_completions',
-    {
+  return server.get_completions(
       src,
       contents,
       line,
       column,
-    });
+    );
 }
 
 export async function getDefinitions(
@@ -177,14 +176,12 @@ export async function getDefinitions(
   column: number,
 ): Promise<?JediDefinitionsResult> {
   const server = await getJediServer(src);
-  return server.call(
-    'get_definitions',
-    {
+  return server.get_definitions(
       src,
       contents,
       line,
       column,
-    });
+    );
 }
 
 export async function getReferences(
@@ -194,22 +191,20 @@ export async function getReferences(
   column: number,
 ): Promise<?JediReferencesResult> {
   const server = await getJediServer(src);
-  return server.call(
-    'get_references',
-    {
+  return server.get_references(
       src,
       contents,
       line,
       column,
-    });
+    );
 }
 
 export async function getOutline(
   src: NuclideUri,
   contents: string,
 ): Promise<?JediOutlineResult> {
-  const server = await getJediServer(src);
-  return server.call('get_outline', {src, contents});
+  const server: JediService = await getJediServer(src);
+  return server.get_outline(src, contents);
 }
 
 export async function formatCode(

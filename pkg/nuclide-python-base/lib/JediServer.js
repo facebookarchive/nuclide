@@ -10,10 +10,13 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import typeof * as JediService from './JediService';
+import type {ProcessMaker} from '../../commons-node/RpcProcess';
 
 import path from 'path';
 import {safeSpawn} from '../../commons-node/process';
 import RpcProcess from '../../commons-node/RpcProcess';
+import {ServiceRegistry} from '../../nuclide-rpc';
 
 const PYTHON_EXECUTABLE = 'python';
 const LIB_PATH = path.join(__dirname, '../VendorLib');
@@ -25,13 +28,36 @@ const OPTS = {
   env: {PYTHONPATH: LIB_PATH},
 };
 
-export default class JediServer extends RpcProcess {
+let serviceRegistry: ?ServiceRegistry = null;
+
+function getServiceRegistry(): ServiceRegistry {
+  if (serviceRegistry == null) {
+    serviceRegistry = ServiceRegistry.createLocal([{
+      name: 'JediService',
+      definition: path.join(__dirname, 'JediService.js'),
+      implementation: path.join(__dirname, 'JediService.js'),
+      preserveFunctionNames: true,
+    }]);
+  }
+  return serviceRegistry;
+}
+
+export default class JediServer {
+  _process: RpcProcess;
 
   constructor(src: NuclideUri, pythonPath: string = PYTHON_EXECUTABLE) {
     // Generate a name for this server using the src file name, used to namespace logs
     const name = `JediServer-${path.basename(src)}`;
-    const createProcess = () => safeSpawn(pythonPath, [PROCESS_PATH, '-s', src], OPTS);
-    super(name, createProcess);
+    const createProcess: ProcessMaker
+      = () => safeSpawn(pythonPath, [PROCESS_PATH, '-s', src], OPTS);
+    this._process = new RpcProcess(name, getServiceRegistry(), createProcess);
   }
 
+  getService(): Promise<JediService> {
+    return this._process.getService('JediService');
+  }
+
+  dispose(): void {
+    this._process.dispose();
+  }
 }

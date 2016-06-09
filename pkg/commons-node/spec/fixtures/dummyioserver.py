@@ -28,7 +28,7 @@ class DummyIOServer:
         req = json.loads(line)
         id, data = req['id'], req['args']
         method = req['method']
-        res = {'type': 'response', 'id': id}
+        res = {'id': id}
 
         if method == 'kill':
             sys.exit(0)
@@ -36,6 +36,7 @@ class DummyIOServer:
             res['type'] = 'error-response'
             res['error'] = 'Command to error received'
         else:
+            res['type'] = 'response'
             res['result'] = {
                 'hello': 'Hello World'
             }

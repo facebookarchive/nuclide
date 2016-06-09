@@ -14,17 +14,22 @@ import type {ProcessMaker} from '../../commons-node/RpcProcess';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import RpcProcess from '../../commons-node/RpcProcess';
 import {getHackCommand, findHackConfigDir} from './hack-config';
+import {ServiceRegistry} from '../../nuclide-rpc';
 
 // From https://reviews.facebook.net/diffusion/HHVM/browse/master/hphp/hack/src/utils/exit_status.ml
 const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
 
 import {logger} from './hack-config';
 
+function getServiceRegistry(): ServiceRegistry {
+  throw new Error('TODO');
+}
+
 class HackProcess extends RpcProcess {
   _hhconfigPath: string;
 
   constructor(name: string, createProcess: ProcessMaker, hhconfigPath: string) {
-    super(name, createProcess);
+    super(name, getServiceRegistry(), createProcess);
     this._hhconfigPath = hhconfigPath;
   }
 
@@ -96,10 +101,6 @@ export async function callHHClientUsingProcess(
   if (processInput != null) {
     args.push(processInput);
   }
-  const method: string = args[0];
-  const result = await hackProcess.call(method, args.slice(1));
-  return {
-    hackRoot: hackProcess.getRoot(),
-    result,
-  };
+  // TODO: This needs to be reworked
+  throw new Error('TODO');
 }

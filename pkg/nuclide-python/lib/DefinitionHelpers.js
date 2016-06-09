@@ -10,6 +10,7 @@
  */
 
 import type {DefinitionQueryResult} from '../../nuclide-definition-service';
+import typeof * as PythonService from '../../nuclide-python-base';
 
 import invariant from 'assert';
 import {Point} from 'atom';
@@ -43,7 +44,7 @@ export default class DefinitionHelpers {
 
     const {range} = wordMatch;
 
-    const service = getServiceByNuclideUri('PythonService', src);
+    const service: ?PythonService = getServiceByNuclideUri('PythonService', src);
     if (service == null) {
       return null;
     }

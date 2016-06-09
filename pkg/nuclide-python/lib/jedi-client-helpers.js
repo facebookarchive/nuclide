@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import typeof * as PythonService from '../../nuclide-python-base';
+
 import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
@@ -22,7 +24,7 @@ async function getCompletions(editor: atom$TextEditor) {
   const line = cursor.getBufferRow();
   const column = cursor.getBufferColumn();
 
-  const service = getServiceByNuclideUri('PythonService', src);
+  const service: ?PythonService = getServiceByNuclideUri('PythonService', src);
   invariant(service);
 
   return service

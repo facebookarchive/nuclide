@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import typeof * as PythonService from '../../nuclide-python-base';
+
 import type {
 OutlineTree,
 Outline,
@@ -165,7 +167,7 @@ export async function generateOutline(
   contents: string,
   mode: ShowVariableMode,
 ): Promise<?Outline> {
-  const service = await getServiceByNuclideUri('PythonService', src);
+  const service: ?PythonService = await getServiceByNuclideUri('PythonService', src);
   if (!service) {
     return null;
   }

@@ -13,6 +13,7 @@ import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
 import ClangServer from '../lib/ClangServer';
+import {getServiceRegistry} from '../lib/ClangServerManager';
 
 const TEST_FILE = path.join(__dirname, 'fixtures', 'test.cpp');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
@@ -43,10 +44,10 @@ describe('ClangServer', () => {
 
   it('can handle requests', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(TEST_FILE, []);
-      let response = await server.call('compile', {
-        contents: FILE_CONTENTS,
-      });
+      const server = new ClangServer(TEST_FILE, getServiceRegistry(), []);
+      let response = await server.compile(
+        FILE_CONTENTS,
+      );
       invariant(response);
       expect(response).toEqual({
         diagnostics: [
@@ -105,13 +106,13 @@ describe('ClangServer', () => {
       const mem = await server.getMemoryUsage();
       expect(mem).toBeGreaterThan(0);
 
-      response = await server.call('get_completions', {
-        contents: FILE_CONTENTS,
-        line: 4,
-        column: 7,
-        tokenStartColumn: 7,
-        prefix: 'f',
-      });
+      response = await server.get_completions(
+        FILE_CONTENTS,
+        4,
+        7,
+        7,
+        'f',
+      );
       invariant(response);
       expect(response.map(x => x.spelling).sort()).toEqual([
         'f()',
@@ -120,35 +121,35 @@ describe('ClangServer', () => {
       ]);
 
       // This will hit the cache. Double-check the result.
-      response = await server.call('get_completions', {
-        contents: FILE_CONTENTS,
-        line: 4,
-        column: 7,
-        tokenStartColumn: 7,
-        prefix: 'fa',
-      });
+      response = await server.get_completions(
+        FILE_CONTENTS,
+        4,
+        7,
+        7,
+        'fa',
+      );
       invariant(response);
       expect(response.map(x => x.spelling).sort()).toEqual([
         'false',
       ]);
 
       // Function argument completions are a little special.
-      response = await server.call('get_completions', {
-        contents: FILE_CONTENTS,
-        line: 4,
-        column: 4,
-        tokenStartColumn: 4,
-        prefix: '',
-      });
+      response = await server.get_completions(
+        FILE_CONTENTS,
+        4,
+        4,
+        4,
+        '',
+      );
       invariant(response);
       expect(response[0].spelling).toBe('f()');
       expect(response[0].cursor_kind).toBe('OVERLOAD_CANDIDATE');
 
-      response = await server.call('get_declaration', {
-        contents: FILE_CONTENTS,
-        line: 4,
-        column: 2,
-      });
+      response = await server.get_declaration(
+        FILE_CONTENTS,
+        4,
+        2,
+      );
       invariant(response);
       const {line, column, spelling, type} = response;
       expect(line).toBe(0);
@@ -156,11 +157,11 @@ describe('ClangServer', () => {
       expect(spelling).toBe('f');
       expect(type).toBe('void ()');
 
-      response = await server.call('get_declaration_info', {
-        contents: FILE_CONTENTS,
-        line: 4,
-        column: 2,
-      });
+      response = await server.get_declaration_info(
+        FILE_CONTENTS,
+        4,
+        2,
+      );
       invariant(response);
       expect(response.length).toBe(1);
       expect(response[0].name).toBe('f()');
@@ -168,9 +169,9 @@ describe('ClangServer', () => {
       // May not be consistent between clang versions.
       expect(response[0].cursor_usr).not.toBe(null);
 
-      response = await server.call('get_outline', {
-        contents: FILE_CONTENTS,
-      });
+      response = await server.get_outline(
+        FILE_CONTENTS,
+      );
       invariant(response);
       expect(response).toEqual(EXPECTED_FILE_OUTLINE);
     });
@@ -178,10 +179,10 @@ describe('ClangServer', () => {
 
   it('gracefully handles server crashes', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(TEST_FILE, []);
-      let response = await server.call('compile', {
-        contents: FILE_CONTENTS,
-      });
+      const server = new ClangServer(TEST_FILE, getServiceRegistry(), []);
+      let response = await server.compile(
+        FILE_CONTENTS,
+      );
       expect(response).not.toBe(null);
 
       const {_process} = server;
@@ -191,48 +192,48 @@ describe('ClangServer', () => {
       // This request should fail, but cleanup should occur.
       let thrown = false;
       try {
-        response = await server.call('compile', {
-          contents: FILE_CONTENTS,
-        });
+        response = await server.compile(
+          FILE_CONTENTS,
+        );
       } catch (e) {
         thrown = true;
       }
       expect(thrown).toBe(true);
 
       // The next request should work as expected.
-      response = await server.call('get_declaration', {
-        contents: FILE_CONTENTS,
-        line: 4,
-        column: 2,
-      });
+      response = await server.get_declaration(
+        FILE_CONTENTS,
+        4,
+        2,
+      );
       expect(response).not.toBe(null);
     });
   });
 
   it('blocks other requests during compilation', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(TEST_FILE, []);
-      const compilePromise = server.call('compile', {
-        contents: FILE_CONTENTS,
-      });
+      const server = new ClangServer(TEST_FILE, getServiceRegistry(), []);
+      const compilePromise = server.compile(
+        FILE_CONTENTS,
+      );
 
       // Since compilation has been triggered but not awaited, this should instantly fail.
-      let response = await server.call('get_declaration', {
-        contents: FILE_CONTENTS,
-        line: 4,
-        column: 2,
-      });
+      let response = await server.get_declaration(
+        FILE_CONTENTS,
+        4,
+        2,
+      );
       expect(response).toBe(null);
 
       response = await compilePromise;
       expect(response).not.toBe(null);
 
       // Should work again after compilation finishes.
-      response = await server.call('get_declaration', {
-        contents: FILE_CONTENTS,
-        line: 4,
-        column: 2,
-      });
+      response = await server.get_declaration(
+        FILE_CONTENTS,
+        4,
+        2,
+      );
       expect(response).not.toBe(null);
     });
   });

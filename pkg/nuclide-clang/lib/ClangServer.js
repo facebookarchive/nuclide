@@ -9,11 +9,20 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import typeof * as ClangProcessService from './ClangProcessService';
+import type {
+  ClangCompileResult,
+  ClangCompletion,
+  ClangDeclaration,
+  ClangCursor,
+  ClangOutlineTree,
+} from './rpc-types';
 
+import path from 'path';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import RpcProcess from '../../commons-node/RpcProcess';
 import findClangServerArgs from './find-clang-server-args';
+import {ServiceRegistry} from '../../nuclide-rpc';
 
 async function spawnClangProcess(
   src: string,
@@ -42,19 +51,28 @@ async function spawnClangProcess(
   return safeSpawn(pythonExecutable, args, options);
 }
 
-export default class ClangServer extends RpcProcess<Object, any> {
+export default class ClangServer extends RpcProcess {
 
   _src: string;
   _flags: Array<string>;
   _usesDefaultFlags: boolean;
   _pendingCompileRequests: number;
 
-  constructor(src: string, flags: Array<string>, usesDefaultFlags?: boolean = false) {
-    super(`ClangServer-${src}`, () => spawnClangProcess(src, flags));
+  constructor(
+    src: string,
+    serviceRegistry: ServiceRegistry,
+    flags: Array<string>,
+    usesDefaultFlags?: boolean = false,
+  ) {
+    super(`ClangServer-${src}`, serviceRegistry, () => spawnClangProcess(src, flags));
     this._src = src;
     this._flags = flags;
     this._usesDefaultFlags = usesDefaultFlags;
     this._pendingCompileRequests = 0;
+  }
+
+  _getClangService(): Promise<ClangProcessService> {
+    return this.getService('ClangProcessService');
   }
 
   /**
@@ -79,30 +97,53 @@ export default class ClangServer extends RpcProcess<Object, any> {
     return this._usesDefaultFlags;
   }
 
-  /**
-   * Send a request to the Clang server.
-   * Requests are processed serially and strictly in order.
-   * If the server is currently compiling, all other requests will automatically return null
-   * (unless the `blocking` parameter is explicitly provided).
-   */
-  async call(
-    method: string,
-    args: Object,
-    blocking?: boolean,
-  ): Promise<any> {
-    if (method === 'compile') {
-      this._pendingCompileRequests++;
-    } else if (!blocking && this._pendingCompileRequests) {
-      // All non-blocking requests should instantly fail.
-      // This allows the client to fall back to default autocomplete, ctags, etc.
+  async compile(contents: string): Promise<ClangCompileResult> {
+    this._pendingCompileRequests++;
+    try {
+      return (await this._getClangService()).compile(contents);
+    } finally {
+      this._pendingCompileRequests--;
+    }
+  }
+
+  async get_completions(
+    contents: string,
+    line: number,
+    column: number,
+    tokenStartColumn: number,
+    prefix: string,
+  ): Promise<?Array<ClangCompletion>> {
+    if (this._pendingCompileRequests > 0) {
       return null;
     }
-    try {
-      return await super.call(method, args);
-    } finally {
-      if (method === 'compile') {
-        this._pendingCompileRequests--;
-      }
+    return (await this._getClangService()).get_completions(
+      contents, line, column, tokenStartColumn, prefix);
+  }
+
+  async get_declaration(
+    contents: string,
+    line: number,
+    column: number,
+  ): Promise<?ClangDeclaration> {
+    if (this._pendingCompileRequests > 0) {
+      return null;
     }
+    return (await this._getClangService()).get_declaration(contents, line, column);
+  }
+
+  async get_declaration_info(
+    contents: string,
+    line: number,
+    column: number,
+  ): Promise<?Array<ClangCursor>> {
+    if (this._pendingCompileRequests > 0) {
+      return null;
+    }
+    return (await this._getClangService()).get_declaration_info(contents, line, column);
+  }
+
+  async get_outline(contents: string): Promise<?Array<ClangOutlineTree>> {
+    // get_ouline is blocking, so no need to check for pending compiles
+    return (await this._getClangService()).get_outline(contents);
   }
 }

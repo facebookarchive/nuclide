@@ -35,7 +35,7 @@ export function compile(
   src: NuclideUri,
   contents: string,
   clean: boolean,
-  defaultFlags?: Array<string>,
+  defaultFlags?: ?Array<string>,
 ): Observable<?ClangCompileResult> {
   if (clean) {
     serverManager.reset(src);
@@ -44,7 +44,7 @@ export function compile(
     // Note: restarts the server if the flags changed.
     const server = await serverManager.getClangServer(src, contents, defaultFlags, true);
     if (server != null) {
-      return server.call('compile', {contents})
+      return server.compile(contents)
         .then(result => ({
           ...result,
           accurateFlags: !server.usesDefaultFlags(),
@@ -61,17 +61,17 @@ export async function getCompletions(
   column: number,
   tokenStartColumn: number,
   prefix: string,
-  defaultFlags?: Array<string>,
+  defaultFlags?: ?Array<string>,
 ): Promise<?Array<ClangCompletion>> {
   const server = await serverManager.getClangServer(src, contents, defaultFlags);
   if (server != null) {
-    return server.call('get_completions', {
+    return server.get_completions(
       contents,
       line,
       column,
       tokenStartColumn,
       prefix,
-    });
+    );
   }
 }
 
@@ -80,15 +80,15 @@ export async function getDeclaration(
   contents: string,
   line: number,
   column: number,
-  defaultFlags?: Array<string>,
+  defaultFlags?: ?Array<string>,
 ): Promise<?ClangDeclaration> {
   const server = await serverManager.getClangServer(src, contents, defaultFlags);
   if (server != null) {
-    return server.call('get_declaration', {
+    return server.get_declaration(
       contents,
       line,
       column,
-    });
+    );
   }
 }
 
@@ -104,11 +104,11 @@ export async function getDeclarationInfo(
 ): Promise<?Array<ClangCursor>> {
   const server = await serverManager.getClangServer(src, contents, defaultFlags);
   if (server != null) {
-    return server.call('get_declaration_info', {
+    return server.get_declaration_info(
       contents,
       line,
       column,
-    });
+    );
   }
 }
 
@@ -119,9 +119,9 @@ export async function getOutline(
 ): Promise<?Array<ClangOutlineTree>> {
   const server = await serverManager.getClangServer(src, contents, defaultFlags);
   if (server != null) {
-    return server.call('get_outline', {
+    return server.get_outline(
       contents,
-    }, /* blocking */ true);
+    );
   }
 }
 
