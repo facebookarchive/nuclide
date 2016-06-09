@@ -26,12 +26,12 @@ import type {
 } from './types';
 
 export type RpcContext = {
-  callRemoteFunction(functionName: string, returnType: ReturnKind, args: Array<any>): any;
+  callRemoteFunction(functionName: string, returnType: ReturnKind, args: Object): any;
   callRemoteMethod(
     objectId: number,
     methodName: string,
     returnType: ReturnKind,
-    args: Array<any>
+    args: Object
   ): any;
   createRemoteObject(
     interfaceName: string,
@@ -45,9 +45,9 @@ export type RpcContext = {
   marshalArguments(
     args: Array<any>,
     argTypes: Array<Parameter>
-  ): Promise<Array<any>>;
+  ): Promise<Object>;
   unmarshalArguments(
-    args: Array<any>,
+    args: Object,
     argTypes: Array<Parameter>
   ): Promise<Array<any>>;
 };

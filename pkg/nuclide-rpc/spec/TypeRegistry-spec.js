@@ -533,6 +533,25 @@ describe('TypeRegistry', () => {
     });
   });
 
+  it('works for parameter names same name as members form Object.prototype', () => {
+    waitsForPromise(async () => {
+      invariant(typeRegistry);
+
+      const parameters = [
+        {
+          name: 'hasOwnProperty',
+          type: stringType,
+        }];
+
+      const expected = 'Hello World';
+      const results = await typeRegistry.unmarshalArguments(
+        context,
+        await typeRegistry.marshalArguments(context, [expected], parameters),
+        parameters,
+      );
+      expect(results).toEqual([expected]);
+    });
+  });
 });
 
 const a1 = {

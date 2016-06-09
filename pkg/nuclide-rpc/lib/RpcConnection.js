@@ -198,12 +198,12 @@ export class RpcConnection<TransportType: Transport> {
   marshalArguments(
     args: Array<any>,
     argTypes: Array<Parameter>,
-  ): Promise<Array<any>> {
+  ): Promise<Object> {
     return this._getTypeRegistry().marshalArguments(this._objectRegistry, args, argTypes);
   }
 
   unmarshalArguments(
-    args: Array<any>,
+    args: Object,
     argTypes: Array<Parameter>,
   ): Promise<Array<any>> {
     return this._getTypeRegistry().unmarshalArguments(this._objectRegistry, args, argTypes);
@@ -216,7 +216,7 @@ export class RpcConnection<TransportType: Transport> {
    *   layer can register the appropriate listeners.
    * @param args - The serialized arguments to invoke the remote function with.
    */
-  callRemoteFunction(functionName: string, returnType: ReturnType, args: Array<any>): any {
+  callRemoteFunction(functionName: string, returnType: ReturnType, args: Object): any {
     return this._sendMessageAndListenForResult(
       createCallMessage(functionName, this._generateRequestId(), args),
       returnType,
@@ -236,7 +236,7 @@ export class RpcConnection<TransportType: Transport> {
     objectId: number,
     methodName: string,
     returnType: ReturnType,
-    args: Array<any>,
+    args: Object,
   ): any {
     return this._sendMessageAndListenForResult(
       createCallObjectMessage(methodName, objectId, this._generateRequestId(), args),

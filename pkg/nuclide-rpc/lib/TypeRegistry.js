@@ -249,12 +249,18 @@ export class TypeRegistry {
     return kindMarshaller.marshaller(value, type, context);
   }
 
-  marshalArguments(
+  async marshalArguments(
     context: ObjectRegistry,
     args: Array<any>,
     argTypes: Array<Parameter>,
-  ): Promise<Array<any>> {
-    return Promise.all(args.map((arg, i) => this.marshal(context, arg, argTypes[i].type)));
+  ): Promise<Object> {
+    const marshalledargs = await Promise.all(argTypes.map((param, i) =>
+      this.marshal(context, args[i], param.type)));
+    const result = {};
+    marshalledargs.forEach((arg, i) => {
+      result[argTypes[i].name] = arg;
+    });
+    return result;
   }
 
   /**
@@ -269,10 +275,14 @@ export class TypeRegistry {
 
   unmarshalArguments(
     context: ObjectRegistry,
-    args: Array<any>,
+    args: Object,
     argTypes: Array<Parameter>,
   ): Promise<Array<any>> {
-    return Promise.all(args.map((arg, i) => this.unmarshal(context, arg, argTypes[i].type)));
+    return Promise.all(argTypes.map((arg, i) => {
+      invariant(Object.hasOwnProperty.call(args, arg.name),
+        `unmarshalArguments: Missing argument: ${arg.name}`);
+      return this.unmarshal(context, args[arg.name], arg.type);
+    }));
   }
 
   _unmarshal(context: ObjectRegistry, value: any, type: Type): any {

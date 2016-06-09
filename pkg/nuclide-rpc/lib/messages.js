@@ -20,7 +20,7 @@ export type CallMessage = {
   type: 'call';
   method: string;
   id: number;
-  args: Array<any>;
+  args: Object;
 };
 
 export type NewObjectMessage = {
@@ -28,7 +28,7 @@ export type NewObjectMessage = {
   type: 'new';
   interface: string;
   id: number;
-  args: Array<any>;
+  args: Object;
 };
 
 export type CallObjectMessage = {
@@ -37,7 +37,7 @@ export type CallObjectMessage = {
   method: string;
   id: number;
   objectId: number;
-  args: Array<any>;
+  args: Object;
 };
 
 export type DisposeMessage = {
@@ -110,7 +110,7 @@ export function decodeError(message: Object, encodedError: ?(Object | string)): 
 export function createCallMessage(
   functionName: string,
   id: number,
-  args: Array<any>,
+  args: Object,
 ): CallMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
@@ -125,7 +125,7 @@ export function createCallObjectMessage(
   methodName: string,
   objectId: number,
   id: number,
-  args: Array<any>,
+  args: Object,
 ): CallObjectMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
@@ -140,7 +140,7 @@ export function createCallObjectMessage(
 export function createNewObjectMessage(
   interfaceName: string,
   id: number,
-  args: Array<any>,
+  args: Object,
 ): NewObjectMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
