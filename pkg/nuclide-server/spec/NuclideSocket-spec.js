@@ -117,11 +117,11 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
       socket.onReconnect(reconnectHandler);
       spyOn(serverSocketClient, '_onSocketMessage');
 
-      const message0 = {foo0: 'bar0'};
-      const message1 = {foo1: 'bar1'};
-      const message2 = {foo2: 'bar2'};
-      const message3 = {foo3: 'bar3'};
-      const message4 = {foo4: 'bar4'};
+      const message0 = JSON.stringify({foo0: 'bar0'});
+      const message1 = JSON.stringify({foo1: 'bar1'});
+      const message2 = JSON.stringify({foo2: 'bar2'});
+      const message3 = JSON.stringify({foo3: 'bar3'});
+      const message4 = JSON.stringify({foo4: 'bar4'});
 
       waitsForPromise(() => socket.waitForConnect());
       runs(() => socket.send(message0));
@@ -145,15 +145,15 @@ xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-
       waitsFor(() => serverSocketClient.getTransport()._onSocketMessage.calls.length === 5);
       runs(() => {
         expect(serverSocketClient.getTransport()._onSocketMessage.calls[0].args[1])
-          .toEqual(JSON.stringify(message0));
+          .toEqual(message0);
         expect(serverSocketClient.getTransport()._onSocketMessage.calls[1].args[1])
-          .toEqual(JSON.stringify(message1));
+          .toEqual(message1);
         expect(serverSocketClient.getTransport()._onSocketMessage.calls[2].args[1])
-          .toEqual(JSON.stringify(message2));
+          .toEqual(message2);
         expect(serverSocketClient.getTransport()._onSocketMessage.calls[3].args[1])
-          .toEqual(JSON.stringify(message3));
+          .toEqual(message3);
         expect(serverSocketClient.getTransport()._onSocketMessage.calls[4].args[1])
-          .toEqual(JSON.stringify(message4));
+          .toEqual(message4);
       });
     });
   });

@@ -54,7 +54,7 @@ describe('QueuedTransport', () => {
   });
 
   it('send - open', () => {
-    const data = {message: 42};
+    const data = JSON.stringify({message: 42});
     q.send(data);
     expect(transport.send).toHaveBeenCalledWith(data);
   });
@@ -106,7 +106,7 @@ describe('QueuedTransport', () => {
 
   it('send on reconnect', () => {
     q.disconnect();
-    const data = {message: 42};
+    const data = JSON.stringify({message: 42});
     q.send(data);
 
     const newTransport = makeUnreliableTransport();

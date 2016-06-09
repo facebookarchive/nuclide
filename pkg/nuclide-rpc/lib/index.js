@@ -20,7 +20,7 @@ export type ConfigEntry = {
 };
 
 export type Transport = {
-  send(data: Object): void;
+  send(message: string): void;
   onMessage(callback: (message: Object) => mixed): IDisposable;
   close(): void;
 };

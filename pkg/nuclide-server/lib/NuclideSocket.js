@@ -189,9 +189,9 @@ export class NuclideSocket {
     }
   }
 
-  send(data: Object): void {
+  send(message: string): void {
     invariant(this._transport != null);
-    this._transport.send(data);
+    this._transport.send(message);
   }
 
   // Resolves if the connection looks healthy.

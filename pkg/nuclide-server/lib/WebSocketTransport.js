@@ -79,7 +79,7 @@ export class WebSocketTransport {
     return this._emitter.on('error', callback);
   }
 
-  send(data: any): Promise<boolean> {
+  send(message: string): Promise<boolean> {
     const socket = this._socket;
     if (socket == null) {
       logger.error('Attempt to send socket message after connection closed', new Error());
@@ -87,9 +87,9 @@ export class WebSocketTransport {
     }
 
     return new Promise((resolve, reject) => {
-      socket.send(JSON.stringify(data), err => {
+      socket.send(message, err => {
         if (err != null) {
-          logger.warn('Failed sending socket message to client:', this.id, data);
+          logger.warn('Failed sending socket message to client:', this.id, JSON.parse(message));
           resolve(false);
         } else {
           resolve(true);

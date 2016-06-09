@@ -20,8 +20,8 @@ export class LoopbackTransports {
     let onClientMessage: (message: Object) => mixed;
 
     this.serverTransport = {
-      send(data: Object): void {
-        onClientMessage(data);
+      send(message: string): void {
+        onClientMessage(JSON.parse(message));
       },
       onMessage(callback: (message: Object) => mixed): IDisposable {
         onServerMessage = callback;
@@ -31,8 +31,8 @@ export class LoopbackTransports {
     };
 
     this.clientTransport = {
-      send(data: Object): void {
-        onServerMessage(data);
+      send(message: string): void {
+        onServerMessage(JSON.parse(message));
       },
       onMessage(callback: (message: Object) => mixed): IDisposable {
         onClientMessage = callback;

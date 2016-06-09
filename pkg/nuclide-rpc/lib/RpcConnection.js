@@ -303,12 +303,12 @@ export class RpcConnection<TransportType: Transport> {
   ): any {
     switch (returnType) {
       case 'void':
-        this._transport.send(message);
+        this._transport.send(JSON.stringify(message));
         return; // No values to return.
       case 'promise':
         // Listen for a single message, and resolve or reject a promise on that message.
         return new Promise((resolve, reject) => {
-          this._transport.send(message);
+          this._transport.send(JSON.stringify(message));
           this._calls.set(message.id, new Call(
             message,
             timeoutMessage,
@@ -334,7 +334,7 @@ export class RpcConnection<TransportType: Transport> {
           const subscription = new Subscription(message, observer);
           invariant(subscriptions != null);
           subscriptions.add(subscription);
-          this._transport.send(message);
+          this._transport.send(JSON.stringify(message));
 
           // Observable dispose function, which is called on subscription dispose, on stream
           // completion, and on stream error.
@@ -346,7 +346,7 @@ export class RpcConnection<TransportType: Transport> {
               if (subscriptions.size === 0) {
                 // Send a message to server to call the dispose function of
                 // the remote Observable subscription.
-                this._transport.send(createUnsubscribeMessage(message.id));
+                this._transport.send(JSON.stringify(createUnsubscribeMessage(message.id)));
               }
             },
           };
@@ -378,10 +378,10 @@ export class RpcConnection<TransportType: Transport> {
 
     // Send the result of the promise across the socket.
     returnVal.then(result => {
-      this._transport.send(createPromiseMessage(id, result));
+      this._transport.send(JSON.stringify(createPromiseMessage(id, result)));
       timingTracker.onSuccess();
     }, error => {
-      this._transport.send(createErrorResponseMessage(id, error));
+      this._transport.send(JSON.stringify(createErrorResponseMessage(id, error)));
       timingTracker.onError(error == null ? new Error() : error);
     });
   }
@@ -402,12 +402,12 @@ export class RpcConnection<TransportType: Transport> {
 
     // Send the next, error, and completion events of the observable across the socket.
     const subscription = result.subscribe(data => {
-      this._transport.send(createNextMessage(id, data));
+      this._transport.send(JSON.stringify(createNextMessage(id, data)));
     }, error => {
-      this._transport.send(createObserveErrorMessage(id, error));
+      this._transport.send(JSON.stringify(createObserveErrorMessage(id, error)));
       this._objectRegistry.removeSubscription(id);
     }, completed => {
-      this._transport.send(createCompleteMessage(id));
+      this._transport.send(JSON.stringify(createCompleteMessage(id)));
       this._objectRegistry.removeSubscription(id);
     });
     this._objectRegistry.addSubscription(id, subscription);
@@ -621,7 +621,7 @@ export class RpcConnection<TransportType: Transport> {
     } catch (e) {
       logger.error(e != null ? e.message : e);
       timingTracker.onError(e == null ? new Error() : e);
-      this._transport.send(createErrorResponseMessage(id, e));
+      this._transport.send(JSON.stringify(createErrorResponseMessage(id, e)));
     }
   }
 

@@ -49,10 +49,10 @@ describe('WebSocketTransport', () => {
     waitsForPromise(async () => {
       const s: any = socket;
       s.send = jasmine.createSpy('send').andCallFake((data, callback) => callback(null));
-      const data = {foo: 42};
+      const data = JSON.stringify({foo: 42});
       const result = await transport.send(data);
       expect(result).toBe(true);
-      expect(socket.send).toHaveBeenCalledWith(JSON.stringify(data), jasmine.any(Function));
+      expect(socket.send).toHaveBeenCalledWith(data, jasmine.any(Function));
     });
   });
 
@@ -60,10 +60,10 @@ describe('WebSocketTransport', () => {
     waitsForPromise(async () => {
       const s: any = socket;
       s.send = jasmine.createSpy('send').andCallFake((data, callback) => callback(new Error()));
-      const data = {foo: 42};
+      const data = JSON.stringify({foo: 42});
       const result = await transport.send(data);
       expect(result).toBe(false);
-      expect(socket.send).toHaveBeenCalledWith(JSON.stringify(data), jasmine.any(Function));
+      expect(socket.send).toHaveBeenCalledWith(data, jasmine.any(Function));
     });
   });
 

@@ -23,7 +23,7 @@ import {Emitter} from 'event-kit';
 // onClose handlers will be called before close() returns.
 // May not call send() after transport has closed..
 export type UnreliableTransport = {
-  send(data: Object): Promise<boolean>;
+  send(message: string): Promise<boolean>;
   onClose(callback: () => mixed): IDisposable;
   onMessage(callback: (message: Object) => mixed): IDisposable;
   onError(callback: (error: Object) => mixed): IDisposable;
@@ -47,7 +47,7 @@ export class QueuedTransport {
   id: string;
   _isClosed: boolean;
   _transport: ?UnreliableTransport;
-  _messageQueue: Array<any>;
+  _messageQueue: Array<string>;
   _emitter: Emitter;
 
   constructor(clientId: string, transport: ?UnreliableTransport) {
@@ -146,25 +146,25 @@ export class QueuedTransport {
     return this._emitter.on('disconnect', callback);
   }
 
-  send(data: any): void {
-    this._send(data);
+  send(message: string): void {
+    this._send(message);
   }
 
-  async _send(data: any): Promise<void> {
+  async _send(message: string): Promise<void> {
     invariant(!this._isClosed, 'Attempt to send socket message after connection closed');
 
-    this._messageQueue.push(data);
+    this._messageQueue.push(message);
     if (this._transport == null) {
       return;
     }
 
-    const sent = await this._transport.send(data);
+    const sent = await this._transport.send(message);
     if (!sent) {
-      logger.warn('Failed sending socket message to client:', this.id, data);
+      logger.warn('Failed sending socket message to client:', this.id, JSON.parse(message));
     } else {
       // This may remove a different (but equivalent) message from the Q,
       // but that's ok because we don't guarantee message ordering.
-      const messageIndex = this._messageQueue.indexOf(data);
+      const messageIndex = this._messageQueue.indexOf(message);
       if (messageIndex !== -1) {
         this._messageQueue.splice(messageIndex, 1);
       }
