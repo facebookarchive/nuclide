@@ -21,7 +21,6 @@ import type {
   Parameter,
 } from './types';
 
-const promiseDotAllExpression = t.memberExpression(t.identifier('Promise'), t.identifier('all'));
 const thenIdent = t.identifier('then');
 
 const observableIdentifier = t.identifier('Observable');
@@ -50,6 +49,29 @@ const clientDotUnmarshalExpression
   = t.memberExpression(clientIdentifier, t.identifier('unmarshal'));
 const marshalCall = (...args) => t.callExpression(clientDotMarshalExpression, args);
 const unmarshalCall = (...args) => t.callExpression(clientDotUnmarshalExpression, args);
+
+const clientDotMarshalArgsExpression
+  = t.memberExpression(clientIdentifier, t.identifier('marshalArguments'));
+// const clientDotUnmarshalArgsExpression
+//   = t.memberExpression(clientIdentifier, t.identifier('unmarshalArguments'));
+
+/**
+ * Helper function that generates statments that can be used to marshal all of the
+ * arguments to a function.
+ * @param argumentTypes - An array of the types of the function's arguments.
+ * @returns An expression representing a promise that resolves to an array of the arguments.
+ */
+const marshalArgsCall = params => t.callExpression(clientDotMarshalArgsExpression, [
+  t.callExpression(
+    t.memberExpression(t.identifier('Array'), t.identifier('from')),
+    [t.identifier('arguments')]),
+  objectToLiteral(params),
+]);
+
+// const unmarshalArgsCall = params => t.callExpression(clientDotUnmarshalArgsExpression, [
+//   t.arguments,
+//   objectToLiteral(params),
+// ]);
 
 /**
  * Given the parsed result of a definition file, generate a remote proxy module
@@ -129,7 +151,7 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
   ]);
 
   // Promise.all(...).then(args => ...)
-  const argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
+  const argumentsPromise = marshalArgsCall(funcType.argumentTypes);
   const marshalArgsAndCall = thenPromise(argumentsPromise, t.arrowFunctionExpression(
     [t.identifier('args')],
     callExpression,
@@ -142,23 +164,6 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
   return t.functionExpression(null, args, t.blockStatement(
     [t.returnStatement(result)]
   ));
-}
-
-/**
- * Helper function that generates statments that can be used to marshal all of the
- * arguments to a function.
- * @param argumentTypes - An array of the types of the function's arguments.
- * @returns An expression representing a promise that resolves to an array of the arguments.
- */
-function generateArgumentConversionPromise(argumentTypes: Array<Parameter>): Array<any> {
-  // Convert all of the arguments into marshaled form.
-  const args = argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
-  // Promise.all([transform(arg0, type0), ...])
-  return t.callExpression(promiseDotAllExpression,
-    [t.arrayExpression(
-      args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i].type, true))
-    )]
-  );
 }
 
 /**
@@ -276,7 +281,7 @@ function generateRemoteDispatch(methodName: string, thisType: NamedType, funcTyp
     t.arrowFunctionExpression([idIdentifier], remoteMethodCall));
 
   // Promise.all(...).then(args => ...)
-  const argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
+  const argumentsPromise = marshalArgsCall(funcType.argumentTypes);
   const marshallThenCall = thenPromise(argumentsPromise, t.arrowFunctionExpression(
     [t.identifier('args')],
     idThenCall,

@@ -6,23 +6,29 @@ module.exports = _client => {
   const remoteModule = {};
   remoteModule.Vector2 = class {
     static distance(arg0, arg1) {
-      return Promise.all([_client.marshal(arg0, {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 3
-        },
-        kind: "named",
-        name: "Vector2"
-      }), _client.marshal(arg1, {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 3
-        },
-        kind: "named",
-        name: "Vector2"
-      })]).then(args => _client.callRemoteFunction("Vector2/distance", "promise", args)).then(value => _client.unmarshal(value, {
+      return _client.marshalArguments(Array.from(arguments), [{
+        name: "a",
+        type: {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 3
+          },
+          kind: "named",
+          name: "Vector2"
+        }
+      }, {
+        name: "b",
+        type: {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 3
+          },
+          kind: "named",
+          name: "Vector2"
+        }
+      }]).then(args => _client.callRemoteFunction("Vector2/distance", "promise", args)).then(value => _client.unmarshal(value, {
         location: {
           type: "source",
           fileName: "InterfaceService.def",
@@ -64,7 +70,7 @@ module.exports = _client => {
     }
     @trackTiming("Vector2.len")
     len() {
-      return Promise.all([]).then(args => _client.marshal(this, {
+      return _client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
         kind: "named",
         location: {
           type: "source",
@@ -82,7 +88,7 @@ module.exports = _client => {
       }));
     }
     watchChanges() {
-      return Observable.fromPromise(Promise.all([]).then(args => _client.marshal(this, {
+      return Observable.fromPromise(_client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
         kind: "named",
         location: {
           type: "source",
@@ -105,7 +111,7 @@ module.exports = _client => {
   }
 
   remoteModule.getCurrentDirection = function () {
-    return Promise.all([]).then(args => _client.callRemoteFunction("InterfaceService/getCurrentDirection", "promise", args)).then(value => _client.unmarshal(value, {
+    return _client.marshalArguments(Array.from(arguments), []).then(args => _client.callRemoteFunction("InterfaceService/getCurrentDirection", "promise", args)).then(value => _client.unmarshal(value, {
       location: {
         type: "source",
         fileName: "InterfaceService.def",
@@ -119,14 +125,32 @@ module.exports = _client => {
   remoteModule.Iface = class {
     @trackTiming("Iface.p")
     p(arg0) {
-      return Promise.all([_client.marshal(arg0, {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 31
+      return _client.marshalArguments(Array.from(arguments), [{
+        name: {
+          type: "Identifier",
+          start: 642,
+          end: 643,
+          loc: {
+            start: {
+              line: 31,
+              column: 4
+            },
+            end: {
+              line: 31,
+              column: 5
+            }
+          },
+          name: "a"
         },
-        kind: "number"
-      })]).then(args => _client.marshal(this, {
+        type: {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 31
+          },
+          kind: "number"
+        }
+      }]).then(args => _client.marshal(this, {
         kind: "named",
         location: {
           type: "source",
@@ -144,7 +168,7 @@ module.exports = _client => {
       }));
     }
     f() {
-      return Promise.all([]).then(args => _client.marshal(this, {
+      return _client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
         kind: "named",
         location: {
           type: "source",
@@ -155,7 +179,7 @@ module.exports = _client => {
       }).then(id => _client.callRemoteMethod(id, "f", "void", args)));
     }
     o() {
-      return Observable.fromPromise(Promise.all([]).then(args => _client.marshal(this, {
+      return Observable.fromPromise(_client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
         kind: "named",
         location: {
           type: "source",
