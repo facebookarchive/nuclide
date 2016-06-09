@@ -14,7 +14,14 @@ import type {FileTreeNode} from './FileTreeNode';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-import {contains, dirname, getPath} from '../../nuclide-remote-uri';
+import {
+  basename,
+  contains,
+  collapse,
+  dirname,
+  getPath,
+  join,
+} from '../../nuclide-remote-uri';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 
 function getHgRepositoryForNode(node: FileTreeNode): ?HgRepositoryClient {
@@ -76,8 +83,50 @@ async function renameNode(node: FileTreeNode, destPath: NuclideUri): Promise<voi
   }
 }
 
+/**
+ * Moves an array of nodes into the destPath, ignoring nodes that cannot be moved.
+ */
+async function moveNodes(nodes: Array<FileTreeNode>, destPath: NuclideUri): Promise<void> {
+  const filteredNodes = nodes.filter(node => isValidRename(node, destPath));
+  // Collapse paths that are in the same subtree, keeping only the subtree root.
+  const paths = collapse(filteredNodes.map(node =>
+    FileTreeHelpers.keyToPath(node.uri)
+  ));
+
+  if (paths.length === 0) {
+    return;
+  }
+
+  // Need to update the paths in editors before the rename to prevent them from closing
+  // In case of an error - undo the editor paths rename
+  paths.forEach(path => {
+    const newPath = join(destPath, basename(path));
+    FileTreeHelpers.updatePathInOpenedEditors(path, newPath);
+  });
+
+  try {
+    const service = getFileSystemServiceByNuclideUri(paths[0]);
+    await service.move(paths.map(p => getPath(p)), getPath(destPath));
+
+    // All filtered nodes should have the same rootUri, so we simply attempt to
+    // retrieve the hg repository using the first node.
+    const hgRepository = getHgRepositoryForNode(filteredNodes[0]);
+    if (hgRepository == null) {
+      return;
+    }
+    await hgRepository.rename(paths, destPath, true /* after */);
+  } catch (e) {
+    paths.forEach(path => {
+      const newPath = join(destPath, basename(path));
+      FileTreeHelpers.updatePathInOpenedEditors(newPath, path);
+    });
+    throw e;
+  }
+}
+
 module.exports = {
   getHgRepositoryForNode,
   isValidRename,
   renameNode,
+  moveNodes,
 };
