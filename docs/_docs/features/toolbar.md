@@ -1,5 +1,5 @@
 ---
-id: feature-toolbar
+pageid: feature-toolbar
 title: Toolbar
 layout: docs
 permalink: /docs/features/toolbar/

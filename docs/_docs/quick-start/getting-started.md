@@ -1,5 +1,5 @@
 ---
-id: quick-start-getting-started
+pageid: quick-start-getting-started
 title: Getting Started
 layout: docs
 permalink: /docs/quick-start/getting-started/

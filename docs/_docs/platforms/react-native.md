@@ -1,5 +1,5 @@
 ---
-id: platform-react-native
+pageid: platform-react-native
 title: React Native
 layout: docs
 permalink: /docs/platforms/react-native/

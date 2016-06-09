@@ -1,5 +1,5 @@
 ---
-id: feature-outline-view
+pageid: feature-outline-view
 title: Outline View
 layout: docs
 permalink: /docs/features/outline-view/

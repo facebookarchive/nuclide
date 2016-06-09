@@ -1,5 +1,5 @@
 ---
-id: feature-remote
+pageid: feature-remote
 title: Remote Development
 layout: docs
 permalink: /docs/features/remote/

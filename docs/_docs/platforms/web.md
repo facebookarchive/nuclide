@@ -1,5 +1,5 @@
 ---
-id: platform-web
+pageid: platform-web
 title: Web Development
 layout: docs
 permalink: /docs/platforms/web/

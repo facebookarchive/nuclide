@@ -1,5 +1,5 @@
 ---
-id: editor-basics
+pageid: editor-basics
 title: Basics
 layout: docs
 permalink: /docs/editor/basics/

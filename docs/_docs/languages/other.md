@@ -1,5 +1,5 @@
 ---
-id: language-other
+pageid: language-other
 title: PHP, JS, OCaml, Python
 layout: docs
 permalink: /docs/languages/other/

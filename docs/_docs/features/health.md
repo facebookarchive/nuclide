@@ -1,5 +1,5 @@
 ---
-id: feature-health
+pageid: feature-health
 title: Health Statistics
 layout: docs
 permalink: /docs/features/health-statistics/

@@ -1,5 +1,5 @@
 ---
-id: feature-debugger
+pageid: feature-debugger
 title: Debugger
 layout: docs
 permalink: /docs/features/debugger/

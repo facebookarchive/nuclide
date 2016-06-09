@@ -1,5 +1,5 @@
 ---
-id: editor-uninstall
+pageid: editor-uninstall
 title: Uninstalling
 layout: docs
 permalink: /docs/editor/uninstall/

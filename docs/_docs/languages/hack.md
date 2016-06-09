@@ -1,5 +1,5 @@
 ---
-id: language-hack
+pageid: language-hack
 title: Hack
 layout: docs
 permalink: /docs/languages/hack/

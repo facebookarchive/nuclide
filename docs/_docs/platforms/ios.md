@@ -1,5 +1,5 @@
 ---
-id: platform-ios
+pageid: platform-ios
 title: iOS
 layout: docs
 permalink: /docs/platforms/ios/

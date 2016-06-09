@@ -1,5 +1,5 @@
 ---
-id: feature-format-js
+pageid: feature-format-js
 title: Format JS
 layout: docs
 permalink: /docs/features/format-js/

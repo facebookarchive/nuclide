@@ -7,7 +7,7 @@
       items     : [
         {% for item in group.items %}
         {% for docitem in site.docs %}
-          {% if docitem.id == item.id %}
+          {% if docitem.pageid == item.id %}
             {% assign doc = docitem %}
           {% endif %}
         {% endfor %}

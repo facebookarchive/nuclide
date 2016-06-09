@@ -1,5 +1,5 @@
 ---
-id: platform-android
+pageid: platform-android
 title: Android
 layout: docs
 permalink: /docs/platforms/android/

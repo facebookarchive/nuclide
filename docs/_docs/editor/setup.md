@@ -1,5 +1,5 @@
 ---
-id: editor-setup
+pageid: editor-setup
 title: Setup
 layout: docs
 permalink: /docs/editor/setup/

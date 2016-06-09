@@ -1,5 +1,5 @@
 ---
-id: language-objective-c
+pageid: language-objective-c
 title: Objective-C
 layout: docs
 permalink: /docs/languages/objective-c/

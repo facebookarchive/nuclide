@@ -1,5 +1,5 @@
 ---
-id: feature-hg
+pageid: feature-hg
 title: Mercurial Support
 layout: docs
 permalink: /docs/features/hg/

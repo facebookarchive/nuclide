@@ -1,5 +1,5 @@
 ---
-id: advanced-building-from-source
+pageid: advanced-building-from-source
 title: Building Nuclide From Source
 layout: docs
 permalink: /docs/advanced-topics/building-from-source/

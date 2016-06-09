@@ -1,5 +1,5 @@
 ---
-id: feature-quick-open
+pageid: feature-quick-open
 title: Quick Open
 layout: docs
 permalink: /docs/features/quick-open/

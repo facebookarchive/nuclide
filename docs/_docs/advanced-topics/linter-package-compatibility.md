@@ -1,5 +1,5 @@
 ---
-id: advanced-linter-package-compatibility
+pageid: advanced-linter-package-compatibility
 title: Linter Package Compatibility
 layout: docs
 permalink: /docs/advanced-topics/linter-package-compatibility/

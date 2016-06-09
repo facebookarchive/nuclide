@@ -1,5 +1,5 @@
 ---
-id: advanced-custom-keybindings
+pageid: advanced-custom-keybindings
 title: Custom Keybindings
 layout: docs
 permalink: /docs/advanced-topics/custom-keybindings/

@@ -1,5 +1,5 @@
 ---
-id: help-faq
+pageid: help-faq
 title: FAQ
 layout: docs
 permalink: /docs/help/faq/

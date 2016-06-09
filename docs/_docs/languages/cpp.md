@@ -1,5 +1,5 @@
 ---
-id: language-cpp
+pageid: language-cpp
 title: C++
 layout: docs
 permalink: /docs/languages/cpp/
