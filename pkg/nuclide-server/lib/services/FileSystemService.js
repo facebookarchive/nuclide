@@ -17,6 +17,7 @@
 
 import mv from 'mv';
 import fs from 'fs';
+import fsPlus from 'fs-plus';
 import pathModule from 'path';
 import fsPromise from '../../../commons-node/fsPromise';
 
@@ -153,12 +154,17 @@ export function resolveRealPath(path: string): Promise<string> {
  * Runs the equivalent of `mv sourcePath destinationPath`.
  */
 export function rename(sourcePath: string, destinationPath: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const fsPlus = require('fs-plus');
-    fsPlus.move(sourcePath, destinationPath, error => {
-      error ? reject(error) : resolve();
-    });
-  });
+  return fsPromise.move(sourcePath, destinationPath);
+}
+
+/**
+ * Moves all sourcePaths into the specified destDir, assumed to be a directory name.
+ */
+export async function move(sourcePaths: Array<string>, destDir: string): Promise<void> {
+  await Promise.all(sourcePaths.map(path => {
+    const destPath = pathModule.join(destDir, pathModule.basename(path));
+    return fsPromise.move(path, destPath);
+  }));
 }
 
 /**
@@ -171,7 +177,6 @@ export async function copy(sourcePath: string, destinationPath: string): Promise
     return false;
   }
   await new Promise((resolve, reject) => {
-    const fsPlus = require('fs-plus');
     fsPlus.copy(sourcePath, destinationPath, error => {
       error ? reject(error) : resolve();
     });
