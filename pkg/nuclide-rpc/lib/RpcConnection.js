@@ -18,7 +18,7 @@ import type {
   RequestMessage,
   DisposeRemoteObjectMessage,
   CallMessage,
-  CallRemoteMethodMessage,
+  CallObjectMessage,
   NewObjectMessage,
 } from './messages';
 import type {
@@ -34,7 +34,7 @@ import {ServiceRegistry} from './ServiceRegistry';
 import {ObjectRegistry} from './ObjectRegistry';
 import {
   createCallMessage,
-  createCallMethodMessage,
+  createCallObjectMessage,
   createNewObjectMessage,
   createDisposeMessage,
   createPromiseMessage,
@@ -226,7 +226,7 @@ export class RpcConnection<TransportType: Transport> {
     args: Array<any>,
   ): any {
     return this._sendMessageAndListenForResult(
-      createCallMethodMessage(methodName, objectId, this._generateRequestId(), args),
+      createCallObjectMessage(methodName, objectId, this._generateRequestId(), args),
       returnType,
       `Calling remote method ${methodName}.`
     );
@@ -444,7 +444,7 @@ export class RpcConnection<TransportType: Transport> {
   async _callMethod(
     id: number,
     timingTracker: TimingTracker,
-    call: CallRemoteMethodMessage,
+    call: CallObjectMessage,
   ): Promise<boolean> {
     const object = this._objectRegistry.unmarshal(call.objectId);
     invariant(object != null);
@@ -513,7 +513,7 @@ export class RpcConnection<TransportType: Transport> {
         this._handleResponseMessage(message);
         break;
       case 'call':
-      case 'MethodCall':
+      case 'call-object':
       case 'new':
       case 'DisposeObject':
       case 'DisposeObservable':
@@ -583,7 +583,7 @@ export class RpcConnection<TransportType: Transport> {
         case 'call':
           returnedPromise = await this._callFunction(id, timingTracker, message);
           break;
-        case 'MethodCall':
+        case 'call-object':
           returnedPromise = await this._callMethod(id, timingTracker, message);
           break;
         case 'new':
@@ -637,7 +637,7 @@ function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage):
   switch (message.type) {
     case 'call':
       return `service-framework:${message.method}`;
-    case 'MethodCall':
+    case 'call-object':
       const callInterface = registry.getInterface(message.objectId);
       return `service-framework:${callInterface}.${message.method}`;
     case 'new':
