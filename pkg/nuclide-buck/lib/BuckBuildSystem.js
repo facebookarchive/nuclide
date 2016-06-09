@@ -15,6 +15,7 @@ import type {Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base';
 import type {SerializedState} from './types';
 
+import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {CompositeDisposable} from 'atom';
 import {Dispatcher} from 'flux';
@@ -43,6 +44,9 @@ type Flux = {
   actions: BuckToolbarActions;
   store: BuckToolbarStore;
 };
+
+type TaskType = 'build' | 'test' | 'run' | 'debug';
+type BuckSubcommand = 'build' | 'install' | 'test';
 
 export class BuckBuildSystem {
   _flux: ?Flux;
@@ -130,9 +134,11 @@ export class BuckBuildSystem {
   }
 
   runTask(taskType: string): TaskInfo {
-    if (!this.getTasks().some(task => task.type === taskType)) {
-      throw new Error(`There's no Buck task named "${taskType}"`);
-    }
+    invariant(
+      taskType === 'build' || taskType === 'test' ||
+      taskType === 'run' || taskType === 'debug',
+      'Invalid task type',
+    );
 
     const resultStream = this._runTaskType(taskType);
     return {
@@ -175,7 +181,7 @@ export class BuckBuildSystem {
     };
   }
 
-  _runTaskType(taskType: string): Observable<?number> {
+  _runTaskType(taskType: TaskType): Observable<?number> {
     const {store} = this._getFlux();
     const buckProject = store.getMostRecentBuckProject();
     const buildTarget = store.getBuildTarget();
@@ -208,7 +214,7 @@ export class BuckBuildSystem {
             });
         }
         const buckObservable = Observable.fromPromise(
-          this._runBuckCommand(buckProject, buildTarget, subcommand),
+          this._runBuckCommand(buckProject, buildTarget, subcommand, taskType === 'debug'),
         );
         return socketStream
           .merge(buckObservable)
@@ -220,7 +226,8 @@ export class BuckBuildSystem {
   async _runBuckCommand(
     buckProject: BuckProject,
     buildTarget: string,
-    subcommand: string,
+    subcommand: BuckSubcommand,
+    debug: boolean,
   ): Promise<void> {
     const {store} = this._getFlux();
 
@@ -235,7 +242,7 @@ export class BuckBuildSystem {
       }
     }
 
-    if (subcommand === 'debug') {
+    if (debug) {
       // Stop any existing debugging sessions, as install hangs if an existing
       // app that's being overwritten is being debugged.
       atom.commands.dispatch(
@@ -248,11 +255,11 @@ export class BuckBuildSystem {
       buildTarget,
       simulator: store.getSimulator(),
       subcommand,
-      debug: subcommand === 'debug',
+      debug,
       appArgs,
     });
 
-    if (subcommand === 'debug' && result != null && result.pid != null) {
+    if (debug && result != null && result.pid != null) {
       // Use commands here to trigger package activation.
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
       const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
