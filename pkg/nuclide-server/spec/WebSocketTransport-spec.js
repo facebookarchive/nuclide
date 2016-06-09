@@ -38,10 +38,10 @@ describe('WebSocketTransport', () => {
   });
 
   it('messsage', () => {
-    const payload = {foo: 42};
+    const payload = JSON.stringify({foo: 42});
     let result;
-    transport.onMessage(message => { result = message; });
-    socket.emit('message', JSON.stringify(payload));
+    transport.onMessage().subscribe(message => { result = message; });
+    socket.emit('message', payload);
     expect(result).toEqual(payload);
   });
 

@@ -10,33 +10,33 @@
  */
 
 import type {Transport} from '../lib/index';
+import type {Observable} from 'rxjs';
+import {Subject} from 'rxjs';
 
 export class LoopbackTransports {
   serverTransport: Transport;
   clientTransport: Transport;
 
   constructor() {
-    let onServerMessage: (message: Object) => mixed;
-    let onClientMessage: (message: Object) => mixed;
+    const serverMessages: Subject<string> = new Subject();
+    const clientMessages: Subject<string> = new Subject();
 
     this.serverTransport = {
       send(message: string): void {
-        onClientMessage(JSON.parse(message));
+        clientMessages.next(message);
       },
-      onMessage(callback: (message: Object) => mixed): IDisposable {
-        onServerMessage = callback;
-        return {dispose() {}};
+      onMessage(): Observable<string> {
+        return serverMessages;
       },
       close() {},
     };
 
     this.clientTransport = {
       send(message: string): void {
-        onServerMessage(JSON.parse(message));
+        serverMessages.next(message);
       },
-      onMessage(callback: (message: Object) => mixed): IDisposable {
-        onClientMessage = callback;
-        return {dispose() {}};
+      onMessage(): Observable<string> {
+        return clientMessages;
       },
       close() {},
     };

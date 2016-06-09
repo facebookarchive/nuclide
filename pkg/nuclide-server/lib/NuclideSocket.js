@@ -10,6 +10,7 @@
  */
 
 import type {AgentOptions} from './main';
+import type {Observable} from 'rxjs';
 
 import url from 'url';
 import WS from 'ws';
@@ -68,9 +69,6 @@ export class NuclideSocket {
     this._previouslyConnected = false;
     const transport = new QueuedTransport(this.id);
     this._transport = transport;
-    transport.onMessage(message => {
-      this._emitter.emit('message', message);
-    });
     transport.onDisconnect(() => {
       if (this.isDisconnected()) {
         this._emitter.emit('status', false);
@@ -233,8 +231,9 @@ export class NuclideSocket {
     return this._heartbeat.onHeartbeatError(callback);
   }
 
-  onMessage(callback: (message: Object) => mixed): IDisposable {
-    return attachEvent(this._emitter, 'message', callback);
+  onMessage(): Observable<string> {
+    invariant(this._transport != null);
+    return this._transport.onMessage();
   }
 
   onStatus(callback: (connected: boolean) => mixed): IDisposable {

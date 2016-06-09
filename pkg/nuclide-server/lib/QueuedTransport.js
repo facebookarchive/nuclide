@@ -9,8 +9,10 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+import type {Observable} from 'rxjs';
 
+import invariant from 'assert';
+import {Subject} from 'rxjs';
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
 import {Emitter} from 'event-kit';
@@ -25,7 +27,7 @@ import {Emitter} from 'event-kit';
 export type UnreliableTransport = {
   send(message: string): Promise<boolean>;
   onClose(callback: () => mixed): IDisposable;
-  onMessage(callback: (message: Object) => mixed): IDisposable;
+  onMessage(): Observable<string>;
   onError(callback: (error: Object) => mixed): IDisposable;
   close(): void;
   isClosed(): boolean;
@@ -49,12 +51,14 @@ export class QueuedTransport {
   _transport: ?UnreliableTransport;
   _messageQueue: Array<string>;
   _emitter: Emitter;
+  _messages: Subject<string>;
 
   constructor(clientId: string, transport: ?UnreliableTransport) {
     this.id = clientId;
     this._isClosed = false;
     this._transport = null;
     this._messageQueue = [];
+    this._messages = new Subject();
     this._emitter = new Emitter();
 
     if (transport != null) {
@@ -73,7 +77,7 @@ export class QueuedTransport {
     logger.info('Client #%s connecting with a new socket!', this.id);
     invariant(this._transport == null);
     this._transport = transport;
-    transport.onMessage(message => this._onMessage(transport, message));
+    transport.onMessage().subscribe(message => this._messages.next(message));
     transport.onClose(() => this._onClose(transport));
   }
 
@@ -138,8 +142,8 @@ export class QueuedTransport {
     }
   }
 
-  onMessage(callback: (message: Object) => mixed): IDisposable {
-    return this._emitter.on('message', callback);
+  onMessage(): Observable<string> {
+    return this._messages;
   }
 
   onDisconnect(callback: (transport: UnreliableTransport) => mixed): IDisposable {

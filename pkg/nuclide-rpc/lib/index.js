@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rxjs';
+
 export {ServiceRegistry} from './ServiceRegistry';
 export {RpcConnection} from './RpcConnection';
 export {LoopbackTransports} from './LoopbackTransports';
@@ -21,6 +23,6 @@ export type ConfigEntry = {
 
 export type Transport = {
   send(message: string): void;
-  onMessage(callback: (message: Object) => mixed): IDisposable;
+  onMessage(): Observable<string>;
   close(): void;
 };

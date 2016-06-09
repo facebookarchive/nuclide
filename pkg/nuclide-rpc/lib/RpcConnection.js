@@ -136,7 +136,7 @@ export class RpcConnection<TransportType: Transport> {
     this._rpcRequestId = 1;
     this._serviceRegistry = serviceRegistry;
     this._objectRegistry = new ObjectRegistry(kind, this._serviceRegistry, this);
-    this._transport.onMessage(message => { this._handleMessage(message); });
+    this._transport.onMessage().subscribe(message => { this._handleMessage(message); });
     this._subscriptions = new Map();
     this._calls = new Map();
   }
@@ -510,7 +510,9 @@ export class RpcConnection<TransportType: Transport> {
     return this._transport;
   }
 
-  _handleMessage(message: RequestMessage | ResponseMessage): void {
+  _handleMessage(value: string): void {
+    const message: RequestMessage | ResponseMessage = JSON.parse(value);
+
     // TODO: advinsky uncomment after version 0.136 and below are phased out
     // invariant(message.protocol === SERVICE_FRAMEWORK3_PROTOCOL);
 

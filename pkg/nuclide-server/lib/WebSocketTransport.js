@@ -10,7 +10,9 @@
  */
 
 import type WS from 'ws';
+import type {Observable} from 'rxjs';
 
+import {Subject} from 'rxjs';
 import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
 import {Emitter} from 'event-kit';
@@ -28,11 +30,13 @@ export class WebSocketTransport {
   id: string;
   _socket: ?WS;
   _emitter: Emitter;
+  _messages: Subject<string>;
 
   constructor(clientId: string, socket: WS) {
     this.id = clientId;
     this._emitter = new Emitter();
     this._socket = socket;
+    this._messages = new Subject();
 
     logger.info('Client #%s connecting with a new socket!', this.id);
     socket.on('message', message => this._onSocketMessage(message));
@@ -57,18 +61,16 @@ export class WebSocketTransport {
     });
   }
 
-  _onSocketMessage(message: any): void {
+  _onSocketMessage(message: string): void {
     if (this._socket == null) {
       logger.error('Received socket message after connection closed', new Error());
       return;
     }
-
-    const parsedMessage: Object = JSON.parse(message);
-    this._emitter.emit('message', parsedMessage);
+    this._messages.next(message);
   }
 
-  onMessage(callback: (message: Object) => mixed): IDisposable {
-    return this._emitter.on('message', callback);
+  onMessage(): Observable<string> {
+    return this._messages;
   }
 
   onClose(callback: () => mixed): IDisposable {

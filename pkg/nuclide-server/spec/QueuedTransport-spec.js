@@ -12,9 +12,11 @@
 import type {UnreliableTransport} from '../lib/QueuedTransport';
 import {QueuedTransport} from '../lib/QueuedTransport';
 import {Emitter} from 'event-kit';
+import {Subject} from 'rxjs';
 
 function makeUnreliableTransport(): UnreliableTransport {
   let isClosed = false;
+  const messages: Subject<string> = new Subject();
   const result: any = new Emitter();
   result.send = jasmine.createSpy('send').andCallFake((data: Object) => {
     result.emit('send', data);
@@ -24,10 +26,7 @@ function makeUnreliableTransport(): UnreliableTransport {
     (callback: () => mixed): IDisposable => {
       return result.on('close', callback);
     });
-  result.onMessage = jasmine.createSpy('onMessage').andCallFake(
-    (callback: (message: Object) => mixed): IDisposable => {
-      return result.on('message', callback);
-    });
+  result.onMessage = jasmine.createSpy('onMessage').andReturn(messages);
   result.close = jasmine.createSpy('close').andCallFake((): void => {
     isClosed = true;
     result.emit('close');
@@ -35,6 +34,7 @@ function makeUnreliableTransport(): UnreliableTransport {
   result.isClosed = (): boolean => {
     return isClosed;
   };
+  result.sendMessage = message => messages.next(message);
   return result;
 }
 
@@ -49,7 +49,7 @@ describe('QueuedTransport', () => {
 
   it('constructor', () => {
     expect(q.getState()).toBe('open');
-    expect(transport.onMessage).toHaveBeenCalledWith(jasmine.any(Function));
+    expect(transport.onMessage).toHaveBeenCalledWith();
     expect(transport.onClose).toHaveBeenCalledWith(jasmine.any(Function));
   });
 
@@ -100,7 +100,7 @@ describe('QueuedTransport', () => {
     q.reconnect(newTransport);
 
     expect(q.getState()).toBe('open');
-    expect(newTransport.onMessage).toHaveBeenCalledWith(jasmine.any(Function));
+    expect(newTransport.onMessage).toHaveBeenCalledWith();
     expect(newTransport.onClose).toHaveBeenCalledWith(jasmine.any(Function));
   });
 
@@ -139,18 +139,20 @@ describe('QueuedTransport', () => {
 
   it('onMessage', () => {
     const onMessage = jasmine.createSpy('onMessage');
-    q.onMessage(onMessage);
-    const data = {message: 42};
-    (transport: any).emit('message', data);
+    q.onMessage().subscribe(onMessage);
+    const data = JSON.stringify({message: 42});
+    (transport: any).sendMessage(data);
 
     expect(onMessage).toHaveBeenCalledWith(data);
   });
 
   it('dispose unsubscribes from onMessage', () => {
     const onMessage = jasmine.createSpy('onMessage');
-    q.onMessage(onMessage).dispose();
-    const data = {message: 42};
-    (transport: any).emit('message', data);
+    const subscription = q.onMessage().subscribe(onMessage);
+    subscription.unsubscribe();
+
+    const data = JSON.stringify({message: 42});
+    (transport: any).sendMessage(data);
 
     expect(onMessage).not.toHaveBeenCalled();
   });
