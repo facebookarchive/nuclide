@@ -10,7 +10,6 @@
  */
 
 import path from 'path';
-import {__testUseOnly_removeFeature} from '../../../lib/main';
 
 /**
  * Activates all nuclide and fb atom packages that do not defer their own activation until a
@@ -28,9 +27,6 @@ export async function activateAllPackages(): Promise<Array<string>> {
     'status-bar',
     'tool-bar',
   ];
-
-  // TODO(jonaldislarry) These package(s) cannot be activated manually -- t9243542.
-  ['nuclide-fuzzy-filename-provider'].forEach(name => __testUseOnly_removeFeature(name));
 
   const packageNames = atom.packages.getAvailablePackageNames().filter(name => {
     const pack = atom.packages.loadPackage(name);
