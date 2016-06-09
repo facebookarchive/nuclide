@@ -207,6 +207,7 @@ export default {
   readlink: _denodeifyFsMethod('readlink'),
   realpath: _denodeifyFsMethod('realpath'),
   rename: _denodeifyFsMethod('rename'),
+  move: _denodeifyFsMethod('move'),
   stat: _denodeifyFsMethod('stat'),
   symlink: _denodeifyFsMethod('symlink'),
   unlink: _denodeifyFsMethod('unlink'),
