@@ -256,7 +256,7 @@ describe('HgService', () => {
         wasCalled = true;
       });
       waitsForPromise(async () => {
-        await hgService.rename('file_1.txt', 'file_2.txt');
+        await hgService.rename(['file_1.txt'], 'file_2.txt');
         expect(wasCalled).toBeTruthy();
       });
     });

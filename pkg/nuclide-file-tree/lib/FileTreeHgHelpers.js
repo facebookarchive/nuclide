@@ -40,7 +40,7 @@ async function renameNode(node: FileTreeNode, newPath: string): Promise<void> {
   if (hgRepository != null) {
     try {
       shouldFSRename = false;
-      await hgRepository.rename(filePath, newPath);
+      await hgRepository.rename([filePath], newPath);
     } catch (e) {
       const statuses = await hgRepository.getStatuses([filePath]);
       const pathStatus = statuses.get(filePath);

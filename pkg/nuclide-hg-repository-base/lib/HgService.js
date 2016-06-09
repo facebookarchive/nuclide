@@ -721,15 +721,30 @@ export class HgService {
   }
 
   /**
-   * Rename a file versioned under Hg.
-   * @param oldFilePath Which file should be renamed.
-   * @param newFilePath What should the file be renamed to.
+   * Rename/move files versioned under Hg.
+   * @param filePaths Which files should be renamed/moved.
+   * @param destPath What should the file be renamed/moved to.
    */
-  rename(oldFilePath: NuclideUri, newFilePath: NuclideUri): Promise<void> {
-    return this._runSimpleInWorkingDirectory(
-      'rename',
-      [getPath(oldFilePath), getPath(newFilePath)],
-    );
+  async rename(
+    filePaths: Array<NuclideUri>,
+    destPath: NuclideUri,
+    after?: boolean,
+  ): Promise<void> {
+    const args = [
+      ...filePaths.map(p => getPath(p)), // Sources
+      getPath(destPath),                 // Dest
+    ];
+    const opts = {};
+    if (after) {
+      args.unshift('--after');
+      // TODO (tyangliu): Ignore stdio streams for now to silence EBADF error.
+      // Figure out what is causing these errors; seems to be some kind of
+      // fs race condition, since adding a 10ms sleep before calling rename
+      // nearly eliminates the error, whereas the error still happens with
+      // a 1ms sleep.
+      opts.stdio = 'ignore';
+    }
+    await this._runSimpleInWorkingDirectory('rename', args, opts);
   }
 
   /**
