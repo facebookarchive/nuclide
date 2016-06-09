@@ -165,7 +165,7 @@ export async function generateOutline(
   contents: string,
   mode: ShowVariableMode,
 ): Promise<?Outline> {
-  const service = await getServiceByNuclideUri('JediService', src);
+  const service = await getServiceByNuclideUri('PythonService', src);
   if (!service) {
     return null;
   }

@@ -17,7 +17,7 @@ import {
   getDefinitions,
   getReferences,
   getOutline,
-} from '../lib/JediService';
+} from '../lib/PythonService';
 
 // Test python file located at fixtures/serverdummy.py
 const TEST_FILE = path.join(__dirname, 'fixtures', 'serverdummy.py');
@@ -25,7 +25,7 @@ const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
 
 // Line/column actual offsets are 0-indexed in this test, similar to what atom
 // provides as input.
-describe('JediService', () => {
+describe('PythonService', () => {
 
   describe('Completions', () => {
     it('gives a rejected promise when an invalid request is given', () => {

@@ -43,7 +43,7 @@ export default class DefinitionHelpers {
 
     const {range} = wordMatch;
 
-    const service = getServiceByNuclideUri('JediService', src);
+    const service = getServiceByNuclideUri('PythonService', src);
     if (service == null) {
       return null;
     }

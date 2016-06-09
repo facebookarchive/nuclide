@@ -28,7 +28,7 @@ export default class CodeFormatHelpers {
       };
     }
 
-    const service = getServiceByNuclideUri('JediService', src);
+    const service = getServiceByNuclideUri('PythonService', src);
     invariant(service, 'Failed to get service for python.');
 
     try {

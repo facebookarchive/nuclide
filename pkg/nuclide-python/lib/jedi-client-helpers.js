@@ -22,7 +22,7 @@ async function getCompletions(editor: atom$TextEditor) {
   const line = cursor.getBufferRow();
   const column = cursor.getBufferColumn();
 
-  const service = getServiceByNuclideUri('JediService', src);
+  const service = getServiceByNuclideUri('PythonService', src);
   invariant(service);
 
   return service

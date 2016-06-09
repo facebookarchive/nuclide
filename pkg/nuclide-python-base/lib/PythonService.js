@@ -53,6 +53,14 @@ export type JediReferencesResult = {
   references: Array<JediReference>;
 };
 
+// Limit the number of active Jedi processes.
+const jediServers = new LRUCache({
+  max: 10,
+  dispose(key: NuclideUri, val: JediServer) {
+    val.dispose();
+  },
+});
+
 export type Position = {
   line: number;
   column: number;
@@ -93,14 +101,6 @@ export type JediOutlineResult = {
   items: Array<JediOutlineItem>
 };
 
-// Limit the number of active Jedi processes.
-const jediServers = new LRUCache({
-  max: 10,
-  dispose(key: NuclideUri, val: JediServer) {
-    val.dispose();
-  },
-});
-
 // Cache the pythonPath on first execution so we don't rerun overrides script
 // everytime.
 let pythonPath;
@@ -112,7 +112,6 @@ async function getPythonPath() {
   pythonPath = 'python';
   try {
     // Override the python path if override script is present.
-    // $FlowFB
     const overrides = await require('./fb/find-jedi-server-args')();
     if (overrides.pythonExecutable) {
       pythonPath = overrides.pythonExecutable;

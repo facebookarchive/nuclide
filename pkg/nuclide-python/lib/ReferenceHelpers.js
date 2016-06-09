@@ -37,7 +37,7 @@ export default class ReferenceHelpers {
     const line = position.row;
     const column = position.column;
 
-    const service = await getServiceByNuclideUri('JediService', src);
+    const service = await getServiceByNuclideUri('PythonService', src);
     if (!service) {
       return null;
     }

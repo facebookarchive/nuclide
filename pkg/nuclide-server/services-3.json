@@ -16,8 +16,8 @@
     "name": "ClangService"
   },
   {
-    "implementation": "../nuclide-python-base/lib/JediService.js",
-    "name": "JediService"
+    "implementation": "../nuclide-python-base/lib/PythonService.js",
+    "name": "PythonService"
   },
   {
     "implementation": "../nuclide-flow-base/lib/FlowService.js",
