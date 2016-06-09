@@ -17,7 +17,7 @@ import type {
   ResponseMessage,
   RequestMessage,
   DisposeRemoteObjectMessage,
-  CallRemoteFunctionMessage,
+  CallMessage,
   CallRemoteMethodMessage,
   CreateRemoteObjectMessage,
 } from './messages';
@@ -33,7 +33,7 @@ import {Observable} from 'rxjs';
 import {ServiceRegistry} from './ServiceRegistry';
 import {ObjectRegistry} from './ObjectRegistry';
 import {
-  createCallFunctionMessage,
+  createCallMessage,
   createCallMethodMessage,
   createNewObjectMessage,
   createDisposeMessage,
@@ -205,7 +205,7 @@ export class RpcConnection<TransportType: Transport> {
    */
   callRemoteFunction(functionName: string, returnType: ReturnType, args: Array<any>): any {
     return this._sendMessageAndListenForResult(
-      createCallFunctionMessage(functionName, this._generateRequestId(), args),
+      createCallMessage(functionName, this._generateRequestId(), args),
       returnType,
       `Calling function ${functionName}`
     );
@@ -425,12 +425,12 @@ export class RpcConnection<TransportType: Transport> {
   async _callFunction(
     id: number,
     timingTracker: TimingTracker,
-    call: CallRemoteFunctionMessage,
+    call: CallMessage,
   ): Promise<boolean> {
     const {
       localImplementation,
       type,
-    } = this._getFunctionImplemention(call.function);
+    } = this._getFunctionImplemention(call.method);
     const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
       this._objectRegistry, call.args, type.argumentTypes);
 
@@ -512,7 +512,7 @@ export class RpcConnection<TransportType: Transport> {
       case 'ErrorMessage':
         this._handleResponseMessage(message);
         break;
-      case 'FunctionCall':
+      case 'call':
       case 'MethodCall':
       case 'NewObject':
       case 'DisposeObject':
@@ -580,7 +580,7 @@ export class RpcConnection<TransportType: Transport> {
     try {
       let returnedPromise = false;
       switch (message.type) {
-        case 'FunctionCall':
+        case 'call':
           returnedPromise = await this._callFunction(id, timingTracker, message);
           break;
         case 'MethodCall':
@@ -635,8 +635,8 @@ export class RpcConnection<TransportType: Transport> {
 
 function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage): string {
   switch (message.type) {
-    case 'FunctionCall':
-      return `service-framework:${message.function}`;
+    case 'call':
+      return `service-framework:${message.method}`;
     case 'MethodCall':
       const callInterface = registry.getInterface(message.objectId);
       return `service-framework:${callInterface}.${message.method}`;

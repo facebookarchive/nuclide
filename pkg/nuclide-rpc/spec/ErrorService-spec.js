@@ -43,7 +43,7 @@ describe('ErrorServer', () => {
         expect(e instanceof Error).toBe(true);
         expect(e.message.startsWith(
           'Remote Error: msg processing message {"protocol":"service_framework3_rpc","type":' +
-          '"FunctionCall","function":"ErrorService/promiseError","id":1,"args":["msg"]}'))
+          '"call","method":"ErrorService/promiseError","id":1,"args":["msg"]}'))
           .toBe(true);
       }
     });
@@ -96,7 +96,7 @@ describe('ErrorServer', () => {
       e => {
         expect(e.message.startsWith(
           'Remote Error: msg processing message {"protocol":"service_framework3_rpc","type":' +
-          '"FunctionCall","function":"ErrorService/observableError","id":1,"args":["msg"]}'))
+          '"call","method":"ErrorService/observableError","id":1,"args":["msg"]}'))
           .toBe(true);
         completed = true;
       },
