@@ -14,6 +14,7 @@ import type {Observable} from 'rxjs';
 export {ServiceRegistry} from './ServiceRegistry';
 export {RpcConnection} from './RpcConnection';
 export {LoopbackTransports} from './LoopbackTransports';
+export {StreamTransport} from './StreamTransport';
 
 export type ConfigEntry = {
   name: string;
