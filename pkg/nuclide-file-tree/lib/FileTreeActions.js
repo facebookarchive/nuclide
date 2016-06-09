@@ -153,6 +153,14 @@ class FileTreeActions {
     });
   }
 
+  moveToNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.MOVE_TO_NODE,
+      nodeKey,
+      rootKey,
+    });
+  }
+
   setUsePreviewTabs(usePreviewTabs: boolean): void {
     this._dispatcher.dispatch({
       actionType: ActionType.SET_USE_PREVIEW_TABS,
@@ -330,6 +338,14 @@ class FileTreeActions {
     });
   }
 
+  setDragHoveredNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_DRAG_HOVERED_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
   setSelectedNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionType.SET_SELECTED_NODE,
@@ -349,6 +365,14 @@ class FileTreeActions {
   unselectNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionType.UNSELECT_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
+  unhoverNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.UNHOVER_NODE,
       rootKey,
       nodeKey,
     });

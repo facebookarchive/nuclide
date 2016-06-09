@@ -26,6 +26,7 @@ export type FileTreeNodeOptions = {
   rootUri: NuclideUri;
   isExpanded?: boolean;
   isSelected?: boolean;
+  isDragHovered?: boolean;
   isLoading?: boolean;
   wasFetched?: boolean;
   isCwd?: boolean;
@@ -41,6 +42,7 @@ export type FileTreeNodeOptions = {
 type DefaultFileTreeNodeOptions = {
   isExpanded: boolean;
   isSelected: boolean;
+  isDragHovered: boolean;
   isLoading: boolean;
   wasFetched: boolean;
   isCwd: boolean;
@@ -55,6 +57,7 @@ type DefaultFileTreeNodeOptions = {
 const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
   isExpanded: false,
   isSelected: false,
+  isDragHovered: false,
   isLoading: false,
   wasFetched: false,
   isCwd: false,
@@ -69,6 +72,7 @@ const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
 export type ImmutableNodeSettableFields = {
   isExpanded?: boolean;
   isSelected?: boolean;
+  isDragHovered?: boolean;
   isLoading?: boolean;
   wasFetched?: boolean;
   isCwd?: boolean;
@@ -147,6 +151,7 @@ export class FileTreeNode {
   rootUri: NuclideUri;
   isExpanded: boolean;
   isSelected: boolean;
+  isDragHovered: boolean;
   isLoading: boolean;
   wasFetched: boolean;
   isTracked: boolean;
@@ -173,6 +178,7 @@ export class FileTreeNode {
 
   // Derived from children
   containsSelection: boolean;
+  containsDragHover: boolean;
   containsTrackedNode: boolean;
   containsFilterMatches: boolean;
   shownChildrenBelow: number;
@@ -220,6 +226,7 @@ export class FileTreeNode {
   */
   _handleChildren(): void {
     let containsSelection = this.isSelected;
+    let containsDragHover = this.isDragHovered;
     let containsTrackedNode = this.isTracked;
     let containsFilterMatches = this.matchesFilter;
     let shownChildrenBelow = this.shouldBeShown ? 1 : 0;
@@ -243,6 +250,10 @@ export class FileTreeNode {
         containsSelection = true;
       }
 
+      if (!containsDragHover && c.containsDragHover) {
+        containsDragHover = true;
+      }
+
       if (!containsTrackedNode && c.containsTrackedNode) {
         containsTrackedNode = true;
       }
@@ -260,6 +271,7 @@ export class FileTreeNode {
     }
 
     this.containsSelection = containsSelection;
+    this.containsDragHover = containsDragHover;
     this.containsTrackedNode = containsTrackedNode;
     this.containsFilterMatches = containsFilterMatches;
     this.shownChildrenBelow = shownChildrenBelow;
@@ -280,6 +292,7 @@ export class FileTreeNode {
     this.rootUri = o.rootUri;
     this.isExpanded = o.isExpanded !== undefined ? o.isExpanded : D.isExpanded;
     this.isSelected = o.isSelected !== undefined ? o.isSelected : D.isSelected;
+    this.isDragHovered = o.isDragHovered !== undefined ? o.isDragHovered : D.isDragHovered;
     this.isLoading = o.isLoading !== undefined ? o.isLoading : D.isLoading;
     this.wasFetched = o.wasFetched !== undefined ? o.wasFetched : D.wasFetched;
     this.isTracked = o.isTracked !== undefined ? o.isTracked : D.isTracked;
@@ -322,6 +335,7 @@ export class FileTreeNode {
       rootUri: this.rootUri,
       isExpanded: this.isExpanded,
       isSelected: this.isSelected,
+      isDragHovered: this.isDragHovered,
       isLoading: this.isLoading,
       wasFetched: this.wasFetched,
       isTracked: this.isTracked,
@@ -354,6 +368,10 @@ export class FileTreeNode {
 
   setIsSelected(isSelected: boolean): FileTreeNode {
     return this.set({isSelected});
+  }
+
+  setIsDragHovered(isDragHovered: boolean): FileTreeNode {
+    return this.set({isDragHovered});
   }
 
   setIsLoading(isLoading: boolean): FileTreeNode {
@@ -713,6 +731,9 @@ export class FileTreeNode {
 
   _propsAreTheSame(props: Object): boolean {
     if (props.isSelected !== undefined && this.isSelected !== props.isSelected) {
+      return false;
+    }
+    if (props.isDragHovered !== undefined && this.isDragHovered !== props.isDragHovered) {
       return false;
     }
     if (props.isTracked !== undefined && this.isTracked !== props.isTracked) {

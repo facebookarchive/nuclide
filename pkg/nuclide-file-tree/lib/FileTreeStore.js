@@ -17,6 +17,7 @@ import type {
 
 import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
+import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeNode} from './FileTreeNode';
 import Immutable from 'immutable';
 import {ActionType} from './FileTreeConstants';
@@ -278,6 +279,9 @@ export class FileTreeStore {
       case ActionType.SET_TRACKED_NODE:
         this._setTrackedNode(payload.rootKey, payload.nodeKey);
         break;
+      case ActionType.MOVE_TO_NODE:
+        this._moveToNode(payload.rootKey, payload.nodeKey);
+        break;
       case ActionType.SET_ROOT_KEYS:
         this._setRootKeys(payload.rootKeys);
         break;
@@ -336,6 +340,12 @@ export class FileTreeStore {
         this._uncheckNode(payload.rootKey, payload.nodeKey);
         break;
 
+      case ActionType.SET_DRAG_HOVERED_NODE:
+        this._setDragHoveredNode(payload.rootKey, payload.nodeKey);
+        break;
+      case ActionType.UNHOVER_NODE:
+        this._unhoverNode(payload.rootKey, payload.nodeKey);
+        break;
       case ActionType.SET_SELECTED_NODE:
         this._setSelectedNode(payload.rootKey, payload.nodeKey);
         break;
@@ -938,6 +948,23 @@ export class FileTreeStore {
     this._isLoadingMap = this._isLoadingMap.delete(nodeKey);
   }
 
+  async _moveToNode(rootKey: NuclideUri, nodeKey: NuclideUri): Promise<void> {
+    const targetNode = this.getNode(rootKey, nodeKey);
+    if (targetNode == null || !targetNode.isContainer) {
+      return;
+    }
+
+    const selectedNodes = this.getSelectedNodes();
+    this._clearDragHover();
+    this._clearSelection();
+
+    try {
+      await FileTreeHgHelpers.moveNodes(selectedNodes.toJS(), targetNode.uri);
+    } catch (e) {
+      atom.notifications.addError('Failed to move entries: ' + e.message);
+    }
+  }
+
   async _deleteSelectedNodes(): Promise<void> {
     const selectedNodes = this.getSelectedNodes();
     await Promise.all(selectedNodes.map(async node => {
@@ -1068,6 +1095,15 @@ export class FileTreeStore {
     });
   }
 
+  _setDragHoveredNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._clearDragHover();
+    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsDragHovered(true));
+  }
+
+  _unhoverNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsDragHovered(false));
+  }
+
   /**
   * Selects a single node and tracks it.
   */
@@ -1179,6 +1215,15 @@ export class FileTreeStore {
     const lastRoot = this.roots.last();
     const lastChild = lastRoot.findLastRecursiveChild();
     this._setSelectedNode(lastChild.rootUri, lastChild.uri);
+  }
+
+  _clearDragHover(): void {
+    this._updateRoots(root => {
+      return root.setRecursive(
+        node => (node.containsDragHover ? null : node),
+        node => node.setIsDragHovered(false),
+      );
+    });
   }
 
   _clearSelection(): void {

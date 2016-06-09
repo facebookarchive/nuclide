@@ -9,16 +9,19 @@
  * the root directory of this source tree.
  */
 
+import type {FileTreeNode} from '../lib/FileTreeNode';
+
 import FileTreeActions from '../lib/FileTreeActions';
 import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
 import fileTypeClass from '../../commons-atom/file-type-class';
 import {filterName} from '../lib/FileTreeFilterHelper';
-import {isContextClick} from '../lib/FileTreeHelpers';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
-import type {FileTreeNode} from '../lib/FileTreeNode';
+import {FileTreeStore} from '../lib/FileTreeStore';
+import {isValidRename} from '../lib/FileTreeHgHelpers';
 
+const store = FileTreeStore.getInstance();
 const getActions = FileTreeActions.getInstance;
 
 type Props = {
@@ -27,15 +30,26 @@ type Props = {
 
 const INDENT_LEVEL = 17;
 
-
 export class FileTreeEntryComponent extends React.Component {
   props: Props;
+  // Keep track of the # of dragenter/dragleave events in order to properly decide
+  // when an entry is truly hovered/unhovered, since these fire many times over
+  // the duration of one user interaction.
+  dragEventCount: number;
 
   constructor(props: Props) {
     super(props);
+    this.dragEventCount = 0;
     (this: any)._onClick = this._onClick.bind(this);
     (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
     (this: any)._onMouseDown = this._onMouseDown.bind(this);
+
+    (this: any)._onDragEnter = this._onDragEnter.bind(this);
+    (this: any)._onDragLeave = this._onDragLeave.bind(this);
+    (this: any)._onDragStart = this._onDragStart.bind(this);
+    (this: any)._onDragOver = this._onDragOver.bind(this);
+    (this: any)._onDrop = this._onDrop.bind(this);
+
     (this: any)._checkboxOnChange = this._checkboxOnChange.bind(this);
     (this: any)._checkboxOnClick = this._checkboxOnClick.bind(this);
   }
@@ -54,7 +68,7 @@ export class FileTreeEntryComponent extends React.Component {
       'collapsed': !node.isLoading && !node.isExpanded,
       'expanded': !node.isLoading && node.isExpanded,
       'project-root': node.isRoot,
-      'selected': node.isSelected,
+      'selected': node.isSelected || node.isDragHovered,
       'nuclide-file-tree-softened': node.shouldBeSoftened,
     });
     const listItemClassName = classnames({
@@ -99,9 +113,15 @@ export class FileTreeEntryComponent extends React.Component {
       <li
         className={`${outerClassName} ${statusClass}`}
         style={{paddingLeft: this.props.node.getDepth() * INDENT_LEVEL}}
+        draggable={true}
         onClick={this._onClick}
         onDoubleClick={this._onDoubleClick}
-        onMouseDown={this._onMouseDown}>
+        onMouseDown={this._onMouseDown}
+        onDragEnter={this._onDragEnter}
+        onDragLeave={this._onDragLeave}
+        onDragStart={this._onDragStart}
+        onDragOver={this._onDragOver}
+        onDrop={this._onDrop}>
         <div
           className={listItemClassName}
           ref="arrowContainer">
@@ -209,13 +229,76 @@ export class FileTreeEntryComponent extends React.Component {
 
   _onMouseDown(event: SyntheticMouseEvent) {
     event.stopPropagation();
-
-    // Select node on right-click (in order for context menu to behave correctly).
-    if (isContextClick(event)) {
-      if (!this.props.node.isSelected) {
-        getActions().setSelectedNode(this.props.node.rootUri, this.props.node.uri);
-      }
+    // Don't do anything if node is already selected.
+    if (this.props.node.isSelected) {
+      return;
     }
+
+    // Select node on either start of drag, or right-click (in order for
+    // context menu to behave correctly).
+    const modifySelection = event.ctrlKey || event.metaKey;
+    if (!modifySelection) {
+      // Select a single node.
+      getActions().setSelectedNode(this.props.node.rootUri, this.props.node.uri);
+    }
+  }
+
+  _onDragEnter(event: SyntheticDragEvent) {
+    event.stopPropagation();
+    const movableNodes = store.getSelectedNodes()
+      .filter(node => isValidRename(node, this.props.node.uri));
+
+    // Ignores hover over invalid targets.
+    if (!this.props.node.isContainer || movableNodes.size === 0) {
+      return;
+    }
+    if (this.dragEventCount <= 0) {
+      this.dragEventCount = 0;
+      getActions().setDragHoveredNode(this.props.node.rootUri, this.props.node.uri);
+    }
+    this.dragEventCount++;
+  }
+
+  _onDragLeave(event: SyntheticDragEvent) {
+    event.stopPropagation();
+    // Avoid calling an unhoverNode action if dragEventCount is already 0.
+    if (this.dragEventCount === 0) {
+      return;
+    }
+    this.dragEventCount--;
+    if (this.dragEventCount <= 0) {
+      this.dragEventCount = 0;
+      getActions().unhoverNode(this.props.node.rootUri, this.props.node.uri);
+    }
+  }
+
+  _onDragStart(event: SyntheticDragEvent) {
+    event.stopPropagation();
+    const target = this.refs.pathContainer;
+
+    const fileIcon = target.cloneNode(false);
+    fileIcon.style.cssText = 'position: absolute; top: 0; left: 0; color: #fff; opacity: .8;';
+    document.body.appendChild(fileIcon);
+
+    const nativeEvent = (event.nativeEvent: any);
+    nativeEvent.dataTransfer.effectAllowed = 'move';
+    nativeEvent.dataTransfer.setDragImage(fileIcon, -8, -4);
+
+    window.requestAnimationFrame(() => document.body.removeChild(fileIcon));
+  }
+
+  _onDragOver(event: SyntheticDragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  _onDrop(event: SyntheticDragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Reset the dragEventCount for the currently dragged node upon dropping.
+    this.dragEventCount = 0;
+    getActions().moveToNode(this.props.node.rootUri, this.props.node.uri);
   }
 
   _toggleNodeExpanded(deep: boolean): void {
