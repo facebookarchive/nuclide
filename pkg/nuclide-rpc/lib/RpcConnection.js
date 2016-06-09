@@ -41,6 +41,7 @@ import {
   createErrorMessage,
   createNextMessage,
   createCompletedMessage,
+  createObserveErrorMessage,
   decodeError,
 } from './messages';
 import {builtinLocation, voidType} from './builtin-types';
@@ -395,7 +396,7 @@ export class RpcConnection<TransportType: Transport> {
     const subscription = result.subscribe(data => {
       this._transport.send(createNextMessage(requestId, data));
     }, error => {
-      this._transport.send(createErrorMessage(requestId, error));
+      this._transport.send(createObserveErrorMessage(requestId, error));
       this._objectRegistry.removeSubscription(requestId);
     }, completed => {
       this._transport.send(createCompletedMessage(requestId));
@@ -542,6 +543,8 @@ export class RpcConnection<TransportType: Transport> {
         subscriptions.forEach(subscription => {
           if (result.type === 'next') {
             subscription.next(result.data);
+          } else if (result.type === 'error') {
+            subscription.error(result.error);
           } else {
             invariant(result.type === 'completed');
             subscription.complete();
@@ -550,14 +553,10 @@ export class RpcConnection<TransportType: Transport> {
         break;
       }
       case 'ErrorMessage': {
-        const errorSubscriptions = this._subscriptions.get(requestId);
         const errorCall = this._calls.get(requestId);
-        invariant(errorSubscriptions == null || errorCall == null);
-        const {error} = message;
-        if (errorSubscriptions != null) {
-          errorSubscriptions.forEach(subscription => subscription.error(error));
-        } else if (errorCall != null) {
+        if (errorCall != null) {
           this._calls.delete(requestId);
+          const {error} = message;
           errorCall.reject(error);
         }
         break;

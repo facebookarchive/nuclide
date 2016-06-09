@@ -78,7 +78,10 @@ export type ObservableResponseMessage = {
   result: ObservableResult;
 };
 
-export type ObservableResult = { type: 'completed'; } | { type: 'next'; data: any };
+export type ObservableResult =
+  { type: 'completed'; } |
+  { type: 'next'; data: any } |
+  { type: 'error'; error: any};
 
 
 // TODO: This should be a custom marshaller registered in the TypeRegistry
@@ -168,6 +171,21 @@ export function createCompletedMessage(requestId: number): ObservableResponseMes
     type: 'ObservableMessage',
     requestId,
     result: {type: 'completed'},
+  };
+}
+
+export function createObserveErrorMessage(
+  requestId: number,
+  error: any,
+): ObservableResponseMessage {
+  return {
+    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    type: 'ObservableMessage',
+    requestId,
+    result: {
+      type: 'error',
+      error: formatError(error),
+    },
   };
 }
 
