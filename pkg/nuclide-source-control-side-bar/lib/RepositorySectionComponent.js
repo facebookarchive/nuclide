@@ -37,6 +37,8 @@ function bookmarkIsEqual(a: ?BookmarkInfo, b: ?BookmarkInfo) {
     && a.bookmark === b.bookmark;
 }
 
+const ACTIVE_BOOKMARK_TITLE = 'Active bookmark';
+
 export default class RepositorySectionComponent extends React.Component {
   props: Props;
 
@@ -108,39 +110,39 @@ export default class RepositorySectionComponent extends React.Component {
           );
         } else {
           bookmarksBranchesListItems = repositoryBookmarks.map(bookmark => {
-            let activeCheck;
-            if (bookmark.active) {
-              activeCheck = (
-                <span
-                  className="icon icon-check text-success"
-                  style={{marginLeft: '10px'}}
-                  title="Active bookmark"
-                />
-              );
-            }
-
+            // Deeply compare bookmarks because the Objects get re-created when bookmarks are
+            // re-fetched and will not remain equal across fetches.
+            const isSelected = selectedItem != null
+              && selectedItem.type === 'bookmark'
+              && bookmarkIsEqual(bookmark, selectedItem.bookmark);
             let liClassName = classnames(
               'list-item nuclide-source-control-side-bar--list-item', {
-                // Deeply compare bookmarks because the Objects get re-created when bookmarks
-                // are re-fetched and will not remain equal across fetches.
-                selected: selectedItem != null
-                  && selectedItem.type === 'bookmark'
-                  && bookmarkIsEqual(bookmark, selectedItem.bookmark),
+                selected: isSelected,
               }
             );
+
+            let title;
+            if (bookmark.active) {
+              title = ACTIVE_BOOKMARK_TITLE;
+            }
+
+            const iconClassName = classnames('icon', {
+              'icon-bookmark': !bookmark.active,
+              'icon-check': bookmark.active,
+              // Don't apply `success` when the bookmark is selected because the resulting text
+              // contrast ratio can be illegibly low in core themes.
+              'text-success': bookmark.active && !isSelected,
+            });
 
             return (
               <li
                 className={liClassName}
-                data-name={bookmark.bookmark}
+                key={bookmark.bookmark}
                 onClick={this._handleBookmarkClick.bind(this, bookmark)}
-                onContextMenu={
-                  this._handleBookmarkContextMenu.bind(this, bookmark)
-                }
-                key={bookmark.bookmark}>
-                <span className="icon icon-bookmark">
+                onContextMenu={this._handleBookmarkContextMenu.bind(this, bookmark)}
+                title={title}>
+                <span className={iconClassName}>
                   {bookmark.bookmark}
-                  {activeCheck}
                 </span>
               </li>
             );
