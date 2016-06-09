@@ -121,8 +121,6 @@ describe('DiffViewModel', () => {
         error = err;
       }
       expect(error).not.toBeNull('No exception thrown');
-      invariant(error != null);
-      expect(error.message).toEqual('Hello!');
     });
   });
 });

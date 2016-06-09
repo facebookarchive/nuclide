@@ -738,7 +738,16 @@ class DiffViewModel {
       publishMode,
     });
     const commitMessage = publishMode === PublishMode.CREATE ? publishMessage : null;
-    const cleanResult = await this._promptToCleanDirtyChanges(commitMessage);
+    let cleanResult;
+    try {
+      cleanResult = await this._promptToCleanDirtyChanges(commitMessage);
+    } catch (error) {
+      atom.notifications.addError('Error clearning dirty changes', {
+        detail: error.message,
+        dismissable: true,
+        nativeFriendly: true,
+      });
+    }
     if (cleanResult == null) {
       this._setState({
         ...this._state,
@@ -775,7 +784,10 @@ class DiffViewModel {
       });
       this.setViewMode(DiffMode.BROWSE_MODE);
     } catch (error) {
-      notifyInternalError(error, true /*persist the error (user dismissable)*/);
+      atom.notifications.addError('Couldn\'t Publish to Phabricator', {
+        detail: error.message,
+        nativeFriendly: true,
+      });
       this._setState({
         ...this._state,
         publishModeState: PublishModeState.PUBLISH_ERROR,
@@ -920,6 +932,7 @@ class DiffViewModel {
   }
 
   async _processArcanistOutput(stream: Rx.Observable): Promise<void> {
+    let fatalError = false;
     stream = stream
       // Split stream into single lines.
       .flatMap((message: {stderr?: string; stdout?: string}) => {
@@ -968,7 +981,9 @@ class DiffViewModel {
             messages.push({level: 'error', text: decodedJSON.message});
             break;
           case 'error':
-            throw new Error(decodedJSON.message);
+            messages.push({level: 'error', text: decodedJSON.message});
+            fatalError = true;
+            break;
           default:
             getLogger().info(
               'Unhandled message type:',
@@ -1010,7 +1025,17 @@ class DiffViewModel {
           }
         },
       )
-      .toPromise();
+      .toPromise().catch(error => {
+        fatalError = true;
+      });
+
+    if (fatalError) {
+      throw new Error(
+        'Failed publish to Phabricator\n' +
+        'You could have missed test plan or mistyped reviewers.\n' +
+        'Please fix and try again.'
+      );
+    }
   }
 
   async _saveFile(filePath: NuclideUri): Promise<void> {
