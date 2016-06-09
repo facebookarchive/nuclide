@@ -15,7 +15,7 @@ import type {
   ClangCompileResult,
   ClangSourceRange,
   ClangLocation,
-} from '../../nuclide-clang';
+} from '../../nuclide-clang/lib/rpc-types';
 import type {
   FileDiagnosticMessage,
   MessageUpdateCallback,
@@ -111,10 +111,12 @@ class ClangDiagnosticsProvider {
       if (diagnostics == null || !this._hasSubscription.get(buffer)) {
         return;
       }
+      const accurateFlags = diagnostics.accurateFlags;
+      invariant(accurateFlags != null);
       track('nuclide-clang-atom.fetch-diagnostics', {
         filePath,
         count: diagnostics.diagnostics.length.toString(),
-        accurateFlags: diagnostics.accurateFlags.toString(),
+        accurateFlags: accurateFlags.toString(),
       });
       const filePathToMessages = this._processDiagnostics(diagnostics, textEditor);
       this.invalidateBuffer(buffer);

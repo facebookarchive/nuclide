@@ -10,12 +10,12 @@
  */
 
 import type {Outline, OutlineTree} from '../../nuclide-outline-view';
-import type {ClangOutlineTree} from '../../nuclide-clang';
+import type {ClangOutlineTree} from '../../nuclide-clang/lib/rpc-types';
 import type {TokenizedText} from '../../nuclide-tokenized-text';
 
 import {Point} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
-import {ClangCursorTypes} from '../../nuclide-clang';
+import {ClangCursorTypes} from '../../nuclide-clang/lib/rpc-types';
 import {
   keyword,
   className,

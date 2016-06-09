@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {ClangCursorExtent} from '../../nuclide-clang';
+import type {ClangCursorExtent} from '../../nuclide-clang/lib/rpc-types';
 
 import {Range} from 'atom';
 

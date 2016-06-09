@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {ClangCompletion} from '../../nuclide-clang';
+import type {ClangCompletion} from '../../nuclide-clang/lib/rpc-types';
 
 import {Point} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
-import {ClangCursorToDeclarationTypes} from '../../nuclide-clang';
+import {ClangCursorToDeclarationTypes} from '../../nuclide-clang/lib/rpc-types';
 import {getCompletions} from './libclang';
 
 const MAX_LINE_LENGTH = 120;

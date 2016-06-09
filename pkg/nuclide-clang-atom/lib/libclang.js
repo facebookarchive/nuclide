@@ -14,7 +14,7 @@ import type {
   ClangCompletion,
   ClangDeclaration,
   ClangOutlineTree,
-} from '../../nuclide-clang';
+} from '../../nuclide-clang/lib/rpc-types';
 
 import featureConfig from '../../nuclide-feature-config';
 import invariant from 'assert';

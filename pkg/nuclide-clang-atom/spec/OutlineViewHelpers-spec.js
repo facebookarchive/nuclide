@@ -10,7 +10,7 @@
  */
 
 import {Point} from 'atom';
-import {ClangCursorTypes} from '../../nuclide-clang';
+import {ClangCursorTypes} from '../../nuclide-clang/lib/rpc-types';
 import {
   keyword,
   className,
