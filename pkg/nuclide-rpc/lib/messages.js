@@ -66,7 +66,7 @@ export type ErrorResponseMessage = {
 
 export type PromiseResponseMessage = {
   protocol: 'service_framework3_rpc';
-  type: 'PromiseMessage';
+  type: 'response';
   id: number;
   result: any;
 };
@@ -154,7 +154,7 @@ export function createNewObjectMessage(
 export function createPromiseMessage(id: number, result: any): PromiseResponseMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
-    type: 'PromiseMessage',
+    type: 'response',
     id,
     result,
   };

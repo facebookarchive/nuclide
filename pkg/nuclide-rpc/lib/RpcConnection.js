@@ -501,7 +501,7 @@ export class RpcConnection<TransportType: Transport> {
     // invariant(message.protocol === SERVICE_FRAMEWORK3_PROTOCOL);
 
     switch (message.type) {
-      case 'PromiseMessage':
+      case 'response':
       case 'error-response':
       case 'next':
       case 'complete':
@@ -523,7 +523,7 @@ export class RpcConnection<TransportType: Transport> {
   _handleResponseMessage(message: ResponseMessage): void {
     const id = message.id;
     switch (message.type) {
-      case 'PromiseMessage': {
+      case 'response': {
         const {result} = message;
         const call = this._calls.get(id);
         if (call != null) {
