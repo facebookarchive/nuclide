@@ -11,6 +11,7 @@
 
 import type {IconButtonOption, Task} from '../types';
 
+import {Button} from '../../../nuclide-ui/lib/Button';
 import {SplitButtonDropdown} from '../../../nuclide-ui/lib/SplitButtonDropdown';
 import {BuildSystemButton} from './BuildSystemButton';
 import {ProgressBar} from './ProgressBar';
@@ -23,7 +24,7 @@ type Props = {
   getExtraUi: ?() => ReactClass;
   progress: ?number;
   visible: boolean;
-  runTask: () => void;
+  runTask: (taskType?: string) => void;
   activeTaskType: ?string;
   selectBuildSystem: (id: string) => void;
   selectTask: (taskType: ?string) => void;
@@ -39,16 +40,6 @@ export class BuildToolbar extends React.Component {
     if (!this.props.visible || this.props.activeBuildSystemId == null) {
       return null;
     }
-
-    // If there are no tasks, just show "Run" (but have it disabled). It's just less weird than
-    // some kind of placeholder.
-    const taskOptions = this.props.tasks.length === 0
-      ? [{value: null, label: 'Run', icon: 'triangle-right'}]
-      : this.props.tasks.map(task => ({
-        value: task.type,
-        label: task.label,
-        icon: task.icon,
-      }));
 
     const activeBuildSystemIcon = this.props.getActiveBuildSystemIcon();
     // Default to the first task if no task is currently active.
@@ -68,13 +59,12 @@ export class BuildToolbar extends React.Component {
             onChange={value => { this.props.selectBuildSystem(value); }}
           />
           <div className="inline-block">
-            <SplitButtonDropdown
-              value={activeTaskType}
-              options={taskOptions}
-              onChange={value => { this.props.selectTask(value); }}
-              onConfirm={() => { this.props.runTask(activeTaskType); }}
-              confirmDisabled={this.props.taskIsRunning || !activeTask || !activeTask.enabled}
-              changeDisabled={this.props.taskIsRunning}
+            <TaskButton
+              activeTask={activeTask}
+              runTask={this.props.runTask}
+              selectTask={this.props.selectTask}
+              taskIsRunning={this.props.taskIsRunning}
+              tasks={this.props.tasks}
             />
           </div>
           <div className="inline-block">
@@ -94,4 +84,47 @@ export class BuildToolbar extends React.Component {
     );
   }
 
+}
+
+type TaskButtonProps = {
+  activeTask: ?Task;
+  runTask: (taskType?: string) => void;
+  selectTask: (taskType: ?string) => void;
+  taskIsRunning: boolean;
+  tasks: Array<Task>;
+};
+
+function TaskButton(props: TaskButtonProps): React.Element {
+  const activeTaskType = props.activeTask == null ? undefined : props.activeTask.type;
+
+  if (props.tasks.length <= 1) {
+    // If there are no tasks, just show "Run" (but have it disabled). It's just less weird than some
+    // kind of placeholder.
+    const task = props.tasks[0] || {value: null, label: 'Run', icon: 'triangle-right'};
+    return (
+      <Button
+        disabled={!task.enabled}
+        icon={task.icon}
+        onClick={() => { props.runTask(activeTaskType); }}>
+        {task.label}
+      </Button>
+    );
+  } else {
+    const taskOptions = props.tasks.map(task => ({
+      value: task.type,
+      label: task.label,
+      icon: task.icon,
+    }));
+
+    return (
+      <SplitButtonDropdown
+        value={activeTaskType}
+        options={taskOptions}
+        onChange={value => { props.selectTask(value); }}
+        onConfirm={() => { props.runTask(activeTaskType); }}
+        confirmDisabled={props.taskIsRunning || !props.activeTask || !props.activeTask.enabled}
+        changeDisabled={props.taskIsRunning}
+      />
+    );
+  }
 }
