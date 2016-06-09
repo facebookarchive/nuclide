@@ -13,7 +13,7 @@ import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 
 // Encodes the structure of messages that can be sent from the client to the server.
 export type RequestMessage = CallMessage | NewObjectMessage |
-  CallObjectMessage | DisposeRemoteObjectMessage;
+  CallObjectMessage | DisposeMessage | UnsubscribeMessage;
 
 export type CallMessage = {
   protocol: 'service_framework3_rpc';
@@ -40,16 +40,16 @@ export type CallObjectMessage = {
   args: Array<any>;
 };
 
-export type DisposeRemoteObjectMessage = {
+export type DisposeMessage = {
   protocol: 'service_framework3_rpc';
-  type: 'DisposeObject';
+  type: 'dispose';
   id: number;
   objectId: number;
 };
 
-export type DisposeObservableMessage = {
+export type UnsubscribeMessage = {
   protocol: 'service_framework3_rpc';
-  type: 'DisposeObservable';
+  type: 'unsubscribe';
   id: number;
 };
 
@@ -189,10 +189,19 @@ export function createObserveErrorMessage(
   };
 }
 
-export function createDisposeMessage(id: number): DisposeObservableMessage {
+export function createDisposeMessage(id: number, objectId: number): DisposeMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
-    type: 'DisposeObservable',
+    type: 'dispose',
+    id,
+    objectId,
+  };
+}
+
+export function createUnsubscribeMessage(id: number): UnsubscribeMessage {
+  return {
+    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    type: 'unsubscribe',
     id,
   };
 }

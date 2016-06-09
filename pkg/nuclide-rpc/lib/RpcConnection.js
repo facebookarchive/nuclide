@@ -9,14 +9,12 @@
  * the root directory of this source tree.
  */
 
-import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 import type {ConfigEntry, Transport} from './index';
 import type {ReturnType, Type} from './types';
 import type {TypeRegistry} from './TypeRegistry';
 import type {
   ResponseMessage,
   RequestMessage,
-  DisposeRemoteObjectMessage,
   CallMessage,
   CallObjectMessage,
   NewObjectMessage,
@@ -37,6 +35,7 @@ import {
   createCallObjectMessage,
   createNewObjectMessage,
   createDisposeMessage,
+  createUnsubscribeMessage,
   createPromiseMessage,
   createErrorResponseMessage,
   createNextMessage,
@@ -267,14 +266,9 @@ export class RpcConnection<TransportType: Transport> {
   async disposeRemoteObject(object: Object): Promise<void> {
     const objectId = await this._objectRegistry.disposeProxy(object);
     if (objectId != null) {
-      const message: DisposeRemoteObjectMessage = {
-        protocol: SERVICE_FRAMEWORK3_PROTOCOL,
-        type: 'DisposeObject',
-        id: this._generateRequestId(),
-        objectId,
-      };
       return await this._sendMessageAndListenForResult(
-        message, 'promise', `Disposing object ${objectId}`);
+        createDisposeMessage(this._generateRequestId(), objectId),
+        'promise', `Disposing object ${objectId}`);
     } else {
       logger.info('Duplicate dispose call on remote proxy');
     }
@@ -338,7 +332,7 @@ export class RpcConnection<TransportType: Transport> {
               if (subscriptions.size === 0) {
                 // Send a message to server to call the dispose function of
                 // the remote Observable subscription.
-                this._transport.send(createDisposeMessage(message.id));
+                this._transport.send(createUnsubscribeMessage(message.id));
               }
             },
           };
@@ -517,8 +511,8 @@ export class RpcConnection<TransportType: Transport> {
       case 'call':
       case 'call-object':
       case 'new':
-      case 'DisposeObject':
-      case 'DisposeObservable':
+      case 'dispose':
+      case 'unsubscribe':
         this._handleRequestMessage(message);
         break;
       default:
@@ -596,12 +590,12 @@ export class RpcConnection<TransportType: Transport> {
           await this._callConstructor(id, timingTracker, message);
           returnedPromise = true;
           break;
-        case 'DisposeObject':
+        case 'dispose':
           await this._objectRegistry.disposeObject(message.objectId);
           this._returnPromise(id, timingTracker, Promise.resolve(), voidType);
           returnedPromise = true;
           break;
-        case 'DisposeObservable':
+        case 'unsubscribe':
           this._objectRegistry.disposeSubscription(id);
           break;
         default:
@@ -648,10 +642,10 @@ function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage):
       return `service-framework:${callInterface}.${message.method}`;
     case 'new':
       return `service-framework:new:${message.interface}`;
-    case 'DisposeObject':
+    case 'dispose':
       const interfaceName = registry.getInterface(message.objectId);
       return `service-framework:dispose:${interfaceName}`;
-    case 'DisposeObservable':
+    case 'unsubscribe':
       return 'service-framework:disposeObservable';
     default:
       throw new Error(`Unknown message type ${message.type}`);
