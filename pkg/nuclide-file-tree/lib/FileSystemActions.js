@@ -198,7 +198,7 @@ const FileSystemActions = {
         : <span>Enter the new path for the file.</span>,
       onConfirm: (newBasename: string, options: Object) => {
         this._onConfirmRename(node, nodePath, newBasename).catch(error => {
-          atom.notifications.addError(`Rename to ${newBasename} failed`);
+          atom.notifications.addError(`Rename to ${newBasename} failed: ${error.message}`);
         });
       },
       onClose: this._closeDialog,
