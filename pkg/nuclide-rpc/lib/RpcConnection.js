@@ -29,7 +29,6 @@ import type {TimingTracker} from '../../nuclide-analytics';
 import type {Observer} from 'rxjs';
 
 import invariant from 'assert';
-import {EventEmitter} from 'events';
 import {Observable} from 'rxjs';
 import {ServiceRegistry} from './ServiceRegistry';
 import {ObjectRegistry} from './ObjectRegistry';
@@ -74,13 +73,58 @@ class Subscription {
   }
 }
 
+class Call {
+  _message: RequestMessage;
+  _timeoutMessage: string;
+  _reject: (error: any) => void;
+  _resolve: (result: any) => void;
+  _complete: boolean;
+
+  constructor(
+    message: RequestMessage,
+    timeoutMessage: string,
+    resolve: (result: any) => void,
+    reject: (error: any) => void,
+  ) {
+    this._message = message;
+    this._timeoutMessage = timeoutMessage;
+    this._resolve = resolve;
+    this._reject = reject;
+    this._complete = false;
+  }
+
+  reject(error): void {
+    if (!this._complete) {
+      this._complete = true;
+      this._reject(decodeError(this._message, error));
+    }
+  }
+
+  resolve(result): void {
+    if (!this._complete) {
+      this._complete = true;
+      this._resolve(result);
+    }
+  }
+
+  timeout(): void {
+    if (!this._complete) {
+      this._complete = true;
+      this._reject(new Error(
+        `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for requestId: ` +
+        `${this._message.requestId}, ${this._timeoutMessage}.`
+      ));
+    }
+  }
+}
+
 export class RpcConnection<TransportType: Transport> {
   _rpcRequestId: number;
-  _emitter: EventEmitter;
   _transport: TransportType;
   _serviceRegistry: ServiceRegistry;
   _objectRegistry: ObjectRegistry;
   _subscriptions: Map<number, Set<Subscription>>;
+  _calls: Map<number, Call>;
 
   // Do not call this directly, use factory methods below.
   constructor(
@@ -88,13 +132,13 @@ export class RpcConnection<TransportType: Transport> {
     serviceRegistry: ServiceRegistry,
     transport: TransportType,
   ) {
-    this._emitter = new EventEmitter();
     this._transport = transport;
     this._rpcRequestId = 1;
     this._serviceRegistry = serviceRegistry;
     this._objectRegistry = new ObjectRegistry(kind, this._serviceRegistry, this);
     this._transport.onMessage(message => { this._handleMessage(message); });
     this._subscriptions = new Map();
+    this._calls = new Map();
   }
 
   // Creates a connection on the server side.
@@ -256,16 +300,19 @@ export class RpcConnection<TransportType: Transport> {
         // Listen for a single message, and resolve or reject a promise on that message.
         return new Promise((resolve, reject) => {
           this._transport.send(message);
-          this._emitter.once(message.requestId.toString(), (hadError, error, result) => {
-            hadError ? reject(decodeError(message, error)) : resolve(result);
-          });
+          this._calls.set(message.requestId, new Call(
+            message,
+            timeoutMessage,
+            resolve,
+            reject
+          ));
 
           setTimeout(() => {
-            this._emitter.removeAllListeners(message.requestId.toString());
-            reject(new Error(
-              `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for requestId: ` +
-              `${message.requestId}, ${timeoutMessage}.`
-            ));
+            const call = this._calls.get(message.requestId);
+            if (call != null) {
+              this._calls.delete(message.requestId);
+              call.timeout();
+            }
           }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
         });
       case 'observable':
@@ -481,7 +528,11 @@ export class RpcConnection<TransportType: Transport> {
     switch (message.type) {
       case 'PromiseMessage': {
         const {result} = message;
-        this._emitter.emit(requestId.toString(), false, null, result);
+        const call = this._calls.get(requestId);
+        if (call != null) {
+          this._calls.delete(requestId);
+          call.resolve(result);
+        }
         break;
       }
       case 'ObservableMessage': {
@@ -500,11 +551,14 @@ export class RpcConnection<TransportType: Transport> {
       }
       case 'ErrorMessage': {
         const errorSubscriptions = this._subscriptions.get(requestId);
+        const errorCall = this._calls.get(requestId);
+        invariant(errorSubscriptions == null || errorCall == null);
         const {error} = message;
         if (errorSubscriptions != null) {
           errorSubscriptions.forEach(subscription => subscription.error(error));
-        } else {
-          this._emitter.emit(requestId.toString(), true, error, undefined);
+        } else if (errorCall != null) {
+          this._calls.delete(requestId);
+          errorCall.reject(error);
         }
         break;
       }
