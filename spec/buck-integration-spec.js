@@ -91,7 +91,7 @@ describe('Buck building via toolbar', () => {
     let listGroup: HTMLElement;
     waitsFor(
       'results to appear',
-      10000,
+      30000,
       () => {
         listGroup = combobox.querySelector('.list-group');
         const hasListItems = listGroup && listGroup.querySelectorAll('li').length > 0;
@@ -127,7 +127,7 @@ describe('Buck building via toolbar', () => {
     let paneItem;
     waitsFor(
       'the output pane to appear',
-      10000,
+      30000,
       () => {
         paneItem = atom.workspace.getActivePaneItem();
         return paneItem != null && paneItem.getTitle() === 'buck build test_app_alias';
@@ -136,7 +136,7 @@ describe('Buck building via toolbar', () => {
 
     waitsFor(
       'the build to finish',
-      10000,
+      30000,
       () => {
         const processOutputStore = paneItem && paneItem.props && paneItem.props.processOutputStore;
         const stdout = processOutputStore && processOutputStore.getStdout() || '';
