@@ -19,7 +19,7 @@ import type {
   DisposeRemoteObjectMessage,
   CallMessage,
   CallRemoteMethodMessage,
-  CreateRemoteObjectMessage,
+  NewObjectMessage,
 } from './messages';
 import type {
   ClassDefinition,
@@ -468,7 +468,7 @@ export class RpcConnection<TransportType: Transport> {
   async _callConstructor(
     id: number,
     timingTracker: TimingTracker,
-    constructorMessage: CreateRemoteObjectMessage,
+    constructorMessage: NewObjectMessage,
   ): Promise<void> {
     const classDefinition = this._getClassDefinition(constructorMessage.interface);
     invariant(classDefinition != null);
@@ -514,7 +514,7 @@ export class RpcConnection<TransportType: Transport> {
         break;
       case 'call':
       case 'MethodCall':
-      case 'NewObject':
+      case 'new':
       case 'DisposeObject':
       case 'DisposeObservable':
         this._handleRequestMessage(message);
@@ -586,7 +586,7 @@ export class RpcConnection<TransportType: Transport> {
         case 'MethodCall':
           returnedPromise = await this._callMethod(id, timingTracker, message);
           break;
-        case 'NewObject':
+        case 'new':
           await this._callConstructor(id, timingTracker, message);
           returnedPromise = true;
           break;
@@ -640,7 +640,7 @@ function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage):
     case 'MethodCall':
       const callInterface = registry.getInterface(message.objectId);
       return `service-framework:${callInterface}.${message.method}`;
-    case 'NewObject':
+    case 'new':
       return `service-framework:new:${message.interface}`;
     case 'DisposeObject':
       const interfaceName = registry.getInterface(message.objectId);

@@ -12,7 +12,7 @@
 import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 
 // Encodes the structure of messages that can be sent from the client to the server.
-export type RequestMessage = CallMessage | CreateRemoteObjectMessage |
+export type RequestMessage = CallMessage | NewObjectMessage |
   CallRemoteMethodMessage | DisposeRemoteObjectMessage;
 
 export type CallMessage = {
@@ -23,9 +23,9 @@ export type CallMessage = {
   args: Array<any>;
 };
 
-export type CreateRemoteObjectMessage = {
+export type NewObjectMessage = {
   protocol: 'service_framework3_rpc';
-  type: 'NewObject';
+  type: 'new';
   interface: string;
   id: number;
   args: Array<any>;
@@ -134,10 +134,10 @@ export function createNewObjectMessage(
   interfaceName: string,
   id: number,
   args: Array<any>,
-): CreateRemoteObjectMessage {
+): NewObjectMessage {
   return {
     protocol: SERVICE_FRAMEWORK3_PROTOCOL,
-    type: 'NewObject',
+    type: 'new',
     interface: interfaceName,
     id,
     args,
