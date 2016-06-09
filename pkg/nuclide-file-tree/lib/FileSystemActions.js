@@ -21,7 +21,12 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
-import RemoteUri, {getPath} from '../../nuclide-remote-uri';
+import RemoteUri, {
+  getPath,
+  createRemoteUri,
+  isRemote,
+  getHostname,
+} from '../../nuclide-remote-uri';
 import {File} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
@@ -130,20 +135,17 @@ const FileSystemActions = {
      * Use `resolve` to strip trailing slashes because renaming a file to a name with a
      * trailing slash is an error.
      */
-    const newPath = pathModule.resolve(
+    let newPath = pathModule.resolve(
       // Trim leading and trailing whitespace to prevent bad filenames.
       pathModule.join(pathModule.dirname(nodePath), newBasename.trim())
     );
 
-    // Need to update the paths in editors before the rename to prevent them from closing
-    // In case of an error - undo the editor paths rename
-    FileTreeHelpers.updatePathInOpenedEditors(node.uri, newPath);
-    try {
-      await FileTreeHgHelpers.renameNode(node, newPath);
-    } catch (err) {
-      FileTreeHelpers.updatePathInOpenedEditors(newPath, node.uri);
-      throw err;
+    // Create a remote nuclide uri when the node being moved is remote.
+    if (isRemote(node.uri)) {
+      newPath = createRemoteUri(getHostname(node.uri), newPath);
     }
+
+    await FileTreeHgHelpers.renameNode(node, newPath);
   },
 
   async _onConfirmDuplicate(
