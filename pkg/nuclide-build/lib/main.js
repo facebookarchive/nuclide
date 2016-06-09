@@ -173,3 +173,6 @@ export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
     },
   };
 }
+
+// Exported for testing :'(
+export const _getCommands = () => _commands;
