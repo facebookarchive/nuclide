@@ -87,14 +87,16 @@ function handleNotInstalled(pathToRoot: NuclideUri): void {
   if (!featureConfig.get(WARN_NOT_INSTALLED_CONFIG)) {
     return;
   }
-  const message = `Flow was not found when attempting to start it in '${pathToRoot}'.<br/><br/>` +
+  const title = `Flow was not found when attempting to start it in '${pathToRoot}'.`;
+  const description = 'If you do not want to use Flow, you can ignore this message.<br/><br/>' +
     'You can download it from <a href="http://flowtype.org/">flowtype.org</a>. ' +
     'Make sure it is installed and on your PATH. ' +
     'If this is a remote repository make sure it is available on the remote machine.<br/><br/>' +
     'You will not see this message again until you restart Nuclide';
-  const notification = atom.notifications.addError(
-    message,
+  const notification = atom.notifications.addInfo(
+    title,
     {
+      description,
       dismissable: true,
       buttons: [{
         className: 'icon icon-x',
