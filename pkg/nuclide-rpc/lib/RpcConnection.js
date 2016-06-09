@@ -17,7 +17,6 @@ import type {
   ResponseMessage,
   RequestMessage,
   DisposeRemoteObjectMessage,
-  ObservableResult,
   CallRemoteFunctionMessage,
   CallRemoteMethodMessage,
   CreateRemoteObjectMessage,
@@ -27,6 +26,7 @@ import type {
   FunctionImplementation,
 } from './ServiceRegistry';
 import type {TimingTracker} from '../../nuclide-analytics';
+import type {Observer} from 'rxjs';
 
 import invariant from 'assert';
 import {EventEmitter} from 'events';
@@ -52,12 +52,35 @@ const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
 
 type RpcConnectionKind = 'server' | 'client';
 
+class Subscription {
+  _message: Object;
+  _observer: Observer;
+
+  constructor(message: Object, observer: Observer) {
+    this._message = message;
+    this._observer = observer;
+  }
+
+  error(error): void {
+    this._observer.error(decodeError(this._message, error));
+  }
+
+  next(data: any): void {
+    this._observer.next(data);
+  }
+
+  complete(): void {
+    this._observer.complete();
+  }
+}
+
 export class RpcConnection<TransportType: Transport> {
   _rpcRequestId: number;
   _emitter: EventEmitter;
   _transport: TransportType;
   _serviceRegistry: ServiceRegistry;
   _objectRegistry: ObjectRegistry;
+  _subscriptions: Map<number, Set<Subscription>>;
 
   // Do not call this directly, use factory methods below.
   constructor(
@@ -71,6 +94,7 @@ export class RpcConnection<TransportType: Transport> {
     this._serviceRegistry = serviceRegistry;
     this._objectRegistry = new ObjectRegistry(kind, this._serviceRegistry, this);
     this._transport.onMessage(message => { this._handleMessage(message); });
+    this._subscriptions = new Map();
   }
 
   // Creates a connection on the server side.
@@ -245,34 +269,29 @@ export class RpcConnection<TransportType: Transport> {
           }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
         });
       case 'observable':
+        let subscriptions = this._subscriptions.get(message.requestId);
+        if (subscriptions == null) {
+          subscriptions = new Set();
+          this._subscriptions.set(message.requestId, subscriptions);
+        }
         const observable = Observable.create(observer => {
+          const subscription = new Subscription(message, observer);
+          invariant(subscriptions != null);
+          subscriptions.add(subscription);
           this._transport.send(message);
 
-          // Listen for 'next', 'error', and 'completed' events.
-          this._emitter.on(
-            message.requestId.toString(),
-            (hadError: boolean, error: ?Error, result: ?ObservableResult) => {
-              if (hadError) {
-                observer.error(decodeError(message, error));
-              } else {
-                invariant(result);
-                if (result.type === 'completed') {
-                  observer.complete();
-                } else if (result.type === 'next') {
-                  observer.next(result.data);
-                }
-              }
-            });
-
-          // Observable dispose function, which is called on subscription dipsose, on stream
+          // Observable dispose function, which is called on subscription dispose, on stream
           // completion, and on stream error.
           return {
             unsubscribe: () => {
-              this._emitter.removeAllListeners(message.requestId.toString());
+              invariant(subscriptions != null);
+              subscriptions.delete(subscription);
 
-              // Send a message to server to call the dispose function of
-              // the remote Observable subscription.
-              this._transport.send(createDisposeMessage(message.requestId));
+              if (subscriptions.size === 0) {
+                // Send a message to server to call the dispose function of
+                // the remote Observable subscription.
+                this._transport.send(createDisposeMessage(message.requestId));
+              }
             },
           };
         });
@@ -466,13 +485,27 @@ export class RpcConnection<TransportType: Transport> {
         break;
       }
       case 'ObservableMessage': {
+        const subscriptions = this._subscriptions.get(requestId);
+        invariant(subscriptions != null);
         const {result} = message;
-        this._emitter.emit(requestId.toString(), false, null, result);
+        subscriptions.forEach(subscription => {
+          if (result.type === 'next') {
+            subscription.next(result.data);
+          } else {
+            invariant(result.type === 'completed');
+            subscription.complete();
+          }
+        });
         break;
       }
       case 'ErrorMessage': {
+        const errorSubscriptions = this._subscriptions.get(requestId);
         const {error} = message;
-        this._emitter.emit(requestId.toString(), true, error, undefined);
+        if (errorSubscriptions != null) {
+          errorSubscriptions.forEach(subscription => subscription.error(error));
+        } else {
+          this._emitter.emit(requestId.toString(), true, error, undefined);
+        }
         break;
       }
       default:

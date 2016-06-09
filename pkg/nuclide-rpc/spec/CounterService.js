@@ -11,9 +11,15 @@
 
 import {Observable, Subject} from 'rxjs';
 
+export type CounterChangeEvent = {
+  type: string;
+  oldValue: number;
+  newValue: number;
+};
+
 export class Counter {
   _count: number;
-  _changes: Subject;
+  _changes: Subject<CounterChangeEvent>;
 
   static _counters: Array<Counter> = [];
   static _newCounters = new Subject();
@@ -46,7 +52,7 @@ export class Counter {
   }
 
   // Subscribe to changes in this counter.
-  watchChanges(): Observable {
+  watchChanges(): Observable<CounterChangeEvent> {
     return this._changes;
   }
 

@@ -88,5 +88,39 @@ describe('CounterService', () => {
     });
   });
 
+  it('can subscribe/unsubscribe to the same observable multiple times.', () => {
+    waitsForPromise(async () => {
+      invariant(service);
+
+      const obs = service.Counter.watchNewCounters();
+
+      let watchedCounters1 = 0;
+      const sub1 = obs.subscribe(counter => {
+        sub1.unsubscribe();
+        ++watchedCounters1;
+      });
+      let watchedCounters2 = 0;
+      const sub2 = obs.subscribe(counter => {
+        ++watchedCounters2;
+        if (watchedCounters2 === 2) {
+          sub2.unsubscribe();
+        }
+      });
+
+      // Create two services.
+      const counter1 = new service.Counter(3);
+      await counter1.getCount();
+
+      const counter2 = new service.Counter(5);
+      await counter2.getCount();
+
+      const counter3 = new service.Counter(7);
+      await counter3.getCount();
+
+      expect(watchedCounters1).toBe(1);
+      expect(watchedCounters2).toBe(2);
+    });
+  });
+
   afterEach(() => testHelper.stop());
 });
