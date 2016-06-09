@@ -93,7 +93,7 @@ export function getProxy(
   clientObject: RpcContext,
 ): any {
   if (!proxiesCache.has(definitionPath)) {
-    proxiesCache.set(definitionPath, createProxyFactory(serviceName, definitionPath));
+    proxiesCache.set(definitionPath, createProxyFactory(serviceName, false, definitionPath));
   }
 
   const factory = proxiesCache.get(definitionPath);
@@ -103,11 +103,12 @@ export function getProxy(
 
 export function createProxyFactory(
   serviceName: string,
+  preserveFunctionNames: boolean,
   definitionPath: string,
 ): ProxyFactory {
   // Transpile this code (since it will use anonymous classes and arrow functions).
   const defs = getDefinitions(definitionPath);
-  const code = generateProxy(serviceName, defs);
+  const code = generateProxy(serviceName, preserveFunctionNames, defs);
   const filename = path.parse(definitionPath).name + 'Proxy.js';
   const m = transpileToModule(code, filename);
 

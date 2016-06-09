@@ -35,7 +35,7 @@ describe('Proxy generator test suite.', () => {
         const fixturePath = path.join(__dirname, 'fixtures', file);
         const definitions = parseServiceDefinition(file, fs.readFileSync(fixturePath, 'utf8'));
 
-        const code = generateProxy(path.basename(file, '.def'), definitions);
+        const code = generateProxy(path.basename(file, '.def'), false, definitions);
         const expected = fs.readFileSync(
           path.join(__dirname, 'fixtures', file).replace('.def', '.proxy'), 'utf8');
         expect(code.trim()).diffLines(expected.trim());

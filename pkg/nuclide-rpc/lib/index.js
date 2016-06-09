@@ -20,6 +20,8 @@ export type ConfigEntry = {
   name: string;
   definition:string;
   implementation: string;
+  // When true, doesn't mangle in the service name into the method names for functions.
+  preserveFunctionNames?: boolean;
 };
 
 export type Transport = {

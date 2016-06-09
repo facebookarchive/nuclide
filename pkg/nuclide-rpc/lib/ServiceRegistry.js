@@ -91,6 +91,8 @@ export class ServiceRegistry {
   }
 
   addService(service: ConfigEntry): void {
+    const preserveFunctionNames = service.preserveFunctionNames != null
+      && service.preserveFunctionNames;
     logger.debug(`Registering 3.0 service ${service.name}...`);
     try {
       const defs = getDefinitions(service.definition);
@@ -98,7 +100,8 @@ export class ServiceRegistry {
       const localImpl = require(service.implementation);
       this._services.set(service.name, {
         name: service.name,
-        factory: createProxyFactory(service.name, service.definition),
+        factory: createProxyFactory(
+          service.name, preserveFunctionNames, service.definition),
       });
 
       // Register type aliases.
@@ -114,7 +117,9 @@ export class ServiceRegistry {
             break;
           case 'function':
             // Register module-level functions.
-            this._registerFunction(`${service.name}/${name}`, localImpl[name], definition.type);
+            const functionName = service.preserveFunctionNames
+              ? name : `${service.name}/${name}`;
+            this._registerFunction(functionName, localImpl[name], definition.type);
             break;
           case 'interface':
             // Register interfaces.

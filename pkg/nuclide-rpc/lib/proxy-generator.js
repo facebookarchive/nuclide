@@ -82,7 +82,11 @@ const marshalArgsCall = params => t.callExpression(clientDotMarshalArgsExpressio
  * @param defs - The result of parsing the definition file.
  * @returns The proxy factory method.
  */
-export function generateProxy(serviceName: string, defs: Definitions): string {
+export function generateProxy(
+  serviceName: string,
+  preserveFunctionNames: boolean,
+  defs: Definitions,
+): string {
   const statements = [];
 
   // Declare remoteModule as empty object.
@@ -96,10 +100,11 @@ export function generateProxy(serviceName: string, defs: Definitions): string {
     const name = definition.name;
     switch (definition.kind) {
       case 'function':
+        const functionName = preserveFunctionNames ? name : `${serviceName}/${name}`;
         // Generate a remote proxy for each module-level function.
         statements.push(t.assignmentExpression('=',
           t.memberExpression(remoteModule, t.identifier(name)),
-          generateFunctionProxy(`${serviceName}/${name}`, definition.type)));
+          generateFunctionProxy(functionName, definition.type)));
         break;
       case 'interface':
         // Generate a remote proxy for each remotable interface.
