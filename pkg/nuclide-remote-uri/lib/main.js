@@ -263,6 +263,16 @@ function contains(parent: NuclideUri, child: NuclideUri): boolean {
     && (child.length === parent.length || child[parent.length] === '/');
 }
 
+/**
+ * Filter an array of paths to contain only the collapsed root paths, e.g.
+ * [a/b/c, a/, c/d/, c/d/e] collapses to [a/, c/d/]
+ */
+function collapse(paths: Array<NuclideUri>): Array<NuclideUri> {
+  return paths.filter(p =>
+    !paths.some(fp => contains(fp, p) && fp !== p)
+  );
+}
+
 const hostFormatters = [];
 
 // A formatter which may shorten hostnames.
@@ -341,6 +351,7 @@ module.exports = {
   uriToNuclideUri,
   nuclideUriToUri,
   contains,
+  collapse,
   nuclideUriToDisplayString,
   registerHostnameFormatter,
   pathModuleFor,

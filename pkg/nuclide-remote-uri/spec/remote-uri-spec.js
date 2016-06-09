@@ -90,6 +90,22 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.contains('/foo/bar/', '/foo/bar/')).toBe(true);
   });
 
+  it('collapse', () => {
+    expect(nuclideUri.collapse(['/a', '/b'])).toEqual(['/a', '/b']);
+    expect(nuclideUri.collapse(['/a/b/c/d', '/a', '/a/b'])).toEqual(['/a']);
+    expect(nuclideUri.collapse(['/a/c', '/a/c/d', '/a/b', '/a/b/c/d/e']))
+      .toEqual(['/a/c', '/a/b']);
+    expect(nuclideUri.collapse(['/a/be', '/a/b'])).toEqual(['/a/be', '/a/b']);
+    expect(nuclideUri.collapse([
+      'nuclide://fb.com/usr/local',
+      'nuclide://fb.com/usr/local/test',
+      'nuclide://facebook.com/usr/local/test',
+    ])).toEqual([
+      'nuclide://fb.com/usr/local',
+      'nuclide://facebook.com/usr/local/test',
+    ]);
+  });
+
   it('normalize', () => {
     expect(nuclideUri.normalize(localUri)).toBe(localUri);
     expect(nuclideUri.normalize(remoteUri)).toBe(remoteUri);
