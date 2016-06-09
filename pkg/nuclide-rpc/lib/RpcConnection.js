@@ -61,15 +61,27 @@ class Subscription {
   }
 
   error(error): void {
-    this._observer.error(decodeError(this._message, error));
+    try {
+      this._observer.error(decodeError(this._message, error));
+    } catch (e) {
+      logger.error(`Caught exception in Subscription.error: ${e.toString()}`);
+    }
   }
 
   next(data: any): void {
-    this._observer.next(data);
+    try {
+      this._observer.next(data);
+    } catch (e) {
+      logger.error(`Caught exception in Subscription.next: ${e.toString()}`);
+    }
   }
 
   complete(): void {
-    this._observer.complete();
+    try {
+      this._observer.complete();
+    } catch (e) {
+      logger.error(`Caught exception in Subscription.complete: ${e.toString()}`);
+    }
   }
 }
 
@@ -559,6 +571,7 @@ export class RpcConnection<TransportType: Transport> {
         const subscriptions = this._subscriptions.get(id);
         invariant(subscriptions != null);
         subscriptions.forEach(subscription => subscription.complete());
+        subscriptions.clear();
         break;
       }
       case 'error': {
@@ -566,6 +579,7 @@ export class RpcConnection<TransportType: Transport> {
         invariant(subscriptions != null);
         const {error} = message;
         subscriptions.forEach(subscription => subscription.error(error));
+        subscriptions.clear();
         break;
       }
       case 'error-response': {
@@ -646,6 +660,14 @@ export class RpcConnection<TransportType: Transport> {
   dispose(): void {
     this._transport.close();
     this._objectRegistry.dispose();
+    this._calls.forEach(call => {
+      call.reject(new Error('Connection Closed'));
+    });
+    this._subscriptions.forEach(subscriptions => {
+      subscriptions.forEach(subscription => {
+        subscription.error(new Error('Connection Closed'));
+      });
+    });
   }
 }
 
