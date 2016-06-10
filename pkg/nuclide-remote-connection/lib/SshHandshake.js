@@ -107,6 +107,9 @@ const SshConnectionErrorLevelMap: Map<SshConnectionErrorLevel, SshHandshakeError
 ]);
 
 export class SshHandshake {
+  static ErrorType = ErrorType;
+  static SupportedMethods: typeof SupportedMethods = SupportedMethods;
+
   _delegate: SshConnectionDelegate;
   _connection: SshConnection;
   _config: SshConnectionConfiguration;
@@ -116,9 +119,6 @@ export class SshHandshake {
   _certificateAuthorityCertificate: Buffer;
   _clientCertificate: Buffer;
   _clientKey: Buffer;
-  static SupportedMethods: typeof SupportedMethods;
-
-  static ErrorType = ErrorType;
 
   constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
     this._delegate = delegate;
@@ -462,8 +462,6 @@ export class SshHandshake {
     return this._config;
   }
 }
-
-SshHandshake.SupportedMethods = SupportedMethods;
 
 export function decorateSshConnectionDelegateWithTracking(
   delegate: SshConnectionDelegate,

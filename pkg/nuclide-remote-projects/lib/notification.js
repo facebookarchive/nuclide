@@ -77,8 +77,31 @@ export function notifySshHandshakeError(
         originalErrorDetail;
       break;
     case SshHandshake.ErrorType.SSH_AUTHENTICATION:
-      message = 'Authentication failed';
-      detail = 'Make sure your password or private key is properly configured.';
+      switch (config.authMethod) {
+        case SshHandshake.SupportedMethods.PASSWORD:
+          message = 'Password Authentication failed';
+          detail = 'Troubleshooting:\n' +
+            '  1. Did you mean to choose password authentication?\n' +
+            '  2. Make sure you provided the correct username and password.';
+          break;
+        case SshHandshake.SupportedMethods.PRIVATE_KEY:
+          message = 'Private Key Authentication failed';
+          detail = 'Troubleshooting:\n' +
+            '  1. Did you mean to choose private key authentication?\n' +
+            '  2. Make sure your SSH private key is properly configured.';
+          break;
+        case SshHandshake.SupportedMethods.SSL_AGENT:
+          message = 'SSL Agent Authentication failed';
+          detail = 'Troubleshooting:\n' +
+            '  1. Did you mean to choose SSL agent authentication?\n' +
+            '  2. Make sure your SSH connection is properly configured.';
+          break;
+        default:
+          message = 'Unknown SSH Authentication Method failed';
+          detail = `Unknown authentication method '${config.authMethod}' provided. Make sure your`
+            + ' SSH connection is properly configured.';
+          break;
+      }
       break;
     case SshHandshake.ErrorType.DIRECTORY_NOT_FOUND:
       message = `There is no such directory ${config.cwd} on ${config.host}.`;
