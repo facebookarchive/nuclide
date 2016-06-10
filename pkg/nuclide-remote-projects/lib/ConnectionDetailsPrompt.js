@@ -128,6 +128,7 @@ export default class ConnectionDetailsPrompt extends React.Component<void, Props
               items={listSelectorItems}
               idOfSelectedItem={idOfSelectedItem}
               onItemClicked={this._boundOnProfileClicked}
+              onItemDoubleClicked={this.props.onConfirm}
               onAddButtonClicked={this.props.onAddProfileClicked}
               onDeleteButtonClicked={this._boundOnDeleteProfileClicked}
             />

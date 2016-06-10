@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
 import {Button} from './Button';
 import {ButtonGroup} from './ButtonGroup';
+import {React} from 'react-for-atom';
 
 type NuclideListSelectorItem = {
   deletable?: boolean;
@@ -24,6 +24,7 @@ type Props = {
   // If null, no item is initially selected.
   idOfSelectedItem: ?string;
   onItemClicked: (idOfClickedItem: string) => mixed;
+  onItemDoubleClicked: (idOfDoubleClickedItem: string) => mixed;
   // Function that is called when the "+" button on the list is clicked.
   // The user's intent is to create a new item for the list.
   onAddButtonClicked: () => mixed;
@@ -53,14 +54,12 @@ const DELETE_BUTTON_TITLE_UNDELETABLE = 'Selected item cannot be deleted';
  *  | +  |  - |
  *   ---------
  */
-export class MutableListSelector extends React.Component<void, Props, void> {
+export class MutableListSelector extends React.Component {
   props: Props;
-
-  _boundOnDeleteButtonClicked: mixed;
 
   constructor(props: Props) {
     super(props);
-    this._boundOnDeleteButtonClicked = this._onDeleteButtonClicked.bind(this);
+    (this: any)._onDeleteButtonClicked = this._onDeleteButtonClicked.bind(this);
   }
 
   _onDeleteButtonClicked() {
@@ -69,6 +68,10 @@ export class MutableListSelector extends React.Component<void, Props, void> {
 
   _onItemClicked(itemId: string) {
     this.props.onItemClicked(itemId);
+  }
+
+  _onItemDoubleClicked(itemId: string) {
+    this.props.onItemDoubleClicked(itemId);
   }
 
   render(): ?React.Element {
@@ -83,7 +86,8 @@ export class MutableListSelector extends React.Component<void, Props, void> {
         <li
           key={item.id}
           className={classes}
-          onClick={this._onItemClicked.bind(this, item.id)}>
+          onClick={this._onItemClicked.bind(this, item.id)}
+          onDoubleClick={this._onItemDoubleClicked.bind(this, item.id)}>
           {item.displayTitle}
         </li>
       );
@@ -109,9 +113,9 @@ export class MutableListSelector extends React.Component<void, Props, void> {
         </div>
         <div className="text-right">
           <ButtonGroup>
-          <Button
+            <Button
               disabled={selectedItem == null || selectedItem.deletable === false}
-              onClick={this._boundOnDeleteButtonClicked}
+              onClick={this._onDeleteButtonClicked}
               title={deleteButtonTitle}>
               -
             </Button>
