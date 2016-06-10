@@ -9,12 +9,27 @@
  * the root directory of this source tree.
  */
 
-import {ContextViewPanelState} from './ContextViewPanelState';
+import {ContextViewState} from './ContextViewState';
 
-import {CompositeDisposable} from 'atom';
+import type {DefinitionService} from '../../nuclide-definition-service';
+import invariant from 'assert';
 
-const INITIAL_PANEL_WIDTH: number = 30;
+import {Disposable, CompositeDisposable} from 'atom';
+
+let currentService: ?DefinitionService = null;
+
+type ContextViewConfig = {
+  width: number;
+  visible: boolean;
+};
+
+const INITIAL_PANEL_WIDTH: number = 300;
 const INITIAL_PANEL_VISIBILITY: boolean = true;
+
+const DEFAULT_CONFIG: ContextViewConfig = {
+  width: INITIAL_PANEL_WIDTH,
+  visible: INITIAL_PANEL_VISIBILITY,
+};
 
 /**
  * Encapsulates the package into one Activation object, so that
@@ -24,16 +39,28 @@ const INITIAL_PANEL_VISIBILITY: boolean = true;
 class Activation {
 
   _disposables: CompositeDisposable;
-  _panelState: ContextViewPanelState;
+  _panelState: ContextViewState;
 
-  constructor() {
+  constructor(config?: ContextViewConfig = DEFAULT_CONFIG) {
     this._disposables = new CompositeDisposable();
 
-    const panelState = this._panelState = new ContextViewPanelState(
-      INITIAL_PANEL_WIDTH,
-      INITIAL_PANEL_VISIBILITY);
-    this._disposables.add(panelState);
+    this._panelState = new ContextViewState(config.width, config.visible);
+    this.updateService();
+    this._bindShortcuts();
+  }
 
+  dispose() {
+    this._disposables.dispose();
+  }
+
+  serialize(): ContextViewConfig {
+    return {
+      width: this._panelState.getWidth(),
+      visible: this._panelState.isVisible(),
+    };
+  }
+
+  _bindShortcuts() {
     // Bind toggle command
     this._disposables.add(
       atom.commands.add(
@@ -62,24 +89,16 @@ class Activation {
     );
   }
 
-  dispose() {
-    this._disposables.dispose();
-  }
-
-  serialize() {
-
-  }
-
-  _bindShortcuts() {
+  updateService(): void {
 
   }
 }
 
 let activation: ?Activation = null;
 
-export function activate() {
+export function activate(state: Object | void) {
   if (!activation) {
-    activation = new Activation();
+    activation = new Activation(state);
   }
 }
 
@@ -94,4 +113,21 @@ export function serialize() {
   if (activation != null) {
     return activation.serialize();
   }
+}
+
+function updateService(): void {
+  if (activation != null) {
+    activation.updateService();
+  }
+}
+
+export function consumeDefinitionService(service: DefinitionService): IDisposable {
+  invariant(currentService == null);
+  currentService = service;
+  updateService();
+  return new Disposable(() => {
+    invariant(currentService === service);
+    currentService = null;
+    updateService();
+  });
 }

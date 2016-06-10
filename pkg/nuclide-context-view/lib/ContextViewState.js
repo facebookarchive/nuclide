@@ -13,7 +13,7 @@
 import invariant from 'assert';
 import {ContextViewPanel} from './ContextViewPanel';
 
-export class ContextViewPanelState {
+export class ContextViewState {
 
   _width: number;
   _contextViewPanel: ?ContextViewPanel;
