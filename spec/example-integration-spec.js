@@ -18,7 +18,7 @@ import {
 describe('Example Integration Test', () => {
 
   beforeEach(() => {
-    waitsForPromise({timeout: 60000}, async () => {
+    waitsForPromise(async () => {
       // Configure some jasmine specific things for integration testing.
       jasmineIntegrationTestSetup();
       // Activate nuclide packages.
