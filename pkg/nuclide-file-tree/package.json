@@ -54,6 +54,12 @@
         "type": "boolean",
         "default": true,
         "description": "Allows using the keyboard to navigate to a sibling node matching a prefix string"
+      },
+      "showOpenFiles": {
+        "title": "Show open files",
+        "type": "boolean",
+        "default": true,
+        "description": "Display a list of currently opened files in the top section of the tree"
       }
     },
     "packageType": "Atom",

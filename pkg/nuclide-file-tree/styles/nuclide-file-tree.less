@@ -67,8 +67,10 @@
 .nuclide-file-tree-toolbar-container {
   display: flex;
   flex: 1;
+  flex-direction: column;
   min-height: 0;
   width: 100%;
+  background-color: @tree-view-background-color;
 }
 
 .nuclide-file-tree-toolbar-fader {
@@ -105,4 +107,59 @@
 // matches the margin in .inline-block-tight
 .nuclide-file-tree-connection-title {
   margin-left: @component-padding/2;
+}
+
+.nuclide-file-tree-open-files {
+  max-height: 30vh;
+  display: flex;
+
+  .nuclide-file-tree-open-files-list {
+    width: 100%;
+    position: relative;
+  }
+
+  .nuclide-file-tree-open-files-row {
+    display: flex;
+    width: 100%;
+  }
+
+  .nuclide-file-tree-open-files-row-name {
+    flex: 1;
+    &:hover {
+      color: @text-color-highlight;
+    }
+  }
+
+  .nuclide-file-tree-open-close-icon {
+    font-family: 'Octicons Regular';
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    -webkit-font-smoothing: antialiased;
+    text-decoration: none;
+    font-size: 12px;
+    width: 20px;
+    height: 2em;
+
+    &:hover {
+      color: @text-color-highlight;
+    }
+
+    &::before {
+    margin-left: 5px;
+    content: "\f081";
+    }
+
+    &.modified {
+      color: @background-color-info;
+      &:not(:hover)::before {
+        content: "\f052";
+      }
+    }
+  }
+}
+
+.nuclide-file-tree-section-caption {
+  padding-left: 5px;
+  padding-right: 5px;
 }

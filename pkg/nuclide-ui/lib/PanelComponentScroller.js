@@ -17,6 +17,7 @@ type Props = {
   flexDirection?: 'column';
   overflowX?: string;
   onScroll?: (event: Event) => void;
+  onFocus?: (event: SyntheticEvent) => void;
 };
 
 export class PanelComponentScroller extends React.Component {
@@ -29,7 +30,11 @@ export class PanelComponentScroller extends React.Component {
     });
 
     return (
-      <div className={className} style={style} onScroll={this.props.onScroll}>
+      <div
+        className={className}
+        style={style}
+        onScroll={this.props.onScroll}
+        onFocus={this.props.onFocus}>
         {this.props.children}
       </div>
     );

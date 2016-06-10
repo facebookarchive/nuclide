@@ -46,4 +46,4 @@ exports.ActionType = Object.freeze({
   ENSURE_CHILD_NODE: 'ENSURE_CHILD_NODE',
 });
 
-exports.EVENT_HANDLER_SELECTOR = '.nuclide-file-tree-toolbar-container';
+exports.EVENT_HANDLER_SELECTOR = '.nuclide-file-tree';

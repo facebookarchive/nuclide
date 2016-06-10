@@ -451,7 +451,9 @@ export class FileTreeStore {
   * Updates the roots, maintains their sibling relationships and fires the change event.
   */
   _setRoots(roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>): void {
-    const changed = !Immutable.is(roots, this.roots);
+    // Explicitly test for the empty case, otherwise configuration changes with an empty
+    // tree will not emit changes.
+    const changed = !Immutable.is(roots, this.roots) || roots.isEmpty();
     if (changed) {
       this.roots = roots;
       let prevRoot = null;
@@ -727,6 +729,10 @@ export class FileTreeStore {
 
   isEditedWorkingSetEmpty(): boolean {
     return this.roots.every(root => root.checkedStatus === 'clear');
+  }
+
+  getOpenFilesWorkingSet(): WorkingSet {
+    return this._conf.openFilesWorkingSet;
   }
 
   /**

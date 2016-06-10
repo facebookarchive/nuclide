@@ -54,7 +54,7 @@ type AtomContextMenuItemWithCallback = {
 
 export type FileTreeContextMenuItem = atom$ContextMenuItem | AtomContextMenuItemWithCallback;
 
-const FILE_TREE_CSS = '.nuclide-file-tree-toolbar-container';
+const FILE_TREE_CSS = '.nuclide-file-tree';
 
 const NEW_MENU_PRIORITY = 0;
 const ADD_PROJECT_MENU_PRIORITY = 1000;
