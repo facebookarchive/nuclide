@@ -1,0 +1,12 @@
+{
+  "name": "nuclide-context-view",
+  "description": "UI for Context View sidebar",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "atomTestRunner": "../../lib/test-runner.js",
+  "version": "0.0.0",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  }
+}

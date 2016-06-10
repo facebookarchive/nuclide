@@ -1,0 +1,26 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Context View",
+          "submenu": [
+            {
+              "label": "Toggle",
+              "command": "nuclide-context-view:toggle"
+            },
+            {
+              "label": "Show",
+              "command": "nuclide-context-view:show"
+            },
+            {
+              "label": "Hide",
+              "command": "nuclide-context-view:hide"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

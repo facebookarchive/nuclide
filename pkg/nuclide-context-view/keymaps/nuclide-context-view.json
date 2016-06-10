@@ -1,0 +1,5 @@
+{
+  "atom-workspace": {
+    "cmd-ctrl-b": "nuclide-context-view:toggle"
+  }
+}
