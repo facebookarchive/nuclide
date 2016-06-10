@@ -200,10 +200,13 @@ export async function flowGetType(
   );
 }
 
-export async function flowGetCoverage(file: NuclideUri): Promise<?FlowCoverageResult> {
+export async function flowGetCoverage(
+  file: NuclideUri,
+  useDumpTypes: boolean,
+): Promise<?FlowCoverageResult> {
   return getRootContainer().runWithRoot(
     file,
-    root => root.flowGetCoverage(file),
+    root => root.flowGetCoverage(file, useDumpTypes),
   );
 }
 

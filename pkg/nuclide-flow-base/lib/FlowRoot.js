@@ -268,7 +268,15 @@ export class FlowRoot {
     return {type, rawType};
   }
 
-  async flowGetCoverage(path: NuclideUri): Promise<?FlowCoverageResult> {
+  flowGetCoverage(path: NuclideUri, useDumpTypes: boolean): Promise<?FlowCoverageResult> {
+    // The coverage command doesn't actually have the required information until Flow v0.28. For
+    // earlier versions, we have to fall back on dump-types, which is slower especially in
+    // pathological cases. We can remove this entirely when we want to stop supporting versions
+    // earlier than v0.28.
+    return useDumpTypes ? this._getCoverageViaDumpTypes(path) : this._getCoverageViaCoverage(path);
+  }
+
+  async _getCoverageViaDumpTypes(path: NuclideUri): Promise<?FlowCoverageResult> {
     const args = ['dump-types', '--json', path];
     let result;
     try {
@@ -295,6 +303,39 @@ export class FlowRoot {
     const uncoveredCount = uncoveredEntries.length;
     const totalCount = allEntries.length;
     const coveredCount = totalCount - uncoveredCount;
+    return {
+      percentage: totalCount === 0 ? 100 : coveredCount / totalCount * 100,
+      uncoveredRanges,
+    };
+  }
+
+  async _getCoverageViaCoverage(path: NuclideUri): Promise<?FlowCoverageResult> {
+    const args = ['coverage', '--json', path];
+    let result;
+    try {
+      result = await this._process.execFlow(args, {});
+    } catch (e) {
+      return null;
+    }
+    if (result == null) {
+      return null;
+    }
+    let json;
+    try {
+      json = parseJSON(args, result.stdout);
+    } catch (e) {
+      // The error is already logged in parseJSON
+      return null;
+    }
+
+    const expressions = json.expressions;
+
+    const uncoveredCount = expressions.uncovered_count;
+    const coveredCount = expressions.covered_count;
+    const totalCount = uncoveredCount + coveredCount;
+
+    const uncoveredRanges = expressions.uncovered_locs.map(flowCoordsToAtomCoords);
+
     return {
       percentage: totalCount === 0 ? 100 : coveredCount / totalCount * 100,
       uncoveredRanges,

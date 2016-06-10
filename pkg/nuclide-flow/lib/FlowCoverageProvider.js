@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/types';
 import type {FlowCoverageResult} from '../../nuclide-flow-base';
+import featureConfig from '../../nuclide-feature-config';
 
 import invariant from 'assert';
 import {Range} from 'atom';
@@ -21,7 +22,14 @@ import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 export async function getCoverage(path: NuclideUri): Promise<?CoverageResult> {
   const flowService = await getFlowServiceByNuclideUri(path);
   invariant(flowService != null);
-  const flowCoverage: ?FlowCoverageResult = await flowService.flowGetCoverage(path);
+
+  const useDumpTypes = featureConfig.get('nuclide-flow.useDumpTypes');
+  invariant(typeof useDumpTypes === 'boolean');
+
+  const flowCoverage: ?FlowCoverageResult = await flowService.flowGetCoverage(
+    path,
+    useDumpTypes,
+  );
   return flowCoverageToCoverage(flowCoverage);
 }
 
