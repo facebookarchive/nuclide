@@ -17,7 +17,7 @@ describe('nuclide-arcanist-client', () => {
   const testCases = [
     [
       'Differential Revision: https://phabricator.intern.facebook.com/D169775',
-      {id: 'D169775', url: 'https://phabricator.intern.facebook.com/D169775'},
+      {id: 169775, name: 'D169775', url: 'https://phabricator.intern.facebook.com/D169775'},
     ],
     ['Some stuff', null],
     [
@@ -26,7 +26,7 @@ describe('nuclide-arcanist-client', () => {
       message
       Differential Revision: https://phabricator.intern.facebook.com/d123456
       Test plan: foo!`).replace(/^ +/gm, ''),
-      {id: 'D123456', url: 'https://phabricator.intern.facebook.com/d123456'},
+      {id: 123456, name: 'D123456', url: 'https://phabricator.intern.facebook.com/d123456'},
     ],
   ];
   it('can parse a commit message and get the revision ID', () => {
@@ -39,6 +39,7 @@ describe('nuclide-arcanist-client', () => {
         expect(revisionInfo).not.toBeNull(msg);
         invariant(revisionInfo != null);
         expect(revisionInfo.id).toBe(correctAnswer.id, msg);
+        expect(revisionInfo.name).toBe(correctAnswer.name, msg);
         expect(revisionInfo.url).toBe(correctAnswer.url, msg);
       }
     }

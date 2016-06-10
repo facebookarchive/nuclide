@@ -75,7 +75,7 @@ export default class RevisionTimelineNode extends React.Component {
           className="inline-block"
           href={phabricatorRevision.url}
           onClick={this._handlePhabricatorRevisionClick}>
-          <strong>{phabricatorRevision.id}</strong>
+          <strong>{phabricatorRevision.name}</strong>
         </a>
       );
     }

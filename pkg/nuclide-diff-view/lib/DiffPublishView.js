@@ -45,7 +45,7 @@ class DiffRevisionView extends React.Component {
       ? <span />
       : (
         <a href={revision.url} title={tooltip}>
-          {revision.id}
+          {revision.name}
         </a>
       );
   }

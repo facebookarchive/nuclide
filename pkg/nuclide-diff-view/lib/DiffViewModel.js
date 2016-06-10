@@ -77,7 +77,7 @@ const DID_UPDATE_STATE_EVENT = 'did-update-state';
 function getRevisionUpdateMessage(phabricatorRevision: PhabricatorRevisionInfo): string {
   return `
 
-# Updating ${phabricatorRevision.id}
+# Updating ${phabricatorRevision.name}
 #
 # Enter a brief description of the changes included in this update.
 # The first line is used as subject, next lines as comment.`;
@@ -152,8 +152,8 @@ function notifyRevisionStatus(
     atom.notifications.addSuccess(message, {nativeFriendly: true});
     return;
   }
-  const {id, url} = phabRevision;
-  message = `Revision '${id}' ${statusMessage}`;
+  const {name, url} = phabRevision;
+  message = `Revision '${name}' ${statusMessage}`;
   atom.notifications.addSuccess(message, {
     dismissable: true,
     buttons: [{
@@ -935,7 +935,7 @@ class DiffViewModel {
 
     this._publishUpdates.next({
       level: 'log',
-      text: `Updating revision \`${phabricatorRevision.id}\`...\n`,
+      text: `Updating revision \`${phabricatorRevision.name}\`...\n`,
     });
     const stream = arcanist.updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked);
     await this._processArcanistOutput(stream);

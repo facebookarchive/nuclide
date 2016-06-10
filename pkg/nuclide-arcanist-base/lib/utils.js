@@ -11,7 +11,8 @@
 
 export type PhabricatorRevisionInfo = {
  url: string;
- id: string;
+ id: number;
+ name: string;
 };
 
 const DIFFERENTIAL_REVISION_REGEX = /^Differential Revision:\s*(\D+\/[dD]([1-9][0-9]{5,}))/im;
@@ -26,7 +27,8 @@ export function getPhabricatorRevisionFromCommitMessage(
   } else {
     return {
       url: match[1],
-      id: `D${match[2]}`,
+      id: parseInt(match[2], 10),
+      name: `D${match[2]}`,
     };
   }
 }
