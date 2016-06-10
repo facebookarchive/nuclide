@@ -47,6 +47,7 @@ export const ButtonGroup = (props: Props) => {
   const newClassName = classnames(
     className,
     'btn-group',
+    'nuclide-btn-group',
     {
       [sizeClassName]: size != null,
     },

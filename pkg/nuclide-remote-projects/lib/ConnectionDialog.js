@@ -184,7 +184,7 @@ export default class ConnectionDialog extends React.Component {
         <div className="block">
           {content}
         </div>
-        <div className="block text-right">
+        <div style={{display: 'flex', justifyContent: 'flex-end'}}>
           <ButtonGroup>
             <Button onClick={this.cancel}>
               Cancel

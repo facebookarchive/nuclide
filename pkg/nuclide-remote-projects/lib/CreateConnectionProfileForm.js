@@ -110,7 +110,7 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
           onCancel={emptyFunction}
           ref="connection-details"
         />
-        <div className="text-right">
+        <div style={{display: 'flex', justifyContent: 'flex-end'}}>
           <ButtonGroup>
             <Button onClick={this._clickCancel}>
               Cancel

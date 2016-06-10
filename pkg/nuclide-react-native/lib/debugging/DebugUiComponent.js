@@ -72,7 +72,7 @@ export class DebugUiComponent extends React.Component {
           After starting the debugger, enable JS debugging from the developer menu of your React
           Native app
         </div>
-        <div className="nuclide-react-native-debugging-launch-attach-actions text-right">
+        <div className="nuclide-react-native-debugging-launch-attach-actions">
           <ButtonGroup>
             <Button
               onClick={this._handleCancelButtonClick}>
