@@ -220,9 +220,9 @@ class DiffViewModel {
     this._serializedUpdateActiveFileDiff = serializeAsyncCall(
       () => this._updateActiveFileDiff(),
     );
+    this._setActiveFileState(getInitialFileChangeState());
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
-    this._setActiveFileState(getInitialFileChangeState());
   }
 
   _updateRepositories(): void {
@@ -265,6 +265,17 @@ class DiffViewModel {
       );
     }
     this._updateDirtyChangedStatus();
+    this._updateSelectedFileChanges();
+    // Clear the active diff state if it was from a repo that's now removed.
+    const {filePath} = this._activeFileState;
+    if (filePath && !repositories.has((repositoryForPath(filePath): any))) {
+      getLogger().info(
+        'Diff View\'s active buffer was belonging to a removed project.\n' +
+        'Clearing the UI state.'
+      );
+      this._activeSubscriptions.dispose();
+      this._setActiveFileState(getInitialFileChangeState());
+    }
   }
 
   _createRepositoryStack(repository: HgRepositoryClient): RepositoryStack {
