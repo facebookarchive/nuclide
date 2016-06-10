@@ -645,6 +645,7 @@ declare class atom$TextEditor extends atom$Model {
   getSelectedBufferRange(): atom$Range;
   getSelectedBufferRanges(): Array<atom$Range>;
   getSelections(): Array<atom$Selection>;
+  selectToBufferPosition(point: atom$Point): void;
 
   // Searching and Replacing
   scanInBufferRange(

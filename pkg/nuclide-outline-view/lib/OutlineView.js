@@ -149,13 +149,25 @@ function renderTree(
     goToLocationInEditor(editor, outline.startPosition.row, outline.startPosition.column);
   };
 
+  const onDoubleClick = () => {
+    // Assumes that the click handler has already run, activating the text editor and moving the
+    // cursor to the start of the symbol.
+    const endPosition = outline.endPosition;
+    if (endPosition != null) {
+      editor.selectToBufferPosition(endPosition);
+    }
+  };
+
   const classes = classnames(
     'list-nested-item',
     {selected: outline.highlighted},
   );
   return (
     <li className={classes} key={index}>
-      <div className="list-item nuclide-outline-view-item" onClick={onClick}>
+      <div
+        className="list-item nuclide-outline-view-item"
+        onClick={onClick}
+        onDoubleClick={onDoubleClick}>
         {renderItemText(outline)}
       </div>
       {renderTrees(editor, outline.children)}
