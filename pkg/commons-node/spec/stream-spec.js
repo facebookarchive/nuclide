@@ -15,6 +15,7 @@ import {
   reconcileSetDiffs,
   observeStream,
   splitStream,
+  takeWhileInclusive,
   toggle,
 } from '../stream';
 import {Disposable} from 'event-kit';
@@ -75,6 +76,24 @@ describe('commons-node/stream', () => {
       expect(result).toBe(error);
     });
   });
+
+  describe('takeWhileInclusive', () => {
+
+    it('completes the stream when something matches the predicate', () => {
+      const source = new Subject();
+      const result = takeWhileInclusive(source, x => x !== 2);
+      const next = jasmine.createSpy();
+      const complete = jasmine.createSpy();
+      result.subscribe({next, complete});
+      source.next(1);
+      source.next(2);
+      source.next(3);
+      expect(complete).toHaveBeenCalled();
+      expect(next.calls.map(call => call.args[0])).toEqual([1, 2]);
+    });
+
+  });
+
 });
 
 describe('cacheWhileSubscribed', () => {
@@ -302,4 +321,5 @@ describe('toggle', () => {
       expect(outputArray).toEqual([1, 2, 3]);
     });
   });
+
 });

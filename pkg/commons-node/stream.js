@@ -289,3 +289,24 @@ export function compact<T>(source: Observable<?T>): Observable<T> {
   // Flow does not understand the semantics of `filter`
   return (source.filter(x => x != null): any);
 }
+
+/**
+ * Like `takeWhile`, but includes the first item that doesn't match the predicate.
+ */
+export function takeWhileInclusive<T>(
+  source: Observable<T>,
+  predicate: (value: T) => boolean,
+): Observable<T> {
+  return Observable.create(observer => (
+    source.subscribe(
+      x => {
+        observer.next(x);
+        if (!predicate(x)) {
+          observer.complete();
+        }
+      },
+      err => { observer.error(err); },
+      () => { observer.complete(); },
+    )
+  ));
+}
