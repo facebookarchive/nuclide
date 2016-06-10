@@ -17,12 +17,6 @@ import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScrolle
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import {track} from '../../nuclide-analytics';
 
-type Props = {
-  uris: Array<NuclideUri>;
-  modifiedUris: Array<NuclideUri>;
-  activeUri: ?NuclideUri;
-};
-
 type OpenFileEntry = {
   name: string;
   uri: NuclideUri;
@@ -30,10 +24,29 @@ type OpenFileEntry = {
   isSelected: boolean;
 };
 
+type Props = {
+  uris: Array<NuclideUri>;
+  modifiedUris: Array<NuclideUri>;
+  activeUri: ?NuclideUri;
+};
+
+type State = {
+  hoveredUri: ?NuclideUri;
+};
+
 export class OpenFilesListComponent extends React.Component {
   props: Props;
+  state: State;
 
-  shouldComponentUpdate(nextProps: Object, nextState: void): boolean {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hoveredUri: null,
+    };
+    (this: any)._onListItemMouseLeave = this._onListItemMouseLeave.bind(this);
+  }
+
+  shouldComponentUpdate(nextProps: Object, nextState: State): boolean {
     return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
@@ -44,34 +57,70 @@ export class OpenFilesListComponent extends React.Component {
     }
   }
 
+  _onClick(entry: OpenFileEntry, event: SyntheticEvent): void {
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    const uri = entry.uri;
+    track('filetree-open-from-open-files', {uri});
+    atom.workspace.open(uri, {searchAllPanes: true});
+  }
+
+  _onCloseClick(entry: OpenFileEntry, event: SyntheticEvent): void {
+    const uri = entry.uri;
+    track('filetree-close-from-open-files', {uri});
+    event.preventDefault();
+    atom.workspace.getPanes().forEach(pane => {
+      pane.getItems().filter(item => item.getPath && item.getPath() === uri).forEach(item => {
+        pane.destroyItem(item);
+      });
+    });
+  }
+
+  _onListItemMouseEnter(entry: OpenFileEntry) {
+    this.setState({
+      hoveredUri: entry.uri,
+    });
+  }
+
+  _onListItemMouseLeave() {
+    this.setState({
+      hoveredUri: null,
+    });
+  }
+
   render(): React.Element {
     const sortedEntries = propsToEntries(this.props);
 
     return (
       <div className="nuclide-file-tree-open-files">
         <PanelComponentScroller>
-          <ul className="list-group nuclide-file-tree-open-files-list">
+          <ul className="list-tree nuclide-file-tree-open-files-list">
           {sortedEntries.map(e => {
+            const isHoveredUri = this.state.hoveredUri === e.uri;
             return (
-              <li className={classnames(
-                'list-item nuclide-file-tree-open-files-row',
-                {selected: e.isSelected},
-              )}
-              ref={e.isSelected ? 'selectedRow' : null}
-              key={e.uri}>
-                <div className="nuclide-file-tree-open-files-row">
-                  <span className={classnames(
-                      'nuclide-file-tree-open-close-icon',
-                      {modified: e.isModified},
-                    )}
-                    onClick={() => this._onCloseClick(e.uri)}
-                  />
-                  <span className="icon icon-file-text" />
-                  <span
-                    className=" nuclide-file-tree-open-files-row-name"
-                    onClick={() => this._onClick(e.uri)}>{e.name}
-                  </span>
-                </div>
+              <li
+                className={classnames('list-item', {
+                  'selected': e.isSelected,
+                  'text-highlight': isHoveredUri,
+                })}
+                key={e.uri}
+                onClick={this._onClick.bind(this, e)}
+                onMouseEnter={this._onListItemMouseEnter.bind(this, e)}
+                onMouseLeave={this._onListItemMouseLeave}
+                ref={e.isSelected ? 'selectedRow' : null}>
+                <span
+                  className={classnames('icon', {
+                    'icon-primitive-dot': e.isModified && !isHoveredUri,
+                    'icon-x': isHoveredUri || !e.isModified,
+                    'text-info': e.isModified,
+                  })}
+                  onClick={this._onCloseClick.bind(this, e)}
+                />
+                <span className="icon icon-file-text">
+                  {e.name}
+                </span>
               </li>
             );
           })}
@@ -79,20 +128,6 @@ export class OpenFilesListComponent extends React.Component {
         </PanelComponentScroller>
       </div>
     );
-  }
-
-  _onClick(uri: NuclideUri): void {
-    track('filetree-open-from-open-files', {uri});
-    atom.workspace.open(uri, {searchAllPanes: true});
-  }
-
-  _onCloseClick(uri: NuclideUri): void {
-    track('filetree-close-from-open-files', {uri});
-    atom.workspace.getPanes().forEach(pane => {
-      pane.getItems().filter(item => item.getPath && item.getPath() === uri).forEach(item => {
-        pane.destroyItem(item);
-      });
-    });
   }
 }
 

@@ -141,7 +141,7 @@ class FileTreeSidebarComponent extends React.Component {
     let openFilesCaption = null;
     let openFilesList = null;
     let foldersCaption = null;
-    if (this.state.showOpenFiles && this.state.openFilesUris.length > 0) {
+    if (this.state.showOpenFiles) {
       openFilesCaption = <h6 className="nuclide-file-tree-section-caption">OPEN FILES</h6>;
 
       openFilesList = (

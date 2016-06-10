@@ -110,53 +110,31 @@
 }
 
 .nuclide-file-tree-open-files {
-  max-height: 30vh;
   display: flex;
+  max-height: 30vh;
+}
 
-  .nuclide-file-tree-open-files-list {
-    width: 100%;
-    position: relative;
+.nuclide-file-tree-open-files-list {
+  padding-left: @component-icon-padding;
+  padding-right: @component-padding;
+  position: relative;
+  width: 100%;
+
+  .list-item:hover {
+    color: @text-color-highlight;
   }
 
-  .nuclide-file-tree-open-files-row {
-    display: flex;
-    width: 100%;
-  }
-
-  .nuclide-file-tree-open-files-row-name {
-    flex: 1;
-    &:hover {
-      color: @text-color-highlight;
-    }
-  }
-
-  .nuclide-file-tree-open-close-icon {
-    font-family: 'Octicons Regular';
-    font-weight: normal;
-    font-style: normal;
-    display: inline-block;
-    -webkit-font-smoothing: antialiased;
-    text-decoration: none;
+  .icon-primitive-dot:before,
+  .icon-x:before {
     font-size: 12px;
-    width: 20px;
-    height: 2em;
-
-    &:hover {
-      color: @text-color-highlight;
-    }
-
-    &::before {
-    margin-left: 5px;
-    content: "\f081";
-    }
-
-    &.modified {
-      color: @background-color-info;
-      &:not(:hover)::before {
-        content: "\f052";
-      }
-    }
+    height: 12px;
+    width: 12px;
   }
+}
+
+.nuclide-file-tree-open-files-row {
+  display: flex;
+  width: 100%;
 }
 
 .nuclide-file-tree-section-caption {
