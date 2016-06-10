@@ -36,6 +36,7 @@ require('../../nuclide-node-transpiler');
 global.waitsForPromise = require('../lib/waitsForPromise');
 global.window = global;
 
+require('../lib/focused');
 require('../lib/unspy');
 require('../lib/faketimer');
 
