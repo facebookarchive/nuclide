@@ -1,0 +1,20 @@
+{
+  "name": "nuclide-move-item-to-available-pane",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Provides commands to move an item to the next available pane",
+  "atomTestRunner": "../../lib/test-runner.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+    "atom-text-editor": [
+      "nuclide-move-item-to-available-pane:right",
+      "nuclide-move-item-to-available-pane:left",
+      "nuclide-move-item-to-available-pane:up",
+      "nuclide-move-item-to-available-pane:down"
+    ]
+  }
+}

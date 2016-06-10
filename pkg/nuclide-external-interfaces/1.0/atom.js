@@ -297,6 +297,7 @@ declare class atom$Pane {
   itemAtIndex(index: number): ?Object;
   getActiveItemIndex(): number;
   activateItem(item: Object): ?Object;
+  activateItemAtIndex(index: number): void;
   moveItemToPane(item: Object, pane: atom$Pane, index: number): void;
   destroyItem(item: Object): boolean;
   itemForURI(uri: string): Object;
