@@ -26,6 +26,7 @@ export type FileTreeNodeOptions = {
   rootUri: NuclideUri;
   isExpanded?: boolean;
   isSelected?: boolean;
+  isFocused?: boolean;
   isDragHovered?: boolean;
   isLoading?: boolean;
   wasFetched?: boolean;
@@ -42,6 +43,7 @@ export type FileTreeNodeOptions = {
 type DefaultFileTreeNodeOptions = {
   isExpanded: boolean;
   isSelected: boolean;
+  isFocused: boolean;
   isDragHovered: boolean;
   isLoading: boolean;
   wasFetched: boolean;
@@ -57,6 +59,7 @@ type DefaultFileTreeNodeOptions = {
 const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
   isExpanded: false,
   isSelected: false,
+  isFocused: false,
   isDragHovered: false,
   isLoading: false,
   wasFetched: false,
@@ -72,6 +75,7 @@ const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
 export type ImmutableNodeSettableFields = {
   isExpanded?: boolean;
   isSelected?: boolean;
+  isFocused?: boolean;
   isDragHovered?: boolean;
   isLoading?: boolean;
   wasFetched?: boolean;
@@ -151,6 +155,7 @@ export class FileTreeNode {
   rootUri: NuclideUri;
   isExpanded: boolean;
   isSelected: boolean;
+  isFocused: boolean;
   isDragHovered: boolean;
   isLoading: boolean;
   wasFetched: boolean;
@@ -292,6 +297,7 @@ export class FileTreeNode {
     this.rootUri = o.rootUri;
     this.isExpanded = o.isExpanded !== undefined ? o.isExpanded : D.isExpanded;
     this.isSelected = o.isSelected !== undefined ? o.isSelected : D.isSelected;
+    this.isFocused = o.isFocused !== undefined ? o.isFocused : D.isFocused;
     this.isDragHovered = o.isDragHovered !== undefined ? o.isDragHovered : D.isDragHovered;
     this.isLoading = o.isLoading !== undefined ? o.isLoading : D.isLoading;
     this.wasFetched = o.wasFetched !== undefined ? o.wasFetched : D.wasFetched;
@@ -335,6 +341,7 @@ export class FileTreeNode {
       rootUri: this.rootUri,
       isExpanded: this.isExpanded,
       isSelected: this.isSelected,
+      isFocused: this.isFocused,
       isDragHovered: this.isDragHovered,
       isLoading: this.isLoading,
       wasFetched: this.wasFetched,
@@ -368,6 +375,10 @@ export class FileTreeNode {
 
   setIsSelected(isSelected: boolean): FileTreeNode {
     return this.set({isSelected});
+  }
+
+  setIsFocused(isFocused: boolean): FileTreeNode {
+    return this.set({isFocused});
   }
 
   setIsDragHovered(isDragHovered: boolean): FileTreeNode {
@@ -731,6 +742,9 @@ export class FileTreeNode {
 
   _propsAreTheSame(props: Object): boolean {
     if (props.isSelected !== undefined && this.isSelected !== props.isSelected) {
+      return false;
+    }
+    if (props.isFocused !== undefined && this.isFocused !== props.isFocused) {
       return false;
     }
     if (props.isDragHovered !== undefined && this.isDragHovered !== props.isDragHovered) {

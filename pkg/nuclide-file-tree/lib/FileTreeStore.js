@@ -349,6 +349,9 @@ export class FileTreeStore {
       case ActionType.SET_SELECTED_NODE:
         this._setSelectedNode(payload.rootKey, payload.nodeKey);
         break;
+      case ActionType.SET_FOCUSED_NODE:
+        this._setFocusedNode(payload.rootKey, payload.nodeKey);
+        break;
       case ActionType.ADD_SELECTED_NODE:
         this._addSelectedNode(payload.rootKey, payload.nodeKey);
         break;
@@ -1114,8 +1117,26 @@ export class FileTreeStore {
   * Selects a single node and tracks it.
   */
   _setSelectedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._clearSelection();
+    this._clearSelection(rootKey, nodeKey);
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
+    this._setTrackedNode(rootKey, nodeKey);
+  }
+
+  /**
+   * Mark a node that has been focused, similar to selected, but only true after mouseup.
+   */
+  _setFocusedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsFocused(true));
+  }
+
+  /**
+   * Selects and focuses a node in one pass.
+   */
+  _setSelectedAndFocusedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._clearSelection(rootKey, nodeKey);
+    this._updateNodeAtRoot(rootKey, nodeKey, node =>
+      node.set({isSelected: true, isFocused: true})
+    );
     this._setTrackedNode(rootKey, nodeKey);
   }
 
@@ -1124,7 +1145,9 @@ export class FileTreeStore {
   }
 
   _unselectNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(false));
+    this._updateNodeAtRoot(rootKey, nodeKey, node =>
+      node.set({isSelected: false, isFocused: false})
+    );
   }
 
   _selectFirstFilter(): void {
@@ -1166,7 +1189,7 @@ export class FileTreeStore {
     }
 
     if (nodeToSelect != null) {
-      this._setSelectedNode(nodeToSelect.rootUri, nodeToSelect.uri);
+      this._setSelectedAndFocusedNode(nodeToSelect.rootUri, nodeToSelect.uri);
     }
   }
 
@@ -1194,7 +1217,7 @@ export class FileTreeStore {
     }
 
     if (nodeToSelect != null) {
-      this._setSelectedNode(nodeToSelect.rootUri, nodeToSelect.uri);
+      this._setSelectedAndFocusedNode(nodeToSelect.rootUri, nodeToSelect.uri);
     }
   }
 
@@ -1209,7 +1232,7 @@ export class FileTreeStore {
     }
 
     if (nodeToSelect != null) {
-      this._setSelectedNode(nodeToSelect.uri, nodeToSelect.uri);
+      this._setSelectedAndFocusedNode(nodeToSelect.uri, nodeToSelect.uri);
     }
   }
 
@@ -1220,7 +1243,7 @@ export class FileTreeStore {
 
     const lastRoot = this.roots.last();
     const lastChild = lastRoot.findLastRecursiveChild();
-    this._setSelectedNode(lastChild.rootUri, lastChild.uri);
+    this._setSelectedAndFocusedNode(lastChild.rootUri, lastChild.uri);
   }
 
   _clearDragHover(): void {
@@ -1232,11 +1255,16 @@ export class FileTreeStore {
     });
   }
 
-  _clearSelection(): void {
+  // Clear selections and focuses on all nodes except an optionally specified
+  // current node.
+  _clearSelection(currRootKey?: NuclideUri, currNodeKey?: NuclideUri): void {
     this._updateRoots(root => {
       return root.setRecursive(
         node => (node.containsSelection ? null : node),
-        node => node.setIsSelected(false),
+        node => {
+          return (node.rootUri === currRootKey && node.uri === currNodeKey) ?
+            node : node.set({isSelected: false, isFocused: false});
+        },
       );
     });
   }

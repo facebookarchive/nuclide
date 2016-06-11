@@ -354,6 +354,14 @@ class FileTreeActions {
     });
   }
 
+  setFocusedNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_FOCUSED_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
   addSelectedNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionType.ADD_SELECTED_NODE,

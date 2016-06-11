@@ -40,9 +40,9 @@ export class FileTreeEntryComponent extends React.Component {
   constructor(props: Props) {
     super(props);
     this.dragEventCount = 0;
+    (this: any)._onMouseDown = this._onMouseDown.bind(this);
     (this: any)._onClick = this._onClick.bind(this);
     (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
-    (this: any)._onMouseDown = this._onMouseDown.bind(this);
 
     (this: any)._onDragEnter = this._onDragEnter.bind(this);
     (this: any)._onDragLeave = this._onDragLeave.bind(this);
@@ -114,9 +114,9 @@ export class FileTreeEntryComponent extends React.Component {
         className={`${outerClassName} ${statusClass}`}
         style={{paddingLeft: this.props.node.getDepth() * INDENT_LEVEL}}
         draggable={true}
+        onMouseDown={this._onMouseDown}
         onClick={this._onClick}
         onDoubleClick={this._onDoubleClick}
-        onMouseDown={this._onMouseDown}
         onDragEnter={this._onDragEnter}
         onDragLeave={this._onDragLeave}
         onDragStart={this._onDragStart}
@@ -174,6 +174,18 @@ export class FileTreeEntryComponent extends React.Component {
     );
   }
 
+  _onMouseDown(event: SyntheticMouseEvent) {
+    event.stopPropagation();
+    const node = this.props.node;
+
+    const modifySelection = event.ctrlKey || event.metaKey;
+    if (modifySelection && !node.isSelected) {
+      getActions().addSelectedNode(node.rootUri, node.uri);
+    } else if (!node.isSelected) {
+      getActions().setSelectedNode(node.rootUri, node.uri);
+    }
+  }
+
   _onClick(event: SyntheticMouseEvent) {
     event.stopPropagation();
     const node = this.props.node;
@@ -192,24 +204,29 @@ export class FileTreeEntryComponent extends React.Component {
 
     const modifySelection = event.ctrlKey || event.metaKey;
     if (modifySelection) {
-      if (node.isSelected) {
+      if (node.isFocused) {
         getActions().unselectNode(node.rootUri, node.uri);
-      } else {
-        getActions().addSelectedNode(node.rootUri, node.uri);
+        // If this node was just unselected, immediately return and skip
+        // the statement below that sets this node to focused.
+        return;
       }
     } else {
-      if (!node.isSelected) {
-        getActions().setSelectedNode(node.rootUri, node.uri);
-      }
       if (node.isContainer) {
-        if (node.isSelected || node.conf.usePreviewTabs) {
+        if (node.isFocused || node.conf.usePreviewTabs) {
           this._toggleNodeExpanded(deep);
         }
       } else {
-        if (this.props.node.conf.usePreviewTabs) {
-          getActions().confirmNode(this.props.node.rootUri, this.props.node.uri);
+        if (node.conf.usePreviewTabs) {
+          getActions().confirmNode(node.rootUri, node.uri);
         }
       }
+      // Set selected node to clear any other selected nodes (i.e. in the case of
+      // previously having multiple selections).
+      getActions().setSelectedNode(node.rootUri, node.uri);
+    }
+
+    if (node.isSelected) {
+      getActions().setFocusedNode(node.rootUri, node.uri);
     }
   }
 
@@ -224,22 +241,6 @@ export class FileTreeEntryComponent extends React.Component {
       getActions().keepPreviewTab();
     } else {
       getActions().confirmNode(this.props.node.rootUri, this.props.node.uri);
-    }
-  }
-
-  _onMouseDown(event: SyntheticMouseEvent) {
-    event.stopPropagation();
-    // Don't do anything if node is already selected.
-    if (this.props.node.isSelected) {
-      return;
-    }
-
-    // Select node on either start of drag, or right-click (in order for
-    // context menu to behave correctly).
-    const modifySelection = event.ctrlKey || event.metaKey;
-    if (!modifySelection) {
-      // Select a single node.
-      getActions().setSelectedNode(this.props.node.rootUri, this.props.node.uri);
     }
   }
 
