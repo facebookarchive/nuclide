@@ -49,16 +49,33 @@ export class NuxTour {
     }
   }
 
-  // Force the NUX tour to end. Used when a package or the NUX framework is deactivated.
-  forceEnd(): void {
-    this._track(false, 'NuxTour was forcibly ended.');
+  /**
+   * Force the NUX tour to end. Used when a package or the NUX framework is deactivated.
+   *
+   * @param {boolean} shouldMarkAsCompleted - Whether or not to mark the NUX as completed.
+   * If marked as completed, it will not be shown again.
+   * To be used when the user dismisses the NUX and doesn't want to see it again.
+   */
+  forceEnd(
+    shouldMarkAsCompleted: boolean = false,
+  ): void {
+    if (shouldMarkAsCompleted) {
+      this._track(true, 'NuxTour was dismissed by the user.');
+    } else {
+      this._track(false, 'NuxTour was forcibly ended.');
+    }
     this._nuxList[this._currentStep].dispose();
     // Skip remaining NUXes. No disposal is needed since they are lazily instantiated.
-    this._onNuxComplete(false);
+    this._onNuxComplete(shouldMarkAsCompleted);
   }
 
-  _nextStep(): void {
-    if (this._currentStep < this._nuxList.length - 1) {
+  _nextStep(
+    stepWasSuccesful: boolean,
+  ): void {
+    if (!stepWasSuccesful) {
+      // Mark the NUX as completed, since the step was exited prematurely (skipped)
+      this.forceEnd(true);
+    } else if (this._currentStep < this._nuxList.length - 1) {
       this._track(true);
       try {
         this._nuxList[++this._currentStep].showNux();

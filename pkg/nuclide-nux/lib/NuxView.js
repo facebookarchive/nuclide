@@ -30,7 +30,7 @@ export class NuxView {
   _content: string;
   _customContent: boolean;
   _disposables : CompositeDisposable;
-  _callback: ?(() => void);
+  _callback: ?((success: boolean) => void);
   _tooltipDisposable: IDisposable;
   _displayPredicate: (() => boolean);
   _completePredicate: (() => boolean);
@@ -149,6 +149,16 @@ export class NuxView {
   }
 
   _createDisposableTooltip() : void {
+    if (!this._customContent) {
+      // Can turn it into custom content (add DISMISS button)
+      this._content = `<div class="nuclide-nux-text-content">
+                        <a class="nuclide-nux-dismiss-link">
+                          <span class="icon-x pull-right"></span>
+                        </a>
+                        <span>${this._content}</span>
+                      </div>`;
+      this._customContent = true;
+    }
     this._tooltipDisposable = atom.tooltips.add(
       this._tooltipDiv,
       {
@@ -156,13 +166,20 @@ export class NuxView {
         trigger: 'manual',
         placement: this._position,
         html: this._customContent,
-        template: '<div class="tooltip nuclide-nux-tooltip">' +
-                    '<div class="tooltip-arrow"></div>' +
-                    '<div class="tooltip-inner"></div>' +
-                  '</div>',
+        template: `<div class="tooltip nuclide-nux-tooltip">
+                    <div class="tooltip-arrow"></div>
+                    <div class="tooltip-inner"></div>
+                  </div>`,
       }
     );
     this._disposables.add(this._tooltipDisposable);
+
+    const dismissElemClickListener = this._onNuxComplete.bind(this, false);
+    const dismissElement = document.querySelector('.nuclide-nux-dismiss-link');
+    dismissElement.addEventListener('click', dismissElemClickListener);
+    this._disposables.add(new Disposable(() =>
+      dismissElement.removeEventListener('click', dismissElemClickListener),
+    ));
   }
 
   _handleDisposableClick(
@@ -186,13 +203,15 @@ export class NuxView {
     this._createNux();
   }
 
-  setNuxCompleteCallback(callback: (() => void)): void {
+  setNuxCompleteCallback(callback: ((success: boolean) => void)): void {
     this._callback = callback;
   }
 
-  _onNuxComplete(success: boolean): boolean {
+  _onNuxComplete(
+    success: boolean = true,
+  ): boolean {
     if (this._callback) {
-      this._callback();
+      this._callback(success);
        // avoid the callback being invoked again
       this._callback = null;
     }

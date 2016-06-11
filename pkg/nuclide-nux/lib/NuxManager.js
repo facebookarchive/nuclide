@@ -72,7 +72,6 @@ export class NuxManager {
 
   _removeNux(id: string): void {
     if (this._activeNuxTour != null && this._activeNuxTour.getID() === id) {
-      // TODO: End active NUX
       this._activeNuxTour.forceEnd();
       return;
     }
