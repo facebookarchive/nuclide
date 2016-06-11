@@ -22,7 +22,7 @@ export type Location = {
   position: atom$Point;
 };
 
-export type CodePreviewContent = {
+export type DefinitionPreviewContent = {
   location: Location;
   symbolName: ?string;
   definition: Location;
@@ -32,7 +32,7 @@ export type CodePreviewContent = {
 async function contentOfEditor(
   definitionService: DefinitionService,
   editorPosition: ?EditorPosition,
-): Promise<?CodePreviewContent> {
+): Promise<?DefinitionPreviewContent> {
   if (editorPosition == null) {
     return null;
   }
@@ -61,7 +61,8 @@ async function contentOfEditor(
   };
 }
 
-export function getContent(definitionService: DefinitionService): Observable<?CodePreviewContent> {
+export function getContent(definitionService: DefinitionService):
+  Observable<?DefinitionPreviewContent> {
   return Observable.concat(
     Observable.of(null),
     observeTextEditorsPositions()

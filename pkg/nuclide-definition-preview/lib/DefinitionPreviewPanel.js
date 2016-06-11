@@ -9,22 +9,21 @@
  * the root directory of this source tree.
  */
 
-import type {CodePreviewContent} from './CodePreviewContent';
-import type {PreviewContent} from './CodePreviewView';
+import type {DefinitionPreviewContent} from './DefinitionPreviewContent';
+import type {PreviewContent} from './DefinitionPreviewView';
 
 import {React, ReactDOM} from 'react-for-atom';
 import {Observable} from 'rxjs';
-import {CodePreviewView} from './CodePreviewView';
+import {DefinitionPreviewView} from './DefinitionPreviewView';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
 import invariant from 'assert';
 
-export class CodePreviewPanel {
+export class DefinitionPreviewPanel {
   _panelDOMElement: HTMLElement;
   _panel: atom$Panel;
-  _width: number;
 
-  constructor(initialWidth: number, data: Observable<?CodePreviewContent>) {
+  constructor(data: Observable<?DefinitionPreviewContent>) {
     this._panelDOMElement = document.createElement('div');
     // Otherwise it does not fill the whole panel, which might be alright except it means that the
     // resize-handle doesn't extend all the way to the bottom.
@@ -34,9 +33,6 @@ export class CodePreviewPanel {
     // give `height: auto;`.
     this._panelDOMElement.style.display = 'flex';
     this._panelDOMElement.style.height = 'inherit';
-    this._width = initialWidth;
-
-    const onResize = newWidth => { this._width = newWidth; };
 
     const symbolNames = data.filter(value => value != null)
       .map(value => {
@@ -55,26 +51,20 @@ export class CodePreviewPanel {
     ReactDOM.render(
       <PanelComponent
         dock="right"
-        initialLength={initialWidth}
-        noScroll
-        onResize={onResize}>
+        noScroll>
         <div className="nuclide-definition-preview-panel">
           <Header data={symbolNames} />
           <PanelComponentScroller>
-            <CodePreviewView data={content} />
+            <DefinitionPreviewView data={content} />
           </PanelComponentScroller>
         </div>
       </PanelComponent>,
       this._panelDOMElement,
     );
-    this._panel = atom.workspace.addRightPanel({
-      item: this._panelDOMElement,
-      priority: 200,
-    });
-  }
-
-  getWidth(): number {
-    return this._width;
+    // this._panel = atom.workspace.addRightPanel({
+    //   item: this._panelDOMElement,
+    //   priority: 200,
+    // });
   }
 
   dispose(): void {
@@ -123,20 +113,8 @@ class Header extends React.Component {
       // contents. The default for flex children is to shrink as needed.
       <div className="panel-heading" style={{'flex-shrink': 0}}>
         <span className="icon icon-comment-discussion" />
-        CodePreview {this.state.data == null ? '' : `: ${this.state.data}`}
-        <button
-          className="btn btn-xs icon icon-x pull-right nuclide-definition-preview-close-button"
-          onClick={hide}
-          title="Hide CodePreview"
-        />
+        DefinitionPreview {this.state.data == null ? '' : `: ${this.state.data}`}
       </div>
     );
   }
-}
-
-function hide() {
-  atom.commands.dispatch(
-    atom.views.getView(atom.workspace),
-    'nuclide-definition-preview:hide'
-  );
 }

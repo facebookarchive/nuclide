@@ -26,7 +26,7 @@ export type PreviewContent = {
   grammar: atom$Grammar;
 };
 
-export class CodePreviewView extends ObservingComponent<PreviewContent> {
+export class DefinitionPreviewView extends ObservingComponent<PreviewContent> {
   _loadAndScroll: ?() =>Promise<void>;
 
   constructor(props: Props<PreviewContent>) {
@@ -64,7 +64,9 @@ export class CodePreviewView extends ObservingComponent<PreviewContent> {
   _maybeContent(): React.Element {
     const previewContent = this.state.data;
     return previewContent == null
-      ? <div className="nuclide-definition-container"><span>Unknown Definition</span></div>
+      ? <div className="nuclide-definition-container">
+          <span>Unknown Definition.</span>
+        </div>
       : this._previewDefinition(previewContent);
   }
 
