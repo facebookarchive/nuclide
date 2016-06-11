@@ -314,7 +314,7 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
     waitsForPromise(async () => {
       const call = dbgpSocket.getPropertiesByFullname(43, '42', 'fullname-value', 45);
       testCallResult(
-          'property_value -i 1 -d 43 -c 42 -n fullname-value -p 45',
+          'property_value -i 1 -d 43 -c 42 -n "fullname-value" -p 45',
         {
           command: 'property_value',
           transaction_id: '1',

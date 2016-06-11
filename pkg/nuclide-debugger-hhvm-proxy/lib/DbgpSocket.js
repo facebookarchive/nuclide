@@ -198,8 +198,12 @@ class DbgpSocket {
     fullname: string,
     page: number,
   ): Promise<Array<DbgpProperty>> {
+    // Escape any double quote in the expression.
+    const escapedFullname = fullname.replace(/"/g, '\\"');
     const result = await this._callDebugger(
-      'property_value', `-d ${frameIndex} -c ${contextId} -n ${fullname} -p ${page}`);
+      'property_value',
+      `-d ${frameIndex} -c ${contextId} -n "${escapedFullname}" -p ${page}`,
+    );
     // property_value returns the outer property, we want the children ...
     // 0 results yields missing 'property' member
     if (result.property == null || result.property[0] == null) {
