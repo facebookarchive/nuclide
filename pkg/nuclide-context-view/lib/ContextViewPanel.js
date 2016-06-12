@@ -9,27 +9,59 @@
  * the root directory of this source tree.
  */
 
-import {React, ReactDOM} from 'react-for-atom';
+import type {Definition} from '../../nuclide-definition-service';
 
+import {React} from 'react-for-atom';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 
-export class ContextViewPanel {
-  _panelDOMElement: HTMLElement;
+export class ContextViewPanel extends React.Component {
+  static propTypes = {
+    initialWidth: React.PropTypes.number.isRequired,
+    onResize: React.PropTypes.func.isRequired, // Should be (newWidth: number) => void
+    children: React.PropTypes.element,
+    definition: React.PropTypes.object,
+  };
 
-  constructor(initialWidth: number) {
-
-    this._panelDOMElement = document.createElement('div');
-    ReactDOM.render(
+  render() {
+    return (
       <PanelComponent
       dock="right"
-      initialLength={initialWidth}>
-        <div>Hello world</div>
-      </PanelComponent>,
-      this._panelDOMElement
+      initialLength={this.props.initialWidth}
+      noScroll
+      onResize={this.props.onResize}>
+        <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
+          <Header definition={this.props.definition} />
+          <div className="nuclide-context-view-content">
+            {this.props.children}
+          </div>
+        </div>
+      </PanelComponent>
     );
   }
+}
 
-  dispose(): void {
-    ReactDOM.unmountComponentAtNode(this._panelDOMElement);
+type HeaderProps = {
+  definition: Definition;
+};
+
+class Header extends React.Component {
+
+  props: HeaderProps;
+
+  constructor(props: HeaderProps) {
+    super(props);
+    this.props = props;
+  }
+
+  render(): React.Element {
+    const info = (this.props.definition != null)
+      ? this.props.definition.name
+      : 'No definition selected';
+
+    return (
+      <div className="panel-heading" style={{'flex-shrink': 0}}>
+        <h4>Context View: {info}</h4>
+      </div>
+    );
   }
 }

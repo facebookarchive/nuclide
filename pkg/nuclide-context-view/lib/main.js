@@ -90,7 +90,9 @@ class Activation {
   }
 
   updateService(): void {
-
+    if (this._panelState != null && currentService != null) {
+      this._panelState.setDefinitionService(currentService);
+    }
   }
 }
 
