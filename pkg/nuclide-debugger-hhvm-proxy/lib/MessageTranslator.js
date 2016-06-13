@@ -60,7 +60,7 @@ export class MessageTranslator {
     this._debuggerHandler.onSessionEnd(callback);
   }
 
-  async handleCommand(command: string): Promise<any> {
+  async handleCommand(command: string): Promise<void> {
     logger.log('handleCommand: ' + command);
     const {id, method, params} = JSON.parse(command);
 

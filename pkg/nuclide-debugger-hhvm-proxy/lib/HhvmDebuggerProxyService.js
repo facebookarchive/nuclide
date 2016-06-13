@@ -34,7 +34,7 @@ export type HhvmDebuggerSessionConfig = {
 };
 
 export type NotificationMessage = {
-  type: string;
+  type: 'info' | 'warning' | 'error' | 'fatalError';
   message: string;
 };
 

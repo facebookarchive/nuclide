@@ -14,7 +14,8 @@ import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import type {
   HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,
 } from '../../nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
-
+import typeof * as HhvmDebuggerProxyService
+  from '../../nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
 import utils from './utils';
 import invariant from 'assert';
 import {DebuggerInstance} from '../../nuclide-debugger-atom';
@@ -57,7 +58,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
   async getWebsocketAddress(): Promise<string> {
     logInfo('Connecting to: ' + this.getTargetUri());
     const {getServiceByNuclideUri} = require('../../nuclide-client');
-    const service =
+    const service: ?HhvmDebuggerProxyService =
       getServiceByNuclideUri('HhvmDebuggerProxyService', this.getTargetUri());
     invariant(service);
     const proxy = new service.HhvmDebuggerProxyService();
