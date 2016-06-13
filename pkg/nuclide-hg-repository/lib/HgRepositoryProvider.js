@@ -16,6 +16,7 @@ import {
   RemoteDirectory as RemoteDirectoryType,
 } from '../../nuclide-remote-connection';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+import typeof * as HgService from '../../nuclide-hg-repository-base/lib/HgService';
 
 let logger = null;
 function getLogger() {
@@ -100,7 +101,7 @@ export class HgRepositoryProvider {
       } = repositoryDescription;
 
       const {getServiceByNuclideUri} = require('../../nuclide-client');
-      const service = getServiceByNuclideUri('HgService', directory.getPath());
+      const service: ?HgService = getServiceByNuclideUri('HgService', directory.getPath());
       invariant(service);
       const hgService = new service.HgService(workingDirectoryLocalPath);
       return new HgRepositoryClient(repoPath, hgService, {
