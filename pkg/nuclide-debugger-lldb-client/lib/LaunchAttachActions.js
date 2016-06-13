@@ -16,6 +16,8 @@ import type {
 } from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type DebuggerProcessInfo from '../../nuclide-debugger-atom/lib/DebuggerProcessInfo';
+import typeof * as DebuggerRpcServiceInterface
+  from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -96,13 +98,14 @@ export class LaunchAttachActions {
   }
 
   async updateAttachTargetList(): Promise<void> {
-    const rpcService = getServiceByNuclideUri('LLDBDebuggerRpcService', this._targetUri);
+    const rpcService: ?DebuggerRpcServiceInterface
+      = getServiceByNuclideUri('LLDBDebuggerRpcService', this._targetUri);
     invariant(rpcService);
     const attachTargetList = await rpcService.getAttachTargetInfoList();
     this._emitNewAction(LaunchAttachActionCode.UPDATE_ATTACH_TARGET_LIST, attachTargetList);
   }
 
-  _emitNewAction(actionType: string, data: Object): void {
+  _emitNewAction(actionType: string, data: Array<AttachTargetInfo>): void {
     this._dispatcher.dispatch({
       actionType,
       data,

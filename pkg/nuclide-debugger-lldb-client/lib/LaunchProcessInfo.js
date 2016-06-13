@@ -15,6 +15,8 @@ import type {
   LaunchTargetInfo,
   DebuggerRpcService as DebuggerRpcServiceType,
 } from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
+import typeof * as DebuggerRpcServiceInterface
+  from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 
 import invariant from 'assert';
 import {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
@@ -63,7 +65,8 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       buckConfigRootFile: getConfig().buckConfigRootFile,
     };
     const {getServiceByNuclideUri} = require('../../nuclide-client');
-    const service = getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
+    const service: ?DebuggerRpcServiceInterface
+      = getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
     invariant(service);
     return new service.DebuggerRpcService(debuggerConfig);
   }

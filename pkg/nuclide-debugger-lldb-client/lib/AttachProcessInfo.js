@@ -16,6 +16,8 @@ import type {
   AttachTargetInfo,
   DebuggerRpcService as DebuggerRpcServiceType,
 } from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
+import typeof * as DebuggerRpcServiceInterface
+  from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 
 import {registerOutputWindowLogging} from '../../nuclide-debugger-common/lib/OutputServiceManager';
 import {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
@@ -64,7 +66,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
       buckConfigRootFile: getConfig().buckConfigRootFile,
     };
     const {getServiceByNuclideUri} = require('../../nuclide-client');
-    const service =
+    const service: ?DebuggerRpcServiceInterface =
       getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
     invariant(service);
     return new service.DebuggerRpcService(debuggerConfig);

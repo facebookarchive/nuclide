@@ -10,6 +10,8 @@
  */
 
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
+import typeof * as DebuggerRpcServiceInterface
+  from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 
 import invariant from 'assert';
 
@@ -25,7 +27,8 @@ async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
   }
 
   const {getServiceByNuclideUri} = require('../../nuclide-client');
-  const localService = getServiceByNuclideUri('LLDBDebuggerRpcService', localDirectory.getPath());
+  const localService: ?DebuggerRpcServiceInterface
+    = getServiceByNuclideUri('LLDBDebuggerRpcService', localDirectory.getPath());
   invariant(localService);
   const targetInfoList = await localService.getAttachTargetInfoList();
 
