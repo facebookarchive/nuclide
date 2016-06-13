@@ -20,12 +20,15 @@ from jedi.evaluate.representation import InstanceElement
 import outline
 
 LOGGING_DIR = 'nuclide-%s-logs/python' % getpass.getuser()
+LIB_DIR = os.path.abspath('../VendorLib')
+WORKING_DIR = os.getcwd()
 
 
 class JediServer:
 
     def __init__(self, src):
         self.src = src
+        self.sys_path = self.get_filtered_sys_path()
         self.logger = logging.getLogger()
         self.input_stream = sys.stdin
         self.output_stream = sys.stdout
@@ -39,6 +42,13 @@ class JediServer:
             # Use \n to signal the end of the response.
             self.output_stream.write('\n')
             self.output_stream.flush()
+
+    def get_filtered_sys_path(self):
+        # Retrieves the sys.path with VendorLib filtered out, so symbols from
+        # jedi don't appear in user's autocompletions or hyperclicks.
+        # Don't filter out VendorLib if we're working in the jediserver's dir. :)
+        return [path for path in sys.path
+                if path != LIB_DIR or self.src.startswith(WORKING_DIR)]
 
     def generate_log_name(self, value):
         hash = hashlib.md5(value).hexdigest()[:10]
@@ -90,7 +100,8 @@ class JediServer:
     def make_script(self, req_data):
         return jedi.api.Script(
             source=req_data['contents'], line=req_data['line'] + 1,
-            column=req_data['column'], path=self.src)
+            column=req_data['column'], path=self.src,
+            sys_path=self.sys_path)
 
     def get_description(self, completion):
         description = completion.docstring()
