@@ -650,7 +650,7 @@ describe('TreeRootComponent', () => {
         });
       });
 
-      it('selects the node if it is not a container', () => {
+      it('selects and confirms the node if it is not a container', () => {
         waitsForPromise(async () => {
           invariant(renderComponent);
           const component = renderComponent(props);
@@ -664,7 +664,7 @@ describe('TreeRootComponent', () => {
           expect(component.getSelectedNodes()).toEqual([nodes.J]);
 
           invariant(onConfirmSelection);
-          expect(onConfirmSelection.callCount).toBe(0);
+          expect(onConfirmSelection.callCount).toBe(1);
         });
       });
 

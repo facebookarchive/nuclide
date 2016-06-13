@@ -553,6 +553,10 @@ class DiffViewModel {
     if (filePath === this._activeFileState.filePath) {
       return;
     }
+    this._setActiveFileState({
+      ...getInitialFileChangeState(),
+      filePath,
+    });
     this._activeSubscriptions.dispose();
     this._activeSubscriptions = new CompositeDisposable();
     // TODO(most): Show progress indicator: t8991676

@@ -120,7 +120,12 @@ class DiffViewComponent extends React.Component {
 
   componentDidMount(): void {
     const {diffModel} = this.props;
-    this._subscriptions.add(diffModel.onActiveFileUpdates(this._updateLineDiffState));
+    this._subscriptions.add(diffModel.onActiveFileUpdates(activeFileState => {
+      this._updateLineDiffState(activeFileState);
+      // The diff tree needs to update the active diffed file.
+      // TODO(most): merge ActiveFileState into DiffModel's State.
+      this._renderTree();
+    }));
     this._subscriptions.add(diffModel.onDidUpdateState(this._onModelStateChange));
     this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem(activeItem => {
       if (activeItem != null && (activeItem: any).tagName === 'NUCLIDE-DIFF-VIEW') {

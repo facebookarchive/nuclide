@@ -193,8 +193,7 @@ export const TreeRootComponent = React.createClass({
       selectedKeys: new Set([node.getKey()]),
     });
 
-    if (!this._isNodeSelected(node) &&
-        (node.isContainer() || !atom.config.get('tabs.usePreviewTabs'))) {
+    if (!this._isNodeSelected(node) && node.isContainer()) {
       // User clicked on a new directory or the user isn't using the "Preview Tabs" feature of the
       // `tabs` package, so don't toggle the node's state any further yet.
       return;
