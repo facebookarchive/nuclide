@@ -10,8 +10,8 @@
  */
 
 import type {Subscription} from 'rxjs';
-import type {ProcessMessage} from './process';
 import type {ServiceRegistry} from '../nuclide-rpc';
+import type {ProcessMessage} from './process-types';
 
 import {StreamTransport, RpcConnection} from '../nuclide-rpc';
 import {getOutputStream} from './process';

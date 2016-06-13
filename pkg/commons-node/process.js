@@ -10,6 +10,7 @@
  */
 
 import type {Observer} from 'rxjs';
+import type {ProcessMessage} from './process-types';
 
 import child_process from 'child_process';
 import invariant from 'assert';
@@ -43,25 +44,6 @@ export type AsyncExecuteOptions = child_process$spawnOpts & {
   // Timeout (in milliseconds).
   timeout?: number;
 };
-
-export type ProcessMessage = StdoutMessage | StderrMessage | ExitMessage | ErrorMessage;
-export type StdoutMessage = {
-  kind: 'stdout';
-  data: string;
-};
-export type StderrMessage = {
-  kind: 'stderr';
-  data: string;
-};
-export type ExitMessage = {
-  kind: 'exit';
-  exitCode: number;
-};
-export type ErrorMessage = {
-  kind: 'error';
-  error: Object;
-};
-
 
 let platformPathPromise: ?Promise<string>;
 
