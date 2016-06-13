@@ -312,6 +312,12 @@ atom-text-editor[mini].nuclide-console-filter-field {
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
 
+  &.is-focused {
+    // When focused, layer this on top of the regexp button so that the outline
+    // overlays it.
+    z-index: 1;
+  }
+
   &.invalid {
     background-color: @nuclide-console-record-background-color-error;
     color: @nuclide-console-record-text-color-error;
@@ -320,7 +326,8 @@ atom-text-editor[mini].nuclide-console-filter-field {
 }
 
 .btn.nuclide-console-filter-regexp-button {
-  border-left: 0;
+  position: relative;
+  left: -1px;
   font-weight: bold;
   font-family: Menlo, monospace;
 }
