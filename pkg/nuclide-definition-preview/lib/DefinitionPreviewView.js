@@ -114,6 +114,7 @@ export class DefinitionPreviewView extends ObservingComponent<PreviewContent> {
           textBuffer={textBuffer}
           grammar={content.grammar}
           syncTextContents={false}
+          autoGrow={true}
         />
       </div>;
   }
