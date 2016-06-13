@@ -69,16 +69,11 @@ export default class ConnectionDetailsPrompt extends React.Component<void, Props
   getPrefilledConnectionParams(): ?NuclideRemoteConnectionParams {
     // If there are profiles, pre-fill the form with the information from the
     // specified selected profile.
-    if (this.props.connectionProfiles &&
-        this.props.connectionProfiles.length &&
+    if (this.props.connectionProfiles != null &&
+        this.props.connectionProfiles.length > 0 &&
         this.props.indexOfSelectedConnectionProfile != null) {
-      let indexToSelect = this.props.indexOfSelectedConnectionProfile;
-      if (indexToSelect >= this.props.connectionProfiles.length) {
-        // This logic protects us from incorrect indices passed from above, and
-        // allows us to passively account for profiles being deleted.
-        indexToSelect = this.props.connectionProfiles.length - 1;
-      }
-      const selectedProfile = this.props.connectionProfiles[indexToSelect];
+      const selectedProfile =
+        this.props.connectionProfiles[this.props.indexOfSelectedConnectionProfile];
       return selectedProfile.params;
     }
   }
