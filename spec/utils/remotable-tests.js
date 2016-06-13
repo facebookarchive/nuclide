@@ -44,6 +44,10 @@ class LocalTestContext {
     });
 
     afterEach(() => {
+      if (this._projectPath != null) {
+        setLocalProject([]);
+        this._projectPath = null;
+      }
       deactivateAllPackages();
     });
   }
@@ -79,6 +83,8 @@ class RemoteTestContext {
       waitsForPromise(async () => {
         if (this._connection != null) {
           await stopNuclideServer(this._connection);
+          this._connection = null;
+          this._remoteProjectPath = null;
         }
         deactivateAllPackages();
       });
