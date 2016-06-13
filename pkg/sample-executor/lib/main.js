@@ -38,7 +38,10 @@ export function consumeRegisterExecutor(registerExecutor: RegisterExecutorFuncti
       send(code: string): void {
         messages.next({
           level: 'log',
-          text: code,
+          result: {
+            value: code,
+            _type: 'string',
+          },
         });
       },
       output: messages.asObservable(),
