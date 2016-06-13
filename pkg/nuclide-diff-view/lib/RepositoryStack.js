@@ -50,6 +50,7 @@ export default class RepositoryStack {
   _serializedUpdateStackState: () => Promise<void>;
   _serializedUpdateSelectedFileChanges: () => Promise<void>;
   _revisionIdToFileChanges: LRUCache<number, RevisionFileChanges>;
+  _fileContentsAtCommitIds: LRUCache<number, Map<NuclideUri, string>>;
   _diffOption: DiffOptionType;
 
   constructor(repository: HgRepositoryClient, diffOption: DiffOptionType) {
@@ -60,6 +61,7 @@ export default class RepositoryStack {
     this._selectedFileChanges = new Map();
     this._isActive = false;
     this._revisionIdToFileChanges = new LRU({max: 100});
+    this._fileContentsAtCommitIds = new LRU({max: 20});
     this._selectedCompareCommitId = null;
     this._lastRevisionsState = null;
     this._diffOption = diffOption;
@@ -108,6 +110,7 @@ export default class RepositoryStack {
   deactivate(): void {
     this._isActive = false;
     this._revisionsStatePromise = null;
+    this._fileContentsAtCommitIds.reset();
   }
 
   @trackTiming('diff-view.update-change-status')
@@ -364,33 +367,45 @@ export default class RepositoryStack {
     const {revisions, commitId} = revisionsState;
     // When `compareCommitId` is null, the `HEAD` commit contents is compared
     // to the filesystem, otherwise it compares that commit to filesystem.
-    let compareCommitId = null;
+    let compareCommitId;
     switch (this._diffOption) {
       case DiffOption.DIRTY:
-        compareCommitId = null;
+        compareCommitId = commitId;
         break;
       case DiffOption.LAST_COMMIT:
-        compareCommitId = revisions.length <= 1
-          ? null
-          : revisions[revisions.length - 2].id;
+        compareCommitId = revisions.length > 1
+          ? revisions[revisions.length - 2].id
+          : commitId;
         break;
       case DiffOption.COMPARE_COMMIT:
-        compareCommitId = revisionsState.compareCommitId;
+        compareCommitId = revisionsState.compareCommitId || commitId;
         break;
       default:
         throw new Error(`Invalid Diff Option: ${this._diffOption}`);
     }
-    const committedContents = await this._repository
-      .fetchFileContentAtRevision(filePath, compareCommitId ? `${compareCommitId}` : null)
-      // If the file didn't exist on the previous revision, return empty contents.
-      .catch(_err => '');
 
-    const fetchedRevisionId = compareCommitId != null ? compareCommitId : commitId;
-    const [revisionInfo] = revisions.filter(revision => revision.id === fetchedRevisionId);
+    const [revisionInfo] = revisions.filter(revision => revision.id === compareCommitId);
     invariant(
       revisionInfo,
-      `Diff Viw Fetcher: revision with id ${fetchedRevisionId} not found`,
+      `Diff Viw Fetcher: revision with id ${compareCommitId} not found`,
     );
+
+    if (!this._fileContentsAtCommitIds.has(compareCommitId)) {
+      this._fileContentsAtCommitIds.set(compareCommitId, new Map());
+    }
+    const fileContentsAtCommit = this._fileContentsAtCommitIds.get(compareCommitId);
+    let committedContents;
+    if (fileContentsAtCommit.has(filePath)) {
+      committedContents = fileContentsAtCommit.get(filePath);
+      invariant(committedContents != null);
+    } else {
+      committedContents = await this._repository
+        .fetchFileContentAtRevision(filePath, compareCommitId.toString())
+        // If the file didn't exist on the previous revision, return empty contents.
+        .catch(_err => '');
+      fileContentsAtCommit.set(filePath, committedContents);
+    }
+
     return {
       committedContents,
       revisionInfo,
@@ -459,6 +474,7 @@ export default class RepositoryStack {
   }
 
   dispose(): void {
+    this.deactivate();
     this._subscriptions.dispose();
     this._dirtyFileChanges.clear();
     this._selectedFileChanges.clear();
