@@ -26,7 +26,7 @@ export default class CodeFormatHelpers {
     const src = editor.getPath();
     if (!src) {
       return {
-        formatted: buffer.getTextInRange(range),
+        formatted: buffer.getText(),
       };
     }
 
@@ -45,7 +45,7 @@ export default class CodeFormatHelpers {
     } catch (e) {
       atom.notifications.addError('Failed to format code. Error: ' + e.message);
       return {
-        formatted: buffer.getTextInRange(range),
+        formatted: buffer.getText(),
       };
     }
   }
