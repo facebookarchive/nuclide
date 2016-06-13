@@ -25,6 +25,16 @@ export type AppState = {
   visible: boolean;
 };
 
+type BuildProgressEvent = {
+  kind: 'progress';
+  progress: ?number;
+};
+
+/**
+ * Currently, there's only one type of build event, but we may add more (e.g. status).
+ */
+export type BuildEvent = BuildProgressEvent;
+
 export type SerializedAppState = {
   previousSessionActiveBuildSystemId: ?string;
   previousSessionActiveTaskType: ?string;
