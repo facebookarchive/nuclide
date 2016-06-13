@@ -49,17 +49,24 @@ type Props = {
  * 'profiles'. Clicking on a 'profile' in the NuclideListSelector auto-fills
  * the form with the information associated with that profile.
  */
-export default class ConnectionDetailsPrompt extends React.Component<void, Props, void> {
+export default class ConnectionDetailsPrompt extends React.Component {
   props: Props;
-
-  _idToConnectionProfile: ?Map<string, NuclideRemoteConnectionProfile>;
-  _boundOnProfileClicked: (profileId: string) => void;
-  _boundOnDeleteProfileClicked: (profileId: ?string) => void;
 
   constructor(props: Props) {
     super(props);
-    this._boundOnProfileClicked = this._onProfileClicked.bind(this);
-    this._boundOnDeleteProfileClicked = this._onDeleteProfileClicked.bind(this);
+    (this: any)._onProfileClicked = this._onProfileClicked.bind(this);
+    (this: any)._onDeleteProfileClicked = this._onDeleteProfileClicked.bind(this);
+  }
+
+  componentDidUpdate() {
+    // We have to manually update the contents of an existing ConnectionDetailsForm,
+    // because it contains AtomInput components (which don't update their contents
+    // when their props change).
+    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    if (existingConnectionDetailsForm) {
+      existingConnectionDetailsForm.setFormFields(this.getPrefilledConnectionParams());
+      existingConnectionDetailsForm.clearPassword();
+    }
   }
 
   getFormFields(): NuclideRemoteConnectionParamsWithPassword {
@@ -78,15 +85,17 @@ export default class ConnectionDetailsPrompt extends React.Component<void, Props
     }
   }
 
-  componentDidUpdate() {
-    // We have to manually update the contents of an existing ConnectionDetailsForm,
-    // because it contains AtomInput components (which don't update their contents
-    // when their props change).
-    const existingConnectionDetailsForm = this.refs['connection-details-form'];
-    if (existingConnectionDetailsForm) {
-      existingConnectionDetailsForm.setFormFields(this.getPrefilledConnectionParams());
-      existingConnectionDetailsForm.clearPassword();
+  _onProfileClicked(profileId: string): void {
+    // The id of a profile is its index in the list of props.
+    this.props.onProfileClicked(parseInt(profileId, 10));
+  }
+
+  _onDeleteProfileClicked(profileId: ?string): void {
+    if (profileId == null) {
+      return;
     }
+    // The id of a profile is its index in the list of props.
+    this.props.onDeleteProfileClicked(parseInt(profileId, 10));
   }
 
   render(): React.Element<any> {
@@ -122,10 +131,10 @@ export default class ConnectionDetailsPrompt extends React.Component<void, Props
             <MutableListSelector
               items={listSelectorItems}
               idOfSelectedItem={idOfSelectedItem}
-              onItemClicked={this._boundOnProfileClicked}
+              onItemClicked={this._onProfileClicked}
               onItemDoubleClicked={this.props.onConfirm}
               onAddButtonClicked={this.props.onAddProfileClicked}
-              onDeleteButtonClicked={this._boundOnDeleteProfileClicked}
+              onDeleteButtonClicked={this._onDeleteProfileClicked}
             />
           </div>
           <div className="connection-details-form col-xs-9">
@@ -145,18 +154,5 @@ export default class ConnectionDetailsPrompt extends React.Component<void, Props
         </div>
       </div>
     );
-  }
-
-  _onProfileClicked(profileId: string): void {
-    // The id of a profile is its index in the list of props.
-    this.props.onProfileClicked(parseInt(profileId, 10));
-  }
-
-  _onDeleteProfileClicked(profileId: ?string): void {
-    if (profileId == null) {
-      return;
-    }
-    // The id of a profile is its index in the list of props.
-    this.props.onDeleteProfileClicked(parseInt(profileId, 10));
   }
 }
