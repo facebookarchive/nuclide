@@ -32,4 +32,4 @@ module.use_strict=true
 experimental.strict_type_args=true
 
 [version]
-0.26.0
+0.27.0
