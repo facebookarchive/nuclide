@@ -20,6 +20,7 @@ import {describeRemotableTest} from './utils/remotable-tests';
 import {
   getAutocompleteView,
   getAutocompleteSuggestions,
+  getAutocompleteDescription,
   waitsForAutocompleteSuggestions,
 } from './utils/autocomplete-common';
 
@@ -64,7 +65,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
 
     runs(() => {
       // Trigger autocompletion.
-      textEditor.setCursorBufferPosition([12, 0]);
+      textEditor.setCursorBufferPosition([13, 0]);
       textEditor.insertText('t.');
       textEditor.insertText('m');
     });
@@ -84,6 +85,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
         leftLabel: 'int',
         rightLabel: 'Field',
       });
+      expect(getAutocompleteDescription()).toBe('Test documentation');
 
       // Confirm autocomplete.
       dispatchKeyboardEvent('enter', document.activeElement);
@@ -135,7 +137,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
       });
 
       // Trigger a datatip on t
-      textEditor.setCursorBufferPosition([11, 17]);
+      textEditor.setCursorBufferPosition([12, 17]);
       atom.commands.dispatch(textEditorView, 'nuclide-datatip:toggle');
     });
 
@@ -150,7 +152,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
       expect(datatip.getModel().getText()).toBe('TestClass<int>');
 
       // Hyperclick on TestClass
-      textEditor.setCursorBufferPosition([11, 10]);
+      textEditor.setCursorBufferPosition([12, 10]);
       // hyperclick:confirm-cursor
       dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
     });
