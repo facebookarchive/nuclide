@@ -25,21 +25,11 @@ export type AgentOptions = {
   cert: Buffer;
 };
 
-function setupServer(): void {
-  try {
-    // $FlowFB
-    require('./fb/setup').setupServer();
-  } catch (e) {
-    // Swallow the error while runing in open sourced version.
-  }
-}
-
 async function main(args) {
   const serverStartTimer = startTracking('nuclide-server:start');
   process.on('SIGHUP', () => {});
 
   try {
-    setupServer();
     const {port} = args;
     let {key, cert, ca} = args;
     if (key && cert && ca) {
