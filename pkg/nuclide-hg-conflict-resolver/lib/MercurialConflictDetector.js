@@ -79,10 +79,18 @@ export class MercurialConflictDetector {
     if (repository.isInConflict()) {
       this._mercurialConflictContext.setConflictingRepository(repository);
       conflictsApi.showForContext(this._mercurialConflictContext);
+      atom.notifications.addWarning(
+        'Nuclide detected merge conflicts in your active project\'s repository', {
+          detail: 'Use the conflicts resolver UI below to help resolve them',
+          nativeFriendly: true,
+        },
+      );
     } else {
-      const cleared = this._mercurialConflictContext.clearConflictingRepository(repository);
-      if (cleared) {
+      const toClear = this._mercurialConflictContext.getConflictingRepository() === repository;
+      if (toClear) {
+        this._mercurialConflictContext.clearConflictState();
         conflictsApi.hideForContext(this._mercurialConflictContext);
+        atom.notifications.addInfo('Conflicts resolved outside of Nuclide');
         getLogger().info('Conflicts resolved outside of Nuclide');
       }
     }
