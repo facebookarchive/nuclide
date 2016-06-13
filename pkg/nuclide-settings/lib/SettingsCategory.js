@@ -25,33 +25,51 @@ export default class SettingsCategory extends React.Component {
   props: Props;
 
   render(): React.Element<any> {
-    const elements = [];
 
-    // Category title.
-    elements.push(<h1>{this.props.name}</h1>);
-
-    Object.keys(this.props.packages).sort().forEach(pkgName => {
+    const children = Object.keys(this.props.packages).sort().map(pkgName => {
       const pkgData = this.props.packages[pkgName];
-
-      // Package title.
-      elements.push(<h2>{pkgData.title}</h2>);
-
       const settingsArray = getSortedSettingsArray(pkgData.settings, pkgName);
-      settingsArray.forEach(settingName => {
+      const elements = settingsArray.map(settingName => {
         const settingData = pkgData.settings[settingName];
         const settingElement = renderSetting(pkgName, settingData);
-        elements.push(
-          <div className="control-group">
-            <div className="controls">
-              {settingElement}
-            </div>
-          </div>
+        return (
+          <ControlGroup key={settingName}>{settingElement}</ControlGroup>
         );
       });
+      // We create a control group for the whole group of controls and then another for each
+      // individual one. Why? Because that's what Atom does in its settings view.
+      return (
+        <ControlGroup key={pkgName}>
+          <section className="sub-section">
+            {/* Package title. */}
+            <h2 className="sub-section-heading">{pkgData.title}</h2>
+            <div className="sub-section-body">
+              {elements}
+            </div>
+          </section>
+        </ControlGroup>
+      );
     });
 
-    return (<div>{elements}</div>);
+    return (
+      <section className="section settings-panel">
+        {/* Category Title */}
+        <h1 className="block section-heading icon icon-gear">{this.props.name} Settings</h1>
+        {children}
+      </section>
+    );
   }
+
+}
+
+function ControlGroup(props: {children?: React.Children}): React.Element<any> {
+  return (
+    <div className="control-group">
+      <div className="controls">
+        {props.children}
+      </div>
+    </div>
+  );
 }
 
 function getSortedSettingsArray(settings: Object, pkgName: string): Array<string> {

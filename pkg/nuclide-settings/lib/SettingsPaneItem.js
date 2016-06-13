@@ -139,8 +139,11 @@ export default class NuclideSettingsPaneItem extends React.Component {
     return (
       <div className="pane-item padded settings-gadgets-pane">
         <div className="settings-view">
-          <div className="settings-panel">
-            {elements}
+          <div className="panels">
+            <div className="panels-item">
+              <form className="general-panel section" />
+              {elements}
+            </div>
           </div>
         </div>
       </div>
