@@ -18,6 +18,11 @@ import {
   jasmineIntegrationTestSetup,
   waitsForFile, waitsForFilePosition,
 } from '../pkg/nuclide-integration-test-helpers';
+import {
+  getAutocompleteView,
+  getAutocompleteSuggestions,
+  waitsForAutocompleteSuggestions,
+} from './utils/autocomplete-common';
 
 import path from 'path';
 
@@ -34,7 +39,6 @@ describe('Clang Integration Test (objc)', () => {
   it('handles basic IDE commands', () => {
     let objcPath;
     let textEditor: atom$TextEditor;
-    let textEditorView: HTMLElement;
     waitsForPromise({timeout: 60000}, async () => {
       jasmineIntegrationTestSetup();
       // Activate atom packages.
@@ -42,7 +46,6 @@ describe('Clang Integration Test (objc)', () => {
 
       objcPath = await copyFixture('objc_project_1');
       textEditor = await atom.workspace.open(path.join(objcPath, 'Hello.m'));
-      textEditorView = atom.views.getView(textEditor);
     });
 
     waitsForFile('Hello.m');
@@ -63,23 +66,19 @@ describe('Clang Integration Test (objc)', () => {
       textEditor.insertText('O');
     });
 
-    let autocompleteMenuView: HTMLElement;
-    waitsFor('autocomplete suggestions to render', 10000, () => {
-      autocompleteMenuView = textEditorView.querySelector('.autocomplete-plus');
-      if (autocompleteMenuView != null) {
-        return autocompleteMenuView.querySelector('.right-label');
-      }
-      return null;
-    });
+    waitsForAutocompleteSuggestions();
 
     runs(() => {
-      // The first result should be NSObject, with an annotated type.
-      expect(autocompleteMenuView.querySelector('.right-label').innerText).toBe('ObjCInterface');
-      expect(autocompleteMenuView.querySelector('.word').innerText).toBe('NSObject');
+      const items = getAutocompleteSuggestions();
+      expect(items[0]).toEqual({
+        word: 'NSObject',
+        leftLabel: '',
+        rightLabel: 'ObjCInterface',
+      });
 
       // Confirm autocomplete.
       dispatchKeyboardEvent('enter', document.activeElement);
-      expect(textEditorView.querySelector('.autocomplete-plus')).not.toExist();
+      expect(getAutocompleteView()).not.toExist();
       const lineText = textEditor.lineTextForBufferRow(textEditor.getCursorBufferPosition().row);
       expect(lineText).toBe('{NSObject');
 

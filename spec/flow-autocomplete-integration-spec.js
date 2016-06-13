@@ -13,7 +13,15 @@ import {
   busySignal,
   copyFixture,
 } from '../pkg/nuclide-integration-test-helpers';
+
 import {describeRemotableTest} from './utils/remotable-tests';
+
+import {
+  getAutocompleteView,
+  getAutocompleteSuggestions,
+  getAutocompleteDescription,
+  waitsForAutocompleteSuggestions,
+} from './utils/autocomplete-common';
 
 describeRemotableTest('Flow Autocomplete', context => {
   it('tests simple autocomplete example', () => {
@@ -45,28 +53,20 @@ describeRemotableTest('Flow Autocomplete', context => {
       textEditor.insertText('n');
     });
 
-    let autocompleteMenuView: HTMLElement = (null : any);
-    waitsFor('autocomplete suggestions to render', 10000, () => {
-      autocompleteMenuView = textEditorView.querySelector('.autocomplete-plus');
-      if (autocompleteMenuView != null) {
-        return autocompleteMenuView.querySelector('.right-label');
-      }
-      return autocompleteMenuView;
-    });
+    waitsForAutocompleteSuggestions();
 
     runs(() => {
-      // Check autocomplete box renders.
-      expect(autocompleteMenuView).toExist();
-
-      // Check type annotations exist and are correct.
-      expect(autocompleteMenuView.querySelector('.right-label').innerText).toBe('number');
-      const typeHintView = autocompleteMenuView.querySelector('.suggestion-description-content');
-      expect(typeHintView).toExist();
-      expect(typeHintView.innerText).toBe('number');
+      const items = getAutocompleteSuggestions();
+      expect(items[0]).toEqual({
+        word: 'num',
+        leftLabel: '',
+        rightLabel: 'number',
+      });
+      expect(getAutocompleteDescription()).toBe('number');
 
       // Confirm autocomplete.
       atom.commands.dispatch(textEditorView, 'autocomplete-plus:confirm');
-      expect(textEditorView.querySelector('.autocomplete-plus')).not.toExist();
+      expect(getAutocompleteView()).not.toExist();
       const lineText = textEditor.lineTextForBufferRow(textEditor.getCursorBufferPosition().row);
       expect(lineText).toBe('num');
     });

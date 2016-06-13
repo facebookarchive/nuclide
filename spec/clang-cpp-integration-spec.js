@@ -17,14 +17,11 @@ import {
   waitsForFilePosition,
 } from '../pkg/nuclide-integration-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
-
-function getAutocompleteData(node) {
-  return {
-    text: node.querySelector('.word').innerText,
-    type: node.querySelector('.left-label').innerText,
-    kind: node.querySelector('.right-label').innerText,
-  };
-}
+import {
+  getAutocompleteView,
+  getAutocompleteSuggestions,
+  waitsForAutocompleteSuggestions,
+} from './utils/autocomplete-common';
 
 function getOutlineData(node) {
   return {
@@ -72,32 +69,25 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
       textEditor.insertText('m');
     });
 
-    let autocompleteMenuView: HTMLElement;
-    waitsFor('autocomplete suggestions to render', 10000, () => {
-      autocompleteMenuView = textEditorView.querySelector('.autocomplete-plus');
-      if (autocompleteMenuView != null) {
-        return autocompleteMenuView.querySelector('.right-label');
-      }
-      return null;
-    });
+    waitsForAutocompleteSuggestions();
 
     runs(() => {
-      const items = autocompleteMenuView.querySelectorAll('li');
+      const items = getAutocompleteSuggestions();
       expect(items.length).toBeGreaterThan(1);
-      expect(getAutocompleteData(items[0])).toEqual({
-        text: 'method()',
-        type: 'void',
-        kind: 'CXXMethod',
+      expect(items[0]).toEqual({
+        word: 'method()',
+        leftLabel: 'void',
+        rightLabel: 'CXXMethod',
       });
-      expect(getAutocompleteData(items[1])).toEqual({
-        text: 'member',
-        type: 'int',
-        kind: 'Field',
+      expect(items[1]).toEqual({
+        word: 'member',
+        leftLabel: 'int',
+        rightLabel: 'Field',
       });
 
       // Confirm autocomplete.
       dispatchKeyboardEvent('enter', document.activeElement);
-      expect(textEditorView.querySelector('.autocomplete-plus')).not.toExist();
+      expect(getAutocompleteView()).not.toExist();
       const lineText = textEditor.lineTextForBufferRow(textEditor.getCursorBufferPosition().row);
       expect(lineText).toBe('t.method()}');
 

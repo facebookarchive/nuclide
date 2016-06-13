@@ -18,13 +18,16 @@ import {
   waitsForFile,
   waitsForFilePosition,
 } from '../pkg/nuclide-integration-test-helpers';
+import {
+  getAutocompleteSuggestions,
+  waitsForAutocompleteSuggestions,
+} from './utils/autocomplete-common';
 
 import path from 'path';
 
 describe('Python Integration Test', () => {
   let pyProjPath;
   let textEditor: atom$TextEditor = (null : any);
-  let textEditorView: HTMLElement = (null : any);
 
   beforeEach(() => {
     waitsForPromise({timeout: 60000}, async () => {
@@ -34,7 +37,6 @@ describe('Python Integration Test', () => {
 
       pyProjPath = await copyFixture('python_project_1');
       textEditor = await atom.workspace.open(path.join(pyProjPath, 'Foo.py'));
-      textEditorView = atom.views.getView(textEditor);
     });
 
     waitsForFile('Foo.py');
@@ -45,7 +47,6 @@ describe('Python Integration Test', () => {
     deactivateAllPackages();
   });
 
-
   it('gives autocomplete suggestions', () => {
     runs(() => {
       // Trigger autocompletion.
@@ -54,18 +55,16 @@ describe('Python Integration Test', () => {
       textEditor.insertText('t');
     });
 
-    let autocompleteMenuView: HTMLElement;
-    waitsFor('autocomplete suggestions to render', 10000, () => {
-      autocompleteMenuView = textEditorView.querySelector('.autocomplete-plus');
-      if (autocompleteMenuView != null) {
-        return autocompleteMenuView.querySelector('.right-label');
-      }
-      return null;
-    });
+    waitsForAutocompleteSuggestions();
 
     runs(() => {
+      const items = getAutocompleteSuggestions();
       // The first suggestion should be 'path' as in 'os.path'.
-      expect(autocompleteMenuView.querySelector('.word').innerText).toBe('path');
+      expect(items[0]).toEqual({
+        word: 'path',
+        leftLabel: '',
+        rightLabel: '',
+      });
     });
   });
 
