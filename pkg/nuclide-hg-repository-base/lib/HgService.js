@@ -153,7 +153,7 @@ export type VcsLogResponse = {
 };
 
 export type MergeConflict = {
-  path: NuclideUri;
+  path: string;
   message: MergeConflictStatusValue;
 };
 
@@ -192,6 +192,7 @@ export class HgService {
   _rebaseStateFilePath: string;
   _watchmanClient: ?WatchmanClient;
   _hgDirWatcher: ?fs.FSWatcher;
+  _origBackupPath: ?string;
 
   _workingDirectory: string;
   _filesDidChangeObserver: Subject<any>;
@@ -652,7 +653,7 @@ export class HgService {
       cwd: this._workingDirectory,
     };
     try {
-      return (await this._hgAsyncExecute(args, execOptions)).stdout;
+      return (await this._hgAsyncExecute(args, execOptions)).stdout.trim();
     } catch (e) {
       getLogger().error(
         `Failed to fetch Hg config for key ${key}.  Error: ${e.toString()}`
@@ -864,10 +865,11 @@ export class HgService {
     const conflictedFiles = fileListStatuses.filter(fileStatus => {
       return fileStatus.status === StatusCodeId.UNRESOLVED;
     });
+    const origBackupPath = await this._getOrigBackupPath();
     const conflicts = await Promise.all(conflictedFiles.map(async conflictedFile => {
       let message;
       // Heuristic: If the `.orig` file doesn't exist, then it's deleted by the rebasing commit.
-      if (await this._checkOrigFile(conflictedFile.path)) {
+      if (await this._checkOrigFile(origBackupPath, conflictedFile.path)) {
         message = MergeConflictStatus.BOTH_CHANGED;
       } else {
         message = MergeConflictStatus.DELETED_IN_THEIRS;
@@ -880,9 +882,24 @@ export class HgService {
     return conflicts;
   }
 
-  _checkOrigFile(filePath: string): Promise<boolean> {
-    const origFilePath = path.join(this._workingDirectory, filePath + '.orig');
-    return fsPromise.exists(origFilePath);
+  async _getOrigBackupPath(): Promise<string> {
+    if (this._origBackupPath == null) {
+      const relativeBackupPath = await this.getConfigValueAsync('ui.origbackuppath');
+      if (relativeBackupPath == null) {
+        this._origBackupPath = this._workingDirectory;
+      } else {
+        this._origBackupPath = path.join(this._workingDirectory, relativeBackupPath);
+      }
+    }
+    return this._origBackupPath;
+  }
+
+  async _checkOrigFile(origBackupPath: string, filePath: string): Promise<boolean> {
+    const origFilePath = path.join(origBackupPath, `${filePath}.orig`);
+    logger.info('origBackupPath:', origBackupPath);
+    logger.info('filePath:', filePath);
+    logger.info('origFilePath:', origFilePath);
+    return await fsPromise.exists(origFilePath);
   }
 
   resolveConflictedFile(filePath: NuclideUri): Promise<void> {

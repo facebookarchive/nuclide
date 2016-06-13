@@ -400,9 +400,10 @@ describe('HgService', () => {
     const relativePath2 = relativize(PATH_2);
 
     beforeEach(() => {
-      spyOn(hgService, '_checkOrigFile').andCallFake(relativePath => {
+      spyOn(hgService, '_checkOrigFile').andCallFake((origbackupPath, relativePath) => {
         return relativePath === relativePath1;
       });
+      spyOn(hgService, '_getOrigBackupPath').andReturn(Promise.resolve(TEST_WORKING_DIRECTORY));
       spyOn(hgService, '_hgAsyncExecute').andReturn({
         stdout: JSON.stringify([
           {path: relativePath1, status: StatusCodeId.UNRESOLVED},
