@@ -1,70 +1,19 @@
-/* @flow */
-
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
+ *
+ * @flow
  */
 
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-import {keyMirror} from '../../commons-node/collection';
-
 // NOTE that the definitions in this file are shared between
 // the ClangService and ClangProcessService.
 
-
-// Maps clang's cursor types to the actual declaration types: for a full list see
-// https://github.com/llvm-mirror/clang/blob/master/include/clang/Basic/DeclNodes.td
-//
-// Keep in sync with the clang Python binding (../fb/lib/python/clang/cindex.py)
-// The order of the keys matches the ordering in cindex.py.
-export const ClangCursorToDeclarationTypes = Object.freeze({
-  UNEXPOSED_DECL: '',
-  STRUCT_DECL: 'Record',
-  UNION_DECL: 'Record',
-  CLASS_DECL: 'CXXRecord',
-  ENUM_DECL: 'Enum',
-  FIELD_DECL: 'Field',
-  ENUM_CONSTANT_DECL: 'EnumConstant',
-  FUNCTION_DECL: 'Function',
-  VAR_DECL: 'Var',
-  PARM_DECL: 'ParmVar',
-  OBJC_INTERFACE_DECL: 'ObjCInterface',
-  OBJC_CATEGORY_DECL: 'ObjCCategory',
-  OBJC_PROTOCOL_DECL: 'ObjCProtocol',
-  OBJC_PROPERTY_DECL: 'ObjCProperty',
-  OBJC_IVAR_DECL: 'ObjCIVar',
-  OBJC_INSTANCE_METHOD_DECL: 'ObjCMethod',
-  OBJC_CLASS_METHOD_DECL: 'ObjCMethod',
-  OBJC_IMPLEMENTATION_DECL: 'ObjCImplementation',
-  OBJC_CATEGORY_IMPL_DECL: 'ObjCCategoryImpl',
-  TYPEDEF_DECL: 'Typedef',
-  CXX_METHOD: 'CXXMethod',
-  NAMESPACE: 'Namespace',
-  LINKAGE_SPEC: 'LinkageSpec',
-  CONSTRUCTOR: 'CXXConstructor',
-  DESTRUCTOR: 'CXXDestructor',
-  CONVERSION_FUNCTION: 'CXXConversion',
-  TEMPLATE_TYPE_PARAMETER: 'TemplateTypeParm',
-  TEMPLATE_NON_TYPE_PARAMETER: 'NonTypeTemplateParm',
-  TEMPLATE_TEMPLATE_PARAMETER: 'TemplateTemplateParm',
-  FUNCTION_TEMPLATE: 'FunctionTemplate',
-  CLASS_TEMPLATE: 'ClassTemplate',
-  CLASS_TEMPLATE_PARTIAL_SPECIALIZATION: 'ClassTemplatePartialSpecialization',
-  NAMESPACE_ALIAS: 'NamespaceAlias',
-  USING_DIRECTIVE: 'UsingDirective',
-  USING_DECLARATION: 'Using',
-  TYPE_ALIAS_DECL: 'TypeAlias',
-  OBJC_SYNTHESIZE_DECL: 'ObjCSynthesize',
-  OBJC_DYNAMIC_DECL: 'ObjCDynamic',
-  CXX_ACCESS_SPEC_DECL: 'AccessSpec',
-  OVERLOAD_CANDIDATE: 'Function',
-  MACRO_DEFINITION: 'Macro',
-});
 
 // TODO: Support enums in rpc3 framework.
 // export type ClangCursorType = $Enum<typeof ClangCursorToDeclarationTypes>;
@@ -158,5 +107,3 @@ export type ClangOutlineTree = {
   // Will be non-null for class-like containers only.
   children?: Array<ClangOutlineTree>;
 };
-
-export const ClangCursorTypes = keyMirror(ClangCursorToDeclarationTypes);

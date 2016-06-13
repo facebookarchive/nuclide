@@ -13,7 +13,7 @@ import type {ClangCompletion} from '../../nuclide-clang/lib/rpc-types';
 
 import {Point} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
-import {ClangCursorToDeclarationTypes} from '../../nuclide-clang/lib/rpc-types';
+import {ClangCursorToDeclarationTypes} from '../../nuclide-clang';
 import {getCompletions} from './libclang';
 
 const MAX_LINE_LENGTH = 120;
