@@ -13,6 +13,7 @@ import invariant from 'assert';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import {getServiceByNuclideUri} from '../../nuclide-client';
 import child_process from 'child_process';
+import typeof * as FlowService from '../../nuclide-flow-base';
 
 const DEFAULT_PORT = 9090;
 
@@ -41,7 +42,7 @@ export async function addRemoteProject(projectPath: string): Promise<?RemoteConn
  * Kills the nuclide server associated with `connection`, and closes the connection.
  */
 export async function stopNuclideServer(connection: RemoteConnection): Promise<void> {
-  const service =
+  const service: ?FlowService =
     getServiceByNuclideUri('FlowService', connection.getUriForInitialWorkingDirectory());
   invariant(service);
   service.dispose();
