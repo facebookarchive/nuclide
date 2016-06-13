@@ -6,7 +6,7 @@
 
 # Note: this file has intentionally invalid references to test autocompletion
 import os
-from decorated import Test
+from decorated import Test, Test2
 
 
 hello = os.path.isab
@@ -24,3 +24,4 @@ def test_fn():
     print(test_parent_name)
 
 a = Tes
+b = Test2()

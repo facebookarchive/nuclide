@@ -73,7 +73,7 @@ describe('PythonService', () => {
 
     it('classifies methods with @property decorators as properties', () => {
       waitsForPromise(async () => {
-        // line 17: a.t
+        // line 18: a.t
         const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 17, 3);
         invariant(response);
         expect(response.completions.length).toBeGreaterThan(0);
@@ -142,6 +142,41 @@ describe('PythonService', () => {
         expect(definition.type).toEqual('module');
         // Path is machine dependent, so just check that it exists and isn't empty.
         expect(definition.file.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('follows imports until a non-import definition when possible', () => {
+      waitsForPromise(async () => {
+        // line 17: a = Test()
+        const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 16, 7);
+        invariant(response);
+        expect(response.definitions.length).toBeGreaterThan(0);
+
+        const definition = response.definitions[0];
+        expect(definition.text).toEqual('Test');
+        expect(definition.type).toEqual('class');
+        // Result should be the class definition itself, not the import statement.
+        expect(definition.file.endsWith('decorated.py')).toBeTruthy();
+        expect(definition.line).toEqual(9);
+        expect(definition.column).toEqual(6);
+      });
+    });
+
+    it('follows imports until the furthest unresolvable import statement', () => {
+      waitsForPromise(async () => {
+        // line 27: b = Test2()
+        const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 26, 7);
+        invariant(response);
+        expect(response.definitions.length).toBeGreaterThan(0);
+
+        const definition = response.definitions[0];
+        expect(definition.text).toEqual('Test2');
+        expect(definition.type).toEqual('import');
+        // Result should be the import statement in decorated.py, since it's not
+        // possible to follow further (the module doesn't exist in this case).
+        expect(definition.file.endsWith('decorated.py')).toBeTruthy();
+        expect(definition.line).toEqual(6);
+        expect(definition.column).toEqual(19);
       });
     });
 

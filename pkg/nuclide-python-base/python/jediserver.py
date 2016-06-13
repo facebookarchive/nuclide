@@ -144,6 +144,20 @@ class JediServer:
             results.append(result)
         return results
 
+    def follow_imports(self, definition):
+        # Iteratively follow a definition until a non-import definition is found.
+        result = definition
+        while result.type == 'import':
+            for assignment in definition.goto_assignments():
+                if assignment != result and assignment.module_path:
+                    result = assignment
+                    break
+            # Break out of while if no new result was found.
+            else:
+                break
+
+        return result
+
     def get_definitions(self, script):
         results = []
         definitions = script.goto_assignments()
@@ -151,7 +165,7 @@ class JediServer:
         for definition in definitions:
             if not definition.module_path:
                 continue
-            result = self.serialize_definition(definition)
+            result = self.serialize_definition(self.follow_imports(definition))
             results.append(result)
         return results
 
