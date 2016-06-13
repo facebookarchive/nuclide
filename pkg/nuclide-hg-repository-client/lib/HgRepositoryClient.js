@@ -931,6 +931,14 @@ export class HgRepositoryClient {
     return this._service.log(filePaths, limit);
   }
 
+  continueRebase(): Promise<void> {
+    return this._service.continueRebase();
+  }
+
+  abortRebase(): Promise<void> {
+    return this._service.abortRebase();
+  }
+
   _getStatusOption(options: ?HgStatusCommandOptions): ?HgStatusOptionValue {
     if (options == null) {
       return null;

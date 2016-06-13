@@ -889,4 +889,12 @@ export class HgService {
     return this._runSimpleInWorkingDirectory('resolve', ['-m', filePath]);
   }
 
+  continueRebase(): Promise<void> {
+    return this._runSimpleInWorkingDirectory('rebase', ['--continue']);
+  }
+
+  abortRebase(): Promise<void> {
+    return this._runSimpleInWorkingDirectory('rebase', ['--abort']);
+  }
+
 }

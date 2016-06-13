@@ -112,11 +112,18 @@ export class MercurialConflictContext {
 
   complete(wasRebasing: boolean): void {
     invariant(wasRebasing, 'Mercurial conflict resolver only handles rebasing');
+    invariant(this._hgRepository != null, 'merge conflicts complete with no active repository!');
+    const repository = this._hgRepository;
     const notification = atom.notifications.addSuccess('All Conflicts Resolved', {
       buttons: [{
         onDidClick() {
           notification.dismiss();
-          // TODO(most): run `hg rebase --continue`.
+          repository.continueRebase().catch(error => {
+            atom.notifications.addError(
+              'Failed to continue rebase\n' +
+              'You will have to run `hg rebase --continue` manually.'
+            );
+          });
         },
         text: 'Continue',
       }],
@@ -127,13 +134,20 @@ export class MercurialConflictContext {
 
   quit(wasRebasing: boolean): void {
     invariant(wasRebasing, 'Mercurial conflict resolver only handles rebasing');
+    invariant(this._hgRepository != null, 'merge conflicts quit with no active repository!');
+    const repository = this._hgRepository;
     const detail = 'Careful, you\'ve still got conflict markers left!\n' +
       'Click `Abort` if you just want to give up on this one and run: `hg rebase --abort`.';
     const notification = atom.notifications.addWarning('Maybe Later', {
       buttons: [{
         onDidClick() {
           notification.dismiss();
-          // TODO(most): run `hg rebase --abort`.
+          repository.abortRebase().catch(error => {
+            atom.notifications.addError(
+              'Failed to abort rebase\n' +
+              'You will have to run `hg rebase --abort` manually.'
+            );
+          });
         },
         text: 'Abort',
       }],
