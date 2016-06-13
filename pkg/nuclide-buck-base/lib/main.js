@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import typeof * as BuckService from './BuckProject';
 import type {BuckProject} from './BuckProject';
 
 import invariant from 'assert';
@@ -17,8 +18,8 @@ import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export {BuckProject} from './BuckProject';
 
-const buckProjectDirectoryByPath = new Map();
-const buckProjectForBuckProjectDirectory = new Map();
+const buckProjectDirectoryByPath: Map<string, string> = new Map();
+const buckProjectForBuckProjectDirectory: Map<string, BuckProject> = new Map();
 
 export function isBuckFile(filePath: string): boolean {
   // TODO(mbolin): Buck does have an option where the user can customize the
@@ -33,8 +34,8 @@ export function isBuckFile(filePath: string): boolean {
 export async function getBuckProjectRoot(filePath: string): Promise<?string> {
   let directory = buckProjectDirectoryByPath.get(filePath);
   if (!directory) {
-    const service = getServiceByNuclideUri('BuckProject', filePath);
-    invariant(service);
+    const service: ?BuckService = getServiceByNuclideUri('BuckProject', filePath);
+    invariant(service != null);
     directory = await service.BuckProject.getRootForPath(filePath);
     if (directory == null) {
       return null;
@@ -59,7 +60,7 @@ export async function getBuckProject(filePath: string): Promise<?BuckProject> {
     return buckProject;
   }
 
-  const buckService = getServiceByNuclideUri('BuckProject', filePath);
+  const buckService: ?BuckService = getServiceByNuclideUri('BuckProject', filePath);
   if (buckService) {
     buckProject = new buckService.BuckProject({rootPath});
     buckProjectForBuckProjectDirectory.set(rootPath, buckProject);
