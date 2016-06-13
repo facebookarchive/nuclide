@@ -86,6 +86,7 @@ export function consumeNuclideSideBar(sideBar: NuclideSideBarService): IDisposab
         projectBookmarks: state.projectBookmarks,
         projectDirectories: state.projectDirectories,
         projectRepositories: state.projectRepositories,
+        renameBookmark: commands.renameBookmark,
         updateToBookmark: commands.updateToBookmark,
       }));
 

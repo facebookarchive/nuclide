@@ -32,6 +32,7 @@ export default class Commands {
     // Bind to allow methods to be passed as callbacks.
     (this: any).createBookmark = this.createBookmark.bind(this);
     (this: any).deleteBookmark = this.deleteBookmark.bind(this);
+    (this: any).renameBookmark = this.renameBookmark.bind(this);
     (this: any).updateToBookmark = this.updateToBookmark.bind(this);
   }
 
@@ -59,6 +60,19 @@ export default class Commands {
 
     track('scsidebar-delete-bookmark');
     repositoryAsync.deleteBookmark(bookmark.bookmark);
+  }
+
+  renameBookmark(bookmark: BookmarkInfo, nextName: string, repository: atom$Repository): void {
+    const repositoryAsync = repository.async;
+    if (repositoryAsync.getType() !== 'hg') {
+      return;
+    }
+
+    // Type was checked with `getType`. Downcast to safely access members with Flow.
+    invariant(repositoryAsync instanceof HgRepositoryClientAsync);
+
+    track('scsidebar-rename-bookmark');
+    repositoryAsync.renameBookmark(bookmark.bookmark, nextName);
   }
 
   fetchProjectDirectories(): void {

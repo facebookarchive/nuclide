@@ -16,6 +16,7 @@ import {CompositeDisposable} from 'atom';
 import CreateBookmarkModalComponent from './CreateBookmarkModalComponent';
 import DeleteBookmarkModalComponent from './DeleteBookmarkModalComponent';
 import {React, ReactDOM} from 'react-for-atom';
+import RenameBookmarkModalComponent from './RenameBookmarkModalComponent';
 import RepositorySectionComponent from './RepositorySectionComponent';
 import remote from 'remote';
 import url from 'url';
@@ -28,6 +29,7 @@ type Props = {
   projectBookmarks: Map<string, Array<BookmarkInfo>>;
   projectDirectories: Array<Directory>;
   projectRepositories: Map<string, atom$Repository>;
+  renameBookmark: (bookmarkInfo: BookmarkInfo, nextName: string, repo: atom$Repository) => mixed;
   updateToBookmark: (bookmarkInfo: BookmarkInfo, repo: atom$Repository) => mixed;
 };
 
@@ -64,6 +66,7 @@ export default class SideBarComponent extends React.Component {
 
     (this: any)._confirmCreateBookmark = this._confirmCreateBookmark.bind(this);
     (this: any)._confirmDeleteBookmark = this._confirmDeleteBookmark.bind(this);
+    (this: any)._confirmRenameBookmark = this._confirmRenameBookmark.bind(this);
     (this: any)._destroyActiveModal = this._destroyActiveModal.bind(this);
     (this: any)._handleBookmarkClick = this._handleBookmarkClick.bind(this);
     (this: any)._handleBookmarkContextMenu = this._handleBookmarkContextMenu.bind(this);
@@ -103,6 +106,11 @@ export default class SideBarComponent extends React.Component {
 
   _confirmDeleteBookmark(bookmark: BookmarkInfo, repo: atom$Repository): void {
     this.props.deleteBookmark(bookmark, repo);
+    this.setState({activeModalComponent: null});
+  }
+
+  _confirmRenameBookmark(bookmark: BookmarkInfo, nextName: string, repo: atom$Repository): void {
+    this.props.renameBookmark(bookmark, nextName, repo);
     this.setState({activeModalComponent: null});
   }
 
@@ -175,6 +183,21 @@ export default class SideBarComponent extends React.Component {
           });
         },
         label: `Delete ${bookmark.bookmark}...`,
+      },
+      {
+        click: () => {
+          this.setState({
+            activeModalComponent: (
+              <RenameBookmarkModalComponent
+                bookmark={bookmark}
+                onCancel={() => { this.setState({activeModalComponent: null}); }}
+                onRename={this._confirmRenameBookmark}
+                repository={repository}
+              />
+            ),
+          });
+        },
+        label: `Rename ${bookmark.bookmark}...`,
       },
     ]);
 

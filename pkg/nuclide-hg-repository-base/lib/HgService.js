@@ -526,6 +526,10 @@ export class HgService {
     return this._runSimpleInWorkingDirectory('bookmarks', ['--delete', name]);
   }
 
+  renameBookmark(name: string, nextName: string): Promise<void> {
+    return this._runSimpleInWorkingDirectory('bookmarks', ['--rename', name, nextName]);
+  }
+
   /**
    * @return The name of the current bookmark.
    */

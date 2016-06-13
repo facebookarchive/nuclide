@@ -162,6 +162,21 @@ describe('HgService', () => {
     });
   });
 
+  describe('::renameBookmark', () => {
+    const BOOKMARK_NAME = 'fakey456';
+
+    it('calls the appropriate `hg` command to rename', () => {
+      waitsForPromise(async () => {
+        spyOn(hgService, '_hgAsyncExecute');
+        await hgService.renameBookmark(BOOKMARK_NAME, 'fried-chicken');
+        expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
+          ['bookmarks', '--rename', BOOKMARK_NAME, 'fried-chicken'],
+          {cwd: TEST_WORKING_DIRECTORY}
+        );
+      });
+    });
+  });
+
   describe('::fetchDiffInfo', () => {
     const mockHgDiffOutput =
     `diff --git test-test/blah/blah.js test-test/blah/blah.js

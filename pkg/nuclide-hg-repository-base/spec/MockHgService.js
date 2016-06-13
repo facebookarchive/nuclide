@@ -43,6 +43,10 @@ module.exports = class MockHgService {
     return Promise.resolve();
   }
 
+  renameBookmark(name: string, nextName: string): Promise<void> {
+    return Promise.resolve();
+  }
+
   observeHgConflictStateDidChange(): Observable<void> {
     return new Subject();
   }
