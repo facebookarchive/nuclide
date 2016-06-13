@@ -29,7 +29,7 @@ export {
 };
 
 export function getFileSystemServiceByNuclideUri(uri: NuclideUri): FileSystemService {
-  const service = getServiceByNuclideUri('FileSystemService', uri);
+  const service: ?FileSystemService = getServiceByNuclideUri('FileSystemService', uri);
   invariant(service);
   return service;
 }
