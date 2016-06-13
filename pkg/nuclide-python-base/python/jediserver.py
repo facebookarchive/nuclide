@@ -17,6 +17,7 @@ from logging import FileHandler
 from optparse import OptionParser
 import jedi
 from jedi.evaluate.representation import InstanceElement
+from jedi.parser.tree import ImportFrom
 import outline
 
 LOGGING_DIR = 'nuclide-%s-logs/python' % getpass.getuser()
@@ -123,8 +124,10 @@ class JediServer:
                 'text': completion.name,
                 'description': self.get_description(completion),
             }
-            # Return function params if completion has params (thus is a function).
-            if hasattr(completion, 'params'):
+            # Return params if completion has params (thus is a class/function).
+            # Don't autocomplete params in the middle of an import from statement.
+            if hasattr(completion, 'params') and not isinstance(
+                    script._parser.user_stmt(), ImportFrom):
                 result['params'] = [p.description for p in completion.params]
 
             # Check for decorators on functions.

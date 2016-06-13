@@ -81,6 +81,35 @@ describe('PythonService', () => {
         const completion = response.completions[0];
         expect(completion.text).toEqual('test');
         expect(completion.type).toEqual('property');
+        expect(completion.params).toBeUndefined();
+      });
+    });
+
+    it('includes parameters for assignment completions', () => {
+      waitsForPromise(async () => {
+        // line 26: a = Tes
+        const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 25, 7);
+        invariant(response);
+        expect(response.completions.length).toBeGreaterThan(0);
+
+        const completion = response.completions[0];
+        expect(completion.text).toEqual('Test');
+        expect(completion.type).toEqual('class');
+        expect(completion.params).toEqual([]);
+      });
+    });
+
+    it('does not include parameters for import statement completions', () => {
+      waitsForPromise(async () => {
+        // line 9: from decorated import Test
+        const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 8, 26);
+        invariant(response);
+        expect(response.completions.length).toBeGreaterThan(0);
+
+        const completion = response.completions[0];
+        expect(completion.text).toEqual('Test');
+        expect(completion.type).toEqual('class');
+        expect(completion.params).toBeUndefined();
       });
     });
   });
