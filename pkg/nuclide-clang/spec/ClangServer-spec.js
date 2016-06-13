@@ -13,7 +13,6 @@ import invariant from 'assert';
 import fs from 'fs';
 import path from 'path';
 import ClangServer from '../lib/ClangServer';
-import {getServiceRegistry} from '../lib/ClangServerManager';
 
 const TEST_FILE = path.join(__dirname, 'fixtures', 'test.cpp');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
@@ -44,7 +43,8 @@ describe('ClangServer', () => {
 
   it('can handle requests', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(TEST_FILE, getServiceRegistry(), []);
+      const server = new ClangServer(TEST_FILE, []);
+      const service = await server.getService();
       let response = await server.compile(
         FILE_CONTENTS,
       );
@@ -106,7 +106,7 @@ describe('ClangServer', () => {
       const mem = await server.getMemoryUsage();
       expect(mem).toBeGreaterThan(0);
 
-      response = await server.get_completions(
+      response = await service.get_completions(
         FILE_CONTENTS,
         4,
         7,
@@ -121,7 +121,7 @@ describe('ClangServer', () => {
       ]);
 
       // This will hit the cache. Double-check the result.
-      response = await server.get_completions(
+      response = await service.get_completions(
         FILE_CONTENTS,
         4,
         7,
@@ -134,7 +134,7 @@ describe('ClangServer', () => {
       ]);
 
       // Function argument completions are a little special.
-      response = await server.get_completions(
+      response = await service.get_completions(
         FILE_CONTENTS,
         4,
         4,
@@ -145,7 +145,7 @@ describe('ClangServer', () => {
       expect(response[0].spelling).toBe('f()');
       expect(response[0].cursor_kind).toBe('OVERLOAD_CANDIDATE');
 
-      response = await server.get_declaration(
+      response = await service.get_declaration(
         FILE_CONTENTS,
         4,
         2,
@@ -157,7 +157,7 @@ describe('ClangServer', () => {
       expect(spelling).toBe('f');
       expect(type).toBe('void ()');
 
-      response = await server.get_declaration_info(
+      response = await service.get_declaration_info(
         FILE_CONTENTS,
         4,
         2,
@@ -169,7 +169,7 @@ describe('ClangServer', () => {
       // May not be consistent between clang versions.
       expect(response[0].cursor_usr).not.toBe(null);
 
-      response = await server.get_outline(
+      response = await service.get_outline(
         FILE_CONTENTS,
       );
       invariant(response);
@@ -179,7 +179,7 @@ describe('ClangServer', () => {
 
   it('gracefully handles server crashes', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(TEST_FILE, getServiceRegistry(), []);
+      const server = new ClangServer(TEST_FILE, []);
       let response = await server.compile(
         FILE_CONTENTS,
       );
@@ -201,7 +201,8 @@ describe('ClangServer', () => {
       expect(thrown).toBe(true);
 
       // The next request should work as expected.
-      response = await server.get_declaration(
+      const service = await server.getService();
+      response = await service.get_declaration(
         FILE_CONTENTS,
         4,
         2,
@@ -210,31 +211,15 @@ describe('ClangServer', () => {
     });
   });
 
-  it('blocks other requests during compilation', () => {
+  it('tracks server status', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(TEST_FILE, getServiceRegistry(), []);
-      const compilePromise = server.compile(
-        FILE_CONTENTS,
-      );
+      const server = new ClangServer(TEST_FILE, []);
+      expect(server.getStatus()).toBe('ready');
+      server.compile('');
 
-      // Since compilation has been triggered but not awaited, this should instantly fail.
-      let response = await server.get_declaration(
-        FILE_CONTENTS,
-        4,
-        2,
-      );
-      expect(response).toBe(null);
-
-      response = await compilePromise;
-      expect(response).not.toBe(null);
-
-      // Should work again after compilation finishes.
-      response = await server.get_declaration(
-        FILE_CONTENTS,
-        4,
-        2,
-      );
-      expect(response).not.toBe(null);
+      expect(server.getStatus()).toBe('compiling');
+      await server.waitForReady();
+      expect(server.getStatus()).toBe('ready');
     });
   });
 

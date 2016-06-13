@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import typeof * as ClangProcessService from './ClangProcessService';
 import type {
   ClangCompileResult,
   ClangCompletion,
@@ -21,6 +22,7 @@ import type {
 import {keyMirror} from '../../commons-node/collection';
 import {Observable} from 'rxjs';
 import {checkOutput} from '../../commons-node/process';
+import ClangServer from './ClangServer';
 import ClangServerManager from './ClangServerManager';
 
 const serverManager = new ClangServerManager();
@@ -76,6 +78,26 @@ export const ClangCursorToDeclarationTypes = Object.freeze({
 
 export const ClangCursorTypes = keyMirror(ClangCursorToDeclarationTypes);
 
+async function getClangService(
+  src: NuclideUri,
+  contents: string,
+  defaultFlags: ?Array<string>,
+  blocking?: boolean,
+): Promise<?ClangProcessService> {
+  const server = await serverManager.getClangServer(src, contents, defaultFlags);
+  if (server == null) {
+    return null;
+  }
+  if (server.getStatus() !== ClangServer.Status.READY) {
+    if (blocking) {
+      await server.waitForReady();
+    } else {
+      return null;
+    }
+  }
+  return server.getService();
+}
+
 /**
  * Compiles the specified source file (automatically determining the correct compilation flags).
  * It currently returns an Observable just to circumvent the 60s service timeout for Promises.
@@ -115,9 +137,9 @@ export async function getCompletions(
   prefix: string,
   defaultFlags?: ?Array<string>,
 ): Promise<?Array<ClangCompletion>> {
-  const server = await serverManager.getClangServer(src, contents, defaultFlags);
-  if (server != null) {
-    return server.get_completions(
+  const service = await getClangService(src, contents, defaultFlags);
+  if (service != null) {
+    return service.get_completions(
       contents,
       line,
       column,
@@ -134,9 +156,9 @@ export async function getDeclaration(
   column: number,
   defaultFlags?: ?Array<string>,
 ): Promise<?ClangDeclaration> {
-  const server = await serverManager.getClangServer(src, contents, defaultFlags);
-  if (server != null) {
-    return server.get_declaration(
+  const service = await getClangService(src, contents, defaultFlags);
+  if (service != null) {
+    return service.get_declaration(
       contents,
       line,
       column,
@@ -154,9 +176,9 @@ export async function getDeclarationInfo(
   column: number,
   defaultFlags: ?Array<string>,
 ): Promise<?Array<ClangCursor>> {
-  const server = await serverManager.getClangServer(src, contents, defaultFlags);
-  if (server != null) {
-    return server.get_declaration_info(
+  const service = await getClangService(src, contents, defaultFlags);
+  if (service != null) {
+    return service.get_declaration_info(
       contents,
       line,
       column,
@@ -169,11 +191,9 @@ export async function getOutline(
   contents: string,
   defaultFlags: ?Array<string>,
 ): Promise<?Array<ClangOutlineTree>> {
-  const server = await serverManager.getClangServer(src, contents, defaultFlags);
-  if (server != null) {
-    return server.get_outline(
-      contents,
-    );
+  const service = await getClangService(src, contents, defaultFlags, true);
+  if (service != null) {
+    return service.get_outline(contents);
   }
 }
 

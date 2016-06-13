@@ -63,7 +63,7 @@ describe('ClangServerManager', () => {
   it('has a hard limit on server count', () => {
     waitsForPromise(async () => {
       const servers = [];
-      for (let i = 0; i < 11; i++) {
+      for (let i = 0; i < 21; i++) {
         // eslint-disable-next-line babel/no-await-in-loop
         servers.push(await serverManager.getClangServer(`test${i}.cpp`, '', []));
       }

@@ -16,11 +16,9 @@ import {serializeAsyncCall} from '../../commons-node/promise';
 import {getLogger} from '../../nuclide-logging';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
-import {ServiceRegistry} from '../../nuclide-rpc';
-import path from 'path';
 
 // Limit the number of active Clang servers.
-const SERVER_LIMIT = 10;
+const SERVER_LIMIT = 20;
 
 // Limit the total memory usage of all Clang servers.
 const MEMORY_LIMIT = Math.round(os.totalmem() * 15 / 100);
@@ -40,20 +38,6 @@ async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<A
     return flags.concat(await _getDefaultFlags(src));
   }
   return flags;
-}
-
-let serviceRegistry: ?ServiceRegistry = null;
-
-export function getServiceRegistry(): ServiceRegistry {
-  if (serviceRegistry == null) {
-    serviceRegistry = ServiceRegistry.createLocal([{
-      name: 'ClangProcessService',
-      definition: path.join(__dirname, 'ClangProcessService.js'),
-      implementation: path.join(__dirname, 'ClangProcessService.js'),
-      preserveFunctionNames: true,
-    }]);
-  }
-  return serviceRegistry;
 }
 
 export default class ClangServerManager {
@@ -109,7 +93,7 @@ export default class ClangServerManager {
     if (server != null) {
       return server;
     }
-    server = new ClangServer(src, getServiceRegistry(), flags, usesDefaultFlags);
+    server = new ClangServer(src, flags, usesDefaultFlags);
     // Seed with a compile request to ensure fast responses.
     server.compile(contents)
       .then(() => this._checkMemoryUsage());

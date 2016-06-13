@@ -10,19 +10,31 @@
  */
 
 import typeof * as ClangProcessService from './ClangProcessService';
-import type {
-  ClangCompileResult,
-  ClangCompletion,
-  ClangDeclaration,
-  ClangCursor,
-  ClangOutlineTree,
-} from './rpc-types';
+import type {ClangCompileResult} from './rpc-types';
 
 import path from 'path';
+import {BehaviorSubject} from 'rxjs';
+
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import RpcProcess from '../../commons-node/RpcProcess';
 import findClangServerArgs from './find-clang-server-args';
 import {ServiceRegistry} from '../../nuclide-rpc';
+
+export type ClangServerStatus = 'ready' | 'compiling';
+
+let serviceRegistry: ?ServiceRegistry = null;
+
+function getServiceRegistry(): ServiceRegistry {
+  if (serviceRegistry == null) {
+    serviceRegistry = ServiceRegistry.createLocal([{
+      name: 'ClangProcessService',
+      definition: path.join(__dirname, 'ClangProcessService.js'),
+      implementation: path.join(__dirname, 'ClangProcessService.js'),
+      preserveFunctionNames: true,
+    }]);
+  }
+  return serviceRegistry;
+}
 
 async function spawnClangProcess(
   src: string,
@@ -53,26 +65,33 @@ async function spawnClangProcess(
 
 export default class ClangServer extends RpcProcess {
 
-  _src: string;
-  _flags: Array<string>;
+  static Status: {[key: string]: ClangServerStatus} = Object.freeze({
+    READY: 'ready',
+    COMPILING: 'compiling',
+  });
+
   _usesDefaultFlags: boolean;
   _pendingCompileRequests: number;
+  _serverStatus: BehaviorSubject<ClangServerStatus>;
 
   constructor(
     src: string,
-    serviceRegistry: ServiceRegistry,
     flags: Array<string>,
     usesDefaultFlags?: boolean = false,
   ) {
-    super(`ClangServer-${src}`, serviceRegistry, () => spawnClangProcess(src, flags));
-    this._src = src;
-    this._flags = flags;
+    super(`ClangServer-${src}`, getServiceRegistry(), () => spawnClangProcess(src, flags));
     this._usesDefaultFlags = usesDefaultFlags;
     this._pendingCompileRequests = 0;
+    this._serverStatus = new BehaviorSubject(ClangServer.Status.READY);
   }
 
-  _getClangService(): Promise<ClangProcessService> {
-    return this.getService('ClangProcessService');
+  dispose() {
+    super.dispose();
+    this._serverStatus.complete();
+  }
+
+  getService(): Promise<ClangProcessService> {
+    return super.getService('ClangProcessService');
   }
 
   /**
@@ -97,53 +116,33 @@ export default class ClangServer extends RpcProcess {
     return this._usesDefaultFlags;
   }
 
-  async compile(contents: string): Promise<ClangCompileResult> {
-    this._pendingCompileRequests++;
+  // Call this instead of using the RPC layer directly.
+  // This way, we can track when the server is busy compiling.
+  async compile(contents: string): Promise<?ClangCompileResult> {
+    if (this._pendingCompileRequests++ === 0) {
+      this._serverStatus.next(ClangServer.Status.COMPILING);
+    }
     try {
-      return (await this._getClangService()).compile(contents);
+      const service = await this.getService();
+      return await service.compile(contents);
     } finally {
-      this._pendingCompileRequests--;
+      if (--this._pendingCompileRequests === 0) {
+        this._serverStatus.next(ClangServer.Status.READY);
+      }
     }
   }
 
-  async get_completions(
-    contents: string,
-    line: number,
-    column: number,
-    tokenStartColumn: number,
-    prefix: string,
-  ): Promise<?Array<ClangCompletion>> {
-    if (this._pendingCompileRequests > 0) {
-      return null;
-    }
-    return (await this._getClangService()).get_completions(
-      contents, line, column, tokenStartColumn, prefix);
+  getStatus(): ClangServerStatus {
+    return this._serverStatus.getValue();
   }
 
-  async get_declaration(
-    contents: string,
-    line: number,
-    column: number,
-  ): Promise<?ClangDeclaration> {
-    if (this._pendingCompileRequests > 0) {
-      return null;
+  waitForReady(): Promise<mixed> {
+    if (this.getStatus() === ClangServer.Status.READY) {
+      return Promise.resolve();
     }
-    return (await this._getClangService()).get_declaration(contents, line, column);
+    return this._serverStatus
+      .takeWhile(x => x !== ClangServer.Status.READY)
+      .toPromise();
   }
 
-  async get_declaration_info(
-    contents: string,
-    line: number,
-    column: number,
-  ): Promise<?Array<ClangCursor>> {
-    if (this._pendingCompileRequests > 0) {
-      return null;
-    }
-    return (await this._getClangService()).get_declaration_info(contents, line, column);
-  }
-
-  async get_outline(contents: string): Promise<?Array<ClangOutlineTree>> {
-    // get_ouline is blocking, so no need to check for pending compiles
-    return (await this._getClangService()).get_outline(contents);
-  }
 }
