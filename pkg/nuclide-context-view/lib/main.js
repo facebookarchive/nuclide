@@ -24,7 +24,7 @@ type ContextViewConfig = {
 };
 
 const INITIAL_PANEL_WIDTH: number = 300;
-const INITIAL_PANEL_VISIBILITY: boolean = true;
+const INITIAL_PANEL_VISIBILITY: boolean = false;
 
 const DEFAULT_CONFIG: ContextViewConfig = {
   width: INITIAL_PANEL_WIDTH,
