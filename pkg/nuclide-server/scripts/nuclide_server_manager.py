@@ -350,18 +350,19 @@ def get_option_parser():
 
 
 if __name__ == '__main__':
+    parser = get_option_parser()
+    options, args = parser.parse_args(sys.argv[1:])
+
+    configure_nuclide_logger(options.verbose)
+
     logger = logging.getLogger()
     logger.info('Invoked nuclide_server_manager...')
 
     if sys.platform == 'darwin':
         os.environ['PATH'] = darwin_path_helper() + os.pathsep + os.environ.get('PATH', '')
 
-    parser = get_option_parser()
-    options, args = parser.parse_args(sys.argv[1:])
-
     manager = NuclideServerManager(options)
     manager.cleanup()
-    configure_nuclide_logger(options.verbose)
 
     # Enable core dump by change ulimit to infinity.
     if options.dump_core:
