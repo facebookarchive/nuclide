@@ -10,41 +10,31 @@
  */
 
 import {
-  activateAllPackages,
   copyFixture,
-  deactivateAllPackages,
   dispatchKeyboardEvent,
-  jasmineIntegrationTestSetup,
   waitsForFile,
   waitsForFilePosition,
 } from '../pkg/nuclide-integration-test-helpers';
+import {
+  describeRemotableTest,
+} from './utils/remotable-tests';
 import {
   getAutocompleteSuggestions,
   waitsForAutocompleteSuggestions,
 } from './utils/autocomplete-common';
 
-import path from 'path';
-
-describe('Python Integration Test', () => {
+describeRemotableTest('Python Integration Test', context => {
   let pyProjPath;
   let textEditor: atom$TextEditor = (null : any);
 
   beforeEach(() => {
     waitsForPromise({timeout: 60000}, async () => {
-      jasmineIntegrationTestSetup();
-      // Activate atom packages.
-      await activateAllPackages();
-
       pyProjPath = await copyFixture('python_project_1');
-      textEditor = await atom.workspace.open(path.join(pyProjPath, 'Foo.py'));
+      await context.setProject(pyProjPath);
+      textEditor = await atom.workspace.open(context.getProjectRelativePath('Foo.py'));
     });
 
     waitsForFile('Foo.py');
-  });
-
-  afterEach(() => {
-    // Deactivate nuclide packages.
-    deactivateAllPackages();
   });
 
   it('gives autocomplete suggestions', () => {
