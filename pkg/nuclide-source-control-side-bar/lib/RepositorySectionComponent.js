@@ -69,7 +69,7 @@ export default class RepositorySectionComponent extends React.Component {
     this.props.onUncommittedChangesClick(this.props.repository);
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const repository = this.props.repository;
     const selectedItem = this.props.selectedItem;
 

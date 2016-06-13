@@ -35,7 +35,7 @@ const DebuggerInspector = React.createClass({
     bridge: React.PropTypes.instanceOf(Bridge).isRequired,
   },
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     return (
       <PanelComponent initialLength={500} dock="right">
         <div className="inspector">

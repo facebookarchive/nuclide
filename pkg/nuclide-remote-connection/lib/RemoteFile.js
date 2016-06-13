@@ -98,7 +98,7 @@ export class RemoteFile {
     });
   }
 
-  async _handleNativeChangeEvent(): Promise {
+  async _handleNativeChangeEvent(): Promise<any> {
     // Don't bother checking the file - this can be very expensive.
     this._emitter.emit('did-change');
   }
@@ -238,7 +238,7 @@ export class RemoteFile {
     return wasCreated;
   }
 
-  async delete(): Promise {
+  async delete(): Promise<any> {
     try {
       await this._getFileSystemService().unlink(this._localPath);
       this._handleNativeDeleteEvent();
@@ -249,7 +249,7 @@ export class RemoteFile {
     }
   }
 
-  async rename(newPath: string): Promise {
+  async rename(newPath: string): Promise<any> {
     await this._getFileSystemService().rename(this._localPath, newPath);
     this._handleNativeRenameEvent(newPath);
   }

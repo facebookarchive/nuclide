@@ -34,7 +34,7 @@ export default class SettingsSelect extends React.Component {
     });
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const keyPath = this.props.keyPath;
     const id = normalizeIdentifier(keyPath);
     const title = this.props.title;

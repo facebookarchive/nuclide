@@ -202,7 +202,7 @@ export class ConnectionMultiplexer {
     return this._dummyConnection;
   }
 
-  async _onAttach(params: {socket: Socket; message: Object}): Promise {
+  async _onAttach(params: {socket: Socket; message: Object}): Promise<any> {
     const {socket, message} = params;
     if (!isCorrectConnection(message)) {
       failConnection(socket, 'Discarding connection ' + JSON.stringify(message));
@@ -379,7 +379,7 @@ export class ConnectionMultiplexer {
     }
   }
 
-  setPauseOnExceptions(state: ExceptionState): Promise {
+  setPauseOnExceptions(state: ExceptionState): Promise<any> {
     return this._breakpointStore.setPauseOnExceptions(state);
   }
 
@@ -387,7 +387,7 @@ export class ConnectionMultiplexer {
     return this._breakpointStore.setBreakpoint(filename, lineNumber);
   }
 
-  removeBreakpoint(breakpointId: string): Promise {
+  removeBreakpoint(breakpointId: string): Promise<any> {
     return this._breakpointStore.removeBreakpoint(breakpointId);
   }
 

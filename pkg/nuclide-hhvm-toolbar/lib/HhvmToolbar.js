@@ -36,7 +36,7 @@ const NO_LAUNCH_DEBUG_OPTIONS = [
   WEB_SERVER_OPTION,
 ];
 
-async function callDebugService(processInfo: DebuggerProcessInfo): Promise {
+async function callDebugService(processInfo: DebuggerProcessInfo): Promise<any> {
   // Use commands here to trigger package activation.
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
   const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
@@ -96,7 +96,7 @@ class HhvmToolbar extends React.Component {
     this.refs.debugTarget.setText(this._getDebugTarget(selectedIndex, nextProps.targetFilePath));
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const debugTarget = this._getDebugTarget(this.state.selectedIndex, this.props.targetFilePath);
     const isDebugScript = this._isDebugScript(this.state.selectedIndex);
     return (

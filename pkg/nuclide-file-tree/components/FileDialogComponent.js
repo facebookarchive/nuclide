@@ -97,7 +97,7 @@ class FileDialogComponent extends React.Component {
     document.removeEventListener('mousedown', this._handleDocumentMouseDown);
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     let labelClassName;
     if (this.props.iconClassName != null) {
       labelClassName = `icon ${this.props.iconClassName}`;

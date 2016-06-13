@@ -22,7 +22,7 @@ class DiffCountComponent extends React.Component {
     return this.props.count !== nextProps.count;
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const {count} = this.props;
     if (count === 0) {
       return null;

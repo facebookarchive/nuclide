@@ -194,10 +194,10 @@ export class HgService {
   _hgDirWatcher: ?fs.FSWatcher;
 
   _workingDirectory: string;
-  _filesDidChangeObserver: Subject;
-  _hgActiveBookmarkDidChangeObserver: Subject;
-  _hgBookmarksDidChangeObserver: Subject;
-  _hgRepoStateDidChangeObserver: Subject;
+  _filesDidChangeObserver: Subject<any>;
+  _hgActiveBookmarkDidChangeObserver: Subject<any>;
+  _hgBookmarksDidChangeObserver: Subject<any>;
+  _hgRepoStateDidChangeObserver: Subject<any>;
   _watchmanSubscriptionPromise: Promise<void>;
   _hgConflictStateDidChangeObserver: Subject<boolean>;
   _debouncedCheckConflictChange: () => void;

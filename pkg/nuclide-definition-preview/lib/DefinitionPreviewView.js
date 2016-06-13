@@ -53,7 +53,7 @@ export class DefinitionPreviewView extends ObservingComponent<PreviewContent> {
     return newState.data !== this.state.data;
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     return (
       <div className="pane-item padded nuclide-definition-preview">
         {this._maybeContent()}
@@ -61,7 +61,7 @@ export class DefinitionPreviewView extends ObservingComponent<PreviewContent> {
     );
   }
 
-  _maybeContent(): React.Element {
+  _maybeContent(): React.Element<any> {
     const previewContent = this.state.data;
     return previewContent == null
       ? <div className="nuclide-definition-container">
@@ -70,7 +70,7 @@ export class DefinitionPreviewView extends ObservingComponent<PreviewContent> {
       : this._previewDefinition(previewContent);
   }
 
-  _previewDefinition(content: PreviewContent): React.Element {
+  _previewDefinition(content: PreviewContent): React.Element<any> {
     this._loadAndScroll = null;
 
     const definition = content.location;

@@ -21,9 +21,9 @@ export class LazyTreeNode {
 
   // Private
   _children: ?Immutable.List;
-  _fetchChildren: (node: LazyTreeNode) => Promise;
+  _fetchChildren: (node: LazyTreeNode) => Promise<any>;
   _isCacheValid: boolean;
-  _pendingFetch: ?Promise;
+  _pendingFetch: ?Promise<any>;
 
   /**
    * @param fetchChildren returns a Promise that resolves to an Immutable.List
@@ -33,7 +33,7 @@ export class LazyTreeNode {
       item: any,
       parent: ?LazyTreeNode,
       isContainer: boolean,
-      fetchChildren: (node: LazyTreeNode) => Promise) {
+      fetchChildren: (node: LazyTreeNode) => Promise<any>) {
     this.__item = item;
     this.__parent = parent;
     this.__isContainer = isContainer;
@@ -60,7 +60,7 @@ export class LazyTreeNode {
     return this._children;
   }
 
-  fetchChildren(): Promise {
+  fetchChildren(): Promise<any> {
     let pendingFetch = this._pendingFetch;
     if (!pendingFetch) {
       pendingFetch = this._fetchChildren(this).then(children => {
@@ -107,7 +107,7 @@ export class LazyTreeNode {
   /**
    * This can return a richer element for a node and will be used instead of the label if present.
    */
-  getLabelElement(): ?React$Element {
+  getLabelElement(): ?React$Element<any> {
     return null;
   }
 

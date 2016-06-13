@@ -47,7 +47,7 @@ class Wrapper extends React.Component {
   props: {
     children?: any;
   };
-  render(): React.Element {
+  render(): React.Element<any> {
     return <div>{this.props.children}</div>;
   }
 }

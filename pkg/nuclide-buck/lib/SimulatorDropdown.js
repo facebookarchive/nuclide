@@ -74,7 +74,7 @@ class SimulatorDropdown extends React.Component {
     this.setState({options, value});
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     if (this.state.options.length === 0) {
       return <span />;
     }

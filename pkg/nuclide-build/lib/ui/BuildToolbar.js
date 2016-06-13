@@ -20,8 +20,8 @@ import {React} from 'react-for-atom';
 type Props = {
   activeBuildSystemId: ?string;
   buildSystemOptions: Array<IconButtonOption>;
-  getActiveBuildSystemIcon: () => ?ReactClass;
-  getExtraUi: ?() => ReactClass;
+  getActiveBuildSystemIcon: () => ?ReactClass<any>;
+  getExtraUi: ?() => ReactClass<any>;
   progress: ?number;
   visible: boolean;
   runTask: (taskType?: string) => void;
@@ -36,7 +36,7 @@ type Props = {
 export class BuildToolbar extends React.Component {
   props: Props;
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     if (!this.props.visible || this.props.activeBuildSystemId == null) {
       return null;
     }
@@ -94,7 +94,7 @@ type TaskButtonProps = {
   tasks: Array<Task>;
 };
 
-function TaskButton(props: TaskButtonProps): React.Element {
+function TaskButton(props: TaskButtonProps): React.Element<any> {
   const activeTaskType = props.activeTask == null ? undefined : props.activeTask.type;
 
   if (props.tasks.length <= 1) {

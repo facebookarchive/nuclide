@@ -29,7 +29,7 @@ export class RuntimeHandler extends Handler {
     this._connectionMultiplexer = connectionMultiplexer;
   }
 
-  async handleMethod(id: number, method: string, params: Object): Promise {
+  async handleMethod(id: number, method: string, params: Object): Promise<any> {
     switch (method) {
       case 'enable':
         this._notifyExecutionContext(id);
@@ -69,7 +69,7 @@ export class RuntimeHandler extends Handler {
     this.replyToCommand(id, {});
   }
 
-  async _getProperties(id: number, params: Object): Promise {
+  async _getProperties(id: number, params: Object): Promise<any> {
     // params also has properties:
     //    ownProperties
     //    generatePreview
@@ -84,7 +84,7 @@ export class RuntimeHandler extends Handler {
     this.replyToCommand(id, {result});
   }
 
-  async _evaluate(id: number, params: Object): Promise {
+  async _evaluate(id: number, params: Object): Promise<any> {
     const result = await this._connectionMultiplexer.runtimeEvaluate(params.expression);
     this.replyToCommand(id, result);
   }

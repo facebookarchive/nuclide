@@ -35,7 +35,7 @@ export class SplitButtonDropdown<T> extends React.Component {
     (this: any)._handleDropdownClick = this._handleDropdownClick.bind(this);
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const selectedOption =
       this.props.options.find(option => option.value === this.props.value) || this.props.options[0];
 

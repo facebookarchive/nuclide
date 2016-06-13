@@ -39,7 +39,7 @@ export const RadioGroup = React.createClass({
     };
   },
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const checkboxes = this.props.optionLabels.map((labelContent, i) => {
       const id = 'nuclide-radiogroup-' + uid + '-' + i;
       return (

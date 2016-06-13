@@ -43,7 +43,7 @@ export default class ArcToolbarSection extends React.Component {
     (this: any)._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const {model} = this.props;
     if (!model.isArcSupported()) {
       return null;

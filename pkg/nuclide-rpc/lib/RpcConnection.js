@@ -53,9 +53,9 @@ type RpcConnectionKind = 'server' | 'client';
 
 class Subscription {
   _message: Object;
-  _observer: Observer;
+  _observer: Observer<any>;
 
-  constructor(message: Object, observer: Observer) {
+  constructor(message: Object, observer: Observer<any>) {
     this._message = message;
     this._observer = observer;
   }
@@ -399,7 +399,7 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   _returnObservable(id: number, returnVal: any, elementType: Type): void {
-    let result: Observable;
+    let result: Observable<any>;
     // Ensure that the return value is an observable.
     if (!isObservable(returnVal)) {
       result = Observable.throw(new Error(

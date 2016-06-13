@@ -128,7 +128,7 @@ export default class Hyperclick {
   /**
    * Returns the first suggestion from the consumed providers.
    */
-  getSuggestion(textEditor: TextEditor, position: atom$Point): Promise {
+  getSuggestion(textEditor: TextEditor, position: atom$Point): Promise<any> {
     // Get the default word RegExp for this editor.
     const defaultWordRegExp = defaultWordRegExpForEditor(textEditor);
 

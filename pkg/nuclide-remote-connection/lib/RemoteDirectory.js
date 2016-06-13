@@ -240,7 +240,7 @@ export class RemoteDirectory {
     return created;
   }
 
-  async delete(): Promise {
+  async delete(): Promise<any> {
     await this._getFileSystemService().rmdir(this._localPath);
     this._handleNativeDeleteEvent();
   }
@@ -248,7 +248,7 @@ export class RemoteDirectory {
   /**
    * Renames this directory to the given absolute path.
    */
-  async rename(newPath: string): Promise {
+  async rename(newPath: string): Promise<any> {
     await this._getFileSystemService().rename(this._localPath, newPath);
 
     // Unsubscribe from the old `this._localPath`. This must be done before

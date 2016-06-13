@@ -29,7 +29,7 @@ export class DebuggerSteppingComponent extends React.Component {
     super(props);
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const {
       actions,
     } = this.props;

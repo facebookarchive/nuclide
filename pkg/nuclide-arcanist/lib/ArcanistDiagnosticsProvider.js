@@ -27,7 +27,7 @@ import invariant from 'assert';
 
 export class ArcanistDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
-  _requestSerializer: RequestSerializer;
+  _requestSerializer: RequestSerializer<any>;
   _subscriptions: atom$CompositeDisposable;
   _busySignalProvider: BusySignalProviderBase;
 

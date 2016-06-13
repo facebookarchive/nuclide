@@ -20,7 +20,7 @@ export class CustomPaneItem extends HTMLElement {
   _iconName: ?string;
   _uri: ?string;
   _allowSplit: boolean;
-  __component: React.Component;
+  __component: React.Component<any, any, any>;
 
   initialize(options: CustomPaneItemOptions) {
     this._title = options.title;
@@ -38,7 +38,7 @@ export class CustomPaneItem extends HTMLElement {
    *
    * @return A React component that this element call ReactDOM.render() on.
    */
-  __renderPaneItem(options: CustomPaneItemOptions): React.Element {
+  __renderPaneItem(options: CustomPaneItemOptions): React.Element<any> {
     throw new Error('Subclass should implement this method.');
   }
 

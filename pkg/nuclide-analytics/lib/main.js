@@ -126,15 +126,15 @@ class TimingTracker {
     this._startTime = getTimestamp();
   }
 
-  onError(error: Error): Promise {
+  onError(error: Error): Promise<any> {
     return this._trackTimingEvent(error);
   }
 
-  onSuccess(): Promise {
+  onSuccess(): Promise<any> {
     return this._trackTimingEvent(/* error */ null);
   }
 
-  _trackTimingEvent(exception: ?Error): Promise {
+  _trackTimingEvent(exception: ?Error): Promise<any> {
     return track(PERFORMANCE_EVENT, {
       duration: (getTimestamp() - this._startTime).toString(),
       eventName: this._eventName,

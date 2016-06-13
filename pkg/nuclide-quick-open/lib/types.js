@@ -39,7 +39,7 @@ export type Provider = {
   getAction?: () => string;
   getDebounceDelay?: () => number;
   isEligibleForDirectory?: (directory: atom$Directory) => Promise<boolean>;
-  getComponentForItem?: (item: FileResult) => React.Element;
+  getComponentForItem?: (item: FileResult) => React.Element<any>;
   /**
    * An optional number ≥ 0 used to determine ranking order in OmniSearch.
    * 0 == highest rank, +Infinity == lowest rank. Defaults to Number.POSITIVE_INFINITY.

@@ -23,7 +23,7 @@ type Props = {
 export default class OutputTable extends React.Component {
   props: Props;
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     return (
       <div
         className="nuclide-console-table-wrapper native-key-bindings"
@@ -33,7 +33,7 @@ export default class OutputTable extends React.Component {
     );
   }
 
-  _renderRow(record: Record, index: number): React.Element {
+  _renderRow(record: Record, index: number): React.Element<any> {
     return (
       <RecordView
         key={index}

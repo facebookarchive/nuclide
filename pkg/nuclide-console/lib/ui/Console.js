@@ -70,7 +70,7 @@ export default class Console extends React.Component {
     }
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const {pattern, isValid} =
       this._getFilterPattern(this.state.filterText, this.state.enableRegExpFilter);
 

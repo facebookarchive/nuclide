@@ -217,15 +217,15 @@ class WatchmanClient {
     return roots;
   }
 
-  _deleteWatcher(entryPath: string): Promise {
+  _deleteWatcher(entryPath: string): Promise<any> {
     return this._command('watch-del', entryPath);
   }
 
-  _unsubscribe(subscriptionPath: string, subscriptionName: string): Promise {
+  _unsubscribe(subscriptionPath: string, subscriptionName: string): Promise<any> {
     return this._command('unsubscribe', subscriptionPath, subscriptionName);
   }
 
-  async _watch(directoryPath: string): Promise {
+  async _watch(directoryPath: string): Promise<any> {
     const response = await this._command('watch', directoryPath);
     if (response.warning) {
       logger.error('watchman warning: ', response.warning);

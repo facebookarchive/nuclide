@@ -66,7 +66,7 @@ export default class AuthenticationPrompt extends React.Component<void, Props, v
     }
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     // * Need native-key-bindings so that delete works and we need `_onKeyUp` so that escape and
     //   enter work
     // * `instructions` are pre-formatted, so apply `whiteSpace: pre` to maintain formatting coming

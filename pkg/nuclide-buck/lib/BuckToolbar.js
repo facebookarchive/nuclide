@@ -102,7 +102,7 @@ class BuckToolbar extends React.Component {
     return aliases;
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const buckToolbarStore = this._buckToolbarStore;
     let status;
     if (buckToolbarStore.isLoadingRule()) {

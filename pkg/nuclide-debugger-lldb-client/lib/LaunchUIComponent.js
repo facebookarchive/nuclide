@@ -41,7 +41,7 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
     }
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     // TODO: smart fill the working directory textbox.
     // TODO: make tab stop between textbox work.
     // Reserve tabIndex [1~10] to header portion of the UI so we start from "11" here.

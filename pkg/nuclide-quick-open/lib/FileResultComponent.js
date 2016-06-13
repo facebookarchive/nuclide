@@ -17,15 +17,15 @@ import path from 'path';
 
 type Key = number | string;
 
-function renderSubsequence(seq: string, props: Object): ?React.Element {
+function renderSubsequence(seq: string, props: Object): ?React.Element<any> {
   return seq.length === 0 ? null : <span {...props}>{seq}</span>;
 }
 
-function renderUnmatchedSubsequence(seq: string, key: Key): ?React.Element {
+function renderUnmatchedSubsequence(seq: string, key: Key): ?React.Element<any> {
   return renderSubsequence(seq, {key});
 }
 
-function renderMatchedSubsequence(seq: string, key: Key): ?React.Element {
+function renderMatchedSubsequence(seq: string, key: Key): ?React.Element<any> {
   return renderSubsequence(
     seq,
     {
@@ -41,7 +41,7 @@ class FileResultComponent {
     item: FileResult,
     serviceName: string,
     dirName: string,
-  ): React.Element {
+  ): React.Element<any> {
     // Trim the `dirName` off the `filePath` since that's shown by the group
     let filePath = item.path;
     let matchIndexes = item.matchIndexes || [];

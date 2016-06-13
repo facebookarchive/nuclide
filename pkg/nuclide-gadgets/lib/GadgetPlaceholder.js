@@ -54,7 +54,7 @@ class GadgetPlaceholder extends React.Component<void, Props, void> {
     return this.props.rawInitialGadgetState;
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     // TODO: Make some nice placeholder? It happens so fast it may not be worth it.
     return <div />;
   }
@@ -74,7 +74,7 @@ class GadgetPlaceholder extends React.Component<void, Props, void> {
     };
   }
 
-  static deserialize(state): React.Component {
+  static deserialize(state): React.Component<any, any, any> {
     return createComponentItem(<GadgetPlaceholder {...state.data} />);
   }
 }

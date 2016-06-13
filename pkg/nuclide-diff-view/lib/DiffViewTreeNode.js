@@ -21,7 +21,7 @@ export default class DiffViewTreeNode extends LazyTreeNode {
     entry: FileChange,
     parent: ?LazyTreeNode,
     isContainer: boolean,
-    fetchChildren: (node: LazyTreeNode) => Promise,
+    fetchChildren: (node: LazyTreeNode) => Promise<any>,
   ) {
     super(entry, parent, isContainer, fetchChildren);
   }

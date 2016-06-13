@@ -34,7 +34,7 @@ export default class DiffNavigationBar extends React.Component {
     (this: any)._handleClick = this._handleClick.bind(this);
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const {
       addedLines,
       removedLines,
@@ -152,7 +152,7 @@ class NavigatonBarJumpTarget extends React.Component {
     (this: any)._handleClick = this._handleClick.bind(this);
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const {offsetLineNumber, linesCount, containerHeight, lineChangeClass} = this.props;
     const targertTop = Math.ceil(containerHeight * offsetLineNumber / linesCount);
     const targertHeight = Math.ceil(containerHeight / linesCount);

@@ -50,7 +50,7 @@ class DiagnosticsPanel extends React.Component {
     return this.refs.panel.getLength();
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     let warningCount = 0;
     let errorCount = 0;
     let {diagnostics} = this.props;

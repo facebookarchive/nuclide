@@ -43,9 +43,9 @@ export type Task = {
 export interface BuildSystem {
   id: string;
   name: string;
-  getExtraUi?: () => ReactClass;
+  getExtraUi?: () => ReactClass<any>;
   observeTasks: (callback: (tasks: Array<Task>) => mixed) => IDisposable;
-  getIcon(): ReactClass;
+  getIcon(): ReactClass<any>;
   runTask(taskName: string): TaskInfo;
 }
 

@@ -179,7 +179,7 @@ export class DatatipManager {
     this._datatipInEditor(editor, bufferPosition);
   }
 
-  async _datatipInEditor(editor: TextEditor, position: atom$Point): Promise {
+  async _datatipInEditor(editor: TextEditor, position: atom$Point): Promise<any> {
     if (this._isHoveringDatatip) {
       return;
     }

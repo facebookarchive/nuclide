@@ -57,7 +57,7 @@ class DiffCommitView extends React.Component {
     this.refs.message.getTextBuffer().setText(this.props.commitMessage || '');
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const {commitModeState} = this.props;
     const isLoading = commitModeState !== CommitModeState.READY;
 

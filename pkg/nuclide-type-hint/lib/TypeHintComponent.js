@@ -27,7 +27,7 @@ type TypeHintComponentState = {
 export function makeTypeHintComponent(
   content: string | HintTree,
   grammar: atom$Grammar,
-): ReactClass {
+): ReactClass<any> {
   return () => <TypeHintComponent content={content} grammar={grammar} />;
 }
 
@@ -42,7 +42,7 @@ class TypeHintComponent extends React.Component {
     };
   }
 
-  renderPrimitive(value: string): React.Element {
+  renderPrimitive(value: string): React.Element<any> {
     const buffer = new TextBuffer(value);
     const {grammar} = this.props;
     return (
@@ -71,7 +71,7 @@ class TypeHintComponent extends React.Component {
     this.forceUpdate();
   }
 
-  renderHierarchical(tree: HintTree): React.Element {
+  renderHierarchical(tree: HintTree): React.Element<any> {
     if (tree.children == null) {
       return this.renderPrimitive(tree.value);
     }
@@ -101,7 +101,7 @@ class TypeHintComponent extends React.Component {
     );
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const {content} = this.props;
     if (typeof content === 'string') {
       return this.renderPrimitive(content);

@@ -44,7 +44,7 @@ export const TreeItem = (props: TreeItemProps) => {
 };
 
 type NestedTreeItemProps = {
-  title: ?React.Element;
+  title: ?React.Element<any>;
   children?: mixed;
   className?: string;
   selected?: boolean;

@@ -34,9 +34,9 @@ function createMessage(method: string, params: ?Object): Object {
  * 4. Output window messages.
  */
 export class ClientCallback {
-  _serverMessageObservable: Subject;  // For server messages.
-  _notificationObservable: Subject;   // For atom UI notifications.
-  _outputWindowObservable: Subject;   // For output window messages.
+  _serverMessageObservable: Subject<any>;  // For server messages.
+  _notificationObservable: Subject<any>;   // For atom UI notifications.
+  _outputWindowObservable: Subject<any>;   // For output window messages.
 
   constructor() {
     this._serverMessageObservable = new Subject();
@@ -105,7 +105,7 @@ export class ClientCallback {
   _sendJsonObject(observable: Observable<string>, value: Object): void {
     const message = JSON.stringify(value);
     logger.log('Sending JSON: ' + message);
-    ((observable : any) : Subject).next(message);
+    ((observable : any) : Subject<any>).next(message);
   }
 
   dispose(): void {

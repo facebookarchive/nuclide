@@ -491,7 +491,7 @@ describe('promises::retryLimit()', () => {
 });
 
 describe('promises::RequestSerializer()', () => {
-  let requestSerializer: RequestSerializer = (null: any);
+  let requestSerializer: RequestSerializer<any> = (null: any);
 
   beforeEach(() => {
     jasmine.useRealClock();
@@ -562,7 +562,7 @@ async function captureParallelismHistory(
   return {result, parallelismHistory};
 }
 
-function waitPromise(timeoutMs: number, value: any): Promise {
+function waitPromise(timeoutMs: number, value: any): Promise<any> {
   return new Promise((resolve, reject) => {
     setTimeout(() => resolve(value), timeoutMs);
   });

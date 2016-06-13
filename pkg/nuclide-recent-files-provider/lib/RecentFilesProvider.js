@@ -132,7 +132,7 @@ export const RecentFilesProvider: Provider = {
     _recentFilesService = service;
   },
 
-  getComponentForItem(item: FileResult): React.Element {
+  getComponentForItem(item: FileResult): React.Element<any> {
     const filename = path.basename(item.path);
     const filePath = item.path.substring(0, item.path.lastIndexOf(filename));
     const date = item.timestamp == null ? null : new Date(item.timestamp);

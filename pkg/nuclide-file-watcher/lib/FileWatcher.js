@@ -44,7 +44,7 @@ class FileWatcher {
   }
 
   @trackTiming('file-watcher:promptReload')
-  async _promptReload(): Promise {
+  async _promptReload(): Promise<any> {
     const {getPath, basename} = require('../../nuclide-remote-uri');
 
     const filePath = this._editor.getPath();

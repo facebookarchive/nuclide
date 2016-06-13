@@ -134,7 +134,7 @@ export class FileTree extends React.Component {
     }
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const classes = {
       'nuclide-file-tree': true,
       'focusable-panel': true,
@@ -149,7 +149,7 @@ export class FileTree extends React.Component {
     );
   }
 
-  _renderChildren(): React.Element {
+  _renderChildren(): React.Element<any> {
     const roots = this._store.roots;
     const childrenCount = countShownNodes(roots);
 

@@ -19,7 +19,7 @@ import {trackOperationTiming} from '../../nuclide-analytics';
  * Clients must call `dispose()` once they're done with an instance.
  */
 export default class JumpToRelatedFile {
-  _commandSubscriptionsMap: Map;
+  _commandSubscriptionsMap: Map<any, any>;
   _relatedFileFinder: RelatedFileFinder;
 
   constructor(relatedFileFinder: RelatedFileFinder) {

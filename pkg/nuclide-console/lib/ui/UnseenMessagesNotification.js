@@ -20,7 +20,7 @@ type Props = {
 export default class NewMessagesNotification extends React.Component {
   props: Props;
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const className = classnames(
       'nuclide-console-new-messages-notification',
       'badge',

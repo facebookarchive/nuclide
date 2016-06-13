@@ -21,7 +21,7 @@ import {Observable} from 'rxjs';
 
 export default class ArcBuildSystem {
   _model: ArcToolbarModelType;
-  _extraUi: ?ReactClass;
+  _extraUi: ?ReactClass<any>;
   id: string;
   name: string;
   _tasks: ?Observable<Array<Task>>;
@@ -61,14 +61,14 @@ export default class ArcBuildSystem {
     );
   }
 
-  getExtraUi(): ReactClass {
+  getExtraUi(): ReactClass<any> {
     if (this._extraUi == null) {
       this._extraUi = createExtraUiComponent(this._model);
     }
     return this._extraUi;
   }
 
-  getIcon(): ReactClass {
+  getIcon(): ReactClass<any> {
     return HhvmIcon;
   }
 

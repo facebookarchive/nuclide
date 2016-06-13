@@ -40,7 +40,7 @@ export default class HandlesTableComponent extends React.Component {
     return handleSummaries;
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     if (!this.props.handles || Object.keys(this.props.handles).length === 0) {
       return <div />;
     }

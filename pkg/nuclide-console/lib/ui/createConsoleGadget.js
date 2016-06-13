@@ -74,7 +74,7 @@ export default function createConsoleGadget(
       this._state$Subscription.unsubscribe();
     }
 
-    render(): ?React.Element {
+    render(): ?React.Element<any> {
       const sources = Array.from(this.state.providers.values())
         .map(source => ({
           id: source.id,

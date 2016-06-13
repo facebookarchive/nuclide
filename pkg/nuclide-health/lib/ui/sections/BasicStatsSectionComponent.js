@@ -23,7 +23,7 @@ export default class BasicStatsSectionComponent extends React.Component {
     activeRequests: PropTypes.number.isRequired,
   };
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const stats = [
       {
         name: 'CPU',

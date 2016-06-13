@@ -74,7 +74,7 @@ export class OutlineView extends React.Component {
     this.subscription = null;
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     return (
       <div className="pane-item padded nuclide-outline-view">
         <OutlineViewComponent outline={this.state.outline} />
@@ -90,7 +90,7 @@ type OutlineViewComponentProps = {
 class OutlineViewComponent extends React.Component {
   props: OutlineViewComponentProps;
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const outline = this.props.outline;
     switch (outline.kind) {
       case 'empty':
@@ -137,7 +137,7 @@ function renderTree(
   editor: atom$TextEditor,
   outline: OutlineTreeForUi,
   index: number,
-): React.Element {
+): React.Element<any> {
   const onClick = () => {
     const pane = atom.workspace.paneForItem(editor);
     if (pane == null) {
@@ -175,7 +175,7 @@ function renderTree(
   );
 }
 
-function renderItemText(outline: OutlineTreeForUi): Array<React.Element> | string {
+function renderItemText(outline: OutlineTreeForUi): Array<React.Element<any>> | string {
   if (outline.tokenizedText != null) {
     return outline.tokenizedText.map(renderTextToken);
   } else if (outline.plainText != null) {
@@ -185,7 +185,7 @@ function renderItemText(outline: OutlineTreeForUi): Array<React.Element> | strin
   }
 }
 
-function renderTextToken(token: TextToken, index: number): React.Element {
+function renderTextToken(token: TextToken, index: number): React.Element<any> {
   const className = TOKEN_KIND_TO_CLASS_NAME_MAP[token.kind];
   return <span className={className} key={index}>{token.value}</span>;
 }
@@ -193,7 +193,7 @@ function renderTextToken(token: TextToken, index: number): React.Element {
 function renderTrees(
   editor: atom$TextEditor,
   outlines: Array<OutlineTreeForUi>,
-): ?React.Element {
+): ?React.Element<any> {
   if (outlines.length === 0) {
     return null;
   }

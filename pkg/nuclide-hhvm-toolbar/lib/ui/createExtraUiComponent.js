@@ -22,11 +22,11 @@ import {React} from 'react-for-atom';
  */
 export function createExtraUiComponent(
   model: ArcToolbarModel,
-): ReactClass {
+): ReactClass<any> {
 
   return class ExtraUi extends React.Component {
 
-    render(): React.Element {
+    render(): React.Element<any> {
       return (
         <ArcToolbarSection model={model} />
       );

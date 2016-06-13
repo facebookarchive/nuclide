@@ -347,7 +347,7 @@ class DbgpSocket {
     return response.$.id;
   }
 
-  async removeBreakpoint(breakpointId: string): Promise {
+  async removeBreakpoint(breakpointId: string): Promise<any> {
     const response = await this._callDebugger('breakpoint_remove', `-d ${breakpointId}`);
     if (response.error) {
       throw new Error('Error removing breakpoint: ' + JSON.stringify(response));

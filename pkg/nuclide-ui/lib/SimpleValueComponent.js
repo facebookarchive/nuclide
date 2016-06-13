@@ -22,7 +22,7 @@ type SimpleValueComponentProps = {
   evaluationResult: EvaluationResult;
 };
 
-function renderNullish(evaluationResult: EvaluationResult): ?React.Element {
+function renderNullish(evaluationResult: EvaluationResult): ?React.Element<any> {
   const {_type} = evaluationResult;
   return (
     _type === 'undefined' || _type === 'null'
@@ -31,7 +31,7 @@ function renderNullish(evaluationResult: EvaluationResult): ?React.Element {
   );
 }
 
-function renderString(evaluationResult: EvaluationResult): ?React.Element {
+function renderString(evaluationResult: EvaluationResult): ?React.Element<any> {
   const {
     _type,
     value,
@@ -47,7 +47,7 @@ function renderString(evaluationResult: EvaluationResult): ?React.Element {
   );
 }
 
-function renderNumber(evaluationResult: EvaluationResult): ?React.Element {
+function renderNumber(evaluationResult: EvaluationResult): ?React.Element<any> {
   const {
     _type,
     value,
@@ -73,7 +73,7 @@ const valueRenderers = [
 export default class SimpleValueComponent extends React.Component {
   props: SimpleValueComponentProps;
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const {
       expression,
       evaluationResult,

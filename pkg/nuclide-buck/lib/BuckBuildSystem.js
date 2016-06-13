@@ -51,7 +51,7 @@ type BuckSubcommand = 'build' | 'install' | 'test';
 export class BuckBuildSystem {
   _flux: ?Flux;
   _disposables: CompositeDisposable;
-  _extraUi: ?ReactClass;
+  _extraUi: ?ReactClass<any>;
   id: string;
   name: string;
   _initialState: ?SerializedState;
@@ -102,7 +102,7 @@ export class BuckBuildSystem {
     );
   }
 
-  getExtraUi(): ReactClass {
+  getExtraUi(): ReactClass<any> {
     if (this._extraUi == null) {
       const {store, actions} = this._getFlux();
       this._extraUi = createExtraUiComponent(store, actions);
@@ -110,7 +110,7 @@ export class BuckBuildSystem {
     return this._extraUi;
   }
 
-  getIcon(): ReactClass {
+  getIcon(): ReactClass<any> {
     return BuckIcon;
   }
 

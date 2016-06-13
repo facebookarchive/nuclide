@@ -37,7 +37,6 @@ type WatchExpressionComponentProps = {
 };
 
 export class WatchExpressionComponent extends React.Component {
-  // $FlowIssue `watchExpressions` is injected by a higher-order component.
   props: WatchExpressionComponentProps;
   state: {
     rowBeingEdited: ?number;
@@ -117,7 +116,7 @@ export class WatchExpressionComponent extends React.Component {
     fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
     watchExpression: WatchExpression,
     index: number,
-  ): React.Element {
+  ): React.Element<any> {
     const {
       expression,
       value,
@@ -161,7 +160,7 @@ export class WatchExpressionComponent extends React.Component {
     );
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const {
       watchExpressions,
       watchExpressionStore,

@@ -192,7 +192,7 @@ class DiffViewModel {
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
   _isActive: boolean;
   _state: State;
-  _publishUpdates: Rx.Subject;
+  _publishUpdates: Rx.Subject<any>;
   _serializedUpdateActiveFileDiff: () => Promise<void>;
 
   constructor() {
@@ -649,7 +649,7 @@ class DiffViewModel {
     return this._activeFileState;
   }
 
-  getPublishUpdates(): Rx.Subject {
+  getPublishUpdates(): Rx.Subject<any> {
     return this._publishUpdates;
   }
 
@@ -942,7 +942,7 @@ class DiffViewModel {
     return phabricatorRevision;
   }
 
-  async _processArcanistOutput(stream: Rx.Observable): Promise<void> {
+  async _processArcanistOutput(stream: Rx.Observable<any>): Promise<void> {
     let fatalError = false;
     stream = stream
       // Split stream into single lines.

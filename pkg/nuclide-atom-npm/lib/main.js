@@ -13,7 +13,7 @@ import fs from 'fs-plus';
 import path from 'path';
 import fsPromise from '../../commons-node/fsPromise';
 
-async function loadStyles(stylesPath: string): Promise {
+async function loadStyles(stylesPath: string): Promise<any> {
   // TODO(jjiaa): If possible, check that `stylesPath` is also a directory.
   if (!(await fsPromise.exists(stylesPath))) {
     return;

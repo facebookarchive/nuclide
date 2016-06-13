@@ -131,7 +131,7 @@ async function mkdirp(filePath: string): Promise<boolean> {
 /**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
-async function rmdir(filePath: string): Promise {
+async function rmdir(filePath: string): Promise<any> {
   return new Promise((resolve, reject) => {
     rimraf(filePath, err => {
       if (err) {
@@ -175,8 +175,8 @@ async function isNfs(entityPath: string): Promise<boolean> {
  * with the same functionality, but returns a Promise rather than taking a callback. This isn't
  * quite as efficient as Q's implementation of denodeify, but it's considerably less code.
  */
-function _denodeifyFsMethod(methodName: string): () => Promise {
-  return function(...args): Promise {
+function _denodeifyFsMethod(methodName: string): () => Promise<any> {
+  return function(...args): Promise<any> {
     const method = fs[methodName];
     return new Promise((resolve, reject) => {
       method.apply(fs, args.concat([

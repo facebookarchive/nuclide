@@ -67,7 +67,7 @@ export class BreakpointStore {
     return storeId;
   }
 
-  async removeBreakpoint(breakpointId: string): Promise {
+  async removeBreakpoint(breakpointId: string): Promise<any> {
     this._breakpoints.delete(breakpointId);
     return await this._removeBreakpointFromConnections(breakpointId);
   }
@@ -77,7 +77,7 @@ export class BreakpointStore {
    * Dbgp protocol does not seem to support uncaught exception handling
    * so we only support 'all' and treat all other states as 'none'.
    */
-  async setPauseOnExceptions(state: ExceptionState): Promise {
+  async setPauseOnExceptions(state: ExceptionState): Promise<any> {
     if (state === EXCEPTION_PAUSE_STATE_ALL) {
       this._breakpointCount++;
       const breakpiontId = String(this._breakpointCount);
@@ -96,7 +96,7 @@ export class BreakpointStore {
     }
   }
 
-  async _removePauseAllExceptionBreakpointIfNeeded(): Promise {
+  async _removePauseAllExceptionBreakpointIfNeeded(): Promise<any> {
     const breakpointId = this._pauseAllExceptionBreakpointId;
     if (breakpointId) {
       this._pauseAllExceptionBreakpointId = null;
@@ -108,7 +108,7 @@ export class BreakpointStore {
     }
   }
 
-  async _removeBreakpointFromConnections(breakpointId: string): Promise {
+  async _removeBreakpointFromConnections(breakpointId: string): Promise<any> {
     return Promise.all(Array.from(this._connections.entries())
       .map(entry => {
         const [connection, map] = entry;

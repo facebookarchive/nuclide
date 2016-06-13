@@ -112,7 +112,7 @@ function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
 class FlowDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
   _busySignalProvider: BusySignalProviderBase;
-  _requestSerializer: RequestSerializer;
+  _requestSerializer: RequestSerializer<any>;
 
   /**
     * Maps flow root to the set of file paths under that root for which we have

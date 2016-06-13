@@ -53,7 +53,7 @@ class Header extends React.Component {
     this.props = props;
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const info = (this.props.definition != null)
       ? this.props.definition.name
       : 'No definition selected';

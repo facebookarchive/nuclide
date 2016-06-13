@@ -34,7 +34,7 @@ import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import pathModule from 'path';
 
 let atomPanel: ?Object;
-let dialogComponent: ?React.Component;
+let dialogComponent: ?React.Component<any, any, any>;
 
 class FileSystemActions {
   openAddFolderDialog(onDidConfirm: (filePath: ?string) => mixed): void {

@@ -44,7 +44,7 @@ let keyLatency = 0;
 let lastKeyLatency = 0;
 let keyLatencyHistogram: ?HistogramTracker = null;
 
-let paneItemState$: ?Rx.BehaviorSubject = null;
+let paneItemState$: ?Rx.BehaviorSubject<any> = null;
 
 let subscriptions: CompositeDisposable = (null: any);
 

@@ -57,7 +57,7 @@ export class PinnedDatatip {
   _mouseSubscription: ?rx$ISubscription;
   _subscriptions: atom$CompositeDisposable;
   _range: atom$Range;
-  _component: ReactClass;
+  _component: ReactClass<any>;
   _editor: TextEditor;
   _hostElement: HTMLElement;
   _boundDispose: Function;

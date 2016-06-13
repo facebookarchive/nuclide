@@ -50,7 +50,7 @@ export default class ConsoleHeader extends React.Component {
     this.props.toggleRegExpFilter();
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const options = [
       ...this.props.sources
         .slice()

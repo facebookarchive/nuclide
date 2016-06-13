@@ -29,7 +29,7 @@ type Props = {
 
 export class NewDebuggerView extends React.Component {
   props: Props;
-  _wrappedComponent: ReactClass;
+  _wrappedComponent: ReactClass<any>;
 
   constructor(props: Props) {
     super(props);
@@ -41,7 +41,7 @@ export class NewDebuggerView extends React.Component {
     );
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const {
       model,
     } = this.props;

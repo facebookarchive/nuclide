@@ -29,5 +29,7 @@ esproposal.decorators=ignore
 unsafe.enable_getters_and_setters=true
 module.use_strict=true
 
+experimental.strict_type_args=true
+
 [version]
 0.26.0

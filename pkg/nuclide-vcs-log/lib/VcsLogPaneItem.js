@@ -17,7 +17,7 @@ import {CustomPaneItem} from '../../nuclide-ui/lib/CustomPaneItem';
 import VcsLog from './VcsLog';
 
 class VcsLogPaneItem extends CustomPaneItem {
-  __renderPaneItem(options: CustomPaneItemOptions): React.Element {
+  __renderPaneItem(options: CustomPaneItemOptions): React.Element<any> {
     return <VcsLog {...options.initialProps} />;
   }
 

@@ -34,7 +34,7 @@ class RemoteDirectoryProvider {
     }
   }
 
-  directoryForURI(uri: string): Promise {
+  directoryForURI(uri: string): Promise<any> {
     return Promise.resolve(this.directoryForURISync(uri));
   }
 }

@@ -56,7 +56,7 @@ const DebuggerSessionSelector = React.createClass({
     }
   },
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     return (
       <section className="padded">
         <h2>Attach to Process</h2>
@@ -98,7 +98,7 @@ const DebuggerSessionSelector = React.createClass({
     });
   },
 
-  _renderProcessChoices(): ?Array<React.Element> {
+  _renderProcessChoices(): ?Array<React.Element<any>> {
     return this.state.processes
       .map((item, index) =>
         <option key={item.toString()} value={index}>

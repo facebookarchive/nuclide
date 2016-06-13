@@ -249,7 +249,7 @@ export const TreeRootComponent = React.createClass({
     atom.contextMenu.add(contextMenuObj);
   },
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     if (this.state.roots.length === 0) {
       return this.props.elementToRenderWhenEmpty;
     }
@@ -258,7 +258,7 @@ export const TreeRootComponent = React.createClass({
     const expandedKeys = this.state.expandedKeys;
     let foundFirstSelectedDescendant: boolean = false;
 
-    const promises: Array<Promise> = [];
+    const promises: Array<Promise<any>> = [];
     const allKeys: Array<string> = [];
     const keyToNode: { [key:string]: LazyTreeNode} = {};
 

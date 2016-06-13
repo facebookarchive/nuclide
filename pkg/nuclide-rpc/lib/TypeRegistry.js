@@ -570,7 +570,7 @@ export class TypeRegistry {
     });
 
     // Serialize / Deserialize Maps.
-    this._registerKind('map', (map: Map, type: Type, context: ObjectRegistry) => {
+    this._registerKind('map', (map: Map<any, any>, type: Type, context: ObjectRegistry) => {
       assert(map instanceof Map, 'Expected an object of type Set.');
       invariant(type.kind === 'map');
       const serializePromises = [];

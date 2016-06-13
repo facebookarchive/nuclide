@@ -35,7 +35,7 @@ function isObjectValue(result: EvaluationResult): boolean {
   return result._objectId != null;
 }
 
-function TreeItemWithLoadingSpinner(): React.Element {
+function TreeItemWithLoadingSpinner(): React.Element<any> {
   return <TreeItem><LoadingSpinner size="EXTRA_SMALL" delay={SPINNER_DELAY} /></TreeItem>;
 }
 
@@ -45,7 +45,7 @@ type LoadableValueComponentProps = {
   path: string;
   expandedValuePaths: Set<string>;
   onExpandedStateChange: (path: string, isExpanded: boolean) => void;
-  simpleValueComponent: ReactClass;
+  simpleValueComponent: ReactClass<any>;
 };
 
 /**
@@ -84,9 +84,9 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
 
 // TODO allow passing action components (edit button, pin button) here
 function renderValueLine(
-  expression: React.Element | ?string,
-  value: React.Element | string,
-): React.Element {
+  expression: React.Element<any> | ?string,
+  value: React.Element<any> | string,
+): React.Element<any> {
   if (expression == null) {
     return <div>{value}</div>;
   } else {
@@ -108,7 +108,7 @@ type LazyNestedValueComponentProps = {
   expandedValuePaths: Set<string>;
   onExpandedStateChange: (path: string, expanded: boolean) => void;
   path: string;
-  simpleValueComponent: ReactClass;
+  simpleValueComponent: ReactClass<any>;
 };
 
 type LazyNestedValueComponentState = {
@@ -197,7 +197,7 @@ class ValueComponent extends React.Component {
     event.stopPropagation();
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const {
       evaluationResult,
       expression,
@@ -233,7 +233,6 @@ class ValueComponent extends React.Component {
       } else {
         const ChildrenComponent = bindObservableAsProps(
           children.map(childrenValue => ({children: childrenValue})).startWith({children: null}),
-          // $FlowIssue HOC
           LoadableValueComponent
         );
         childListElement = (
@@ -265,7 +264,7 @@ type TopLevelValueComponentProps = {
   evaluationResult: ?EvaluationResult;
   fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
   expression: ?string;
-  simpleValueComponent: ReactClass;
+  simpleValueComponent: ReactClass<any>;
 };
 
 /**
@@ -294,7 +293,7 @@ class TopLevelLazyNestedValueComponent extends React.Component {
     }
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     return (
       <span className="nuclide-ui-lazy-nested-value">
         <ValueComponent

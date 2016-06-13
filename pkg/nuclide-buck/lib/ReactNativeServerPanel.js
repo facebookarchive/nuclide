@@ -38,7 +38,7 @@ export default class ReactNativeServerPanel extends React.Component {
     this._storeSubscription.dispose();
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     // TODO(natthu): Add another button to allow debugging RN Javascript.
     const status = this.props.store.isServerRunning()
       ? <span className="inline-block highlight-success">Running</span>

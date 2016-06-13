@@ -17,7 +17,7 @@
 export default function consumeFirstProvider(
   keyPath: string,
   version: string = '0.0.0',
-): Promise {
+): Promise<any> {
   return new Promise((resolve, reject) => {
     const subscription =
       atom.packages.serviceHub.consume(keyPath, version, provider => {

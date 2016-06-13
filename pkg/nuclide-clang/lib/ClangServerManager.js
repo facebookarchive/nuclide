@@ -59,7 +59,7 @@ export function getServiceRegistry(): ServiceRegistry {
 export default class ClangServerManager {
 
   _flagsManager: ClangFlagsManager;
-  _servers: LRUCache;
+  _servers: LRUCache<any, any>;
   _checkMemoryUsage: () => Promise<void>;
 
   constructor() {

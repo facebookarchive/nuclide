@@ -66,8 +66,8 @@ export class BuildSystem {
     this._tasks = new BehaviorSubject([]);
   }
 
-  getIcon(): ReactClass {
-    return ((null: any): ReactClass);
+  getIcon(): ReactClass<any> {
+    return ((null: any): ReactClass<any>);
   }
 
   observeTasks(callback: (tasks: Array<Task>) => mixed): IDisposable {

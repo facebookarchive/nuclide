@@ -95,7 +95,7 @@ function hackMessageToDiagnosticMessage(
 class HackDiagnosticsProvider {
   _busySignalProvider: BusySignalProviderBase;
   _providerBase: DiagnosticsProviderBase;
-  _requestSerializer: RequestSerializer;
+  _requestSerializer: RequestSerializer<any>;
 
   /**
    * Maps hack root to the set of file paths under that root for which we have

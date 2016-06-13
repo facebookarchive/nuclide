@@ -45,7 +45,7 @@ type ComponentSpec = {
   description: string;
   examples: Array<{
     title: string;
-    component: React.Component | () => React.Element;
+    component: React.Component<any, any, any> | () => React.Element<any>;
   }>;
 };
 
@@ -94,7 +94,7 @@ export class Playground extends React.Component {
   renderExampleForComponent(
     spec: ComponentSpec,
     index: number,
-  ): React.Element {
+  ): React.Element<any> {
     const {
       sectionName,
       description,
@@ -133,7 +133,7 @@ export class Playground extends React.Component {
     );
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const renderedExamples = playgroundComponents.map(this.renderExampleForComponent);
     return (
       <div className="nuclide-ui-playground">

@@ -18,7 +18,7 @@ import invariant from 'assert';
 
 let server: NuclideServer;
 let socket: NuclideSocket;
-let serverSocketClient: RpcConnection;
+let serverSocketClient: RpcConnection<any>;
 
 xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-disabled-tests
   beforeEach(() => {

@@ -79,7 +79,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     return null;
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const containerStyle = {
       maxHeight: '30em',
       overflow: 'auto',

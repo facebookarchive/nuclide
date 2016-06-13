@@ -47,13 +47,13 @@ class TabExample extends React.Component {
     };
   }
 
-  handleTabChange(newTabName: {name: string; tabContent: React.Element;}): void {
+  handleTabChange(newTabName: {name: string; tabContent: React.Element<any>;}): void {
     this.setState({
       activeTabName: newTabName.name,
     });
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const {activeTabName} = this.state;
     return (
       <Block>

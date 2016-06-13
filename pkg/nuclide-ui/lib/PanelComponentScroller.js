@@ -23,7 +23,7 @@ type Props = {
 export class PanelComponentScroller extends React.Component {
   props: Props;
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const style = (this.props.overflowX == null) ? null : {overflowX: this.props.overflowX};
     const className = classnames('nuclide-ui-panel-component-scroller', {
       'nuclide-ui-panel-component-scroller--column': (this.props.flexDirection === 'column'),

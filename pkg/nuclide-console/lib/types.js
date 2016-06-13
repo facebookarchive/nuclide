@@ -65,7 +65,7 @@ export type Executor = {
   output: Rx.Observable<Message> | Rx.Observable<{result: EvaluationResult}>;
   scopeName?: string;
   getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>;
-  renderValue?: ReactClass;
+  renderValue?: ReactClass<any>;
 };
 
 export type RegisterExecutorFunction = (executor: Executor) => IDisposable;

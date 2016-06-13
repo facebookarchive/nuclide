@@ -38,7 +38,7 @@ export const Tabs = React.createClass({
     }
   },
 
-  _renderTabMenu(): React.Element {
+  _renderTabMenu(): React.Element<any> {
     const tabs = this.props.tabs.map(tab => {
       const handler = {};
       handler[this.props.triggeringEvent] = this._handleTabChange.bind(this, tab.name);
@@ -63,7 +63,7 @@ export const Tabs = React.createClass({
     );
   },
 
-  render(): React.Element {
+  render(): React.Element<any> {
     return (
       <div className="nuclide-tabs">
         {this._renderTabMenu()}

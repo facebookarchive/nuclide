@@ -15,7 +15,7 @@ import {React} from 'react-for-atom';
  * Component to entertain the user while he is waiting to hear back from the server.
  */
 export default class IndeterminateProgressBar extends React.Component {
-  render(): React.Element {
+  render(): React.Element<any> {
     return (
       <div className="text-center padded">
         <span className="loading loading-spinner-medium inline-block"></span>

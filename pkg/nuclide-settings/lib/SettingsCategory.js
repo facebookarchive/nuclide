@@ -24,7 +24,7 @@ type Props = {
 export default class SettingsCategory extends React.Component {
   props: Props;
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const elements = [];
 
     // Category title.
@@ -63,7 +63,7 @@ function getSortedSettingsArray(settings: Object, pkgName: string): Array<string
   return settingsArray;
 }
 
-function renderSetting(packageName: string, settingData: Object): ?React.Element {
+function renderSetting(packageName: string, settingData: Object): ?React.Element<any> {
   const {description, keyPath, name, onChanged, title, value} = settingData;
   invariant(keyPath === (packageName + '.' + name));
   const schema = featureConfig.getSchema(keyPath);

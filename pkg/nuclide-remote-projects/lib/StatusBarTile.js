@@ -23,7 +23,7 @@ const StatusBarTile = React.createClass({
     fileUri: React.PropTypes.string,
   },
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     let iconName = null;
     switch (this.props.connectionState) {
       case ConnectionState.NONE:

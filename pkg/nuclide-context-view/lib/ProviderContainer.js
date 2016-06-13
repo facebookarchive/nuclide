@@ -17,7 +17,7 @@ export class ProviderContainer extends React.Component {
     children: React.PropTypes.element.isRequired,
   };
 
-  render(): React.Element {
+  render(): React.Element<any> {
     return (
       <div className="padded nuclide-context-view-provider-container">
         <div className="inset-panel">

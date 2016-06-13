@@ -38,7 +38,7 @@ class RadioGroupExample extends React.Component {
     });
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     return (
       <Block>
         <RadioGroup

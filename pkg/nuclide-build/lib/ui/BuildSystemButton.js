@@ -19,7 +19,7 @@ const MenuItem = remote.require('menu-item');
 
 type Props = {
   value: ?string;
-  icon: ?ReactClass;
+  icon: ?ReactClass<any>;
   options: Array<IconButtonOption>;
   onChange: (value: string) => void;
   disabled?: boolean;
@@ -49,7 +49,7 @@ export class BuildSystemButton extends React.Component {
     menu.popup(currentWindow, event.clientX, event.clientY);
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const {icon: Icon} = this.props;
     // Render the button, making sure that the icon is centered.
     return (

@@ -23,8 +23,8 @@
  *     `verify()` must throw an exception.
  */
 async function expectAsyncFailure(
-    promise: Promise,
-    verify: (error: Error) => void): Promise {
+    promise: Promise<any>,
+    verify: (error: Error) => void): Promise<any> {
   try {
     await promise;
     return Promise.reject('Promise should have failed, but did not.');
@@ -118,7 +118,7 @@ function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
 /**
  * Checks if the contents of two sets are identical
  */
-function areSetsEqual(set1: Set, set2: Set): boolean {
+function areSetsEqual(set1: Set<any>, set2: Set<any>): boolean {
   for (const v1 of set1) {
     if (!set2.has(v1)) {
       return false;
@@ -140,7 +140,7 @@ import type {Observer} from 'rxjs';
  * Usage:
  *     observable = observable.do(loggingObserver('My Prefix'));
  */
-function loggingObserver(message: string): Observer {
+function loggingObserver(message: string): Observer<any> {
   const Rx = require('rxjs');
   return Rx.Observer.create(
     value => {

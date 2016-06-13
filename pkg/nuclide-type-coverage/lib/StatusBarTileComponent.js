@@ -37,7 +37,7 @@ export class StatusBarTileComponent extends React.Component {
     super(props);
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const result = this.props.result;
     if (result != null) {
       const percentage = result.percentage;

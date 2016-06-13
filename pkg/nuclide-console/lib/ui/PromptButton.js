@@ -33,7 +33,7 @@ export default class PromptButton extends React.Component {
     (this: any)._handleClick = this._handleClick.bind(this);
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     return (
       <span className="nuclide-console-prompt-wrapper" onClick={this._handleClick}>
         <span className="nuclide-console-prompt-label">

@@ -148,7 +148,7 @@ export class AtomInput extends React.Component {
     }
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const className = classNames(this.props.className, {
       'atom-text-editor-unstyled': this.props.unstyled,
       [`atom-text-editor-${this.props.size}`]: (this.props.size != null),

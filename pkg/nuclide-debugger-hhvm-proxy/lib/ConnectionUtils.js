@@ -21,7 +21,7 @@ async function getHackRoot(filePath: string): Promise<?string> {
   return await fsPromise.findNearestFile('.hhconfig', filePath);
 }
 
-export async function setRootDirectoryUri(directoryUri: string): Promise {
+export async function setRootDirectoryUri(directoryUri: string): Promise<any> {
   const hackRootDirectory = await getHackRoot(directoryUri);
   logger.log(`setRootDirectoryUri: from ${directoryUri} to ${hackRootDirectory}`);
   // TODO: make xdebug_includes.php path configurable from hhconfig.

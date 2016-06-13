@@ -17,7 +17,7 @@ import {
   BadgeSizes,
 } from './Badge';
 
-const BadgeBasicExample = (): React.Element => (
+const BadgeBasicExample = (): React.Element<any> => (
   <div>
     <Block>
       <Badge value={1} />{' '}
@@ -27,7 +27,7 @@ const BadgeBasicExample = (): React.Element => (
   </div>
 );
 
-const BadgeColorExample = (): React.Element => (
+const BadgeColorExample = (): React.Element<any> => (
   <div>
     <Block>
       Info: <Badge color={BadgeColors.info} value={123} />
@@ -44,7 +44,7 @@ const BadgeColorExample = (): React.Element => (
   </div>
 );
 
-const BadgeSizeExample = (): React.Element => (
+const BadgeSizeExample = (): React.Element<any> => (
   <div>
     <Block>
       Small: <Badge size={BadgeSizes.small} value={123} />
@@ -58,7 +58,7 @@ const BadgeSizeExample = (): React.Element => (
   </div>
 );
 
-const BadgeIconExample = (): React.Element => (
+const BadgeIconExample = (): React.Element<any> => (
   <div>
     <Block>
       <Badge icon="gear" value={13} />{' '}

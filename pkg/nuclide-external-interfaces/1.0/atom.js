@@ -260,7 +260,7 @@ declare class atom$PackageManager {
   getAvailablePackageNames(): Array<string>;
 
   // (Undocumented.)
-  activate(): Promise;
+  activate(): Promise<any>;
   deactivatePackages(): void;
   deactivatePackage(name: string): void;
   loadPackage(name: string): void;
@@ -455,7 +455,7 @@ declare class atom$ThemeManager {
   getEnabledThemeNames(): Array<string>;
 
   // Private
-  activateThemes(): Promise;
+  activateThemes(): Promise<any>;
   requireStylesheet(stylesheetPath: string): IDisposable;
 }
 

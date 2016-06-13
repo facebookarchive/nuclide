@@ -64,7 +64,7 @@ export class Dropdown extends React.Component {
     this.props.onChange(option == null ? null : option.value);
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const options = this.props.options.map((item, index) =>
       // Use indexes for values. This allows us to have non-string values in our options object.
       <option key={index} value={index}>{item.label}</option>

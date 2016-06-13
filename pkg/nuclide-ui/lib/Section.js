@@ -12,8 +12,8 @@
 import {React} from 'react-for-atom';
 
 type Props = {
-  children?: React.Element;
-  headline: React.Element | string;
+  children?: React.Element<any>;
+  headline: React.Element<any> | string;
 };
 
 /** A vertical divider with a title. */

@@ -34,7 +34,7 @@ export default class UncommittedChangesTimelineNode extends React.Component {
     (this: any)._handleClickAmend = this._handleClickAmend.bind(this);
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const {dirtyFileCount} = this.props;
     const hasChanges = dirtyFileCount > 0;
     const bubbleClassName = classnames('revision-bubble revision-bubble--uncommitted', {

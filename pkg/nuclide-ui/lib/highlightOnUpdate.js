@@ -15,7 +15,7 @@ import {React} from 'react-for-atom';
  * Wraps DecoratedComponent in a special `span` with a configurable classname whenever the
  * component's props change.
  */
-export function highlightOnUpdate<T : ReactClass>(
+export function highlightOnUpdate<T : ReactClass<any>>(
   ComposedComponent: T,
   /**
    * The result of this function determines whether to apply the highlight or not.
@@ -63,7 +63,7 @@ export function highlightOnUpdate<T : ReactClass>(
       );
     }
 
-    render(): React.Element {
+    render(): React.Element<any> {
       return (
         <span className={`${className} ${this.showFlash ? className + '-highlight' : ''}`}>
           <ComposedComponent {...this.props} />

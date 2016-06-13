@@ -76,7 +76,11 @@ export default class Commands {
    * through which all pane item creation goes (new pane item creation, deserialization,
    * splitting, reopening, etc.).
    */
-  createPaneItem(gadgetId: string, props?: Object, isNew: boolean = true): ?React.Component {
+  createPaneItem(
+    gadgetId: string,
+    props?: Object,
+    isNew: boolean = true,
+  ): ?React.Component<any, any, any> {
     // Look up the gadget.
     const gadget = this._getState().get('gadgets').get(gadgetId);
 

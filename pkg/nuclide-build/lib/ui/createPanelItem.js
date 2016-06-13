@@ -11,7 +11,7 @@
 
 import {React, ReactDOM} from 'react-for-atom';
 
-export function createPanelItem(reactElement: React.Element): Object {
+export function createPanelItem(reactElement: React.Element<any>): Object {
   const element = document.createElement('div');
   const mounted = ReactDOM.render(reactElement, element);
   // Add the DOM element as the "element" property of the instance. (Atom looks for this.)

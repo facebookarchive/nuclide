@@ -29,7 +29,7 @@ class Handler {
     return this._domain;
   }
 
-  handleMethod(id: number, method: string, params: Object): Promise {
+  handleMethod(id: number, method: string, params: Object): Promise<any> {
     throw new Error('absrtact');
   }
 

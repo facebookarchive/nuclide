@@ -11,7 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 let subscriptions: ?CompositeDisposable = null;
-let watchers: ?Map = null;
+let watchers: ?Map<any, any> = null;
 
 export function activate(state: ?Object): void {
   const _subscriptions = new CompositeDisposable();

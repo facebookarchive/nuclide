@@ -18,7 +18,7 @@ import {
   NestedTreeItem,
 } from './Tree';
 
-const BasicTreeExample = (): React.Element => (
+const BasicTreeExample = (): React.Element<any> => (
   <div>
     Trees
     <Block>
@@ -35,7 +35,7 @@ const BasicTreeExample = (): React.Element => (
   </div>
 );
 
-const AtomStyleguideTreeExample = (): React.Element => (
+const AtomStyleguideTreeExample = (): React.Element<any> => (
   <Block>
     <TreeList showArrows={true}>
       <NestedTreeItem

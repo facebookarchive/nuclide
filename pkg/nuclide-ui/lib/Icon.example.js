@@ -13,7 +13,7 @@ import {React} from 'react-for-atom';
 import {Block} from './Block';
 import {Icon} from './Icon';
 
-const IconExample = (): React.Element => (
+const IconExample = (): React.Element<any> => (
   <div>
     <Block>
       <Icon icon="gift" />
@@ -23,7 +23,7 @@ const IconExample = (): React.Element => (
   </div>
 );
 
-const IconWithTextExample = (): React.Element => (
+const IconWithTextExample = (): React.Element<any> => (
   <div>
     <Block>
       <div><Icon icon="gift">gift</Icon></div>

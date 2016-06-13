@@ -23,7 +23,7 @@ class PageHandler extends Handler {
     super('Page', clientCallback);
   }
 
-  async handleMethod(id: number, method: string, params: ?Object): Promise {
+  async handleMethod(id: number, method: string, params: ?Object): Promise<any> {
     switch (method) {
       case 'canScreencast':
         this.replyToCommand(id, {result: false});

@@ -169,7 +169,7 @@ class NuclideServer {
     }
   }
 
-  connect(): Promise {
+  connect(): Promise<any> {
     return new Promise((resolve, reject) => {
       this._webServer.on('listening', () => {
         resolve();

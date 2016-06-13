@@ -100,7 +100,7 @@ export class StatusBarTile extends React.Component {
     this.setState({isActive});
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     return (
       <StatusBarTileComponent {...this.state} onClick={this.props.onClick} />
     );

@@ -43,7 +43,7 @@ export class PromisePool {
    * @return A Promise that will be resolved/rejected in response to the
    *     execution of the executor.
    */
-  submit(executor: Executor): Promise {
+  submit(executor: Executor): Promise<any> {
     const id = this._getNextRequestId();
     this._fifo.push({id, executor});
     const promise = new Promise((resolve, reject) => {
@@ -103,7 +103,7 @@ export class PromiseQueue {
    * @return A Promise that will be resolved/rejected in response to the
    *     execution of the executor.
    */
-  submit(executor: Executor): Promise {
+  submit(executor: Executor): Promise<any> {
     return this._promisePool.submit(executor);
   }
 }

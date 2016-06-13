@@ -24,7 +24,7 @@ import {React, ReactDOM} from 'react-for-atom';
 */
 export default function addTooltip(
   options: atom$TooltipsAddOptions,
-): (elementRef: React.Element) => void {
+): (elementRef: React.Element<any>) => void {
   let prevRefDisposable;
 
   return elementRef => {

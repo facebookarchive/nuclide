@@ -61,7 +61,7 @@ export default class DiffTimelineView extends React.Component {
     });
   }
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     let content = null;
     const {diffModel, onSelectionChange} = this.props;
     const {revisionsState} = this.state;
@@ -107,7 +107,7 @@ type RevisionsComponentProps = {
   revisions: Array<RevisionInfo>;
 };
 
-function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Element {
+function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Element<any> {
 
   const {revisions, compareRevisionId} = props;
   const latestToOldestRevisions = revisions.slice().reverse();

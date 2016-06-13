@@ -52,7 +52,7 @@ export class Connection {
     return this._socket.setBreakpoint(filename, lineNumber);
   }
 
-  removeBreakpoint(breakpointId: string): Promise {
+  removeBreakpoint(breakpointId: string): Promise<any> {
     return this._socket.removeBreakpoint(breakpointId);
   }
 

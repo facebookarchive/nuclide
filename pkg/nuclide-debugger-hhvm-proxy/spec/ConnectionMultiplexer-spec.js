@@ -240,7 +240,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     expectListen();
   });
 
-  async function doAttach(): Promise {
+  async function doAttach(): Promise<any> {
     connectionMultiplexer.listen();
     expectListen();
 
@@ -271,7 +271,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     enabledIndex++;
   }
 
-  async function doEnable(): Promise {
+  async function doEnable(): Promise<any> {
     await doAttach();
 
     sendConnectionStatus(0, STATUS_BREAK);
@@ -397,7 +397,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       expectDetached(0);
     });
   });
-  async function gotoFFT(): Promise {
+  async function gotoFFT(): Promise<any> {
     await doAttach();
     expect(connectionSpys[0]).not.toBe(undefined);
     await onDbgpConnectorAttach({
@@ -442,7 +442,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       expectDetached(1);
     });
   });
-  async function gotoTFT(): Promise {
+  async function gotoTFT(): Promise<any> {
     await gotoFFT();
     sendConnectionStatus(2, STATUS_BREAK);
 
@@ -504,7 +504,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       expectDetached(2);
     });
   });
-  async function gotoTTT(): Promise {
+  async function gotoTTT(): Promise<any> {
     await gotoFFT();
     sendConnectionStatus(0, STATUS_BREAK);
     sendConnectionStatus(2, STATUS_BREAK);
@@ -595,7 +595,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       expectDetached(0);
     });
   });
-  async function gotoTTF(): Promise {
+  async function gotoTTF(): Promise<any> {
     await gotoFFT();
     sendConnectionStatus(1, STATUS_BREAK);
     sendConnectionStatus(0, STATUS_BREAK);

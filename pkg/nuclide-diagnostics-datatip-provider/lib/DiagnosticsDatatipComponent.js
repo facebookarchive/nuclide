@@ -26,7 +26,7 @@ const NOOP = () => {};
 export class DiagnosticsDatatipComponent extends React.Component {
   props: DiagnosticsDatatipComponentProps;
 
-  render(): React.Element {
+  render(): React.Element<any> {
     // Remove the `fix` property to prevent the fix button from showing up (for now).
     const message = {...this.props.message, fix: undefined};
     return (
@@ -41,6 +41,6 @@ export class DiagnosticsDatatipComponent extends React.Component {
   }
 }
 
-export function makeDiagnosticsDatatipComponent(message: FileDiagnosticMessage): ReactClass {
+export function makeDiagnosticsDatatipComponent(message: FileDiagnosticMessage): ReactClass<any> {
   return () => <DiagnosticsDatatipComponent message={message} />;
 }

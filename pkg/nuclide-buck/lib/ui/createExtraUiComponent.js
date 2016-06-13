@@ -24,11 +24,11 @@ import {React} from 'react-for-atom';
 export function createExtraUiComponent(
   store: BuckToolbarStore,
   actions: BuckToolbarActions,
-): ReactClass {
+): ReactClass<any> {
 
   return class ExtraUi extends React.Component {
 
-    render(): React.Element {
+    render(): React.Element<any> {
       return (
         <BuckToolbar store={store} actions={actions} />
       );

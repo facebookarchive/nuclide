@@ -15,7 +15,7 @@ type DatatipComponentProps = {
   word: string;
 };
 
-export function makeSampleDatatipComponent(word: string): ReactClass {
+export function makeSampleDatatipComponent(word: string): ReactClass<any> {
   return () => <SampleDatatipComponent word={word} />;
 }
 

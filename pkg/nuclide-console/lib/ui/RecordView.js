@@ -26,7 +26,7 @@ type Props = {
 export default class RecordView extends React.Component {
   props: Props;
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const {record} = this.props;
     const classNames = classnames(
       'nuclide-console-record',
@@ -70,7 +70,7 @@ function getHighlightClassName(level: Level): string {
   }
 }
 
-function renderContent(record: Record, getExecutor: (id: string) => ?Executor): React.Element {
+function renderContent(record: Record, getExecutor: (id: string) => ?Executor): React.Element<any> {
   if (record.kind === 'request') {
     return <CodeBlock text={record.text} scopeName={record.scopeName} />;
   } else if (record.kind === 'response') {

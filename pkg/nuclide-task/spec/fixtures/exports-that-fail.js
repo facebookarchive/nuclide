@@ -16,7 +16,7 @@ module.exports = {
     throw Error('All I do is fail.');
   },
 
-  returnsRejectedPromise(): Promise {
+  returnsRejectedPromise(): Promise<any> {
     // TODO(mbolin): If this passes a string rather than an Error, the unit test
     // fails.
     return Promise.reject(Error('Explicit fail with rejected Promise.'));

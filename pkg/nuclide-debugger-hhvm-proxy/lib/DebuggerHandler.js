@@ -64,7 +64,7 @@ export class DebuggerHandler extends Handler {
     this._emitter.on(SESSION_END_EVENT, callback);
   }
 
-  async handleMethod(id: number, method: string, params: Object): Promise {
+  async handleMethod(id: number, method: string, params: Object): Promise<any> {
 
     switch (method) {
 
@@ -131,7 +131,7 @@ export class DebuggerHandler extends Handler {
     }
   }
 
-  async _setPauseOnExceptions(id: number, params: Object): Promise {
+  async _setPauseOnExceptions(id: number, params: Object): Promise<any> {
     const {state} = params;
     await this._connectionMultiplexer.setPauseOnExceptions(state);
     this.replyToCommand(id, {});
@@ -158,7 +158,7 @@ export class DebuggerHandler extends Handler {
       ]});
   }
 
-  async _removeBreakpoint(id: number, params: Object): Promise {
+  async _removeBreakpoint(id: number, params: Object): Promise<any> {
     const {breakpointId} = params;
     await this._connectionMultiplexer.removeBreakpoint(breakpointId);
     this.replyToCommand(id, {id: breakpointId});
@@ -204,14 +204,14 @@ export class DebuggerHandler extends Handler {
     this._connectionMultiplexer.sendContinuationCommand(command);
   }
 
-  async _sendBreakCommand(id: number): Promise {
+  async _sendBreakCommand(id: number): Promise<any> {
     const response = await this._connectionMultiplexer.sendBreakCommand();
     if (!response) {
       this.replyWithError(id, 'Unable to break');
     }
   }
 
-  async _onStatusChanged(status: string): Promise {
+  async _onStatusChanged(status: string): Promise<any> {
     logger.log('Sending status: ' + status);
     switch (status) {
       case STATUS_BREAK:
@@ -235,7 +235,7 @@ export class DebuggerHandler extends Handler {
   }
 
   // May only call when in paused state.
-  async _sendPausedMessage(): Promise {
+  async _sendPausedMessage(): Promise<any> {
     this.sendMethod(
       'Debugger.paused',
       {

@@ -23,7 +23,7 @@ const WS_URL = `ws://localhost:${EXECUTOR_PORT}/debugger-proxy?role=debugger&nam
 
 export class DebuggerProxyClient {
 
-  _children: Set;
+  _children: Set<any>;
   _shouldConnect: boolean;
   _emitter: EventEmitter;
   _wsDisposable: ?IDisposable;

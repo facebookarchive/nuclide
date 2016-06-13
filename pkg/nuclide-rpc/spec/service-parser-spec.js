@@ -376,7 +376,7 @@ function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object }
   return obj;
 }
 
-function mapToJSON(map: Map): Object {
+function mapToJSON(map: Map<any, any>): Object {
   const result = {};
   for (const it of map.entries()) {
     result[it[0]] = it[1];

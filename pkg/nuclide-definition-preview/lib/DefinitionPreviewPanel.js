@@ -107,7 +107,7 @@ class Header extends React.Component {
     this.subscription = null;
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     return (
       // Because the container is flex, prevent this header from shrinking smaller than its
       // contents. The default for flex children is to shrink as needed.

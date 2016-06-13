@@ -39,7 +39,7 @@ type SerializedDiffViewState = {
 
 let diffViewModel: ?DiffViewModelType = null;
 let activeDiffView: ?{
-  component: React.Component;
+  component: React.Component<any, any, any>;
   element: HTMLElement;
 } = null;
 

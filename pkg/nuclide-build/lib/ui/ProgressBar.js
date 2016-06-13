@@ -21,7 +21,7 @@ type Props = {
 export class ProgressBar extends React.Component {
   props: Props;
 
-  render(): ?React.Element {
+  render(): ?React.Element<any> {
     const className = classnames(
       'nuclide-build-progress-bar', {
         indeterminate: this._isIndeterminate(),
@@ -38,7 +38,7 @@ export class ProgressBar extends React.Component {
     return this.props.progress == null;
   }
 
-  _renderBar(): ?React.Element {
+  _renderBar(): ?React.Element<any> {
     if (this._isIndeterminate()) {
       return null;
     }
@@ -56,7 +56,7 @@ type BarProps = {
 class Bar extends React.Component {
   props: BarProps;
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const pct = Math.max(0,
       Math.min(100, this.props.progress * 100),
     );

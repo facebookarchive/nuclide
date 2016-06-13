@@ -25,7 +25,7 @@ const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
 import {logger} from './hack-config';
 
 let hhPromiseQueue: ?PromiseQueue = null;
-const pendingSearchPromises: Map<string, Promise> = new Map();
+const pendingSearchPromises: Map<string, Promise<any>> = new Map();
 
  /**
   * Executes hh_client with proper arguments returning the result string or json object.

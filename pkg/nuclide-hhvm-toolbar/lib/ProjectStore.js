@@ -47,7 +47,7 @@ class ProjectStore {
     callback();
   }
 
-  async _onDidChangeActivePaneItem(): Promise {
+  async _onDidChangeActivePaneItem(): Promise<any> {
     const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (!activeTextEditor) {
       return;

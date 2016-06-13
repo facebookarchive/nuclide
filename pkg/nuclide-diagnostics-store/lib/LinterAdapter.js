@@ -115,7 +115,7 @@ export class LinterAdapter {
 
   _enabled: boolean;
 
-  _requestSerializer: RequestSerializer;
+  _requestSerializer: RequestSerializer<any>;
 
   _providerUtils: DiagnosticsProviderBase;
 

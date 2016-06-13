@@ -46,7 +46,7 @@ export default class VcsLog extends React.Component {
     };
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const {logEntries} = this.state;
     if (logEntries != null) {
       // Even if the "Show Differential Revision" preference is enabled, only show the column if

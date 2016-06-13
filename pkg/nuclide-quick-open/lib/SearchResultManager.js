@@ -19,7 +19,7 @@ import type {
 import type {Dispatcher} from 'flux';
 
 type ResultRenderer =
-  (item: FileResult, serviceName: string, dirName: string) => React.Element;
+  (item: FileResult, serviceName: string, dirName: string) => React.Element<any>;
 
 import invariant from 'assert';
 import {track} from '../../nuclide-analytics';

@@ -79,7 +79,7 @@ export type HighlightedLines = {
 };
 
 export type UIElement = {
-  node: React.Element;
+  node: React.Element<any>;
   bufferRow: number;
 };
 

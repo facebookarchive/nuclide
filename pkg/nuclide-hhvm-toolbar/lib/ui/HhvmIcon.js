@@ -27,7 +27,7 @@ export default class HhvmIcon extends React.Component {
     width: '16px',
   };
 
-  render(): React.Element {
+  render(): React.Element<any> {
     return (
       <svg className="hhvm-icon"
         version="1.1"

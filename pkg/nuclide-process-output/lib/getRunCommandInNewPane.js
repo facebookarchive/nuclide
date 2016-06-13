@@ -25,7 +25,7 @@ export type RunCommandOptions = {
    */
   processOutputHandler?: ProcessOutputHandler;
   /* An optional React component that will be placed at the top of the process output view. */
-  processOutputViewTopElement?: React.Element;
+  processOutputViewTopElement?: React.Element<any>;
   /* If true, before opening the new tab, it will close any existing tab with the same title. */
   destroyExistingPane?: boolean;
 };
@@ -46,7 +46,7 @@ const PROCESS_OUTPUT_VIEW_TOP_ELEMENT = 'nuclide-processOutputViewTopElement';
 type CreateProcessOutputViewOptions = {
   'nuclide-processOutputHandler': ?ProcessOutputHandler;
   'nuclide-processOutputStore': ProcessOutputStore;
-  'nuclide-processOutputViewTopElement': ?React.Element;
+  'nuclide-processOutputViewTopElement': ?React.Element<any>;
 };
 
 let subscriptions: ?CompositeDisposable;

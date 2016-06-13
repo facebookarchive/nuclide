@@ -22,7 +22,7 @@ import {React} from 'react-for-atom';
  * The wrapped component is guaranteed to render only if the observable has resolved;
  * otherwise, the wrapper component renders `null`.
  */
-export function bindObservableAsProps<T : ReactClass>(
+export function bindObservableAsProps<T : ReactClass<any>>(
   stream: Observable<{[key: string]: any}>,
   ComposedComponent: T,
 ): T {
@@ -52,7 +52,7 @@ export function bindObservableAsProps<T : ReactClass>(
       }
     }
 
-    render(): ?React.Element {
+    render(): ?React.Element<any> {
       if (!this._resolved) {
         return null;
       }

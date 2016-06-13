@@ -17,10 +17,10 @@ import invariant from 'assert';
 
 export default class Commands {
 
-  _observer: rx$IObserver;
+  _observer: rx$IObserver<any>;
   _getState: () => AppState;
 
-  constructor(observer: rx$IObserver, getState: () => AppState) {
+  constructor(observer: rx$IObserver<any>, getState: () => AppState) {
     this._observer = observer;
     this._getState = getState;
   }

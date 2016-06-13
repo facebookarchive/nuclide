@@ -49,7 +49,7 @@ export default class QuickOpenHelpers {
     return false;
   }
 
-  static getComponentForItem(uncastedItem: FileResult): React.Element {
+  static getComponentForItem(uncastedItem: FileResult): React.Element<any> {
     const item = ((uncastedItem: any): Result);
     const path = relative(item.dir, item.path);
     let kind;

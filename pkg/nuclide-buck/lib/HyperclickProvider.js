@@ -72,7 +72,7 @@ async function parseTarget(
  * position property of the target location will be set to null.
  * If `target.path` file cannot be found or read, Promise resolves to null.
  */
-async function findTargetLocation(target: Target): Promise {
+async function findTargetLocation(target: Target): Promise<any> {
   let data;
   try {
     const fs = getFileSystemServiceByNuclideUri(target.path);

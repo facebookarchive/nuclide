@@ -95,7 +95,7 @@ export class FileTreeToolbarComponent extends React.Component {
     }
   }
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const workingSet = this._store.getWorkingSet();
     const editedWorkingSetIsEmpty = this._store.isEditedWorkingSetEmpty();
     const isEditingWorkingSet = this._store.isEditingWorkingSet();
@@ -245,7 +245,7 @@ class SelectWorkingSetButton extends React.Component {
     onFocus: () => void;
   };
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const {
       highlight,
       onClick,
@@ -274,7 +274,7 @@ class DefineWorkingSetButton extends React.Component {
     onClick: () => void;
   };
 
-  render(): React.Element {
+  render(): React.Element<any> {
     const {
       isActive,
       onClick,

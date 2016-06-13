@@ -15,7 +15,7 @@ import {Block} from './Block';
 import {AtomInput} from './AtomInput';
 import {AtomTextEditor} from './AtomTextEditor';
 
-const AtomInputExample = (): React.Element => (
+const AtomInputExample = (): React.Element<any> => (
   <div>
     <Block>
       <AtomInput
@@ -82,7 +82,7 @@ const editorWrapperStyle = {
   boxShadow: '0 0 20px 0 rgba(0, 0, 0, 0.3)',
 };
 
-const AtomTextEditorExample = (): React.Element => (
+const AtomTextEditorExample = (): React.Element<any> => (
   <Block>
     <div style={editorWrapperStyle}>
       <AtomTextEditor
