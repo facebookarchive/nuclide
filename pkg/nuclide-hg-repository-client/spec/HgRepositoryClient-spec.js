@@ -532,6 +532,7 @@ describe('HgRepositoryClient', () => {
       });
     });
 
+    // eslint-disable-next-line jasmine/no-disabled-tests
     xit('is updated when the active pane item changes to an editor, if the editor file is in the'
       + ' project.', () => {
       spyOn(repo, '_updateDiffInfo');

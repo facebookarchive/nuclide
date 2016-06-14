@@ -215,6 +215,7 @@ describe('RemoteFile', () => {
   });
 
   // TODO: #7344702 Re-enable and don't depend on watchman.
+  // eslint-disable-next-line jasmine/no-disabled-tests
   xdescribe('RemoteFile watchFile integration', () => {
     const WATCHMAN_SETTLE_TIME_MS = 1 * 1000;
     let tempDir;
@@ -261,6 +262,7 @@ describe('RemoteFile', () => {
     });
 
     // Watchman doesn't support rename event, if needed, will need to be fuzzily implemented.
+    // eslint-disable-next-line jasmine/no-disabled-tests
     xdescribe('when the file is renamed', () => {
       it('notifies ::onDidRename observers', () => {
         const renameHandler = jasmine.createSpy();

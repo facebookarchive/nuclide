@@ -340,6 +340,7 @@ describe('RemoteDirectory::rename()', () => {
 });
 
 // TODO: #7344702 Re-enable and don't depend on watchman.
+// eslint-disable-next-line jasmine/no-disabled-tests
 xdescribe('RemoteDirectory::onDidChange()', () => {
   const WATCHMAN_SETTLE_TIME_MS = 1 * 1000;
   let directoryPath;

@@ -52,6 +52,7 @@ describe('QueryItem', () => {
     const item = new QueryItem('He/y/Hello', '/');
 
     // TODO match indices not yet implemented. These are not provided by the FBIDE algorithm.
+    // eslint-disable-next-line jasmine/no-disabled-tests
     xit('should prefer matches after the last path separator', () => {
       const score = item.score('h');
       invariant(score);
@@ -69,6 +70,7 @@ describe('QueryItem', () => {
 
   describe('Misc', () => {
     // TODO match indices not yet implemented. These are not provided by the FBIDE algorithm.
+    // eslint-disable-next-line jasmine/no-disabled-tests
     xit('should prefer matches with an initialism', () => {
       const item = new QueryItem('AbBa');
       const score = item.score('ab');

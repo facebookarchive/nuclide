@@ -992,6 +992,7 @@ describe('PHP grammar', () => {
         });
       });
 
+      // eslint-disable-next-line jasmine/no-disabled-tests
       xit('should tokenize namespace at the same line as <?hh', () => {
         expect(grammar).toBeTruthy();
         grammar = grammar || {};

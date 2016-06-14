@@ -13,7 +13,7 @@ import http from 'http';
 import utils from '../lib/utils';
 import querystring from 'querystring';
 
-xdescribe('NuclideServer utils test', () => { // eslint-disable-line jasmine/no-disabled-tests
+describe('NuclideServer utils test', () => {
   let server;
   let customHandler;
 

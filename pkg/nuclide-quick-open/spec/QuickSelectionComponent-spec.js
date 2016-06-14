@@ -33,6 +33,7 @@ class TestQuickSelectionProvider {
   }
 }
 
+// eslint-disable-next-line jasmine/no-disabled-tests
 xdescribe('QuickSelectionComponent', () => {
   let componentRoot: Node;
   let component: QuickSelectionComponent;

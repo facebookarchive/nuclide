@@ -283,7 +283,7 @@ module.exports = {
     'jasmine/missing-expect': 0,
     'jasmine/named-spy': 0,
     'jasmine/no-assign-spyon': 0,
-    'jasmine/no-disabled-tests': 0,
+    'jasmine/no-disabled-tests': 1,
     'jasmine/no-focused-tests': 0,
     'jasmine/no-spec-dupes': [1, 'branch'],
     'jasmine/no-suite-callback-args': 0,

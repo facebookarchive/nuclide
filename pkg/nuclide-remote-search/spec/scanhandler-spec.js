@@ -148,6 +148,7 @@ describe('Scan Handler Tests', () => {
   // HG Grep test. This test is disabled due to differences in the behavior of
   // Mercurial between v3.3 (where hg grep searches the revision history), and v3.4
   // (where hg grep) searches the working directory.
+  // eslint-disable-next-line jasmine/no-disabled-tests
   xit('Hg repo: should ignore untracked files or files listed in .hgignore', () => {
     waitsForPromise(async () => {
       // Create a git repo in a temporary folder.
