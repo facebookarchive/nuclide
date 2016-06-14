@@ -112,7 +112,7 @@ describe('Buck building via toolbar', () => {
       listElements[0].click();
 
       // Since there's some debouncing going on, wait for the state to update before building.
-      await sleep(500);
+      await sleep(1000);
 
       // Run the project
       atom.commands.dispatch(workspaceView, 'nuclide-build:build');

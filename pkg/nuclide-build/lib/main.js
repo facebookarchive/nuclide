@@ -60,13 +60,13 @@ export function activate(rawState: ?SerializedAppState): void {
       'nuclide-build:toggle-toolbar-visibility': () => { commands.toggleToolbarVisibility(); },
     }),
 
-    // Update the Atom palette commands to match our tasks.
+    // Update the Atom palette commands to match our currently enabled tasks.
     syncAtomCommands(
       states
         .debounceTime(500)
         .map(state => state.tasks)
         .distinctUntilChanged()
-        .map(tasks => new Set(tasks.map(task => task.type))),
+        .map(tasks => new Set(tasks.filter(task => task.enabled).map(task => task.type))),
       taskType => ({
         'atom-workspace': {
           // $FlowFixMe(matthewwithanm)

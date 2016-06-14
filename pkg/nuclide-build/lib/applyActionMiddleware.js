@@ -89,6 +89,10 @@ export function applyActionMiddleware(
         const task = getState().tasks.find(t => t.type === taskType);
         invariant(task != null);
 
+        if (!task.enabled) {
+          return Observable.empty();
+        }
+
         return runTask(activeBuildSystem, task)
           // Stop listening once the task is done.
           .takeUntil(output.filter(a => (
