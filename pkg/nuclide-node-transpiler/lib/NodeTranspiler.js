@@ -18,6 +18,7 @@
 //------------------------------------------------------------------------------
 
 /*eslint-disable no-console*/
+/*eslint-disable prefer-object-spread/prefer-object-spread*/
 
 const assert = require('assert');
 const crypto = require('crypto');
@@ -93,13 +94,15 @@ class NodeTranspiler {
 
   getConfigDigest() {
     if (!this._configDigest) {
+      // Keep the digest consistent regardless of what directory we're in.
+      const optsOnly = Object.assign({}, BABEL_OPTIONS, {plugins: null});
       const hash = crypto
         .createHash('sha1')
         .update('babel-core', 'utf8')
         .update('\0', 'utf8')
         .update(this._babelVersion, 'utf8')
         .update('\0', 'utf8')
-        .update(JSON.stringify(BABEL_OPTIONS), 'utf8');
+        .update(JSON.stringify(optsOnly), 'utf8');
       // The source of this file and that of plugins is used as part of the
       // hash as a way to version our transforms.
       [__filename]
