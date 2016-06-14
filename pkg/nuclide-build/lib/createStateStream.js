@@ -93,7 +93,7 @@ function accumulateState(state: AppState, action: Action): AppState {
       const {buildSystem} = action.payload;
       const newState = {
         ...state,
-        buildSystems: state.buildSystems.set(buildSystem.id, buildSystem),
+        buildSystems: new Map(state.buildSystems).set(buildSystem.id, buildSystem),
       };
 
       // If the newly selected build system is the one we were waiting to restore from the user's
