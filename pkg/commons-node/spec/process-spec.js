@@ -407,4 +407,17 @@ describe('commons-node/process', () => {
       }
     });
   });
+
+  describe('observeProcess', () => {
+
+    it('completes the stream if the process errors', () => {
+      spyOn(console, 'error');
+      // If the stream doesn't complete, this will timeout.
+      waitsForPromise({timeout: 1000}, async () => {
+        await observeProcess(() => safeSpawn('fakeCommand')).toArray().toPromise();
+      });
+    });
+
+  });
+
 });

@@ -13,9 +13,8 @@ import type {Observer} from 'rxjs';
 import type {ProcessMessage} from './process-types';
 
 import child_process from 'child_process';
-import invariant from 'assert';
 import path from 'path';
-import {CompositeSubscription, observeStream, splitStream} from './stream';
+import {CompositeSubscription, observeStream, splitStream, takeWhileInclusive} from './stream';
 import {Observable} from 'rxjs';
 import {PromiseQueue} from './promise-executors';
 import {quote} from 'shell-quote';
@@ -280,6 +279,8 @@ export function scriptSafeSpawnAndObserveOutput(
  * 1. It contains a process that's created using the provided factory upon subscription.
  * 2. It doesn't complete until the process exits (or errors).
  * 3. The process is killed when there are no more subscribers.
+ *
+ * IMPORTANT: The exit event does NOT mean that all stdout and stderr events have been received.
  */
 function _createProcessStream(
   createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
@@ -302,27 +303,22 @@ function _createProcessStream(
       maybeKill();
     });
 
-    const processStream = Observable.fromPromise(promise);
+    // Create a stream that contains the process but never completes. We'll use this to build the
+    // completion conditions.
+    const processStream = Observable.fromPromise(promise).merge(Observable.never());
 
-    const errors = throwOnError
-      ? processStream.switchMap(p => (
-        Observable.fromEvent(p, 'error').flatMap(err => Observable.throw(err))
-      ))
-      : Observable.empty();
-
+    const errors = processStream.switchMap(p => Observable.fromEvent(p, 'error'));
     const exit = processStream
       .flatMap(p => Observable.fromEvent(p, 'exit', (code, signal) => signal))
       // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
       .filter(signal => signal !== 'SIGUSR1')
       .do(() => { exited = true; });
+    const completion = throwOnError ? exit : exit.race(errors);
 
     return new CompositeSubscription(
       processStream
-        // A version of processStream that never completes...
-        .merge(Observable.never())
-        .merge(errors)
-        // ...which we take until the process exits.
-        .takeUntil(exit)
+        .merge(throwOnError ? errors.flatMap(Observable.throw) : Observable.empty())
+        .takeUntil(completion)
         .subscribe(observer),
       () => { disposed = true; maybeKill(); },
     );
@@ -354,23 +350,29 @@ export function getOutputStream(
 ): Observable<ProcessMessage> {
   return Observable.fromPromise(Promise.resolve(childProcess))
     .flatMap(process => {
-      invariant(process != null, 'process has not yet been disposed');
-      // Use replay/connect on exit for the final concat.
-      // By default concat defers subscription until after the LHS completes.
-      const exit = Observable
-        .fromEvent(process, 'exit')
+      // We need to start listening for the exit event immediately, but defer emitting it until the
+      // output streams end.
+      const exit = Observable.fromEvent(process, 'exit')
         .take(1)
-        .map(exitCode => ({kind: 'exit', exitCode})).publishReplay();
-      exit.connect();
-      const error = Observable
-        .fromEvent(process, 'error')
-        .takeUntil(exit)
+        .map(exitCode => ({kind: 'exit', exitCode}))
+        .publishReplay();
+      const exitSub = exit.connect();
+
+      const error = Observable.fromEvent(process, 'error')
         .map(errorObj => ({kind: 'error', error: errorObj}));
       const stdout = splitStream(observeStream(process.stdout))
         .map(data => ({kind: 'stdout', data}));
       const stderr = splitStream(observeStream(process.stderr))
         .map(data => ({kind: 'stderr', data}));
-      return stdout.merge(stderr).merge(error).concat(exit);
+
+      return takeWhileInclusive(
+        Observable.merge(
+          Observable.merge(stdout, stderr).concat(exit),
+          error,
+        ),
+        event => event.kind !== 'error' && event.kind !== 'exit',
+      )
+        .finally(() => { exitSub.unsubscribe(); });
     });
 }
 
