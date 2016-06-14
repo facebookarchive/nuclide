@@ -31,6 +31,63 @@ export type process$asyncExecuteRet = {
   stdout: string;
 };
 
+type ProcessSystemErrorOptions = {
+  command: string;
+  args: Array<string>;
+  options: Object;
+  code: string;
+  originalError: Error;
+};
+
+export class ProcessSystemError extends Error {
+  command: string;
+  args: Array<string>;
+  options: Object;
+  code: string;
+  originalError: Error;
+
+  constructor(opts: ProcessSystemErrorOptions) {
+    super(`"${opts.command}" failed with code ${opts.code}`);
+    this.name = 'ProcessSystemError';
+    this.command = opts.command;
+    this.args = opts.args;
+    this.options = opts.options;
+    this.code = opts.code;
+    this.originalError = opts.originalError;
+  }
+}
+
+type ProcessExitErrorOptions = {
+  command: string;
+  args: Array<string>;
+  options: Object;
+  code: number;
+  stdout: string;
+  stderr: string;
+};
+
+export class ProcessExitError extends Error {
+  command: string;
+  args: Array<string>;
+  options: Object;
+  code: number;
+  stdout: string;
+  stderr: string;
+
+  constructor(opts: ProcessExitErrorOptions) {
+    super(`"${opts.command}" failed with code ${opts.code}\n\n${opts.stderr}`);
+    this.name = 'ProcessExitError';
+    this.command = opts.command;
+    this.args = opts.args;
+    this.options = opts.options;
+    this.code = opts.code;
+    this.stdout = opts.stdout;
+    this.stderr = opts.stderr;
+  }
+}
+
+export type ProcessError = ProcessSystemError | ProcessExitError;
+
 export type AsyncExecuteOptions = child_process$spawnOpts & {
   // The queue on which to block dependent calls.
   queueName?: string;
@@ -562,6 +619,60 @@ export async function checkOutput(
     );
   }
   return result;
+}
+
+/**
+ * Run a command, accumulate the output. Errors are surfaced as stream errors and unsubscribing will
+ * kill the process.
+ */
+export function runCommand(
+  command: string,
+  args?: Array<string> = [],
+  options?: Object = {},
+): Observable<string> {
+  return observeProcess(() => safeSpawn(command, args, options))
+    .reduce(
+      (acc, event) => {
+        switch (event.kind) {
+          case 'stdout':
+            acc.stdout += event.data;
+            break;
+          case 'stderr':
+            acc.stderr += event.data;
+            break;
+          case 'error':
+            acc.error = event.error;
+            break;
+          case 'exit':
+            acc.exitCode = event.exitCode;
+            break;
+        }
+        return acc;
+      },
+      {error: ((null: any): Object), stdout: '', stderr: '', exitCode: ((null: any): ?number)},
+    )
+    .map(acc => {
+      if (acc.error != null) {
+        throw new ProcessSystemError({
+          command,
+          args,
+          options,
+          code: acc.error.code, // Alias of errno
+          originalError: acc.error, // Just in case.
+        });
+      }
+      if (acc.exitCode != null && acc.exitCode !== 0) {
+        throw new ProcessExitError({
+          command,
+          args,
+          options,
+          code: acc.exitCode,
+          stdout: acc.stdout,
+          stderr: acc.stderr,
+        });
+      }
+      return acc.stdout;
+    });
 }
 
 export const __test__ = {

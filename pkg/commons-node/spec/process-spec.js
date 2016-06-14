@@ -22,6 +22,7 @@ import {
   getOutputStream,
   observeProcess,
   observeProcessExit,
+  runCommand,
   safeSpawn,
   scriptSafeSpawn,
   __test__,
@@ -415,6 +416,82 @@ describe('commons-node/process', () => {
       // If the stream doesn't complete, this will timeout.
       waitsForPromise({timeout: 1000}, async () => {
         await observeProcess(() => safeSpawn('fakeCommand')).toArray().toPromise();
+      });
+    });
+
+  });
+
+  describe('runCommand', () => {
+    beforeEach(() => {
+      // Suppress console spew.
+      spyOn(console, 'error');
+    });
+
+    if (origPlatform === 'win32') { return; }
+
+    it('returns stdout of the running process', () => {
+      waitsForPromise(async () => {
+        const val = await runCommand('echo', ['-n', 'foo'], {env: process.env}).toPromise();
+        expect(val).toEqual('foo');
+      });
+    });
+
+    it("throws an error if the process can't be spawned", () => {
+      waitsForPromise(async () => {
+        let error;
+        try {
+          await runCommand('fakeCommand').toPromise();
+        } catch (err) {
+          error = err;
+        }
+        invariant(error != null);
+        expect(error.name).toBe('ProcessSystemError');
+      });
+    });
+
+    it('throws an error if the exit code !== 0', () => {
+      waitsForPromise(async () => {
+        let error;
+        try {
+          await runCommand(process.execPath, ['-e', 'process.exit(1)']).toPromise();
+        } catch (err) {
+          error = err;
+        }
+        invariant(error != null);
+        expect(error.name).toBe('ProcessExitError');
+        expect(error.code).toBe(1);
+      });
+    });
+
+    it('accumulates the stdout if the process exits with a non-zero code', () => {
+      waitsForPromise(async () => {
+        let error;
+        try {
+          await runCommand(
+            process.execPath,
+            ['-e', 'process.stdout.write("hola"); process.exit(1)'],
+          ).toPromise();
+        } catch (err) {
+          error = err;
+        }
+        invariant(error != null);
+        expect(error.stdout).toBe('hola');
+      });
+    });
+
+    it('accumulates the stderr if the process exits with a non-zero code', () => {
+      waitsForPromise(async () => {
+        let error;
+        try {
+          await runCommand(
+            process.execPath,
+            ['-e', 'process.stderr.write("oopsy"); process.exit(1)'],
+          ).toPromise();
+        } catch (err) {
+          error = err;
+        }
+        invariant(error != null);
+        expect(error.stderr).toBe('oopsy');
       });
     });
 
