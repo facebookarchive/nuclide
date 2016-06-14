@@ -373,6 +373,9 @@ export class FileTreeStore {
       case ActionType.ENSURE_CHILD_NODE:
         this._ensureChildNode(payload.nodeKey);
         break;
+      case ActionType.CLEAR_FILTER:
+        this.clearFilter();
+        break;
     }
   }
 
@@ -901,6 +904,10 @@ export class FileTreeStore {
   }
 
   clearFilter(): void {
+    // Don't waste time if the filter is already clear.
+    if (this._filter === '') {
+      return;
+    }
     this._filter = '';
     this._updateRoots(root => {
       return root.setRecursive(

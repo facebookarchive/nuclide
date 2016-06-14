@@ -16,12 +16,15 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import {Observable} from 'rxjs';
+import {CompositeDisposable, Disposable} from 'atom';
+
 import {FileTree} from './FileTree';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {OpenFilesListComponent} from './OpenFilesListComponent';
+import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
-import {CompositeDisposable, Disposable} from 'atom';
+
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
 import {DisposableSubscription, toggle} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -44,6 +47,7 @@ type Props = {
 const SHOW_OPEN_FILE_CONFIG_KEY = 'nuclide-file-tree.showOpenFiles';
 
 class FileTreeSidebarComponent extends React.Component {
+  _actions: FileTreeActions;
   _store: FileTreeStore;
   _disposables: CompositeDisposable;
   _afRequestId: ?number;
@@ -54,6 +58,7 @@ class FileTreeSidebarComponent extends React.Component {
   constructor(props: Props) {
     super(props);
 
+    this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
     this.state = {
       shouldRenderToolbar: false,
@@ -109,6 +114,7 @@ class FileTreeSidebarComponent extends React.Component {
 
   componentDidUpdate(prevProps: Props): void {
     if (prevProps.hidden && !this.props.hidden) {
+      this._actions.clearFilter();
       this._onViewChange();
     }
   }

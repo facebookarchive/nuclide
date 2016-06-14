@@ -78,6 +78,12 @@ class FileTreeActions {
     }
   }
 
+  clearFilter() : void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.CLEAR_FILTER,
+    });
+  }
+
   expandNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionType.EXPAND_NODE,
