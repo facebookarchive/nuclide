@@ -19,7 +19,7 @@ import {diffSets, reconcileSetDiffs} from '../commons-node/stream';
 import {CompositeDisposable} from 'atom';
 import {Observable} from 'rxjs';
 
-type Projector<T> = (set: Set<T>) => AtomCommands;
+type Projector<T> = (item: T) => AtomCommands;
 
 /**
  * A utility that adds and removes commands to the Atom command registry based on their presence in

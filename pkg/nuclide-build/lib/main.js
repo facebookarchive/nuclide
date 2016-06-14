@@ -69,7 +69,6 @@ export function activate(rawState: ?SerializedAppState): void {
         .map(tasks => new Set(tasks.filter(task => task.enabled).map(task => task.type))),
       taskType => ({
         'atom-workspace': {
-          // $FlowFixMe(matthewwithanm)
           [`nuclide-build:${taskType}`]: () => { commands.runTask(taskType); },
         },
       }),

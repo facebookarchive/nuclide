@@ -64,7 +64,6 @@ class Activation {
       // Keep the atom commands up to date with the registered gadgets.
       syncAtomCommands(
         gadget$.map(gadgetsMap => new Set(gadgetsMap.values())),
-        // $FlowFixMe(matthewwithanm)
         gadget => createAtomCommands(gadget, commands),
       ),
 
