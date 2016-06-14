@@ -1,5 +1,33 @@
 # Nuclide Changelog
 
+## v0.143.0
+
+**General**
+
+* [New Feature] The file-tree can display a list of open files.
+* [New Feature] Drag to move files and directories in the file-tree, including ability to move multiple files at once with cmd/ctrl click.
+* Opt-in new behavior for moving editors across panes via keyboard shortcuts ([see details](https://github.com/facebook/nuclide/tree/master/pkg/nuclide-move-item-to-available-pane/#readme)).
+* Double click on an outline view item to select it in the editor
+* Fixed docs navigation on nuclide.io
+
+**Internal**
+
+* Lots of new integration tests that improve Nuclide's reliability & speed up releases.
+
+**Source Control**
+
+* Better error handling and messages for publish failures.
+* Diff View: Update UI for project additions/removals.
+* Diff View: rate-limit the calls to `hg status`.
+* Show author in revision timeline
+* Added “show history” to source control context menu.
+
+**Debugger**
+
+* C++ debugger: Various UX improvements for launching debuggee process
+* More prominent debugger breakpoints
+
+
 ## v0.142.0
 
 **General**
