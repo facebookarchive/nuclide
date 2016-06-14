@@ -14,6 +14,9 @@ import subprocess
 import sys
 import time
 
+# http://www.tldp.org/LDP/abs/html/exitcodes.html
+EXIT_KEYBOARD_INTERRUPT = 130
+
 
 class TestFailureError(Exception):
     def __init__(self, message, code=1):

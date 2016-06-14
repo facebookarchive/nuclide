@@ -22,6 +22,7 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 # Add the lib/ directory to $PYTHONPATH so library code can be imported.
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
+import lint_eslint
 import utils
 from dependencies import check_dependencies
 from js_test_runner import JsTestRunner
@@ -89,6 +90,18 @@ def lint_py_headers():
     if errors:
         raise utils.TestFailureError('FAILED: Python file license header lint.')
 
+def run_lint_eslint():
+    start = datetime.now()
+    print('Running eslint across %s workers...' % lint_eslint.MAX_WORKERS)
+    out, err, returncode = lint_eslint.eslint_all(max_warnings=0)
+    if out:
+        print(out, file=sys.stderr)
+    if err:
+        print(err, file=sys.stderr)
+    if returncode != 0:
+        raise utils.TestFailureError('FAILED: eslint.', returncode)
+    print('Finished eslint (%s seconds)' % (datetime.now() - start).seconds)
+
 # Some tests compare created files and all their properties to an oracle. If
 # they are created with a different umask, then the permissions are different
 # and the tests fail.
@@ -116,12 +129,12 @@ if options.run_integration_tests:
         sys.exit(err.code)
 else:
     run('lint_packages', ['scripts/dev/lint_packages'])
-    run('eslint', ['node_modules/.bin/eslint', '--max-warnings=0', '.'])
     run('flow', ['flow', 'check', '--show-all-errors'])
     run('transpile', ['scripts/dev/release_transpile.js'])
     if not options.no_module_cycle_check:
         run('module_cycle_check', ['scripts/dev/module_cycle_check'])
     try:
+        run_lint_eslint()
         lint_py_headers()
         test_runner.run_unit_tests()
     except utils.TestFailureError as err:
