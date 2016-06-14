@@ -27,12 +27,7 @@ const authMethods = [
   SupportedMethods.PRIVATE_KEY,
 ];
 
-type DefaultProps = {
-  autoFocus: boolean;
-};
-
 type Props = {
-  autoFocus: boolean;
   initialUsername: string;
   initialServer: string;
   initialCwd: string;
@@ -56,10 +51,6 @@ type State = {
 
 /** Component to prompt the user for connection details. */
 export default class ConnectionDetailsForm extends React.Component {
-  static defaultProps: DefaultProps = {
-    autoFocus: true,
-  };
-
   props: Props;
   state: State;
 
@@ -241,10 +232,6 @@ export default class ConnectionDetailsForm extends React.Component {
       'core:cancel',
       event => this.props.onCancel()
     ));
-
-    if (this.props.autoFocus) {
-      this.refs.username.focus();
-    }
   }
 
   componentWillUnmount() {
@@ -265,6 +252,10 @@ export default class ConnectionDetailsForm extends React.Component {
       authMethod: this._getAuthMethod(),
       password: this._getPassword(),
     };
+  }
+
+  focus(): void {
+    this.refs.username.focus();
   }
 
   // Note: 'password' is not settable. The only exposed method is 'clearPassword'.

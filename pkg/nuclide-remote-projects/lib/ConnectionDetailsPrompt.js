@@ -58,15 +58,29 @@ export default class ConnectionDetailsPrompt extends React.Component {
     (this: any)._onDeleteProfileClicked = this._onDeleteProfileClicked.bind(this);
   }
 
-  componentDidUpdate() {
-    // We have to manually update the contents of an existing ConnectionDetailsForm,
-    // because it contains AtomInput components (which don't update their contents
-    // when their props change).
-    const existingConnectionDetailsForm = this.refs['connection-details-form'];
-    if (existingConnectionDetailsForm) {
-      existingConnectionDetailsForm.setFormFields(this.getPrefilledConnectionParams());
-      existingConnectionDetailsForm.clearPassword();
+  componentDidUpdate(prevProps: Props, prevState: void) {
+    // Manually update the contents of an existing `ConnectionDetailsForm`, because it contains
+    // `AtomInput` components (which don't update their contents when their props change).
+    if (
+      prevProps.indexOfSelectedConnectionProfile !== this.props.indexOfSelectedConnectionProfile
+      || (
+        // If the connection profiles changed length, the effective selected profile also changed.
+        prevProps.connectionProfiles != null
+        && this.props.connectionProfiles != null
+        && prevProps.connectionProfiles.length !== this.props.connectionProfiles.length
+      )
+    ) {
+      const existingConnectionDetailsForm = this.refs['connection-details-form'];
+      if (existingConnectionDetailsForm) {
+        existingConnectionDetailsForm.setFormFields(this.getPrefilledConnectionParams());
+        existingConnectionDetailsForm.clearPassword();
+        existingConnectionDetailsForm.focus();
+      }
     }
+  }
+
+  focus(): void {
+    this.refs['connection-details-form'].focus();
   }
 
   getFormFields(): NuclideRemoteConnectionParamsWithPassword {

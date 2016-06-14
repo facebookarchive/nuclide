@@ -52,6 +52,10 @@ export default class AuthenticationPrompt extends React.Component<void, Props, v
     this._disposables.dispose();
   }
 
+  focus(): void {
+    this.refs.password.focus();
+  }
+
   getPassword(): string {
     return this.refs.password.value;
   }
@@ -77,7 +81,7 @@ export default class AuthenticationPrompt extends React.Component<void, Props, v
           {this.props.instructions}
         </div>
         <input
-          tabIndex="-1"
+          tabIndex="0"
           type="password"
           className="nuclide-password native-key-bindings"
           ref="password"

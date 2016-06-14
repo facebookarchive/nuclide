@@ -25,7 +25,7 @@ import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
 import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
 import {notifySshHandshakeError} from './notification';
-import {React} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 import {
   SshHandshake,
   decorateSshConnectionDelegateWithTracking,
@@ -122,6 +122,10 @@ export default class ConnectionDialog extends React.Component {
     (this: any).onProfileClicked = this.onProfileClicked.bind(this);
   }
 
+  componentDidMount(): void {
+    this._focus();
+  }
+
   componentWillReceiveProps(nextProps: Props): void {
     let indexOfSelectedConnectionProfile = this.state.indexOfSelectedConnectionProfile;
     if (nextProps.connectionProfiles == null) {
@@ -141,6 +145,21 @@ export default class ConnectionDialog extends React.Component {
     this.setState({indexOfSelectedConnectionProfile});
   }
 
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    if (this.state.mode !== prevState.mode) {
+      this._focus();
+    }
+  }
+
+  _focus(): void {
+    const content = this.refs.content;
+    if (content == null) {
+      ReactDOM.findDOMNode(this.refs.cancelButton).focus();
+    } else {
+      content.focus();
+    }
+  }
+
   render(): React.Element<any> {
     const mode = this.state.mode;
     let content;
@@ -150,7 +169,6 @@ export default class ConnectionDialog extends React.Component {
     if (mode === REQUEST_CONNECTION_DETAILS) {
       content = (
         <ConnectionDetailsPrompt
-          ref="connection-details"
           connectionProfiles={this.props.connectionProfiles}
           indexOfSelectedConnectionProfile={this.state.indexOfSelectedConnectionProfile}
           onAddProfileClicked={this.props.onAddProfileClicked}
@@ -158,6 +176,7 @@ export default class ConnectionDialog extends React.Component {
           onConfirm={this.ok}
           onCancel={this.cancel}
           onProfileClicked={this.onProfileClicked}
+          ref="content"
         />
       );
       isOkDisabled = false;
@@ -169,10 +188,10 @@ export default class ConnectionDialog extends React.Component {
     } else {
       content = (
         <AuthenticationPrompt
-          ref="authentication"
           instructions={this.state.instructions}
           onConfirm={this.ok}
           onCancel={this.cancel}
+          ref="content"
         />
       );
       isOkDisabled = false;
@@ -186,9 +205,9 @@ export default class ConnectionDialog extends React.Component {
         </div>
         <div style={{display: 'flex', justifyContent: 'flex-end'}}>
           <ButtonGroup>
-            <Button onClick={this.cancel}>
+            <button className="btn" onClick={this.cancel} ref="cancelButton">
               Cancel
-            </Button>
+            </button>
             <Button buttonType={ButtonTypes.PRIMARY} onClick={this.ok} disabled={isOkDisabled}>
               {okButtonText}
             </Button>
@@ -232,7 +251,7 @@ export default class ConnectionDialog extends React.Component {
 
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
-      const connectionDetailsForm = this.refs['connection-details'];
+      const connectionDetailsForm = this.refs.content;
       const {
         username,
         server,
@@ -266,7 +285,7 @@ export default class ConnectionDialog extends React.Component {
         // TODO(mbolin): Tell user to fill out all of the fields.
       }
     } else if (mode === REQUEST_AUTHENTICATION_DETAILS) {
-      const authenticationPrompt = this.refs.authentication;
+      const authenticationPrompt = this.refs.content;
       const password = authenticationPrompt.getPassword();
 
       this.state.finish([password]);
@@ -287,7 +306,7 @@ export default class ConnectionDialog extends React.Component {
   }
 
   getFormFields(): ?NuclideRemoteConnectionParams {
-    const connectionDetailsForm = this.refs['connection-details'];
+    const connectionDetailsForm = this.refs.content;
     if (!connectionDetailsForm) {
       return null;
     }

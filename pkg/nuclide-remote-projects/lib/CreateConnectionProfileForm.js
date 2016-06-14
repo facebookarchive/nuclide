@@ -98,7 +98,6 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
           />
         </div>
         <ConnectionDetailsForm
-          autoFocus={false}
           initialUsername={initialFields.username}
           initialServer={initialFields.server}
           initialCwd={initialFields.cwd}
