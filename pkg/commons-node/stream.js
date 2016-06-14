@@ -16,12 +16,15 @@ import {Observable, Subscription, Subject} from 'rxjs';
  * Observe a stream like stdout or stderr.
  */
 export function observeStream(stream: stream$Readable): Observable<string> {
+  return observeRawStream(stream).map(data => data.toString());
+}
+
+export function observeRawStream(stream: stream$Readable): Observable<Buffer> {
   const error = Observable.fromEvent(stream, 'error').flatMap(Observable.throw);
   return Observable
     .fromEvent(stream, 'data')
-    .map(data => data.toString())
     .merge(error)
-    .takeUntil(Observable.fromEvent(stream, 'end').race(error));
+    .takeUntil(Observable.fromEvent(stream, 'end'));
 }
 
 /**
