@@ -11,6 +11,7 @@
 
 
 import invariant from 'assert';
+import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import {ContextViewPanel} from './ContextViewPanel';
 import type {DefinitionService} from '../../nuclide-definition-service';
@@ -19,15 +20,24 @@ import {DefinitionPreviewView}
 import {getContent} from '../../nuclide-definition-preview/lib/DefinitionPreviewContent';
 import {ProviderContainer} from './ProviderContainer';
 
-export class ContextViewState {
+export type ContextViewConfig = {
+  width: number;
+  visible: boolean;
+};
+
+export class ContextViewManager {
 
   _width: number;
+  _disposables: CompositeDisposable;
   _definitionService: DefinitionService;
   _panelDOMElement: ?HTMLElement;
   _atomPanel: atom$Panel;
 
   constructor(width: number, visible: boolean) {
     this._width = width;
+    this._disposables = new CompositeDisposable();
+
+    this._bindShortcuts();
 
     if (visible) {
       this._show();
@@ -38,6 +48,28 @@ export class ContextViewState {
     if (this.isVisible()) {
       this._destroyPanel();
     }
+    this._disposables.dispose();
+  }
+
+  getWidth(): number {
+    return this._width;
+  }
+
+  hide(): void {
+    if (this.isVisible()) {
+      this._destroyPanel();
+    }
+  }
+
+  isVisible(): boolean {
+    return this._panelDOMElement != null;
+  }
+
+  serialize(): ContextViewConfig {
+    return {
+      width: this._width,
+      visible: this.isVisible(),
+    };
   }
 
   setDefinitionService(service: ?DefinitionService) {
@@ -51,6 +83,12 @@ export class ContextViewState {
     }
   }
 
+  show(): void {
+    if (!this.isVisible()) {
+      this._show();
+    }
+  }
+
   toggle(): void {
     if (this.isVisible()) {
       this._destroyPanel();
@@ -59,24 +97,47 @@ export class ContextViewState {
     }
   }
 
-  show(): void {
-    if (!this.isVisible()) {
-      this._show();
+  _bindShortcuts() {
+    // Bind toggle command
+    this._disposables.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-context-view:toggle',
+        this.toggle.bind(this)
+      )
+    );
+
+    // Bind show command
+    this._disposables.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-context-view:show',
+        this.show.bind(this)
+      )
+    );
+
+    // Bind hide command
+    this._disposables.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-context-view:hide',
+        this.hide.bind(this)
+      )
+    );
+  }
+
+  _destroyPanel(): void {
+    const tempHandle = this._panelDOMElement;
+    if (tempHandle != null) {
+      ReactDOM.unmountComponentAtNode(this._panelDOMElement);
+      this._atomPanel.destroy();
     }
+
+    this._panelDOMElement = null;
   }
 
-  hide(): void {
-    if (this.isVisible()) {
-      this._destroyPanel();
-    }
-  }
-
-  getWidth(): number {
-    return this._width;
-  }
-
-  isVisible(): boolean {
-    return this._panelDOMElement != null;
+  _onResize(newWidth: number): void {
+    this._width = newWidth;
   }
 
   _show(): void {
@@ -113,17 +174,4 @@ export class ContextViewState {
     });
   }
 
-  _onResize(newWidth: number): void {
-    this._width = newWidth;
-  }
-
-  _destroyPanel(): void {
-    const tempHandle = this._panelDOMElement;
-    if (tempHandle != null) {
-      ReactDOM.unmountComponentAtNode(this._panelDOMElement);
-      this._atomPanel.destroy();
-    }
-
-    this._panelDOMElement = null;
-  }
 }

@@ -9,117 +9,45 @@
  * the root directory of this source tree.
  */
 
-import {ContextViewState} from './ContextViewState';
+import {ContextViewManager} from './ContextViewManager';
+import type {ContextViewConfig} from './ContextViewManager';
 
 import type {DefinitionService} from '../../nuclide-definition-service';
 import invariant from 'assert';
 
-import {Disposable, CompositeDisposable} from 'atom';
+import {Disposable} from 'atom';
 
 let currentService: ?DefinitionService = null;
-
-type ContextViewConfig = {
-  width: number;
-  visible: boolean;
-};
 
 const INITIAL_PANEL_WIDTH: number = 300;
 const INITIAL_PANEL_VISIBILITY: boolean = false;
 
-const DEFAULT_CONFIG: ContextViewConfig = {
-  width: INITIAL_PANEL_WIDTH,
-  visible: INITIAL_PANEL_VISIBILITY,
-};
+let manager: ?ContextViewManager = null;
 
-/**
- * Encapsulates the package into one Activation object, so that
- * in atom's activate() and deactivate() functions, only the Activation
- * object must be instantiated/disposed of.
- */
-class Activation {
-
-  _disposables: CompositeDisposable;
-  _panelState: ContextViewState;
-
-  constructor(config?: ContextViewConfig = DEFAULT_CONFIG) {
-    this._disposables = new CompositeDisposable();
-
-    this._panelState = new ContextViewState(config.width, config.visible);
-    this.updateService();
-    this._bindShortcuts();
-  }
-
-  dispose() {
-    this._disposables.dispose();
-  }
-
-  serialize(): ContextViewConfig {
-    return {
-      width: this._panelState.getWidth(),
-      visible: this._panelState.isVisible(),
-    };
-  }
-
-  _bindShortcuts() {
-    // Bind toggle command
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-context-view:toggle',
-        this._panelState.toggle.bind(this._panelState)
-      )
-    );
-
-    // Bind show command
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-context-view:show',
-        this._panelState.show.bind(this._panelState)
-      )
-    );
-
-    // Bind hide command
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-context-view:hide',
-        this._panelState.hide.bind(this._panelState)
-      )
-    );
-  }
-
-  updateService(): void {
-    if (this._panelState != null && currentService != null) {
-      this._panelState.setDefinitionService(currentService);
-    }
+export function activate(state: ContextViewConfig | void): void {
+  if (manager === null) {
+    manager = (state != null)
+    ? new ContextViewManager(state.width, state.visible)
+    : new ContextViewManager(INITIAL_PANEL_WIDTH, INITIAL_PANEL_VISIBILITY);
   }
 }
 
-let activation: ?Activation = null;
-
-export function activate(state: Object | void) {
-  if (!activation) {
-    activation = new Activation(state);
+export function deactivate(): void {
+  if (manager != null) {
+    manager.dispose();
+    manager = null;
   }
 }
 
-export function deactivate() {
-  if (activation != null) {
-    activation.dispose();
-    activation = null;
-  }
-}
-
-export function serialize() {
-  if (activation != null) {
-    return activation.serialize();
+export function serialize(): ?ContextViewConfig {
+  if (manager != null) {
+    return manager.serialize();
   }
 }
 
 function updateService(): void {
-  if (activation != null) {
-    activation.updateService();
+  if (manager != null) {
+    manager.setDefinitionService(currentService);
   }
 }
 
