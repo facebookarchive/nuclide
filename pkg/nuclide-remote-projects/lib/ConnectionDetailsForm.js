@@ -35,8 +35,8 @@ type Props = {
   initialSshPort: string;
   initialPathToPrivateKey: string;
   initialAuthMethod: $Enum<typeof SupportedMethods>;
-  onConfirm: Function;
-  onCancel: Function;
+  onConfirm: () => mixed;
+  onCancel: () => mixed;
 };
 
 type State = {
@@ -67,12 +67,10 @@ export default class ConnectionDetailsForm extends React.Component {
       pathToPrivateKey: props.initialPathToPrivateKey,
       selectedAuthMethodIndex: authMethods.indexOf(props.initialAuthMethod),
     };
-  }
 
-  handleAuthMethodChange(newIndex: number) {
-    this.setState({
-      selectedAuthMethodIndex: newIndex,
-    });
+    (this: any)._handleAuthMethodChange = this._handleAuthMethodChange.bind(this);
+    (this: any)._handleKeyFileInputClick = this._handleKeyFileInputClick.bind(this);
+    (this: any)._handlePasswordInputClick = this._handlePasswordInputClick.bind(this);
   }
 
   _onKeyUp(e: SyntheticKeyboardEvent): void {
@@ -85,16 +83,10 @@ export default class ConnectionDetailsForm extends React.Component {
     }
   }
 
-  _handlePasswordInputClick(event: SyntheticEvent): void {
-    const passwordAuthMethodIndex = authMethods.indexOf(SupportedMethods.PASSWORD);
-    this.setState(
-      {
-        selectedAuthMethodIndex: passwordAuthMethodIndex,
-      },
-      () => {
-        ReactDOM.findDOMNode(this.refs.password).focus();
-      }
-    );
+  _handleAuthMethodChange(newIndex: number) {
+    this.setState({
+      selectedAuthMethodIndex: newIndex,
+    });
   }
 
   _handleKeyFileInputClick(event: SyntheticEvent): void {
@@ -108,6 +100,18 @@ export default class ConnectionDetailsForm extends React.Component {
         setTimeout(() => {
           ReactDOM.findDOMNode(this.refs.pathToPrivateKey).focus();
         }, 0);
+      }
+    );
+  }
+
+  _handlePasswordInputClick(event: SyntheticEvent): void {
+    const passwordAuthMethodIndex = authMethods.indexOf(SupportedMethods.PASSWORD);
+    this.setState(
+      {
+        selectedAuthMethodIndex: passwordAuthMethodIndex,
+      },
+      () => {
+        ReactDOM.findDOMNode(this.refs.password).focus();
       }
     );
   }
@@ -126,7 +130,7 @@ export default class ConnectionDetailsForm extends React.Component {
             className="nuclide-password native-key-bindings"
             disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
             ref="password"
-            onClick={this._handlePasswordInputClick.bind(this)}
+            onClick={this._handlePasswordInputClick}
             onKeyUp={this._onKeyUp.bind(this)}
           />
         </div>
@@ -142,7 +146,7 @@ export default class ConnectionDetailsForm extends React.Component {
             ref="pathToPrivateKey"
             disabled={activeAuthMethod !== SupportedMethods.PRIVATE_KEY}
             initialValue={this.state.pathToPrivateKey}
-            onClick={this._handleKeyFileInputClick.bind(this)}
+            onClick={this._handleKeyFileInputClick}
             placeholder="Path to private key"
             unstyled={true}
           />
@@ -198,7 +202,7 @@ export default class ConnectionDetailsForm extends React.Component {
               sshAgentLabel,
               privateKeyLabel,
             ]}
-            onSelectedChange={this.handleAuthMethodChange.bind(this)}
+            onSelectedChange={this._handleAuthMethodChange}
             selectedIndex={this.state.selectedAuthMethodIndex}
           />
         </div>
