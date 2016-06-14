@@ -150,7 +150,7 @@ export class WorkingSetSelectionComponent extends React.Component {
         className="select-list"
         tabIndex="0"
         onBlur={this._checkFocus}>
-        <ol className="list-group mark-active">
+        <ol className="list-group mark-active" style={{'max-height': '80vh'}}>
           {applicableDefinitions}
         </ol>
         {notApplicableSection}
