@@ -22,7 +22,8 @@ export function getAutocompleteView(): ?HTMLElement {
 
 export function waitsForAutocompleteSuggestions(): void {
   waitsFor('autocomplete suggestions to load', 10000, () => {
-    return getAutocompleteView() != null;
+    const view = getAutocompleteView();
+    return view != null && view.querySelector('li') != null;
   });
 }
 
