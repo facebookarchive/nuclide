@@ -93,10 +93,9 @@ describe('NuxTour', () => {
     };
     nuxStore.addNewNux(nuxTour);
 
-
     expect(nuxStore._nuxMap.size).toBe(1);
-    expect(nuxManager._readyToDisplayNuxList.length).toBe(0);
-    expect(nuxManager._pendingNuxList.length).toBe(1);
+    expect(nuxManager._readyToDisplayNuxes.length).toBe(0);
+    expect(nuxManager._pendingNuxes.size).toBe(1);
     expect(nuxManager._activeNuxTour != null).toBeFalsy();
   });
 });

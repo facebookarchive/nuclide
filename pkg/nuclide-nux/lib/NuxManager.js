@@ -31,10 +31,11 @@ export class NuxManager {
   _disposables: CompositeDisposable;
   _emitter: atom$Emitter;
   _activeNuxTour: ?NuxTour;
+  // Maps a NUX's unique ID to its corresponding NuxTour
   // Registered NUXes that are waiting to be triggered
-  _pendingNuxList: Array<NuxTour>;
+  _pendingNuxes: Map<string, NuxTour>;
   // Triggered NUXes that are waiting to be displayed
-  _readyToDisplayNuxList: Array<NuxTour>;
+  _readyToDisplayNuxes: Array<NuxTour>;
 
   constructor(
     nuxStore: NuxStore,
@@ -44,8 +45,8 @@ export class NuxManager {
     this._emitter = new Emitter();
     this._disposables = new CompositeDisposable();
 
-    this._pendingNuxList = [];
-    this._readyToDisplayNuxList = [];
+    this._pendingNuxes = new Map();
+    this._readyToDisplayNuxes = [];
     this._activeNuxTour = null;
 
     this._emitter.on('newTour', this._handleNewTour.bind(this));
@@ -75,8 +76,8 @@ export class NuxManager {
       this._activeNuxTour.forceEnd();
       return;
     }
-    this._removeNuxFromList(this._pendingNuxList, id);
-    this._removeNuxFromList(this._readyToDisplayNuxList, id);
+    this._pendingNuxes.delete(id);
+    this._removeNuxFromList(this._readyToDisplayNuxes, id);
   }
 
   _removeNuxFromList(
@@ -127,10 +128,10 @@ export class NuxManager {
   _handleNuxCompleted(nuxTourModel: NuxTourModel): void {
     this._activeNuxTour = null;
     this._nuxStore.onNuxCompleted(nuxTourModel);
-    if (this._readyToDisplayNuxList.length === 0) {
+    if (this._readyToDisplayNuxes.length === 0) {
       return;
     }
-    const nextNux = this._readyToDisplayNuxList.shift();
+    const nextNux = this._readyToDisplayNuxes.shift();
     this._emitter.emit('nuxTourReady', nextNux);
   }
 
@@ -146,7 +147,7 @@ export class NuxManager {
     nuxTour.setNuxCompleteCallback(
         this._handleNuxCompleted.bind(this, nuxTourModel)
     );
-    this._pendingNuxList.push(nuxTour);
+    this._pendingNuxes.set(nuxTour.getID(), nuxTour);
   }
 
   // Handles triggered NUXes that are ready to be displayed
@@ -155,7 +156,7 @@ export class NuxManager {
       this._activeNuxTour = nuxTour;
       nuxTour.begin();
     } else {
-      this._readyToDisplayNuxList.push(nuxTour);
+      this._readyToDisplayNuxes.push(nuxTour);
     }
   }
 
@@ -166,20 +167,19 @@ export class NuxManager {
     if (paneItem == null || !(paneItem instanceof TextEditor)) {
       return;
     }
-    invariant(paneItem instanceof TextEditor);
-    for (let i = 0; i < this._pendingNuxList.length; i++) {
-      const nuxToCheck = this._pendingNuxList[i];
-      if (nuxToCheck.getTriggerType() !== 'editor' ||
-          !nuxToCheck.isReady(paneItem)) {
-        continue;
+    this._pendingNuxes.forEach((nux: NuxTour, id: string) => {
+      // Invariant added to satisfy `paneItem`'s Flow typing
+      invariant(paneItem instanceof TextEditor);
+      if (nux.getTriggerType() !== 'editor' || !nux.isReady(paneItem)) {
+        return;
       }
-      this._pendingNuxList.splice(i--, 1);
-      this._emitter.emit('nuxTourReady', nuxToCheck);
-    }
+      this._pendingNuxes.delete(id);
+      this._emitter.emit('nuxTourReady', nux);
+    });
   }
 
   tryTriggerNux(id: string): void {
-    const nuxToTrigger = this._pendingNuxList.find(nux => nux.getID() === id);
+    const nuxToTrigger = this._pendingNuxes.get(id);
     if (nuxToTrigger == null) {
       throw new Error('Please enter a valid ID of a registered NUX.');
     }
@@ -188,7 +188,7 @@ export class NuxManager {
       throw new Error('You cannot trigger a NUX that has already been viewed!');
     }
     // Remove from pending list
-    this._removeNuxFromList(this._pendingNuxList, id);
+    this._pendingNuxes.delete(id);
     this._emitter.emit('nuxTourReady', nuxToTrigger);
   }
 
