@@ -158,16 +158,6 @@ class NuclideServerManager(object):
     # Clean up bad processes and old files.
     def cleanup(self):
         self.logger.info('Starting to clean up old Nuclide processes/files.')
-        # TODO: Remove it after migration is complete.
-        # For migration, stop the forever monitor processes of Nuclide server.
-        # This does not stop existing Nuclide server processes themselves.
-        # It just removes the monitor so that we can kill them on upgrade.
-        for proc in ProcessInfo.get_processes(
-                getpass.getuser(), '%s.*%s' %
-                (re.escape('forever/bin/monitor'), re.escape('nuclide-main.js'))):
-            self.logger.info('Stopping forever monitor process: %s' % proc)
-            proc.stop()
-
         # Clean up multiple Nuclide processes on same port.
         # There should be no more than one on a given port.
         # TODO: log the error to analytics db.
