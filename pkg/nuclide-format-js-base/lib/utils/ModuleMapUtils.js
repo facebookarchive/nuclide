@@ -12,12 +12,12 @@
 import type {AbsolutePath, Identifier, Literal, RelativePath} from '../types/common';
 
 import StringUtils from './StringUtils';
-import path from 'path';
+import nuclideUri from '../../../nuclide-remote-uri';
 
 function getIdentifiersFromPath(filePath: AbsolutePath): Set<Identifier> {
   const ids = new Set();
 
-  const baseName = path.basename(filePath);
+  const baseName = nuclideUri.basename(filePath);
 
   // Get rid of extensions like, '.js', '.jsx', '.react.js', etc.
   const noExtensions = baseName.split('.')[0];
@@ -39,28 +39,17 @@ function getIdentifiersFromPath(filePath: AbsolutePath): Set<Identifier> {
 }
 
 function getLiteralFromPath(filePath: AbsolutePath): Literal {
-  const baseName = path.basename(filePath);
-  return removeFileType(baseName);
+  const baseName = nuclideUri.basename(filePath);
+  return nuclideUri.stripExtension(baseName);
 }
 
 function relativizeForRequire(
   sourcePath: AbsolutePath,
   destPath: AbsolutePath,
 ): RelativePath {
-  const relativePath = path.relative(path.dirname(sourcePath), destPath);
-  const noFileType = removeFileType(relativePath);
-  return !noFileType.startsWith('.')
-    ? '.' + path.sep + noFileType
-    : noFileType;
-}
-
-function removeFileType(str: string): string {
-  const splits = str.split('.');
-  if (splits.length <= 1) {
-    return str;
-  } else {
-    return splits.slice(0, -1).join('.');
-  }
+  const relativePath = nuclideUri.relative(nuclideUri.dirname(sourcePath), destPath);
+  const noFileType = nuclideUri.stripExtension(relativePath);
+  return nuclideUri.ensureLocalPrefix(noFileType);
 }
 
 const ModuleMapUtils = {

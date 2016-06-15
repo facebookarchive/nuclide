@@ -11,9 +11,10 @@
 
 
 import {arrayEqual} from '../../commons-node/collection';
-import {normalizePathUri, dedupeNormalizedUris, splitUri, isUriBelow} from './uri';
+import {dedupeUris} from './uri';
 import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
+import nuclideUri from '../../nuclide-remote-uri';
 const logger = getLogger();
 
 
@@ -57,7 +58,7 @@ export class WorkingSet {
 
   constructor(uris: Array<NuclideUri> = []) {
     try {
-      this._uris = dedupeNormalizedUris(uris.map(normalizePathUri));
+      this._uris = dedupeUris(uris);
       this._root = this._buildDirTree(this._uris);
     } catch (e) {
       logger.error(
@@ -74,7 +75,7 @@ export class WorkingSet {
     }
 
     try {
-      const tokens = splitUri(normalizePathUri(uri));
+      const tokens = nuclideUri.split(uri);
       return this._containsPathFor(tokens, /* mustHaveLeaf */ true);
     } catch (e) {
       logger.error(e);
@@ -88,7 +89,7 @@ export class WorkingSet {
     }
 
     try {
-      const tokens = splitUri(normalizePathUri(uri));
+      const tokens = nuclideUri.split(uri);
       return this._containsPathFor(tokens, /* mustHaveLeaf */ false);
     } catch (e) {
       logger.error(e);
@@ -110,8 +111,7 @@ export class WorkingSet {
 
   remove(rootUri: NuclideUri): WorkingSet {
     try {
-      const normalizedRoot = normalizePathUri(rootUri);
-      const uris = this._uris.filter(uri => !isUriBelow(normalizedRoot, uri));
+      const uris = this._uris.filter(uri => !nuclideUri.contains(rootUri, uri));
       return new WorkingSet(uris);
     } catch (e) {
       logger.error(e);
@@ -131,7 +131,7 @@ export class WorkingSet {
     const root: InnerNode = newInnerNode();
 
     for (const uri of uris) {
-      const tokens = splitUri(uri);
+      const tokens = nuclideUri.split(uri);
       if (tokens.length === 0) {
         continue;
       }

@@ -13,8 +13,8 @@ import {Emitter} from 'atom';
 import {WorkingSet} from './WorkingSet';
 import {arrayEqual} from '../../commons-node/collection';
 import {track} from '../../nuclide-analytics';
-import {normalizePathUri} from './uri';
 import {getLogger} from '../../nuclide-logging';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import type {WorkingSetDefinition} from './types';
 
@@ -251,7 +251,7 @@ export class WorkingSetsStore {
         return false;
       }
       try {
-        normalizePathUri(dir.getPath());
+        nuclideUri.parse(dir.getPath());
         return true;
       } catch (e) {
         const logger = getLogger();

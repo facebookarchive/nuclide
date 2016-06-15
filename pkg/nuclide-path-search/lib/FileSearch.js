@@ -10,9 +10,8 @@
  */
 
 import urlJoin from 'url-join';
-import path from 'path';
-
 import nuclideUri from '../../nuclide-remote-uri';
+
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 
@@ -41,12 +40,12 @@ class FileSearch {
     // Attempt to relativize paths that people might e.g. copy + paste.
     let relQuery = query;
     // If a full path is pasted, make the path relative.
-    if (relQuery.startsWith(this._originalUri + path.sep)) {
+    if (relQuery.startsWith(nuclideUri.ensureTrailingSeparator(this._originalUri))) {
       relQuery = relQuery.substr(this._originalUri.length + 1);
     } else {
       // Also try to relativize queries that start with the dirname alone.
-      const dirname = path.dirname(this._originalUri);
-      if (relQuery.startsWith(dirname + path.sep)) {
+      const dirname = nuclideUri.dirname(this._originalUri);
+      if (relQuery.startsWith(nuclideUri.ensureTrailingSeparator(dirname))) {
         relQuery = relQuery.substr(dirname.length + 1);
       }
     }

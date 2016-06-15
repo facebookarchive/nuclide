@@ -154,6 +154,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.contains('/foo/bar/', '/foo/bar/abc.txt')).toBe(true);
     expect(nuclideUri.contains('/foo/bar', '/foo/bar/')).toBe(true);
     expect(nuclideUri.contains('/foo/bar/', '/foo/bar/')).toBe(true);
+    expect(nuclideUri.contains('/foo/bar/', '/foo/bar')).toBe(true);
   });
 
   it('collapse', () => {
@@ -349,23 +350,23 @@ describe('nuclide-uri', () => {
     const win32Path = path.win32;
     const posixPath = path.posix;
 
-    expect(nuclideUri.pathModuleFor('/')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('/abc')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('/abc/def')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('/abc.txt')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('nuclide://host')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('nuclide://host/')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('nuclide://host/abc')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('nuclide://host/abc/def')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('nuclide://host/abc/def.txt')).toBe(posixPath);
-    expect(nuclideUri.pathModuleFor('C:\\')).toBe(win32Path);
-    expect(nuclideUri.pathModuleFor('C:\\abc')).toBe(win32Path);
-    expect(nuclideUri.pathModuleFor('C:\\abc\\def')).toBe(win32Path);
-    expect(nuclideUri.pathModuleFor('C:\\abc\\def.txt')).toBe(win32Path);
-    expect(nuclideUri.pathModuleFor('D:\\abc\\aaa bbb')).toBe(win32Path);
-    expect(nuclideUri.pathModuleFor('\\abc\\def')).toBe(win32Path);
+    expect(nuclideUri._pathModuleFor('/')).toBe(posixPath);
+    expect(nuclideUri._pathModuleFor('/abc')).toBe(posixPath);
+    expect(nuclideUri._pathModuleFor('/abc/def')).toBe(posixPath);
+    expect(nuclideUri._pathModuleFor('/abc.txt')).toBe(posixPath);
+    expect(nuclideUri._pathModuleFor('nuclide://host')).toBe(posixPath);
+    expect(nuclideUri._pathModuleFor('nuclide://host/')).toBe(posixPath);
+    expect(nuclideUri._pathModuleFor('nuclide://host/abc')).toBe(posixPath);
+    expect(nuclideUri._pathModuleFor('nuclide://host/abc/def')).toBe(posixPath);
+    expect(nuclideUri._pathModuleFor('nuclide://host/abc/def.txt')).toBe(posixPath);
+    expect(nuclideUri._pathModuleFor('C:\\')).toBe(win32Path);
+    expect(nuclideUri._pathModuleFor('C:\\abc')).toBe(win32Path);
+    expect(nuclideUri._pathModuleFor('C:\\abc\\def')).toBe(win32Path);
+    expect(nuclideUri._pathModuleFor('C:\\abc\\def.txt')).toBe(win32Path);
+    expect(nuclideUri._pathModuleFor('D:\\abc\\aaa bbb')).toBe(win32Path);
+    expect(nuclideUri._pathModuleFor('\\abc\\def')).toBe(win32Path);
 
     //Default to Posix
-    expect(nuclideUri.pathModuleFor('abcdef')).toBe(posixPath);
+    expect(nuclideUri._pathModuleFor('abcdef')).toBe(posixPath);
   });
 });

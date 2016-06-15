@@ -12,7 +12,7 @@
 import child_process from 'child_process';
 import invariant from 'assert';
 import mockSpawn from 'mock-spawn';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import {
   asyncExecute,
@@ -58,9 +58,10 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         const PATH = process.env.PATH;
         invariant(PATH != null);
+        const delimitedPath = nuclideUri.splitPathList(PATH);
         expect(
           await createExecEnvironment({foo: 'bar', PATH}, ['/abc/def'])
-        ).toEqual({foo: 'bar', PATH: PATH + path.delimiter + '/abc/def'});
+        ).toEqual({foo: 'bar', PATH: nuclideUri.joinPathList([...delimitedPath, '/abc/def'])});
       });
     });
 
@@ -76,7 +77,7 @@ describe('commons-node/process', () => {
         } finally {
           process.env.PATH = oldPath;
         }
-        expect(execEnv.PATH).toEqual(`/abc/def${path.delimiter}/abc`);
+        expect(execEnv.PATH).toEqual(nuclideUri.joinPathList(['/abc/def', '/abc']));
       });
     });
 

@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 
 import {Directory} from 'atom';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 /**
  * @param repository Either a GitRepository or HgRepositoryClient.
@@ -44,7 +44,9 @@ function repositoryContainsPath(repository: atom$Repository, filePath: NuclideUr
  * @return Whether the file paths are equal, accounting for trailing slashes.
  */
 function pathsAreEqual(filePath1: string, filePath2: string): boolean {
-  return path.normalize(filePath1 + path.sep) === path.normalize(filePath2 + path.sep);
+  const realPath1 = nuclideUri.resolve(filePath1);
+  const realPath2 = nuclideUri.resolve(filePath2);
+  return realPath1 === realPath2;
 }
 
 

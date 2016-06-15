@@ -9,14 +9,11 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
 import nuclideUri from '../../nuclide-remote-uri';
 
 const ADD_ACTION = 'add';
 const REMOVE_ACTION = 'remove';
 type DirectoriesCacheOperation = 'add' | 'remove';
-
-const separatorRegex = new RegExp('\\' + path.sep, 'g');
 
 /**
  * This function takes in a file path, and computes all directories that would
@@ -72,25 +69,23 @@ function computeAllParentDirectories(
     modifiedPath: string,
     pathPrefixToSkip: ?string,
     operation: DirectoriesCacheOperation,
-  ) {
-  // Reset the regex so it will start the next search at the beginning of the string.
-  separatorRegex.lastIndex = 0;
-
-  if (pathPrefixToSkip) {
-    // Setting the lastIndex determines where the next search begins.
-    separatorRegex.lastIndex = nuclideUri.ensureTrailingSeparator(pathPrefixToSkip).length;
-  }
-
+) {
   const shouldAdd = (operation === ADD_ACTION);
-  let match;
-  while ((match = separatorRegex.exec(modifiedPath))) {
-    const newSubPath = modifiedPath.slice(0, match.index + 1);
-    if (shouldAdd) {
-      addItemToCache(newSubPath, directories);
-    } else {
-      removeItemFromCache(newSubPath, directories);
+  let current = modifiedPath;
+  const stopPrefix =
+    pathPrefixToSkip == null ? '' : nuclideUri.ensureTrailingSeparator(pathPrefixToSkip);
+  do {
+    current = nuclideUri.ensureTrailingSeparator(nuclideUri.dirname(current));
+    if (stopPrefix.startsWith(current)) {
+      return;
     }
-  }
+
+    if (shouldAdd) {
+      addItemToCache(current, directories);
+    } else {
+      removeItemFromCache(current, directories);
+    }
+  } while (!nuclideUri.isRoot(current));
 }
 
 function addItemToCache(item: string, cache: Map<string, number>) {

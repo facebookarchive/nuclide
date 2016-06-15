@@ -17,12 +17,10 @@ import type {RemoteFile} from './RemoteFile';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-base';
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {Disposable, Emitter} from 'atom';
 import {getLogger} from '../../nuclide-logging';
 import remoteUri from '../../nuclide-remote-uri';
-
-const posixPath = path.posix;
 
 const logger = getLogger();
 
@@ -65,7 +63,7 @@ export class RemoteDirectory {
     invariant(protocol);
     invariant(host);
     /** In the example, this would be "nuclide://example.com". */
-    this._host = protocol + '//' + host;
+    this._host = host;
     /** In the example, this would be "/path/to/directory". */
     this._localPath = directoryPath;
     // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
@@ -178,8 +176,8 @@ export class RemoteDirectory {
   }
 
   _isRoot(filePath: string): boolean {
-    filePath = posixPath.normalize(filePath);
-    const parts = posixPath.parse(filePath);
+    filePath = nuclideUri.normalize(filePath);
+    const parts = nuclideUri.parsePath(filePath);
     return parts.root === filePath;
   }
 
@@ -191,16 +189,12 @@ export class RemoteDirectory {
     return this._localPath;
   }
 
-  getHost(): string {
-    return this._host;
-  }
-
   getRealPathSync(): string {
     throw new Error('Not implemented');
   }
 
   getBaseName(): string {
-    return posixPath.basename(this._localPath);
+    return nuclideUri.basename(this._localPath);
   }
 
   relativize(uri: string): string {
@@ -209,25 +203,25 @@ export class RemoteDirectory {
     }
     // Note: host of uri must match this._host.
     const subpath = remoteUri.parse(uri).path;
-    return posixPath.relative(this._localPath, subpath);
+    return nuclideUri.relative(this._localPath, subpath);
   }
 
   getParent(): RemoteDirectory {
     if (this.isRoot()) {
       return this;
     } else {
-      const uri = this._host + posixPath.normalize(posixPath.join(this._localPath, '..'));
+      const uri = nuclideUri.createRemoteUri(this._host, nuclideUri.dirname(this._localPath));
       return this._server.createDirectory(uri, this._hgRepositoryDescription);
     }
   }
 
   getFile(filename: string): RemoteFile {
-    const uri = this._host + posixPath.join(this._localPath, filename);
+    const uri = nuclideUri.createRemoteUri(this._host, nuclideUri.join(this._localPath, filename));
     return this._server.createFile(uri);
   }
 
-  getSubdirectory(dirname: string): RemoteDirectory {
-    const uri = this._host + posixPath.join(this._localPath, dirname);
+  getSubdirectory(dir: string): RemoteDirectory {
+    const uri = nuclideUri.createRemoteUri(this._host, nuclideUri.join(this._localPath, dir));
     return this._server.createDirectory(uri, this._hgRepositoryDescription);
   }
 
@@ -296,7 +290,10 @@ export class RemoteDirectory {
       return a.file.toLowerCase().localeCompare(b.file.toLowerCase());
     }).forEach(entry => {
       invariant(entry);
-      const uri = this._host + posixPath.join(this._localPath, entry.file);
+      const uri = nuclideUri.createRemoteUri(
+        this._host,
+        nuclideUri.join(this._localPath, entry.file)
+      );
       const symlink = entry.isSymbolicLink;
       if (entry.stats && entry.stats.isFile()) {
         files.push(this._server.createFile(uri, symlink));
@@ -308,20 +305,11 @@ export class RemoteDirectory {
   }
 
   contains(pathToCheck: ?string): boolean {
-    // Can't just do startsWith here. If this directory is "www" and you
-    // are trying to check "www-base", just using startsWith would return
-    // true, even though "www-base" is at the same level as "Www", not
-    // contained in it.
-    // So first check startsWith. If so, then if the two path lengths are
-    // equal OR if the next character in the path to check is a path
-    // separator, then we know the checked path is in this path.
-    const endIndex = this.getPath().slice(-1) === posixPath.sep
-                   ? this.getPath().length - 1
-                   : this.getPath().length;
-    return pathToCheck != null
-      && pathToCheck.startsWith(this.getPath())
-      && (pathToCheck.length === this.getPath().length
-          || pathToCheck.charAt(endIndex) === posixPath.sep);
+    if (pathToCheck == null) {
+      return false;
+    }
+
+    return nuclideUri.contains(this.getPath(), pathToCheck);
   }
 
   off() {

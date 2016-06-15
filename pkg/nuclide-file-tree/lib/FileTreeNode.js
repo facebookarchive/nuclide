@@ -504,9 +504,7 @@ export class FileTreeNode {
       return this;
     }
 
-    const subUri = uri.slice(this.uri.length);
-    const pathModule = nuclideUri.pathModuleFor(uri);
-    const childNamePath = subUri.split(pathModule.sep).filter(part => part !== '');
+    const childNamePath = nuclideUri.split(nuclideUri.relative(this.uri, uri));
     return this._findLastByNamePath(childNamePath);
   }
 

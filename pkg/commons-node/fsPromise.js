@@ -16,10 +16,6 @@ import rimraf from 'rimraf';
 import temp from 'temp';
 import {asyncExecute} from './process';
 
-function isRoot(filePath: string): boolean {
-  return nuclideUri.dirname(filePath) === filePath;
-}
-
 /**
  * Create a temp directory with given prefix. The caller is responsible for cleaning up the
  *   drectory.
@@ -81,7 +77,7 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
       return currentPath;
     }
 
-    if (isRoot(currentPath)) {
+    if (nuclideUri.isRoot(currentPath)) {
       return null;
     }
     currentPath = nuclideUri.dirname(currentPath);
@@ -174,7 +170,6 @@ function _denodeifyFsMethod(methodName: string): () => Promise<any> {
 }
 
 export default {
-  isRoot,
   tempdir,
   tempfile,
   findNearestFile,

@@ -20,50 +20,30 @@ import {
 } from '../../nuclide-remote-connection';
 import nuclideUri from '../../nuclide-remote-uri';
 
-import url from 'url';
 import crypto from 'crypto';
 
 export type Directory = LocalDirectory | RemoteDirectory;
 type File = LocalFile | RemoteFile;
 type Entry = LocalDirectory | RemoteDirectory | LocalFile | RemoteFile;
 
-/*
- * Returns a string with backslashes replaced by two backslashes for use with strings passed to the
- * `RegExp` constructor.
- */
-function escapeBackslash(str: string): string {
-  return str.replace('\\', '\\\\');
-}
-
 function dirPathToKey(path: string): string {
-  const pathModule = nuclideUri.pathModuleFor(path);
-  return path.replace(new RegExp(`${escapeBackslash(pathModule.sep)}+$`), '') + pathModule.sep;
+  return nuclideUri.ensureTrailingSeparator(nuclideUri.trimTrailingSeparator(path));
 }
 
 function isDirKey(key: string): boolean {
-  const pathModule = nuclideUri.pathModuleFor(key);
-  return (key.slice(-1) === pathModule.sep);
+  return nuclideUri.endsWithSeparator(key);
 }
 
 function keyToName(key: string): string {
-  const pathModule = nuclideUri.pathModuleFor(key);
-  const path = keyToPath(key);
-  const index = path.lastIndexOf(pathModule.sep);
-  return (index === -1) ? path : path.slice(index + 1);
+  return nuclideUri.basename(key);
 }
 
 function keyToPath(key: string): string {
-  const pathModule = nuclideUri.pathModuleFor(key);
-  return key.replace(new RegExp(`${escapeBackslash(pathModule.sep)}+$`), '');
+  return nuclideUri.trimTrailingSeparator(key);
 }
 
 function getParentKey(key: string): string {
-  const pathModule = nuclideUri.pathModuleFor(key);
-  const path = keyToPath(key);
-  const parsed = nuclideUri.parse(path);
-  parsed.pathname = pathModule.join(parsed.pathname, '..');
-  const parentPath = url.format((parsed: any));
-  return dirPathToKey(parentPath);
+  return nuclideUri.ensureTrailingSeparator(nuclideUri.dirname(key));
 }
 
 // The array this resolves to contains the `nodeKey` of each child
@@ -148,8 +128,7 @@ function isValidDirectory(directory: Directory): boolean {
   }
 
   const dirPath = directory.getPath();
-  const pathModule = nuclideUri.pathModuleFor(dirPath);
-  return pathModule.isAbsolute(dirPath);
+  return nuclideUri.isAbsolute(dirPath);
 }
 
 function isLocalEntry(entry: Entry): boolean {

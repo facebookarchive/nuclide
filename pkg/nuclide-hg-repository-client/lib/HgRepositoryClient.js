@@ -446,7 +446,7 @@ export class HgRepositoryClient {
     if (!directoryPath) {
       return StatusCodeNumber.CLEAN;
     }
-    const directoryPathWithSeparator = nuclideUri.ensureTrailingSeparator(directoryPath);
+    const directoryPathWithSeparator = nuclideUri.normalizeDir(directoryPath);
     if (this._modifiedDirectoryCache.has(directoryPathWithSeparator)) {
       return StatusCodeNumber.MODIFIED;
     }

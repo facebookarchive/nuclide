@@ -180,13 +180,13 @@ export async function createExecEnvironment(
   if (platformPath) {
     execEnv.PATH = platformPath;
   } else if (commonBinaryPaths.length) {
-    const paths = nuclideUri.splitByDelimiter(execEnv.PATH);
+    const paths = nuclideUri.splitPathList(execEnv.PATH);
     commonBinaryPaths.forEach(commonBinaryPath => {
       if (paths.indexOf(commonBinaryPath) === -1) {
         paths.push(commonBinaryPath);
       }
     });
-    execEnv.PATH = nuclideUri.joinWithDelimiter(paths);
+    execEnv.PATH = nuclideUri.joinPathList(paths);
   }
 
   return execEnv;

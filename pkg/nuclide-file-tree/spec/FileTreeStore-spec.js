@@ -17,7 +17,7 @@ import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import {fixtures} from '../../nuclide-test-helpers';
 import fs from 'fs';
-import pathModule from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import {denodeify} from '../../commons-node/promise';
 
@@ -60,24 +60,22 @@ async function buildTempDirTree(...paths: Array<string>): Promise<Map<string, st
 
   for (let i = 0; i < paths.length; i++) {
     const pathItem = paths[i];
-    const arrPathItemParts = pathItem.split(pathModule.sep);
-    const itemLocalDirPath = arrPathItemParts.slice(0, -1).join(pathModule.sep);
-    const itemGlobalDirPath = pathModule.join(rootPath, itemLocalDirPath);
+    const arrPathItemParts = nuclideUri.split(pathItem);
+    const itemGlobalDirPath = nuclideUri.join(rootPath, ...arrPathItemParts.slice(0, -1));
     const itemLocalFileName = arrPathItemParts[arrPathItemParts.length - 1];
 
     await mkdir(itemGlobalDirPath);
     if (itemLocalFileName) {
-      await touch(pathModule.join(itemGlobalDirPath, itemLocalFileName));
+      await touch(nuclideUri.join(itemGlobalDirPath, itemLocalFileName));
     }
 
     arrPathItemParts.forEach((val, j) => {
-      const pathPrefix = arrPathItemParts.slice(0, j + 1).join(pathModule.sep);
-      let prefixNodePath = pathModule.join(rootPath, pathPrefix);
-      if (j < arrPathItemParts.length - 1 || pathPrefix.endsWith('/')) {
-        prefixNodePath += '/';
+      let prefixNodePath = nuclideUri.join(rootPath, ...arrPathItemParts.slice(0, j + 1));
+      if (j < arrPathItemParts.length - 1 || nuclideUri.endsWithSeparator(val)) {
+        prefixNodePath = nuclideUri.ensureTrailingSeparator(prefixNodePath);
       }
 
-      fileMap.set(pathPrefix, prefixNodePath);
+      fileMap.set(nuclideUri.join(...arrPathItemParts.slice(0, j + 1)), prefixNodePath);
     });
   }
 
@@ -118,9 +116,9 @@ describe('FileTreeStore', () => {
   beforeEach(() => {
     waitsForPromise(async () => {
       const tmpFixturesDir = await fixtures.copyFixture('.', __dirname);
-      dir1 = pathModule.join(tmpFixturesDir, 'dir1/');
-      fooTxt = pathModule.join(dir1, 'foo.txt');
-      dir2 = pathModule.join(tmpFixturesDir, 'dir2/');
+      dir1 = nuclideUri.join(tmpFixturesDir, 'dir1/');
+      fooTxt = nuclideUri.join(dir1, 'foo.txt');
+      dir2 = nuclideUri.join(tmpFixturesDir, 'dir2/');
     });
   });
 
@@ -156,7 +154,7 @@ describe('FileTreeStore', () => {
   });
 
   it('should expand root keys as they are added', () => {
-    const rootKey = pathModule.join(__dirname, 'fixtures') + '/';
+    const rootKey = nuclideUri.join(__dirname, 'fixtures') + '/';
     actions.setRootKeys([rootKey]);
     const node = getNode(rootKey, rootKey);
     expect(node.isExpanded).toBe(true);
@@ -401,7 +399,7 @@ describe('FileTreeStore', () => {
 
         // Add a new file, 'bar.baz', for which the store will not get a notification because
         // the subscription failed.
-        const barBaz = pathModule.join(dir1, 'bar.baz');
+        const barBaz = nuclideUri.join(dir1, 'bar.baz');
         fs.writeFileSync(barBaz, '');
         await loadChildKeys(dir1, dir1);
         expect(shownChildren(dir1, dir1).map(n => n.uri)).toEqual([fooTxt]);
@@ -514,7 +512,7 @@ describe('FileTreeStore', () => {
   });
 
   it('should be able to add, remove, then re-add a file', () => {
-    const foo2Txt = pathModule.join(dir1, 'foo2.txt');
+    const foo2Txt = nuclideUri.join(dir1, 'foo2.txt');
 
     waitsForPromise(async () => {
       actions.setRootKeys([dir1]);

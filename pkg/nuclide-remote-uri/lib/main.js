@@ -188,7 +188,7 @@ function getHostnameOpt(remoteUri: ?NuclideUri): ?string {
 }
 
 function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, path} = parseRemoteUri(uri);
     relativePath.splice(0, 0, path);
@@ -202,7 +202,7 @@ function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
 }
 
 function normalize(uri: NuclideUri): NuclideUri {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, path} = parseRemoteUri(uri);
     return createRemoteUri(
@@ -214,13 +214,17 @@ function normalize(uri: NuclideUri): NuclideUri {
   }
 }
 
+function normalizeDir(uri: NuclideUri): NuclideUri {
+  return ensureTrailingSeparator(normalize(uri));
+}
+
 function getParent(uri: NuclideUri): NuclideUri {
   // TODO: Is this different than dirname?
   return normalize(join(uri, '..'));
 }
 
 function relative(uri: NuclideUri, other: NuclideUri): string {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
   const remote = isRemote(uri);
   if (remote !== isRemote(other) ||
       (remote && getHostname(uri) !== getHostname(other))) {
@@ -234,12 +238,12 @@ function relative(uri: NuclideUri, other: NuclideUri): string {
 }
 
 function basename(uri: NuclideUri, ext: string = ''): string {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
   return uriPathModule.basename(getPath(uri), ext);
 }
 
 function dirname(uri: NuclideUri): NuclideUri {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, path} = parseRemoteUri(uri);
     return createRemoteUri(
@@ -252,8 +256,17 @@ function dirname(uri: NuclideUri): NuclideUri {
 }
 
 function extname(uri: NuclideUri): string {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
   return uriPathModule.extname(getPath(uri));
+}
+
+function stripExtension(uri: NuclideUri): NuclideUri {
+  const ext = extname(uri);
+  if (ext.length === 0) {
+    return uri;
+  }
+
+  return uri.slice(0, -1 * ext.length);
 }
 
 /**
@@ -292,9 +305,26 @@ function contains(parent: NuclideUri, child: NuclideUri): boolean {
   // are trying to check "www-base", just using startsWith would return
   // true, even though "www-base" is at the same level as "Www", not
   // contained in it.
-  // So first check startsWith. If so, then if the two path lengths are
+  // Also, there's an issue with a trailing separator ambiguity. A path
+  // like /abc/ does contain /abc
+  // This function is used in some performance-sensitive parts, so we
+  // want to avoid doing unnecessary string copy, as those that would
+  // result from an ensureTrailingSeparator() call
+  //
+  // First we'll check the lengths.
+  // Then check startsWith. If so, then if the two path lengths are
   // equal OR if the next character in the path to check is a path
   // separator, then we know the checked path is in this path.
+
+  if (child.length < parent.length) {  // A strong indication of false
+    // It could be a matter of a trailing separator, though
+    if (child.length < parent.length - 1) { // It must be more than just the separator
+      return false;
+    }
+
+    return endsWithSeparator(parent) && parent.startsWith(child);
+  }
+
   if (!child.startsWith(parent)) {
     return false;
   }
@@ -303,7 +333,7 @@ function contains(parent: NuclideUri, child: NuclideUri): boolean {
     return true;
   }
 
-  const uriPathModule = pathModuleFor(child);
+  const uriPathModule = _pathModuleFor(child);
   return child.slice(parent.length).startsWith(uriPathModule.sep);
 }
 
@@ -358,7 +388,7 @@ function nuclideUriToDisplayString(uri: NuclideUri): string {
 }
 
 function ensureTrailingSeparator(uri: NuclideUri): NuclideUri {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
   if (uri.endsWith(uriPathModule.sep)) {
     return uri;
   }
@@ -367,7 +397,7 @@ function ensureTrailingSeparator(uri: NuclideUri): NuclideUri {
 }
 
 function trimTrailingSeparator(uri: NuclideUri): NuclideUri {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
   let stripped = uri;
 
   while (stripped.endsWith(uriPathModule.sep) && !isRoot(stripped)) {
@@ -378,7 +408,7 @@ function trimTrailingSeparator(uri: NuclideUri): NuclideUri {
 }
 
 function endsWithSeparator(uri: NuclideUri): boolean {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
   return uri.endsWith(uriPathModule.sep);
 }
 
@@ -386,12 +416,12 @@ function isAbsolute(uri: NuclideUri): boolean {
   if (isRemote(uri)) {
     return true;
   } else {
-    return pathModuleFor(uri).isAbsolute(uri);
+    return _pathModuleFor(uri).isAbsolute(uri);
   }
 }
 
 function resolve(uri: NuclideUri, ...paths: Array<string>): NuclideUri {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, path} = parseRemoteUri(uri);
     paths.splice(0, 0, path);
@@ -433,9 +463,9 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
  *
  * Since remote URI might contain the delimiter, only local paths are allowed.
  */
-function splitByDelimiter(paths: string): Array<NuclideUri> {
+function splitPathList(paths: string): Array<NuclideUri> {
   invariant(paths.indexOf(REMOTE_PATH_URI_PREFIX) < 0, 'Splitting remote URIs is not supported');
-  const pathsModule = pathModuleFor(paths);
+  const pathsModule = _pathModuleFor(paths);
 
   return paths.split(pathsModule.delimiter);
 }
@@ -446,14 +476,14 @@ function splitByDelimiter(paths: string): Array<NuclideUri> {
  *
  * Since remote URI might contain the delimiter, only local paths are allowed.
  */
-function joinWithDelimiter(paths: Array<NuclideUri>): string {
+function joinPathList(paths: Array<NuclideUri>): string {
   if (paths.length === 0) {
     return '';
   }
 
   invariant(paths.every(path => !isRemote(path)), 'Joining of remote URIs is not supported');
 
-  const uriPathModule = pathModuleFor(paths[0]);
+  const uriPathModule = _pathModuleFor(paths[0]);
   return paths.join(uriPathModule.delimiter);
 }
 
@@ -462,7 +492,7 @@ function joinWithDelimiter(paths: Array<NuclideUri>): string {
  * which is `./` on *nix and .\ on Windows
  */
 function ensureLocalPrefix(uri: NuclideUri): NuclideUri {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
 
   invariant(!isRemote(uri), 'Local prefix can not be added to a remote path');
   invariant(!isAbsolute(uri), 'Local prefix can not be added to an absolute path');
@@ -480,11 +510,30 @@ function isRoot(uri: NuclideUri): boolean {
 }
 
 function parsePath(uri: NuclideUri): ParsedPath {
-  const uriPathModule = pathModuleFor(uri);
+  const uriPathModule = _pathModuleFor(uri);
   return uriPathModule.parse(getPath(uri));
 }
 
-function pathModuleFor(uri: NuclideUri): any {
+export function split(uri: string): Array<string> {
+  const parts = [];
+  let current = uri;
+  let parent = dirname(current);
+
+  while (current !== parent) {
+    parts.push(basename(current));
+
+    current = parent;
+    parent = dirname(current);
+  }
+
+  if (isAbsolute(uri)) {
+    parts.push(parent);
+  }
+  parts.reverse();
+  return parts;
+}
+
+function _pathModuleFor(uri: NuclideUri): any {
   const posixPath = pathModule.posix;
   const win32Path = pathModule.win32;
 
@@ -509,6 +558,7 @@ export default {
   basename,
   dirname,
   extname,
+  stripExtension,
   isRemote,
   isLocal,
   createRemoteUri,
@@ -520,6 +570,7 @@ export default {
   join,
   relative,
   normalize,
+  normalizeDir,
   getParent,
   uriToNuclideUri,
   nuclideUriToUri,
@@ -533,10 +584,11 @@ export default {
   isAbsolute,
   resolve,
   expandHomeDir,
-  splitByDelimiter,
-  joinWithDelimiter,
+  splitPathList,
+  joinPathList,
   ensureLocalPrefix,
   isRoot,
   parsePath,
-  pathModuleFor,
+  split,
+  _pathModuleFor,  // Exported for tests only
 };
