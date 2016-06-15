@@ -139,7 +139,12 @@ function aFileSearchShould(typename, dirPathFn) {
       beforeEach(() => {
         waitsForPromise(async () => {
           uriSearch = await fileSearchForDirectory(
-            url.format({protocol: 'http', host: 'somehost.fb.com', pathname: dirPath}),
+            url.format({
+              protocol: 'nuclide',
+              slashes: true,
+              host: 'somehost.fb.com',
+              pathname: dirPath,
+            }),
             mockPathSetUpdater,
           );
         });
@@ -150,7 +155,7 @@ function aFileSearchShould(typename, dirPathFn) {
           invariant(uriSearch);
           const results = await uriSearch.query('test');
           expect(values(results)).toEqual([
-            `http://somehost.fb.com${dirPath}/test`,
+            `nuclide://somehost.fb.com${dirPath}/test`,
           ]);
         });
       });
@@ -160,7 +165,7 @@ function aFileSearchShould(typename, dirPathFn) {
           invariant(uriSearch);
           const results = await uriSearch.query('deeper');
           expect(values(results)).toEqual([
-            `http://somehost.fb.com${dirPath}/deeper/deeper`,
+            `nuclide://somehost.fb.com${dirPath}/deeper/deeper`,
           ]);
         });
       });

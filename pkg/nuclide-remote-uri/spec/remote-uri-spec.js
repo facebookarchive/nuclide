@@ -67,14 +67,80 @@ describe('nuclide-uri', () => {
   });
 
   it('basename', () => {
-    expect(nuclideUri.basename(localUri)).toBe('file');
-    expect(nuclideUri.basename(remoteUri)).toBe('local');
+    expect(nuclideUri.basename('/')).toBe('');
+    expect(nuclideUri.basename('/abc')).toBe('abc');
+    expect(nuclideUri.basename('/abc/')).toBe('abc');
+    expect(nuclideUri.basename('/abc/def')).toBe('def');
+    expect(nuclideUri.basename('/abc/def/')).toBe('def');
+
+    expect(nuclideUri.basename('nuclide://host/')).toBe('');
+    expect(nuclideUri.basename('nuclide://host/abc')).toBe('abc');
+    expect(nuclideUri.basename('nuclide://host/abc/')).toBe('abc');
+    expect(nuclideUri.basename('nuclide://host/abc/def')).toBe('def');
+    expect(nuclideUri.basename('nuclide://host/abc/def/')).toBe('def');
+    expect(nuclideUri.basename('nuclide://host/a c/d f')).toBe('d f');
+
+    expect(nuclideUri.basename('C:\\')).toBe('');
+    expect(nuclideUri.basename('C:\\abc')).toBe('abc');
+    expect(nuclideUri.basename('C:\\abc\\')).toBe('abc');
+    expect(nuclideUri.basename('C:\\abc\\def')).toBe('def');
+    expect(nuclideUri.basename('C:\\abc\\def\\')).toBe('def');
+    expect(nuclideUri.basename('\\abc\\def')).toBe('def');
+    expect(nuclideUri.basename('\\abc\\def\\')).toBe('def');
   });
 
   it('dirname', () => {
-    expect(nuclideUri.dirname(localUri)).toBe('/usr/local');
-    expect(nuclideUri.dirname(remoteUri)).toBe('nuclide://fb.com/usr');
-    expect(nuclideUri.dirname(remoteUriWithSpaces)).toBe('nuclide://fb.com/a b');
+    expect(nuclideUri.dirname('/')).toBe('/');
+    expect(nuclideUri.dirname('/abc')).toBe('/');
+    expect(nuclideUri.dirname('/abc/')).toBe('/');
+    expect(nuclideUri.dirname('/abc/def')).toBe('/abc');
+    expect(nuclideUri.dirname('/abc/def/')).toBe('/abc');
+
+    expect(nuclideUri.dirname('nuclide://host/')).toBe('nuclide://host/');
+    expect(nuclideUri.dirname('nuclide://host/abc')).toBe('nuclide://host/');
+    expect(nuclideUri.dirname('nuclide://host/abc/')).toBe('nuclide://host/');
+    expect(nuclideUri.dirname('nuclide://host/abc/def')).toBe('nuclide://host/abc');
+    expect(nuclideUri.dirname('nuclide://host/abc/def/')).toBe('nuclide://host/abc');
+    expect(nuclideUri.dirname('nuclide://host/a c/d f')).toBe('nuclide://host/a c');
+
+    expect(nuclideUri.dirname('C:\\')).toBe('C:\\');
+    expect(nuclideUri.dirname('C:\\abc')).toBe('C:\\');
+    expect(nuclideUri.dirname('C:\\abc\\')).toBe('C:\\');
+    expect(nuclideUri.dirname('C:\\abc\\def')).toBe('C:\\abc');
+    expect(nuclideUri.dirname('C:\\abc\\def\\')).toBe('C:\\abc');
+    expect(nuclideUri.dirname('\\abc\\def')).toBe('\\abc');
+    expect(nuclideUri.dirname('\\abc\\def\\')).toBe('\\abc');
+  });
+
+  it('extname', () => {
+    expect(nuclideUri.extname('/abc')).toBe('');
+    expect(nuclideUri.extname('/abc.')).toBe('.');
+    expect(nuclideUri.extname('/abc.txt')).toBe('.txt');
+    expect(nuclideUri.extname('/abc/def.html')).toBe('.html');
+    expect(nuclideUri.extname('/abc/def/')).toBe('');
+    expect(nuclideUri.extname('/abc/def.dir/')).toBe('.dir');
+
+    expect(nuclideUri.extname('nuclide://host/')).toBe('');
+    expect(nuclideUri.extname('nuclide://host/abc')).toBe('');
+    expect(nuclideUri.extname('nuclide://host/abc.txt')).toBe('.txt');
+    expect(nuclideUri.extname('nuclide://host/abc.')).toBe('.');
+    expect(nuclideUri.extname('nuclide://host/abc/')).toBe('');
+    expect(nuclideUri.extname('nuclide://host/abc/def')).toBe('');
+    expect(nuclideUri.extname('nuclide://host/abc/def.js')).toBe('.js');
+
+    expect(nuclideUri.extname('C:\\')).toBe('');
+    expect(nuclideUri.extname('C:\\abc')).toBe('');
+    expect(nuclideUri.extname('C:\\abc\\')).toBe('');
+    expect(nuclideUri.extname('C:\\abc.')).toBe('.');
+    expect(nuclideUri.extname('C:\\abc.js')).toBe('.js');
+    expect(nuclideUri.extname('C:\\abc\\def')).toBe('');
+    expect(nuclideUri.extname('C:\\abc\\def\\')).toBe('');
+    expect(nuclideUri.extname('C:\\abc\\def.')).toBe('.');
+    expect(nuclideUri.extname('C:\\abc\\def.html')).toBe('.html');
+    expect(nuclideUri.extname('\\abc\\def')).toBe('');
+    expect(nuclideUri.extname('\\abc\\def.dir\\')).toBe('.dir');
+    expect(nuclideUri.extname('\\abc\\def.')).toBe('.');
+    expect(nuclideUri.extname('\\abc\\def.xml')).toBe('.xml');
   });
 
   it('getParent', () => {
@@ -132,6 +198,153 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.nuclideUriToDisplayString(remoteUri)).toBe('fb.com//usr/local');
   });
 
+  describe('isRoot', () => {
+    it('plain posix root', () => expect(nuclideUri.isRoot('/')).toBe(true));
+    it('double root', () => expect(nuclideUri.isRoot('//')).toBe(false));
+    it('/abc', () => expect(nuclideUri.isRoot('/abc')).toBe(false));
+    it('abc', () => expect(nuclideUri.isRoot('abc')).toBe(false));
+    it('abc/def', () => expect(nuclideUri.isRoot('abc/def')).toBe(false));
+    it('remote root', () => expect(nuclideUri.isRoot('nuclide://host/')).toBe(true));
+    it('remote root with port', () => expect(nuclideUri.isRoot('nuclide://host/')).toBe(true));
+    it('remote non-root', () => expect(nuclideUri.isRoot('nuclide://host/abc')).toBe(false));
+    it('remote non-root no port', () => {
+      expect(nuclideUri.isRoot('nuclide://host/abc')).toBe(false);
+    });
+    it('win diskless root', () => expect(nuclideUri.isRoot('\\')).toBe(true));
+    it('win diskless double root', () => expect(nuclideUri.isRoot('\\\\')).toBe(false));
+    it('win diskless non-root', () => expect(nuclideUri.isRoot('\\abc')).toBe(false));
+    it('win diskful root', () => expect(nuclideUri.isRoot('C:\\')).toBe(true));
+    it('win diskful double root', () => expect(nuclideUri.isRoot('C:\\\\')).toBe(false));
+    it('win diskful non-root', () => expect(nuclideUri.isRoot('C:\\abc')).toBe(false));
+
+    it('win relative', () => expect(nuclideUri.isRoot('abc\\def')).toBe(false));
+  });
+
+  it('adds a proper suffix when needed', () => {
+    expect(nuclideUri.ensureTrailingSeparator('/')).toBe('/');
+    expect(nuclideUri.ensureTrailingSeparator('/abc')).toBe('/abc/');
+    expect(nuclideUri.ensureTrailingSeparator('/abc/')).toBe('/abc/');
+    expect(nuclideUri.ensureTrailingSeparator('/abc/def')).toBe('/abc/def/');
+    expect(nuclideUri.ensureTrailingSeparator('/abc/def/')).toBe('/abc/def/');
+    expect(nuclideUri.ensureTrailingSeparator('nuclide://host')).toBe('nuclide://host/');
+    expect(nuclideUri.ensureTrailingSeparator('nuclide://host/')).toBe('nuclide://host/');
+    expect(nuclideUri.ensureTrailingSeparator('nuclide://host/abc')).toBe('nuclide://host/abc/');
+    expect(nuclideUri.ensureTrailingSeparator('nuclide://host/abc/def'))
+    .toBe('nuclide://host/abc/def/');
+    expect(nuclideUri.ensureTrailingSeparator('nuclide://host/abc/def/'))
+    .toBe('nuclide://host/abc/def/');
+    expect(nuclideUri.ensureTrailingSeparator('C:\\')).toBe('C:\\');
+    expect(nuclideUri.ensureTrailingSeparator('C:\\abc')).toBe('C:\\abc\\');
+    expect(nuclideUri.ensureTrailingSeparator('C:\\abc\\')).toBe('C:\\abc\\');
+    expect(nuclideUri.ensureTrailingSeparator('C:\\abc\\def')).toBe('C:\\abc\\def\\');
+    expect(nuclideUri.ensureTrailingSeparator('C:\\abc\\def\\')).toBe('C:\\abc\\def\\');
+    expect(nuclideUri.ensureTrailingSeparator('\\abc\\def')).toBe('\\abc\\def\\');
+    expect(nuclideUri.ensureTrailingSeparator('\\abc\\def\\')).toBe('\\abc\\def\\');
+  });
+
+  it('properly removes suffix when needed', () => {
+    expect(nuclideUri.trimTrailingSeparator('/')).toBe('/');
+    expect(nuclideUri.trimTrailingSeparator('//')).toBe('/');
+    expect(nuclideUri.trimTrailingSeparator('/abc')).toBe('/abc');
+    expect(nuclideUri.trimTrailingSeparator('/abc/')).toBe('/abc');
+    expect(nuclideUri.trimTrailingSeparator('/abc/def')).toBe('/abc/def');
+    expect(nuclideUri.trimTrailingSeparator('/abc/def/')).toBe('/abc/def');
+    expect(nuclideUri.trimTrailingSeparator('nuclide://host/')).toBe('nuclide://host/');
+    expect(nuclideUri.trimTrailingSeparator('nuclide://host//')).toBe('nuclide://host/');
+    expect(nuclideUri.trimTrailingSeparator('nuclide://host/')).toBe('nuclide://host/');
+    expect(nuclideUri.trimTrailingSeparator('nuclide://host//')).toBe('nuclide://host/');
+    expect(nuclideUri.trimTrailingSeparator('nuclide://host/abc')).toBe('nuclide://host/abc');
+    expect(nuclideUri.trimTrailingSeparator('nuclide://host/abc/')).toBe('nuclide://host/abc');
+    expect(nuclideUri.trimTrailingSeparator('nuclide://host/abc/def'))
+    .toBe('nuclide://host/abc/def');
+    expect(nuclideUri.trimTrailingSeparator('nuclide://host/abc/def/'))
+    .toBe('nuclide://host/abc/def');
+    expect(nuclideUri.trimTrailingSeparator('C:\\')).toBe('C:\\');
+    expect(nuclideUri.trimTrailingSeparator('C:\\\\')).toBe('C:\\');
+    expect(nuclideUri.trimTrailingSeparator('C:\\abc')).toBe('C:\\abc');
+    expect(nuclideUri.trimTrailingSeparator('C:\\abc\\')).toBe('C:\\abc');
+    expect(nuclideUri.trimTrailingSeparator('C:\\abc\\def')).toBe('C:\\abc\\def');
+    expect(nuclideUri.trimTrailingSeparator('C:\\abc\\def\\')).toBe('C:\\abc\\def');
+    expect(nuclideUri.trimTrailingSeparator('\\')).toBe('\\');
+    expect(nuclideUri.trimTrailingSeparator('\\\\')).toBe('\\');
+    expect(nuclideUri.trimTrailingSeparator('\\abc\\def')).toBe('\\abc\\def');
+    expect(nuclideUri.trimTrailingSeparator('\\abc\\def\\')).toBe('\\abc\\def');
+  });
+
+  it('isAbsolute', () => {
+    expect(nuclideUri.isAbsolute('/abc')).toBe(true);
+    expect(nuclideUri.isAbsolute('/abc/def')).toBe(true);
+    expect(nuclideUri.isAbsolute('nuclide://host/')).toBe(true);
+    expect(nuclideUri.isAbsolute('nuclide://host/abc')).toBe(true);
+    expect(nuclideUri.isAbsolute('nuclide://host/abc/def')).toBe(true);
+
+    expect(nuclideUri.isAbsolute('C:\\abc')).toBe(true);
+    expect(nuclideUri.isAbsolute('C:\\abc\\def')).toBe(true);
+    expect(nuclideUri.isAbsolute('\\abc')).toBe(true);
+    expect(nuclideUri.isAbsolute('\\abc\\def')).toBe(true);
+
+    expect(nuclideUri.isAbsolute('abc')).toBe(false);
+    expect(nuclideUri.isAbsolute('abc/def')).toBe(false);
+
+    expect(nuclideUri.isAbsolute('abc\\def')).toBe(false);
+  });
+
+
+  it('resolve', () => {
+    expect(nuclideUri.resolve('/abc')).toBe('/abc');
+    expect(nuclideUri.resolve('/abc', '..')).toBe('/');
+    expect(nuclideUri.resolve('/abc', '..', '..')).toBe('/');
+    expect(nuclideUri.resolve('/abc', '../..')).toBe('/');
+
+    expect(nuclideUri.resolve('/abc/def')).toBe('/abc/def');
+    expect(nuclideUri.resolve('/abc/def', 'ghi')).toBe('/abc/def/ghi');
+    expect(nuclideUri.resolve('/abc/def', '..', 'ghi')).toBe('/abc/ghi');
+    expect(nuclideUri.resolve('/abc/def', '../ghi')).toBe('/abc/ghi');
+    expect(nuclideUri.resolve('/abc/def', '/ghi')).toBe('/ghi');
+
+    expect(nuclideUri.resolve('nuclide://host/')).toBe('nuclide://host/');
+    expect(nuclideUri.resolve('nuclide://host/', '..')).toBe('nuclide://host/');
+    expect(nuclideUri.resolve('nuclide://host/abc')).toBe('nuclide://host/abc');
+    expect(nuclideUri.resolve('nuclide://host/abc', '..')).toBe('nuclide://host/');
+    expect(nuclideUri.resolve('nuclide://host/abc', '..', '..')).toBe('nuclide://host/');
+    expect(nuclideUri.resolve('nuclide://host/abc', '../..')).toBe('nuclide://host/');
+    expect(nuclideUri.resolve('nuclide://host/abc/def', 'ghi'))
+    .toBe('nuclide://host/abc/def/ghi');
+    expect(nuclideUri.resolve('nuclide://host/abc/def', '../ghi'))
+    .toBe('nuclide://host/abc/ghi');
+    expect(nuclideUri.resolve('nuclide://host/abc/def', '..', 'ghi'))
+    .toBe('nuclide://host/abc/ghi');
+    expect(nuclideUri.resolve('nuclide://host/abc/def', '/ghi')).toBe('nuclide://host/ghi');
+
+    expect(nuclideUri.resolve('C:\\abc')).toBe('C:\\abc');
+    expect(nuclideUri.resolve('C:\\abc', '..')).toBe('C:\\');
+    expect(nuclideUri.resolve('C:\\abc', '..', '..')).toBe('C:\\');
+    expect(nuclideUri.resolve('C:\\abc', '..\\..')).toBe('C:\\');
+    expect(nuclideUri.resolve('C:\\abc', 'def')).toBe('C:\\abc\\def');
+    expect(nuclideUri.resolve('C:\\abc', '..\\def')).toBe('C:\\def');
+    expect(nuclideUri.resolve('C:\\abc', '..', 'def')).toBe('C:\\def');
+
+    expect(nuclideUri.resolve('\\abc', 'def')).toBe('\\abc\\def');
+    expect(nuclideUri.resolve('\\abc', '..\\def')).toBe('\\def');
+    expect(nuclideUri.resolve('\\abc', '..', 'def')).toBe('\\def');
+  });
+
+  describe('expandHomeDir()', () => {
+    it('expands ~ to HOME', () => {
+      expect(nuclideUri.expandHomeDir('~')).toBe(process.env.HOME);
+    });
+
+    it('expands ~/ to HOME', () => {
+      const HOME = process.env.HOME;
+      expect(HOME).not.toBeNull();
+      expect(nuclideUri.expandHomeDir('~/abc')).toBe(path.posix.join(HOME, 'abc'));
+    });
+
+    it('keeps ~def to ~def', () => {
+      expect(nuclideUri.expandHomeDir('~def')).toBe('~def');
+    });
+  });
+
   it('detects Windows and Posix paths properly', () => {
     const win32Path = path.win32;
     const posixPath = path.posix;
@@ -151,5 +364,8 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.pathModuleFor('C:\\abc\\def.txt')).toBe(win32Path);
     expect(nuclideUri.pathModuleFor('D:\\abc\\aaa bbb')).toBe(win32Path);
     expect(nuclideUri.pathModuleFor('\\abc\\def')).toBe(win32Path);
+
+    //Default to Posix
+    expect(nuclideUri.pathModuleFor('abcdef')).toBe(posixPath);
   });
 });
