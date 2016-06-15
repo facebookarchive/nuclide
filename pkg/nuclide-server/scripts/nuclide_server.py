@@ -225,13 +225,14 @@ class NuclideServer(object):
 
         if not debug:
             self.logger.info('Trying to ping the Nuclide server...')
-            for i in range(0, timeout + 1):
-                # Wait for a sec and then ping endpoint for version.
+            for i in range(0, int(timeout / 0.1) + 1):
+                # Wait for 100ms and then ping the endpoint for the version.
                 running_version = self.get_version()
                 if running_version is not None:
+                    self.logger.info('Attempted %s pings.', i)
                     self.logger.info('Verified Nuclide started on port %d.' % self.port)
                     return 0
-                time.sleep(1)
+                time.sleep(0.1)
 
             timeoutMsg = 'Attempted to start Nuclide server on port %d, but timed out after %d seconds.' % (
                 self.port, timeout)
