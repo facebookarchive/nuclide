@@ -258,6 +258,12 @@ export class ContextViewManager {
     );
 
     invariant(this._panelDOMElement != null);
+    // Otherwise it does not fill the whole panel, which might be alright except it means that the
+    // resize-handle doesn't extend all the way to the bottom.
+    //
+    // Use 'flex' to fit Atom v1.6.0+ and `height: inherit` to fit Atom <v1.6.0. The latter uses
+    // `height: 100%;` down the hierarchy and becomes innocuous in 1.6.0 because inheriting will
+    // give `height: auto;`.
     this._panelDOMElement.style.display = 'flex';
     this._panelDOMElement.style.height = 'inherit';
 
