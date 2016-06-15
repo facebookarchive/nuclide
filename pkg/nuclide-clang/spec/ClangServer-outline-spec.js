@@ -11,11 +11,11 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import ClangServer from '../lib/ClangServer';
 
-const TEST_FILE = path.join(__dirname, 'fixtures', 'outline.cpp');
+const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'outline.cpp');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE, 'utf8');
 
 describe('ClangServer', () => {

@@ -21,8 +21,7 @@ import {
   startNuclideServer,
   stopNuclideServer,
 } from '../../pkg/nuclide-integration-test-helpers';
-import path from 'path';
-import {join} from '../../pkg/nuclide-remote-uri';
+import nuclideUri from '../../pkg/nuclide-remote-uri';
 import invariant from 'assert';
 
 export type TestContext = {
@@ -60,7 +59,7 @@ class LocalTestContext {
 
   getProjectRelativePath(relativePath: string): NuclideUri {
     invariant(this._projectPath != null, 'Must call setProject first');
-    return path.join(this._projectPath, relativePath);
+    return nuclideUri.join(this._projectPath, relativePath);
   }
 }
 
@@ -103,7 +102,7 @@ class RemoteTestContext {
 
   getProjectRelativePath(relativePath: string): NuclideUri {
     invariant(this._remoteProjectPath != null, 'Must call setProject first');
-    return join(this._remoteProjectPath, relativePath);
+    return nuclideUri.join(this._remoteProjectPath, relativePath);
   }
 }
 

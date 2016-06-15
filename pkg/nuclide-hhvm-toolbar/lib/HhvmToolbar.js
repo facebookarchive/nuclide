@@ -22,6 +22,7 @@ import {
 } from '../../nuclide-ui/lib/ButtonGroup';
 import ProjectStore from './ProjectStore';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+import nuclideUri from '../../nuclide-remote-uri';
 
 const WEB_SERVER_OPTION = {label: 'WebServer', value: 0};
 const SCRIPT_OPTION = {label: 'Script', value: 1};
@@ -132,16 +133,15 @@ class HhvmToolbar extends React.Component {
   }
 
   _getDebugTarget(index: number, targetFilePath: string): string {
-    const remoteUri = require('../../nuclide-remote-uri');
     if (this._isDebugScript(index)) {
-      const targetPath = remoteUri.getPath(targetFilePath);
+      const targetPath = nuclideUri.getPath(targetFilePath);
       const lastScriptCommand = this._getLastScriptCommand(targetPath);
       if (lastScriptCommand === '') {
         return targetPath;
       }
       return lastScriptCommand;
     }
-    return remoteUri.getHostname(targetFilePath);
+    return nuclideUri.getHostname(targetFilePath);
   }
 
   _handleDropdownChange(newIndex: number) {

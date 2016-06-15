@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {ServiceTester} from './ServiceTester';
 
 describe('ErrorServer', () => {
@@ -22,8 +22,8 @@ describe('ErrorServer', () => {
       invariant(testHelper);
       return testHelper.start([{
         name: 'ErrorService',
-        definition: path.join(__dirname, 'ErrorService.def'),
-        implementation: path.join(__dirname, 'ErrorService.js'),
+        definition: nuclideUri.join(__dirname, 'ErrorService.def'),
+        implementation: nuclideUri.join(__dirname, 'ErrorService.js'),
       }]);
     });
 

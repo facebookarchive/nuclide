@@ -20,7 +20,7 @@ import type {HackCoverageResult} from './TypedRegions';
 
 import {ServerHackLanguage} from './ServerHackLanguage';
 import {ServerConnection, RemoteConnection} from '../../nuclide-remote-connection';
-import {isRemote} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {getHackEnvironmentDetails} from './utils';
 
 export type CompletionResult = {
@@ -155,7 +155,7 @@ function createHackLanguage(
 function getKeyOfUri(uri: NuclideUri): ?string {
   const remoteConnection = RemoteConnection.getForUri(uri);
   return remoteConnection == null ?
-    (isRemote(uri) ? null : LOCAL_URI_KEY) :
+    (nuclideUri.isRemote(uri) ? null : LOCAL_URI_KEY) :
     remoteConnection.getUriForInitialWorkingDirectory();
 }
 

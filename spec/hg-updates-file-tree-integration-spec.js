@@ -18,7 +18,7 @@ import type {TestContext} from './utils/remotable-tests';
 
 import fs from 'fs';
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 
 import {copyMercurialFixture} from '../pkg/nuclide-integration-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
@@ -45,9 +45,9 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       repoPath = await copyMercurialFixture('hg_repo_1');
       await context.setProject(repoPath);
       repoRemotePath = context.getProjectRelativePath(repoPath);
-      testFileLocalPath = path.join(repoPath, 'test.txt');
-      newFileLocalPath = path.join(repoPath, 'new.txt');
-      otherFileLocalPath = path.join(repoPath, 'other.txt');
+      testFileLocalPath = nuclideUri.join(repoPath, 'test.txt');
+      newFileLocalPath = nuclideUri.join(repoPath, 'new.txt');
+      otherFileLocalPath = nuclideUri.join(repoPath, 'other.txt');
       workspaceView = atom.views.getView(atom.workspace);
       rootNode = workspaceView.querySelector('.nuclide-file-tree');
       hgRepository = ((repositoryForPath(repoRemotePath): any): HgRepositoryClient);

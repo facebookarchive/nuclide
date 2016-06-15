@@ -11,7 +11,7 @@
 
 import type {ClientCallback} from '../lib/ClientCallback';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import FileCache from '../lib/FileCache';
 
 describe('debugger-hhvm-proxy FileCache', () => {
@@ -36,8 +36,8 @@ describe('debugger-hhvm-proxy FileCache', () => {
       .createSpy('getServerMessageObservable')
       .andReturn(observableSpy);
     cache = new FileCache(callback);
-    const fixturesPath = path.join(__dirname, 'fixtures');
-    filepath = path.join(fixturesPath, 'test.php');
+    const fixturesPath = nuclideUri.join(__dirname, 'fixtures');
+    filepath = nuclideUri.join(fixturesPath, 'test.php');
   });
 
   it('registerFile - source file path', () => {

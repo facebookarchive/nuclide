@@ -13,7 +13,7 @@ import {observeProcess, safeSpawn} from '../../commons-node/process';
 import featureConfig from '../../nuclide-feature-config';
 import invariant from 'assert';
 import os from 'os';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import Rx from 'rxjs';
 
 export function createProcessStream(): Rx.Observable<string> {
@@ -80,7 +80,7 @@ function spawnSimctlList(): Promise<child_process$ChildProcess> {
 }
 
 function tailDeviceLogs(udid: string): Promise<child_process$ChildProcess> {
-  const logDir = path.join(
+  const logDir = nuclideUri.join(
     os.homedir(),
     'Library',
     'Logs',

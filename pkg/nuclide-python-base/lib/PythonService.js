@@ -12,9 +12,8 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import typeof * as JediService from './JediService';
 
-import path from 'path';
 import {asyncExecute} from '../../commons-node/process';
-import {getPath} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import LRUCache from 'lru-cache';
 import JediServer from './JediServer';
 
@@ -214,7 +213,7 @@ export async function formatCode(
   end: number,
 ): Promise<string> {
   const libCommand = getFormatterPath();
-  const dirName = path.dirname(getPath(src));
+  const dirName = nuclideUri.dirname(nuclideUri.getPath(src));
 
   const result = await asyncExecute(
     libCommand,

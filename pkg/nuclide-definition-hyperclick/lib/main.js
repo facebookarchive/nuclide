@@ -17,7 +17,7 @@ import type {DefinitionService} from '../../nuclide-definition-service';
 
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {Disposable} from 'atom';
-import {relative} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 
 let currentService: ?DefinitionService = null;
@@ -46,7 +46,7 @@ async function getSuggestion(
     invariant(definition.name != null, 'must include name when returning multiple definitions');
     const filePath = definition.projectRoot == null
       ? definition.path
-      : relative(definition.projectRoot, definition.path);
+      : nuclideUri.relative(definition.projectRoot, definition.path);
     return `${definition.name} (${filePath})`;
   }
 

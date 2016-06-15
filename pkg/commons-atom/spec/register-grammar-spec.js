@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import registerGrammar from '../register-grammar';
 
 describe('registerGrammar', () => {
   it('works', () => {
     waitsForPromise(async () => {
-      atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/javascript.cson'));
+      atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/javascript.cson'));
       registerGrammar('source.js', 'cats');
       const textEditor = await atom.workspace.open('file.cats');
       expect(textEditor.getGrammar().scopeName).toBe('source.js');

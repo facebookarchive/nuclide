@@ -11,7 +11,7 @@
 
 import {activate} from '../lib/main';
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 describe('nuclide-move-item-to-available-pane', () => {
   it('moves items across panes and creates new ones, as appropriate', () => {
@@ -92,7 +92,7 @@ function createDescriptorForWorkspaceState(): Array<Array<string>> {
   return atom.workspace.getPanes().map(pane => {
     return pane.getItems().map(item => {
       const fileName = item.getPath();
-      let name = path.basename(fileName);
+      let name = nuclideUri.basename(fileName);
       if (item === activeItem) {
         name += '*';
       }

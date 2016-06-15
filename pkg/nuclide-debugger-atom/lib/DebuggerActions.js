@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import nuclideUri from '../../nuclide-remote-uri';
 import type {Dispatcher} from 'flux';
 import type {
   nuclide_debugger$Service,
@@ -22,7 +23,6 @@ import type DebuggerInstance from './DebuggerInstance';
 import Constants from './Constants';
 import {CompositeDisposable} from 'atom';
 import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
-import remoteUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import {DebuggerMode} from './DebuggerStore';
 import passesGK from '../../commons-node/passesGK';
@@ -264,10 +264,10 @@ class DebuggerActions {
   _getRemoteConnections(): Array<string> {
     // TODO: move this logic into RemoteConnection package.
     return atom.project.getPaths().filter(path => {
-      return remoteUri.isRemote(path);
+      return nuclideUri.isRemote(path);
     }).map(remotePath => {
-      const {hostname} = remoteUri.parseRemoteUri(remotePath);
-      return remoteUri.createRemoteUri(hostname, '/');
+      const {hostname} = nuclideUri.parseRemoteUri(remotePath);
+      return nuclideUri.createRemoteUri(hostname, '/');
     }).filter((path, index, inputArray) => {
       return inputArray.indexOf(path) === index;
     });

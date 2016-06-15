@@ -13,7 +13,7 @@ import BreakpointStore from './BreakpointStore';
 import Bridge from './Bridge';
 import DebuggerActions from './DebuggerActions';
 import {React, ReactDOM} from 'react-for-atom';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 import {
   Button,
@@ -87,7 +87,7 @@ const DebuggerInspector = React.createClass({
   },
 
   _getUrl(): string {
-    return `${path.join(__dirname, '../scripts/inspector.html')}?${this.props.socket}`;
+    return `${nuclideUri.join(__dirname, '../scripts/inspector.html')}?${this.props.socket}`;
   },
 
   _handleClickClose() {

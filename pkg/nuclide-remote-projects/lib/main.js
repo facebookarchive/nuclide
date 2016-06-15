@@ -28,6 +28,7 @@ import {CompositeDisposable} from 'atom';
 import {RemoteConnection, ServerConnection} from '../../nuclide-remote-connection';
 import {trackImmediate} from '../../nuclide-analytics';
 import {openConnectionDialog} from './open-connection';
+import nuclideUri from '../../nuclide-remote-uri';
 
 const logger = getLogger();
 
@@ -163,9 +164,8 @@ function getRemoteRootDirectories(): Array<atom$Directory> {
  */
 function deleteDummyRemoteRootDirectories() {
   const {RemoteDirectory} = require('../../nuclide-remote-connection');
-  const {isRemote} = require('../../nuclide-remote-uri');
   for (const directory of atom.project.getDirectories()) {
-    if (isRemote(directory.getPath()) &&
+    if (nuclideUri.isRemote(directory.getPath()) &&
         !(RemoteDirectory.isRemoteDirectory(directory))) {
       atom.project.removePath(directory.getPath());
     }

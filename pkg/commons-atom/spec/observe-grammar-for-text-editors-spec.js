@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import observeGrammarForTextEditors from '../observe-grammar-for-text-editors';
 
 describe('observeGrammarForTextEditors', () => {
@@ -20,9 +20,9 @@ describe('observeGrammarForTextEditors', () => {
     observeGrammarForTextEditors.__reset__();
     // The grammar registry is cleared automatically after Atom 1.3.0+
     atom.grammars.clear();
-    atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/objective-c.cson'));
+    atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/objective-c.cson'));
     objcGrammar = atom.grammars.grammarForScopeName('source.objc');
-    atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/javascript.cson'));
+    atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/javascript.cson'));
     jsGrammar = atom.grammars.grammarForScopeName('source.js');
   });
 

@@ -10,7 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import {getPath} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {getAtomProjectRelativePath} from '../../commons-atom/projects';
 import {trackOperationTiming} from '../../nuclide-analytics';
 
@@ -22,7 +22,7 @@ function copyAbsolutePath(): void {
     if (!uri) {
       return;
     }
-    copyToClipboard('Copied absolute path', getPath(uri));
+    copyToClipboard('Copied absolute path', nuclideUri.getPath(uri));
   });
 }
 
@@ -39,7 +39,7 @@ function copyProjectRelativePath(): void {
     } else {
       copyToClipboard(
         'Path not contained in any open project.\nCopied absolute path',
-        getPath(uri));
+        nuclideUri.getPath(uri));
     }
   });
 }
@@ -71,7 +71,10 @@ function copyRepositoryRelativePath(): void {
     if (projectRelativePath) {
       copyToClipboard('Copied project relative path', projectRelativePath);
     } else {
-      copyToClipboard('Path not contained in any repository.\nCopied absolute path', getPath(uri));
+      copyToClipboard(
+        'Path not contained in any repository.\nCopied absolute path',
+        nuclideUri.getPath(uri),
+      );
     }
   });
 }

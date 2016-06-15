@@ -11,14 +11,14 @@
 
 import {BuckProject} from '../lib/BuckProject';
 import fs from 'fs-plus';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import temp from 'temp';
 
 temp.track();
 
 function copyProject(projectInFixturesDirectory: string) {
   const tempDir = temp.mkdirSync('BuckProject-spec');
-  fs.copySync(path.join(__dirname, 'fixtures', projectInFixturesDirectory),
+  fs.copySync(nuclideUri.join(__dirname, 'fixtures', projectInFixturesDirectory),
       tempDir);
   return tempDir;
 }
@@ -93,7 +93,7 @@ describe('BuckProject (test-project-with-failing-targets)', () => {
     it('returns the output file for a genrule()', () => {
       waitsForPromise(async () => {
         const outputFile = await buckProject.outputFileFor('good');
-        expect(outputFile).toBe(path.join(projectDir, 'buck-out/gen/good_rule/good.txt'));
+        expect(outputFile).toBe(nuclideUri.join(projectDir, 'buck-out/gen/good_rule/good.txt'));
       });
     });
   });
@@ -148,7 +148,7 @@ describe('BuckProject (buck-query-project)', () => {
       // First expensive buck operation gets a large timeout.
       waitsForPromise({timeout: 15000}, async () => {
         const file = await buckProject.getBuildFile('//examples:one');
-        expect(file).toBe(path.join(projectDir, 'examples', 'BUCK'));
+        expect(file).toBe(nuclideUri.join(projectDir, 'examples', 'BUCK'));
       });
     });
 

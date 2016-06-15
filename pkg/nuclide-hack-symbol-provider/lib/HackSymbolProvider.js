@@ -17,7 +17,7 @@ import type {
 import type {HackSearchPosition} from '../../nuclide-hack-base/lib/HackService';
 
 import {getHackService} from './getHackService';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {React} from 'react-for-atom';
 
 const ICONS = {
@@ -103,7 +103,7 @@ export const HackSymbolProvider: Provider = {
   getComponentForItem(uncastedItem: FileResult): React.Element<any> {
     const item = ((uncastedItem: any): HackSearchPosition);
     const filePath = item.path;
-    const filename = path.basename(filePath);
+    const filename = nuclideUri.basename(filePath);
     const name = item.name || '';
 
     const icon = bestIconForItem(item);

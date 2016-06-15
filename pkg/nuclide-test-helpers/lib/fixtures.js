@@ -10,7 +10,7 @@
  */
 
 import fse from 'fs-extra';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {mkdir} from './tempdir';
 import {checkOutput} from '../../commons-node/process';
 
@@ -28,7 +28,7 @@ async function copyFixture(fixtureName: string, dirname: string): Promise<string
 
   // Recursively copy the contents of the fixture to the temp directory.
   await new Promise((resolve, reject) => {
-    const sourceDirectory = path.join(dirname, 'fixtures', fixtureName);
+    const sourceDirectory = nuclideUri.join(dirname, 'fixtures', fixtureName);
     fse.copy(sourceDirectory, tempDir, (err: ?Error) => {
       if (err) {
         reject(err);
@@ -54,7 +54,7 @@ async function copyFixture(fixtureName: string, dirname: string): Promise<string
 async function extractTarGzFixture(fixtureName: string, dirname: string): Promise<string> {
   const tempDir = await mkdir(fixtureName);
 
-  const fixtureArchive = path.join(dirname, 'fixtures', `${fixtureName}.tar.gz`);
+  const fixtureArchive = nuclideUri.join(dirname, 'fixtures', `${fixtureName}.tar.gz`);
   const {stderr} = await checkOutput('tar', ['-xf', fixtureArchive], {cwd: tempDir});
   if (stderr !== '') {
     throw new Error(stderr);

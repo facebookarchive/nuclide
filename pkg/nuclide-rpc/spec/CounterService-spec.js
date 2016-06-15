@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {ServiceTester} from './ServiceTester';
 
 describe('CounterService', () => {
@@ -20,8 +20,8 @@ describe('CounterService', () => {
     testHelper = new ServiceTester();
     waitsForPromise(() => testHelper.start([{
       name: 'CounterService',
-      definition: path.join(__dirname, 'CounterService.def'),
-      implementation: path.join(__dirname, 'CounterService.js'),
+      definition: nuclideUri.join(__dirname, 'CounterService.def'),
+      implementation: nuclideUri.join(__dirname, 'CounterService.js'),
     }]));
 
     runs(() => {

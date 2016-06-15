@@ -18,7 +18,7 @@ import {Observable} from 'rxjs';
 
 import {safeSpawn} from '../../commons-node/process';
 import fsPromise from '../../commons-node/fsPromise';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import split from 'split';
 
 // This pattern is used for parsing the output of grep.
@@ -54,7 +54,7 @@ export default function search(directory: string, regex: RegExp, subdirs: Array<
     // Run the search on each subdirectory that exists.
     return Observable.from(subdirs).concatMap(async subdir => {
       try {
-        const stat = await fsPromise.lstat(path.join(directory, subdir));
+        const stat = await fsPromise.lstat(nuclideUri.join(directory, subdir));
         if (stat.isDirectory()) {
           return searchInSubdir(matchesByFile, directory, subdir, regex);
         } else {
@@ -79,7 +79,7 @@ function searchInSubdir(
   // Try running search commands, falling through to the next if there is an error.
   const vcsargs = (regex.ignoreCase ? ['-i'] : []).concat(['-n', regex.source]);
   const grepargs = (regex.ignoreCase ? ['-i'] : []).concat(['-rHn', '-e', regex.source, '.']);
-  const cmdDir = path.join(directory, subdir);
+  const cmdDir = nuclideUri.join(directory, subdir);
   const linesSource =
     getLinesFromCommand('hg', ['wgrep'].concat(vcsargs), cmdDir)
     .catch(() => getLinesFromCommand('git', ['grep'].concat(vcsargs), cmdDir))
@@ -97,7 +97,7 @@ function searchInSubdir(
     // Extract the filename, line number, and line text from grep output.
     const lineText = grepMatchResult[3];
     const lineNo = parseInt(grepMatchResult[2], 10) - 1;
-    const filePath = path.join(subdir, grepMatchResult[1]);
+    const filePath = nuclideUri.join(subdir, grepMatchResult[1]);
 
     // Try to extract the actual "matched" text.
     const matchTextResult = regex.exec(lineText);

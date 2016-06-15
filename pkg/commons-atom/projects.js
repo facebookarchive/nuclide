@@ -12,7 +12,7 @@
 import type {NuclideUri} from '../nuclide-remote-uri';
 
 import {Emitter, Directory} from 'atom';
-import {isRemote} from '../nuclide-remote-uri';
+import nuclideUri from '../nuclide-remote-uri';
 import singleton from '../commons-node/singleton';
 
 const REMOVE_PROJECT_EVENT = 'did-remove-project';
@@ -23,7 +23,7 @@ function getValidProjectPaths(): Array<string> {
   return atom.project.getDirectories().filter(directory => {
     // If a remote directory path is a local `Directory` instance, the project path
     // isn't yet ready for consumption.
-    if (isRemote(directory.getPath()) && directory instanceof Directory) {
+    if (nuclideUri.isRemote(directory.getPath()) && directory instanceof Directory) {
       return false;
     }
     return true;

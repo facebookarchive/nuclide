@@ -13,7 +13,7 @@ import type {RevisionFileChanges} from './HgService';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {hgAsyncExecute} from './hg-utils';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 
 const ALL_FILES_LABEL = 'files:';
@@ -136,7 +136,7 @@ function parseRevisionFileChangeOutput(
 }
 
 function absolutize(filePath: string, workingDirectory: string): string {
-  return path.join(workingDirectory, filePath);
+  return nuclideUri.join(workingDirectory, filePath);
 }
 
 function absolutizeAll(filePaths: Array<string>, workingDirectory: string) {

@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {ServiceTester} from './ServiceTester';
 import typeof * as EchoServiceType from './EchoService';
 import {RemotableObject} from './EchoService';
@@ -23,8 +23,8 @@ describe('EchoServer', () => {
     testHelper = new ServiceTester();
     waitsForPromise(() => testHelper.start([{
       name: 'EchoService',
-      definition: path.join(__dirname, 'EchoService.js'),
-      implementation: path.join(__dirname, 'EchoService.js'),
+      definition: nuclideUri.join(__dirname, 'EchoService.js'),
+      implementation: nuclideUri.join(__dirname, 'EchoService.js'),
     }]));
 
     runs(() => {

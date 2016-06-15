@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type WatchmanSubscription from '../../nuclide-watchman-helpers/lib/WatchmanSubscription';
 import type {FileChange} from '../../nuclide-watchman-helpers/lib/WatchmanClient';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {Observable} from 'rxjs';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
@@ -117,7 +117,7 @@ export function watchDirectoryRecursive(
 function onWatcherChange(subscription: WatchmanSubscription, entries: Array<FileChange>): void {
   const directoryChanges = new Set();
   entries.forEach(entry => {
-    const entryPath = path.join(subscription.root, entry.name);
+    const entryPath = nuclideUri.join(subscription.root, entry.name);
     const observer = entityObserver.get(entryPath);
     if (observer != null) {
       // TODO(most): handle `rename`, if needed.
@@ -131,7 +131,7 @@ function onWatcherChange(subscription: WatchmanSubscription, entries: Array<File
     // A file watch event can also be considered a directory change
     // for the parent directory if a file was created or deleted.
     if (entry.new || !entry.exists) {
-      directoryChanges.add(path.dirname(entryPath));
+      directoryChanges.add(nuclideUri.dirname(entryPath));
     }
   });
 

@@ -14,7 +14,7 @@ import type {Reference, ReferenceGroup} from '../types';
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
 import FilePreview from './FilePreview';
-import {relative} from '../../../nuclide-remote-uri';
+import nuclideUri from '../../../nuclide-remote-uri';
 
 const FileReferencesView = React.createClass({
   propTypes: {
@@ -98,7 +98,7 @@ const FileReferencesView = React.createClass({
         <div className="nuclide-find-references-filename list-item">
           <span className="icon-file-text icon" />
           <a onClick={this._onFileNameClick}>
-            {relative(this.props.basePath, this.props.uri)}
+            {nuclideUri.relative(this.props.basePath, this.props.uri)}
           </a>
           <span className="nuclide-find-references-ref-count badge badge-small">
             {groups.length}

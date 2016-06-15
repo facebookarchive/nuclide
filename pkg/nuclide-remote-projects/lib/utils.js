@@ -15,7 +15,7 @@ import type {
 } from '../../nuclide-remote-connection/lib/RemoteConnection';
 
 import invariant from 'assert';
-import {parse} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 
 const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
 const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
@@ -60,7 +60,7 @@ export function *getOpenFileEditorForRemoteProject(
         continue;
       }
       const uri = sanitizeNuclideUri(paneItem.getURI());
-      const {hostname: fileHostname, path: filePath} = parse(uri);
+      const {hostname: fileHostname, path: filePath} = nuclideUri.parse(uri);
       if (fileHostname === connectionConfig.host) {
         invariant(fileHostname);
         yield {

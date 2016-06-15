@@ -14,11 +14,11 @@ import type {RemoteFile} from './RemoteFile';
 
 import {File} from 'atom';
 import {ServerConnection} from './ServerConnection';
-import {isRemote} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 
 module.exports = {
   getFileForPath(filePath: NuclideUri): ?(atom$File | RemoteFile) {
-    if (isRemote(filePath)) {
+    if (nuclideUri.isRemote(filePath)) {
       const connection = ServerConnection.getForUri(filePath);
       if (!connection) {
         return null;

@@ -10,17 +10,17 @@
  */
 
 import {parseRevisionFileChangeOutput} from '../lib/hg-revision-state-helpers';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 describe('parseRevisionFileChangeOutput', () => {
   const testWorkingDirectory = '/Hg/Working/Directory';
-  const test1 = path.join(testWorkingDirectory, 'test1.js');
-  const test2 = path.join(testWorkingDirectory, 'test2.js');
-  const test3 = path.join(testWorkingDirectory, 'test3.js');
-  const test4 = path.join(testWorkingDirectory, 'test4.js');
-  const test5 = path.join(testWorkingDirectory, 'test5.js');
-  const testOrig1 = path.join(testWorkingDirectory, 'test-orig1.js');
-  const testOrig2 = path.join(testWorkingDirectory, 'test-orig2.js');
+  const test1 = nuclideUri.join(testWorkingDirectory, 'test1.js');
+  const test2 = nuclideUri.join(testWorkingDirectory, 'test2.js');
+  const test3 = nuclideUri.join(testWorkingDirectory, 'test3.js');
+  const test4 = nuclideUri.join(testWorkingDirectory, 'test4.js');
+  const test5 = nuclideUri.join(testWorkingDirectory, 'test5.js');
+  const testOrig1 = nuclideUri.join(testWorkingDirectory, 'test-orig1.js');
+  const testOrig2 = nuclideUri.join(testWorkingDirectory, 'test-orig2.js');
 
   it('correctly parses a revision with files added, deleted, copied, and modified.', () => {
     // This output is in the form of the REVISION_FILE_CHANGES_TEMPLATE in

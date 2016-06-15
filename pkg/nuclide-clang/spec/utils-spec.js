@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import temp from 'temp';
 
 import {findIncludingSourceFile} from '../lib/utils';
@@ -26,30 +26,33 @@ describe('findIncludingSourceFile', () => {
   });
 
   it('is able to find an absolute include', () => {
-    fs.mkdirSync(path.join(tmpdir, 'a'));
-    const sourceFile = path.join(tmpdir, 'a/b.cpp');
+    fs.mkdirSync(nuclideUri.join(tmpdir, 'a'));
+    const sourceFile = nuclideUri.join(tmpdir, 'a/b.cpp');
     fs.writeFileSync(sourceFile, '#include <a/b.h>');
     waitsForPromise(async () => {
-      const file = await findIncludingSourceFile(path.join(tmpdir, 'a/b.h'), tmpdir).toPromise();
+      const file = await findIncludingSourceFile(nuclideUri.join(tmpdir, 'a/b.h'), tmpdir)
+      .toPromise();
       expect(file).toBe(sourceFile);
     });
   });
 
   it('is able to find a relative include', () => {
-    fs.mkdirSync(path.join(tmpdir, 'a'));
-    const sourceFile = path.join(tmpdir, 'a/x.cpp');
+    fs.mkdirSync(nuclideUri.join(tmpdir, 'a'));
+    const sourceFile = nuclideUri.join(tmpdir, 'a/x.cpp');
     fs.writeFileSync(sourceFile, '#include <../x.h>');
     waitsForPromise(async () => {
-      const file = await findIncludingSourceFile(path.join(tmpdir, 'x.h'), tmpdir).toPromise();
+      const file = await findIncludingSourceFile(nuclideUri.join(tmpdir, 'x.h'), tmpdir)
+      .toPromise();
       expect(file).toBe(sourceFile);
     });
   });
 
   it('rejects non-matching relative includes', () => {
-    fs.mkdirSync(path.join(tmpdir, 'a'));
-    fs.writeFileSync(path.join(tmpdir, 'a/x.cpp'), '#include <../../x.h>');
+    fs.mkdirSync(nuclideUri.join(tmpdir, 'a'));
+    fs.writeFileSync(nuclideUri.join(tmpdir, 'a/x.cpp'), '#include <../../x.h>');
     waitsForPromise(async () => {
-      const file = await findIncludingSourceFile(path.join(tmpdir, 'x.h'), tmpdir).toPromise();
+      const file = await findIncludingSourceFile(nuclideUri.join(tmpdir, 'x.h'), tmpdir)
+      .toPromise();
       expect(file).toBeNull();
     });
   });

@@ -18,7 +18,7 @@ import {describeRemotableTest} from './utils/remotable-tests';
 
 import fs from 'fs';
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 
 const FILE_ENCODING = {encoding: 'utf-8'};
 
@@ -65,7 +65,7 @@ describeRemotableTest('Diff View Reloads Filesystem Contents', (context: TestCon
     // Change the file on the file system
     runs(() => {
       setResourceTextSync(
-        path.join(repoPath, TEST_FILE_NAME),
+        nuclideUri.join(repoPath, TEST_FILE_NAME),
         SAMPLE_TEXT,
       );
     });
@@ -84,7 +84,7 @@ describeRemotableTest('Diff View Reloads Filesystem Contents', (context: TestCon
 
     // Delete the file on the file system
     runs(() => {
-      fs.unlinkSync(path.join(repoPath, TEST_FILE_NAME));
+      fs.unlinkSync(nuclideUri.join(repoPath, TEST_FILE_NAME));
     });
 
     // Ensure that the new Diff View editor that is created when the file on the system is deleted is blank

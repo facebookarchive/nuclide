@@ -15,7 +15,6 @@ import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 
 import invariant from 'assert';
-import pathModule from 'path';
 import {RpcConnection} from '../../nuclide-rpc';
 import {loadServicesConfig} from '../../nuclide-server/lib/services';
 import {setConnectionConfig} from './RemoteConnectionConfigurationManager';
@@ -24,13 +23,11 @@ import {RemoteFile} from './RemoteFile';
 import {RemoteDirectory} from './RemoteDirectory';
 
 import {Disposable} from 'atom';
-import {parse as parseRemoteUri} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {EventEmitter} from 'events';
 
 import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 import {getVersion} from '../../nuclide-version';
-
-const posixPath = pathModule.posix;
 
 export type ServerConnectionConfiguration = {
   host: string; // host nuclide server is running on.
@@ -128,7 +125,7 @@ class ServerConnection {
   }
 
   getPathOfUri(uri: string): string {
-    return parseRemoteUri(uri).path;
+    return nuclideUri.parse(uri).path;
   }
 
   createDirectory(
@@ -136,8 +133,8 @@ class ServerConnection {
     hgRepositoryDescription: ?HgRepositoryDescription,
     symlink: boolean = false,
   ): RemoteDirectory {
-    let {path} = parseRemoteUri(uri);
-    path = posixPath.normalize(path);
+    let {path} = nuclideUri.parse(uri);
+    path = nuclideUri.normalize(path);
 
     let entry = this._entries[path];
     if (
@@ -163,8 +160,8 @@ class ServerConnection {
   }
 
   createFile(uri: NuclideUri, symlink: boolean = false): RemoteFile {
-    let {path} = parseRemoteUri(uri);
-    path = posixPath.normalize(path);
+    let {path} = nuclideUri.parse(uri);
+    path = nuclideUri.normalize(path);
 
     let entry = this._entries[path];
     if (
@@ -325,7 +322,7 @@ class ServerConnection {
   }
 
   static getForUri(uri: NuclideUri): ?ServerConnection {
-    const {hostname} = parseRemoteUri(uri);
+    const {hostname} = nuclideUri.parse(uri);
     if (hostname == null) {
       return null;
     }
@@ -337,7 +334,7 @@ class ServerConnection {
   }
 
   getRemoteConnectionForUri(uri: NuclideUri): ?RemoteConnection {
-    const {path} = parseRemoteUri(uri);
+    const {path} = nuclideUri.parse(uri);
     return this.getConnections().filter(connection => {
       return path.startsWith(connection.getPathForInitialWorkingDirectory());
     })[0];

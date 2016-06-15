@@ -10,11 +10,11 @@
  */
 
 import NuclideServer from '../lib/NuclideServer';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {loadServicesConfig} from '../lib/services';
 
-const pathToTestDir = path.join(__dirname, 'testfiles');
-const pathToTestFile = path.join(pathToTestDir, 'testfile.txt');
+const pathToTestDir = nuclideUri.join(__dirname, 'testfiles');
+const pathToTestFile = nuclideUri.join(pathToTestDir, 'testfile.txt');
 
 let server;
 let client;
@@ -39,7 +39,7 @@ xdescribe('NuclideSearch test suite', () => { // eslint-disable-line jasmine/no-
       waitsForPromise(async () => {
         const results = await client.searchDirectory(pathToTestDir, 'te');
         expect(results.length).toBe(1);
-        expect(results[0].path).toBe(path.join(pathToTestDir, 'testfile.txt'));
+        expect(results[0].path).toBe(nuclideUri.join(pathToTestDir, 'testfile.txt'));
       });
     });
 

@@ -17,7 +17,7 @@ import repositoryContainsPath from '../lib/repositoryContainsPath';
 import {checkOutput} from '../../commons-node/process';
 import {MockHgService} from '../../nuclide-hg-repository-base';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 const temp = require('temp').track();
 
@@ -28,7 +28,7 @@ describe('repositoryContainsPath', () => {
   beforeEach(() => {
     // Create a temporary Hg repository.
     tempFolder = temp.mkdirSync();
-    repoRoot = path.join(tempFolder, 'repoRoot');
+    repoRoot = nuclideUri.join(tempFolder, 'repoRoot');
     fs.mkdirSync(repoRoot);
   });
 
@@ -48,9 +48,9 @@ describe('repositoryContainsPath', () => {
       });
 
       expect(repositoryContainsPath(gitRepository, repoRoot)).toBe(true);
-      const subdir = path.join(repoRoot, 'subdir');
+      const subdir = nuclideUri.join(repoRoot, 'subdir');
       expect(repositoryContainsPath(gitRepository, subdir)).toBe(true);
-      const parentDir = path.resolve(tempFolder, '..');
+      const parentDir = nuclideUri.resolve(tempFolder, '..');
       expect(repositoryContainsPath(gitRepository, parentDir)).toBe(false);
     });
   });
@@ -63,7 +63,7 @@ describe('repositoryContainsPath', () => {
       const mockService = new MockHgService();
       const mockHgService: HgServiceType = (mockService: any);
       const hgRepositoryClient = new HgRepositoryClient(
-        /* repoPath */ path.join(repoRoot, '.hg'),
+        /* repoPath */ nuclideUri.join(repoRoot, '.hg'),
         /* hgService */ mockHgService,
         /* options */ {
           originURL: 'testURL',
@@ -75,9 +75,9 @@ describe('repositoryContainsPath', () => {
       const hgRepository: atom$Repository = (hgRepositoryClient: any);
 
       expect(repositoryContainsPath(hgRepository, repoRoot)).toBe(true);
-      const subdir = path.join(repoRoot, 'subdir');
+      const subdir = nuclideUri.join(repoRoot, 'subdir');
       expect(repositoryContainsPath(hgRepository, subdir)).toBe(true);
-      const parentDir = path.resolve(tempFolder, '..');
+      const parentDir = nuclideUri.resolve(tempFolder, '..');
       expect(repositoryContainsPath(hgRepository, parentDir)).toBe(false);
     });
   });

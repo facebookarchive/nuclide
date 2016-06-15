@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import type {ConfigEntry} from '../../nuclide-rpc';
 
-const PACKAGE_ROOT = path.resolve(__dirname, '..');
+const PACKAGE_ROOT = nuclideUri.resolve(__dirname, '..');
 
 /**
  * Load service configs, and resolve all of the paths to absolute paths.
@@ -59,6 +59,6 @@ function resolveServicePath(servicePath: string): string {
   try {
     return require.resolve(servicePath);
   } catch (e) {
-    return path.resolve(PACKAGE_ROOT, servicePath);
+    return nuclideUri.resolve(PACKAGE_ROOT, servicePath);
   }
 }

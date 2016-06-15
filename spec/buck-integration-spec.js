@@ -19,7 +19,7 @@ import {
   setLocalProject,
 } from '../pkg/nuclide-integration-test-helpers';
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 
 describe('Buck building via toolbar', () => {
 
@@ -45,7 +45,7 @@ describe('Buck building via toolbar', () => {
     waitsForPromise(async () => {
       const projectPath = await copyFixture('objc_project_1');
       setLocalProject(projectPath);
-      await atom.workspace.open(path.join(projectPath, '.buckconfig'));
+      await atom.workspace.open(nuclideUri.join(projectPath, '.buckconfig'));
     });
 
     waitsFor(

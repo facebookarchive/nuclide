@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import temp from 'temp';
 import watchman from 'fb-watchman';
@@ -30,13 +30,13 @@ describe('WatchmanClient test suite', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
     client = new WatchmanClient();
     dirPath = temp.mkdirSync();
-    filePath = path.join(dirPath, 'test.txt');
-    fs.writeFileSync(path.join(dirPath, 'non-used-file.txt'), 'def');
+    filePath = nuclideUri.join(dirPath, 'test.txt');
+    fs.writeFileSync(nuclideUri.join(dirPath, 'non-used-file.txt'), 'def');
     fs.writeFileSync(filePath, 'abc');
     // Many people use restrict_root_files so watchman only will watch folders
     // that have those listed files in them.  This list of root files almost
     // always has .git in it.
-    const watchmanRootPath = path.join(dirPath, '.git');
+    const watchmanRootPath = nuclideUri.join(dirPath, '.git');
     fs.mkdirSync(watchmanRootPath);
     waits(1010);
   });
@@ -155,8 +155,8 @@ describe('WatchmanClient test suite', () => {
         const dirRealPath = fs.realpathSync(dirPath);
         // The .watchmanconfig file, amonst others that could also be configured
         // define the project root directory.
-        fs.writeFileSync(path.join(dirPath, '.watchmanconfig'), '');
-        const nestedDirPath = path.join(dirPath, 'nested');
+        fs.writeFileSync(nuclideUri.join(dirPath, '.watchmanconfig'), '');
+        const nestedDirPath = nuclideUri.join(dirPath, 'nested');
         fs.mkdirSync(nestedDirPath);
         const {
           watch: watchRoot,

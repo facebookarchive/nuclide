@@ -17,7 +17,7 @@ import {
   scriptSafeSpawnAndObserveOutput,
 } from '../../commons-node/process';
 import fsPromise from '../../commons-node/fsPromise';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import createBuckWebSocket from './createBuckWebSocket';
 
 const logger = require('../../nuclide-logging').getLogger();
@@ -116,7 +116,7 @@ export class BuckProject {
       if (result.length === 0) {
         return null;
       }
-      return path.join(this._rootPath, result[0]);
+      return nuclideUri.join(this._rootPath, result[0]);
     } catch (e) {
       logger.error(`No build file for target "${targetName}" ${e}`);
       return null;
@@ -202,7 +202,9 @@ export class BuckProject {
   async _loadBuckConfig(): Promise<BuckConfig> {
     const ini = require('ini');
     const header = 'scope = global\n';
-    const buckConfigContent = await fsPromise.readFile(path.join(this._rootPath, '.buckconfig'));
+    const buckConfigContent = await fsPromise.readFile(
+      nuclideUri.join(this._rootPath, '.buckconfig'),
+    );
     return ini.parse(header + buckConfigContent);
   }
 
@@ -418,7 +420,7 @@ export class BuckProject {
     const stdout = result.stdout.trim();
     if (stdout.indexOf(' ') !== -1) {
       const relativePath = stdout.split(' ')[1];
-      return path.resolve(this._rootPath, relativePath);
+      return nuclideUri.resolve(this._rootPath, relativePath);
     } else {
       return null;
     }

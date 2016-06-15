@@ -18,7 +18,7 @@ import {
   RemoteDirectory,
   RemoteFile,
 } from '../../nuclide-remote-connection';
-import RemoteUri, {getPath} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import url from 'url';
 import crypto from 'crypto';
@@ -36,31 +36,31 @@ function escapeBackslash(str: string): string {
 }
 
 function dirPathToKey(path: string): string {
-  const pathModule = RemoteUri.pathModuleFor(path);
+  const pathModule = nuclideUri.pathModuleFor(path);
   return path.replace(new RegExp(`${escapeBackslash(pathModule.sep)}+$`), '') + pathModule.sep;
 }
 
 function isDirKey(key: string): boolean {
-  const pathModule = RemoteUri.pathModuleFor(key);
+  const pathModule = nuclideUri.pathModuleFor(key);
   return (key.slice(-1) === pathModule.sep);
 }
 
 function keyToName(key: string): string {
-  const pathModule = RemoteUri.pathModuleFor(key);
+  const pathModule = nuclideUri.pathModuleFor(key);
   const path = keyToPath(key);
   const index = path.lastIndexOf(pathModule.sep);
   return (index === -1) ? path : path.slice(index + 1);
 }
 
 function keyToPath(key: string): string {
-  const pathModule = RemoteUri.pathModuleFor(key);
+  const pathModule = nuclideUri.pathModuleFor(key);
   return key.replace(new RegExp(`${escapeBackslash(pathModule.sep)}+$`), '');
 }
 
 function getParentKey(key: string): string {
-  const pathModule = RemoteUri.pathModuleFor(key);
+  const pathModule = nuclideUri.pathModuleFor(key);
   const path = keyToPath(key);
-  const parsed = RemoteUri.parse(path);
+  const parsed = nuclideUri.parse(path);
   parsed.pathname = pathModule.join(parsed.pathname, '..');
   const parentPath = url.format((parsed: any));
   return dirPathToKey(parentPath);
@@ -98,7 +98,7 @@ function getDirectoryByKey(key: string): ?Directory {
   const path = keyToPath(key);
   if (!isDirKey(key)) {
     return null;
-  } else if (RemoteUri.isRemote(path)) {
+  } else if (nuclideUri.isRemote(path)) {
     const connection = RemoteConnection.getForUri(path);
     if (connection == null) {
       return null;
@@ -113,7 +113,7 @@ function getFileByKey(key: string): ?File {
   const path = keyToPath(key);
   if (isDirKey(key)) {
     return null;
-  } else if (RemoteUri.isRemote(path)) {
+  } else if (nuclideUri.isRemote(path)) {
     const connection = RemoteConnection.getForUri(path);
     if (connection == null) {
       return;
@@ -132,7 +132,7 @@ function getEntryByKey(key: string): ?Entry {
 function getDisplayTitle(key: string): ?string {
   const path = keyToPath(key);
 
-  if (RemoteUri.isRemote(path)) {
+  if (nuclideUri.isRemote(path)) {
     const connection = RemoteConnection.getForUri(path);
 
     if (connection != null) {
@@ -148,7 +148,7 @@ function isValidDirectory(directory: Directory): boolean {
   }
 
   const dirPath = directory.getPath();
-  const pathModule = RemoteUri.pathModuleFor(dirPath);
+  const pathModule = nuclideUri.pathModuleFor(dirPath);
   return pathModule.isAbsolute(dirPath);
 }
 
@@ -174,7 +174,7 @@ function updatePathInOpenedEditors(oldPath: NuclideUri, newPath: NuclideUri): vo
     if (buffer.getPath() === oldPath) {
       // setPath will append the hostname when given the local path, so we
       // strip off the hostname here to avoid including it twice in the path.
-      buffer.setPath(getPath(newPath));
+      buffer.setPath(nuclideUri.getPath(newPath));
     }
   });
 }

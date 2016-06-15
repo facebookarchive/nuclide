@@ -16,7 +16,7 @@ import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getAtomProjectRootPath} from '../../commons-atom/projects';
 import loadingNotification from '../../commons-atom/loading-notification';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 export default class ReferenceHelpers {
 
@@ -32,7 +32,7 @@ export default class ReferenceHelpers {
 
     // Choose the project root as baseUri, or if no project exists,
     // use the dirname of the src file.
-    const baseUri = getAtomProjectRootPath(src) || path.dirname(src);
+    const baseUri = getAtomProjectRootPath(src) || nuclideUri.dirname(src);
 
     const contents = editor.getText();
     const line = position.row;

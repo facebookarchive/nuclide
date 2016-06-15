@@ -10,7 +10,7 @@
  */
 
 import path from 'path';
-import fsSync from '../../commons-node/fsSync';
+import nuclideUri from '../../nuclide-remote-uri';
 
 const ADD_ACTION = 'add';
 const REMOVE_ACTION = 'remove';
@@ -78,7 +78,7 @@ function computeAllParentDirectories(
 
   if (pathPrefixToSkip) {
     // Setting the lastIndex determines where the next search begins.
-    separatorRegex.lastIndex = fsSync.ensureTrailingSeparator(pathPrefixToSkip).length;
+    separatorRegex.lastIndex = nuclideUri.ensureTrailingSeparator(pathPrefixToSkip).length;
   }
 
   const shouldAdd = (operation === ADD_ACTION);

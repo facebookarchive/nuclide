@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 /**
  * Activates all nuclide and fb atom packages that do not defer their own activation until a
@@ -40,9 +40,9 @@ export async function activateAllPackages(): Promise<Array<string>> {
   });
 
   // Include the path to the nuclide package.
-  packageNames.push(path.dirname(require.resolve('../../../package.json')));
+  packageNames.push(nuclideUri.dirname(require.resolve('../../../package.json')));
   // Include the path to the tool-bar package
-  packageNames.push(path.join(String(process.env.ATOM_HOME), 'packages/tool-bar'));
+  packageNames.push(nuclideUri.join(String(process.env.ATOM_HOME), 'packages/tool-bar'));
 
   await Promise.all(packageNames.map(pack => atom.packages.activatePackage(pack)));
   return atom.packages.getActivePackages().map(pack => pack.name);

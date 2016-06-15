@@ -17,7 +17,7 @@ import {Observable} from 'rxjs';
 
 // TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
 import NuclideTextBuffer from '../nuclide-remote-projects/lib/NuclideTextBuffer';
-import {isLocal} from '../nuclide-remote-uri';
+import nuclideUri from '../nuclide-remote-uri';
 import {ServerConnection} from '../nuclide-remote-connection';
 
 import {observableFromSubscribeFunction} from '../commons-node/event';
@@ -69,7 +69,7 @@ export function bufferForUri(uri: NuclideUri): atom$TextBuffer {
 
 function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
   let buffer;
-  if (isLocal(uri)) {
+  if (nuclideUri.isLocal(uri)) {
     buffer = new TextBuffer({filePath: uri});
   } else {
     const connection = ServerConnection.getForUri(uri);

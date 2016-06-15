@@ -16,7 +16,7 @@ import {Range} from 'atom';
 
 import {MarkerTracker} from '../lib/MarkerTracker';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 describe('MarkerTracker', () => {
   let tracker: MarkerTracker = (null: any);
@@ -32,9 +32,9 @@ describe('MarkerTracker', () => {
   beforeEach(() => {
     tracker = new MarkerTracker();
 
-    const fixturesPath = path.join(__dirname, 'fixtures');
-    initiallyOpenFilePath = path.join(fixturesPath, 'initiallyOpenFile.txt');
-    initiallyClosedFilePath = path.join(fixturesPath, 'initiallyClosedFile.txt');
+    const fixturesPath = nuclideUri.join(__dirname, 'fixtures');
+    initiallyOpenFilePath = nuclideUri.join(fixturesPath, 'initiallyOpenFile.txt');
+    initiallyClosedFilePath = nuclideUri.join(fixturesPath, 'initiallyClosedFile.txt');
 
     messageForInitiallyOpenFile = {
       scope: 'file',

@@ -11,14 +11,13 @@
 
 import fs from 'fs-plus';
 import mkdirpLib from 'mkdirp';
-import path from 'path';
+import nuclideUri from '../nuclide-remote-uri';
 import rimraf from 'rimraf';
-import os from 'os';
 import temp from 'temp';
 import {asyncExecute} from './process';
 
 function isRoot(filePath: string): boolean {
-  return path.dirname(filePath) === filePath;
+  return nuclideUri.dirname(filePath) === filePath;
 }
 
 /**
@@ -74,9 +73,9 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
   // this function. The downside would be that if someone added a closer file
   // with fileName to pathToFile (or deleted the one that was cached), then we
   // would have a bug. This would probably be pretty rare, though.
-  let currentPath = path.resolve(pathToDirectory);
+  let currentPath = nuclideUri.resolve(pathToDirectory);
   do { // eslint-disable-line no-constant-condition
-    const fileToFind = path.join(currentPath, fileName);
+    const fileToFind = nuclideUri.join(currentPath, fileName);
     const hasFile = await exists(fileToFind); // eslint-disable-line babel/no-await-in-loop
     if (hasFile) {
       return currentPath;
@@ -85,14 +84,14 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
     if (isRoot(currentPath)) {
       return null;
     }
-    currentPath = path.dirname(currentPath);
+    currentPath = nuclideUri.dirname(currentPath);
   } while (true);
 }
 
 function getCommonAncestorDirectory(filePaths: Array<string>): string {
-  let commonDirectoryPath = path.dirname(filePaths[0]);
+  let commonDirectoryPath = nuclideUri.dirname(filePaths[0]);
   while (filePaths.some(filePath => !filePath.startsWith(commonDirectoryPath))) {
-    commonDirectoryPath = path.dirname(commonDirectoryPath);
+    commonDirectoryPath = nuclideUri.dirname(commonDirectoryPath);
   }
   return commonDirectoryPath;
 }
@@ -143,18 +142,6 @@ async function rmdir(filePath: string): Promise<any> {
   });
 }
 
-function expandHomeDir(filePath: string): string {
-  let resolvedPath = null;
-  if (filePath === '~') {
-    resolvedPath = os.homedir();
-  } else if (filePath.startsWith(`~${path.sep}`)) {
-    resolvedPath = `${os.homedir()}${filePath.substr(1)}`;
-  } else {
-    resolvedPath = filePath;
-  }
-  return resolvedPath;
-}
-
 /** @return true only if we are sure directoryPath is on NFS. */
 async function isNfs(entityPath: string): Promise<boolean> {
   if (process.platform === 'linux' || process.platform === 'darwin') {
@@ -195,7 +182,6 @@ export default {
   exists,
   mkdirp,
   rmdir,
-  expandHomeDir,
   isNfs,
 
   copy: _denodeifyFsMethod('copy'),

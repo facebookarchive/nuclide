@@ -19,7 +19,7 @@ import {getBuckProject} from '../../nuclide-buck-base';
 import wordAtPosition from '../../commons-atom/word-at-position';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 import {goToLocation} from '../../commons-atom/go-to-location';
-import {basename, dirname, getPath, join} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import escapeStringRegExp from 'escape-string-regexp';
 
 /**
@@ -53,7 +53,7 @@ async function parseTarget(
       buildFileName = 'BUCK';
     }
 
-    path = join(buckRoot, basePath, buildFileName);
+    path = nuclideUri.join(buckRoot, basePath, buildFileName);
   } else {
     // filePath is already an absolute path.
     path = filePath;
@@ -76,7 +76,7 @@ async function findTargetLocation(target: Target): Promise<any> {
   let data;
   try {
     const fs = getFileSystemServiceByNuclideUri(target.path);
-    data = (await fs.readFile(getPath(target.path))).toString('utf8');
+    data = (await fs.readFile(nuclideUri.getPath(target.path))).toString('utf8');
   } catch (e) {
     return null;
   }
@@ -119,7 +119,7 @@ module.exports = {
       return null;
     }
 
-    const baseName = basename(absolutePath);
+    const baseName = nuclideUri.basename(absolutePath);
     if (!VALID_BUILD_FILE_NAMES.has(baseName)) {
       return null;
     }
@@ -131,7 +131,7 @@ module.exports = {
 
     const results = await Promise.all([
       findBuildTarget(textEditor, position, absolutePath, buckProject),
-      findRelativeFilePath(textEditor, position, dirname(absolutePath)),
+      findRelativeFilePath(textEditor, position, nuclideUri.dirname(absolutePath)),
     ]);
     const hyperclickMatch = results.find(x => x != null);
 
@@ -208,11 +208,11 @@ async function findRelativeFilePath(
     return null;
   }
 
-  const potentialPath = join(directory, wordMatch[2]);
+  const potentialPath = nuclideUri.join(directory, wordMatch[2]);
   let stat;
   try {
     const fs = getFileSystemServiceByNuclideUri(potentialPath);
-    stat = await fs.stat(getPath(potentialPath));
+    stat = await fs.stat(nuclideUri.getPath(potentialPath));
   } catch (e) {
     return null;
   }

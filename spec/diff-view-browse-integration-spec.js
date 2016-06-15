@@ -28,7 +28,7 @@ import {ReactDOM} from 'react-for-atom';
 import uiTreePath from '../pkg/commons-atom/ui-tree-path';
 import {NON_MERCURIAL_REPO_DISPLAY_NAME} from '../pkg/nuclide-diff-view/lib/constants';
 import temp from 'temp';
-import {join} from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 
 temp.track();
 
@@ -47,24 +47,28 @@ describe('Diff View Browse Mode Integration Test', () => {
       await activateAllPackages();
       // Copy local mercurial project to temporary directory.
       localRepoPath = await copyMercurialFixture('hg_repo_2');
-      fs.writeFileSync(join(localRepoPath, 'test.txt'), 'dirty changes', 'utf8');
+      fs.writeFileSync(nuclideUri.join(localRepoPath, 'test.txt'), 'dirty changes', 'utf8');
 
       // Non-Mercurial project.
       nonRepoPath = temp.mkdirSync('non_repo');
-      fs.writeFileSync(join(nonRepoPath, 'no_repo_file.txt'), 'ignored_contents', 'utf8');
+      fs.writeFileSync(
+        nuclideUri.join(nonRepoPath, 'no_repo_file.txt'),
+        'ignored_contents',
+        'utf8',
+      );
       // Add those two local directories as a new project in atom.
       setLocalProject([localRepoPath, nonRepoPath]);
 
       // Start the Nuclide server and add a remote mercurial repository project.
       remoteRepoLocalPath = await copyMercurialFixture('hg_repo_2');
-      fs.writeFileSync(join(remoteRepoLocalPath, 'untracked.txt'), 'untracked', 'utf8');
+      fs.writeFileSync(nuclideUri.join(remoteRepoLocalPath, 'untracked.txt'), 'untracked', 'utf8');
       await startNuclideServer();
       connection = await addRemoteProject(remoteRepoLocalPath);
       invariant(connection != null, 'connection was not established');
       // Open a remote file in the flow project we copied, and get reference to the editor's HTML.
       remoteRepoPath = connection.getUriForInitialWorkingDirectory();
       // Open the test.txt file in the repo.
-      await atom.workspace.open(join(remoteRepoPath, 'test.txt'));
+      await atom.workspace.open(nuclideUri.join(remoteRepoPath, 'test.txt'));
     });
   });
 
@@ -137,13 +141,13 @@ describe('Diff View Browse Mode Integration Test', () => {
     runs(() => {
       expect(diffFiles.length).toBe(3);
       expect(uiTreePath(({currentTarget: diffFiles[0]}: any))).toBe(
-        join(localRepoPath, 'test.txt'),
+        nuclideUri.join(localRepoPath, 'test.txt'),
       );
       expect(uiTreePath(({currentTarget: diffFiles[1]}: any))).toBe(
-        join(remoteRepoPath, '.arcconfig'),
+        nuclideUri.join(remoteRepoPath, '.arcconfig'),
       );
       expect(uiTreePath(({currentTarget: diffFiles[2]}: any))).toBe(
-        join(remoteRepoPath, 'untracked.txt'),
+        nuclideUri.join(remoteRepoPath, 'untracked.txt'),
       );
       const treeRoots = treeElement.querySelectorAll('.root');
       expect(treeRoots.length).toBe(4);

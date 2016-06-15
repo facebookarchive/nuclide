@@ -12,7 +12,7 @@
 import type {TestContext} from './remotable-tests';
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../pkg/nuclide-remote-uri';
 
 import {
   extractTarGzFixture,
@@ -35,7 +35,9 @@ export function runTest(context: TestContext): void {
       await testADir('dir_1000_files', 'file0001.txt', 1500); // 1.5 sec for 1000 files
       await testADir('dir_10000_files', 'file00001.txt', 5000); // 5 sec for 10000 files
 
-      const filePath = context.getProjectRelativePath(path.join('dir_1000_files', 'file0001.txt'));
+      const filePath = context.getProjectRelativePath(
+        nuclideUri.join('dir_1000_files', 'file0001.txt'),
+      );
       const editor = await atom.workspace.open(filePath);
       invariant(editor);
 

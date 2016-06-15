@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {track} from 'temp';
 const temp = track();
 
@@ -32,9 +32,9 @@ describe('PathSetFactory', () => {
   beforeEach(() => {
     testDir = temp.mkdirSync();
     testDir = fs.realpathSync(testDir);
-    trackedFile = path.join(testDir, TRACKED_FILE_BASE);
-    untrackedFile = path.join(testDir, UNTRACKED_FILE_BASE);
-    ignoredFile = path.join(testDir, IGNORED_FILE_BASE);
+    trackedFile = nuclideUri.join(testDir, TRACKED_FILE_BASE);
+    untrackedFile = nuclideUri.join(testDir, UNTRACKED_FILE_BASE);
+    ignoredFile = nuclideUri.join(testDir, IGNORED_FILE_BASE);
   });
 
   describe('getFilesFromGit()', () => {
@@ -46,7 +46,7 @@ describe('PathSetFactory', () => {
       invariant(ignoredFile);
       invariant(untrackedFile);
       fs.writeFileSync(trackedFile, '');
-      fs.writeFileSync(path.join(testDir, '.gitignore'), `.gitignore\n${IGNORED_FILE_BASE}`);
+      fs.writeFileSync(nuclideUri.join(testDir, '.gitignore'), `.gitignore\n${IGNORED_FILE_BASE}`);
       fs.writeFileSync(ignoredFile, '');
       await checkOutput('git', ['add', '*'], {cwd: testDir});
       fs.writeFileSync(untrackedFile, '');
@@ -72,7 +72,7 @@ describe('PathSetFactory', () => {
       invariant(ignoredFile);
       invariant(untrackedFile);
       fs.writeFileSync(trackedFile, '');
-      fs.writeFileSync(path.join(testDir, '.hgignore'), `.hgignore\n${IGNORED_FILE_BASE}`);
+      fs.writeFileSync(nuclideUri.join(testDir, '.hgignore'), `.hgignore\n${IGNORED_FILE_BASE}`);
       fs.writeFileSync(ignoredFile, '');
       await checkOutput('hg', ['addremove'], {cwd: testDir});
       fs.writeFileSync(untrackedFile, '');

@@ -16,13 +16,13 @@ import fsPromise from '../../commons-node/fsPromise';
 import userInfo from '../../commons-node/userInfo';
 
 import os from 'os';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
-const LOG_DIRECTORY = path.join(os.tmpdir(), `/nuclide-${userInfo().username}-logs`);
-const LOG_FILE_PATH = path.join(LOG_DIRECTORY, 'nuclide.log');
+const LOG_DIRECTORY = nuclideUri.join(os.tmpdir(), `/nuclide-${userInfo().username}-logs`);
+const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
 
 let logDirectoryInitialized = false;
-const scribeAppenderPath = path.join(__dirname, '../fb/scribeAppender.js');
+const scribeAppenderPath = nuclideUri.join(__dirname, '../fb/scribeAppender.js');
 
 const LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
 
@@ -78,7 +78,7 @@ module.exports = {
           type: 'logLevelFilter',
           level: 'INFO',
           appender: {
-            type: path.join(__dirname, './consoleAppender'),
+            type: nuclideUri.join(__dirname, './consoleAppender'),
           },
         },
         {

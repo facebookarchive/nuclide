@@ -22,8 +22,7 @@ import {
   StatusCodeId,
   StatusCodeNumber,
 } from '../../nuclide-hg-repository-base/lib/hg-constants';
-import fsSync from '../../commons-node/fsSync';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import temp from 'temp';
 
 temp.track();
@@ -32,7 +31,7 @@ describe('HgRepositoryClient', () => {
   const tempDir = temp.mkdirSync('testproj');
   const tempSubDir = temp.mkdirSync({dir: tempDir});
 
-  const repoPath = path.join(tempDir, '.hg');
+  const repoPath = nuclideUri.join(tempDir, '.hg');
   const workingDirectory = new Directory(tempDir);
   const projectDirectory = new Directory(tempSubDir);
   const repoOptions = {
@@ -44,7 +43,7 @@ describe('HgRepositoryClient', () => {
   // Manufactures the absolute path of a file that should pass as being
   // within the repo.
   const createFilePath = filename => {
-    return path.join(projectDirectory.getPath(), filename);
+    return nuclideUri.join(projectDirectory.getPath(), filename);
   };
 
   // Some test "absolute" paths.
@@ -360,12 +359,12 @@ describe('HgRepositoryClient', () => {
 
     it('returns true if the path is, or is within, the .hg directory.', () => {
       expect(repo.isPathIgnored(repoPath)).toBe(true);
-      expect(repo.isPathIgnored(path.join(repoPath, 'blah'))).toBe(true);
+      expect(repo.isPathIgnored(nuclideUri.join(repoPath, 'blah'))).toBe(true);
     });
 
     it('returns false if the path is not in the cache and is not the .hg directory.', () => {
       expect(repo.isPathIgnored('/A/Random/Path')).toBe(false);
-      const parsedPath = path.parse(repoPath);
+      const parsedPath = nuclideUri.parsePath(repoPath);
       expect(repo.isPathIgnored(parsedPath.root)).toBe(false);
       expect(repo.isPathIgnored(parsedPath.dir)).toBe(false);
     });
@@ -630,14 +629,14 @@ describe('HgRepositoryClient', () => {
 
   describe('::getDirectoryStatus', () => {
     const testDir = createFilePath('subDirectory');
-    const subDirectory = path.join(testDir, 'dir1');
-    const subSubDirectory = path.join(subDirectory, 'dir2');
+    const subDirectory = nuclideUri.join(testDir, 'dir1');
+    const subSubDirectory = nuclideUri.join(subDirectory, 'dir2');
 
     it('marks a directory as modified only if it is in the modified directories cache.', () => {
       // Force the state of the hgStatusCache.
       repo._modifiedDirectoryCache = new Map();
-      repo._modifiedDirectoryCache.set(fsSync.ensureTrailingSeparator(testDir), 1);
-      repo._modifiedDirectoryCache.set(fsSync.ensureTrailingSeparator(subDirectory), 1);
+      repo._modifiedDirectoryCache.set(nuclideUri.ensureTrailingSeparator(testDir), 1);
+      repo._modifiedDirectoryCache.set(nuclideUri.ensureTrailingSeparator(subDirectory), 1);
 
       expect(repo.getDirectoryStatus(testDir)).toBe(StatusCodeNumber.MODIFIED);
       expect(repo.getDirectoryStatus(subDirectory)).toBe(StatusCodeNumber.MODIFIED);
@@ -650,8 +649,8 @@ describe('HgRepositoryClient', () => {
 
       // Force the state of the cache.
       repo._modifiedDirectoryCache = new Map();
-      repo._modifiedDirectoryCache.set(fsSync.ensureTrailingSeparator(dir_called_null), 1);
-      repo._modifiedDirectoryCache.set(fsSync.ensureTrailingSeparator(dir_called_undefined), 1);
+      repo._modifiedDirectoryCache.set(nuclideUri.ensureTrailingSeparator(dir_called_null), 1);
+      repo._modifiedDirectoryCache.set(nuclideUri.ensureTrailingSeparator(dir_called_undefined), 1);
 
       expect(repo.getDirectoryStatus(null)).toBe(StatusCodeNumber.CLEAN);
       expect(repo.getDirectoryStatus(undefined)).toBe(StatusCodeNumber.CLEAN);

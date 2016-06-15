@@ -13,7 +13,7 @@ import type {Observer} from 'rxjs';
 import type {ProcessMessage} from './process-types';
 
 import child_process from 'child_process';
-import path from 'path';
+import nuclideUri from '../nuclide-remote-uri';
 import {CompositeSubscription, observeStream, splitStream, takeWhileInclusive} from './stream';
 import {Observable} from 'rxjs';
 import {PromiseQueue} from './promise-executors';
@@ -180,13 +180,13 @@ export async function createExecEnvironment(
   if (platformPath) {
     execEnv.PATH = platformPath;
   } else if (commonBinaryPaths.length) {
-    const paths = execEnv.PATH.split(path.delimiter);
+    const paths = nuclideUri.splitByDelimiter(execEnv.PATH);
     commonBinaryPaths.forEach(commonBinaryPath => {
       if (paths.indexOf(commonBinaryPath) === -1) {
         paths.push(commonBinaryPath);
       }
     });
-    execEnv.PATH = paths.join(path.delimiter);
+    execEnv.PATH = nuclideUri.joinWithDelimiter(paths);
   }
 
   return execEnv;

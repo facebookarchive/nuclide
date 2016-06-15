@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {React} from 'react-for-atom';
 
 import type {
@@ -133,7 +133,7 @@ export const RecentFilesProvider: Provider = {
   },
 
   getComponentForItem(item: FileResult): React.Element<any> {
-    const filename = path.basename(item.path);
+    const filename = nuclideUri.basename(item.path);
     const filePath = item.path.substring(0, item.path.lastIndexOf(filename));
     const date = item.timestamp == null ? null : new Date(item.timestamp);
     const datetime = date === null ? '' : date.toLocaleString();

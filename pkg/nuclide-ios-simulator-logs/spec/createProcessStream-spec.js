@@ -11,14 +11,14 @@
 
 import fsPromise from '../../commons-node/fsPromise';
 import {_findAvailableDevice} from '../lib/createProcessStream';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 describe('_findAvailableDevice', () => {
 
   it('identifies the active simulator', () => {
     waitsForPromise(async () => {
       const simctlOutput = await fsPromise.readFile(
-        path.join(__dirname, 'fixtures', 'simctl-output.json')
+        nuclideUri.join(__dirname, 'fixtures', 'simctl-output.json')
       );
       const {devices} = JSON.parse(simctlOutput);
       const device = _findAvailableDevice(devices);

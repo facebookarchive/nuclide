@@ -10,7 +10,7 @@
  */
 
 import escapeStringRegExp from 'escape-string-regexp';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {Observable} from 'rxjs';
 
 import {
@@ -22,11 +22,11 @@ const HEADER_EXTENSIONS = new Set(['.h', '.hh', '.hpp', '.hxx', '.h++']);
 const SOURCE_EXTENSIONS = new Set(['.c', '.cc', '.cpp', '.cxx', '.c++', '.m', '.mm']);
 
 export function isHeaderFile(filename: string): boolean {
-  return HEADER_EXTENSIONS.has(path.extname(filename));
+  return HEADER_EXTENSIONS.has(nuclideUri.extname(filename));
 }
 
 export function isSourceFile(filename: string): boolean {
-  return SOURCE_EXTENSIONS.has(path.extname(filename));
+  return SOURCE_EXTENSIONS.has(nuclideUri.extname(filename));
 }
 
 function processGrepResult(
@@ -49,7 +49,9 @@ function processGrepResult(
   // Source-relative includes have to be verified.
   // Relative paths will match the (../)* rule (at index 2).
   if (match[2] != null) {
-    const includePath = path.normalize(path.join(path.dirname(filename), match[1]));
+    const includePath = nuclideUri.normalize(
+      nuclideUri.join(nuclideUri.dirname(filename), match[1]),
+    );
     if (includePath !== headerFile) {
       return null;
     }
@@ -72,8 +74,8 @@ export function findIncludingSourceFile(
   headerFile: string,
   projectRoot: string,
 ): Observable<?string> {
-  const basename = escapeStringRegExp(path.basename(headerFile));
-  const relativePath = escapeStringRegExp(path.relative(projectRoot, headerFile));
+  const basename = escapeStringRegExp(nuclideUri.basename(headerFile));
+  const relativePath = escapeStringRegExp(nuclideUri.relative(projectRoot, headerFile));
   const pattern = `^\\s*#include\\s+["<](${relativePath}|(../)*${basename})[">]\\s*$`;
   const regex = new RegExp(pattern);
   const spawnGrepProcess = () => {
@@ -83,7 +85,7 @@ export function findIncludingSourceFile(
       '-RE',    // recursive, extended
       '--null', // separate file/match with \0
       pattern,
-      path.dirname(headerFile),
+      nuclideUri.dirname(headerFile),
     ]);
   };
   return observeProcess(spawnGrepProcess)

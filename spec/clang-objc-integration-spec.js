@@ -24,7 +24,7 @@ import {
   waitsForAutocompleteSuggestions,
 } from './utils/autocomplete-common';
 
-import path from 'path';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 
 /**
  * This is a full integration test for (local) Objective-C support in Nuclide.
@@ -45,7 +45,7 @@ describe('Clang Integration Test (objc)', () => {
       await activateAllPackages();
 
       objcPath = await copyFixture('objc_project_1');
-      textEditor = await atom.workspace.open(path.join(objcPath, 'Hello.m'));
+      textEditor = await atom.workspace.open(nuclideUri.join(objcPath, 'Hello.m'));
     });
 
     waitsForFile('Hello.m');

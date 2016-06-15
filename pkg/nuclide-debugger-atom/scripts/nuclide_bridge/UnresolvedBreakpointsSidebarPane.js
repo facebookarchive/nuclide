@@ -12,7 +12,7 @@
 import NuclideBridge from './NuclideBridge';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import path from 'path';
+import nuclideUri from '../../../nuclide-remote-uri';
 import url from 'url';
 import invariant from 'assert';
 
@@ -34,7 +34,7 @@ const UnresolvedBreakpointsComponent = React.createClass({
       const {pathname} = url.parse(breakpoint.url);
       invariant(pathname);
       const longRep = `${pathname}:${breakpoint.line + 1}`;
-      const shortRep = `${path.basename(pathname)}:${breakpoint.line + 1}`;
+      const shortRep = `${nuclideUri.basename(pathname)}:${breakpoint.line + 1}`;
       return (
         <li
           key={longRep}

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import fsPromise from '../fsPromise';
 import ScribeProcess, {__test__} from '../ScribeProcess';
 
@@ -17,13 +17,17 @@ import ScribeProcess, {__test__} from '../ScribeProcess';
 // data into scribe, it save data into ${process.env['SCRIBE_MOCK_PATH'] + category_name}
 // so that we could verify that the data is saved.
 // Also, if a special data "abort" (with quote) is received, it will crash itself.
-const scribeCatMockCommandPath = path.join(path.dirname(__filename), 'scripts', 'scribe_cat_mock');
+const scribeCatMockCommandPath = nuclideUri.join(
+  nuclideUri.dirname(__filename),
+  'scripts',
+  'scribe_cat_mock',
+);
 let tempDir = '';
 let scribeProcess: ?ScribeProcess = null;
 let originalCommand = '';
 
 async function getContentOfScribeCategory(category: string): Promise<Array<mixed>> {
-  const categoryFilePath = path.join(tempDir, category);
+  const categoryFilePath = nuclideUri.join(tempDir, category);
   const content = await fsPromise.readFile(categoryFilePath);
   const result = content.toString().split('\n')
     .filter(item => (item.length > 0));

@@ -14,14 +14,7 @@ import type {FileTreeNode} from './FileTreeNode';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-import {
-  basename,
-  contains,
-  collapse,
-  dirname,
-  getPath,
-  join,
-} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {triggerAfterWait} from '../../commons-node/promise';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 
@@ -52,10 +45,10 @@ function isValidRename(node: FileTreeNode, destPath: NuclideUri): boolean {
     // fs module.
     path !== destPath &&
     // Disallow renames where the destination is a child of the source node.
-    !contains(path, dirname(destPath)) &&
+    !nuclideUri.contains(path, nuclideUri.dirname(destPath)) &&
     // Disallow renames across projects for the time being, since cross-host and
     // cross-repository moves are a bit tricky.
-    contains(rootPath, destPath);
+    nuclideUri.contains(rootPath, destPath);
 }
 
 /**
@@ -73,7 +66,7 @@ async function renameNode(node: FileTreeNode, destPath: NuclideUri): Promise<voi
   try {
     const service = getFileSystemServiceByNuclideUri(filePath);
     // Throws if the destPath already exists.
-    await service.rename(getPath(filePath), getPath(destPath));
+    await service.rename(nuclideUri.getPath(filePath), nuclideUri.getPath(destPath));
 
     const hgRepository = getHgRepositoryForNode(node);
     if (hgRepository == null) {
@@ -124,7 +117,7 @@ async function _moveNodesUnprotected(
   try {
     const filteredNodes = nodes.filter(node => isValidRename(node, destPath));
     // Collapse paths that are in the same subtree, keeping only the subtree root.
-    paths = collapse(filteredNodes.map(node =>
+    paths = nuclideUri.collapse(filteredNodes.map(node =>
       FileTreeHelpers.keyToPath(node.uri)
     ));
 
@@ -135,12 +128,12 @@ async function _moveNodesUnprotected(
     // Need to update the paths in editors before the rename to prevent them from closing
     // In case of an error - undo the editor paths rename
     paths.forEach(path => {
-      const newPath = join(destPath, basename(path));
+      const newPath = nuclideUri.join(destPath, nuclideUri.basename(path));
       FileTreeHelpers.updatePathInOpenedEditors(path, newPath);
     });
 
     const service = getFileSystemServiceByNuclideUri(paths[0]);
-    await service.move(paths.map(p => getPath(p)), getPath(destPath));
+    await service.move(paths.map(p => nuclideUri.getPath(p)), nuclideUri.getPath(destPath));
 
     // All filtered nodes should have the same rootUri, so we simply attempt to
     // retrieve the hg repository using the first node.
@@ -159,7 +152,7 @@ async function _moveNodesUnprotected(
 
     // Restore old editor paths upon error.
     paths.forEach(path => {
-      const newPath = join(destPath, basename(path));
+      const newPath = nuclideUri.join(destPath, nuclideUri.basename(path));
       FileTreeHelpers.updatePathInOpenedEditors(newPath, path);
     });
     throw e;

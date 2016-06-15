@@ -16,7 +16,7 @@ import typeof * as FileSystemService from '../../nuclide-server/lib/services/Fil
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-base';
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import crypto from 'crypto';
 import {Disposable, Emitter} from 'atom';
 import remoteUri from '../../nuclide-remote-uri';
@@ -227,7 +227,7 @@ export class RemoteFile {
   }
 
   getBaseName(): string {
-    return path.basename(this._path);
+    return nuclideUri.basename(this._path);
   }
 
   async create(): Promise<boolean> {
@@ -281,10 +281,10 @@ export class RemoteFile {
   }
 
   getParent(): RemoteDirectory {
-    const {path: localPath, protocol, host} = remoteUri.parse(this._path);
+    const {path: localPath, protocol, host} = nuclideUri.parse(this._path);
     invariant(protocol);
     invariant(host);
-    const directoryPath = protocol + '//' + host + path.dirname(localPath);
+    const directoryPath = protocol + '//' + host + nuclideUri.dirname(localPath);
     const remoteConnection = this._server.getRemoteConnectionForUri(this._path);
     const hgRepositoryDescription = remoteConnection != null ?
       remoteConnection.getHgRepositoryDescription() :

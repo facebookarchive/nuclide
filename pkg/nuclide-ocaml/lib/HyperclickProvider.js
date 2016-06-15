@@ -11,7 +11,7 @@
 
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import {GRAMMARS} from './constants';
 import {goToLocation} from '../../commons-atom/go-to-location';
@@ -42,7 +42,7 @@ module.exports = {
     }
 
     let kind = 'ml';
-    const extension = path.extname(file);
+    const extension = nuclideUri.extname(file);
     if (EXTENSIONS.has(extension)) {
       kind = extension;
     }

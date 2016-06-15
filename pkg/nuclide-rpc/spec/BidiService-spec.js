@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {ServiceTester} from './ServiceTester';
 import typeof * as BidiServiceType from './BidiService';
 
@@ -35,8 +35,8 @@ describe('BidiService', () => {
     waitsForPromise(async () => {
       await testHelper.start([{
         name: 'BidiService',
-        definition: path.join(__dirname, 'BidiService.def'),
-        implementation: path.join(__dirname, 'BidiService.js'),
+        definition: nuclideUri.join(__dirname, 'BidiService.def'),
+        implementation: nuclideUri.join(__dirname, 'BidiService.js'),
       }]);
       service = testHelper.getRemoteService('BidiService');
     });

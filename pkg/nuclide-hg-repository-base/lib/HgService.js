@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import fs from 'fs';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 
@@ -36,7 +36,6 @@ import {
 import {hgAsyncExecute} from './hg-utils';
 import fsPromise from '../../commons-node/fsPromise';
 import debounce from '../../commons-node/debounce';
-import {getPath} from '../../nuclide-remote-uri';
 
 import {readArcConfig} from '../../nuclide-arcanist-base';
 import {getLogger} from '../../nuclide-logging';
@@ -211,8 +210,8 @@ export class HgService {
     this._hgRepoStateDidChangeObserver = new Subject();
     this._hgConflictStateDidChangeObserver = new Subject();
     this._lockFileHeld = false;
-    this._lockFilePath = path.join(workingDirectory, '.hg', 'wlock');
-    this._rebaseStateFilePath = path.join(workingDirectory, '.hg', 'rebasestate');
+    this._lockFilePath = nuclideUri.join(workingDirectory, '.hg', 'wlock');
+    this._rebaseStateFilePath = nuclideUri.join(workingDirectory, '.hg', 'rebasestate');
     this._isRebasing = false;
     this._isInConflict = false;
     this._debouncedCheckConflictChange = debounce(
@@ -285,7 +284,7 @@ export class HgService {
     const statuses = JSON.parse(output.stdout);
     statuses.forEach(status => {
       statusMap.set(
-        path.join(this._workingDirectory, status.path),
+        nuclideUri.join(this._workingDirectory, status.path),
         status.status,
       );
     });
@@ -334,7 +333,7 @@ export class HgService {
     // that doesn't happen with big mercurial updates (the primary use of state file watchers).
     // Hence, we here use node's filesystem watchers instead.
     try {
-      this._hgDirWatcher = fs.watch(path.join(workingDirectory, '.hg'), (event, fileName) => {
+      this._hgDirWatcher = fs.watch(nuclideUri.join(workingDirectory, '.hg'), (event, fileName) => {
         if (fileName === 'wlock') {
           this._debouncedCheckConflictChange();
         } else if (fileName === 'rebasestate') {
@@ -404,7 +403,7 @@ export class HgService {
     }
 
     const workingDirectory = this._workingDirectory;
-    const changedFiles = fileChanges.map(change => path.join(workingDirectory, change.name));
+    const changedFiles = fileChanges.map(change => nuclideUri.join(workingDirectory, change.name));
     this._filesDidChangeObserver.next(changedFiles);
   }
 
@@ -502,7 +501,7 @@ export class HgService {
     const absolutePathToDiffInfo = new Map();
     for (const [filePath, diffInfo] of pathToDiffInfo) {
       absolutePathToDiffInfo.set(
-        path.join(this._workingDirectory, filePath),
+        nuclideUri.join(this._workingDirectory, filePath),
         diffInfo,
       );
     }
@@ -536,7 +535,7 @@ export class HgService {
    */
   fetchActiveBookmark(): Promise<string> {
     const {fetchActiveBookmark} = require('./hg-bookmark-helpers');
-    return fetchActiveBookmark(path.join(this._workingDirectory, '.hg'));
+    return fetchActiveBookmark(nuclideUri.join(this._workingDirectory, '.hg'));
   }
 
   /**
@@ -794,8 +793,8 @@ export class HgService {
     after?: boolean,
   ): Promise<void> {
     const args = [
-      ...filePaths.map(p => getPath(p)), // Sources
-      getPath(destPath),                 // Dest
+      ...filePaths.map(p => nuclideUri.getPath(p)), // Sources
+      nuclideUri.getPath(destPath),                 // Dest
     ];
     const opts = {};
     if (after) {
@@ -809,7 +808,7 @@ export class HgService {
    * @param filePath Which file should be removed.
    */
   remove(filePath: NuclideUri): Promise<void> {
-    return this._runSimpleInWorkingDirectory('remove', ['-f', getPath(filePath)]);
+    return this._runSimpleInWorkingDirectory('remove', ['-f', nuclideUri.getPath(filePath)]);
   }
 
   /**
@@ -888,14 +887,14 @@ export class HgService {
       if (relativeBackupPath == null) {
         this._origBackupPath = this._workingDirectory;
       } else {
-        this._origBackupPath = path.join(this._workingDirectory, relativeBackupPath);
+        this._origBackupPath = nuclideUri.join(this._workingDirectory, relativeBackupPath);
       }
     }
     return this._origBackupPath;
   }
 
   async _checkOrigFile(origBackupPath: string, filePath: string): Promise<boolean> {
-    const origFilePath = path.join(origBackupPath, `${filePath}.orig`);
+    const origFilePath = nuclideUri.join(origBackupPath, `${filePath}.orig`);
     logger.info('origBackupPath:', origBackupPath);
     logger.info('filePath:', filePath);
     logger.info('origFilePath:', origFilePath);

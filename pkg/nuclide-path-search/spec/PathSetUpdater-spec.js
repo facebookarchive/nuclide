@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import {WatchmanSubscription} from '../../nuclide-watchman-helpers';
 
@@ -21,7 +21,7 @@ describe('PathSetUpdater', () => {
   const MOCK_WATCHMAN_PROJECT_ROOT = '/Mock/Root';
   const INITIAL_PATHS = ['a', 'b'];
   const TEST_DIRECTORY = '/Mock/Root/To/Test/Dir';
-  const RELATIVE_PATH = path.relative(MOCK_WATCHMAN_PROJECT_ROOT, TEST_DIRECTORY);
+  const RELATIVE_PATH = nuclideUri.relative(MOCK_WATCHMAN_PROJECT_ROOT, TEST_DIRECTORY);
   let pathSet;
   let pathSetUpdater;
 
@@ -79,19 +79,19 @@ describe('PathSetUpdater', () => {
         // result in changes to the pathSet.
         const mockChanges = [
           {
-            name: path.join(RELATIVE_PATH, 'c'),
+            name: nuclideUri.join(RELATIVE_PATH, 'c'),
             new: true,
             exists: true,
             mode: 1234,
           },
           {
-            name: path.join(RELATIVE_PATH, 'a'),
+            name: nuclideUri.join(RELATIVE_PATH, 'a'),
             new: false,
             exists: false,
             mode: 1234,
           },
           {
-            name: path.join(RELATIVE_PATH, 'dir'),
+            name: nuclideUri.join(RELATIVE_PATH, 'dir'),
             new: true,
             exists: true,
             // This is a directory, and should be ignored.
@@ -105,7 +105,7 @@ describe('PathSetUpdater', () => {
         // This is a no-op.
         emitMockWatchmanUpdate([
           {
-            name: path.join(RELATIVE_PATH, 'x'),
+            name: nuclideUri.join(RELATIVE_PATH, 'x'),
             new: true,
             exists: false,
             mode: 1234,
@@ -119,13 +119,13 @@ describe('PathSetUpdater', () => {
         expect(mockWatchmanClient.unwatch).toHaveBeenCalledWith(TEST_DIRECTORY);
         const unnoticedChanges = [
           {
-            name: path.join(RELATIVE_PATH, 'd'),
+            name: nuclideUri.join(RELATIVE_PATH, 'd'),
             new: true,
             exists: true,
             mode: 1234,
           },
           {
-            name: path.join(RELATIVE_PATH, 'b'),
+            name: nuclideUri.join(RELATIVE_PATH, 'b'),
             new: false,
             exists: false,
             mode: 1234,

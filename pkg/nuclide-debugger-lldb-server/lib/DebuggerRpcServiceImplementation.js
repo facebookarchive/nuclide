@@ -18,7 +18,7 @@ import type {
 import {CompositeDisposable, Disposable} from 'event-kit';
 import {Observable} from 'rxjs';
 import child_process from 'child_process';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import utils from './utils';
 import WS from 'ws';
 const {log, logTrace, logError, logInfo, setLogLevel} = utils;
@@ -195,10 +195,10 @@ export class DebuggerRpcService {
   }
 
   _spawnPythonBackend(): child_process$ChildProcess {
-    const lldbPythonScriptPath = path.join(__dirname, '../scripts/main.py');
+    const lldbPythonScriptPath = nuclideUri.join(__dirname, '../scripts/main.py');
     const python_args = [lldbPythonScriptPath, '--arguments_in_json'];
     const options = {
-      cwd: path.dirname(lldbPythonScriptPath),
+      cwd: nuclideUri.dirname(lldbPythonScriptPath),
       // FD[3] is used for sending arguments JSON blob.
       // FD[4] is used as a ipc channel for output/atom notifications.
       stdio: ['pipe', 'pipe', 'pipe', 'pipe', 'pipe'],

@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import {EventEmitter} from 'events';
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
 
 describe('ClangFlagsManager', () => {
@@ -27,10 +27,10 @@ describe('ClangFlagsManager', () => {
         return ['//test:__default_headers__', '//test'];
       },
       getPath() {
-        return path.join(__dirname, 'fixtures');
+        return nuclideUri.join(__dirname, 'fixtures');
       },
       getBuildFile() {
-        return path.join(__dirname, 'fixtures', 'BUCK');
+        return nuclideUri.join(__dirname, 'fixtures', 'BUCK');
       },
       build() {
         return {
@@ -203,37 +203,37 @@ describe('ClangFlagsManager', () => {
       // When headers are not properly owned, we should look for source files
       // in the same directory.
       const spy = spyOn(buckProject, 'getOwner').andReturn(['//test:__default_headers__']);
-      const dir = path.join(__dirname, 'fixtures');
-      result = await flagsManager.getFlagsForSrc(path.join(dir, 'testInternal.h'));
+      const dir = nuclideUri.join(__dirname, 'fixtures');
+      result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'testInternal.h'));
       expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
 
-      result = await flagsManager.getFlagsForSrc(path.join(dir, 'test-inl.h'));
+      result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'test-inl.h'));
       expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
 
-      result = await flagsManager.getFlagsForSrc(path.join(dir, 'test2.h'));
+      result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'test2.h'));
       expect(result && result.flags).toBeNull();
 
       // Make sure we don't try get flags for non-source files.
-      result = await flagsManager.getFlagsForSrc(path.join(dir, 'compile_commands.h'));
+      result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'compile_commands.h'));
       expect(result && result.flags).toBeNull();
-      expect(spy).not.toHaveBeenCalledWith(path.join(dir, 'compile_commands.json'));
+      expect(spy).not.toHaveBeenCalledWith(nuclideUri.join(dir, 'compile_commands.json'));
     });
   });
 
   it('gets flags from the compilation database', () => {
     waitsForPromise(async () => {
       spyOn(buckProject, 'build').andCallThrough();
-      let testFile = path.join(__dirname, 'fixtures', 'test.cpp');
+      let testFile = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
       let result = await flagsManager.getFlagsForSrc(testFile);
       expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(buckProject.build).not.toHaveBeenCalled();
 
-      testFile = path.join(__dirname, 'fixtures', 'test.h');
+      testFile = nuclideUri.join(__dirname, 'fixtures', 'test.h');
       result = await flagsManager.getFlagsForSrc(testFile);
       expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
 
       // Fall back to Buck if it's not in the compilation DB.
-      testFile = path.join(__dirname, 'fixtures', 'test2.cpp');
+      testFile = nuclideUri.join(__dirname, 'fixtures', 'test2.cpp');
       result = await flagsManager.getFlagsForSrc(testFile);
       expect(buckProject.build).toHaveBeenCalled();
       expect(result && result.flags).toEqual(null);
@@ -258,7 +258,7 @@ describe('ClangFlagsManager', () => {
       });
 
       spyOn(buckProject, 'build').andCallThrough();
-      const testFile = path.join(__dirname, 'fixtures', 'test.cpp');
+      const testFile = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
       const result = await flagsManager.getFlagsForSrc(testFile);
       invariant(result != null);
 
@@ -286,9 +286,9 @@ describe('ClangFlagsManager', () => {
   it('can guess locations of build files', () => {
     waitsForPromise(async () => {
       const file = await ClangFlagsManager._guessBuildFile(
-        path.join(__dirname, 'fixtures', 'a.cpp'),
+        nuclideUri.join(__dirname, 'fixtures', 'a.cpp'),
       );
-      expect(file).toBe(path.join(__dirname, 'fixtures', 'compile_commands.json'));
+      expect(file).toBe(nuclideUri.join(__dirname, 'fixtures', 'compile_commands.json'));
     });
   });
 

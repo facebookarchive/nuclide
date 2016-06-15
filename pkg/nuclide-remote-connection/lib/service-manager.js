@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {Transport} from '../../nuclide-rpc';
 
 import {ServerConnection} from './ServerConnection';
-import {isRemote, getHostname} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import {loadServicesConfig} from '../../nuclide-server/lib/services';
 import ServiceLogger from './ServiceLogger';
@@ -63,17 +63,15 @@ function getlocalService(serviceName: string): Object {
 
 /**
  * Create or get a cached service.
- * @param nuclideUri It could either be either a local path or a remote path in form of
+ * @param uri It could either be either a local path or a remote path in form of
  *    `nuclide://$host/$path`. The function will use the $host from remote path to
  *    create a remote service or create a local service if the uri is local path.
  */
 function getServiceByNuclideUri(
   serviceName: string,
-  nuclideUri: ?NuclideUri = null,
+  uri: ?NuclideUri = null,
 ): ?any {
-  const hostname = (nuclideUri && isRemote(nuclideUri)) ?
-    getHostname(nuclideUri) :
-    null;
+  const hostname = nuclideUri.getHostnameOpt(uri);
   return getService(serviceName, hostname);
 }
 

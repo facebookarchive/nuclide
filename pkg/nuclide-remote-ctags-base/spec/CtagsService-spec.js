@@ -10,19 +10,19 @@
  */
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import {getCtagsService, CtagsService} from '..';
 
-const TAGS_PATH = path.join(__dirname, 'fixtures', 'tags');
+const TAGS_PATH = nuclideUri.join(__dirname, 'fixtures', 'tags');
 
 describe('getCtagsService', () => {
   it('can find the tags file from a path', () => {
     waitsForPromise(async () => {
-      const filePath = path.join(__dirname, 'fixtures', 'a.cpp');
+      const filePath = nuclideUri.join(__dirname, 'fixtures', 'a.cpp');
       const svc = await getCtagsService(filePath);
       invariant(svc);
-      expect(await svc.getTagsPath()).toBe(path.join(__dirname, 'fixtures', 'tags'));
+      expect(await svc.getTagsPath()).toBe(nuclideUri.join(__dirname, 'fixtures', 'tags'));
     });
   });
 
@@ -43,7 +43,7 @@ describe('CtagsService.findTags', () => {
       expect(tags).toEqual([
         {
           name: 'a',
-          file: path.join(__dirname, 'fixtures', 'a.cpp'),
+          file: nuclideUri.join(__dirname, 'fixtures', 'a.cpp'),
           lineNumber: 0,
           kind: '',
           pattern: '/^void a() {$/',
@@ -54,7 +54,7 @@ describe('CtagsService.findTags', () => {
       expect(tags).toEqual([
         {
           name: 'b',
-          file: path.join(__dirname, 'fixtures', 'b.cpp'),
+          file: nuclideUri.join(__dirname, 'fixtures', 'b.cpp'),
           lineNumber: 0,
           kind: 'f',
           pattern: '/^void b() {$/',
@@ -80,7 +80,7 @@ describe('CtagsService.findTags', () => {
       expect(tags).toEqual([
         {
           name: 'a',
-          file: path.join(__dirname, 'fixtures', 'a.cpp'),
+          file: nuclideUri.join(__dirname, 'fixtures', 'a.cpp'),
           lineNumber: 0,
           kind: '',
           pattern: '/^void a() {$/',

@@ -13,10 +13,9 @@ import type {CommandInfo} from './types';
 
 import fsPromise from '../../../commons-node/fsPromise';
 import featureConfig from '../../../nuclide-feature-config';
-import * as RemoteUri from '../../../nuclide-remote-uri';
 import {getBuckProjectRoot} from '../../../nuclide-buck-base';
 import ini from 'ini';
-import path from 'path';
+import nuclideUri from '../../../nuclide-remote-uri';
 
 type PartialCommandInfo = {
   command: string;
@@ -32,7 +31,7 @@ type PartialCommandInfo = {
 export async function getCommandInfo(): Promise<?CommandInfo> {
   const localDirectories = atom.project.getDirectories()
     .map(dir => dir.getPath())
-    .filter(uri => !RemoteUri.isRemote(uri));
+    .filter(uri => !nuclideUri.isRemote(uri));
 
   for (const dir of localDirectories) {
     const commandInfo =
@@ -65,7 +64,7 @@ async function getCommandFromNodeModules(dir: string): Promise<?CommandInfo> {
   }
 
   const command = await getCommandForCli(
-    path.join(nodeModulesParent, 'node_modules', 'react-native')
+    nuclideUri.join(nodeModulesParent, 'node_modules', 'react-native')
   );
 
   return command == null ? null : {
@@ -83,7 +82,7 @@ async function getCommandFromReactNative(dir: string): Promise<?CommandInfo> {
   if (projectRoot == null) {
     return null;
   }
-  const filePath = path.join(projectRoot, 'package.json');
+  const filePath = nuclideUri.join(projectRoot, 'package.json');
   const content = await fsPromise.readFile(filePath);
   const parsed = JSON.parse(content);
   const isReactNative = parsed.name === 'react-native';
@@ -107,7 +106,7 @@ async function getCommandFromBuck(dir: string): Promise<?CommandInfo> {
   }
 
   // TODO(matthewwithanm): Move this to BuckUtils?
-  const filePath = path.join(projectRoot, '.buckConfig');
+  const filePath = nuclideUri.join(projectRoot, '.buckConfig');
   const content = await fsPromise.readFile(filePath);
   const parsed = ini.parse(`scope = global\n${content}`);
   const section = parsed['react-native'];
@@ -121,7 +120,7 @@ async function getCommandFromBuck(dir: string): Promise<?CommandInfo> {
 }
 
 async function getCommandForCli(pathToReactNative: string): Promise<?PartialCommandInfo> {
-  const cliPath = path.join(pathToReactNative, 'local-cli', 'cli.js');
+  const cliPath = nuclideUri.join(pathToReactNative, 'local-cli', 'cli.js');
   const cliExists = await fsPromise.exists(cliPath);
   if (!cliExists) {
     return null;

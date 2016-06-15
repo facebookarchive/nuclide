@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import ini from 'ini';
 import fsPromise from '../../commons-node/fsPromise';
 
@@ -22,14 +22,14 @@ import type {HgRepositoryDescription} from '..';
 function findHgRepository(directoryPath: string): ?HgRepositoryDescription {
   const fs = require('fs-plus');
   let workingDirectoryPath = directoryPath;
-  let repoPath = path.join(workingDirectoryPath, '.hg');
+  let repoPath = nuclideUri.join(workingDirectoryPath, '.hg');
   let originURL = null;
   for (;;) {
-    const dirToTest = path.join(workingDirectoryPath, '.hg');
+    const dirToTest = nuclideUri.join(workingDirectoryPath, '.hg');
     if (fs.isDirectorySync(dirToTest)) {
       repoPath = dirToTest;
-      if (fs.isFileSync(path.join(dirToTest, 'hgrc'))) {
-        const config = ini.parse(fs.readFileSync(path.join(dirToTest, 'hgrc'), 'utf8'));
+      if (fs.isFileSync(nuclideUri.join(dirToTest, 'hgrc'))) {
+        const config = ini.parse(fs.readFileSync(nuclideUri.join(dirToTest, 'hgrc'), 'utf8'));
         if (typeof config.paths === 'object' && typeof config.paths.default === 'string') {
           originURL = config.paths.default;
         }
@@ -50,7 +50,7 @@ function isRootDir(directoryPath: string): boolean {
 }
 
 function getParentDir(directoryPath: string): string {
-  return path.resolve(directoryPath, '..');
+  return nuclideUri.resolve(directoryPath, '..');
 }
 
 module.exports = findHgRepository;

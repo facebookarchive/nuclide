@@ -12,11 +12,11 @@
 import type {SshConnectionConfiguration} from '../lib/SshHandshake';
 
 import {EventEmitter} from 'events';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 import {SshHandshake} from '../lib/SshHandshake';
 
-const pathToFakePk = path.join(__dirname, 'fakepk');
+const pathToFakePk = nuclideUri.join(__dirname, 'fakepk');
 
 describe('SshHandshake', () => {
   class MockSshConnection extends EventEmitter {

@@ -17,11 +17,11 @@
 import type {process$asyncExecuteRet} from '../pkg/commons-node/process';
 
 import {asyncExecute} from '../pkg/commons-node/process';
-import path from 'path';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 
 describe('atom-script', () => {
   describe('echo sample', () => {
-    const echoScript = path.join(__dirname, '../pkg/nuclide-atom-script/samples/echo.js');
+    const echoScript = nuclideUri.join(__dirname, '../pkg/nuclide-atom-script/samples/echo.js');
 
     it('with zero arguments', () => {
       waitsForPromise(async () => {
@@ -39,7 +39,10 @@ describe('atom-script', () => {
   });
 
   describe('markdown sample', () => {
-    const markdownScript = path.join(__dirname, '../pkg/nuclide-atom-script/samples/markdown.js');
+    const markdownScript = nuclideUri.join(
+      __dirname,
+      '../pkg/nuclide-atom-script/samples/markdown.js',
+    );
 
     it(
       'verify that all of the output has been written to stdout ' +
@@ -47,7 +50,7 @@ describe('atom-script', () => {
       'is a bit shaky.)',
       () => {
         waitsForPromise(async () => {
-          const readme = path.join(__dirname, '../pkg/nuclide-atom-script/README.md');
+          const readme = nuclideUri.join(__dirname, '../pkg/nuclide-atom-script/README.md');
           const result = await runAtomScript(markdownScript, [readme]);
           expect(result.stdout.endsWith('</body>\n</html>\n')).toBe(true);
         });
@@ -58,6 +61,6 @@ describe('atom-script', () => {
 
 function runAtomScript(script: string, args = []): Promise<process$asyncExecuteRet> {
   return asyncExecute(
-    path.join(__dirname, '../pkg/nuclide-atom-script/bin/atom-script'),
+    nuclideUri.join(__dirname, '../pkg/nuclide-atom-script/bin/atom-script'),
     [script].concat(args));
 }

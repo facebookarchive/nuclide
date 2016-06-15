@@ -10,7 +10,7 @@
  */
 
 import {asyncExecute} from './process';
-import path from 'path';
+import nuclideUri from '../nuclide-remote-uri';
 
 type VcsInfo = {
   vcs: string;
@@ -21,7 +21,7 @@ const vcsInfoCache: {[src: string]: VcsInfo} = {};
 
 async function findVcsHelper(src: string): Promise<VcsInfo> {
   const options = {
-    cwd: path.dirname(src),
+    cwd: nuclideUri.dirname(src),
   };
   const hgResult = await asyncExecute('hg', ['root'], options);
   if (hgResult.exitCode === 0) {

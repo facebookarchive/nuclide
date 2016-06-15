@@ -22,7 +22,7 @@ import type {ProxyFactory} from './main';
 import invariant from 'assert';
 import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';
-import {getPath, createRemoteUri} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {builtinLocation} from './builtin-types';
 
 const logger = require('../../nuclide-logging').getLogger();
@@ -81,8 +81,8 @@ export class ServiceRegistry {
     hostname: string, services: Array<ConfigEntry>,
   ): ServiceRegistry {
     return new ServiceRegistry(
-        remoteUri => getPath(remoteUri),
-        path => createRemoteUri(hostname, path),
+        remoteUri => nuclideUri.getPath(remoteUri),
+        path => nuclideUri.createRemoteUri(hostname, path),
         services);
   }
 

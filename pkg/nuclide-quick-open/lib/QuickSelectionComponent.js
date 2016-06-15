@@ -41,7 +41,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import SearchResultManager from './SearchResultManager';
 import classnames from 'classnames';
 import {filterEmptyResults} from './searchResultHelpers';
-import {nuclideUriToDisplayString} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import QuickSelectionActions from './QuickSelectionActions';
 
 const RESULTS_CHANGED_DEBOUNCE_DELAY = 50;
@@ -688,7 +688,9 @@ export default class QuickSelectionComponent extends React.Component {
         if (showDirectories) {
           directoryLabel = (
             <div className="list-item">
-              <span className="icon icon-file-directory">{nuclideUriToDisplayString(dirName)}</span>
+              <span className="icon icon-file-directory">
+                {nuclideUri.nuclideUriToDisplayString(dirName)}
+              </span>
             </div>
           );
         }

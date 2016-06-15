@@ -12,7 +12,7 @@
 import fs from 'fs';
 import {addMatchers} from '../../nuclide-test-helpers';
 import {parseServiceDefinition} from '../lib/service-parser';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import type {Definition} from '../lib/types';
 
 describe('Nuclide service parser test suite.', () => {
@@ -20,13 +20,13 @@ describe('Nuclide service parser test suite.', () => {
     addMatchers(this);
   });
 
-  for (const file of fs.readdirSync(path.join(__dirname, 'fixtures'))) {
+  for (const file of fs.readdirSync(nuclideUri.join(__dirname, 'fixtures'))) {
     if (file.endsWith('.def')) {
       it(`Successfully parses ${file}`, () => {
-        const fixturePath = path.join(__dirname, 'fixtures', file);
+        const fixturePath = nuclideUri.join(__dirname, 'fixtures', file);
         const code = fs.readFileSync(fixturePath, 'utf8');
         const expected = JSON.parse(
-          fs.readFileSync(path.join(__dirname, 'fixtures', file) + '.json', 'utf8'));
+          fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', file) + '.json', 'utf8'));
         const definitions = parseServiceDefinition(file, code);
         expect(mapDefinitions(definitions)).diffJson(expected);
       });

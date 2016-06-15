@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {Observable} from 'rxjs';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import search from './scanhandler';
 
 export type search$Match = {
@@ -32,6 +32,6 @@ export function findInProjectSearch(directory: NuclideUri, regex: RegExp, subdir
     Observable<search$FileResult> {
   return search(directory, regex, subdirs).map(update => {
     // Transform filePath's to absolute paths.
-    return {filePath: path.join(directory, update.filePath), matches: update.matches};
+    return {filePath: nuclideUri.join(directory, update.filePath), matches: update.matches};
   });
 }

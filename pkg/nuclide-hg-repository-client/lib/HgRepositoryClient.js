@@ -33,7 +33,7 @@ import {
 } from '../../nuclide-hg-repository-base/lib/hg-constants';
 import {serializeAsyncCall} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
-import fsSync from '../../commons-node/fsSync';
+import nuclideUri from '../../nuclide-remote-uri';
 import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
@@ -446,7 +446,7 @@ export class HgRepositoryClient {
     if (!directoryPath) {
       return StatusCodeNumber.CLEAN;
     }
-    const directoryPathWithSeparator = fsSync.ensureTrailingSeparator(directoryPath);
+    const directoryPathWithSeparator = nuclideUri.ensureTrailingSeparator(directoryPath);
     if (this._modifiedDirectoryCache.has(directoryPathWithSeparator)) {
       return StatusCodeNumber.MODIFIED;
     }

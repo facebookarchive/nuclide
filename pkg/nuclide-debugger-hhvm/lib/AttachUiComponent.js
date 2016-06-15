@@ -17,7 +17,7 @@ import {
 } from '../../nuclide-ui/lib/Button';
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
@@ -71,7 +71,9 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _getPathMenuItems(): Array<{label: string; value: number}> {
-    const connections = RemoteConnection.getByHostname(remoteUri.getHostname(this.props.targetUri));
+    const connections = RemoteConnection.getByHostname(
+      nuclideUri.getHostname(this.props.targetUri),
+    );
     return connections.map((connection, index) => {
       const pathToProject = connection.getPathForInitialWorkingDirectory();
       return {
@@ -90,10 +92,10 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
 
   _handleAttachButtonClick(): void {
     // Start a debug session with the user-supplied information.
-    const {hostname} = remoteUri.parseRemoteUri(this.props.targetUri);
+    const {hostname} = nuclideUri.parseRemoteUri(this.props.targetUri);
     const selectedPath = this.state.pathMenuItems[this.state.selectedPathIndex].label;
     const processInfo = new AttachProcessInfo(
-      remoteUri.createRemoteUri(hostname, selectedPath),
+      nuclideUri.createRemoteUri(hostname, selectedPath),
     );
     consumeFirstProvider('nuclide-debugger.remote')
       .then(debuggerService => debuggerService.startDebugging(processInfo));

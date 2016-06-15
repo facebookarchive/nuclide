@@ -12,7 +12,7 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {MerlinError, MerlinType} from '..';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import readline from 'readline';
 
 import fsPromise from '../../commons-node/fsPromise';
@@ -243,7 +243,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
   const dotMerlinPath = await fsPromise.findNearestFile('.merlin', file);
 
   const options = {
-    cwd: (dotMerlinPath ? path.dirname(dotMerlinPath) : '.'),
+    cwd: (dotMerlinPath ? nuclideUri.dirname(dotMerlinPath) : '.'),
   };
 
   logger.info('Spawning new ocamlmerlin process');

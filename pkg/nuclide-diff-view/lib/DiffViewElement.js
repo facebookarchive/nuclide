@@ -12,7 +12,7 @@
 import type DiffViewModel from './DiffViewModel';
 
 import {Emitter, CompositeDisposable} from 'atom';
-import {basename} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 
 const DID_DESTROY_EVENT_NAME = 'did-destroy';
 const CHANGE_TITLE_EVENT_NAME = 'did-change-title';
@@ -46,7 +46,7 @@ class DiffViewElement extends HTMLElement {
     if (filePath == null || filePath.length === 0) {
       return null;
     }
-    return basename(filePath);
+    return nuclideUri.basename(filePath);
   }
 
   getIconName(): string {

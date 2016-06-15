@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {ServiceRegistry} from '../lib/ServiceRegistry';
 
 describe('Import Errors', () => {
@@ -20,8 +20,8 @@ describe('Import Errors', () => {
       try {
         ServiceRegistry.createLocal([{
           name: 'ImportClassService',
-          definition: path.join(__dirname, 'ImportClassService.js'),
-          implementation: path.join(__dirname, 'ImportClassService.js'),
+          definition: nuclideUri.join(__dirname, 'ImportClassService.js'),
+          implementation: nuclideUri.join(__dirname, 'ImportClassService.js'),
         }]);
       } catch (e) {
         hadError = true;
@@ -37,8 +37,8 @@ describe('Import Errors', () => {
       try {
         ServiceRegistry.createLocal([{
           name: 'ImportFunctionService',
-          definition: path.join(__dirname, 'ImportFunctionService.js'),
-          implementation: path.join(__dirname, 'ImportFunctionService.js'),
+          definition: nuclideUri.join(__dirname, 'ImportFunctionService.js'),
+          implementation: nuclideUri.join(__dirname, 'ImportFunctionService.js'),
         }]);
       } catch (e) {
         hadError = true;

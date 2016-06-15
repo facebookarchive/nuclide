@@ -14,6 +14,7 @@ import {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import {HhvmDebuggerInstance} from './HhvmDebuggerInstance';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
   constructor(targetUri: NuclideUri) {
@@ -35,8 +36,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   }
 
   displayString(): string {
-    const remoteUri = require('../../nuclide-remote-uri');
-    return remoteUri.getHostname(this._targetUri);
+    return nuclideUri.getHostname(this._targetUri);
   }
 }
 

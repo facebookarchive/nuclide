@@ -11,7 +11,7 @@
 
 import type {Gadget} from '../../../nuclide-gadgets/lib/types';
 import {React} from 'react-for-atom';
-import path from 'path';
+import nuclideUri from '../../../nuclide-remote-uri';
 import {Webview} from '../../../nuclide-ui/lib/Webview';
 
 class Inspector extends React.Component {
@@ -42,7 +42,7 @@ class Inspector extends React.Component {
     const element = ((event.target: any): WebviewElement);
     const requirePaths = require.cache[__filename].paths;
     const inspectorDevTools =
-      path.join(__dirname, '../../VendorLib/dev-tools/standalone.js');
+      nuclideUri.join(__dirname, '../../VendorLib/dev-tools/standalone.js');
     element.executeJavaScript(
       `initializeElementInspector(
         ${JSON.stringify(inspectorDevTools)},

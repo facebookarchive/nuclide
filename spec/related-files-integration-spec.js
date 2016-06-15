@@ -17,7 +17,7 @@ import {
 } from '../pkg/nuclide-integration-test-helpers';
 
 import fsPromise from '../pkg/commons-node/fsPromise';
-import {join} from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 import {tempdir} from '../pkg/nuclide-test-helpers';
 
 describeRemotableTest('Related Files Integration Test', context => {
@@ -30,7 +30,7 @@ describeRemotableTest('Related Files Integration Test', context => {
       // Create a temporary directory and some test files.
       const testDir = await fsPromise.realpath(await tempdir.mkdir('related-files'));
       await Promise.all(TEST_FILES.concat([BAD_FILE]).map(
-        file => fsPromise.writeFile(join(testDir, file), ''),
+        file => fsPromise.writeFile(nuclideUri.join(testDir, file), ''),
       ));
 
       await context.setProject(testDir);

@@ -12,7 +12,7 @@
 import typeof * as ClangProcessService from './ClangProcessService';
 import type {ClangCompileResult} from './rpc-types';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {BehaviorSubject} from 'rxjs';
 
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
@@ -28,8 +28,8 @@ function getServiceRegistry(): ServiceRegistry {
   if (serviceRegistry == null) {
     serviceRegistry = ServiceRegistry.createLocal([{
       name: 'ClangProcessService',
-      definition: path.join(__dirname, 'ClangProcessService.js'),
-      implementation: path.join(__dirname, 'ClangProcessService.js'),
+      definition: nuclideUri.join(__dirname, 'ClangProcessService.js'),
+      implementation: nuclideUri.join(__dirname, 'ClangProcessService.js'),
       preserveFunctionNames: true,
     }]);
   }
@@ -41,7 +41,7 @@ async function spawnClangProcess(
   flags: Array<string>,
 ): Promise<child_process$ChildProcess> {
   const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = await findClangServerArgs();
-  const pathToLibClangServer = path.join(__dirname, '../python/clang_server.py');
+  const pathToLibClangServer = nuclideUri.join(__dirname, '../python/clang_server.py');
   const args = [pathToLibClangServer];
   if (libClangLibraryFile != null) {
     args.push('--libclang-file', libClangLibraryFile);
@@ -49,7 +49,7 @@ async function spawnClangProcess(
   args.push('--', src);
   args.push(...flags);
   const options = {
-    cwd: path.dirname(pathToLibClangServer),
+    cwd: nuclideUri.dirname(pathToLibClangServer),
     stdio: 'pipe',
     detached: false, // When Atom is killed, clang_server.py should be killed, too.
     env: {

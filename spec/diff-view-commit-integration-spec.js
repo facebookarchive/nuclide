@@ -16,7 +16,7 @@ import {
   deactivateAllPackages,
   setLocalProject,
 } from '../pkg/nuclide-integration-test-helpers';
-import path from 'path';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 import fs from 'fs';
 import {waitsForRepositoryReady} from './utils/diff-view-utils';
 
@@ -35,7 +35,7 @@ describe('Diff View Commit Mode Integration Test', () => {
       // Copy mercurial project to temporary directory.
       repoPath = await copyMercurialFixture('hg_repo_2', __dirname);
       // This is an existing file to be changed & committed.
-      filePath = path.join(repoPath, 'test.txt');
+      filePath = nuclideUri.join(repoPath, 'test.txt');
       // Add this directory as a new project in atom.
       setLocalProject(repoPath);
     });

@@ -42,7 +42,7 @@ export type ExpansionResult = Array<{
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import {getLogger} from '../../nuclide-logging';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {Deferred} from '../../commons-node/promise';
 import {DebuggerMode} from './DebuggerStore';
 
@@ -335,7 +335,7 @@ class Bridge {
   _setSelectedCallFrameLine(nullableOptions: ?{sourceURL: string; lineNumber: number}) {
     if (nullableOptions) {
       const options = nullableOptions; // For use in capture without re-checking null
-      const path = remoteUri.uriToNuclideUri(options.sourceURL);
+      const path = nuclideUri.uriToNuclideUri(options.sourceURL);
       if (path != null && atom.workspace != null) { // only handle real files for now
         atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
           this._clearSelectedCallFrameMarker();
@@ -350,7 +350,7 @@ class Bridge {
   _openSourceLocation(nullableOptions: ?{sourceURL: string; lineNumber: number}) {
     if (nullableOptions) {
       const options = nullableOptions; // For use in capture without re-checking null
-      const path = remoteUri.uriToNuclideUri(options.sourceURL);
+      const path = nuclideUri.uriToNuclideUri(options.sourceURL);
       if (path != null && atom.workspace != null) { // only handle real files for now.
         atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
           editor.scrollToBufferPosition([options.lineNumber, 0]);
@@ -372,7 +372,7 @@ class Bridge {
   }
 
   _addBreakpoint(location: {sourceURL: string; lineNumber: number}) {
-    const path = remoteUri.uriToNuclideUri(location.sourceURL);
+    const path = nuclideUri.uriToNuclideUri(location.sourceURL);
     // only handle real files for now.
     if (path) {
       try {
@@ -385,7 +385,7 @@ class Bridge {
   }
 
   _removeBreakpoint(location: {sourceURL: string; lineNumber: number}) {
-    const path = remoteUri.uriToNuclideUri(location.sourceURL);
+    const path = nuclideUri.uriToNuclideUri(location.sourceURL);
     // only handle real files for now.
     if (path) {
       try {
@@ -415,7 +415,7 @@ class Bridge {
       const results = [];
       this._debuggerModel.getBreakpointStore().getAllBreakpoints().forEach((line, key) => {
         results.push({
-          sourceURL: remoteUri.nuclideUriToUri(key),
+          sourceURL: nuclideUri.nuclideUriToUri(key),
           lineNumber: line,
         });
       });

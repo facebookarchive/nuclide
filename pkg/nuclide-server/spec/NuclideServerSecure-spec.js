@@ -11,7 +11,7 @@
 
 import fs from 'fs';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import NuclideServer from '../lib/NuclideServer';
 import {RpcConnection} from '../../nuclide-rpc';
 import {loadServicesConfig} from '../lib/services';
@@ -33,7 +33,10 @@ let server_key_path;
 let client_cert_path;
 let client_key_path;
 
-const gen_certs_path = path.resolve(__dirname, '../scripts/nuclide_certificates_generator.py');
+const gen_certs_path = nuclideUri.resolve(
+  __dirname,
+  '../scripts/nuclide_certificates_generator.py',
+);
 
 describe('Nuclide Secure Server test suite', () => {
   it('Starts a server', () => {

@@ -17,7 +17,7 @@ import {
 } from '../../commons-atom/text-editor';
 import {NavigationStack} from './NavigationStack';
 import invariant from 'assert';
-import {contains} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {getPathOfLocation, getLocationOfEditor, editorOfLocation} from './Location';
 
 function log(message: string): void {
@@ -166,8 +166,8 @@ export class NavigationStackController {
     log(`Removing path ${removedPath} remaining: ${JSON.stringify(remainingDirectories)}`);
     this._navigationStack.filter(location => {
       const uri = getPathOfLocation(location);
-      return uri == null || !contains(removedPath, uri)
-        || remainingDirectories.find(directory => contains(directory, uri)) != null;
+      return uri == null || !nuclideUri.contains(removedPath, uri)
+        || remainingDirectories.find(directory => nuclideUri.contains(directory, uri)) != null;
     });
   }
 

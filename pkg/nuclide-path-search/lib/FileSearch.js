@@ -12,7 +12,7 @@
 import urlJoin from 'url-join';
 import path from 'path';
 
-import {parse} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 
@@ -77,7 +77,7 @@ export async function fileSearchForDirectory(
     return fileSearch;
   }
 
-  const realpath = await fsPromise.realpath(parse(directoryUri).path);
+  const realpath = await fsPromise.realpath(nuclideUri.parse(directoryUri).path);
   const paths = await getPaths(realpath);
   const pathSet = new PathSet(paths);
 

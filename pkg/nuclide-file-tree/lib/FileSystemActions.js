@@ -21,17 +21,11 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
-import RemoteUri, {
-  getPath,
-  createRemoteUri,
-  isRemote,
-  getHostname,
-} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {File} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 
-import pathModule from 'path';
 
 let atomPanel: ?Object;
 let dialogComponent: ?React.Component<any, any, any>;
@@ -57,8 +51,8 @@ class FileSystemActions {
           return;
         }
 
-        const {pathname} = RemoteUri.parse(filePath);
-        const basename = pathModule.basename(pathname);
+        const {pathname} = nuclideUri.parse(filePath);
+        const basename = nuclideUri.basename(pathname);
         const newDirectory = directory.getSubdirectory(basename);
         const created = await newDirectory.create();
         if (!created) {
@@ -83,7 +77,7 @@ class FileSystemActions {
     }
     this._openAddDialog(
       'file',
-      node.localPath + pathModule.sep,
+      nuclideUri.ensureTrailingSeparator(node.localPath),
       async (filePath: string, options: {addToVCS?: boolean}) => {
         // Prevent submission of a blank field from creating a file.
         if (filePath === '') {
@@ -135,14 +129,14 @@ class FileSystemActions {
      * Use `resolve` to strip trailing slashes because renaming a file to a name with a
      * trailing slash is an error.
      */
-    let newPath = pathModule.resolve(
+    let newPath = nuclideUri.resolve(
       // Trim leading and trailing whitespace to prevent bad filenames.
-      pathModule.join(pathModule.dirname(nodePath), newBasename.trim())
+      nuclideUri.join(nuclideUri.dirname(nodePath), newBasename.trim())
     );
 
     // Create a remote nuclide uri when the node being moved is remote.
-    if (isRemote(node.uri)) {
-      newPath = createRemoteUri(getHostname(node.uri), newPath);
+    if (nuclideUri.isRemote(node.uri)) {
+      newPath = nuclideUri.createRemoteUri(nuclideUri.getHostname(node.uri), newPath);
     }
 
     await FileTreeHgHelpers.renameNode(node, newPath);
@@ -159,7 +153,7 @@ class FileSystemActions {
     const newFile = directory.getFile(newBasename);
     const newPath = newFile.getPath();
     const service = getFileSystemServiceByNuclideUri(newPath);
-    const exists = !(await service.copy(nodePath, getPath(newPath)));
+    const exists = !(await service.copy(nodePath, nuclideUri.getPath(newPath)));
     if (exists) {
       atom.notifications.addError(`'${newPath}' already exists.`);
       onDidConfirm(null);
@@ -192,7 +186,7 @@ class FileSystemActions {
     const nodePath = node.localPath;
     this._openDialog({
       iconClassName: 'icon-arrow-right',
-      initialValue: pathModule.basename(nodePath),
+      initialValue: nuclideUri.basename(nodePath),
       message: node.isContainer
         ? <span>Enter the new path for the directory.</span>
         : <span>Enter the new path for the file.</span>,
@@ -216,8 +210,8 @@ class FileSystemActions {
 
     const node = selectedNodes.first();
     const nodePath = node.localPath;
-    let initialValue = pathModule.basename(nodePath);
-    const ext = pathModule.extname(nodePath);
+    let initialValue = nuclideUri.basename(nodePath);
+    const ext = nuclideUri.extname(nodePath);
     initialValue = initialValue.substr(0, initialValue.length - ext.length) + '-copy' + ext;
     const hgRepository = FileTreeHgHelpers.getHgRepositoryForNode(node);
     const additionalOptions = {};

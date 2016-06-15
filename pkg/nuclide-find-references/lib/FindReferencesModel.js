@@ -25,7 +25,7 @@ type FindReferencesOptions = {
 import {arrayCompact} from '../../commons-node/collection';
 import {getLogger} from '../../nuclide-logging';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
-import {getPath} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 
 const FRAGMENT_GRAMMARS = {
   'text.html.hack': 'source.hackfragment',
@@ -45,7 +45,7 @@ function compareReference(x: Reference, y: Reference): number {
 }
 
 async function readFileContents(uri: NuclideUri): Promise<?string> {
-  const localPath = getPath(uri);
+  const localPath = nuclideUri.getPath(uri);
   let contents;
   try {
     contents = (await getFileSystemServiceByNuclideUri(uri).readFile(localPath)).toString('utf8');

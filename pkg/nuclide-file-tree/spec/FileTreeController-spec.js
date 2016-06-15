@@ -14,7 +14,7 @@ import FileTreeController from '../lib/FileTreeController';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 
-import pathModule from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 
 describe('FileTreeController', () => {
@@ -61,10 +61,10 @@ describe('FileTreeController', () => {
   });
 
   describe('navigating with the keyboard', () => {
-    const rootKey = pathModule.join(__dirname, 'fixtures') + '/';
-    const dir1Key = pathModule.join(__dirname, 'fixtures/dir1') + '/';
-    const fooTxtKey = pathModule.join(__dirname, 'fixtures/dir1/foo.txt');
-    const dir2Key = pathModule.join(__dirname, 'fixtures/dir2') + '/';
+    const rootKey = nuclideUri.join(__dirname, 'fixtures') + '/';
+    const dir1Key = nuclideUri.join(__dirname, 'fixtures/dir1') + '/';
+    const fooTxtKey = nuclideUri.join(__dirname, 'fixtures/dir1/foo.txt');
+    const dir2Key = nuclideUri.join(__dirname, 'fixtures/dir2') + '/';
 
     describe('with a collapsed root', () => {
       /*

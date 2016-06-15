@@ -17,7 +17,7 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 
-import pathModule from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 const {PropTypes} = React;
 
@@ -84,7 +84,7 @@ class FileDialogComponent extends React.Component {
     const path = this.props.initialValue;
     input.focus();
     if (this.props.selectBasename) {
-      const {dir, name} = pathModule.parse(path);
+      const {dir, name} = nuclideUri.parsePath(path);
       const selectionStart = dir ? dir.length + 1 : 0;
       const selectionEnd = selectionStart + name.length;
       input.getTextEditor().setSelectedBufferRange([[0, selectionStart], [0, selectionEnd]]);

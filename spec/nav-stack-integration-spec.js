@@ -20,7 +20,7 @@ import {
 } from '../pkg/nuclide-integration-test-helpers';
 import {sleep} from '../pkg/commons-node/promise';
 import {goToLocation} from '../pkg/commons-atom/go-to-location';
-import path from 'path';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 
 const NAV_SLEEP_MS = 1000;
 
@@ -80,8 +80,8 @@ describe('Nav Stack Integration', () => {
 
       // Copy flow project to a temporary location.
       flowProjectPath = await copyFixture('nav_project_1');
-      mainPath = path.join(flowProjectPath, 'main');
-      fooPath = path.join(flowProjectPath, 'Foo');
+      mainPath = nuclideUri.join(flowProjectPath, 'main');
+      fooPath = nuclideUri.join(flowProjectPath, 'Foo');
 
       // Add this directory as an atom project.
       setLocalProject(flowProjectPath);

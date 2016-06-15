@@ -21,8 +21,7 @@ import {
   getSearchResults,
 } from './HackHelpers';
 import {setHackCommand, setUseIde, getHackExecOptions} from './hack-config';
-import path from 'path';
-import {getPath} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {logger} from './hack-config';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
@@ -516,8 +515,8 @@ export async function isAvailableForDirectoryHack(rootDirectory: NuclideUri): Pr
  * @return whether the file represented by fileUri is inside of a Hack project.
  */
 export async function isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
-  const filePath = getPath(fileUri);
-  const hhconfigPath = await fsPromise.findNearestFile('.hhconfig', path.dirname(filePath));
+  const filePath = nuclideUri.getPath(fileUri);
+  const hhconfigPath = await fsPromise.findNearestFile('.hhconfig', nuclideUri.dirname(filePath));
   return hhconfigPath != null;
 }
 

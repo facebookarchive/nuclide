@@ -15,7 +15,7 @@ import type {
 } from '../../hyperclick/lib/types';
 
 import semver from 'semver';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import shell from 'shell';
 
 import {parseJSON, babelLocToRange} from './parsing';
@@ -82,7 +82,7 @@ function isPackageJson(textEditor: atom$TextEditor): boolean {
   const filePath = textEditor.getPath();
   return scopeName === 'source.json' &&
     filePath != null &&
-    path.basename(filePath) === 'package.json';
+    nuclideUri.basename(filePath) === 'package.json';
 }
 
 function getPackageUrl(packageName: string, version: string): ?string {

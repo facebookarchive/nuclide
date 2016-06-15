@@ -11,23 +11,23 @@
 
 import typeof * as DummyService from './DummyService';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import {safeSpawn} from '../process';
 import RpcProcess from '../RpcProcess';
 import {ServiceRegistry} from '../../nuclide-rpc';
 
-const PROCESS_PATH = path.join(__dirname, '/fixtures/dummyioserver.py');
+const PROCESS_PATH = nuclideUri.join(__dirname, '/fixtures/dummyioserver.py');
 const OPTS = {
-  cwd: path.dirname(PROCESS_PATH),
+  cwd: nuclideUri.dirname(PROCESS_PATH),
   stdio: 'pipe',
   detached: false,
 };
 
 const serviceRegistry = ServiceRegistry.createLocal([{
   name: 'dummy',
-  definition: path.join(__dirname, 'DummyService.js'),
-  implementation: path.join(__dirname, 'DummyService.js'),
+  definition: nuclideUri.join(__dirname, 'DummyService.js'),
+  implementation: nuclideUri.join(__dirname, 'DummyService.js'),
   preserveFunctionNames: true,
 }]);
 

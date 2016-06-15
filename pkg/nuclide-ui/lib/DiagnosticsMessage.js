@@ -19,6 +19,7 @@ import {React} from 'react-for-atom';
 import {Button} from './Button';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 import {DiagnosticsTraceItem} from './DiagnosticsTraceItem';
+import nuclideUri from '../../nuclide-remote-uri';
 
 type DiagnosticsMessageProps = {
   message: FileDiagnosticMessage;
@@ -27,7 +28,6 @@ type DiagnosticsMessageProps = {
 };
 
 function plainTextForItem(item: FileDiagnosticMessage | Trace): string {
-  const {getPath} = require('../../nuclide-remote-uri');
   let mainComponent = undefined;
   if (item.html != null) {
     // Quick and dirty way to get an approximation for the plain text from HTML.
@@ -43,7 +43,7 @@ function plainTextForItem(item: FileDiagnosticMessage | Trace): string {
     pathComponent = '';
   } else {
     const lineComponent = item.range != null ? `:${item.range.start.row + 1}` : '';
-    pathComponent = ': ' + getPath(item.filePath) + lineComponent;
+    pathComponent = ': ' + nuclideUri.getPath(item.filePath) + lineComponent;
   }
   return mainComponent + pathComponent;
 }

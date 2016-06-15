@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import observeGrammarForTextEditors from '../observe-grammar-for-text-editors';
 import observeLanguageTextEditors from '../observe-language-text-editors';
 
@@ -23,13 +23,13 @@ describe('observeLanguageTextEditors', () => {
 
   beforeEach(() => {
     observeGrammarForTextEditors.__reset__();
-    atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/objective-c.cson'));
+    atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/objective-c.cson'));
     objcGrammar = atom.grammars.grammarForScopeName('source.objc');
     invariant(objcGrammar);
-    atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/java.cson'));
+    atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/java.cson'));
     javaGrammar = atom.grammars.grammarForScopeName('source.java');
     invariant(javaGrammar);
-    atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/javascript.cson'));
+    atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/javascript.cson'));
     jsGrammar = atom.grammars.grammarForScopeName('source.js');
     nullGrammar = atom.grammars.grammarForScopeName('text.plain.null-grammar');
 

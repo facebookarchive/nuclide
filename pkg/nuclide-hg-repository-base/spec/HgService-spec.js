@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {HgService} from '../lib/HgService';
 import {
   StatusCodeId,
@@ -29,10 +29,10 @@ class TestHgService extends HgService {
 describe('HgService', () => {
   let hgService;
   const TEST_WORKING_DIRECTORY = '/Test/Working/Directory/';
-  const PATH_1 = path.join(TEST_WORKING_DIRECTORY, 'test1.js');
-  const PATH_2 = path.join(TEST_WORKING_DIRECTORY, 'test2.js');
+  const PATH_1 = nuclideUri.join(TEST_WORKING_DIRECTORY, 'test1.js');
+  const PATH_2 = nuclideUri.join(TEST_WORKING_DIRECTORY, 'test2.js');
   function relativize(filePath: string): string {
-    return path.relative(TEST_WORKING_DIRECTORY, filePath);
+    return nuclideUri.relative(TEST_WORKING_DIRECTORY, filePath);
   }
 
   beforeEach(() => {

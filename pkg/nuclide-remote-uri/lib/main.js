@@ -505,7 +505,7 @@ function pathModuleFor(uri: NuclideUri): any {
   }
 }
 
-module.exports = {
+export default {
   basename,
   dirname,
   extname,

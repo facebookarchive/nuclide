@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import fsPromise from '../../commons-node/fsPromise';
 import {generateOutline} from '../lib/outline';
 
@@ -18,7 +18,7 @@ describe('Python outline', () => {
 
   it('conversion from JSON to outline', () => {
     waitsForPromise({timeout: 15000}, async () => {
-      const src = path.join(__dirname, './fixtures/t.py');
+      const src = nuclideUri.join(__dirname, './fixtures/t.py');
       const contents = await fsPromise.readFile(src, 'utf8');
       const result = await generateOutline(src, contents, 'all');
       expect(result).toEqual(JSON.parse(expected));

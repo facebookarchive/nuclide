@@ -13,7 +13,7 @@ import type {LRUCache} from 'lru-cache';
 
 import type {FlowLocNoSource} from './flowOutputTypes';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {checkOutput} from '../../commons-node/process';
 import fsPromise from '../../commons-node/fsPromise';
 import LRU from 'lru-cache';
@@ -164,7 +164,7 @@ function getStopFlowOnExit(): boolean {
 
 function findFlowConfigDir(localFile: string): Promise<?string> {
   if (!flowConfigDirCache.has(localFile)) {
-    const flowConfigDir = fsPromise.findNearestFile('.flowconfig', path.dirname(localFile));
+    const flowConfigDir = fsPromise.findNearestFile('.flowconfig', nuclideUri.dirname(localFile));
     flowConfigDirCache.set(localFile, flowConfigDir);
   }
   return flowConfigDirCache.get(localFile);

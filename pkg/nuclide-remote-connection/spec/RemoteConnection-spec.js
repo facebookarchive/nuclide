@@ -12,9 +12,9 @@
 import fs from 'fs';
 import {RemoteConnection} from '../lib/RemoteConnection';
 import {ServerConnection, __test__} from '../lib/ServerConnection';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
-const pathToFakePk = path.join(__dirname, 'fakepk');
+const pathToFakePk = nuclideUri.join(__dirname, 'fakepk');
 
 describe('RemoteConnection', () => {
   const testConnections = __test__.connections;

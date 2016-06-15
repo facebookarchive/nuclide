@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import watchman from 'fb-watchman';
 import {serializeAsyncCall, sleep} from '../../commons-node/promise';
 import {getWatchmanBinaryPath} from './path';
@@ -106,15 +106,15 @@ class WatchmanClient {
   }
 
   _getSubscription(entryPath: string): ?WatchmanSubscription {
-    return this._subscriptions.get(path.normalize(entryPath));
+    return this._subscriptions.get(nuclideUri.normalize(entryPath));
   }
 
   _setSubscription(entryPath: string, subscription: WatchmanSubscription): void {
-    this._subscriptions.set(path.normalize(entryPath), subscription);
+    this._subscriptions.set(nuclideUri.normalize(entryPath), subscription);
   }
 
   _deleteSubscription(entryPath: string): void {
-    this._subscriptions.delete(path.normalize(entryPath));
+    this._subscriptions.delete(nuclideUri.normalize(entryPath));
   }
 
   _onSubscriptionResult(response: WatchmanSubscriptionResponse): void {

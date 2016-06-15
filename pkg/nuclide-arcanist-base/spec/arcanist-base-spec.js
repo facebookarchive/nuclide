@@ -10,7 +10,7 @@
  */
 
 import * as arcanist from '..';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import fs from 'fs-plus';
 import temp from 'temp';
 import invariant from 'assert';
@@ -38,23 +38,23 @@ describe('nuclide-arcanist-base', () => {
       // Copy the contents of 'fixtures' into a temp directory
       // ... and rename any .arcconfig.test -> .arcconfig
       tempPath = fs.absolute(temp.mkdirSync());
-      const fixturesPath = path.join(__dirname, 'fixtures');
+      const fixturesPath = nuclideUri.join(__dirname, 'fixtures');
       fs.copySync(fixturesPath, tempPath);
 
       function adjustArcConfig(dir: string) {
         fs.renameSync(
-          path.join(dir, '.arcconfig.test'),
-          path.join(dir, '.arcconfig'));
+          nuclideUri.join(dir, '.arcconfig.test'),
+          nuclideUri.join(dir, '.arcconfig'));
       }
 
-      adjustArcConfig(path.join(tempPath, 'arc'));
-      adjustArcConfig(path.join(tempPath, 'arc', 'nested-project'));
+      adjustArcConfig(nuclideUri.join(tempPath, 'arc'));
+      adjustArcConfig(nuclideUri.join(tempPath, 'arc', 'nested-project'));
 
-      rootPath = path.join(tempPath, 'arc');
-      dirPath = path.join(rootPath, 'dir1');
-      file1Path = path.join(dirPath, 'file1');
-      file2Path = path.join(rootPath, 'file2');
-      nestedPath = path.join(rootPath, 'nested-project');
+      rootPath = nuclideUri.join(tempPath, 'arc');
+      dirPath = nuclideUri.join(rootPath, 'dir1');
+      file1Path = nuclideUri.join(dirPath, 'file1');
+      file2Path = nuclideUri.join(rootPath, 'file2');
+      nestedPath = nuclideUri.join(rootPath, 'nested-project');
     });
   });
 

@@ -13,7 +13,7 @@ import typeof * as BuckService from './BuckProject';
 import type {BuckProject} from './BuckProject';
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export {BuckProject} from './BuckProject';
@@ -25,7 +25,7 @@ export function isBuckFile(filePath: string): boolean {
   // TODO(mbolin): Buck does have an option where the user can customize the
   // name of the build file: https://github.com/facebook/buck/issues/238.
   // This function will not work for those who use that option.
-  return path.basename(filePath) === 'BUCK';
+  return nuclideUri.basename(filePath) === 'BUCK';
 }
 
 /**

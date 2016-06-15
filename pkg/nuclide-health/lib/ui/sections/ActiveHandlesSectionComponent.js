@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../../../nuclide-remote-uri';
 import {React} from 'react-for-atom';
 import HandlesTableComponent from './HandlesTableComponent';
 
@@ -72,7 +72,7 @@ export default class ActiveHandlesSectionComponent extends React.Component {
           keyed={process => process.pid}
           columns={[{
             title: 'Name',
-            value: process => path.basename(process.spawnfile),
+            value: process => nuclideUri.basename(process.spawnfile),
             widthPercentage: 15,
           }, {
             title: 'In',

@@ -23,7 +23,7 @@ import {ObservableManager} from './ObservableManager';
 import {CompositeDisposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {Disposable} from 'atom';
 import WS from 'ws';
 import {stringifyError} from '../../commons-node/string';
@@ -69,7 +69,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
       proxy.getServerMessageObservable(),
       proxy.getOutputWindowObservable().map(message => {
         const serverMessage = translateMessageFromServer(
-          remoteUri.getHostname(this.getTargetUri()),
+          nuclideUri.getHostname(this.getTargetUri()),
           message,
         );
         return JSON.parse(serverMessage);
@@ -83,7 +83,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     const sessionConfig: HhvmDebuggerSessionConfig = {
       xdebugAttachPort: config.xdebugAttachPort,
       xdebugLaunchingPort: config.xdebugLaunchingPort,
-      targetUri: remoteUri.getPath(this.getTargetUri()),
+      targetUri: nuclideUri.getPath(this.getTargetUri()),
       logLevel: config.logLevel,
       endDebugWhenNoRequests: false,
       phpRuntimePath: config.phpRuntimePath,
@@ -162,7 +162,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     if (webSocket != null) {
       webSocket.send(
         translateMessageFromServer(
-          remoteUri.getHostname(this.getTargetUri()),
+          nuclideUri.getHostname(this.getTargetUri()),
           message,
         ),
       );

@@ -13,11 +13,11 @@ import fs from 'fs';
 import invariant from 'assert';
 import once from './once';
 import os from 'os';
-import path from 'path';
+import nuclideUri from '../nuclide-remote-uri';
 import {checkOutput} from './process';
 
 const NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../package.json');
-const NUCLIDE_BASEDIR = path.dirname(NUCLIDE_PACKAGE_JSON_PATH);
+const NUCLIDE_BASEDIR = nuclideUri.dirname(NUCLIDE_PACKAGE_JSON_PATH);
 
 const pkgJson = JSON.parse(fs.readFileSync(NUCLIDE_PACKAGE_JSON_PATH));
 
@@ -33,7 +33,7 @@ export const OS_TYPE = {
 // we use this to figure if we're packaged or not.
 export const isDevelopment = once((): boolean => {
   try {
-    fs.statSync(path.join(NUCLIDE_BASEDIR, '.flowconfig'));
+    fs.statSync(nuclideUri.join(NUCLIDE_BASEDIR, '.flowconfig'));
     return true;
   } catch (err) {
     return false;

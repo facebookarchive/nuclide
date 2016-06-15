@@ -19,7 +19,7 @@ import {
 
 import invariant from 'assert';
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 import {ReactDOM} from 'react-for-atom';
 
 function getResourceTextSync(filePath: string): string {
@@ -45,7 +45,7 @@ describe('Diff View Right Editor Save and Edit Test', () => {
       // Add this directory as a new project in atom.
       setLocalProject(repoPath);
       // Open the test.txt file in the repo.
-      await atom.workspace.open(path.join(repoPath, TEST_FILE_NAME));
+      await atom.workspace.open(nuclideUri.join(repoPath, TEST_FILE_NAME));
     });
   });
 
@@ -89,7 +89,7 @@ describe('Diff View Right Editor Save and Edit Test', () => {
       // Test that inserting text does not affect the file until the TextEditor saves
       rightEditor.insertText('Integration test sample text');
 
-      const TEST_FILE_PATH = path.join(repoPath, TEST_FILE_NAME);
+      const TEST_FILE_PATH = nuclideUri.join(repoPath, TEST_FILE_NAME);
       expect(getResourceTextSync(TEST_FILE_PATH)).not.toEqual(rightEditor.getText());
       rightEditor.saveAs(TEST_FILE_PATH);
       expect(getResourceTextSync(TEST_FILE_PATH)).toEqual(rightEditor.getText());

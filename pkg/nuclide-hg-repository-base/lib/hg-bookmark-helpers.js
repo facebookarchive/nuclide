@@ -10,7 +10,7 @@
  */
 
 import fsPromise from '../../commons-node/fsPromise';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 /**
  * @param repoPath The full path to the repository directory (.hg).
@@ -18,7 +18,7 @@ import path from 'path';
  *   or else an empty string.
  */
 async function fetchActiveBookmark(repoPath: string): Promise<string> {
-  const bookmarkFile = path.join(repoPath, 'bookmarks.current');
+  const bookmarkFile = nuclideUri.join(repoPath, 'bookmarks.current');
   let result;
   try {
     result = await fsPromise.readFile(bookmarkFile, 'utf-8');

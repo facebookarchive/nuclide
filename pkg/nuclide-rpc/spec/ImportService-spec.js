@@ -12,7 +12,7 @@
 import typeof * as ImportService from './ImportService';
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {ServiceTester} from './ServiceTester';
 
 describe('ImportService', () => {
@@ -25,8 +25,8 @@ describe('ImportService', () => {
       invariant(testHelper);
       return testHelper.start([{
         name: 'ImportService',
-        definition: path.join(__dirname, 'ImportService.js'),
-        implementation: path.join(__dirname, 'ImportService.js'),
+        definition: nuclideUri.join(__dirname, 'ImportService.js'),
+        implementation: nuclideUri.join(__dirname, 'ImportService.js'),
       }]);
     });
 

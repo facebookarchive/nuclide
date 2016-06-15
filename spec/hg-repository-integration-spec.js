@@ -22,7 +22,7 @@ import {
   fetchFilesChangedAtRevision,
 } from '../pkg/nuclide-hg-repository-base/lib/hg-revision-state-helpers';
 import fsPromise from '../pkg/commons-node/fsPromise';
-import path from 'path';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 import invariant from 'assert';
 
 describe('Mercurial Repository Integration Tests', () => {
@@ -41,7 +41,7 @@ describe('Mercurial Repository Integration Tests', () => {
       // Add this directory as a new project in atom.
       atom.project.setPaths([repoPath]);
       // Open a file within this project.
-      await atom.workspace.open(path.join(repoPath, 'test.txt'));
+      await atom.workspace.open(nuclideUri.join(repoPath, 'test.txt'));
       // Verify mercurialness.
       const respositories = atom.project.getRepositories();
       expect(respositories.length).toBe(1);
@@ -57,7 +57,7 @@ describe('Mercurial Repository Integration Tests', () => {
   it('can commit changes', () => {
     waitsForPromise({timeout: 15000}, async () => {
       const repoPath = await copyMercurialFixture('hg_repo_1');
-      const filePath = path.join(repoPath, 'test.txt');
+      const filePath = nuclideUri.join(repoPath, 'test.txt');
       atom.project.setPaths([repoPath]);
       const hgRepository = ((repositoryForPath(repoPath): any): HgRepositoryClient);
       invariant(hgRepository != null);
@@ -76,7 +76,7 @@ describe('Mercurial Repository Integration Tests', () => {
   it('can amend changes', () => {
     waitsForPromise({timeout: 20000}, async () => {
       const repoPath = await copyMercurialFixture('hg_repo_1');
-      const filePath = path.join(repoPath, 'test.txt');
+      const filePath = nuclideUri.join(repoPath, 'test.txt');
       atom.project.setPaths([repoPath]);
       const hgRepository = ((repositoryForPath(repoPath): any): HgRepositoryClient);
       invariant(hgRepository != null);

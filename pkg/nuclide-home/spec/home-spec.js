@@ -11,7 +11,7 @@
 
 import featureConfig from '../../nuclide-feature-config';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 const CONFIG_KEY = 'nuclide-home.showHome';
 
@@ -42,9 +42,9 @@ describe('Home', () => {
         featureConfig.setSchema(`nuclide-home.${k}`, config[k])
       );
       const GADGETS_DIR =
-        path.dirname(require.resolve('../../nuclide-gadgets/package.json'));
+        nuclideUri.dirname(require.resolve('../../nuclide-gadgets/package.json'));
       await Promise.all([
-        atom.packages.activatePackage(path.join(__dirname, '..')),
+        atom.packages.activatePackage(nuclideUri.join(__dirname, '..')),
         atom.packages.activatePackage(GADGETS_DIR),
       ]);
     });

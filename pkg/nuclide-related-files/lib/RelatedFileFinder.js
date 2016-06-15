@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {basename, dirname, getPath, join} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 
 /**
  * Finds related files, to be used in `JumpToRelatedFile`.
@@ -33,17 +33,17 @@ export default class RelatedFileFinder {
    * @return The related files and the given path's index into it.
    */
   async find(filePath: NuclideUri): Promise<{relatedFiles: Array<string>; index: number}> {
-    const dirName = dirname(filePath);
+    const dirName = nuclideUri.dirname(filePath);
     const prefix = this._getPrefix(filePath);
 
     const service = getServiceByNuclideUri('FileSystemService', filePath);
     invariant(service);
-    const listing = await service.readdir(getPath(dirName));
+    const listing = await service.readdir(nuclideUri.getPath(dirName));
     const relatedFiles = listing
       .filter(otherFilePath => {
         return otherFilePath.stats.isFile() && this._getPrefix(otherFilePath.file) === prefix;
       })
-      .map(otherFilePath => join(dirName, otherFilePath.file))
+      .map(otherFilePath => nuclideUri.join(dirName, otherFilePath.file))
       .sort();
 
     const index = relatedFiles.indexOf(filePath);
@@ -58,7 +58,7 @@ export default class RelatedFileFinder {
   }
 
   _getPrefix(filePath: NuclideUri): string {
-    let base = basename(filePath);
+    let base = nuclideUri.basename(filePath);
     // Strip off the extension.
     const pos = base.lastIndexOf('.');
     if (pos !== -1) {

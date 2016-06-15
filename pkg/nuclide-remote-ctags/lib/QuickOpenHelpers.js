@@ -16,7 +16,7 @@ import {React} from 'react-for-atom';
 import featureConfig from '../../nuclide-feature-config';
 import {getHackService} from '../../nuclide-hack-symbol-provider/lib/getHackService';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {join, relative} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {CTAGS_KIND_ICONS, CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
 
 // ctags doesn't have a true limit API, so having too many results slows down Nuclide.
@@ -30,7 +30,7 @@ async function getCtagsService(
   directory: atom$Directory,
 ): Promise<?CtagsService> {
   // The tags package looks in the directory, so give it a sample file.
-  const path = join(directory.getPath(), 'file');
+  const path = nuclideUri.join(directory.getPath(), 'file');
   const service = getServiceByNuclideUri('CtagsService', path);
   if (service == null) {
     return null;
@@ -51,7 +51,7 @@ export default class QuickOpenHelpers {
 
   static getComponentForItem(uncastedItem: FileResult): React.Element<any> {
     const item = ((uncastedItem: any): Result);
-    const path = relative(item.dir, item.path);
+    const path = nuclideUri.relative(item.dir, item.path);
     let kind;
     let icon;
     if (item.kind != null) {

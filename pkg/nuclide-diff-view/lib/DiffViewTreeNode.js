@@ -10,7 +10,7 @@
  */
 
 import {LazyTreeNode} from '../../nuclide-ui/lib/LazyTreeNode';
-import {basename} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {FileChangeStatusToPrefix} from './constants';
 
 import type {FileChange} from './types';
@@ -28,7 +28,7 @@ export default class DiffViewTreeNode extends LazyTreeNode {
 
   getLabel(): string {
     const item: FileChange = this.getItem();
-    const fileName = basename(item.filePath);
+    const fileName = nuclideUri.basename(item.filePath);
     return (this.isContainer() || !item.statusCode)
       ? fileName
       : ((FileChangeStatusToPrefix[item.statusCode] || '') + fileName);

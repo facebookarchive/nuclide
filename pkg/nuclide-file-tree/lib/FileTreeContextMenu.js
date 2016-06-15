@@ -17,7 +17,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
 import {FileTreeStore} from './FileTreeStore';
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 type MenuItemSingle = {
   label: string;
@@ -382,7 +382,7 @@ class FileTreeContextMenu {
     const node = this.getSingleSelectedNode();
     return (
       node != null &&
-      path.isAbsolute(node.uri) &&
+      nuclideUri.isAbsolute(node.uri) &&
       process.platform === platform
     );
   }

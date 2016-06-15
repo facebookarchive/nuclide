@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {
   getCompletions,
   getDefinitions,
@@ -20,7 +20,7 @@ import {
 } from '../lib/PythonService';
 
 // Test python file located at fixtures/serverdummy.py
-const TEST_FILE = path.join(__dirname, 'fixtures', 'serverdummy.py');
+const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'serverdummy.py');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
 
 // Line/column actual offsets are 0-indexed in this test, similar to what atom
@@ -254,12 +254,12 @@ describe('PythonService', () => {
 
     function checkOutlineTree(testName: string) {
       waitsForPromise(async () => {
-        const dirName = path.join(__dirname, 'fixtures', 'outline-tests');
+        const dirName = nuclideUri.join(__dirname, 'fixtures', 'outline-tests');
 
-        const srcPath = path.join(dirName, testName + '.py');
+        const srcPath = nuclideUri.join(dirName, testName + '.py');
         const srcContents = fs.readFileSync(srcPath).toString('utf8');
 
-        const jsonPath = path.join(dirName, 'expected', testName + '.json');
+        const jsonPath = nuclideUri.join(dirName, 'expected', testName + '.json');
         const jsonContents = fs.readFileSync(jsonPath).toString('utf8');
 
         const response = await getOutline(srcPath, srcContents);

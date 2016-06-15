@@ -15,7 +15,7 @@ import generate from 'babel-core/lib/generation';
 import {generateProxy} from '../lib/proxy-generator';
 import {addMatchers} from '../../nuclide-test-helpers';
 import {parseServiceDefinition} from '../lib/service-parser';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {__test__} from '../lib/proxy-generator';
 
 import type {Type} from '../lib/types';
@@ -29,15 +29,15 @@ describe('Proxy generator test suite.', () => {
     addMatchers(this);
   });
 
-  for (const file of fs.readdirSync(path.join(__dirname, 'fixtures'))) {
+  for (const file of fs.readdirSync(nuclideUri.join(__dirname, 'fixtures'))) {
     if (file.endsWith('.def')) {
       it(`Successfully generates proxy for ${file}`, () => {
-        const fixturePath = path.join(__dirname, 'fixtures', file);
+        const fixturePath = nuclideUri.join(__dirname, 'fixtures', file);
         const definitions = parseServiceDefinition(file, fs.readFileSync(fixturePath, 'utf8'));
 
-        const code = generateProxy(path.basename(file, '.def'), false, definitions);
+        const code = generateProxy(nuclideUri.basename(file, '.def'), false, definitions);
         const expected = fs.readFileSync(
-          path.join(__dirname, 'fixtures', file).replace('.def', '.proxy'), 'utf8');
+          nuclideUri.join(__dirname, 'fixtures', file).replace('.def', '.proxy'), 'utf8');
         expect(code.trim()).diffLines(expected.trim());
       });
     }

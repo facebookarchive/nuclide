@@ -30,7 +30,7 @@ import {namedBuiltinTypes} from './builtin-types';
 import {locationToString} from './location';
 import {validateDefinitions} from './DefinitionValidator';
 import resolveFrom from 'resolve-from';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import fs from 'fs';
 
 function isPrivateMemberName(name: string): boolean {
@@ -90,7 +90,7 @@ class ServiceParser {
     const parser = new FileParser(fileName, fileType, this._defs);
     const imports = parser.parse(source);
     for (const imp of imports) {
-      const resolvedFrom = resolveFrom(path.dirname(fileName), imp);
+      const resolvedFrom = resolveFrom(nuclideUri.dirname(fileName), imp);
 
       if (!this._filesSeen.has(resolvedFrom)) {
         this._filesSeen.add(resolvedFrom);

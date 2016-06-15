@@ -18,7 +18,7 @@
 import mv from 'mv';
 import fs from 'fs';
 import fsPlus from 'fs-plus';
-import pathModule from 'path';
+import nuclideUri from '../../../nuclide-remote-uri';
 import fsPromise from '../../../commons-node/fsPromise';
 
 export type FileWithStats = {
@@ -95,7 +95,7 @@ export async function newFile(filePath: string): Promise<boolean> {
   if (isExistingFile) {
     return false;
   }
-  await fsPromise.mkdirp(pathModule.dirname(filePath));
+  await fsPromise.mkdirp(nuclideUri.dirname(filePath));
   await fsPromise.writeFile(filePath, '');
   return true;
 }
@@ -112,7 +112,7 @@ export async function newFile(filePath: string): Promise<boolean> {
 export async function readdir(path: string): Promise<Array<FileWithStats>> {
   const files = await fsPromise.readdir(path);
   const entries = await Promise.all(files.map(async file => {
-    const fullpath = pathModule.join(path, file);
+    const fullpath = nuclideUri.join(path, file);
     const lstats = await fsPromise.lstat(fullpath);
     if (!lstats.isSymbolicLink()) {
       return {file, stats: lstats, isSymbolicLink: false};
@@ -147,7 +147,7 @@ export function realpath(path: string): Promise<string> {
  * like: ~/abc to its absolute path format.
  */
 export function resolveRealPath(path: string): Promise<string> {
-  return fsPromise.realpath(fsPromise.expandHomeDir(path));
+  return fsPromise.realpath(nuclideUri.expandHomeDir(path));
 }
 
 /**
@@ -162,7 +162,7 @@ export function rename(sourcePath: string, destinationPath: string): Promise<voi
  */
 export async function move(sourcePaths: Array<string>, destDir: string): Promise<void> {
   await Promise.all(sourcePaths.map(path => {
-    const destPath = pathModule.join(destDir, pathModule.basename(path));
+    const destPath = nuclideUri.join(destDir, nuclideUri.basename(path));
     return fsPromise.move(path, destPath);
   }));
 }

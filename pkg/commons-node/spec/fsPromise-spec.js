@@ -10,9 +10,8 @@
  */
 
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import temp from 'temp';
-import os from 'os';
 import fsPromise from '../fsPromise';
 
 describe('fsPromise test suite', () => {
@@ -27,10 +26,10 @@ describe('fsPromise test suite', () => {
 
     beforeEach(() => {
       dirPath = temp.mkdirSync('nearest_test');
-      nestedDirPath = path.join(dirPath, 'nested_dir');
+      nestedDirPath = nuclideUri.join(dirPath, 'nested_dir');
       fs.mkdirSync(nestedDirPath);
       fileName = '.some_file';
-      filePath = path.join(dirPath, fileName);
+      filePath = nuclideUri.join(dirPath, fileName);
       fs.writeFileSync(filePath, 'just a file');
     });
 
@@ -53,20 +52,6 @@ describe('fsPromise test suite', () => {
         const foundPath = await fsPromise.findNearestFile('non-existent.txt', nestedDirPath);
         expect(foundPath).toBe(null);
       });
-    });
-  });
-
-  describe('expandHomeDir()', () => {
-    it('expands ~ to HOME', () => {
-      expect(fsPromise.expandHomeDir('~')).toBe(os.homedir());
-    });
-
-    it('expands ~/ to HOME', () => {
-      expect(fsPromise.expandHomeDir('~/abc')).toBe(path.join(os.homedir(), 'abc'));
-    });
-
-    it('keeps ~def to ~def', () => {
-      expect(fsPromise.expandHomeDir('~def')).toBe('~def');
     });
   });
 

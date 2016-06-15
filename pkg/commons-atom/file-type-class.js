@@ -10,11 +10,13 @@
  */
 
 import fs from 'fs-plus';
-import path from 'path';
+import nuclideUri from '../nuclide-remote-uri';
 
-export default function fileTypeClass(filename: string): string {
+import type {NuclideUri} from '../nuclide-remote-uri';
+
+export default function fileTypeClass(filename: NuclideUri): string {
   let typeClass;
-  const ext = path.extname(filename);
+  const ext = nuclideUri.extname(filename);
 
   if (fs.isReadmePath(filename)) {
     typeClass = 'icon-book';

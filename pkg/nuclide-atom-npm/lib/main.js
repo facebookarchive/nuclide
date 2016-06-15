@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs-plus';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import fsPromise from '../../commons-node/fsPromise';
 
 async function loadStyles(stylesPath: string): Promise<any> {
@@ -29,7 +29,7 @@ async function loadStyles(stylesPath: string): Promise<any> {
       // Styles should be loaded in alphabetical order according to
       // https://atom.io/docs/v0.186.0/creating-a-package
       .sort()
-      .map(filePath => atom.themes.requireStylesheet(path.join(stylesPath, filePath)));
+      .map(filePath => atom.themes.requireStylesheet(nuclideUri.join(stylesPath, filePath)));
 }
 
 /**
@@ -37,7 +37,7 @@ async function loadStyles(stylesPath: string): Promise<any> {
  * synchronous so that it works as expected with require().
  */
 function loadGrammarsSync(packagePath: string) {
-  const grammarsDir = path.join(packagePath, 'grammars');
+  const grammarsDir = nuclideUri.join(packagePath, 'grammars');
   if (!fs.isDirectorySync(grammarsDir)) {
     return;
   }
@@ -60,10 +60,10 @@ module.exports = {
 
     if (!nuclide[mainFilename]) {
       // $FlowIgnore
-      nuclide[mainFilename] = require(path.join(libPath, mainFilename));
+      nuclide[mainFilename] = require(nuclideUri.join(libPath, mainFilename));
 
-      const packagePath = path.dirname(libPath);
-      loadStyles(path.join(packagePath, 'styles'));
+      const packagePath = nuclideUri.dirname(libPath);
+      loadStyles(nuclideUri.join(packagePath, 'styles'));
 
       loadGrammarsSync(packagePath);
     }

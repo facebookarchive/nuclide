@@ -19,7 +19,7 @@ import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {CompositeDisposable} from 'atom';
 import {Dispatcher} from 'flux';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -277,7 +277,7 @@ export class BuckBuildSystem {
     if (repoRoot == null) {
       return null;
     }
-    return path.join(repoRoot, serverCommand);
+    return nuclideUri.join(repoRoot, serverCommand);
   }
 
   _getReactNativeServerActions(): ReactNativeServerActions {

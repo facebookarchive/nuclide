@@ -13,7 +13,7 @@ import logger from './utils';
 import {getConfig} from './config';
 import {launchScriptForDummyConnection, uriToPath} from './helpers';
 import fsPromise from '../../commons-node/fsPromise';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import type {Socket} from 'net';
 
@@ -25,7 +25,7 @@ export async function setRootDirectoryUri(directoryUri: string): Promise<void> {
   const hackRootDirectory = await getHackRoot(directoryUri);
   logger.log(`setRootDirectoryUri: from ${directoryUri} to ${hackRootDirectory}`);
   // TODO: make xdebug_includes.php path configurable from hhconfig.
-  const hackDummyRequestFilePath = path.join(
+  const hackDummyRequestFilePath = nuclideUri.join(
     (hackRootDirectory ? hackRootDirectory : ''),
     '/scripts/xdebug_includes.php'
   );

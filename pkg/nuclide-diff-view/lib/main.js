@@ -27,6 +27,7 @@ import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {getLogger} from '../../nuclide-logging';
 import {DiffMode, CommitMode} from './constants';
 import DiffViewElement from './DiffViewElement';
+import nuclideUri from '../../nuclide-remote-uri';
 
 type SerializedDiffViewState = {
   visible: false;
@@ -136,14 +137,13 @@ function activateDiffPath(diffEntityOptions: DiffEntityOptions): void {
 }
 
 function projectsContainPath(checkPath: string): boolean {
-  const {isRemote} = require('../../nuclide-remote-uri');
   return atom.project.getDirectories().some(directory => {
     const directoryPath = directory.getPath();
     if (!checkPath.startsWith(directoryPath)) {
       return false;
     }
     // If the remote directory hasn't yet loaded.
-    if (isRemote(checkPath) && directory instanceof Directory) {
+    if (nuclideUri.isRemote(checkPath) && directory instanceof Directory) {
       return false;
     }
     return true;

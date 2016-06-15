@@ -13,7 +13,7 @@ import type {FileResult} from './types';
 
 import {React} from 'react-for-atom';
 import fileTypeClass from '../../commons-atom/file-type-class';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 type Key = number | string;
 
@@ -81,7 +81,7 @@ class FileResultComponent {
     // `data-name` is support for the "file-icons" package.
     // See: https://atom.io/packages/file-icons
     return (
-      <div className={filenameClasses} data-name={path.basename(filePath)}>
+      <div className={filenameClasses} data-name={nuclideUri.basename(filePath)}>
         {pathComponents}
       </div>
     );

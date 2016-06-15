@@ -14,7 +14,7 @@ import type {RevisionFileChanges} from '../../nuclide-hg-repository-base/lib/HgS
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {
   checkOutput,
   scriptSafeSpawnAndObserveOutput,
@@ -66,7 +66,7 @@ export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
     return null;
   }
   if (!arcProjectMap.has(arcConfigDirectory)) {
-    const arcconfigFile = path.join(arcConfigDirectory, ARC_CONFIG_FILE_NAME);
+    const arcconfigFile = nuclideUri.join(arcConfigDirectory, ARC_CONFIG_FILE_NAME);
     const contents = await fsPromise.readFile(arcconfigFile, 'utf8');
     invariant(typeof contents === 'string');
     const result = JSON.parse(contents);
@@ -82,7 +82,7 @@ export async function findArcProjectIdOfPath(fileName: NuclideUri): Promise<?str
 
 export async function getProjectRelativePath(fileName: NuclideUri): Promise<?string> {
   const arcPath = await findArcConfigDirectory(fileName);
-  return arcPath && fileName ? path.relative(arcPath, fileName) : null;
+  return arcPath && fileName ? nuclideUri.relative(arcPath, fileName) : null;
 }
 
 export async function findDiagnostics(pathToFiles: Array<NuclideUri>, skip: Array<string>):
@@ -219,7 +219,7 @@ async function execArcLint(cwd: string, filePaths: Array<NuclideUri>, skip: Arra
     // TODO(7876450): For some reason, this does not work for particular values of pathToFile.
     // Depending on the location of .arcconfig, we may get a key that is different from what `arc
     // lint` actually returns, and end up without any lints for this path.
-    const key = path.relative(cwd, file);
+    const key = nuclideUri.relative(cwd, file);
     const rawLints = output.get(key);
     if (rawLints) {
       for (const lint of convertLints(file, rawLints)) {

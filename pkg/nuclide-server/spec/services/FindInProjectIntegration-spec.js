@@ -11,7 +11,7 @@
 
 import fs from 'fs';
 import {addMatchers} from '../../../nuclide-test-helpers';
-import path from 'path';
+import nuclideUri from '../../../nuclide-remote-uri';
 import ServiceTestHelper from './ServiceTestHelper';
 
 describe('FindInProjectService-Integration', () => {
@@ -46,7 +46,7 @@ describe('FindInProjectService-Integration', () => {
       const remoteService = testHelper.getRemoteService('FindInProjectService');
 
       // Search in the fixtures/basic directory.
-      const input_dir = path.join(__dirname, 'fixtures', 'basic');
+      const input_dir = nuclideUri.join(__dirname, 'fixtures', 'basic');
       const uri = testHelper.getUriOfRemotePath(input_dir);
 
       // Do search.

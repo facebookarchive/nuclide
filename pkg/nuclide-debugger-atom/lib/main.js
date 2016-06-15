@@ -38,7 +38,7 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import passesGK from '../../commons-node/passesGK';
 
@@ -107,10 +107,10 @@ class Activation {
           return; // Nothing to do if we're not debugging.
         }
         const debuggeeTargetUri = debuggerProcess.getTargetUri();
-        if (remoteUri.isLocal(debuggeeTargetUri)) {
+        if (nuclideUri.isLocal(debuggeeTargetUri)) {
           return; // Nothing to do if our debug session is local.
         }
-        if (remoteUri.getHostname(debuggeeTargetUri) === connection.getRemoteHostname()) {
+        if (nuclideUri.getHostname(debuggeeTargetUri) === connection.getRemoteHostname()) {
           this._model.getActions().stopDebugging();
         }
       }),

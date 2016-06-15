@@ -29,7 +29,7 @@ import {React} from 'react-for-atom';
 import {arrayCompact} from '../../commons-node/collection';
 import classnames from 'classnames';
 import uiTreePath from '../../commons-atom/ui-tree-path';
-import {getPath, basename} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {addPath, revertPath} from '../../nuclide-hg-repository/lib/actions';
 
@@ -159,7 +159,7 @@ export default class DiffViewTree extends React.Component {
       'nuclide-diff-tree:copy-full-path',
       event => {
         const filePath = uiTreePath(event);
-        atom.clipboard.write(getPath(filePath || ''));
+        atom.clipboard.write(nuclideUri.getPath(filePath || ''));
       }
     ));
     this._subscriptions.add(atom.commands.add(
@@ -167,7 +167,7 @@ export default class DiffViewTree extends React.Component {
       'nuclide-diff-tree:copy-file-name',
       event => {
         const filePath = uiTreePath(event);
-        atom.clipboard.write(basename(filePath || ''));
+        atom.clipboard.write(nuclideUri.getPath(filePath || ''));
       }
     ));
     this._subscriptions.add(atom.commands.add(

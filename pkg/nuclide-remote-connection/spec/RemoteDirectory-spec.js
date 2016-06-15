@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {Directory} from 'atom';
 import {RemoteDirectory} from '../lib/RemoteDirectory';
 import connectionMock from './connection_mock';
@@ -225,9 +225,9 @@ describe('RemoteDirectory::delete()', () => {
 
   it('deletes the existing directory', () => {
     waitsForPromise(async () => {
-      const directoryPath = path.join(tempDir, 'directory_to_delete');
+      const directoryPath = nuclideUri.join(tempDir, 'directory_to_delete');
       fs.mkdirSync(directoryPath);
-      fs.mkdirSync(path.join(directoryPath, 'subdir'));
+      fs.mkdirSync(nuclideUri.join(directoryPath, 'subdir'));
       const directory = new RemoteDirectory(connectionMock, `nuclide://host13${directoryPath}`);
       expect(fs.existsSync(directoryPath)).toBe(true);
       await directory.delete();
@@ -237,7 +237,7 @@ describe('RemoteDirectory::delete()', () => {
 
   it('deletes the non-existent directory', () => {
     waitsForPromise(async () => {
-      const directoryPath = path.join(tempDir, 'directory_to_delete');
+      const directoryPath = nuclideUri.join(tempDir, 'directory_to_delete');
       const directory = new RemoteDirectory(connectionMock, `nuclide://host13${directoryPath}`);
       await directory.delete();
       expect(fs.existsSync(directoryPath)).toBe(false);
@@ -260,7 +260,7 @@ describe('RemoteDirectory::exists()', () => {
   it('verifies non-existence', () => {
     waitsForPromise(async () => {
       const tempDir = temp.mkdirSync('exists_test');
-      const directoryPath = path.join(tempDir, '/directory_that_doesnt_exist');
+      const directoryPath = nuclideUri.join(tempDir, '/directory_that_doesnt_exist');
       expect(fs.existsSync(directoryPath)).toBe(false);
 
       const directory = new RemoteDirectory(connectionMock, `nuclide://host13${directoryPath}`);
@@ -278,8 +278,8 @@ describe('RemoteDirectory::isSymbolicLink()', () => {
   });
 
   it('verifies symlink', () => {
-    const targetDirectoryPath = path.join(tempDir, 'target');
-    const symLinkedDirectoryPath = path.join(tempDir, 'linked');
+    const targetDirectoryPath = nuclideUri.join(tempDir, 'target');
+    const symLinkedDirectoryPath = nuclideUri.join(tempDir, 'linked');
     fs.mkdirSync(targetDirectoryPath);
     fs.symlinkSync(
       targetDirectoryPath,
@@ -298,7 +298,7 @@ describe('RemoteDirectory::isSymbolicLink()', () => {
   });
 
   it('verifies non-symlink', () => {
-    const notLinkedDirectoryPath = path.join(tempDir, 'not_linked');
+    const notLinkedDirectoryPath = nuclideUri.join(tempDir, 'not_linked');
     fs.mkdirSync(notLinkedDirectoryPath);
     expect(fs.lstatSync(notLinkedDirectoryPath).isSymbolicLink()).toBe(false);
 
@@ -324,9 +324,9 @@ describe('RemoteDirectory::rename()', () => {
   // delegating to `fsPromise` here.
   it('renames existing directories', () => {
     waitsForPromise(async () => {
-      const directoryPath = path.join(tempDir, 'directory_to_rename');
+      const directoryPath = nuclideUri.join(tempDir, 'directory_to_rename');
       fs.mkdirSync(directoryPath);
-      const newDirectoryPath = path.join(tempDir, 'new_directory_name');
+      const newDirectoryPath = nuclideUri.join(tempDir, 'new_directory_name');
       expect(fs.existsSync(directoryPath)).toBe(true);
 
       const directory = new RemoteDirectory(connectionMock, `nuclide://host13${directoryPath}`);
@@ -349,7 +349,7 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
   beforeEach(() => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     directoryPath = temp.mkdirSync('on_did_change_test');
-    filePath = path.join(directoryPath, 'sample_file.txt');
+    filePath = nuclideUri.join(directoryPath, 'sample_file.txt');
     fs.writeFileSync(filePath, 'sample contents!');
     waitsForPromise(() => connectionMock.getFsService().watchDirectoryRecursive(directoryPath));
     // wait for the watchman to settle on the created directory and file.
@@ -364,7 +364,7 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     const directory = new RemoteDirectory(connectionMock, directoryPath);
     const changeHandler = jasmine.createSpy();
     directory.onDidChange(changeHandler);
-    runs(() => fs.writeFileSync(path.join(directoryPath, 'new_file.txt'), 'new contents!'));
+    runs(() => fs.writeFileSync(nuclideUri.join(directoryPath, 'new_file.txt'), 'new contents!'));
     waitsFor(() => changeHandler.callCount > 0);
     runs(() => {
       expect(changeHandler.callCount).toBe(1);
@@ -386,7 +386,7 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     runs(() => {
       expect(changeHandler.callCount).toBe(1);
       expect(changeHandler.argsForCall[0][0]).toEqual([{
-        name: path.basename(filePath),
+        name: nuclideUri.basename(filePath),
         mode: FILE_MODE,
         exists: false,
         new: false,
@@ -408,8 +408,8 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     const changeHandler = jasmine.createSpy();
     directory.onDidChange(changeHandler);
     runs(() => {
-      fs.writeFileSync(path.join(directoryPath, 'new_file_1.txt'), 'new contents 1!');
-      fs.writeFileSync(path.join(directoryPath, 'new_file_2.txt'), 'new contents 2!');
+      fs.writeFileSync(nuclideUri.join(directoryPath, 'new_file_1.txt'), 'new contents 1!');
+      fs.writeFileSync(nuclideUri.join(directoryPath, 'new_file_2.txt'), 'new contents 2!');
     });
     waitsFor(() => changeHandler.callCount > 0);
     runs(() => {
@@ -433,7 +433,7 @@ describe('RemoteDirectory::onDidDelete()', () => {
 
   it('calls on delete', () => {
     waitsForPromise(async () => {
-      const dirPath = path.join(tempDir, 'dir_to_delete');
+      const dirPath = nuclideUri.join(tempDir, 'dir_to_delete');
       const dir = new RemoteDirectory(connectionMock, `nuclide://host13${dirPath}`);
       const callbackSpy = jasmine.createSpy();
       dir.onDidDelete(callbackSpy);

@@ -11,6 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 import {trackTiming, track} from '../../nuclide-analytics';
+import nuclideUri from '../../nuclide-remote-uri';
 
 let logger = null;
 
@@ -45,14 +46,12 @@ class FileWatcher {
 
   @trackTiming('file-watcher:promptReload')
   async _promptReload(): Promise<any> {
-    const {getPath, basename} = require('../../nuclide-remote-uri');
-
     const filePath = this._editor.getPath();
     if (filePath == null) {
       return;
     }
     const encoding = this._editor.getEncoding();
-    const fileName = basename(filePath);
+    const fileName = nuclideUri.basename(filePath);
     const choice = atom.confirm({
       message: fileName + ' has changed on disk.',
       buttons: ['Reload', 'Compare', 'Ignore'],
@@ -74,7 +73,7 @@ class FileWatcher {
     const {getFileSystemServiceByNuclideUri} = require('../../nuclide-client');
 
     // Load the file contents locally or remotely.
-    const localFilePath = getPath(filePath);
+    const localFilePath = nuclideUri.getPath(filePath);
     const filesystemContents = (await getFileSystemServiceByNuclideUri(filePath)
       .readFile(localFilePath)).toString(encoding);
 

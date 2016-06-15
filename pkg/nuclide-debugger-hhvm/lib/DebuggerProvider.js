@@ -12,10 +12,10 @@
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-atom';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import {HhvmLaunchAttachProvider} from './HhvmLaunchAttachProvider';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 
 function getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-  if (remoteUri.isRemote(connection)) {
+  if (nuclideUri.isRemote(connection)) {
     return new HhvmLaunchAttachProvider('PHP', connection);
   }
   return null;

@@ -20,7 +20,7 @@ import {
   stopNuclideServer,
 } from '../pkg/nuclide-integration-test-helpers';
 
-import {join} from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 
 import invariant from 'assert';
 
@@ -37,7 +37,10 @@ describe('Remote clipboard path integration test', () => {
       const connection = await addRemoteProject(repoPath);
       invariant(connection != null, 'connection was not established');
       // Open a remote file in the project.
-      const remoteFileUri = join(connection.getUriForInitialWorkingDirectory(), 'test.txt');
+      const remoteFileUri = nuclideUri.join(
+        connection.getUriForInitialWorkingDirectory(),
+        'test.txt',
+      );
       await atom.workspace.open(remoteFileUri);
 
       // Absolute path.

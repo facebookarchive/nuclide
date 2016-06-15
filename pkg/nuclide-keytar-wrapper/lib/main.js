@@ -10,16 +10,16 @@
  */
 
 import child_process from 'child_process';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 function getApmNodePath(): string {
-  const apmDir = path.dirname(atom.packages.getApmPath());
-  return path.normalize(path.join(apmDir, 'node'));
+  const apmDir = nuclideUri.dirname(atom.packages.getApmPath());
+  return nuclideUri.normalize(nuclideUri.join(apmDir, 'node'));
 }
 
 function getApmNodeModulesPath(): string {
-  const apmDir = path.dirname(atom.packages.getApmPath());
-  return path.normalize(path.join(apmDir, '..', 'node_modules'));
+  const apmDir = nuclideUri.dirname(atom.packages.getApmPath());
+  return nuclideUri.normalize(nuclideUri.join(apmDir, '..', 'node_modules'));
 }
 
 function runScriptInApmNode(script: string): string {

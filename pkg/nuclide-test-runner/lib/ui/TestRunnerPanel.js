@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../../nuclide-remote-uri';
 import Console from './Console';
 import {Dropdown} from '../../../nuclide-ui/lib/Dropdown';
 import {PanelComponent} from '../../../nuclide-ui/lib/PanelComponent';
@@ -173,7 +173,7 @@ class TestRunnerPanel extends React.Component {
 
     let pathMsg;
     if (this.props.path) {
-      pathMsg = <span title={this.props.path}>{path.basename(this.props.path)}</span>;
+      pathMsg = <span title={this.props.path}>{nuclideUri.basename(this.props.path)}</span>;
     }
 
     let dropdown;

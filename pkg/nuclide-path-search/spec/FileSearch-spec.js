@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import temp from 'temp';
 import url from 'url';
 import {checkOutput} from '../../commons-node/process';
@@ -69,7 +69,7 @@ function aFileSearchShould(typename, dirPathFn) {
           invariant(dirPath);
           const results = await search.query('test');
           expect(values(results)).toEqual([
-            path.join(dirPath, 'test'),
+            nuclideUri.join(dirPath, 'test'),
           ]);
           expect(indexes(results)).toEqual([
             [0, 1, 2, 3],
@@ -83,7 +83,7 @@ function aFileSearchShould(typename, dirPathFn) {
           invariant(dirPath);
           const results = await search.query('deeper');
           expect(values(results)).toEqual([
-            path.join(dirPath, 'deeper/deeper'),
+            nuclideUri.join(dirPath, 'deeper/deeper'),
           ]);
           expect(indexes(results)).toEqual([
             [7, 8, 9, 10, 11, 12],
@@ -93,10 +93,12 @@ function aFileSearchShould(typename, dirPathFn) {
 
       it('should handle searches for full paths', () => {
         waitsForPromise(async () => {
-          const fullpath = path.join(dirPath, 'deeper/deeper');
+          const fullpath = nuclideUri.join(dirPath, 'deeper/deeper');
           let results = await search.query(fullpath);
           expect(values(results)).toEqual([fullpath]);
-          results = await search.query(path.join(path.dirname(dirPath), 'deeper/deeper'));
+          results = await search.query(
+            nuclideUri.join(nuclideUri.dirname(dirPath), 'deeper/deeper'),
+          );
           expect(values(results)).toEqual([fullpath]);
         });
       });
@@ -107,7 +109,7 @@ function aFileSearchShould(typename, dirPathFn) {
       beforeEach(() => {
         waitsForPromise(async () => {
           deeperSearch =
-            await fileSearchForDirectory(path.join(dirPath, 'deeper'), mockPathSetUpdater);
+            await fileSearchForDirectory(nuclideUri.join(dirPath, 'deeper'), mockPathSetUpdater);
         });
       });
 
@@ -117,7 +119,7 @@ function aFileSearchShould(typename, dirPathFn) {
           invariant(dirPath);
           const results = await deeperSearch.query('deeper');
           expect(values(results)).toEqual([
-            path.join(dirPath, 'deeper/deeper'),
+            nuclideUri.join(dirPath, 'deeper/deeper'),
           ]);
           expect(indexes(results)).toEqual([
             [7, 8, 9, 10, 11, 12],
@@ -176,10 +178,10 @@ function aFileSearchShould(typename, dirPathFn) {
 function createTestFolder(): string {
   const folder = temp.mkdirSync();
 
-  fs.writeFileSync(path.join(folder, 'test'), '');
+  fs.writeFileSync(nuclideUri.join(folder, 'test'), '');
 
-  fs.mkdirSync(path.join(folder, 'deeper'));
-  fs.writeFileSync(path.join(folder, 'deeper', 'deeper'), '');
+  fs.mkdirSync(nuclideUri.join(folder, 'deeper'));
+  fs.writeFileSync(nuclideUri.join(folder, 'deeper', 'deeper'), '');
 
   return folder;
 }
@@ -193,8 +195,8 @@ async function hgTestFolder(): Promise<string> {
   // After adding the existing files to hg, add an ignored file to
   // prove we're using hg to populate the list.
   const ignoredFile = 'ignored';
-  fs.writeFileSync(path.join(folder, ignoredFile), '');
-  fs.writeFileSync(path.join(folder, '.hgignore'), `.hgignore\n${ignoredFile}`);
+  fs.writeFileSync(nuclideUri.join(folder, ignoredFile), '');
+  fs.writeFileSync(nuclideUri.join(folder, '.hgignore'), `.hgignore\n${ignoredFile}`);
 
   return folder;
 }
@@ -208,8 +210,8 @@ async function gitTestFolder(): Promise<string> {
   // After adding the existing files to git, add an ignored file to
   // prove we're using git to populate the list.
   const ignoredFile = 'ignored';
-  fs.writeFileSync(path.join(folder, ignoredFile), '');
-  fs.writeFileSync(path.join(folder, '.gitignore'), `.gitignore\n${ignoredFile}`);
+  fs.writeFileSync(nuclideUri.join(folder, ignoredFile), '');
+  fs.writeFileSync(nuclideUri.join(folder, '.gitignore'), `.gitignore\n${ignoredFile}`);
 
   return folder;
 }

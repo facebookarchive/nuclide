@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 /**
  * Waits for the specified file to become the active text editor.
@@ -25,7 +25,7 @@ export function waitsForFile(filename: string, timeoutMs: number = 10000): void 
     if (editorPath == null) {
       return false;
     }
-    return path.basename(editorPath) === filename;
+    return nuclideUri.basename(editorPath) === filename;
   });
 }
 
@@ -45,7 +45,7 @@ export function waitsForFilePosition(
       return false;
     }
     const pos = editor.getCursorBufferPosition();
-    return path.basename(editorPath) === filename
+    return nuclideUri.basename(editorPath) === filename
       && pos.row === row
       && pos.column === column;
   });

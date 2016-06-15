@@ -10,7 +10,7 @@
  */
 
 import featureConfig from '../../nuclide-feature-config';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {sleep} from '../../commons-node/promise';
 
 const openHealthPane = () => {
@@ -40,10 +40,10 @@ describe('Health', () => {
         featureConfig.setSchema(`nuclide-health.${k}`, config[k])
       );
       const GADGETS_DIR =
-        path.dirname(require.resolve('../../nuclide-gadgets/package.json'));
+        nuclideUri.dirname(require.resolve('../../nuclide-gadgets/package.json'));
       await Promise.all([
         atom.packages.activatePackage(GADGETS_DIR),
-        atom.packages.activatePackage(path.join(__dirname, '..')),
+        atom.packages.activatePackage(nuclideUri.join(__dirname, '..')),
       ]);
     });
   });

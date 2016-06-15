@@ -11,10 +11,10 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import ClangServer from '../lib/ClangServer';
 
-const TEST_FILE = path.join(__dirname, 'fixtures', 'test.cpp');
+const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
 const EXPECTED_FILE_OUTLINE = [
   {
@@ -55,7 +55,7 @@ describe('ClangServer', () => {
             severity: 3,
             ranges: [
               {
-                file: path.join(__dirname, 'fixtures/test.cpp'),
+                file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
                 start: {column: 2, line: 5},
                 end: {column: 3, line: 5},
               },
@@ -64,7 +64,7 @@ describe('ClangServer', () => {
             location: {
               column: 2,
               line: 5,
-              file: path.join(__dirname, 'fixtures/test.cpp'),
+              file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
             },
             spelling: 'no matching function for call to \'f\'',
             children: [
@@ -72,7 +72,7 @@ describe('ClangServer', () => {
                 location: {
                   column: 5,
                   line: 0,
-                  file: path.join(__dirname, 'fixtures/test.cpp'),
+                  file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
                 },
                 ranges: [],
                 spelling: 'candidate function not viable: requires 0 arguments, but 1 was provided',
@@ -85,7 +85,7 @@ describe('ClangServer', () => {
             fixits: [
               {
                 range: {
-                  file: path.join(__dirname, 'fixtures/test.cpp'),
+                  file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
                   start: {column: 10, line: 6},
                   end: {column: 10, line: 6},
                 },
@@ -95,7 +95,7 @@ describe('ClangServer', () => {
             location: {
               column: 10,
               line: 6,
-              file: path.join(__dirname, 'fixtures/test.cpp'),
+              file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
             },
             spelling: 'expected \';\' after return statement',
             children: [],

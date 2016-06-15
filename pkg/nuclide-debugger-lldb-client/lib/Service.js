@@ -14,13 +14,13 @@ import typeof * as DebuggerRpcServiceInterface
   from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 
 import invariant from 'assert';
+import nuclideUri from '../../nuclide-remote-uri';
 
 async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
   const {AttachProcessInfo} = require('./AttachProcessInfo');
   // TODO: Currently first local dir only.
-  const remoteUri = require('../../nuclide-remote-uri');
   const localDirectory = atom.project.getDirectories()
-    .filter(directory => remoteUri.isLocal(directory.getPath()))[0];
+    .filter(directory => nuclideUri.isLocal(directory.getPath()))[0];
 
   if (!localDirectory) {
     return [];

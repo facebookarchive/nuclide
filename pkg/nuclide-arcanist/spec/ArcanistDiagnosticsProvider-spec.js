@@ -12,7 +12,7 @@
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import {ArcanistDiagnosticsProvider} from '../lib/ArcanistDiagnosticsProvider';
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {track} from 'temp';
 const temp = track();
 import {Range} from 'atom';
@@ -23,7 +23,7 @@ describe('ArcanistDiagnosticsProvider', () => {
 
   beforeEach(() => {
     const folder = temp.mkdirSync();
-    tempFile = path.join(folder, 'test');
+    tempFile = nuclideUri.join(folder, 'test');
     fs.writeFileSync(tempFile, /* data */ '');
     provider = new ArcanistDiagnosticsProvider(new BusySignalProviderBase());
   });

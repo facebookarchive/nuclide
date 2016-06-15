@@ -15,7 +15,7 @@ import type DebuggerActions from './DebuggerActions';
 
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {React} from 'react-for-atom';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 
 type PropsType = {
   store: DebuggerProviderStore;
@@ -72,7 +72,7 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
 
   render(): React.Element<any> {
     const connectionItems = this.state.connections.map((connection, index) => ({
-      label: remoteUri.isRemote(connection) ? remoteUri.getHostname(connection) : connection,
+      label: nuclideUri.isRemote(connection) ? nuclideUri.getHostname(connection) : connection,
       value: index,
     }));
 

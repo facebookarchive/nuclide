@@ -13,7 +13,7 @@ import type {ExitCode} from '../lib/types';
 
 import fs from 'fs';
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import yargs from 'yargs';
 
 /* eslint-disable no-console */
@@ -61,7 +61,7 @@ export default async function runCommand(args: Array<string>): Promise<ExitCode>
   // We create a MarkdownPreviewView to call its getMarkdownPreviewCSS() method.
   // $FlowIssue: Need to dynamically load a path.
   const MarkdownPreviewView = require(
-    path.join(markdownPreviewPackage.path, 'lib/markdown-preview-view.js'),
+    nuclideUri.join(markdownPreviewPackage.path, 'lib/markdown-preview-view.js'),
   );
   const view = new MarkdownPreviewView({
     editorId: textEditor.id,
@@ -100,10 +100,10 @@ export default async function runCommand(args: Array<string>): Promise<ExitCode>
 
 // TODO(mbolin): Consider using fs-plus to ensure this handles ~ in fileName correctly.
 function resolvePath(fileName): string {
-  if (!path.isAbsolute(fileName)) {
+  if (!nuclideUri.isAbsolute(fileName)) {
     const pwd = process.env.PWD;
     invariant(pwd);
-    return path.join(pwd, fileName);
+    return nuclideUri.join(pwd, fileName);
   } else {
     return fileName;
   }

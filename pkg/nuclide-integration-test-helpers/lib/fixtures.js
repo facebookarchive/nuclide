@@ -12,16 +12,16 @@
 import invariant from 'assert';
 import {absolute, existsSync, moveSync} from 'fs-plus';
 import {fixtures} from '../../nuclide-test-helpers';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 function getTestDir(): string {
   const {testPaths} = atom.getLoadSettings();
   const specPath = testPaths[0];
   // This happens when we run all the specs at once.
-  if (path.basename(specPath) === 'spec') {
+  if (nuclideUri.basename(specPath) === 'spec') {
     return specPath;
   }
-  return path.dirname(specPath);
+  return nuclideUri.dirname(specPath);
 }
 
 /*
@@ -36,9 +36,9 @@ function getTestDir(): string {
  */
 export async function copyMercurialFixture(fixtureName: string): Promise<string> {
   const repo = await fixtures.copyFixture(fixtureName, getTestDir());
-  const pathToHg = path.join(repo, '.hg-rename');
+  const pathToHg = nuclideUri.join(repo, '.hg-rename');
   invariant(existsSync(pathToHg), `Directory: ${pathToHg} was not found.`);
-  moveSync(pathToHg, path.join(repo, '.hg'));
+  moveSync(pathToHg, nuclideUri.join(repo, '.hg'));
   return absolute(repo);
 }
 

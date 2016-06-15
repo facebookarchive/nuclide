@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import Module from 'module';
 
@@ -109,7 +109,7 @@ export function createProxyFactory(
   // Transpile this code (since it will use anonymous classes and arrow functions).
   const defs = getDefinitions(definitionPath);
   const code = generateProxy(serviceName, preserveFunctionNames, defs);
-  const filename = path.parse(definitionPath).name + 'Proxy.js';
+  const filename = nuclideUri.parsePath(definitionPath).name + 'Proxy.js';
   const m = transpileToModule(code, filename);
 
   return m.exports;
@@ -121,7 +121,7 @@ function transpileToModule(code: string, filename: string): Module {
   // Load the module directly from a string,
   const m = new Module();
   // as if it were a sibling to this file.
-  m.filename = m.id = path.join(__dirname, filename);
+  m.filename = m.id = nuclideUri.join(__dirname, filename);
   m.paths = ((module: any).paths: Array<string>);
   m._compile(transpiled, filename);
 

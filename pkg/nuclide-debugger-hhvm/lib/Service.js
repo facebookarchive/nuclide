@@ -14,14 +14,15 @@ const {log} = utils;
 
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 
+import nuclideUri from '../../nuclide-remote-uri';
+
 async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
   log('Getting process info list');
 
-  const remoteUri = require('../../nuclide-remote-uri');
   // TODO: Currently first remote dir only.
   const remoteDirectoryPath = atom.project.getDirectories()
     .map(directoryPath => directoryPath.getPath())
-    .filter(directoryPath => remoteUri.isRemote(directoryPath))[0];
+    .filter(directoryPath => nuclideUri.isRemote(directoryPath))[0];
 
   if (remoteDirectoryPath) {
     const {AttachProcessInfo} = require('./AttachProcessInfo');

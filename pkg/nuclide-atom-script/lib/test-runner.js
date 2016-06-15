@@ -26,7 +26,7 @@ import type {
 } from './types';
 
 import invariant from 'assert';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {Console} from 'console';
 import {ipcRenderer} from 'electron';
 import {parse} from 'shell-quote';
@@ -83,7 +83,7 @@ export default async function runTest(
     invariant(typeof process.env.ARGS_ATOM_SCRIPT === 'string');
     const argsAtomScript = process.env.ARGS_ATOM_SCRIPT;
 
-    const scriptPath = path.resolve(fileAtomScript);
+    const scriptPath = nuclideUri.resolve(fileAtomScript);
     const scriptArgs = argsAtomScript === "''" ? [] : parse(argsAtomScript);
 
     // Unfortunately we have to pollute our environment if we want to take

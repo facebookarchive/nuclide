@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {isRemote} from '../../nuclide-remote-uri';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import type {WorkingSetsStore} from './WorkingSetsStore';
 
@@ -33,7 +32,7 @@ export class PathsObserver {
   }
 
   _didChangePaths(_paths: Array<string>): void {
-    const paths = _paths.filter(p => isRemote(p) || path.isAbsolute(p));
+    const paths = _paths.filter(p => nuclideUri.isRemote(p) || nuclideUri.isAbsolute(p));
     this._workingSetsStore.updateApplicability();
 
     const prevPaths = this._prevPaths;

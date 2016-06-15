@@ -13,7 +13,7 @@ import type {ServerConnection} from '..';
 
 import invariant from 'assert';
 import fs from 'fs';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import crypto from 'crypto';
 import temp from 'temp';
 import connectionMock from './connection_mock';
@@ -35,7 +35,7 @@ describe('RemoteFile', () => {
 
     beforeEach(() => {
       const tempDir = temp.mkdirSync('realpath_test');
-      filePath = path.join(tempDir, 'file.txt');
+      filePath = nuclideUri.join(tempDir, 'file.txt');
       fs.writeFileSync(filePath, 'some contents');
       filePath = fs.realpathSync(filePath);
       symlinkedFilePath = filePath + '.sym';
@@ -69,7 +69,7 @@ describe('RemoteFile', () => {
 
     it('deletes the existing file', () => {
       waitsForPromise(async () => {
-        const filePath = path.join(tempDir, 'file_to_delete');
+        const filePath = nuclideUri.join(tempDir, 'file_to_delete');
         fs.writeFileSync(filePath, '');
         const file = new RemoteFile(connectionMock, filePath);
         expect(fs.existsSync(filePath)).toBe(true);
@@ -80,7 +80,7 @@ describe('RemoteFile', () => {
 
     it('deletes the non-existent file', () => {
       waitsForPromise(async () => {
-        const filePath = path.join(tempDir, 'file_to_delete');
+        const filePath = nuclideUri.join(tempDir, 'file_to_delete');
         const file = new RemoteFile(connectionMock, filePath);
         await file.delete();
         expect(fs.existsSync(filePath)).toBe(false);
@@ -97,7 +97,7 @@ describe('RemoteFile', () => {
 
     it('calls on delete', () => {
       waitsForPromise(async () => {
-        const filePath = path.join(tempDir, 'file_to_delete');
+        const filePath = nuclideUri.join(tempDir, 'file_to_delete');
         fs.writeFileSync(filePath, '');
         const file = new RemoteFile(connectionMock, filePath);
         const callbackSpy = jasmine.createSpy();
@@ -121,8 +121,8 @@ describe('RemoteFile', () => {
     });
 
     it('verifies symlink', () => {
-      const targetFilePath = path.join(tempDir, 'target');
-      const symLinkedFilePath = path.join(tempDir, 'linked');
+      const targetFilePath = nuclideUri.join(tempDir, 'target');
+      const symLinkedFilePath = nuclideUri.join(tempDir, 'linked');
       fs.writeFileSync(targetFilePath, '');
       fs.symlinkSync(
         targetFilePath,
@@ -141,7 +141,7 @@ describe('RemoteFile', () => {
     });
 
     it('verifies non-symlink', () => {
-      const notLinkedFilePath = path.join(tempDir, 'not_linked');
+      const notLinkedFilePath = nuclideUri.join(tempDir, 'not_linked');
       fs.writeFileSync(notLinkedFilePath, '');
       expect(fs.lstatSync(notLinkedFilePath).isSymbolicLink()).toBe(false);
 
@@ -167,9 +167,9 @@ describe('RemoteFile', () => {
     // delegating to `fsPromise` here.
     it('renames existing files', () => {
       waitsForPromise(async () => {
-        const filePath = path.join(tempDir, 'file_to_rename');
+        const filePath = nuclideUri.join(tempDir, 'file_to_rename');
         fs.writeFileSync(filePath, '');
-        const newFilePath = path.join(tempDir, 'new_file_name');
+        const newFilePath = nuclideUri.join(tempDir, 'new_file_name');
         expect(fs.existsSync(filePath)).toBe(true);
 
         const file = new RemoteFile(connectionMock, `nuclide://host123${filePath}`);
@@ -195,10 +195,10 @@ describe('RemoteFile', () => {
     // delegating to `fsPromise` here.
     it('copying existing files', () => {
       waitsForPromise(async () => {
-        const filePath = path.join(tempDir, 'file_to_copy');
+        const filePath = nuclideUri.join(tempDir, 'file_to_copy');
         const fileContents = 'copy me!';
         fs.writeFileSync(filePath, fileContents);
-        const newFilePath = path.join(tempDir, 'copied_file');
+        const newFilePath = nuclideUri.join(tempDir, 'copied_file');
         expect(fs.existsSync(filePath)).toBe(true);
         expect(fs.existsSync(newFilePath)).toBe(false);
 
@@ -225,7 +225,7 @@ describe('RemoteFile', () => {
     beforeEach(() => {
       jasmine.getEnv().defaultTimeoutInterval = 10000;
       tempDir = temp.mkdirSync('on_did_change_test');
-      filePath = path.join(tempDir, 'file.txt');
+      filePath = nuclideUri.join(tempDir, 'file.txt');
       file = new RemoteFile(connectionMock, filePath);
       fs.writeFileSync(filePath, 'sample contents');
       // Ask watchman to watch the directory.
@@ -273,7 +273,7 @@ describe('RemoteFile', () => {
         waitsFor(() => renameHandler.callCount > 0);
         runs(() => {
           expect(renameHandler.callCount).toBe(1);
-          expect(renameHandler.argsForCall[0][0]).toBe(path.basename(filePath + '_moved'));
+          expect(renameHandler.argsForCall[0][0]).toBe(nuclideUri.basename(filePath + '_moved'));
         });
       });
     });
@@ -282,7 +282,7 @@ describe('RemoteFile', () => {
       it('notifies ::onWillThrowWatchError observers', () => {
         const notExistingFile = new RemoteFile(
           connectionMock,
-          path.join(tempDir, 'no_existing.txt')
+          nuclideUri.join(tempDir, 'no_existing.txt')
         );
         let skippedError;
         let handleError;
@@ -318,7 +318,7 @@ describe('RemoteFile', () => {
 
     it('returns true when file creation is successful', () => {
       waitsForPromise(async () => {
-        const filePath = path.join(tempDir, 'create.txt');
+        const filePath = nuclideUri.join(tempDir, 'create.txt');
         const remoteFile = new RemoteFile(connectionMock, filePath);
         const wasCreated = await remoteFile.create();
         expect(wasCreated).toBe(true);
@@ -335,7 +335,7 @@ describe('RemoteFile', () => {
 
     it('exists resolves to true when the file exists', () => {
       waitsForPromise(async () => {
-        const filePath = path.join(tempDir, 'file.txt');
+        const filePath = nuclideUri.join(tempDir, 'file.txt');
         fs.writeFileSync(filePath, 'sample contents');
         const existingFile = new RemoteFile(connectionMock, filePath);
         const exists = await existingFile.exists();
@@ -347,7 +347,7 @@ describe('RemoteFile', () => {
       waitsForPromise(async () => {
         const notExistingFile = new RemoteFile(
           connectionMock,
-          path.join(tempDir, 'no_existing.txt')
+          nuclideUri.join(tempDir, 'no_existing.txt')
         );
         const exists = await notExistingFile.exists();
         expect(exists).toBe(false);
@@ -363,7 +363,7 @@ describe('RemoteFile', () => {
 
     beforeEach(() => {
       tempDir = temp.mkdirSync('on_did_change_test');
-      filePath = path.join(tempDir, 'file.txt');
+      filePath = nuclideUri.join(tempDir, 'file.txt');
       fileContents = 'sample contents!';
       fs.writeFileSync(filePath, fileContents);
       file = new RemoteFile(connectionMock, filePath);

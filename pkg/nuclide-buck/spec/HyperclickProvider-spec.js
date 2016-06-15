@@ -10,7 +10,7 @@
  */
 
 import {BuckProject} from '../../nuclide-buck-base';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import {findTargetLocation, parseTarget} from '../lib/HyperclickProvider';
 
@@ -18,7 +18,7 @@ describe('HyperclickProvider', () => {
   let projectPath: string = (null: any);
 
   beforeEach(() => {
-    projectPath = path.join(__dirname, 'fixtures/test-project') + '/';
+    projectPath = nuclideUri.join(__dirname, 'fixtures/test-project') + '/';
     atom.project.setPaths([projectPath]);
   });
 

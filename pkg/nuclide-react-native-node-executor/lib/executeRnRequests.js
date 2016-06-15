@@ -19,7 +19,7 @@ import {
   getOutputStream,
 } from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import {Observable} from 'rxjs';
 
 const logger = getLogger();
@@ -29,7 +29,7 @@ export function executeRnRequests(rnRequests: Observable<RnRequest>): Observable
     // TODO: The node location/path needs to be more configurable. We need to figure out a way to
     //   handle this across the board.
     forkWithExecEnvironment(
-      path.join(__dirname, 'executor.js'),
+      nuclideUri.join(__dirname, 'executor.js'),
       [],
       {
         execArgv: ['--debug-brk'],

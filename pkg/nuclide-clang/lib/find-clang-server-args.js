@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 
 import {asyncExecute} from '../../commons-node/process';
 
@@ -42,7 +42,7 @@ export default async function findClangServerArgs(): Promise<{
   const clangServerArgs = {
     libClangLibraryFile,
     pythonExecutable: 'python',
-    pythonPathEnv: path.join(__dirname, '../VendorLib'),
+    pythonPathEnv: nuclideUri.join(__dirname, '../VendorLib'),
   };
   if (typeof fbFindClangServerArgs === 'function') {
     const clangServerArgsOverrides = await fbFindClangServerArgs();

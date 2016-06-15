@@ -14,7 +14,7 @@ import type {CtagsResult, CtagsService} from '../../nuclide-remote-ctags-base';
 
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {dirname, relative} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import {CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
 import invariant from 'assert';
 
@@ -79,12 +79,12 @@ export default class HyperclickHelpers {
         return len;
       });
 
-      const tagsDir = dirname(await ctagsService.getTagsPath());
+      const tagsDir = nuclideUri.dirname(await ctagsService.getTagsPath());
       return {
         range,
         callback: tags.map(tag => {
           const {file, fields, kind} = tag;
-          const relpath = relative(tagsDir, file);
+          const relpath = nuclideUri.relative(tagsDir, file);
           let title = `${tag.name} (${relpath})`;
           if (fields != null) {
             // Python uses a.b.c; most other langauges use a::b::c.

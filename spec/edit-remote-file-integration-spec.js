@@ -20,7 +20,7 @@ import {
   pollFor,
 } from '../pkg/nuclide-integration-test-helpers';
 
-import path from 'path';
+import nuclideUri from '../pkg/nuclide-remote-uri';
 import fs from 'fs';
 
 import invariant from 'assert';
@@ -38,7 +38,7 @@ describe('Edit remote file Integration Test', () => {
       const connection = await addRemoteProject(repoPath);
       invariant(connection, 'Failed to make connection to a remote server');
 
-      const remotePath = path.join(repoPath, 'test.txt');
+      const remotePath = nuclideUri.join(repoPath, 'test.txt');
       const textEditor = await atom.workspace.open(connection.getUriOfRemotePath(remotePath));
       invariant(textEditor);
       const textEditorView = atom.views.getView(textEditor);

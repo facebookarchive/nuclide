@@ -11,7 +11,7 @@
 
 
 import {isDirKey, keyToName, keyToPath, buildHashKey} from './FileTreeHelpers';
-import {isRemote, parse, pathModuleFor} from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import Immutable from 'immutable';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
@@ -505,7 +505,7 @@ export class FileTreeNode {
     }
 
     const subUri = uri.slice(this.uri.length);
-    const pathModule = pathModuleFor(uri);
+    const pathModule = nuclideUri.pathModuleFor(uri);
     const childNamePath = subUri.split(pathModule.sep).filter(part => part !== '');
     return this._findLastByNamePath(childNamePath);
   }
@@ -630,7 +630,7 @@ export class FileTreeNode {
       hashKey: buildHashKey(uri),
       isContainer,
       relativePath: uri.slice(rootUri.length),
-      localPath: keyToPath(isRemote(uri) ? parse(uri).pathname : uri),
+      localPath: keyToPath(nuclideUri.isRemote(uri) ? nuclideUri.parse(uri).pathname : uri),
       isIgnored,
       shouldBeShown: this._deriveShouldBeShown(uri, rootUri, isContainer, repo, conf, isIgnored),
       shouldBeSoftened: this._deriveShouldBeSoftened(uri, isContainer, conf),

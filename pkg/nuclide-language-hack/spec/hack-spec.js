@@ -2,7 +2,7 @@
 /* @flow */
 
 /*eslint-disable nuclide-internal/license-header*/
-import path from 'path';
+import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import grammarTest from 'atom-grammar-test';
 
@@ -1471,6 +1471,6 @@ describe('PHP grammar', () => {
     });
   });
 
-  grammarTest(path.join(__dirname, 'fixtures/syntax_test_hack_typing.php'));
-  grammarTest(path.join(__dirname, 'fixtures/syntax_test_xhp.php'));
+  grammarTest(nuclideUri.join(__dirname, 'fixtures/syntax_test_hack_typing.php'));
+  grammarTest(nuclideUri.join(__dirname, 'fixtures/syntax_test_xhp.php'));
 });
