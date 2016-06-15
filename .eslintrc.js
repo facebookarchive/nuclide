@@ -297,6 +297,7 @@ module.exports = {
     'nuclide-internal/import-type-style': 1,
     'nuclide-internal/license-header': 1,
     'nuclide-internal/no-re-export-type': 1,
+    'nuclide-internal/prefer-nuclide-uri': 1,
     'nuclide-internal/type-alias-semi': 1,
 
     // prefer-object-spread (https://github.com/bryanrsmith/eslint-plugin-prefer-object-spread)

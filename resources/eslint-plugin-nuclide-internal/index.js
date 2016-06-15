@@ -17,6 +17,7 @@ module.exports = {
     'func-params-comma-dangle': require('./func-params-comma-dangle'),
     'license-header': require('./license-header'),
     'no-re-export-type': require('./no-re-export-type'),
+    'prefer-nuclide-uri': require('./prefer-nuclide-uri'),
     'type-alias-semi': require('./type-alias-semi'),
   },
   rulesConfig: {
@@ -26,6 +27,7 @@ module.exports = {
     'func-params-comma-dangle': 0,
     'license-header': 0,
     'no-re-export-type': 0,
+    'prefer-nuclide-uri': 0,
     'type-alias-semi': 0,
   },
 };

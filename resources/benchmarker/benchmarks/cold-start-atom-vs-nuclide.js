@@ -14,6 +14,7 @@ const TIMEOUT = 30 * 1000;
 const REPETITIONS = 3;
 
 import invariant from 'assert';
+// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import path from 'path';
 import {timedAsync} from '../benchmarker-utils';
 

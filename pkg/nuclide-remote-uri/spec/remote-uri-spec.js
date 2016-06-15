@@ -10,6 +10,7 @@
  */
 
 import nuclideUri from '..';
+// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import path from 'path';
 
 describe('nuclide-uri', () => {
