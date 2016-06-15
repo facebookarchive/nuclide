@@ -14,9 +14,12 @@ import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import Module from 'module';
 
-import NodeTranspiler from '../../nuclide-node-transpiler/lib/NodeTranspiler';
 import {generateProxy} from './proxy-generator';
 import {parseServiceDefinition} from './service-parser';
+
+// Proxy dependencies
+import Rx from 'rxjs';
+import {trackOperationTiming} from '../../nuclide-analytics';
 
 import type {
   Definitions,
@@ -106,24 +109,20 @@ export function createProxyFactory(
   preserveFunctionNames: boolean,
   definitionPath: string,
 ): ProxyFactory {
-  // Transpile this code (since it will use anonymous classes and arrow functions).
   const defs = getDefinitions(definitionPath);
   const code = generateProxy(serviceName, preserveFunctionNames, defs);
   const filename = nuclideUri.parsePath(definitionPath).name + 'Proxy.js';
-  const m = transpileToModule(code, filename);
+  const m = loadCodeAsModule(code, filename);
+  m.exports.inject(Rx.Observable, trackOperationTiming);
 
   return m.exports;
 }
 
-function transpileToModule(code: string, filename: string): Module {
-  const transpiled = (new NodeTranspiler()).transformWithCache(code, filename);
-
-  // Load the module directly from a string,
+function loadCodeAsModule(code: string, filename: string): Module {
   const m = new Module();
-  // as if it were a sibling to this file.
   m.filename = m.id = nuclideUri.join(__dirname, filename);
-  m.paths = ((module: any).paths: Array<string>);
-  m._compile(transpiled, filename);
+  m.paths = []; // Prevent accidental requires by removing lookup paths.
+  m._compile(code, filename);
 
   return m;
 }

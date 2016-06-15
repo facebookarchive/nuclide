@@ -1,6 +1,6 @@
-"use babel";
-import { Observable } from "rxjs";
-import { trackTiming } from "../../nuclide-analytics";
+"use strict";
+
+let Observable, trackOperationTiming;
 
 module.exports = _client => {
   const remoteModule = {};
@@ -68,24 +68,25 @@ module.exports = _client => {
         }
       }])
     }
-    @trackTiming("Vector2.len")
     len() {
-      return _client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
-        kind: "named",
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 1
-        },
-        name: "Vector2"
-      }).then(id => _client.callRemoteMethod(id, "len", "promise", args))).then(value => _client.unmarshal(value, {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 4
-        },
-        kind: "number"
-      }));
+      return trackOperationTiming("Vector2.len", () => {
+        return _client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
+          kind: "named",
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 1
+          },
+          name: "Vector2"
+        }).then(id => _client.callRemoteMethod(id, "len", "promise", args))).then(value => _client.unmarshal(value, {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 4
+          },
+          kind: "number"
+        }));
+      });
     }
     watchChanges() {
       return Observable.fromPromise(_client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
@@ -123,49 +124,50 @@ module.exports = _client => {
   }
 
   remoteModule.Iface = class {
-    @trackTiming("Iface.p")
     p(arg0) {
-      return _client.marshalArguments(Array.from(arguments), [{
-        name: {
-          type: "Identifier",
-          start: 642,
-          end: 643,
-          loc: {
-            start: {
-              line: 31,
-              column: 4
+      return trackOperationTiming("Iface.p", () => {
+        return _client.marshalArguments(Array.from(arguments), [{
+          name: {
+            type: "Identifier",
+            start: 642,
+            end: 643,
+            loc: {
+              start: {
+                line: 31,
+                column: 4
+              },
+              end: {
+                line: 31,
+                column: 5
+              }
             },
-            end: {
-              line: 31,
-              column: 5
-            }
+            name: "a"
           },
-          name: "a"
-        },
-        type: {
+          type: {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 31
+            },
+            kind: "number"
+          }
+        }]).then(args => _client.marshal(this, {
+          kind: "named",
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 30
+          },
+          name: "Iface"
+        }).then(id => _client.callRemoteMethod(id, "p", "promise", args))).then(value => _client.unmarshal(value, {
           location: {
             type: "source",
             fileName: "InterfaceService.def",
             line: 31
           },
           kind: "number"
-        }
-      }]).then(args => _client.marshal(this, {
-        kind: "named",
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 30
-        },
-        name: "Iface"
-      }).then(id => _client.callRemoteMethod(id, "p", "promise", args))).then(value => _client.unmarshal(value, {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 31
-        },
-        kind: "number"
-      }));
+        }));
+      });
     }
     f() {
       return _client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
@@ -201,4 +203,11 @@ module.exports = _client => {
     }
   }
   return remoteModule;
-}
+};
+
+Object.defineProperty(module.exports, "inject", {
+  value: function () {
+    Observable = arguments[0];
+    trackOperationTiming = arguments[1];
+  }
+});

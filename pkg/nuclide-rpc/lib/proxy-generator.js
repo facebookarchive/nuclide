@@ -73,6 +73,46 @@ const marshalArgsCall = params => t.callExpression(clientDotMarshalArgsExpressio
 //   objectToLiteral(params),
 // ]);
 
+// Generates `trackOperationTiming(eventName, () => { return operation; })`
+const trackOperationTimingCall = (eventName, operation) =>
+  t.callExpression(
+    t.identifier('trackOperationTiming'), [t.literal(eventName),
+      t.arrowFunctionExpression([], t.blockStatement([
+        t.returnStatement(operation),
+      ])),
+    ]
+  );
+
+// Generates `Object.defineProperty(module.exports, name, {value: …})`
+const objectDefinePropertyCall = (name, value) => t.callExpression(
+  t.memberExpression(t.identifier('Object'), t.identifier('defineProperty')),
+  [
+    moduleDotExportsExpression,
+    t.literal(name),
+    t.objectExpression([
+      t.property('init', t.identifier('value'), value),
+    ]),
+  ],
+);
+
+const dependenciesNodes = names => {
+  return {
+    // let name0, ... nameN;
+    declaration: t.variableDeclaration('let', names.map(name => t.identifier(name))),
+    // function() { name0 = arguments[0]; ... nameN = arguments[N]; }
+    injectionCall: t.functionExpression(null, [],
+      t.blockStatement(
+        names.map((name, i) => t.expressionStatement(
+          t.assignmentExpression('=',
+            t.identifier(name),
+            t.memberExpression(t.identifier('arguments'), t.literal(i)),
+          )
+        ))
+      )
+    ),
+  };
+};
+
 /**
  * Given the parsed result of a definition file, generate a remote proxy module
  * that exports the definition's API, but internally calls RPC functions. The function
@@ -121,20 +161,22 @@ export function generateProxy(
   // Return the remote module.
   statements.push(t.returnStatement(remoteModule));
 
-  // Wrap the remoteModule construction in a function that takes a RpcConnection object as
-  // an argument. `require` calls will resolve as if made by a file that is a sibling to
-  // this module's `lib/main.js`.
+  // Node module dependencies are added via the `inject` function, instead of
+  // requiring them. This eliminates having to worry about module resolution.
+  // In turn, that makes colocating the definition and the constructed proxy
+  // easier for internal and external services.
+  const deps = dependenciesNodes(['Observable', 'trackOperationTiming']);
+
+  // Wrap the remoteModule construction in a function that takes a RpcConnection
+  // object as an argument.
   const func = t.arrowFunctionExpression([clientIdentifier], t.blockStatement(statements));
   const assignment = t.assignmentExpression('=', moduleDotExportsExpression, func);
   const program = t.program([
-    t.expressionStatement(t.literal('use babel')),
-    t.importDeclaration([
-      t.importSpecifier(t.identifier('Observable'), t.identifier('Observable'))],
-      t.literal('rxjs')),
-    t.importDeclaration([
-      t.importSpecifier(t.identifier('trackTiming'), t.identifier('trackTiming'))],
-      t.literal('../../nuclide-analytics')),
-    assignment,
+    // !!!This module is not transpiled!!!
+    t.expressionStatement(t.literal('use strict')),
+    deps.declaration,
+    t.expressionStatement(assignment),
+    t.expressionStatement(objectDefinePropertyCall('inject', deps.injectionCall)),
   ]);
 
   // Use Babel to generate code from the AST.
@@ -173,19 +215,17 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
 
 /**
  * Generate a remote proxy for an interface.
- * @param name - The name of the interface.
  * @param def - The InterfaceDefinition object that encodes all if the interface's operations.
  * @returns An anonymous ClassExpression node that can be assigned to a module property.
  */
 function generateInterfaceProxy(def: InterfaceDefinition): any {
-  const name = def.name;
   const methodDefinitions = [];
 
   // Generate proxies for static methods.
   def.staticMethods.forEach((funcType, methodName) => {
     methodDefinitions.push(t.methodDefinition(
       t.identifier(methodName),
-      generateFunctionProxy(`${name}/${methodName}`, funcType),
+      generateFunctionProxy(`${def.name}/${methodName}`, funcType),
       'method',
       false,
       true
@@ -194,7 +234,7 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
 
   // Generate constructor proxy.
   if (def.constructorArgs != null) {
-    methodDefinitions.push(generateRemoteConstructor(name, def.constructorArgs));
+    methodDefinitions.push(generateRemoteConstructor(def.name, def.constructorArgs));
   }
 
   // Generate proxies for instance methods.
@@ -208,21 +248,7 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
     if (methodName === 'dispose') {
       return;
     }
-
     const methodDefinition = generateRemoteDispatch(methodName, thisType, funcType);
-
-    // Add trackTiming decorator to instance method that returns a promise.
-    if (funcType.returnType.kind === 'promise') {
-      methodDefinition.decorators = [
-        t.decorator(
-          t.callExpression(
-            t.identifier('trackTiming'),
-            [t.literal(`${name}.${methodName}`)],
-          ),
-        ),
-      ];
-    }
-
     methodDefinitions.push(methodDefinition);
   });
 
@@ -294,8 +320,15 @@ function generateRemoteDispatch(methodName: string, thisType: NamedType, funcTyp
 
   // methodName(arg0, ... argN) { return ... }
   const funcTypeArgs = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+  const result = generateUnmarshalResult(funcType.returnType, marshallThenCall);
   const funcExpression = t.functionExpression(null, funcTypeArgs, t.blockStatement([
-    t.returnStatement(generateUnmarshalResult(funcType.returnType, marshallThenCall))]));
+    // Wrap in trackOperationTiming if result returns a promise.
+    t.returnStatement(funcType.returnType.kind === 'promise'
+      ? trackOperationTimingCall(`${thisType.name}.${methodName}`, result)
+      : result
+    )])
+  );
+
   return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);
 }
 
