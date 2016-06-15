@@ -20,7 +20,7 @@
         ">=0.0.0": "consumeRegisterNuxService"
       }
     },
-    "nux.trigger": {
+    "nux-trigger": {
       "versions": {
         ">=0.0.0": "consumeTriggerNuxService"
       }
