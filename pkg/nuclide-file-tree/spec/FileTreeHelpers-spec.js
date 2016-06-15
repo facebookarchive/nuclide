@@ -14,7 +14,6 @@ import {
   File,
 } from 'atom';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
-import pathModule from 'path';
 
 describe('FileTreeHelpers', () => {
   it('should convert key to path', () => {
@@ -75,23 +74,10 @@ describe('FileTreeHelpers', () => {
   });
 
   describe('on Windows', () => {
-    let originalPathModule;
-
-    beforeEach(() => {
-      // Clone path module, then override all functions with the Windows version
-      originalPathModule = {...pathModule};
-      Object.assign(pathModule, pathModule.win32);
-    });
-
-    afterEach(() => {
-      Object.assign(pathModule, originalPathModule);
-    });
-
     it('should convert key to path', () => {
       expect(FileTreeHelpers.keyToPath('\\a')).toBe('\\a');
       expect(FileTreeHelpers.keyToPath('\\a\\')).toBe('\\a');
       expect(FileTreeHelpers.keyToPath('\\a\\b\\\\')).toBe('\\a\\b');
-      expect(FileTreeHelpers.keyToPath('nuclide://host\\a\\b\\\\')).toBe('nuclide://host\\a\\b');
     });
 
     it('should convert path to key', () => {
@@ -104,7 +90,6 @@ describe('FileTreeHelpers', () => {
       expect(FileTreeHelpers.keyToName('\\a\\b\\foo')).toBe('foo');
       expect(FileTreeHelpers.keyToName('\\a\\b\\foo\\')).toBe('foo');
       expect(FileTreeHelpers.keyToName('\\a\\b\\foo\\\\')).toBe('foo');
-      expect(FileTreeHelpers.keyToName('nuclide://host\\a\\b\\foo\\\\')).toBe('foo');
       expect(FileTreeHelpers.keyToName('asdf')).toBe('asdf');
     });
 
@@ -112,8 +97,6 @@ describe('FileTreeHelpers', () => {
       expect(FileTreeHelpers.isDirKey('c:\\a\\b\\foo')).toBe(false);
       expect(FileTreeHelpers.isDirKey('c:\\a\\b\\')).toBe(true);
       expect(FileTreeHelpers.isDirKey('c:\\a\\b\\\\')).toBe(true);
-      expect(FileTreeHelpers.isDirKey('nuclide://host\\a\\b')).toBe(false);
-      expect(FileTreeHelpers.isDirKey('nuclide://host\\a\\b\\')).toBe(true);
     });
 
     it('should instantiate a local directory from a key', () => {
@@ -123,8 +106,6 @@ describe('FileTreeHelpers', () => {
     it('should validate directories', () => {
       const validDir = new Directory('c:\\a\\b\\c');
       expect(FileTreeHelpers.isValidDirectory(validDir)).toBe(true);
-      const badDir = new Directory('nuclide://host\\a\\b\\c');
-      expect(FileTreeHelpers.isValidDirectory(badDir)).toBe(false);
     });
 
     describe('getFileByKey', () => {
