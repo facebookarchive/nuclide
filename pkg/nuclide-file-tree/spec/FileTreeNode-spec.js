@@ -149,4 +149,32 @@ describe('FileTreeNode', () => {
     updatedNode = node.updateChild(child2.setIsSelected(true));
     expect(updatedNode).not.toBe(node);
   });
+
+  it('finds nodes', () => {
+    const rootUri = '/r/';
+    const nodeABC = new FileTreeNode({uri: '/r/A/B/C/', rootUri}, CONF);
+    const nodeABD = new FileTreeNode({uri: '/r/A/B/D/', rootUri}, CONF);
+    let children = FileTreeNode.childrenFromArray([nodeABC, nodeABD]);
+    const nodeAB = new FileTreeNode({uri: '/r/A/B/', rootUri, children}, CONF);
+    children = FileTreeNode.childrenFromArray([nodeAB]);
+    const nodeA = new FileTreeNode({uri: '/r/A/', rootUri, children}, CONF);
+    const nodeB = new FileTreeNode({uri: '/r/B/', rootUri}, CONF);
+    children = FileTreeNode.childrenFromArray([nodeA, nodeB]);
+    const root = new FileTreeNode({uri: '/r/', rootUri, children}, CONF);
+
+    expect(root.find('/r/')).toBe(root);
+    expect(root.find('/r/A/')).toBe(nodeA);
+    expect(root.find('/r/B/')).toBe(nodeB);
+    expect(root.find('/r/A/B/')).toBe(nodeAB);
+    expect(root.find('/r/A/B/C/')).toBe(nodeABC);
+    expect(root.find('/r/A/B/D/')).toBe(nodeABD);
+
+    expect(root.findDeepest('/r/A/B/E/')).toBe(nodeAB);
+    expect(root.findDeepest('/r/A/B/C/E/')).toBe(nodeABC);
+    expect(root.findDeepest('/r/B/B/C/E/')).toBe(nodeB);
+    expect(root.findDeepest('/r/C/B/C/E/')).toBe(root);
+
+    expect(root.find('/r/A/B/E/')).toBe(null);
+    expect(root.findDeepest('/nonRoot/C/B/C/E/')).toBe(null);
+  });
 });
