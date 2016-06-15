@@ -8,7 +8,7 @@
     "name": "BuckProject"
   },
   {
-    "implementation": "lib/services/FileSystemService.js",
+    "implementation": "./lib/services/FileSystemService.js",
     "name": "FileSystemService"
   },
   {
@@ -33,7 +33,7 @@
   },
   {
     "name": "InfoService",
-    "implementation": "lib/services/InfoService.js"
+    "implementation": "./lib/services/InfoService.js"
   },
   {
     "implementation": "../nuclide-remote-search/lib/FindInProjectService.js",
@@ -48,7 +48,7 @@
     "name": "FileWatcherService"
   },
   {
-    "implementation": "lib/services/SourceControlService.js",
+    "implementation": "./lib/services/SourceControlService.js",
     "name": "SourceControlService"
   },
   {

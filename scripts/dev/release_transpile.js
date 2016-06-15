@@ -29,7 +29,6 @@ function runParent() {
 
   const assert = require('assert');
   const child_process = require('child_process');
-  const fs = require('fs');
   const glob = require('glob');
   const os = require('os');
   const path = require('path');
@@ -39,25 +38,12 @@ function runParent() {
 
   const count = {
     skipped: 0,
-    services: 0,
     transpiled: 0,
   };
 
-  const services = [];
-  ['services-3.json', 'fb/fb-services-3.json'].forEach(jsonFilename => {
-    const configPath = path.join(basedir, 'pkg/nuclide-server', jsonFilename);
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath));
-      config.forEach(service => {
-        const def = service.definition || service.implementation;
-        const servicePath = path.join(basedir, 'pkg/nuclide-server', def);
-        services.push(servicePath);
-      });
-    } else {
-      // eslint-disable-next-line no-console
-      console.log('Service config "%s" not found.', configPath);
-    }
-  });
+  require('../../pkg/nuclide-node-transpiler');
+  const loadServicesConfig = require('../../pkg/nuclide-server/lib/loadServicesConfig');
+  const services = loadServicesConfig().map(service => service.definition);
 
   const jsFiles = glob.sync(path.join(basedir, '**/*.js'), {
     ignore: [
@@ -68,13 +54,8 @@ function runParent() {
 
   // Sanity checks
   assert(jsFiles.length > 10);
-  assert(services.length > 10);
   jsFiles.forEach(filename => {
     assert(path.isAbsolute(filename));
-  });
-  services.forEach(service => {
-    assert(path.isAbsolute(service));
-    fs.statSync(service);
   });
 
   // eslint-disable-next-line no-console

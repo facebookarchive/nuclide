@@ -14,7 +14,7 @@ import fs from 'fs';
 import nuclideUri from '../../nuclide-remote-uri';
 import NuclideServer from '../lib/NuclideServer';
 import {RpcConnection} from '../../nuclide-rpc';
-import {loadServicesConfig} from '../lib/services';
+import loadServicesConfig from '../lib/loadServicesConfig';
 import {NuclideSocket} from '../lib/NuclideSocket';
 import invariant from 'assert';
 import child_process from 'child_process';

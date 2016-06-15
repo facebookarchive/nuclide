@@ -16,7 +16,7 @@ import typeof * as InfoService from '../../nuclide-server/lib/services/InfoServi
 
 import invariant from 'assert';
 import {RpcConnection} from '../../nuclide-rpc';
-import {loadServicesConfig} from '../../nuclide-server/lib/services';
+import loadServicesConfig from '../../nuclide-server/lib/loadServicesConfig';
 import {setConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';

@@ -70,16 +70,17 @@ const proxiesCache: Map<string, ProxyFactory> = new Map();
  */
 export function getDefinitions(definitionPath: string): Definitions {
   if (!definitionsCache.has(definitionPath)) {
-    definitionsCache.set(definitionPath, loadDefinitions(definitionPath));
+    invariant(
+      nuclideUri.isAbsolute(definitionPath),
+      `"${definitionPath}" definition path must be absolute.`
+    );
+    const definitionSource = fs.readFileSync(definitionPath, 'utf8');
+    const def = parseServiceDefinition(definitionPath, definitionSource);
+    definitionsCache.set(definitionPath, def);
   }
   const result = definitionsCache.get(definitionPath);
   invariant(result != null);
   return result;
-}
-
-function loadDefinitions(definitionPath: string): Definitions {
-  const resolvedPath = resolvePath(definitionPath);
-  return parseServiceDefinition(resolvedPath, fs.readFileSync(resolvedPath, 'utf8'));
 }
 
 /**
@@ -96,6 +97,10 @@ export function getProxy(
   clientObject: RpcContext,
 ): any {
   if (!proxiesCache.has(definitionPath)) {
+    invariant(
+      nuclideUri.isAbsolute(definitionPath),
+      `"${definitionPath}" definition path must be absolute.`
+    );
     proxiesCache.set(definitionPath, createProxyFactory(serviceName, false, definitionPath));
   }
 
@@ -109,6 +114,11 @@ export function createProxyFactory(
   preserveFunctionNames: boolean,
   definitionPath: string,
 ): ProxyFactory {
+  invariant(
+    nuclideUri.isAbsolute(definitionPath),
+    `"${definitionPath}" definition path must be absolute.`
+  );
+
   const defs = getDefinitions(definitionPath);
   const code = generateProxy(serviceName, preserveFunctionNames, defs);
   const filename = nuclideUri.parsePath(definitionPath).name + 'Proxy.js';
@@ -125,16 +135,6 @@ function loadCodeAsModule(code: string, filename: string): Module {
   m._compile(code, filename);
 
   return m;
-}
-
-/**
- * Resolve definitionPath based on the caller's module, and fallback to
- * this file's module in case module.parent doesn't exist (we are using repl).
- * Note that `require('module')._resolveFilename(path, module)` is equivelent to
- * `require.resolve(path)` under the context of given module.
- */
-function resolvePath(definitionPath: string): string {
-  return Module._resolveFilename(definitionPath, module.parent ? module.parent : module);
 }
 
 // Export caches for testing.

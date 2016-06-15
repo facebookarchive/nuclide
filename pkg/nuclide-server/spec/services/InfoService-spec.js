@@ -14,7 +14,7 @@ import typeof * as InfoService from '../../lib/services/InfoService';
 import ServiceTestHelper from './ServiceTestHelper';
 import {getVersion} from '../../../nuclide-version';
 import invariant from 'assert';
-import {loadServicesConfig} from '../../lib/services';
+import loadServicesConfig from '../../lib/loadServicesConfig';
 
 describe('InfoService', () => {
   let testHelper;

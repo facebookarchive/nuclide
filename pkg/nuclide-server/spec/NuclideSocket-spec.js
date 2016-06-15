@@ -12,7 +12,7 @@
 import type {RpcConnection} from '../../nuclide-rpc';
 
 import NuclideServer from '../lib/NuclideServer';
-import {loadServicesConfig} from '../lib/services';
+import loadServicesConfig from '../lib/loadServicesConfig';
 import {NuclideSocket} from '../lib/NuclideSocket';
 import invariant from 'assert';
 

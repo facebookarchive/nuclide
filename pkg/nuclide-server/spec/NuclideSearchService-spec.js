@@ -11,7 +11,7 @@
 
 import NuclideServer from '../lib/NuclideServer';
 import nuclideUri from '../../nuclide-remote-uri';
-import {loadServicesConfig} from '../lib/services';
+import loadServicesConfig from '../lib/loadServicesConfig';
 
 const pathToTestDir = nuclideUri.join(__dirname, 'testfiles');
 const pathToTestFile = nuclideUri.join(pathToTestDir, 'testfile.txt');

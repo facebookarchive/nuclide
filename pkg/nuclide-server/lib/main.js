@@ -13,7 +13,7 @@ import fs from 'fs';
 import {getLogger, flushLogsAndAbort, initialUpdateConfig} from '../../nuclide-logging';
 import {startTracking} from '../../nuclide-analytics';
 import NuclideServer from './NuclideServer';
-import {loadServicesConfig} from './services';
+import loadServicesConfig from './loadServicesConfig';
 
 const DEFAULT_PORT = 9090;
 

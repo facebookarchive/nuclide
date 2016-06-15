@@ -21,7 +21,7 @@ describe('Module public API.', () => {
 
   it('Creates a remote proxy for a module, caching the intermediate results.', () => {
     const fakeClient: any = {};
-    const defFile = '../spec/fixtures/FunctionService.def';
+    const defFile = require.resolve('../spec/fixtures/FunctionService.def');
 
     expect(__test__.definitionsCache.size).toBe(0);
     expect(__test__.proxiesCache.size).toBe(0);
