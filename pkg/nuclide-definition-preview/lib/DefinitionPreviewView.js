@@ -9,12 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {Props, State} from '../../nuclide-ui/lib/ObservingComponent';
+import type {Definition} from '../../nuclide-definition-service';
 
 import {React} from 'react-for-atom';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
-import {ObservingComponent} from '../../nuclide-ui/lib/ObservingComponent';
 
 export type Location = {
   path: string;
@@ -26,16 +25,23 @@ export type PreviewContent = {
   grammar: atom$Grammar;
 };
 
-export class DefinitionPreviewView extends ObservingComponent<PreviewContent> {
+type Props = {
+  definition: ?Definition;
+};
+
+export class DefinitionPreviewView extends React.Component {
+
   _loadAndScroll: ?() =>Promise<void>;
 
-  constructor(props: Props<PreviewContent>) {
+  props: Props;
+
+  constructor(props: Props) {
     super(props);
     this._loadAndScroll = null;
   }
 
-  componentWillReceiveProps(newProps: Props<PreviewContent>): void {
-    if (newProps.data === this.props.data) {
+  componentWillReceiveProps(newProps: Props): void {
+    if (newProps.definition === this.props.definition) {
       return;
     }
     super.componentWillReceiveProps(newProps);
@@ -49,31 +55,21 @@ export class DefinitionPreviewView extends ObservingComponent<PreviewContent> {
     }
   }
 
-  shouldComponentUpdate(newProps: Props<PreviewContent>, newState: State<PreviewContent>): boolean {
-    return newState.data !== this.state.data;
-  }
-
   render(): React.Element<any> {
+    // Show either the definition in an editor or a message
+    const content: React.Element<any> = (this.props.definition != null)
+      ? this._previewDefinition(this.props.definition)
+      : <div>No definition selected!</div>;
+
     return (
       <div className="pane-item padded nuclide-definition-preview">
-        {this._maybeContent()}
+        {content}
       </div>
     );
   }
 
-  _maybeContent(): React.Element<any> {
-    const previewContent = this.state.data;
-    return previewContent == null
-      ? <div className="nuclide-definition-container">
-          <span>Unknown Definition.</span>
-        </div>
-      : this._previewDefinition(previewContent);
-  }
-
-  _previewDefinition(content: PreviewContent): React.Element<any> {
+  _previewDefinition(definition: Definition): React.Element<any> {
     this._loadAndScroll = null;
-
-    const definition = content.location;
 
     const path = definition.path;
     const textBuffer = bufferForUri(path);
@@ -104,7 +100,8 @@ export class DefinitionPreviewView extends ObservingComponent<PreviewContent> {
     // Defer loading and scrolling until after rendering.
     this._loadAndScroll = loadAndScroll;
 
-    return <div className="nuclide-definition-preview-container">
+    return (
+      <div className="nuclide-definition-preview-container">
         <AtomTextEditor
           ref="editor"
           gutterHidden={true}
@@ -112,11 +109,13 @@ export class DefinitionPreviewView extends ObservingComponent<PreviewContent> {
           path={path}
           readOnly={true}
           textBuffer={textBuffer}
-          grammar={content.grammar}
           syncTextContents={false}
           autoGrow={true}
         />
-      </div>;
+      </div>
+    );
+    // TODO add this to AtomTextEditor:
+    // grammar={get grammar from somewhere}
   }
 
   getEditor(): atom$TextEditor {

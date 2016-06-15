@@ -9,33 +9,54 @@
  * the root directory of this source tree.
  */
 
+import type {
+  Definition,
+  DefinitionService,
+  DefinitionQueryResult,
+} from '../../nuclide-definition-service';
+import type {EditorPosition} from '../../commons-atom/debounced';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
+import {observeTextEditorsPositions} from '../../commons-atom/debounced';
+import {Observable} from 'rxjs';
 import {ContextViewPanel} from './ContextViewPanel';
-import type {DefinitionService} from '../../nuclide-definition-service';
-import {DefinitionPreviewView}
-  from '../../nuclide-definition-preview/lib/DefinitionPreviewView';
-import {getContent} from '../../nuclide-definition-preview/lib/DefinitionPreviewContent';
 import {ProviderContainer} from './ProviderContainer';
+import {NoProvidersView} from './NoProvidersView';
 
 export type ContextViewConfig = {
   width: number;
   visible: boolean;
 };
 
+export type ContextProvider = {
+  /**
+   * Context View uses element factories to render providers' React
+   * components. This gives Context View the ability to set the props (which
+   * contains the currentDefinition) of each provider.
+   */
+  getElementFactory: () => ((props: {definition: ?Definition}) => React.Element<any>);
+  id: string;
+  title: string;
+};
+
 export class ContextViewManager {
 
-  _width: number;
-  _disposables: CompositeDisposable;
-  _definitionService: DefinitionService;
-  _panelDOMElement: ?HTMLElement;
   _atomPanel: atom$Panel;
+  _contextProviders: Array<ContextProvider>;
+  currentDefinition: ?Definition;
+  _definitionService: DefinitionService;
+  _disposables: CompositeDisposable;
+  _panelDOMElement: ?HTMLElement;
+  _defServiceSubscription: rx$ISubscription;
+  _width: number;
 
   constructor(width: number, visible: boolean) {
     this._width = width;
     this._disposables = new CompositeDisposable();
+    this._contextProviders = [];
+    this.currentDefinition = null;
 
     this._bindShortcuts();
 
@@ -65,6 +86,25 @@ export class ContextViewManager {
     return this._panelDOMElement != null;
   }
 
+  registerProvider(newProvider: ContextProvider): boolean {
+
+    // Ensure provider with given ID isn't already registered
+    for (let i = 0; i < this._contextProviders.length; i++) {
+      if (newProvider.id === this._contextProviders[i].id) {
+        return false;
+      }
+    }
+
+    this._contextProviders.push(newProvider);
+
+    if (this.isVisible()) {
+      this._destroyPanel();
+      this._show();
+    }
+
+    return true;
+  }
+
   serialize(): ContextViewConfig {
     return {
       width: this._width,
@@ -72,10 +112,30 @@ export class ContextViewManager {
     };
   }
 
-  setDefinitionService(service: ?DefinitionService) {
+  setDefinitionService(service: ?DefinitionService): void {
     if (service != null) {
       this._definitionService = service;
     }
+
+    this._defServiceSubscription = observeTextEditorsPositions()
+      .filter((pos: ?EditorPosition) => pos != null)
+      .map((editorPos: ?EditorPosition) => {
+        invariant(editorPos != null);
+        return this._definitionService.getDefinition(
+          editorPos.editor,
+          editorPos.position
+        );
+      }).flatMap((queryResult: ?Promise<?DefinitionQueryResult>) => {
+        return (queryResult != null)
+          ? Observable.fromPromise(queryResult)
+          : Observable.empty();
+      })
+      .map((queryResult: ?DefinitionQueryResult) => {
+        return (queryResult != null)
+          ? queryResult.definitions[0]
+          : null;
+      })
+      .subscribe((def: ?Definition) => this.updateCurrentDefinition(def));
 
     if (this.isVisible()) {
       this._destroyPanel();
@@ -93,6 +153,34 @@ export class ContextViewManager {
     if (this.isVisible()) {
       this._destroyPanel();
     } else {
+      this._show();
+    }
+  }
+
+  deregisterProvider(idToRemove: string): boolean {
+    let wasRemoved: boolean = false;
+    for (let i = 0; i < this._contextProviders.length; i++) {
+      if (this._contextProviders[i].id === idToRemove) {
+        // Remove from array
+        this._contextProviders.splice(i, 1);
+        wasRemoved = true;
+      }
+    }
+
+    if (this.isVisible()) {
+      this._show();
+    }
+    return wasRemoved;
+  }
+
+  updateCurrentDefinition(newDefinition: ?Definition) {
+    if (newDefinition === this.currentDefinition) {
+      return;
+    }
+
+    this.currentDefinition = newDefinition;
+    if (this.isVisible()) {
+      this._destroyPanel();
       this._show();
     }
   }
@@ -141,29 +229,34 @@ export class ContextViewManager {
   }
 
   _show(): void {
-    const data = getContent(this._definitionService);
-    const content = data.map(value => {
-      if (value == null) {
-        return null;
+
+    const providerElements: Array<React.Element<any>> =
+      this._contextProviders.map((provider, index) => {
+        const createElementFn = provider.getElementFactory();
+        return (
+          <ProviderContainer title={provider.title} key={provider.id}>
+            {createElementFn({definition: this.currentDefinition})}
+          </ProviderContainer>
+        );
       }
-      return {
-        location: value.definition,
-        grammar: value.grammar,
-      };
-    });
+    );
+
+    // If there are no providers, put in a placeholder
+    if (providerElements.length === 0) {
+      providerElements.push(<NoProvidersView key="no-providers-view" />);
+    }
 
     this._panelDOMElement = document.createElement('div');
     // Render the panel in atom workspace
     ReactDOM.render(
       <ContextViewPanel
-        initialWidth={300}
-        onResize={newWidth => { this._width = newWidth; }}>
-        <ProviderContainer title="Definition Preview">
-          <DefinitionPreviewView data={content} />
-        </ProviderContainer>
+        initialWidth={this._width}
+        onResize={this._onResize.bind(this)}>
+        {providerElements}
       </ContextViewPanel>,
       this._panelDOMElement
     );
+
     invariant(this._panelDOMElement != null);
     this._panelDOMElement.style.display = 'flex';
     this._panelDOMElement.style.height = 'inherit';

@@ -9,19 +9,17 @@
  * the root directory of this source tree.
  */
 
-import {ContextViewManager} from './ContextViewManager';
-import type {ContextViewConfig} from './ContextViewManager';
-
+import type {ContextViewConfig, ContextProvider} from './ContextViewManager';
 import type {DefinitionService} from '../../nuclide-definition-service';
-import invariant from 'assert';
 
+import {ContextViewManager} from './ContextViewManager';
 import {Disposable} from 'atom';
-
-let currentService: ?DefinitionService = null;
+import invariant from 'assert';
 
 const INITIAL_PANEL_WIDTH: number = 300;
 const INITIAL_PANEL_VISIBILITY: boolean = false;
 
+let currentService: ?DefinitionService = null;
 let manager: ?ContextViewManager = null;
 
 export function activate(state: ContextViewConfig | void): void {
@@ -51,6 +49,23 @@ function updateService(): void {
   }
 }
 
+const Service = {
+  registerProvider(provider: ContextProvider): boolean {
+    if (manager != null && provider != null) {
+      return manager.registerProvider(provider);
+    } else {
+      return false;
+    }
+  },
+  deregisterProvider(providerId: string): boolean {
+    if (manager != null && providerId != null) {
+      return manager.deregisterProvider(providerId);
+    } else {
+      return false;
+    }
+  },
+};
+
 export function consumeDefinitionService(service: DefinitionService): IDisposable {
   invariant(currentService == null);
   currentService = service;
@@ -60,4 +75,10 @@ export function consumeDefinitionService(service: DefinitionService): IDisposabl
     currentService = null;
     updateService();
   });
+}
+
+export type NuclideContextView = typeof Service;
+
+export function provideNuclideContextView(): NuclideContextView {
+  return Service;
 }

@@ -8,5 +8,12 @@
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
+  },
+  "consumedServices": {
+    "nuclide-context-view": {
+      "versions": {
+        "0.0.0": "consumeNuclideContextView"
+      }
+    }
   }
 }

@@ -15,5 +15,12 @@
         "0.0.0": "consumeDefinitionService"
       }
     }
+  },
+  "providedServices": {
+    "nuclide-context-view": {
+      "versions": {
+        "0.0.0": "provideNuclideContextView"
+      }
+    }
   }
 }
