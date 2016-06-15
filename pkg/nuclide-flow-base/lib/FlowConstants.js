@@ -27,3 +27,6 @@ export const ServerStatus = Object.freeze({
 // assertion here ensures that all of the values are valid ServerStatus options, while yielding
 // better Flow behavior at use sites.
 (ServerStatus: { [key: string]: ServerStatusType });
+
+// Controls how long the Flow version will be cached before it is considered invalid.
+export const VERSION_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes in ms
