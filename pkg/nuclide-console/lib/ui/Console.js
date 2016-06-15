@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Executor, Record} from '../types';
+import type {Executor, Record, OutputProvider} from '../types';
 
 import ConsoleView from './ConsoleView';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -21,6 +21,7 @@ type Props = {
   execute: (code: string) => void;
   currentExecutor: ?Executor;
   executors: Map<string, Executor>;
+  getProvider: (id: string) => ?OutputProvider;
   initialSelectedSourceId: string;
   selectExecutor: (executorId: string) => void;
   sources: Array<{id: string; name: string}>;
@@ -85,6 +86,7 @@ export default class Console extends React.Component {
         invalidFilterInput={!isValid}
         records={records}
         enableRegExpFilter={this.state.enableRegExpFilter}
+        getProvider={this.props.getProvider}
         selectedSourceId={this.state.selectedSourceId}
         selectSource={this._selectSource}
         toggleRegExpFilter={this._toggleRegExpFilter}

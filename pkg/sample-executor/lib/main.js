@@ -30,7 +30,7 @@ export function deactivate(): void {
 
 export function consumeRegisterExecutor(registerExecutor: RegisterExecutorFunction): void {
   invariant(disposables != null);
-  const messages = new Rx.Subject();
+  const messages: Rx.Subject<{result: Object}> = new Rx.Subject();
   disposables.add(
     registerExecutor({
       id: 'echo',

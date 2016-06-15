@@ -21,6 +21,7 @@ type MessageKind = 'message' | 'request' | 'response';
 export type Message = {
   text: string;
   level: Level;
+  result?: EvaluationResult;
 };
 
 // A normalized type used internally to represent all possible kinds of messages. Responses and
@@ -43,15 +44,16 @@ export type AppState = {
 
 export type OutputProvider = {
   messages: Rx.Observable<Message>;
-
   // The source can't be part of the message because we want to be able to populate a filter menu
   // before we even have any messages.
   id: string;
+  getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>;
 };
 
 export type RecordProvider = {
   records: Rx.Observable<Record>;
   id: string;
+  getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>;
 };
 
 export type OutputService = {

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Record, Executor} from '../types';
+import type {Record, Executor, OutputProvider} from '../types';
 
 import debounce from '../../../commons-node/debounce';
 import {React} from 'react-for-atom';
@@ -35,6 +35,7 @@ type Props = {
   sources: Array<{id: string; name: string}>;
   toggleRegExpFilter: () => void;
   updateFilterText: (filterText: string) => void;
+  getProvider: (id: string) => ?OutputProvider;
 };
 
 type State = {
@@ -130,6 +131,7 @@ export default class ConsoleView extends React.Component {
               records={this.props.records}
               showSourceLabels={!this.props.selectedSourceId}
               getExecutor={id => this.props.executors.get(id)}
+              getProvider={this.props.getProvider}
             />
           </div>
           <UnseenMessagesNotification

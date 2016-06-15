@@ -9,22 +9,64 @@
  * the root directory of this source tree.
  */
 
-import type {Level, Record, Executor} from '../types';
+import type {Level, Record, Executor, OutputProvider} from '../types';
 
 import CodeBlock from './CodeBlock';
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {LazyNestedValueComponent} from '../../../nuclide-ui/lib/LazyNestedValueComponent';
 import SimpleValueComponent from '../../../nuclide-ui/lib/SimpleValueComponent';
+import invariant from 'assert';
 
 type Props = {
   record: Record;
   showSourceLabel: boolean;
   getExecutor: (id: string) => ?Executor;
+  getProvider: (id: string) => ?OutputProvider;
 };
 
 export default class RecordView extends React.Component {
   props: Props;
+
+  _renderContent(record: Record): React.Element<any> {
+    if (record.kind === 'request') {
+      return <CodeBlock text={record.text} scopeName={record.scopeName} />;
+    } else if (record.kind === 'response') {
+      const {sourceId} = record;
+      let simpleValueComponent = SimpleValueComponent;
+      let getProperties;
+      const executor = this.props.getExecutor(sourceId);
+      if (executor != null) {
+        if (executor.renderValue != null) {
+          simpleValueComponent = executor.renderValue;
+        }
+        getProperties = executor.getProperties;
+      }
+      return (
+        <LazyNestedValueComponent
+          evaluationResult={record.result}
+          fetchChildren={getProperties}
+          simpleValueComponent={simpleValueComponent}
+        />
+      );
+    } else if (record.result != null) {
+      const provider = this.props.getProvider(record.sourceId);
+      invariant(provider != null);
+      const {getProperties} = provider;
+      invariant(getProperties != null);
+      return (
+        <LazyNestedValueComponent
+          evaluationResult={record.result}
+          fetchChildren={getProperties}
+          simpleValueComponent={SimpleValueComponent}
+        />
+      );
+    } else {
+      // If there's not text, use a space to make sure the row doesn't collapse.
+      const text = record.text || ' ';
+      return <pre>{text}</pre>;
+    }
+  }
 
   render(): React.Element<any> {
     const {record} = this.props;
@@ -53,7 +95,7 @@ export default class RecordView extends React.Component {
         {icon}
         <div className="nuclide-console-record-content-wrapper">
           {sourceLabel}
-          {renderContent(record, this.props.getExecutor)}
+          {this._renderContent(record)}
         </div>
       </div>
     );
@@ -68,34 +110,6 @@ function getHighlightClassName(level: Level): string {
     case 'error': return 'highlight-error';
     default: return 'highlight';
   }
-}
-
-function renderContent(record: Record, getExecutor: (id: string) => ?Executor): React.Element<any> {
-  if (record.kind === 'request') {
-    return <CodeBlock text={record.text} scopeName={record.scopeName} />;
-  } else if (record.kind === 'response') {
-    const {sourceId} = record;
-    let simpleValueComponent = SimpleValueComponent;
-    let getProperties;
-    const executor = getExecutor(sourceId);
-    if (executor != null) {
-      if (executor.renderValue != null) {
-        simpleValueComponent = executor.renderValue;
-      }
-      getProperties = executor.getProperties;
-    }
-    return (
-      <LazyNestedValueComponent
-        evaluationResult={record.result}
-        fetchChildren={getProperties}
-        simpleValueComponent={simpleValueComponent}
-      />
-    );
-  }
-
-  // If there's not text, use a space to make sure the row doesn't collapse.
-  const text = record.text || ' ';
-  return <pre>{text}</pre>;
 }
 
 function getIconName(record: Record): ?string {

@@ -91,6 +91,7 @@ export default function createConsoleGadget(
           records={this.state.records}
           sources={sources}
           executors={this.state.executors}
+          getProvider={id => this.state.providers.get(id)}
         />
       );
     }

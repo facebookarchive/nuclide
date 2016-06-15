@@ -88,7 +88,6 @@ export default class Commands {
       ...outputProvider,
       records: outputProvider.messages
         .map(message => ({
-          result: null,
           ...message,
           kind: 'message',
           sourceId: outputProvider.id,
