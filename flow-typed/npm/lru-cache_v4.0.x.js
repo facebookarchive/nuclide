@@ -1,12 +1,5 @@
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
+// flow-typed signature: bb8c907e5137ea7b164eca6cb4839acc
+// flow-typed version: a9bec9eec1/lru-cache_v4.0.x/flow_>=v0.26.0
 
 declare module 'lru-cache' {
 
@@ -28,5 +21,6 @@ declare module 'lru-cache' {
     stale?: boolean;
   };
 
+  // TODO You can supply just an integer (max size), or even nothing at all.
   declare var exports: <K, V>(options: Options<K, V>) => LRUCache<K, V>;
 }
