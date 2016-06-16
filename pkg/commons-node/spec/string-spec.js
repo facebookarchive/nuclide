@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {relativeDate} from '../string';
+import {maybeToString, relativeDate} from '../string';
 
 describe('relativeDate', () => {
   it('works', () => {
@@ -46,5 +46,19 @@ describe('relativeDate', () => {
     expect(relativeDate(reference - YEAR, reference)).toEqual('a year ago');
     expect(relativeDate(reference - YEAR * 2, reference)).toEqual('2 years ago');
     expect(relativeDate(0, reference)).toEqual('5 years ago');
+  });
+});
+
+describe('maybeToString', () => {
+  it("returns 'undefined'", () => {
+    expect(maybeToString(undefined)).toEqual('undefined');
+  });
+
+  it("returns 'null'", () => {
+    expect(maybeToString(null)).toEqual('null');
+  });
+
+  it('returns an ordinary string', () => {
+    expect(maybeToString('foo')).toEqual('foo');
   });
 });

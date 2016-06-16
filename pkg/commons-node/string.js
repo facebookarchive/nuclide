@@ -13,6 +13,15 @@ export function stringifyError(error: Error): string {
   return `name: ${error.name}, message: ${error.message}, stack: ${error.stack}.`;
 }
 
+// As of Flow v0.28, Flow does not alllow implicit string coercion of null or undefined. Use this to
+// make it explicit.
+export function maybeToString(str: ?string): string {
+  // We don't want to encourage the use of this function directly because it coerces anything to a
+  // string. We get stricter typechecking by using maybeToString, so it should generally be
+  // preferred.
+  return String(str);
+}
+
 /**
  * Originally adapted from https://github.com/azer/relative-date.
  * We're including it because of https://github.com/npm/npm/issues/12012
