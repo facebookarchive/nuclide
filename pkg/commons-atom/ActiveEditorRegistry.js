@@ -197,7 +197,7 @@ export default class ActiveEditorRegistry<T: Provider, V> {
         editor,
       };
     } catch (e) {
-      logger.error(`Error from provider for ${editor.getGrammar()}`, e);
+      logger.error(`Error from provider for ${editor.getGrammar().scopeName}`, e);
       return {
         provider,
         kind: 'provider-error',
