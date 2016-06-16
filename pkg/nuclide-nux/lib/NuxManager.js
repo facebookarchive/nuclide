@@ -185,12 +185,12 @@ export class NuxManager {
 
   tryTriggerNux(id: string): void {
     const nuxToTrigger = this._pendingNuxes.get(id);
-    if (nuxToTrigger == null) {
-      throw new Error('Please enter a valid ID of a registered NUX.');
-    }
-    if (nuxToTrigger.completed) {
-      //TODO [ @rageandqq | 05-27-16 ]: Inform the package more gracefully
-      throw new Error('You cannot trigger a NUX that has already been viewed!');
+    // Silently fail if the NUX is not found or has already been completed.
+    // This isn't really an "error" to log, since the NUX may be triggered quite
+    // often even after it has been seen as it is tied to a package that is
+    // instantiated every single time a window is opened.
+    if (nuxToTrigger == null || nuxToTrigger.completed) {
+      return;
     }
     // Remove from pending list
     this._pendingNuxes.delete(id);
