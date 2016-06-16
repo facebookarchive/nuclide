@@ -25,6 +25,8 @@ import {NuxView} from './NuxView';
 import type {NuxTourModel} from './NuxModel';
 
 const GK_NUX_OUTLINE_VIEW = 'nuclide_outline_view_nux';
+// Limits the number of NUXes displayed every session
+const NUX_PER_SESSION_LIMIT = 3;
 
 export class NuxManager {
   _nuxStore: NuxStore;
@@ -36,6 +38,7 @@ export class NuxManager {
   _pendingNuxes: Map<string, NuxTour>;
   // Triggered NUXes that are waiting to be displayed
   _readyToDisplayNuxes: Array<NuxTour>;
+  _numNuxesDisplayed: number;
 
   constructor(
     nuxStore: NuxStore,
@@ -48,6 +51,7 @@ export class NuxManager {
     this._pendingNuxes = new Map();
     this._readyToDisplayNuxes = [];
     this._activeNuxTour = null;
+    this._numNuxesDisplayed = 0;
 
     this._emitter.on('newTour', this._handleNewTour.bind(this));
     this._emitter.on('nuxTourReady', this._handleReadyTour.bind(this));
@@ -152,7 +156,8 @@ export class NuxManager {
 
   // Handles triggered NUXes that are ready to be displayed
   _handleReadyTour(nuxTour: NuxTour) {
-    if (this._activeNuxTour == null) {
+    if (this._activeNuxTour == null && this._numNuxesDisplayed < NUX_PER_SESSION_LIMIT) {
+      this._numNuxesDisplayed++;
       this._activeNuxTour = nuxTour;
       nuxTour.begin();
     } else {
