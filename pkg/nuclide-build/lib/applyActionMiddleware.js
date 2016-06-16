@@ -124,7 +124,9 @@ function runTask(buildSystem: BuildSystem, task: Task): Observable<Action> {
         unsubscribe() { taskInfo.cancel(); },
       };
     },
-    ({taskInfo}) => {
+    ({taskInfo}) => Observable.of(taskInfo),
+  )
+    .switchMap(taskInfo => {
       const progressStream = taskInfo.observeProgress == null
         ? Observable.empty()
         : observableFromSubscribeFunction(
@@ -151,18 +153,17 @@ function runTask(buildSystem: BuildSystem, task: Task): Observable<Action> {
         )
         .concat(Observable.of({
           type: ActionTypes.TASK_COMPLETED,
-        }))
-        .catch(error => {
-          atom.notifications.addError(
-            `The task "${task.label}" failed`,
-            {description: error.message},
-          );
-          return Observable.of({
-            type: ActionTypes.TASK_ERRORED,
-            payload: {error},
-          });
-        });
-    },
-  )
-  .share();
+        }));
+    })
+    .catch(error => {
+      atom.notifications.addError(
+        `The task "${task.label}" failed`,
+        {description: error.message},
+      );
+      return Observable.of({
+        type: ActionTypes.TASK_ERRORED,
+        payload: {error},
+      });
+    })
+    .share();
 }
