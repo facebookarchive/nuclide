@@ -105,8 +105,9 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
           initialSshPort={initialFields.sshPort}
           initialPathToPrivateKey={initialFields.pathToPrivateKey}
           initialAuthMethod={initialFields.authMethod}
-          onConfirm={emptyFunction}
           onCancel={emptyFunction}
+          onConfirm={emptyFunction}
+          onDidChange={emptyFunction}
           ref="connection-details"
         />
         <div style={{display: 'flex', justifyContent: 'flex-end'}}>

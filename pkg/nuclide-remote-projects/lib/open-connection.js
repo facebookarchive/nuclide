@@ -89,6 +89,14 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
     let basePanel;
     let newProfileForm;
 
+    function saveProfile(index: number, profile: NuclideRemoteConnectionProfile): void {
+      const profiles = compositeConnectionProfiles.slice();
+      profiles.splice(index, 1, profile);
+
+      // Don't include the default connection profile.
+      saveConnectionProfiles(profiles.slice(1));
+    }
+
     /*
      * When the "+" button is clicked (the user intends to add a new connection profile),
      * open a new dialog with a form to create one.
@@ -161,17 +169,6 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
       const baseDialogProps = {
         indexOfInitiallySelectedConnectionProfile,
         onAddProfileClicked,
-        onDeleteProfileClicked,
-        onConnect: async (connection, config) => {
-          resolve(connection);
-          saveConnectionConfig(config, getOfficialRemoteServerCommand());
-          cleanupSubscriptionFunc();
-        },
-        onError: (err_, config) => {
-          resolve(/*connection*/ null);
-          saveConnectionConfig(config, getOfficialRemoteServerCommand());
-          cleanupSubscriptionFunc();
-        },
         onCancel: () => {
           resolve(/*connection*/ null);
           cleanupSubscriptionFunc();
@@ -183,6 +180,18 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
             basePanel.destroy();
           }
         },
+        onConnect: async (connection, config) => {
+          resolve(connection);
+          saveConnectionConfig(config, getOfficialRemoteServerCommand());
+          cleanupSubscriptionFunc();
+        },
+        onError: (err_, config) => {
+          resolve(/*connection*/ null);
+          saveConnectionConfig(config, getOfficialRemoteServerCommand());
+          cleanupSubscriptionFunc();
+        },
+        onDeleteProfileClicked,
+        onSaveProfile: saveProfile,
         ...props,
       };
 

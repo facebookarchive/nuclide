@@ -43,6 +43,7 @@ export type NuclideRemoteConnectionProfile = {
   deletable: boolean;
   displayTitle: string;
   params: NuclideRemoteConnectionParams;
+  saveable: boolean;
 };
 
 export type NuclideSavedConnectionDialogConfig = {

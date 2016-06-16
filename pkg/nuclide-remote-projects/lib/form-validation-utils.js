@@ -109,6 +109,7 @@ export function validateFormInputs(
     deletable: true,
     displayTitle: profileName,
     params: profileParams,
+    saveable: true,
   };
   const validationResult = warningMessage.length > 0
     ? {

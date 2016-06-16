@@ -35,8 +35,9 @@ type Props = {
   initialSshPort: string;
   initialPathToPrivateKey: string;
   initialAuthMethod: $Enum<typeof SupportedMethods>;
-  onConfirm: () => mixed;
   onCancel: () => mixed;
+  onConfirm: () => mixed;
+  onDidChange: () => mixed;
 };
 
 type State = {
@@ -69,6 +70,7 @@ export default class ConnectionDetailsForm extends React.Component {
     };
 
     (this: any)._handleAuthMethodChange = this._handleAuthMethodChange.bind(this);
+    (this: any)._handleInputDidChange = this._handleInputDidChange.bind(this);
     (this: any)._handleKeyFileInputClick = this._handleKeyFileInputClick.bind(this);
     (this: any)._handlePasswordInputClick = this._handlePasswordInputClick.bind(this);
   }
@@ -84,9 +86,14 @@ export default class ConnectionDetailsForm extends React.Component {
   }
 
   _handleAuthMethodChange(newIndex: number) {
+    this.props.onDidChange();
     this.setState({
       selectedAuthMethodIndex: newIndex,
     });
+  }
+
+  _handleInputDidChange(): void {
+    this.props.onDidChange();
   }
 
   _handleKeyFileInputClick(event: SyntheticEvent): void {
@@ -129,9 +136,10 @@ export default class ConnectionDetailsForm extends React.Component {
           <input type="password"
             className="nuclide-password native-key-bindings"
             disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
-            ref="password"
+            onChange={this._handleInputDidChange}
             onClick={this._handlePasswordInputClick}
             onKeyUp={this._onKeyUp.bind(this)}
+            ref="password"
           />
         </div>
       </div>
@@ -143,11 +151,12 @@ export default class ConnectionDetailsForm extends React.Component {
         </div>
         <div className="nuclide-auth-method-input nuclide-auth-method-privatekey">
           <AtomInput
-            ref="pathToPrivateKey"
             disabled={activeAuthMethod !== SupportedMethods.PRIVATE_KEY}
             initialValue={this.state.pathToPrivateKey}
             onClick={this._handleKeyFileInputClick}
+            onDidChange={this._handleInputDidChange}
             placeholder="Path to private key"
+            ref="pathToPrivateKey"
             unstyled={true}
           />
         </div>
@@ -164,6 +173,7 @@ export default class ConnectionDetailsForm extends React.Component {
           <label>Username:</label>
           <AtomInput
             initialValue={this.state.username}
+            onDidChange={this._handleInputDidChange}
             ref="username"
             unstyled={true}
           />
@@ -173,6 +183,7 @@ export default class ConnectionDetailsForm extends React.Component {
             <label>Server:</label>
             <AtomInput
               initialValue={this.state.server}
+              onDidChange={this._handleInputDidChange}
               ref="server"
               unstyled={true}
             />
@@ -181,6 +192,7 @@ export default class ConnectionDetailsForm extends React.Component {
             <label>SSH Port:</label>
             <AtomInput
               initialValue={this.state.sshPort}
+              onDidChange={this._handleInputDidChange}
               ref="sshPort"
               unstyled={true}
             />
@@ -190,6 +202,7 @@ export default class ConnectionDetailsForm extends React.Component {
           <label>Initial Directory:</label>
           <AtomInput
             initialValue={this.state.cwd}
+            onDidChange={this._handleInputDidChange}
             ref="cwd"
             unstyled={true}
           />
@@ -210,6 +223,7 @@ export default class ConnectionDetailsForm extends React.Component {
           <label>Remote Server Command:</label>
           <AtomInput
             initialValue={this.state.remoteServerCommand}
+            onDidChange={this._handleInputDidChange}
             ref="remoteServerCommand"
             unstyled={true}
           />

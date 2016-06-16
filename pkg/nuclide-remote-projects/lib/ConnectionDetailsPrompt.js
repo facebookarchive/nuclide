@@ -31,6 +31,7 @@ type Props = {
   onConfirm: () => mixed;
   // Function to call when 'cancel' is selected by the user in this view.
   onCancel: () => mixed;
+  onDidChange: () => mixed;
   // Function that is called when the "+" button on the profiles list is clicked.
   // The user's intent is to create a new profile.
   onAddProfileClicked: () => mixed;
@@ -52,8 +53,13 @@ type Props = {
 export default class ConnectionDetailsPrompt extends React.Component {
   props: Props;
 
+  _settingFormFieldsLock: boolean;
+
   constructor(props: Props) {
     super(props);
+    this._settingFormFieldsLock = false;
+    (this: any)._handleConnectionDetailsFormDidChange =
+      this._handleConnectionDetailsFormDidChange.bind(this);
     (this: any)._onProfileClicked = this._onProfileClicked.bind(this);
     (this: any)._onDeleteProfileClicked = this._onDeleteProfileClicked.bind(this);
   }
@@ -72,8 +78,10 @@ export default class ConnectionDetailsPrompt extends React.Component {
     ) {
       const existingConnectionDetailsForm = this.refs['connection-details-form'];
       if (existingConnectionDetailsForm) {
+        this._settingFormFieldsLock = true;
         existingConnectionDetailsForm.setFormFields(this.getPrefilledConnectionParams());
         existingConnectionDetailsForm.clearPassword();
+        this._settingFormFieldsLock = false;
         existingConnectionDetailsForm.focus();
       }
     }
@@ -97,6 +105,14 @@ export default class ConnectionDetailsPrompt extends React.Component {
         this.props.connectionProfiles[this.props.indexOfSelectedConnectionProfile];
       return selectedProfile.params;
     }
+  }
+
+  _handleConnectionDetailsFormDidChange(): void {
+    if (this._settingFormFieldsLock) {
+      return;
+    }
+
+    this.props.onDidChange();
   }
 
   _onProfileClicked(profileId: string): void {
@@ -127,6 +143,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
           deletable: profile.deletable,
           displayTitle: profile.displayTitle,
           id: String(index),
+          saveable: profile.saveable,
         };
       });
     } else {
@@ -153,7 +170,6 @@ export default class ConnectionDetailsPrompt extends React.Component {
           </div>
           <div className="connection-details-form col-xs-9">
             <ConnectionDetailsForm
-              ref="connection-details-form"
               initialUsername={prefilledConnectionParams.username}
               initialServer={prefilledConnectionParams.server}
               initialRemoteServerCommand={prefilledConnectionParams.remoteServerCommand}
@@ -163,6 +179,8 @@ export default class ConnectionDetailsPrompt extends React.Component {
               initialAuthMethod={prefilledConnectionParams.authMethod}
               onConfirm={this.props.onConfirm}
               onCancel={this.props.onCancel}
+              onDidChange={this._handleConnectionDetailsFormDidChange}
+              ref="connection-details-form"
             />
           </div>
         </div>

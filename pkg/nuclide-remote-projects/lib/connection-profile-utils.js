@@ -54,6 +54,7 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
     deletable: false,
     displayTitle: '(default)',
     params: dialogSettings,
+    saveable: false,
   };
 }
 
