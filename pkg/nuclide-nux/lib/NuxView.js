@@ -13,10 +13,12 @@ import {CompositeDisposable, Disposable} from 'atom';
 import debounce from '../../commons-node/debounce';
 
 const VALID_NUX_POSITIONS = new Set(['top', 'bottom', 'left', 'right', 'auto']);
-// The maximum number of times the NuxView will attempt to attach to the DOM
+// The maximum number of times the NuxView will attempt to attach to the DOM.
 const ATTACHMENT_ATTEMPT_THRESHOLD = 5;
 const ATTACHMENT_RETRY_TIMEOUT = 500; // milliseconds
 const RESIZE_EVENT_DEBOUNCE_DURATION = 100; // milliseconds
+// The frequency with which to poll the element that the NUX is bound to.
+const POLL_ELEMENT_TIMEOUT = 100; // milliseconds
 
 function validatePlacement(position: string) : boolean {
   return VALID_NUX_POSITIONS.has(position);
@@ -103,6 +105,39 @@ export class NuxView {
       debounce(this._handleWindowResize.bind(this), RESIZE_EVENT_DEBOUNCE_DURATION, false);
     window.addEventListener('resize', debouncedWindowResizeListener);
 
+    // Destroy the NUX if the element it is bound to is no longer visible.
+    const tryDismissTooltip = element => {
+      //ヽ༼ຈل͜ຈ༽/ Yay for documentation! ᕕ( ᐛ )ᕗ
+      // According to https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent,
+      // `offsetParent` returns `null` if the parent or element is hidden.
+      // However, it also returns null if the `position` CSS of the element is
+      // `fixed`. This case requires a much slower operation `getComputedStyle`,
+      // so try and avoid it if possible.
+      let isHidden;
+      if (element.style.position !== 'fixed') {
+        isHidden = element.offsetParent === null;
+      } else {
+        isHidden = window.getComputedStyle(element).display === 'none';
+      }
+      if (isHidden) {
+        // Consider the NUX to be dismissed and mark it as completed.
+        this._onNuxComplete(false);
+      }
+    };
+    // The element is polled every `POLL_ELEMENT_TIMEOUT` milliseconds instead
+    // of using a MutationObserver. When an element such as a panel is closed,
+    // it may not mutate but simply be removed from the DOM - a change which
+    // would not be captured by the MutationObserver.
+    const pollElementTimeout = setInterval(
+      tryDismissTooltip.bind(this, elem),
+      POLL_ELEMENT_TIMEOUT,
+    );
+    this._disposables.add(new Disposable(() => {
+      if (pollElementTimeout !== null) {
+        clearTimeout(pollElementTimeout);
+      }
+    }));
+
     const tooltip = document.querySelector('.nuclide-nux-tooltip');
     const boundClickListener = this._handleDisposableClick.bind(
       this,
@@ -125,7 +160,7 @@ export class NuxView {
 
   _createDisposableTooltip() : void {
     if (!this._customContent) {
-      // Can turn it into custom content (add DISMISS button)
+      // Can turn it into custom content (add DISMISS button).
       this._content = `<div class="nuclide-nux-text-content">
                         <a class="nuclide-nux-dismiss-link">
                           <span class="icon-x pull-right"></span>
@@ -166,7 +201,7 @@ export class NuxView {
       return;
     }
 
-    // Cleanup changes made to the DOM
+    // Cleanup changes made to the DOM.
     addedElement.classList.remove('nuclide-nux-tooltip-helper-parent');
     disposable.dispose();
     this._tooltipDiv.remove();
@@ -187,7 +222,7 @@ export class NuxView {
   ): boolean {
     if (this._callback) {
       this._callback(success);
-       // avoid the callback being invoked again
+       // Avoid the callback being invoked again.
       this._callback = null;
     }
     this.dispose();
