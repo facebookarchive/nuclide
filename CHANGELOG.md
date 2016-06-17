@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.144.0
+
+Hotfix release
+
 ## v0.143.0
 
 **General**
