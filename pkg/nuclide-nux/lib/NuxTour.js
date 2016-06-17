@@ -105,7 +105,7 @@ export class NuxTour {
       {
         tourId: this._id,
         step: `${this._currentStep + 1}/${this._nuxList.length + 1}`,
-        completed: `${completed}`,
+        completed: `${completed.toString()}`,
         error: `${error}`,
       },
     );

@@ -57,7 +57,7 @@ export default class RevisionTimelineNode extends React.Component {
     });
     const tooltip = `${hash}: ${title}
   Author: ${author}
-  Date: ${date}`;
+  Date: ${date.toString()}`;
 
     const commitAuthor = getCommitAuthorFromAuthorEmail(author);
     let commitAuthorElement;
