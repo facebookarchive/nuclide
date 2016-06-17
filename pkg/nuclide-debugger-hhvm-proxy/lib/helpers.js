@@ -57,7 +57,7 @@ export function pathToUri(path: string): string {
 export function uriToPath(uri: string): string {
   const components = url.parse(uri);
   // Some filename returned from hhvm does not have protocol.
-  if (components.protocol !== 'file:' && components.protocol !== null) {
+  if (components.protocol !== 'file:' && components.protocol != null) {
     logger.logErrorAndThrow(`unexpected file protocol. Got: ${components.protocol}`);
   }
   return components.pathname || '';
