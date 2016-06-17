@@ -45,7 +45,7 @@ export function serialize(): ?ContextViewConfig {
 
 function updateService(): void {
   if (manager != null) {
-    manager.setDefinitionService(currentService);
+    manager.consumeDefinitionService(currentService);
   }
 }
 

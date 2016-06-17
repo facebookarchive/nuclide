@@ -57,23 +57,33 @@ export class ContextViewManager {
   _defServiceSubscription: rx$ISubscription;
   _width: number;
 
-  constructor(width: number, visible: boolean) {
+  constructor(width: number, isVisible: boolean) {
     this._width = width;
     this._disposables = new CompositeDisposable();
     this._contextProviders = [];
     this.currentDefinition = null;
 
-    this._bindShortcuts();
+    this._panelDOMElement = document.createElement('div');
 
-    if (visible) {
-      this._show();
-    }
+    // Otherwise it does not fill the whole panel, which might be alright except it means that the
+    // resize-handle doesn't extend all the way to the bottom.
+    //
+    // Use 'flex' to fit Atom v1.6.0+ and `height: inherit` to fit Atom <v1.6.0. The latter uses
+    // `height: 100%;` down the hierarchy and becomes innocuous in 1.6.0 because inheriting will
+    // give `height: auto;`.
+    this._panelDOMElement.style.display = 'flex';
+    this._panelDOMElement.style.height = 'inherit';
+
+    this._atomPanel = atom.workspace.addRightPanel({
+      item: ((this._panelDOMElement: any): HTMLElement),
+      visible: isVisible,
+      priority: 200,
+    });
+    this._bindShortcuts();
   }
 
   dispose(): void {
-    if (this.isVisible()) {
-      this._destroyPanel();
-    }
+    this.disposeView();
     this._disposables.dispose();
   }
 
@@ -82,13 +92,13 @@ export class ContextViewManager {
   }
 
   hide(): void {
-    if (this.isVisible()) {
-      this._destroyPanel();
+    if (this._atomPanel.isVisible()) {
+      this._atomPanel.hide();
     }
   }
 
   isVisible(): boolean {
-    return this._panelDOMElement != null;
+    return (this._atomPanel.isVisible());
   }
 
   registerProvider(newProvider: ContextProvider): boolean {
@@ -103,8 +113,7 @@ export class ContextViewManager {
     this._contextProviders.push(newProvider);
 
     if (this.isVisible()) {
-      this._destroyPanel();
-      this._show();
+      this.render();
     }
     return true;
   }
@@ -121,7 +130,8 @@ export class ContextViewManager {
    * to the definition service to an Observable<Definition>, and
    * re-renders if necessary.
    */
-  setDefinitionService(service: ?DefinitionService): void {
+  consumeDefinitionService(service: ?DefinitionService): void {
+    // TODO (reesjones) handle case when definition service is deactivated
     if (service != null) {
       this._definitionService = service;
     }
@@ -145,25 +155,18 @@ export class ContextViewManager {
           : null; // We do want to return null sometimes so providers can show "No definition selected"
       })
       .subscribe((def: ?Definition) => this.updateCurrentDefinition(def));
-
-    if (this.isVisible()) {
-      this._destroyPanel();
-      this._show();
-    }
   }
 
   show(): void {
     if (!this.isVisible()) {
-      this._show();
+      this._atomPanel.show();
     }
   }
 
   toggle(): void {
-    if (this.isVisible()) {
-      this._destroyPanel();
-    } else {
-      this._show();
-    }
+    (this.isVisible())
+      ? this.hide()
+      : this.show();
   }
 
   deregisterProvider(idToRemove: string): boolean {
@@ -176,9 +179,7 @@ export class ContextViewManager {
       }
     }
 
-    if (this.isVisible()) {
-      this._show();
-    }
+    this.render();
     return wasRemoved;
   }
 
@@ -189,8 +190,7 @@ export class ContextViewManager {
 
     this.currentDefinition = newDefinition;
     if (this.isVisible()) {
-      this._destroyPanel();
-      this._show();
+      this.render();
     }
   }
 
@@ -223,7 +223,7 @@ export class ContextViewManager {
     );
   }
 
-  _destroyPanel(): void {
+  disposeView(): void {
     const tempHandle = this._panelDOMElement;
     if (tempHandle != null) {
       ReactDOM.unmountComponentAtNode(this._panelDOMElement);
@@ -237,7 +237,7 @@ export class ContextViewManager {
     this._width = newWidth;
   }
 
-  _show(): void {
+  render(): void {
     // Create collection of provider React elements to render, and
     // display them in order
     const providerElements: Array<React.Element<any>> =
@@ -251,37 +251,21 @@ export class ContextViewManager {
       }
     );
 
-    // If there are no providers, put in a placeholder
+    // If there are no context providers to show, show a message instead
     if (providerElements.length === 0) {
-      providerElements.push(<NoProvidersView key="no-providers-view" />);
+      providerElements.push(<NoProvidersView />);
     }
-
-    this._panelDOMElement = document.createElement('div');
 
     // Render the panel in atom workspace
     ReactDOM.render(
       <ContextViewPanel
         initialWidth={this._width}
-        onResize={this._onResize.bind(this)}>
+        onResize={this._onResize.bind(this)}
+        definition={this.currentDefinition}>
         {providerElements}
       </ContextViewPanel>,
       this._panelDOMElement
     );
-
-    invariant(this._panelDOMElement != null);
-    // Otherwise it does not fill the whole panel, which might be alright except it means that the
-    // resize-handle doesn't extend all the way to the bottom.
-    //
-    // Use 'flex' to fit Atom v1.6.0+ and `height: inherit` to fit Atom <v1.6.0. The latter uses
-    // `height: 100%;` down the hierarchy and becomes innocuous in 1.6.0 because inheriting will
-    // give `height: auto;`.
-    this._panelDOMElement.style.display = 'flex';
-    this._panelDOMElement.style.height = 'inherit';
-
-    this._atomPanel = atom.workspace.addRightPanel({
-      item: this._panelDOMElement,
-      priority: 200,
-    });
   }
 
 }
