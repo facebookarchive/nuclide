@@ -416,17 +416,38 @@ function generateTransformStatement(id: any, type: Type, marshal: boolean): any 
  * @returns A babel AST node.
  */
 function objectToLiteral(obj: any): any {
-  if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
+  if (
+    typeof obj === 'string' ||
+    typeof obj === 'number' ||
+    typeof obj === 'boolean' ||
+    obj === null
+  ) {
+    // abc, 123, true, false, null
     return t.literal(obj);
-  } else if (obj instanceof Array) {
+  } else if (obj === undefined) {
+    // undefined
+    return t.identifier('undefined');
+  } else if (Array.isArray(obj)) {
+    // [...]
     return t.arrayExpression(obj.map(elem => objectToLiteral(elem)));
+  } else if (obj instanceof Map) {
+    return t.newExpression(
+      t.identifier('Map'), obj.size
+        // new Map([...])
+        ? [objectToLiteral(Array.from(obj.entries()))]
+        // new Map()
+        : null
+    );
   } else if (typeof obj === 'object') {
-    return t.objectExpression(Object.keys(obj).map(key => {
-      return t.Property('init', t.identifier(key), objectToLiteral(obj[key]));
-    }));
+    // {a: 1, b: 2}
+    return t.objectExpression(
+      Object.keys(obj).map(key =>
+        t.property('init', t.identifier(key), objectToLiteral(obj[key]))
+      )
+    );
   }
 
-  throw new Error(`Cannot convert unkown type ${typeof obj} to literal.`);
+  throw new Error(`Cannot convert unknown type ${typeof obj} to literal.`);
 }
 
 /**
@@ -443,4 +464,5 @@ function thenPromise(promiseExpression, functionExpression): any {
 /** Export private functions for unit-testing. */
 export const __test__ = {
   generateTransformStatement,
+  objectToLiteral,
 };
