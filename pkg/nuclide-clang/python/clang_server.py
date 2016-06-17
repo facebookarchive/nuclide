@@ -109,6 +109,11 @@ class Server:
             c_char_p),
 
         ("clang_sortCodeCompletionResults", [c_void_p, c_uint], None),
+
+        # Much faster than actually fetching/checking the file string.
+        ("clang_Location_isFromMainFile",
+            [SourceLocation],
+            c_int),
     ]
 
     # New in Clang 3.8: not in the Python bindings yet.
@@ -343,7 +348,7 @@ class Server:
         translation_unit = self._update_translation_unit(contents)
         if not translation_unit:
             return None
-        return outline.get_outline(translation_unit, self.src)
+        return outline.get_outline(self.custom_clang_lib, translation_unit)
 
     def _get_translation_unit(self, unsaved_contents):
         '''

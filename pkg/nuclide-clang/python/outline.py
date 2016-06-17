@@ -63,13 +63,13 @@ VAR_KINDS = set([
 ALL_KINDS = FUNCTION_KINDS | CLASS_KINDS | MEMBER_KINDS | VAR_KINDS
 
 
-def visit_cursor(path, cursor):
-    # Skip symbols from other files.
-    if cursor.location.file is None or cursor.location.file.name != path:
-        return None
-
+def visit_cursor(libclang, cursor):
     kind = cursor.kind.name
     if kind not in ALL_KINDS:
+        return None
+
+    # Skip symbols from other files.
+    if not libclang.clang_Location_isFromMainFile(cursor.location):
         return None
 
     # Names of function parameters.
@@ -101,7 +101,7 @@ def visit_cursor(path, cursor):
         name = cursor.displayname
         children = []
         for child in cursor.get_children():
-            child_outline = visit_cursor(path, child)
+            child_outline = visit_cursor(libclang, child)
             if child_outline is not None:
                 children.append(child_outline)
 
@@ -117,11 +117,11 @@ def visit_cursor(path, cursor):
     return {k: v for k, v in ret.items() if v is not None}
 
 
-def get_outline(translation_unit, path):
+def get_outline(libclang, translation_unit):
     result = []
     root_cursor = translation_unit.cursor
     for child in root_cursor.get_children():
-        child_outline = visit_cursor(path, child)
+        child_outline = visit_cursor(libclang, child)
         if child_outline is not None:
             result.append(child_outline)
     return result

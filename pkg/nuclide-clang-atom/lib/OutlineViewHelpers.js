@@ -15,6 +15,7 @@ import type {TokenizedText} from '../../nuclide-tokenized-text';
 
 import {Point} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
+import {sleep} from '../../commons-node/promise';
 import {ClangCursorTypes} from '../../nuclide-clang';
 import {
   keyword,
@@ -131,6 +132,8 @@ export function outlineFromClangOutline(outline: Array<ClangOutlineTree>): Array
 export default class OutlineViewHelpers {
   @trackTiming('nuclide-clang-atom:outline-view')
   static async getOutline(editor: atom$TextEditor): Promise<?Outline> {
+    // HACK: Since outline view and diagnostics both trigger on save, favor diagnostics.
+    await sleep(0);
     const clangOutline = await getOutline(editor);
     if (clangOutline == null) {
       return null;
