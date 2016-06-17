@@ -82,7 +82,6 @@ function generateTestNuxTour(
     selector: '.tool-bar .icon-mortar-board',
     selectorFunction: null,
     position: 'auto',
-    displayPredicate: null,
     completionPredicate: null,
     completed: false,
   };

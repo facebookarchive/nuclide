@@ -15,7 +15,6 @@ export type NuxViewModel = {
   selector: ?string;
   selectorFunction: ?(() => HTMLElement);
   position: 'top' | 'bottom' | 'left' | 'right' | 'auto';
-  displayPredicate: ?(() => boolean);
   completionPredicate: ?(() => boolean);
   completed: boolean;
 };

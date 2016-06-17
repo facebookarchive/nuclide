@@ -109,7 +109,6 @@ export class NuxManager {
         model.position,
         model.content,
         model.isCustomContent,
-        model.displayPredicate,
         model.completionPredicate,
       )
     );

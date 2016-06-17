@@ -57,7 +57,6 @@ export class NuxStore {
       selector: '.nuclide-outline-view-toolbar-button',
       selectorFunction: null,
       position: 'auto',
-      displayPredicate: null,
       completionPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
       completed: false,
     };
@@ -68,7 +67,6 @@ export class NuxStore {
       selector: 'div.pane-item.nuclide-outline-view',
       selectorFunction: null,
       position: 'left',
-      displayPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
       completionPredicate: null,
       completed: false,
     };

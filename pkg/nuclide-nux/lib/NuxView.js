@@ -15,9 +15,7 @@ import debounce from '../../commons-node/debounce';
 const VALID_NUX_POSITIONS = new Set(['top', 'bottom', 'left', 'right', 'auto']);
 // The maximum number of times the NuxView will attempt to attach to the DOM
 const ATTACHMENT_ATTEMPT_THRESHOLD = 5;
-const DISPLAY_PREDICATE_ATTEMPT_THRESHOLD = 4;
 const ATTACHMENT_RETRY_TIMEOUT = 500; // milliseconds
-const DISPLAY_RETRY_TIMEOUT = 500; // milliseconds
 const RESIZE_EVENT_DEBOUNCE_DURATION = 100; // milliseconds
 
 function validatePlacement(position: string) : boolean {
@@ -32,7 +30,6 @@ export class NuxView {
   _disposables : CompositeDisposable;
   _callback: ?((success: boolean) => void);
   _tooltipDisposable: IDisposable;
-  _displayPredicate: (() => boolean);
   _completePredicate: (() => boolean);
   _tooltipDiv: HTMLElement;
 
@@ -48,9 +45,6 @@ export class NuxView {
     NUX should show.
    * @param {string} content - The content to show in the NUX.
    * @param {boolean} customContent - True iff `content` is a valid HTML String.
-   * @param {?(() => boolean)} displayPredicate - Will be used when display the NUX.
-   * The NUX will only show if this predicate returns true. If null, the predicate used
-   * will always true.
    * @param {?(() => boolean)} completePredicate - Will be used when determining whether
    * the NUX has been completed/viewed. The NUX will only be completed if this returns true.
    * If null, the predicate used will always return true.
@@ -63,7 +57,6 @@ export class NuxView {
     position: 'top' | 'bottom' | 'left' | 'right' | 'auto',
     content: string,
     customContent: boolean = false,
-    displayPredicate: ?(() => boolean) = null,
     completePredicate: ?(() => boolean) = null,
   ) : void {
     if (selectorFunction != null) {
@@ -77,13 +70,12 @@ export class NuxView {
     this._content = content;
     this._position = validatePlacement(position) ? position : 'auto';
     this._customContent = customContent;
-    this._displayPredicate = displayPredicate || (() => true);
     this._completePredicate = completePredicate || (() => true);
 
     this._disposables = new CompositeDisposable();
   }
 
-  _createNux(creationAttempt: number = 1, displayAttempt: number = 1): void {
+  _createNux(creationAttempt: number = 1): void {
     if (creationAttempt > ATTACHMENT_ATTEMPT_THRESHOLD) {
       this._onNuxComplete(false);
       throw new Error('The NuxView failed to succesfully query and attach to the DOM.');
@@ -98,23 +90,6 @@ export class NuxView {
         }
       }));
       return;
-    }
-
-    // If the predicate fails, retry a few times to make sure that it actually failed this nux.
-    if (!this._displayPredicate()) {
-      if (displayAttempt < DISPLAY_PREDICATE_ATTEMPT_THRESHOLD) {
-        const displayTimeout = setTimeout(
-          this._createNux.bind(this, creationAttempt, displayAttempt + 1),
-          DISPLAY_RETRY_TIMEOUT,
-        );
-        this._disposables.add(new Disposable(() => {
-          if (displayTimeout !== null) {
-            clearTimeout(displayTimeout);
-          }
-        }));
-        return;
-      }
-      throw new Error('NuxView failed to display. Display predicate was consistently false.');
     }
 
     this._tooltipDiv = document.createElement('div');

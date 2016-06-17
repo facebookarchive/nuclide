@@ -31,7 +31,6 @@ describe('NuxTour', () => {
       selector: '.something',
       selectorFunction: null,
       position: 'auto',
-      displayPredicate: null,
       completionPredicate: null,
       completed: false,
     };
