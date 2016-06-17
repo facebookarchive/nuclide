@@ -15,9 +15,7 @@ import type {
   NuxTourModel,
 } from './NuxModel';
 
-const NUX_NAMESPACE = 'nuclide-nux';
-export const NUX_SAVED_STORE = `${NUX_NAMESPACE}.saved-nux-data-store`;
-export const NUX_SAMPLE_OUTLINE_VIEW_TOUR = `${NUX_NAMESPACE}.outline-view-tour`;
+export const NUX_SAVED_STORE = 'nuclide-nux.saved-nux-data-store';
 
 export class NuxStore {
   _emitter: atom$Emitter;
@@ -25,11 +23,7 @@ export class NuxStore {
   // Maps a Nux's unique ID to the boolean representing its viewed state
   _nuxMap: Map<string, boolean>;
 
-  constructor(
-    shouldSeedNux: boolean = false,
-  ): void {
-    this._shouldSeedNux = shouldSeedNux;
-
+  constructor(): void {
     this._nuxMap = new Map();
     this._emitter = new Emitter();
   }
@@ -45,57 +39,6 @@ export class NuxStore {
     this._nuxMap = new Map(
       JSON.parse(window.localStorage.getItem(NUX_SAVED_STORE))
     );
-    if (this._shouldSeedNux) {
-      this.addNewNux(this._createSampleNux());
-    }
-  }
-
-  _createSampleNux(): NuxTourModel {
-    const nuxTriggerOutline = {
-      content: 'Check out the new Outline View!',
-      isCustomContent: false,
-      selector: '.nuclide-outline-view-toolbar-button',
-      selectorFunction: null,
-      position: 'auto',
-      completionPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
-      completed: false,
-    };
-
-    const nuxOutlineView = {
-      content: 'Click on a symbol to jump to its definition.',
-      isCustomContent: false,
-      selector: 'div.pane-item.nuclide-outline-view',
-      selectorFunction: null,
-      position: 'left',
-      completionPredicate: null,
-      completed: false,
-    };
-
-    const isJavaScriptFile = editor => {
-      if (editor == null) {
-        return false;
-      }
-      const path = editor.getPath();
-      if (path == null) {
-        return false;
-      }
-      return path.endsWith('.js');
-    };
-    const isOutlineViewClosed = () => document.querySelector('.nuclide-outline-view') == null;
-    const triggerCallback = editor => isOutlineViewClosed() && isJavaScriptFile(editor);
-    const nuxTriggerModel = {
-      triggerType: 'editor',
-      triggerCallback,
-    };
-
-    const sampleOutlineNuxTour = {
-      completed: false,
-      id: NUX_SAMPLE_OUTLINE_VIEW_TOUR,
-      nuxList: [nuxTriggerOutline, nuxOutlineView],
-      trigger: nuxTriggerModel,
-    };
-
-    return sampleOutlineNuxTour;
   }
 
   addNewNux(nux: NuxTourModel) {

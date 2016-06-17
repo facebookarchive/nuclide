@@ -15,10 +15,11 @@ import {NuxManager} from '../lib/NuxManager';
 import {
   NuxStore,
   NUX_SAVED_STORE,
-  NUX_SAMPLE_OUTLINE_VIEW_TOUR,
 } from '../lib/NuxStore';
 
 import type {NuxTourModel} from '../lib/NuxModel';
+
+const NUX_TOUR_SPEC_EXAMPLE_NUX = 'nuclide-nux-spec.nux-tour-sample';
 
 describe('NuxTour', () => {
   function generateTestNuxTour(
@@ -76,7 +77,7 @@ describe('NuxTour', () => {
     const nuxManager = new NuxManager(nuxStore);
     disposables.add(nuxManager);
 
-    nuxStore.addNewNux(generateTestNuxTour(NUX_SAMPLE_OUTLINE_VIEW_TOUR));
+    nuxStore.addNewNux(generateTestNuxTour(NUX_TOUR_SPEC_EXAMPLE_NUX));
 
     expect(nuxStore._nuxMap.size).toBe(1);
   });
@@ -85,7 +86,7 @@ describe('NuxTour', () => {
     const nuxManager = new NuxManager(nuxStore);
     disposables.add(nuxManager);
 
-    const nuxTour = generateTestNuxTour(NUX_SAMPLE_OUTLINE_VIEW_TOUR);
+    const nuxTour = generateTestNuxTour(NUX_TOUR_SPEC_EXAMPLE_NUX);
     nuxTour.trigger = {
       triggerType: 'editor',
       triggerCallback: (() => false),

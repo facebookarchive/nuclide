@@ -27,6 +27,11 @@ import invariant from 'assert';
 
 import type {TokenizedText} from '../../nuclide-tokenized-text';
 
+import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
+import type {RegisterNux} from '../../nuclide-nux/lib/main';
+
+const NUX_OUTLINE_VIEW_TOUR = 'nuclide-nux.outline-view-tour';
+
 export type OutlineTree = {
   // Must be one or the other. If both are present, tokenizedText is preferred.
   plainText?: string;
@@ -120,6 +125,54 @@ class Activation {
 
   _panel: OutlineViewPanelState;
 
+  _createOutlineViewNuxTourModel(): NuxTourModel {
+    const nuxTriggerOutline = {
+      content: 'Check out the new Outline View!',
+      isCustomContent: false,
+      selector: '.nuclide-outline-view-toolbar-button',
+      selectorFunction: null,
+      position: 'auto',
+      completionPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
+      completed: false,
+    };
+
+    const nuxOutlineView = {
+      content: 'Click on a symbol to jump to its definition.',
+      isCustomContent: false,
+      selector: 'div.pane-item.nuclide-outline-view',
+      selectorFunction: null,
+      position: 'left',
+      completionPredicate: null,
+      completed: false,
+    };
+
+    const isJavaScriptFile = editor => {
+      if (editor == null) {
+        return false;
+      }
+      const path = editor.getPath();
+      if (path == null) {
+        return false;
+      }
+      return path.endsWith('.js');
+    };
+    const isOutlineViewClosed = () => document.querySelector('.nuclide-outline-view') == null;
+    const triggerCallback = editor => isOutlineViewClosed() && isJavaScriptFile(editor);
+    const nuxTriggerModel = {
+      triggerType: 'editor',
+      triggerCallback,
+    };
+
+    const sampleOutlineNuxTour = {
+      completed: false,
+      id: NUX_OUTLINE_VIEW_TOUR,
+      nuxList: [nuxTriggerOutline, nuxOutlineView],
+      trigger: nuxTriggerModel,
+    };
+
+    return sampleOutlineNuxTour;
+  }
+
   constructor(state?: OutlineViewState = makeDefaultState()) {
     this._disposables = new CompositeDisposable();
 
@@ -204,6 +257,13 @@ class Activation {
       getResultsStream: () => this._editorService.getResultsStream(),
     };
   }
+
+  consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
+    invariant(activation != null);
+    const disposable = addNewNux(this._createOutlineViewNuxTourModel());
+    this._disposables.add(disposable);
+    return disposable;
+  }
 }
 
 let activation: ?Activation = null;
@@ -257,4 +317,9 @@ export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
 export function getOutlineViewResultsStream(): ResultsStreamProvider {
   invariant(activation != null);
   return activation.getOutlineViewResultsStream();
+}
+
+export function consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
+  invariant(activation != null);
+  return activation.consumeRegisterNuxService(addNewNux);
 }

@@ -28,7 +28,7 @@ class Activation {
 
   constructor(): void {
     this._disposables = new CompositeDisposable();
-    this._nuxStore = new NuxStore(/* shouldSeedNux */ true);
+    this._nuxStore = new NuxStore();
     this._nuxManager = new NuxManager(this._nuxStore);
 
     this._disposables.add(this._nuxStore);
