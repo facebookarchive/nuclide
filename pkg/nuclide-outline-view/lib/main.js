@@ -18,6 +18,7 @@ import type {Observable} from 'rxjs';
 import {CompositeDisposable, Disposable} from 'atom';
 
 import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
+import {track} from '../../nuclide-analytics';
 
 import {OutlineViewPanelState} from './OutlineViewPanel';
 import {createOutlines} from './createOutlines';
@@ -123,7 +124,10 @@ class Activation {
     this._disposables = new CompositeDisposable();
 
     this._editorService = new ActiveEditorRegistry(
-      (provider, editor) => provider.getOutline(editor)
+      (provider, editor) => {
+        track('nuclide-outline-view-getoutline');
+        return provider.getOutline(editor);
+      }
     );
 
     const panel = this._panel = new OutlineViewPanelState(
