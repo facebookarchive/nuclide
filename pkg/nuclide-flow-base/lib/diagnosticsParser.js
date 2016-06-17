@@ -117,6 +117,11 @@ export function newFlowStatusOutputToDiagnostics(
       operationComponent.descr = 'See also: ' + operationComponent.descr;
       messageComponents.push(operationComponent);
     }
+    const extra = flowStatusError.extra;
+    if (extra != null) {
+      const flatExtra = [].concat(...extra.map(({message}) => message));
+      messageComponents.push(...flatExtra.map(newFlowMessageComponentToMessageComponent));
+    }
 
     return {
       level,

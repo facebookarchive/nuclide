@@ -58,9 +58,9 @@ export type NewFlowStatusError = {
   kind: string;
   message: Array<NewFlowStatusErrorMessageComponent>;
   operation?: NewFlowStatusErrorMessageComponent;
-
-  // There is also an `extra` field where additional details about certain kinds of errors are
-  // provided. For now we will ignore these details.
+  extra?: Array<{
+    message: Array<NewFlowStatusErrorMessageComponent>;
+  }>;
 };
 
 export type NewFlowStatusErrorMessageComponent = {
