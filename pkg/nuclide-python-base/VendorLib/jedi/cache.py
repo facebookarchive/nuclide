@@ -163,6 +163,18 @@ def memoize_method(method):
     return wrapper
 
 
+def memoize_function(obj):
+    """ A normal memoize function for memoizing free functions. """
+    cache = obj.cache = {}
+
+    def memoizer(*args, **kwargs):
+        key = str(args) + str(kwargs)
+        if key not in cache:
+            cache[key] = obj(*args, **kwargs)
+        return cache[key]
+    return memoizer
+
+
 def cache_star_import(func):
     @time_cache("star_import_cache_validity")
     def wrapper(self):
