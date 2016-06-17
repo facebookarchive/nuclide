@@ -8,9 +8,10 @@
 
 from __future__ import print_function
 
-from clang.cindex import Config, CursorKind, Index
+from clang.cindex import Config, Cursor, CursorKind, Index
 from utils import range_dict_relative
 
+import ctypes
 import json
 import os
 import sys
@@ -118,10 +119,19 @@ def visit_cursor(libclang, cursor):
 
 
 def get_outline(libclang, translation_unit):
-    result = []
     root_cursor = translation_unit.cursor
-    for child in root_cursor.get_children():
+
+    # This is the same as Cursor.get_children minus an assert in visitor().
+    # This results in a ~2x speedup!
+    callback_type = ctypes.CFUNCTYPE(ctypes.c_int, Cursor, Cursor, ctypes.py_object)
+
+    def visitor(child, parent, result):
+        child._tu = translation_unit
         child_outline = visit_cursor(libclang, child)
         if child_outline is not None:
             result.append(child_outline)
+        return 1  # continue
+
+    result = []
+    libclang.clang_visitChildren(root_cursor, callback_type(visitor), result)
     return result
