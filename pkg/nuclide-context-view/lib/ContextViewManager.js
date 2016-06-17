@@ -37,10 +37,15 @@ export type ContextProvider = {
    * contains the currentDefinition) of each provider.
    */
   getElementFactory: () => ((props: {definition: ?Definition}) => React.Element<any>);
-  id: string;
-  title: string;
+  id: string; // Unique ID of the provider (suggested: use the package name of the provider)
+  title: string; // Display name
 };
 
+/**
+ * Manages registering/deregistering of definition service and context providers,
+ * and manages re-rendering when a new definition is emitted from the definition
+ * service.
+ */
 export class ContextViewManager {
 
   _atomPanel: atom$Panel;
@@ -101,7 +106,6 @@ export class ContextViewManager {
       this._destroyPanel();
       this._show();
     }
-
     return true;
   }
 
@@ -112,6 +116,11 @@ export class ContextViewManager {
     };
   }
 
+  /**
+   * Sets handle to registered definition service, sets the subscriber
+   * to the definition service to an Observable<Definition>, and
+   * re-renders if necessary.
+   */
   setDefinitionService(service: ?DefinitionService): void {
     if (service != null) {
       this._definitionService = service;
@@ -133,7 +142,7 @@ export class ContextViewManager {
       .map((queryResult: ?DefinitionQueryResult) => {
         return (queryResult != null)
           ? queryResult.definitions[0]
-          : null;
+          : null; // We do want to return null sometimes so providers can show "No definition selected"
       })
       .subscribe((def: ?Definition) => this.updateCurrentDefinition(def));
 
@@ -186,7 +195,7 @@ export class ContextViewManager {
   }
 
   _bindShortcuts() {
-    // Bind toggle command
+    // Toggle
     this._disposables.add(
       atom.commands.add(
         'atom-workspace',
@@ -195,7 +204,7 @@ export class ContextViewManager {
       )
     );
 
-    // Bind show command
+    // Show
     this._disposables.add(
       atom.commands.add(
         'atom-workspace',
@@ -204,7 +213,7 @@ export class ContextViewManager {
       )
     );
 
-    // Bind hide command
+    // Hide
     this._disposables.add(
       atom.commands.add(
         'atom-workspace',
@@ -229,7 +238,8 @@ export class ContextViewManager {
   }
 
   _show(): void {
-
+    // Create collection of provider React elements to render, and
+    // display them in order
     const providerElements: Array<React.Element<any>> =
       this._contextProviders.map((provider, index) => {
         const createElementFn = provider.getElementFactory();
@@ -247,6 +257,7 @@ export class ContextViewManager {
     }
 
     this._panelDOMElement = document.createElement('div');
+
     // Render the panel in atom workspace
     ReactDOM.render(
       <ContextViewPanel

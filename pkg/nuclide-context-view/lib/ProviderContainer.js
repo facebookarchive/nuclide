@@ -11,6 +11,9 @@
 
 import {React} from 'react-for-atom';
 
+/**
+ * Each context provider view is rendered inside a ProviderContainer.
+ */
 export class ProviderContainer extends React.Component {
   static propTypes = {
     title: React.PropTypes.string.isRequired,

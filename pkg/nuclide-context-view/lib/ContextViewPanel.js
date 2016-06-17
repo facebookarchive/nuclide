@@ -12,6 +12,10 @@
 import {React} from 'react-for-atom';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 
+/**
+ * The Atom panel containing context provider views. This is the sidebar that
+ * is rendered in the atom workspace.
+ */
 export class ContextViewPanel extends React.Component {
   static propTypes = {
     initialWidth: React.PropTypes.number.isRequired,

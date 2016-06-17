@@ -49,6 +49,11 @@ function updateService(): void {
   }
 }
 
+/**
+ * This is the context view service that other Nuclide packages consume when they
+ * want to provide context for a definition. A context provider must consume the
+ * nuclide-context-view service and register themselves as a provider.
+ */
 const Service = {
   registerProvider(provider: ContextProvider): boolean {
     if (manager != null && provider != null) {
