@@ -32,6 +32,7 @@ import {
 } from './FlowHelpers';
 
 import {FlowProcess} from './FlowProcess';
+import {FlowVersion} from './FlowVersion';
 
 import {astToOutline} from './astToOutline';
 import {flowStatusOutputToDiagnostics} from './diagnosticsParser';
@@ -41,10 +42,15 @@ export class FlowRoot {
   // The path to the directory where the .flowconfig is -- i.e. the root of the Flow project.
   _root: string;
   _process: FlowProcess;
+  _version: FlowVersion;
 
   constructor(root: string) {
     this._root = root;
     this._process = new FlowProcess(root);
+    this._version = new FlowVersion(() => this._flowGetVersion());
+    this._process.getServerStatusUpdates()
+      .filter(state => state === 'not running')
+      .subscribe(() => this._version.invalidateVersion());
   }
 
   dispose(): void {
@@ -357,6 +363,22 @@ export class FlowRoot {
       // earlier versions, until we want to break support for earlier version.
       return false;
     }
+  }
+
+  async _flowGetVersion(): Promise<?string> {
+    const args = ['version', '--json'];
+    let json;
+    try {
+      const result = await FlowProcess.execFlowClient(args);
+      if (result == null) {
+        return null;
+      }
+      json = parseJSON(args, result.stdout);
+    } catch (e) {
+      logger.warn(e);
+      return null;
+    }
+    return json.semver;
   }
 
   static async flowGetOutline(currentContents: string): Promise<?Array<FlowOutlineTree>> {
