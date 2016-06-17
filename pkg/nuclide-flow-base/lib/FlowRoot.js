@@ -20,7 +20,7 @@ import type {
 } from '..';
 
 import {filter} from 'fuzzaldrin';
-
+import semver from 'semver';
 
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
@@ -274,12 +274,18 @@ export class FlowRoot {
     return {type, rawType};
   }
 
-  flowGetCoverage(path: NuclideUri, useDumpTypes: boolean): Promise<?FlowCoverageResult> {
+  async flowGetCoverage(path: NuclideUri): Promise<?FlowCoverageResult> {
     // The coverage command doesn't actually have the required information until Flow v0.28. For
     // earlier versions, we have to fall back on dump-types, which is slower especially in
     // pathological cases. We can remove this entirely when we want to stop supporting versions
     // earlier than v0.28.
-    return useDumpTypes ? this._getCoverageViaDumpTypes(path) : this._getCoverageViaCoverage(path);
+
+    const version = await this._version.getVersion();
+    // Fall back to dump types if we don't know the version
+    const useDumpTypes = version == null || semver.lte(version, '0.27.0');
+    return useDumpTypes ?
+      await this._getCoverageViaDumpTypes(path) :
+      await this._getCoverageViaCoverage(path);
   }
 
   async _getCoverageViaDumpTypes(path: NuclideUri): Promise<?FlowCoverageResult> {
