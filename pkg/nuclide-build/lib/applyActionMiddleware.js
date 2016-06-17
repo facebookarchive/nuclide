@@ -13,6 +13,7 @@ import type {Action, AppState, BuildSystem, Task} from './types';
 
 import once from '../../commons-node/once';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {compact} from '../../commons-node/stream';
 import * as ActionTypes from './ActionTypes';
 import {getActiveBuildSystem} from './getActiveBuildSystem';
 import {Observable} from 'rxjs';
@@ -34,17 +35,17 @@ export function applyActionMiddleware(
     // Forward on the actions that we don't handle here.
     actions.filter(action => HANDLED_ACTION_TYPES.indexOf(action.type) === -1),
 
-    actions.filter(action => action.type === ActionTypes.STOP_TASK)
-      .do(action => {
-        const {taskStatus} = getState();
-        const runningTaskInfo = taskStatus == null ? null : taskStatus.info;
-        if (runningTaskInfo == null) {
-          return;
-        }
-        runningTaskInfo.cancel();
-      })
-      .map(() => ({
+    compact(
+      actions.filter(action => action.type === ActionTypes.STOP_TASK)
+        .map(action => {
+          const {taskStatus} = getState();
+          return taskStatus == null ? null : taskStatus.info;
+        })
+    )
+      .do(taskInfo => { taskInfo.cancel(); })
+      .map(taskInfo => ({
         type: ActionTypes.TASK_STOPPED,
+        payload: {taskInfo},
       })),
 
     // Update the tasks...
@@ -93,7 +94,7 @@ export function applyActionMiddleware(
           return Observable.empty();
         }
 
-        return runTask(activeBuildSystem, task)
+        return runTask(activeBuildSystem, task, getState)
           // Stop listening once the task is done.
           .takeUntil(output.filter(a => (
             a.type === ActionTypes.TASK_COMPLETED
@@ -112,7 +113,11 @@ export function applyActionMiddleware(
 /**
  * Run a task and transform its output into domain-specific actions.
  */
-function runTask(buildSystem: BuildSystem, task: Task): Observable<Action> {
+function runTask(
+  buildSystem: BuildSystem,
+  task: Task,
+  getState: () => AppState,
+): Observable<Action> {
   // $FlowFixMe(matthewwithanm): Type this.
   return Observable.using(
     () => {
@@ -153,6 +158,7 @@ function runTask(buildSystem: BuildSystem, task: Task): Observable<Action> {
         )
         .concat(Observable.of({
           type: ActionTypes.TASK_COMPLETED,
+          payload: {taskInfo},
         }));
     })
     .catch(error => {
@@ -160,9 +166,13 @@ function runTask(buildSystem: BuildSystem, task: Task): Observable<Action> {
         `The task "${task.label}" failed`,
         {description: error.message},
       );
+      const {taskStatus} = getState();
       return Observable.of({
         type: ActionTypes.TASK_ERRORED,
-        payload: {error},
+        payload: {
+          error,
+          taskInfo: taskStatus == null ? null : taskStatus.info,
+        },
       });
     })
     .share();

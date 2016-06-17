@@ -69,6 +69,7 @@ export interface TaskInfo {
   onDidComplete(callback: () => mixed): IDisposable;
   onDidError(callback: (error: Error) => mixed): IDisposable;
   cancel(): void;
+  getTrackingData?: () => Object;
 }
 
 //
@@ -107,8 +108,11 @@ type StopTaskAction = {
   type: 'STOP_TASK';
 };
 
-type TaskCompletedAction = {
+export type TaskCompletedAction = {
   type: 'TASK_COMPLETED';
+  payload: {
+    taskInfo: TaskInfo;
+  };
 };
 
 type TaskProgressAction = {
@@ -118,19 +122,26 @@ type TaskProgressAction = {
   };
 };
 
-type TaskErroredAction = {
+export type TaskErroredAction = {
   type: 'TASK_ERRORED';
+  payload: {
+    error: Error;
+    taskInfo: ?TaskInfo;
+  };
 };
 
-type TaskStartedAction = {
+export type TaskStartedAction = {
   type: 'TASK_STARTED';
   payload: {
     taskInfo: TaskInfo;
   };
 };
 
-type TaskStoppedAction = {
+export type TaskStoppedAction = {
   type: 'TASK_STOPPED';
+  payload: {
+    taskInfo: TaskInfo;
+  };
 };
 
 type ToolbarVisibilityUpdatedAction = {

@@ -11,12 +11,24 @@
 
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {Commands as CommandsType} from './Commands';
-import type {AppState, BuildSystem, BuildSystemRegistry, SerializedAppState} from './types';
+import type {
+  AppState,
+  BuildSystem,
+  BuildSystemRegistry,
+  SerializedAppState,
+  TaskStartedAction,
+  TaskStoppedAction,
+  TaskCompletedAction,
+  TaskErroredAction,
+} from './types';
 import type {BehaviorSubject} from 'rxjs';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
+import type {TrackingEvent} from '../../nuclide-analytics';
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
-import {DisposableSubscription} from '../../commons-node/stream';
+import {compact, DisposableSubscription} from '../../commons-node/stream';
+import {trackEvent} from '../../nuclide-analytics';
+import * as ActionTypes from './ActionTypes';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 
@@ -39,12 +51,10 @@ export function activate(rawState: ?SerializedAppState): void {
     ...(rawState || {}),
   };
 
-  const actions = new Rx.Subject();
-  const states = _states = createStateStream(
-    applyActionMiddleware(actions, () => states.getValue()),
-    initialState,
-  );
-  const dispatch = action => { actions.next(action); };
+  const rawActions = new Rx.Subject();
+  const actions = applyActionMiddleware(rawActions, () => states.getValue());
+  const states = _states = createStateStream(actions, initialState);
+  const dispatch = action => { rawActions.next(action); };
   const commands = _commands = new Commands(dispatch, () => states.getValue());
 
   // Add the panel.
@@ -72,6 +82,27 @@ export function activate(rawState: ?SerializedAppState): void {
           [`nuclide-build:${taskType}`]: () => { commands.runTask(taskType); },
         },
       }),
+    ),
+
+    // Track Build events.
+    new DisposableSubscription(
+      compact(
+        actions.map(action => {
+          switch (action.type) {
+            case ActionTypes.TASK_STARTED:
+              return createTrackingEvent('nuclide-build:task-started', action, states.getValue());
+            case ActionTypes.TASK_STOPPED:
+              return createTrackingEvent('nuclide-build:task-stopped', action, states.getValue());
+            case ActionTypes.TASK_COMPLETED:
+              return createTrackingEvent('nuclide-build:task-completed', action, states.getValue());
+            case ActionTypes.TASK_ERRORED:
+              return createTrackingEvent('nuclide-build:task-errored', action, states.getValue());
+            default:
+              return null;
+          }
+        })
+      )
+        .subscribe(event => { trackEvent(event); })
     ),
 
     // Update the actions whenever the build system changes. This is a little weird because state
@@ -175,3 +206,25 @@ export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
 
 // Exported for testing :'(
 export const _getCommands = () => _commands;
+
+function createTrackingEvent(
+  type: string,
+  action: TaskStartedAction | TaskStoppedAction | TaskCompletedAction | TaskErroredAction,
+  state: AppState,
+): TrackingEvent {
+  const taskInfo = action.payload.taskInfo;
+  const taskTrackingData = taskInfo != null && taskInfo.getTrackingData != null
+    ? taskInfo.getTrackingData()
+    : {};
+  const error = action.type === ActionTypes.TASK_ERRORED ? action.payload.error : null;
+  return {
+    type,
+    data: {
+      ...taskTrackingData,
+      buildSystemId: state.activeBuildSystemId,
+      taskType: state.activeTaskType,
+      errorMessage: error != null ? error.message : null,
+      stackTrace: error != null ? String(error.stack) : null,
+    },
+  };
+}
