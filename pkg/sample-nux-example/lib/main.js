@@ -37,11 +37,12 @@ class Activation {
 
   consumeToolBar(getToolBar: GetToolBar): void {
     const toolBar = getToolBar('nux-example-toolbar');
-    toolBar.addButton({
+    const toolBarButtonView = toolBar.addButton({
       icon: 'mortar-board',
       callback: 'nux-example-toolbar:noop',
       tooltip: 'Example Nux Toolbar Item',
     });
+    toolBarButtonView.element.classList.add('sample-nux-toolbar-button');
     this._disposables.add(new Disposable(() => {
       toolBar.removeItems();
     }));
@@ -76,19 +77,24 @@ function generateTestNuxTour(
   identifier: string,
   numViews: number = 1,
 ): NuxTourModel {
-  const nuxViewModel = {
-    content: 'Content',
-    isCustomContent: false,
-    selector: '.tool-bar .icon-mortar-board',
-    selectorFunction: null,
-    position: 'auto',
-    completionPredicate: null,
-    completed: false,
-  };
+  const getNuxViewModel = viewNumber => (
+    {
+      content: `Content NUX #${viewNumber}`,
+      isCustomContent: false,
+      selector: '.sample-nux-toolbar-button',
+      selectorFunction: null,
+      position: 'auto',
+      completionPredicate: null,
+      completed: false,
+    }
+  );
+  const nuxList = Array(numViews)
+                    .fill() // Fill holes so map doesn't skip them
+                    .map((_, index) => getNuxViewModel(index + 1));
   return {
     completed: false,
     id: identifier,
-    nuxList: Array(numViews).fill(nuxViewModel),
+    nuxList,
     trigger: null,
   };
 }
