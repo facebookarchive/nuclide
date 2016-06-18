@@ -26,8 +26,8 @@ import {ProviderContainer} from './ProviderContainer';
 import {NoProvidersView} from './NoProvidersView';
 
 export type ContextViewConfig = {
-  width: number;
-  visible: boolean;
+  width?: number;
+  visible?: boolean;
 };
 
 export type ContextProvider = {

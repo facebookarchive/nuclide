@@ -22,11 +22,12 @@ const INITIAL_PANEL_VISIBILITY: boolean = false;
 let currentService: ?DefinitionService = null;
 let manager: ?ContextViewManager = null;
 
-export function activate(state: ContextViewConfig | void): void {
+export function activate(state: ContextViewConfig = {}): void {
   if (manager === null) {
-    manager = (state != null)
-    ? new ContextViewManager(state.width, state.visible)
-    : new ContextViewManager(INITIAL_PANEL_WIDTH, INITIAL_PANEL_VISIBILITY);
+    manager = new ContextViewManager(
+      state.width || INITIAL_PANEL_WIDTH,
+      state.visible || INITIAL_PANEL_VISIBILITY,
+    );
   }
 }
 
