@@ -10,13 +10,10 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import typeof * as JediService from './JediService';
 
 import {asyncExecute} from '../../commons-node/process';
 import nuclideUri from '../../nuclide-remote-uri';
-import LRUCache from 'lru-cache';
-import JediServer from './JediServer';
-import LinkTreeManager from './LinkTreeManager';
+import JediServerManager from './JediServerManager';
 
 export type JediCompletion = {
   type: string;
@@ -53,14 +50,6 @@ export type JediReference = {
 export type JediReferencesResult = {
   references: Array<JediReference>;
 };
-
-// Limit the number of active Jedi processes.
-const jediServers = new LRUCache({
-  max: 10,
-  dispose(key: NuclideUri, val: JediServer) {
-    val.dispose();
-  },
-});
 
 export type Position = {
   line: number;
@@ -102,27 +91,6 @@ export type JediOutlineResult = {
   items: Array<JediOutlineItem>
 };
 
-// Cache the pythonPath on first execution so we don't rerun overrides script
-// everytime.
-let pythonPath;
-async function getPythonPath() {
-  if (pythonPath) {
-    return pythonPath;
-  }
-  // Default to assuming that python is in system PATH.
-  pythonPath = 'python';
-  try {
-    // Override the python path if override script is present.
-    const overrides = await require('./fb/find-jedi-server-args')();
-    if (overrides.pythonExecutable) {
-      pythonPath = overrides.pythonExecutable;
-    }
-  } catch (e) {
-    // Ignore.
-  }
-  return pythonPath;
-}
-
 let formatterPath;
 function getFormatterPath() {
   if (formatterPath) {
@@ -143,23 +111,7 @@ function getFormatterPath() {
   return formatterPath;
 }
 
-const linkTreeManager = new LinkTreeManager();
-
-async function getJediServer(src: NuclideUri): Promise<JediService> {
-  let server = jediServers.get(src);
-  if (server == null) {
-    const paths = [];
-    const linkTreePath = await linkTreeManager.getLinkTreePath(src);
-    if (linkTreePath != null) {
-      paths.push(linkTreePath);
-    }
-    // Create a JediServer using default python path.
-    server = new JediServer(src, await getPythonPath(), paths);
-    jediServers.set(src, server);
-  }
-
-  return await server.getService();
-}
+const serverManager = new JediServerManager();
 
 export async function getCompletions(
   src: NuclideUri,
@@ -167,8 +119,8 @@ export async function getCompletions(
   line: number,
   column: number,
 ): Promise<?JediCompletionsResult> {
-  const server = await getJediServer(src);
-  return server.get_completions(
+  const service = await serverManager.getJediService(src);
+  return service.get_completions(
       src,
       contents,
       line,
@@ -182,8 +134,8 @@ export async function getDefinitions(
   line: number,
   column: number,
 ): Promise<?JediDefinitionsResult> {
-  const server = await getJediServer(src);
-  return server.get_definitions(
+  const service = await serverManager.getJediService(src);
+  return service.get_definitions(
       src,
       contents,
       line,
@@ -197,8 +149,8 @@ export async function getReferences(
   line: number,
   column: number,
 ): Promise<?JediReferencesResult> {
-  const server = await getJediServer(src);
-  return server.get_references(
+  const service = await serverManager.getJediService(src);
+  return service.get_references(
       src,
       contents,
       line,
@@ -210,8 +162,8 @@ export async function getOutline(
   src: NuclideUri,
   contents: string,
 ): Promise<?JediOutlineResult> {
-  const server: JediService = await getJediServer(src);
-  return server.get_outline(src, contents);
+  const service = await serverManager.getJediService(src);
+  return service.get_outline(src, contents);
 }
 
 export async function formatCode(

@@ -104,4 +104,12 @@ export default class LinkTreeManager {
     }
   }
 
+  reset(src: string): void {
+    this._cachedBuckProjects.delete(src);
+  }
+
+  dispose() {
+    this._cachedBuckProjects.clear();
+  }
+
 }
