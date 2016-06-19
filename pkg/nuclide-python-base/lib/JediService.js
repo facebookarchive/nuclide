@@ -89,6 +89,10 @@ export type PythonOutlineResult = {
   items: Array<PythonOutlineItem>
 };
 
+export type PythonAddPathsResult = {
+  newPaths: Array<string>;
+};
+
 export async function get_completions(
   src: NuclideUri,
   contents: string,
@@ -120,5 +124,11 @@ export function get_outline(
   src: NuclideUri,
   contents: string,
 ): Promise<?PythonOutlineResult> {
+  throw new Error('RPC Stub');
+}
+
+export function add_paths(
+  paths: Array<string>,
+): Promise<?PythonAddPathsResult> {
   throw new Error('RPC Stub');
 }

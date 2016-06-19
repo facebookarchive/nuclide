@@ -55,17 +55,25 @@ export default class JediServerManager {
   async getJediService(src: NuclideUri): Promise<JediService> {
     let server = this._servers.get(src);
     if (server == null) {
-      const paths = [];
-      const linkTreePath = await this._linkTreeManager.getLinkTreePath(src);
-      if (linkTreePath != null) {
-        paths.push(linkTreePath);
-      }
       // Create a JediServer using default python path.
-      server = new JediServer(src, await getPythonPath(), paths);
+      server = new JediServer(src, await getPythonPath());
       this._servers.set(src, server);
+
+      // Add link tree path without awaiting so we don't block the service
+      // from returning.
+      this._addLinkTreePath(src, server);
     }
 
     return await server.getService();
+  }
+
+  async _addLinkTreePath(src: NuclideUri, server: JediServer): Promise<void> {
+    const linkTreePath = await this._linkTreeManager.getLinkTreePath(src);
+    if (server.isDisposed() || linkTreePath == null) {
+      return;
+    }
+    const service = await server.getService();
+    await service.add_paths([linkTreePath]);
   }
 
   reset(src: string): void {

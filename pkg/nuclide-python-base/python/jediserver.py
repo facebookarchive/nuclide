@@ -86,6 +86,10 @@ class JediServer:
                 res['result']['references'] = self.get_references(self.make_script(data))
             elif method == 'get_outline':
                 res['result']['items'] = outline.get_outline(self.src, data['contents'])
+            # Allow deferred injection of additional paths
+            elif method == 'add_paths':
+                self.sys_path = self.sys_path + data['paths']
+                res['result']['newPaths'] = self.sys_path
             else:
                 res['type'] = 'error-response'
                 del res['result']

@@ -13,6 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import typeof * as JediService from './JediService';
 import type {ProcessMaker} from '../../commons-node/RpcProcess';
 
+import invariant from 'assert';
 import nuclideUri from '../../nuclide-remote-uri';
 import {safeSpawn} from '../../commons-node/process';
 import RpcProcess from '../../commons-node/RpcProcess';
@@ -44,6 +45,7 @@ function getServiceRegistry(): ServiceRegistry {
 
 export default class JediServer {
   _process: RpcProcess;
+  _isDisposed: boolean;
 
   constructor(src: NuclideUri, pythonPath: string = PYTHON_EXECUTABLE, paths?: Array<string> = []) {
     // Generate a name for this server using the src file name, used to namespace logs
@@ -55,13 +57,20 @@ export default class JediServer {
     }
     const createProcess: ProcessMaker = () => safeSpawn(pythonPath, args, OPTS);
     this._process = new RpcProcess(name, getServiceRegistry(), createProcess);
+    this._isDisposed = false;
   }
 
   getService(): Promise<JediService> {
+    invariant(!this._isDisposed, 'getService called on disposed JediServer');
     return this._process.getService('JediService');
   }
 
+  isDisposed(): boolean {
+    return this._isDisposed;
+  }
+
   dispose(): void {
+    this._isDisposed = true;
     this._process.dispose();
   }
 }
