@@ -17,7 +17,10 @@ import {React} from 'react-for-atom';
 export class ProviderContainer extends React.Component {
   static propTypes = {
     title: React.PropTypes.string.isRequired,
-    children: React.PropTypes.element.isRequired,
+    children: React.PropTypes.oneOfType([
+      React.PropTypes.arrayOf(React.PropTypes.node),
+      React.PropTypes.node,
+    ]),
   };
 
   render(): React.Element<any> {

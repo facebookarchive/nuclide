@@ -73,6 +73,7 @@ export class ContextViewManager {
     // give `height: auto;`.
     this._panelDOMElement.style.display = 'flex';
     this._panelDOMElement.style.height = 'inherit';
+    this.render();
 
     this._atomPanel = atom.workspace.addRightPanel({
       item: ((this._panelDOMElement: any): HTMLElement),
@@ -155,10 +156,15 @@ export class ContextViewManager {
           : null; // We do want to return null sometimes so providers can show "No definition selected"
       })
       .subscribe((def: ?Definition) => this.updateCurrentDefinition(def));
+
+    if (this.isVisible()) {
+      this.render();
+    }
   }
 
   show(): void {
     if (!this.isVisible()) {
+      this.render();
       this._atomPanel.show();
     }
   }
@@ -179,7 +185,9 @@ export class ContextViewManager {
       }
     }
 
-    this.render();
+    if (this.isVisible()) {
+      this.render();
+    }
     return wasRemoved;
   }
 
@@ -244,7 +252,7 @@ export class ContextViewManager {
       this._contextProviders.map((provider, index) => {
         const createElementFn = provider.getElementFactory();
         return (
-          <ProviderContainer title={provider.title} key={provider.id}>
+          <ProviderContainer title={provider.title} key={index}>
             {createElementFn({definition: this.currentDefinition})}
           </ProviderContainer>
         );
@@ -253,7 +261,7 @@ export class ContextViewManager {
 
     // If there are no context providers to show, show a message instead
     if (providerElements.length === 0) {
-      providerElements.push(<NoProvidersView />);
+      providerElements.push(<NoProvidersView key={0} />);
     }
 
     // Render the panel in atom workspace

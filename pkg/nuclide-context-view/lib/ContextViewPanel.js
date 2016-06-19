@@ -20,7 +20,10 @@ export class ContextViewPanel extends React.Component {
   static propTypes = {
     initialWidth: React.PropTypes.number.isRequired,
     onResize: React.PropTypes.func.isRequired, // Should be (newWidth: number) => void
-    children: React.PropTypes.element,
+    children: React.PropTypes.oneOfType([
+      React.PropTypes.arrayOf(React.PropTypes.node),
+      React.PropTypes.node,
+    ]),
   };
 
   render() {
@@ -45,10 +48,9 @@ class Header extends React.Component {
 
   render(): React.Element<any> {
     return (
-      <div className="panel-heading" style={{'flex-shrink': 0}}>
+      <div className="panel-heading" style={{flexShrink: 0}}>
         <h4>Context View</h4>
       </div>
     );
   }
 }
-
