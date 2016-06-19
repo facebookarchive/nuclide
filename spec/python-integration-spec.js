@@ -11,9 +11,7 @@
 
 import {
   copyFixture,
-  dispatchKeyboardEvent,
   waitsForFile,
-  waitsForFilePosition,
 } from '../pkg/nuclide-integration-test-helpers';
 import {
   describeRemotableTest,
@@ -22,12 +20,13 @@ import {
   getAutocompleteSuggestions,
   waitsForAutocompleteSuggestions,
 } from './utils/autocomplete-common';
+import {waitsForHyperclickResult} from './utils/hyperclick-common';
 
 describeRemotableTest('Python Integration Test', context => {
   let pyProjPath;
   let textEditor: atom$TextEditor = (null : any);
 
-  beforeEach(() => {
+  it('supports autocompletion and hyperclick', () => {
     waitsForPromise({timeout: 60000}, async () => {
       pyProjPath = await copyFixture('python_project_1');
       await context.setProject(pyProjPath);
@@ -35,9 +34,8 @@ describeRemotableTest('Python Integration Test', context => {
     });
 
     waitsForFile('Foo.py');
-  });
 
-  it('gives autocomplete suggestions', () => {
+    // Autocompletion
     runs(() => {
       // Trigger autocompletion.
       textEditor.setCursorBufferPosition([13, 1]);
@@ -56,16 +54,13 @@ describeRemotableTest('Python Integration Test', context => {
         rightLabel: '',
       });
     });
-  });
 
-  it('supports hyperclicking to goto definitions', () => {
-    runs(() => {
-      textEditor.setCursorBufferPosition([6, 8]);
-      // shortcut key for hyperclick:confirm-cursor
-      dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
-    });
-
-    waitsForFilePosition('os.py', 0, 0);
+    // Hyperclick
+    waitsForHyperclickResult(
+      [6, 8],
+      'os.py',
+      [0, 0],
+    );
   });
 
 });
