@@ -33,21 +33,14 @@ export default class CodeFormatHelpers {
     const service: ?PythonService = getServiceByNuclideUri('PythonService', src);
     invariant(service, 'Failed to get service for python.');
 
-    try {
-      const formatted = await service.formatCode(
-        src,
-        buffer.getText(),
-        range.start.row + 1,
-        range.end.row + 1
-      );
+    const formatted = await service.formatCode(
+      src,
+      buffer.getText(),
+      range.start.row + 1,
+      range.end.row + 1
+    );
 
-      return {formatted};
-    } catch (e) {
-      atom.notifications.addError('Failed to format code. Error: ' + e.message);
-      return {
-        formatted: buffer.getText(),
-      };
-    }
+    return {formatted};
   }
 
 }

@@ -60,16 +60,12 @@ class CodeFormatManager {
     });
   }
 
-  // Checks whether contents have changed in the buffer post-format, displaying
-  // an atom error and returning true if so.
-  _contentsHaveChanged(before: string, after: string, displayErrors: boolean): boolean {
-    const changed = before !== after;
-    if (changed && displayErrors) {
-      atom.notifications.addError(
-        'The file contents were changed before formatting was complete.'
-      );
+  // Checks whether contents are same in the buffer post-format, throwing if
+  // anything has changed.
+  _checkContentsAreSame(before: string, after: string): void {
+    if (before !== after) {
+      throw new Error('The file contents were changed before formatting was complete.');
     }
-    return changed;
   }
 
   // Formats code in the active editor, returning whether or not the code
@@ -118,36 +114,40 @@ class CodeFormatManager {
     }
     const contents = editor.getText();
 
-    const provider = matchingProviders[0];
-    if (provider.formatCode != null &&
-      (!selectionRangeEmpty || provider.formatEntireFile == null)) {
-      const formatted = await provider.formatCode(editor, formatRange);
-      // Contents have changed since the time of triggering format code.
-      if (this._contentsHaveChanged(contents, editor.getText(), displayErrors)) {
-        return false;
-      }
-      // TODO(most): save cursor location.
-      editor.setTextInBufferRange(formatRange, formatted);
-    } else if (provider.formatEntireFile != null) {
-      const {newCursor, formatted} = await provider.formatEntireFile(editor, formatRange);
-      // Contents have changed since the time of triggering format code.
-      if (this._contentsHaveChanged(contents, editor.getText(), displayErrors)) {
-        return false;
-      }
-      buffer.setTextViaDiff(formatted);
+    try {
+      const provider = matchingProviders[0];
+      if (provider.formatCode != null &&
+        (!selectionRangeEmpty || provider.formatEntireFile == null)) {
+        const formatted = await provider.formatCode(editor, formatRange);
+        // Throws if contents have changed since the time of triggering format code.
+        this._checkContentsAreSame(contents, editor.getText());
+        // TODO(most): save cursor location.
+        editor.setTextInBufferRange(formatRange, formatted);
+        return true;
+      } else if (provider.formatEntireFile != null) {
+        const {newCursor, formatted} = await provider.formatEntireFile(editor, formatRange);
+        // Throws if contents have changed since the time of triggering format code.
+        this._checkContentsAreSame(contents, editor.getText());
 
-      const newPosition = (newCursor != null)
-        ? buffer.positionForCharacterIndex(newCursor)
-        : editor.getCursorBufferPosition();
+        buffer.setTextViaDiff(formatted);
 
-      // We call setCursorBufferPosition even when there is no newCursor,
-      // because it unselects the text selection.
-      editor.setCursorBufferPosition(newPosition);
-    } else {
-      throw new Error('code-format providers must implement formatCode or formatEntireFile');
+        const newPosition = (newCursor != null)
+          ? buffer.positionForCharacterIndex(newCursor)
+          : editor.getCursorBufferPosition();
+
+        // We call setCursorBufferPosition even when there is no newCursor,
+        // because it unselects the text selection.
+        editor.setCursorBufferPosition(newPosition);
+        return true;
+      } else {
+        throw new Error('code-format providers must implement formatCode or formatEntireFile');
+      }
+    } catch (e) {
+      if (displayErrors) {
+        atom.notifications.addError('Failed to format code: ' + e.message);
+      }
+      return false;
     }
-
-    return true;
   }
 
   _getMatchingProvidersForScopeName(scopeName: string): Array<CodeFormatProvider> {

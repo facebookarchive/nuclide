@@ -24,10 +24,7 @@ export default class CodeFormatHelpers {
       return await libclang.formatCode(editor, range);
     } catch (e) {
       getLogger().error('Could not run clang-format:', e);
-      atom.notifications.addError(
-        'Could not run clang-format.<br>Ensure it is installed and in your $PATH.'
-      );
-      throw e;
+      throw new Error('Could not run clang-format.<br>Ensure it is installed and in your $PATH.');
     }
   }
 }
