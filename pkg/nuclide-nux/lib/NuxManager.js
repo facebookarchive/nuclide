@@ -9,12 +9,10 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
 import {
   CompositeDisposable,
   Disposable,
   Emitter,
-  TextEditor,
 } from 'atom';
 import passesGK from '../../commons-node/passesGK';
 
@@ -168,13 +166,13 @@ export class NuxManager {
     // The `paneItem` is not guaranteed to be an instance of `TextEditor` from
     // Atom's API, but usually is.  We return if the type is not `TextEditor`
     // since the `NuxTour.isReady` expects a `TextEditor` as its argument.
-    if (paneItem == null || !(paneItem instanceof TextEditor)) {
+    if (!atom.workspace.isTextEditor(paneItem)) {
       return;
     }
+    // Flow doesn't understand the refinement done above.
+    const textEditor: atom$TextEditor = (paneItem: any);
     this._pendingNuxes.forEach((nux: NuxTour, id: string) => {
-      // Invariant added to satisfy `paneItem`'s Flow typing
-      invariant(paneItem instanceof TextEditor);
-      if (nux.getTriggerType() !== 'editor' || !nux.isReady(paneItem)) {
+      if (nux.getTriggerType() !== 'editor' || !nux.isReady(textEditor)) {
         return;
       }
       this._pendingNuxes.delete(id);
