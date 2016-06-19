@@ -49,7 +49,8 @@ class JediServer:
         # jedi don't appear in user's autocompletions or hyperclicks.
         # Don't filter out VendorLib if we're working in the jediserver's dir. :)
         return [path for path in sys.path
-                if path != LIB_DIR or self.src.startswith(WORKING_DIR)]
+                if (path != LIB_DIR and path != WORKING_DIR) or
+                self.src.startswith(WORKING_DIR)]
 
     def generate_log_name(self, value):
         hash = hashlib.md5(value).hexdigest()[:10]
