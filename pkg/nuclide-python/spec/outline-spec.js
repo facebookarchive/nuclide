@@ -17,7 +17,7 @@ describe('Python outline', () => {
 
 
   it('conversion from JSON to outline', () => {
-    waitsForPromise({timeout: 15000}, async () => {
+    waitsForPromise({timeout: 60000}, async () => {
       const src = nuclideUri.join(__dirname, './fixtures/t.py');
       const contents = await fsPromise.readFile(src, 'utf8');
       const result = await generateOutline(src, contents, 'all');

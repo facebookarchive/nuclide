@@ -14,7 +14,7 @@ import tempfile
 import time
 import traceback
 from logging import FileHandler
-from optparse import OptionParser
+from argparse import ArgumentParser
 import jedi
 from jedi.evaluate.representation import InstanceElement
 from jedi.parser.tree import ImportFrom
@@ -27,9 +27,9 @@ WORKING_DIR = os.getcwd()
 
 class JediServer:
 
-    def __init__(self, src):
+    def __init__(self, src, paths):
         self.src = src
-        self.sys_path = self.get_filtered_sys_path()
+        self.sys_path = self.get_filtered_sys_path() + paths
         self.logger = logging.getLogger()
         self.input_stream = sys.stdin
         self.output_stream = sys.stdout
@@ -207,8 +207,9 @@ class JediServer:
 
 
 if __name__ == '__main__':
-    parser = OptionParser()
-    parser.add_option('-s', '--source', dest='src', default='')
-    (opts, _) = parser.parse_args()
+    parser = ArgumentParser()
+    parser.add_argument('-s', '--source', dest='src', default='', type=str)
+    parser.add_argument('-p', '--paths', dest='paths', default=[], type=str, nargs='+')
+    args = parser.parse_args()
 
-    JediServer(opts.src).run()
+    JediServer(args.src, args.paths).run()

@@ -45,11 +45,15 @@ function getServiceRegistry(): ServiceRegistry {
 export default class JediServer {
   _process: RpcProcess;
 
-  constructor(src: NuclideUri, pythonPath: string = PYTHON_EXECUTABLE) {
+  constructor(src: NuclideUri, pythonPath: string = PYTHON_EXECUTABLE, paths?: Array<string> = []) {
     // Generate a name for this server using the src file name, used to namespace logs
     const name = `JediServer-${nuclideUri.basename(src)}`;
-    const createProcess: ProcessMaker
-      = () => safeSpawn(pythonPath, [PROCESS_PATH, '-s', src], OPTS);
+    let args = [PROCESS_PATH, '-s', src];
+    if (paths.length > 0) {
+      args.push('-p');
+      args = args.concat(paths);
+    }
+    const createProcess: ProcessMaker = () => safeSpawn(pythonPath, args, OPTS);
     this._process = new RpcProcess(name, getServiceRegistry(), createProcess);
   }
 

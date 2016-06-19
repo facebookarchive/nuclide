@@ -23,13 +23,17 @@ import {
 const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'serverdummy.py');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
 
+// Disable buckd so it doesn't linger around after the test.
+process.env.NO_BUCKD = '1';
+
 // Line/column actual offsets are 0-indexed in this test, similar to what atom
 // provides as input.
 describe('PythonService', () => {
 
   describe('Completions', () => {
     it('gives a rejected promise when an invalid request is given', () => {
-      waitsForPromise(async () => {
+      // Large timeout for buck to warm up.
+      waitsForPromise({timeout: 30000}, async () => {
         // Basically everything is wrong here, but politely reject the promise.
         try {
           await getCompletions('potato', 'tomato', 6, 15);
@@ -44,7 +48,7 @@ describe('PythonService', () => {
     });
 
     it('can make completion suggestions for imported module member functions', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // line 12: def hello = os.path.isab
         const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 11, 20);
         invariant(response);
@@ -59,7 +63,7 @@ describe('PythonService', () => {
     });
 
     it('can make completion suggestions for locally defined variables', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // line 14: potato2 = po
         const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 13, 12);
         invariant(response);
@@ -72,7 +76,7 @@ describe('PythonService', () => {
     });
 
     it('classifies methods with @property decorators as properties', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // line 18: a.t
         const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 17, 3);
         invariant(response);
@@ -86,7 +90,7 @@ describe('PythonService', () => {
     });
 
     it('includes parameters for assignment completions', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // line 26: a = Tes
         const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 25, 7);
         invariant(response);
@@ -100,7 +104,7 @@ describe('PythonService', () => {
     });
 
     it('does not include parameters for import statement completions', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // line 9: from decorated import Test
         const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 8, 26);
         invariant(response);
@@ -116,7 +120,7 @@ describe('PythonService', () => {
 
   describe('Definitions', () => {
     it('gives a rejected promise when an invalid request is given', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // Basically everything is wrong here, but politely reject the promise.
         try {
           await getDefinitions('potato', 'tomato', 6, 15);
@@ -131,7 +135,7 @@ describe('PythonService', () => {
     });
 
     it('can find definitions for imported modules', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // line 9: import os
         const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 7, 8);
         invariant(response);
@@ -146,7 +150,7 @@ describe('PythonService', () => {
     });
 
     it('follows imports until a non-import definition when possible', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // line 17: a = Test()
         const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 16, 7);
         invariant(response);
@@ -163,7 +167,7 @@ describe('PythonService', () => {
     });
 
     it('follows imports until the furthest unresolvable import statement', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // line 27: b = Test2()
         const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 26, 7);
         invariant(response);
@@ -181,7 +185,7 @@ describe('PythonService', () => {
     });
 
     it('can find the definitions of locally defined variables', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // line 15: potato3 = potato
         const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 14, 12);
         invariant(response);
@@ -199,7 +203,7 @@ describe('PythonService', () => {
 
   describe('References', () => {
     it('can find the references of locally defined variables', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // line 13: potato = 5
         const response = await getReferences(TEST_FILE, FILE_CONTENTS, 12, 2);
         invariant(response);
@@ -224,7 +228,7 @@ describe('PythonService', () => {
     });
 
     it('displays the caller name for references within functions', () => {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         // line 13: potato = 5
         const response = await getReferences(TEST_FILE, FILE_CONTENTS, 19, 2);
         invariant(response);
@@ -253,7 +257,7 @@ describe('PythonService', () => {
   describe('Outlines', () => {
 
     function checkOutlineTree(testName: string) {
-      waitsForPromise(async () => {
+      waitsForPromise({timeout: 30000}, async () => {
         const dirName = nuclideUri.join(__dirname, 'fixtures', 'outline-tests');
 
         const srcPath = nuclideUri.join(dirName, testName + '.py');

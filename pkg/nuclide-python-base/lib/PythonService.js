@@ -16,6 +16,7 @@ import {asyncExecute} from '../../commons-node/process';
 import nuclideUri from '../../nuclide-remote-uri';
 import LRUCache from 'lru-cache';
 import JediServer from './JediServer';
+import LinkTreeManager from './LinkTreeManager';
 
 export type JediCompletion = {
   type: string;
@@ -142,11 +143,18 @@ function getFormatterPath() {
   return formatterPath;
 }
 
+const linkTreeManager = new LinkTreeManager();
+
 async function getJediServer(src: NuclideUri): Promise<JediService> {
   let server = jediServers.get(src);
   if (server == null) {
+    const paths = [];
+    const linkTreePath = await linkTreeManager.getLinkTreePath(src);
+    if (linkTreePath != null) {
+      paths.push(linkTreePath);
+    }
     // Create a JediServer using default python path.
-    server = new JediServer(src, await getPythonPath());
+    server = new JediServer(src, await getPythonPath(), paths);
     jediServers.set(src, server);
   }
 
