@@ -782,6 +782,17 @@ export class HgService {
     return this._runSimpleInWorkingDirectory('checkout', [revision]);
   }
 
+  /*
+   * Silence errors from hg calls that don't include any tracked files - these
+   * are generally harmless and should not create an error notification.
+   * This checks the error string in order to avoid potentially slow hg pre-checks.
+   */
+  _rethrowErrorIfHelpful(e: Error): void {
+    if (!e.message.endsWith('abort: no files to copy\n')) {
+      throw e;
+    }
+  }
+
   /**
    * Rename/move files versioned under Hg.
    * @param filePaths Which files should be renamed/moved.
@@ -800,7 +811,15 @@ export class HgService {
     if (after) {
       args.unshift('--after');
     }
-    await this._runSimpleInWorkingDirectory('rename', args, opts);
+    try {
+      await this._runSimpleInWorkingDirectory('rename', args, opts);
+    } catch (e) {
+      if (after) {
+        this._rethrowErrorIfHelpful(e);
+      } else {
+        throw e;
+      }
+    }
   }
 
   /**
