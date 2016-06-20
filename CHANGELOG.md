@@ -1,5 +1,18 @@
 # Nuclide Changelog
 
+## v0.145.0
+
+**General**
+
+* More detailed Flow error messages.
+* Remote Connection Dialog: Added a “Save” button to save changes to Connection Profiles.
+* Remote Connection Dialog: Double clicking a profile now connects to that profile.
+* Performance improvements for C++ outline view / diagnostics.
+
+**Source Control**
+
+* Added “Rename bookmark” ability to the bookmarks side bar.
+
 ## v0.144.0
 
 Hotfix release
@@ -11,8 +24,8 @@ Hotfix release
 * [New Feature] The file-tree can display a list of open files.
 * [New Feature] Drag to move files and directories in the file-tree, including ability to move multiple files at once with cmd/ctrl click.
 * Opt-in new behavior for moving editors across panes via keyboard shortcuts ([see details](https://github.com/facebook/nuclide/tree/master/pkg/nuclide-move-item-to-available-pane/#readme)).
-* Double click on an outline view item to select it in the editor
-* Fixed docs navigation on nuclide.io
+* Double click on an outline view item to select it in the editor.
+* Fixed docs navigation on nuclide.io.
 
 **Internal**
 
