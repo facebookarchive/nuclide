@@ -109,11 +109,14 @@ class JediServer:
             column=req_data['column'], path=self.src,
             sys_path=self.sys_path)
 
+    def is_func_or_class(self, completion):
+        return completion.type == 'function' or completion.type == 'class'
+
     def get_description(self, completion):
         description = completion.docstring()
         # If docstring is not available, attempt to generate a function signature
         # with params.
-        if description == '' and hasattr(completion, 'params'):
+        if description == '' and self.is_func_or_class(completion):
             description = '%s(%s)' % (
                 completion.name,
                 ', '.join(p.description for p in completion.params)
@@ -131,7 +134,7 @@ class JediServer:
             }
             # Return params if completion has params (thus is a class/function).
             # Don't autocomplete params in the middle of an import from statement.
-            if hasattr(completion, 'params') and not isinstance(
+            if self.is_func_or_class(completion) and not isinstance(
                     script._parser.user_stmt(), ImportFrom):
                 result['params'] = [p.description for p in completion.params]
 
@@ -139,13 +142,11 @@ class JediServer:
             if completion.type == 'function' and not completion.in_builtin_module():
                 definition = completion._name.get_definition()
                 if isinstance(definition, InstanceElement):
-                    decorated_func = definition.get_decorated_func()
-                    if decorated_func.decorates is not None:
-                        # If a function has a property decorator, treat it as a property
-                        # instead of a method.
-                        if str(decorated_func.base.name) == 'property':
+                    for decorator in definition.base_func.get_decorators():
+                        if str(decorator.children[1]) == 'property':
                             del result['params']
                             result['type'] = 'property'
+                            break
             results.append(result)
         return results
 
