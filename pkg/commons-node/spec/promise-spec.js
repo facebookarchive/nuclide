@@ -286,6 +286,13 @@ describe('promises::asyncLimit()', () => {
       });
     });
   });
+
+  it('works when the array is empty', () => {
+    waitsForPromise(async () => {
+      const result = await asyncLimit([], 1, () => Promise.resolve());
+      expect(result).toEqual([]);
+    });
+  });
 });
 
 describe('promises::asyncFilter()', () => {

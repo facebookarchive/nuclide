@@ -350,7 +350,7 @@ export function asyncLimit<T, V>(
   let parallelPromises = 0;
   let index = 0;
 
-  const parallelLimit = Math.min(limit, array.length);
+  let parallelLimit = Math.min(limit, array.length) || 1;
 
   return new Promise((resolve, reject) => {
     const runPromise = async () => {
@@ -371,7 +371,7 @@ export function asyncLimit<T, V>(
       runPromise();
     };
 
-    while (parallelPromises < parallelLimit) {
+    while (parallelLimit--) {
       runPromise();
     }
   });
