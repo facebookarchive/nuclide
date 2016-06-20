@@ -36,6 +36,30 @@ const UPDATE_STATUS_DEBOUNCE_MS = 50;
 const FETCH_REV_INFO_RETRY_TIME_MS = 1000;
 const FETCH_REV_INFO_MAX_TRIES = 5;
 
+// The revisions haven't changed if the revisions' ids are the same.
+// That's because commit ids are unique and incremental.
+// Also, any write operation will update them.
+// That way, we guarantee we only update the revisions state if the revisions are changed.
+function isEqualRevisionsStates(
+  revisionsState1: ?RevisionsState,
+  revisionsState2: ?RevisionsState,
+): boolean {
+  if (revisionsState1 === revisionsState2) {
+    return true;
+  }
+  if (revisionsState1 == null || revisionsState2 == null) {
+    return false;
+  }
+  return arrayEqual(
+    revisionsState1.revisions,
+    revisionsState2.revisions,
+    (revision1, revision2) => {
+      return revision1.id === revision2.id &&
+        arrayEqual(revision1.bookmarks, revision2.bookmarks);
+    },
+  );
+}
+
 export default class RepositoryStack {
 
   _emitter: Emitter;
@@ -44,7 +68,7 @@ export default class RepositoryStack {
   _selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _repository: HgRepositoryClient;
   _lastRevisionsState: ?RevisionsState;
-  _revisionsStatePromise: ?Promise<RevisionsState>;
+  _fetchRevisionsPromise: ?Promise<Array<RevisionInfo>>;
   _selectedCompareCommitId: ?number;
   _isActive: boolean;
   _serializedUpdateStackState: () => Promise<void>;
@@ -109,7 +133,7 @@ export default class RepositoryStack {
 
   deactivate(): void {
     this._isActive = false;
-    this._revisionsStatePromise = null;
+    this._fetchRevisionsPromise = null;
     this._fileContentsAtCommitIds.reset();
   }
 
@@ -153,21 +177,10 @@ export default class RepositoryStack {
     }
     const lastRevisionsState = this._lastRevisionsState;
     const revisionsState = await this.getRevisionsStatePromise();
-    // The revisions haven't changed if the revisions' ids are the same.
-    // That's because commit ids are unique and incremental.
-    // Also, any write operation will update them.
-    // That way, we guarantee we only update the revisions state if the revisions are changed.
-    if (
-      lastRevisionsState == null ||
-      !arrayEqual(
-        lastRevisionsState.revisions,
-        revisionsState.revisions,
-        (revision1, revision2) => revision1.id === revision2.id,
-      )
-    ) {
+    this._lastRevisionsState = revisionsState;
+    if (!isEqualRevisionsStates(revisionsState, lastRevisionsState)) {
       this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
     }
-    this._lastRevisionsState = revisionsState;
   }
 
   /**
@@ -225,21 +238,23 @@ export default class RepositoryStack {
     );
   }
 
-  getRevisionsStatePromise(): Promise<RevisionsState> {
-    this._revisionsStatePromise = this._fetchRevisionsState().then(
-      this._amendSelectedCompareCommitId.bind(this),
-      error => {
-        this._revisionsStatePromise = null;
-        throw error;
-      },
-    );
-    return this._revisionsStatePromise;
+  async getRevisionsStatePromise(): Promise<RevisionsState> {
+    const revisionPromise = this._fetchRevisionsPromise = this._fetchRevisions();
+    let revisions;
+    try {
+      revisions = await this._fetchRevisionsPromise;
+    } catch (error) {
+      if (revisionPromise === this._fetchRevisionsPromise) {
+        this._fetchRevisionsPromise = null;
+      }
+      throw error;
+    }
+    return this._createRevisionsState(revisions);
   }
 
-  getCachedRevisionsStatePromise(): Promise<RevisionsState> {
-    const revisionsStatePromise = this._revisionsStatePromise;
-    if (revisionsStatePromise != null) {
-      return revisionsStatePromise.then(this._amendSelectedCompareCommitId.bind(this));
+  async getCachedRevisionsStatePromise(): Promise<RevisionsState> {
+    if (this._fetchRevisionsPromise != null) {
+      return this._createRevisionsState(await this._fetchRevisionsPromise);
     } else {
       return this.getRevisionsStatePromise();
     }
@@ -248,8 +263,8 @@ export default class RepositoryStack {
   /**
    * Amend the revisions state with the latest selected valid compare commit id.
    */
-  _amendSelectedCompareCommitId(revisionsState: RevisionsState): RevisionsState {
-    const {commitId, revisions} = revisionsState;
+  _createRevisionsState(revisions: Array<RevisionInfo>): RevisionsState {
+    const commitId = revisions[revisions.length - 1].id;
     // Prioritize the cached compaereCommitId, if it exists.
     // The user could have selected that from the timeline view.
     let compareCommitId = this._selectedCompareCommitId;
@@ -258,14 +273,14 @@ export default class RepositoryStack {
       compareCommitId = null;
     }
     return {
-      revisions,
       commitId,
       compareCommitId,
+      revisions,
     };
   }
 
   @trackTiming('diff-view.fetch-revisions-state')
-  async _fetchRevisionsState(): Promise<RevisionsState> {
+  async _fetchRevisions(): Promise<Array<RevisionInfo>> {
     if (!this._isActive) {
       throw new Error('Diff View should not fetch revisions while not active');
     }
@@ -282,12 +297,7 @@ export default class RepositoryStack {
     if (revisions == null || revisions.length === 0) {
       throw new Error('Cannot fetch revision info needed!');
     }
-    const commitId = revisions[revisions.length - 1].id;
-    return {
-      revisions,
-      commitId,
-      compareCommitId: null,
-    };
+    return revisions;
   }
 
   @trackTiming('diff-view.fetch-revisions-change-history')
