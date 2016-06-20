@@ -24,6 +24,12 @@ export type NuxTourModel = {
   id: string;
   nuxList: Array<NuxViewModel>;
   trigger: ?NuxTriggerModel;
+  /**
+   * An optional gatekeeper ID to to pass in with this NUX.
+   * If omitted, the NUX will always show.
+   * If supplied, the NUX will show iff both this and the global `GK_NUX` pass.
+   */
+  gatekeeperID: ?string;
 };
 
 export type NuxTriggerModel = {

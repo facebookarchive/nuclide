@@ -40,6 +40,7 @@ describe('NuxTour', () => {
       id,
       nuxList: Array(numViews).fill(nuxViewModel),
       trigger: null,
+      gatekeeperID: null,
     };
   }
 

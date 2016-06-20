@@ -26,7 +26,7 @@ import {NuxView} from './NuxView';
 
 import type {NuxTourModel} from './NuxModel';
 
-const GK_NUX_OUTLINE_VIEW = 'nuclide_outline_view_nux';
+export const GK_NUX = 'nuclide_all_nuxes';
 // Limits the number of NUXes displayed every session
 const NUX_PER_SESSION_LIMIT = 3;
 
@@ -156,7 +156,8 @@ export class NuxManager {
       nuxTour,
       nuxTourModel,
     } = value;
-    if (!passesGK(GK_NUX_OUTLINE_VIEW)) {
+    if (nuxTourModel.gatekeeperID != null &&
+        !(passesGK(GK_NUX) && passesGK(nuxTourModel.gatekeeperID))) {
       return;
     }
     nuxTour.setNuxCompleteCallback(
