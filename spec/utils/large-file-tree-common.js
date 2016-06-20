@@ -13,9 +13,8 @@ import type {TestContext} from './remotable-tests';
 
 import invariant from 'assert';
 import nuclideUri from '../../pkg/nuclide-remote-uri';
-
+import {fixtures} from '../../pkg/nuclide-test-helpers';
 import {
-  extractTarGzFixture,
   fileTreeHasFinishedLoading,
   getVisibleEntryFromFileTree,
   pollFor,
@@ -24,19 +23,29 @@ import {
 export function runTest(context: TestContext): void {
   it('opens large directories in the file tree', () => {
     waitsForPromise({timeout: 60000}, async () => {
-      const projectPath = await extractTarGzFixture('large_tree');
+      const files = new Map();
+      // Add an empty `.watchmanconfig` so we don't get "resolve_projpath" errors.
+      files.set('.watchmanconfig');
+      // Generate 3 dirs, with 100, 1000, 10000 files each.
+      [100, 1000, 10000].forEach(amt => {
+        for (let i = 0; i < amt; i++) {
+          files.set(`dir_${amt}_files/file_${amt}_${i}.txt`, 'some text');
+        }
+      });
+
+      const projectPath = await fixtures.generateFixture('large_tree', files);
 
       // Add this directory as an atom project.
       await context.setProject(projectPath);
 
       await fileTreeHasFinishedLoading();
 
-      await testADir('dir_100_files', 'file001.txt', 500); // 500ms for 100 files
-      await testADir('dir_1000_files', 'file0001.txt', 1500); // 1.5 sec for 1000 files
-      await testADir('dir_10000_files', 'file00001.txt', 5000); // 5 sec for 10000 files
+      await testADir('dir_100_files', 'file_100_0.txt', 500); // 500ms for 100 files
+      await testADir('dir_1000_files', 'file_1000_0.txt', 1500); // 1.5 sec for 1000 files
+      await testADir('dir_10000_files', 'file_10000_0.txt', 5000); // 5 sec for 10000 files
 
       const filePath = context.getProjectRelativePath(
-        nuclideUri.join('dir_1000_files', 'file0001.txt'),
+        nuclideUri.join('dir_1000_files', 'file_1000_0.txt'),
       );
       const editor = await atom.workspace.open(filePath);
       invariant(editor);

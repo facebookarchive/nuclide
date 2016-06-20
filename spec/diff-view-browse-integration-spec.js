@@ -27,10 +27,8 @@ import invariant from 'assert';
 import {ReactDOM} from 'react-for-atom';
 import uiTreePath from '../pkg/commons-atom/ui-tree-path';
 import {NON_MERCURIAL_REPO_DISPLAY_NAME} from '../pkg/nuclide-diff-view/lib/constants';
-import temp from 'temp';
 import nuclideUri from '../pkg/nuclide-remote-uri';
-
-temp.track();
+import {fixtures} from '../pkg/nuclide-test-helpers';
 
 describe('Diff View Browse Mode Integration Test', () => {
 
@@ -50,12 +48,11 @@ describe('Diff View Browse Mode Integration Test', () => {
       fs.writeFileSync(nuclideUri.join(localRepoPath, 'test.txt'), 'dirty changes', 'utf8');
 
       // Non-Mercurial project.
-      nonRepoPath = temp.mkdirSync('non_repo');
-      fs.writeFileSync(
-        nuclideUri.join(nonRepoPath, 'no_repo_file.txt'),
-        'ignored_contents',
-        'utf8',
-      );
+      nonRepoPath = await fixtures.generateFixture('non_repo', new Map([
+        ['.watchmanconfig'], // avoid resolve_projpath errors
+        ['no_repo_file.txt', 'ignored_contents'],
+      ]));
+
       // Add those two local directories as a new project in atom.
       setLocalProject([localRepoPath, nonRepoPath]);
 

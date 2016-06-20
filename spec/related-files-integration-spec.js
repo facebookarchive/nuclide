@@ -16,22 +16,20 @@ import {
   waitsForFile,
 } from '../pkg/nuclide-integration-test-helpers';
 
-import fsPromise from '../pkg/commons-node/fsPromise';
-import nuclideUri from '../pkg/nuclide-remote-uri';
-import {tempdir} from '../pkg/nuclide-test-helpers';
+import {fixtures} from '../pkg/nuclide-test-helpers';
 
 describeRemotableTest('Related Files Integration Test', context => {
   const TEST_FILES = ['test.cpp', 'test.h', 'testInternal.h', 'test-inl.h'].sort();
-  const BAD_FILE = 'bad.txt'; // should not switch to this
+  const BAD_FILES = ['bad.txt', '.watchmanconfig']; // should not switch to this
 
   it('is able to switch between related files', () => {
     waitsForPromise({timeout: 60000}, async () => {
 
       // Create a temporary directory and some test files.
-      const testDir = await fsPromise.realpath(await tempdir.mkdir('related-files'));
-      await Promise.all(TEST_FILES.concat([BAD_FILE]).map(
-        file => fsPromise.writeFile(nuclideUri.join(testDir, file), ''),
-      ));
+      const testDir = await fixtures.generateFixture(
+        'related-files',
+        new Map(TEST_FILES.concat(BAD_FILES).map(f => [f]))
+      );
 
       await context.setProject(testDir);
       await atom.workspace.open(context.getProjectRelativePath(TEST_FILES[0]));
