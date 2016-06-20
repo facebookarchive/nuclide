@@ -10,6 +10,7 @@
  */
 
 import invariant from 'assert';
+import {CompositeDisposable, Disposable} from 'event-kit';
 import {Observable, Subscription, Subject} from 'rxjs';
 
 /**
@@ -266,16 +267,17 @@ export function reconcileSetDiffs<T>(
     itemsToDisposables.clear();
   };
 
-  return new DisposableSubscription(
-    diffs
-      .subscribe(diff => {
+  return new CompositeDisposable(
+    new DisposableSubscription(
+      diffs.subscribe(diff => {
         // For every item that got added, perform the add action.
         diff.added.forEach(item => { itemsToDisposables.set(item, addAction(item)); });
 
         // "Undo" the add action for each item that got removed.
         diff.removed.forEach(disposeItem);
       })
-      .add(disposeAll)
+    ),
+    new Disposable(disposeAll),
   );
 }
 
