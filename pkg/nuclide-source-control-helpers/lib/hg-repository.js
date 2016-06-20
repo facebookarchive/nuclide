@@ -27,8 +27,10 @@ function findHgRepository(directoryPath: string): ?HgRepositoryDescription {
     const dirToTest = nuclideUri.join(workingDirectoryPath, '.hg');
     if (fs.isDirectorySync(dirToTest)) {
       repoPath = dirToTest;
-      if (fs.isFileSync(nuclideUri.join(dirToTest, 'hgrc'))) {
-        const config = ini.parse(fs.readFileSync(nuclideUri.join(dirToTest, 'hgrc'), 'utf8'));
+      const hgrc = nuclideUri.join(dirToTest, 'hgrc');
+      // Note that .hg/hgrc will not exist in a local repo created via `hg init`, for example.
+      if (fs.isFileSync(hgrc)) {
+        const config = ini.parse(fs.readFileSync(hgrc, 'utf8'));
         if (typeof config.paths === 'object' && typeof config.paths.default === 'string') {
           originURL = config.paths.default;
         }
