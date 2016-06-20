@@ -11,7 +11,13 @@
 
 import type {LRUCache} from 'lru-cache';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {FileChangeStatusValue, HgDiffState, RevisionsState, DiffOptionType} from './types';
+import type {
+  DiffOptionType,
+  DiffStatusDisplay,
+  FileChangeStatusValue,
+  HgDiffState,
+  RevisionsState,
+} from './types';
 import type {
   RevisionFileChanges,
   RevisionInfo,
@@ -25,6 +31,7 @@ import debounce from '../../commons-node/debounce';
 import {serializeAsyncCall, retryLimit} from '../../commons-node/promise';
 import {trackTiming} from '../../nuclide-analytics';
 import {notifyInternalError} from './notifications';
+import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
 import LRU from 'lru-cache';
 
@@ -35,6 +42,21 @@ const UPDATE_STATUS_DEBOUNCE_MS = 50;
 
 const FETCH_REV_INFO_RETRY_TIME_MS = 1000;
 const FETCH_REV_INFO_MAX_TRIES = 5;
+
+type DiffStatusFetcher = (
+  revisions: Array<RevisionInfo>,
+) => Promise<Map<number, DiffStatusDisplay>>;
+
+let diffStatusFetcher;
+
+function getDiffStatusFetcher(): DiffStatusFetcher {
+  if (diffStatusFetcher != null) {
+    return diffStatusFetcher;
+  }
+  // TODO(most): add fb-specific diff status fetcher.
+  diffStatusFetcher = async () => new Map();
+  return diffStatusFetcher;
+}
 
 // The revisions haven't changed if the revisions' ids are the same.
 // That's because commit ids are unique and incremental.
@@ -66,6 +88,7 @@ export default class RepositoryStack {
   _subscriptions: CompositeDisposable;
   _dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  _commitIdsToDiffStatuses: Map<number, DiffStatusDisplay>;
   _repository: HgRepositoryClient;
   _lastRevisionsState: ?RevisionsState;
   _fetchRevisionsPromise: ?Promise<Array<RevisionInfo>>;
@@ -73,6 +96,7 @@ export default class RepositoryStack {
   _isActive: boolean;
   _serializedUpdateStackState: () => Promise<void>;
   _serializedUpdateSelectedFileChanges: () => Promise<void>;
+  _serializedUpdateDiffStatusForCommits: () => Promise<void>;
   _revisionIdToFileChanges: LRUCache<number, RevisionFileChanges>;
   _fileContentsAtCommitIds: LRUCache<number, Map<NuclideUri, string>>;
   _diffOption: DiffOptionType;
@@ -88,6 +112,7 @@ export default class RepositoryStack {
     this._fileContentsAtCommitIds = new LRU({max: 20});
     this._selectedCompareCommitId = null;
     this._lastRevisionsState = null;
+    this._commitIdsToDiffStatuses = new Map();
     this._diffOption = diffOption;
 
     this._serializedUpdateStackState = serializeAsyncCall(
@@ -95,6 +120,9 @@ export default class RepositoryStack {
     );
     this._serializedUpdateSelectedFileChanges = serializeAsyncCall(
       () => this._updateSelectedFileChanges(),
+    );
+    this._serializedUpdateDiffStatusForCommits = serializeAsyncCall(
+      () => this._updateDiffStatusForCommits(),
     );
     const debouncedSerializedUpdateStackState = debounce(
       this._serializedUpdateStackState,
@@ -180,7 +208,20 @@ export default class RepositoryStack {
     this._lastRevisionsState = revisionsState;
     if (!isEqualRevisionsStates(revisionsState, lastRevisionsState)) {
       this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
+      this._serializedUpdateDiffStatusForCommits().catch(error => {
+        getLogger().warn('Failed to update diff status for commits', error);
+      });
     }
+  }
+
+  async _updateDiffStatusForCommits(): Promise<void> {
+    if (!this._isActive) {
+      return;
+    }
+    const cachedRevisionsState = await this.getCachedRevisionsStatePromise();
+    this._commitIdsToDiffStatuses = await getDiffStatusFetcher()(cachedRevisionsState.revisions);
+    // Emit the new revisions state with the diff statuses.
+    this._emitter.emit(CHANGE_REVISIONS_EVENT, await this.getCachedRevisionsStatePromise());
   }
 
   /**
@@ -272,9 +313,11 @@ export default class RepositoryStack {
       // Invalidate if there there is no longer a revision with that id.
       compareCommitId = null;
     }
+    const diffStatuses = this._commitIdsToDiffStatuses;
     return {
       commitId,
       compareCommitId,
+      diffStatuses,
       revisions,
     };
   }

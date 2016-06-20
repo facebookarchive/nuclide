@@ -48,10 +48,16 @@ export type FileChangeState = {
   inlineComponents?: Array<UIElement>;
 };
 
+export type DiffStatusDisplay = {
+  name: string;
+  className: ?string;
+};
+
 export type RevisionsState = {
   revisions: Array<RevisionInfo>;
   compareCommitId: ?number;
   commitId: number;
+  diffStatuses: Map<number, DiffStatusDisplay>;
 };
 
 export type OffsetMap = Map<number, number>;
