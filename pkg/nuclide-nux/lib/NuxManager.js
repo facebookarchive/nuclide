@@ -102,6 +102,7 @@ export class NuxManager {
 
     const nuxViews = nuxTourModel.nuxList.map(model =>
       new NuxView(
+        nuxTourModel.id,
         model.selector,
         model.selectorFunction,
         model.position,

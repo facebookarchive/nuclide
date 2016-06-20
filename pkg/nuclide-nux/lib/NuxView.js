@@ -11,6 +11,8 @@
 
 import {CompositeDisposable, Disposable} from 'atom';
 import debounce from '../../commons-node/debounce';
+import analytics from '../../nuclide-analytics';
+import {getLogger} from '../../nuclide-logging';
 
 const VALID_NUX_POSITIONS = new Set(['top', 'bottom', 'left', 'right', 'auto']);
 // The maximum number of times the NuxView will attempt to attach to the DOM.
@@ -19,6 +21,8 @@ const ATTACHMENT_RETRY_TIMEOUT = 500; // milliseconds
 const RESIZE_EVENT_DEBOUNCE_DURATION = 100; // milliseconds
 // The frequency with which to poll the element that the NUX is bound to.
 const POLL_ELEMENT_TIMEOUT = 100; // milliseconds
+
+const logger = getLogger();
 
 function validatePlacement(position: string) : boolean {
   return VALID_NUX_POSITIONS.has(position);
@@ -34,10 +38,12 @@ export class NuxView {
   _tooltipDisposable: IDisposable;
   _completePredicate: (() => boolean);
   _tooltipDiv: HTMLElement;
+  _tourId: string;
 
   /**
    * Constructor for the NuxView.
    *
+   * @param {string} tourId - The ID of the associated NuxTour
    * @param {?string} selectorString - The query selector to use to find an element
     on the DOM to attach to. If null, will use `selectorFunction` instead.
    * @param {?Function} selectorFunction - The function to execute to query an item
@@ -54,6 +60,7 @@ export class NuxView {
    * @throws Errors if both `selectorString` and `selectorFunction` are null.
    */
   constructor(
+    tourId: string,
     selectorString: ?string,
     selectorFunction : ?Function,
     position: 'top' | 'bottom' | 'left' | 'right' | 'auto',
@@ -61,6 +68,7 @@ export class NuxView {
     customContent: boolean = false,
     completePredicate: ?(() => boolean) = null,
   ) : void {
+    this._tourId = tourId;
     if (selectorFunction != null) {
       this._selector = selectorFunction;
     } else if (selectorString != null) {
@@ -79,8 +87,15 @@ export class NuxView {
 
   _createNux(creationAttempt: number = 1): void {
     if (creationAttempt > ATTACHMENT_ATTEMPT_THRESHOLD) {
+      const error = 'The NuxView failed to succesfully query and attach to the DOM.';
       this._onNuxComplete(false);
-      throw new Error('The NuxView failed to succesfully query and attach to the DOM.');
+      // An error is logged and tracked instead of simply throwing an error since this function
+      // will execute outside of the parent scope's execution and cannot be caught.
+      logger.error(`ERROR: ${error}`);
+      this._track(
+       error,
+       error,
+      );
     }
     const elem = this._selector();
     if (elem == null) {
@@ -231,5 +246,19 @@ export class NuxView {
 
   dispose() : void {
     this._disposables.dispose();
+  }
+
+  _track(
+    message: string,
+    error: ?string,
+  ): void {
+    analytics.track(
+      'nux-view-action',
+      {
+        tourId: this._tourId,
+        message: `${message}`,
+        error: `${error}`,
+      },
+    );
   }
 }
