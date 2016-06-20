@@ -117,6 +117,7 @@
     "language-ini",
     "language-ocaml",
     "language-thrift",
+    "merge-conflicts",
     "sort-lines"
   ]
 }
