@@ -29,7 +29,7 @@ function validatePlacement(position: string) : boolean {
 }
 
 export class NuxView {
-  _selector : Function;
+  _selector : (() => ?HTMLElement);
   _position: 'top' | 'bottom' | 'left' | 'right' | 'auto';
   _content: string;
   _customContent: boolean;
@@ -97,7 +97,7 @@ export class NuxView {
        error,
       );
     }
-    const elem = this._selector();
+    const elem: ?HTMLElement = this._selector();
     if (elem == null) {
       const attachmentTimeout =
         setTimeout(this._createNux.bind(this, creationAttempt + 1), ATTACHMENT_RETRY_TIMEOUT);
