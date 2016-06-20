@@ -370,4 +370,10 @@ describe('nuclide-uri', () => {
     //Default to Posix
     expect(nuclideUri._pathModuleFor('abcdef')).toBe(posixPath);
   });
+
+  it('properly handles backslash-containing remote URIs', () => {
+    expect(nuclideUri.getPath('nuclide://host/aaa\\bbb.txt')).toBe('/aaa\\bbb.txt');
+    expect(nuclideUri.getPath('nuclide://host/dir/aaa\\bbb.txt')).toBe('/dir/aaa\\bbb.txt');
+    expect(nuclideUri.getPath('nuclide://host/one\\two\\file.txt')).toBe('/one\\two\\file.txt');
+  });
 });
