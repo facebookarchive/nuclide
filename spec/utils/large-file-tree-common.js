@@ -47,11 +47,13 @@ export function runTest(context: TestContext): void {
       const teElement = atom.views.getView(editor);
       atom.commands.dispatch(teElement, 'core:save');
 
-      pollFor(() => !editor.isModified(), 'Failed to save fast enough', 500);
+      await pollFor(() => !editor.isModified(), 'Failed to save fast enough 1', 500);
 
       editor.insertText('Another bla');
       expect(editor.isModified()).toBe(true);
-      pollFor(() => !editor.isModified(), 'Failed to save fast enough', 500);
+      atom.commands.dispatch(teElement, 'core:save');
+
+      await pollFor(() => !editor.isModified(), 'Failed to save fast enough 2', 500);
     });
   });
 }
