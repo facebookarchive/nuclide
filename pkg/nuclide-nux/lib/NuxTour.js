@@ -44,8 +44,8 @@ export class NuxTour {
   begin(): void {
     try {
       this._nuxList[0].showNux();
-    } catch (e) {
-      this._track(false, e.toString());
+    } catch (err) {
+      this._track(false, err.toString());
     }
   }
 
@@ -79,8 +79,8 @@ export class NuxTour {
       this._track(true);
       try {
         this._nuxList[++this._currentStep].showNux();
-      } catch (e) {
-        this._track(false, e.toString());
+      } catch (err) {
+        this._track(false, err.toString());
       }
     } else {
       this._onNuxComplete();

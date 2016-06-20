@@ -14,7 +14,11 @@ import {
   Disposable,
   Emitter,
 } from 'atom';
+
 import passesGK from '../../commons-node/passesGK';
+import {arrayCompact} from '../../commons-node/collection';
+
+import analytics from '../../nuclide-analytics';
 
 import {NuxStore} from './NuxStore';
 import {NuxTour} from './NuxTour';
@@ -100,17 +104,26 @@ export class NuxManager {
       return;
     }
 
-    const nuxViews = nuxTourModel.nuxList.map(model =>
-      new NuxView(
-        nuxTourModel.id,
-        model.selector,
-        model.selectorFunction,
-        model.position,
-        model.content,
-        model.isCustomContent,
-        model.completionPredicate,
-      )
-    );
+    const nuxViews = arrayCompact(nuxTourModel.nuxList.map(model => {
+      try {
+        return new NuxView(
+          nuxTourModel.id,
+          model.selector,
+          model.selectorFunction,
+          model.position,
+          model.content,
+          model.isCustomContent,
+          model.completionPredicate,
+        );
+      } catch (err) {
+        this._track(
+          nuxTourModel.id,
+          'NuxView failed to instantiate.',
+          err.toString(),
+        );
+        return null;
+      }
+    }));
 
     const nuxTour = new NuxTour(
       nuxTourModel.id,
@@ -158,6 +171,10 @@ export class NuxManager {
       this._numNuxesDisplayed++;
       this._activeNuxTour = nuxTour;
       nuxTour.begin();
+      this._track(
+        nuxTour.getID(),
+        'Triggered new nux',
+      );
     } else {
       this._readyToDisplayNuxes.push(nuxTour);
     }
@@ -197,5 +214,20 @@ export class NuxManager {
 
   dispose() : void {
     this._disposables.dispose();
+  }
+
+  _track(
+    id: string,
+    message: string,
+    error: ?string = null,
+  ): void {
+    analytics.track(
+      'nux-manager-action',
+      {
+        tourId: id,
+        message: `${message}`,
+        error: `${error}`,
+      },
+    );
   }
 }
