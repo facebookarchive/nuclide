@@ -84,6 +84,22 @@ export function activate(rawState: ?SerializedAppState): void {
       }),
     ),
 
+    // Add Atom palette commands for selecting the build system.
+    syncAtomCommands(
+      states
+        .debounceTime(500)
+        .map(state => state.buildSystems)
+        .distinctUntilChanged()
+        .map(buildSystems => new Set(buildSystems.values())),
+      buildSystem => ({
+        'atom-workspace': {
+          [`nuclide-build:select-${buildSystem.name}-build-system`]: () => {
+            commands.selectBuildSystem(buildSystem.id);
+          },
+        },
+      }),
+    ),
+
     // Track Build events.
     new DisposableSubscription(
       compact(
