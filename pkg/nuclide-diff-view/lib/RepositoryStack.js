@@ -44,6 +44,7 @@ const FETCH_REV_INFO_RETRY_TIME_MS = 1000;
 const FETCH_REV_INFO_MAX_TRIES = 5;
 
 type DiffStatusFetcher = (
+  directoryPath: NuclideUri,
   revisions: Array<RevisionInfo>,
 ) => Promise<Map<number, DiffStatusDisplay>>;
 
@@ -53,8 +54,12 @@ function getDiffStatusFetcher(): DiffStatusFetcher {
   if (diffStatusFetcher != null) {
     return diffStatusFetcher;
   }
-  // TODO(most): add fb-specific diff status fetcher.
-  diffStatusFetcher = async () => new Map();
+  try {
+    // $FlowFB
+    diffStatusFetcher = require('./fb/services').diffStatusFetcher;
+  } catch (e) {
+    diffStatusFetcher = async () => new Map();
+  }
   return diffStatusFetcher;
 }
 
@@ -219,7 +224,10 @@ export default class RepositoryStack {
       return;
     }
     const cachedRevisionsState = await this.getCachedRevisionsStatePromise();
-    this._commitIdsToDiffStatuses = await getDiffStatusFetcher()(cachedRevisionsState.revisions);
+    this._commitIdsToDiffStatuses = await getDiffStatusFetcher()(
+      this._repository.getWorkingDirectory(),
+      cachedRevisionsState.revisions,
+    );
     // Emit the new revisions state with the diff statuses.
     this._emitter.emit(CHANGE_REVISIONS_EVENT, await this.getCachedRevisionsStatePromise());
   }
