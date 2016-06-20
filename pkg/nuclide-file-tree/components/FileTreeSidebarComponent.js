@@ -17,6 +17,7 @@ import {
 } from 'react-for-atom';
 import {Observable} from 'rxjs';
 import {CompositeDisposable, Disposable} from 'atom';
+import classnames from 'classnames';
 
 import {FileTree} from './FileTree';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
@@ -77,6 +78,7 @@ class FileTreeSidebarComponent extends React.Component {
     (this: any)._onViewChange = this._onViewChange.bind(this);
     (this: any)._scrollToPosition = this._scrollToPosition.bind(this);
     (this: any)._processExternalUpdate = this._processExternalUpdate.bind(this);
+    (this: any)._toggleOpenFilesExpanded = this._toggleOpenFilesExpanded.bind(this);
   }
 
   componentDidMount(): void {
@@ -148,14 +150,24 @@ class FileTreeSidebarComponent extends React.Component {
     let openFilesList = null;
     let foldersCaption = null;
     if (this.state.showOpenFiles) {
-      openFilesCaption = <h6 className="nuclide-file-tree-section-caption">OPEN FILES</h6>;
+      const triangleClass = classnames(
+        'nuclide-file-tree-section-caption icon',
+        {
+          'icon-chevron-down': this._store.openFilesExpanded,
+          'icon-chevron-right': !this._store.openFilesExpanded,
+        }
+      );
+      openFilesCaption =
+          <h6 className={triangleClass} onClick={this._toggleOpenFilesExpanded}>OPEN FILES</h6>;
 
-      openFilesList = (
-        <OpenFilesListComponent
-          uris={this.state.openFilesUris}
-          modifiedUris={this.state.modifiedUris}
-          activeUri={this.state.activeUri}
-        />);
+      if (this._store.openFilesExpanded) {
+        openFilesList = (
+          <OpenFilesListComponent
+            uris={this.state.openFilesUris}
+            modifiedUris={this.state.modifiedUris}
+            activeUri={this.state.activeUri}
+          />);
+      }
 
       foldersCaption = <h6 className="nuclide-file-tree-section-caption">FOLDERS</h6>;
     }
@@ -196,6 +208,10 @@ class FileTreeSidebarComponent extends React.Component {
       // Note: It's safe to call forceUpdate here because the change events are de-bounced.
       this.forceUpdate();
     }
+  }
+
+  _toggleOpenFilesExpanded(): void {
+    this._actions.setOpenFilesExpanded(!this._store.openFilesExpanded);
   }
 
   _setModifiedUris(): void {

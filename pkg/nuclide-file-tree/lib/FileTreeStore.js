@@ -51,6 +51,7 @@ export type ExportStoreData = {
   rootKeys: Array<string>;
   selectedKeysByRoot: { [key: string]: Array<string> };
   version: number;
+  openFilesExpanded?: boolean;
 };
 
 export type StoreConfigData = {
@@ -91,6 +92,8 @@ let instance: ?Object;
  */
 export class FileTreeStore {
   roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>;
+  openFilesExpanded: boolean;
+
   _conf: StoreConfigData; // The configuration for the file-tree. Avoid direct writing.
   _workingSetsStore: ?WorkingSetsStore;
   _usePrefixNav: boolean;
@@ -137,6 +140,7 @@ export class FileTreeStore {
     global.FTConf = this._conf;
     this._suppressChanges = false;
     this._filter = '';
+    this.openFilesExpanded = true;
   }
 
   /**
@@ -187,6 +191,7 @@ export class FileTreeStore {
       expandedKeysByRoot,
       rootKeys,
       selectedKeysByRoot,
+      openFilesExpanded: this.openFilesExpanded,
     };
   }
 
@@ -228,6 +233,10 @@ export class FileTreeStore {
       },
       this._conf);
     };
+
+    if (data.openFilesExpanded != null) {
+      this.openFilesExpanded = data.openFilesExpanded;
+    }
 
     this._setRoots(new Immutable.OrderedMap(
       data.rootKeys.map(rootUri => [rootUri, buildNode(rootUri, rootUri)])
@@ -375,6 +384,9 @@ export class FileTreeStore {
         break;
       case ActionType.CLEAR_FILTER:
         this.clearFilter();
+        break;
+      case ActionType.SET_OPEN_FILES_EXPANDED:
+        this._setOpenFilesExpanded(payload.openFilesExpanded);
         break;
     }
   }
@@ -1505,6 +1517,11 @@ export class FileTreeStore {
       const urisToAppend = nodesToAppend.map(n => n.uri);
       conf.editedWorkingSet = conf.editedWorkingSet.remove(uriToRemove).append(...urisToAppend);
     });
+  }
+
+  _setOpenFilesExpanded(openFilesExpanded: boolean): void {
+    this.openFilesExpanded = openFilesExpanded;
+    this._emitChange();
   }
 
   reset(): void {

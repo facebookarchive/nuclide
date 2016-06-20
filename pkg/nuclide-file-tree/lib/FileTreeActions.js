@@ -416,6 +416,13 @@ class FileTreeActions {
     });
   }
 
+  setOpenFilesExpanded(openFilesExpanded: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_OPEN_FILES_EXPANDED,
+      openFilesExpanded,
+    });
+  }
+
   async _repositoryAdded(
     repo: atom$GitRepository | HgRepositoryClient,
     rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
