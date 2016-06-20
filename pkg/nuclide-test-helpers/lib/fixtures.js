@@ -13,7 +13,6 @@ import fs from 'fs';
 import fse from 'fs-extra';
 import nuclideUri from '../../nuclide-remote-uri';
 import {mkdir} from './tempdir';
-import {checkOutput} from '../../commons-node/process';
 import {asyncLimit} from '../../commons-node/promise';
 import fsPromise from '../../commons-node/fsPromise';
 
@@ -40,28 +39,6 @@ export async function copyFixture(fixtureName: string, dirname: string): Promise
       }
     });
   });
-
-  return tempDir;
-}
-
-/**
- * When called from a file in a spec/ directory that has a subdirectory named fixtures/, it extracts
- * the specified fixtureName .tar.gz archive into a temp directory.
- * The temp directory will be deleted automatically when the current process exits.
- *
- * @param fixtureName The name of the archive file without the .tar.gz extension that should be
- * extracted.
- * @param dirname The calling function should call `__dirname` as this argument. This should
- *   correspond to the spec/ directory with a fixtures/ subdirectory.
- */
-export async function extractTarGzFixture(fixtureName: string, dirname: string): Promise<string> {
-  const tempDir = await mkdir(fixtureName);
-
-  const fixtureArchive = nuclideUri.join(dirname, 'fixtures', `${fixtureName}.tar.gz`);
-  const {stderr} = await checkOutput('tar', ['-xf', fixtureArchive], {cwd: tempDir});
-  if (stderr !== '') {
-    throw new Error(stderr);
-  }
 
   return tempDir;
 }
