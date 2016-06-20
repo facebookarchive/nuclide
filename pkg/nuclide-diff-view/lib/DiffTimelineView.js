@@ -10,7 +10,7 @@
  */
 
 import type DiffViewModel from './DiffViewModel';
-import type {RevisionsState} from './types';
+import type {RevisionsState, DiffStatusDisplay} from './types';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 
 import {CompositeDisposable} from 'atom';
@@ -68,7 +68,7 @@ export default class DiffTimelineView extends React.Component {
     if (revisionsState == null) {
       content = 'Revisions not loaded...';
     } else {
-      const {revisions, compareCommitId, commitId} = revisionsState;
+      const {revisions, compareCommitId, commitId, diffStatuses} = revisionsState;
       content = (
         <RevisionsTimelineComponent
           diffModel={diffModel}
@@ -77,6 +77,7 @@ export default class DiffTimelineView extends React.Component {
           onSelectionChange={onSelectionChange}
           onClickPublish={this._handleClickPublish}
           revisions={revisions}
+          diffStatuses={diffStatuses}
         />
       );
     }
@@ -105,11 +106,12 @@ type RevisionsComponentProps = {
   onSelectionChange: (revisionInfo: RevisionInfo) => mixed;
   onClickPublish: () => mixed;
   revisions: Array<RevisionInfo>;
+  diffStatuses: Map<number, DiffStatusDisplay>;
 };
 
 function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Element<any> {
 
-  const {revisions, compareRevisionId} = props;
+  const {revisions, compareRevisionId, diffStatuses} = props;
   const latestToOldestRevisions = revisions.slice().reverse();
   const selectedIndex = latestToOldestRevisions.findIndex(
     revision => revision.id === compareRevisionId
@@ -136,6 +138,7 @@ function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Eleme
               key={revision.hash}
               selectedIndex={selectedIndex}
               revision={revision}
+              diffStatus={diffStatuses.get(revision.id)}
               revisionsCount={revisions.length}
               onSelectionChange={props.onSelectionChange}
             />

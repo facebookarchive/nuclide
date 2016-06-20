@@ -10,6 +10,7 @@
  */
 
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {DiffStatusDisplay} from './types';
 
 import classnames from 'classnames';
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-base/lib/utils';
@@ -18,11 +19,12 @@ import {React} from 'react-for-atom';
 import {track} from '../../nuclide-analytics';
 
 type RevisionTimelineNodeProps = {
-  revision: RevisionInfo;
+  diffStatus: ?DiffStatusDisplay;
   index: number;
-  selectedIndex: number;
-  revisionsCount: number;
   onSelectionChange: (revisionInfo: RevisionInfo) => any;
+  revision: RevisionInfo;
+  revisionsCount: number;
+  selectedIndex: number;
 };
 
 export default class RevisionTimelineNode extends React.Component {
@@ -48,7 +50,7 @@ export default class RevisionTimelineNode extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {index, revision, revisionsCount, selectedIndex} = this.props;
+    const {diffStatus, index, revision, revisionsCount, selectedIndex} = this.props;
     const {author, bookmarks, date, description, hash, title} = revision;
     const revisionClassName = classnames('revision revision--actionable', {
       'selected-revision-inrange': index < selectedIndex,
@@ -80,6 +82,15 @@ export default class RevisionTimelineNode extends React.Component {
       );
     }
 
+    let diffStatusElement;
+    if (diffStatus != null) {
+      diffStatusElement = (
+        <span className={classnames('inline-block', diffStatus.className)}>
+          {diffStatus.name}
+        </span>
+      );
+    }
+
     const bookmarksToRender = bookmarks.slice();
     if (index === 0 && revisionsCount > 1 && bookmarks.length === 0) {
       bookmarksToRender.push('HEAD');
@@ -107,6 +118,7 @@ export default class RevisionTimelineNode extends React.Component {
           <span className="inline-block">{hash.substr(0, 7)}</span>
           {commitAuthorElement}
           {phabricatorRevisionElement}
+          {diffStatusElement}
           {bookmarksElement}
           <br />
           <span className="revision-title">
