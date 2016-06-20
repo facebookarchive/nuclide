@@ -11,7 +11,7 @@
 
 import NuclideServer from '../lib/NuclideServer';
 import nuclideUri from '../../nuclide-remote-uri';
-import loadServicesConfig from '../lib/loadServicesConfig';
+import servicesConfig from '../lib/servicesConfig';
 
 const pathToTestDir = nuclideUri.join(__dirname, 'testfiles');
 const pathToTestFile = nuclideUri.join(pathToTestDir, 'testfile.txt');
@@ -23,7 +23,7 @@ xdescribe('NuclideSearch test suite', () => { // eslint-disable-line jasmine/no-
   beforeEach(() => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     waitsForPromise(async () => {
-      server = new NuclideServer({port: 8176}, loadServicesConfig());
+      server = new NuclideServer({port: 8176}, servicesConfig);
       await server.connect();
       // client = new NuclideClient('test', new NuclideRemoteEventbus('http://localhost:8176'));
     });

@@ -17,7 +17,7 @@ import invariant from 'assert';
 import nuclideUri from '../../nuclide-remote-uri';
 import {safeSpawn} from '../../commons-node/process';
 import RpcProcess from '../../commons-node/RpcProcess';
-import {ServiceRegistry} from '../../nuclide-rpc';
+import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 
 const PYTHON_EXECUTABLE = 'python';
 const LIB_PATH = nuclideUri.join(__dirname, '../VendorLib');
@@ -33,12 +33,9 @@ let serviceRegistry: ?ServiceRegistry = null;
 
 function getServiceRegistry(): ServiceRegistry {
   if (serviceRegistry == null) {
-    serviceRegistry = ServiceRegistry.createLocal([{
-      name: 'JediService',
-      definition: nuclideUri.join(__dirname, 'JediService.js'),
-      implementation: nuclideUri.join(__dirname, 'JediService.js'),
-      preserveFunctionNames: true,
-    }]);
+    serviceRegistry = ServiceRegistry.createLocal(
+      loadServicesConfig(nuclideUri.join(__dirname, '..'))
+    );
   }
   return serviceRegistry;
 }

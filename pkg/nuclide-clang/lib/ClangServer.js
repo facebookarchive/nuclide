@@ -18,7 +18,7 @@ import {BehaviorSubject} from 'rxjs';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import RpcProcess from '../../commons-node/RpcProcess';
 import findClangServerArgs from './find-clang-server-args';
-import {ServiceRegistry} from '../../nuclide-rpc';
+import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 
 export type ClangServerStatus = 'ready' | 'compiling';
 
@@ -26,12 +26,9 @@ let serviceRegistry: ?ServiceRegistry = null;
 
 function getServiceRegistry(): ServiceRegistry {
   if (serviceRegistry == null) {
-    serviceRegistry = ServiceRegistry.createLocal([{
-      name: 'ClangProcessService',
-      definition: nuclideUri.join(__dirname, 'ClangProcessService.js'),
-      implementation: nuclideUri.join(__dirname, 'ClangProcessService.js'),
-      preserveFunctionNames: true,
-    }]);
+    serviceRegistry = ServiceRegistry.createLocal(
+      loadServicesConfig(nuclideUri.join(__dirname, '..'))
+    );
   }
   return serviceRegistry;
 }

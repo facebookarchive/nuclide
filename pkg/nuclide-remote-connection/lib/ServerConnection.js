@@ -16,7 +16,7 @@ import typeof * as InfoService from '../../nuclide-server/lib/services/InfoServi
 
 import invariant from 'assert';
 import {RpcConnection} from '../../nuclide-rpc';
-import loadServicesConfig from '../../nuclide-server/lib/loadServicesConfig';
+import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {setConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';
@@ -265,7 +265,7 @@ class ServerConnection {
 
     const socket = new NuclideSocket(uri, options);
     const client = RpcConnection.createRemote(
-      this.getRemoteHostname(), socket, loadServicesConfig(),
+      this.getRemoteHostname(), socket, servicesConfig,
     );
 
     this._client = client;

@@ -14,13 +14,13 @@ import typeof * as InfoService from '../../lib/services/InfoService';
 import ServiceTestHelper from './ServiceTestHelper';
 import {getVersion} from '../../../nuclide-version';
 import invariant from 'assert';
-import loadServicesConfig from '../../lib/loadServicesConfig';
+import servicesConfig from '../../lib/servicesConfig';
 
 describe('InfoService', () => {
   let testHelper;
   beforeEach(() => {
     testHelper = new ServiceTestHelper();
-    waitsForPromise(() => testHelper.start(loadServicesConfig()));
+    waitsForPromise(() => testHelper.start(servicesConfig));
   });
 
   it('Returns the correct version number', () => {

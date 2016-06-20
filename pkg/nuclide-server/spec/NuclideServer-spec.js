@@ -12,7 +12,7 @@
 import WS from 'ws';
 import NuclideServer from '../lib/NuclideServer';
 import {RpcConnection} from '../../nuclide-rpc';
-import loadServicesConfig from '../lib/loadServicesConfig';
+import servicesConfig from '../lib/servicesConfig';
 
 import invariant from 'assert';
 import {NuclideSocket} from '../lib/NuclideSocket';
@@ -26,10 +26,10 @@ describe('Nuclide Server test suite', () => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
 
     waitsForPromise(async () => {
-      server = new NuclideServer({port: 8176}, loadServicesConfig());
+      server = new NuclideServer({port: 8176}, servicesConfig);
       await server.connect();
       socket = new NuclideSocket('http://localhost:8176', null);
-      client = RpcConnection.createRemote('localhost', socket, loadServicesConfig());
+      client = RpcConnection.createRemote('localhost', socket, servicesConfig);
     });
   });
 

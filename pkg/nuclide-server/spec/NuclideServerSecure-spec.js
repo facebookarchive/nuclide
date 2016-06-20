@@ -14,7 +14,7 @@ import fs from 'fs';
 import nuclideUri from '../../nuclide-remote-uri';
 import NuclideServer from '../lib/NuclideServer';
 import {RpcConnection} from '../../nuclide-rpc';
-import loadServicesConfig from '../lib/loadServicesConfig';
+import servicesConfig from '../lib/servicesConfig';
 import {NuclideSocket} from '../lib/NuclideSocket';
 import invariant from 'assert';
 import child_process from 'child_process';
@@ -49,7 +49,7 @@ describe('Nuclide Secure Server test suite', () => {
         serverKey: fs.readFileSync(server_key_path),
         serverCertificate: fs.readFileSync(server_cert_path),
         certificateAuthorityCertificate: fs.readFileSync(ca_cert_path),
-      }, loadServicesConfig());
+      }, servicesConfig);
 
       await server.connect();
 
@@ -58,7 +58,7 @@ describe('Nuclide Secure Server test suite', () => {
         cert: fs.readFileSync(client_cert_path),
         key: fs.readFileSync(client_key_path),
       });
-      const client = RpcConnection.createRemote('localhost', socket, loadServicesConfig());
+      const client = RpcConnection.createRemote('localhost', socket, servicesConfig);
       invariant(client);
 
       socket.close();

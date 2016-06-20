@@ -16,6 +16,9 @@ export {RpcConnection} from './RpcConnection';
 export {LoopbackTransports} from './LoopbackTransports';
 export {StreamTransport} from './StreamTransport';
 
+import loadServicesConfig from './loadServicesConfig';
+export {loadServicesConfig};
+
 export type ConfigEntry = {
   name: string;
   definition:string;

@@ -10,35 +10,26 @@
  */
 
 import fs from 'fs';
-import invariant from 'assert';
 import nuclideUri from '../../nuclide-remote-uri';
 
 import type {ConfigEntry} from '../../nuclide-rpc';
 
-let servicesConfig: ?Array<ConfigEntry>;
-
 /**
  * Load service configs, and resolve all of the paths to absolute paths.
  */
-export default function loadServicesConfig(): Array<ConfigEntry> {
-  if (!servicesConfig) {
-    servicesConfig = [];
-    [
-      nuclideUri.resolve(__dirname, '../services-3.json'),
-      nuclideUri.resolve(__dirname, '../fb-services-3.json'),
-    ].forEach(servicePath => {
-      if (!fs.existsSync(servicePath)) {
-        return;
-      }
+export default function loadServicesConfig(dirname: string): Array<ConfigEntry> {
+  return [
+    nuclideUri.resolve(dirname, './services-3.json'),
+    nuclideUri.resolve(dirname, './fb-services-3.json'),
+  ].reduce((acc, servicePath) => {
+    if (fs.existsSync(servicePath)) {
       const basedir = nuclideUri.dirname(servicePath);
       const src = fs.readFileSync(servicePath, 'utf8');
       const jsonConfig: Array<Object> = JSON.parse(src);
-
-      invariant(servicesConfig != null);
-      servicesConfig.push(...createServiceConfigObject(basedir, jsonConfig));
-    });
-  }
-  return servicesConfig;
+      acc.push(...createServiceConfigObject(basedir, jsonConfig));
+    }
+    return acc;
+  }, []);
 }
 
 /**
@@ -57,6 +48,7 @@ function createServiceConfigObject(
       // TODO(peterhal): Remove this once all services have had their def files removed.
       definition: nuclideUri.resolve(basedir, config.definition || config.implementation),
       implementation: nuclideUri.resolve(basedir, config.implementation),
+      preserveFunctionNames: config.preserveFunctionNames === true,
     };
   });
 }

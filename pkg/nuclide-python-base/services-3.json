@@ -1,0 +1,7 @@
+[
+  {
+    "implementation": "./lib/JediService.js",
+    "name": "JediService",
+    "preserveFunctionNames": true
+  }
+]

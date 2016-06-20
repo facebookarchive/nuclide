@@ -15,7 +15,7 @@ import type {Transport} from '../../nuclide-rpc';
 import {ServerConnection} from './ServerConnection';
 import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
-import loadServicesConfig from '../../nuclide-server/lib/loadServicesConfig';
+import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import ServiceLogger from './ServiceLogger';
 import {
   LoopbackTransports,
@@ -33,12 +33,11 @@ let knownLocalRpc = false;
 // local service calls have the same behavior as remote RPC calls.
 function createLocalRpcClient(): RpcConnection<Transport> {
   const localTransports = new LoopbackTransports();
-  const newServices = loadServicesConfig();
-  const serviceRegistry = ServiceRegistry.createLocal(newServices);
+  const serviceRegistry = ServiceRegistry.createLocal(servicesConfig);
   const localClientConnection
     = RpcConnection.createServer(serviceRegistry, localTransports.serverTransport);
   invariant(localClientConnection != null); // silence lint...
-  return RpcConnection.createLocal(localTransports.clientTransport, newServices);
+  return RpcConnection.createLocal(localTransports.clientTransport, servicesConfig);
 }
 
 function setUseLocalRpc(value: boolean): void {
@@ -54,8 +53,7 @@ function getlocalService(serviceName: string): Object {
   if (localRpcClient != null) {
     return localRpcClient.getService(serviceName);
   } else {
-    const newServices = loadServicesConfig();
-    const [serviceConfig] = newServices.filter(config => config.name === serviceName);
+    const [serviceConfig] = servicesConfig.filter(config => config.name === serviceName);
     invariant(serviceConfig, `No config found for service ${serviceName}`);
     // $FlowIgnore
     return require(serviceConfig.implementation);

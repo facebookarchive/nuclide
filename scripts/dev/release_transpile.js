@@ -42,8 +42,11 @@ function runParent() {
   };
 
   require('../../pkg/nuclide-node-transpiler');
-  const loadServicesConfig = require('../../pkg/nuclide-server/lib/loadServicesConfig');
-  const services = loadServicesConfig().map(service => service.definition);
+  const loadServicesConfig = require('../../pkg/nuclide-rpc/lib/loadServicesConfig');
+
+  const services = glob.sync(path.join(basedir, 'pkg/*'))
+    .reduce((acc, dirname) => acc.concat(loadServicesConfig(dirname)), [])
+    .map(service => service.definition);
 
   const jsFiles = glob.sync(path.join(basedir, '**/*.js'), {
     ignore: [
