@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import typeof * as DummyService from './DummyService';
+import typeof * as DummyService from './fixtures/dummy-service/DummyService';
 
 import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
@@ -17,24 +17,24 @@ import {safeSpawn} from '../process';
 import RpcProcess from '../RpcProcess';
 import {ServiceRegistry} from '../../nuclide-rpc';
 
-const PROCESS_PATH = nuclideUri.join(__dirname, '/fixtures/dummyioserver.py');
-const OPTS = {
-  cwd: nuclideUri.dirname(PROCESS_PATH),
-  stdio: 'pipe',
-  detached: false,
-};
-
-const serviceRegistry = ServiceRegistry.createLocal([{
-  name: 'dummy',
-  definition: nuclideUri.join(__dirname, 'DummyService.js'),
-  implementation: nuclideUri.join(__dirname, 'DummyService.js'),
-  preserveFunctionNames: true,
-}]);
-
 describe('RpcProcess', () => {
   let server: RpcProcess;
 
   beforeEach(() => {
+    const PROCESS_PATH = nuclideUri.join(__dirname, 'fixtures/dummy-service/dummyioserver.py');
+    const OPTS = {
+      cwd: nuclideUri.dirname(PROCESS_PATH),
+      stdio: 'pipe',
+      detached: false,
+    };
+
+    const serviceRegistry = ServiceRegistry.createLocal([{
+      name: 'dummy',
+      definition: nuclideUri.join(__dirname, 'fixtures/dummy-service/DummyService.js'),
+      implementation: nuclideUri.join(__dirname, 'fixtures/dummy-service/DummyService.js'),
+      preserveFunctionNames: true,
+    }]);
+
     waitsForPromise(async () => {
       const createProcess = () => safeSpawn('python', [PROCESS_PATH], OPTS);
       server = new RpcProcess('Dummy IO Server', serviceRegistry, createProcess);

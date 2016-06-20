@@ -16,8 +16,6 @@ import fsPromise from '../fsPromise';
 
 describe('fsPromise test suite', () => {
 
-  temp.track();
-
   describe('findNearestFile()', () => {
     let dirPath: any;
     let nestedDirPath: any;
@@ -25,6 +23,7 @@ describe('fsPromise test suite', () => {
     let filePath;
 
     beforeEach(() => {
+      temp.track();
       dirPath = temp.mkdirSync('nearest_test');
       nestedDirPath = nuclideUri.join(dirPath, 'nested_dir');
       fs.mkdirSync(nestedDirPath);

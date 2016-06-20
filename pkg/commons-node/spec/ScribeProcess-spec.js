@@ -13,30 +13,32 @@ import nuclideUri from '../../nuclide-remote-uri';
 import fsPromise from '../fsPromise';
 import ScribeProcess, {__test__} from '../ScribeProcess';
 
-// The script who simluate behavior of scribe_cat. Different from `scribe_cat` who save
-// data into scribe, it save data into ${process.env['SCRIBE_MOCK_PATH'] + category_name}
-// so that we could verify that the data is saved.
-// Also, if a special data "abort" (with quote) is received, it will crash itself.
-const scribeCatMockCommandPath = nuclideUri.join(
-  nuclideUri.dirname(__filename),
-  'scripts',
-  'scribe_cat_mock',
-);
-let tempDir = '';
-let scribeProcess: ?ScribeProcess = null;
-let originalCommand = '';
-
-async function getContentOfScribeCategory(category: string): Promise<Array<mixed>> {
-  const categoryFilePath = nuclideUri.join(tempDir, category);
-  const content = await fsPromise.readFile(categoryFilePath);
-  const result = content.toString().split('\n')
-    .filter(item => (item.length > 0));
-  return result;
-}
-
 describe('scribe_cat test suites', () => {
+  let tempDir = '';
+  let scribeProcess: ?ScribeProcess = null;
+  let originalCommand = '';
+
+  async function getContentOfScribeCategory(
+    category: string,
+  ): Promise<Array<mixed>> {
+    const categoryFilePath = nuclideUri.join(tempDir, category);
+    const content = await fsPromise.readFile(categoryFilePath);
+    const result = content.toString().split('\n')
+      .filter(item => (item.length > 0));
+    return result;
+  }
+
   beforeEach(() => {
     jasmine.useRealClock();
+    // The script who simluate behavior of scribe_cat. Different from `scribe_cat` who save
+    // data into scribe, it save data into ${process.env['SCRIBE_MOCK_PATH'] + category_name}
+    // so that we could verify that the data is saved.
+    // Also, if a special data "abort" (with quote) is received, it will crash itself.
+    const scribeCatMockCommandPath = nuclideUri.join(
+      nuclideUri.dirname(__filename),
+      'scripts',
+      'scribe_cat_mock',
+    );
     waitsForPromise(async () => {
       tempDir = await fsPromise.tempdir();
       originalCommand = __test__.setScribeCatCommand(scribeCatMockCommandPath);

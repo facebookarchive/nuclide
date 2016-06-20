@@ -28,8 +28,6 @@ import {
   __test__,
 } from '../process';
 
-const {DARWIN_PATH_HELPER_REGEXP} = __test__;
-
 describe('commons-node/process', () => {
 
   let origPlatform;
@@ -86,7 +84,7 @@ describe('commons-node/process', () => {
   describe('OS X path_helper regexp', () => {
     it('matches and captures valid PATH', () => {
       const matches = 'PATH="/usr/bin:/usr/local/bin"; export PATH; echo ""'
-        .match(DARWIN_PATH_HELPER_REGEXP);
+        .match(__test__.DARWIN_PATH_HELPER_REGEXP);
       invariant(matches);
       expect(matches[1]).toEqual('/usr/bin:/usr/local/bin');
     });

@@ -123,9 +123,8 @@ describe('promises::denodeify()', () => {
     }
   }
 
-  const denodeifiedAsyncProduct = denodeify(asyncProduct);
-
   it('resolves Promise when callback succeeds', () => {
+    const denodeifiedAsyncProduct = denodeify(asyncProduct);
     waitsForPromise(async () => {
       const trivialProduct = await denodeifiedAsyncProduct();
       expect(trivialProduct).toBe(1);
@@ -136,6 +135,7 @@ describe('promises::denodeify()', () => {
   });
 
   it('rejects Promise when callback fails', () => {
+    const denodeifiedAsyncProduct = denodeify(asyncProduct);
     waitsForPromise(async () => {
       await expectAsyncFailure(denodeifiedAsyncProduct('a', 'b'), (error: Error) => {
         expect(error.message).toBe('product was NaN');
@@ -151,9 +151,9 @@ describe('promises::denodeify()', () => {
     }
   }
 
-  const denodeifiedChecksReceiver = denodeify(checksReceiver);
-
   it('result of denodeify propagates receiver as expected', () => {
+    const denodeifiedChecksReceiver = denodeify(checksReceiver);
+
     waitsForPromise(async () => {
       const receiver = {denodeifiedChecksReceiver};
       const result = await receiver.denodeifiedChecksReceiver(receiver);
@@ -237,8 +237,9 @@ describe('promises::serializeAsyncCall()', () => {
 });
 
 describe('promises::asyncLimit()', () => {
-
-  beforeEach(() => jasmine.useRealClock());
+  beforeEach(() => {
+    jasmine.useRealClock();
+  });
 
   it('runs in series if limit is 1', () => {
     waitsForPromise(async () => {
@@ -296,11 +297,12 @@ describe('promises::asyncLimit()', () => {
 });
 
 describe('promises::asyncFilter()', () => {
+  beforeEach(() => {
+    jasmine.useRealClock();
+  });
 
-  beforeEach(() => jasmine.useRealClock());
-
-  it('filters an array with an async iterator and maximum parallelization when no limit is'
-    + ' specified', () => {
+  // eslint-disable-next-line max-len
+  it('filters an array with an async iterator and maximum parallelization when no limit is specified', () => {
     waitsForPromise(async () => {
       const {result: filtered, parallelismHistory} = await captureParallelismHistory(
           asyncFilter,
@@ -332,8 +334,9 @@ describe('promises::asyncFilter()', () => {
 });
 
 describe('promises::asyncObjFilter()', () => {
-
-  beforeEach(() => jasmine.useRealClock());
+  beforeEach(() => {
+    jasmine.useRealClock();
+  });
 
   // eslint-disable-next-line max-len
   it('filters an object with an async iterator and maximum parallelization when no limit is specified', () => {
@@ -368,11 +371,12 @@ describe('promises::asyncObjFilter()', () => {
 });
 
 describe('promises::asyncSome()', () => {
+  beforeEach(() => {
+    jasmine.useRealClock();
+  });
 
-  beforeEach(() => jasmine.useRealClock());
-
-  it('some an array with an async iterator and maximum parallelization when no limit is'
-    + ' specified', () => {
+  // eslint-disable-next-line max-len
+  it('some an array with an async iterator and maximum parallelization when no limit is specified', () => {
     waitsForPromise(async () => {
       const {result, parallelismHistory} = await captureParallelismHistory(
           asyncSome,
@@ -403,8 +407,9 @@ describe('promises::asyncSome()', () => {
 });
 
 describe('promises::retryLimit()', () => {
-
-  beforeEach(() => jasmine.useRealClock());
+  beforeEach(() => {
+    jasmine.useRealClock();
+  });
 
   it('retries and fails 2 times before resolving to an acceptable result where limit = 5', () => {
     waitsForPromise(async () => {
