@@ -17,10 +17,10 @@ Outline,
 } from '../../nuclide-outline-view';
 import type {TextToken} from '../../nuclide-tokenized-text';
 import type {
-  JediOutlineItem,
-  JediClassItem,
-  JediFunctionItem,
-  JediStatementItem,
+  PythonOutlineItem,
+  PythonClassItem,
+  PythonFunctionItem,
+  PythonStatementItem,
 } from '../../nuclide-python-base';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
@@ -38,7 +38,7 @@ type ShowVariableMode = 'none' | 'constants' | 'all';
 
 function itemToOutlineTree(
   mode: ShowVariableMode,
-  item: JediOutlineItem,
+  item: PythonOutlineItem,
 ): ?OutlineTree {
   switch (item.kind) {
     case 'class':
@@ -52,7 +52,7 @@ function itemToOutlineTree(
 
 function itemsToOutline(
   mode: ShowVariableMode,
-  items: ?Array<JediOutlineItem>,
+  items: ?Array<PythonOutlineItem>,
 ): Array<OutlineTree> {
   if (!items || items.length === 0) {
     return [];
@@ -68,7 +68,7 @@ function itemsToOutline(
 
 function classToOutlineTree(
   mode: ShowVariableMode,
-  item: JediClassItem,
+  item: PythonClassItem,
 ): OutlineTree {
   return {
     tokenizedText: [
@@ -82,7 +82,7 @@ function classToOutlineTree(
   };
 }
 
-function functionToOutlineTree(item: JediFunctionItem): OutlineTree {
+function functionToOutlineTree(item: PythonFunctionItem): OutlineTree {
   return {
     tokenizedText: [
       keyword('def'),
@@ -100,7 +100,7 @@ function functionToOutlineTree(item: JediFunctionItem): OutlineTree {
 
 function statementToOutlineTree(
   mode: ShowVariableMode,
-  item: JediStatementItem,
+  item: PythonStatementItem,
 ): ?OutlineTree {
   if (mode === 'none') {
     return null;
@@ -147,7 +147,7 @@ function argsToText(args: Array<string>): Array<TextToken> {
   return result;
 }
 
-function itemToPositions(item: JediOutlineItem): {
+function itemToPositions(item: PythonOutlineItem): {
   startPosition: atom$Point;
   endPosition: atom$Point;
 } {
@@ -178,6 +178,6 @@ export async function generateOutline(
   }
 
   return {
-    outlineTrees: itemsToOutline(mode, result.items),
+    outlineTrees: itemsToOutline(mode, result),
   };
 }

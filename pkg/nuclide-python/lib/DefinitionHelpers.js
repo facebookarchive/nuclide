@@ -59,11 +59,11 @@ export default class DefinitionHelpers {
       return null;
     }
 
-    if (result.definitions.length === 0) {
+    if (result.length === 0) {
       return null;
     }
 
-    const definitions = result.definitions.map(definition => ({
+    const definitions = result.map(definition => ({
       path: definition.file,
       position: new Point(definition.line, definition.column),
       id: definition.text,

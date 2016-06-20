@@ -52,9 +52,9 @@ describe('PythonService', () => {
         // line 12: def hello = os.path.isab
         const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 11, 20);
         invariant(response);
-        expect(response.completions.length).toBeGreaterThan(0);
+        expect(response.length).toBeGreaterThan(0);
 
-        const completion = response.completions[0];
+        const completion = response[0];
         expect(completion.text).toEqual('isabs');
         expect(completion.type).toEqual('function');
         // Check that description exists.
@@ -67,9 +67,9 @@ describe('PythonService', () => {
         // line 14: potato2 = po
         const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 13, 12);
         invariant(response);
-        expect(response.completions.length).toBeGreaterThan(0);
+        expect(response.length).toBeGreaterThan(0);
 
-        const completion = response.completions[0];
+        const completion = response[0];
         expect(completion.text).toEqual('potato');
         expect(completion.type).toEqual('statement');
       });
@@ -80,9 +80,9 @@ describe('PythonService', () => {
         // line 18: a.t
         const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 17, 3);
         invariant(response);
-        expect(response.completions.length).toBeGreaterThan(0);
+        expect(response.length).toBeGreaterThan(0);
 
-        const completion = response.completions[0];
+        const completion = response[0];
         expect(completion.text).toEqual('test');
         expect(completion.type).toEqual('property');
         expect(completion.params).toBeUndefined();
@@ -94,9 +94,9 @@ describe('PythonService', () => {
         // line 26: a = Tes
         const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 25, 7);
         invariant(response);
-        expect(response.completions.length).toBeGreaterThan(0);
+        expect(response.length).toBeGreaterThan(0);
 
-        const completion = response.completions[0];
+        const completion = response[0];
         expect(completion.text).toEqual('Test');
         expect(completion.type).toEqual('class');
         expect(completion.params).toEqual([]);
@@ -108,9 +108,9 @@ describe('PythonService', () => {
         // line 9: from decorated import Test
         const response = await getCompletions(TEST_FILE, FILE_CONTENTS, 8, 26);
         invariant(response);
-        expect(response.completions.length).toBeGreaterThan(0);
+        expect(response.length).toBeGreaterThan(0);
 
-        const completion = response.completions[0];
+        const completion = response[0];
         expect(completion.text).toEqual('Test');
         expect(completion.type).toEqual('class');
         expect(completion.params).toBeUndefined();
@@ -139,9 +139,9 @@ describe('PythonService', () => {
         // line 9: import os
         const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 7, 8);
         invariant(response);
-        expect(response.definitions.length).toBeGreaterThan(0);
+        expect(response.length).toBeGreaterThan(0);
 
-        const definition = response.definitions[0];
+        const definition = response[0];
         expect(definition.text).toEqual('os');
         expect(definition.type).toEqual('module');
         // Path is machine dependent, so just check that it exists and isn't empty.
@@ -154,9 +154,9 @@ describe('PythonService', () => {
         // line 17: a = Test()
         const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 16, 7);
         invariant(response);
-        expect(response.definitions.length).toBeGreaterThan(0);
+        expect(response.length).toBeGreaterThan(0);
 
-        const definition = response.definitions[0];
+        const definition = response[0];
         expect(definition.text).toEqual('Test');
         expect(definition.type).toEqual('class');
         // Result should be the class definition itself, not the import statement.
@@ -171,9 +171,9 @@ describe('PythonService', () => {
         // line 27: b = Test2()
         const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 26, 7);
         invariant(response);
-        expect(response.definitions.length).toBeGreaterThan(0);
+        expect(response.length).toBeGreaterThan(0);
 
-        const definition = response.definitions[0];
+        const definition = response[0];
         expect(definition.text).toEqual('Test2');
         expect(definition.type).toEqual('import');
         // Result should be the import statement in decorated.py, since it's not
@@ -189,9 +189,9 @@ describe('PythonService', () => {
         // line 15: potato3 = potato
         const response = await getDefinitions(TEST_FILE, FILE_CONTENTS, 14, 12);
         invariant(response);
-        expect(response.definitions.length).toBeGreaterThan(0);
+        expect(response.length).toBeGreaterThan(0);
 
-        const definition = response.definitions[0];
+        const definition = response[0];
         expect(definition.text).toEqual('potato');
         expect(definition.type).toEqual('statement');
         expect(definition.line).toEqual(12);
@@ -208,7 +208,7 @@ describe('PythonService', () => {
         const response = await getReferences(TEST_FILE, FILE_CONTENTS, 12, 2);
         invariant(response);
 
-        expect(response.references).toEqual([
+        expect(response).toEqual([
           {
             type: 'statement',
             text: 'potato',
@@ -233,7 +233,7 @@ describe('PythonService', () => {
         const response = await getReferences(TEST_FILE, FILE_CONTENTS, 19, 2);
         invariant(response);
 
-        expect(response.references).toEqual([
+        expect(response).toEqual([
           {
             type: 'statement',
             text: 'test_parent_name',

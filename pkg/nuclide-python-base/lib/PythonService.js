@@ -15,18 +15,14 @@ import {asyncExecute} from '../../commons-node/process';
 import nuclideUri from '../../nuclide-remote-uri';
 import JediServerManager from './JediServerManager';
 
-export type JediCompletion = {
+export type PythonCompletion = {
   type: string;
   text: string;
   description?: string;
   params?: Array<string>;
 };
 
-export type JediCompletionsResult = {
-  completions: Array<JediCompletion>;
-};
-
-export type JediDefinition = {
+export type PythonDefinition = {
   type: string;
   text: string;
   file: NuclideUri;
@@ -34,11 +30,7 @@ export type JediDefinition = {
   column: number;
 };
 
-export type JediDefinitionsResult = {
-  definitions: Array<JediDefinition>;
-};
-
-export type JediReference = {
+export type PythonReference = {
   type: string;
   text: string;
   file: NuclideUri;
@@ -47,37 +39,33 @@ export type JediReference = {
   parentName?: string;
 };
 
-export type JediReferencesResult = {
-  references: Array<JediReference>;
-};
-
 export type Position = {
   line: number;
   column: number;
 };
 
-export type JediFunctionItem = {
+export type PythonFunctionItem = {
   kind: 'function';
   name: string;
   start: Position;
   end: Position;
-  children?: Array<JediOutlineItem>;
+  children?: Array<PythonOutlineItem>;
   docblock?: string;
   params?: Array<string>;
 };
 
-export type JediClassItem = {
+export type PythonClassItem = {
   kind: 'class';
   name: string;
   start: Position;
   end: Position;
-  children?: Array<JediOutlineItem>;
+  children?: Array<PythonOutlineItem>;
   docblock?: string;
   // Class params, i.e. superclasses.
   params?: Array<string>;
 };
 
-export type JediStatementItem = {
+export type PythonStatementItem = {
   kind: 'statement';
   name: string;
   start: Position;
@@ -85,11 +73,7 @@ export type JediStatementItem = {
   docblock?: string;
 };
 
-export type JediOutlineItem = JediFunctionItem | JediClassItem | JediStatementItem;
-
-export type JediOutlineResult = {
-  items: Array<JediOutlineItem>
-};
+export type PythonOutlineItem = PythonFunctionItem | PythonClassItem | PythonStatementItem;
 
 let formatterPath;
 function getFormatterPath() {
@@ -118,7 +102,7 @@ export async function getCompletions(
   contents: string,
   line: number,
   column: number,
-): Promise<?JediCompletionsResult> {
+): Promise<?Array<PythonCompletion>> {
   const service = await serverManager.getJediService(src);
   return service.get_completions(
       src,
@@ -133,7 +117,7 @@ export async function getDefinitions(
   contents: string,
   line: number,
   column: number,
-): Promise<?JediDefinitionsResult> {
+): Promise<?Array<PythonDefinition>> {
   const service = await serverManager.getJediService(src);
   return service.get_definitions(
       src,
@@ -148,7 +132,7 @@ export async function getReferences(
   contents: string,
   line: number,
   column: number,
-): Promise<?JediReferencesResult> {
+): Promise<?Array<PythonReference>> {
   const service = await serverManager.getJediService(src);
   return service.get_references(
       src,
@@ -161,7 +145,7 @@ export async function getReferences(
 export async function getOutline(
   src: NuclideUri,
   contents: string,
-): Promise<?JediOutlineResult> {
+): Promise<?Array<PythonOutlineItem>> {
   const service = await serverManager.getJediService(src);
   return service.get_outline(src, contents);
 }

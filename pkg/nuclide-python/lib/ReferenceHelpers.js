@@ -53,14 +53,14 @@ export default class ReferenceHelpers {
       'Loading references from Jedi server...',
     );
 
-    if (!result || result.references.length === 0) {
+    if (!result || result.length === 0) {
       return {type: 'error', message: 'No usages were found.'};
     }
 
-    const symbolName = result.references[0].text;
+    const symbolName = result[0].text;
 
     // Process this into the format nuclide-find-references expects.
-    const references = result.references.map(ref => {
+    const references = result.map(ref => {
       return {
         uri: ref.file,
         name: ref.parentName,

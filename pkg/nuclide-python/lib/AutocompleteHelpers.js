@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {JediCompletion} from '../../nuclide-python-base/lib/PythonService';
+import type {PythonCompletion} from '../../nuclide-python-base/lib/PythonService';
 
 import {trackTiming} from '../../nuclide-analytics';
 import {TYPES} from './constants';
@@ -18,7 +18,7 @@ import {getCompletions} from './jedi-client-helpers';
 const VALID_EMPTY_SUFFIX = /(\.|\()$/;
 const TRIGGER_COMPLETION_REGEX = /([\. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
 
-function getText(completion: JediCompletion): string {
+function getText(completion: PythonCompletion): string {
   // Generate a snippet if completion is a function. Otherwise just return the
   // completion text.
   if (completion.params) {
@@ -59,7 +59,7 @@ export default class AutocompleteHelpers {
       return [];
     }
 
-    return result.completions.map(completion => ({
+    return result.map(completion => ({
       snippet: getText(completion),
       type: TYPES[completion.type],
       description: completion.description,

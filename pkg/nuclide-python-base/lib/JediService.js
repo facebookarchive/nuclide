@@ -13,18 +13,14 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 // This file contains RPC definitions for jediserver.py.
 
-export type PythonCompletion = {
+export type JediCompletion = {
   type: string;
   text: string;
   description?: string;
   params?: Array<string>;
 };
 
-export type PythonCompletionsResult = {
-  completions: Array<PythonCompletion>;
-};
-
-export type PythonDefinition = {
+export type JediDefinition = {
   type: string;
   text: string;
   file: NuclideUri;
@@ -32,11 +28,7 @@ export type PythonDefinition = {
   column: number;
 };
 
-export type PythonDefinitionsResult = {
-  definitions: Array<PythonDefinition>;
-};
-
-export type PythonReference = {
+export type JediReference = {
   type: string;
   text: string;
   file: NuclideUri;
@@ -45,37 +37,33 @@ export type PythonReference = {
   parentName?: string;
 };
 
-export type PythonReferencesResult = {
-  references: Array<PythonReference>;
-};
-
 export type Position = {
   line: number;
   column: number;
 };
 
-export type PythonFunctionItem = {
+export type JediFunctionItem = {
   kind: 'function';
   name: string;
   start: Position;
   end: Position;
-  children?: Array<PythonOutlineItem>;
+  children?: Array<JediOutlineItem>;
   docblock?: string;
   params?: Array<string>;
 };
 
-export type PythonClassItem = {
+export type JediClassItem = {
   kind: 'class';
   name: string;
   start: Position;
   end: Position;
-  children?: Array<PythonOutlineItem>;
+  children?: Array<JediOutlineItem>;
   docblock?: string;
   // Class params, i.e. superclasses.
   params?: Array<string>;
 };
 
-export type PythonStatementItem = {
+export type JediStatementItem = {
   kind: 'statement';
   name: string;
   start: Position;
@@ -83,22 +71,14 @@ export type PythonStatementItem = {
   docblock?: string;
 };
 
-export type PythonOutlineItem = PythonFunctionItem | PythonClassItem | PythonStatementItem;
-
-export type PythonOutlineResult = {
-  items: Array<PythonOutlineItem>
-};
-
-export type PythonAddPathsResult = {
-  newPaths: Array<string>;
-};
+export type JediOutlineItem = JediFunctionItem | JediClassItem | JediStatementItem;
 
 export async function get_completions(
   src: NuclideUri,
   contents: string,
   line: number,
   column: number,
-): Promise<?PythonCompletionsResult> {
+): Promise<?Array<JediCompletion>> {
   throw new Error('RPC Stub');
 }
 
@@ -107,7 +87,7 @@ export async function get_definitions(
   contents: string,
   line: number,
   column: number,
-): Promise<?PythonDefinitionsResult> {
+): Promise<?Array<JediDefinition>> {
   throw new Error('RPC Stub');
 }
 
@@ -116,19 +96,19 @@ export async function get_references(
   contents: string,
   line: number,
   column: number,
-): Promise<?PythonReferencesResult> {
+): Promise<?Array<JediReference>> {
   throw new Error('RPC Stub');
 }
 
 export function get_outline(
   src: NuclideUri,
   contents: string,
-): Promise<?PythonOutlineResult> {
+): Promise<?Array<JediOutlineItem>> {
   throw new Error('RPC Stub');
 }
 
 export function add_paths(
   paths: Array<string>,
-): Promise<?PythonAddPathsResult> {
+): Promise<?Array<string>> {
   throw new Error('RPC Stub');
 }

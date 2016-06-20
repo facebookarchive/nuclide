@@ -75,28 +75,26 @@ class JediServer:
         req = json.loads(line)
         id, data = req['id'], req['args']
         method = req['method']
-        res = {'type': 'response', 'id': id, 'result': {}}
+        res = {'type': 'response', 'id': id}
 
         try:
             if method == 'get_completions':
-                res['result']['completions'] = self.get_completions(self.make_script(data))
+                res['result'] = self.get_completions(self.make_script(data))
             elif method == 'get_definitions':
-                res['result']['definitions'] = self.get_definitions(self.make_script(data))
+                res['result'] = self.get_definitions(self.make_script(data))
             elif method == 'get_references':
-                res['result']['references'] = self.get_references(self.make_script(data))
+                res['result'] = self.get_references(self.make_script(data))
             elif method == 'get_outline':
-                res['result']['items'] = outline.get_outline(self.src, data['contents'])
+                res['result'] = outline.get_outline(self.src, data['contents'])
             # Allow deferred injection of additional paths
             elif method == 'add_paths':
                 self.sys_path = self.sys_path + data['paths']
-                res['result']['newPaths'] = self.sys_path
+                res['result'] = self.sys_path
             else:
                 res['type'] = 'error-response'
-                del res['result']
                 res['error'] = 'Unknown method to jediserver.py: %s.' % method
         except:
             res['type'] = 'error-response'
-            del res['result']
             res['error'] = traceback.format_exc()
 
         self.logger.info('Finished %s request in %.2lf seconds.',
