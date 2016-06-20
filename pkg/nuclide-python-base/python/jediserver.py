@@ -93,6 +93,10 @@ class JediServer:
             else:
                 res['type'] = 'error-response'
                 res['error'] = 'Unknown method to jediserver.py: %s.' % method
+        # Catch and ignore KeyErrors from jedi
+        # See https://github.com/davidhalter/jedi/issues/590
+        except KeyError:
+            res['result']['items'] = []
         except:
             res['type'] = 'error-response'
             res['error'] = traceback.format_exc()
