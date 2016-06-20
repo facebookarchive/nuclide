@@ -8,6 +8,7 @@ import logging
 import multiprocessing
 import os
 import re
+import signal
 import subprocess
 import time
 import threading
@@ -165,13 +166,15 @@ def run_test(
         cwd=pkg_path,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
+        preexec_fn=os.setsid,
         shell=False)
     stdout = []
-    timer = threading.Timer(
-        MAX_RUN_TIME_IN_SECONDS,
-        lambda proc: proc.kill(),
-        [proc],
-    )
+
+    def kill_proc():
+        logging.info('KILLING TEST: %s', name)
+        # Kill the group so child processes are also cleaned up.
+        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+    timer = threading.Timer(MAX_RUN_TIME_IN_SECONDS, kill_proc)
 
     try:
         timer.start()
