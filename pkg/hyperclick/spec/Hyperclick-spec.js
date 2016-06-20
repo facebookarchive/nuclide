@@ -52,12 +52,12 @@ describe('Hyperclick', () => {
     const scrollViewClientRect = component.domNode
         .querySelector('.scroll-view')
         .getBoundingClientRect();
-    // $FlowFixMe: Use of private method.
-    const scrollLeft = textEditor.getScrollLeft();
-    // $FlowFixMe: Use of private method.
-    const scrollTop = textEditor.getScrollTop();
-    const clientX = scrollViewClientRect.left + positionOffset.left - scrollLeft;
-    const clientY = scrollViewClientRect.top + positionOffset.top - scrollTop;
+    const clientX = scrollViewClientRect.left
+                  + positionOffset.left
+                  - textEditorView.getScrollLeft();
+    const clientY = scrollViewClientRect.top
+                  + positionOffset.top
+                  - textEditorView.getScrollTop();
     return {clientX, clientY};
   }
 

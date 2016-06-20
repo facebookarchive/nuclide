@@ -64,10 +64,12 @@ describe('mouseListenerForTextEditor', () => {
         .querySelector('.scroll-view')
         .getBoundingClientRect();
     invariant(textEditor);
-    // $FlowFixMe: Use of private method.
-    const clientX = scrollViewClientRect.left + positionOffset.left - textEditor.getScrollLeft();
-    // $FlowFixMe: Use of private method.
-    const clientY = scrollViewClientRect.top + positionOffset.top - textEditor.getScrollTop();
+    const clientX = scrollViewClientRect.left
+                  + positionOffset.left
+                  - textEditorView.getScrollLeft();
+    const clientY = scrollViewClientRect.top
+                  + positionOffset.top
+                  - textEditorView.getScrollTop();
     return {clientX, clientY};
   }
 
