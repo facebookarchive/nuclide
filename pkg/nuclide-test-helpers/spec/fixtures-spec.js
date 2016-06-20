@@ -12,8 +12,9 @@
 import {fixtures} from '..';
 import fs from 'fs';
 import nuclideUri from '../../nuclide-remote-uri';
+import glob from 'glob';
 
-const {copyFixture} = fixtures;
+const {copyFixture, generateFixture} = fixtures;
 
 describe('copyFixture', () => {
 
@@ -37,3 +38,62 @@ describe('copyFixture', () => {
     });
   });
 });
+
+describe('generateFixture', () => {
+  it('should create the directory hierarchy', () => {
+    waitsForPromise(async () => {
+      const fixturePath = await generateFixture(
+        'fixture-to-generate',
+        new Map([
+          ['foo.js'],
+          ['bar/baz.txt', 'some text'],
+        ])
+      );
+
+      expect(nuclideUri.isAbsolute(fixturePath)).toBe(true);
+      expect(fs.statSync(fixturePath).isDirectory()).toBe(true);
+
+      const fooPath = nuclideUri.join(fixturePath, 'foo.js');
+      const bazPath = nuclideUri.join(fixturePath, 'bar/baz.txt');
+
+      expect(fs.statSync(fooPath).isFile()).toBe(true);
+      expect(fs.statSync(bazPath).isFile()).toBe(true);
+
+      expect(fs.readFileSync(fooPath, 'utf8')).toBe('');
+      expect(fs.readFileSync(bazPath, 'utf8')).toBe('some text');
+    });
+  });
+
+  it('should work with lots of files', () => {
+    waitsForPromise(async () => {
+      const files = new Map();
+      for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 1000; j++) {
+          files.set(`dir_${i}/file_${j}.txt`, `${i} + ${j} = ${i + j}`);
+        }
+      }
+      const fixturePath = await generateFixture('lots-of-files', files);
+      const fixtureFiles = glob.sync(nuclideUri.join(fixturePath, 'dir_*/file_*.txt'));
+      expect(fixtureFiles.length).toBe(10000);
+    });
+  });
+
+  it('should work with no files', () => {
+    waitsForPromise(async () => {
+      const fixturePath = await generateFixture('fixture-empty', new Map());
+      expect(nuclideUri.isAbsolute(fixturePath)).toBe(true);
+      expect(fs.statSync(fixturePath).isDirectory()).toBe(true);
+      expect(fs.readdirSync(fixturePath)).toEqual([]);
+    });
+  });
+
+  it('works with no files arg', () => {
+    waitsForPromise(async () => {
+      const fixturePath = await generateFixture('fixture-empty');
+      expect(nuclideUri.isAbsolute(fixturePath)).toBe(true);
+      expect(fs.statSync(fixturePath).isDirectory()).toBe(true);
+      expect(fs.readdirSync(fixturePath)).toEqual([]);
+    });
+  });
+});
+
