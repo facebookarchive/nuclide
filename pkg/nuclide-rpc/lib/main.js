@@ -22,7 +22,6 @@ import Rx from 'rxjs';
 import {trackOperationTiming} from '../../nuclide-analytics';
 
 import type {
-  Definitions,
   ReturnKind,
   Type,
   Parameter,
@@ -57,57 +56,8 @@ export type RpcContext = {
 
 export type ProxyFactory = (context: RpcContext) => Object;
 
-/** Cache for definitions. */
-const definitionsCache: Map<string, Definitions> = new Map();
 /** Cache for remote proxies. */
 const proxiesCache: Map<string, ProxyFactory> = new Map();
-
-/**
- * Load the definitions, cached by their resolved file path.
- * @param definitionPath - The path to the definition file, relative to the module of
- *  the caller.
- * @returns - The Definitions that represents the API of the definiition file.
- */
-export function getDefinitions(definitionPath: string): Definitions {
-  if (!definitionsCache.has(definitionPath)) {
-    invariant(
-      nuclideUri.isAbsolute(definitionPath),
-      `"${definitionPath}" definition path must be absolute.`
-    );
-    const definitionSource = fs.readFileSync(definitionPath, 'utf8');
-    const def = parseServiceDefinition(definitionPath, definitionSource);
-    definitionsCache.set(definitionPath, def);
-  }
-  const result = definitionsCache.get(definitionPath);
-  invariant(result != null);
-  return result;
-}
-
-/**
- * Get a proxy module for a given (service, client) pair. This function generates
- * the definitions if the they don't exist, and caches the proxy module if it has
- * already been generated before.
- * @param clientObject {RpcConnection} The client object that needs to be able to marhsal
- *   and unmarshal objects, as well as make RPC calls.
- * @returns - A proxy module that exports the API specified by the definition
- */
-export function getProxy(
-  serviceName: string,
-  definitionPath: string,
-  clientObject: RpcContext,
-): any {
-  if (!proxiesCache.has(definitionPath)) {
-    invariant(
-      nuclideUri.isAbsolute(definitionPath),
-      `"${definitionPath}" definition path must be absolute.`
-    );
-    proxiesCache.set(definitionPath, createProxyFactory(serviceName, false, definitionPath));
-  }
-
-  const factory = proxiesCache.get(definitionPath);
-  invariant(factory != null);
-  return factory(clientObject);
-}
 
 export function createProxyFactory(
   serviceName: string,
@@ -118,14 +68,22 @@ export function createProxyFactory(
     nuclideUri.isAbsolute(definitionPath),
     `"${definitionPath}" definition path must be absolute.`
   );
+  if (!proxiesCache.has(definitionPath)) {
+    const filename = nuclideUri.parsePath(definitionPath).name + 'Proxy.js';
+    const definitionSource = fs.readFileSync(definitionPath, 'utf8');
+    const defs = parseServiceDefinition(definitionPath, definitionSource);
+    const code = generateProxy(serviceName, preserveFunctionNames, defs);
 
-  const defs = getDefinitions(definitionPath);
-  const code = generateProxy(serviceName, preserveFunctionNames, defs);
-  const filename = nuclideUri.parsePath(definitionPath).name + 'Proxy.js';
-  const m = loadCodeAsModule(code, filename);
-  m.exports.inject(Rx.Observable, trackOperationTiming);
+    const m = loadCodeAsModule(code, filename);
+    m.exports.inject(Rx.Observable, trackOperationTiming);
 
-  return m.exports;
+    proxiesCache.set(definitionPath, m.exports);
+  }
+
+  const factory = proxiesCache.get(definitionPath);
+  invariant(factory != null);
+
+  return factory;
 }
 
 function loadCodeAsModule(code: string, filename: string): Module {
@@ -139,6 +97,5 @@ function loadCodeAsModule(code: string, filename: string): Module {
 
 // Export caches for testing.
 export const __test__ = {
-  definitionsCache,
   proxiesCache,
 };

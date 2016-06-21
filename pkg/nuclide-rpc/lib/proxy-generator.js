@@ -177,6 +177,7 @@ export function generateProxy(
     deps.declaration,
     t.expressionStatement(assignment),
     t.expressionStatement(objectDefinePropertyCall('inject', deps.injectionCall)),
+    t.expressionStatement(objectDefinePropertyCall('defs', objectToLiteral(defs))),
   ]);
 
   // Use Babel to generate code from the AST.

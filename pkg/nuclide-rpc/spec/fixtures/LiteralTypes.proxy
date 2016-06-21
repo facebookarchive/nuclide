@@ -51,3 +51,151 @@ Object.defineProperty(module.exports, "inject", {
     trackOperationTiming = arguments[1];
   }
 });
+Object.defineProperty(module.exports, "defs", {
+  value: new Map([["Object", {
+    kind: "alias",
+    name: "Object",
+    location: {
+      type: "builtin"
+    }
+  }], ["Date", {
+    kind: "alias",
+    name: "Date",
+    location: {
+      type: "builtin"
+    }
+  }], ["RegExp", {
+    kind: "alias",
+    name: "RegExp",
+    location: {
+      type: "builtin"
+    }
+  }], ["Buffer", {
+    kind: "alias",
+    name: "Buffer",
+    location: {
+      type: "builtin"
+    }
+  }], ["fs.Stats", {
+    kind: "alias",
+    name: "fs.Stats",
+    location: {
+      type: "builtin"
+    }
+  }], ["NuclideUri", {
+    kind: "alias",
+    name: "NuclideUri",
+    location: {
+      type: "builtin"
+    }
+  }], ["StringLiteralType", {
+    kind: "alias",
+    location: {
+      type: "source",
+      fileName: "LiteralTypes.def",
+      line: 1
+    },
+    name: "StringLiteralType",
+    definition: {
+      location: {
+        type: "source",
+        fileName: "LiteralTypes.def",
+        line: 1
+      },
+      kind: "string-literal",
+      value: "value"
+    }
+  }], ["NumberLiteralType", {
+    kind: "alias",
+    location: {
+      type: "source",
+      fileName: "LiteralTypes.def",
+      line: 2
+    },
+    name: "NumberLiteralType",
+    definition: {
+      location: {
+        type: "source",
+        fileName: "LiteralTypes.def",
+        line: 2
+      },
+      kind: "number-literal",
+      value: 42
+    }
+  }], ["BooleanLiteralType", {
+    kind: "alias",
+    location: {
+      type: "source",
+      fileName: "LiteralTypes.def",
+      line: 3
+    },
+    name: "BooleanLiteralType",
+    definition: {
+      location: {
+        type: "source",
+        fileName: "LiteralTypes.def",
+        line: 3
+      },
+      kind: "boolean-literal",
+      value: true
+    }
+  }], ["LiteralFunc", {
+    kind: "function",
+    name: "LiteralFunc",
+    location: {
+      type: "source",
+      fileName: "LiteralTypes.def",
+      line: 5
+    },
+    type: {
+      location: {
+        type: "source",
+        fileName: "LiteralTypes.def",
+        line: 5
+      },
+      kind: "function",
+      argumentTypes: [{
+        name: "s",
+        type: {
+          location: {
+            type: "source",
+            fileName: "LiteralTypes.def",
+            line: 5
+          },
+          kind: "string-literal",
+          value: "v"
+        }
+      }, {
+        name: "n",
+        type: {
+          location: {
+            type: "source",
+            fileName: "LiteralTypes.def",
+            line: 5
+          },
+          kind: "number-literal",
+          value: 42
+        }
+      }, {
+        name: "b",
+        type: {
+          location: {
+            type: "source",
+            fileName: "LiteralTypes.def",
+            line: 5
+          },
+          kind: "boolean-literal",
+          value: true
+        }
+      }],
+      returnType: {
+        location: {
+          type: "source",
+          fileName: "LiteralTypes.def",
+          line: 5
+        },
+        kind: "void"
+      }
+    }
+  }]])
+});

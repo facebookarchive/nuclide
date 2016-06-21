@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import {createProxyFactory, getDefinitions} from './main';
+import {createProxyFactory} from './main';
 import {TypeRegistry} from './TypeRegistry';
 import type {
   FunctionType,
@@ -95,17 +95,20 @@ export class ServiceRegistry {
       && service.preserveFunctionNames;
     logger.debug(`Registering 3.0 service ${service.name}...`);
     try {
-      const defs = getDefinitions(service.definition);
+      const factory = createProxyFactory(
+        service.name,
+        preserveFunctionNames,
+        service.definition,
+      );
       // $FlowIssue - the parameter passed to require must be a literal string.
       const localImpl = require(service.implementation);
       this._services.set(service.name, {
         name: service.name,
-        factory: createProxyFactory(
-          service.name, preserveFunctionNames, service.definition),
+        factory,
       });
 
       // Register type aliases.
-      defs.forEach((definition: Definition) => {
+      factory.defs.forEach((definition: Definition) => {
         const name = definition.name;
         switch (definition.kind) {
           case 'alias':
