@@ -60,6 +60,10 @@ parser.add_option('--run-integration-tests', action='store_true',
                   help='Only run tests in Nuclide/spec')
 parser.add_option('--continue-on-errors', action='store_true',
                   help='Run all tests, regardless of failures')
+parser.add_option('--destructive-compile', action='store_true',
+                  help='Transpile and generate RPC proxies as if this were a '
+                       'prod build. THIS WILL DESTROY THE ORIGINAL SOURCE!!!',
+                  default=False)
 
 options, args = parser.parse_args(sys.argv[1:])
 
@@ -102,6 +106,17 @@ def run_lint_eslint():
         raise utils.TestFailureError('FAILED: eslint.', returncode)
     print('Finished eslint (%s seconds)' % (datetime.now() - start).seconds)
 
+def run_compile_steps(destructive_compile=False):
+    if destructive_compile:
+        # This will destroy the original source and create untracked files!
+        run('generate_proxies',
+            ['scripts/dev/release_generate_proxies.js', '--save'])
+        run('transpile',
+            ['scripts/dev/release_transpile.js', '--overwrite'])
+    else:
+        # This only warms up the transpile cache.
+        run('transpile', ['scripts/dev/release_transpile.js'])
+
 # Some tests compare created files and all their properties to an oracle. If
 # they are created with a different umask, then the permissions are different
 # and the tests fail.
@@ -120,23 +135,21 @@ test_runner = JsTestRunner(
 if not options.no_version:
     check_dependencies(not options.no_atom)
 
-if options.run_integration_tests:
-    run('transpile', ['scripts/dev/release_transpile.js'])
-    try:
+try:
+    if options.run_integration_tests:
+        run_compile_steps(destructive_compile=options.destructive_compile)
         test_runner.run_integration_tests()
-    except utils.TestFailureError as err:
-        logging.info(err)
-        sys.exit(err.code)
-else:
-    run('lint_packages', ['scripts/dev/lint_packages'])
-    run('flow', ['flow', 'check', '--show-all-errors'])
-    run('transpile', ['scripts/dev/release_transpile.js'])
-    if not options.no_module_cycle_check:
-        run('module_cycle_check', ['scripts/dev/module_cycle_check'])
-    try:
+    else:
+        run('lint_packages', ['scripts/dev/lint_packages'])
+        run('flow', ['flow', 'check', '--show-all-errors'])
         run_lint_eslint()
         lint_py_headers()
+        if not options.no_module_cycle_check:
+            run('module_cycle_check', ['scripts/dev/module_cycle_check'])
+        # Some tests have fixtures that are services. These should be declared
+        # in a services-3.json file first.
+        run_compile_steps(destructive_compile=False)
         test_runner.run_unit_tests()
-    except utils.TestFailureError as err:
-        logging.info(err)
-        sys.exit(err.code)
+except utils.TestFailureError as err:
+    logging.info(err)
+    sys.exit(err.code)
