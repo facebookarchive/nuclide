@@ -1,5 +1,5 @@
-// flow-typed signature: 626f35d1b030a6a427a4ccf8d95e4f83
-// flow-typed version: 6378198de1/rxjs_v5.0.x/flow_>=v0.25.0
+// flow-typed signature: 0cbf6b1b6fbc1b025b58ec06d5f2bb3f
+// flow-typed version: b60fdb4c58/rxjs_v5.0.x/flow_>=v0.25.0
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
@@ -151,6 +151,12 @@ declare module 'rxjs' {
       resultSelector: ?(value: T, index: number) => U,
       defaultValue: U,
     ): Observable<U>;
+
+    groupBy(
+      keySelector: (value: T) => mixed,
+      elementSelector?: (value: T) => T,
+      compare?: (x: T, y: T) => boolean,
+    ): Observable<Observable<T>>;
 
     ignoreElements<U>(): Observable<U>;
 
