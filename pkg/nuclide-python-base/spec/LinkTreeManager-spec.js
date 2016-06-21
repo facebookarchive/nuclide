@@ -10,10 +10,20 @@
  */
 
 import nuclideUri from '../../nuclide-remote-uri';
-import rimraf from 'rimraf';
+import fsPlus from 'fs-plus';
+import temp from 'temp';
 import LinkTreeManager from '../lib/LinkTreeManager';
 
 const FIXTURES_PATH = nuclideUri.join(__dirname, 'fixtures');
+
+temp.track();
+
+function copyProject(projectInFixturesDirectory: string) {
+  const tempDir = temp.mkdirSync('LinkTreeManager-spec');
+  fsPlus.copySync(nuclideUri.join(__dirname, 'fixtures', projectInFixturesDirectory),
+      tempDir);
+  return tempDir;
+}
 
 // Disable buckd so it doesn't linger around after the test.
 process.env.NO_BUCKD = '1';
@@ -35,11 +45,6 @@ describe('LinkTreeManager', () => {
 
   beforeEach(() => {
     linkTreeManager = new LinkTreeManager();
-  });
-
-  afterEach(() => {
-    // Clean up buck-out directory.
-    rimraf.sync(nuclideUri.join(FIXTURES_PATH, 'test-project/buck-out'));
   });
 
   it('correctly builds a link tree path given a source file path (mocked project)', () => {
@@ -88,10 +93,11 @@ describe('LinkTreeManager', () => {
   it('resolves a link tree path with a buck project\'s source file', () => {
     // Large timeout for buck to warm up.
     waitsForPromise({timeout: 30000}, async () => {
-      const srcPath = nuclideUri.join(FIXTURES_PATH, 'test-project/test1/test1.py');
+      const projectDir = copyProject('test-project');
+      const srcPath = nuclideUri.join(projectDir, 'test1/test1.py');
       const linkTreePath = await linkTreeManager.getLinkTreePath(srcPath);
       expect(linkTreePath).toBe(
-        nuclideUri.join(FIXTURES_PATH, 'test-project/buck-out/gen/test1/testbin1#link-tree')
+        nuclideUri.join(projectDir, 'buck-out/gen/test1/testbin1#link-tree')
       );
     });
   });
