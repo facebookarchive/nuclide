@@ -65,7 +65,7 @@ describe('generateFixture', () => {
   });
 
   it('should work with lots of files', () => {
-    waitsForPromise(async () => {
+    waitsForPromise({timeout: 10000}, async () => {
       const files = new Map();
       for (let i = 0; i < 10; i++) {
         for (let j = 0; j < 1000; j++) {
