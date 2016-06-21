@@ -276,8 +276,8 @@ function specOutline(expressionStatement: any, describeOnly: boolean = false): ?
     return null;
   }
   const functionName = expression.callee.name;
-  if (functionName !== 'describe') {
-    if (describeOnly || functionName !== 'it') {
+  if (!isDescribe(functionName)) {
+    if (describeOnly || !isIt(functionName)) {
       return null;
     }
   }
@@ -287,7 +287,7 @@ function specOutline(expressionStatement: any, describeOnly: boolean = false): ?
     return null;
   }
   let children;
-  if (functionName === 'it') {
+  if (isIt(functionName)) {
     children = [];
   } else {
     children = arrayCompact(
@@ -305,6 +305,30 @@ function specOutline(expressionStatement: any, describeOnly: boolean = false): ?
     children,
     ...getExtent(expressionStatement),
   };
+}
+
+function isDescribe(functionName: string): boolean {
+  switch (functionName) {
+    case 'describe':
+    case 'fdescribe':
+    case 'ddescribe':
+    case 'xdescribe':
+      return true;
+    default:
+      return false;
+  }
+}
+
+function isIt(functionName: string): boolean {
+  switch (functionName) {
+    case 'it':
+    case 'fit':
+    case 'iit':
+    case 'xit':
+      return true;
+    default:
+      return false;
+  }
 }
 
 /** If the given AST Node is a string literal, return its literal value. Otherwise return null */
