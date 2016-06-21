@@ -91,6 +91,21 @@ export default class RevisionTimelineNode extends React.Component {
       );
     }
 
+    let associatedExtraElement;
+    try {
+      const extraUIUtils = require('../../nuclide-arcanist-base/lib/fb/utils.js');
+      const extraUIElements = extraUIUtils.getExtraUIElements(description);
+      if (extraUIElements != null) {
+        associatedExtraElement = extraUIElements.map(task => {
+          return (
+            <a key={task.id} className="inline-block" href={task.url}>{task.name}</a>
+          );
+        });
+      }
+    } catch (ex) {
+      // There are no extra UI elements to show.
+    }
+
     const bookmarksToRender = bookmarks.slice();
     if (index === 0 && revisionsCount > 1 && bookmarks.length === 0) {
       bookmarksToRender.push('HEAD');
@@ -119,6 +134,7 @@ export default class RevisionTimelineNode extends React.Component {
           {commitAuthorElement}
           {phabricatorRevisionElement}
           {diffStatusElement}
+          {associatedExtraElement}
           {bookmarksElement}
           <br />
           <span className="revision-title">
