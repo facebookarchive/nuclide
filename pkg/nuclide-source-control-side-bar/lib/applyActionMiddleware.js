@@ -21,6 +21,7 @@ import Rx from 'rxjs';
 
 const HANDLED_ACTION_TYPES = [
   ActionType.FETCH_PROJECT_REPOSITORIES,
+  ActionType.RENAME_BOOKMARK,
   ActionType.UPDATE_TO_BOOKMARK,
 ];
 
@@ -89,6 +90,7 @@ export function applyActionMiddleware(
         const {bookmark, repository} = action.payload;
         return Rx.Observable
           .fromPromise(repository.async.checkoutReference(bookmark.bookmark, false))
+          .flatMap(Rx.Observable.empty)
           .catch(error => {
             atom.notifications.addWarning('Failed Updating to Bookmark', {
               description: 'Revert or commit uncommitted changes before changing bookmarks.',
@@ -96,15 +98,65 @@ export function applyActionMiddleware(
               dismissable: true,
             });
 
-            // Replace previous, single-use Promise Observable with an empty one because the former
-            // will be completed and not re-subscribable (which is the default action for `catch`).
             return Rx.Observable.empty();
-          })
-          // Middlware always returns an action. Return a no-op but handled action so the state
-          // accumulator is happy.
-          .map(() => ({
-            type: ActionType.SET_PENDING_BOOKMARK,
-          }));
+          });
+      }),
+
+    actions.filter(action => action.type === ActionType.RENAME_BOOKMARK)
+      .groupBy(action => {
+        // Action was filtered, invariant check to downcast in Flow.
+        invariant(action.type === ActionType.RENAME_BOOKMARK);
+        return action.payload.bookmark.rev;
+      })
+      .flatMap(renames => {
+        return renames.switchMap(action => {
+          // Action was filtered, invariant check to downcast in Flow.
+          invariant(action.type === ActionType.RENAME_BOOKMARK);
+          const {
+            bookmark,
+            nextName,
+            repository,
+          } = action.payload;
+
+          if (repository.getType() !== 'hg') {
+            atom.notifications.addWarning('Failed Renaming Bookmark', {
+              detail: `Expected repository type 'hg' but found ${repository.getType()}`,
+              dismissable: true,
+            });
+            return Rx.Observable.empty();
+          }
+
+          const repositoryAsync = repository.async;
+
+          // Type was checked with `getType`. Downcast to safely access members with Flow.
+          invariant(repositoryAsync instanceof HgRepositoryClientAsync);
+
+          return Rx.Observable.of({
+            payload: {
+              bookmark,
+              repository,
+            },
+            type: ActionType.SET_BOOKMARK_IS_LOADING,
+          }).concat(
+            Rx.Observable
+              .fromPromise(repositoryAsync.renameBookmark(bookmark.bookmark, nextName))
+              .flatMap(Rx.Observable.empty)
+              .catch(error => {
+                atom.notifications.addWarning('Failed Renaming Bookmark', {
+                  detail: error,
+                  dismissable: true,
+                });
+
+                return Rx.Observable.of({
+                  payload: {
+                    bookmark,
+                    repository,
+                  },
+                  type: ActionType.UNSET_BOOKMARK_IS_LOADING,
+                });
+              })
+          );
+        });
       }),
   );
   return output.share();

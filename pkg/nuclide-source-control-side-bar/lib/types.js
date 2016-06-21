@@ -15,6 +15,23 @@ type FetchProjectDirectoriesAction = {
   type: 'fetch-project-repositories';
 };
 
+type RenameBookmark = {
+  payload: {
+    bookmark: BookmarkInfo;
+    nextName: string;
+    repository: atom$Repository;
+  };
+  type: 'rename-bookmark';
+};
+
+export type SetBookmarkIsLoading = {
+  payload: {
+    bookmark: BookmarkInfo;
+    repository: atom$Repository;
+  };
+  type: 'set-bookmark-is-loading';
+};
+
 type SetDirectoryRepository = {
   payload: {
     directory: atom$Directory;
@@ -38,6 +55,14 @@ type SetRepositoryBookmarks = {
   type: 'set-repository-bookmarks';
 };
 
+export type UnsetBookmarkIsLoading = {
+  payload: {
+    bookmark: BookmarkInfo;
+    repository: atom$Repository;
+  };
+  type: 'unset-bookmark-is-loading';
+};
+
 type UpdateToBookmarkAction = {
   payload: {
     bookmark: BookmarkInfo;
@@ -48,7 +73,10 @@ type UpdateToBookmarkAction = {
 
 export type Action =
   FetchProjectDirectoriesAction
+  | RenameBookmark
+  | SetBookmarkIsLoading
   | SetDirectoryRepository
   | SetProjectDirectoriesAction
   | SetRepositoryBookmarks
+  | UnsetBookmarkIsLoading
   | UpdateToBookmarkAction;

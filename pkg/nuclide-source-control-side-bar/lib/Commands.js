@@ -63,16 +63,15 @@ export default class Commands {
   }
 
   renameBookmark(bookmark: BookmarkInfo, nextName: string, repository: atom$Repository): void {
-    const repositoryAsync = repository.async;
-    if (repositoryAsync.getType() !== 'hg') {
-      return;
-    }
-
-    // Type was checked with `getType`. Downcast to safely access members with Flow.
-    invariant(repositoryAsync instanceof HgRepositoryClientAsync);
-
     track('scsidebar-rename-bookmark');
-    repositoryAsync.renameBookmark(bookmark.bookmark, nextName);
+    this._dispatch({
+      payload: {
+        bookmark,
+        nextName,
+        repository,
+      },
+      type: ActionType.RENAME_BOOKMARK,
+    });
   }
 
   fetchProjectDirectories(): void {

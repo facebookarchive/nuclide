@@ -30,6 +30,7 @@ type Props = {
   projectDirectories: Array<Directory>;
   projectRepositories: Map<string, atom$Repository>;
   renameBookmark: (bookmarkInfo: BookmarkInfo, nextName: string, repo: atom$Repository) => mixed;
+  repositoryBookmarksIsLoading: WeakMap<atom$Repository, Array<BookmarkInfo>>;
   updateToBookmark: (bookmarkInfo: BookmarkInfo, repo: atom$Repository) => mixed;
 };
 
@@ -255,6 +256,9 @@ export default class SideBarComponent extends React.Component {
         <ul className="list-unstyled">
           {this.props.projectDirectories.map((directory, index) => {
             const repository = this.props.projectRepositories.get(directory.getPath());
+            const repositoryBookmarksIsLoading = (repository == null)
+              ? null
+              : this.props.repositoryBookmarksIsLoading.get(repository);
 
             let bookmarks;
             let selectedItem;
@@ -271,6 +275,7 @@ export default class SideBarComponent extends React.Component {
             return (
               <RepositorySectionComponent
                 bookmarks={bookmarks}
+                bookmarksIsLoading={repositoryBookmarksIsLoading}
                 hasSeparator={index > 0}
                 key={directory.getPath()}
                 onBookmarkClick={this._handleBookmarkClick}

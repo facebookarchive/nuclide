@@ -12,12 +12,14 @@
 import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {SelectableItem} from './SideBarComponent';
 
+import bookmarkIsEqual from './bookmarkIsEqual';
 import classnames from 'classnames';
 import invariant from 'assert';
 import {React} from 'react-for-atom';
 
 type Props = {
   bookmarks: ?Array<BookmarkInfo>;
+  bookmarksIsLoading: ?Array<BookmarkInfo>;
   hasSeparator: boolean;
   onBookmarkClick: (bookmark: BookmarkInfo, repository: atom$Repository) => mixed;
   onBookmarkContextMenu:
@@ -29,15 +31,8 @@ type Props = {
   title: string;
 };
 
-// Returns true if the given bookmarks are not void and are deeply equal.
-function bookmarkIsEqual(a: ?BookmarkInfo, b: ?BookmarkInfo) {
-  return a != null
-    && b != null
-    && a.rev === b.rev
-    && a.bookmark === b.bookmark;
-}
-
 const ACTIVE_BOOKMARK_TITLE = 'Active bookmark';
+const LOADING_BOOKMARK_TITLE = 'Loading...';
 
 export default class RepositorySectionComponent extends React.Component {
   props: Props;
@@ -110,12 +105,16 @@ export default class RepositorySectionComponent extends React.Component {
           );
         } else {
           bookmarksBranchesListItems = repositoryBookmarks.map(bookmark => {
-            // Deeply compare bookmarks because the Objects get re-created when bookmarks are
-            // re-fetched and will not remain equal across fetches.
+            // If there is a list of "loading" bookmarks and this bookmark is in it, this bookmark
+            // is in the "loading" state.
+            const isLoading = this.props.bookmarksIsLoading != null &&
+              this.props.bookmarksIsLoading.find(
+                loadingBookmark => bookmarkIsEqual(bookmark, loadingBookmark)) != null;
+
             const isSelected = selectedItem != null
               && selectedItem.type === 'bookmark'
               && bookmarkIsEqual(bookmark, selectedItem.bookmark);
-            let liClassName = classnames(
+            const liClassName = classnames(
               'list-item nuclide-source-control-side-bar--list-item', {
                 selected: isSelected,
               }
@@ -124,24 +123,47 @@ export default class RepositorySectionComponent extends React.Component {
             let title;
             if (bookmark.active) {
               title = ACTIVE_BOOKMARK_TITLE;
+            } else if (isLoading) {
+              title = LOADING_BOOKMARK_TITLE;
             }
 
             const iconClassName = classnames('icon', {
-              'icon-bookmark': !bookmark.active,
-              'icon-check': bookmark.active,
-              // Don't apply `success` when the bookmark is selected because the resulting text
-              // contrast ratio can be illegibly low in core themes.
-              'text-success': bookmark.active && !isSelected,
+              // Don't display the icon when loading but still apply `.icon` because it affects
+              // rendering of its content.
+              'icon-bookmark': !bookmark.active && !isLoading,
+              'icon-check': bookmark.active && !isLoading,
+              'text-subtle': isLoading,
+              // * Don't apply `success` when the bookmark is selected because the resulting text
+              //   contrast ratio can be illegibly low in core themes.
+              // * Don't apply `success` when it's loading like during a rename.
+              'text-success': bookmark.active && !isSelected && !isLoading,
             });
+
+            let loadingSpinner;
+            if (isLoading) {
+              loadingSpinner = (
+                <span
+                  className="loading loading-spinner-tiny inline-block inline-block-tight">
+                </span>
+              );
+            }
+
+            let onContextMenu;
+            if (!isLoading) {
+              // When the bookmark is not loading, show its context menu so actions can be taken on
+              // it.
+              onContextMenu = this._handleBookmarkContextMenu.bind(this, bookmark);
+            }
 
             return (
               <li
                 className={liClassName}
                 key={bookmark.bookmark}
                 onClick={this._handleBookmarkClick.bind(this, bookmark)}
-                onContextMenu={this._handleBookmarkContextMenu.bind(this, bookmark)}
+                onContextMenu={onContextMenu}
                 title={title}>
                 <span className={iconClassName}>
+                  {loadingSpinner}
                   {bookmark.bookmark}
                 </span>
               </li>

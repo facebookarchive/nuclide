@@ -9,13 +9,18 @@
  * the root directory of this source tree.
  */
 
-import type {Action} from './types';
+import type {
+  Action,
+  SetBookmarkIsLoading,
+  UnsetBookmarkIsLoading,
+} from './types';
 import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
 
 import * as ActionType from './ActionType';
 import {applyActionMiddleware} from './applyActionMiddleware';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
+import bookmarkIsEqual from './bookmarkIsEqual';
 import Commands from './Commands';
 import {CompositeDisposable, Disposable} from 'atom';
 import {DisposableSubscription} from '../../commons-node/stream';
@@ -28,6 +33,7 @@ export type AppState = {
   projectBookmarks: Map<string, Array<BookmarkInfo>>;
   projectDirectories: Array<atom$Directory>;
   projectRepositories: Map<string, atom$Repository>;
+  repositoryBookmarksIsLoading: WeakMap<atom$Repository, Array<BookmarkInfo>>;
 };
 
 function createStateStream(
@@ -44,6 +50,7 @@ function getInitialState() {
     projectBookmarks: new Map(),
     projectDirectories: [],
     projectRepositories: new Map(),
+    repositoryBookmarksIsLoading: new WeakMap(),
   };
 }
 
@@ -87,6 +94,7 @@ export function consumeNuclideSideBar(sideBar: NuclideSideBarService): IDisposab
         projectDirectories: state.projectDirectories,
         projectRepositories: state.projectRepositories,
         renameBookmark: commands.renameBookmark,
+        repositoryBookmarksIsLoading: state.repositoryBookmarksIsLoading,
         updateToBookmark: commands.updateToBookmark,
       }));
 
@@ -112,8 +120,60 @@ export function consumeNuclideSideBar(sideBar: NuclideSideBarService): IDisposab
   });
 }
 
+function accumulateSetBookmarkIsLoading(state: AppState, action: SetBookmarkIsLoading): AppState {
+  const {
+    bookmark,
+    repository,
+  } = action.payload;
+  let repositoryBookmarksIsLoading;
+  if (state.repositoryBookmarksIsLoading.has(repository)) {
+    repositoryBookmarksIsLoading = state.repositoryBookmarksIsLoading.get(repository);
+  } else {
+    repositoryBookmarksIsLoading = [];
+  }
+
+  const bookmarkIndex = repositoryBookmarksIsLoading.findIndex(
+    loadingBookmark => bookmarkIsEqual(loadingBookmark, bookmark));
+  if (bookmarkIndex === -1) {
+    repositoryBookmarksIsLoading.push(bookmark);
+  }
+
+  return {
+    ...state,
+    repositoryBookmarksIsLoading:
+      state.repositoryBookmarksIsLoading.set(repository, repositoryBookmarksIsLoading),
+  };
+}
+
+function accumulateUnsetBookmarkIsLoading(
+  state: AppState,
+  action: UnsetBookmarkIsLoading,
+): AppState {
+  const {
+    bookmark,
+    repository,
+  } = action.payload;
+  const repositoryBookmarksIsLoading = state.repositoryBookmarksIsLoading.get(repository);
+  if (repositoryBookmarksIsLoading == null) {
+    // TODO: Can this happen?
+    return state;
+  }
+
+  const bookmarkIndex = repositoryBookmarksIsLoading.findIndex(
+    loadingBookmark => bookmarkIsEqual(loadingBookmark, bookmark));
+  if (bookmarkIndex >= 0) {
+    repositoryBookmarksIsLoading.splice(bookmarkIndex, 1);
+  }
+
+  return state;
+}
+
 function accumulateState(state: AppState, action: Action): AppState {
   switch (action.type) {
+    case ActionType.SET_BOOKMARK_IS_LOADING:
+      return accumulateSetBookmarkIsLoading(state, action);
+    case ActionType.UNSET_BOOKMARK_IS_LOADING:
+      return accumulateUnsetBookmarkIsLoading(state, action);
     case ActionType.SET_DIRECTORY_REPOSITORY:
       return {
         ...state,
@@ -143,6 +203,7 @@ function accumulateState(state: AppState, action: Action): AppState {
       });
 
       return {
+        ...state,
         projectBookmarks: nextProjectBookmarks,
         projectDirectories: action.payload.projectDirectories,
         projectRepositories: nextProjectRepositories,
@@ -155,8 +216,6 @@ function accumulateState(state: AppState, action: Action): AppState {
           action.payload.bookmarks
         ),
       };
-    case ActionType.SET_PENDING_BOOKMARK:
-      return state;
   }
 
   throw new Error(`Unrecognized action type: ${action.type}`);
