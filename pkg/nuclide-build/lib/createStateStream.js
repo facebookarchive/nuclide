@@ -43,6 +43,7 @@ function accumulateState(state: AppState, action: Action): AppState {
       return {
         ...state,
         activeTaskType: taskType,
+        previousSessionActiveTaskType: null,
       };
     }
     case ActionTypes.TASK_COMPLETED: {
@@ -102,8 +103,7 @@ function accumulateState(state: AppState, action: Action): AppState {
         buildSystem.id === state.previousSessionActiveBuildSystemId ||
         state.activeBuildSystemId == null
       ) {
-        newState.activeBuildSystemId = buildSystem.id;
-        newState.previousSessionActiveBuildSystemId = null;
+        return setBuildSystem(newState, buildSystem.id);
       }
 
       return newState;
@@ -111,8 +111,8 @@ function accumulateState(state: AppState, action: Action): AppState {
     case ActionTypes.SELECT_BUILD_SYSTEM: {
       const {id} = action.payload;
       return {
-        ...state,
-        activeBuildSystemId: id,
+        ...setBuildSystem(state, id),
+
         // Now that the user has selected a build system, we no longer care about what the selected
         // one was the last session.
         previousSessionActiveBuildSystemId: null,
@@ -135,13 +135,30 @@ function accumulateState(state: AppState, action: Action): AppState {
       };
 
       // If the new tasks contain the one we were waiting to restore from the user's previous
-      // session (or we have no active task), make it the active one.
+      // session make it the active one.
+      if (tasks.some(task => task.type === state.previousSessionActiveTaskType)) {
+        return {
+          ...newState,
+          activeTaskType: state.previousSessionActiveTaskType,
+          previousSessionActiveTaskType: null,
+        };
+      }
+
+      // If there's no active task (or it was removed), change the active task to something
+      // sensible.
       if (
-        tasks.some(task => task.type === state.previousSessionActiveTaskType) ||
-        state.activeTaskType == null
+        (state.activeTaskType == null) || !tasks.some(task => task.type === state.activeTaskType)
       ) {
-        newState.activeTaskType = state.previousSessionActiveTaskType;
-        newState.previousSessionActiveTaskType = null;
+        const activeTaskType = tasks.length > 0
+          ? tasks[0].type
+          : null;
+        return {
+          ...newState,
+          activeTaskType,
+          // Remember what we really wanted, so we can return to it later.
+          previousSessionActiveTaskType:
+            state.previousSessionActiveTaskType || state.activeTaskType,
+        };
       }
 
       return newState;
@@ -149,4 +166,16 @@ function accumulateState(state: AppState, action: Action): AppState {
   }
 
   throw new Error(`Unrecognized action type: ${action.type}`);
+}
+
+function setBuildSystem(state: AppState, buildSystemId: ?string): AppState {
+  return {
+    ...state,
+
+    // We're not sure if the new build system will have the currently active task type.
+    activeTaskType: null,
+    previousSessionActiveTaskType: state.previousSessionActiveTaskType || state.activeTaskType,
+
+    activeBuildSystemId: buildSystemId,
+  };
 }

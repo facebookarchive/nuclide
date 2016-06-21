@@ -67,6 +67,53 @@ describe('createStateStream', () => {
 
   });
 
+  it('chooses a default activeTaskType if the currently active one goes away', () => {
+    waitsForPromise(async () => {
+      const initialState = {
+        ...createEmptyAppState(),
+        activeBuildSystemId: 'some-build-system',
+        activeTaskType: 'bark',
+        tasks: [createTask('bark'), createTask('purr')],
+      };
+      const actions = [
+        {
+          type: ActionTypes.TASKS_UPDATED,
+          payload: {
+            tasks: [createTask('purr')],
+          },
+        },
+      ];
+      const finalState = await getStateAfterActions(actions, initialState);
+      expect(finalState.activeTaskType).toBe('purr');
+
+      // It should remember the old one so it can be restored.
+      expect(finalState.previousSessionActiveTaskType).toBe('bark');
+    });
+  });
+
+  it('restores the previous task when it comes back', () => {
+    waitsForPromise(async () => {
+      const initialState = {
+        ...createEmptyAppState(),
+        activeBuildSystemId: 'some-build-system',
+        activeTaskType: 'purr',
+        previousSessionActiveTaskType: 'bark',
+        tasks: [createTask('purr')],
+      };
+      const actions = [
+        {
+          type: ActionTypes.TASKS_UPDATED,
+          payload: {
+            tasks: [createTask('bark'), createTask('purr')],
+          },
+        },
+      ];
+      const finalState = await getStateAfterActions(actions, initialState);
+      expect(finalState.activeTaskType).toBe('bark');
+      expect(finalState.previousSessionActiveTaskType).toBe(null);
+    });
+  });
+
 });
 
 async function getStateAfterActions(
@@ -82,3 +129,11 @@ async function getStateAfterActions(
   actionStream.complete();
   return await statePromise;
 }
+
+const createTask = name => ({
+  type: name,
+  label: name,
+  description: name,
+  enabled: true,
+  icon: 'triangle-right',
+});
