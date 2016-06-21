@@ -157,7 +157,7 @@ function createGutterItem(
   fixer: (message: FileDiagnosticMessage) => void,
 ): {item: HTMLElement; dispose: () => void} {
   const item = window.document.createElement('span');
-  item.innerText = '\u25B6'; // Unicode character for a right-pointing triangle.
+  item.innerText = '\uf05a'; // The triangle-right icon in the octicon font.
   item.className = gutterMarkerCssClass;
   let popupElement = null;
   let paneItemSubscription = null;
