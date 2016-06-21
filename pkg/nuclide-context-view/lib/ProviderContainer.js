@@ -10,27 +10,25 @@
  */
 
 import {React} from 'react-for-atom';
+import {Section} from '../../nuclide-ui/lib/Section';
+
+type ProviderContainerProps = {
+  title: string;
+  children?: React.Element<any>;
+};
 
 /**
  * Each context provider view is rendered inside a ProviderContainer.
  */
 export class ProviderContainer extends React.Component {
-  static propTypes = {
-    title: React.PropTypes.string.isRequired,
-    children: React.PropTypes.oneOfType([
-      React.PropTypes.arrayOf(React.PropTypes.node),
-      React.PropTypes.node,
-    ]),
-  };
+
+  props: ProviderContainerProps;
 
   render(): React.Element<any> {
     return (
-      <div className="padded nuclide-context-view-provider-container">
-        <div className="inset-panel">
-          <div className="panel-heading">{this.props.title}</div>
-          {this.props.children}
-        </div>
-      </div>
+      <Section headline={this.props.title} collapsable={true} collapsedByDefault={false}>
+        {this.props.children}
+      </Section>
     );
   }
 }
