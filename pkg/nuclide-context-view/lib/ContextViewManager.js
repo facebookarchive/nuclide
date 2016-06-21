@@ -269,7 +269,8 @@ export class ContextViewManager {
       <ContextViewPanel
         initialWidth={this._width}
         onResize={this._onResize.bind(this)}
-        definition={this.currentDefinition}>
+        definition={this.currentDefinition}
+        onHide={this.hide.bind(this)}>
         {providerElements}
       </ContextViewPanel>,
       this._panelDOMElement
