@@ -16,7 +16,6 @@ export type NuxViewModel = {
   selectorFunction: ?(() => HTMLElement);
   position: 'top' | 'bottom' | 'left' | 'right' | 'auto';
   completionPredicate: ?(() => boolean);
-  completed: boolean;
 };
 
 export type NuxTourModel = {

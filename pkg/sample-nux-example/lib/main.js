@@ -76,7 +76,7 @@ export function consumeToolBar(getToolBar: GetToolBar): void {
 }
 
 function generateTestNuxTour(
-  identifier: string,
+  id: string,
   numViews: number = 1,
 ): NuxTourModel {
   const getNuxViewModel = viewNumber => (
@@ -87,7 +87,6 @@ function generateTestNuxTour(
       selectorFunction: null,
       position: 'auto',
       completionPredicate: null,
-      completed: false,
     }
   );
   const nuxList = Array(numViews)
@@ -95,7 +94,7 @@ function generateTestNuxTour(
                     .map((_, index) => getNuxViewModel(index + 1));
   return {
     completed: false,
-    id: identifier,
+    id,
     nuxList,
     trigger: null,
     /* Add your own gatekeeper to control who the NUX is displayed to.

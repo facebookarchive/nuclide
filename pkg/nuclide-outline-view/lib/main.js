@@ -134,7 +134,6 @@ class Activation {
       selectorFunction: null,
       position: 'auto',
       completionPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
-      completed: false,
     };
 
     const nuxOutlineView = {
@@ -144,7 +143,6 @@ class Activation {
       selectorFunction: null,
       position: 'left',
       completionPredicate: null,
-      completed: false,
     };
 
     const isJavaScriptFile = editor => {
