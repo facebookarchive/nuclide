@@ -132,19 +132,16 @@ class NodeTranspiler {
     }
   }
 
-  transformWithCache(src, filename, done) {
+  transformWithCache(src, filename) {
     const cacheFilename = this._getCacheFilename(src);
 
     if (fs.existsSync(cacheFilename)) {
       const cached = fs.readFileSync(cacheFilename, 'utf8');
-      if (done) {
-        process.nextTick(() => { done(null, cacheFilename); });
-      }
       return cached;
     }
 
     const output = this.transform(src, filename);
-    cacheWriteAsync(cacheFilename, output, done);
+    this._cacheWriteSync(cacheFilename, output);
 
     return output;
   }
@@ -167,46 +164,33 @@ class NodeTranspiler {
     const cacheFilename = path.join(this._cacheDir, fileDigest + '.js');
     return cacheFilename;
   }
+
+  _cacheWriteSync(cacheFilename, src) {
+    // Write the file to a temp file first and then move it so the write to the
+    // cache is atomic. Although Node is single-threaded, there could be
+    // multiple Node processes running simultaneously that are using the cache.
+
+    const mkdirp = require('mkdirp');
+    const uuid = require('uuid');
+
+    const basedir = path.dirname(cacheFilename);
+    const tmpName = path.join(basedir, '.' + uuid.v4());
+
+    try {
+      mkdirp.sync(basedir);
+    } catch (err) {
+      console.error(`Cache mkdirp failed. ${err}`);
+      return;
+    }
+
+    try {
+      fs.writeFileSync(tmpName, src);
+      fs.renameSync(tmpName, cacheFilename);
+    } catch (err) {
+      console.error(`Cache write failed. ${err}`);
+      try { fs.unlinkSync(tmpName); } catch (err_) {}
+    }
+  }
 }
 
 module.exports = NodeTranspiler;
-
-function cacheWriteAsync(cacheFilename, src, done) {
-  const mkdirp = require('mkdirp');
-  const uuid = require('uuid');
-
-  const basedir = path.dirname(cacheFilename);
-  const tmpName = path.join(basedir, '.' + uuid.v4());
-
-  const fail = done || (err => {
-    console.error(`Cache write failed. ${err}`);
-  });
-
-  mkdirp(basedir, mkdirErr => {
-    if (mkdirErr) {
-      fail(mkdirErr);
-      return;
-    }
-    // Asynchronously write the result to the cache. Write the file to a temp
-    // file first and then move it so the write to the cache is atomic. Although
-    // Node is single-threaded, there could be multiple Node processes running
-    // simultaneously that are using the cache.
-    fs.writeFile(tmpName, src, writeError => {
-      if (writeError) {
-        fail(writeError);
-        return;
-      }
-      fs.rename(tmpName, cacheFilename, renameErr => {
-        if (renameErr) {
-          fail(renameErr);
-          // Try to remove the temp file if renaming failed.
-          fs.unlink(tmpName, () => {});
-          return;
-        }
-        if (done) {
-          done(null, cacheFilename);
-        }
-      });
-    });
-  });
-}

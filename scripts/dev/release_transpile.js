@@ -34,7 +34,7 @@ function runParent() {
   const path = require('path');
 
   const basedir = path.join(__dirname, '../..');
-  const numWorkers = os.cpus().length - 1;
+  const numWorkers = Math.max(os.cpus().length - 1, 1);
 
   const count = {
     skipped: 0,
@@ -67,23 +67,19 @@ function runParent() {
   for (let i = 0; i < numWorkers; i++) {
     child_process.fork(__filename)
       .on('message', function(m) {
-        if (m.error) {
-          // eslint-disable-next-line no-console
-          console.error('Transpile failed. %s', m.error);
-          process.exit(1);
-        } else if (m.transpile === true) {
+        if (m.transpiled === true) {
           count.transpiled++;
-        } else if (m.transpile === false) {
+        } else if (m.skipped === true) {
           count.skipped++;
         }
         if (jsFiles.length) {
           this.send({cmd: 'next', filename: jsFiles.pop()});
         } else {
-          this.disconnect();
+          this.kill();
         }
       })
       .on('exit', code => {
-        if (code !== 0) {
+        if (code) {
           process.exit(code);
         }
       })
@@ -113,61 +109,23 @@ function runChild() {
   let overwrite;
 
   process.on('message', m => {
+    const res = {};
     if (m.cmd === 'next') {
-      run(m.filename, (err, ret) => {
-        if (process.connected) {
-          if (err) {
-            process.send({error: String(err)});
-          } else {
-            process.send(ret);
-          }
+      const src = fs.readFileSync(m.filename);
+      if (NodeTranspiler.shouldCompile(src)) {
+        const code = nodeTranspiler.transformWithCache(src, m.filename);
+        // Services are never overwritten.
+        if (overwrite && !services.has(m.filename)) {
+          fs.writeFileSync(m.filename, code);
         }
-      });
+        res.transpiled = true;
+      } else {
+        res.skipped = true;
+      }
     } else if (m.cmd === 'init') {
       services = new Set(m.services);
       overwrite = m.overwrite;
     }
+    process.send(res);
   });
-
-  process.send({ready: true});
-
-  function run(filename, cb) {
-    const src = fs.readFileSync(filename);
-
-    const ret = {
-      filename,
-      transpile: NodeTranspiler.shouldCompile(src),
-    };
-
-    if (!ret.transpile) {
-      process.nextTick(() => { cb(null, ret); });
-      return;
-    }
-
-    let code;
-    let pending = 0;
-
-    try {
-      pending++;
-      code = nodeTranspiler.transformWithCache(src, filename, done);
-    } catch (err) {
-      process.nextTick(() => { done(err); });
-      return;
-    }
-
-    // Services are never overwritten.
-    if (overwrite && !services.has(filename)) {
-      pending++;
-      fs.writeFile(filename, code, done);
-    }
-
-    function done(err) {
-      if (err) {
-        pending = 0;
-        cb(err);
-      } else if (--pending === 0) {
-        cb(null, ret);
-      }
-    }
-  }
 }
