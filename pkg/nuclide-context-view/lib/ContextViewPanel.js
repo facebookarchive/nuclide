@@ -11,6 +11,7 @@
 
 import {React} from 'react-for-atom';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
+import {Button} from '../../nuclide-ui/lib/Button';
 
 /**
  * The Atom panel containing context provider views. This is the sidebar that
@@ -24,6 +25,7 @@ export class ContextViewPanel extends React.Component {
       React.PropTypes.arrayOf(React.PropTypes.node),
       React.PropTypes.node,
     ]),
+    onHide: React.PropTypes.func,
   };
 
   render() {
@@ -34,7 +36,7 @@ export class ContextViewPanel extends React.Component {
       noScroll
       onResize={this.props.onResize}>
         <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-          <Header />
+          <Header onHide={this.props.onHide} />
           <div className="nuclide-context-view-content">
             {this.props.children}
           </div>
@@ -46,10 +48,19 @@ export class ContextViewPanel extends React.Component {
 
 class Header extends React.Component {
 
+  static propTypes = {
+    onHide: React.PropTypes.func,
+  };
+
   render(): React.Element<any> {
     return (
-      <div className="panel-heading" style={{flexShrink: 0}}>
-        <h4>Context View</h4>
+      <div className="panel-heading" >
+        <h4>
+          <span>Context View</span>
+          <Button icon="x" className="pull-right"
+            onClick={this.props.onHide} title="Hide context view"
+          />
+        </h4>
       </div>
     );
   }
