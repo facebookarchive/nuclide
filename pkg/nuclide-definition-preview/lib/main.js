@@ -23,6 +23,7 @@ const PROVIDER_TITLE: string = 'Definition Preview';
 class Activation {
 
   provider: ContextProvider;
+  contextViewService: ?NuclideContextView;
 
   constructor() {
 
@@ -38,6 +39,20 @@ class Activation {
   }
 
   dispose() {
+    if (this.contextViewService != null) {
+      // Remove definition preview from context view's list of registered providers
+      this.contextViewService.deregisterProvider(PROVIDER_ID);
+    }
+  }
+
+  updateContextViewService(newService: ?NuclideContextView) {
+    if (this.contextViewService !== newService) {
+      this.contextViewService = newService;
+
+      if (this.contextViewService != null) {
+        this.contextViewService.registerProvider(this.provider);
+      }
+    }
   }
 }
 
@@ -59,8 +74,10 @@ export function deactivate() {
 
 export function consumeNuclideContextView(contextView: NuclideContextView): IDisposable {
   invariant(activation != null);
-  contextView.registerProvider(activation.getContextProvider());
+  activation.updateContextViewService(contextView);
   return new Disposable(() => {
-    contextView.deregisterProvider(PROVIDER_ID);
+    if (activation != null) {
+      activation.updateContextViewService(null);
+    }
   });
 }
