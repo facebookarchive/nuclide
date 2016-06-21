@@ -123,6 +123,13 @@ export class Commands {
     });
   }
 
+  setToolbarVisibility(visible: boolean) : void {
+    this._dispatch({
+      type: ActionTypes.TOOLBAR_VISIBILITY_UPDATED,
+      payload: {visible},
+    });
+  }
+
   stopTask(): void {
     this._dispatch({
       type: ActionTypes.STOP_TASK,

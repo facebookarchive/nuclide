@@ -67,7 +67,14 @@ export function activate(rawState: ?SerializedAppState): void {
       _states = null;
     }),
     atom.commands.add('atom-workspace', {
-      'nuclide-build:toggle-toolbar-visibility': () => { commands.toggleToolbarVisibility(); },
+      'nuclide-build:toggle-toolbar-visibility': event => {
+        const visible = event.detail == null ? undefined : event.detail.visible;
+        if (typeof visible === 'boolean') {
+          commands.setToolbarVisibility(visible);
+        } else {
+          commands.toggleToolbarVisibility();
+        }
+      },
     }),
 
     // Update the Atom palette commands to match our currently enabled tasks.
