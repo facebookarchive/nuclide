@@ -344,6 +344,7 @@ function isIt(functionName: string): boolean {
     case 'it':
     case 'fit':
     case 'iit':
+    case 'pit':
     case 'xit':
     case 'it.only':
       return true;
