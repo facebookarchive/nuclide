@@ -41,13 +41,6 @@ function runParent() {
     transpiled: 0,
   };
 
-  require('../../pkg/nuclide-node-transpiler');
-  const loadServicesConfig = require('../../pkg/nuclide-rpc/lib/loadServicesConfig');
-
-  const services = glob.sync(path.join(basedir, 'pkg/*'))
-    .reduce((acc, dirname) => acc.concat(loadServicesConfig(dirname)), [])
-    .map(service => service.definition);
-
   const jsFiles = glob.sync(path.join(basedir, '**/*.js'), {
     ignore: [
       '**/node_modules/**',
@@ -83,17 +76,16 @@ function runParent() {
           process.exit(code);
         }
       })
-      .send({cmd: 'init', overwrite: argv.overwrite, services});
+      .send({cmd: 'init', overwrite: argv.overwrite});
   }
 
   process.once('exit', code => {
     if (code !== 0) { return; }
     // eslint-disable-next-line no-console
     console.log(
-      'transpiled: %s | skipped: %s | services: %s | %ds',
+      'transpiled: %s | skipped: %s | %ds',
       count.transpiled,
       count.skipped,
-      services.length,
       process.uptime().toFixed(2)
     );
   });
@@ -105,7 +97,6 @@ function runChild() {
   const NodeTranspiler = require('../../pkg/nuclide-node-transpiler/lib/NodeTranspiler');
   const nodeTranspiler = new NodeTranspiler();
 
-  let services;
   let overwrite;
 
   process.on('message', m => {
@@ -114,8 +105,7 @@ function runChild() {
       const src = fs.readFileSync(m.filename);
       if (NodeTranspiler.shouldCompile(src)) {
         const code = nodeTranspiler.transformWithCache(src, m.filename);
-        // Services are never overwritten.
-        if (overwrite && !services.has(m.filename)) {
+        if (overwrite) {
           fs.writeFileSync(m.filename, code);
         }
         res.transpiled = true;
@@ -123,7 +113,6 @@ function runChild() {
         res.skipped = true;
       }
     } else if (m.cmd === 'init') {
-      services = new Set(m.services);
       overwrite = m.overwrite;
     }
     process.send(res);

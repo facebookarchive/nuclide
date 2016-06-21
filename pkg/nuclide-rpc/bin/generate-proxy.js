@@ -10,35 +10,114 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable no-var, prefer-const, no-console*/
+/* eslint-disable no-console */
 
-// Generates a .proxy file to stdout from a service definition file.
+process.on('uncaughtException', err => {
+  console.error(err.stack);
+  process.exit(1);
+});
 
 require('../../nuclide-node-transpiler');
 
-var parseServiceDefinition = require('../lib/service-parser').parseServiceDefinition;
-var generateProxy = require('../lib/proxy-generator').generateProxy;
+const argv = require('yargs')
+  .usage('Usage: $0 -d path/to/definition -n serviceName')
+  .options({
+    definitionPath: {
+      demand: true,
+      describe: 'Path to definition',
+      type: 'string',
+    },
+    serviceName: {
+      demand: true,
+      describe: 'Service name',
+      type: 'string',
+    },
+    preserveFunctionNames: {
+      demand: false,
+      default: false,
+      describe: 'Preserve function names',
+      type: 'boolean',
+    },
+    useBasename: {
+      demand: false,
+      default: false,
+      describe: 'Removes full paths from definitions in favor of base names',
+      type: 'boolean',
+    },
+    save: {
+      demand: false,
+      default: false,
+      describe: 'Save the proxy next to definition file',
+      type: 'boolean',
+    },
+    code: {
+      demand: false,
+      default: false,
+      describe: 'Prints the proxy code',
+      type: 'boolean',
+    },
+    json: {
+      demand: false,
+      default: false,
+      describe: 'Prints details in JSON format',
+      type: 'boolean',
+    },
+    validate: {
+      demand: false,
+      default: false,
+      describe: 'Validate the proxy by running it',
+      type: 'boolean',
+    },
+  })
+  .argv;
 
-if (process.argv.length < 3) {
-  console.error('Missing service definition file argument.');
-  process.exit(1);
+const fs = require('fs');
+const path = require('path');
+
+const createProxyFactory = require('../lib/main').createProxyFactory;
+const proxyFilename = require('../lib/main').proxyFilename;
+const stripLocationsFileName = require('../lib/location').stripLocationsFileName;
+
+const generateProxy = require('../lib/proxy-generator').generateProxy;
+const parseServiceDefinition = require('../lib/service-parser').parseServiceDefinition;
+
+const definitionPath = path.resolve(argv.definitionPath);
+const preserveFunctionNames = argv.preserveFunctionNames;
+const serviceName = argv.serviceName;
+
+const filename = proxyFilename(definitionPath);
+const definitionSource = fs.readFileSync(definitionPath, 'utf8');
+const defs = parseServiceDefinition(definitionPath, definitionSource);
+if (argv.useBasename) {
+  stripLocationsFileName(defs);
+}
+const code = generateProxy(argv.serviceName, argv.preserveFunctionNames, defs);
+
+if (argv.validate) {
+  try {
+    const fakeClient = {};
+    const factory = createProxyFactory(
+      serviceName,
+      preserveFunctionNames,
+      definitionPath
+    );
+    factory(fakeClient);
+  } catch (e) {
+    console.error(`Failed to validate "${definitionPath}"`);
+    throw e;
+  }
 }
 
-if (process.argv.length < 4) {
-  console.error('Missing service name argument.');
-  process.exit(1);
+if (argv.save) {
+  fs.writeFileSync(filename, code);
 }
 
-if (process.argv.length > 4) {
-  console.error('Too many arguments.');
-  process.exit(1);
+if (argv.json) {
+  console.log(JSON.stringify({
+    src: definitionPath,
+    dest: filename,
+    code: argv.code ? code : undefined,
+  }, null, 2));
+} else if (argv.code) {
+  console.log(code);
 }
-
-var fs = require('fs');
-
-var file = process.argv[2];
-var serviceName = process.argv[3];
-var definitions = parseServiceDefinition(file, fs.readFileSync(file, 'utf8'));
-
-var code = generateProxy(serviceName, definitions);
-console.log(code);

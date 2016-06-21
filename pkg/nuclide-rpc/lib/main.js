@@ -59,20 +59,33 @@ export type ProxyFactory = (context: RpcContext) => Object;
 /** Cache for remote proxies. */
 const proxiesCache: Map<string, ProxyFactory> = new Map();
 
+export function proxyFilename(definitionPath: string): string {
+  invariant(
+    nuclideUri.isAbsolute(definitionPath),
+    `"${definitionPath}" definition path must be absolute.`
+  );
+  const dir = nuclideUri.dirname(definitionPath);
+  const name = nuclideUri.basename(definitionPath, nuclideUri.extname(definitionPath));
+  const filename = nuclideUri.join(dir, name + 'Proxy.js');
+  return filename;
+}
+
 export function createProxyFactory(
   serviceName: string,
   preserveFunctionNames: boolean,
   definitionPath: string,
 ): ProxyFactory {
-  invariant(
-    nuclideUri.isAbsolute(definitionPath),
-    `"${definitionPath}" definition path must be absolute.`
-  );
   if (!proxiesCache.has(definitionPath)) {
-    const filename = nuclideUri.parsePath(definitionPath).name + 'Proxy.js';
-    const definitionSource = fs.readFileSync(definitionPath, 'utf8');
-    const defs = parseServiceDefinition(definitionPath, definitionSource);
-    const code = generateProxy(serviceName, preserveFunctionNames, defs);
+    const filename = proxyFilename(definitionPath);
+
+    let code;
+    if (fs.existsSync(filename)) {
+      code = fs.readFileSync(filename, 'utf8');
+    } else {
+      const definitionSource = fs.readFileSync(definitionPath, 'utf8');
+      const defs = parseServiceDefinition(definitionPath, definitionSource);
+      code = generateProxy(serviceName, preserveFunctionNames, defs);
+    }
 
     const m = loadCodeAsModule(code, filename);
     m.exports.inject(Rx.Observable, trackOperationTiming);
@@ -87,8 +100,9 @@ export function createProxyFactory(
 }
 
 function loadCodeAsModule(code: string, filename: string): Module {
-  const m = new Module();
-  m.filename = m.id = nuclideUri.join(__dirname, filename);
+  invariant(code.length > 0, 'Code must not be empty.');
+  const m = new Module(filename, ((module: any): Module));
+  m.filename = filename;
   m.paths = []; // Prevent accidental requires by removing lookup paths.
   m._compile(code, filename);
 
