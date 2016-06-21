@@ -275,7 +275,10 @@ function specOutline(expressionStatement: any, describeOnly: boolean = false): ?
   if (expression.type !== 'CallExpression') {
     return null;
   }
-  const functionName = expression.callee.name;
+  const functionName = getFunctionName(expression.callee);
+  if (functionName == null) {
+    return null;
+  }
   if (!isDescribe(functionName)) {
     if (describeOnly || !isIt(functionName)) {
       return null;
@@ -297,7 +300,7 @@ function specOutline(expressionStatement: any, describeOnly: boolean = false): ?
   }
   return {
     tokenizedText: [
-      method(expression.callee.name),
+      method(functionName),
       whitespace(' '),
       string(description),
     ],
@@ -307,12 +310,29 @@ function specOutline(expressionStatement: any, describeOnly: boolean = false): ?
   };
 }
 
+// Return the function name as written as a string. Intended to stringify patterns like `describe`
+// and `describe.only` even though `describe.only` is a MemberExpression rather than an Identifier.
+function getFunctionName(callee: any): ?string {
+  switch (callee.type) {
+    case 'Identifier':
+      return callee.name;
+    case 'MemberExpression':
+      if (callee.object.type !== 'Identifier' || callee.property.type !== 'Identifier') {
+        return null;
+      }
+      return `${callee.object.name}.${callee.property.name}`;
+    default:
+      return null;
+  }
+}
+
 function isDescribe(functionName: string): boolean {
   switch (functionName) {
     case 'describe':
     case 'fdescribe':
     case 'ddescribe':
     case 'xdescribe':
+    case 'describe.only':
       return true;
     default:
       return false;
@@ -325,6 +345,7 @@ function isIt(functionName: string): boolean {
     case 'fit':
     case 'iit':
     case 'xit':
+    case 'it.only':
       return true;
     default:
       return false;
