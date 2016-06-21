@@ -26,6 +26,7 @@ ruleTester.run('type-alias-semi', rule, {
   invalid: [
     {
       code: 'type T = {}',
+      output: 'type T = {};',
       errors: [{
         message: 'Missing semicolon.',
         type: 'TypeAlias',
@@ -33,6 +34,7 @@ ruleTester.run('type-alias-semi', rule, {
     },
     {
       code: 'type T = TT',
+      output: 'type T = TT;',
       errors: [{
         message: 'Missing semicolon.',
         type: 'TypeAlias',
