@@ -16,6 +16,7 @@ require('../../nuclide-node-transpiler');
 
 const parseServiceDefinition = require('../lib/service-parser').parseServiceDefinition;
 const generateProxy = require('../lib/proxy-generator').generateProxy;
+const stripLocationsFileName = require('../lib/location').stripLocationsFileName;
 
 const fs = require('fs');
 const path = require('path');
@@ -29,9 +30,11 @@ for (const file of fs.readdirSync(dir)) {
 
     const definitionSource = fs.readFileSync(definitionPath, 'utf8');
     const definitions = parseServiceDefinition(
-      path.basename(file),
+      definitionPath,
       definitionSource
     );
+
+    stripLocationsFileName(definitions);
 
     const json = mapDefinitions(definitions);
     fs.writeFileSync(

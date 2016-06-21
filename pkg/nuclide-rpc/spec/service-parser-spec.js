@@ -12,6 +12,7 @@
 import fs from 'fs';
 import {addMatchers} from '../../nuclide-test-helpers';
 import {parseServiceDefinition} from '../lib/service-parser';
+import {stripLocationsFileName} from '../lib/location';
 import nuclideUri from '../../nuclide-remote-uri';
 import type {Definition} from '../lib/types';
 
@@ -27,7 +28,8 @@ describe('Nuclide service parser test suite.', () => {
         const code = fs.readFileSync(fixturePath, 'utf8');
         const expected = JSON.parse(
           fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', file) + '.json', 'utf8'));
-        const definitions = parseServiceDefinition(file, code);
+        const definitions = parseServiceDefinition(fixturePath, code);
+        stripLocationsFileName(definitions);
         expect(mapDefinitions(definitions)).diffJson(expected);
       });
     }
