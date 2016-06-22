@@ -60,13 +60,18 @@ function spawnWorker() {
     if (code) {
       process.exit(code);
     } else {
-      const json = JSON.parse(out);
-      const a = path.relative(basedir, json.src);
-      if (argv.save) {
-        const b = path.relative(path.dirname(json.src), json.dest);
-        console.log(`${a} => ${b}`);
-      } else {
-        console.log(`${a}`);
+      try {
+        const json = JSON.parse(out);
+        const a = path.relative(basedir, json.src);
+        if (argv.save) {
+          const b = path.relative(path.dirname(json.src), json.dest);
+          console.log(`${a} => ${b}`);
+        } else {
+          console.log(`${a}`);
+        }
+      } catch (err) {
+        console.error(`Error ${err} parsing:\n${out}`);
+        process.exit(1);
       }
       spawnWorker();
     }
@@ -74,5 +79,5 @@ function spawnWorker() {
 
   let out = '';
   ps.stdout.on('data', data => { out += data; });
-  ps.stderr.on('data', data => { console.log(data.toString()); });
+  ps.stderr.on('data', data => { console.error(data.toString()); });
 }
