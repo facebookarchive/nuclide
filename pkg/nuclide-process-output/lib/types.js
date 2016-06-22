@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -17,4 +18,3 @@
  * (e.g. ANSI) that you want to interpret and strip from the data before appending
  * to the buffer. You can do this by implementing a custom ProcessOutputHandler.
  */
-export type ProcessOutputHandler = (buffer: atom$TextBuffer, newText: string) => void;

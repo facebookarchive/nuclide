@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,51 +14,59 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+var _assert2;
 
-import JumpToRelatedFile from './JumpToRelatedFile';
-import RelatedFileFinder from './RelatedFileFinder';
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-let jumpToRelatedFile: ?JumpToRelatedFile = null;
-let subscriptions: ?CompositeDisposable = null;
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _JumpToRelatedFile2;
+
+function _JumpToRelatedFile() {
+  return _JumpToRelatedFile2 = _interopRequireDefault(require('./JumpToRelatedFile'));
+}
+
+var _RelatedFileFinder2;
+
+function _RelatedFileFinder() {
+  return _RelatedFileFinder2 = _interopRequireDefault(require('./RelatedFileFinder'));
+}
+
+var jumpToRelatedFile = null;
+var subscriptions = null;
 
 // Only expose a context menu for files in languages that have header files.
-const GRAMMARS_WITH_HEADER_FILES = new Set([
-  'source.c',
-  'source.cpp',
-  'source.objc',
-  'source.objcpp',
-  'source.ocaml',
-]);
+var GRAMMARS_WITH_HEADER_FILES = new Set(['source.c', 'source.cpp', 'source.objc', 'source.objcpp', 'source.ocaml']);
 
-export function activate() {
-  subscriptions = new CompositeDisposable();
-  subscriptions.add(atom.workspace.observeTextEditors(textEditor => {
+function activate() {
+  subscriptions = new (_atom2 || _atom()).CompositeDisposable();
+  subscriptions.add(atom.workspace.observeTextEditors(function (textEditor) {
     if (jumpToRelatedFile == null) {
-      jumpToRelatedFile = new JumpToRelatedFile(new RelatedFileFinder());
-      invariant(subscriptions);
+      jumpToRelatedFile = new (_JumpToRelatedFile2 || _JumpToRelatedFile()).default(new (_RelatedFileFinder2 || _RelatedFileFinder()).default());
+      (0, (_assert2 || _assert()).default)(subscriptions);
       subscriptions.add(jumpToRelatedFile);
     }
     jumpToRelatedFile.enableInTextEditor(textEditor);
   }));
   subscriptions.add(atom.contextMenu.add({
-    'atom-text-editor': [
-      {
-        label: 'Switch Between Header/Source',
-        command: 'nuclide-related-files:jump-to-next-related-file',
-        shouldDisplay() {
-          const editor = atom.workspace.getActiveTextEditor();
-          return editor != null &&
-            GRAMMARS_WITH_HEADER_FILES.has(editor.getGrammar().scopeName);
-        },
-      },
-      {type: 'separator'},
-    ],
+    'atom-text-editor': [{
+      label: 'Switch Between Header/Source',
+      command: 'nuclide-related-files:jump-to-next-related-file',
+      shouldDisplay: function shouldDisplay() {
+        var editor = atom.workspace.getActiveTextEditor();
+        return editor != null && GRAMMARS_WITH_HEADER_FILES.has(editor.getGrammar().scopeName);
+      }
+    }, { type: 'separator' }]
   }));
 }
 
-export function deactivate() {
+function deactivate() {
   if (subscriptions != null) {
     subscriptions.dispose();
     subscriptions = null;

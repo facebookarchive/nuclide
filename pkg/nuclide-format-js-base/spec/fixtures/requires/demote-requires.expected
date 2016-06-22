@@ -1,3 +1,0 @@
-import type one from 'one';
-
-var two: ?one = null;

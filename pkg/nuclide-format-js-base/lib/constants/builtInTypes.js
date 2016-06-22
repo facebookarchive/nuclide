@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -15,15 +14,4 @@
  * NOTE: This is in addition to the standard set of "built-in" modules. This
  * should only be for declared types that are not actual modules.
  */
-module.exports = new Set([
-  '$jsx',
-  'AdAccountID',
-  'FBID',
-  'Fbt',
-  'Function',
-  'HTMLElement',
-  'Iterable',
-  'Map',
-  'ReactElement',
-  'Set',
-]);
+module.exports = new Set(['$jsx', 'AdAccountID', 'FBID', 'Fbt', 'Function', 'HTMLElement', 'Iterable', 'Map', 'ReactElement', 'Set']);

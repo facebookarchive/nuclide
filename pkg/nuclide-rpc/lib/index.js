@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +10,50 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export {ServiceRegistry} from './ServiceRegistry';
-export {RpcConnection} from './RpcConnection';
-export {LoopbackTransports} from './LoopbackTransports';
-export {StreamTransport} from './StreamTransport';
+var _ServiceRegistry = require('./ServiceRegistry');
 
-import loadServicesConfig from './loadServicesConfig';
-export {loadServicesConfig};
+Object.defineProperty(exports, 'ServiceRegistry', {
+  enumerable: true,
+  get: function get() {
+    return _ServiceRegistry.ServiceRegistry;
+  }
+});
 
-export type ConfigEntry = {
-  name: string;
-  definition:string;
-  implementation: string;
-  // When true, doesn't mangle in the service name into the method names for functions.
-  preserveFunctionNames?: boolean;
-};
+var _RpcConnection = require('./RpcConnection');
 
-export type Transport = {
-  send(message: string): void;
-  onMessage(): Observable<string>;
-  close(): void;
-};
+Object.defineProperty(exports, 'RpcConnection', {
+  enumerable: true,
+  get: function get() {
+    return _RpcConnection.RpcConnection;
+  }
+});
+
+var _LoopbackTransports = require('./LoopbackTransports');
+
+Object.defineProperty(exports, 'LoopbackTransports', {
+  enumerable: true,
+  get: function get() {
+    return _LoopbackTransports.LoopbackTransports;
+  }
+});
+
+var _StreamTransport = require('./StreamTransport');
+
+Object.defineProperty(exports, 'StreamTransport', {
+  enumerable: true,
+  get: function get() {
+    return _StreamTransport.StreamTransport;
+  }
+});
+
+var _loadServicesConfig2;
+
+function _loadServicesConfig() {
+  return _loadServicesConfig2 = _interopRequireDefault(require('./loadServicesConfig'));
+}
+
+exports.loadServicesConfig = (_loadServicesConfig2 || _loadServicesConfig()).default;
+
+// When true, doesn't mangle in the service name into the method names for functions.

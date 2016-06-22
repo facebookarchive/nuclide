@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +8,32 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten2;
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
-import unwrapMarkers from '../../utils/unwrapMarkers';
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+var _utilsUnwrapMarkers2;
+
+function _utilsUnwrapMarkers() {
+  return _utilsUnwrapMarkers2 = _interopRequireDefault(require('../../utils/unwrapMarkers'));
+}
 
 /**
  * Adds parenthesis and the appropriate markers to a set of lines. It also moves
  * any leading and trailing markers outside of the parenthesis.
  */
-function wrapExpression(print: Print, node: any, lines: Lines): Lines {
-  lines = flatten(lines);
+function wrapExpression(print, node, lines) {
+  lines = (0, (_utilsFlatten2 || _utilsFlatten()).default)(lines);
   if (node.parenthesizedExpression) {
-    lines = unwrapMarkers(
-      [
-        '(',
-        markers.openScope,
-        markers.scopeIndent,
-        markers.scopeBreak,
-      ],
-      lines,
-      [
-        markers.scopeBreak,
-        markers.scopeDedent,
-        markers.closeScope,
-        ')',
-      ],
-    );
+    lines = (0, (_utilsUnwrapMarkers2 || _utilsUnwrapMarkers()).default)(['(', (_constantsMarkers2 || _constantsMarkers()).default.openScope, (_constantsMarkers2 || _constantsMarkers()).default.scopeIndent, (_constantsMarkers2 || _constantsMarkers()).default.scopeBreak], lines, [(_constantsMarkers2 || _constantsMarkers()).default.scopeBreak, (_constantsMarkers2 || _constantsMarkers()).default.scopeDedent, (_constantsMarkers2 || _constantsMarkers()).default.closeScope, ')']);
   }
   return lines;
 }

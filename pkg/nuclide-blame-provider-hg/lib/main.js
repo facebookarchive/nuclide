@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +10,14 @@
  * the root directory of this source tree.
  */
 
-import type {BlameProvider} from '../../nuclide-blame-base';
+exports.activate = activate;
+exports.provideHgBlameProvider = provideHgBlameProvider;
 
-let blameProvider;
+var blameProvider = undefined;
 
-export function activate(state: ?Object): void {
-}
+function activate(state) {}
 
-export function provideHgBlameProvider(): BlameProvider {
+function provideHgBlameProvider() {
   if (!blameProvider) {
     blameProvider = require('./HgBlameProvider');
   }
