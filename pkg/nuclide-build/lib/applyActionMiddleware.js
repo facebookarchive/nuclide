@@ -164,7 +164,10 @@ function runTask(
     .catch(error => {
       atom.notifications.addError(
         `The task "${task.label}" failed`,
-        {description: error.message},
+        {
+          description: error.message,
+          dismissable: true,
+        },
       );
       const {taskStatus} = getState();
       return Observable.of({
