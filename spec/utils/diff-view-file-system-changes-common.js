@@ -34,15 +34,20 @@ function setResourceTextSync(
 
 export function runTest(context: TestContext) {
   const TEST_FILE_NAME = 'test.txt';
+  let diffViewElement: ?HTMLElement;
+  let textEditor: ?atom$TextEditor;
   let localFilePath: string = (null: any);
   let repoPath: string = (null: any);
 
-  it('reloads the diff view when changes to the active file occur on the file system', () => {
-    let diffViewElement: ?HTMLElement;
-    let textEditor: ?atom$TextEditor;
+  function getDiffEditorContents(): string {
+    invariant(diffViewElement != null);
+    const textEditorElements = diffViewElement.querySelectorAll('atom-text-editor');
+    const rightEditorElement = ((textEditorElements[1]: any): atom$TextEditorElement);
+    const rightEditor = rightEditorElement.getModel();
+    return rightEditor.getText();
+  }
 
-    const SAMPLE_TEXT = 'Integration test sample text';
-
+  function openDiffViewForTestFile() {
     waitsForPromise(async () => {
       repoPath = await copyMercurialFixture('hg_repo_2');
       localFilePath = nuclideUri.join(repoPath, TEST_FILE_NAME);
@@ -61,14 +66,11 @@ export function runTest(context: TestContext) {
       diffViewElement = atom.workspace.getActivePaneItem();
       return diffViewElement != null && diffViewElement.tagName === 'NUCLIDE-DIFF-VIEW';
     });
+  }
 
-    function getDiffEditorContents(): string {
-      invariant(diffViewElement != null);
-      const textEditorElements = diffViewElement.querySelectorAll('atom-text-editor');
-      const rightEditorElement = ((textEditorElements[1]: any): atom$TextEditorElement);
-      const rightEditor = rightEditorElement.getModel();
-      return rightEditor.getText();
-    }
+  it('reloads the diff view when the active file changes', () => {
+    const SAMPLE_TEXT = 'Integration test sample text';
+    openDiffViewForTestFile();
 
     // Change the file on the file system
     runs(() => {
@@ -82,7 +84,10 @@ export function runTest(context: TestContext) {
     waitsFor('editor to reload on file change', () => {
       return getDiffEditorContents() === SAMPLE_TEXT;
     });
+  });
 
+  it('clears the diff editor state when the active file is deleted', () => {
+    openDiffViewForTestFile();
     // Delete the file on the file system
     runs(() => {
       fs.unlinkSync(nuclideUri.join(repoPath, TEST_FILE_NAME));
