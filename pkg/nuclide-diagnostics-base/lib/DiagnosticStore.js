@@ -23,9 +23,11 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {applyTextEdit} from '../../nuclide-textedit';
 import {arrayRemove} from '../../commons-node/collection';
+import {DisposableSubscription} from '../../commons-node/stream';
 import {MarkerTracker} from './MarkerTracker';
 import invariant from 'assert';
 import {Disposable, Emitter} from 'atom';
+import {Subject, Observable} from 'rxjs';
 
 const PROJECT_MESSAGE_CHANGE_EVENT = 'messages-changed-for-project';
 const ALL_CHANGE_EVENT = 'messages-changed';
@@ -43,11 +45,8 @@ class DiagnosticStore {
 
   // File paths are used as event names for the _fileChangeEmitter, so a second
   // emitter is used for other events to prevent event name collisions.
-  _fileChangeEmitter: Emitter;
+  _fileChanges: Subject<FileMessageUpdate>;
   _nonFileChangeEmitter: Emitter;
-  // A map of NuclideUri to the number of listeners registered for changes to
-  // messages for that file.
-  _fileToListenersCount: Map<NuclideUri, number>;
   _projectListenersCount: number;
   _allMessagesListenersCount: number;
 
@@ -58,9 +57,8 @@ class DiagnosticStore {
     this._fileToProviders = new Map();
     this._providerToProjectDiagnostics = new Map();
 
-    this._fileChangeEmitter = new Emitter();
+    this._fileChanges = new Subject();
     this._nonFileChangeEmitter = new Emitter();
-    this._fileToListenersCount = new Map();
     this._projectListenersCount = 0;
     this._allMessagesListenersCount = 0;
 
@@ -71,9 +69,8 @@ class DiagnosticStore {
     this._providerToFileToMessages.clear();
     this._fileToProviders.clear();
     this._providerToProjectDiagnostics.clear();
-    this._fileChangeEmitter.dispose();
+    this._fileChanges.complete();
     this._nonFileChangeEmitter.dispose();
-    this._fileToListenersCount.clear();
     this._markerTracker.dispose();
   }
 
@@ -239,33 +236,20 @@ class DiagnosticStore {
    *   messages for this file path.
    */
   onFileMessagesDidUpdate(
-      callback: (update: FileMessageUpdate) => mixed,
-      filePath: NuclideUri,
-    ): IDisposable {
-    // Use the filePath as the event name.
-    const emitterDisposable = this._fileChangeEmitter.on(filePath, callback);
-    this._incrementFileListenerCount(filePath);
-
+    callback: (update: FileMessageUpdate) => mixed,
+    filePath: NuclideUri,
+  ): IDisposable {
     const fileMessages = this._getFileMessages(filePath);
-    if (fileMessages.length) {
-      callback({filePath, messages: fileMessages});
-    }
-    return new Disposable(() => {
-      emitterDisposable.dispose();
-      this._decrementFileListenerCount(filePath);
-    });
-  }
+    const initialObservable = fileMessages.length > 0 ?
+      Observable.of({filePath, messages: fileMessages}) :
+      Observable.empty();
+    const observable = Observable.concat(
+      initialObservable,
+      this._fileChanges
+        .filter(change => change.filePath === filePath),
+    );
 
-  _incrementFileListenerCount(filePath: NuclideUri): void {
-    const currentCount = this._fileToListenersCount.get(filePath) || 0;
-    this._fileToListenersCount.set(filePath, currentCount + 1);
-  }
-
-  _decrementFileListenerCount(filePath: NuclideUri): void {
-    const currentCount = this._fileToListenersCount.get(filePath) || 0;
-    if (currentCount > 0) {
-      this._fileToListenersCount.set(filePath, currentCount - 1);
-    }
+    return new DisposableSubscription(observable.subscribe(callback));
   }
 
   /**
@@ -416,9 +400,10 @@ class DiagnosticStore {
    */
 
   _emitFileMessages(filePath: NuclideUri): void {
-    if (this._fileToListenersCount.get(filePath)) {
-      this._fileChangeEmitter.emit(filePath, {filePath, messages: this._getFileMessages(filePath)});
-    }
+    this._fileChanges.next({
+      filePath,
+      messages: this._getFileMessages(filePath),
+    });
   }
 
   _emitProjectMessages(): void {
