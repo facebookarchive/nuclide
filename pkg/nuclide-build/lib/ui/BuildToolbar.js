@@ -96,6 +96,7 @@ type TaskButtonProps = {
 
 function TaskButton(props: TaskButtonProps): React.Element<any> {
   const activeTaskType = props.activeTask == null ? undefined : props.activeTask.type;
+  const confirmDisabled = props.taskIsRunning || !props.activeTask || !props.activeTask.enabled;
 
   if (props.tasks.length <= 1) {
     // If there are no tasks, just show "Run" (but have it disabled). It's just less weird than some
@@ -104,7 +105,7 @@ function TaskButton(props: TaskButtonProps): React.Element<any> {
     return (
       <Button
         size={ButtonSizes.SMALL}
-        disabled={!task.enabled}
+        disabled={confirmDisabled}
         icon={task.icon}
         onClick={() => { props.runTask(activeTaskType); }}>
         {task.label}
@@ -123,7 +124,7 @@ function TaskButton(props: TaskButtonProps): React.Element<any> {
         options={taskOptions}
         onChange={value => { props.selectTask(value); }}
         onConfirm={() => { props.runTask(activeTaskType); }}
-        confirmDisabled={props.taskIsRunning || !props.activeTask || !props.activeTask.enabled}
+        confirmDisabled={confirmDisabled}
         changeDisabled={props.taskIsRunning}
         size={ButtonSizes.SMALL}
       />
