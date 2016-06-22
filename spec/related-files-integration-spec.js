@@ -19,7 +19,8 @@ import {
 import {fixtures} from '../pkg/nuclide-test-helpers';
 
 describeRemotableTest('Related Files Integration Test', context => {
-  const TEST_FILES = ['test.cpp', 'test.h', 'testInternal.h', 'test-inl.h'].sort();
+  // Normally these would be .cpp / .h files, but avoid spinning up C++ processes for speed.
+  const TEST_FILES = ['test.abc', 'test.def', 'testInternal.def', 'test-inl.def'].sort();
   const BAD_FILES = ['bad.txt', '.watchmanconfig']; // should not switch to this
 
   it('is able to switch between related files', () => {
