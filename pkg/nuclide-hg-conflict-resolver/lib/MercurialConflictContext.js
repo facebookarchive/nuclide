@@ -49,9 +49,7 @@ export class MercurialConflictContext {
     // TODO(most) Prioritize the current working directory's repository
     // in the non-typical case of multiple conflicting project repositories.
     this.priority = 2;
-    const repositoryIndex = atom.project.getRepositories().indexOf((conflictingRepository: any));
-    // TODO(most): handle multiple same-repository project directories.
-    this.workingDirectory = atom.project.getDirectories()[repositoryIndex];
+    this.workingDirectory = conflictingRepository._workingDirectory;
   }
 
   getConflictingRepository(): ?HgRepositoryClient {
