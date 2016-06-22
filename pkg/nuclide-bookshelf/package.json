@@ -1,0 +1,14 @@
+{
+  "name": "nuclide-bookshelf",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Saves/Restores open files / tabs when switching between source control bookmarks/branches",
+  "atomTestRunner": "../../lib/test-runner.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+  }
+}
