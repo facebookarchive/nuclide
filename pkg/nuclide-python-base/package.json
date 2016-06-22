@@ -6,6 +6,7 @@
   "description": "Provides base support for Python language features.",
   "nuclide": {
     "packageType": "Node",
+    "testsCannotBeRunInParallel": true,
     "testRunner": "npm"
   },
   "scripts": {
