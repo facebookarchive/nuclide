@@ -265,9 +265,7 @@ class DiagnosticStore {
     this._projectListenersCount += 1;
 
     const projectMessages = this._getProjectMessages();
-    if (projectMessages.length) {
-      callback(projectMessages);
-    }
+    callback(projectMessages);
     return new Disposable(() => {
       emitterDisposable.dispose();
       this._projectListenersCount -= 1;

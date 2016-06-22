@@ -135,7 +135,7 @@ describe('DiagnosticStore', () => {
     setSpies();
     expect(spy_fileA.callCount).toBe(1);
     expect(spy_fileB.callCount).toBe(1);
-    expect(spy_project).not.toHaveBeenCalled();
+    expect(spy_project.callCount).toBe(1);
     expect(spy_allMessages).not.toHaveBeenCalled();
 
     // Test 1. Add file and project messages from one provider.
@@ -148,7 +148,7 @@ describe('DiagnosticStore', () => {
     expect(spy_fileA.mostRecentCall.args).toEqual(
       [{filePath: 'fileA', messages: [fileMessageA]}]
     );
-    expect(spy_project.calls.length).toBe(1);
+    expect(spy_project.callCount).toBe(2);
     expect(spy_project.mostRecentCall.args).toEqual(
       [[projectMessageA]]
     );
