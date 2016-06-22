@@ -15,7 +15,7 @@ import {
   valueToString,
 } from '../../pkg/nuclide-settings/lib/settings-utils';
 
-const ReactTestUtils = require('react-addons-test-utils');
+import {TestUtils} from 'react-for-atom';
 
 type elementGetValue = (element: any) => any;
 type elementSetValue = (element: any, newValue: any) => void;
@@ -91,7 +91,7 @@ export function testSettingsSelect(keyPath: string, value: mixed, tmpValue: mixe
     tmpValue,
     (element: HTMLInputElement) => { return element.value; },
     (element: HTMLInputElement, newValue: string) => {
-      ReactTestUtils.Simulate.change(
+      TestUtils.Simulate.change(
         element,
         {target: element.children[parseInt(newValue, 10)]}
       );
@@ -111,7 +111,7 @@ export function testSettingsInput(keyPath: string, value: mixed, tmpValue: mixed
   //   (element: atom$TextEditorElement, newValue: any) => {
   //     const target = element.getModel();
   //     target.setText(valueToString(newValue));
-  //     ReactTestUtils.Simulate.change(element, {target});
+  //     TestUtils.Simulate.change(element, {target});
   //   }
   // );
 }

@@ -45,8 +45,8 @@ export default class SettingsSelect extends React.Component {
 
     const optionElements = [];
     if (options.enum) {
-      options.enum.forEach(option => {
-        optionElements.push(<option value={option}>{option}</option>);
+      options.enum.forEach((option, i) => {
+        optionElements.push(<option value={option} key={i}>{option}</option>);
       });
     }
 
