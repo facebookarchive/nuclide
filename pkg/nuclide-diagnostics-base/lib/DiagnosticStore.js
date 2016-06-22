@@ -27,9 +27,8 @@ import {DisposableSubscription} from '../../commons-node/stream';
 import {MarkerTracker} from './MarkerTracker';
 import invariant from 'assert';
 import {Disposable, Emitter} from 'atom';
-import {Subject, Observable} from 'rxjs';
+import {BehaviorSubject, Subject, Observable} from 'rxjs';
 
-const PROJECT_MESSAGE_CHANGE_EVENT = 'messages-changed-for-project';
 const ALL_CHANGE_EVENT = 'messages-changed';
 
 class DiagnosticStore {
@@ -47,8 +46,9 @@ class DiagnosticStore {
   // emitter is used for other events to prevent event name collisions.
   _fileChanges: Subject<FileMessageUpdate>;
   _nonFileChangeEmitter: Emitter;
-  _projectListenersCount: number;
   _allMessagesListenersCount: number;
+
+  _projectChanges: BehaviorSubject<Array<ProjectDiagnosticMessage>>;
 
   _markerTracker: MarkerTracker;
 
@@ -59,8 +59,9 @@ class DiagnosticStore {
 
     this._fileChanges = new Subject();
     this._nonFileChangeEmitter = new Emitter();
-    this._projectListenersCount = 0;
     this._allMessagesListenersCount = 0;
+
+    this._projectChanges = new BehaviorSubject([]);
 
     this._markerTracker = new MarkerTracker();
   }
@@ -71,6 +72,7 @@ class DiagnosticStore {
     this._providerToProjectDiagnostics.clear();
     this._fileChanges.complete();
     this._nonFileChangeEmitter.dispose();
+    this._projectChanges.complete();
     this._markerTracker.dispose();
   }
 
@@ -261,15 +263,7 @@ class DiagnosticStore {
   onProjectMessagesDidUpdate(
     callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
   ): IDisposable {
-    const emitterDisposable = this._nonFileChangeEmitter.on(PROJECT_MESSAGE_CHANGE_EVENT, callback);
-    this._projectListenersCount += 1;
-
-    const projectMessages = this._getProjectMessages();
-    callback(projectMessages);
-    return new Disposable(() => {
-      emitterDisposable.dispose();
-      this._projectListenersCount -= 1;
-    });
+    return new DisposableSubscription(this._projectChanges.subscribe(callback));
   }
 
   /**
@@ -401,9 +395,7 @@ class DiagnosticStore {
   }
 
   _emitProjectMessages(): void {
-    if (this._projectListenersCount) {
-      this._nonFileChangeEmitter.emit(PROJECT_MESSAGE_CHANGE_EVENT, this._getProjectMessages());
-    }
+    this._projectChanges.next(this._getProjectMessages());
   }
 
   _emitAllMessages(): void {
