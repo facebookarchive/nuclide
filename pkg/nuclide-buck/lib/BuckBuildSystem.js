@@ -29,7 +29,7 @@ import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
-import {getEventsFromSocket, getEventsFromProcess} from './BuckEventStream';
+import {getEventsFromSocket, getEventsFromProcess, isBuildFinishEvent} from './BuckEventStream';
 
 import ReactNativeServerManager from './ReactNativeServerManager';
 import ReactNativeServerActions from './ReactNativeServerActions';
@@ -205,7 +205,7 @@ export class BuckBuildSystem {
         getLogger().warn(`Failed to get httpPort for ${buildTarget}`, err);
         return Observable.of(-1);
       })
-      .flatMap(httpPort => {
+      .switchMap(httpPort => {
         let socketStream = Observable.empty();
         if (httpPort > 0) {
           socketStream = getEventsFromSocket(buckProject.getWebSocketStream(httpPort))
@@ -227,17 +227,38 @@ export class BuckBuildSystem {
           // Without a websocket, just pipe the Buck output directly.
           eventStream = buckObservable;
         } else {
-          eventStream = socketStream
+          eventStream = socketStream.merge(
             // Skip everything from Buck's output until the first non-log message.
             // We ensure that error/info logs will not duplicate messages from the websocket.
             // $FlowFixMe: add skipWhile to flow-typed rx definitions
-            .merge(buckObservable.skipWhile(
-              event => event.type !== 'log' || event.level === 'log'
-            ));
+            buckObservable.skipWhile(event => event.type !== 'log' || event.level === 'log')
+          );
+          if (taskType === 'test') {
+            // The websocket does not reliably provide test output.
+            // After the build finishes, fall back to the Buck output stream.
+            eventStream = eventStream
+              .takeUntil(socketStream.filter(isBuildFinishEvent))
+              .concat(buckObservable);
+          } else if (subcommand === 'install') {
+            // Add a message indicating that install has started after build completes.
+            // The websocket does not naturally provide any indication.
+            eventStream = eventStream.merge(
+              socketStream.switchMap(event => {
+                if (isBuildFinishEvent(event)) {
+                  return Observable.of({
+                    type: 'log',
+                    message: 'Installing...',
+                    level: 'info',
+                  });
+                }
+                return Observable.empty();
+              })
+            );
+          }
         }
 
         return eventStream
-          .flatMap(event => {
+          .switchMap(event => {
             if (event.type === 'progress') {
               return Observable.of(event.progress);
             } else if (event.type === 'log') {

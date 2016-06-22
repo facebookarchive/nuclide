@@ -41,6 +41,11 @@ function convertJavaLevel(level: string): Level {
   return 'log';
 }
 
+// Every build finishes with a 100% progress event.
+export function isBuildFinishEvent(event: BuckEvent): boolean {
+  return event.type === 'progress' && event.progress === 1;
+}
+
 export function getEventsFromSocket(
   socketStream: Observable<BuckWebSocketMessage>,
 ): Observable<BuckEvent> {
