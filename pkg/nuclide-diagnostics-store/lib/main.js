@@ -51,7 +51,7 @@ function getDiagnosticStore(): DiagnosticStore {
 /**
  * @return A wrapper around the methods on DiagnosticStore that allow reading data.
  */
-function getDiagnosticUpdater(): DiagnosticUpdater {
+export function provideDiagnosticUpdates(): DiagnosticUpdater {
   if (!diagnosticUpdater) {
     const store = getDiagnosticStore();
     diagnosticUpdater = {
@@ -144,10 +144,6 @@ export function consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvi
   }));
 
   return compositeDisposable;
-}
-
-export function provideDiagnosticUpdates(): DiagnosticUpdater {
-  return getDiagnosticUpdater();
 }
 
 export function deactivate() {
