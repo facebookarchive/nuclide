@@ -13,6 +13,7 @@ import type {Task, TaskInfo} from '../../nuclide-build/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base';
 import type {SerializedState} from './types';
+import type {BuckEvent} from './BuckEventStream';
 
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
@@ -28,12 +29,12 @@ import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
-import {getEventsFromSocket} from './BuckEventStream';
+import {getEventsFromSocket, getEventsFromProcess} from './BuckEventStream';
 
 import ReactNativeServerManager from './ReactNativeServerManager';
 import ReactNativeServerActions from './ReactNativeServerActions';
-import runBuckCommandInNewPane from './runBuckCommandInNewPane';
 
+const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 const REACT_NATIVE_APP_FLAGS = [
   '-executor-override', 'RCTWebSocketExecutor',
   '-websocket-executor-name', 'Nuclide',
@@ -194,6 +195,8 @@ export class BuckBuildSystem {
       return Observable.empty();
     }
 
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
+
     const subcommand = taskType === 'run' || taskType === 'debug' ? 'install' : taskType;
     this._logOutput(`Starting "buck ${subcommand} ${buildTarget}"`, 'log');
 
@@ -207,11 +210,33 @@ export class BuckBuildSystem {
         if (httpPort > 0) {
           socketStream = getEventsFromSocket(buckProject.getWebSocketStream(httpPort))
             .share();
+        } else {
+          this._logOutput('Enable httpserver in your .buckconfig for better output.', 'warning');
         }
-        const buckObservable = Observable.fromPromise(
-          this._runBuckCommand(buckProject, buildTarget, subcommand, taskType === 'debug'),
+
+        const buckObservable = this._runBuckCommand(
+          buckProject,
+          buildTarget,
+          subcommand,
+          taskType === 'debug',
+          httpPort < 0,
         );
-        return socketStream
+
+        let eventStream;
+        if (httpPort <= 0) {
+          // Without a websocket, just pipe the Buck output directly.
+          eventStream = buckObservable;
+        } else {
+          eventStream = socketStream
+            // Skip everything from Buck's output until the first non-log message.
+            // We ensure that error/info logs will not duplicate messages from the websocket.
+            // $FlowFixMe: add skipWhile to flow-typed rx definitions
+            .merge(buckObservable.skipWhile(
+              event => event.type !== 'log' || event.level === 'log'
+            ));
+        }
+
+        return eventStream
           .flatMap(event => {
             if (event.type === 'progress') {
               return Observable.of(event.progress);
@@ -220,30 +245,24 @@ export class BuckBuildSystem {
             }
             return Observable.empty();
           })
-          .merge(buckObservable)
-          .takeUntil(buckObservable);
+          .takeUntil(
+            buckObservable
+              .ignoreElements()
+              // Despite the docs, takeUntil doesn't respond to completion.
+              .concat(Observable.of(null))
+          );
       })
       .share();
   }
 
-  async _runBuckCommand(
+  _runBuckCommand(
     buckProject: BuckProject,
     buildTarget: string,
     subcommand: BuckSubcommand,
     debug: boolean,
-  ): Promise<void> {
+    logOutput: boolean,
+  ): Observable<BuckEvent> {
     const {store} = this._getFlux();
-
-    let appArgs = [];
-    if (subcommand === 'install' && store.isReactNativeServerMode()) {
-      const serverCommand = await this._getReactNativeServerCommand(buckProject);
-      if (serverCommand) {
-        const rnActions = this._getReactNativeServerActions();
-        rnActions.startServer(serverCommand);
-        rnActions.startNodeExecutorServer();
-        appArgs = REACT_NATIVE_APP_FLAGS;
-      }
-    }
 
     if (debug) {
       // Stop any existing debugging sessions, as install hangs if an existing
@@ -253,22 +272,60 @@ export class BuckBuildSystem {
         'nuclide-debugger:stop-debugging');
     }
 
-    const result = await runBuckCommandInNewPane({
-      buckProject,
-      buildTarget,
-      simulator: store.getSimulator(),
-      subcommand,
-      debug,
-      appArgs,
-    });
-
-    if (debug && result != null && result.pid != null) {
-      // Use commands here to trigger package activation.
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-      const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
-      const buckProjectPath = await buckProject.getPath();
-      debuggerService.debugLLDB(result.pid, buckProjectPath);
+    let buckObservable;
+    if (subcommand === 'install') {
+      let appArgs = [];
+      let rnObservable = Observable.empty();
+      if (store.isReactNativeServerMode()) {
+        rnObservable = Observable.fromPromise(
+          this._getReactNativeServerCommand(buckProject),
+        ).map(serverCommand => {
+          if (serverCommand) {
+            const rnActions = this._getReactNativeServerActions();
+            rnActions.startServer(serverCommand);
+            rnActions.startNodeExecutorServer();
+            appArgs = REACT_NATIVE_APP_FLAGS;
+          }
+        }).ignoreElements();
+      }
+      buckObservable = rnObservable.concat(
+        buckProject.installWithOutput(
+          [buildTarget],
+          store.getSimulator(),
+          {run: true, debug, appArgs},
+        ),
+      );
+    } else if (subcommand === 'build') {
+      buckObservable = buckProject.buildWithOutput([buildTarget]);
+    } else if (subcommand === 'test') {
+      buckObservable = buckProject.testWithOutput([buildTarget]);
+    } else {
+      throw Error(`Unknown subcommand: ${subcommand}`);
     }
+
+    let lldbPid;
+    return getEventsFromProcess(buckObservable)
+      .do({
+        next: event => {
+          // For debug builds, watch for the lldb process ID.
+          if (debug && event.type === 'log') {
+            const pidMatch = event.message.match(LLDB_PROCESS_ID_REGEX);
+            if (pidMatch != null) {
+              lldbPid = parseInt(pidMatch[1], 10);
+            }
+          }
+        },
+        complete: async () => {
+          if (lldbPid != null) {
+            // Use commands here to trigger package activation.
+            atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+            const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
+            const buckProjectPath = await buckProject.getPath();
+            debuggerService.debugLLDB(lldbPid, buckProjectPath);
+          }
+        },
+      })
+      .share();
   }
 
   async _getReactNativeServerCommand(buckProject: BuckProject): Promise<?string> {

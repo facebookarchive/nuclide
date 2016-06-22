@@ -126,11 +126,11 @@ describe('Buck building via toolbar', () => {
 
     let paneItem;
     waitsFor(
-      'the output pane to appear',
+      'the console to appear',
       30000,
       () => {
         paneItem = atom.workspace.getActivePaneItem();
-        return paneItem != null && paneItem.getTitle() === 'buck build test_app_alias';
+        return paneItem != null && paneItem.getTitle() === 'Console';
       },
     );
 
@@ -138,10 +138,11 @@ describe('Buck building via toolbar', () => {
       'the build to finish',
       30000,
       () => {
-        const processOutputStore = paneItem && paneItem.props && paneItem.props.processOutputStore;
-        const stdout = processOutputStore && processOutputStore.getStdout() || '';
-        if (stdout.indexOf('FINISHED') === -1) { return false; }
-        if (stdout.indexOf('100%') === -1) { return false; }
+        const consoleOutput = workspaceView.querySelectorAll('.nuclide-console-record pre');
+        if (consoleOutput.length > 0) {
+          const lastOutput = consoleOutput[consoleOutput.length - 1];
+          return lastOutput.innerText.indexOf('Buck exited') !== -1;
+        }
         return true;
       },
     );

@@ -11,11 +11,14 @@
 
 import type {Level} from '../../nuclide-console/lib/types';
 import type {BuckWebSocketMessage} from '../../nuclide-buck-base/lib/BuckProject';
+import type {ProcessMessage} from '../../commons-node/process-types';
 
 import {Observable} from 'rxjs';
+import stripAnsi from 'strip-ansi';
 import {getLogger} from '../../nuclide-logging';
 
 const PROGRESS_OUTPUT_INTERVAL = 5 * 1000;
+const BUILD_FAILED_MESSAGE = 'BUILD FAILED:';
 
 export type BuckEvent = {
   type: 'progress';
@@ -93,4 +96,38 @@ export function getEventsFromSocket(
       })
       .throttleTime(PROGRESS_OUTPUT_INTERVAL)
   );
+}
+
+export function getEventsFromProcess(
+  processStream: Observable<ProcessMessage>,
+): Observable<BuckEvent> {
+  return processStream
+    .map(message => {
+      switch (message.kind) {
+        case 'error':
+          return {
+            type: 'log',
+            message: `Buck failed: ${message.error.message}`,
+            level: 'error',
+          };
+        case 'exit':
+          return {
+            type: 'log',
+            message: `Buck exited with code ${message.exitCode}.`,
+            level: 'info',
+          };
+        case 'stderr':
+        case 'stdout':
+          return {
+            type: 'log',
+            // Some Buck steps output ansi escape codes regardless of terminal setting.
+            message: stripAnsi(message.data),
+            // Build failure messages typically do not show up in the web socket.
+            // TODO(hansonw): fix this on the Buck side
+            level: message.data.indexOf(BUILD_FAILED_MESSAGE) === -1 ? 'log' : 'error',
+          };
+        default:
+          throw new Error('impossible');
+      }
+    });
 }
