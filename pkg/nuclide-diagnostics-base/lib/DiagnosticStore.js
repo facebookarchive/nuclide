@@ -285,9 +285,7 @@ class DiagnosticStore {
     this._allMessagesListenersCount += 1;
 
     const allMessages = this._getAllMessages();
-    if (allMessages.length) {
-      callback(allMessages);
-    }
+    callback(allMessages);
     return new Disposable(() => {
       emitterDisposable.dispose();
       this._allMessagesListenersCount -= 1;

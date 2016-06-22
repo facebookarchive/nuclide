@@ -130,13 +130,12 @@ describe('DiagnosticStore', () => {
   });
 
   it('An updates only notifies listeners for the scope(s) of the update.', () => {
-    // Register spies. File spies should be called with the initial data (the others will be updated
-    // soon enough)
+    // Register spies. Spies should be called with the initial data.
     setSpies();
     expect(spy_fileA.callCount).toBe(1);
     expect(spy_fileB.callCount).toBe(1);
     expect(spy_project.callCount).toBe(1);
-    expect(spy_allMessages).not.toHaveBeenCalled();
+    expect(spy_allMessages.callCount).toBe(1);
 
     // Test 1. Add file and project messages from one provider.
     addUpdateA();
@@ -152,7 +151,7 @@ describe('DiagnosticStore', () => {
     expect(spy_project.mostRecentCall.args).toEqual(
       [[projectMessageA]]
     );
-    expect(spy_allMessages.calls.length).toBe(1);
+    expect(spy_allMessages.calls.length).toBe(2);
     expect(spy_allMessages.mostRecentCall.args[0].length).toBe(2);
     expect(spy_allMessages.mostRecentCall.args[0]).toContain(fileMessageA);
     expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageA);
