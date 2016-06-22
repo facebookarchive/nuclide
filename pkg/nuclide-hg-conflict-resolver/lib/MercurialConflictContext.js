@@ -15,6 +15,7 @@ import type {CheckoutSideName, MergeConflict} from '../../nuclide-hg-repository-
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import remoteUri from '../../nuclide-remote-uri';
+import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
 import {Directory} from 'atom';
 
@@ -81,10 +82,12 @@ export class MercurialConflictContext {
   }
 
   async checkoutSide(sideName: CheckoutSideName, filePath: NuclideUri): Promise<void> {
+    track('hg-conflict-detctor.checkout-side-requested');
     throw new Error('Checkout sides is still not working for Mercurial repos');
   }
 
   async resolveFile(filePath: NuclideUri): Promise<void> {
+    track('hg-conflict-detctor.resolve-file');
     if (this._conflictingRepository == null) {
       throw new Error('Mercurial merge conflict resolver doesn\'t have a conflicting repository');
     }
@@ -105,6 +108,7 @@ export class MercurialConflictContext {
   }
 
   complete(wasRebasing: boolean): void {
+    track('hg-conflict-detctor.complete-resolving');
     invariant(wasRebasing, 'Mercurial conflict resolver only handles rebasing');
     invariant(
       this._conflictingRepository != null,
@@ -137,6 +141,7 @@ export class MercurialConflictContext {
   }
 
   quit(wasRebasing: boolean): void {
+    track('hg-conflict-detctor.quit-resolving');
     invariant(wasRebasing, 'Mercurial conflict resolver only handles rebasing');
     invariant(
       this._conflictingRepository != null,

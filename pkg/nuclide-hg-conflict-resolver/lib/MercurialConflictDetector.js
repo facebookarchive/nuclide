@@ -15,6 +15,7 @@ import type {ConflictsApi} from '../';
 import {MercurialConflictContext} from './MercurialConflictContext';
 import {CompositeDisposable} from 'atom';
 import {getLogger} from '../../nuclide-logging';
+import {track} from '../../nuclide-analytics';
 
 export class MercurialConflictDetector {
   _subscriptions: CompositeDisposable;
@@ -77,6 +78,7 @@ export class MercurialConflictDetector {
       return;
     }
     if (repository.isInConflict()) {
+      track('hg-conflict-detctor.detected-conflicts');
       this._mercurialConflictContext.setConflictingRepository(repository);
       conflictsApi.showForContext(this._mercurialConflictContext);
       atom.notifications.addWarning(
@@ -88,10 +90,13 @@ export class MercurialConflictDetector {
     } else {
       const toClear = this._mercurialConflictContext.getConflictingRepository() === repository;
       if (toClear) {
+        track('hg-conflict-detctor.resolved-outside-nuclide');
         this._mercurialConflictContext.clearConflictState();
         conflictsApi.hideForContext(this._mercurialConflictContext);
         atom.notifications.addInfo('Conflicts resolved outside of Nuclide');
         getLogger().info('Conflicts resolved outside of Nuclide');
+      } else {
+        track('hg-conflict-detctor.resolved-in-nuclide');
       }
     }
   }
