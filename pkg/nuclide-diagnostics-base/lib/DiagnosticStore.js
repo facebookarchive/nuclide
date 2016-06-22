@@ -240,9 +240,7 @@ class DiagnosticStore {
     filePath: NuclideUri,
   ): IDisposable {
     const fileMessages = this._getFileMessages(filePath);
-    const initialObservable = fileMessages.length > 0 ?
-      Observable.of({filePath, messages: fileMessages}) :
-      Observable.empty();
+    const initialObservable = Observable.of({filePath, messages: fileMessages});
     const observable = Observable.concat(
       initialObservable,
       this._fileChanges

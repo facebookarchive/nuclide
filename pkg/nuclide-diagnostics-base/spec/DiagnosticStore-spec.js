@@ -130,11 +130,11 @@ describe('DiagnosticStore', () => {
   });
 
   it('An updates only notifies listeners for the scope(s) of the update.', () => {
-    // Register spies. No spies should immediately be called because there is no
-    // data in the store now.
+    // Register spies. File spies should be called with the initial data (the others will be updated
+    // soon enough)
     setSpies();
-    expect(spy_fileA).not.toHaveBeenCalled();
-    expect(spy_fileB).not.toHaveBeenCalled();
+    expect(spy_fileA.callCount).toBe(1);
+    expect(spy_fileB.callCount).toBe(1);
     expect(spy_project).not.toHaveBeenCalled();
     expect(spy_allMessages).not.toHaveBeenCalled();
 
@@ -142,9 +142,9 @@ describe('DiagnosticStore', () => {
     addUpdateA();
 
     // Expect all spies except spy_fileB to have been called.
-    expect(spy_fileB).not.toHaveBeenCalled();
+    expect(spy_fileB.callCount).toBe(1);
 
-    expect(spy_fileA.calls.length).toBe(1);
+    expect(spy_fileA.calls.length).toBe(2);
     expect(spy_fileA.mostRecentCall.args).toEqual(
       [{filePath: 'fileA', messages: [fileMessageA]}]
     );
@@ -175,11 +175,12 @@ describe('DiagnosticStore', () => {
     // Register spies. Some spies should be called immediately because there is
     // data in the store.
     setSpies();
-    expect(spy_fileA.calls.length).toBe(1);
-    expect(spy_fileA.mostRecentCall.args).toEqual(
-      [{filePath: 'fileA', messages: [fileMessageA]}]
+    expect(spy_fileA.callCount).toBe(1);
+    expect(spy_fileA).toHaveBeenCalledWith(
+      {filePath: 'fileA', messages: [fileMessageA]}
     );
-    expect(spy_fileB).not.toHaveBeenCalled();
+    expect(spy_fileB.callCount).toBe(1);
+    expect(spy_fileB).toHaveBeenCalledWith({filePath: 'fileB', messages: []});
     expect(spy_project.calls.length).toBe(1);
     expect(spy_project.mostRecentCall.args[0].length).toBe(1);
     expect(spy_project.mostRecentCall.args[0]).toContain(projectMessageA);
@@ -196,7 +197,7 @@ describe('DiagnosticStore', () => {
     expect(spy_fileA.calls.length).toBe(1);
 
     // spy_fileB is called from updateB.
-    expect(spy_fileB.calls.length).toBe(1);
+    expect(spy_fileB.callCount).toBe(2);
     expect(spy_fileB.mostRecentCall.args).toEqual(
       [{filePath: 'fileB', messages: [fileMessageB]}]
     );
@@ -351,8 +352,9 @@ describe('DiagnosticStore', () => {
       // invalidation message.
       // At this point, there should be no ProviderA messages, and ProviderB file
       // and project messages.
-      expect(spy_fileA).not.toHaveBeenCalled();
-      expect(spy_fileB.calls.length).toBe(1);
+      expect(spy_fileA.callCount).toBe(1);
+      expect(spy_fileA).toHaveBeenCalledWith({filePath: 'fileA', messages: []});
+      expect(spy_fileB.callCount).toBe(1);
 
       expect(spy_project.calls.length).toBe(2);
       expect(spy_project.mostRecentCall.args[0].length).toBe(1);
@@ -379,13 +381,13 @@ describe('DiagnosticStore', () => {
     // Set up the state of the store.
     addUpdateB();
 
-    // Register spies. Spies except spy_fileA should be called immediately
-    // because there is relevant data in the store.
+    // Register spies. Spies should be called immediately because there is relevant data in the
+    // store.
     setSpies();
-    expect(spy_fileA).not.toHaveBeenCalled();
-    expect(spy_fileB.calls.length).toBe(1);
-    expect(spy_project.calls.length).toBe(1);
-    expect(spy_allMessages.calls.length).toBe(1);
+    expect(spy_fileA.callCount).toBe(1);
+    expect(spy_fileB.callCount).toBe(1);
+    expect(spy_project.callCount).toBe(1);
+    expect(spy_allMessages.callCount).toBe(1);
 
     // Test 5. Remove listeners, then invalidate all messages from ProviderB.
     // We don't need to remove spy_fileA_subscription -- it shouldn't be called anyway.
@@ -402,10 +404,10 @@ describe('DiagnosticStore', () => {
     diagnosticStore.invalidateMessages(dummyProviderB, providerInvalidationMessage);
 
     // There should have been no additional calls on the spies.
-    expect(spy_fileA).not.toHaveBeenCalled();
-    expect(spy_fileB.calls.length).toBe(1);
-    expect(spy_project.calls.length).toBe(1);
-    expect(spy_allMessages.calls.length).toBe(1);
+    expect(spy_fileA.callCount).toBe(1);
+    expect(spy_fileB.callCount).toBe(1);
+    expect(spy_project.callCount).toBe(1);
+    expect(spy_allMessages.callCount).toBe(1);
 
     // Expect the getter methods on DiagnosticStore to return the correct info.
     expect(diagnosticStore._getFileMessages('fileA')).toEqual([]);
