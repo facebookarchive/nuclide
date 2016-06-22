@@ -9,16 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {TestContext} from './utils/remotable-tests';
+import type {TestContext} from './remotable-tests';
 
 import {
   copyMercurialFixture,
-} from '../pkg/nuclide-integration-test-helpers';
-import {describeRemotableTest} from './utils/remotable-tests';
+} from '../../pkg/nuclide-integration-test-helpers';
 
 import fs from 'fs';
 import invariant from 'assert';
-import nuclideUri from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../../pkg/nuclide-remote-uri';
 
 const FILE_ENCODING = {encoding: 'utf-8'};
 
@@ -33,9 +32,9 @@ function setResourceTextSync(
   );
 }
 
-describeRemotableTest('Diff View Reloads Filesystem Contents', (context: TestContext) => {
-
+export function runTest(context: TestContext) {
   const TEST_FILE_NAME = 'test.txt';
+  let localFilePath: string = (null: any);
   let repoPath: string = (null: any);
 
   it('reloads the diff view when changes to the active file occur on the file system', () => {
@@ -46,6 +45,7 @@ describeRemotableTest('Diff View Reloads Filesystem Contents', (context: TestCon
 
     waitsForPromise(async () => {
       repoPath = await copyMercurialFixture('hg_repo_2');
+      localFilePath = nuclideUri.join(repoPath, TEST_FILE_NAME);
       invariant(repoPath != null);
       await context.setProject(repoPath);
       textEditor = await atom.workspace.open(context.getProjectRelativePath(TEST_FILE_NAME));
@@ -62,24 +62,25 @@ describeRemotableTest('Diff View Reloads Filesystem Contents', (context: TestCon
       return diffViewElement != null && diffViewElement.tagName === 'NUCLIDE-DIFF-VIEW';
     });
 
+    function getDiffEditorContents(): string {
+      invariant(diffViewElement != null);
+      const textEditorElements = diffViewElement.querySelectorAll('atom-text-editor');
+      const rightEditorElement = ((textEditorElements[1]: any): atom$TextEditorElement);
+      const rightEditor = rightEditorElement.getModel();
+      return rightEditor.getText();
+    }
+
     // Change the file on the file system
     runs(() => {
       setResourceTextSync(
-        nuclideUri.join(repoPath, TEST_FILE_NAME),
+        localFilePath,
         SAMPLE_TEXT,
       );
     });
 
     // Ensure that the change on the file system is reflected in the Diff View's TextEditor
     waitsFor('editor to reload on file change', () => {
-      invariant(diffViewElement != null);
-      const textEditorElements = diffViewElement.querySelectorAll('atom-text-editor');
-      expect(textEditorElements.length).toBe(2);
-
-      const rightEditorElement = ((textEditorElements[1]: any): atom$TextEditorElement);
-      const rightEditor = rightEditorElement.getModel();
-
-      return rightEditor.getText() === SAMPLE_TEXT;
+      return getDiffEditorContents() === SAMPLE_TEXT;
     });
 
     // Delete the file on the file system
@@ -89,14 +90,7 @@ describeRemotableTest('Diff View Reloads Filesystem Contents', (context: TestCon
 
     // Ensure that the new Diff View editor that is created when the file on the system is deleted is blank
     waitsFor('diff view to create a new text editor on file deletion', () => {
-      invariant(diffViewElement != null);
-      const textEditorElements = diffViewElement.querySelectorAll('atom-text-editor');
-      expect(textEditorElements.length).toBe(2);
-
-      const rightEditorElement = ((textEditorElements[1]: any): atom$TextEditorElement);
-      const rightEditor = rightEditorElement.getModel();
-
-      return rightEditor.getText() === '';
+      return getDiffEditorContents() === '';
     });
   });
-});
+}
