@@ -20,6 +20,7 @@ import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import Rx from 'rxjs';
 
 const HANDLED_ACTION_TYPES = [
+  ActionType.DELETE_BOOKMARK,
   ActionType.FETCH_PROJECT_REPOSITORIES,
   ActionType.RENAME_BOOKMARK,
   ActionType.UPDATE_TO_BOOKMARK,
@@ -112,13 +113,10 @@ export function applyActionMiddleware(
         return renames.switchMap(action => {
           // Action was filtered, invariant check to downcast in Flow.
           invariant(action.type === ActionType.RENAME_BOOKMARK);
-          const {
-            bookmark,
-            nextName,
-            repository,
-          } = action.payload;
+          const {repository} = action.payload;
+          const repositoryAsync = repository.async;
 
-          if (repository.getType() !== 'hg') {
+          if (!repositoryAsync instanceof HgRepositoryClientAsync) {
             atom.notifications.addWarning('Failed Renaming Bookmark', {
               detail: `Expected repository type 'hg' but found ${repository.getType()}`,
               dismissable: true,
@@ -126,9 +124,12 @@ export function applyActionMiddleware(
             return Rx.Observable.empty();
           }
 
-          const repositoryAsync = repository.async;
+          const {
+            bookmark,
+            nextName,
+          } = action.payload;
 
-          // Type was checked with `getType`. Downcast to safely access members with Flow.
+          // Type was checked. Downcast to safely access members with Flow.
           invariant(repositoryAsync instanceof HgRepositoryClientAsync);
 
           return Rx.Observable.of({
@@ -143,6 +144,60 @@ export function applyActionMiddleware(
               .flatMap(Rx.Observable.empty)
               .catch(error => {
                 atom.notifications.addWarning('Failed Renaming Bookmark', {
+                  detail: error,
+                  dismissable: true,
+                });
+
+                return Rx.Observable.of({
+                  payload: {
+                    bookmark,
+                    repository,
+                  },
+                  type: ActionType.UNSET_BOOKMARK_IS_LOADING,
+                });
+              })
+          );
+        });
+      }),
+
+    actions.filter(action => action.type === ActionType.DELETE_BOOKMARK)
+      .groupBy(action => {
+        // Action was filtered, invariant check to downcast in Flow.
+        invariant(action.type === ActionType.DELETE_BOOKMARK);
+        return action.payload.bookmark.rev;
+      })
+      .flatMap(renames => {
+        return renames.switchMap(action => {
+          // Action was filtered, invariant check to downcast in Flow.
+          invariant(action.type === ActionType.DELETE_BOOKMARK);
+          const {repository} = action.payload;
+          const repositoryAsync = repository.async;
+
+          if (!repositoryAsync instanceof HgRepositoryClientAsync) {
+            atom.notifications.addWarning('Failed Deleting Bookmark', {
+              detail: `Expected repository type 'hg' but found ${repository.getType()}`,
+              dismissable: true,
+            });
+            return Rx.Observable.empty();
+          }
+
+          const {bookmark} = action.payload;
+
+          // Type was checked with `getType`. Downcast to safely access members with Flow.
+          invariant(repositoryAsync instanceof HgRepositoryClientAsync);
+
+          return Rx.Observable.of({
+            payload: {
+              bookmark,
+              repository,
+            },
+            type: ActionType.SET_BOOKMARK_IS_LOADING,
+          }).concat(
+            Rx.Observable
+              .fromPromise(repositoryAsync.deleteBookmark(bookmark.bookmark))
+              .flatMap(Rx.Observable.empty)
+              .catch(error => {
+                atom.notifications.addWarning('Failed Deleting Bookmark', {
                   detail: error,
                   dismissable: true,
                 });

@@ -50,16 +50,14 @@ export default class Commands {
   }
 
   deleteBookmark(bookmark: BookmarkInfo, repository: atom$Repository): void {
-    const repositoryAsync = repository.async;
-    if (repositoryAsync.getType() !== 'hg') {
-      return;
-    }
-
-    // Type was checked with `getType`. Downcast to safely access members with Flow.
-    invariant(repositoryAsync instanceof HgRepositoryClientAsync);
-
     track('scsidebar-delete-bookmark');
-    repositoryAsync.deleteBookmark(bookmark.bookmark);
+    this._dispatch({
+      payload: {
+        bookmark,
+        repository,
+      },
+      type: ActionType.DELETE_BOOKMARK,
+    });
   }
 
   renameBookmark(bookmark: BookmarkInfo, nextName: string, repository: atom$Repository): void {

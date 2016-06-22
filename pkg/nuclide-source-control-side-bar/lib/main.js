@@ -209,11 +209,32 @@ function accumulateState(state: AppState, action: Action): AppState {
         projectRepositories: nextProjectRepositories,
       };
     case ActionType.SET_REPOSITORY_BOOKMARKS:
+      const {
+        bookmarks,
+        repository,
+      } = action.payload;
+
+      let nextBookmarksIsLoading;
+      const bookmarksIsLoading = state.repositoryBookmarksIsLoading.get(repository);
+      if (bookmarksIsLoading == null) {
+        nextBookmarksIsLoading = [];
+      } else {
+        // Transfer only the loading state of bookmarks that are in the next list of bookmarks.
+        // Other loading states should be wiped out.
+        nextBookmarksIsLoading = bookmarksIsLoading.filter(loadingBookmark => {
+          return bookmarks.some(bookmark => bookmarkIsEqual(bookmark, loadingBookmark));
+        });
+      }
+
       return {
         ...state,
         projectBookmarks: state.projectBookmarks.set(
-          action.payload.repository.getPath(),
-          action.payload.bookmarks
+          repository.getPath(),
+          bookmarks
+        ),
+        repositoryBookmarksIsLoading: state.repositoryBookmarksIsLoading.set(
+          repository,
+          nextBookmarksIsLoading
         ),
       };
   }

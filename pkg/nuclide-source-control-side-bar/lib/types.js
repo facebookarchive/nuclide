@@ -11,6 +11,14 @@
 
 import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 
+type DeleteBookmark = {
+  payload: {
+    bookmark: BookmarkInfo;
+    repository: atom$Repository;
+  };
+  type: 'delete-bookmark';
+};
+
 type FetchProjectDirectoriesAction = {
   type: 'fetch-project-repositories';
 };
@@ -74,6 +82,7 @@ type UpdateToBookmarkAction = {
 export type Action =
   FetchProjectDirectoriesAction
   | RenameBookmark
+  | DeleteBookmark // Place out of alphabetical order to satisfy Flow union types bug
   | SetBookmarkIsLoading
   | SetDirectoryRepository
   | SetProjectDirectoriesAction
