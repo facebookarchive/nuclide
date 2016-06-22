@@ -40,6 +40,53 @@ export type BuckWebSocketMessage = {
 } | {
   type: 'BuildFinished';
   exitCode: number;
+} | {
+  type: 'BuildStarted';
+} | {
+  type: 'ConsoleEvent';
+  message: string;
+  level: {
+    name: 'OFF' | 'SEVERE' | 'WARNING' | 'INFO' | 'CONFIG' | 'FINE' | 'FINER' | 'FINEST' | 'ALL';
+  };
+} | {
+  type: 'ParseStarted';
+} | {
+  type: 'ParseFinished';
+} | {
+  type: 'InstallFinished';
+  success: boolean;
+  pid?: number;
+} | {
+  type: 'RunStarted';
+} | {
+  type: 'RunComplete';
+} | {
+  type: 'ResultsAvailable';
+  results: {
+    buildTarget: {
+      shortName: string;
+      baseName: string;
+    };
+    success: boolean;
+    failureCount: number;
+    totalNumberOfTests: number;
+    testCases: Array<{
+      success: boolean;
+      failureCount: number;
+      skippedCount: number;
+      testCaseName: string;
+      testResults: Array<{
+        testCaseName: string;
+        testName: string;
+        type: string;
+        time: number;
+        message: string;
+        stacktrace: ?string;
+        stdOut: string;
+        stdErr: string;
+      }>;
+    }>;
+  };
 };
 
 type BuckConfig = Object;

@@ -9,9 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {BuckWebSocketMessage} from '../../nuclide-buck-base/lib/BuckProject';
 import type {Task, TaskInfo} from '../../nuclide-build/lib/types';
-import type {Message} from '../../nuclide-console/lib/types';
+import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base';
 import type {SerializedState} from './types';
 
@@ -29,6 +28,7 @@ import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
+import {getEventsFromSocket} from './BuckEventStream';
 
 import ReactNativeServerManager from './ReactNativeServerManager';
 import ReactNativeServerActions from './ReactNativeServerActions';
@@ -118,6 +118,10 @@ export class BuckBuildSystem {
     return this._outputMessages;
   }
 
+  _logOutput(text: string, level: Level) {
+    this._outputMessages.next({text, level});
+  }
+
   /**
    * Lazily create the flux stuff.
    */
@@ -191,6 +195,8 @@ export class BuckBuildSystem {
     }
 
     const subcommand = taskType === 'run' || taskType === 'debug' ? 'install' : taskType;
+    this._logOutput(`Starting "buck ${subcommand} ${buildTarget}"`, 'log');
+
     return Observable.fromPromise(buckProject.getHTTPServerPort())
       .catch(err => {
         getLogger().warn(`Failed to get httpPort for ${buildTarget}`, err);
@@ -199,24 +205,21 @@ export class BuckBuildSystem {
       .flatMap(httpPort => {
         let socketStream = Observable.empty();
         if (httpPort > 0) {
-          socketStream = buckProject.getWebSocketStream(httpPort)
-            .flatMap((message: BuckWebSocketMessage) => {
-              switch (message.type) {
-                case 'BuildProgressUpdated':
-                  return Observable.of(message.progressValue);
-              }
-              return Observable.empty();
-            })
-            .catch(err => {
-              getLogger().error(`Got Buck websocket error building ${buildTarget}`, err);
-              // Return to indeterminate progress.
-              return Observable.of(null);
-            });
+          socketStream = getEventsFromSocket(buckProject.getWebSocketStream(httpPort))
+            .share();
         }
         const buckObservable = Observable.fromPromise(
           this._runBuckCommand(buckProject, buildTarget, subcommand, taskType === 'debug'),
         );
         return socketStream
+          .flatMap(event => {
+            if (event.type === 'progress') {
+              return Observable.of(event.progress);
+            } else if (event.type === 'log') {
+              this._logOutput(event.message, event.level);
+            }
+            return Observable.empty();
+          })
           .merge(buckObservable)
           .takeUntil(buckObservable);
       })
