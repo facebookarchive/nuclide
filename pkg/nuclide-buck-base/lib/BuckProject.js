@@ -11,13 +11,16 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {AsyncExecuteOptions} from '../../commons-node/process';
+import type {ProcessMessage} from '../../commons-node/process-types';
 
 import {
   checkOutput,
-  scriptSafeSpawnAndObserveOutput,
+  observeProcess,
+  safeSpawn,
 } from '../../commons-node/process';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../nuclide-remote-uri';
+import {Observable} from 'rxjs';
 import createBuckWebSocket from './createBuckWebSocket';
 
 const logger = require('../../nuclide-logging').getLogger();
@@ -107,7 +110,6 @@ type BuckCommandAndOptions = {
   pathToBuck: string;
   buckCommandOptions: AsyncExecuteOptions;
 };
-import type {Observable} from 'rxjs';
 
 /**
  * As defined in com.facebook.buck.cli.Command, some of Buck's subcommands are
@@ -337,7 +339,7 @@ export class BuckProject {
    */
   buildWithOutput(
     buildTargets: Array<string>,
-  ): Observable<{stderr?: string; stdout?: string;}> {
+  ): Observable<ProcessMessage> {
     return this._buildWithOutput(buildTargets, {});
   }
 
@@ -354,7 +356,7 @@ export class BuckProject {
    */
   testWithOutput(
     buildTargets: Array<string>,
-  ): Observable<{stderr?: string; stdout?: string;}> {
+  ): Observable<ProcessMessage> {
     return this._buildWithOutput(buildTargets, {test: true});
   }
 
@@ -373,7 +375,7 @@ export class BuckProject {
     buildTargets: Array<string>,
     simulator: ?string,
     runOptions: ?BuckRunOptions,
-  ): Observable<{stderr?: string; stdout?: string;}> {
+  ): Observable<ProcessMessage> {
     return this._buildWithOutput(buildTargets, {install: true, simulator, runOptions});
   }
 
@@ -385,14 +387,16 @@ export class BuckProject {
   _buildWithOutput(
     buildTargets: Array<string>,
     options: BaseBuckBuildOptions,
-  ): Observable<{stderr?: string; stdout?: string;}> {
+  ): Observable<ProcessMessage> {
     const args = this._translateOptionsToBuckBuildArgs({
       baseOptions: {...options},
       buildTargets,
     });
     const {pathToBuck, buckCommandOptions} = this._getBuckCommandAndOptions();
 
-    return scriptSafeSpawnAndObserveOutput(pathToBuck, args, buckCommandOptions);
+    return observeProcess(
+      () => safeSpawn(pathToBuck, args, buckCommandOptions),
+    );
   }
 
   /**
