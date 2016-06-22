@@ -13,8 +13,10 @@ import type {Octicon} from './Octicons';
 
 import remote from 'remote';
 import {React} from 'react-for-atom';
-import {Button} from './Button';
+import {Button, ButtonSizes} from './Button';
 import {ButtonGroup} from './ButtonGroup';
+
+type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
 
 const Menu = remote.require('menu');
 const MenuItem = remote.require('menu-item');
@@ -26,6 +28,7 @@ type Props<T> = {
   onConfirm: (value: T) => mixed;
   confirmDisabled?: boolean;
   changeDisabled?: boolean;
+  size: ?ButtonSize;
 };
 
 export class SplitButtonDropdown<T> extends React.Component {
@@ -42,12 +45,14 @@ export class SplitButtonDropdown<T> extends React.Component {
     return (
       <ButtonGroup className="nuclide-ui-split-button-dropdown">
         <Button
+          size={this.props.size}
           disabled={this.props.confirmDisabled === true}
           icon={selectedOption.icon}
           onClick={this.props.onConfirm}>
           {selectedOption.label}
         </Button>
         <Button
+          size={this.props.size}
           className="nuclide-ui-split-button-dropdown-toggle"
           disabled={this.props.changeDisabled === true}
           icon="triangle-down"
@@ -76,3 +81,5 @@ export class SplitButtonDropdown<T> extends React.Component {
   }
 
 }
+
+export {ButtonSizes};

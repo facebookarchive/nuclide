@@ -11,7 +11,7 @@
 
 import type {IconButtonOption, Task} from '../types';
 
-import {Button} from '../../../nuclide-ui/lib/Button';
+import {Button, ButtonSizes} from '../../../nuclide-ui/lib/Button';
 import {SplitButtonDropdown} from '../../../nuclide-ui/lib/SplitButtonDropdown';
 import {BuildSystemButton} from './BuildSystemButton';
 import {ProgressBar} from './ProgressBar';
@@ -69,7 +69,7 @@ export class BuildToolbar extends React.Component {
           </div>
           <div className="inline-block">
             <button
-              className="btn icon icon-primitive-square"
+              className="btn btn-sm icon icon-primitive-square"
               disabled={!this.props.taskIsRunning || !activeTask || activeTask.cancelable === false}
               onClick={() => { this.props.stopTask(); }}
             />
@@ -103,6 +103,7 @@ function TaskButton(props: TaskButtonProps): React.Element<any> {
     const task = props.tasks[0] || {value: null, label: 'Run', icon: 'triangle-right'};
     return (
       <Button
+        size={ButtonSizes.SMALL}
         disabled={!task.enabled}
         icon={task.icon}
         onClick={() => { props.runTask(activeTaskType); }}>
@@ -124,6 +125,7 @@ function TaskButton(props: TaskButtonProps): React.Element<any> {
         onConfirm={() => { props.runTask(activeTaskType); }}
         confirmDisabled={props.taskIsRunning || !props.activeTask || !props.activeTask.enabled}
         changeDisabled={props.taskIsRunning}
+        size={ButtonSizes.SMALL}
       />
     );
   }

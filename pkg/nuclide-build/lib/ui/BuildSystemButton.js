@@ -54,7 +54,7 @@ export class BuildSystemButton extends React.Component {
     // Render the button, making sure that the icon is centered.
     return (
       <button
-        className="btn nuclide-build-system-button inline-block"
+        className="btn btn-sm nuclide-build-system-button inline-block"
         style={{display: 'flex', alignSelf: 'stretch'}}
         disabled={this.props.disabled === true}
         onClick={this._handleClick}>
