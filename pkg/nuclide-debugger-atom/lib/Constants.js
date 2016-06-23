@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +8,7 @@
  * the root directory of this source tree.
  */
 
-const Actions = Object.freeze({
+var Actions = Object.freeze({
   SET_DEBUGGER_INSTANCE: 'SET_DEBUGGER_INSTANCE',
   SET_ERROR: 'SET_ERROR',
   ADD_SERVICE: 'ADD_SERVICE',
@@ -28,9 +27,9 @@ const Actions = Object.freeze({
   ADD_REGISTER_EXECUTOR: 'ADD_REGISTER_EXECUTOR',
   REMOVE_REGISTER_EXECUTOR: 'REMOVE_REGISTER_EXECUTOR',
   REGISTER_CONSOLE: 'REGISTER_CONSOLE',
-  UNREGISTER_CONSOLE: 'UNREGISTER_CONSOLE',
+  UNREGISTER_CONSOLE: 'UNREGISTER_CONSOLE'
 });
 
 module.exports = {
-  Actions,
+  Actions: Actions
 };

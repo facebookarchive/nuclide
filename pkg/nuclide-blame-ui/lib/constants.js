@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -10,5 +9,5 @@
  */
 
 module.exports = Object.freeze({
-  BLAME_DECORATION_CLASS: 'blame-decoration',
+  BLAME_DECORATION_CLASS: 'blame-decoration'
 });

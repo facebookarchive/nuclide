@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +10,12 @@
  * the root directory of this source tree.
  */
 
-export type HgRepositoryDescription = {
-  repoPath: string;
-  originURL: ?string;
-  workingDirectoryPath: string;
-};
-
-module.exports = {
-  get findHgRepository() {
-    return require('./hg-repository');
-  },
-};
+module.exports = Object.defineProperties({}, {
+  findHgRepository: {
+    get: function get() {
+      return require('./hg-repository');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

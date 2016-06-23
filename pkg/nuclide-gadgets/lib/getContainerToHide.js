@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +10,44 @@
  * the root directory of this source tree.
  */
 
-import type {PaneItemContainer} from '../types/PaneItemContainer';
+exports.default = getContainerToHide;
 
-import {TextEditor} from 'atom';
-import getResizableContainers from './getResizableContainers';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const containsTextEditor = pane => pane.getItems().some(item => item instanceof TextEditor);
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _getResizableContainers2;
+
+function _getResizableContainers() {
+  return _getResizableContainers2 = _interopRequireDefault(require('./getResizableContainers'));
+}
+
+var containsTextEditor = function containsTextEditor(pane) {
+  return pane.getItems().some(function (item) {
+    return item instanceof (_atom2 || _atom()).TextEditor;
+  });
+};
 
 /**
  * Gets the resizeable container (Pane or PaneAxis) which should be resized in order to hide the
  * provided pane.
  */
-export default function getContainerToHide(pane: PaneItemContainer): ?PaneItemContainer {
-  let containerToHide = null;
+
+function getContainerToHide(pane) {
+  var containerToHide = null;
 
   // The top-most container isn't resizable so exclude that immediately.
-  const resizableContainers = Array.from(getResizableContainers(pane)).slice(0, -1);
+  var resizableContainers = Array.from((0, (_getResizableContainers2 || _getResizableContainers()).default)(pane)).slice(0, -1);
 
   // Find the highest resizable container that doesn't contain a text editor. If the very first
   // container has a text editor, use it anyway (we gotta hide something!)
-  for (let i = 0, len = resizableContainers.length; i < len; i++) {
-    const container = resizableContainers[i];
-    const isLeaf = i === 0;
+  for (var i = 0, len = resizableContainers.length; i < len; i++) {
+    var container = resizableContainers[i];
+    var isLeaf = i === 0;
 
     if (!isLeaf && containsTextEditor(container)) {
       break;
@@ -41,3 +58,5 @@ export default function getContainerToHide(pane: PaneItemContainer): ?PaneItemCo
 
   return containerToHide;
 }
+
+module.exports = exports.default;

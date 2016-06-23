@@ -1,5 +1,11 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.consumeProvider = consumeProvider;
+exports.deactivate = deactivate;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +15,25 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+var _assert2;
 
-import type CodeFormatManagerType from './CodeFormatManager';
-import type {CodeFormatProvider} from './types';
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-let codeFormatManager: ?CodeFormatManagerType = null;
+var codeFormatManager = null;
 
-export function activate(state: ?any): void {
-  const CodeFormatManager = require('./CodeFormatManager');
+function activate(state) {
+  var CodeFormatManager = require('./CodeFormatManager');
   codeFormatManager = new CodeFormatManager();
 }
 
-export function consumeProvider(provider: CodeFormatProvider) {
-  invariant(codeFormatManager);
+function consumeProvider(provider) {
+  (0, (_assert2 || _assert()).default)(codeFormatManager);
   codeFormatManager.addProvider(provider);
 }
 
-export function deactivate() {
+function deactivate() {
   if (codeFormatManager) {
     codeFormatManager.dispose();
     codeFormatManager = null;

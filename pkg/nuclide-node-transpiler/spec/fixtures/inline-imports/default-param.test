@@ -1,5 +1,0 @@
-import Foo from './foo';
-
-class Bar {
-  baz(n = Foo()) {}
-}
