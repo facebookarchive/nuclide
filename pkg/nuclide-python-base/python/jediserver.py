@@ -96,7 +96,7 @@ class JediServer:
         # Catch and ignore KeyErrors from jedi
         # See https://github.com/davidhalter/jedi/issues/590
         except KeyError:
-            res['result']['items'] = []
+            res['result'] = []
         except:
             res['type'] = 'error-response'
             res['error'] = traceback.format_exc()
