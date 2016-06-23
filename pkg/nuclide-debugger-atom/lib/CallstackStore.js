@@ -15,6 +15,7 @@ import {
   Disposable,
   CompositeDisposable,
 } from 'atom';
+import {EventEmitter} from 'events';
 import Constants from './Constants';
 
 type CallstackItem = {
@@ -30,6 +31,7 @@ export type Callstack = Array<CallstackItem>;
 export default class CallstackStore {
   _disposables: IDisposable;
   _callstack: ?Callstack;
+  _eventEmitter: EventEmitter;
 
   constructor(dispatcher: Dispatcher) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
@@ -39,6 +41,7 @@ export default class CallstackStore {
       })
     );
     this._callstack = null;
+    this._eventEmitter = new EventEmitter();
   }
 
   _handlePayload(payload: Object) {
@@ -53,7 +56,15 @@ export default class CallstackStore {
 
   _updateCallstack(callstack: Callstack): void {
     this._callstack = callstack;
+    this._eventEmitter.emit('change');
   }
+
+  onChange(callback: () => void): Disposable {
+    const emitter = this._eventEmitter;
+    this._eventEmitter.on('change', callback);
+    return new Disposable(() => emitter.removeListener('change', callback));
+  }
+
   getCallstack(): ?Callstack {
     return this._callstack;
   }
