@@ -35,7 +35,7 @@ export class NewDebuggerView extends React.Component {
   props: Props;
   state: {
     debuggerMode: DebuggerModeType;
-    callstack: Callstack;
+    callstack: ?Callstack;
   };
   _wrappedComponent: ReactClass<any>;
   _disposables: CompositeDisposable;
@@ -51,7 +51,7 @@ export class NewDebuggerView extends React.Component {
     this._disposables = new CompositeDisposable();
     this.state = {
       debuggerMode: props.model.getStore().getDebuggerMode(),
-      callstack: [], // TODO get actual stack from Chrome dev tools
+      callstack: props.model.getCallstackStore().getCallstack(),
     };
   }
 
@@ -61,6 +61,14 @@ export class NewDebuggerView extends React.Component {
       debuggerStore.onChange(() => {
         this.setState({
           debuggerMode: debuggerStore.getDebuggerMode(),
+        });
+      })
+    );
+    const callstackStore = this.props.model.getCallstackStore();
+    this._disposables.add(
+      callstackStore.onChange(() => {
+        this.setState({
+          callstack: callstackStore.getCallstack(),
         });
       })
     );
