@@ -64,7 +64,7 @@ class DebuggerActions {
     this.stopDebugging(); // stop existing session.
     this.setError(null);
     this._handleDebugModeStart();
-    this._setDebuggerMode(DebuggerMode.STARTING);
+    this.setDebuggerMode(DebuggerMode.STARTING);
     try {
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
       const debuggerInstance = await processInfo.debug();
@@ -83,7 +83,7 @@ class DebuggerActions {
     }
   }
 
-  _setDebuggerMode(debuggerMode: DebuggerModeType): void {
+  setDebuggerMode(debuggerMode: DebuggerModeType): void {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
       data: debuggerMode,
@@ -106,7 +106,7 @@ class DebuggerActions {
       data: socketAddr,
     });
     // Debugger finished initializing and entered debug mode.
-    this._setDebuggerMode(DebuggerMode.RUNNING);
+    this.setDebuggerMode(DebuggerMode.RUNNING);
 
     // Wait for 'resume' event from Bridge.js to guarantee we've passed the loader breakpoint.
     await this._store.loaderBreakpointResumePromise;
@@ -133,7 +133,7 @@ class DebuggerActions {
     if (this._store.getDebuggerMode() === DebuggerMode.STOPPING) {
       return;
     }
-    this._setDebuggerMode(DebuggerMode.STOPPING);
+    this.setDebuggerMode(DebuggerMode.STOPPING);
     this._unregisterConsole();
     const debuggerInstance = this._store.getDebuggerInstance();
     if (debuggerInstance != null) {
@@ -144,7 +144,7 @@ class DebuggerActions {
       actionType: Constants.Actions.SET_PROCESS_SOCKET,
       data: null,
     });
-    this._setDebuggerMode(DebuggerMode.STOPPED);
+    this.setDebuggerMode(DebuggerMode.STOPPED);
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();
 
