@@ -11,6 +11,8 @@
 
 import type DebuggerModel from './DebuggerModel';
 import type {DebuggerModeType} from './DebuggerStore';
+import type Multimap from './Multimap';
+import type {FileLineBreakpoints} from './BreakpointListComponent';
 import type {
   WatchExpressionListStore,
 } from './WatchExpressionListStore';
@@ -32,14 +34,29 @@ type Props = {
   watchExpressionListStore: WatchExpressionListStore;
 };
 
-// TODO jxg consume breakpoints from store
-const breakpoints = [];
+function storeBreakpointsToViewBreakpoints(
+  storeBreakpoints: Multimap<string, number>,
+): FileLineBreakpoints {
+  const breakpoints: FileLineBreakpoints = [];
+  storeBreakpoints.forEach((line: number, path: string) => {
+    breakpoints.push({
+      path,
+      line,
+      // TODO jxg add enabled/disable functionality to store & consume it here.
+      enabled: true,
+      // TODO jxg sync unresolved breakpoints from Chrome Dev tools & consume them here.
+      resolved: true,
+    });
+  });
+  return breakpoints;
+}
 
 export class NewDebuggerView extends React.Component {
   props: Props;
   state: {
     debuggerMode: DebuggerModeType;
     callstack: ?Callstack;
+    breakpoints: ?FileLineBreakpoints;
   };
   _wrappedComponent: ReactClass<any>;
   _disposables: CompositeDisposable;
@@ -56,6 +73,9 @@ export class NewDebuggerView extends React.Component {
     this.state = {
       debuggerMode: props.model.getStore().getDebuggerMode(),
       callstack: props.model.getCallstackStore().getCallstack(),
+      breakpoints: storeBreakpointsToViewBreakpoints(
+        props.model.getBreakpointStore().getAllBreakpoints()
+      ),
     };
   }
 
@@ -73,6 +93,14 @@ export class NewDebuggerView extends React.Component {
       callstackStore.onChange(() => {
         this.setState({
           callstack: callstackStore.getCallstack(),
+        });
+      })
+    );
+    const breakpointStore = this.props.model.getBreakpointStore();
+    this._disposables.add(
+      breakpointStore.onChange(() => {
+        this.setState({
+          breakpoints: storeBreakpointsToViewBreakpoints(breakpointStore.getAllBreakpoints()),
         });
       })
     );
@@ -104,7 +132,7 @@ export class NewDebuggerView extends React.Component {
         </Section>
         <Section headline="Breakpoints">
           <BreakpointListComponent
-            breakpoints={breakpoints}
+            breakpoints={this.state.breakpoints}
           />
         </Section>
         <Section headline="Watch Expressions">
