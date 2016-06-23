@@ -11,3 +11,11 @@
 .nuclide-ui-listview-item {
   padding: 3px 6px;
 }
+
+.nuclide-ui-listview-selectable > .nuclide-ui-listview-item {
+  cursor: pointer;
+  &:hover {
+    background-color: @background-color-info;
+    color: @text-color-highlight;
+  }
+}

@@ -10,6 +10,7 @@
  */
 
 import classnames from 'classnames';
+import invariant from 'assert';
 import {React} from 'react-for-atom';
 
 type Props = {
@@ -18,6 +19,15 @@ type Props = {
    */
   alternateBackground?: boolean;
   children?: React.Element<any>;
+  /**
+   * Whether items can be selected.
+   * If specified, `onSelect` must also be specified.
+   */
+  selectable?: boolean;
+  /**
+   * Handler to be called upon selection. Called iff `selectable` is `true`.
+   */
+  onSelect?: (selectedIndex: number, event: SyntheticMouseEvent) => mixed;
 };
 
 /**
@@ -30,6 +40,8 @@ export class Listview extends React.Component {
     const {
       children,
       alternateBackground,
+      selectable,
+      onSelect,
     } = this.props;
     const wrappedChildren = React.Children.map(
       children,
@@ -37,8 +49,16 @@ export class Listview extends React.Component {
         child: React.Element<any>,
         index: number,
       ) => {
+        const dynamicProps = {};
+        if (selectable) {
+          invariant(onSelect != null);
+          dynamicProps.onClick = onSelect.bind(this, index);
+        }
         return (
-          <div key={index} className="nuclide-ui-listview-item">
+          <div
+            key={index}
+            className="nuclide-ui-listview-item"
+            {...dynamicProps}>
             {child}
           </div>
         );
@@ -47,6 +67,7 @@ export class Listview extends React.Component {
     const className = classnames({
       'nuclide-ui-listview': true,
       'nuclide-ui-listview-highlight-odd': alternateBackground,
+      'nuclide-ui-listview-selectable': selectable,
     });
     return (
       <div className={className}>
