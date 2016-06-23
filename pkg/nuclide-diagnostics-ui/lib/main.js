@@ -39,7 +39,7 @@ type ActivationState = {
 
 let activationState: ?ActivationState = null;
 
-let diagnosticUpdaterForTable: ?DiagnosticUpdater = null;
+let consumeUpdatesCalled = false;
 
 function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: CompositeDisposable) {
   invariant(activationState);
@@ -135,12 +135,24 @@ export function activate(state: ?Object): void {
 
 export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
   getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
+  gutterConsumeDiagnosticUpdates(diagnosticUpdater);
 
+  // Currently, the DiagnosticsPanel is designed to work with only one DiagnosticUpdater.
+  if (consumeUpdatesCalled) {
+    return;
+  }
+  consumeUpdatesCalled = true;
+
+  tableConsumeDiagnosticUpdates(diagnosticUpdater);
+  addAtomCommands(diagnosticUpdater);
+}
+
+function gutterConsumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
   const {applyUpdateToEditor} = require('./gutter');
 
   const fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
 
-  invariant(subscriptions);
+  invariant(subscriptions != null);
   subscriptions.add(atom.workspace.observeTextEditors((editor: TextEditor) => {
     const filePath = editor.getPath();
     if (!filePath) {
@@ -155,14 +167,10 @@ export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): 
     // Be sure to remove the subscription on the DiagnosticStore once the editor is closed.
     editor.onDidDestroy(() => disposable.dispose());
   }));
+}
 
-  // Currently, the DiagnosticsPanel is designed to work with only one DiagnosticUpdater.
-  // Therefore, we only create a DiagnosticsPanel for the first call to consumeDiagnosticUpdates.
-  if (diagnosticUpdaterForTable) {
-    return;
-  }
-  diagnosticUpdaterForTable = diagnosticUpdater;
-
+function tableConsumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
+  invariant(subscriptions != null);
   const lazilyCreateTable = createPanel.bind(null, diagnosticUpdater, subscriptions);
 
   const toggleTable = () => {
@@ -184,6 +192,25 @@ export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): 
     }
   };
 
+  subscriptions.add(atom.commands.add(
+    atom.views.getView(atom.workspace),
+    'nuclide-diagnostics-ui:toggle-table',
+    toggleTable,
+  ));
+
+  subscriptions.add(atom.commands.add(
+    atom.views.getView(atom.workspace),
+    'nuclide-diagnostics-ui:show-table',
+    showTable,
+  ));
+
+  invariant(activationState);
+  if (!activationState.hideDiagnosticsPanel) {
+    lazilyCreateTable();
+  }
+}
+
+function addAtomCommands(diagnosticUpdater: DiagnosticUpdater): void {
   const fixAllInCurrentFile = () => {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
@@ -197,17 +224,7 @@ export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): 
     diagnosticUpdater.applyFixesForFile(path);
   };
 
-  subscriptions.add(atom.commands.add(
-    atom.views.getView(atom.workspace),
-    'nuclide-diagnostics-ui:toggle-table',
-    toggleTable,
-  ));
-
-  subscriptions.add(atom.commands.add(
-    atom.views.getView(atom.workspace),
-    'nuclide-diagnostics-ui:show-table',
-    showTable,
-  ));
+  invariant(subscriptions != null);
 
   subscriptions.add(atom.commands.add(
     atom.views.getView(atom.workspace),
@@ -215,10 +232,6 @@ export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): 
     fixAllInCurrentFile,
   ));
 
-  invariant(activationState);
-  if (!activationState.hideDiagnosticsPanel) {
-    lazilyCreateTable();
-  }
 }
 
 export function consumeStatusBar(statusBar: atom$StatusBar): void {
@@ -254,8 +267,6 @@ export function deactivate(): void {
   if (toolBar) {
     toolBar.removeItems();
   }
-
-  diagnosticUpdaterForTable = null;
 }
 
 export function serialize(): ActivationState {
