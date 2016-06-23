@@ -23,6 +23,7 @@ import {
 import {Section} from '../../nuclide-ui/lib/Section';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import {WatchExpressionComponent} from './WatchExpressionComponent';
+import {BreakpointListComponent} from './BreakpointListComponent';
 import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
 import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
 
@@ -30,6 +31,9 @@ type Props = {
   model: DebuggerModel;
   watchExpressionListStore: WatchExpressionListStore;
 };
+
+// TODO jxg consume breakpoints from store
+const breakpoints = [];
 
 export class NewDebuggerView extends React.Component {
   props: Props;
@@ -96,6 +100,11 @@ export class NewDebuggerView extends React.Component {
           <DebuggerCallstackComponent
             actions={actions}
             callstack={this.state.callstack}
+          />
+        </Section>
+        <Section headline="Breakpoints">
+          <BreakpointListComponent
+            breakpoints={breakpoints}
           />
         </Section>
         <Section headline="Watch Expressions">
