@@ -31,8 +31,9 @@ export type Callstack = Array<CallstackItem>;
 
 export default class CallstackStore {
   _disposables: IDisposable;
-  _callstack: ?Callstack;
   _eventEmitter: EventEmitter;
+  _callstack: ?Callstack;
+  _selectedCallFrameMarker: ?atom$Marker;
 
   constructor(dispatcher: Dispatcher) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
@@ -42,11 +43,18 @@ export default class CallstackStore {
       })
     );
     this._callstack = null;
+    this._selectedCallFrameMarker = null;
     this._eventEmitter = new EventEmitter();
   }
 
   _handlePayload(payload: Object) {
     switch (payload.actionType) {
+      case Constants.Actions.CLEAR_INTERFACE:
+        this._handleClearInterface();
+        break;
+      case Constants.Actions.SET_SELECTED_CALLFRAME_LINE:
+        this._setSelectedCallFrameLine(payload.data.options);
+        break;
       case Constants.Actions.OPEN_SOURCE_LOCATION:
         this._openSourceLocation(payload.data.sourceURL, payload.data.lineNumber);
         break;
@@ -73,6 +81,43 @@ export default class CallstackStore {
     }
   }
 
+  _handleClearInterface(): void {
+    this._setSelectedCallFrameLine(null);
+  }
+
+  _setSelectedCallFrameLine(options: ?{sourceURL: string; lineNumber: number}) {
+    if (options) {
+      const path = remoteUri.uriToNuclideUri(options.sourceURL);
+      const {lineNumber} = options;
+      if (path != null && atom.workspace != null) { // only handle real files for now
+        atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
+          this._clearSelectedCallFrameMarker();
+          this._highlightCallFrameLine(editor, lineNumber);
+        });
+      }
+    } else {
+      this._clearSelectedCallFrameMarker();
+    }
+  }
+
+  _highlightCallFrameLine(editor: atom$TextEditor, line: number) {
+    const marker = editor.markBufferRange(
+      [[line, 0], [line, Infinity]],
+      {persistent: false, invalidate: 'never'});
+    editor.decorateMarker(marker, {
+      type: 'line',
+      class: 'nuclide-current-line-highlight',
+    });
+    this._selectedCallFrameMarker = marker;
+  }
+
+  _clearSelectedCallFrameMarker() {
+    if (this._selectedCallFrameMarker) {
+      this._selectedCallFrameMarker.destroy();
+      this._selectedCallFrameMarker = null;
+    }
+  }
+
   onChange(callback: () => void): Disposable {
     const emitter = this._eventEmitter;
     this._eventEmitter.on('change', callback);
@@ -84,6 +129,7 @@ export default class CallstackStore {
   }
 
   dispose(): void {
+    this._clearSelectedCallFrameMarker();
     this._disposables.dispose();
   }
 }

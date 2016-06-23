@@ -87,7 +87,6 @@ class Bridge {
   // Contains disposable items should be disposed by
   // cleanup() method.
   _cleanupDisposables: CompositeDisposable;
-  _selectedCallFrameMarker: ?atom$Marker;
   _webview: ?WebviewElement;
   _suppressBreakpointSync: boolean;
   // Tracks requests for expression evaluation, keyed by the expression body.
@@ -97,7 +96,6 @@ class Bridge {
   constructor(debuggerModel: DebuggerModel) {
     this._debuggerModel = debuggerModel;
     this._cleanupDisposables = new CompositeDisposable();
-    this._selectedCallFrameMarker = null;
     this._webview = null;
     this._suppressBreakpointSync = false;
     this._disposables = new CompositeDisposable(
@@ -124,7 +122,12 @@ class Bridge {
   cleanup() {
     this._cleanupDisposables.dispose();
     this._webview = null;
-    this._clearSelectedCallFrameMarker();
+    // Poor man's `waitFor` to prevent nested dispatch. Actual `waitsFor` requires passing around
+    // dispatch tokens between unrelated stores, which is quite cumbersome.
+    // TODO @jxg move to redux to eliminate this problem altogether.
+    setTimeout(() => {
+      this._debuggerModel.getActions().clearInterface();
+    });
   }
 
   continue() {
@@ -328,10 +331,6 @@ class Bridge {
     this._debuggerModel.getWatchExpressionStore().triggerReevaluation();
   }
 
-  _handleClearInterface(): void {
-    this._setSelectedCallFrameLine(null);
-  }
-
   _handleDebuggerResumed(): void {
     this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.RUNNING);
   }
@@ -340,19 +339,12 @@ class Bridge {
     this._debuggerModel.getStore().loaderBreakpointResumed();
   }
 
-  _setSelectedCallFrameLine(nullableOptions: ?{sourceURL: string; lineNumber: number}) {
-    if (nullableOptions) {
-      const options = nullableOptions; // For use in capture without re-checking null
-      const path = nuclideUri.uriToNuclideUri(options.sourceURL);
-      if (path != null && atom.workspace != null) { // only handle real files for now
-        atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
-          this._clearSelectedCallFrameMarker();
-          this._highlightCallFrameLine(editor, options.lineNumber);
-        });
-      }
-    } else {
-      this._clearSelectedCallFrameMarker();
-    }
+  _handleClearInterface(): void {
+    this._debuggerModel.getActions().clearInterface();
+  }
+
+  _setSelectedCallFrameLine(options: ?{sourceURL: string; lineNumber: number}): void {
+    this._debuggerModel.getActions().setSelectedCallFrameline(options);
   }
 
   _openSourceLocation(options: ?{sourceURL: string; lineNumber: number}): void {
@@ -363,17 +355,6 @@ class Bridge {
       options.sourceURL,
       options.lineNumber,
     );
-  }
-
-  _highlightCallFrameLine(editor: atom$TextEditor, line: number) {
-    const marker = editor.markBufferRange(
-      [[line, 0], [line, Infinity]],
-      {persistent: false, invalidate: 'never'});
-    editor.decorateMarker(marker, {
-      type: 'line',
-      class: 'nuclide-current-line-highlight',
-    });
-    this._selectedCallFrameMarker = marker;
   }
 
   _addBreakpoint(location: {sourceURL: string; lineNumber: number}) {
@@ -399,13 +380,6 @@ class Bridge {
       } finally {
         this._suppressBreakpointSync = false;
       }
-    }
-  }
-
-  _clearSelectedCallFrameMarker() {
-    if (this._selectedCallFrameMarker) {
-      this._selectedCallFrameMarker.destroy();
-      this._selectedCallFrameMarker = null;
     }
   }
 

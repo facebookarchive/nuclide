@@ -333,6 +333,22 @@ class DebuggerActions {
     });
   }
 
+  setSelectedCallFrameline(options: ?{sourceURL: string; lineNumber: number}): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.SET_SELECTED_CALLFRAME_LINE,
+      data: {
+        options,
+      },
+    });
+  }
+
+  clearInterface(): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.CLEAR_INTERFACE,
+      data: {},
+    });
+  }
+
   dispose() {
     endTimerTracking();
     this._disposables.dispose();

@@ -11,6 +11,7 @@
 
 import invariant from 'assert';
 import DebuggerModel from '../lib/DebuggerModel';
+import {sleep} from '../../commons-node/promise';
 import utils from './utils';
 
 class MockWebview {
@@ -145,9 +146,10 @@ describe('Bridge', () => {
       return Boolean(getCallFrameDecorationInRow(1));
     }, 'call frame highlight to appear', 100);
 
-    runs(() => {
+    runs(async () => {
       expect(getCallFrameDecorationInRow(1)).toBeTruthy();
       bridge.dispose();
+      await sleep(10);
       expect(getCallFrameDecorationInRow(1)).toBeFalsy();
       expect(mockWebview.getListeners('ipc-message').size).toEqual(0);
     });
@@ -158,9 +160,10 @@ describe('Bridge', () => {
       return Boolean(getCallFrameDecorationInRow(1));
     }, 'call frame highlight to appear', 100);
 
-    runs(() => {
+    runs(async () => {
       expect(getCallFrameDecorationInRow(1)).toBeTruthy();
       bridge.cleanup();
+      await sleep(10);
       expect(getCallFrameDecorationInRow(1)).toBeFalsy();
       expect(mockWebview.getListeners('ipc-message').size).toEqual(0);
     });
