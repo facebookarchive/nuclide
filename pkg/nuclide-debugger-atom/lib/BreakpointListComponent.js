@@ -15,6 +15,7 @@ import {
 
 import nuclideUri from '../../nuclide-remote-uri';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {Listview} from '../../nuclide-ui/lib/Listview';
 
 // TODO use type from store
 type FileLineBreakpoint = {
@@ -66,9 +67,10 @@ export class BreakpointListComponent extends React.Component {
       );
     });
     return (
-      <div>
+      <Listview
+        alternateBackground={true}>
         {renderedBreakpoints}
-      </div>
+      </Listview>
     );
   }
 }
