@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-import {observableToTaskInfo} from '../lib/observableToTaskInfo';
+import {observableToBuildTaskInfo} from '../observableToBuildTaskInfo';
 import invariant from 'assert';
 import {Observable, Subscription, Subject} from 'rxjs';
 
-describe('observableToTaskInfo', () => {
+describe('observableToBuildTaskInfo', () => {
 
   it('subscribes when the function is called', () => {
     const events = Observable.never();
     spyOn(events, 'subscribe').andCallThrough();
-    observableToTaskInfo(events);
+    observableToBuildTaskInfo(events);
     expect(events.subscribe).toHaveBeenCalled();
   });
 
@@ -27,7 +27,7 @@ describe('observableToTaskInfo', () => {
     const sub = new Subscription();
     spyOn(events, 'subscribe').andReturn(sub);
     spyOn(sub, 'unsubscribe').andCallThrough();
-    const taskInfo = observableToTaskInfo(events);
+    const taskInfo = observableToBuildTaskInfo(events);
     expect(sub.unsubscribe).not.toHaveBeenCalled();
     taskInfo.cancel();
     expect(sub.unsubscribe).toHaveBeenCalled();
@@ -35,7 +35,7 @@ describe('observableToTaskInfo', () => {
 
   it('relays progress events', () => {
     const events = new Subject();
-    const taskInfo = observableToTaskInfo(events);
+    const taskInfo = observableToBuildTaskInfo(events);
     const spy = jasmine.createSpy();
     invariant(taskInfo.observeProgress != null);
     taskInfo.observeProgress(spy);
