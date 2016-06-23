@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 import * as ActionTypes from '../lib/ActionTypes';
 import {applyActionMiddleware} from '../lib/applyActionMiddleware';
 import {createEmptyAppState} from '../lib/createEmptyAppState';
@@ -40,6 +41,63 @@ describe('applyActionMiddleware', () => {
         const output = await outputPromise;
         expect(output.map(action => action.type)).toEqual([ActionTypes.TASK_STOPPED]);
         expect(taskInfo.cancel).toHaveBeenCalled();
+      });
+    });
+
+  });
+
+  describe('RUN_TASK', () => {
+
+    it('runs a task to completion', () => {
+      waitsForPromise(async () => {
+        const input = new Subject();
+        const cancelSpy = jasmine.createSpy('task.cancel');
+        let completeTask;
+
+        const buildSystem = new dummy.BuildSystem();
+        spyOn(buildSystem, 'runTask').andReturn({
+          onDidComplete(cb) {
+            completeTask = cb;
+            return {dispose: () => {}};
+          },
+          onDidError() {
+            return {dispose: () => {}};
+          },
+          cancel: cancelSpy,
+        });
+
+        const state = {
+          ...createEmptyAppState(),
+          activeBuildSystemId: 'test',
+          buildSystems: new Map([['test', buildSystem]]),
+          tasks: [
+            {
+              type: 'test',
+              label: 'Test Task',
+              description: 'A great task to test',
+              enabled: true,
+              icon: 'squirrel',
+            },
+          ],
+        };
+        const outputPromise = applyActionMiddleware(input, () => state).toArray().toPromise();
+        input.next({
+          type: ActionTypes.RUN_TASK,
+          payload: {
+            taskType: 'test',
+          },
+        });
+        input.complete();
+
+        invariant(completeTask != null, 'completeTask should be set');
+        completeTask();
+
+        const output = await outputPromise;
+        expect(output.map(action => action.type)).toEqual([
+          ActionTypes.TASK_STARTED,
+          ActionTypes.TASK_COMPLETED,
+        ]);
+        expect(cancelSpy).not.toHaveBeenCalled();
       });
     });
 

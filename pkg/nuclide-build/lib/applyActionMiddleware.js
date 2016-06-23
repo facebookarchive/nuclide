@@ -118,15 +118,21 @@ function runTask(
   task: Task,
   getState: () => AppState,
 ): Observable<Action> {
+  let finished;
   // $FlowFixMe(matthewwithanm): Type this.
   return Observable.using(
     () => {
       let taskInfo = buildSystem.runTask(task.type);
       // We may call cancel multiple times so let's make sure it's idempotent.
       taskInfo = {...taskInfo, cancel: once(taskInfo.cancel)};
+      finished = false;
       return {
         taskInfo,
-        unsubscribe() { taskInfo.cancel(); },
+        unsubscribe() {
+          if (!finished) {
+            taskInfo.cancel();
+          }
+        },
       };
     },
     ({taskInfo}) => Observable.of(taskInfo),
@@ -177,6 +183,9 @@ function runTask(
           taskInfo: taskStatus == null ? null : taskStatus.info,
         },
       });
+    })
+    .finally(() => {
+      finished = true;
     })
     .share();
 }
