@@ -12,16 +12,7 @@
 import {
   React,
 } from 'react-for-atom';
-
-type CallstackItem = {
-  name: string;
-  location: {
-    path: string;
-    line: number;
-    column?: number;
-  };
-};
-export type Callstack = Array<CallstackItem>;
+import type {Callstack} from './CallstackStore';
 
 type DebuggerCallstackComponentProps = {
   callstack: Callstack;

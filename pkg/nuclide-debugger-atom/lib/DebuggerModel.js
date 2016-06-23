@@ -15,6 +15,7 @@ import BreakpointStore from './BreakpointStore';
 import DebuggerActions from './DebuggerActions';
 import {DebuggerStore} from './DebuggerStore';
 import {WatchExpressionStore} from './WatchExpressionStore';
+import CallstackStore from './CallstackStore';
 import {WatchExpressionListStore} from './WatchExpressionListStore';
 import DebuggerActionsStore from './DebuggerActionsStore';
 import Bridge from './Bridge';
@@ -37,6 +38,7 @@ class DebuggerModel {
   _watchExpressionListStore: WatchExpressionListStore;
   _debuggerProviderStore: DebuggerProviderStore;
   _debuggerActionStore: DebuggerActionsStore;
+  _callstackStore: CallstackStore;
   _bridge: Bridge;
 
   constructor(state: ?SerializedState) {
@@ -53,6 +55,7 @@ class DebuggerModel {
       this._dispatcher
     );
     this._debuggerActionStore = new DebuggerActionsStore(this._dispatcher, this._bridge);
+    this._callstackStore = new CallstackStore(this._dispatcher);
 
     this._disposables = new CompositeDisposable(
       this._store,
@@ -63,6 +66,7 @@ class DebuggerModel {
       this._debuggerProviderStore,
       this._watchExpressionStore,
       this._debuggerActionStore,
+      this._callstackStore,
     );
   }
 
@@ -92,6 +96,10 @@ class DebuggerModel {
 
   getBreakpointStore(): BreakpointStore {
     return this._breakpointStore;
+  }
+
+  getCallstackStore(): CallstackStore {
+    return this._callstackStore;
   }
 
   getBridge(): Bridge {

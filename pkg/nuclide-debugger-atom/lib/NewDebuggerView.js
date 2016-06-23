@@ -14,7 +14,7 @@ import type {DebuggerModeType} from './DebuggerStore';
 import type {
   WatchExpressionListStore,
 } from './WatchExpressionListStore';
-import type {Callstack} from './DebuggerCallstackComponent';
+import type {Callstack} from './CallstackStore';
 
 import {CompositeDisposable} from 'atom';
 import {
