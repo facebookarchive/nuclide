@@ -101,10 +101,11 @@ export function createProxyFactory(
 
 function loadCodeAsModule(code: string, filename: string): Module {
   invariant(code.length > 0, 'Code must not be empty.');
-  const m = new Module(filename, ((module: any): Module));
+  const m = new Module(filename);
   m.filename = filename;
-  m.paths = []; // Prevent accidental requires by removing lookup paths.
+  m.paths = []; // Disallow require resolving by removing lookup paths.
   m._compile(code, filename);
+  m.loaded = true;
 
   return m;
 }
