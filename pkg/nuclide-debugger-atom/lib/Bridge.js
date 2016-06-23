@@ -10,6 +10,7 @@
  */
 
 import type DebuggerModel from './DebuggerModel';
+import type {Callstack} from './CallstackStore';
 
 type ExpressionResult = ChromeProtocolResponse & {
   expression: string;
@@ -213,6 +214,10 @@ class Bridge {
     );
   }
 
+  _handleCallstackUpdate(callstack: Callstack): void {
+    this._debuggerModel.getActions().updateCallstack(callstack);
+  }
+
   _handleResponseForPendingRequest<T>(
     pending: Map<string, Deferred<?T>>,
     response: ChromeProtocolResponse,
@@ -279,6 +284,9 @@ class Bridge {
             break;
           case 'GetPropertiesResponse':
             this._handleGetPropertiesResponse(event.args[1]);
+            break;
+          case 'CallstackUpdate':
+            this._handleCallstackUpdate(event.args[1]);
             break;
         }
         break;

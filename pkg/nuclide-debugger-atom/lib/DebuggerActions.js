@@ -19,6 +19,7 @@ import type {
 import type {DebuggerStore, DebuggerModeType} from './DebuggerStore';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type DebuggerInstance from './DebuggerInstance';
+import type {Callstack} from './CallstackStore';
 
 import Constants from './Constants';
 import {CompositeDisposable} from 'atom';
@@ -309,6 +310,15 @@ class DebuggerActions {
       actionType: Constants.Actions.TRIGGER_DEBUGGER_ACTION,
       data: {
         actionId,
+      },
+    });
+  }
+
+  updateCallstack(callstack: Callstack): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.UPDATE_CALLSTACK,
+      data: {
+        callstack,
       },
     });
   }

@@ -15,6 +15,7 @@ import {
   Disposable,
   CompositeDisposable,
 } from 'atom';
+import Constants from './Constants';
 
 type CallstackItem = {
   name: string;
@@ -42,9 +43,16 @@ export default class CallstackStore {
 
   _handlePayload(payload: Object) {
     switch (payload.actionType) {
+      case Constants.Actions.UPDATE_CALLSTACK:
+        this._updateCallstack(payload.data.callstack);
+        break;
       default:
         return;
     }
+  }
+
+  _updateCallstack(callstack: Callstack): void {
+    this._callstack = callstack;
   }
   getCallstack(): ?Callstack {
     return this._callstack;

@@ -236,6 +236,36 @@ class NuclideBridge {
     });
   }
 
+  _sendCallstack(): void {
+    const target = WebInspector.targetManager.mainTarget();
+    if (target == null) {
+      return;
+    }
+    const model = target.debuggerModel;
+    if (model == null) {
+      return;
+    }
+    const callFrames = model.callFrames;
+    if (callFrames == null) {
+      return;
+    }
+    const callstack = callFrames.map(callFrame => {
+      const location = callFrame.location();
+      /* names anonymous functions "(anonymous function)" */
+      const functionName = WebInspector.beautifyFunctionName(callFrame.functionName);
+      return {
+        name: functionName,
+        location: {
+          path: callFrame.script.sourceURL,
+          // line & column numbers are zero-based in Chrome.
+          column: location.columnNumber + 1,
+          line: location.lineNumber + 1,
+        },
+      };
+    });
+    ipc.sendToHost('notification', 'CallstackUpdate', callstack);
+  }
+
   _getProperties(objectId: string): void {
     const mainTarget = WebInspector.targetManager.mainTarget();
     if (mainTarget == null) {
@@ -309,6 +339,7 @@ class NuclideBridge {
     } else {
       ipc.sendToHost('notification', 'NonLoaderDebuggerPaused', {});
     }
+    this._sendCallstack();
   }
 
   _handleLoaderBreakpoint() {
