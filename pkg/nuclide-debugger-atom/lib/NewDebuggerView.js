@@ -10,10 +10,12 @@
  */
 
 import type DebuggerModel from './DebuggerModel';
+import type {DebuggerModeType} from './DebuggerStore';
 import type {
   WatchExpressionListStore,
 } from './WatchExpressionListStore';
 
+import {CompositeDisposable} from 'atom';
 import {
   React,
 } from 'react-for-atom';
@@ -29,7 +31,11 @@ type Props = {
 
 export class NewDebuggerView extends React.Component {
   props: Props;
+  state: {
+    debuggerMode: DebuggerModeType;
+  };
   _wrappedComponent: ReactClass<any>;
+  _disposables: CompositeDisposable;
 
   constructor(props: Props) {
     super(props);
@@ -39,6 +45,25 @@ export class NewDebuggerView extends React.Component {
       ),
       WatchExpressionComponent
     );
+    this._disposables = new CompositeDisposable();
+    this.state = {
+      debuggerMode: props.model.getStore().getDebuggerMode(),
+    };
+  }
+
+  componentDidMount(): void {
+    const debuggerStore = this.props.model.getStore();
+    this._disposables.add(
+      debuggerStore.onChange(() => {
+        this.setState({
+          debuggerMode: debuggerStore.getDebuggerMode(),
+        });
+      })
+    );
+  }
+
+  componentWillUnmount(): void {
+    this._dispose();
   }
 
   render(): React.Element<any> {
@@ -52,6 +77,7 @@ export class NewDebuggerView extends React.Component {
         <Section headline="Debugger Controls">
           <DebuggerSteppingComponent
             actions={actions}
+            debuggerMode={this.state.debuggerMode}
           />
         </Section>
         <Section headline="Watch Expressions">
@@ -64,5 +90,9 @@ export class NewDebuggerView extends React.Component {
         </Section>
       </div>
     );
+  }
+
+  _dispose(): void {
+    this._disposables.dispose();
   }
 }

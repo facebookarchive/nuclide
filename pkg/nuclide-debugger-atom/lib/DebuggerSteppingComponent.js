@@ -10,6 +10,7 @@
  */
 
 import type DebuggerActions from './DebuggerActions';
+import type {DebuggerModeType} from './DebuggerStore';
 
 import {
   React,
@@ -17,9 +18,11 @@ import {
 import {Button} from '../../nuclide-ui/lib/Button';
 import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
+import {DebuggerMode} from './DebuggerStore';
 
 type DebuggerSteppingComponentProps = {
   actions: DebuggerActions;
+  debuggerMode: DebuggerModeType;
 };
 
 export class DebuggerSteppingComponent extends React.Component {
@@ -32,9 +35,9 @@ export class DebuggerSteppingComponent extends React.Component {
   render(): ?React.Element<any> {
     const {
       actions,
+      debuggerMode,
     } = this.props;
-    // TODO consume paused state via props & wire up action handlers.
-    const isPaused = false;
+    const isPaused = debuggerMode === DebuggerMode.PAUSED;
     return (
       <div>
         <ButtonGroup>
@@ -44,9 +47,7 @@ export class DebuggerSteppingComponent extends React.Component {
             onClick={
               actions.triggerDebuggerAction.bind(
                 actions,
-                isPaused
-                  ? ChromeActionRegistryActions.RUN
-                  : ChromeActionRegistryActions.PAUSE
+                ChromeActionRegistryActions.PAUSE // Toggles paused state
               )
             }
           />
