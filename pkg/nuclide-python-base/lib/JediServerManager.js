@@ -61,19 +61,19 @@ export default class JediServerManager {
 
       // Add link tree path without awaiting so we don't block the service
       // from returning.
-      this._addLinkTreePath(src, server);
+      this._addLinkTreePaths(src, server);
     }
 
     return await server.getService();
   }
 
-  async _addLinkTreePath(src: NuclideUri, server: JediServer): Promise<void> {
-    const linkTreePath = await this._linkTreeManager.getLinkTreePath(src);
-    if (server.isDisposed() || linkTreePath == null) {
+  async _addLinkTreePaths(src: NuclideUri, server: JediServer): Promise<void> {
+    const linkTreePaths = await this._linkTreeManager.getLinkTreePaths(src);
+    if (server.isDisposed() || linkTreePaths.length === 0) {
       return;
     }
     const service = await server.getService();
-    await service.add_paths([linkTreePath]);
+    await service.add_paths(linkTreePaths);
   }
 
   reset(src: string): void {

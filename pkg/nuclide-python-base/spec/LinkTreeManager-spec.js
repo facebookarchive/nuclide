@@ -14,8 +14,6 @@ import fsPlus from 'fs-plus';
 import temp from 'temp';
 import LinkTreeManager from '../lib/LinkTreeManager';
 
-const FIXTURES_PATH = nuclideUri.join(__dirname, 'fixtures');
-
 temp.track();
 
 function copyProject(projectInFixturesDirectory: string) {
@@ -31,12 +29,13 @@ process.env.NO_BUCKD = '1';
 describe('LinkTreeManager', () => {
 
   let linkTreeManager;
+  const projectDir = copyProject('test-project');
   const mockBuckProject = {
     getOwner(src) {
       return ['//test', '//test2'];
     },
     getPath() {
-      return nuclideUri.join(__dirname, 'fixtures');
+      return projectDir;
     },
     query(q) {
       return ['//testbin', '//testbin2'];
@@ -52,25 +51,28 @@ describe('LinkTreeManager', () => {
       spyOn(linkTreeManager, '_getBuckProject').andReturn(mockBuckProject);
 
       const spy = spyOn(mockBuckProject, 'query').andReturn(['//testbin', '//testbin2']);
-      const srcPath = nuclideUri.join(FIXTURES_PATH, 'test.py');
-      const expectedPath = nuclideUri.join(FIXTURES_PATH, 'buck-out/gen/testbin#link-tree');
+      const srcPath = nuclideUri.join(projectDir, 'test1/test1.py');
+      const expectedPaths = [
+        nuclideUri.join(projectDir, 'buck-out/gen/testbin#link-tree'),
+        nuclideUri.join(projectDir, 'buck-out/gen/testbin2#link-tree'),
+      ];
 
-      let linkTreePath = await linkTreeManager.getLinkTreePath(srcPath);
+      let linkTreePaths = await linkTreeManager.getLinkTreePaths(srcPath);
       // rdeps query should be executed with the first owner found, and scoped to
       // the target of the source path's directory.
       expect(spy).toHaveBeenCalledWith(
-        `kind(python_binary, rdeps(//fixtures:, owner(${srcPath})))`
+        `kind(python_binary, rdeps(//test1:, owner(${srcPath})))`
       );
       // Properly resolve a link-tree path based on the source's firstly found
       // binary dependency.
-      expect(linkTreePath).toBe(expectedPath);
+      expect(linkTreePaths).toEqual(expectedPaths);
 
       // Second call with the same source path should retrieve from cache and
       // not make a buck query.
       mockBuckProject.query.reset();
-      linkTreePath = await linkTreeManager.getLinkTreePath(srcPath);
+      linkTreePaths = await linkTreeManager.getLinkTreePaths(srcPath);
       expect(spy).not.toHaveBeenCalled();
-      expect(linkTreePath).toBe(expectedPath);
+      expect(linkTreePaths).toEqual(expectedPaths);
     });
   });
 
@@ -81,24 +83,23 @@ describe('LinkTreeManager', () => {
       // Return an empty array for results, in which case the manager should try
       // querying for python_unittest targets too.
       const spy = spyOn(mockBuckProject, 'query').andReturn([]);
-      const srcPath = nuclideUri.join(FIXTURES_PATH, 'test.py');
-      const linkTreePath = await linkTreeManager.getLinkTreePath(srcPath);
+      const srcPath = nuclideUri.join(projectDir, 'test1/test1.py');
+      const linkTreePaths = await linkTreeManager.getLinkTreePaths(srcPath);
       expect(spy).toHaveBeenCalledWith(
-        `kind(python_unittest, rdeps(//fixtures:, owner(${srcPath})))`
+        `kind(python_unittest, rdeps(//test1:, owner(${srcPath})))`
       );
-      expect(linkTreePath).toBeNull;
+      expect(linkTreePaths).toEqual([]);
     });
   });
 
   it('resolves a link tree path with a buck project\'s source file', () => {
     // Large timeout for buck to warm up.
     waitsForPromise({timeout: 30000}, async () => {
-      const projectDir = copyProject('test-project');
       const srcPath = nuclideUri.join(projectDir, 'test1/test1.py');
-      const linkTreePath = await linkTreeManager.getLinkTreePath(srcPath);
-      expect(linkTreePath).toBe(
-        nuclideUri.join(projectDir, 'buck-out/gen/test1/testbin1#link-tree')
-      );
+      const linkTreePaths = await linkTreeManager.getLinkTreePaths(srcPath);
+      expect(linkTreePaths).toEqual([
+        nuclideUri.join(projectDir, 'buck-out/gen/test1/testbin1#link-tree'),
+      ]);
     });
   });
 
