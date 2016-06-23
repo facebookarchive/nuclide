@@ -61,7 +61,7 @@ export class WatchExpressionStore {
       payload.actionType === Actions.DEBUGGER_MODE_CHANGE &&
       payload.data === DebuggerMode.PAUSED
     ) {
-      this.triggerReevaluation();
+      this._triggerReevaluation();
     }
   }
 
@@ -129,7 +129,7 @@ export class WatchExpressionStore {
     return subject.asObservable();
   }
 
-  triggerReevaluation(): void {
+  _triggerReevaluation(): void {
     // Cancel any outstanding evaluation requests to the Bridge
     this._previousEvaluationSubscriptions.dispose();
     this._previousEvaluationSubscriptions = new CompositeDisposable();

@@ -32,7 +32,6 @@ export type EvaluationResult = {
   // Or:
   _description? : string;
   _objectId?: string;
-
 };
 
 export type ExpansionResult = Array<{
@@ -326,13 +325,11 @@ class Bridge {
 
   _handleDebuggerPaused(additionalData: {sourceUrl?: string}): void {
     this._expressionsInFlight.clear();
-    this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.PAUSED);
-    // TODO go through dispatcher
-    this._debuggerModel.getWatchExpressionStore().triggerReevaluation();
+    this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.PAUSED);
   }
 
   _handleDebuggerResumed(): void {
-    this._debuggerModel.getStore().setDebuggerMode(DebuggerMode.RUNNING);
+    this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.RUNNING);
   }
 
   _handleLoaderBreakpointResumed(): void {

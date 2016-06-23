@@ -35,6 +35,15 @@ const DebuggerInspector = React.createClass({
     bridge: React.PropTypes.instanceOf(Bridge).isRequired,
   },
 
+  shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
+    return (
+      nextProps.actions !== this.props.actions ||
+      nextProps.breakpointStore !== this.props.breakpointStore ||
+      nextProps.socket !== this.props.socket ||
+      nextProps.bridge !== this.props.bridge
+    );
+  },
+
   render(): ?React.Element<any> {
     return (
       <PanelComponent initialLength={500} dock="right">

@@ -137,16 +137,6 @@ class DebuggerStore {
     return new Disposable(() => emitter.removeListener('change', callback));
   }
 
-  setDebuggerMode(newMode: DebuggerModeType): void {
-    this._debuggerMode = newMode;
-  // Using a setter is necessary to circumvent timing issues when using the dispatcher.
-    // TODO fix underlying dispatcher timing problem & move to proper Flux implementation.
-    // this._dispatcher.dispatch({
-    //   actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
-    //   data: newMode,
-    // });
-  }
-
   _handlePayload(payload: Object) {
     switch (payload.actionType) {
       case Constants.Actions.SET_PROCESS_SOCKET:
