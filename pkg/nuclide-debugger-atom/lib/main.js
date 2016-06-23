@@ -386,6 +386,7 @@ function registerConsoleExecutor(
         .first()
         .subscribe(result => rawOutput.next(result)),
     ));
+    watchExpressionStore._triggerReevaluation();
   };
   const output: Observable<{result: EvaluationResult}> = rawOutput
     .map(result => {
