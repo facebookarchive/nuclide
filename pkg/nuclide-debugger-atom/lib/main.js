@@ -379,11 +379,15 @@ function registerConsoleExecutor(
   const rawOutput: Subject<?EvaluationResult> = new Subject();
   const send = expression => {
     disposables.add(new DisposableSubscription(
-      watchExpressionStore.evaluateConsoleExpression(expression).subscribe(rawOutput),
+      // We filter here because the first value in the BehaviorSubject is null no matter what, and
+      // we want the console to unsubscribe the stream after the first non-null value.
+      watchExpressionStore.evaluateConsoleExpression(expression)
+        .filter(result => result != null)
+        .first()
+        .subscribe(result => rawOutput.next(result)),
     ));
   };
   const output: Observable<{result: EvaluationResult}> = rawOutput
-    .filter(result => result != null)
     .map(result => {
       invariant(result != null);
       return {result};
