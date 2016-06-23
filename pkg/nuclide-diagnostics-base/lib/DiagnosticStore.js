@@ -26,10 +26,7 @@ import {arrayRemove} from '../../commons-node/collection';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {MarkerTracker} from './MarkerTracker';
 import invariant from 'assert';
-import {Disposable, Emitter} from 'atom';
 import {BehaviorSubject, Subject, Observable} from 'rxjs';
-
-const ALL_CHANGE_EVENT = 'messages-changed';
 
 class DiagnosticStore {
   // A map from each diagnostic provider to:
@@ -42,13 +39,9 @@ class DiagnosticStore {
   // A map from each diagnostic provider to the array of project messages from it.
   _providerToProjectDiagnostics: Map<DiagnosticProvider, Array<ProjectDiagnosticMessage>>;
 
-  // File paths are used as event names for the _fileChangeEmitter, so a second
-  // emitter is used for other events to prevent event name collisions.
   _fileChanges: Subject<FileMessageUpdate>;
-  _nonFileChangeEmitter: Emitter;
-  _allMessagesListenersCount: number;
-
   _projectChanges: BehaviorSubject<Array<ProjectDiagnosticMessage>>;
+  _allChanges: BehaviorSubject<Array<DiagnosticMessage>>;
 
   _markerTracker: MarkerTracker;
 
@@ -58,10 +51,8 @@ class DiagnosticStore {
     this._providerToProjectDiagnostics = new Map();
 
     this._fileChanges = new Subject();
-    this._nonFileChangeEmitter = new Emitter();
-    this._allMessagesListenersCount = 0;
-
     this._projectChanges = new BehaviorSubject([]);
+    this._allChanges = new BehaviorSubject([]);
 
     this._markerTracker = new MarkerTracker();
   }
@@ -71,9 +62,8 @@ class DiagnosticStore {
     this._fileToProviders.clear();
     this._providerToProjectDiagnostics.clear();
     this._fileChanges.complete();
-    this._nonFileChangeEmitter.dispose();
     this._projectChanges.complete();
-    this._markerTracker.dispose();
+    this._allChanges.complete();
   }
 
 
@@ -273,17 +263,10 @@ class DiagnosticStore {
    * @param callback The function to message when any messages change. The array
    *   of messages is meant to completely replace any previous messages.
    */
-  onAllMessagesDidUpdate(callback: (messages: Array<DiagnosticMessage>) => mixed):
-      IDisposable {
-    const emitterDisposable = this._nonFileChangeEmitter.on(ALL_CHANGE_EVENT, callback);
-    this._allMessagesListenersCount += 1;
-
-    const allMessages = this._getAllMessages();
-    callback(allMessages);
-    return new Disposable(() => {
-      emitterDisposable.dispose();
-      this._allMessagesListenersCount -= 1;
-    });
+  onAllMessagesDidUpdate(
+    callback: (messages: Array<DiagnosticMessage>) => mixed,
+  ): IDisposable {
+    return new DisposableSubscription(this._allChanges.subscribe(callback));
   }
 
   /**
@@ -399,9 +382,7 @@ class DiagnosticStore {
   }
 
   _emitAllMessages(): void {
-    if (this._allMessagesListenersCount) {
-      this._nonFileChangeEmitter.emit(ALL_CHANGE_EVENT, this._getAllMessages());
-    }
+    this._allChanges.next(this._getAllMessages());
   }
 }
 
