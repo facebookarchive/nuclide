@@ -25,6 +25,7 @@ import {DiagnosticsExamples} from '../../nuclide-ui/lib/Diagnostics.example';
 import {BadgeExamples} from '../../nuclide-ui/lib/Badge.example';
 import {IconExamples} from '../../nuclide-ui/lib/Icon.example';
 import {TreeExamples} from '../../nuclide-ui/lib/Tree.example';
+import {ListviewExamples} from '../../nuclide-ui/lib/Listview.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -38,6 +39,7 @@ const playgroundComponents = [
   BadgeExamples,
   IconExamples,
   TreeExamples,
+  ListviewExamples,
 ];
 
 type ComponentSpec = {
