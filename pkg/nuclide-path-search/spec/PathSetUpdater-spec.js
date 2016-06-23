@@ -53,7 +53,7 @@ describe('PathSetUpdater', () => {
 
 
   beforeEach(() => {
-    pathSet = new PathSet(INITIAL_PATHS);
+    pathSet = new PathSet(INITIAL_PATHS, []);
     pathSetUpdater = new PathSetUpdater();
   });
 

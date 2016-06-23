@@ -172,6 +172,26 @@ function aFileSearchShould(typename, dirPathFn) {
         });
       });
     });
+
+    describe('a FileSearch with ignoredNames', () => {
+      let search;
+      beforeEach(() => {
+        waitsForPromise(async () => {
+          search = await fileSearchForDirectory(dirPath, mockPathSetUpdater, [
+            'deeper/**',
+          ]);
+        });
+      });
+
+      it('should not match ignored patterns', () => {
+        waitsForPromise(async () => {
+          const results = await search.query('');
+          expect(values(results)).toEqual([
+            nuclideUri.join(dirPath, 'test'),
+          ]);
+        });
+      });
+    });
   });
 }
 

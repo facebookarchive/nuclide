@@ -70,6 +70,7 @@ const fileSearchForDirectoryUri = {};
 export async function fileSearchForDirectory(
   directoryUri: string,
   pathSetUpdater: ?PathSetUpdater,
+  ignoredNames?: Array<string> = [],
 ): Promise<FileSearch> {
   let fileSearch = fileSearchForDirectoryUri[directoryUri];
   if (fileSearch) {
@@ -78,7 +79,7 @@ export async function fileSearchForDirectory(
 
   const realpath = await fsPromise.realpath(nuclideUri.parse(directoryUri).path);
   const paths = await getPaths(realpath);
-  const pathSet = new PathSet(paths);
+  const pathSet = new PathSet(paths, ignoredNames || []);
 
   const thisPathSetUpdater = pathSetUpdater || getPathSetUpdater();
   try {
@@ -108,8 +109,11 @@ function getPathSetUpdater() {
 // The return values of the following functions must be JSON-serializable so they
 // can be sent across a process boundary.
 
-export async function initFileSearchForDirectory(directoryUri: string): Promise<void> {
-  await fileSearchForDirectory(directoryUri);
+export async function initFileSearchForDirectory(
+  directoryUri: string,
+  ignoredNames: Array<string>,
+): Promise<void> {
+  await fileSearchForDirectory(directoryUri, null, ignoredNames);
 }
 
 export async function doSearch(

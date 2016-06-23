@@ -15,7 +15,7 @@ import type {
   ProviderType,
 } from '../../nuclide-quick-open/lib/types';
 
-import {getFuzzyFileSearchService} from './utils';
+import {getFuzzyFileSearchService, getIgnoredNames} from './utils';
 import {
   RemoteDirectory,
 } from '../../nuclide-remote-connection';
@@ -75,7 +75,7 @@ const FuzzyFileNameProvider: Provider = {
     }
 
     const directoryPath = directory.getPath();
-    const result = await service.queryFuzzyFile(directoryPath, query);
+    const result = await service.queryFuzzyFile(directoryPath, query, getIgnoredNames());
     // Take the `nuclide://<host>` prefix into account for matchIndexes of remote files.
     if (RemoteDirectory.isRemoteDirectory(directory)) {
       const remoteDir: RemoteDirectory = (directory: any);

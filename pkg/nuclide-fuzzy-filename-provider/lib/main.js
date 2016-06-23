@@ -18,6 +18,7 @@ import {
 } from 'atom';
 
 import {getServiceByNuclideUri} from '../../nuclide-client';
+import {getIgnoredNames} from './utils';
 
 let providerInstance: ?Provider;
 function getProviderInstance(): Provider {
@@ -74,7 +75,7 @@ function initSearch(projectPaths: Array<string>): void {
       // kicked off by 'fileSearchForDirectory'.
       service.isFuzzySearchAvailableFor(projectPath).then(isAvailable => {
         if (isAvailable) {
-          service.queryFuzzyFile(projectPath, 'a');
+          service.queryFuzzyFile(projectPath, 'a', getIgnoredNames());
         }
       });
     }

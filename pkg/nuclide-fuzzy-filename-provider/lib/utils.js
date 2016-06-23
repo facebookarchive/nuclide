@@ -26,3 +26,7 @@ export async function getFuzzyFileSearchService(
   );
   return service;
 }
+
+export function getIgnoredNames(): Array<string> {
+  return ((atom.config.get('core.ignoredNames'): any): ?Array<string>) || [];
+}

@@ -26,8 +26,9 @@ import fsPromise from '../../commons-node/fsPromise';
 export async function queryFuzzyFile(
   rootDirectory: NuclideUri,
   queryString: string,
+  ignoredNames: Array<string>,
 ): Promise<Array<FileSearchResult>> {
-  const search = await fileSearchForDirectory(rootDirectory);
+  const search = await fileSearchForDirectory(rootDirectory, ignoredNames);
   return search.query(queryString);
 }
 

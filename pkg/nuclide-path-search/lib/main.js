@@ -65,13 +65,16 @@ class MainProcessFileSearch {
 
 const fileSearchForDirectoryUri: {[key: DirectoryUri]: Promise<MainProcessFileSearch>} = {};
 
-async function newFileSearch(directoryUri: string): Promise<MainProcessFileSearch> {
+async function newFileSearch(
+  directoryUri: string,
+  ignoredNames: Array<string>,
+): Promise<MainProcessFileSearch> {
   const {createTask} = require('../../nuclide-task');
   const task = createTask();
   await task.invokeRemoteMethod({
     file: require.resolve('./FileSearch'),
     method: 'initFileSearchForDirectory',
-    args: [directoryUri],
+    args: [directoryUri, ignoredNames],
   });
   return new MainProcessFileSearch(task, directoryUri);
 }
@@ -82,8 +85,12 @@ async function newFileSearch(directoryUri: string): Promise<MainProcessFileSearc
  *
  * TODO(mbolin): Caller should also invoke dispose(), as appropriate.
  */
-export async function fileSearchForDirectory(directoryUri: string): Promise<FileSearch> {
+export async function fileSearchForDirectory(
+  directoryUri: string,
+  ignoredNames: Array<string>,
+): Promise<FileSearch> {
   if (directoryUri in fileSearchForDirectoryUri) {
+    // TODO(hansonw): check if ignoredNames has changed and create a new task
     return fileSearchForDirectoryUri[directoryUri];
   }
 
@@ -97,7 +104,7 @@ export async function fileSearchForDirectory(directoryUri: string): Promise<File
     throw new Error('Provided path is not a directory : ' + directoryUri);
   }
 
-  const promise = newFileSearch(directoryUri);
+  const promise = newFileSearch(directoryUri, ignoredNames);
   fileSearchForDirectoryUri[directoryUri] = promise;
   return promise;
 }
