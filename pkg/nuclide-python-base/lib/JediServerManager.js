@@ -16,25 +16,23 @@ import LRUCache from 'lru-cache';
 import JediServer from './JediServer';
 import LinkTreeManager from './LinkTreeManager';
 
-// Cache the pythonPath on first execution so we don't rerun overrides script
-// everytime.
-let pythonPath;
-async function getPythonPath() {
-  if (pythonPath) {
-    return pythonPath;
-  }
-  // Default to assuming that python is in system PATH.
-  pythonPath = 'python';
+
+async function getServerArgs(src: string) {
+  let overrides = {};
   try {
-    // Override the python path if override script is present.
-    const overrides = await require('./fb/find-jedi-server-args')();
-    if (overrides.pythonExecutable) {
-      pythonPath = overrides.pythonExecutable;
-    }
+    // Override the python path and additional sys paths
+    // if override script is present.
+    overrides = await require('./fb/find-jedi-server-args')(src);
   } catch (e) {
     // Ignore.
   }
-  return pythonPath;
+
+  return {
+    // Default to assuming that python is in system PATH.
+    pythonPath: 'python',
+    paths: [],
+    ...overrides,
+  };
 }
 
 export default class JediServerManager {
@@ -55,8 +53,9 @@ export default class JediServerManager {
   async getJediService(src: NuclideUri): Promise<JediService> {
     let server = this._servers.get(src);
     if (server == null) {
+      const {pythonPath, paths} = await getServerArgs(src);
       // Create a JediServer using default python path.
-      server = new JediServer(src, await getPythonPath());
+      server = new JediServer(src, pythonPath, paths);
       this._servers.set(src, server);
 
       // Add link tree path without awaiting so we don't block the service
