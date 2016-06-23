@@ -29,8 +29,13 @@ import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import {compact, DisposableSubscription} from '../../commons-node/stream';
 import {trackEvent} from '../../nuclide-analytics';
 import * as ActionTypes from './ActionTypes';
+import {applyActionMiddleware} from './applyActionMiddleware';
+import {Commands} from './Commands';
+import {createStateStream} from './createStateStream';
+import {createEmptyAppState} from './createEmptyAppState';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
+import Rx from 'rxjs';
 
 let disposables: ?CompositeDisposable = null;
 let _commands: ?CommandsType = null;
@@ -39,12 +44,6 @@ let _states: ?BehaviorSubject<AppState> = null;
 export function activate(rawState: ?SerializedAppState): void {
   invariant(disposables == null);
   invariant(_commands == null);
-
-  const {applyActionMiddleware} = require('./applyActionMiddleware');
-  const {Commands} = require('./Commands');
-  const {createStateStream} = require('./createStateStream');
-  const {createEmptyAppState} = require('./createEmptyAppState');
-  const Rx = require('rxjs');
 
   const initialState = {
     ...createEmptyAppState(),
