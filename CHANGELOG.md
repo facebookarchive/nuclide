@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.146.0
+
+Hotfix release. The Context View was misbehaving and causing the remote hack service to timeout.
+
 ## v0.145.0
 
 **General**
