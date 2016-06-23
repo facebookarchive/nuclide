@@ -379,7 +379,7 @@ function registerConsoleExecutor(
   const rawOutput: Subject<?EvaluationResult> = new Subject();
   const send = expression => {
     disposables.add(new DisposableSubscription(
-      watchExpressionStore.evaluateWatchExpression(expression).subscribe(rawOutput),
+      watchExpressionStore.evaluateConsoleExpression(expression).subscribe(rawOutput),
     ));
   };
   const output: Observable<{result: EvaluationResult}> = rawOutput

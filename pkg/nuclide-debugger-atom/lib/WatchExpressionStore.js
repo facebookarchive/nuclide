@@ -84,10 +84,15 @@ export class WatchExpressionStore {
   _requestExpressionEvaluation(
     expression: Expression,
     subject: Rx.BehaviorSubject<?EvaluationResult>,
+    supportRepl: boolean,
   ): void {
     const evaluationDisposable = this._requestActionFromBridge(
       subject,
-      () => this._bridge.evaluateOnSelectedCallFrame(expression),
+      () => (
+        supportRepl
+          ? this._bridge.evaluateConsoleExpression(expression)
+          : this._bridge.evaluateWatchExpression(expression)
+      ),
     );
     this._previousEvaluationSubscriptions.add(evaluationDisposable);
   }
@@ -112,18 +117,31 @@ export class WatchExpressionStore {
       });
   }
 
+  evaluateConsoleExpression(expression: Expression): Rx.Observable<?EvaluationResult> {
+    return this._evaluateExpression(expression, true /* support REPL */);
+  }
+
+  evaluateWatchExpression(expression: Expression): Rx.Observable<?EvaluationResult> {
+    return this._evaluateExpression(expression, false /* do not support REPL */);
+  }
+
   /**
    * Returns an observable of evaluation results for a given expression.
    * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
+   *
+   * The supportRepl boolean indicates if we allow evaluation in a non-paused state.
    */
-  evaluateWatchExpression(expression: Expression): Rx.Observable<?EvaluationResult> {
+  _evaluateExpression(
+    expression: Expression,
+    supportRepl: boolean,
+  ): Rx.Observable<?EvaluationResult> {
     if (this._watchExpressions.has(expression)) {
       const cachedResult = this._watchExpressions.get(expression);
       invariant(cachedResult);
       return cachedResult;
     }
     const subject = new Rx.BehaviorSubject();
-    this._requestExpressionEvaluation(expression, subject);
+    this._requestExpressionEvaluation(expression, subject, supportRepl);
     this._watchExpressions.set(expression, subject);
     // Expose an observable rather than the raw subject.
     return subject.asObservable();
@@ -139,7 +157,7 @@ export class WatchExpressionStore {
         this._watchExpressions.delete(expression);
         continue;
       }
-      this._requestExpressionEvaluation(expression, subject);
+      this._requestExpressionEvaluation(expression, subject, false /* no REPL support */);
     }
   }
 }

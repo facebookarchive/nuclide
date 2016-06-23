@@ -157,12 +157,16 @@ class Bridge {
     return this._cachedSendCommand(this._getPropertiesRequestsInFlight, 'getProperties', objectId);
   }
 
-  evaluateOnSelectedCallFrame(expression: string): Promise<?EvaluationResult> {
-    return this._cachedSendCommand(
-      this._expressionsInFlight,
-      'evaluateOnSelectedCallFrame',
-      expression,
-    );
+  evaluateWatchExpression(expression: string): Promise<?EvaluationResult> {
+    return this._evaluateOnSelectedCallFrame(expression);
+  }
+
+  evaluateConsoleExpression(expression: string): Promise<?EvaluationResult> {
+    if (this._debuggerModel.getStore().getDebuggerMode() === 'paused') {
+      return this._evaluateOnSelectedCallFrame(expression);
+    } else {
+      return this._runtimeEvaluate(expression);
+    }
   }
 
   triggerAction(actionId: string): void {
@@ -173,6 +177,22 @@ class Bridge {
         actionId,
       );
     }
+  }
+
+  _evaluateOnSelectedCallFrame(expression: string): Promise<?EvaluationResult> {
+    return this._cachedSendCommand(
+      this._expressionsInFlight,
+      'evaluateOnSelectedCallFrame',
+      expression,
+    );
+  }
+
+  _runtimeEvaluate(expression: string): Promise<?EvaluationResult> {
+    return this._cachedSendCommand(
+      this._expressionsInFlight,
+      'runtimeEvaluate',
+      expression,
+    );
   }
 
   async _cachedSendCommand<T>(

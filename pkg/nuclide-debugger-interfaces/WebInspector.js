@@ -61,6 +61,26 @@ type ThreadData = {
   threadMap: Object; // TODO: add flow type.
 };
 
+declare class WebInspector$RuntimeModel {
+  executionContexts(): Array<WebInspector$ExecutionContext>;
+}
+
+declare class WebInspector$ExecutionContext {
+  evaluate(
+    expression: string,
+    objectGroup: string,
+    includeCommandLineAPI: boolean,
+    doNotPauseOnExceptionsAndMuteConsole: boolean,
+    returnByValue: boolean,
+    generatePreview: boolean,
+    callback: (
+      remoteObject: ?Object,
+      wasThrown: boolean,
+      resultOrError: mixed
+    ) => void,
+  ): void;
+}
+
 declare class WebInspector$DebuggerModel {
   static Events: {
     CallFrameSelected: string;
@@ -145,6 +165,7 @@ declare class WebInspector$RuntimeAgent {
 
 declare class WebInspector$Target {
   debuggerModel: WebInspector$DebuggerModel;
+  runtimeModel: WebInspector$RuntimeModel;
   runtimeAgent(): WebInspector$RuntimeAgent;
 }
 

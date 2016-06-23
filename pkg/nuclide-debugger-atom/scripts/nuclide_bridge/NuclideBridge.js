@@ -19,7 +19,8 @@ import {
 
 const WebInspector: typeof WebInspector = window.WebInspector;
 // Re-use 'watch-group' since some backends throw when they encounted an unrecognized object group.
-const NUCLIDE_DEBUGGER_OBJECT_GROUP = 'watch-group';
+const NUCLIDE_DEBUGGER_WATCH_OBJECT_GROUP = 'watch-group';
+const NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
 
 const DebuggerSettingsChangedEvent = 'debugger-settings-updated';
 
@@ -193,6 +194,9 @@ class NuclideBridge {
       case 'evaluateOnSelectedCallFrame':
         this._evaluateOnSelectedCallFrame(args[0]);
         break;
+      case 'runtimeEvaluate':
+        this._runtimeEvaluate(args[0]);
+        break;
       case 'getProperties':
         this._getProperties(args[0]);
         break;
@@ -296,7 +300,34 @@ class NuclideBridge {
     }
     mainTarget.debuggerModel.evaluateOnSelectedCallFrame(
       expression,
-      NUCLIDE_DEBUGGER_OBJECT_GROUP,
+      NUCLIDE_DEBUGGER_WATCH_OBJECT_GROUP,
+      false, /* includeCommandLineAPI */
+      true, /* doNotPauseOnExceptionsAndMuteConsole */
+      false,  /* returnByValue */
+      false, /* generatePreview */
+      (remoteObject, wasThrown, error) => {
+        ipc.sendToHost('notification', 'ExpressionEvaluationResponse', {
+          result: wasThrown ? null : remoteObject,
+          error: wasThrown ? error : null,
+          expression,
+        });
+      },
+    );
+  }
+
+  _runtimeEvaluate(expression: string): void {
+    const mainTarget = WebInspector.targetManager.mainTarget();
+    if (mainTarget == null) {
+      return;
+    }
+    const executionContexts = mainTarget.runtimeModel.executionContexts();
+    if (executionContexts.length === 0) {
+      return;
+    }
+    const firstContext = executionContexts[0];
+    firstContext.evaluate(
+      expression,
+      NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP,
       false, /* includeCommandLineAPI */
       true, /* doNotPauseOnExceptionsAndMuteConsole */
       false,  /* returnByValue */
