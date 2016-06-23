@@ -140,18 +140,8 @@ Use flexbox cross-axis stretch to fill the vertical space.
 
 /* Call stack */
 .nuclide-debugger-atom-callstack-item {
-  cursor: pointer;
   display: flex;
   justify-content: space-between;
-  padding: 3px 6px;
-
-  &:nth-child(odd) {
-    background-color: @background-color-highlight;
-  }
-  &:hover {
-    background-color: @background-color-info;
-    color: @text-color-highlight;
-  }
 }
 
 .nuclide-debugger-atom-callstack-label {

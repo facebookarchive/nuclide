@@ -15,7 +15,9 @@ import {
 import type {Callstack} from './CallstackStore';
 import type DebuggerActions from './DebuggerActions';
 
+import invariant from 'assert';
 import nuclideUri from '../../nuclide-remote-uri';
+import {Listview} from '../../nuclide-ui/lib/Listview';
 
 type DebuggerCallstackComponentProps = {
   actions: DebuggerActions;
@@ -27,16 +29,15 @@ export class DebuggerCallstackComponent extends React.Component {
 
   constructor(props: DebuggerCallstackComponentProps) {
     super(props);
+    (this: any)._handleCallframeClick = this._handleCallframeClick.bind(this);
   }
 
-  _handleCallframeClick(
-    sourceURL: string,
-    lineNumber: number,
-    event: SyntheticMouseEvent,
-  ): void {
+  _handleCallframeClick(callFrameIndex: number, event: SyntheticMouseEvent): void {
+    invariant(this.props.callstack != null);
+    const {location} = this.props.callstack[callFrameIndex];
     const options = {
-      sourceURL,
-      lineNumber,
+      sourceURL: location.path,
+      lineNumber: location.line,
     };
     this.props.actions.setSelectedCallFrameline(options);
   }
@@ -52,10 +53,7 @@ export class DebuggerCallstackComponent extends React.Component {
         } = callstackItem;
         const path = nuclideUri.basename(location.path);
         return (
-          <div
-            className="nuclide-debugger-atom-callstack-item"
-            onClick={this._handleCallframeClick.bind(this, location.path, location.line)}
-            key={i}>
+          <div className="nuclide-debugger-atom-callstack-item" key={i}>
             <div className="nuclide-debugger-atom-callstack-name">
               {name}
             </div>
@@ -66,9 +64,12 @@ export class DebuggerCallstackComponent extends React.Component {
         );
       });
     return (
-      <div>
+      <Listview
+        alternateBackground={true}
+        selectable={true}
+        onSelect={this._handleCallframeClick}>
         {renderedCallstack}
-      </div>
+      </Listview>
     );
   }
 }
