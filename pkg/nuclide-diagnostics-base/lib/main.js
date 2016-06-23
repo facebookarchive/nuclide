@@ -103,6 +103,20 @@ export type DiagnosticUpdater = {
   applyFixesForFile: (file: NuclideUri) => void;
 };
 
+export type ObservableDiagnosticUpdater = {
+  // All observables here will issue an initial value on subscribe.
+
+  // Sent only when the messages for a given file change. Consumers may use this to avoid
+  // unnecessary work if the file(s) they are interested in are not changed.
+  getFileMessageUpdates: (filePath: NuclideUri) => Observable<FileMessageUpdate>;
+  // Sent whenever any project message changes.
+  projectMessageUpdates: Observable<Array<ProjectDiagnosticMessage>>;
+  // Sent whenever any message changes, and includes all messages.
+  allMessageUpdates: Observable<Array<DiagnosticMessage>>;
+  applyFix: (message: FileDiagnosticMessage) => void;
+  applyFixesForFile: (file: NuclideUri) => void;
+};
+
 import DiagnosticStore from './DiagnosticStore';
 
 /**
