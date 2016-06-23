@@ -9,7 +9,14 @@
  * the root directory of this source tree.
  */
 
+import type {Dispatcher} from 'flux';
+
+import {
+  Disposable,
+  CompositeDisposable,
+} from 'atom';
 import {Emitter} from 'atom';
+import Constants from './Constants';
 import Multimap from './Multimap';
 
 export type SerializedBreakpoint = {
@@ -24,10 +31,20 @@ export type SerializedBreakpoint = {
  * controllers, giving them a chance to update.
  */
 class BreakpointStore {
+  _disposables: IDisposable;
   _breakpoints: Multimap<string, number>;
   _emitter: atom$Emitter;
 
-  constructor(initialBreakpoints: ?Array<SerializedBreakpoint>) {
+  constructor(
+    dispatcher: Dispatcher,
+    initialBreakpoints: ?Array<SerializedBreakpoint>,
+  ) {
+    const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
+    this._disposables = new CompositeDisposable(
+      new Disposable(() => {
+        dispatcher.unregister(dispatcherToken);
+      })
+    );
     this._breakpoints = new Multimap();
     this._emitter = new Emitter();
     if (initialBreakpoints) {
@@ -35,26 +52,39 @@ class BreakpointStore {
     }
   }
 
-  dispose() {
-    this._emitter.dispose();
+  _handlePayload(payload: Object): void {
+    const {data} = payload;
+    switch (payload.actionType) {
+      case Constants.Actions.ADD_BREAKPOINT:
+        this._addBreakpoint(data.path, data.line);
+        break;
+      case Constants.Actions.DELETE_BREAKPOINT:
+        this._deleteBreakpoint(data.path, data.line);
+        break;
+      case Constants.Actions.TOGGLE_BREAKPOINT:
+        this._toggleBreakpoint(data.path, data.line);
+        break;
+      default:
+        return;
+    }
   }
 
-  addBreakpoint(path: string, line: number) {
+  _addBreakpoint(path: string, line: number): void {
     this._breakpoints.set(path, line);
     this._emitter.emit('change', path);
   }
 
-  deleteBreakpoint(path: string, line: number) {
+  _deleteBreakpoint(path: string, line: number): void {
     if (this._breakpoints.delete(path, line)) {
       this._emitter.emit('change', path);
     }
   }
 
-  toggleBreakpoint(path: string, line: number) {
+  _toggleBreakpoint(path: string, line: number): void {
     if (this._breakpoints.hasEntry(path, line)) {
-      this.deleteBreakpoint(path, line);
+      this._deleteBreakpoint(path, line);
     } else {
-      this.addBreakpoint(path, line);
+      this._addBreakpoint(path, line);
     }
   }
 
@@ -77,7 +107,7 @@ class BreakpointStore {
   _deserializeBreakpoints(breakpoints: Array<SerializedBreakpoint>): void {
     for (const breakpoint of breakpoints) {
       const {line, sourceURL} = breakpoint;
-      this.addBreakpoint(sourceURL, line);
+      this._addBreakpoint(sourceURL, line);
     }
   }
 
@@ -86,6 +116,11 @@ class BreakpointStore {
    */
   onChange(callback: (path: string) => void): IDisposable {
     return this._emitter.on('change', callback);
+  }
+
+  dispose(): void {
+    this._emitter.dispose();
+    this._disposables.dispose();
   }
 }
 

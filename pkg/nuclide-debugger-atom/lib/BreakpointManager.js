@@ -10,17 +10,23 @@
  */
 
 import type BreakpointStore from './BreakpointStore';
+import type DebuggerActions from './DebuggerActions';
 
 import {CompositeDisposable} from 'atom';
 import BreakpointDisplayController from './BreakpointDisplayController';
 
 class BreakpointManager {
   _breakpointStore: BreakpointStore;
+  _debuggerActions: DebuggerActions;
   _displayControllers: Map<atom$TextEditor, BreakpointDisplayController>;
   _disposables: CompositeDisposable;
 
-  constructor(store: BreakpointStore) {
+  constructor(
+    store: BreakpointStore,
+    debuggerActions: DebuggerActions,
+  ) {
     this._breakpointStore = store;
+    this._debuggerActions = debuggerActions;
     this._displayControllers = new Map();
     this._disposables = new CompositeDisposable(
       atom.workspace.observeTextEditors(this._handleTextEditor.bind(this)),
@@ -50,10 +56,12 @@ class BreakpointManager {
 
   _handleTextEditor(editor: atom$TextEditor) {
     if (!this._displayControllers.has(editor)) {
-      // TODO[jeffreytan]: flow does not seem to accept delegate typing,
-      // need to ask flow team if this is a known issue.
-      // $FlowFixMe
-      const controller = new BreakpointDisplayController(this, this._breakpointStore, editor);
+      const controller = new BreakpointDisplayController(
+        this,
+        this._breakpointStore,
+        editor,
+        this._debuggerActions,
+      );
       this._displayControllers.set(editor, controller);
     }
   }

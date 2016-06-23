@@ -10,6 +10,7 @@
  */
 
 import type BreakpointStore from './BreakpointStore';
+import type DebuggerActions from './DebuggerActions';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import {
@@ -34,6 +35,7 @@ type BreakpointDisplayControllerDelegate = {
  */
 class BreakpointDisplayController {
   _breakpointStore: BreakpointStore;
+  _debuggerActions: DebuggerActions;
   _delegate: BreakpointDisplayControllerDelegate;
   _disposables: CompositeDisposable;
   _editor: atom$TextEditor;
@@ -46,10 +48,12 @@ class BreakpointDisplayController {
       delegate: BreakpointDisplayControllerDelegate,
       breakpointStore: BreakpointStore,
       editor: atom$TextEditor,
+      debuggerActions: DebuggerActions,
   ) {
     this._delegate = delegate;
     this._disposables = new CompositeDisposable();
     this._breakpointStore = breakpointStore;
+    this._debuggerActions = debuggerActions;
     this._editor = editor;
     this._markers = [];
     this._shadowMarkerRows = new Set([]);
@@ -263,10 +267,10 @@ class BreakpointDisplayController {
       return;
     }
     if (!event.isValid) {
-      this._breakpointStore.deleteBreakpoint(path, event.newHeadBufferPosition.row);
+      this._debuggerActions.deleteBreakpoint(path, event.newHeadBufferPosition.row);
     } else if (event.oldHeadBufferPosition.row !== event.newHeadBufferPosition.row) {
-      this._breakpointStore.deleteBreakpoint(path, event.oldHeadBufferPosition.row);
-      this._breakpointStore.addBreakpoint(path, event.newHeadBufferPosition.row);
+      this._debuggerActions.deleteBreakpoint(path, event.oldHeadBufferPosition.row);
+      this._debuggerActions.addBreakpoint(path, event.newHeadBufferPosition.row);
     }
   }
 
@@ -285,7 +289,7 @@ class BreakpointDisplayController {
     // $FlowIssue
     const screenPos = atom.views.getView(this._editor).component.screenPositionForMouseEvent(event);
     const bufferPos = this._editor.bufferPositionForScreenPosition(screenPos);
-    this._breakpointStore.toggleBreakpoint(path, bufferPos.row);
+    this._debuggerActions.toggleBreakpoint(path, bufferPos.row);
   }
 
   _handleLineNumberGutterMouseOverOrOut(event: Event): void {

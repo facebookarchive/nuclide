@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import {Dispatcher} from 'flux';
+import {DebuggerStore} from '../lib/DebuggerStore';
+import DebuggerActions from '../lib/DebuggerActions';
 import BreakpointManager from '../lib/BreakpointManager';
 import BreakpointStore from '../lib/BreakpointStore';
 import {hasBreakpointDecorationInRow} from './utils';
@@ -18,16 +21,22 @@ import invariant from 'assert';
 describe('BreakpointManager', () => {
   let breakpointManager;
   let breakpointStore;
+  let dispatcher;
+  let actions;
+  let store;
 
   beforeEach(() => {
-    breakpointStore = new BreakpointStore();
-    breakpointManager = new BreakpointManager(breakpointStore);
+    dispatcher = new Dispatcher();
+    breakpointStore = new BreakpointStore(dispatcher);
+    store = new DebuggerStore(dispatcher);
+    actions = new DebuggerActions(dispatcher, store);
+    breakpointManager = new BreakpointManager(breakpointStore, actions);
   });
 
   it('should display existing breakpoints in editor when it is opened', () => {
     waitsForPromise(async () => {
       const path = utils.getUniquePath();
-      breakpointStore.addBreakpoint(path, 0);
+      breakpointStore._addBreakpoint(path, 0);
       const editor = await atom.workspace.open(path);
       expect(hasBreakpointDecorationInRow(editor, 0)).toBe(true);
     });
@@ -38,7 +47,7 @@ describe('BreakpointManager', () => {
       const uniqueEditor = await utils.createEditorWithUniquePath();
       const path = uniqueEditor.getPath();
       invariant(path);
-      breakpointStore.addBreakpoint(path, 1);
+      breakpointStore._addBreakpoint(path, 1);
       const editor = await atom.workspace.open(path);
       expect(hasBreakpointDecorationInRow(editor, 0)).toBe(true);
       expect(breakpointManager.getDisplayControllers().size).toBe(1);

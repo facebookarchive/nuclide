@@ -363,7 +363,7 @@ class Bridge {
     if (path) {
       try {
         this._suppressBreakpointSync = true;
-        this._debuggerModel.getBreakpointStore().addBreakpoint(path, location.lineNumber);
+        this._debuggerModel.getActions().addBreakpoint(path, location.lineNumber);
       } finally {
         this._suppressBreakpointSync = false;
       }
@@ -376,7 +376,7 @@ class Bridge {
     if (path) {
       try {
         this._suppressBreakpointSync = true;
-        this._debuggerModel.getBreakpointStore().deleteBreakpoint(path, location.lineNumber);
+        this._debuggerModel.getActions().deleteBreakpoint(path, location.lineNumber);
       } finally {
         this._suppressBreakpointSync = false;
       }

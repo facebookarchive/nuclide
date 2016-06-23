@@ -247,7 +247,7 @@ class Activation {
       const filePath = editor.getPath();
       if (filePath) {
         const line = editor.getLastCursor().getBufferRow();
-        this.getModel().getBreakpointStore().toggleBreakpoint(filePath, line);
+        this._model.getActions().toggleBreakpoint(filePath, line);
       }
     }
   }

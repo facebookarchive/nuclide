@@ -349,6 +349,36 @@ class DebuggerActions {
     });
   }
 
+  addBreakpoint(path: string, line: number): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.ADD_BREAKPOINT,
+      data: {
+        path,
+        line,
+      },
+    });
+  }
+
+  deleteBreakpoint(path: string, line: number): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.DELETE_BREAKPOINT,
+      data: {
+        path,
+        line,
+      },
+    });
+  }
+
+  toggleBreakpoint(path: string, line: number): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.TOGGLE_BREAKPOINT,
+      data: {
+        path,
+        line,
+      },
+    });
+  }
+
   dispose() {
     endTimerTracking();
     this._disposables.dispose();

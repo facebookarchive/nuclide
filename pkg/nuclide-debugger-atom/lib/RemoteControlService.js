@@ -77,7 +77,7 @@ class RemoteControlService {
     if (model == null) {
       throw new Error('Package is not activated.');
     }
-    model.getBreakpointStore().toggleBreakpoint(filePath, line);
+    model.getActions().toggleBreakpoint(filePath, line);
   }
 
   isInDebuggingMode(providerName: string): boolean {

@@ -9,10 +9,13 @@
  * the root directory of this source tree.
  */
 
+import {Dispatcher} from 'flux';
+import invariant from 'assert';
 import BreakpointDisplayController from '../lib/BreakpointDisplayController';
 import BreakpointStore from '../lib/BreakpointStore';
+import {DebuggerStore} from '../lib/DebuggerStore';
+import DebuggerActions from '../lib/DebuggerActions';
 import utils from './utils';
-import invariant from 'assert';
 
 const controllerDelegate = {
   handleTextEditorDestroyed(controller: BreakpointDisplayController) {
@@ -24,6 +27,9 @@ describe('BreakpointDisplayController', () => {
   let editor;
   let store;
   let testFilePath;
+  let dispatcher;
+  let actions;
+  let debuggerStore;
 
   function simulateClickAtBufferPosition(target: EventTarget, row: number) {
     const editorView = atom.views.getView(editor);
@@ -42,18 +48,26 @@ describe('BreakpointDisplayController', () => {
       const editorPath = editor.getPath();
       invariant(editorPath);
       testFilePath = editorPath;
-      store = new BreakpointStore();
       document.querySelector('#jasmine-content').appendChild(atom.views.getView(editor));
 
+      dispatcher = new Dispatcher();
+      store = new BreakpointStore(dispatcher);
+      debuggerStore = new DebuggerStore(dispatcher);
+      actions = new DebuggerActions(dispatcher, debuggerStore);
       // BreakpointDisplayController is created for side-effects /:
-      const controller = new BreakpointDisplayController(controllerDelegate, store, editor);
+      const controller = new BreakpointDisplayController(
+        controllerDelegate,
+        store,
+        editor,
+        actions,
+      );
       invariant(controller);
     });
   });
 
   it('should remove breakpoint when marker decoration is clicked', () => {
     editor.setText('foo\nbar\nbaz');
-    store.addBreakpoint(testFilePath, 1);
+    store._addBreakpoint(testFilePath, 1);
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(true);
 
     const decoration = utils.getBreakpointDecorationInRow(editor, 1);
@@ -95,8 +109,8 @@ describe('BreakpointDisplayController', () => {
 
   it('should only set markers for breakpoints in current file', () => {
     editor.setText('foo\nbar\nbaz');
-    store.addBreakpoint(testFilePath, 1);
-    store.addBreakpoint('/tmp/bar.m', 2);
+    store._addBreakpoint(testFilePath, 1);
+    store._addBreakpoint('/tmp/bar.m', 2);
 
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(true);
     expect(utils.hasBreakpointDecorationInRow(editor, 2)).toBe(false);
@@ -104,7 +118,7 @@ describe('BreakpointDisplayController', () => {
 
   it('should update breakpoint when marker moves', () => {
     editor.setText('foo\nbar\nbaz');
-    store.addBreakpoint(testFilePath, 1);
+    store._addBreakpoint(testFilePath, 1);
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(true);
     expect(utils.hasBreakpointDecorationInRow(editor, 2)).toBe(false);
 
@@ -117,11 +131,11 @@ describe('BreakpointDisplayController', () => {
 
   it('should remove markers for removed breakpoints', () => {
     editor.setText('foo\nbar\nbaz');
-    store.addBreakpoint(testFilePath, 1);
-    store.addBreakpoint(testFilePath, 2);
+    store._addBreakpoint(testFilePath, 1);
+    store._addBreakpoint(testFilePath, 2);
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(true);
     expect(utils.hasBreakpointDecorationInRow(editor, 2)).toBe(true);
-    store.deleteBreakpoint(testFilePath, 1);
+    store._deleteBreakpoint(testFilePath, 1);
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(false);
     expect(utils.hasBreakpointDecorationInRow(editor, 2)).toBe(true);
   });
@@ -134,7 +148,7 @@ describe('BreakpointDisplayController', () => {
 
   it('should create shadow markers on each row', () => {
     editor.setText(mockText(3));
-    store.addBreakpoint(testFilePath, 1);
+    store._addBreakpoint(testFilePath, 1);
 
     const gutter: ?atom$Gutter = editor.gutterWithName('nuclide-breakpoint');
     invariant(gutter);
@@ -149,9 +163,9 @@ describe('BreakpointDisplayController', () => {
   it('should maintain the minimal set of markers', () => {
     editor.setText(mockText(20));
 
-    store.addBreakpoint(testFilePath, 1);
-    store.addBreakpoint(testFilePath, 4);
-    store.addBreakpoint(testFilePath, 10);
+    store._addBreakpoint(testFilePath, 1);
+    store._addBreakpoint(testFilePath, 4);
+    store._addBreakpoint(testFilePath, 10);
 
     const gutter: ?atom$Gutter = editor.gutterWithName('nuclide-breakpoint');
 
@@ -166,10 +180,10 @@ describe('BreakpointDisplayController', () => {
     expect(shadowBreakpointElems).toBeDefined();
     expect(shadowBreakpointElems.length).toEqual(editor.rowsPerPage - numBreakpoints);
 
-    store.addBreakpoint(testFilePath, 5);
-    store.addBreakpoint(testFilePath, 8);
-    store.addBreakpoint(testFilePath, 11);
-    store.deleteBreakpoint(testFilePath, 4);
+    store._addBreakpoint(testFilePath, 5);
+    store._addBreakpoint(testFilePath, 8);
+    store._addBreakpoint(testFilePath, 11);
+    store._deleteBreakpoint(testFilePath, 4);
     numBreakpoints += 2;
     shadowBreakpointElems =
       atom.views.getView(gutter).querySelectorAll('.nuclide-debugger-atom-shadow-breakpoint');
