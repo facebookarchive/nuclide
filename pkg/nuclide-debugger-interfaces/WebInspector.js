@@ -34,12 +34,14 @@ declare class WebInspector$Script {
 }
 
 declare class WebInspector$DebuggerModel$Location {
-  lineNumber: string;
+  lineNumber: number;
+  columnNumber?: number;
   uiSourceCode: WebInspector$UISourceCode;
 }
 
 declare class WebInspector$CallFrame {
   script: WebInspector$Script;
+  functionName: string;
   location(): WebInspector$DebuggerModel$Location;
 }
 
@@ -285,4 +287,6 @@ declare var WebInspector: {
   settings: WebInspector$Settings;
   targetManager: WebInspector$TargetManager;
   workspace: WebInspector$Workspace;
+
+  beautifyFunctionName: (name: string) => string;
 }
