@@ -210,14 +210,12 @@ def run_test(
     else:
         logging.info('TEST PASSED: %s (%s seconds)', name, (end - start).seconds)
 
+
 def is_retryable_error(output):
     errors = [
-        # Atom 1.5.3 for sure, maybe later ones too:
-        r'Atom\.app/atom:\s+line 117:\s+\d+\s+Segmentation fault: 11',
-        r'Atom\.app/atom:\s+line 117:\s+\d+\s+Abort trap: 6',
-        # Atom 1.6.1 for sure:
-        r'Atom\.app/atom:\s+line 117:\s+\d+\s+Illegal instruction: 4',
-        # Atom 1.6.2 for sure:
-        r'Atom\.app/atom:\s+line 117:\s+\d+\s+Bus error: 10',
+        r'Atom\.app/atom:\s+line\s+\d+:\s+\d+\s+Segmentation fault: 11',
+        r'Atom\.app/atom:\s+line\s+\d+:\s+\d+\s+Abort trap: 6',
+        r'Atom\.app/atom:\s+line\s+\d+:\s+\d+\s+Illegal instruction: 4',
+        r'Atom\.app/atom:\s+line\s+\d+:\s+\d+\s+Bus error: 10',
     ]
     return any(re.search(error, output) for error in errors)
