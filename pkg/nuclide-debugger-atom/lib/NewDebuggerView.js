@@ -118,24 +118,24 @@ export class NewDebuggerView extends React.Component {
     const WatchExpressionComponentWrapped = this._wrappedComponent;
     return (
       <div className="nuclide-debugger-container-new">
-        <Section headline="Debugger Controls">
+        <Section collapsable={true} headline="Debugger Controls">
           <DebuggerSteppingComponent
             actions={actions}
             debuggerMode={this.state.debuggerMode}
           />
         </Section>
-        <Section headline="Call Stack">
+        <Section collapsable={true} headline="Call Stack">
           <DebuggerCallstackComponent
             actions={actions}
             callstack={this.state.callstack}
           />
         </Section>
-        <Section headline="Breakpoints">
+        <Section collapsable={true} headline="Breakpoints">
           <BreakpointListComponent
             breakpoints={this.state.breakpoints}
           />
         </Section>
-        <Section headline="Watch Expressions">
+        <Section collapsable={true} headline="Watch Expressions">
           <WatchExpressionComponentWrapped
           onAddWatchExpression={actions.addWatchExpression.bind(model)}
           onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
