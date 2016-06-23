@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Task, TaskInfo} from '../../nuclide-build/lib/types';
+import type {BuildEvent, Task, TaskInfo} from '../../nuclide-build/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base';
 import type {SerializedState} from './types';
@@ -23,6 +23,7 @@ import nuclideUri from '../../nuclide-remote-uri';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {observableToBuildTaskInfo} from '../../commons-node/observableToBuildTaskInfo';
 import {getLogger} from '../../nuclide-logging';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {BuckIcon} from './ui/BuckIcon';
@@ -146,26 +147,16 @@ export class BuckBuildSystem {
     );
 
     const resultStream = this._runTaskType(taskType);
+    const taskInfo = observableToBuildTaskInfo(resultStream);
+    invariant(taskInfo.observeProgress != null);
     return {
-      cancel() {
-        // FIXME: How can we cancel Buck tasks?
-      },
-      observeProgress(cb) {
-        return new DisposableSubscription(
-          resultStream.subscribe({next: cb, error: () => {}})
-        );
-      },
-      onDidError(cb) {
-        return new DisposableSubscription(
-          resultStream.subscribe({error: cb})
-        );
-      },
-      onDidComplete(cb) {
-        return new DisposableSubscription(
-          // Add an empty error handler to avoid the "Unhandled Error" message. (We're handling it
-          // above via the onDidError interface.)
-          resultStream.subscribe({complete: cb, error: () => {}})
-        );
+      // Flow can't check ...taskInfo due to the optional args.
+      observeProgress: taskInfo.observeProgress,
+      onDidComplete: taskInfo.onDidComplete,
+      onDidError: taskInfo.onDidError,
+      cancel: () => {
+        this._logOutput('Build cancelled.', 'warning');
+        taskInfo.cancel();
       },
     };
   }
@@ -186,7 +177,7 @@ export class BuckBuildSystem {
     };
   }
 
-  _runTaskType(taskType: TaskType): Observable<?number> {
+  _runTaskType(taskType: TaskType): Observable<BuildEvent> {
     const {store} = this._getFlux();
     const buckProject = store.getMostRecentBuckProject();
     const buildTarget = store.getBuildTarget();
@@ -260,7 +251,10 @@ export class BuckBuildSystem {
         return eventStream
           .switchMap(event => {
             if (event.type === 'progress') {
-              return Observable.of(event.progress);
+              return Observable.of({
+                kind: 'progress',
+                progress: event.progress,
+              });
             } else if (event.type === 'log') {
               this._logOutput(event.message, event.level);
             }
@@ -382,7 +376,6 @@ const TASKS = [
     label: 'Build',
     description: 'Build the specified Buck target',
     enabled: true,
-    cancelable: false,
     icon: 'tools',
   },
   {
@@ -390,7 +383,6 @@ const TASKS = [
     label: 'Run',
     description: 'Run the specfied Buck target',
     enabled: true,
-    cancelable: false,
     icon: 'triangle-right',
   },
   {
@@ -398,7 +390,6 @@ const TASKS = [
     label: 'Test',
     description: 'Test the specfied Buck target',
     enabled: true,
-    cancelable: false,
     icon: 'checklist',
   },
   {
@@ -406,7 +397,6 @@ const TASKS = [
     label: 'Debug',
     description: 'Debug the specfied Buck target',
     enabled: true,
-    cancelable: false,
     icon: 'plug',
   },
 ];
