@@ -9,13 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
 import typeof * as JediService from './JediService';
 
 import LRUCache from 'lru-cache';
 import JediServer from './JediServer';
 import LinkTreeManager from './LinkTreeManager';
-
 
 async function getServerArgs(src: string) {
   let overrides = {};
@@ -38,19 +36,19 @@ async function getServerArgs(src: string) {
 export default class JediServerManager {
 
   _linkTreeManager: LinkTreeManager;
-  _servers: LRUCache<NuclideUri, JediServer>;
+  _servers: LRUCache<string, JediServer>;
 
   constructor() {
     this._linkTreeManager = new LinkTreeManager();
     this._servers = new LRUCache({
       max: 20,
-      dispose(key: NuclideUri, val: JediServer) {
+      dispose(key: string, val: JediServer) {
         val.dispose();
       },
     });
   }
 
-  async getJediService(src: NuclideUri): Promise<JediService> {
+  async getJediService(src: string): Promise<JediService> {
     let server = this._servers.get(src);
     if (server == null) {
       const {pythonPath, paths} = await getServerArgs(src);
@@ -66,7 +64,7 @@ export default class JediServerManager {
     return await server.getService();
   }
 
-  async _addLinkTreePaths(src: NuclideUri, server: JediServer): Promise<void> {
+  async _addLinkTreePaths(src: string, server: JediServer): Promise<void> {
     const linkTreePaths = await this._linkTreeManager.getLinkTreePaths(src);
     if (server.isDisposed() || linkTreePaths.length === 0) {
       return;

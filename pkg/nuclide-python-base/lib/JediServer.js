@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
 import typeof * as JediService from './JediService';
 import type {ProcessMaker} from '../../commons-node/RpcProcess';
 
@@ -44,7 +43,7 @@ export default class JediServer {
   _process: RpcProcess;
   _isDisposed: boolean;
 
-  constructor(src: NuclideUri, pythonPath: string = PYTHON_EXECUTABLE, paths?: Array<string> = []) {
+  constructor(src: string, pythonPath: string = PYTHON_EXECUTABLE, paths?: Array<string> = []) {
     // Generate a name for this server using the src file name, used to namespace logs
     const name = `JediServer-${nuclideUri.basename(src)}`;
     let args = [PROCESS_PATH, '-s', src];
