@@ -11,10 +11,14 @@
 
 import type Bridge from './Bridge';
 import type {ExpansionResult, EvaluationResult} from './Bridge';
+import type Dispatcher from 'flux';
 
 import {
+  Disposable,
   CompositeDisposable,
 } from 'atom';
+import {DebuggerMode} from './DebuggerStore';
+import {Actions} from './Constants';
 import Rx from 'rxjs';
 import invariant from 'assert';
 import {DisposableSubscription} from '../../commons-node/stream';
@@ -36,7 +40,7 @@ export class WatchExpressionStore {
   _watchExpressions: Map<Expression, Rx.BehaviorSubject<?EvaluationResult>>;
   _previousEvaluationSubscriptions: CompositeDisposable;
 
-  constructor(bridge: Bridge) {
+  constructor(dispatcher: Dispatcher, bridge: Bridge) {
     this._bridge = bridge;
     this._disposables = new CompositeDisposable();
     this._watchExpressions = new Map();
@@ -44,6 +48,21 @@ export class WatchExpressionStore {
     // `this._disposables`.
     this._previousEvaluationSubscriptions = new CompositeDisposable();
     this._disposables.add(this._previousEvaluationSubscriptions);
+    const _dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
+    this._disposables.add(
+      new Disposable(() => {
+        dispatcher.unregister(_dispatcherToken);
+      })
+    );
+  }
+
+  _handlePayload(payload: Object) {
+    if (
+      payload.actionType === Actions.DEBUGGER_MODE_CHANGE &&
+      payload.data === DebuggerMode.PAUSED
+    ) {
+      this.triggerReevaluation();
+    }
   }
 
   dispose(): void {

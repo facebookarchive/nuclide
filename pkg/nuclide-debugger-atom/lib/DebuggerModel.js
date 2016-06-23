@@ -47,7 +47,7 @@ class DebuggerModel {
     this._breakpointManager = new BreakpointManager(this._breakpointStore);
     this._bridge = new Bridge(this);
     this._debuggerProviderStore = new DebuggerProviderStore(this._dispatcher, this._actions);
-    this._watchExpressionStore = new WatchExpressionStore(this._bridge);
+    this._watchExpressionStore = new WatchExpressionStore(this._dispatcher, this._bridge);
     this._watchExpressionListStore = new WatchExpressionListStore(
       this._watchExpressionStore,
       this._dispatcher
