@@ -93,7 +93,7 @@ describe('FlowProcess', () => {
 
     describe('execFlow', () => {
       it('should spawn a new Flow server', () => {
-        const expectedWorkers = os.cpus().length - 1;
+        const expectedWorkers = os.cpus().length - 2;
         // $FlowIgnore it's a spy.
         const args = require('../../commons-node/process').safeSpawn.mostRecentCall.args;
         expect(args[0]).toEqual('flow');
