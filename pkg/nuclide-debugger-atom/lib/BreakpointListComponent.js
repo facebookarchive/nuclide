@@ -25,10 +25,10 @@ type FileLineBreakpoint = {
   enabled: boolean;
   resolved: boolean;
 };
-type Breakpoints = Array<FileLineBreakpoint>;
+export type FileLineBreakpoints = Array<FileLineBreakpoint>;
 
 type BreakpointListComponentProps = {
-  breakpoints: Breakpoints;
+  breakpoints: ?FileLineBreakpoints;
 };
 
 export class BreakpointListComponent extends React.Component {
@@ -52,6 +52,9 @@ export class BreakpointListComponent extends React.Component {
 
   render(): ?React.Element<any> {
     const {breakpoints} = this.props;
+    if (breakpoints == null || breakpoints.length === 0) {
+      return <span>(no breakpoints)</span>;
+    }
     const renderedBreakpoints = breakpoints.map((breakpoint, i) => {
       const {
         path,
