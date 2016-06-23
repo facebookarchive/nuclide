@@ -302,6 +302,16 @@ class DebuggerActions {
     });
   }
 
+  openSourceLocation(sourceURL: string, lineNumber: number): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.OPEN_SOURCE_LOCATION,
+      data: {
+        sourceURL,
+        lineNumber,
+      },
+    });
+  }
+
   /**
    * `actionId` is a debugger action understood by Chrome's `WebInspector.ActionRegistry`.
    */

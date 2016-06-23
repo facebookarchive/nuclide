@@ -16,6 +16,7 @@ import {
   CompositeDisposable,
 } from 'atom';
 import {EventEmitter} from 'events';
+import remoteUri from '../../nuclide-remote-uri';
 import Constants from './Constants';
 
 type CallstackItem = {
@@ -46,6 +47,9 @@ export default class CallstackStore {
 
   _handlePayload(payload: Object) {
     switch (payload.actionType) {
+      case Constants.Actions.OPEN_SOURCE_LOCATION:
+        this._openSourceLocation(payload.data.sourceURL, payload.data.lineNumber);
+        break;
       case Constants.Actions.UPDATE_CALLSTACK:
         this._updateCallstack(payload.data.callstack);
         break;
@@ -57,6 +61,16 @@ export default class CallstackStore {
   _updateCallstack(callstack: Callstack): void {
     this._callstack = callstack;
     this._eventEmitter.emit('change');
+  }
+
+  _openSourceLocation(sourceURL: string, lineNumber: number): void {
+    const path = remoteUri.uriToNuclideUri(sourceURL);
+    if (path != null && atom.workspace != null) { // only handle real files for now.
+      atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
+        editor.scrollToBufferPosition([lineNumber, 0]);
+        editor.setCursorBufferPosition([lineNumber, 0]);
+      });
+    }
   }
 
   onChange(callback: () => void): Disposable {

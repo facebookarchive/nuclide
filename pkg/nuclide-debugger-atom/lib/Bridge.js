@@ -355,17 +355,14 @@ class Bridge {
     }
   }
 
-  _openSourceLocation(nullableOptions: ?{sourceURL: string; lineNumber: number}) {
-    if (nullableOptions) {
-      const options = nullableOptions; // For use in capture without re-checking null
-      const path = nuclideUri.uriToNuclideUri(options.sourceURL);
-      if (path != null && atom.workspace != null) { // only handle real files for now.
-        atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
-          editor.scrollToBufferPosition([options.lineNumber, 0]);
-          editor.setCursorBufferPosition([options.lineNumber, 0]);
-        });
-      }
+  _openSourceLocation(options: ?{sourceURL: string; lineNumber: number}): void {
+    if (options == null) {
+      return;
     }
+    this._debuggerModel.getActions().openSourceLocation(
+      options.sourceURL,
+      options.lineNumber,
+    );
   }
 
   _highlightCallFrameLine(editor: atom$TextEditor, line: number) {
