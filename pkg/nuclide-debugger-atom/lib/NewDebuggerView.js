@@ -94,6 +94,7 @@ export class NewDebuggerView extends React.Component {
         </Section>
         <Section headline="Call Stack">
           <DebuggerCallstackComponent
+            actions={actions}
             callstack={this.state.callstack}
           />
         </Section>

@@ -257,9 +257,8 @@ class NuclideBridge {
         name: functionName,
         location: {
           path: callFrame.script.sourceURL,
-          // line & column numbers are zero-based in Chrome.
-          column: location.columnNumber + 1,
-          line: location.lineNumber + 1,
+          column: location.columnNumber,
+          line: location.lineNumber,
         },
       };
     });
