@@ -13,6 +13,7 @@ import {
   React,
 } from 'react-for-atom';
 
+import invariant from 'assert';
 import nuclideUri from '../../nuclide-remote-uri';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {Listview} from '../../nuclide-ui/lib/Listview';
@@ -36,10 +37,17 @@ export class BreakpointListComponent extends React.Component {
   constructor(props: BreakpointListComponentProps) {
     super(props);
     (this: any)._handleBreakpointEnabledChange = this._handleBreakpointEnabledChange.bind(this);
+    (this: any)._handleBreakpointClick = this._handleBreakpointClick.bind(this);
   }
 
   _handleBreakpointEnabledChange(path: string, line: number, enabled: boolean): void {
     // TODO jxg toggle breakpoint enabled/disabled on store
+  }
+
+  _handleBreakpointClick(breakpointIndex: number, event: SyntheticMouseEvent): void {
+    const {breakpoints} = this.props;
+    invariant(breakpoints != null);
+    // TODO jxg get breakpoint and go to selected path/line.
   }
 
   render(): ?React.Element<any> {
@@ -68,7 +76,9 @@ export class BreakpointListComponent extends React.Component {
     });
     return (
       <Listview
-        alternateBackground={true}>
+        alternateBackground={true}
+        onSelect={this._handleBreakpointClick}
+        selectable={true}>
         {renderedBreakpoints}
       </Listview>
     );
