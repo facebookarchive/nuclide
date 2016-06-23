@@ -195,7 +195,7 @@ class JediServer:
         return {
             'text': definition.name,
             'type': definition.type,
-            'file': definition.module_path,
+            'file': os.path.realpath(definition.module_path),
             'line': definition.line - 1,
             'column': definition.column
         }
