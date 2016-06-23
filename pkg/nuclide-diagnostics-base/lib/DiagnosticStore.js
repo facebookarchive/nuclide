@@ -219,6 +219,24 @@ class DiagnosticStore {
    * Section: Methods to read from the store.
    */
 
+  getFileMessageUpdates(filePath: NuclideUri): Observable<FileMessageUpdate> {
+    const fileMessages = this._getFileMessages(filePath);
+    const initialObservable = Observable.of({filePath, messages: fileMessages});
+    return Observable.concat(
+      initialObservable,
+      this._fileChanges
+        .filter(change => change.filePath === filePath),
+    );
+  }
+
+  getProjectMessageUpdates(): Observable<Array<ProjectDiagnosticMessage>> {
+    return this._projectChanges.asObservable();
+  }
+
+  getAllMessageUpdates(): Observable<Array<DiagnosticMessage>> {
+    return this._allChanges.asObservable();
+  }
+
   /**
    * Call the callback when the filePath's messages have changed.
    * In addition, the Store will immediately invoke the callback with the data
@@ -231,15 +249,7 @@ class DiagnosticStore {
     callback: (update: FileMessageUpdate) => mixed,
     filePath: NuclideUri,
   ): IDisposable {
-    const fileMessages = this._getFileMessages(filePath);
-    const initialObservable = Observable.of({filePath, messages: fileMessages});
-    const observable = Observable.concat(
-      initialObservable,
-      this._fileChanges
-        .filter(change => change.filePath === filePath),
-    );
-
-    return new DisposableSubscription(observable.subscribe(callback));
+    return new DisposableSubscription(this.getFileMessageUpdates(filePath).subscribe(callback));
   }
 
   /**
@@ -253,7 +263,7 @@ class DiagnosticStore {
   onProjectMessagesDidUpdate(
     callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
   ): IDisposable {
-    return new DisposableSubscription(this._projectChanges.subscribe(callback));
+    return new DisposableSubscription(this.getProjectMessageUpdates().subscribe(callback));
   }
 
   /**
@@ -266,7 +276,7 @@ class DiagnosticStore {
   onAllMessagesDidUpdate(
     callback: (messages: Array<DiagnosticMessage>) => mixed,
   ): IDisposable {
-    return new DisposableSubscription(this._allChanges.subscribe(callback));
+    return new DisposableSubscription(this.getAllMessageUpdates().subscribe(callback));
   }
 
   /**
