@@ -51,10 +51,10 @@ export class ContextViewManager {
   _atomPanel: atom$Panel;
   _contextProviders: Array<ContextProvider>;
   currentDefinition: ?Definition;
-  _definitionService: DefinitionService;
+  _definitionService: ?DefinitionService;
   _disposables: CompositeDisposable;
   _panelDOMElement: ?HTMLElement;
-  _defServiceSubscription: rx$ISubscription;
+  _defServiceSubscription: ?rx$ISubscription;
   _width: number;
 
   constructor(width: number, isVisible: boolean) {
@@ -62,6 +62,8 @@ export class ContextViewManager {
     this._disposables = new CompositeDisposable();
     this._contextProviders = [];
     this.currentDefinition = null;
+    this._definitionService = null;
+    this._defServiceSubscription = null;
 
     this._panelDOMElement = document.createElement('div');
 
@@ -96,6 +98,7 @@ export class ContextViewManager {
     if (this._atomPanel.isVisible()) {
       this._atomPanel.hide();
     }
+    this.updateSubscription();
   }
 
   isVisible(): boolean {
@@ -133,32 +136,44 @@ export class ContextViewManager {
    */
   consumeDefinitionService(service: ?DefinitionService): void {
     // TODO (reesjones) handle case when definition service is deactivated
-    if (service != null) {
-      this._definitionService = service;
-    }
-
-    this._defServiceSubscription = observeTextEditorsPositions()
-      .filter((pos: ?EditorPosition) => pos != null)
-      .map((editorPos: ?EditorPosition) => {
-        invariant(editorPos != null);
-        return this._definitionService.getDefinition(
-          editorPos.editor,
-          editorPos.position
-        );
-      }).flatMap((queryResult: ?Promise<?DefinitionQueryResult>) => {
-        return (queryResult != null)
-          ? Observable.fromPromise(queryResult)
-          : Observable.empty();
-      })
-      .map((queryResult: ?DefinitionQueryResult) => {
-        return (queryResult != null)
-          ? queryResult.definitions[0]
-          : null; // We do want to return null sometimes so providers can show "No definition selected"
-      })
-      .subscribe((def: ?Definition) => this.updateCurrentDefinition(def));
+    this._definitionService = service;
+    this.updateSubscription();
 
     if (this.isVisible()) {
       this.render();
+    }
+  }
+
+  updateSubscription(): void {
+    // Only subscribe if panel showing and there's something to subscribe to
+    if (this.isVisible() && this._definitionService !== null) {
+      this._defServiceSubscription = observeTextEditorsPositions()
+        .filter((pos: ?EditorPosition) => pos != null)
+        .map((editorPos: ?EditorPosition) => {
+          invariant(editorPos != null);
+          invariant(this._definitionService != null);
+          return this._definitionService.getDefinition(
+            editorPos.editor,
+            editorPos.position
+          );
+        }).flatMap((queryResult: ?Promise<?DefinitionQueryResult>) => {
+          return (queryResult != null)
+            ? Observable.fromPromise(queryResult)
+            : Observable.empty();
+        })
+        .map((queryResult: ?DefinitionQueryResult) => {
+          return (queryResult != null)
+            ? queryResult.definitions[0]
+            : null; // We do want to return null sometimes so providers can show "No definition selected"
+        })
+        .subscribe((def: ?Definition) => this.updateCurrentDefinition(def));
+      return;
+    }
+    // Otherwise, unsubscribe if there is a subscription
+    if (this._defServiceSubscription !== null) {
+      invariant(this._defServiceSubscription != null);
+      this._defServiceSubscription.unsubscribe();
+      this._defServiceSubscription = null;
     }
   }
 
@@ -167,6 +182,7 @@ export class ContextViewManager {
       this.render();
       this._atomPanel.show();
     }
+    this.updateSubscription();
   }
 
   toggle(): void {
