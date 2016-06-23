@@ -14,6 +14,7 @@ import type {DebuggerModeType} from './DebuggerStore';
 import type {
   WatchExpressionListStore,
 } from './WatchExpressionListStore';
+import type {Callstack} from './DebuggerCallstackComponent';
 
 import {CompositeDisposable} from 'atom';
 import {
@@ -23,6 +24,7 @@ import {Section} from '../../nuclide-ui/lib/Section';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import {WatchExpressionComponent} from './WatchExpressionComponent';
 import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
+import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
 
 type Props = {
   model: DebuggerModel;
@@ -33,6 +35,7 @@ export class NewDebuggerView extends React.Component {
   props: Props;
   state: {
     debuggerMode: DebuggerModeType;
+    callstack: Callstack;
   };
   _wrappedComponent: ReactClass<any>;
   _disposables: CompositeDisposable;
@@ -48,6 +51,7 @@ export class NewDebuggerView extends React.Component {
     this._disposables = new CompositeDisposable();
     this.state = {
       debuggerMode: props.model.getStore().getDebuggerMode(),
+      callstack: [], // TODO get actual stack from Chrome dev tools
     };
   }
 
@@ -78,6 +82,11 @@ export class NewDebuggerView extends React.Component {
           <DebuggerSteppingComponent
             actions={actions}
             debuggerMode={this.state.debuggerMode}
+          />
+        </Section>
+        <Section headline="Call Stack">
+          <DebuggerCallstackComponent
+            callstack={this.state.callstack}
           />
         </Section>
         <Section headline="Watch Expressions">
