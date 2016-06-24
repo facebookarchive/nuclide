@@ -26,7 +26,9 @@ describeRemote('Remote Connection', (context: TestContext) => {
         context.getProjectRelativePath(NEW_FILE_NAME)
       );
       expect(editor).not.toBeNull();
-      editor.saveAs(context.getProjectRelativePath(NEW_FILE_NAME));
+      expect(editor.isModified()).toBe(true);
+      await editor.saveAs(context.getProjectRelativePath(NEW_FILE_NAME));
+      expect(editor.isModified()).toBe(false);
     });
   });
 });

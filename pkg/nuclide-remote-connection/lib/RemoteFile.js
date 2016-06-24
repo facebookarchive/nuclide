@@ -170,11 +170,13 @@ export class RemoteFile {
   }
 
   getDigestSync(): string {
-    if (this._digest) {
-      return this._digest;
-    } else {
-      throw new Error('getDigestSync is not supported in RemoteFile');
+    if (!this._digest) {
+      // File's `getDigestSync()` calls `readSync()`, which we don't implement.
+      // However, we mimic it's behavior for when a file does not exist.
+      this._setDigest('');
     }
+    invariant(this._digest);
+    return this._digest;
   }
 
   async getDigest(): Promise<string> {

@@ -392,14 +392,9 @@ describe('RemoteFile', () => {
       });
     });
 
-    it('getDigestSync throws if no digest is cached!', () => {
-      let digestError;
-      try {
-        file.getDigestSync();
-      } catch (error) {
-        digestError = error;
-      }
-      expect(digestError).toBeDefined();
+    it('getDigestSync sets the digest for an empty string if no digest is cached', () => {
+      const digest = file.getDigestSync();
+      expect(digest).toBe(computeDigest(''));
     });
 
     it('_setDigest sets the digest', () => {

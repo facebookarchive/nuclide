@@ -19,7 +19,7 @@ import type RemoteDirectorySearcherT from './RemoteDirectorySearcher';
 import type RemoteProjectsControllerT from './RemoteProjectsController';
 import typeof * as FindInProjectService from '../../nuclide-remote-search';
 
-import {loadBufferForUri} from '../../commons-atom/text-editor';
+import {loadBufferForUri, bufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
 import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from '../../nuclide-feature-config';
@@ -186,15 +186,17 @@ async function createEditorForNuclide(
     } catch (err) {
       // Suppress ENOENT errors which occur if the file doesn't exist.
       // This is the same thing Atom does when opening a file (given a URI) that doesn't exist.
-      if (err.code !== 'ENOENT' || err._nuclideTextBufferRemnant == null) {
+      if (err.code !== 'ENOENT') {
         throw err;
       }
       // If `loadBufferForURI` fails, then the buffer is removed from Atom's list of buffers.
-      // Additionally, `buffer` will still be null. So, the NuclideTextBuffer is passed through
-      // the exception handling control flow for this special case. The buffer is also added back
-      // to the internal list for consistency's sake.
-      buffer = err._nuclideTextBufferRemnant;
-      atom.project.addBuffer(buffer);
+      // `buffer.file` is marked as destroyed, making it useless. So we create
+      // a new `buffer` and call `finishLoading` so that the `buffer` is marked
+      // as `loaded` and the proper events are fired. The effect of all of this
+      // is that files that don't exist remotely anymore are shown as empty
+      // unsaved text editors.
+      buffer = bufferForUri(uri);
+      buffer.finishLoading();
     }
     return atom.workspace.buildTextEditor({buffer});
   } catch (err) {
