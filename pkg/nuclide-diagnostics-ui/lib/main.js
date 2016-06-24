@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticUpdater, FileMessageUpdate} from '../../nuclide-diagnostics-base';
+import type {
+  DiagnosticUpdater,
+  FileMessageUpdate,
+  ObservableDiagnosticUpdater,
+} from '../../nuclide-diagnostics-base';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
 import invariant from 'assert';
@@ -40,6 +44,7 @@ type ActivationState = {
 let activationState: ?ActivationState = null;
 
 let consumeUpdatesCalled = false;
+let consumeObservableUpdatesCalled = false;
 
 function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: CompositeDisposable) {
   invariant(activationState);
@@ -145,6 +150,16 @@ export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): 
 
   tableConsumeDiagnosticUpdates(diagnosticUpdater);
   addAtomCommands(diagnosticUpdater);
+}
+
+export function consumeObservableDiagnosticUpdates(
+  diagnosticUpdater: ObservableDiagnosticUpdater,
+): void {
+  // TODO migrate things from consumeDiagnosticUpdates above
+  if (consumeObservableUpdatesCalled) {
+    return;
+  }
+  consumeObservableUpdatesCalled = true;
 }
 
 function gutterConsumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
