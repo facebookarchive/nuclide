@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +10,10 @@
  * the root directory of this source tree.
  */
 
-import type {AppState, BuildSystem} from './types';
+exports.getActiveBuildSystem = getActiveBuildSystem;
 
-export function getActiveBuildSystem(state: AppState): ?BuildSystem {
-  const {activeBuildSystemId} = state;
-  return activeBuildSystemId == null
-    ? null
-    : state.buildSystems.get(activeBuildSystemId);
+function getActiveBuildSystem(state) {
+  var activeBuildSystemId = state.activeBuildSystemId;
+
+  return activeBuildSystemId == null ? null : state.buildSystems.get(activeBuildSystemId);
 }

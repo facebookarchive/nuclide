@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +8,25 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {WhileStatement} from 'ast-types-flow';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2;
 
-function printWhileStatement(print: Print, node: WhileStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-  return wrap([
-    markers.hardBreak,
-    'while (',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.test),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    ')',
-    markers.space,
-    print(node.body),
-  ]);
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+var _wrappersSimpleWrapStatement2;
+
+function _wrappersSimpleWrapStatement() {
+  return _wrappersSimpleWrapStatement2 = _interopRequireDefault(require('../../wrappers/simple/wrapStatement'));
+}
+
+function printWhileStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapStatement2 || _wrappersSimpleWrapStatement()).default)(print, node, x);
+  };
+  return wrap([(_constantsMarkers2 || _constantsMarkers()).default.hardBreak, 'while (', (_constantsMarkers2 || _constantsMarkers()).default.openScope, (_constantsMarkers2 || _constantsMarkers()).default.scopeIndent, (_constantsMarkers2 || _constantsMarkers()).default.scopeBreak, print(node.test), (_constantsMarkers2 || _constantsMarkers()).default.scopeBreak, (_constantsMarkers2 || _constantsMarkers()).default.scopeDedent, (_constantsMarkers2 || _constantsMarkers()).default.closeScope, ')', (_constantsMarkers2 || _constantsMarkers()).default.space, print(node.body)]);
 }
 
 module.exports = printWhileStatement;

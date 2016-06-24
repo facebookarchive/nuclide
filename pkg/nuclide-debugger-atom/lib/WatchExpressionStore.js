@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,118 +10,144 @@
  * the root directory of this source tree.
  */
 
-import type Bridge from './Bridge';
-import type {ExpansionResult, EvaluationResult} from './Bridge';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import {
-  CompositeDisposable,
-} from 'atom';
-import Rx from 'rxjs';
-import invariant from 'assert';
-import {DisposableSubscription} from '../../commons-node/stream';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-type Expression = string;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-function normalizeEvaluationResult(rawResult: Object): EvaluationResult {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = _interopRequireDefault(require('rxjs/bundles/Rx.umd.min.js'));
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsNodeStream2;
+
+function _commonsNodeStream() {
+  return _commonsNodeStream2 = require('../../commons-node/stream');
+}
+
+function normalizeEvaluationResult(rawResult) {
   return {
     value: rawResult.value,
     _type: rawResult._type || rawResult.type,
     _objectId: rawResult._objectId || rawResult.objectId,
-    _description: rawResult._description || rawResult.description,
+    _description: rawResult._description || rawResult.description
   };
 }
 
-export class WatchExpressionStore {
-  _bridge: Bridge;
-  _disposables: CompositeDisposable;
-  _watchExpressions: Map<Expression, Rx.BehaviorSubject<?EvaluationResult>>;
-  _previousEvaluationSubscriptions: CompositeDisposable;
+var WatchExpressionStore = (function () {
+  function WatchExpressionStore(bridge) {
+    _classCallCheck(this, WatchExpressionStore);
 
-  constructor(bridge: Bridge) {
     this._bridge = bridge;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
     this._watchExpressions = new Map();
     // `this._previousEvaluationSubscriptions` can change at any time and are a distinct subset of
     // `this._disposables`.
-    this._previousEvaluationSubscriptions = new CompositeDisposable();
+    this._previousEvaluationSubscriptions = new (_atom2 || _atom()).CompositeDisposable();
     this._disposables.add(this._previousEvaluationSubscriptions);
   }
 
-  dispose(): void {
-    this._disposables.dispose();
-  }
+  _createClass(WatchExpressionStore, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: '_requestActionFromBridge',
+    value: function _requestActionFromBridge(subject, callback) {
+      return new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).default.Observable.fromPromise(callback()).merge((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).default.Observable.never()).subscribe(subject));
+    }
+  }, {
+    key: '_requestExpressionEvaluation',
+    value: function _requestExpressionEvaluation(expression, subject) {
+      var _this = this;
 
-  _requestActionFromBridge<T>(
-    subject: Rx.BehaviorSubject<T>,
-    callback: () => Promise<T>,
-  ): IDisposable {
-    return new DisposableSubscription(
-      Rx.Observable
-      .fromPromise(callback())
-      .merge(Rx.Observable.never())
-      .subscribe(subject)
-    );
-  }
+      var evaluationDisposable = this._requestActionFromBridge(subject, function () {
+        return _this._bridge.evaluateOnSelectedCallFrame(expression);
+      });
+      this._previousEvaluationSubscriptions.add(evaluationDisposable);
+    }
 
-  _requestExpressionEvaluation(
-    expression: Expression,
-    subject: Rx.BehaviorSubject<?EvaluationResult>,
-  ): void {
-    const evaluationDisposable = this._requestActionFromBridge(
-      subject,
-      () => this._bridge.evaluateOnSelectedCallFrame(expression),
-    );
-    this._previousEvaluationSubscriptions.add(evaluationDisposable);
-  }
-
-  /**
-   * Returns an observable of child properties for the given objectId.
-   * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
-   */
-  getProperties(objectId: string): Rx.Observable<?ExpansionResult> {
-    return Rx.Observable
-      .fromPromise(this._bridge.getProperties(objectId))
-      .map((expansionResult: ?ExpansionResult) => {
+    /**
+     * Returns an observable of child properties for the given objectId.
+     * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
+     */
+  }, {
+    key: 'getProperties',
+    value: function getProperties(objectId) {
+      return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).default.Observable.fromPromise(this._bridge.getProperties(objectId)).map(function (expansionResult) {
         if (expansionResult == null) {
           return expansionResult;
         }
-        return expansionResult.map(property => ({
-          name: property.name,
-          // The EvaluationResults format returned from `getProperties` differs slightly from that
-          // of `evaluateOnSelectedCallFrame`, so normalize the result.
-          value: normalizeEvaluationResult(property.value),
-        }));
+        return expansionResult.map(function (property) {
+          return {
+            name: property.name,
+            // The EvaluationResults format returned from `getProperties` differs slightly from that
+            // of `evaluateOnSelectedCallFrame`, so normalize the result.
+            value: normalizeEvaluationResult(property.value)
+          };
+        });
       });
-  }
-
-  /**
-   * Returns an observable of evaluation results for a given expression.
-   * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
-   */
-  evaluateWatchExpression(expression: Expression): Rx.Observable<?EvaluationResult> {
-    if (this._watchExpressions.has(expression)) {
-      const cachedResult = this._watchExpressions.get(expression);
-      invariant(cachedResult);
-      return cachedResult;
     }
-    const subject = new Rx.BehaviorSubject();
-    this._requestExpressionEvaluation(expression, subject);
-    this._watchExpressions.set(expression, subject);
-    // Expose an observable rather than the raw subject.
-    return subject.asObservable();
-  }
 
-  triggerReevaluation(): void {
-    // Cancel any outstanding evaluation requests to the Bridge
-    this._previousEvaluationSubscriptions.dispose();
-    this._previousEvaluationSubscriptions = new CompositeDisposable();
-    for (const [expression, subject] of this._watchExpressions) {
-      if (subject.observers == null || subject.observers.length === 0) {
-        // Nobody is watching this expression anymore.
-        this._watchExpressions.delete(expression);
-        continue;
+    /**
+     * Returns an observable of evaluation results for a given expression.
+     * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
+     */
+  }, {
+    key: 'evaluateWatchExpression',
+    value: function evaluateWatchExpression(expression) {
+      if (this._watchExpressions.has(expression)) {
+        var cachedResult = this._watchExpressions.get(expression);
+        (0, (_assert2 || _assert()).default)(cachedResult);
+        return cachedResult;
       }
+      var subject = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).default.BehaviorSubject();
       this._requestExpressionEvaluation(expression, subject);
+      this._watchExpressions.set(expression, subject);
+      // Expose an observable rather than the raw subject.
+      return subject.asObservable();
     }
-  }
-}
+  }, {
+    key: 'triggerReevaluation',
+    value: function triggerReevaluation() {
+      // Cancel any outstanding evaluation requests to the Bridge
+      this._previousEvaluationSubscriptions.dispose();
+      this._previousEvaluationSubscriptions = new (_atom2 || _atom()).CompositeDisposable();
+      for (var _ref3 of this._watchExpressions) {
+        var _ref2 = _slicedToArray(_ref3, 2);
+
+        var expression = _ref2[0];
+        var subject = _ref2[1];
+
+        if (subject.observers == null || subject.observers.length === 0) {
+          // Nobody is watching this expression anymore.
+          this._watchExpressions.delete(expression);
+          continue;
+        }
+        this._requestExpressionEvaluation(expression, subject);
+      }
+    }
+  }]);
+
+  return WatchExpressionStore;
+})();
+
+exports.WatchExpressionStore = WatchExpressionStore;

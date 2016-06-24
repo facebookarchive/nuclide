@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -13,12 +14,13 @@
  * A map to specific, un-changeable chrome protocol actions understood by
  * `WebInspector.ActionRegistry`, taken from  VendorLib/devtools/front_end/sources/module.json
  */
-const ChromeActionRegistryActions = Object.freeze({
+var ChromeActionRegistryActions = Object.freeze({
   PAUSE: 'debugger.toggle-pause',
   STEP_OVER: 'debugger.step-over',
   STEP_INTO: 'debugger.step-into',
   STEP_OUT: 'debugger.step-out',
-  RUN: 'debugger.run-snippet',
+  RUN: 'debugger.run-snippet'
 });
 
-export default ChromeActionRegistryActions;
+exports.default = ChromeActionRegistryActions;
+module.exports = exports.default;

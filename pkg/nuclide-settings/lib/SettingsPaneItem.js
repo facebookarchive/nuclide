@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,177 +10,239 @@
  * the root directory of this source tree.
  */
 
-import type {SettingsEvent} from './types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable} from 'atom';
-import featureConfig from '../../nuclide-feature-config';
-import {React} from 'react-for-atom';
-import SettingsCategory from './SettingsCategory';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-export default class NuclideSettingsPaneItem extends React.Component {
-  static gadgetId = 'nuclide-settings';
-  static defaultLocation = 'active-pane';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  _disposables: CompositeDisposable;
-  state: Object;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  constructor(props: Object) {
-    super(props);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _nuclideFeatureConfig2;
+
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _SettingsCategory2;
+
+function _SettingsCategory() {
+  return _SettingsCategory2 = _interopRequireDefault(require('./SettingsCategory'));
+}
+
+var NuclideSettingsPaneItem = (function (_React$Component) {
+  _inherits(NuclideSettingsPaneItem, _React$Component);
+
+  _createClass(NuclideSettingsPaneItem, null, [{
+    key: 'gadgetId',
+    value: 'nuclide-settings',
+    enumerable: true
+  }, {
+    key: 'defaultLocation',
+    value: 'active-pane',
+    enumerable: true
+  }]);
+
+  function NuclideSettingsPaneItem(props) {
+    _classCallCheck(this, NuclideSettingsPaneItem);
+
+    _get(Object.getPrototypeOf(NuclideSettingsPaneItem.prototype), 'constructor', this).call(this, props);
 
     // Bind callbacks first since we use these during config data generation.
-    (this: any)._onConfigChanged = this._onConfigChanged.bind(this);
-    (this: any)._onComponentChanged = this._onComponentChanged.bind(this);
+    this._onConfigChanged = this._onConfigChanged.bind(this);
+    this._onComponentChanged = this._onComponentChanged.bind(this);
 
     this.state = this._getConfigData();
   }
 
-  _getConfigData(): Object {
-    // Only need to add config listeners once.
-    let disposables = null;
-    if (!this._disposables) {
-      this._disposables = disposables = new CompositeDisposable();
+  _createClass(NuclideSettingsPaneItem, [{
+    key: '_getConfigData',
+    value: function _getConfigData() {
+      var _this = this;
+
+      // Only need to add config listeners once.
+      var disposables = null;
+      if (!this._disposables) {
+        this._disposables = disposables = new (_atom2 || _atom()).CompositeDisposable();
+      }
+
+      var configData = {};
+      var nuclidePackages = atom.packages.getActivePackages().filter(function (pkg) {
+        return pkg.metadata && pkg.metadata.nuclide;
+      });
+
+      // Config data is organized as a series of nested objects. First, by category
+      // and then by packages in each category. Each package contains a title and an
+      // object for each setting in that package. Each setting also contains an
+      // onChanged callback for components. We also listen for atom.config.onDidChange.
+      //
+      // ```
+      // configData = {
+      //   "Debugger": {
+      //     "nuclide-debugger-hhvm": {
+      //       "title": "HHVM",
+      //       "settings": {
+      //         "idekeyRegex": {
+      //           name: "idekeyRegex",
+      //           value: false"",
+      //           ...
+      //         },
+      //          ...
+      //       }
+      //     },
+      //     ...
+      //   },
+      // }
+      // ```
+      nuclidePackages.forEach(function (pkg) {
+        var pkgName = pkg.name;
+        var nuclide = pkg.metadata.nuclide;
+
+        if (nuclide.config && nuclide.configMetadata) {
+          (function () {
+            var pathComponents = nuclide.configMetadata.pathComponents;
+
+            var categoryName = pathComponents[0];
+            var packageTitle = pathComponents[1];
+
+            // Group packages according to their category.
+            var packages = configData[categoryName];
+            if (packages == null) {
+              packages = {};
+              configData[categoryName] = packages;
+            }
+
+            // Create settingData for each setting.
+            var settings = {};
+            Object.keys(nuclide.config).forEach(function (settingName) {
+              var keyPath = pkgName + '.' + settingName;
+              var schema = (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.getSchema(keyPath);
+              settings[settingName] = {
+                name: settingName,
+                description: getDescription(schema),
+                keyPath: keyPath,
+                onChanged: _this._onComponentChanged,
+                order: getOrder(schema),
+                title: getTitle(schema, settingName),
+                value: (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get(keyPath)
+              };
+
+              if (disposables) {
+                var disposable = (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.onDidChange(keyPath, _this._onConfigChanged);
+                _this._disposables.add(disposable);
+              }
+            });
+
+            packages[pkgName] = {
+              title: packageTitle || pkgName,
+              settings: settings
+            };
+          })();
+        }
+      });
+
+      return configData;
+    }
+  }, {
+    key: '_onConfigChanged',
+    value: function _onConfigChanged(event) {
+      var _this2 = this;
+
+      // Workaround: Defer this._getConfigData() as it registers new config.onDidChange() callbacks
+      // The issue is that Atom invokes these new callbacks for the current onDidChange event,
+      // instead of only for *future* events.
+      setTimeout(function () {
+        return _this2.setState(_this2._getConfigData());
+      });
+    }
+  }, {
+    key: '_onComponentChanged',
+    value: function _onComponentChanged(event) {
+      (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.set(event.keyPath, event.newValue);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var elements = [];
+
+      var configData = this.state;
+      Object.keys(configData).sort().forEach(function (categoryName) {
+        var packages = configData[categoryName];
+        elements.push((_reactForAtom2 || _reactForAtom()).React.createElement((_SettingsCategory2 || _SettingsCategory()).default, { key: categoryName, name: categoryName, packages: packages }));
+      });
+
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'pane-item padded settings-gadgets-pane' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          { className: 'settings-view' },
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'div',
+            { className: 'panels' },
+            (_reactForAtom2 || _reactForAtom()).React.createElement(
+              'div',
+              { className: 'panels-item' },
+              (_reactForAtom2 || _reactForAtom()).React.createElement('form', { className: 'general-panel section' }),
+              elements
+            )
+          )
+        )
+      );
+    }
+  }, {
+    key: 'getTitle',
+    value: function getTitle() {
+      return 'Nuclide Settings';
+    }
+  }, {
+    key: 'getIconName',
+    value: function getIconName() {
+      return 'tools';
     }
 
-    const configData = {};
-    const nuclidePackages =
-      atom.packages.getActivePackages().filter(pkg => pkg.metadata && pkg.metadata.nuclide);
+    // Prevent the tab getting split.
+  }, {
+    key: 'copy',
+    value: function copy() {
+      return false;
+    }
+  }]);
 
-    // Config data is organized as a series of nested objects. First, by category
-    // and then by packages in each category. Each package contains a title and an
-    // object for each setting in that package. Each setting also contains an
-    // onChanged callback for components. We also listen for atom.config.onDidChange.
-    //
-    // ```
-    // configData = {
-    //   "Debugger": {
-    //     "nuclide-debugger-hhvm": {
-    //       "title": "HHVM",
-    //       "settings": {
-    //         "idekeyRegex": {
-    //           name: "idekeyRegex",
-    //           value: false"",
-    //           ...
-    //         },
-    //          ...
-    //       }
-    //     },
-    //     ...
-    //   },
-    // }
-    // ```
-    nuclidePackages.forEach(pkg => {
-      const pkgName = pkg.name;
-      const {nuclide} = pkg.metadata;
+  return NuclideSettingsPaneItem;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
 
-      if (nuclide.config && nuclide.configMetadata) {
-        const {pathComponents} = nuclide.configMetadata;
-        const categoryName = pathComponents[0];
-        const packageTitle = pathComponents[1];
+exports.default = NuclideSettingsPaneItem;
 
-        // Group packages according to their category.
-        let packages = configData[categoryName];
-        if (packages == null) {
-          packages = {};
-          configData[categoryName] = packages;
-        }
-
-        // Create settingData for each setting.
-        const settings = {};
-        Object.keys(nuclide.config).forEach(settingName => {
-          const keyPath = pkgName + '.' + settingName;
-          const schema = featureConfig.getSchema(keyPath);
-          settings[settingName] = {
-            name: settingName,
-            description: getDescription(schema),
-            keyPath,
-            onChanged: this._onComponentChanged,
-            order: getOrder(schema),
-            title: getTitle(schema, settingName),
-            value: featureConfig.get(keyPath),
-          };
-
-          if (disposables) {
-            const disposable = featureConfig.onDidChange(keyPath, this._onConfigChanged);
-            this._disposables.add(disposable);
-          }
-        });
-
-        packages[pkgName] = {
-          title: packageTitle || pkgName,
-          settings,
-        };
-      }
-    });
-
-    return configData;
-  }
-
-  _onConfigChanged(event: Object) {
-    // Workaround: Defer this._getConfigData() as it registers new config.onDidChange() callbacks
-    // The issue is that Atom invokes these new callbacks for the current onDidChange event,
-    // instead of only for *future* events.
-    setTimeout(() => this.setState(this._getConfigData()));
-  }
-
-  _onComponentChanged(event: SettingsEvent) {
-    featureConfig.set(event.keyPath, event.newValue);
-  }
-
-  render(): React.Element<any> {
-    const elements = [];
-
-    const configData = this.state;
-    Object.keys(configData).sort().forEach(categoryName => {
-      const packages = configData[categoryName];
-      elements.push(
-        <SettingsCategory key={categoryName} name={categoryName} packages={packages} />
-      );
-    });
-
-    return (
-      <div className="pane-item padded settings-gadgets-pane">
-        <div className="settings-view">
-          <div className="panels">
-            <div className="panels-item">
-              <form className="general-panel section" />
-              {elements}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  getTitle(): string {
-    return 'Nuclide Settings';
-  }
-
-  getIconName(): string {
-    return 'tools';
-  }
-
-  // Prevent the tab getting split.
-  copy(): boolean {
-    return false;
-  }
+function getOrder(schema) {
+  return schema.order ? schema.order : 0;
 }
 
-function getOrder(schema: atom$ConfigSchema): number {
-  return (schema.order ? schema.order : 0);
-}
-
-function getTitle(schema: atom$ConfigSchema, settingName: string): string {
-  let title = schema.title;
+function getTitle(schema, settingName) {
+  var title = schema.title;
   if (!title) {
-    title = settingName
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, str => str.toUpperCase())
-      .split('.')
-      .join(' ');
+    title = settingName.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) {
+      return str.toUpperCase();
+    }).split('.').join(' ');
   }
   return title;
 }
 
-function getDescription(schema: atom$ConfigSchema): string {
+function getDescription(schema) {
   return schema.description || '';
 }
+module.exports = exports.default;

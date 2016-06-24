@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,51 +8,38 @@
  * the root directory of this source tree.
  */
 
-import type {Context, Lines, Print} from '../../types/common';
-import type {VariableDeclaration} from 'ast-types-flow';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2;
 
-function printVariableDeclaration(
-  print: Print,
-  node: VariableDeclaration,
-  context: Context,
-): Lines {
-  const last = context.path.last();
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
 
-  const parts = [
-    node.kind,
-    markers.space,
-    flatten(node.declarations.map((declNode, i) => {
-      if (i === 0) {
-        return print(declNode);
-      } else {
-        return [
-          ',',
-          markers.space,
-          print(declNode),
-        ];
-      }
-    })),
-  ];
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+function printVariableDeclaration(print, node, context) {
+  var last = context.path.last();
+
+  var parts = [node.kind, (_constantsMarkers2 || _constantsMarkers()).default.space, (0, (_utilsFlatten2 || _utilsFlatten()).default)(node.declarations.map(function (declNode, i) {
+    if (i === 0) {
+      return print(declNode);
+    } else {
+      return [',', (_constantsMarkers2 || _constantsMarkers()).default.space, print(declNode)];
+    }
+  }))];
 
   // For these node types we shouldn't break or add a semicolon.
-  const nonBreakingParents = new Set([
-    'ForInStatement',
-    'ForOfStatement',
-    'ForStatement',
-  ]);
+  var nonBreakingParents = new Set(['ForInStatement', 'ForOfStatement', 'ForStatement']);
 
   if (!last || nonBreakingParents.has(last.type)) {
-    return flatten(parts);
+    return (0, (_utilsFlatten2 || _utilsFlatten()).default)(parts);
   } else {
-    return flatten([
-      parts,
-      markers.noBreak,
-      ';',
-      markers.hardBreak,
-    ]);
+    return (0, (_utilsFlatten2 || _utilsFlatten()).default)([parts, (_constantsMarkers2 || _constantsMarkers()).default.noBreak, ';', (_constantsMarkers2 || _constantsMarkers()).default.hardBreak]);
   }
 }
 

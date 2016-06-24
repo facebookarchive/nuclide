@@ -1,5 +1,11 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getDefinitions = getDefinitions;
+exports.getProxy = getProxy;
+exports.createProxyFactory = createProxyFactory;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,58 +15,60 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs';
-import nuclideUri from '../../nuclide-remote-uri';
-import invariant from 'assert';
-import Module from 'module';
+var _fs2;
 
-import {generateProxy} from './proxy-generator';
-import {parseServiceDefinition} from './service-parser';
+function _fs() {
+  return _fs2 = _interopRequireDefault(require('fs'));
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = _interopRequireDefault(require('../../nuclide-remote-uri'));
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _module2;
+
+function _module() {
+  return _module2 = _interopRequireDefault(require('module'));
+}
+
+var _proxyGenerator2;
+
+function _proxyGenerator() {
+  return _proxyGenerator2 = require('./proxy-generator');
+}
+
+var _serviceParser2;
+
+function _serviceParser() {
+  return _serviceParser2 = require('./service-parser');
+}
 
 // Proxy dependencies
-import Rx from 'rxjs';
-import {trackOperationTiming} from '../../nuclide-analytics';
 
-import type {
-  Definitions,
-  ReturnKind,
-  Type,
-  Parameter,
-} from './types';
+var _rxjsBundlesRxUmdMinJs2;
 
-export type RpcContext = {
-  callRemoteFunction(functionName: string, returnType: ReturnKind, args: Object): any;
-  callRemoteMethod(
-    objectId: number,
-    methodName: string,
-    returnType: ReturnKind,
-    args: Object
-  ): any;
-  createRemoteObject(
-    interfaceName: string,
-    thisArg: Object,
-    unmarshalledArgs: Array<any>,
-    argTypes: Array<Parameter>
-  ): void;
-  disposeRemoteObject(object: Object): Promise<void>;
-  marshal(value: any, type: Type): any;
-  unmarshal(value: any, type: Type): any;
-  marshalArguments(
-    args: Array<any>,
-    argTypes: Array<Parameter>
-  ): Promise<Object>;
-  unmarshalArguments(
-    args: Object,
-    argTypes: Array<Parameter>
-  ): Promise<Array<any>>;
-};
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = _interopRequireDefault(require('rxjs/bundles/Rx.umd.min.js'));
+}
 
-export type ProxyFactory = (context: RpcContext) => Object;
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
 
 /** Cache for definitions. */
-const definitionsCache: Map<string, Definitions> = new Map();
+var definitionsCache = new Map();
 /** Cache for remote proxies. */
-const proxiesCache: Map<string, ProxyFactory> = new Map();
+var proxiesCache = new Map();
 
 /**
  * Load the definitions, cached by their resolved file path.
@@ -68,18 +76,16 @@ const proxiesCache: Map<string, ProxyFactory> = new Map();
  *  the caller.
  * @returns - The Definitions that represents the API of the definiition file.
  */
-export function getDefinitions(definitionPath: string): Definitions {
+
+function getDefinitions(definitionPath) {
   if (!definitionsCache.has(definitionPath)) {
-    invariant(
-      nuclideUri.isAbsolute(definitionPath),
-      `"${definitionPath}" definition path must be absolute.`
-    );
-    const definitionSource = fs.readFileSync(definitionPath, 'utf8');
-    const def = parseServiceDefinition(definitionPath, definitionSource);
+    (0, (_assert2 || _assert()).default)((_nuclideRemoteUri2 || _nuclideRemoteUri()).default.isAbsolute(definitionPath), '"' + definitionPath + '" definition path must be absolute.');
+    var definitionSource = (_fs2 || _fs()).default.readFileSync(definitionPath, 'utf8');
+    var def = (0, (_serviceParser2 || _serviceParser()).parseServiceDefinition)(definitionPath, definitionSource);
     definitionsCache.set(definitionPath, def);
   }
-  const result = definitionsCache.get(definitionPath);
-  invariant(result != null);
+  var result = definitionsCache.get(definitionPath);
+  (0, (_assert2 || _assert()).default)(result != null);
   return result;
 }
 
@@ -91,46 +97,33 @@ export function getDefinitions(definitionPath: string): Definitions {
  *   and unmarshal objects, as well as make RPC calls.
  * @returns - A proxy module that exports the API specified by the definition
  */
-export function getProxy(
-  serviceName: string,
-  definitionPath: string,
-  clientObject: RpcContext,
-): any {
+
+function getProxy(serviceName, definitionPath, clientObject) {
   if (!proxiesCache.has(definitionPath)) {
-    invariant(
-      nuclideUri.isAbsolute(definitionPath),
-      `"${definitionPath}" definition path must be absolute.`
-    );
+    (0, (_assert2 || _assert()).default)((_nuclideRemoteUri2 || _nuclideRemoteUri()).default.isAbsolute(definitionPath), '"' + definitionPath + '" definition path must be absolute.');
     proxiesCache.set(definitionPath, createProxyFactory(serviceName, false, definitionPath));
   }
 
-  const factory = proxiesCache.get(definitionPath);
-  invariant(factory != null);
+  var factory = proxiesCache.get(definitionPath);
+  (0, (_assert2 || _assert()).default)(factory != null);
   return factory(clientObject);
 }
 
-export function createProxyFactory(
-  serviceName: string,
-  preserveFunctionNames: boolean,
-  definitionPath: string,
-): ProxyFactory {
-  invariant(
-    nuclideUri.isAbsolute(definitionPath),
-    `"${definitionPath}" definition path must be absolute.`
-  );
+function createProxyFactory(serviceName, preserveFunctionNames, definitionPath) {
+  (0, (_assert2 || _assert()).default)((_nuclideRemoteUri2 || _nuclideRemoteUri()).default.isAbsolute(definitionPath), '"' + definitionPath + '" definition path must be absolute.');
 
-  const defs = getDefinitions(definitionPath);
-  const code = generateProxy(serviceName, preserveFunctionNames, defs);
-  const filename = nuclideUri.parsePath(definitionPath).name + 'Proxy.js';
-  const m = loadCodeAsModule(code, filename);
-  m.exports.inject(Rx.Observable, trackOperationTiming);
+  var defs = getDefinitions(definitionPath);
+  var code = (0, (_proxyGenerator2 || _proxyGenerator()).generateProxy)(serviceName, preserveFunctionNames, defs);
+  var filename = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.parsePath(definitionPath).name + 'Proxy.js';
+  var m = loadCodeAsModule(code, filename);
+  m.exports.inject((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).default.Observable, (_nuclideAnalytics2 || _nuclideAnalytics()).trackOperationTiming);
 
   return m.exports;
 }
 
-function loadCodeAsModule(code: string, filename: string): Module {
-  const m = new Module();
-  m.filename = m.id = nuclideUri.join(__dirname, filename);
+function loadCodeAsModule(code, filename) {
+  var m = new (_module2 || _module()).default();
+  m.filename = m.id = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.join(__dirname, filename);
   m.paths = []; // Prevent accidental requires by removing lookup paths.
   m._compile(code, filename);
 
@@ -138,7 +131,8 @@ function loadCodeAsModule(code: string, filename: string): Module {
 }
 
 // Export caches for testing.
-export const __test__ = {
-  definitionsCache,
-  proxiesCache,
+var __test__ = {
+  definitionsCache: definitionsCache,
+  proxiesCache: proxiesCache
 };
+exports.__test__ = __test__;

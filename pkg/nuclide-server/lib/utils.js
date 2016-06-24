@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +10,27 @@
  * the root directory of this source tree.
  */
 
-import type {AgentOptions} from './main';
-import invariant from 'assert';
-import url from 'url';
-import request from 'request';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const MAX_REQUEST_LENGTH = 1e6;
+var _assert2;
 
-type HttpResponse = {
-  statusCode: number;
-};
-export type ResponseBody = {body: string; response: HttpResponse};
-type QueryParams = {[key:string]: any};
-type SerializedArguments = {args: Array<string>; argTypes: Array<string>};
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-export type RequestOptions = {
-  uri: string;
-  agentOptions?: AgentOptions;
-  useQuerystring?: boolean;
-  timeout?: number;
-};
+var _url2;
+
+function _url() {
+  return _url2 = _interopRequireDefault(require('url'));
+}
+
+var _request2;
+
+function _request() {
+  return _request2 = _interopRequireDefault(require('request'));
+}
+
+var MAX_REQUEST_LENGTH = 1e6;
 
 /**
  * Promisified version of the request function:
@@ -38,33 +40,33 @@ export type RequestOptions = {
  * the option:
  * {useQuerystring: false}
  */
-function asyncRequest(options: RequestOptions): Promise<ResponseBody> {
-  return new Promise((resolve, reject) => {
+function asyncRequest(options) {
+  return new Promise(function (resolve, reject) {
     if (options.useQuerystring === undefined) {
       options.useQuerystring = true;
     }
     // TODO(t8118670): This can cause an uncaught exception.
     // Likely requires a fix to 'request'.
-    request(options, (error, response, body) => {
+    (0, (_request2 || _request()).default)(options, function (error, response, body) {
       if (error) {
         reject(error);
       } else if (response.statusCode < 200 || response.statusCode >= 300) {
-        let errorJson = body;
+        var errorJson = body;
         if (typeof body !== 'object') {
           try {
             errorJson = JSON.parse(body);
           } catch (e) {
             // 404 responses aren't currently JSON.
-            errorJson = {message: body};
+            errorJson = { message: body };
           }
         }
         // Cast to Object for use of code field below...
-        const err: Object = new Error(errorJson.message);
+        var err = new Error(errorJson.message);
         // Success http status codes range from 200 to 299.
         err.code = errorJson.code || response.statusCode;
         reject(err);
       } else {
-        resolve({body, response});
+        resolve({ body: body, response: response });
       }
     });
   });
@@ -73,8 +75,7 @@ function asyncRequest(options: RequestOptions): Promise<ResponseBody> {
 /**
  * Write a text or convert to text response with an optional status code.
  */
-function sendTextResponse(response: http$fixed$ServerResponse, text: any, statusCode: ?number):
-    void {
+function sendTextResponse(response, text, statusCode) {
   if (typeof statusCode === 'number') {
     response.statusCode = statusCode;
   }
@@ -85,8 +86,7 @@ function sendTextResponse(response: http$fixed$ServerResponse, text: any, status
 /**
  * Write a json response text with an optional status code.
  */
-function sendJsonResponse(response: http$fixed$ServerResponse, json: any, statusCode: ?number):
-    void {
+function sendJsonResponse(response, json, statusCode) {
   response.setHeader('Content-Type', 'application/json');
   sendTextResponse(response, JSON.stringify(json), statusCode);
 }
@@ -94,11 +94,10 @@ function sendJsonResponse(response: http$fixed$ServerResponse, json: any, status
 /**
   * Parses the request body in an anyc/promise way
   */
-function parseRequestBody(httpRequest: http$fixed$IncomingMessage, isJson: ?boolean):
-    Promise<string> {
-  return new Promise((resolve, reject) => {
-    let body = '';
-    httpRequest.on('data', data => {
+function parseRequestBody(httpRequest, isJson) {
+  return new Promise(function (resolve, reject) {
+    var body = '';
+    httpRequest.on('data', function (data) {
       body += data;
       // too much POST data, kill the connection!
       if (body.length > MAX_REQUEST_LENGTH) {
@@ -106,17 +105,20 @@ function parseRequestBody(httpRequest: http$fixed$IncomingMessage, isJson: ?bool
         httpRequest.connection.destroy();
       }
     });
-    httpRequest.on('end', () => resolve(isJson ? JSON.parse(body) : body));
+    httpRequest.on('end', function () {
+      return resolve(isJson ? JSON.parse(body) : body);
+    });
   });
 }
 
 /**
  * Parses the url parameters ?abc=erf&lol=432c
  */
-function getQueryParameters(requestUrl: string): QueryParams {
-  const components: ?Object = url.parse(requestUrl, true);
-  invariant(components != null);
-  const {query} = components;
+function getQueryParameters(requestUrl) {
+  var components = (_url2 || _url()).default.parse(requestUrl, true);
+  (0, (_assert2 || _assert()).default)(components != null);
+  var query = components.query;
+
   return query;
 }
 
@@ -125,10 +127,10 @@ function getQueryParameters(requestUrl: string): QueryParams {
  * to send the metadata about the argument types with the data
  * to help the server understand and parse it.
  */
-function serializeArgs(args: Array<any>): SerializedArguments {
-  const argsOnHttp = [];
-  const argTypes = [];
-  args.forEach(arg => {
+function serializeArgs(args) {
+  var argsOnHttp = [];
+  var argTypes = [];
+  args.forEach(function (arg) {
     // I do this because nulls are normally sent as empty strings
     if (arg === undefined) {
       argsOnHttp.push('');
@@ -136,14 +138,15 @@ function serializeArgs(args: Array<any>): SerializedArguments {
     } else if (typeof arg === 'string') {
       argsOnHttp.push(arg);
       argTypes.push('string');
-    } else { // object, number, boolean null
+    } else {
+      // object, number, boolean null
       argsOnHttp.push(JSON.stringify(arg));
       argTypes.push('object');
     }
   });
   return {
     args: argsOnHttp,
-    argTypes,
+    argTypes: argTypes
   };
 }
 
@@ -151,13 +154,17 @@ function serializeArgs(args: Array<any>): SerializedArguments {
  * Deserializes a url with query parameters: args, argTypes to an array
  * of the original arguments of the same types the client called the function with.
  */
-function deserializeArgs(requestUrl: string): Array<any> {
-  let {args, argTypes} = getQueryParameters(requestUrl);
+function deserializeArgs(requestUrl) {
+  var _getQueryParameters = getQueryParameters(requestUrl);
+
+  var args = _getQueryParameters.args;
+  var argTypes = _getQueryParameters.argTypes;
+
   args = args || [];
   argTypes = argTypes || [];
-  const argsArray = Array.isArray(args) ? args : [args];
-  const argTypesArray = Array.isArray(argTypes) ? argTypes : [argTypes];
-  return argsArray.map((arg, i) => {
+  var argsArray = Array.isArray(args) ? args : [args];
+  var argTypesArray = Array.isArray(argTypes) ? argTypes : [argTypes];
+  return argsArray.map(function (arg, i) {
     // I do this because nulls are normally sent as empty strings.
     if (argTypesArray[i] === 'undefined') {
       return undefined;
@@ -171,11 +178,11 @@ function deserializeArgs(requestUrl: string): Array<any> {
 }
 
 module.exports = {
-  asyncRequest,
-  deserializeArgs,
-  getQueryParameters,
-  parseRequestBody,
-  sendJsonResponse,
-  sendTextResponse,
-  serializeArgs,
+  asyncRequest: asyncRequest,
+  deserializeArgs: deserializeArgs,
+  getQueryParameters: getQueryParameters,
+  parseRequestBody: parseRequestBody,
+  sendJsonResponse: sendJsonResponse,
+  sendTextResponse: sendTextResponse,
+  serializeArgs: serializeArgs
 };

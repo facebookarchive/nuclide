@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.split = split;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -14,60 +18,38 @@
 //
 // This package creates, queries and decomposes NuclideUris.
 
-export type NuclideUri = string;
+var _assert2;
 
-type ParsedUrl = {
-  auth: ?string;
-  href: string;
-  host: ?string;
-  hostname: ?string;
-  path: string;
-  pathname: string;
-  protocol: ?string;
-  query: ?any;
-  search: ?string;
-  slashes: ?boolean;
-};
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-type ParsedRemoteUrl = {
-  auth: ?string;
-  href: string;
-  host: ?string;
-  hostname: string;
-  path: string;
-  pathname: string;
-  protocol: ?string;
-  query: ?any;
-  search: ?string;
-  slashes: ?boolean;
-};
-
-type ParsedPath = {
-  root: string;
-  dir: string;
-  base: string;
-  ext: string;
-  name: string;
-};
-
-import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
-import pathModule from 'path';
 
-import url from 'url';
+var _path2;
 
-const REMOTE_PATH_URI_PREFIX = 'nuclide://';
+function _path() {
+  return _path2 = _interopRequireDefault(require('path'));
+}
 
-function isRemote(uri: NuclideUri): boolean {
+var _url2;
+
+function _url() {
+  return _url2 = _interopRequireDefault(require('url'));
+}
+
+var REMOTE_PATH_URI_PREFIX = 'nuclide://';
+
+function isRemote(uri) {
   return uri.startsWith(REMOTE_PATH_URI_PREFIX);
 }
 
-function isLocal(uri: NuclideUri): boolean {
+function isLocal(uri) {
   return !isRemote(uri);
 }
 
-function createRemoteUri(hostname: string, remotePath: string): string {
-  return `nuclide://${hostname}${remotePath}`;
+function createRemoteUri(hostname, remotePath) {
+  return 'nuclide://' + hostname + remotePath;
 }
 
 /**
@@ -88,7 +70,7 @@ function createRemoteUri(hostname: string, remotePath: string): string {
  *           ...
  *         }
  */
-function parse(uri: NuclideUri): ParsedUrl {
+function parse(uri) {
   if (isLocal(uri)) {
     return {
       auth: null,
@@ -100,29 +82,23 @@ function parse(uri: NuclideUri): ParsedUrl {
       protocol: null,
       query: null,
       search: null,
-      slashes: null,
+      slashes: null
     };
   }
 
-  const parsedUri = url.parse(_escapeBackslashes(uri));
+  var parsedUri = (_url2 || _url()).default.parse(_escapeBackslashes(uri));
 
-  invariant(
-    parsedUri.path,
-    `Nuclide URIs must contain paths, '${parsedUri.path}' found while parsing '${uri}'`
-  );
+  (0, (_assert2 || _assert()).default)(parsedUri.path, 'Nuclide URIs must contain paths, \'' + parsedUri.path + '\' found while parsing \'' + uri + '\'');
 
-  let path = parsedUri.path;
+  var path = parsedUri.path;
   // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
   // feature is not used in Nuclide and is instead treated as part of the path.
   if (parsedUri.hash != null) {
     path += parsedUri.hash;
   }
 
-  invariant(
-    parsedUri.pathname,
-    `Nuclide URIs must contain pathnamess, '${parsedUri.pathname}' found while parsing '${uri}'`
-  );
-  let pathname = parsedUri.pathname;
+  (0, (_assert2 || _assert()).default)(parsedUri.pathname, 'Nuclide URIs must contain pathnamess, \'' + parsedUri.pathname + '\' found while parsing \'' + uri + '\'');
+  var pathname = parsedUri.pathname;
   // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
   // feature is not used in Nuclide and is instead treated as part of the pathname.
   if (parsedUri.hash != null) {
@@ -141,20 +117,16 @@ function parse(uri: NuclideUri): ParsedUrl {
     protocol: parsedUri.protocol,
     query: parsedUri.query,
     search: parsedUri.search,
-    slashes: parsedUri.slashes,
+    slashes: parsedUri.slashes
   };
 }
 
-function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
+function parseRemoteUri(remoteUri) {
   if (!isRemote(remoteUri)) {
     throw new Error('Expected remote uri. Got ' + remoteUri);
   }
-  const parsedUri = parse(remoteUri);
-  invariant(
-    parsedUri.hostname,
-    `Remote Nuclide URIs must contain hostnames, '${parsedUri.hostname}' found ` +
-    `while parsing '${remoteUri}'`
-  );
+  var parsedUri = parse(remoteUri);
+  (0, (_assert2 || _assert()).default)(parsedUri.hostname, 'Remote Nuclide URIs must contain hostnames, \'' + parsedUri.hostname + '\' found ' + ('while parsing \'' + remoteUri + '\''));
 
   // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
   // operator causes null/undefined errors, and `Object.assign` bypasses type checking.
@@ -168,19 +140,19 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
     protocol: parsedUri.protocol,
     query: parsedUri.query,
     search: parsedUri.search,
-    slashes: parsedUri.slashes,
+    slashes: parsedUri.slashes
   };
 }
 
-function getPath(uri: NuclideUri): string {
+function getPath(uri) {
   return parse(uri).path;
 }
 
-function getHostname(remoteUri: NuclideUri): string {
+function getHostname(remoteUri) {
   return parseRemoteUri(remoteUri).hostname;
 }
 
-function getHostnameOpt(remoteUri: ?NuclideUri): ?string {
+function getHostnameOpt(remoteUri) {
   if (remoteUri == null || isLocal(remoteUri)) {
     return null;
   }
@@ -188,48 +160,55 @@ function getHostnameOpt(remoteUri: ?NuclideUri): ?string {
   return getHostname(remoteUri);
 }
 
-function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
-  const uriPathModule = _pathModuleFor(uri);
+function join(uri) {
+  var uriPathModule = _pathModuleFor(uri);
+
+  for (var _len = arguments.length, relativePath = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    relativePath[_key - 1] = arguments[_key];
+  }
+
   if (isRemote(uri)) {
-    const {hostname, path} = parseRemoteUri(uri);
-    relativePath.splice(0, 0, path);
-    return createRemoteUri(
-      hostname,
-      uriPathModule.join.apply(null, relativePath));
+    var _parseRemoteUri = parseRemoteUri(uri);
+
+    var _hostname = _parseRemoteUri.hostname;
+    var _path3 = _parseRemoteUri.path;
+
+    relativePath.splice(0, 0, _path3);
+    return createRemoteUri(_hostname, uriPathModule.join.apply(null, relativePath));
   } else {
     relativePath.splice(0, 0, uri);
     return uriPathModule.join.apply(null, relativePath);
   }
 }
 
-function normalize(uri: NuclideUri): NuclideUri {
-  const uriPathModule = _pathModuleFor(uri);
+function normalize(uri) {
+  var uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
-    const {hostname, path} = parseRemoteUri(uri);
-    return createRemoteUri(
-      hostname,
-      uriPathModule.normalize(path)
-    );
+    var _parseRemoteUri2 = parseRemoteUri(uri);
+
+    var _hostname2 = _parseRemoteUri2.hostname;
+    var _path4 = _parseRemoteUri2.path;
+
+    return createRemoteUri(_hostname2, uriPathModule.normalize(_path4));
   } else {
     return uriPathModule.normalize(uri);
   }
 }
 
-function normalizeDir(uri: NuclideUri): NuclideUri {
+function normalizeDir(uri) {
   return ensureTrailingSeparator(normalize(uri));
 }
 
-function getParent(uri: NuclideUri): NuclideUri {
+function getParent(uri) {
   // TODO: Is this different than dirname?
   return normalize(join(uri, '..'));
 }
 
-function relative(uri: NuclideUri, other: NuclideUri): string {
-  const uriPathModule = _pathModuleFor(uri);
-  const remote = isRemote(uri);
-  if (remote !== isRemote(other) ||
-      (remote && getHostname(uri) !== getHostname(other))) {
-    throw new Error(`Cannot relative urls on different hosts: ${uri} and ${other}`);
+function relative(uri, other) {
+  var uriPathModule = _pathModuleFor(uri);
+  var remote = isRemote(uri);
+  if (remote !== isRemote(other) || remote && getHostname(uri) !== getHostname(other)) {
+    throw new Error('Cannot relative urls on different hosts: ' + uri + ' and ' + other);
   }
   if (remote) {
     return uriPathModule.relative(getPath(uri), getPath(other));
@@ -238,31 +217,34 @@ function relative(uri: NuclideUri, other: NuclideUri): string {
   }
 }
 
-function basename(uri: NuclideUri, ext: string = ''): string {
-  const uriPathModule = _pathModuleFor(uri);
+function basename(uri) {
+  var ext = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+
+  var uriPathModule = _pathModuleFor(uri);
   return uriPathModule.basename(getPath(uri), ext);
 }
 
-function dirname(uri: NuclideUri): NuclideUri {
-  const uriPathModule = _pathModuleFor(uri);
+function dirname(uri) {
+  var uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
-    const {hostname, path} = parseRemoteUri(uri);
-    return createRemoteUri(
-      hostname,
-      uriPathModule.dirname(path)
-    );
+    var _parseRemoteUri3 = parseRemoteUri(uri);
+
+    var _hostname3 = _parseRemoteUri3.hostname;
+    var _path5 = _parseRemoteUri3.path;
+
+    return createRemoteUri(_hostname3, uriPathModule.dirname(_path5));
   } else {
     return uriPathModule.dirname(uri);
   }
 }
 
-function extname(uri: NuclideUri): string {
-  const uriPathModule = _pathModuleFor(uri);
+function extname(uri) {
+  var uriPathModule = _pathModuleFor(uri);
   return uriPathModule.extname(getPath(uri));
 }
 
-function stripExtension(uri: NuclideUri): NuclideUri {
-  const ext = extname(uri);
+function stripExtension(uri) {
+  var ext = extname(uri);
   if (ext.length === 0) {
     return uri;
   }
@@ -276,9 +258,10 @@ function stripExtension(uri: NuclideUri): NuclideUri {
  *
  * Returns null if not a valid file: URI.
  */
-function uriToNuclideUri(uri: string): ?string {
-  const urlParts = url.parse(_escapeBackslashes(uri), false);
-  if (urlParts.protocol === 'file:' && urlParts.path) { // only handle real files for now.
+function uriToNuclideUri(uri) {
+  var urlParts = (_url2 || _url()).default.parse(_escapeBackslashes(uri), false);
+  if (urlParts.protocol === 'file:' && urlParts.path) {
+    // only handle real files for now.
     return urlParts.path;
   } else if (isRemote(uri)) {
     return uri;
@@ -290,7 +273,7 @@ function uriToNuclideUri(uri: string): ?string {
 /**
  * Converts local paths to file: URI's. Leaves remote URI's alone.
  */
-function nuclideUriToUri(uri: NuclideUri): string {
+function nuclideUriToUri(uri) {
   if (isRemote(uri)) {
     return uri;
   } else {
@@ -301,7 +284,7 @@ function nuclideUriToUri(uri: NuclideUri): string {
 /**
  * Returns true if child is equal to, or is a proper child of parent.
  */
-function contains(parent: NuclideUri, child: NuclideUri): boolean {
+function contains(parent, child) {
   // Can't just do startsWith here. If this directory is "www" and you
   // are trying to check "www-base", just using startsWith would return
   // true, even though "www-base" is at the same level as "Www", not
@@ -317,9 +300,11 @@ function contains(parent: NuclideUri, child: NuclideUri): boolean {
   // equal OR if the next character in the path to check is a path
   // separator, then we know the checked path is in this path.
 
-  if (child.length < parent.length) {  // A strong indication of false
+  if (child.length < parent.length) {
+    // A strong indication of false
     // It could be a matter of a trailing separator, though
-    if (child.length < parent.length - 1) { // It must be more than just the separator
+    if (child.length < parent.length - 1) {
+      // It must be more than just the separator
       return false;
     }
 
@@ -334,7 +319,7 @@ function contains(parent: NuclideUri, child: NuclideUri): boolean {
     return true;
   }
 
-  const uriPathModule = _pathModuleFor(child);
+  var uriPathModule = _pathModuleFor(child);
   return child.slice(parent.length).startsWith(uriPathModule.sep);
 }
 
@@ -342,29 +327,29 @@ function contains(parent: NuclideUri, child: NuclideUri): boolean {
  * Filter an array of paths to contain only the collapsed root paths, e.g.
  * [a/b/c, a/, c/d/, c/d/e] collapses to [a/, c/d/]
  */
-function collapse(paths: Array<NuclideUri>): Array<NuclideUri> {
-  return paths.filter(p =>
-    !paths.some(fp => contains(fp, p) && fp !== p)
-  );
+function collapse(paths) {
+  return paths.filter(function (p) {
+    return !paths.some(function (fp) {
+      return contains(fp, p) && fp !== p;
+    });
+  });
 }
 
-const hostFormatters = [];
+var hostFormatters = [];
 
 // A formatter which may shorten hostnames.
 // Returns null if the formatter won't shorten the hostname.
-export type HostnameFormatter = (uri: NuclideUri) => ?string;
 
 // Registers a host formatter for nuclideUriToDisplayString
-function registerHostnameFormatter(formatter: HostnameFormatter):
-    {dispose: () => void} {
+function registerHostnameFormatter(formatter) {
   hostFormatters.push(formatter);
   return {
-    dispose: () => {
-      const index = hostFormatters.indexOf(formatter);
+    dispose: function dispose() {
+      var index = hostFormatters.indexOf(formatter);
       if (index >= 0) {
         hostFormatters.splice(index, 1);
       }
-    },
+    }
   };
 }
 
@@ -372,24 +357,24 @@ function registerHostnameFormatter(formatter: HostnameFormatter):
  * NuclideUris should never be shown to humans.
  * This function returns a human usable string.
  */
-function nuclideUriToDisplayString(uri: NuclideUri): string {
+function nuclideUriToDisplayString(uri) {
   if (isRemote(uri)) {
-    let hostname = getHostname(uri);
-    for (const formatter of hostFormatters) {
-      const formattedHostname = formatter(hostname);
+    var _hostname4 = getHostname(uri);
+    for (var formatter of hostFormatters) {
+      var formattedHostname = formatter(_hostname4);
       if (formattedHostname) {
-        hostname = formattedHostname;
+        _hostname4 = formattedHostname;
         break;
       }
     }
-    return `${hostname}/${getPath(uri)}`;
+    return _hostname4 + '/' + getPath(uri);
   } else {
     return uri;
   }
 }
 
-function ensureTrailingSeparator(uri: NuclideUri): NuclideUri {
-  const uriPathModule = _pathModuleFor(uri);
+function ensureTrailingSeparator(uri) {
+  var uriPathModule = _pathModuleFor(uri);
   if (uri.endsWith(uriPathModule.sep)) {
     return uri;
   }
@@ -397,9 +382,9 @@ function ensureTrailingSeparator(uri: NuclideUri): NuclideUri {
   return uri + uriPathModule.sep;
 }
 
-function trimTrailingSeparator(uri: NuclideUri): NuclideUri {
-  const uriPathModule = _pathModuleFor(uri);
-  let stripped = uri;
+function trimTrailingSeparator(uri) {
+  var uriPathModule = _pathModuleFor(uri);
+  var stripped = uri;
 
   while (stripped.endsWith(uriPathModule.sep) && !isRoot(stripped)) {
     stripped = stripped.slice(0, -1 * uriPathModule.sep.length);
@@ -408,12 +393,12 @@ function trimTrailingSeparator(uri: NuclideUri): NuclideUri {
   return stripped;
 }
 
-function endsWithSeparator(uri: NuclideUri): boolean {
-  const uriPathModule = _pathModuleFor(uri);
+function endsWithSeparator(uri) {
+  var uriPathModule = _pathModuleFor(uri);
   return uri.endsWith(uriPathModule.sep);
 }
 
-function isAbsolute(uri: NuclideUri): boolean {
+function isAbsolute(uri) {
   if (isRemote(uri)) {
     return true;
   } else {
@@ -421,21 +406,28 @@ function isAbsolute(uri: NuclideUri): boolean {
   }
 }
 
-function resolve(uri: NuclideUri, ...paths: Array<string>): NuclideUri {
-  const uriPathModule = _pathModuleFor(uri);
+function resolve(uri) {
+  var uriPathModule = _pathModuleFor(uri);
+
+  for (var _len2 = arguments.length, paths = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+    paths[_key2 - 1] = arguments[_key2];
+  }
+
   if (isRemote(uri)) {
-    const {hostname, path} = parseRemoteUri(uri);
-    paths.splice(0, 0, path);
-    return createRemoteUri(
-      hostname,
-      uriPathModule.resolve.apply(null, paths));
+    var _parseRemoteUri4 = parseRemoteUri(uri);
+
+    var _hostname5 = _parseRemoteUri4.hostname;
+    var _path6 = _parseRemoteUri4.path;
+
+    paths.splice(0, 0, _path6);
+    return createRemoteUri(_hostname5, uriPathModule.resolve.apply(null, paths));
   } else {
     paths.splice(0, 0, uri);
     return uriPathModule.resolve.apply(null, paths);
   }
 }
 
-function expandHomeDir(uri: NuclideUri): NuclideUri {
+function expandHomeDir(uri) {
   // This function is POSIX only functionality, so using the posix path directly
 
   // Do not expand non home relative uris
@@ -443,8 +435,9 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
     return uri;
   }
 
-  const {HOME} = process.env;
-  invariant(HOME != null);
+  var HOME = process.env.HOME;
+
+  (0, (_assert2 || _assert()).default)(HOME != null);
 
   if (uri === '~') {
     return HOME;
@@ -455,7 +448,7 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
     return uri;
   }
 
-  return pathModule.posix.resolve(HOME, uri.replace('~', '.'));
+  return (_path2 || _path()).default.posix.resolve(HOME, uri.replace('~', '.'));
 }
 
 /**
@@ -464,9 +457,9 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
  *
  * Since remote URI might contain the delimiter, only local paths are allowed.
  */
-function splitPathList(paths: string): Array<NuclideUri> {
-  invariant(paths.indexOf(REMOTE_PATH_URI_PREFIX) < 0, 'Splitting remote URIs is not supported');
-  const pathsModule = _pathModuleFor(paths);
+function splitPathList(paths) {
+  (0, (_assert2 || _assert()).default)(paths.indexOf(REMOTE_PATH_URI_PREFIX) < 0, 'Splitting remote URIs is not supported');
+  var pathsModule = _pathModuleFor(paths);
 
   return paths.split(pathsModule.delimiter);
 }
@@ -477,14 +470,16 @@ function splitPathList(paths: string): Array<NuclideUri> {
  *
  * Since remote URI might contain the delimiter, only local paths are allowed.
  */
-function joinPathList(paths: Array<NuclideUri>): string {
+function joinPathList(paths) {
   if (paths.length === 0) {
     return '';
   }
 
-  invariant(paths.every(path => !isRemote(path)), 'Joining of remote URIs is not supported');
+  (0, (_assert2 || _assert()).default)(paths.every(function (path) {
+    return !isRemote(path);
+  }), 'Joining of remote URIs is not supported');
 
-  const uriPathModule = _pathModuleFor(paths[0]);
+  var uriPathModule = _pathModuleFor(paths[0]);
   return paths.join(uriPathModule.delimiter);
 }
 
@@ -492,13 +487,13 @@ function joinPathList(paths: Array<NuclideUri>): string {
  * This function prepends the given relative path with a "current-folder" prefix
  * which is `./` on *nix and .\ on Windows
  */
-function ensureLocalPrefix(uri: NuclideUri): NuclideUri {
-  const uriPathModule = _pathModuleFor(uri);
+function ensureLocalPrefix(uri) {
+  var uriPathModule = _pathModuleFor(uri);
 
-  invariant(!isRemote(uri), 'Local prefix can not be added to a remote path');
-  invariant(!isAbsolute(uri), 'Local prefix can not be added to an absolute path');
+  (0, (_assert2 || _assert()).default)(!isRemote(uri), 'Local prefix can not be added to a remote path');
+  (0, (_assert2 || _assert()).default)(!isAbsolute(uri), 'Local prefix can not be added to an absolute path');
 
-  const localPrefix = `.${uriPathModule.sep}`;
+  var localPrefix = '.' + uriPathModule.sep;
   if (uri.startsWith(localPrefix)) {
     return uri;
   }
@@ -506,19 +501,19 @@ function ensureLocalPrefix(uri: NuclideUri): NuclideUri {
   return localPrefix + uri;
 }
 
-function isRoot(uri: NuclideUri): boolean {
+function isRoot(uri) {
   return dirname(uri) === uri;
 }
 
-function parsePath(uri: NuclideUri): ParsedPath {
-  const uriPathModule = _pathModuleFor(uri);
+function parsePath(uri) {
+  var uriPathModule = _pathModuleFor(uri);
   return uriPathModule.parse(getPath(uri));
 }
 
-export function split(uri: string): Array<string> {
-  const parts = [];
-  let current = uri;
-  let parent = dirname(current);
+function split(uri) {
+  var parts = [];
+  var current = uri;
+  var parent = dirname(current);
 
   while (current !== parent) {
     parts.push(basename(current));
@@ -534,9 +529,9 @@ export function split(uri: string): Array<string> {
   return parts;
 }
 
-function _pathModuleFor(uri: NuclideUri): any {
-  const posixPath = pathModule.posix;
-  const win32Path = pathModule.win32;
+function _pathModuleFor(uri) {
+  var posixPath = (_path2 || _path()).default.posix;
+  var win32Path = (_path2 || _path()).default.win32;
 
   if (uri.startsWith(posixPath.sep)) {
     return posixPath;
@@ -560,45 +555,45 @@ function _pathModuleFor(uri: NuclideUri): any {
  * It, however, is being automatically "corrected" by node's `url.parse()` method if not escaped
  * properly.
  */
-function _escapeBackslashes(uri: NuclideUri): NuclideUri {
+function _escapeBackslashes(uri) {
   return uri.replace(/\\/g, '%5C');
 }
 
-export default {
-  basename,
-  dirname,
-  extname,
-  stripExtension,
-  isRemote,
-  isLocal,
-  createRemoteUri,
-  parse,
-  parseRemoteUri,
-  getPath,
-  getHostname,
-  getHostnameOpt,
-  join,
-  relative,
-  normalize,
-  normalizeDir,
-  getParent,
-  uriToNuclideUri,
-  nuclideUriToUri,
-  contains,
-  collapse,
-  nuclideUriToDisplayString,
-  registerHostnameFormatter,
-  ensureTrailingSeparator,
-  trimTrailingSeparator,
-  endsWithSeparator,
-  isAbsolute,
-  resolve,
-  expandHomeDir,
-  splitPathList,
-  joinPathList,
-  ensureLocalPrefix,
-  isRoot,
-  parsePath,
-  split,
-  _pathModuleFor,  // Exported for tests only
-};
+exports.default = {
+  basename: basename,
+  dirname: dirname,
+  extname: extname,
+  stripExtension: stripExtension,
+  isRemote: isRemote,
+  isLocal: isLocal,
+  createRemoteUri: createRemoteUri,
+  parse: parse,
+  parseRemoteUri: parseRemoteUri,
+  getPath: getPath,
+  getHostname: getHostname,
+  getHostnameOpt: getHostnameOpt,
+  join: join,
+  relative: relative,
+  normalize: normalize,
+  normalizeDir: normalizeDir,
+  getParent: getParent,
+  uriToNuclideUri: uriToNuclideUri,
+  nuclideUriToUri: nuclideUriToUri,
+  contains: contains,
+  collapse: collapse,
+  nuclideUriToDisplayString: nuclideUriToDisplayString,
+  registerHostnameFormatter: registerHostnameFormatter,
+  ensureTrailingSeparator: ensureTrailingSeparator,
+  trimTrailingSeparator: trimTrailingSeparator,
+  endsWithSeparator: endsWithSeparator,
+  isAbsolute: isAbsolute,
+  resolve: resolve,
+  expandHomeDir: expandHomeDir,
+  splitPathList: splitPathList,
+  joinPathList: joinPathList,
+  ensureLocalPrefix: ensureLocalPrefix,
+  isRoot: isRoot,
+  parsePath: parsePath,
+  split: split,
+  _pathModuleFor: _pathModuleFor };
+// Exported for tests only
