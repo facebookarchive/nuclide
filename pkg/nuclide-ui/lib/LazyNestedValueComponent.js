@@ -43,9 +43,12 @@ type LoadableValueComponentProps = {
   children?: ExpansionResult;
   fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
   path: string;
-  expandedValuePaths: Set<string>;
+  expandedValuePaths: Map<string, NodeData>;
   onExpandedStateChange: (path: string, isExpanded: boolean) => void;
   simpleValueComponent: ReactClass<any>;
+  shouldCacheChildren: boolean;
+  getCachedChildren: (path: string) => ?ExpansionResult;
+  setCachedChildren: (path: string, children: ExpansionResult) => void;
 };
 
 /**
@@ -60,26 +63,38 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
     expandedValuePaths,
     onExpandedStateChange,
     simpleValueComponent,
+    shouldCacheChildren,
+    getCachedChildren,
+    setCachedChildren,
   } = props;
-  return children == null
-    ? TreeItemWithLoadingSpinner()
-    : <span>
-        {
-          children.map(child =>
-            <TreeItem key={child.name}>
-              <ValueComponent
-                evaluationResult={child.value}
-                fetchChildren={fetchChildren}
-                expression={child.name}
-                expandedValuePaths={expandedValuePaths}
-                onExpandedStateChange={onExpandedStateChange}
-                path={path + '.' + child.name}
-                simpleValueComponent={simpleValueComponent}
-              />
-            </TreeItem>
-          )
-        }
-      </span>;
+  if (children == null) {
+    return TreeItemWithLoadingSpinner();
+  }
+  if (shouldCacheChildren) {
+    setCachedChildren(path, children);
+  }
+  return (
+    <span>
+      {
+        children.map(child =>
+          <TreeItem key={child.name}>
+            <ValueComponent
+              evaluationResult={child.value}
+              fetchChildren={fetchChildren}
+              expression={child.name}
+              expandedValuePaths={expandedValuePaths}
+              onExpandedStateChange={onExpandedStateChange}
+              path={path + '.' + child.name}
+              simpleValueComponent={simpleValueComponent}
+              shouldCacheChildren={shouldCacheChildren}
+              getCachedChildren={getCachedChildren}
+              setCachedChildren={setCachedChildren}
+            />
+          </TreeItem>
+        )
+      }
+    </span>
+  );
 };
 
 // TODO allow passing action components (edit button, pin button) here
@@ -105,10 +120,13 @@ type LazyNestedValueComponentProps = {
   fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
   expression: ?string;
   isRoot?: boolean;
-  expandedValuePaths: Set<string>;
+  expandedValuePaths: Map<string, NodeData>;
   onExpandedStateChange: (path: string, expanded: boolean) => void;
   path: string;
   simpleValueComponent: ReactClass<any>;
+  shouldCacheChildren: boolean;
+  getCachedChildren: (path: string) => ?ExpansionResult;
+  setCachedChildren: (path: string, children: ExpansionResult) => void;
 };
 
 type LazyNestedValueComponentState = {
@@ -141,9 +159,12 @@ class ValueComponent extends React.Component {
       fetchChildren,
       evaluationResult,
     } = this.props;
+    const nodeData = expandedValuePaths.get(path);
     if (
       !this.state.isExpanded &&
-      expandedValuePaths.has(path) &&
+      nodeData != null &&
+      nodeData.isExpanded &&
+      this._shouldFetch() &&
       evaluationResult != null &&
       evaluationResult._objectId != null &&
       fetchChildren != null
@@ -158,6 +179,7 @@ class ValueComponent extends React.Component {
 
   componentWillReceiveProps(nextProps: LazyNestedValueComponentProps): void {
     if (
+      this._shouldFetch() &&
       this.state.isExpanded &&
       nextProps.evaluationResult != null &&
       nextProps.fetchChildren != null
@@ -170,6 +192,12 @@ class ValueComponent extends React.Component {
         children: nextProps.fetchChildren(_objectId),
       });
     }
+  }
+
+  _shouldFetch(): boolean {
+    const {shouldCacheChildren, getCachedChildren, path} = this.props;
+    const children = getCachedChildren(path);
+    return !shouldCacheChildren || children == null;
   }
 
   _toggleExpand(event: SyntheticMouseEvent): void {
@@ -185,6 +213,7 @@ class ValueComponent extends React.Component {
     };
     if (!this.state.isExpanded) {
       if (
+        this._shouldFetch() &&
         typeof fetchChildren === 'function' &&
         evaluationResult != null &&
         evaluationResult._objectId != null
@@ -206,6 +235,9 @@ class ValueComponent extends React.Component {
       path,
       expandedValuePaths,
       onExpandedStateChange,
+      shouldCacheChildren,
+      getCachedChildren,
+      setCachedChildren,
       simpleValueComponent: SimpleValueComponent,
     } = this.props;
     if (evaluationResult == null) {
@@ -228,7 +260,22 @@ class ValueComponent extends React.Component {
     } = this.state;
     let childListElement = null;
     if (isExpanded) {
-      if (children == null) {
+      const cachedChildren = getCachedChildren(path);
+      if (shouldCacheChildren && cachedChildren != null) {
+        childListElement = (
+          <LoadableValueComponent
+            children={cachedChildren}
+            fetchChildren={fetchChildren}
+            path={path}
+            expandedValuePaths={expandedValuePaths}
+            onExpandedStateChange={onExpandedStateChange}
+            simpleValueComponent={SimpleValueComponent}
+            shouldCacheChildren={shouldCacheChildren}
+            getCachedChildren={getCachedChildren}
+            setCachedChildren={setCachedChildren}
+          />
+        );
+      } else if (children == null) {
         childListElement = <TreeItemWithLoadingSpinner />;
       } else {
         const ChildrenComponent = bindObservableAsProps(
@@ -242,6 +289,9 @@ class ValueComponent extends React.Component {
             expandedValuePaths={expandedValuePaths}
             onExpandedStateChange={onExpandedStateChange}
             simpleValueComponent={SimpleValueComponent}
+            shouldCacheChildren={shouldCacheChildren}
+            getCachedChildren={getCachedChildren}
+            setCachedChildren={setCachedChildren}
           />
         );
       }
@@ -265,6 +315,13 @@ type TopLevelValueComponentProps = {
   fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
   expression: ?string;
   simpleValueComponent: ReactClass<any>;
+  // $FlowIssue -- Flow's object spread operator inference is buggy.
+  shouldCacheChildren: ?boolean;
+};
+
+type NodeData = {
+  isExpanded: boolean;
+  cachedChildren: ?ExpansionResult;
 };
 
 /**
@@ -277,19 +334,43 @@ type TopLevelValueComponentProps = {
 class TopLevelLazyNestedValueComponent extends React.Component {
   // $FlowIssue `evaluationResult` gets injected via HOC.
   props: TopLevelValueComponentProps;
-  expandedValuePaths: Set<string>;
+  expandedValuePaths: Map<string, NodeData>;
+  shouldCacheChildren: boolean;
 
   constructor(props: TopLevelValueComponentProps) {
     super(props);
-    this.expandedValuePaths = new Set();
+    this.expandedValuePaths = new Map();
     (this: any).handleExpansionChange = this.handleExpansionChange.bind(this);
+    (this: any).getCachedChildren = this.getCachedChildren.bind(this);
+    (this: any).setCachedChildren = this.setCachedChildren.bind(this);
+    this.shouldCacheChildren = this.props.shouldCacheChildren == null
+      ? false
+      : this.props.shouldCacheChildren;
   }
 
   handleExpansionChange(expandedValuePath: string, isExpanded: boolean): void {
+    const nodeData =
+      this.expandedValuePaths.get(expandedValuePath) || {isExpanded, cachedChildren: null};
     if (isExpanded) {
-      this.expandedValuePaths.add(expandedValuePath);
+      this.expandedValuePaths.set(expandedValuePath, {...nodeData, isExpanded: true});
     } else {
-      this.expandedValuePaths.delete(expandedValuePath);
+      this.expandedValuePaths.set(expandedValuePath, {...nodeData, isExpanded: false});
+    }
+  }
+
+  getCachedChildren(path: string): ?ExpansionResult {
+    const nodeData = this.expandedValuePaths.get(path);
+    if (nodeData == null) {
+      return null;
+    } else {
+      return nodeData.cachedChildren;
+    }
+  }
+
+  setCachedChildren(path: string, children: ExpansionResult): void {
+    const nodeData = this.expandedValuePaths.get(path);
+    if (nodeData != null) {
+      this.expandedValuePaths.set(path, {...nodeData, cachedChildren: children});
     }
   }
 
@@ -302,6 +383,9 @@ class TopLevelLazyNestedValueComponent extends React.Component {
           expandedValuePaths={this.expandedValuePaths}
           onExpandedStateChange={this.handleExpansionChange}
           path="root"
+          shouldCacheChildren={this.shouldCacheChildren}
+          getCachedChildren={this.getCachedChildren}
+          setCachedChildren={this.setCachedChildren}
         />
       </span>
     );

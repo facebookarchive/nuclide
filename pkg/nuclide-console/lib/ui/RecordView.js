@@ -47,6 +47,7 @@ export default class RecordView extends React.Component {
           evaluationResult={record.result}
           fetchChildren={getProperties}
           simpleValueComponent={simpleValueComponent}
+          shouldCacheChildren={true}
         />
       );
     } else if (record.result != null) {
@@ -59,6 +60,7 @@ export default class RecordView extends React.Component {
           evaluationResult={record.result}
           fetchChildren={getProperties}
           simpleValueComponent={SimpleValueComponent}
+          shouldCacheChildren={true}
         />
       );
     } else {
