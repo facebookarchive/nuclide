@@ -14,6 +14,7 @@ import type {
   CallbackDiagnosticProvider,
   LinterProvider,
   ObservableDiagnosticProvider,
+  ObservableDiagnosticUpdater,
 } from '../../nuclide-diagnostics-base';
 
 import {Disposable, CompositeDisposable} from 'atom';
@@ -32,6 +33,7 @@ const legacyLintOnTheFlySetting = 'nuclide-diagnostics-store.legacyLintOnTheFly'
 let disposables = null;
 let diagnosticStore = null;
 let diagnosticUpdater = null;
+let observableDiagnosticUpdater: ?ObservableDiagnosticUpdater;
 
 function addDisposable(disposable: IDisposable) {
   if (disposables) {
@@ -63,6 +65,20 @@ export function provideDiagnosticUpdates(): DiagnosticUpdater {
     };
   }
   return diagnosticUpdater;
+}
+
+export function provideObservableDiagnosticUpdates(): ObservableDiagnosticUpdater {
+  if (observableDiagnosticUpdater == null) {
+    const store = getDiagnosticStore();
+    observableDiagnosticUpdater = {
+      getFileMessageUpdates: path => store.getFileMessageUpdates(path),
+      projectMessageUpdates: store.getProjectMessageUpdates(),
+      allMessageUpdates: store.getAllMessageUpdates(),
+      applyFix: message => store.applyFix(message),
+      applyFixesForFile: file => store.applyFixesForFile(file),
+    };
+  }
+  return observableDiagnosticUpdater;
 }
 
 let consumeLegacyLinters = false;
