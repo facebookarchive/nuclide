@@ -1,5 +1,13 @@
 # Nuclide Changelog
 
+## v0.147.0
+
+Hotfix release. Fixes:
+
+* Conflict resolver opening invalid file paths.
+* Check heartbeat version while starting connection for smoother upgrades when the RPC protocol changes.
+* Properly handle `getDigestSync` for remote files that no longer exist.
+
 ## v0.146.0
 
 Hotfix release. The Context View was misbehaving and causing the remote hack service to timeout.
