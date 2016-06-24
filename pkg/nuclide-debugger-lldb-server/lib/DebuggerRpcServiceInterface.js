@@ -15,6 +15,7 @@ import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 export type AttachTargetInfo = {
   pid: number;
   name: string;
+  commandName: string;
   basepath?: string;
 };
 

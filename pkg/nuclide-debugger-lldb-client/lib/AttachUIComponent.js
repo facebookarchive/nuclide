@@ -87,7 +87,8 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     let hasSelectedItem = false;
     const filterRegex = new RegExp(this.state.filterText, 'i');
     const children = this.state.attachTargetInfos
-      .filter(item => filterRegex.test(item.name) || filterRegex.test(item.pid.toString()))
+      .filter(item => filterRegex.test(item.name) || filterRegex.test(item.pid.toString()) ||
+        filterRegex.test(item.commandName))
       .map((item, index) => {
         const isSelected = (this.state.selectedAttachTarget === item);
         if (isSelected) {
@@ -102,6 +103,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
             onDoubleClick={this._handleDoubleClickTableRow.bind(this, index)}>
           <td>{item.name}</td>
           <td>{item.pid}</td>
+          <td>{item.commandName}</td>
         </tr>;
       });
     // TODO: wrap into separate React components.
@@ -114,11 +116,12 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
           size="sm"
         />
         <div style={containerStyle}>
-          <table width="100%">
+          <table className="nuclide-debugger-lldb-client-process-table" width="100%">
             <thead>
-              <tr key="0" align="center">
-                <td>Name</td>
+            <tr key="0" align="center">
+                <td>Process Name</td>
                 <td>PID</td>
+                <td>Command Name</td>
               </tr>
             </thead>
             <tbody align="center">
