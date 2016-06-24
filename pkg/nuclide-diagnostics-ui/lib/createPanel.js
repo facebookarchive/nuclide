@@ -151,9 +151,16 @@ function createDiagnosticsPanel(
     /* immediate */ false);
   win.addEventListener('resize', resizeListener);
 
+  const didChangeVisibleSubscription = bottomPanel.onDidChangeVisible(visible => {
+    if (visible) {
+      render();
+    }
+  });
+
   // Currently, destroy() does not appear to be idempotent:
   // https://github.com/atom/atom/commit/734a79b7ec9f449669e1871871fd0289397f9b60#commitcomment-12631908
   bottomPanel.onDidDestroy(() => {
+    didChangeVisibleSubscription.dispose();
     activePaneItemSubscription.dispose();
     messagesDidUpdateSubscription.dispose();
     win.removeEventListener('resize', resizeListener);
