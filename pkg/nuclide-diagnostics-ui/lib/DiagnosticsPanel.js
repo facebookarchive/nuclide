@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {DiagnosticMessage} from '../../nuclide-diagnostics-base';
+
 import DiagnosticsPane from './DiagnosticsPane';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
@@ -23,22 +26,24 @@ import {
 } from '../../nuclide-ui/lib/Button';
 import {track} from '../../nuclide-analytics';
 
+type Props = {
+  diagnostics: Array<DiagnosticMessage>;
+  height: number;
+  width: number;
+  onDismiss: () => mixed;
+  onResize: () => mixed;
+  pathToActiveTextEditor: ?NuclideUri;
+  filterByActiveTextEditor: boolean;
+  onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed;
+  warnAboutLinter: boolean;
+  disableLinter: () => mixed;
+};
+
 /**
  * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.
  */
 class DiagnosticsPanel extends React.Component {
-  static propTypes = {
-    diagnostics: React.PropTypes.array.isRequired,
-    height: React.PropTypes.number.isRequired,
-    onDismiss: React.PropTypes.func.isRequired,
-    onResize: React.PropTypes.func.isRequired,
-    width: React.PropTypes.number.isRequired,
-    pathToActiveTextEditor: React.PropTypes.string,
-    filterByActiveTextEditor: React.PropTypes.bool.isRequired,
-    onFilterByActiveTextEditorChange: React.PropTypes.func.isRequired,
-    warnAboutLinter: React.PropTypes.bool.isRequired,
-    disableLinter: React.PropTypes.func.isRequired,
-  };
+  props: Props;
 
   constructor(props: mixed) {
     super(props);
@@ -56,7 +61,9 @@ class DiagnosticsPanel extends React.Component {
     let {diagnostics} = this.props;
     if (this.props.filterByActiveTextEditor && this.props.pathToActiveTextEditor) {
       const pathToFilterBy = this.props.pathToActiveTextEditor;
-      diagnostics = diagnostics.filter(diagnostic => diagnostic.filePath === pathToFilterBy);
+      diagnostics = diagnostics.filter(
+        diagnostic => diagnostic.scope === 'file' && diagnostic.filePath === pathToFilterBy,
+      );
     }
     diagnostics.forEach(diagnostic => {
       if (diagnostic.type === 'Error') {
