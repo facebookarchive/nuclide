@@ -149,7 +149,6 @@ export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): 
   consumeUpdatesCalled = true;
 
   tableConsumeDiagnosticUpdates(diagnosticUpdater);
-  addAtomCommands(diagnosticUpdater);
 }
 
 export function consumeObservableDiagnosticUpdates(
@@ -160,6 +159,8 @@ export function consumeObservableDiagnosticUpdates(
     return;
   }
   consumeObservableUpdatesCalled = true;
+
+  addAtomCommands(diagnosticUpdater);
 }
 
 function gutterConsumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
@@ -225,7 +226,7 @@ function tableConsumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): vo
   }
 }
 
-function addAtomCommands(diagnosticUpdater: DiagnosticUpdater): void {
+function addAtomCommands(diagnosticUpdater: ObservableDiagnosticUpdater): void {
   const fixAllInCurrentFile = () => {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
