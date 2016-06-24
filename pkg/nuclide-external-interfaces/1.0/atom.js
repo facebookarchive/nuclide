@@ -1270,6 +1270,7 @@ declare class atom$TextBuffer {
   emitter: atom$Emitter;
   refcount: number;
   wasModifiedBeforeRemove: boolean;
+  finishLoading(): atom$TextBuffer;
   updateCachedDiskContents(flushCache?: boolean, callback?: () => mixed): Promise<void>;
   emitModifiedStatusChanged(changed: boolean): void;
   destroy(): void;
