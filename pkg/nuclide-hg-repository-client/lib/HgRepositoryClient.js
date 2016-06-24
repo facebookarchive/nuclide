@@ -902,8 +902,8 @@ export class HgRepositoryClient {
     return this._service.rename(filePaths, destPath, after);
   }
 
-  remove(filePath: string): Promise<void> {
-    return this._service.remove(filePath);
+  remove(filePaths: Array<string>, after: boolean = false): Promise<void> {
+    return this._service.remove(filePaths, after);
   }
 
   addAll(filePaths: Array<NuclideUri>): Promise<void> {

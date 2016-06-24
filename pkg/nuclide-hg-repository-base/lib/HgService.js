@@ -64,6 +64,15 @@ const FILES_CHANGED_LIMIT = 1000;
 // [1] https://selenic.com/hg/file/3.7.2/mercurial/cmdutil.py#l2734
 const COMMIT_MESSAGE_STRIP_LINE = /^HG:.*(\n|$)/gm;
 
+// Suffixes of hg error messages that indicate that an error is safe to ignore,
+// and should not warrant a user-visible error. These generally happen
+// when performing an hg operation on a non-existent or untracked file.
+const IGNORABLE_ERROR_SUFFIXES = [
+  'abort: no files to copy',
+  'No such file or directory',
+  'does not exist!',
+];
+
 /**
  * These are status codes used by Mercurial's output.
  * Documented in http://selenic.com/hg/help/status.
@@ -788,7 +797,7 @@ export class HgService {
    * This checks the error string in order to avoid potentially slow hg pre-checks.
    */
   _rethrowErrorIfHelpful(e: Error): void {
-    if (!e.message.endsWith('abort: no files to copy\n')) {
+    if (!IGNORABLE_ERROR_SUFFIXES.some(s => e.message.endsWith(s + '\n'))) {
       throw e;
     }
   }
@@ -807,12 +816,11 @@ export class HgService {
       ...filePaths.map(p => nuclideUri.getPath(p)), // Sources
       nuclideUri.getPath(destPath),                 // Dest
     ];
-    const opts = {};
     if (after) {
       args.unshift('--after');
     }
     try {
-      await this._runSimpleInWorkingDirectory('rename', args, opts);
+      await this._runSimpleInWorkingDirectory('rename', args);
     } catch (e) {
       if (after) {
         this._rethrowErrorIfHelpful(e);
@@ -826,8 +834,21 @@ export class HgService {
    * Remove a file versioned under Hg.
    * @param filePath Which file should be removed.
    */
-  remove(filePath: NuclideUri): Promise<void> {
-    return this._runSimpleInWorkingDirectory('remove', ['-f', nuclideUri.getPath(filePath)]);
+  async remove(filePaths: Array<NuclideUri>, after?: boolean): Promise<void> {
+    const args = ['-f', ...filePaths.map(p => nuclideUri.getPath(p))];
+    if (after) {
+      args.unshift('--after');
+    }
+
+    try {
+      await this._runSimpleInWorkingDirectory('remove', args);
+    } catch (e) {
+      if (after) {
+        this._rethrowErrorIfHelpful(e);
+      } else {
+        throw e;
+      }
+    }
   }
 
   /**

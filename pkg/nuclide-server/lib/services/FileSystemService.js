@@ -192,6 +192,10 @@ export function rmdir(path: string): Promise<void> {
   return fsPromise.rmdir(path);
 }
 
+export async function rmdirAll(paths: Array<string>): Promise<void> {
+  await Promise.all(paths.map(p => fsPromise.rmdir(p)));
+}
+
 /**
  * The stat endpoint accepts the following query parameters:
  *

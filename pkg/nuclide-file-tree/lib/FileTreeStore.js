@@ -9,12 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {
-  RemoteDirectory,
-  RemoteFile,
-} from '../../nuclide-remote-connection';
-
 import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeHgHelpers from './FileTreeHgHelpers';
@@ -27,7 +21,6 @@ import {Minimatch} from 'minimatch';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
 import {getLogger} from '../../nuclide-logging';
-import shell from 'shell';
 
 import {WorkingSet} from '../../nuclide-working-sets';
 import {track} from '../../nuclide-analytics';
@@ -278,9 +271,7 @@ export class FileTreeStore {
   _onDispatch(payload: ActionPayload): void {
     switch (payload.actionType) {
       case ActionType.DELETE_SELECTED_NODES:
-        this._deleteSelectedNodes().catch(error => {
-          atom.notifications.addError('Deleting nodes failed with an error: ' + error.toString());
-        });
+        this._deleteSelectedNodes();
         break;
       case ActionType.SET_CWD:
         this._setCwdKey(payload.rootKey);
@@ -995,44 +986,11 @@ export class FileTreeStore {
 
   async _deleteSelectedNodes(): Promise<void> {
     const selectedNodes = this.getSelectedNodes();
-    await Promise.all(selectedNodes.map(async node => {
-      const entry = FileTreeHelpers.getEntryByKey(node.uri);
-
-      if (entry == null) {
-        return;
-      }
-      const path = entry.getPath();
-      const repository = node.repo;
-      if (repository != null && repository.getType() === 'hg') {
-        const hgRepository = ((repository: any): HgRepositoryClient);
-        try {
-          await hgRepository.remove(path);
-        } catch (e) {
-          const statuses = await hgRepository.getStatuses([path]);
-          const pathStatus = statuses.get(path);
-          const goodStatuses = [
-            StatusCodeNumber.ADDED,
-            StatusCodeNumber.CLEAN,
-            StatusCodeNumber.MODIFIED,
-          ];
-          if (goodStatuses.indexOf(pathStatus) !== -1) {
-            atom.notifications.addError(
-              'Failed to remove ' + path + ' from version control.  The file will ' +
-              'still get deleted but you will have to remove it from your VCS yourself.  Error: ' +
-              e.toString(),
-            );
-          }
-        }
-      }
-      if (FileTreeHelpers.isLocalEntry(entry)) {
-        // TODO: This special-case can be eliminated once `delete()` is added to `Directory`
-        // and `File`.
-        shell.moveItemToTrash(FileTreeHelpers.keyToPath(node.uri));
-      } else {
-        const remoteFile = ((entry: any): (RemoteFile | RemoteDirectory));
-        await remoteFile.delete();
-      }
-    }));
+    try {
+      await FileTreeHgHelpers.deleteNodes(selectedNodes.toJS());
+    } catch (e) {
+      atom.notifications.addError('Failed to delete entries: ' + e.message);
+    }
   }
 
   _expandNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {

@@ -9,12 +9,14 @@
  * the root directory of this source tree.
  */
 
-import FileTreeHelpers from './FileTreeHelpers';
 import type {FileTreeNode} from './FileTreeNode';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
+import shell from 'shell';
+import Immutable from 'immutable';
 import nuclideUri from '../../nuclide-remote-uri';
+import FileTreeHelpers from './FileTreeHelpers';
 import {triggerAfterWait} from '../../commons-node/promise';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 
@@ -152,9 +154,50 @@ async function _moveNodesUnprotected(
   }
 }
 
+/**
+ * Deletes an array of nodes.
+ */
+async function deleteNodes(nodes: Array<FileTreeNode>): Promise<void> {
+  // Filter out children nodes to avoid ENOENTs that happen when parents are
+  // deleted before its children. Convert to List so we can use groupBy.
+  const paths = Immutable.List(nuclideUri.collapse(
+    nodes.map(node => FileTreeHelpers.keyToPath(node.uri))
+  ));
+  const localPaths = paths.filter(path => nuclideUri.isLocal(path));
+  const remotePaths = paths.filter(path => nuclideUri.isRemote(path));
+
+  // 1) Move local nodes to trash.
+  localPaths.forEach(path => shell.moveItemToTrash(path));
+
+  // 2) Batch delete remote nodes, one request per hostname.
+  if (remotePaths.size > 0) {
+    const pathsByHost = remotePaths.groupBy(path => nuclideUri.getHostname(path));
+
+    await Promise.all(pathsByHost.map(async pathGroup => {
+      // Batch delete using fs service.
+      const service = getFileSystemServiceByNuclideUri(pathGroup.get(0));
+      await service.rmdirAll(pathGroup.map(path => nuclideUri.getPath(path)).toJS());
+    }));
+  }
+
+  // 3) Batch hg remove nodes that belong to an hg repo, one request per repo.
+  const nodesByHgRepository = Immutable.List(nodes)
+    .filter(node => getHgRepositoryForNode(node) != null)
+    .groupBy(node => getHgRepositoryForNode(node))
+    .entrySeq();
+
+  await Promise.all(nodesByHgRepository.map(async ([hgRepository, repoNodes]) => {
+    const hgPaths = nuclideUri.collapse(
+      repoNodes.map(node => FileTreeHelpers.keyToPath(node.uri)).toJS()
+    );
+    await hgRepository.remove(hgPaths, true /* after */);
+  }));
+}
+
 module.exports = {
   getHgRepositoryForNode,
   isValidRename,
   renameNode,
   moveNodes,
+  deleteNodes,
 };

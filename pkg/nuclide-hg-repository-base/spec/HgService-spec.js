@@ -292,7 +292,7 @@ describe('HgService', () => {
         wasCalled = true;
       });
       waitsForPromise(async () => {
-        await hgService.remove('file.txt');
+        await hgService.remove(['file.txt']);
         expect(wasCalled).toBeTruthy();
       });
     });
