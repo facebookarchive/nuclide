@@ -53,13 +53,14 @@ export default class RecordView extends React.Component {
     } else if (record.result != null) {
       const provider = this.props.getProvider(record.sourceId);
       invariant(provider != null);
-      const {getProperties} = provider;
+      const {getProperties, renderValue} = provider;
+      const simpleValueComponent = renderValue || SimpleValueComponent;
       invariant(getProperties != null);
       return (
         <LazyNestedValueComponent
           evaluationResult={record.result}
           fetchChildren={getProperties}
-          simpleValueComponent={SimpleValueComponent}
+          simpleValueComponent={simpleValueComponent}
           shouldCacheChildren={true}
         />
       );

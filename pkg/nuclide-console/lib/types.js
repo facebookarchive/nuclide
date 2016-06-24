@@ -48,12 +48,14 @@ export type OutputProvider = {
   // before we even have any messages.
   id: string;
   getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>;
+  renderValue?: ReactClass<any>;
 };
 
 export type RecordProvider = {
   records: Rx.Observable<Record>;
   id: string;
   getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>;
+  renderValue?: ReactClass<any>;
 };
 
 export type OutputService = {
