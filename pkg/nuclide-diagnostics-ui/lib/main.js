@@ -46,7 +46,10 @@ let activationState: ?ActivationState = null;
 let consumeUpdatesCalled = false;
 let consumeObservableUpdatesCalled = false;
 
-function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: CompositeDisposable) {
+function createPanel(
+  diagnosticUpdater: ObservableDiagnosticUpdater,
+  disposables: CompositeDisposable,
+) {
   invariant(activationState);
   const {
     atomPanel: panel,
@@ -147,8 +150,6 @@ export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): 
     return;
   }
   consumeUpdatesCalled = true;
-
-  tableConsumeDiagnosticUpdates(diagnosticUpdater);
 }
 
 export function consumeObservableDiagnosticUpdates(
@@ -160,6 +161,7 @@ export function consumeObservableDiagnosticUpdates(
   }
   consumeObservableUpdatesCalled = true;
 
+  tableConsumeDiagnosticUpdates(diagnosticUpdater);
   addAtomCommands(diagnosticUpdater);
 }
 
@@ -185,7 +187,7 @@ function gutterConsumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): v
   }));
 }
 
-function tableConsumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
+function tableConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
   invariant(subscriptions != null);
   const lazilyCreateTable = createPanel.bind(null, diagnosticUpdater, subscriptions);
 

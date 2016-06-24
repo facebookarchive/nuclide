@@ -11,7 +11,7 @@
 
 import type {
   DiagnosticMessage,
-  DiagnosticUpdater,
+  ObservableDiagnosticUpdater,
 } from '../../nuclide-diagnostics-base';
 
 import invariant from 'assert';
@@ -36,7 +36,7 @@ type PanelProps = {
 };
 
 function createDiagnosticsPanel(
-  diagnosticUpdater: DiagnosticUpdater,
+  diagnosticUpdater: ObservableDiagnosticUpdater,
   initialHeight: number,
   initialfilterByActiveTextEditor: boolean,
   disableLinter: () => void,
@@ -104,7 +104,7 @@ function createDiagnosticsPanel(
     }
   });
 
-  const messagesDidUpdateSubscription = diagnosticUpdater.onAllMessagesDidUpdate(
+  const messagesDidUpdateSubscription = diagnosticUpdater.allMessageUpdates.subscribe(
     (messages: Array<DiagnosticMessage>) => {
       props.diagnostics = messages;
       diagnosticsNeedSorting = true;
@@ -162,7 +162,7 @@ function createDiagnosticsPanel(
   bottomPanel.onDidDestroy(() => {
     didChangeVisibleSubscription.dispose();
     activePaneItemSubscription.dispose();
-    messagesDidUpdateSubscription.dispose();
+    messagesDidUpdateSubscription.unsubscribe();
     win.removeEventListener('resize', resizeListener);
     ReactDOM.unmountComponentAtNode(item);
   });
