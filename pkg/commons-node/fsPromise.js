@@ -57,11 +57,11 @@ function tempfile(options: any): Promise<string> {
 }
 
 /**
- * Searches upwards through the filesystem from pathToFile to find a file with
- *   fileName.
+ * Searches upward through the filesystem from pathToDirectory to find a file with
+ * fileName.
  * @param fileName The name of the file to find.
- * @param pathToDirectory Where to begin the search. Must be a path to a directory, not a
- *   file.
+ * @param pathToDirectory Where to begin the search. Must be a path to a directory,
+ *   not a file.
  * @return directory that contains the nearest file or null.
  */
 async function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
@@ -76,9 +76,36 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
     if (hasFile) {
       return currentPath;
     }
-
     if (nuclideUri.isRoot(currentPath)) {
       return null;
+    }
+    currentPath = nuclideUri.dirname(currentPath);
+  } while (true);
+}
+
+/**
+ * Searches upward through the filesystem from pathToDirectory to find the furthest
+ * file with fileName.
+ * @param fileName The name of the file to find.
+ * @param pathToDirectory Where to begin the search. Must be a path to a directory,
+ *   not a file.
+ * @param stopOnMissing Stop searching when we reach a directory without fileName.
+ * @return directory that contains the furthest file or null.
+ */
+async function findFurthestFile(
+  fileName: string,
+  pathToDirectory: string,
+  stopOnMissing: boolean = false,
+): Promise<?string> {
+  let currentPath = nuclideUri.resolve(pathToDirectory);
+  let result = null;
+  do { // eslint-disable-line no-constant-condition
+    const fileToFind = nuclideUri.join(currentPath, fileName);
+    const hasFile = await exists(fileToFind); // eslint-disable-line babel/no-await-in-loop
+    if ((!hasFile && stopOnMissing) || nuclideUri.isRoot(currentPath)) {
+      return result;
+    } else if (hasFile) {
+      result = currentPath;
     }
     currentPath = nuclideUri.dirname(currentPath);
   } while (true);
@@ -173,6 +200,7 @@ export default {
   tempdir,
   tempfile,
   findNearestFile,
+  findFurthestFile,
   getCommonAncestorDirectory,
   exists,
   mkdirp,
