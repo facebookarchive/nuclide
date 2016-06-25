@@ -46,17 +46,15 @@ export default class ConsoleView extends React.Component {
   props: Props;
   state: State;
 
-  _isScrolledToBottom: boolean;
+  _shouldScrollToBottom: boolean;
   _scrollPane: ?HTMLElement;
-  _userIsScrolling: boolean;
 
   constructor(props: Props) {
     super(props);
     this.state = {
       unseenMessages: false,
     };
-    this._isScrolledToBottom = true;
-    this._userIsScrolling = false;
+    this._shouldScrollToBottom = false;
     (this: any)._handleScrollPane = this._handleScrollPane.bind(this);
     (this: any)._handleScroll = this._handleScroll.bind(this);
     (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
@@ -64,14 +62,10 @@ export default class ConsoleView extends React.Component {
   }
 
   componentDidUpdate(prevProps: Props): void {
-    if (this.props.records.length === 0) {
-      this._isScrolledToBottom = true;
-    }
-
     // If records are added while we're scrolled to the bottom (or very very close, at least),
     // automatically scroll.
-    if (this.props.records.length !== prevProps.records.length) {
-      this._autoscroll();
+    if (this._shouldScrollToBottom) {
+      this._scrollToBottom();
     }
   }
 
@@ -93,11 +87,23 @@ export default class ConsoleView extends React.Component {
     );
   }
 
-  componentWillReceiveProps(props: Props): void {
-    // If we receive new messages after we've scrolled away from the bottom, show the "new messages"
-    // notification.
-    if (props.records !== this.props.records && !this._isScrolledToBottom) {
-      this.setState({unseenMessages: true});
+  _isScrolledToBottom(): boolean {
+    if (this._scrollPane == null) { return true; }
+    const {scrollTop, scrollHeight, offsetHeight} = this._scrollPane;
+    return scrollHeight - (offsetHeight + scrollTop) < 5;
+  }
+
+  componentWillReceiveProps(nextProps: Props): void {
+    if (nextProps.records !== this.props.records) {
+      const isScrolledToBottom = this._isScrolledToBottom();
+
+      this._shouldScrollToBottom = isScrolledToBottom;
+
+      // If we receive new messages after we've scrolled away from the bottom, show the "new messages"
+      // notification.
+      if (!isScrolledToBottom) {
+        this.setState({unseenMessages: true});
+      }
     }
   }
 
@@ -161,25 +167,20 @@ export default class ConsoleView extends React.Component {
   }
 
   _handleScroll(event: SyntheticMouseEvent): void {
-    this._userIsScrolling = true;
     this._handleScrollEnd();
   }
 
   _handleScrollEnd(): void {
-    this._userIsScrolling = false;
-
     if (!this._scrollPane) {
       return;
     }
 
-    const {scrollTop, scrollHeight, offsetHeight} = this._scrollPane;
-    this._isScrolledToBottom = scrollHeight - (offsetHeight + scrollTop) < 5;
-    this.setState({unseenMessages: this.state.unseenMessages && !this._isScrolledToBottom});
+    const isScrolledToBottom = this._isScrolledToBottom();
+    this.setState({unseenMessages: this.state.unseenMessages && !isScrolledToBottom});
   }
 
   _handleScrollPane(el: HTMLElement): void {
     this._scrollPane = el;
-    this._autoscroll();
   }
 
   _scrollToBottom(): void {
@@ -188,16 +189,7 @@ export default class ConsoleView extends React.Component {
     }
     // TODO: Animate?
     this._scrollPane.scrollTop = this._scrollPane.scrollHeight;
-  }
-
-  /**
-   * Scroll to the bottom of the list if autoscroll is active.
-   */
-  _autoscroll(): void {
-    if (!this._scrollPane || this._userIsScrolling || !this._isScrolledToBottom) {
-      return;
-    }
-    this._scrollToBottom();
+    this.setState({unseenMessages: false});
   }
 
 }
