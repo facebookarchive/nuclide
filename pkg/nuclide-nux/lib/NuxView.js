@@ -96,6 +96,7 @@ export class NuxView {
        error,
        error,
       );
+      return;
     }
     const elem: ?HTMLElement = this._selector();
     if (elem == null) {
