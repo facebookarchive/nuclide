@@ -56,19 +56,16 @@ function updateService(): void {
  * nuclide-context-view service and register themselves as a provider.
  */
 const Service = {
-  registerProvider(provider: ContextProvider): boolean {
-    if (manager != null && provider != null) {
-      return manager.registerProvider(provider);
-    } else {
-      return false;
-    }
+  registerProvider(provider: ContextProvider): void {
+    invariant(manager != null, 'Cannot register context provider with null ContextViewManager');
+    invariant(provider != null, 'Cannot register null context provider');
+    manager.registerProvider(provider);
   },
-  deregisterProvider(providerId: string): boolean {
-    if (manager != null && providerId != null) {
-      return manager.deregisterProvider(providerId);
-    } else {
-      return false;
-    }
+  deregisterProvider(providerId: string): void {
+    invariant(manager != null, 'Cannot deregister context provider from null ContextViewManager');
+    invariant(providerId != null || providerId === '',
+      'Cannot deregister context provider given null/empty providerId');
+    manager.deregisterProvider(providerId);
   },
 };
 
