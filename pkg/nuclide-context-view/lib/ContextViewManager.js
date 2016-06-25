@@ -21,9 +21,13 @@ import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import {observeTextEditorsPositions} from '../../commons-atom/debounced';
 import {Observable} from 'rxjs';
+import {getLogger} from '../../nuclide-logging';
 import {ContextViewPanel} from './ContextViewPanel';
 import {ProviderContainer} from './ProviderContainer';
 import {NoProvidersView} from './NoProvidersView';
+
+const EDITOR_DEBOUNCE_INTERVAL = 500;
+const POSITION_DEBOUNCE_INTERVAL = 500;
 
 export type ContextViewConfig = {
   width?: number;
@@ -40,6 +44,8 @@ export type ContextProvider = {
   id: string; // Unique ID of the provider (suggested: use the package name of the provider)
   title: string; // Display name
 };
+
+const logger = getLogger();
 
 /**
  * Manages registering/deregistering of definition service and context providers,
@@ -147,16 +153,22 @@ export class ContextViewManager {
   updateSubscription(): void {
     // Only subscribe if panel showing and there's something to subscribe to
     if (this.isVisible() && this._definitionService !== null) {
-      this._defServiceSubscription = observeTextEditorsPositions()
+      this._defServiceSubscription = observeTextEditorsPositions(
+        EDITOR_DEBOUNCE_INTERVAL, POSITION_DEBOUNCE_INTERVAL)
         .filter((pos: ?EditorPosition) => pos != null)
-        .map((editorPos: ?EditorPosition) => {
+        .map(async (editorPos: ?EditorPosition) => {
           invariant(editorPos != null);
           invariant(this._definitionService != null);
-          return this._definitionService.getDefinition(
-            editorPos.editor,
-            editorPos.position
-          );
-        }).flatMap((queryResult: ?Promise<?DefinitionQueryResult>) => {
+          try {
+            return await this._definitionService.getDefinition(
+              editorPos.editor,
+              editorPos.position
+            );
+          } catch (err) {
+            logger.error('nuclide-context-view: Error calling definition service: ', err);
+            return null;
+          }
+        }).switchMap((queryResult: Promise<?DefinitionQueryResult>) => {
           return (queryResult != null)
             ? Observable.fromPromise(queryResult)
             : Observable.empty();
