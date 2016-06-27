@@ -14,6 +14,7 @@ import type {PythonCompletion} from '../../nuclide-python-base/lib/PythonService
 import {trackTiming} from '../../nuclide-analytics';
 import {TYPES} from './constants';
 import {getCompletions} from './jedi-client-helpers';
+import {getAutocompleteArguments} from './config';
 
 const VALID_EMPTY_SUFFIX = /(\.|\()$/;
 const TRIGGER_COMPLETION_REGEX = /([\. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
@@ -60,7 +61,7 @@ export default class AutocompleteHelpers {
     }
 
     return result.map(completion => ({
-      snippet: getText(completion),
+      snippet: getAutocompleteArguments() ? getText(completion) : completion.text,
       type: TYPES[completion.type],
       description: completion.description,
     }));

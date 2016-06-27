@@ -13,6 +13,12 @@
       ]
     },
     "config": {
+      "autocompleteArguments": {
+        "title": "Autocomplete arguments",
+        "type": "boolean",
+        "default": true,
+        "description": "Autocomplete arguments for functions and classes."
+      },
       "pathToPython": {
         "title": "Path to Python Executable",
         "type": "string",

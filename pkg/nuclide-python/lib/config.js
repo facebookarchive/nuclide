@@ -12,6 +12,7 @@
 import featureConfig from '../../nuclide-feature-config';
 
 export type PythonConfig = {
+  autocompleteArguments: boolean;
   pathToPython: string;
   showGlobalVariables: boolean;
 };
@@ -19,6 +20,11 @@ export type PythonConfig = {
 // config can be null in tests.
 function getConfig(): ?PythonConfig {
   return ((featureConfig.get('nuclide-python'): any): ?PythonConfig);
+}
+
+export function getAutocompleteArguments(): boolean {
+  const config = getConfig();
+  return config == null ? true : config.autocompleteArguments;
 }
 
 export function getPythonPath(): string {
