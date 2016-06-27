@@ -132,6 +132,7 @@ export class NewDebuggerView extends React.Component {
         </Section>
         <Section collapsable={true} headline="Breakpoints">
           <BreakpointListComponent
+            actions={actions}
             breakpoints={this.state.breakpoints}
           />
         </Section>

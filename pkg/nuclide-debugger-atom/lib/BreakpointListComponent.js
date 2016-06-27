@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-import {
-  React,
-} from 'react-for-atom';
+import type DebuggerActions from './DebuggerActions';
 
+import {React} from 'react-for-atom';
 import invariant from 'assert';
 import nuclideUri from '../../nuclide-remote-uri';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
@@ -28,6 +27,7 @@ type FileLineBreakpoint = {
 export type FileLineBreakpoints = Array<FileLineBreakpoint>;
 
 type BreakpointListComponentProps = {
+  actions: DebuggerActions;
   breakpoints: ?FileLineBreakpoints;
 };
 
@@ -47,7 +47,11 @@ export class BreakpointListComponent extends React.Component {
   _handleBreakpointClick(breakpointIndex: number, event: SyntheticMouseEvent): void {
     const {breakpoints} = this.props;
     invariant(breakpoints != null);
-    // TODO jxg get breakpoint and go to selected path/line.
+    const {
+      path,
+      line,
+    } = breakpoints[breakpointIndex];
+    this.props.actions.openSourceLocation(nuclideUri.nuclideUriToUri(path), line);
   }
 
   render(): ?React.Element<any> {

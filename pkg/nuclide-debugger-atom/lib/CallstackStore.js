@@ -16,7 +16,7 @@ import {
   CompositeDisposable,
 } from 'atom';
 import {EventEmitter} from 'events';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../nuclide-remote-uri';
 import Constants from './Constants';
 
 type CallstackItem = {
@@ -72,7 +72,7 @@ export default class CallstackStore {
   }
 
   _openSourceLocation(sourceURL: string, lineNumber: number): void {
-    const path = remoteUri.uriToNuclideUri(sourceURL);
+    const path = nuclideUri.uriToNuclideUri(sourceURL);
     if (path != null && atom.workspace != null) { // only handle real files for now.
       atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
         editor.scrollToBufferPosition([lineNumber, 0]);
@@ -87,7 +87,7 @@ export default class CallstackStore {
 
   _setSelectedCallFrameLine(options: ?{sourceURL: string; lineNumber: number}) {
     if (options) {
-      const path = remoteUri.uriToNuclideUri(options.sourceURL);
+      const path = nuclideUri.uriToNuclideUri(options.sourceURL);
       const {lineNumber} = options;
       if (path != null && atom.workspace != null) { // only handle real files for now
         atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
