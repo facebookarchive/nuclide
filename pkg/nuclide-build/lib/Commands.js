@@ -36,6 +36,7 @@ export class Commands {
 
   createPanel(stateStream: Rx.BehaviorSubject<AppState>): void {
     const props = stateStream
+      .debounceTime(10)
       .map(state => {
         const activeBuildSystem = getActiveBuildSystem(state);
         const getExtraUi = activeBuildSystem != null && activeBuildSystem.getExtraUi != null
