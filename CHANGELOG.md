@@ -1,5 +1,29 @@
 # Nuclide Changelog
 
+## v0.148.0
+
+**General**
+
+* 2-3X faster remote connection initialization
+* Fix bug with autoscrolling console
+* Various bugfixes for build toolbar
+* Build system can be selected using command palette
+* Path search: Now respects Atom's “Ignored Names” setting
+* More responsive file tree deletion for hg projects
+
+**Buck**
+
+* Build / test output now appears in the console
+* Buck commands are now cancellable (press the stop button in the toolbar)
+
+**Python**
+
+* Autocompletion/hyperclick support for Buck-based Python projects
+  * Requires that a python_binary or python_unittest target for the source file has been built. Currently we don't automatically run buck build, so make sure to do so manually.
+  * Will not work if a dependent python_binary or python_unittest isn't present in a parent directory's TARGETS/BUCK file.
+* Import/module resolution for autocompletion/hyperclick relative to top-level module
+* New setting to toggle arguments autocompletion
+
 ## v0.147.0
 
 Hotfix release. Fixes:
