@@ -48,22 +48,26 @@ describe('Buck building via toolbar', () => {
       await atom.workspace.open(nuclideUri.join(projectPath, '.buckconfig'));
     });
 
-    waitsFor(
-      'the toolbar to be shown',
-      10,
-      () => {
-        atom.commands.dispatch(workspaceView, 'nuclide-build:toggle-toolbar-visibility');
-        buildToolbar = document.querySelector('.nuclide-build-toolbar');
-        return Boolean(buildToolbar);
-      },
-    );
-
     runs(() => {
       // Select the Buck build system.
       const commands = _getCommands();
       invariant(commands != null);
       commands.selectBuildSystem('buck');
     });
+
+    waitsFor(
+      'the toolbar to be shown',
+      10,
+      () => {
+        atom.commands.dispatch(
+          workspaceView,
+          'nuclide-build:toggle-toolbar-visibility',
+          {visible: true},
+        );
+        buildToolbar = document.querySelector('.nuclide-build-toolbar');
+        return Boolean(buildToolbar);
+      },
+    );
 
     let combobox: HTMLElement;
     waitsFor(
