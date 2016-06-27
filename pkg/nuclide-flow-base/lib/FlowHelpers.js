@@ -135,7 +135,8 @@ async function isFlowInstalled(): Promise<boolean> {
 
 async function canFindFlow(flowPath: string): Promise<boolean> {
   try {
-    await checkOutput('which', [flowPath]);
+    // https://github.com/facebook/nuclide/issues/561
+    await checkOutput(process.platform === 'win32' ? 'where' : 'which', [flowPath]);
     return true;
   } catch (e) {
     return false;
