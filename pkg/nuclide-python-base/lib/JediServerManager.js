@@ -12,6 +12,8 @@
 import typeof * as JediService from './JediService';
 
 import LRUCache from 'lru-cache';
+import fsPromise from '../../commons-node/fsPromise';
+import nuclideUri from '../../nuclide-remote-uri';
 import JediServer from './JediServer';
 import LinkTreeManager from './LinkTreeManager';
 
@@ -56,9 +58,10 @@ export default class JediServerManager {
       server = new JediServer(src, pythonPath, paths);
       this._servers.set(src, server);
 
-      // Add link tree path without awaiting so we don't block the service
-      // from returning.
+      // Add link tree and top-level module paths without awaiting,
+      // so we don't block the service from returning.
       this._addLinkTreePaths(src, server);
+      this._addTopLevelModulePath(src, server);
     }
 
     return await server.getService();
@@ -71,6 +74,21 @@ export default class JediServerManager {
     }
     const service = await server.getService();
     await service.add_paths(linkTreePaths);
+  }
+
+  async _addTopLevelModulePath(src: string, server: JediServer): Promise<void> {
+    // Find the furthest directory while an __init__.py is present, stopping
+    // search once a directory does not contain an __init__.py.
+    const topLevelModulePath = await fsPromise.findFurthestFile(
+      '__init__.py',
+      nuclideUri.dirname(src),
+      true /* stopOnMissing */,
+    );
+    if (server.isDisposed() || !topLevelModulePath) {
+      return;
+    }
+    const service = await server.getService();
+    await service.add_paths([topLevelModulePath]);
   }
 
   reset(src: string): void {

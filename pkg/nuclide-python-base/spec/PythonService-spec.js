@@ -287,4 +287,30 @@ describe('PythonService', () => {
     });
   });
 
+  describe('Module Resolution', () => {
+
+    it('can resolve imports that are relative to the top-level module', () => {
+      const projectFile = nuclideUri.join(__dirname, 'fixtures/test-project/testdir/lib/test2.py');
+      const src = fs.readFileSync(projectFile).toString('utf8');
+
+      // Test completion of a module name relative to the tlm.
+      waitsForPromise(async () => {
+        let response;
+        // Top-level module path may take some (short) amount of time to be
+        // found and added to paths.
+        while (response == null || response.length === 0) {
+          // line 7: from potato import h
+          // eslint-disable-next-line babel/no-await-in-loop
+          response = await getCompletions(projectFile, src, 6, 20);
+        }
+
+        invariant(response);
+        const completion = response[0];
+        expect(completion.text).toEqual('hello_world');
+        expect(completion.type).toEqual('function');
+      });
+    });
+
+  });
+
 });

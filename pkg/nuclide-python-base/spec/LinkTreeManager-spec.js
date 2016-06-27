@@ -29,7 +29,7 @@ process.env.NO_BUCKD = '1';
 describe('LinkTreeManager', () => {
 
   let linkTreeManager;
-  const projectDir = copyProject('test-project');
+  const projectDir = copyProject('test-buck-project');
   const mockBuckProject = {
     getOwner(src) {
       return ['//test', '//test2'];
