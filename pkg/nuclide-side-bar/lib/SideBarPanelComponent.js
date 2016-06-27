@@ -27,9 +27,8 @@ export default class SideBarPanelComponent extends React.Component {
   }
 
   render() {
-    let toolbar;
-    if (this.props.menuItems.length > 1) {
-      toolbar = (
+    return (
+      <div style={{display: 'flex', flex: 1, flexDirection: 'column'}} tabIndex={0}>
         <Toolbar location="top">
           <ToolbarLeft>
             <Dropdown
@@ -40,12 +39,6 @@ export default class SideBarPanelComponent extends React.Component {
             />
           </ToolbarLeft>
         </Toolbar>
-      );
-    }
-
-    return (
-      <div style={{display: 'flex', flex: 1, flexDirection: 'column'}} tabIndex={0}>
-        {toolbar}
         {React.cloneElement(React.Children.only(this.props.children), {ref: 'child'})}
       </div>
     );
