@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,6 +8,10 @@
  * the root directory of this source tree.
  */
 
-import Options from './Options';
+var _Options2;
 
-module.exports = new Options();
+function _Options() {
+  return _Options2 = _interopRequireDefault(require('./Options'));
+}
+
+module.exports = new (_Options2 || _Options()).default();

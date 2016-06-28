@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.dedupeUris = dedupeUris;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +13,24 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../nuclide-remote-uri';
+var _nuclideRemoteUri2;
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = _interopRequireDefault(require('../../nuclide-remote-uri'));
+}
 
-export function dedupeUris(uris: Array<NuclideUri>): Array<NuclideUri> {
-  const dedepped = uris.map(nuclideUri.trimTrailingSeparator);
+function dedupeUris(uris) {
+  var dedepped = uris.map((_nuclideRemoteUri2 || _nuclideRemoteUri()).default.trimTrailingSeparator);
   dedepped.sort();
 
-  let lastOKPrefix = '';
+  var lastOKPrefix = '';
 
-  return dedepped.filter((u, i) => {
+  return dedepped.filter(function (u, i) {
     if (i !== 0 && u.startsWith(lastOKPrefix)) {
       return false;
     }
 
-    lastOKPrefix = nuclideUri.ensureTrailingSeparator(dedepped[i]);
+    lastOKPrefix = (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.ensureTrailingSeparator(dedepped[i]);
     return true;
   });
 }

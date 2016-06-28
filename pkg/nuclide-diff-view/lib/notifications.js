@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.notifyInternalError = notifyInternalError;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +11,18 @@
  * the root directory of this source tree.
  */
 
-import {getLogger} from '../../nuclide-logging';
+var _nuclideLogging2;
 
-const logger = getLogger();
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
 
-export function notifyInternalError(error: Error, dismissable?: boolean = false) {
-  const errorMessage = 'Diff View Internal Error';
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
+
+function notifyInternalError(error) {
+  var dismissable = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+  var errorMessage = 'Diff View Internal Error';
   logger.error(errorMessage, error);
-  atom.notifications.addError(errorMessage, {detail: error.message, dismissable});
+  atom.notifications.addError(errorMessage, { detail: error.message, dismissable: dismissable });
 }

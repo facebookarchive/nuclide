@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -14,13 +15,12 @@
  * See t6913624.
  */
 
-export type HgRepositoryDescription = {
-  repoPath: string;
-  originURL: ?string;
-  workingDirectoryPath: string;
-};
+exports.getHgRepository = getHgRepository;
 
-export function getHgRepository(directoryPath: string): Promise<?HgRepositoryDescription> {
-  const {findHgRepository} = require('../../../nuclide-source-control-helpers');
+function getHgRepository(directoryPath) {
+  var _require = require('../../../nuclide-source-control-helpers');
+
+  var findHgRepository = _require.findHgRepository;
+
   return Promise.resolve(findHgRepository(directoryPath));
 }

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -50,5 +49,5 @@ module.exports = {
   // These are necessary to maintain contiguous runs of markers when relevant.
   comma: '$$comma$$',
   space: '$$space$$',
-  empty: '$$empty$$',
+  empty: '$$empty$$'
 };

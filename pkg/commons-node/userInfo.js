@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -15,34 +18,24 @@
  * we use. If we need more, consider https://github.com/sindresorhus/user-info
  */
 
-import os from 'os';
+var _os2;
 
-export type UserInfo = {
-  uid: number;
-  gid: number;
-  username: string;
-  homedir: string;
-  shell: ?string;
-};
+function _os() {
+  return _os2 = _interopRequireDefault(require('os'));
+}
 
-export default function(): UserInfo {
+exports.default = function () {
   return {
     uid: -1,
     gid: -1,
     username: getUsername(),
-    homedir: os.homedir(),
-    shell: null,
+    homedir: (_os2 || _os()).default.homedir(),
+    shell: null
   };
-}
+};
 
 // https://github.com/sindresorhus/username/blob/21344db/index.js
 function getUsername() {
-  return (
-    process.env.SUDO_USER ||
-    process.env.LOGNAME ||
-    process.env.USER ||
-    process.env.LNAME ||
-    process.env.USERNAME ||
-    ''
-  );
+  return process.env.SUDO_USER || process.env.LOGNAME || process.env.USER || process.env.LNAME || process.env.USERNAME || '';
 }
+module.exports = exports.default;

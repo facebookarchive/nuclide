@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +8,36 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {RemoteFile} from './RemoteFile';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {File} from 'atom';
-import {ServerConnection} from './ServerConnection';
-import nuclideUri from '../../nuclide-remote-uri';
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _ServerConnection2;
+
+function _ServerConnection() {
+  return _ServerConnection2 = require('./ServerConnection');
+}
+
+var _nuclideRemoteUri2;
+
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = _interopRequireDefault(require('../../nuclide-remote-uri'));
+}
 
 module.exports = {
-  getFileForPath(filePath: NuclideUri): ?(atom$File | RemoteFile) {
-    if (nuclideUri.isRemote(filePath)) {
-      const connection = ServerConnection.getForUri(filePath);
+  getFileForPath: function getFileForPath(filePath) {
+    if ((_nuclideRemoteUri2 || _nuclideRemoteUri()).default.isRemote(filePath)) {
+      var connection = (_ServerConnection2 || _ServerConnection()).ServerConnection.getForUri(filePath);
       if (!connection) {
         return null;
       }
       return connection.createFile(filePath);
     } else {
-      return new File(filePath);
+      return new (_atom2 || _atom()).File(filePath);
     }
-  },
+  }
 };

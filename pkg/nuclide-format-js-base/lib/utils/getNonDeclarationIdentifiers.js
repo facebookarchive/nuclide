@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,196 +8,251 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node, NodePath} from '../types/ast';
+var _getNamesFromID2;
 
-import getNamesFromID from './getNamesFromID';
-import jscs from 'jscodeshift';
+function _getNamesFromID() {
+  return _getNamesFromID2 = _interopRequireDefault(require('./getNamesFromID'));
+}
 
-type ConfigEntry = {
-  searchTerms: [any, Object];
-  getNodes: (path: NodePath) => Array<Node>;
-};
+var _jscodeshift2;
 
-const REACT_NODE = jscs.identifier('React');
+function _jscodeshift() {
+  return _jscodeshift2 = _interopRequireDefault(require('jscodeshift'));
+}
+
+var REACT_NODE = (_jscodeshift2 || _jscodeshift()).default.identifier('React');
 
 /**
  * These are the ways in which one might access an undeclared identifier. This
  * should only apply to actual code, not accessing undeclared types.
  */
-const CONFIG: Array<ConfigEntry> = [
-  // foo;
-  {
-    searchTerms: [jscs.ExpressionStatement],
-    getNodes: path => [path.node.expression],
-  },
+var CONFIG = [
+// foo;
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.ExpressionStatement],
+  getNodes: function getNodes(path) {
+    return [path.node.expression];
+  }
+},
 
-  // foo(bar);
-  {
-    searchTerms: [jscs.CallExpression],
-    getNodes: path => [path.node.callee].concat(path.node.arguments),
-  },
+// foo(bar);
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.CallExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.callee].concat(path.node.arguments);
+  }
+},
 
-  // foo.declared;
-  {
-    searchTerms: [jscs.MemberExpression],
-    getNodes: path => [path.node.object],
-  },
+// foo.declared;
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.MemberExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.object];
+  }
+},
 
-  // foo = bar;
-  {
-    searchTerms: [jscs.AssignmentExpression],
-    getNodes: path => [path.node.left, path.node.right],
-  },
+// foo = bar;
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.AssignmentExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.left, path.node.right];
+  }
+},
 
-  // class declared extends foo {}
-  {
-    searchTerms: [jscs.ClassDeclaration],
-    getNodes: path => [path.node.superClass],
-  },
+// class declared extends foo {}
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.ClassDeclaration],
+  getNodes: function getNodes(path) {
+    return [path.node.superClass];
+  }
+},
 
-  // var declared = foo;
-  {
-    searchTerms: [jscs.VariableDeclarator],
-    getNodes: path => [path.node.init],
-  },
+// var declared = foo;
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.VariableDeclarator],
+  getNodes: function getNodes(path) {
+    return [path.node.init];
+  }
+},
 
-  // switch (declared) { case foo: break; }
-  {
-    searchTerms: [jscs.SwitchCase],
-    getNodes: path => [path.node.test],
-  },
+// switch (declared) { case foo: break; }
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.SwitchCase],
+  getNodes: function getNodes(path) {
+    return [path.node.test];
+  }
+},
 
-  // {declared: foo}
-  {
-    searchTerms: [jscs.ObjectExpression],
-    // Generally props have a value, if it is a spread property it doesn't.
-    getNodes: path => path.node.properties.map(prop => prop.value || prop),
-  },
+// {declared: foo}
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.ObjectExpression],
+  // Generally props have a value, if it is a spread property it doesn't.
+  getNodes: function getNodes(path) {
+    return path.node.properties.map(function (prop) {
+      return prop.value || prop;
+    });
+  }
+},
 
-  // return foo;
-  {
-    searchTerms: [jscs.ReturnStatement],
-    getNodes: path => [path.node.argument],
-  },
+// return foo;
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.ReturnStatement],
+  getNodes: function getNodes(path) {
+    return [path.node.argument];
+  }
+},
 
-  // if (foo) {}
-  {
-    searchTerms: [jscs.IfStatement],
-    getNodes: path => [path.node.test],
-  },
+// if (foo) {}
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.IfStatement],
+  getNodes: function getNodes(path) {
+    return [path.node.test];
+  }
+},
 
-  // switch (foo) {}
-  {
-    searchTerms: [jscs.SwitchStatement],
-    getNodes: path => [path.node.discriminant],
-  },
+// switch (foo) {}
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.SwitchStatement],
+  getNodes: function getNodes(path) {
+    return [path.node.discriminant];
+  }
+},
 
-  // !foo;
-  {
-    searchTerms: [jscs.UnaryExpression],
-    getNodes: path => [path.node.argument],
-  },
+// !foo;
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.UnaryExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.argument];
+  }
+},
 
-  // foo || bar;
-  {
-    searchTerms: [jscs.BinaryExpression],
-    getNodes: path => [path.node.left, path.node.right],
-  },
+// foo || bar;
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.BinaryExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.left, path.node.right];
+  }
+},
 
-  // foo < bar;
-  {
-    searchTerms: [jscs.LogicalExpression],
-    getNodes: path => [path.node.left, path.node.right],
-  },
+// foo < bar;
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.LogicalExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.left, path.node.right];
+  }
+},
 
-  // foo ? bar : baz;
-  {
-    searchTerms: [jscs.ConditionalExpression],
-    getNodes: path => [
-      path.node.test,
-      path.node.alternate,
-      path.node.consequent,
-    ],
-  },
+// foo ? bar : baz;
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.ConditionalExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.test, path.node.alternate, path.node.consequent];
+  }
+},
 
-  // new Foo()
-  {
-    searchTerms: [jscs.NewExpression],
-    getNodes: path => [path.node.callee].concat(path.node.arguments),
-  },
+// new Foo()
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.NewExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.callee].concat(path.node.arguments);
+  }
+},
 
-  // foo++;
-  {
-    searchTerms: [jscs.UpdateExpression],
-    getNodes: path => [path.node.argument],
-  },
+// foo++;
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.UpdateExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.argument];
+  }
+},
 
-  // <Element attribute={foo} />
-  {
-    searchTerms: [jscs.JSXExpressionContainer],
-    getNodes: path => [path.node.expression],
-  },
+// <Element attribute={foo} />
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.JSXExpressionContainer],
+  getNodes: function getNodes(path) {
+    return [path.node.expression];
+  }
+},
 
-  // for (foo in bar) {}
-  {
-    searchTerms: [jscs.ForInStatement],
-    getNodes: path => [path.node.left, path.node.right],
-  },
+// for (foo in bar) {}
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.ForInStatement],
+  getNodes: function getNodes(path) {
+    return [path.node.left, path.node.right];
+  }
+},
 
-  // for (foo of bar) {}
-  {
-    searchTerms: [jscs.ForOfStatement],
-    getNodes: path => [path.node.left, path.node.right],
-  },
+// for (foo of bar) {}
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.ForOfStatement],
+  getNodes: function getNodes(path) {
+    return [path.node.left, path.node.right];
+  }
+},
 
-  // for (foo; bar; baz) {}
-  {
-    searchTerms: [jscs.ForStatement],
-    getNodes: path => [path.node.init, path.node.test, path.node.update],
-  },
+// for (foo; bar; baz) {}
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.ForStatement],
+  getNodes: function getNodes(path) {
+    return [path.node.init, path.node.test, path.node.update];
+  }
+},
 
-  // while (foo) {}
-  {
-    searchTerms: [jscs.WhileStatement],
-    getNodes: path => [path.node.test],
-  },
+// while (foo) {}
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.WhileStatement],
+  getNodes: function getNodes(path) {
+    return [path.node.test];
+  }
+},
 
-  // do {} while (foo)
-  {
-    searchTerms: [jscs.DoWhileStatement],
-    getNodes: path => [path.node.test],
-  },
+// do {} while (foo)
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.DoWhileStatement],
+  getNodes: function getNodes(path) {
+    return [path.node.test];
+  }
+},
 
-  // [foo]
-  {
-    searchTerms: [jscs.ArrayExpression],
-    getNodes: path => path.node.elements,
-  },
+// [foo]
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.ArrayExpression],
+  getNodes: function getNodes(path) {
+    return path.node.elements;
+  }
+},
 
-  // Special case. Any JSX elements will get transpiled to use React.
-  {
-    searchTerms: [jscs.JSXOpeningElement],
-    getNodes: path => [REACT_NODE],
-  },
+// Special case. Any JSX elements will get transpiled to use React.
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.JSXOpeningElement],
+  getNodes: function getNodes(path) {
+    return [REACT_NODE];
+  }
+},
 
-  // foo`something`
-  {
-    searchTerms: [jscs.TaggedTemplateExpression],
-    getNodes: path => [path.node.tag],
-  },
+// foo`something`
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.TaggedTemplateExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.tag];
+  }
+},
 
-  // `${bar}`
-  {
-    searchTerms: [jscs.TemplateLiteral],
-    getNodes: path => path.node.expressions,
-  },
+// `${bar}`
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.TemplateLiteral],
+  getNodes: function getNodes(path) {
+    return path.node.expressions;
+  }
+},
 
-  // function foo(a = b) {}
-  {
-    searchTerms: [jscs.AssignmentPattern],
-    getNodes: path => [path.node.right],
-  },
-];
+// function foo(a = b) {}
+{
+  searchTerms: [(_jscodeshift2 || _jscodeshift()).default.AssignmentPattern],
+  getNodes: function getNodes(path) {
+    return [path.node.right];
+  }
+}];
 
 /**
  * This will get a list of all identifiers that are not from a declaration.
@@ -206,20 +260,18 @@ const CONFIG: Array<ConfigEntry> = [
  * NOTE: this can get identifiers that are declared, if you want access to
  * identifiers that are access but undeclared see getUndeclaredIdentifiers
  */
-function getNonDeclarationIdentifiers(root: Collection): Set<string> {
-  const ids = new Set();
-  CONFIG.forEach(config => {
-    root
-      .find(config.searchTerms[0], config.searchTerms[1])
-      .forEach(path => {
-        const nodes = config.getNodes(path);
-        nodes.forEach(node => {
-          const names = getNamesFromID(node);
-          for (const name of names) {
-            ids.add(name);
-          }
-        });
+function getNonDeclarationIdentifiers(root) {
+  var ids = new Set();
+  CONFIG.forEach(function (config) {
+    root.find(config.searchTerms[0], config.searchTerms[1]).forEach(function (path) {
+      var nodes = config.getNodes(path);
+      nodes.forEach(function (node) {
+        var names = (0, (_getNamesFromID2 || _getNamesFromID()).default)(node);
+        for (var _name of names) {
+          ids.add(_name);
+        }
       });
+    });
   });
   return ids;
 }
