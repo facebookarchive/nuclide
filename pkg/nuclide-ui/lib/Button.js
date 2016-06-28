@@ -14,8 +14,8 @@ import type {Octicon} from './Octicons';
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
-type ButtonType = 'PRIMARY' | 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
-type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
+export type ButtonType = 'PRIMARY' | 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
+export type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
 type ButtonNodeName = 'button' | 'a';
 
 type Props = {
