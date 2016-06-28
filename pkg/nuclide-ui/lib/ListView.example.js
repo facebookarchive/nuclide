@@ -13,6 +13,7 @@ import {React} from 'react-for-atom';
 import {Block} from './Block';
 import {Listview} from './Listview';
 import {Checkbox} from './Checkbox';
+import {MultiSelectList} from './MultiSelectList';
 
 const NOOP = () => {};
 
@@ -64,6 +65,29 @@ const ListviewExample2 = (): React.Element<any> => (
   </Block>
 );
 
+class MultiSelectListExample extends React.Component {
+  state: {value: Array<number>};
+  constructor(props: void) {
+    super(props);
+    this.state = {value: [2]};
+  }
+  render(): React.Element<any> {
+    const options = [
+      {value: 1, label: 'One'},
+      {value: 2, label: 'Two'},
+      {value: 3, label: 'Three'},
+      {value: 4, label: 'Four'},
+    ];
+
+    return (
+      <MultiSelectList
+        options={options}
+        value={this.state.value}
+        onChange={value => { this.setState({value}); }}
+      />
+    );
+  }
+}
 
 export const ListviewExamples = {
   sectionName: 'Listview',
@@ -76,6 +100,10 @@ export const ListviewExamples = {
     {
       title: 'Arbitrary components as list items',
       component: ListviewExample2,
+    },
+    {
+      title: 'Multi-Select List',
+      component: MultiSelectListExample,
     },
   ],
 };
