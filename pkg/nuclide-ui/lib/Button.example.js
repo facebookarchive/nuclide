@@ -15,6 +15,7 @@ import {ButtonGroup} from './ButtonGroup';
 import {ButtonToolbar} from './ButtonToolbar';
 import {Block} from './Block';
 import {Dropdown} from './Dropdown';
+import {ModalMultiSelect} from './ModalMultiSelect';
 import {SplitButtonDropdown} from './SplitButtonDropdown';
 
 const ButtonSizeExample = (): React.Element<any> => (
@@ -153,6 +154,31 @@ const SplitButtonDropdownExample = (() => {
   );
 })();
 
+class ModalMultiSelectExample extends React.Component {
+  state: {value: Array<number>};
+
+  constructor(props: void) {
+    super(props);
+    this.state = {value: [2]};
+  }
+
+  render(): React.Element<any> {
+    const options = [
+      {value: 1, label: 'One'},
+      {value: 2, label: 'Two'},
+      {value: 3, label: 'Three'},
+      {value: 4, label: 'Four'},
+    ];
+    return (
+      <ModalMultiSelect
+        options={options}
+        onChange={value => { this.setState({value}); }}
+        value={this.state.value}
+      />
+    );
+  }
+}
+
 export const ButtonExamples = {
   sectionName: 'Buttons',
   description: 'For clicking things.',
@@ -188,6 +214,10 @@ export const ButtonExamples = {
     {
       title: 'Split Button Dropdown',
       component: SplitButtonDropdownExample,
+    },
+    {
+      title: 'Modal Multi-Select',
+      component: ModalMultiSelectExample,
     },
   ],
 };
