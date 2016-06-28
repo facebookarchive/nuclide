@@ -907,10 +907,6 @@ export class FileTreeStore {
   }
 
   clearFilter(): void {
-    // Don't waste time if the filter is already clear.
-    if (this._filter === '') {
-      return;
-    }
     this._filter = '';
     this._updateRoots(root => {
       return root.setRecursive(
@@ -921,8 +917,9 @@ export class FileTreeStore {
   }
 
   removeFilterLetter(): void {
+    const oldLength = this._filter.length;
     this._filter = this._filter.substr(0, this._filter.length - 1);
-    if (this._filter.length) {
+    if (oldLength > 1) {
       this._updateRoots(root => {
         return root.setRecursive(
           node => null,
@@ -935,7 +932,7 @@ export class FileTreeStore {
         );
       });
       this._emitChange();
-    } else {
+    } else if (oldLength === 1) {
       this.clearFilter();
     }
   }
