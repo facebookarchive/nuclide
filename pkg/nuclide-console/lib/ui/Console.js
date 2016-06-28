@@ -22,7 +22,7 @@ type Props = {
   currentExecutor: ?Executor;
   executors: Map<string, Executor>;
   getProvider: (id: string) => ?OutputProvider;
-  initialSelectedSourceId: string;
+  initialSelectedSourceIds: Array<string>;
   selectExecutor: (executorId: string) => void;
   sources: Array<{id: string; name: string}>;
 };
@@ -30,7 +30,7 @@ type Props = {
 type State = {
   filterText: string;
   enableRegExpFilter: boolean;
-  selectedSourceId: string;
+  selectedSourceIds: Array<string>;
 };
 
 /**
@@ -45,9 +45,9 @@ export default class Console extends React.Component {
     this.state = {
       filterText: '',
       enableRegExpFilter: false,
-      selectedSourceId: props.initialSelectedSourceId,
+      selectedSourceIds: props.initialSelectedSourceIds,
     };
-    (this: any)._selectSource = this._selectSource.bind(this);
+    (this: any)._selectSources = this._selectSources.bind(this);
     (this: any)._getExecutor = this._getExecutor.bind(this);
     (this: any)._updateFilterText = this._updateFilterText.bind(this);
     (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
@@ -77,8 +77,9 @@ export default class Console extends React.Component {
 
     const records = filterRecords(
       this.props.records,
-      this.state.selectedSourceId,
+      this.state.selectedSourceIds,
       pattern,
+      this.props.sources.length !== this.state.selectedSourceIds.length,
     );
 
     return (
@@ -87,16 +88,16 @@ export default class Console extends React.Component {
         records={records}
         enableRegExpFilter={this.state.enableRegExpFilter}
         getProvider={this.props.getProvider}
-        selectedSourceId={this.state.selectedSourceId}
-        selectSource={this._selectSource}
+        selectedSourceIds={this.state.selectedSourceIds}
+        selectSources={this._selectSources}
         toggleRegExpFilter={this._toggleRegExpFilter}
         updateFilterText={this._updateFilterText}
       />
     );
   }
 
-  _selectSource(sourceId: string): void {
-    this.setState({selectedSourceId: sourceId});
+  _selectSources(sourceIds: Array<string>): void {
+    this.setState({selectedSourceIds: sourceIds});
   }
 
   _toggleRegExpFilter(): void {
@@ -115,16 +116,17 @@ export default class Console extends React.Component {
 
 function filterRecords(
   records: Array<Record>,
-  selectedSourceId: string,
+  selectedSourceIds: Array<string>,
   filterPattern: ?RegExp,
+  filterSources: boolean,
 ): Array<Record> {
-  if (selectedSourceId === '' && filterPattern == null) { return records; }
+  if (!filterSources && filterPattern == null) { return records; }
 
   return records.filter(record => {
     // Only filter regular messages
     if (record.kind !== 'message') { return true; }
 
-    const sourceMatches = selectedSourceId === '' || selectedSourceId === record.sourceId;
+    const sourceMatches = selectedSourceIds.indexOf(record.sourceId) !== -1;
     const filterMatches = filterPattern == null || filterPattern.test(record.text);
     return sourceMatches && filterMatches;
   });

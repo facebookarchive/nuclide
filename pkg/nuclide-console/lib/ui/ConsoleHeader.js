@@ -13,7 +13,7 @@ import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
 import {ButtonGroup} from '../../../nuclide-ui/lib/ButtonGroup';
-import {Dropdown} from '../../../nuclide-ui/lib/Dropdown';
+import {ModalMultiSelect} from '../../../nuclide-ui/lib/ModalMultiSelect';
 import {Toolbar} from '../../../nuclide-ui/lib/Toolbar';
 import {ToolbarLeft} from '../../../nuclide-ui/lib/ToolbarLeft';
 import {ToolbarRight} from '../../../nuclide-ui/lib/ToolbarRight';
@@ -26,11 +26,11 @@ type Props = {
   clear: () => void;
   invalidFilterInput: boolean;
   enableRegExpFilter: boolean;
-  selectedSourceId: string;
+  selectedSourceIds: Array<string>;
   sources: Array<{id: string; name: string}>;
   onFilterTextChange: (filterText: string) => void;
   toggleRegExpFilter: () => void;
-  onSelectedSourceChange: (sourceId: string) => void;
+  onSelectedSourcesChange: (sourceIds: Array<string>) => void;
 };
 
 export default class ConsoleHeader extends React.Component {
@@ -40,6 +40,7 @@ export default class ConsoleHeader extends React.Component {
     super(props);
     (this: any)._handleClearButtonClick = this._handleClearButtonClick.bind(this);
     (this: any)._handleReToggleButtonClick = this._handleReToggleButtonClick.bind(this);
+    (this: any)._handleSelectedSourcesChange = this._handleSelectedSourcesChange.bind(this);
   }
 
   _handleClearButtonClick(event: SyntheticMouseEvent): void {
@@ -50,17 +51,24 @@ export default class ConsoleHeader extends React.Component {
     this.props.toggleRegExpFilter();
   }
 
+  _handleSelectedSourcesChange(sourceIds: Array<any>): void {
+    this.props.onSelectedSourcesChange(
+      sourceIds.length === 0
+        // We don't actually allow no sources to be selected. What would be the point? If nothing is
+        // selected, treat it as though everything is.
+        ? this.props.sources.map(source => source.id)
+        : sourceIds
+    );
+  }
+
   render(): ?React.Element<any> {
-    const options = [
-      ...this.props.sources
-        .slice()
-        .sort((a, b) => sortAlpha(a.name, b.name))
-        .map(source => ({
-          label: source.id,
-          value: source.name,
-        })),
-      {label: 'All Sources', value: ''},
-    ];
+    const options = this.props.sources
+      .slice()
+      .sort((a, b) => sortAlpha(a.name, b.name))
+      .map(source => ({
+        label: source.id,
+        value: source.name,
+      }));
 
     const filterInputClassName = classnames('nuclide-console-filter-field', {
       invalid: this.props.invalidFilterInput,
@@ -69,14 +77,14 @@ export default class ConsoleHeader extends React.Component {
     return (
       <Toolbar location="top">
         <ToolbarLeft>
-          <span className="nuclide-console-source-dropdown-container inline-block">
-            <Dropdown
-              size="sm"
-              options={options}
-              value={this.props.selectedSourceId}
-              onChange={this.props.onSelectedSourceChange}
-            />
-          </span>
+          <ModalMultiSelect
+            labelComponent={MultiSelectLabel}
+            size={ButtonSizes.SMALL}
+            options={options}
+            value={this.props.selectedSourceIds}
+            onChange={this._handleSelectedSourcesChange}
+            className="inline-block"
+          />
           <ButtonGroup className="inline-block">
             <AtomInput
               className={filterInputClassName}
@@ -116,4 +124,16 @@ function sortAlpha(a: string, b: string): number {
     return 1;
   }
   return 0;
+}
+
+type LabelProps = {
+  selectedOptions: Array<{value: string; label: string}>;
+};
+
+function MultiSelectLabel(props: LabelProps): React.Element<any> {
+  const {selectedOptions} = props;
+  const label = selectedOptions.length === 1
+    ? selectedOptions[0].label
+    : `${selectedOptions.length} Sources`;
+  return <span>Showing: {label}</span>;
 }

@@ -87,7 +87,7 @@ export default function createConsoleGadget(
           selectExecutor={commands.selectExecutor.bind(commands)}
           clearRecords={commands.clearRecords.bind(commands)}
           currentExecutor={this.state.currentExecutor}
-          initialSelectedSourceId=""
+          initialSelectedSourceIds={sources.map(source => source.id)}
           records={this.state.records}
           sources={sources}
           executors={this.state.executors}
