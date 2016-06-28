@@ -77,13 +77,23 @@ function accumulateState(state: AppState, action: Object): AppState {
     case ActionTypes.SOURCE_REMOVED: {
       const {source} = action.payload;
       const providers = new Map(state.providers);
+      const providerStatuses = new Map(state.providerStatuses);
       const providerSubscriptions = new Map(state.providerSubscriptions);
       providers.delete(source);
+      providerStatuses.delete(source);
       providerSubscriptions.delete(source);
       return {
         ...state,
         providers,
+        providerStatuses,
         providerSubscriptions,
+      };
+    }
+    case ActionTypes.STATUS_UPDATED: {
+      const {status, providerId} = action.payload;
+      return {
+        ...state,
+        providerStatuses: new Map(state.providerStatuses).set(providerId, status),
       };
     }
     case ActionTypes.UNREGISTER_EXECUTOR: {

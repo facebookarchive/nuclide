@@ -11,9 +11,11 @@
 
 import type {AppState, Executor, OutputProvider, RecordProvider} from './types';
 
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 import * as ActionTypes from './ActionTypes';
 import getCurrentExecutorId from './getCurrentExecutorId';
 import invariant from 'assert';
+import {Observable} from 'rxjs';
 
 export default class Commands {
 
@@ -100,11 +102,25 @@ export default class Commands {
     // Transform the messages into actions and merge them into the action stream.
     // TODO: Add enabling/disabling of registered source and only subscribe when enabled. That
     //       way, we won't trigger cold observer side-effects when we don't need the results.
-    const subscription = recordProvider.records
+    const messageActions = recordProvider.records
       .map(record => ({
         type: ActionTypes.MESSAGE_RECEIVED,
         payload: {record},
-      }))
+      }));
+
+    // TODO: Can this be delayed until sometime after registration?
+    const statusActions = recordProvider.observeStatus == null
+      ? Observable.empty()
+      : observableFromSubscribeFunction(recordProvider.observeStatus)
+          .map(status => ({
+            type: ActionTypes.STATUS_UPDATED,
+            payload: {
+              providerId: recordProvider.id,
+              status,
+            },
+          }));
+
+    const subscription = Observable.merge(messageActions, statusActions)
       .subscribe(action => this._observer.next(action));
 
     this._observer.next({

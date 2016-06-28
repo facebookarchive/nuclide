@@ -21,6 +21,7 @@ const baseAppState = {
     'a', createDummyExecutor('a'),
   ]]),
   providers: new Map(),
+  providerStatuses: new Map(),
   providerSubscriptions: new Map(),
   records: [],
 };

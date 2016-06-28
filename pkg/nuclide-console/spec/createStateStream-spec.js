@@ -20,6 +20,7 @@ const emptyAppState = {
   maxMessageCount: Number.POSITIVE_INFINITY,
   executors: new Map(),
   providers: new Map(),
+  providerStatuses: new Map(),
   providerSubscriptions: new Map(),
   records: [],
 };
