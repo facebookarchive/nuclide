@@ -11,6 +11,7 @@
 
 import type {Message} from './types';
 
+import {DisposableSubscription} from '../../commons-node/stream';
 import {track} from '../../nuclide-analytics';
 import Rx from 'rxjs';
 
@@ -30,13 +31,13 @@ export class LogTailer {
   _subscription: ?rx$ISubscription;
   _input$: Rx.Observable<Message>;
   _message$: Rx.Subject<Message>;
-  _running: boolean;
+  _running: Rx.BehaviorSubject<boolean>;
 
   constructor(input$: Rx.Observable<Message>, eventNames: EventNames) {
     this._input$ = input$;
     this._eventNames = eventNames;
     this._message$ = new Rx.Subject();
-    this._running = false;
+    this._running = new Rx.BehaviorSubject(false);
   }
 
   start(): void {
@@ -53,17 +54,23 @@ export class LogTailer {
     this._start(false);
   }
 
+  observeStatus(cb: (status: 'running' | 'stopped') => void): IDisposable {
+    return new DisposableSubscription(
+      this._running.map(isRunning => (isRunning ? 'running' : 'stopped')).subscribe(cb)
+    );
+  }
+
   _start(trackCall: boolean = true): void {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
 
-    if (this._running) {
+    if (this._running.getValue()) {
       return;
     }
     if (trackCall) {
       track(this._eventNames.start);
     }
 
-    this._running = true;
+    this._running.next(true);
 
     if (this._subscription != null) {
       this._subscription.unsubscribe();
@@ -79,14 +86,14 @@ export class LogTailer {
   }
 
   _stop(trackCall: boolean = true): void {
-    if (!this._running) {
+    if (!this._running.getValue()) {
       return;
     }
     if (trackCall) {
       track(this._eventNames.stop);
     }
 
-    this._running = false;
+    this._running.next(false);
 
     if (this._subscription != null) {
       this._subscription.unsubscribe();
