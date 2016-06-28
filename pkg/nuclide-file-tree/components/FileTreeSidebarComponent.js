@@ -176,6 +176,7 @@ class FileTreeSidebarComponent extends React.Component {
     return (
       <div
         className="nuclide-file-tree-toolbar-container"
+        onFocus={this._handleFocus}
         tabIndex={0}>
         {openFilesCaption}
         {openFilesList}
@@ -183,7 +184,6 @@ class FileTreeSidebarComponent extends React.Component {
         {foldersCaption}
         <PanelComponentScroller
           ref="scroller"
-          onFocus={this._handleFocus}
           onScroll={this._onViewChange}>
           <FileTree
             ref="fileTree"
