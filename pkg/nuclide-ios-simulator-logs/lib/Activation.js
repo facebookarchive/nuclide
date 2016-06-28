@@ -58,6 +58,9 @@ class Activation {
     return api.registerOutputProvider({
       id: 'iOS Simulator Logs',
       messages: this._logTailer.getMessages(),
+      observeStatus: cb => this._logTailer.observeStatus(cb),
+      start: () => { this._logTailer.start(); },
+      stop: () => { this._logTailer.stop(); },
     });
   }
 
