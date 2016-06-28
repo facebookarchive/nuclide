@@ -15,6 +15,7 @@ import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
 import {ButtonGroup} from '../../../nuclide-ui/lib/ButtonGroup';
+import {FunnelIcon} from './FunnelIcon';
 import {ModalMultiSelect} from '../../../nuclide-ui/lib/ModalMultiSelect';
 import {Toolbar} from '../../../nuclide-ui/lib/Toolbar';
 import {ToolbarLeft} from '../../../nuclide-ui/lib/ToolbarLeft';
@@ -129,6 +130,9 @@ export default class ConsoleHeader extends React.Component {
     return (
       <Toolbar location="top">
         <ToolbarLeft>
+          <span className="nuclide-console-header-filter-icon inline-block">
+            <FunnelIcon />
+          </span>
           <ModalMultiSelect
             labelComponent={MultiSelectLabel}
             optionComponent={MultiSelectOption}
