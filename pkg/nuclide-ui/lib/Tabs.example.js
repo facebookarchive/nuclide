@@ -77,7 +77,6 @@ export const TabExamples = {
   examples: [
     {
       title: '',
-      // $FlowIssue
       component: TabExample,
     },
   ],

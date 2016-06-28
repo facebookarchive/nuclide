@@ -57,7 +57,6 @@ export const RadioGroupExamples = {
   examples: [
     {
       title: '',
-      // $FlowIssue
       component: RadioGroupExample,
     },
   ],

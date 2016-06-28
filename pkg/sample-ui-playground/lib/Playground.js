@@ -47,7 +47,7 @@ type ComponentSpec = {
   description: string;
   examples: Array<{
     title: string;
-    component: React.Component<any, any, any> | () => React.Element<any>;
+    component: ReactClass<any> | () => React.Element<any>;
   }>;
 };
 
@@ -109,7 +109,6 @@ export class Playground extends React.Component {
       flattenedExample = [].concat(...examples.map((example, i) => {
         const {
           title,
-          // $FlowIssue
           component: Component,
         } = example;
         return [
