@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Record, Executor, OutputProvider} from '../types';
+import type {Record, Executor, OutputProvider, Source} from '../types';
 
 import debounce from '../../../commons-node/debounce';
 import {React} from 'react-for-atom';
@@ -32,7 +32,7 @@ type Props = {
   selectedSourceIds: Array<string>;
   selectExecutor: (executorId: string) => void;
   selectSources: (sourceIds: Array<string>) => void;
-  sources: Array<{id: string; name: string}>;
+  sources: Array<Source>;
   toggleRegExpFilter: () => void;
   updateFilterText: (filterText: string) => void;
   getProvider: (id: string) => ?OutputProvider;

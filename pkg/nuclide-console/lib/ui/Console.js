@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Executor, Record, OutputProvider} from '../types';
+import type {Executor, Record, OutputProvider, Source} from '../types';
 
 import ConsoleView from './ConsoleView';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -24,7 +24,7 @@ type Props = {
   getProvider: (id: string) => ?OutputProvider;
   initialSelectedSourceIds: Array<string>;
   selectExecutor: (executorId: string) => void;
-  sources: Array<{id: string; name: string}>;
+  sources: Array<Source>;
 };
 
 type State = {

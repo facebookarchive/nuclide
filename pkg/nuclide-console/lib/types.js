@@ -43,7 +43,7 @@ export type AppState = {
   providerSubscriptions: Map<string, rx$ISubscription>;
 };
 
-type OutputProviderStatus = 'running' | 'stopped';
+export type OutputProviderStatus = 'running' | 'stopped';
 
 type BasicOutputProvider = {
   messages: Rx.Observable<Message>;
@@ -58,6 +58,14 @@ type ControllableOutputProvider = BasicOutputProvider & {
   observeStatus(callback: (status: OutputProviderStatus) => mixed): IDisposable;
   start(): void;
   stop(): void;
+};
+
+export type Source = {
+  id: string;
+  name: string;
+  status: OutputProviderStatus;
+  start: ?() => void;
+  stop: ?() => void;
 };
 
 export type OutputProvider = BasicOutputProvider | ControllableOutputProvider;

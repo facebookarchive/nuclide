@@ -11,7 +11,7 @@
 
 import type Commands from '../Commands';
 import type {Gadget} from '../../../nuclide-gadgets/lib/types';
-import type {AppState, OutputProvider, Record, Executor} from '../types';
+import type {AppState, OutputProvider, OutputProviderStatus, Record, Executor} from '../types';
 import type Rx from 'rxjs';
 
 import Console from './Console';
@@ -21,6 +21,7 @@ import getCurrentExecutorId from '../getCurrentExecutorId';
 type State = {
   currentExecutor: ?Executor;
   providers: Map<string, OutputProvider>;
+  providerStatuses: Map<string, OutputProviderStatus>;
   records: Array<Record>;
   executors: Map<string, Executor>;
 };
@@ -43,6 +44,7 @@ export default function createConsoleGadget(
       this.state = {
         currentExecutor: null,
         providers: new Map(),
+        providerStatuses: new Map(),
         executors: new Map(),
         records: [],
       };
@@ -65,6 +67,7 @@ export default function createConsoleGadget(
           currentExecutor,
           executors: state.executors,
           providers: state.providers,
+          providerStatuses: state.providerStatuses,
           records: state.records,
         });
       });
@@ -79,6 +82,9 @@ export default function createConsoleGadget(
         .map(source => ({
           id: source.id,
           name: source.id,
+          status: this.state.providerStatuses.get(source.id),
+          start: source.start,
+          stop: source.stop,
         }));
       // TODO(matthewwithanm): serialize and restore `initialSelectedSourceId`
       return (

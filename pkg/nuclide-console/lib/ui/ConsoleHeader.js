@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Source} from '../types';
+
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
@@ -21,13 +23,14 @@ import {
   Button,
   ButtonSizes,
 } from '../../../nuclide-ui/lib/Button';
+import invariant from 'assert';
 
 type Props = {
   clear: () => void;
   invalidFilterInput: boolean;
   enableRegExpFilter: boolean;
   selectedSourceIds: Array<string>;
-  sources: Array<{id: string; name: string}>;
+  sources: Array<Source>;
   onFilterTextChange: (filterText: string) => void;
   toggleRegExpFilter: () => void;
   onSelectedSourcesChange: (sourceIds: Array<string>) => void;
@@ -41,6 +44,7 @@ export default class ConsoleHeader extends React.Component {
     (this: any)._handleClearButtonClick = this._handleClearButtonClick.bind(this);
     (this: any)._handleReToggleButtonClick = this._handleReToggleButtonClick.bind(this);
     (this: any)._handleSelectedSourcesChange = this._handleSelectedSourcesChange.bind(this);
+    (this: any)._renderOption = this._renderOption.bind(this);
   }
 
   _handleClearButtonClick(event: SyntheticMouseEvent): void {
@@ -61,6 +65,52 @@ export default class ConsoleHeader extends React.Component {
     );
   }
 
+  _renderProcessControlButton(source: Source): ?React.Element<any> {
+    let action;
+    let label;
+    let icon;
+    switch (source.status) {
+      case 'running': {
+        action = source.stop;
+        label = 'Stop Process';
+        icon = 'primitive-square';
+        break;
+      }
+      case 'stopped': {
+        action = source.start;
+        label = 'Start Process';
+        icon = 'triangle-right';
+        break;
+      }
+    }
+    if (action == null) { return; }
+    const clickHandler = event => {
+      event.stopPropagation();
+      invariant(action != null);
+      action();
+    };
+    return (
+      <Button
+        className="pull-right"
+        icon={icon}
+        onClick={clickHandler}>
+        {label}
+      </Button>
+    );
+  }
+
+  _renderOption(optionProps: {option: {label: string; value: string}}): React.Element<any> {
+    const {option} = optionProps;
+    const source = this.props.sources.find(s => s.id === option.value);
+    invariant(source != null);
+    return (
+      <span>
+        {option.label}
+        {this._renderProcessControlButton(source)}
+      </span>
+    );
+  }
+
   render(): ?React.Element<any> {
     const options = this.props.sources
       .slice()
@@ -74,11 +124,14 @@ export default class ConsoleHeader extends React.Component {
       invalid: this.props.invalidFilterInput,
     });
 
+    const MultiSelectOption = this._renderOption;
+
     return (
       <Toolbar location="top">
         <ToolbarLeft>
           <ModalMultiSelect
             labelComponent={MultiSelectLabel}
+            optionComponent={MultiSelectOption}
             size={ButtonSizes.SMALL}
             options={options}
             value={this.props.selectedSourceIds}
