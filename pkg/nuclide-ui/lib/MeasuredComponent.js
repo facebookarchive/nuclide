@@ -36,7 +36,7 @@ type Props = {
 
 /** A container which invokes a callback function supplied in props whenever the
  * container's height and width measurements change. The callback is invoked once
- * when the component is mounted.
+ * when the MeasuredComponent has mounted.
  **/
 export class MeasuredComponent extends React.Component {
 
