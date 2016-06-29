@@ -285,6 +285,9 @@ export function deactivate(): void {
   if (toolBar) {
     toolBar.removeItems();
   }
+
+  consumeUpdatesCalled = false;
+  consumeObservableUpdatesCalled = false;
 }
 
 export function serialize(): ActivationState {
