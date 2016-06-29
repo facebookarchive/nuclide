@@ -16,16 +16,6 @@ const {getOpenBracketInsertPosition} = ObjectiveCBracketBalancer;
 
 describe('ObjectiveCBracketBalancer', () => {
   describe('getOpenBracketInsertPosition', () => {
-    it('throws an error if the close bracket position does not contain a close bracket', () => {
-      const error = new Error('The close bracket position must contain a close bracket');
-      expect(() => getOpenBracketInsertPosition(new TextBuffer(''), Point.fromObject([0, 0])))
-          .toThrow(error);
-      expect(() => getOpenBracketInsertPosition(new TextBuffer(' ]'), Point.fromObject([0, 0])))
-          .toThrow(error);
-      expect(() => getOpenBracketInsertPosition(new TextBuffer('] '), Point.fromObject([0, 1])))
-          .toThrow(error);
-    });
-
     it('returns the correct point on a line that contains no space before the close'
       + ' bracket', () => {
       expect(getOpenBracketInsertPosition(new TextBuffer(']'), Point.fromObject([0, 0])))

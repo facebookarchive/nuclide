@@ -124,13 +124,6 @@ class ObjectiveCColonIndenter {
    * Return the column of the colon to align with, or null if it doesn't exist.
    */
   static getIndentedColonColumn(buffer: atom$TextBuffer, startPosition: atom$Point): ?number {
-    const startPositionText = buffer.getTextInRange(Range.fromObject(
-        [startPosition, startPosition.translate([0, 1])]));
-    if (startPositionText !== ':') {
-      throw new Error(
-        `The start position must contain a colon, found '${startPositionText}' instead`);
-    }
-
     // Look for the first colon after the start of the current method.
     //
     // The general approach is to iterate backwards, checking key characters.

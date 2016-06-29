@@ -16,17 +16,6 @@ const {getIndentedColonColumn} = ObjectiveCColonIndenter;
 
 describe('ObjectiveCColonIndenter', () => {
   describe('getIndentedColonColumn', () => {
-    it('throws an error if the close bracket position does not contain a colon', () => {
-      let error = new Error('The start position must contain a colon, found \'\' instead');
-      expect(() => getIndentedColonColumn(new TextBuffer(''), Point.fromObject([0, 0])))
-          .toThrow(error);
-      error = new Error('The start position must contain a colon, found \' \' instead');
-      expect(() => getIndentedColonColumn(new TextBuffer(' :'), Point.fromObject([0, 0])))
-          .toThrow(error);
-      expect(() => getIndentedColonColumn(new TextBuffer(': '), Point.fromObject([0, 1])))
-          .toThrow(error);
-    });
-
     it('returns null if no colons are found for a method declaration', () => {
       expect(getIndentedColonColumn(
           new TextBuffer(`

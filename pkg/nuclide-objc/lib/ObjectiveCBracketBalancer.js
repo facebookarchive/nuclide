@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {Point, Range} from 'atom';
+import {Point} from 'atom';
+
 import {trackOperationTiming} from '../../nuclide-analytics';
 import observeLanguageTextEditors from
   '../../commons-atom/observe-language-text-editors';
@@ -81,12 +82,6 @@ class ObjectiveCBracketBalancer {
     buffer: atom$TextBuffer,
     closeBracketPosition: Point,
   ): ?Point {
-    const closeBracketText = buffer.getTextInRange(Range.fromObject(
-        [closeBracketPosition, closeBracketPosition.translate([0, 1])]));
-    if (closeBracketText !== ']') {
-      throw new Error('The close bracket position must contain a close bracket');
-    }
-
     const startingLine = buffer.lineForRow(closeBracketPosition.row);
     let singleQuoteCount = 0;
     let doubleQuoteCount = 0;
