@@ -43,6 +43,8 @@ export type ContextProvider = {
   getElementFactory: () => ((props: {definition: ?Definition}) => React.Element<any>);
   id: string; // Unique ID of the provider (suggested: use the package name of the provider)
   title: string; // Display name
+  isEditorBased: boolean; // Whether the context provider displays an AtomTextEditor. This flag
+  // allows context view to display editor-based providers more nicely.
 };
 
 const logger = getLogger();
@@ -277,10 +279,10 @@ export class ContextViewManager {
     // Create collection of provider React elements to render, and
     // display them in order
     const providerElements: Array<React.Element<any>> =
-      this._contextProviders.map((provider, index) => {
-        const createElementFn = provider.getElementFactory();
+      this._contextProviders.map((prov, index) => {
+        const createElementFn = prov.getElementFactory();
         return (
-          <ProviderContainer title={provider.title} key={index}>
+          <ProviderContainer title={prov.title} key={index} isEditorBased={prov.isEditorBased}>
             {createElementFn({definition: this.currentDefinition})}
           </ProviderContainer>
         );

@@ -100,7 +100,7 @@ export class DefinitionPreviewView extends React.Component {
     this._loadAndScroll = loadAndScroll;
 
     return (
-      <div className="nuclide-definition-preview-container">
+      <div className="nuclide-definition-preview-editor">
         <AtomTextEditor
           ref="editor"
           gutterHidden={true}
@@ -109,12 +109,9 @@ export class DefinitionPreviewView extends React.Component {
           readOnly={true}
           textBuffer={textBuffer}
           syncTextContents={false}
-          autoGrow={true}
         />
       </div>
     );
-    // TODO add this to AtomTextEditor:
-    // grammar={get grammar from somewhere}
   }
 
   getEditor(): atom$TextEditor {

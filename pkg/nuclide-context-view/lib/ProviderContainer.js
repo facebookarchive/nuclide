@@ -11,9 +11,11 @@
 
 import {React} from 'react-for-atom';
 import {Section} from '../../nuclide-ui/lib/Section';
+import {ShowMoreComponent} from '../../nuclide-ui/lib/ShowMoreComponent';
 
 type ProviderContainerProps = {
   title: string;
+  isEditorBased: boolean;
   children?: React.Element<any>;
 };
 
@@ -24,11 +26,21 @@ export class ProviderContainer extends React.Component {
 
   props: ProviderContainerProps;
 
-  render(): React.Element<any> {
+  render(): ?React.Element<any> {
     return (
-      <Section headline={this.props.title} collapsable={true} collapsedByDefault={false}>
+      <div className="nuclide-context-view-provider-container">
+        <Section headline={this.props.title} collapsable={true}>
+          {this.props.isEditorBased ? this.props.children : this._textBasedComponent()}
+        </Section>
+      </div>
+    );
+  }
+
+  _textBasedComponent(): React.Element<any> {
+    return (
+      <ShowMoreComponent maxHeight={600} showMoreByDefault={false}>
         {this.props.children}
-      </Section>
+      </ShowMoreComponent>
     );
   }
 }
