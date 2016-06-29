@@ -28,14 +28,18 @@ module.exports = _client => {
           kind: "named",
           name: "Vector2"
         }
-      }]).then(args => _client.callRemoteFunction("Vector2/distance", "promise", args)).then(value => _client.unmarshal(value, {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 3
-        },
-        kind: "number"
-      }));
+      }]).then(args => {
+        return _client.callRemoteFunction("Vector2/distance", "promise", args);
+      }).then(value => {
+        return _client.unmarshal(value, {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 3
+          },
+          kind: "number"
+        });
+      });
     }
     constructor(arg0, arg1) {
       _client.createRemoteObject("Vector2", this, [arg0, arg1], [{
@@ -70,7 +74,33 @@ module.exports = _client => {
     }
     len() {
       return trackOperationTiming("Vector2.len", () => {
-        return _client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
+        return _client.marshalArguments(Array.from(arguments), []).then(args => {
+          return _client.marshal(this, {
+            kind: "named",
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 1
+            },
+            name: "Vector2"
+          }).then(id => {
+            return _client.callRemoteMethod(id, "len", "promise", args);
+          });
+        }).then(value => {
+          return _client.unmarshal(value, {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 4
+            },
+            kind: "number"
+          });
+        });
+      });
+    }
+    watchChanges() {
+      return Observable.fromPromise(_client.marshalArguments(Array.from(arguments), []).then(args => {
+        return _client.marshal(this, {
           kind: "named",
           location: {
             type: "source",
@@ -78,50 +108,40 @@ module.exports = _client => {
             line: 1
           },
           name: "Vector2"
-        }).then(id => _client.callRemoteMethod(id, "len", "promise", args))).then(value => _client.unmarshal(value, {
+        }).then(id => {
+          return _client.callRemoteMethod(id, "watchChanges", "observable", args);
+        });
+      })).concatMap(id => id).concatMap(value => {
+        return _client.unmarshal(value, {
           location: {
             type: "source",
             fileName: "InterfaceService.def",
-            line: 4
+            line: 6
           },
           kind: "number"
-        }));
+        });
       });
-    }
-    watchChanges() {
-      return Observable.fromPromise(_client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
-        kind: "named",
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 1
-        },
-        name: "Vector2"
-      }).then(id => _client.callRemoteMethod(id, "watchChanges", "observable", args)))).concatMap(id => id).concatMap(value => _client.unmarshal(value, {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 6
-        },
-        kind: "number"
-      }));
     }
     dispose() {
       return _client.disposeRemoteObject(this);
     }
-  }
+  };
 
   remoteModule.getCurrentDirection = function () {
-    return _client.marshalArguments(Array.from(arguments), []).then(args => _client.callRemoteFunction("InterfaceService/getCurrentDirection", "promise", args)).then(value => _client.unmarshal(value, {
-      location: {
-        type: "source",
-        fileName: "InterfaceService.def",
-        line: 14
-      },
-      kind: "named",
-      name: "Vector2"
-    }));
-  }
+    return _client.marshalArguments(Array.from(arguments), []).then(args => {
+      return _client.callRemoteFunction("InterfaceService/getCurrentDirection", "promise", args);
+    }).then(value => {
+      return _client.unmarshal(value, {
+        location: {
+          type: "source",
+          fileName: "InterfaceService.def",
+          line: 14
+        },
+        kind: "named",
+        name: "Vector2"
+      });
+    });
+  };
 
   remoteModule.Iface = class {
     p(arg0) {
@@ -151,7 +171,33 @@ module.exports = _client => {
             },
             kind: "number"
           }
-        }]).then(args => _client.marshal(this, {
+        }]).then(args => {
+          return _client.marshal(this, {
+            kind: "named",
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 30
+            },
+            name: "Iface"
+          }).then(id => {
+            return _client.callRemoteMethod(id, "p", "promise", args);
+          });
+        }).then(value => {
+          return _client.unmarshal(value, {
+            location: {
+              type: "source",
+              fileName: "InterfaceService.def",
+              line: 31
+            },
+            kind: "number"
+          });
+        });
+      });
+    }
+    f() {
+      return _client.marshalArguments(Array.from(arguments), []).then(args => {
+        return _client.marshal(this, {
           kind: "named",
           location: {
             type: "source",
@@ -159,49 +205,39 @@ module.exports = _client => {
             line: 30
           },
           name: "Iface"
-        }).then(id => _client.callRemoteMethod(id, "p", "promise", args))).then(value => _client.unmarshal(value, {
+        }).then(id => {
+          return _client.callRemoteMethod(id, "f", "void", args);
+        });
+      });
+    }
+    o() {
+      return Observable.fromPromise(_client.marshalArguments(Array.from(arguments), []).then(args => {
+        return _client.marshal(this, {
+          kind: "named",
           location: {
             type: "source",
             fileName: "InterfaceService.def",
-            line: 31
+            line: 30
           },
-          kind: "number"
-        }));
+          name: "Iface"
+        }).then(id => {
+          return _client.callRemoteMethod(id, "o", "observable", args);
+        });
+      })).concatMap(id => id).concatMap(value => {
+        return _client.unmarshal(value, {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 33
+          },
+          kind: "string"
+        });
       });
-    }
-    f() {
-      return _client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
-        kind: "named",
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 30
-        },
-        name: "Iface"
-      }).then(id => _client.callRemoteMethod(id, "f", "void", args)));
-    }
-    o() {
-      return Observable.fromPromise(_client.marshalArguments(Array.from(arguments), []).then(args => _client.marshal(this, {
-        kind: "named",
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 30
-        },
-        name: "Iface"
-      }).then(id => _client.callRemoteMethod(id, "o", "observable", args)))).concatMap(id => id).concatMap(value => _client.unmarshal(value, {
-        location: {
-          type: "source",
-          fileName: "InterfaceService.def",
-          line: 33
-        },
-        kind: "string"
-      }));
     }
     dispose() {
       return _client.disposeRemoteObject(this);
     }
-  }
+  };
   return remoteModule;
 };
 

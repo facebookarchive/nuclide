@@ -17,8 +17,10 @@ module.exports = _client => {
         kind: "named",
         name: "Baz"
       }
-    }]).then(args => _client.callRemoteFunction("IntersectionTypes/intersectionFunction", "void", args));
-  }
+    }]).then(args => {
+      return _client.callRemoteFunction("IntersectionTypes/intersectionFunction", "void", args);
+    });
+  };
 
   return remoteModule;
 };

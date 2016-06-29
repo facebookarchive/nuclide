@@ -28,8 +28,10 @@ module.exports = _client => {
         kind: "named",
         name: "MixedUnion"
       }
-    }]).then(args => _client.callRemoteFunction("UnionTypes/UnionFunc", "void", args));
-  }
+    }]).then(args => {
+      return _client.callRemoteFunction("UnionTypes/UnionFunc", "void", args);
+    });
+  };
 
   remoteModule.ObjectUnionFunc = function (arg0) {
     return _client.marshalArguments(Array.from(arguments), [{
@@ -43,8 +45,10 @@ module.exports = _client => {
         kind: "named",
         name: "Location"
       }
-    }]).then(args => _client.callRemoteFunction("UnionTypes/ObjectUnionFunc", "void", args));
-  }
+    }]).then(args => {
+      return _client.callRemoteFunction("UnionTypes/ObjectUnionFunc", "void", args);
+    });
+  };
 
   remoteModule.TypeFunc = function (arg0) {
     return _client.marshalArguments(Array.from(arguments), [{
@@ -58,8 +62,10 @@ module.exports = _client => {
         kind: "named",
         name: "Type"
       }
-    }]).then(args => _client.callRemoteFunction("UnionTypes/TypeFunc", "void", args));
-  }
+    }]).then(args => {
+      return _client.callRemoteFunction("UnionTypes/TypeFunc", "void", args);
+    });
+  };
 
   remoteModule.MDUFunc = function (arg0) {
     return _client.marshalArguments(Array.from(arguments), [{
@@ -73,8 +79,10 @@ module.exports = _client => {
         kind: "named",
         name: "MultipleDiscriminantUnion"
       }
-    }]).then(args => _client.callRemoteFunction("UnionTypes/MDUFunc", "void", args));
-  }
+    }]).then(args => {
+      return _client.callRemoteFunction("UnionTypes/MDUFunc", "void", args);
+    });
+  };
 
   return remoteModule;
 };

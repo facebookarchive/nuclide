@@ -142,15 +142,21 @@ export function generateProxy(
       case 'function':
         const functionName = preserveFunctionNames ? name : `${serviceName}/${name}`;
         // Generate a remote proxy for each module-level function.
-        statements.push(t.assignmentExpression('=',
-          t.memberExpression(remoteModule, t.identifier(name)),
-          generateFunctionProxy(functionName, definition.type)));
+        statements.push(t.expressionStatement(
+          t.assignmentExpression('=',
+            t.memberExpression(remoteModule, t.identifier(name)),
+            generateFunctionProxy(functionName, definition.type),
+          ),
+        ));
         break;
       case 'interface':
         // Generate a remote proxy for each remotable interface.
-        statements.push(t.assignmentExpression('=',
-          t.memberExpression(remoteModule, t.identifier(name)),
-          generateInterfaceProxy(definition)));
+        statements.push(t.expressionStatement(
+          t.assignmentExpression('=',
+            t.memberExpression(remoteModule, t.identifier(name)),
+            generateInterfaceProxy(definition),
+          ),
+        ));
         break;
       case 'alias':
         // nothing
@@ -198,11 +204,13 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
     t.identifier('args'),
   ]);
 
-  // Promise.all(...).then(args => ...)
+  // Promise.all(...).then(args => { return ...)
   const argumentsPromise = marshalArgsCall(funcType.argumentTypes);
   const marshalArgsAndCall = thenPromise(argumentsPromise, t.arrowFunctionExpression(
     [t.identifier('args')],
-    callExpression,
+    t.blockStatement([
+      t.returnStatement(callExpression),
+    ]),
   ));
 
   const result = generateUnmarshalResult(funcType.returnType, marshalArgsAndCall);
@@ -304,19 +312,25 @@ function generateRemoteDispatch(methodName: string, thisType: NamedType, funcTyp
     t.literal(funcType.returnType.kind),
     t.identifier('args')]);
 
-  // _client.marshal(this, thisType).then(id => ... )
+  // _client.marshal(this, thisType).then(id => { return ... })
   const idThenCall = thenPromise(
     generateTransformStatement(
       t.thisExpression(),
       thisType,
-      true),
-    t.arrowFunctionExpression([idIdentifier], remoteMethodCall));
+      true,
+    ),
+    t.arrowFunctionExpression([idIdentifier], t.blockStatement([
+      t.returnStatement(remoteMethodCall)]),
+    ),
+  );
 
-  // Promise.all(...).then(args => ...)
+  // Promise.all(...).then(args => { return ... })
   const argumentsPromise = marshalArgsCall(funcType.argumentTypes);
   const marshallThenCall = thenPromise(argumentsPromise, t.arrowFunctionExpression(
     [t.identifier('args')],
-    idThenCall,
+    t.blockStatement([
+      t.returnStatement(idThenCall),
+    ]),
   ));
 
   // methodName(arg0, ... argN) { return ... }
@@ -368,8 +382,9 @@ function generateUnmarshalResult(returnType: Type, rpcCallExpression) {
 // value => _client.unmarshal(value, type)
 function generateValueTransformer(type: Type) {
   const value = t.identifier('value');
-  return t.arrowFunctionExpression([value],
-    generateTransformStatement(value, type, false));
+  return t.arrowFunctionExpression([value], t.blockStatement([
+    t.returnStatement(generateTransformStatement(value, type, false)),
+  ]));
 }
 
 /**
