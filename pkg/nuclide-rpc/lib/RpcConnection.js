@@ -90,38 +90,54 @@ class Call {
   _timeoutMessage: string;
   _reject: (error: any) => void;
   _resolve: (result: any) => void;
+  _cleanup: () => void;
   _complete: boolean;
+  _timerId: ?number;
 
   constructor(
     message: RequestMessage,
     timeoutMessage: string,
     resolve: (result: any) => void,
     reject: (error: any) => void,
+    cleanup: () => void,
   ) {
     this._message = message;
     this._timeoutMessage = timeoutMessage;
     this._resolve = resolve;
     this._reject = reject;
+    this._cleanup = cleanup;
     this._complete = false;
+    this._timerId = setTimeout(() => {
+      this._timeout();
+    }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
   }
 
   reject(error): void {
     if (!this._complete) {
-      this._complete = true;
+      this.cleanup();
       this._reject(decodeError(this._message, error));
     }
   }
 
   resolve(result): void {
     if (!this._complete) {
-      this._complete = true;
+      this.cleanup();
       this._resolve(result);
     }
   }
 
-  timeout(): void {
+  cleanup(): void {
     if (!this._complete) {
       this._complete = true;
+      clearTimeout(this._timerId);
+      this._timerId = null;
+      this._cleanup();
+    }
+  }
+
+  _timeout(): void {
+    if (!this._complete) {
+      this.cleanup();
       this._reject(new Error(
         `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for id: ` +
         `${this._message.id}, ${this._timeoutMessage}.`
@@ -325,16 +341,11 @@ export class RpcConnection<TransportType: Transport> {
             message,
             timeoutMessage,
             resolve,
-            reject
-          ));
-
-          setTimeout(() => {
-            const call = this._calls.get(message.id);
-            if (call != null) {
+            reject,
+            () => {
               this._calls.delete(message.id);
-              call.timeout();
-            }
-          }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
+            },
+          ));
         });
       case 'observable':
         let subscriptions = this._subscriptions.get(message.id);
@@ -552,11 +563,18 @@ export class RpcConnection<TransportType: Transport> {
     const id = message.id;
     switch (message.type) {
       case 'response': {
-        const {result} = message;
         const call = this._calls.get(id);
         if (call != null) {
-          this._calls.delete(id);
+          const {result} = message;
           call.resolve(result);
+        }
+        break;
+      }
+      case 'error-response': {
+        const call = this._calls.get(id);
+        if (call != null) {
+          const {error} = message;
+          call.reject(error);
         }
         break;
       }
@@ -580,15 +598,6 @@ export class RpcConnection<TransportType: Transport> {
         const {error} = message;
         subscriptions.forEach(subscription => subscription.error(error));
         subscriptions.clear();
-        break;
-      }
-      case 'error-response': {
-        const errorCall = this._calls.get(id);
-        if (errorCall != null) {
-          this._calls.delete(id);
-          const {error} = message;
-          errorCall.reject(error);
-        }
         break;
       }
       default:
