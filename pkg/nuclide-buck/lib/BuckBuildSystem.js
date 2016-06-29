@@ -289,9 +289,9 @@ export class BuckBuildSystem {
 
     let buckObservable;
     if (subcommand === 'install') {
-      let appArgs = [];
       let rnObservable = Observable.empty();
-      if (store.isReactNativeServerMode()) {
+      const isReactNativeServerMode = store.isReactNativeServerMode();
+      if (isReactNativeServerMode) {
         rnObservable = Observable.fromPromise(
           this._getReactNativeServerCommand(buckProject),
         ).map(serverCommand => {
@@ -299,7 +299,6 @@ export class BuckBuildSystem {
             const rnActions = this._getReactNativeServerActions();
             rnActions.startServer(serverCommand);
             rnActions.startNodeExecutorServer();
-            appArgs = REACT_NATIVE_APP_FLAGS;
           }
         }).ignoreElements();
       }
@@ -307,7 +306,11 @@ export class BuckBuildSystem {
         buckProject.installWithOutput(
           [buildTarget],
           store.getSimulator(),
-          {run: true, debug, appArgs},
+          {
+            run: true,
+            debug,
+            appArgs: isReactNativeServerMode ? REACT_NATIVE_APP_FLAGS : [],
+          },
         ),
       );
     } else if (subcommand === 'build') {
