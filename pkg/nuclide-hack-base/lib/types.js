@@ -10,7 +10,6 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {SymbolTypeValue} from '../../nuclide-hack-common';
 import type {HackSearchPosition} from './HackService';
 
 export type HHSearchPosition = {
@@ -26,12 +25,4 @@ export type HHSearchPosition = {
 export type HackSearchResult = {
   hackRoot: NuclideUri;
   result: Array<HackSearchPosition>;
-};
-
-export type HackSymbolNameResult = {
-  name: string;
-  type: SymbolTypeValue;
-  line: number;
-  column: number;
-  length: number;
 };

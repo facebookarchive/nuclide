@@ -87,14 +87,6 @@ export type HackLanguage = {
     filePath: NuclideUri,
   ): Promise<?HackCoverageResult>;
 
-  getDefinition(
-      filePath: NuclideUri,
-      contents: string,
-      lineNumber: number,
-      column: number,
-      lineText: string
-    ): Promise<Array<DefinitionResult>>;
-
   getIdeDefinition(
       filePath: NuclideUri,
       contents: string,

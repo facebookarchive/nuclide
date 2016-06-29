@@ -13,7 +13,6 @@ import typeof * as ServerHackLanguageType from '../lib/ServerHackLanguage';
 import type {ServerHackLanguage} from '../lib/ServerHackLanguage';
 import type {
   HackCompletionsResult,
-  HackDefinitionResult,
   HackDiagnosticsResult,
   HackTypedRegion,
   HackTypeAtPosResult,
@@ -197,31 +196,6 @@ AUTO332class HackClass {}`);
         percentage: 0,
         uncoveredRegions: [{type: 'unchecked', line: 1, start: 4, end: 6}],
       });
-    });
-  });
-
-  it('getDefinition', () => {
-    waitsForPromise(async () => {
-      const definition = {
-        path: filePath,
-        line: 42,
-        column: 24,
-        name: 'foo',
-        length: 3,
-        scope: '',
-        additionalInfo: '',
-      };
-
-      const serviceResults: HackDefinitionResult = {
-        hackRoot: basePath,
-        definitions: [definition],
-      };
-      mockService.getIdentifierDefinition.andReturn(serviceResults);
-
-      const result = await hackLanguage.getDefinition(filePath, contents, 1, 2, 'howdy');
-
-      expect(mockService.getIdentifierDefinition).toHaveBeenCalledWith(filePath, contents, 1, 2);
-      expect(result).toEqual([definition]);
     });
   });
 

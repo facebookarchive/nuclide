@@ -9,46 +9,21 @@
  * the root directory of this source tree.
  */
 
-const HACK_GRAMMARS = ['text.html.hack', 'text.html.php'];
-
-export type CompletionTypeValue = 0 | 1 | 2 | 3 | 4 | 5;
-export type SymbolTypeValue = 0| 1 | 2 | 3 | 4;
-export type SearchResultTypeValue = 0| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-
 /**
- * Constants here represent enums with the same values got from hh_client and the Hack web worker.
+ * Constants here represent enums with the same values got from hh_client.
  */
-module.exports = {
+export const HACK_GRAMMARS = ['text.html.hack', 'text.html.php'];
+export const HACK_GRAMMARS_SET = new Set(HACK_GRAMMARS);
 
-  CompletionType: Object.freeze({
-    ID: 0,
-    NEW: 1,
-    TYPE: 2,
-    CLASS_GET: 3,
-    VAR: 4,
-    NONE: 5,
-  }),
-
-  SymbolType: Object.freeze({
-    CLASS: 0,
-    FUNCTION: 1,
-    METHOD: 2,
-    LOCAL: 3,
-    UNKNOWN: 4,
-  }),
-
-  SearchResultType: Object.freeze({
-    CLASS: 0,
-    TYPEDEF: 1,
-    METHOD: 2,
-    CLASS_VAR: 3,
-    FUNCTION: 4,
-    CONSTANT: 5,
-    INTERFACE: 6,
-    ABSTRACT_CLASS: 7,
-    TRAIT: 8,
-  }),
-
-  HACK_GRAMMARS,
-  HACK_GRAMMARS_SET: new Set(HACK_GRAMMARS),
-};
+export type SearchResultTypeValue = 0| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+export const SearchResultType = Object.freeze({
+  CLASS: 0,
+  TYPEDEF: 1,
+  METHOD: 2,
+  CLASS_VAR: 3,
+  FUNCTION: 4,
+  CONSTANT: 5,
+  INTERFACE: 6,
+  ABSTRACT_CLASS: 7,
+  TRAIT: 8,
+});

@@ -10,12 +10,10 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {CompletionResult, DefinitionResult, Definition} from './HackLanguage';
+import type {CompletionResult, Definition} from './HackLanguage';
 import type {
   HackCompletion,
   HackDiagnostic,
-  HackDefinitionResult,
-  HackSearchPosition,
   HackRange,
   HackReference,
   HackIdeOutline,
@@ -130,20 +128,6 @@ export class ServerHackLanguage {
     return this._hackService.getIdeOutline(filePath, contents);
   }
 
-  async getDefinition(
-    filePath: NuclideUri,
-    contents: string,
-    lineNumber: number,
-    column: number,
-    lineText: string,
-  ): Promise<Array<DefinitionResult>> {
-    const definitionResult = await this._hackService.getIdentifierDefinition(
-      filePath, contents, lineNumber, column
-    );
-    const identifierResult = processDefinitionsForXhp(definitionResult, column, lineText);
-    return identifierResult.length === 1 ? identifierResult : [];
-  }
-
   async getIdeDefinition(
     filePath: NuclideUri,
     contents: string,
@@ -217,9 +201,6 @@ function hackRangeToAtomRange(position: HackRange): atom$Range {
       );
 }
 
-// The xhp char regex include : and - to match xhp tags like <ui:button-group>.
-const xhpCharRegex = /[\w:-]/;
-
 function processCompletions(completionsResponse: Array<HackCompletion>):
     Array<CompletionResult> {
   return completionsResponse.map(completion => {
@@ -249,36 +230,4 @@ function processCompletions(completionsResponse: Array<HackCompletion>):
 function markFileForCompletion(contents: string, offset: number): string {
   return contents.substring(0, offset) +
       'AUTO332' + contents.substring(offset, contents.length);
-}
-
-function processDefinitionsForXhp(
-  definitionResult: ?HackDefinitionResult,
-  column: number,
-  lineText: string,
-): Array<DefinitionResult> {
-  if (!definitionResult) {
-    return [];
-  }
-  const {definitions} = definitionResult;
-  return definitions.map((definition: HackSearchPosition) => {
-    let {name} = definition;
-    if (name.startsWith(':')) {
-      // XHP class name, usages omit the leading ':'.
-      name = name.substring(1);
-    }
-    const definitionIndex = lineText.indexOf(name);
-    if (
-      definitionIndex === -1 ||
-      definitionIndex >= column ||
-      !xhpCharRegex.test(lineText.substring(definitionIndex, column))
-    ) {
-      return {...definition};
-    } else {
-      return {
-        ...definition,
-        searchStartColumn: definitionIndex,
-        searchEndColumn: definitionIndex + definition.name.length,
-      };
-    }
-  });
 }

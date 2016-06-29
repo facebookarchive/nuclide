@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {HackSearchResult} from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
@@ -82,11 +81,6 @@ export type HackCompletionsResult = {
   completions: Array<HackCompletion>;
 };
 
-export type HackDefinitionResult = {
-  hackRoot: NuclideUri;
-  definitions: Array<HackSearchPosition>;
-};
-
 export type HackReferencesResult = {
   hackRoot: NuclideUri;
   references: Array<HackReference>;
@@ -143,12 +137,6 @@ export type HackFormatSourceResult = {
   error_message: string;
   result: string;
   internal_error: boolean;
-};
-
-export type HackGetMethodNameResult = {
-  name: string;
-  result_type: 'class' | 'method' | 'function' | 'local';
-  pos: HackRange;
 };
 
 export type HackDefinition = {
@@ -217,32 +205,6 @@ export async function getCompletions(
     hackRoot,
     completions,
   };
-}
-
-export async function getIdentifierDefinition(
-  file: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?HackDefinitionResult> {
-  const hhResult = await callHHClient(
-    // The `indetify-function` result is text, but passing --json option
-    // will eliminate any hh status messages that's irrelevant.
-    /*args*/ ['--json', '--identify-function', formatLineColumn(line, column)],
-    /*errorStream*/ false,
-    /*outputJson*/ false,
-    /*processInput*/ contents,
-    /*cwd*/ file,
-  );
-  if (!hhResult) {
-    return null;
-  }
-  const identifier = (hhResult.result || '').trim();
-  if (!identifier) {
-    return null;
-  }
-  const searchResponse = await getSearchResults(file, identifier);
-  return selectDefinitionSearchResults(searchResponse, identifier);
 }
 
 export async function getDefinition(
@@ -322,29 +284,6 @@ export function getHackEnvironmentDetails(
   setUseIde(useIdeConnection);
   logger.setLogLevel(logLevel);
   return getHackExecOptions(localFile);
-}
-
-function selectDefinitionSearchResults(
-  searchReposnse: ?HackSearchResult,
-  query: string,
-): ?HackDefinitionResult {
-  if (!searchReposnse) {
-    return null;
-  }
-  const {result: searchResults, hackRoot} = searchReposnse;
-  const matchingResults = searchResults.filter(result => {
-    // If the request had a :: in it, it's a full name, so we should compare to
-    // the name of the result in that format.
-    let fullName = result.name;
-    if (query.indexOf('::') !== -1 && result.scope) {
-      fullName = result.scope + '::' + fullName;
-    }
-    return fullName === query;
-  });
-  return {
-    hackRoot,
-    definitions: matchingResults,
-  };
 }
 
 /**
@@ -471,31 +410,6 @@ export async function formatSource(
     return null;
   }
   const {result} = hhResult;
-  return (result: any);
-}
-
-
-export async function getMethodName(
-  filePath: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?HackGetMethodNameResult> {
-  const hhResult = await callHHClient(
-    /*args*/ ['--get-method-name', formatLineColumn(line, column)],
-    /*errorStream*/ false,
-    /*outputJson*/ true,
-    /*processInput*/ contents,
-    /*file*/ filePath,
-  );
-  if (!hhResult) {
-    return null;
-  }
-  const {result} = hhResult;
-  const name = (result: any).name;
-  if (name == null || name === '') {
-    return null;
-  }
   return (result: any);
 }
 
