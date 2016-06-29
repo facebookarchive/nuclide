@@ -62,7 +62,16 @@ class Activation {
         } else if (this._canHideBlame()) {
           this._hideBlame();
         }
-      })
+      }),
+      atom.commands.add(
+        'atom-text-editor',
+        'nuclide-blame:hide-blame',
+        () => {
+          if (this._canHideBlame()) {
+            this._hideBlame();
+          }
+        }
+      ),
     );
   }
 
