@@ -495,187 +495,33 @@
   'heredoc':
     'patterns': [
       {
-        'begin': '(?=<<<\\s*("?)([a-zA-Z_]+[a-zA-Z0-9_]*)(\\1)\\s*$)'
-        'end': '(?!\\G)'
-        'injections':
-          '*':
-            'patterns': [
-              {
-                'include': '#interpolation'
-              }
-            ]
+        'begin': '<<<\\s*("?)([a-zA-Z_]+[a-zA-Z0-9_]*)(\\1)\\s*$'
+        'beginCaptures':
+          '2':
+            'name': 'keyword.operator.heredoc.php'
+        'end': '^(\\2)\\b'
+        'endCaptures':
+          '1':
+            'name': 'keyword.operator.heredoc.php'
         'name': 'string.unquoted.heredoc.php'
         'patterns': [
           {
-            'include': '#heredoc_interior'
+            'include': '#interpolation'
           }
         ]
       }
       {
-        'begin': '(?=<<<\\s*(\'?)([a-zA-Z_]+[a-zA-Z0-9_]*)(\\1)\\s*$)'
-        'end': '(?!\\G)'
+        'begin': '<<<\\s*(\'?)([a-zA-Z_]+[a-zA-Z0-9_]*)(\\1)\\s*$'
+        'beginCaptures':
+          '2':
+            'name': 'keyword.operator.heredoc.php'
+        'end': '^(\\2)\\b'
+        'endCaptures':
+          '1':
+            'name': 'keyword.operator.heredoc.php'
         'name': 'string.unquoted.heredoc.nowdoc.php'
-        'patterns': [
-          {
-            'include': '#heredoc_interior'
-          }
-        ]
       }
     ]
-    'repository':
-      'heredoc_interior':
-        'patterns': [
-          {
-            'begin': '(<<<)\\s*([\'"]?)(HTML)(\\2)\\s*$\\n?'
-            'beginCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.begin.php'
-              '1':
-                'name': 'punctuation.definition.string.php'
-              '3':
-                'name': 'keyword.operator.heredoc.php'
-            'contentName': 'text.html'
-            'end': '^(\\3)\\b'
-            'endCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.end.php'
-              '1':
-                'name': 'keyword.operator.heredoc.php'
-            'name': 'meta.embedded.html'
-            'patterns': [
-              {
-                'include': 'text.html.basic'
-              }
-            ]
-          }
-          {
-            'begin': '(<<<)\\s*([\'"]?)(XML)(\\2)\\s*$\\n?'
-            'beginCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.begin.php'
-              '1':
-                'name': 'punctuation.definition.string.php'
-              '3':
-                'name': 'keyword.operator.heredoc.php'
-            'contentName': 'text.xml'
-            'end': '^(\\3)\\b'
-            'endCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.end.php'
-              '1':
-                'name': 'keyword.operator.heredoc.php'
-            'name': 'meta.embedded.xml'
-            'patterns': [
-              {
-                'include': 'text.xml'
-              }
-            ]
-          }
-          {
-            'begin': '(<<<)\\s*([\'"]?)(SQL)(\\2)\\s*$\\n?'
-            'beginCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.begin.php'
-              '1':
-                'name': 'punctuation.definition.string.php'
-              '3':
-                'name': 'keyword.operator.heredoc.php'
-            'contentName': 'source.sql'
-            'end': '^(\\3)\\b'
-            'endCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.end.php'
-              '1':
-                'name': 'keyword.operator.heredoc.php'
-            'name': 'meta.embedded.sql'
-            'patterns': [
-              {
-                'include': 'source.sql'
-              }
-            ]
-          }
-          {
-            'begin': '(<<<)\\s*([\'"]?)(JAVASCRIPT)(\\2)\\s*$\\n?'
-            'beginCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.begin.php'
-              '1':
-                'name': 'punctuation.definition.string.php'
-              '3':
-                'name': 'keyword.operator.heredoc.php'
-            'contentName': 'source.js'
-            'end': '^(\\3)\\b'
-            'endCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.end.php'
-              '1':
-                'name': 'keyword.operator.heredoc.php'
-            'name': 'meta.embedded.js'
-            'patterns': [
-              {
-                'include': 'source.js'
-              }
-            ]
-          }
-          {
-            'begin': '(<<<)\\s*([\'"]?)(JSON)(\\2)\\s*$\\n?'
-            'beginCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.begin.php'
-              '1':
-                'name': 'punctuation.definition.string.php'
-              '3':
-                'name': 'keyword.operator.heredoc.php'
-            'contentName': 'source.json'
-            'end': '^(\\3)\\b'
-            'endCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.end.php'
-              '1':
-                'name': 'keyword.operator.heredoc.php'
-            'name': 'meta.embedded.json'
-            'patterns': [
-              {
-                'include': 'source.json'
-              }
-            ]
-          }
-          {
-            'begin': '(<<<)\\s*([\'"]?)(CSS)(\\2)\\s*$\\n?'
-            'beginCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.begin.php'
-              '1':
-                'name': 'punctuation.definition.string.php'
-              '3':
-                'name': 'keyword.operator.heredoc.php'
-            'contentName': 'source.css'
-            'end': '^(\\3)\\b'
-            'endCaptures':
-              '0':
-                'name': 'punctuation.section.embedded.end.php'
-              '1':
-                'name': 'keyword.operator.heredoc.php'
-            'name': 'meta.embedded.css'
-            'patterns': [
-              {
-                'include': 'source.css'
-              }
-            ]
-          }
-          {
-            'begin': '(<<<)\\s*([\'"]?)([a-zA-Z_]+[a-zA-Z0-9_]*)(\\2)'
-            'beginCaptures':
-              '1':
-                'name': 'punctuation.definition.string.php'
-              '3':
-                'name': 'keyword.operator.heredoc.php'
-            'end': '^(\\3)\\b'
-            'endCaptures':
-              '1':
-                'name': 'keyword.operator.heredoc.php'
-          }
-        ]
   'instantiation':
     'begin': '(?i)(new)\\s+'
     'beginCaptures':

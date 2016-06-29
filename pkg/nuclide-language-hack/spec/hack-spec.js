@@ -331,6 +331,23 @@ describe('PHP grammar', () => {
       });
     });
 
+    it('should tokenize heredocs correctly', () => {
+      expect(grammar).toBeTruthy();
+      grammar = grammar || {};
+      const tokens = grammar.tokenizeLines('<?hh\n$x = <<<EOTXT\ntest {$str}\nEOTXT;');
+      expect(tokens[1][5].scopes).toContain('string.unquoted.heredoc.php');
+      expect(tokens[1][6].scopes).toContain(
+        'string.unquoted.heredoc.php',
+        'keyword.operator.heredoc.php',
+      );
+      // Interpolated variables should still be highlighted.
+      expect(tokens[2][2].scopes).toContain('variable.other.php');
+      expect(tokens[3][0].scopes).toContain(
+        'string.unquoted.heredoc.php',
+        'keyword.operator.heredoc.php',
+      );
+    });
+
     describe('combined operators', () => {
       it('should tokenize += correctly', () => {
         expect(grammar).toBeTruthy();
