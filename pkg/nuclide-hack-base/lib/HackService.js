@@ -15,7 +15,6 @@ import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 import fsPromise from '../../commons-node/fsPromise';
 import {retryLimit} from '../../commons-node/promise';
-import {SymbolType} from '../../nuclide-hack-common';
 import {
   callHHClient,
   getSearchResults,
@@ -286,29 +285,29 @@ export async function getDefinition(
   }
 }
 
-export async function getReferences(
-  filePath: NuclideUri,
-  symbolName: string,
-  symbolType?: SymbolTypeValue,
+export async function findReferences(
+  file: NuclideUri,
+  contents: string,
+  line: number,
+  column: number,
 ): Promise<?HackReferencesResult> {
-  let cmd = '--find-refs';
-  if (symbolType === SymbolType.CLASS) {
-    cmd = '--find-class-refs';
-  }
-  const hhResult = await callHHClient(
-    /*args*/ [cmd, symbolName],
+  const hhResult: any = await callHHClient(
+    /*args*/ ['--ide-find-refs', formatLineColumn(line, column)],
     /*errorStream*/ false,
     /*outputJson*/ true,
-    /*processInput*/ null,
-    /*file*/ filePath,
+    /*processInput*/ contents,
+    /*cwd*/ file,
   );
-  if (!hhResult) {
+  if (hhResult == null) {
     return null;
   }
-  const {hackRoot, result} = hhResult;
-  const references = ((result: any): Array<HackReference>);
+
+  const references: ?Array<HackReference> = hhResult.result;
+  if (references == null) {
+    return null;
+  }
   return {
-    hackRoot,
+    hackRoot: hhResult.hackRoot,
     references,
   };
 }

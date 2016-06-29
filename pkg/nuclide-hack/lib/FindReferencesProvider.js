@@ -78,8 +78,8 @@ async function findReferences(
   return await hackLanguage.findReferences(
     filePath,
     contents,
-    line,
-    column,
+    line + 1,
+    column + 1,
   );
 }
 

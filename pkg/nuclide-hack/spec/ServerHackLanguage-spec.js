@@ -19,7 +19,6 @@ import type {
   HackTypeAtPosResult,
   HackFindLvarRefsResult,
   HackFormatSourceResult,
-  HackGetMethodNameResult,
   HackReferencesResult,
 } from '../../nuclide-hack-base/lib/HackService';
 
@@ -47,7 +46,7 @@ describe('ServerHackLanguage', () => {
       'getSourceHighlights',
       'formatSource',
       'getMethodName',
-      'getReferences',
+      'findReferences',
     ]);
 
     const ServerHackLanguageCtor =
@@ -398,17 +397,6 @@ AUTO332class HackClass {}`);
 
   it('findReferences', () => {
     waitsForPromise(async () => {
-      const getMethodResult: HackGetMethodNameResult = {
-        name: 'item_name',
-        pos: {
-          filename: filePath,
-          line: 1,
-          char_start: 2,
-          char_end: 3,
-        },
-        result_type: 'method',
-      };
-      mockService.getMethodName.andReturn(getMethodResult);
       const findResult: HackReferencesResult = {
         hackRoot: basePath,
         references: [
@@ -428,9 +416,9 @@ AUTO332class HackClass {}`);
           },
         ],
       };
-      mockService.getReferences.andReturn(findResult);
+      mockService.findReferences.andReturn(findResult);
 
-      const result = await hackLanguage.findReferences(filePath, contents, 1, 2);
+      const result = await hackLanguage.findReferences(filePath, contents, 2, 3);
 
       expect(result).toEqual(
         {
@@ -453,8 +441,7 @@ AUTO332class HackClass {}`);
             },
           ],
         });
-      expect(mockService.getMethodName).toHaveBeenCalledWith(filePath, contents, 2, 3);
-      expect(mockService.getReferences).toHaveBeenCalledWith(filePath, 'item_name', 2);
+      expect(mockService.findReferences).toHaveBeenCalledWith(filePath, contents, 2, 3);
     });
   });
 

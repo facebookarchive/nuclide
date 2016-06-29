@@ -22,13 +22,11 @@ import type {
   HackDefinition,
 } from '../../nuclide-hack-base/lib/HackService';
 import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
-import type {SymbolTypeValue} from '../../nuclide-hack-common';
 import type {HackCoverageResult} from './TypedRegions';
 
 import {Range} from 'atom';
 import {getLogger} from '../../nuclide-logging';
 import {convertTypedRegionsToCoverageResult} from './TypedRegions';
-import {SymbolType} from '../../nuclide-hack-common';
 import invariant from 'assert';
 
 /**
@@ -191,25 +189,16 @@ export class ServerHackLanguage {
     line: number,
     column: number,
   ): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
-    const getMethodNameResult =
-      await this._hackService.getMethodName(filePath, contents, line + 1, column + 1);
-    if (getMethodNameResult == null) {
-      return null;
-    }
-    const symbolName = getMethodNameResult.name;
-    const symbolType = getSymbolType(getMethodNameResult.result_type);
-
-    if (!SYMBOL_TYPES_WITH_REFERENCES.has(symbolType)) {
-      return null;
-    }
-
     const referencesResult =
-      await this._hackService.getReferences(filePath, symbolName, symbolType);
+      await this._hackService.findReferences(filePath, contents, line, column);
     if (!referencesResult) {
       return null;
     }
     const {hackRoot, references} = referencesResult;
-    return {baseUri: hackRoot, symbolName, references};
+    if (references == null || references.length === 0) {
+      return null;
+    }
+    return {baseUri: hackRoot, symbolName: references[0].name, references};
   }
 
   getBasePath(): ?string {
@@ -230,28 +219,6 @@ function hackRangeToAtomRange(position: HackRange): atom$Range {
 
 // The xhp char regex include : and - to match xhp tags like <ui:button-group>.
 const xhpCharRegex = /[\w:-]/;
-
-const stringToSymbolType = {
-  class: SymbolType.CLASS,
-  function: SymbolType.FUNCTION,
-  method: SymbolType.METHOD,
-  local: SymbolType.LOCAL,
-};
-
-// Symbol types we can get references for.
-const SYMBOL_TYPES_WITH_REFERENCES = new Set([
-  SymbolType.CLASS,
-  SymbolType.FUNCTION,
-  SymbolType.METHOD,
-]);
-
-function getSymbolType(input: string): SymbolTypeValue {
-  let symbolType = stringToSymbolType[input];
-  if (typeof symbolType === 'undefined') {
-    symbolType = SymbolType.METHOD;
-  }
-  return symbolType;
-}
 
 function processCompletions(completionsResponse: Array<HackCompletion>):
     Array<CompletionResult> {
