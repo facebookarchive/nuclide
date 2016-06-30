@@ -16,6 +16,7 @@ import {
   Disposable,
   CompositeDisposable,
 } from 'atom';
+import Rx from 'rxjs';
 import Constants from './Constants';
 
 export type Local = {
@@ -26,6 +27,10 @@ export type Locals = Array<Local>;
 
 export default class LocalsStore {
   _disposables: IDisposable;
+  /**
+   * Treat as immutable.
+   */
+  _locals: Rx.BehaviorSubject<Locals>;
 
   constructor(dispatcher: Dispatcher) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
@@ -34,6 +39,7 @@ export default class LocalsStore {
         dispatcher.unregister(dispatcherToken);
       })
     );
+    this._locals = new Rx.BehaviorSubject([]);
   }
 
   _handlePayload(payload: Object): void {
@@ -47,7 +53,11 @@ export default class LocalsStore {
   }
 
   _handleUpdateLocals(locals: Locals): void {
-    // TODO consume locals.
+    this._locals.next(locals);
+  }
+
+  getLocals(): Rx.Observable<Locals> {
+    return this._locals.asObservable();
   }
 
   dispose(): void {
