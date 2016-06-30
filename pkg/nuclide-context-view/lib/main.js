@@ -56,23 +56,23 @@ function updateService(): void {
  * nuclide-context-view service and register themselves as a provider.
  */
 const Service = {
-  registerProvider(provider: ContextProvider): void {
+  registerProvider(provider: ContextProvider): Disposable {
     invariant(manager != null, 'Cannot register context provider with null ContextViewManager');
     invariant(provider != null, 'Cannot register null context provider');
     manager.registerProvider(provider);
-  },
-  deregisterProvider(providerId: string): void {
-    invariant(manager != null, 'Cannot deregister context provider from null ContextViewManager');
-    invariant(providerId != null || providerId === '',
-      'Cannot deregister context provider given null/empty providerId');
-    manager.deregisterProvider(providerId);
+    return new Disposable(() => {
+      if (manager != null) {
+        manager.deregisterProvider(provider.id);
+      }
+    });
   },
 };
 
 export function consumeDefinitionService(service: DefinitionService): IDisposable {
-  invariant(currentService == null);
-  currentService = service;
-  updateService();
+  if (service !== currentService) {
+    currentService = service;
+    updateService();
+  }
   return new Disposable(() => {
     invariant(currentService === service);
     currentService = null;

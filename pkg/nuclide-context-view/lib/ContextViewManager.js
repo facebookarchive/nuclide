@@ -114,7 +114,6 @@ export class ContextViewManager {
   }
 
   registerProvider(newProvider: ContextProvider): boolean {
-
     // Ensure provider with given ID isn't already registered
     for (let i = 0; i < this._contextProviders.length; i++) {
       if (newProvider.id === this._contextProviders[i].id) {

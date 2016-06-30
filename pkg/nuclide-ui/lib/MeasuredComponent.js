@@ -99,8 +99,8 @@ export class MeasuredComponent extends React.Component {
 
   _updateDomNode(node: HTMLElement): void {
     this._domNode = node;
-    this._mutationObserver.disconnect();
     this._mutationObserver.observe(this._domNode, observerConfig);
+    this._mutationObserver.disconnect();
   }
 
   render(): React.Element<any> {

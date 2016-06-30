@@ -23,7 +23,7 @@ const PROVIDER_TITLE: string = 'Definition Preview';
 class Activation {
 
   provider: ContextProvider;
-  contextViewService: ?NuclideContextView;
+  contextViewRegistration: ?Disposable;
 
   constructor() {
 
@@ -39,20 +39,13 @@ class Activation {
     return this.provider;
   }
 
-  dispose() {
-    if (this.contextViewService != null) {
-      // Remove definition preview from context view's list of registered providers
-      this.contextViewService.deregisterProvider(PROVIDER_ID);
-    }
+  setContextViewRegistration(registration: Disposable): void {
+    this.contextViewRegistration = registration;
   }
 
-  updateContextViewService(newService: ?NuclideContextView) {
-    if (this.contextViewService !== newService) {
-      this.contextViewService = newService;
-
-      if (this.contextViewService != null) {
-        this.contextViewService.registerProvider(this.provider);
-      }
+  dispose() {
+    if (this.contextViewRegistration != null) {
+      this.contextViewRegistration.dispose();
     }
   }
 }
@@ -73,12 +66,8 @@ export function deactivate() {
   }
 }
 
-export function consumeNuclideContextView(contextView: NuclideContextView): IDisposable {
+export function consumeNuclideContextView(contextView: NuclideContextView) {
   invariant(activation != null);
-  activation.updateContextViewService(contextView);
-  return new Disposable(() => {
-    if (activation != null) {
-      activation.updateContextViewService(null);
-    }
-  });
+  const registration = contextView.registerProvider(activation.getContextProvider());
+  activation.setContextViewRegistration(registration);
 }
