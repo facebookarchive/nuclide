@@ -35,6 +35,8 @@ const DebuggerControllerView = React.createClass({
     breakpointStore: React.PropTypes.instanceOf(BreakpointStore).isRequired,
     store: React.PropTypes.instanceOf(DebuggerStore).isRequired,
     bridge: React.PropTypes.instanceOf(Bridge).isRequired,
+    toggleOldView: React.PropTypes.func.isRequired,
+    showOldView: React.PropTypes.bool.isRequired,
   },
 
   getInitialState(): State {
@@ -74,6 +76,8 @@ const DebuggerControllerView = React.createClass({
           bridge={this.props.bridge}
           breakpointStore={this.props.breakpointStore}
           socket={this.state.processSocket}
+          showOldView={this.props.showOldView}
+          toggleOldView={this.props.toggleOldView}
         />
       );
     }

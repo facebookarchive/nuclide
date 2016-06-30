@@ -32,6 +32,8 @@ const DebuggerInspector = React.createClass({
     breakpointStore: React.PropTypes.instanceOf(BreakpointStore).isRequired,
     socket: React.PropTypes.string.isRequired,
     bridge: React.PropTypes.instanceOf(Bridge).isRequired,
+    toggleOldView: React.PropTypes.func.isRequired,
+    showOldView: React.PropTypes.bool.isRequired,
   },
 
   shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
@@ -39,7 +41,9 @@ const DebuggerInspector = React.createClass({
       nextProps.actions !== this.props.actions ||
       nextProps.breakpointStore !== this.props.breakpointStore ||
       nextProps.socket !== this.props.socket ||
-      nextProps.bridge !== this.props.bridge
+      nextProps.bridge !== this.props.bridge ||
+      nextProps.showOldView !== this.props.showOldView ||
+      nextProps.toggleOldView !== this.props.toggleOldView
     );
   },
 
@@ -58,6 +62,11 @@ const DebuggerInspector = React.createClass({
             icon="gear"
             onClick={this._handleClickDevTools}
           />
+          <Button
+            title="Switch back to the old debugger UI"
+            icon="history"
+            onClick={this._handleClickUISwitch}
+          />
         </div>
       </div>
     );
@@ -72,16 +81,26 @@ const DebuggerInspector = React.createClass({
     webviewNode.disablewebsecurity = true;
     webviewNode.classList.add('native-key-bindings'); // required to pass through certain key events
     webviewNode.classList.add('nuclide-debugger-webview');
+    if (!this.props.showOldView) {
+      webviewNode.classList.add('nuclide-debugger-webview-hidden');
+    }
     this._webviewNode = webviewNode;
     const controlBarNode = ReactDOM.findDOMNode(this.refs.controlBar);
     controlBarNode.parentNode.insertBefore(webviewNode, controlBarNode.nextSibling);
     this.props.bridge.setWebviewElement(webviewNode);
   },
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps: Object, prevState: Object): void {
     const webviewNode = this._webviewNode;
-    if (webviewNode) {
+    if (webviewNode == null) {
+      return;
+    }
+    if (this.props.socket !== prevProps.socket) {
       webviewNode.src = this._getUrl();
+    }
+    const {showOldView} = this.props;
+    if (showOldView !== prevProps.showOldView) {
+      webviewNode.classList.toggle('nuclide-debugger-webview-hidden', !showOldView);
     }
   },
 
@@ -105,6 +124,10 @@ const DebuggerInspector = React.createClass({
     if (webviewNode) {
       webviewNode.openDevTools();
     }
+  },
+
+  _handleClickUISwitch(): void {
+    this.props.toggleOldView();
   },
 });
 
