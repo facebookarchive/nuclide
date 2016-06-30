@@ -807,7 +807,7 @@ class Function(ClassOrFunc):
 
     def _get_paramlist_code(self):
         return self.children[2].get_code()
-    
+
     @property
     def doc(self):
         """ Return a document string including call signature. """
@@ -842,7 +842,7 @@ class Lambda(Function):
 
     def _get_paramlist_code(self):
         return '(' + ''.join(param.get_code() for param in self.params).strip() + ')'
-    
+
     @property
     def params(self):
         return self.children[1:-2]
@@ -1185,8 +1185,14 @@ class Param(BaseNode):
 
     @property
     def stars(self):
+        num_children = len(self.children)
         first = self.children[0]
-        if first in ('*', '**'):
+        second = self.children[1] if num_children > 1 else None
+        # Hack - for single star return 0 since the '*' itself is
+        # interpreted as the Name
+        if (first in ('*', '**') and
+                num_children > 1 and
+                second not in (',', ' ')):
             return len(first.value)
         return 0
 
@@ -1206,6 +1212,16 @@ class Param(BaseNode):
         tfpdef: see grammar.txt.
         """
         offset = int(self.children[0] in ('*', '**'))
+        # Hack - a single '*' parameter does not have a corresponding Name node.
+        # In this case, we'll treat the '*' itself as the Name and return 0 for
+        # Param.stars.
+        if (offset >= len(self.children) or
+                self.children[offset] in (',', ' ')):
+            child = self.children[0]
+            star_as_name = Name(child.position_modifier, child.value,
+                                child.start_pos, child.prefix)
+            star_as_name.parent = child.parent
+            return star_as_name
         return self.children[offset]
 
     @property
