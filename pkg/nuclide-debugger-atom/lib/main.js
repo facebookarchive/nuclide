@@ -41,6 +41,7 @@ import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 import nuclideUri from '../../nuclide-remote-uri';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import passesGK from '../../commons-node/passesGK';
+import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 
 import DebuggerProcessInfo from './DebuggerProcessInfo';
 import DebuggerInstance from './DebuggerInstance';
@@ -67,24 +68,27 @@ function createDebuggerView(model: DebuggerModel, useRevampedUi: boolean): HTMLE
   const elem = document.createElement('div');
   elem.className = 'nuclide-debugger-container';
   ReactDOM.render(
-    <div className="nuclide-debugger-root">
-      <div className="nuclide-debugger-container-old">
-        <DebuggerControllerView
-          store={model.getStore()}
-          bridge = {model.getBridge()}
-          actions={model.getActions()}
-          breakpointStore={model.getBreakpointStore()}
-        />
-      </div>
-      {useRevampedUi
-        ? <NewDebuggerView
-            model={model}
-            watchExpressionListStore={model.getWatchExpressionListStore()}
+    <PanelComponent initialLength={500} dock="right">
+      <div className="nuclide-debugger-root">
+        <div className="nuclide-debugger-container-old">
+          <DebuggerControllerView
+            store={model.getStore()}
+            bridge = {model.getBridge()}
+            actions={model.getActions()}
+            breakpointStore={model.getBreakpointStore()}
           />
-        : null
-      }
-    </div>,
-    elem);
+        </div>
+        {useRevampedUi
+          ? <NewDebuggerView
+              model={model}
+              watchExpressionListStore={model.getWatchExpressionListStore()}
+            />
+          : null
+        }
+        </div>
+    </PanelComponent>,
+    elem
+  );
   return elem;
 }
 

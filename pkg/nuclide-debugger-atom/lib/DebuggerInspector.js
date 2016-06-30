@@ -14,7 +14,6 @@ import Bridge from './Bridge';
 import DebuggerActions from './DebuggerActions';
 import {React, ReactDOM} from 'react-for-atom';
 import nuclideUri from '../../nuclide-remote-uri';
-import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 import {
   Button,
   ButtonTypes,
@@ -46,23 +45,21 @@ const DebuggerInspector = React.createClass({
 
   render(): ?React.Element<any> {
     return (
-      <PanelComponent initialLength={500} dock="right">
-        <div className="inspector">
-          <div className="control-bar" ref="controlBar">
-            <Button
-              title="Detach from the current process."
-              icon="x"
-              buttonType={ButtonTypes.ERROR}
-              onClick={this._handleClickClose}
-            />
-            <Button
-              title="(Debug) Open Web Inspector for the debugger frame."
-              icon="gear"
-              onClick={this._handleClickDevTools}
-            />
-          </div>
+      <div className="inspector">
+        <div className="control-bar" ref="controlBar">
+          <Button
+            title="Detach from the current process."
+            icon="x"
+            buttonType={ButtonTypes.ERROR}
+            onClick={this._handleClickClose}
+          />
+          <Button
+            title="(Debug) Open Web Inspector for the debugger frame."
+            icon="gear"
+            onClick={this._handleClickDevTools}
+          />
         </div>
-      </PanelComponent>
+      </div>
     );
   },
 
