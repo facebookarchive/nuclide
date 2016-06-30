@@ -141,10 +141,13 @@ export class WatchExpressionComponent extends React.Component {
     );
     return (
       <div
-        className="nuclide-debugger-atom-watch-expression-row"
+        className={classnames(
+          'nuclide-debugger-atom-expression-value-row',
+          'nuclide-debugger-atom-watch-expression-row',
+        )}
         key={index}>
         <div
-          className="nuclide-debugger-atom-watch-expression-row-content"
+          className="nuclide-debugger-atom-expression-value-content"
           onDoubleClick={this._setRowBeingEdited.bind(this, index)}>
           <ValueComponent
             expression={expression}
@@ -180,7 +183,7 @@ export class WatchExpressionComponent extends React.Component {
       />
     );
     return (
-      <div className="nuclide-debugger-atom-watch-expression-list">
+      <div className="nuclide-debugger-atom-expression-value-list">
         {expressions}
         {addNewExpressionInput}
       </div>

@@ -46,10 +46,10 @@ export class LocalsComponent extends React.Component {
     } = local;
     return (
       <div
-        className="nuclide-debugger-atom-watch-expression-row"
+        className="nuclide-debugger-atom-expression-value-row"
         key={index}>
         <div
-          className="nuclide-debugger-atom-watch-expression-row-content">
+          className="nuclide-debugger-atom-expression-value-content">
           <LazyNestedValueComponent
             expression={name}
             evaluationResult={value}
@@ -72,7 +72,7 @@ export class LocalsComponent extends React.Component {
     const fetchChildren = watchExpressionStore.getProperties.bind(watchExpressionStore);
     const expressions = locals.map(this._renderExpression.bind(this, fetchChildren));
     return (
-      <div>
+      <div className="nuclide-debugger-atom-expression-value-list">
         {expressions}
       </div>
     );

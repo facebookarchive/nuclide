@@ -91,22 +91,22 @@ Use flexbox cross-axis stretch to fill the vertical space.
 /* Watch Expressions */
 @leftMargin: 0.5em;
 
-.nuclide-debugger-atom-watch-expression-list {
+.nuclide-debugger-atom-expression-value-list {
   margin: 0 @leftMargin;
 }
 
-.nuclide-debugger-atom-watch-expression-row {
+.nuclide-debugger-atom-expression-value-row {
   align-items: center;
   display: flex;
   flex-direction: row;
   font-family: Menlo, Monaco, Consolas, monospace;
   justify-content: space-between;
-  max-width: 400px;
+  max-width: 500px;
   min-height: 23px; // Match height of AtomInput to prevent list items from jumping around.
   overflow: auto;
 }
 
-.nuclide-debugger-atom-watch-expression-row-content {
+.nuclide-debugger-atom-expression-value-content {
   display: flex;
   flex-direction: row;
   flex-grow: 1;
