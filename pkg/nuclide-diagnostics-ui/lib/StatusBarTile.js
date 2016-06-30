@@ -10,7 +10,7 @@
  */
 
 import type {
-  DiagnosticUpdater,
+  ObservableDiagnosticUpdater,
   DiagnosticMessage,
 } from '../../nuclide-diagnostics-base';
 
@@ -20,6 +20,8 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
+
+import {DisposableSubscription} from '../../commons-node/stream';
 
 const {PropTypes} = React;
 
@@ -33,7 +35,7 @@ const STATUS_BAR_PRIORITY = -99.5;
 
 class StatusBarTile {
 
-  _diagnosticUpdaters: Map<DiagnosticUpdater, DiagnosticCount>;
+  _diagnosticUpdaters: Map<ObservableDiagnosticUpdater, DiagnosticCount>;
   _totalDiagnosticCount: DiagnosticCount;
   _subscriptions: CompositeDisposable;
   _tile: ?atom$StatusBarTile;
@@ -48,7 +50,7 @@ class StatusBarTile {
     this._subscriptions = new CompositeDisposable();
   }
 
-  consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
+  consumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
     if (this._diagnosticUpdaters.has(diagnosticUpdater)) {
       return;
     }
@@ -59,9 +61,9 @@ class StatusBarTile {
     };
     this._diagnosticUpdaters.set(diagnosticUpdater, diagnosticCount);
     this._subscriptions.add(
-      diagnosticUpdater.onAllMessagesDidUpdate(
+      new DisposableSubscription(diagnosticUpdater.allMessageUpdates.subscribe(
         this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater),
-      ),
+      )),
     );
   }
 
@@ -82,7 +84,7 @@ class StatusBarTile {
   }
 
   _onAllMessagesDidUpdate(
-    diagnosticUpdater: DiagnosticUpdater,
+    diagnosticUpdater: ObservableDiagnosticUpdater,
     messages: Array<DiagnosticMessage>,
   ): void {
     // Update the DiagnosticCount for the updater.

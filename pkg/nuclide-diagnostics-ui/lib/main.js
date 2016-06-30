@@ -142,7 +142,6 @@ export function activate(state: ?Object): void {
 }
 
 export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
-  getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
   gutterConsumeDiagnosticUpdates(diagnosticUpdater);
 
   // Currently, the DiagnosticsPanel is designed to work with only one DiagnosticUpdater.
@@ -156,6 +155,9 @@ export function consumeObservableDiagnosticUpdates(
   diagnosticUpdater: ObservableDiagnosticUpdater,
 ): void {
   // TODO migrate things from consumeDiagnosticUpdates above
+
+  getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
+
   if (consumeObservableUpdatesCalled) {
     return;
   }
