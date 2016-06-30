@@ -19,7 +19,6 @@ import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {CompositeDisposable} from 'atom';
 import {Dispatcher} from 'flux';
-import nuclideUri from '../../nuclide-remote-uri';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -292,15 +291,15 @@ export class BuckBuildSystem {
       let rnObservable = Observable.empty();
       const isReactNativeServerMode = store.isReactNativeServerMode();
       if (isReactNativeServerMode) {
-        rnObservable = Observable.fromPromise(
-          this._getReactNativeServerCommand(buckProject),
-        ).map(serverCommand => {
-          if (serverCommand) {
-            const rnActions = this._getReactNativeServerActions();
-            rnActions.startServer(serverCommand);
-            rnActions.startNodeExecutorServer();
-          }
-        }).ignoreElements();
+        rnObservable = Observable.defer(() => {
+          const rnActions = this._getReactNativeServerActions();
+          atom.commands.dispatch(
+            atom.views.getView(atom.workspace),
+            'nuclide-react-native:start-packager',
+          );
+          rnActions.startNodeExecutorServer();
+          return Observable.empty();
+        });
       }
       buckObservable = rnObservable.concat(
         buckProject.installWithOutput(
@@ -344,18 +343,6 @@ export class BuckBuildSystem {
         },
       })
       .share();
-  }
-
-  async _getReactNativeServerCommand(buckProject: BuckProject): Promise<?string> {
-    const serverCommand = await buckProject.getBuckConfig('react-native', 'server');
-    if (serverCommand == null) {
-      return null;
-    }
-    const repoRoot = await buckProject.getPath();
-    if (repoRoot == null) {
-      return null;
-    }
-    return nuclideUri.join(repoRoot, serverCommand);
   }
 
   _getReactNativeServerActions(): ReactNativeServerActions {

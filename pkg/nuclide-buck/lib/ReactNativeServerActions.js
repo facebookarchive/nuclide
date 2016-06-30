@@ -26,29 +26,8 @@ export default class ReactNativeServerActions {
       actionType: ReactNativeServerActions.ActionType.START_NODE_EXECUTOR_SERVER,
     });
   }
-
-  startServer(serverCommand: string) {
-    this._dispatcher.dispatch({
-      actionType: ReactNativeServerActions.ActionType.START_SERVER,
-      serverCommand,
-    });
-  }
-
-  stopServer() {
-    this._dispatcher.dispatch({actionType: ReactNativeServerActions.ActionType.STOP_SERVER});
-  }
-
-  restartServer(serverCommand: string) {
-    this._dispatcher.dispatch({
-      actionType: ReactNativeServerActions.ActionType.RESTART_SERVER,
-      serverCommand,
-    });
-  }
 }
 
 ReactNativeServerActions.ActionType = Object.freeze({
   START_NODE_EXECUTOR_SERVER: 'START_NODE_EXECUTOR_SERVER',
-  START_SERVER: 'START_SERVER',
-  STOP_SERVER: 'STOP_SERVER',
-  RESTART_SERVER: 'RESTART_SERVER',
 });
