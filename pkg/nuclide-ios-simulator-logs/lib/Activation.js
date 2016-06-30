@@ -54,14 +54,16 @@ class Activation {
     );
   }
 
-  consumeOutputService(api: OutputService): IDisposable {
-    return api.registerOutputProvider({
-      id: 'iOS Simulator Logs',
-      messages: this._logTailer.getMessages(),
-      observeStatus: cb => this._logTailer.observeStatus(cb),
-      start: () => { this._logTailer.start(); },
-      stop: () => { this._logTailer.stop(); },
-    });
+  consumeOutputService(api: OutputService): void {
+    this._disposables.add(
+      api.registerOutputProvider({
+        id: 'iOS Simulator Logs',
+        messages: this._logTailer.getMessages(),
+        observeStatus: cb => this._logTailer.observeStatus(cb),
+        start: () => { this._logTailer.start(); },
+        stop: () => { this._logTailer.stop(); },
+      })
+    );
   }
 
   dispose() {

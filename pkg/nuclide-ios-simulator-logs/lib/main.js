@@ -27,7 +27,7 @@ export function deactivate() {
   activation = null;
 }
 
-export function consumeOutputService(api: OutputService): IDisposable {
+export function consumeOutputService(api: OutputService): void {
   invariant(activation);
-  return activation.consumeOutputService(api);
+  activation.consumeOutputService(api);
 }
