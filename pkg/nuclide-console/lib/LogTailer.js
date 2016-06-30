@@ -10,10 +10,11 @@
  */
 
 import type {Message} from './types';
+import type {ConnectableObservable} from 'rxjs';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {track} from '../../nuclide-analytics';
-import Rx from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 type EventNames = {
   start: string;
@@ -29,15 +30,24 @@ type EventNames = {
 export class LogTailer {
   _eventNames: EventNames;
   _subscription: ?rx$ISubscription;
-  _input$: Rx.Observable<Message>;
-  _message$: Rx.Subject<Message>;
-  _running: Rx.BehaviorSubject<boolean>;
+  _messages: ConnectableObservable<Message>;
+  _running: BehaviorSubject<boolean>;
 
-  constructor(input$: Rx.Observable<Message>, eventNames: EventNames) {
-    this._input$ = input$;
+  constructor(messages: Observable<Message>, eventNames: EventNames) {
     this._eventNames = eventNames;
-    this._message$ = new Rx.Subject();
-    this._running = new Rx.BehaviorSubject(false);
+    this._messages = messages
+      .do({
+        error: err => {
+          this._stop(false);
+          track(this._eventNames.error, {message: err.message});
+        },
+        complete: () => {
+          this._stop();
+        },
+      })
+      .share()
+      .publish();
+    this._running = new BehaviorSubject(false);
   }
 
   start(): void {
@@ -76,16 +86,14 @@ export class LogTailer {
       this._subscription.unsubscribe();
     }
 
-    this._subscription = this._input$.subscribe(
-      message => { this._message$.next(message); },
-      err => {
-        this._stop(false);
-        track(this._eventNames.error, {message: err.message});
-      }
-    );
+    this._subscription = this._messages.connect();
   }
 
   _stop(trackCall: boolean = true): void {
+    if (this._subscription != null) {
+      this._subscription.unsubscribe();
+    }
+
     if (!this._running.getValue()) {
       return;
     }
@@ -94,14 +102,10 @@ export class LogTailer {
     }
 
     this._running.next(false);
-
-    if (this._subscription != null) {
-      this._subscription.unsubscribe();
-    }
   }
 
-  getMessages(): Rx.Observable<Message> {
-    return this._message$.asObservable();
+  getMessages(): Observable<Message> {
+    return this._messages;
   }
 
 }
