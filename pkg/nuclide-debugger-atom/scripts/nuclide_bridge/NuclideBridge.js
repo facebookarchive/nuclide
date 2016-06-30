@@ -149,6 +149,7 @@ class NuclideBridge {
             return;
           }
           this.updateProperties(properties, internalProperties);
+          ipc.sendToHost('notification', 'LocalsUpdate', properties);
         }
         // $FlowFixMe.
         WebInspector.RemoteObject.loadFromObject(

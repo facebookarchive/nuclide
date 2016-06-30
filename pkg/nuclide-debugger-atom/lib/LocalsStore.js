@@ -16,6 +16,7 @@ import {
   Disposable,
   CompositeDisposable,
 } from 'atom';
+import Constants from './Constants';
 
 export type Local = {
   name: string;
@@ -37,9 +38,16 @@ export default class LocalsStore {
 
   _handlePayload(payload: Object): void {
     switch (payload.actionType) {
+      case Constants.Actions.UPDATE_LOCALS:
+        this._handleUpdateLocals(payload.data.locals);
+        break;
       default:
         return;
     }
+  }
+
+  _handleUpdateLocals(locals: Locals): void {
+    // TODO consume locals.
   }
 
   dispose(): void {

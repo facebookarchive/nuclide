@@ -20,6 +20,7 @@ import type {DebuggerStore, DebuggerModeType} from './DebuggerStore';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type DebuggerInstance from './DebuggerInstance';
 import type {Callstack} from './CallstackStore';
+import type {Locals} from './LocalsStore';
 
 import Constants from './Constants';
 import {CompositeDisposable} from 'atom';
@@ -375,6 +376,15 @@ class DebuggerActions {
       data: {
         path,
         line,
+      },
+    });
+  }
+
+  updateLocals(locals: Locals): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.UPDATE_LOCALS,
+      data: {
+        locals,
       },
     });
   }

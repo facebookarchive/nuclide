@@ -11,6 +11,7 @@
 
 import type DebuggerModel from './DebuggerModel';
 import type {Callstack} from './CallstackStore';
+import type {Locals} from './LocalsStore';
 
 type ExpressionResult = ChromeProtocolResponse & {
   expression: string;
@@ -240,6 +241,10 @@ class Bridge {
     this._debuggerModel.getActions().updateCallstack(callstack);
   }
 
+  _handleLocalsUpdate(locals: Locals): void {
+    this._debuggerModel.getActions().updateLocals(locals);
+  }
+
   _handleResponseForPendingRequest<T>(
     pending: Map<string, Deferred<?T>>,
     response: ChromeProtocolResponse,
@@ -309,6 +314,9 @@ class Bridge {
             break;
           case 'CallstackUpdate':
             this._handleCallstackUpdate(event.args[1]);
+            break;
+          case 'LocalsUpdate':
+            this._handleLocalsUpdate(event.args[1]);
             break;
         }
         break;
