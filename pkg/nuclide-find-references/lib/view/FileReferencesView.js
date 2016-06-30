@@ -82,6 +82,7 @@ const FileReferencesView = React.createClass({
             grammar={this.props.grammar}
             text={previewText}
             {...group}
+            onClick={this._onRefClick.bind(this, group.references[0])}
           />
         </li>
       );

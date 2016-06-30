@@ -22,6 +22,7 @@ const FilePreview = React.createClass({
     references: React.PropTypes.arrayOf(React.PropTypes.object /*Reference*/).isRequired,
     startLine: React.PropTypes.number.isRequired,
     endLine: React.PropTypes.number.isRequired,
+    onClick: React.PropTypes.func,
   },
 
   componentDidMount() {
@@ -65,6 +66,7 @@ const FilePreview = React.createClass({
           ref="editor"
           initialValue={this.props.text}
           disabled={true}
+          onClick={this.props.onClick}
         />
       </div>
     );
