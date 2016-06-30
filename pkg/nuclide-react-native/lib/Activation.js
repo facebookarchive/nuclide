@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {OutputService} from '../../nuclide-console/lib/types';
 import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
 
 import {DebuggingActivation} from './debugging/DebuggingActivation';
@@ -18,12 +19,13 @@ import {CompositeDisposable} from 'atom';
 
 export class Activation {
   _debuggingActivation: DebuggingActivation;
+  _packagerActivation: PackagerActivation;
   _disposables: IDisposable;
 
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable(
       this._debuggingActivation = new DebuggingActivation(),
-      new PackagerActivation(),
+      this._packagerActivation = new PackagerActivation(),
       new ShellActivation(),
     );
   }
@@ -34,6 +36,10 @@ export class Activation {
 
   provideNuclideDebugger(): nuclide_debugger$Service {
     return this._debuggingActivation.provideNuclideDebugger();
+  }
+
+  consumeOutputService(api: OutputService): void {
+    return this._packagerActivation.consumeOutputService(api);
   }
 
 }

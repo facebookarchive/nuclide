@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {OutputService} from '../../nuclide-console/lib/types';
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-atom';
 import type {
   nuclide_debugger$Service,
@@ -50,4 +51,9 @@ export function createDebuggerProvider(): NuclideDebuggerProvider {
       return null;
     },
   };
+}
+
+export function consumeOutputService(api: OutputService): void {
+  invariant(activation != null);
+  return activation.consumeOutputService(api);
 }

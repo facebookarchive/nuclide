@@ -23,6 +23,13 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "consumedServices": {
+    "nuclide-output": {
+      "versions": {
+        "0.0.0": "consumeOutputService"
+      }
+    }
+  },
   "providedServices": {
     "nuclide-debugger-react-native-service": {
       "description": "Debugger backend for React Native processes.",
