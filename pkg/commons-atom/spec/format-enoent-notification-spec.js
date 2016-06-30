@@ -41,16 +41,19 @@ describe('formatEnoentNotification', () => {
     invariant(formatted != null);
     const expected =
       "Awesome stuff creation needs *node* but Nuclide couldn't find it at `/path/to/node`";
+    invariant(formatted.meta.description != null);
     expect(formatted.meta.description.startsWith(expected)).toBe(true);
   });
 
   it('mentions the setting title in the description', () => {
     invariant(formatted != null);
+    invariant(formatted.meta.description != null);
     expect(/Path to Node/.test(formatted.meta.description)).toBe(true);
   });
 
   it('mentions the setting category in the description', () => {
     invariant(formatted != null);
+    invariant(formatted.meta.description != null);
     expect(/My-special-package/.test(formatted.meta.description)).toBe(true);
   });
 

@@ -1288,16 +1288,30 @@ declare class atom$Notification {
   dismiss(): void;
 }
 
+type atom$NotificationButton = {
+  text: string;
+  className?: string;
+  onDidClick?: () => mixed;
+};
+
+type atom$NotificationOptions = {
+  detail?: string;
+  dismissable?: boolean;
+  description?: string;
+  icon?: string;
+  buttons?: Array<atom$NotificationButton>;
+};
+
 declare class atom$NotificationManager {
   // Events
   onDidAddNotification(callback: (notification: atom$Notification) => void): IDisposable;
 
   // Adding Notifications
-  addSuccess(message: string, options?: Object): atom$Notification;
-  addInfo(message: string, options?: Object): atom$Notification;
-  addWarning(message: string, options?: Object): atom$Notification;
-  addError(message: string, options?: Object): atom$Notification;
-  addFatalError(message: string, options?: Object): atom$Notification;
+  addSuccess(message: string, options?: atom$NotificationOptions): atom$Notification;
+  addInfo(message: string, options?: atom$NotificationOptions): atom$Notification;
+  addWarning(message: string, options?: atom$NotificationOptions): atom$Notification;
+  addError(message: string, options?: atom$NotificationOptions): atom$Notification;
+  addFatalError(message: string, options?: atom$NotificationOptions): atom$Notification;
 
   // Getting Notifications
   getNotifications(): Array<atom$Notification>;
