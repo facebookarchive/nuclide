@@ -17,7 +17,6 @@ import {
 } from 'react-for-atom';
 import {Observable} from 'rxjs';
 import {CompositeDisposable, Disposable} from 'atom';
-import classnames from 'classnames';
 
 import {FileTree} from './FileTree';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
@@ -29,6 +28,7 @@ import {FileTreeStore} from '../lib/FileTreeStore';
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
 import {DisposableSubscription, toggle} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {Section} from '../../nuclide-ui/lib/Section';
 import featureConfig from '../../nuclide-feature-config';
 
 type State = {
@@ -78,7 +78,7 @@ class FileTreeSidebarComponent extends React.Component {
     (this: any)._onViewChange = this._onViewChange.bind(this);
     (this: any)._scrollToPosition = this._scrollToPosition.bind(this);
     (this: any)._processExternalUpdate = this._processExternalUpdate.bind(this);
-    (this: any)._toggleOpenFilesExpanded = this._toggleOpenFilesExpanded.bind(this);
+    (this: any)._handleOpenFilesExpandedChange = this._handleOpenFilesExpandedChange.bind(this);
   }
 
   componentDidMount(): void {
@@ -146,30 +146,32 @@ class FileTreeSidebarComponent extends React.Component {
       ];
     }
 
-    let openFilesCaption = null;
+    let openFilesSection = null;
     let openFilesList = null;
     let foldersCaption = null;
     if (this.state.showOpenFiles) {
-      const triangleClass = classnames(
-        'nuclide-file-tree-section-caption icon',
-        {
-          'icon-chevron-down': this._store.openFilesExpanded,
-          'icon-chevron-right': !this._store.openFilesExpanded,
-        }
-      );
-      openFilesCaption =
-          <h6 className={triangleClass} onClick={this._toggleOpenFilesExpanded}>OPEN FILES</h6>;
-
       if (this._store.openFilesExpanded) {
         openFilesList = (
           <OpenFilesListComponent
             uris={this.state.openFilesUris}
             modifiedUris={this.state.modifiedUris}
             activeUri={this.state.activeUri}
-          />);
+          />
+        );
       }
+      openFilesSection =
+        <Section
+          className="nuclide-file-tree-section-caption"
+          collapsable={true}
+          collapsed={!this._store.openFilesExpanded}
+          headline="Open Files"
+          onChange={this._handleOpenFilesExpandedChange}
+          size="small">
+          {openFilesList}
+        </Section>;
 
-      foldersCaption = <h6 className="nuclide-file-tree-section-caption">FOLDERS</h6>;
+      foldersCaption =
+        <Section className="nuclide-file-tree-section-caption" headline="Folders" size="small" />;
     }
 
     // Include `tabIndex` so this component can be focused by calling its native `focus` method.
@@ -178,8 +180,7 @@ class FileTreeSidebarComponent extends React.Component {
         className="nuclide-file-tree-toolbar-container"
         onFocus={this._handleFocus}
         tabIndex={0}>
-        {openFilesCaption}
-        {openFilesList}
+        {openFilesSection}
         {toolbar}
         {foldersCaption}
         <PanelComponentScroller
@@ -210,8 +211,8 @@ class FileTreeSidebarComponent extends React.Component {
     }
   }
 
-  _toggleOpenFilesExpanded(): void {
-    this._actions.setOpenFilesExpanded(!this._store.openFilesExpanded);
+  _handleOpenFilesExpandedChange(isCollapsed: boolean): void {
+    this._actions.setOpenFilesExpanded(!isCollapsed);
   }
 
   _setModifiedUris(): void {

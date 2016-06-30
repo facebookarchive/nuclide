@@ -12,11 +12,21 @@
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
 
+type SectionSize = 'large' | 'small';
 type Props = {
   headline: React.Element<any> | string;
+  className?: string;
   children?: React.Element<any>;
+  // Option A: Specify just `collapsable` for uncontrolled toggle behavior.
   collapsable?: boolean;
+  // `collapsable` overrides this when specified.
   collapsedByDefault?: boolean;
+
+  // Option B: Also specify `collapsed` and `onChange` for controlled toggle behavior.
+  collapsed?: boolean;
+  onChange?: (isCollapsed: boolean) => mixed;
+
+  size?: SectionSize;
 };
 
 type State = {
@@ -47,38 +57,47 @@ export class Section extends React.Component {
     };
   }
 
+  _toggleCollapsed(): void {
+    if (this.props.collapsed == null) {
+      // uncontrolled mode
+      this.setState({isCollapsed: !this.state.isCollapsed});
+    } else {
+      // controlled mode
+      if (typeof this.props.onChange === 'function') {
+        this.props.onChange(!this.props.collapsed);
+      }
+    }
+  }
+
   render(): React.Element<any> {
     const collapsable: boolean = (this.props.collapsable != null)
       ? this.props.collapsable
       : false;
-    const isCollapsed: boolean = this.state.isCollapsed;
-    const chevronTooltip: string = (isCollapsed) ? 'Click to expand' : 'Click to collapse';
+    const collapsed = this.props.collapsed == null
+      ? this.state.isCollapsed
+      : this.props.collapsed;
     // Only include classes if the component is collapsable
     const iconClass = classnames(
       {
         'icon': collapsable,
-        'icon-chevron-down': collapsable && !isCollapsed,
-        'icon-chevron-right': collapsable && isCollapsed,
+        'icon-chevron-down': collapsable && !collapsed,
+        'icon-chevron-right': collapsable && collapsed,
         'nuclide-ui-section-collapsable': collapsable,
       }
     );
     const conditionalProps = {};
     if (collapsable) {
       conditionalProps.onClick = this._toggleCollapsed.bind(this);
-      conditionalProps.title = chevronTooltip;
+      conditionalProps.title = collapsed ? 'Click to expand' : 'Click to collapse';
     }
-
+    const HeadlineComponent = this.props.size === 'small' ? 'h5' : 'h3';
     return (
-      <div>
-        <h3 className={iconClass} {...conditionalProps}>
+      <div className={this.props.className}>
+        <HeadlineComponent className={iconClass} {...conditionalProps}>
           {this.props.headline}
-        </h3>
-        <div style={(isCollapsed) ? {display: 'none'} : {}}>{this.props.children}</div>
+        </HeadlineComponent>
+        <div style={(collapsed) ? {display: 'none'} : {}}>{this.props.children}</div>
       </div>
     );
-  }
-
-  _toggleCollapsed(): void {
-    this.setState({isCollapsed: !this.state.isCollapsed});
   }
 }
