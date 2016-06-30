@@ -45,16 +45,15 @@ export class Section extends React.Component {
 
   constructor(props: Props) {
     super(props);
-
     const initialIsCollapsed: boolean =
       this.props.collapsable != null
       && this.props.collapsable
       && this.props.collapsedByDefault != null
       && this.props.collapsedByDefault;
-
     this.state = {
       isCollapsed: initialIsCollapsed,
     };
+    (this: any)._toggleCollapsed = this._toggleCollapsed.bind(this);
   }
 
   _toggleCollapsed(): void {
@@ -87,7 +86,7 @@ export class Section extends React.Component {
     );
     const conditionalProps = {};
     if (collapsable) {
-      conditionalProps.onClick = this._toggleCollapsed.bind(this);
+      conditionalProps.onClick = this._toggleCollapsed;
       conditionalProps.title = collapsed ? 'Click to expand' : 'Click to collapse';
     }
     const HeadlineComponent = this.props.size === 'small' ? 'h5' : 'h3';
