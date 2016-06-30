@@ -91,7 +91,7 @@ export function applyActionMiddleware(
         const {bookmark, repository} = action.payload;
         return Rx.Observable
           .fromPromise(repository.async.checkoutReference(bookmark.bookmark, false))
-          .flatMap(Rx.Observable.empty)
+          .ignoreElements()
           .catch(error => {
             atom.notifications.addWarning('Failed Updating to Bookmark', {
               description: 'Revert or commit uncommitted changes before changing bookmarks.',
@@ -141,7 +141,7 @@ export function applyActionMiddleware(
           }).concat(
             Rx.Observable
               .fromPromise(repositoryAsync.renameBookmark(bookmark.bookmark, nextName))
-              .flatMap(Rx.Observable.empty)
+              .ignoreElements()
               .catch(error => {
                 atom.notifications.addWarning('Failed Renaming Bookmark', {
                   detail: error,
@@ -195,7 +195,7 @@ export function applyActionMiddleware(
           }).concat(
             Rx.Observable
               .fromPromise(repositoryAsync.deleteBookmark(bookmark.bookmark))
-              .flatMap(Rx.Observable.empty)
+              .ignoreElements()
               .catch(error => {
                 atom.notifications.addWarning('Failed Deleting Bookmark', {
                   detail: error,
