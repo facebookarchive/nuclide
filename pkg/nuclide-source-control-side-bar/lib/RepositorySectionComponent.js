@@ -14,6 +14,7 @@ import type {SelectableItem} from './SideBarComponent';
 
 import bookmarkIsEqual from './bookmarkIsEqual';
 import classnames from 'classnames';
+import {HR} from '../../nuclide-ui/lib/HR';
 import invariant from 'assert';
 import {React} from 'react-for-atom';
 
@@ -186,7 +187,7 @@ export default class RepositorySectionComponent extends React.Component {
 
     let separator;
     if (this.props.hasSeparator) {
-      separator = <hr className="nuclide-source-control-side-bar--repo-separator" />;
+      separator = <HR />;
     }
 
     const uncommittedChangesClassName = classnames(

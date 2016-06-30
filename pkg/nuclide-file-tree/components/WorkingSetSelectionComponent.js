@@ -19,6 +19,7 @@ import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import {Button} from '../../nuclide-ui/lib/Button';
 import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
+import {HR} from '../../nuclide-ui/lib/HR';
 
 type Props = {
   workingSetsStore: WorkingSetsStore;
@@ -136,7 +137,7 @@ export class WorkingSetSelectionComponent extends React.Component {
 
       notApplicableSection = (
         <div>
-          <hr className="nuclide-file-tree-working-set-separator" />
+          <HR />
           <span>The working sets below are not applicable to your current project folders</span>
           <ol className="list-group">
             {notApplicableDefinitions}
