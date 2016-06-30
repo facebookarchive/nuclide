@@ -22,6 +22,7 @@ type StateType = {
 class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
   props: mixed;
   state: StateType;
+  _stoppedThread: ?Element;
 
   constructor(props: mixed) {
     super(props);
@@ -29,12 +30,21 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
     this.state = {
       threadData: null,
     };
+    this._stoppedThread = null;
     (this: any)._handleThreadsUpdated = this._handleThreadsUpdated.bind(this);
     (this: any)._handleClearInterface = this._handleClearInterface.bind(this);
   }
 
   componentWillUnmount() {
     this._unregisterUpdate();
+  }
+
+  componentDidUpdate() {
+    // We can currently scroll to the stopped thread after each render
+    // because we are only rendering when we update the threads. If we
+    // add more UI functionality and state changes then we may need to add
+    // flags so that we are only scrolling at the correct times.
+    this._scrollToStoppedThread();
   }
 
   _handleThreadsUpdated(event: WebInspector.Event): void {
@@ -109,6 +119,16 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
     return thread.id === stopThreadId ? '>' : (thread.id === selectedThreadId ? '*' : ' ');
   }
 
+  _setStoppedThread(ref: Element) {
+    this._stoppedThread = ref;
+  }
+
+  _scrollToStoppedThread() {
+    if (this._stoppedThread != null) {
+      this._stoppedThread.scrollIntoView();
+    }
+  }
+
   render() {
     const children = [];
     const {threadData} = this.state;
@@ -123,17 +143,32 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
         if (thread.id === threadData.selectedThreadId) {
           rowStyle.backgroundColor = '#cfcfcf';
         }
-        children.push((
-          <tr
-            align="center"
-            onDoubleClick={this._handleDoubleClick.bind(this, thread)}
-            style={rowStyle}>
-            <td>{indicator}</td>
-            <td>{thread.id}</td>
-            <td>{thread.address}</td>
-            <td>{thread.stopReason}</td>
-          </tr>
-        ));
+        if (indicator === '>') {
+          children.push((
+            <tr
+              align="center"
+              onDoubleClick={this._handleDoubleClick.bind(this, thread)}
+              style={rowStyle}
+              ref={ref => this._setStoppedThread(ref)}>
+              <td>{indicator}</td>
+              <td>{thread.id}</td>
+              <td>{thread.address}</td>
+              <td>{thread.stopReason}</td>
+            </tr>
+          ));
+        } else {
+          children.push((
+            <tr
+              align="center"
+              onDoubleClick={this._handleDoubleClick.bind(this, thread)}
+              style={rowStyle}>
+              <td>{indicator}</td>
+              <td>{thread.id}</td>
+              <td>{thread.address}</td>
+              <td>{thread.stopReason}</td>
+            </tr>
+          ));
+        }
       }
     }
 
