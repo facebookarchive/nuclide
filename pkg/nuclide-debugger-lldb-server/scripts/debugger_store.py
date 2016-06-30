@@ -30,6 +30,7 @@ class DebuggerStore:
         self._remote_object_manager = RemoteObjectManager()
         basepath = self._resolve_basepath_heuristic(basepath)
         log_debug('basepath: %s' % basepath)
+        self._fixup_lldb_cwd_if_needed(basepath)
         self._location_serializer = serialize.LocationSerializer(
             self._file_manager, basepath)
         self._thread_manager = ThreadManager(self)
@@ -55,6 +56,16 @@ class DebuggerStore:
             if search_result:
                 basepath = executable_file_path[:search_result.start()]
         return basepath
+
+    def _fixup_lldb_cwd_if_needed(self, basepath):
+        '''When buck disables dsym files generation lldb has to find source/symbol info in
+        each individual object file to debug target app. However, buck emits relative path
+        for the object file in the symbol info so lldb may fail to resolve the object file
+        if its current working directory is not relative to the buck root.
+        To workaround this issue we set lldb's cwd to buck root.(see t11679878) for details.
+        '''
+        if basepath != '.' and os.path.exists(basepath):
+            os.chdir(basepath)
 
     @property
     def chrome_channel(self):
