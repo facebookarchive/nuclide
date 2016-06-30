@@ -39,6 +39,7 @@ export class NuxView {
   _completePredicate: (() => boolean);
   _tooltipDiv: HTMLElement;
   _tourId: string;
+  _index: number;
 
   /**
    * Constructor for the NuxView.
@@ -56,6 +57,7 @@ export class NuxView {
    * @param {?(() => boolean)} completePredicate - Will be used when determining whether
    * the NUX has been completed/viewed. The NUX will only be completed if this returns true.
    * If null, the predicate used will always return true.
+   * @param {number} indexInTour - The index of the NuxView in the associated NuxTour
    *
    * @throws Errors if both `selectorString` and `selectorFunction` are null.
    */
@@ -67,6 +69,7 @@ export class NuxView {
     content: string,
     customContent: boolean = false,
     completePredicate: ?(() => boolean) = null,
+    indexInTour: number,
   ) : void {
     this._tourId = tourId;
     if (selectorFunction != null) {
@@ -81,16 +84,18 @@ export class NuxView {
     this._position = validatePlacement(position) ? position : 'auto';
     this._customContent = customContent;
     this._completePredicate = completePredicate || (() => true);
+    this._index = indexInTour;
 
     this._disposables = new CompositeDisposable();
   }
 
   _createNux(creationAttempt: number = 1): void {
     if (creationAttempt > ATTACHMENT_ATTEMPT_THRESHOLD) {
-      const error = 'The NuxView failed to succesfully query and attach to the DOM.';
       this._onNuxComplete(false);
       // An error is logged and tracked instead of simply throwing an error since this function
       // will execute outside of the parent scope's execution and cannot be caught.
+      const error = `NuxView #${this._index} for "${this._tourId}" `
+                      + 'failed to succesfully attach to the DOM.';
       logger.error(`ERROR: ${error}`);
       this._track(
        error,

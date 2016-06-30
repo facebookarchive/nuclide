@@ -18,6 +18,7 @@ import {
 import passesGK from '../../commons-node/passesGK';
 import {arrayCompact} from '../../commons-node/collection';
 
+import {getLogger} from '../../nuclide-logging';
 import analytics from '../../nuclide-analytics';
 
 import {NuxStore} from './NuxStore';
@@ -29,6 +30,8 @@ import type {NuxTourModel} from './NuxModel';
 export const GK_NUX = 'nuclide_all_nuxes';
 // Limits the number of NUXes displayed every session
 const NUX_PER_SESSION_LIMIT = 3;
+
+const logger = getLogger();
 
 export class NuxManager {
   _nuxStore: NuxStore;
@@ -104,7 +107,7 @@ export class NuxManager {
       return;
     }
 
-    const nuxViews = arrayCompact(nuxTourModel.nuxList.map(model => {
+    const nuxViews = arrayCompact(nuxTourModel.nuxList.map((model, index) => {
       try {
         return new NuxView(
           nuxTourModel.id,
@@ -114,11 +117,14 @@ export class NuxManager {
           model.content,
           model.isCustomContent,
           model.completionPredicate,
+          index,
         );
       } catch (err) {
+        const error = `NuxView #${index} for "${nuxTourModel.id}" failed to instantiate.`;
+        logger.error(`ERROR: ${error}`);
         this._track(
           nuxTourModel.id,
-          'NuxView failed to instantiate.',
+          `NuxView #${index + 1} failed to instantiate.`,
           err.toString(),
         );
         return null;
