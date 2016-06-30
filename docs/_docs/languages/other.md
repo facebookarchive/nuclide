@@ -1,6 +1,6 @@
 ---
 pageid: language-other
-title: PHP, JS, OCaml, Python
+title: PHP, JS, OCaml
 layout: docs
 permalink: /docs/languages/other/
 ---
@@ -42,11 +42,3 @@ OCaml's integration into Nuclide provides you with productivity features such as
 It requires that `ocamlmerlin` be installed on your system and properly configured for your
 project. `ocamlmerlin` should be on your `PATH`. If it is not, you may specify the path to
 `ocamlmerlin` in the settings for the 'nuclide' package.
-
-## Python
-
-Nuclide has basic highlighting support for Python.
-
-There is a feature for [Buck](http://buckbuild.com) with respect to Python. Since `BUCK` files are
-written in Python, you can use `cmd-<mouse-click>` (`ctrl-<mouse-click` on Linux) to jump to
-the various `BUCK` build targets provided in the given `BUCK` file (e.g. `deps`).
