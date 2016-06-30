@@ -12,7 +12,7 @@
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {
   EvaluationResult,
-} from './Bridge';
+} from './types';
 
 import {React} from 'react-for-atom';
 import {LazyNestedValueComponent} from '../../nuclide-ui/lib/LazyNestedValueComponent';

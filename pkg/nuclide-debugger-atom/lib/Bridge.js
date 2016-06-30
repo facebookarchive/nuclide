@@ -10,8 +10,12 @@
  */
 
 import type DebuggerModel from './DebuggerModel';
-import type {Callstack} from './CallstackStore';
-import type {Locals} from './LocalsStore';
+import type {
+  Callstack,
+  EvaluationResult,
+  ExpansionResult,
+  Locals,
+} from './types';
 
 type ExpressionResult = ChromeProtocolResponse & {
   expression: string;
@@ -25,20 +29,6 @@ type ChromeProtocolResponse = {
   result: ?EvaluationResult | ?GetPropertiesResult;
   error: ?Object;
 };
-
-export type EvaluationResult = {
-  _type: string;
-  // Either:
-  value?: string;
-  // Or:
-  _description? : string;
-  _objectId?: string;
-};
-
-export type ExpansionResult = Array<{
-  name: string;
-  value: EvaluationResult;
-}>;
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';

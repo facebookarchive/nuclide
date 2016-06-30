@@ -17,6 +17,7 @@ import type {
 import type DebuggerInstance from './DebuggerInstance';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
+import type {DebuggerModeType} from './types';
 
 import {Disposable} from 'atom';
 import {EventEmitter} from 'events';
@@ -24,7 +25,6 @@ import Constants from './Constants';
 import {DebuggerSettings} from './DebuggerSettings';
 import invariant from 'assert';
 
-export type DebuggerModeType = 'starting' | 'running' | 'paused' | 'stopping' | 'stopped';
 const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
   STARTING: 'starting',
   RUNNING: 'running',

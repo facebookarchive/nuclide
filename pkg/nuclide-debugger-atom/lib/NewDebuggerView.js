@@ -10,13 +10,15 @@
  */
 
 import type DebuggerModel from './DebuggerModel';
-import type {DebuggerModeType} from './DebuggerStore';
 import type Multimap from './Multimap';
-import type {FileLineBreakpoints} from './BreakpointListComponent';
 import type {
   WatchExpressionListStore,
 } from './WatchExpressionListStore';
-import type {Callstack} from './CallstackStore';
+import type {
+  Callstack,
+  DebuggerModeType,
+  FileLineBreakpoints,
+} from './types';
 
 import {CompositeDisposable} from 'atom';
 import {

@@ -14,7 +14,7 @@ import type {
 } from '../../nuclide-debugger-interfaces/service';
 import type {Datatip} from '../../nuclide-datatip/lib/types';
 import type DebuggerModel from './DebuggerModel';
-import type {EvaluationResult} from './Bridge';
+import type {EvaluationResult} from './types';
 
 import wordAtPosition from '../../commons-atom/word-at-position';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';

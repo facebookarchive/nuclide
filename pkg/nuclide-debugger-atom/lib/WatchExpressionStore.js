@@ -10,7 +10,10 @@
  */
 
 import type Bridge from './Bridge';
-import type {ExpansionResult, EvaluationResult} from './Bridge';
+import type {
+  EvaluationResult,
+  ExpansionResult,
+} from './types';
 import type Dispatcher from 'flux';
 
 import {

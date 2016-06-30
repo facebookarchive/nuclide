@@ -14,14 +14,16 @@ import type {
    NuclideDebuggerProvider,
    NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
-import type {SerializedBreakpoint} from './BreakpointStore';
 import type {
   DatatipProvider,
   DatatipService,
 } from '../../nuclide-datatip/lib/types';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
-import type {EvaluationResult} from './Bridge';
+import type {
+  EvaluationResult,
+  SerializedBreakpoint,
+} from './types';
 import type {Observable} from 'rxjs';
 import type {WatchExpressionStore} from './WatchExpressionStore';
 

@@ -10,7 +10,7 @@
  */
 
 import type DebuggerActions from './DebuggerActions';
-import type {DebuggerModeType} from './DebuggerStore';
+import type {DebuggerModeType} from './types';
 
 import {
   React,

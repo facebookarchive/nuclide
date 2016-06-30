@@ -16,11 +16,14 @@ import type {
   NuclideDebuggerProvider,
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
-import type {DebuggerStore, DebuggerModeType} from './DebuggerStore';
+import type {DebuggerStore} from './DebuggerStore';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type DebuggerInstance from './DebuggerInstance';
-import type {Callstack} from './CallstackStore';
-import type {Locals} from './LocalsStore';
+import type {
+  Callstack,
+  DebuggerModeType,
+  Locals,
+} from './types';
 
 import Constants from './Constants';
 import {CompositeDisposable} from 'atom';

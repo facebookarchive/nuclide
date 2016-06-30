@@ -11,9 +11,10 @@
 
 import type {
   ExpansionResult,
-} from './Bridge';
+  Local,
+  Locals,
+} from './types';
 import {WatchExpressionStore} from './WatchExpressionStore';
-import type {Local, Locals} from './LocalsStore';
 import type {Observable} from 'rxjs';
 
 import {

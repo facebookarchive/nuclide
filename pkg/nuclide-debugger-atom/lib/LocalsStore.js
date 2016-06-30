@@ -10,7 +10,7 @@
  */
 
 import type {Dispatcher} from 'flux';
-import type {EvaluationResult} from './Bridge';
+import type {Locals} from './types';
 
 import {
   Disposable,
@@ -18,12 +18,6 @@ import {
 } from 'atom';
 import Rx from 'rxjs';
 import Constants from './Constants';
-
-export type Local = {
-  name: string;
-  value: EvaluationResult;
-};
-export type Locals = Array<Local>;
 
 export default class LocalsStore {
   _disposables: IDisposable;

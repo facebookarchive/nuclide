@@ -10,6 +10,7 @@
  */
 
 import type {Dispatcher} from 'flux';
+import type {SerializedBreakpoint} from './types';
 
 import {
   Disposable,
@@ -18,11 +19,6 @@ import {
 import {Emitter} from 'atom';
 import Constants from './Constants';
 import Multimap from './Multimap';
-
-export type SerializedBreakpoint = {
-  line: number;
-  sourceURL: string;
-};
 
 /**
  * Stores the currently set breakpoints as (path, line) pairs.

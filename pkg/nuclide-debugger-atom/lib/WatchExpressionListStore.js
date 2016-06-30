@@ -11,7 +11,9 @@
 
 import type {
   EvaluationResult,
-} from './Bridge';
+  Expression,
+  WatchExpressionList,
+} from './types';
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {Dispatcher} from 'flux';
 
@@ -21,13 +23,6 @@ import {
 } from 'atom';
 import Rx from 'rxjs';
 import Constants from './Constants';
-
-type Expression = string;
-export type WatchExpression = {
-  expression: Expression;
-  value: Rx.Observable<?EvaluationResult>;
-};
-export type WatchExpressionList = Array<WatchExpression>;
 
 export class WatchExpressionListStore {
   _watchExpressionStore: WatchExpressionStore;

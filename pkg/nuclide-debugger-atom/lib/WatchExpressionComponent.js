@@ -11,12 +11,10 @@
 
 import type {
   ExpansionResult,
-} from './Bridge';
-import {WatchExpressionStore} from './WatchExpressionStore';
-import type {
   WatchExpression,
   WatchExpressionList,
-} from './WatchExpressionListStore';
+} from './types';
+import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 
 import {

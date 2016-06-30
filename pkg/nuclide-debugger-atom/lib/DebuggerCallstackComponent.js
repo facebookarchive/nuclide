@@ -12,7 +12,7 @@
 import {
   React,
 } from 'react-for-atom';
-import type {Callstack} from './CallstackStore';
+import type {Callstack} from './types';
 import type DebuggerActions from './DebuggerActions';
 
 import invariant from 'assert';

@@ -10,6 +10,7 @@
  */
 
 import type {Dispatcher} from 'flux';
+import type {Callstack} from './types';
 
 import {
   Disposable,
@@ -18,16 +19,6 @@ import {
 import {EventEmitter} from 'events';
 import nuclideUri from '../../nuclide-remote-uri';
 import Constants from './Constants';
-
-type CallstackItem = {
-  name: string;
-  location: {
-    path: string;
-    line: number;
-    column?: number;
-  };
-};
-export type Callstack = Array<CallstackItem>;
 
 export default class CallstackStore {
   _disposables: IDisposable;

@@ -13,7 +13,7 @@
 import type {
   EvaluationResult,
   ExpansionResult,
-} from '../../nuclide-debugger-atom/lib/Bridge';
+} from '../../nuclide-debugger-atom/lib/types';
 import type {Observable} from 'rxjs';
 
 import {React} from 'react-for-atom';

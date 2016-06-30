@@ -16,15 +16,7 @@ import invariant from 'assert';
 import nuclideUri from '../../nuclide-remote-uri';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {Listview} from '../../nuclide-ui/lib/Listview';
-
-// TODO use type from store
-type FileLineBreakpoint = {
-  path: string;
-  line: number;
-  enabled: boolean;
-  resolved: boolean;
-};
-export type FileLineBreakpoints = Array<FileLineBreakpoint>;
+import type {FileLineBreakpoints} from './types';
 
 type BreakpointListComponentProps = {
   actions: DebuggerActions;
