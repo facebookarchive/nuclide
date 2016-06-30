@@ -31,15 +31,7 @@ import BuckToolbarActions from './BuckToolbarActions';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
 import {getEventsFromSocket, getEventsFromProcess, isBuildFinishEvent} from './BuckEventStream';
 
-import ReactNativeServerManager from './ReactNativeServerManager';
-import ReactNativeServerActions from './ReactNativeServerActions';
-
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
-const REACT_NATIVE_APP_FLAGS = [
-  '-executor-override', 'RCTWebSocketExecutor',
-  '-websocket-executor-name', 'Nuclide',
-  '-websocket-executor-port', '8090',
-];
 
 type Flux = {
   actions: BuckToolbarActions;
@@ -58,10 +50,6 @@ export class BuckBuildSystem {
   _initialState: ?SerializedState;
   _tasks: Observable<Array<Task>>;
   _outputMessages: Subject<Message>;
-
-  // React Native server state.
-  _reactNativeServerActions: ?ReactNativeServerActions;
-  _reactNativeServerManager: ?ReactNativeServerManager;
 
   constructor(initialState: ?SerializedState) {
     this.id = 'buck';
@@ -292,12 +280,14 @@ export class BuckBuildSystem {
       const isReactNativeServerMode = store.isReactNativeServerMode();
       if (isReactNativeServerMode) {
         rnObservable = Observable.defer(() => {
-          const rnActions = this._getReactNativeServerActions();
           atom.commands.dispatch(
             atom.views.getView(atom.workspace),
             'nuclide-react-native:start-packager',
           );
-          rnActions.startNodeExecutorServer();
+          atom.commands.dispatch(
+            atom.views.getView(atom.workspace),
+            'nuclide-react-native:start-debugging',
+          );
           return Observable.empty();
         });
       }
@@ -308,7 +298,7 @@ export class BuckBuildSystem {
           {
             run: true,
             debug,
-            appArgs: isReactNativeServerMode ? REACT_NATIVE_APP_FLAGS : [],
+            appArgs: isReactNativeServerMode ? ['-executor-override', 'RCTWebSocketExecutor'] : [],
           },
         ),
       );
@@ -343,19 +333,6 @@ export class BuckBuildSystem {
         },
       })
       .share();
-  }
-
-  _getReactNativeServerActions(): ReactNativeServerActions {
-    if (this._reactNativeServerActions != null) {
-      return this._reactNativeServerActions;
-    }
-
-    const dispatcher = new Dispatcher();
-    const actions = new ReactNativeServerActions(dispatcher);
-    this._reactNativeServerActions = actions;
-    this._reactNativeServerManager = new ReactNativeServerManager(dispatcher, actions);
-    this._disposables.add(this._reactNativeServerManager);
-    return actions;
   }
 
 }
