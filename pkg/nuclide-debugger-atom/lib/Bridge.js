@@ -14,7 +14,6 @@ import type {
   Callstack,
   EvaluationResult,
   ExpansionResult,
-  Locals,
 } from './types';
 
 type ExpressionResult = ChromeProtocolResponse & {
@@ -231,7 +230,7 @@ class Bridge {
     this._debuggerModel.getActions().updateCallstack(callstack);
   }
 
-  _handleLocalsUpdate(locals: Locals): void {
+  _handleLocalsUpdate(locals: ExpansionResult): void {
     this._debuggerModel.getActions().updateLocals(locals);
   }
 

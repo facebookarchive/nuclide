@@ -11,8 +11,8 @@
 
 import type {
   ExpansionResult,
-  WatchExpression,
-  WatchExpressionList,
+  EvaluatedExpression,
+  EvaluatedExpressionList,
 } from './types';
 import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
@@ -27,7 +27,7 @@ import {LazyNestedValueComponent} from '../../nuclide-ui/lib/LazyNestedValueComp
 import SimpleValueComponent from '../../nuclide-ui/lib/SimpleValueComponent';
 
 type WatchExpressionComponentProps = {
-  watchExpressions: WatchExpressionList;
+  watchExpressions: EvaluatedExpressionList;
   onAddWatchExpression: (expression: string) => void;
   onRemoveWatchExpression: (index: number) => void;
   onUpdateWatchExpression: (index: number, newExpression: string) => void;
@@ -112,7 +112,7 @@ export class WatchExpressionComponent extends React.Component {
 
   _renderExpression(
     fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
-    watchExpression: WatchExpression,
+    watchExpression: EvaluatedExpression,
     index: number,
   ): React.Element<any> {
     const {

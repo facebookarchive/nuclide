@@ -27,17 +27,11 @@ export type ExpansionResult = Array<{
 }>;
 
 export type Expression = string;
-export type WatchExpression = {
+export type EvaluatedExpression = {
   expression: Expression;
   value: Rx.Observable<?EvaluationResult>;
 };
-export type WatchExpressionList = Array<WatchExpression>;
-
-export type Local = {
-  name: string;
-  value: EvaluationResult;
-};
-export type Locals = Array<Local>;
+export type EvaluatedExpressionList = Array<EvaluatedExpression>;
 
 /* Breakpoints */
 export type FileLineBreakpoint = {

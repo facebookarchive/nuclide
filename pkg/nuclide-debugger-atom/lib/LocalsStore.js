@@ -10,7 +10,7 @@
  */
 
 import type {Dispatcher} from 'flux';
-import type {Locals} from './types';
+import type {ExpansionResult} from './types';
 
 import {
   Disposable,
@@ -24,7 +24,7 @@ export default class LocalsStore {
   /**
    * Treat as immutable.
    */
-  _locals: Rx.BehaviorSubject<Locals>;
+  _locals: Rx.BehaviorSubject<ExpansionResult>;
 
   constructor(dispatcher: Dispatcher) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
@@ -46,11 +46,11 @@ export default class LocalsStore {
     }
   }
 
-  _handleUpdateLocals(locals: Locals): void {
+  _handleUpdateLocals(locals: ExpansionResult): void {
     this._locals.next(locals);
   }
 
-  getLocals(): Rx.Observable<Locals> {
+  getLocals(): Rx.Observable<ExpansionResult> {
     return this._locals.asObservable();
   }
 

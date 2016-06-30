@@ -22,7 +22,7 @@ import type DebuggerInstance from './DebuggerInstance';
 import type {
   Callstack,
   DebuggerModeType,
-  Locals,
+  ExpansionResult,
 } from './types';
 
 import Constants from './Constants';
@@ -383,7 +383,7 @@ class DebuggerActions {
     });
   }
 
-  updateLocals(locals: Locals): void {
+  updateLocals(locals: ExpansionResult): void {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.UPDATE_LOCALS,
       data: {

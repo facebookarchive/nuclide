@@ -10,9 +10,8 @@
  */
 
 import type {
+  EvaluationResult,
   ExpansionResult,
-  Local,
-  Locals,
 } from './types';
 import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
@@ -24,7 +23,7 @@ import {LazyNestedValueComponent} from '../../nuclide-ui/lib/LazyNestedValueComp
 import SimpleValueComponent from '../../nuclide-ui/lib/SimpleValueComponent';
 
 type LocalsComponentProps = {
-  locals: Locals;
+  locals: ExpansionResult;
   watchExpressionStore: WatchExpressionStore;
 };
 
@@ -38,7 +37,10 @@ export class LocalsComponent extends React.Component {
 
   _renderExpression(
     fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
-    local: Local,
+    local: {
+      name: string;
+      value: EvaluationResult;
+    },
     index: number,
   ): React.Element<any> {
     const {
