@@ -25,6 +25,8 @@ import type DiagnosticsPanel from './DiagnosticsPanel';
 import type StatusBarTile from './StatusBarTile';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 
+import {DisposableSubscription} from '../../commons-node/stream';
+
 const DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 const DEFAULT_TABLE_HEIGHT = 200;
 const DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
@@ -142,8 +144,6 @@ export function activate(state: ?Object): void {
 }
 
 export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
-  gutterConsumeDiagnosticUpdates(diagnosticUpdater);
-
   // Currently, the DiagnosticsPanel is designed to work with only one DiagnosticUpdater.
   if (consumeUpdatesCalled) {
     return;
@@ -157,6 +157,7 @@ export function consumeObservableDiagnosticUpdates(
   // TODO migrate things from consumeDiagnosticUpdates above
 
   getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
+  gutterConsumeDiagnosticUpdates(diagnosticUpdater);
 
   if (consumeObservableUpdatesCalled) {
     return;
@@ -167,7 +168,7 @@ export function consumeObservableDiagnosticUpdates(
   addAtomCommands(diagnosticUpdater);
 }
 
-function gutterConsumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
+function gutterConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
   const {applyUpdateToEditor} = require('./gutter');
 
   const fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
@@ -182,7 +183,9 @@ function gutterConsumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): v
     const callback = (update: FileMessageUpdate) => {
       applyUpdateToEditor(editor, update, fixer);
     };
-    const disposable = diagnosticUpdater.onFileMessagesDidUpdate(callback, filePath);
+    const disposable = new DisposableSubscription(
+      diagnosticUpdater.getFileMessageUpdates(filePath).subscribe(callback),
+    );
 
     // Be sure to remove the subscription on the DiagnosticStore once the editor is closed.
     editor.onDidDestroy(() => disposable.dispose());
