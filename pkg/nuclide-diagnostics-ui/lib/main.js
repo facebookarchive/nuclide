@@ -10,7 +10,6 @@
  */
 
 import type {
-  DiagnosticUpdater,
   FileMessageUpdate,
   ObservableDiagnosticUpdater,
 } from '../../nuclide-diagnostics-base';
@@ -46,7 +45,6 @@ type ActivationState = {
 let activationState: ?ActivationState = null;
 
 let consumeUpdatesCalled = false;
-let consumeObservableUpdatesCalled = false;
 
 function createPanel(
   diagnosticUpdater: ObservableDiagnosticUpdater,
@@ -143,26 +141,17 @@ export function activate(state: ?Object): void {
   activationState = state;
 }
 
-export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
+export function consumeDiagnosticUpdates(
+  diagnosticUpdater: ObservableDiagnosticUpdater,
+): void {
+  getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
+  gutterConsumeDiagnosticUpdates(diagnosticUpdater);
+
   // Currently, the DiagnosticsPanel is designed to work with only one DiagnosticUpdater.
   if (consumeUpdatesCalled) {
     return;
   }
   consumeUpdatesCalled = true;
-}
-
-export function consumeObservableDiagnosticUpdates(
-  diagnosticUpdater: ObservableDiagnosticUpdater,
-): void {
-  // TODO migrate things from consumeDiagnosticUpdates above
-
-  getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
-  gutterConsumeDiagnosticUpdates(diagnosticUpdater);
-
-  if (consumeObservableUpdatesCalled) {
-    return;
-  }
-  consumeObservableUpdatesCalled = true;
 
   tableConsumeDiagnosticUpdates(diagnosticUpdater);
   addAtomCommands(diagnosticUpdater);
@@ -292,7 +281,6 @@ export function deactivate(): void {
   }
 
   consumeUpdatesCalled = false;
-  consumeObservableUpdatesCalled = false;
 }
 
 export function serialize(): ActivationState {

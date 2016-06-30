@@ -12,8 +12,7 @@
   "consumedServices": {
     "nuclide-diagnostics": {
       "versions": {
-        "0.0.0": "consumeDiagnosticUpdates",
-        "0.2.0": "consumeObservableDiagnosticUpdates"
+        "0.2.0": "consumeDiagnosticUpdates"
       }
     },
     "status-bar": {
