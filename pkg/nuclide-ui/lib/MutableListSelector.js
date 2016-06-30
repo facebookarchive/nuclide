@@ -111,7 +111,7 @@ export class MutableListSelector extends React.Component {
             {listItems}
           </ol>
         </div>
-        <div className="text-right">
+        <div style={{display: 'flex', justifyContent: 'flex-end'}}>
           <ButtonGroup>
             <Button
               disabled={selectedItem == null || selectedItem.deletable === false}
