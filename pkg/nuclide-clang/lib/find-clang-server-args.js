@@ -39,6 +39,14 @@ export default async function findClangServerArgs(): Promise<{
     }
   }
 
+  // TODO(asuarez): Fix this when we have server-side settings.
+  if (global.atom) {
+    const path = ((atom.config.get('nuclide.nuclide-clang-atom.libclangPath'): any): ?string);
+    if (path) {
+      libClangLibraryFile = path.trim();
+    }
+  }
+
   const clangServerArgs = {
     libClangLibraryFile,
     pythonExecutable: 'python',

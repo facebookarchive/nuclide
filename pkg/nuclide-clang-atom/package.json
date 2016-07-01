@@ -15,6 +15,12 @@
       ]
     },
     "config": {
+      "libclangPath": {
+        "title": "libclang Library Path",
+        "type": "string",
+        "default": "",
+        "description": "Path to libclang.{so, dylib, dll} on your system. (Local projects only)"
+      },
       "enableDefaultFlags": {
         "title": "Enable Default Compilation Flags",
         "type": "boolean",
