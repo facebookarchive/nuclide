@@ -6,6 +6,20 @@
   "description": "Allows jumping between related files in a project (e.g. header/source files)",
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": [
+        "IDE",
+        "Related Files"
+      ]
+    },
+    "config": {
+      "openInNextPane": {
+        "title": "Open related files in next open pane",
+        "type": "boolean",
+        "default": false,
+        "description": "Open related files (i.e. switch to header/source) in the next open pane."
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   }

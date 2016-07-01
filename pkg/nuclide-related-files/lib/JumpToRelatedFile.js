@@ -12,6 +12,7 @@
 import type RelatedFileFinder from './RelatedFileFinder';
 
 import {trackOperationTiming} from '../../nuclide-analytics';
+import featureConfig from '../../nuclide-feature-config';
 
 /**
  * Sets up listeners so the user can jump to related files.
@@ -91,13 +92,10 @@ export default class JumpToRelatedFile {
     return relatedFiles[(index + 1) % relatedFiles.length];
   }
 
-  /**
-   * Opens the path in the next pane, or the current one if there's only one.
-   *
-   * We navigate to a file if it's already open, instead of opening it in a new tab.
-   */
   _open(path: string) {
-    atom.workspace.activateNextPane();
+    if (featureConfig.get('nuclide-related-files.openInNextPane')) {
+      atom.workspace.activateNextPane();
+    }
     atom.workspace.open(path, {searchAllPanes: true});
   }
 
