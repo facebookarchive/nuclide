@@ -12,9 +12,7 @@
 import {CompositeSubscription} from '../../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../../nuclide-debugger-atom';
-import {
-  DebuggerProxyClient,
-} from '../../../nuclide-react-native-node-executor/lib/DebuggerProxyClient';
+import {DebuggerProxyClient} from './DebuggerProxyClient';
 import Rx from 'rxjs';
 import WS from 'ws';
 import type {Session as SessionType} from '../../../nuclide-debugger-node/lib/Session';

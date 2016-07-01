@@ -11,15 +11,15 @@
 
 import type {ExecutorResponse, RnRequest} from './types';
 
-import {CompositeSubscription} from '../../commons-node/stream';
-import featureConfig from '../../nuclide-feature-config';
+import {CompositeSubscription} from '../../../commons-node/stream';
+import featureConfig from '../../../nuclide-feature-config';
 import {
   createProcessStream,
   forkWithExecEnvironment,
   getOutputStream,
-} from '../../commons-node/process';
-import {getLogger} from '../../nuclide-logging';
-import nuclideUri from '../../nuclide-remote-uri';
+} from '../../../commons-node/process';
+import {getLogger} from '../../../nuclide-logging';
+import nuclideUri from '../../../nuclide-remote-uri';
 import {Observable} from 'rxjs';
 
 const logger = getLogger();

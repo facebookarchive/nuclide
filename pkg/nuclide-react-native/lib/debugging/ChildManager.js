@@ -16,14 +16,14 @@ import type {
 } from './types';
 import type {EventEmitter} from 'events';
 
-import formatEnoentNotification from '../../commons-atom/format-enoent-notification';
+import formatEnoentNotification from '../../../commons-atom/format-enoent-notification';
 import {executeRnRequests} from './executeRnRequests';
 import {Observable, Subject} from 'rxjs';
 
 let logger;
 function getLogger() {
   if (!logger) {
-    logger = require('../../nuclide-logging').getLogger();
+    logger = require('../../../nuclide-logging').getLogger();
   }
   return logger;
 }
