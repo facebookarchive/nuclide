@@ -24,17 +24,17 @@ class Activation {
 
   constructor(state: ?Object) {
     const message$ = Rx.Observable.defer(() => createMessageStream(createProcessStream()))
-      .do({
-        error(err) {
-          if (err.code === 'ENOENT') {
-            const {message, meta} = formatEnoentNotification({
-              feature: 'iOS Syslog tailing',
-              toolName: 'syslog',
-              pathSetting: 'nuclide-ios-simulator-logs.pathToSyslog',
-            });
-            atom.notifications.addError(message, meta);
-          }
-        },
+      .catch(err => {
+        if (err.code === 'ENOENT') {
+          const {message, meta} = formatEnoentNotification({
+            feature: 'iOS Syslog tailing',
+            toolName: 'syslog',
+            pathSetting: 'nuclide-ios-simulator-logs.pathToSyslog',
+          });
+          atom.notifications.addError(message, meta);
+          return Rx.Observable.empty();
+        }
+        throw err;
       });
 
     this._logTailer = new LogTailer({

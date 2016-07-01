@@ -38,22 +38,18 @@ class Activation {
               0,
             )
           ))
-          .do({
-            error(err) {
-              if (isNoEntError(err)) {
-                const {message, meta} = formatEnoentNotification({
-                  feature: 'Tailing Android (adb) logs',
-                  toolName: 'adb',
-                  pathSetting: 'nuclide-adb-logcat.pathToAdb',
-                });
-                atom.notifications.addError(message, meta);
-                return;
-              }
-              atom.notifications.addError(
-                'adb logcat has crashed 3 times.'
-                + ' You can manually restart it using the "Nuclide Adb Logcat: Start" command.'
-              );
-            },
+          .catch(err => {
+            if (isNoEntError(err)) {
+              const {message, meta} = formatEnoentNotification({
+                feature: 'Tailing Android (adb) logs',
+                toolName: 'adb',
+                pathSetting: 'nuclide-adb-logcat.pathToAdb',
+              });
+              atom.notifications.addError(message, meta);
+              return Rx.Observable.empty();
+            }
+
+            throw err;
           })
       )
     );

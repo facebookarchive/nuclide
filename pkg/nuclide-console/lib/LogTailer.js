@@ -45,13 +45,28 @@ export class LogTailer {
     this._eventNames = options.trackingEvents;
     this._messages = options.messages
       .do({
-        error: err => {
-          this._stop(false);
-          getLogger().error(`Error with ${this._name} tailer.`, err);
-        },
         complete: () => {
           this._stop();
         },
+      })
+      .catch(err => {
+        this._stop(false);
+        getLogger().error(`Error with ${this._name} tailer.`, err);
+        const message = `An unexpected error occurred while running the ${this._name} process`
+          + (err.message ? `:\n\n**${err.message}**` : '.');
+        const notification = atom.notifications.addError(message, {
+          dismissable: true,
+          detail: err.stack == null ? '' : err.stack.toString(),
+          buttons: [{
+            text: `Restart ${this._name}`,
+            className: 'icon icon-sync',
+            onDidClick: () => {
+              notification.dismiss();
+              this.restart();
+            },
+          }],
+        });
+        return Observable.empty();
       })
       .share()
       .publish();
