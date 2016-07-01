@@ -348,7 +348,7 @@ class Server:
         translation_unit = self._update_translation_unit(contents)
         if not translation_unit:
             return None
-        return outline.get_outline(self.custom_clang_lib, translation_unit)
+        return outline.get_outline(self.custom_clang_lib, translation_unit, contents)
 
     def _get_translation_unit(self, unsaved_contents):
         '''

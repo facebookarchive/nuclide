@@ -14,6 +14,7 @@ from utils import range_dict_relative
 import ctypes
 import json
 import os
+import re
 import sys
 
 # Function/method cursor kinds.
@@ -62,6 +63,10 @@ VAR_KINDS = set([
 
 # Record any of the cursor types listed above.
 ALL_KINDS = FUNCTION_KINDS | CLASS_KINDS | MEMBER_KINDS | VAR_KINDS
+
+
+# People like adding a '-' by convention, but strip that out.
+PRAGMA_MARK_REGEX = re.compile('^\s*#pragma\s+mark\s+(?:-\s*)?(.+)$', re.MULTILINE)
 
 
 def visit_cursor(libclang, cursor):
@@ -118,7 +123,7 @@ def visit_cursor(libclang, cursor):
     return {k: v for k, v in ret.items() if v is not None}
 
 
-def get_outline(libclang, translation_unit):
+def get_outline(libclang, translation_unit, contents):
     root_cursor = translation_unit.cursor
 
     # This is the same as Cursor.get_children minus an assert in visitor().
@@ -134,4 +139,27 @@ def get_outline(libclang, translation_unit):
 
     result = []
     libclang.clang_visitChildren(root_cursor, callback_type(visitor), result)
-    return result
+
+    # Look for pragma marks. These are not detectable in the AST.
+    line = 0
+    lastpos = 0
+    for mark in PRAGMA_MARK_REGEX.finditer(contents):
+        while lastpos < mark.start():
+            if contents[lastpos] == '\n':
+                line += 1
+            lastpos += 1
+        result.append({
+            'name': mark.group(1),
+            'cursor_kind': 'PRAGMA_MARK',
+            'extent': {
+                'start': {'line': line, 'column': 0},
+                'end': {'line': line + 1, 'column': 0},
+            },
+        })
+
+    return sorted(result, key=lambda x: (
+        x['extent']['start']['line'],
+        x['extent']['start']['column'],
+        x['extent']['end']['line'],
+        x['extent']['end']['column'],
+    ))

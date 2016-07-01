@@ -12,6 +12,7 @@
 import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../../nuclide-remote-uri';
+import {addMatchers} from '../../nuclide-test-helpers';
 
 import ClangServer from '../lib/ClangServer';
 
@@ -19,6 +20,10 @@ const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'outline.cpp');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE, 'utf8');
 
 describe('ClangServer', () => {
+  beforeEach(function() {
+    addMatchers(this);
+  });
+
   it('can return outline data', () => {
     waitsForPromise(async () => {
       const server = new ClangServer(TEST_FILE, ['-x', 'c++']);
@@ -27,7 +32,7 @@ describe('ClangServer', () => {
         FILE_CONTENTS,
       );
       invariant(response != null);
-      expect(response).toEqual([
+      expect(response).diffJson([
         {
           extent: {
             start: {
@@ -94,6 +99,20 @@ describe('ClangServer', () => {
               ],
             },
           ],
+        },
+        {
+          cursor_kind: 'PRAGMA_MARK',
+          name: 'Section 1',
+          extent: {
+            start: {
+              column: 0,
+              line: 10,
+            },
+            end: {
+              column: 0,
+              line: 11,
+            },
+          },
         },
         {
           cursor_kind: 'FUNCTION_TEMPLATE',
@@ -216,6 +235,20 @@ describe('ClangServer', () => {
           ],
           tparams: [
           ],
+        },
+        {
+          cursor_kind: 'PRAGMA_MARK',
+          name: 'Section 2',
+          extent: {
+            start: {
+              column: 0,
+              line: 29,
+            },
+            end: {
+              column: 0,
+              line: 30,
+            },
+          },
         },
         {
           cursor_kind: 'CLASS_TEMPLATE',
