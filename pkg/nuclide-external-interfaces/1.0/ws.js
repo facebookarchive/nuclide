@@ -31,6 +31,11 @@ declare module 'ws' {
     send(message: string, ack?: (error: ?Object) => void): void;
     close(): void;
     terminate(): void;
+    ping(
+      data: ?string,
+      options?: {mask?: boolean; binary?: boolean},
+      dontFailWhenClosed?: boolean,
+    ): void;
   }
 
   declare var exports: typeof ws$WebSocket;

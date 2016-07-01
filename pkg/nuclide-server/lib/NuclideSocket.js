@@ -24,6 +24,8 @@ import {attachEvent} from '../../commons-node/event';
 
 const logger = require('../../nuclide-logging').getLogger();
 
+const PING_SEND_INTERVAL = 5000;
+const PING_WAIT_INTERVAL = 5000;
 
 const INITIAL_RECONNECT_TIME_MS = 10;
 const MAX_RECONNECT_TIME_MS = 5000;
@@ -51,6 +53,7 @@ export class NuclideSocket {
 
   _serverUri: string;
   _options: ?AgentOptions;
+  _pingTimer: ?number;
   _reconnectTime: number;
   _reconnectTimer: ?number; // ID from a setTimeout() call.
   _previouslyConnected: boolean;
@@ -64,6 +67,7 @@ export class NuclideSocket {
     this._serverUri = serverUri;
     this._options = options;
     this.id = uuid.v4();
+    this._pingTimer = null;
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     this._reconnectTimer = null;
     this._previouslyConnected = false;
@@ -142,7 +146,17 @@ export class NuclideSocket {
         case 'success':
           if (this.isDisconnected()) {
             const ws = new WebSocketTransport(this.id, websocket);
+            const pingId = uuid.v4();
+            ws.onClose(() => { this._clearPingTimer(); });
             ws.onError(error => { ws.close(); });
+            ws.onPong(data => {
+              if (pingId !== data) {
+                logger.error('pingId mismatch');
+                return;
+              }
+              this._schedulePing(pingId, ws);
+            });
+            this._schedulePing(pingId, ws);
             invariant(this._transport != null);
             this._transport.reconnect(ws);
             websocket.removeListener('error', onSocketError);
@@ -161,6 +175,24 @@ export class NuclideSocket {
       }
     };
     websocket.on('open', onSocketOpen);
+  }
+
+  _schedulePing(data: string, ws: WebSocketTransport): void {
+    this._clearPingTimer();
+    this._pingTimer = setTimeout(() => {
+      ws.ping(data);
+      this._pingTimer = setTimeout(() => {
+        logger.error('Failed to receive pong in response to ping');
+        ws.close();
+      }, PING_WAIT_INTERVAL);
+    }, PING_SEND_INTERVAL);
+  }
+
+  _clearPingTimer() {
+    if (this._pingTimer != null) {
+      clearTimeout(this._pingTimer);
+      this._pingTimer = null;
+    }
   }
 
   _scheduleReconnect() {
