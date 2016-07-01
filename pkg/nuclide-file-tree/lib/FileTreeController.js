@@ -75,6 +75,20 @@ class FileTreeController {
         // NOTE: This is specifically for use in Diff View, so don't expose a menu item.
         /* eslint-disable nuclide-internal/command-menu-items */
         'nuclide-file-tree:reveal-text-editor': this._revealTextEditor.bind(this),
+        // This command is to workaround the initialization order problem between the
+        // nuclide-remote-projects and nuclide-file-tree packages.
+        // The file-tree starts up and restores its state, which can have a (remote) project root.
+        // But at this point it's not a real directory. It is not present in
+        // atom.project.getDirectories() and essentially it's a fake, but a useful one, as it has
+        // the state (open folders, selection etc.) serialized in it. So we don't want to discard
+        // it. In most cases, after a successful reconnect the real directory instance will be
+        // added to the atom.project.directories and the previously fake root would become real.
+        // The problem happens when the connection fails, or is canceled.
+        // The fake root just stays in the file tree. To workaround that, this command can be used
+        // to force the file-tree reflect the actual state of the projects.
+        // Ideally, we'd like a service dependency between the two packages, but I (advinskyt) don't
+        // see it happening any time soon.
+        'nuclide-file-tree:force-refresh-roots': this._updateRootDirectories.bind(this),
         /* eslint-enable nuclide-internal/command-menu-items */
         'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
       })

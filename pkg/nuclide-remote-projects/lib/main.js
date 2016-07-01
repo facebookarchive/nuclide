@@ -233,6 +233,33 @@ async function reloadRemoteProjects(
         config.host,
         config.cwd,
       );
+      atom.commands.dispatch(
+        atom.views.getView(atom.workspace),
+        'nuclide-file-tree:force-refresh-roots',
+      );
+
+      // Atom restores remote files with a malformed URIs, which somewhat resemble local paths.
+      // If after an unsuccessful connection user modifies and saves them he's presented
+      // with a credential requesting dialog, as the file is attempted to be saved into
+      // /nuclide:/<hostname> folder. If the user will approve the elevation and actually save
+      // the file all kind of weird stuff happens (see t10842295) since the difference between the
+      // remote and the valid local path becomes less aparent.
+      // Anyway - these files better be closed.
+      atom.workspace.getTextEditors()
+      .forEach(textEditor => {
+        if (textEditor == null) {
+          return;
+        }
+
+        const path = textEditor.getPath();
+        if (path == null) {
+          return;
+        }
+
+        if (path.startsWith(`nuclide:/${config.host}`)) {
+          textEditor.destroy();
+        }
+      });
     } else {
       // It's fine the user connected to a different project on the same host:
       // we should still be able to restore this using the new connection.
