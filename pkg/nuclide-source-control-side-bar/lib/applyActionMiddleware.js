@@ -41,45 +41,51 @@ export function applyActionMiddleware(
 
         return Rx.Observable.from(projectDirectories).flatMap(directory => {
           const repository = repositoryForPath(directory.getPath());
-          if (repository == null || repository.getType() !== 'hg') {
+          if (repository == null) {
             return Rx.Observable.empty();
           }
 
-          const repositoryAsync = repository.async;
-
-          // Type was checked with `getType`. Downcast to safely access members with Flow.
-          invariant(repositoryAsync instanceof HgRepositoryClientAsync);
-
-          return Rx.Observable.of({
+          let observable = Rx.Observable.of({
             payload: {
               directory,
               repository,
             },
             type: ActionType.SET_DIRECTORY_REPOSITORY,
-          }).concat(
-            Rx.Observable.merge(
-              observableFromSubscribeFunction(
-                // Re-fetch when the list of bookmarks changes.
-                repositoryAsync.onDidChangeBookmarks.bind(repositoryAsync)
-              ),
-              observableFromSubscribeFunction(
-                // Re-fetch when the active bookmark changes (called "short head" to match
-                // Atom's Git API).
-                repositoryAsync.onDidChangeShortHead.bind(repositoryAsync)
+          });
+
+          if (repository.getType() === 'hg') {
+            const repositoryAsync = repository.async;
+
+            // Type was checked with `getType`. Downcast to safely access members with Flow.
+            invariant(repositoryAsync instanceof HgRepositoryClientAsync);
+
+            observable = observable.concat(
+              Rx.Observable.merge(
+                observableFromSubscribeFunction(
+                  // Re-fetch when the list of bookmarks changes.
+                  repositoryAsync.onDidChangeBookmarks.bind(repositoryAsync)
+                ),
+                observableFromSubscribeFunction(
+                  // Re-fetch when the active bookmark changes (called "short head" to match
+                  // Atom's Git API).
+                  repositoryAsync.onDidChangeShortHead.bind(repositoryAsync)
+                )
               )
-            )
-            .startWith(null) // Kick it off the first time
-            .switchMap(() => {
-              return Rx.Observable.fromPromise(repositoryAsync.getBookmarks());
-            })
-            .map(bookmarks => ({
-              payload: {
-                bookmarks,
-                repository,
-              },
-              type: ActionType.SET_REPOSITORY_BOOKMARKS,
-            }))
-          );
+              .startWith(null) // Kick it off the first time
+              .switchMap(() => {
+                return Rx.Observable.fromPromise(repositoryAsync.getBookmarks());
+              })
+              .map(bookmarks => ({
+                payload: {
+                  bookmarks,
+                  repository,
+                },
+                type: ActionType.SET_REPOSITORY_BOOKMARKS,
+              }))
+            );
+          }
+
+          return observable;
         });
       }),
 
