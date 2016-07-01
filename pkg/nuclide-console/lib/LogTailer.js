@@ -14,13 +14,19 @@ import type {ConnectableObservable} from 'rxjs';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {track} from '../../nuclide-analytics';
+import {getLogger} from '../../nuclide-logging';
 import {BehaviorSubject, Observable} from 'rxjs';
 
-type EventNames = {
+type TrackingEventNames = {
   start: string;
   stop: string;
   restart: string;
-  error: string;
+};
+
+type Options = {
+  name: string;
+  messages: Observable<Message>;
+  trackingEvents: TrackingEventNames;
 };
 
 /**
@@ -28,18 +34,20 @@ type EventNames = {
  * handle the rest.
  */
 export class LogTailer {
-  _eventNames: EventNames;
+  _name: string;
+  _eventNames: TrackingEventNames;
   _subscription: ?rx$ISubscription;
   _messages: ConnectableObservable<Message>;
   _running: BehaviorSubject<boolean>;
 
-  constructor(messages: Observable<Message>, eventNames: EventNames) {
-    this._eventNames = eventNames;
-    this._messages = messages
+  constructor(options: Options) {
+    this._name = options.name;
+    this._eventNames = options.trackingEvents;
+    this._messages = options.messages
       .do({
         error: err => {
           this._stop(false);
-          track(this._eventNames.error, {message: err.message});
+          getLogger().error(`Error with ${this._name} tailer.`, err);
         },
         complete: () => {
           this._stop();

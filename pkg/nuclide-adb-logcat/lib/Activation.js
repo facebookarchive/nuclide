@@ -58,11 +58,14 @@ class Activation {
       )
     );
 
-    this._logTailer = new LogTailer(message$, {
-      start: 'adb-logcat:start',
-      stop: 'adb-logcat:stop',
-      restart: 'adb-logcat:restart',
-      error: 'adb-logcat:crash',
+    this._logTailer = new LogTailer({
+      name: 'adb Logcat',
+      messages: message$,
+      trackingEvents: {
+        start: 'adb-logcat:start',
+        stop: 'adb-logcat:stop',
+        restart: 'adb-logcat:restart',
+      },
     });
 
     this._disposables = new CompositeDisposable(

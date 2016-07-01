@@ -27,11 +27,14 @@ export class PackagerActivation {
   _disposables: CompositeDisposable;
 
   constructor() {
-    this._logTailer = new LogTailer(Observable.defer(getPackagerObservable), {
-      start: 'react-native-packager:start',
-      stop: 'react-native-packager:stop',
-      restart: 'react-native-packager:restart',
-      error: 'react-native-packager:crash',
+    this._logTailer = new LogTailer({
+      name: 'React Native Packager',
+      messages: Observable.defer(getPackagerObservable),
+      trackingEvents: {
+        start: 'react-native-packager:start',
+        stop: 'react-native-packager:stop',
+        restart: 'react-native-packager:restart',
+      },
     });
 
     this._disposables = new CompositeDisposable(

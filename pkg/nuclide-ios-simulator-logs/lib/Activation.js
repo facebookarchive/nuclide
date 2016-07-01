@@ -37,11 +37,14 @@ class Activation {
         },
       });
 
-    this._logTailer = new LogTailer(message$, {
-      start: 'ios-simulator-logs:start',
-      stop: 'ios-simulator-logs:stop',
-      restart: 'ios-simulator-logs:restart',
-      error: 'ios-simulator-logs:error',
+    this._logTailer = new LogTailer({
+      name: 'iOS Simultoar Logs',
+      messages: message$,
+      trackingEvents: {
+        start: 'ios-simulator-logs:start',
+        stop: 'ios-simulator-logs:stop',
+        restart: 'ios-simulator-logs:restart',
+      },
     });
 
     this._disposables = new CompositeDisposable(
