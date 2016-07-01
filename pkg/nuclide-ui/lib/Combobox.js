@@ -111,7 +111,7 @@ export class Combobox extends React.Component {
       atom.commands.add(node, 'core:confirm', this._handleConfirm),
       this.refs.freeformInput.onDidChange(this._handleTextInputChange)
     );
-    this.requestUpdate();
+    this.requestUpdate(this.state.textInput);
   }
 
   componentWillUnmount() {
@@ -123,7 +123,7 @@ export class Combobox extends React.Component {
     }
   }
 
-  requestUpdate(): void {
+  requestUpdate(textInput: string): void {
     // Cancel pending update.
     if (this._updateSubscription != null) {
       this._updateSubscription.unsubscribe();
@@ -132,7 +132,7 @@ export class Combobox extends React.Component {
     this.setState({error: null, loadingOptions: true});
 
     this._updateSubscription = Rx.Observable.fromPromise(
-      this.props.requestOptions(this.state.textInput)
+      this.props.requestOptions(textInput)
     )
       .subscribe(
         options => this.receiveUpdate(options),
@@ -199,7 +199,7 @@ export class Combobox extends React.Component {
     if (newText === this.state.textInput) {
       return;
     }
-    this.requestUpdate();
+    this.requestUpdate(newText);
     const filteredOptions = this._getFilteredOptions(this.state.options, newText);
     let selectedIndex;
     if (filteredOptions.length === 0) {
@@ -223,7 +223,7 @@ export class Combobox extends React.Component {
   }
 
   _handleInputFocus(): void {
-    this.requestUpdate();
+    this.requestUpdate(this.state.textInput);
     this.setState({optionsVisible: true});
   }
 
