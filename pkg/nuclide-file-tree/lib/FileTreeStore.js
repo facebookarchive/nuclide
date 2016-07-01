@@ -24,6 +24,7 @@ import {getLogger} from '../../nuclide-logging';
 
 import {WorkingSet} from '../../nuclide-working-sets';
 import {track} from '../../nuclide-analytics';
+import nuclideUri from '../../nuclide-remote-uri';
 
 // Used to ensure the version we serialized is the same version we are deserializing.
 const VERSION = 1;
@@ -232,7 +233,11 @@ export class FileTreeStore {
     }
 
     this._setRoots(new Immutable.OrderedMap(
-      data.rootKeys.map(rootUri => [rootUri, buildNode(rootUri, rootUri)])
+      data.rootKeys
+      .filter(rootUri => {
+        return nuclideUri.isRemote(rootUri) || atom.project.getPaths().indexOf(rootUri) >= 0;
+      })
+      .map(rootUri => [rootUri, buildNode(rootUri, rootUri)])
     ));
   }
 
