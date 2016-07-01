@@ -130,3 +130,86 @@ export function collect<K, V>(pairs: Array<[K, V]>): Map<K, Array<V>> {
   }
   return result;
 }
+
+export class MultiMap<K, V> {
+  // Invariant: no empty sets. They should be removed instead.
+  _map: Map<K, Set<V>>;
+
+  // TODO may be worth defining a getter but no setter, to mimic Map. But please just behave and
+  // don't mutate this from outside this class.
+  //
+  // Invariant: equal to the sum of the sizes of all the sets contained in this._map
+  /* The total number of key-value bindings contained */
+  size: number;
+
+  constructor() {
+    this._map = new Map();
+    this.size = 0;
+  }
+
+  /*
+   * Returns the set of values associated with the given key. Do not mutate the given set. Copy it
+   * if you need to store it past the next operation on this MultiMap.
+   */
+  get(key: K): Set<V> {
+    const set = this._map.get(key);
+    if (set == null) {
+      return new Set();
+    }
+    return set;
+  }
+
+  /*
+   * Mimics the Map.prototype.set interface. Deliberately did not choose "set" as the name since the
+   * implication is that it removes the previous binding.
+   */
+  add(key: K, value: V): MultiMap<K, V> {
+    let set = this._map.get(key);
+    if (set == null) {
+      set = new Set();
+      this._map.set(key, set);
+    }
+    if (!set.has(value)) {
+      set.add(value);
+      this.size++;
+    }
+    return this;
+  }
+
+  /*
+   * Deletes a single binding. Returns true iff the binding existed.
+   */
+  delete(key: K, value: V): boolean {
+    const set = this.get(key);
+    const didRemove = set.delete(value);
+    if (set.size === 0) {
+      this._map.delete(key);
+    }
+    if (didRemove) {
+      this.size--;
+    }
+    return didRemove;
+  }
+
+  /*
+   * Deletes all bindings associated with the given key. Returns true iff any bindings were deleted.
+   */
+  deleteAll(key: K): boolean {
+    const set = this.get(key);
+    this.size -= set.size;
+    return this._map.delete(key);
+  }
+
+  clear(): void {
+    this._map.clear();
+    this.size = 0;
+  }
+
+  has(key: K, value: V): boolean {
+    return this.get(key).has(value);
+  }
+
+  hasAny(key: K): boolean {
+    return this._map.has(key);
+  }
+}

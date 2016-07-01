@@ -18,6 +18,7 @@ import {
   keyMirror,
   setIntersect,
   collect,
+  MultiMap,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -168,5 +169,90 @@ describe('collect', () => {
     expect(result.get('fizz')).toEqual([3, 6, 9]);
     expect(result.get('buzz')).toEqual([5]);
     expect(result.get('neither')).toEqual([1, 2, 4, 7, 8]);
+  });
+});
+
+describe('MultiMap', () => {
+  let multimap: MultiMap<number, number> = (null: any);
+
+  beforeEach(() => {
+    multimap = new MultiMap();
+  });
+
+  afterEach(() => {
+    // check representation invariants
+    let size = 0;
+    for (const [, set] of multimap._map) {
+      expect(set.size).toBeGreaterThan(0);
+      size += set.size;
+    }
+    expect(multimap.size).toEqual(size);
+  });
+
+  it("returns an empty set when a binding doesn't exist", () => {
+    expect(multimap.get(4)).toEqual(new Set());
+  });
+
+  it('returns itself from add', () => {
+    expect(multimap.add(1, 2)).toBe(multimap);
+  });
+
+  it('properly adds a single binding', () => {
+    multimap.add(1, 2);
+    expect(multimap.size).toEqual(1);
+    expect(multimap.get(1)).toEqual(new Set([2]));
+  });
+
+  it('properly adds multiple bindings', () => {
+    multimap.add(1, 2).add(1, 3).add(10, 11);
+    expect(multimap.size).toEqual(3);
+    expect(multimap.get(1)).toEqual(new Set([2, 3]));
+    expect(multimap.get(10)).toEqual(new Set([11]));
+  });
+
+  it('returns false from delete when nothing was deleted', () => {
+    multimap.add(1, 2);
+    expect(multimap.delete(1, 3)).toBe(false);
+    expect(multimap.delete(2, 3)).toBe(false);
+  });
+
+  it('properly deletes a single binding', () => {
+    multimap.add(1, 2).add(1, 3).add(10, 11);
+    expect(multimap.delete(1, 2)).toBe(true);
+    expect(multimap.get(1)).toEqual(new Set([3]));
+    expect(multimap.get(10)).toEqual(new Set([11]));
+    expect(multimap.size).toEqual(2);
+  });
+
+  it('returns false from deleteAll when nothing was deleted', () => {
+    expect(multimap.deleteAll(5)).toBe(false);
+  });
+
+  it('properly deletes all bindings for a given key', () => {
+    multimap.add(1, 2).add(1, 3);
+    expect(multimap.deleteAll(1)).toBe(true);
+    expect(multimap.size).toEqual(0);
+    expect(multimap.get(1)).toEqual(new Set());
+  });
+
+  it('properly clears', () => {
+    multimap.add(1, 2).add(1, 3).add(10, 11);
+    multimap.clear();
+    expect(multimap.size).toEqual(0);
+    expect(multimap.get(1)).toEqual(new Set());
+    expect(multimap.get(10)).toEqual(new Set());
+  });
+
+  it('checks membership with has', () => {
+    multimap.add(1, 2);
+    expect(multimap.has(5, 6)).toBe(false);
+    expect(multimap.has(1, 2)).toBe(true);
+    expect(multimap.has(1, 3)).toBe(false);
+  });
+
+  it('checks membership with hasAny', () => {
+    multimap.add(1, 2);
+    expect(multimap.hasAny(1)).toBe(true);
+    expect(multimap.hasAny(2)).toBe(false);
   });
 });
