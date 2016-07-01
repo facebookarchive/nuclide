@@ -50,9 +50,9 @@ export class OpenFilesListComponent extends React.Component {
     return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate(prevProps: Props): void {
     const selectedRow = this.refs.selectedRow;
-    if (selectedRow != null) {
+    if (selectedRow != null && prevProps.activeUri !== this.props.activeUri) {
       selectedRow.scrollIntoViewIfNeeded();
     }
   }
