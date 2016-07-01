@@ -11,28 +11,18 @@
 
 import featureConfig from '../../nuclide-feature-config';
 
-export type PythonConfig = {
-  autocompleteArguments: boolean;
-  pathToPython: string;
-  showGlobalVariables: boolean;
-};
-
-// config can be null in tests.
-function getConfig(): ?PythonConfig {
-  return ((featureConfig.get('nuclide-python'): any): ?PythonConfig);
+export function getAutocompleteArguments(): boolean {
+  return (featureConfig.get('nuclide-python.autocompleteArguments'): any);
 }
 
-export function getAutocompleteArguments(): boolean {
-  const config = getConfig();
-  return config == null ? true : config.autocompleteArguments;
+export function getIncludeOptionalArguments(): boolean {
+  return (featureConfig.get('nuclide-python.includeOptionalArguments'): any);
 }
 
 export function getPythonPath(): string {
-  const config = getConfig();
-  return config == null ? 'python' : config.pathToPython;
+  return (featureConfig.get('nuclide-python.pathToPython'): any);
 }
 
 export function getShowGlobalVariables(): boolean {
-  const config = getConfig();
-  return config == null ? true : config.showGlobalVariables;
+  return (featureConfig.get('nuclide-python.showGlobalVariables'): any);
 }

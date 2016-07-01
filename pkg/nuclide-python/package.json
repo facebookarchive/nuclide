@@ -19,6 +19,12 @@
         "default": true,
         "description": "Autocomplete arguments for functions and classes."
       },
+      "includeOptionalArguments": {
+        "title": "Include optional arguments during autocomplete",
+        "type": "boolean",
+        "default": false,
+        "description": "Include optional arguments in autocomplete results, including keyword arguments with default values and placeholders such as *args, **kwargs, *."
+      },
       "pathToPython": {
         "title": "Path to Python Executable",
         "type": "string",
