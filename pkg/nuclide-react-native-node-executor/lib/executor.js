@@ -35,7 +35,7 @@ process.on('message', function(request) {
 
       getScriptContents(scriptUrl, function(err, script) {
         if (err != null) {
-          sendError('Failed to get script from packager:' + err.message);
+          sendError('Failed to get script from packager: ' + err.message);
           return;
         }
 
@@ -54,7 +54,7 @@ process.on('message', function(request) {
           // The file name is dummy here. Without a file name, the source map is not used.
           vm.runInContext(script, currentContext, '/tmp/react-native.js');
         } catch (e) {
-          sendError('Failed to exec script: ' + e);
+          sendError('Failed to exec script: ' + e.message);
         }
         sendResult(request.id);
       });
@@ -69,7 +69,7 @@ process.on('message', function(request) {
             currentContext.__fbBatchedBridge[request.method].apply(null, request.arguments);
         }
       } catch (e) {
-        sendError('Failed while making a call ' + request.method + ':::' + e);
+        sendError('Failed while making a call ' + request.method + ':::' + e.message);
       } finally {
         sendResult(request.id, JSON.stringify(returnValue));
       }
