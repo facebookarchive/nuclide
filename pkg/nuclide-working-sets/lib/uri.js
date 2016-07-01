@@ -14,17 +14,21 @@ import nuclideUri from '../../nuclide-remote-uri';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 export function dedupeUris(uris: Array<NuclideUri>): Array<NuclideUri> {
-  const dedepped = uris.map(nuclideUri.trimTrailingSeparator);
-  dedepped.sort();
+  const deduped = uris.map(nuclideUri.ensureTrailingSeparator);
+  deduped.sort();
 
-  let lastOKPrefix = '';
+  let lastOKPrefix = null;
 
-  return dedepped.filter((u, i) => {
-    if (i !== 0 && u.startsWith(lastOKPrefix)) {
-      return false;
-    }
+  return deduped
+    .filter(pathName => {
+      // Since we've sorted the paths, we know that children will be grouped directly after their
+      // parent.
+      if (lastOKPrefix != null && pathName.startsWith(lastOKPrefix)) {
+        return false;
+      }
 
-    lastOKPrefix = nuclideUri.ensureTrailingSeparator(dedepped[i]);
-    return true;
-  });
+      lastOKPrefix = pathName;
+      return true;
+    })
+    .map(nuclideUri.trimTrailingSeparator);
 }
