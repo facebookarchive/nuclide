@@ -513,7 +513,7 @@ class FileTreeController {
       // close all the files associated with the project before closing
       const projectEditors = atom.workspace.getTextEditors();
       const roots = this._store.getRootKeys();
-      projectEditors.forEach(editor => {
+      const canceled = projectEditors.some(editor => {
         const path = editor.getPath();
         // if the path of the editor is not null AND
         // is part of the currently selected root that would be removed AND
@@ -523,11 +523,16 @@ class FileTreeController {
           path.startsWith(rootNode.uri) &&
           roots.filter(root => path.startsWith(root)).length === 1
         ) {
-          atom.workspace.paneForURI(path).destroyItem(editor);
+          return !atom.workspace.paneForURI(path).destroyItem(editor);
         }
+
+        return false;
       });
-      // actually close the project
-      atom.project.removePath(FileTreeHelpers.keyToPath(rootNode.uri));
+
+      if (!canceled) {
+        // actually close the project
+        atom.project.removePath(FileTreeHelpers.keyToPath(rootNode.uri));
+      }
     }
   }
 
