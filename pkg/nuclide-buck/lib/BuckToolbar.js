@@ -27,7 +27,6 @@ import {
 } from '../../commons-atom/debounced';
 
 const BUCK_TARGET_INPUT_WIDTH = 400;
-const formatRequestOptionsErrorMessage = () => 'Failed to get targets from Buck';
 
 class BuckToolbar extends React.Component {
   /**
@@ -87,10 +86,10 @@ class BuckToolbar extends React.Component {
     this._buckToolbarActions.updateProjectFor(textEditor);
   }
 
-  _requestOptions(inputText: string): Promise<Array<string>> {
+  async _requestOptions(inputText: string): Promise<Array<string>> {
     const project = this._buckToolbarStore.getMostRecentBuckProject();
     if (project == null) {
-      return Promise.resolve([]);
+      throw new Error('No active Buck project.');
     }
 
     let aliases = this._projectAliasesCache.get(project);
@@ -99,7 +98,11 @@ class BuckToolbar extends React.Component {
       this._projectAliasesCache.set(project, aliases);
     }
 
-    return aliases;
+    const result = (await aliases).slice();
+    if (inputText.trim() && result.indexOf(inputText) === -1) {
+      result.splice(0, 0, inputText);
+    }
+    return result;
   }
 
   render(): React.Element<any> {
@@ -161,7 +164,7 @@ class BuckToolbar extends React.Component {
         <Combobox
           className="inline-block nuclide-buck-target-combobox"
           ref="buildTarget"
-          formatRequestOptionsErrorMessage={formatRequestOptionsErrorMessage}
+          formatRequestOptionsErrorMessage={err => err.message}
           requestOptions={this._requestOptions}
           size="sm"
           loadingMessage="Updating target names..."
