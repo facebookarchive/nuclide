@@ -19,14 +19,15 @@ import {CompositeDisposable} from 'atom';
 
 import invariant from 'assert';
 
+import {MultiMap} from '../../commons-node/collection';
+
 export class MarkerTracker {
 
   /**
    * Stores all current FileDiagnosticMessages, indexed by file. Includes those for files that are
    * not open.
-   * invariant: no empty sets (should be removed from the map)
    */
-  _fileToMessages: Map<NuclideUri, Set<FileDiagnosticMessage>>;
+  _fileToMessages: MultiMap<NuclideUri, FileDiagnosticMessage>;
 
   /**
    * Stores all current markers, indexed by FileDiagnosticMessage.
@@ -40,7 +41,7 @@ export class MarkerTracker {
 
   constructor() {
     this._messageToMarker = new Map();
-    this._fileToMessages = new Map();
+    this._fileToMessages = new MultiMap();
     this._subscriptions = new CompositeDisposable();
     this._disposed = false;
 
@@ -51,9 +52,6 @@ export class MarkerTracker {
           return;
         }
         const messagesForPath = this._fileToMessages.get(path);
-        if (messagesForPath == null) {
-          return;
-        }
         for (const message of messagesForPath) {
           // There might already be a marker because there can be multiple TextEditors open for a
           // given file.
@@ -95,15 +93,7 @@ export class MarkerTracker {
     const messagesWithFix = messages.filter(m => m.fix != null);
 
     for (const message of messagesWithFix) {
-
-      // Add to _fileToMessages
-      const path = message.filePath;
-      let messageSet = this._fileToMessages.get(path);
-      if (messageSet == null) {
-        messageSet = new Set();
-        this._fileToMessages.set(path, messageSet);
-      }
-      messageSet.add(message);
+      this._fileToMessages.add(message.filePath, message);
 
       // If the file is currently open, create a marker.
 
@@ -125,13 +115,7 @@ export class MarkerTracker {
     this._assertNotDisposed();
 
     for (const message of messages) {
-      const messageSet = this._fileToMessages.get(message.filePath);
-      if (messageSet != null) {
-        messageSet.delete(message);
-        if (messageSet.size === 0) {
-          this._fileToMessages.delete(message.filePath);
-        }
-      }
+      this._fileToMessages.delete(message.filePath, message);
 
       const marker = this._messageToMarker.get(message);
       if (marker != null) {

@@ -133,7 +133,7 @@ describe('MarkerTracker', () => {
     checkRep(tracker);
 
     tracker.removeFileMessages([messageForInitiallyOpenFile]);
-    expect(tracker._fileToMessages.has(initiallyOpenFilePath)).toBeFalsy();
+    expect(tracker._fileToMessages.hasAny(initiallyOpenFilePath)).toBeFalsy();
     expect(tracker._messageToMarker.has(messageForInitiallyOpenFile)).toBeFalsy();
     expect(marker.isDestroyed()).toBeTruthy();
 
@@ -148,7 +148,7 @@ describe('MarkerTracker', () => {
     expect(messagesSet.has(messageForInitiallyClosedFile)).toBeTruthy();
 
     tracker.removeFileMessages([messageForInitiallyClosedFile]);
-    expect(tracker._fileToMessages.has(initiallyClosedFilePath)).toBeFalsy();
+    expect(tracker._fileToMessages.hasAny(initiallyClosedFilePath)).toBeFalsy();
 
     checkRep(tracker);
   });
@@ -202,9 +202,5 @@ function checkRep(tracker: MarkerTracker): void {
 
   for (const marker of tracker._messageToMarker.values()) {
     expect(marker.isDestroyed()).toBeFalsy();
-  }
-
-  for (const messageSet of tracker._fileToMessages.values()) {
-    expect(messageSet.size).toBeGreaterThan(0);
   }
 }
