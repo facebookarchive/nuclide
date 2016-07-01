@@ -107,6 +107,10 @@ export class BuckBuildSystem {
     return this._outputMessages;
   }
 
+  updateCwd(path: string): void {
+    this._getFlux().actions.updateProjectPath(path);
+  }
+
   _logOutput(text: string, level: Level) {
     this._outputMessages.next({text, level});
   }

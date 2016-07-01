@@ -11,6 +11,7 @@
 
 import type {BuildSystemRegistry} from '../../nuclide-build/lib/types';
 import type {BuckBuildSystem as BuckBuildSystemType} from './BuckBuildSystem';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {OutputService} from '../../nuclide-console/lib/types';
 import type {SerializedState} from './types';
 
@@ -54,6 +55,15 @@ function getBuildSystem(): BuckBuildSystem {
     disposables.add(buildSystem);
   }
   return buildSystem;
+}
+
+export function consumeCurrentWorkingDirectory(service: CwdApi): void {
+  invariant(disposables != null);
+  disposables.add(service.observeCwd(cwd => {
+    if (cwd != null) {
+      getBuildSystem().updateCwd(cwd.getPath());
+    }
+  }));
 }
 
 export function consumeOutputService(service: OutputService): void {

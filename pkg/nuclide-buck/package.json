@@ -29,6 +29,11 @@
         "0.0.0": "consumeBuildSystemRegistry"
       }
     },
+    "nuclide-current-working-directory": {
+      "versions": {
+        "0.0.0": "consumeCurrentWorkingDirectory"
+      }
+    },
     "nuclide-output": {
       "versions": {
         "0.0.0": "consumeOutputService"

@@ -41,13 +41,8 @@ export default class BuckToolbarActions {
     this._loadingRules = 0;
   }
 
-  async updateProjectFor(editor: TextEditor): Promise<void> {
-    const nuclideUri = editor.getPath();
-    if (!nuclideUri) {
-      return;
-    }
-
-    const buckProject = await getBuckProject(nuclideUri);
+  async updateProjectPath(path: string): Promise<void> {
+    const buckProject = await getBuckProject(path);
     if (buckProject != null && buckProject !== this._store.getMostRecentBuckProject()) {
       this._dispatcher.dispatch({
         actionType: BuckToolbarActions.ActionType.UPDATE_PROJECT,

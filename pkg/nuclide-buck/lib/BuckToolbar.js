@@ -22,9 +22,6 @@ import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {LoadingSpinner} from '../../nuclide-ui/lib/LoadingSpinner';
 import addTooltip from '../../nuclide-ui/lib/add-tooltip';
-import {
-  onWorkspaceDidStopChangingActivePaneItem,
-} from '../../commons-atom/debounced';
 
 const BUCK_TARGET_INPUT_WIDTH = 400;
 
@@ -64,11 +61,8 @@ class BuckToolbar extends React.Component {
     this._buckToolbarActions = this.props.actions;
     this._buckToolbarStore = this.props.store;
     this._projectAliasesCache = new WeakMap();
-    this._onActivePaneItemChanged(atom.workspace.getActivePaneItem());
 
     this._disposables = new CompositeDisposable();
-    this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(
-      this._onActivePaneItemChanged.bind(this)));
 
     // Re-render whenever the data in the store changes.
     this._disposables.add(this._buckToolbarStore.subscribe(() => { this.forceUpdate(); }));
@@ -76,14 +70,6 @@ class BuckToolbar extends React.Component {
 
   componentWillUnmount() {
     this._disposables.dispose();
-  }
-
-  _onActivePaneItemChanged(item: ?mixed) {
-    if (!atom.workspace.isTextEditor(item)) {
-      return;
-    }
-    const textEditor: TextEditor = ((item: any): TextEditor);
-    this._buckToolbarActions.updateProjectFor(textEditor);
   }
 
   async _requestOptions(inputText: string): Promise<Array<string>> {
