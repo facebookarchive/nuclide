@@ -77,8 +77,8 @@ function searchInSubdir(
   regex: RegExp,
 ): Observable<search$FileResult> {
   // Try running search commands, falling through to the next if there is an error.
-  const vcsargs = (regex.ignoreCase ? ['-i'] : []).concat(['-n', regex.source]);
-  const grepargs = (regex.ignoreCase ? ['-i'] : []).concat(['-rHn', '-e', regex.source, '.']);
+  const vcsargs = (regex.ignoreCase ? ['-i'] : []).concat(['-n', '-E', regex.source]);
+  const grepargs = (regex.ignoreCase ? ['-i'] : []).concat(['-rHn', '-E', '-e', regex.source, '.']);
   const cmdDir = nuclideUri.join(directory, subdir);
   const linesSource =
     getLinesFromCommand('hg', ['wgrep'].concat(vcsargs), cmdDir)

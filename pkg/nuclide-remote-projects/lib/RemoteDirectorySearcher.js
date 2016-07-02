@@ -60,6 +60,7 @@ class RemoteDirectorySearcher {
       seenFiles.add(next.filePath);
       options.didSearchPaths(seenFiles.size);
     }, error => {
+      options.didError(error);
       searchCompletion.error(error);
     }, () => {
       searchCompletion.complete();

@@ -168,7 +168,7 @@ describe('Scan Handler Tests', () => {
 
       await checkOutput('hg', ['commit', '-m', 'test commit'], {cwd: folder});
 
-      const results = await search(folder, /hello world/i, []).toArray().toPromise();
+      const results = await search(folder, /hello world()/i, []).toArray().toPromise();
       const expected = JSON.parse(
         fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'repo.json'), 'utf8')
       );
