@@ -150,11 +150,11 @@ export class NuclideSocket {
             ws.onClose(() => { this._clearPingTimer(); });
             ws.onError(error => { ws.close(); });
             ws.onPong(data => {
-              if (pingId !== data) {
+              if (pingId === data) {
+                this._schedulePing(pingId, ws);
+              } else {
                 logger.error('pingId mismatch');
-                return;
               }
-              this._schedulePing(pingId, ws);
             });
             this._schedulePing(pingId, ws);
             invariant(this._transport != null);
