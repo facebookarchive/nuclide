@@ -89,7 +89,7 @@ export class Section extends React.Component {
       conditionalProps.onClick = this._toggleCollapsed;
       conditionalProps.title = collapsed ? 'Click to expand' : 'Click to collapse';
     }
-    const HeadlineComponent = this.props.size === 'small' ? 'h5' : 'h3';
+    const HeadlineComponent = this.props.size === 'small' ? 'h6' : 'h3';
     return (
       <div className={this.props.className}>
         <HeadlineComponent className={iconClass} {...conditionalProps}>

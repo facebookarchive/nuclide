@@ -164,14 +164,14 @@ class FileTreeSidebarComponent extends React.Component {
           className="nuclide-file-tree-section-caption"
           collapsable={true}
           collapsed={!this._store.openFilesExpanded}
-          headline="Open Files"
+          headline="OPEN FILES"
           onChange={this._handleOpenFilesExpandedChange}
           size="small">
           {openFilesList}
         </Section>;
 
       foldersCaption =
-        <Section className="nuclide-file-tree-section-caption" headline="Folders" size="small" />;
+        <Section className="nuclide-file-tree-section-caption" headline="FOLDERS" size="small" />;
     }
 
     // Include `tabIndex` so this component can be focused by calling its native `focus` method.
