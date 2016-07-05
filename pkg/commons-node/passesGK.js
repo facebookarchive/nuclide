@@ -9,32 +9,62 @@
  * the root directory of this source tree.
  */
 
-// undefined means unknown. null means known to not be present.
-let gatekeeper = undefined;
+import once from './once';
+import {Disposable} from 'event-kit';
+
+/**
+ * Get the actual Gatekeeper constructor or stub the relevant methods for OSS
+ * friendliness.
+ */
+const getGatekeeper = once(() => {
+  let Gatekeeper;
+  try {
+    // $FlowFB
+    Gatekeeper = require('./fb-gatekeeper').Gatekeeper;
+  } catch (e) {
+    Gatekeeper = class {
+      isGkEnabled(): ?boolean {
+        return null;
+      }
+      async asyncIsGkEnabled(): Promise<?boolean> {
+        return null;
+      }
+      onceGkInitialized(callback: () => mixed): IDisposable {
+        process.nextTick(() => { callback(); });
+        return new Disposable();
+      }
+    };
+  }
+  return new Gatekeeper();
+});
 
 /**
  * Check a GK. Silently return false on error.
  */
 export default async function passesGK(
-  gatekeeperName: string,
+  name: string,
   timeout?: number,
 ): Promise<boolean> {
-  // Only do the expensive require once.
-  if (gatekeeper === undefined) {
-    try {
-      // $FlowFB
-      gatekeeper = require('../fb-gatekeeper').gatekeeper;
-    } catch (e) {
-      gatekeeper = null;
-    }
-  }
-
-  if (gatekeeper == null) {
-    return false;
-  }
   try {
-    return (await gatekeeper.asyncIsGkEnabled(gatekeeperName, timeout)) === true;
+    return (await getGatekeeper().asyncIsGkEnabled(name, timeout)) === true;
   } catch (e) {
     return false;
   }
+}
+
+/**
+ * Synchronous GK check. There is no guarantee that GKs have loaded. This
+ * should be used inside a `onceGkInitialized`.
+ */
+export function isGkEnabled(
+  name: string,
+): ?boolean {
+  return getGatekeeper().isGkEnabled(name);
+}
+
+export function onceGkInitialized(
+  callback: () => mixed,
+  timeout?: number,
+): IDisposable {
+  return getGatekeeper().onceGkInitialized(callback, timeout);
 }

@@ -11,6 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
+import {isGkEnabled, onceGkInitialized} from '../../commons-node/passesGK';
 
 let subscriptions: CompositeDisposable = (null: any);
 let currentConfig = ((featureConfig.get('nuclide-notifications'): any): {[type: string]: bool});
@@ -29,16 +30,12 @@ export function activate(state: ?Object): void {
 
   );
 
-  try {
-    // Listen for the gatekeeper to tell us if we can generate native notifications.
-    // $FlowFB
-    const gatekeeper = require('../../fb-gatekeeper').gatekeeper;
-    subscriptions.add(
-      gatekeeper.onceInitialized(() => {
-        gkEnabled = gatekeeper.isGkEnabled('nuclide_native_notifications');
-      }),
-    );
-  } catch (e) { }
+  // Listen for the gatekeeper to tell us if we can generate native notifications.
+  subscriptions.add(
+    onceGkInitialized(() => {
+      gkEnabled = isGkEnabled('nuclide_native_notifications');
+    }),
+  );
 }
 
 function proxyToNativeNotification(notification: atom$Notification): void {
