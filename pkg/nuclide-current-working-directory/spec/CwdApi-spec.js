@@ -71,25 +71,45 @@ describe('CwdApi event handling', () => {
     ];
     spyOn(atom.project, 'getDirectories').andCallFake(() => projects);
 
+    const api = new CwdApi('/d/e/f');
+    let cwd = api.getCwd();
+    invariant(cwd != null);
+    expect(cwd.getPath()).toBe('/d/e/f');
+
+    // Simulate the removing of a directory from the project list.
+    projects = [new Directory('/a/b/c')];
+
+    cwd = api.getCwd();
+    invariant(cwd != null);
+    expect(cwd.getPath()).toBe('/a/b/c');
+  });
+
+  it('uses the initial directory once it becomes valid', () => {
+    let projects = [];
+    spyOn(atom.project, 'getDirectories').andCallFake(() => projects);
+
     let callback;
     const onDidChangePaths = cb => { callback = cb; };
-    const originalOnDidChangePaths = atom.project.onDidChangePaths;
-    try {
-      (atom.project: any).onDidChangePaths = onDidChangePaths;
-      const api = new CwdApi('/d/e/f');
+    spyOn(atom.project, 'onDidChangePaths').andCallFake(onDidChangePaths);
 
-      // Simulate the removing of a directory from the project list.
-      projects = [new Directory('/a/b/c')];
-      expect(callback).toBeDefined();
-      invariant(callback);
-      callback();
+    // The initial path does not exist, so observeCwd is initially undefined.
+    const api = new CwdApi('/a/b/c');
 
-      const cwd = api.getCwd();
-      invariant(cwd != null);
-      expect(cwd.getPath()).toBe('/a/b/c');
-    } finally {
-      (atom.project: any).onDidChangePaths = originalOnDidChangePaths;
-    }
+    const spy = jasmine.createSpy('cwdChanged');
+    api.observeCwd(spy);
+    expect(spy).toHaveBeenCalledWith(null);
+
+    projects = [new Directory('/a/b/c')];
+
+    // Once the list of projects is updated, the initial path should become active again.
+    expect(callback).toBeDefined();
+    invariant(callback);
+    callback();
+
+    expect(spy.callCount).toBe(2);
+    const arg = spy.calls[1].args[0];
+    expect(arg).not.toBeNull();
+    expect((arg: any).getPath()).toBe('/a/b/c');
   });
 
 });

@@ -9,10 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {RemoteDirectory} from '../../nuclide-remote-connection';
+
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {DisposableSubscription} from '../../commons-node/stream';
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
-import {RemoteConnection, RemoteDirectory} from '../../nuclide-remote-connection';
-import RemoteUri from '../../nuclide-remote-uri';
 import {CompositeDisposable, Directory as LocalDirectory} from 'atom';
 import Rx from 'rxjs';
 
@@ -26,23 +27,21 @@ export class CwdApi {
   constructor(initialCwdPath: ?string) {
     this._cwdPath$ = new Rx.BehaviorSubject(initialCwdPath);
     this._cwd$ = this._cwdPath$
-      .distinctUntilChanged()
+      // Re-check the CWD every time the project paths change.
+      // Adding/removing projects can affect the validity of cwdPath.
+      .merge(
+        observableFromSubscribeFunction(cb => atom.project.onDidChangePaths(cb))
+          .mapTo(null)
+      )
       .map(() => this.getCwd())
-      .map(directory => (isValidDirectory(directory) ? directory : null));
+      .map(directory => (isValidDirectory(directory) ? directory : null))
+      .distinctUntilChanged();
 
-    this._disposables = new CompositeDisposable(
-      // If the active directory is removed, fall back to the default.
-      atom.project.onDidChangePaths(() => {
-        const currentPath = this._cwdPath$.getValue();
-        if (currentPath == null || !isValidCwdPath(currentPath)) {
-          this._cwdPath$.next(this._getDefaultCwdPath());
-        }
-      }),
-    );
+    this._disposables = new CompositeDisposable();
   }
 
   setCwd(path: string): void {
-    if (!isValidCwdPath(path)) {
+    if (getDirectory(path) == null) {
       throw new Error(`Path is not a project root: ${path}`);
     }
     this._cwdPath$.next(path);
@@ -66,7 +65,7 @@ export class CwdApi {
   }
 
   getCwd(): ?Directory {
-    return getDirectory(this._cwdPath$.getValue() || this._getDefaultCwdPath());
+    return getDirectory(this._cwdPath$.getValue()) || getDirectory(this._getDefaultCwdPath());
   }
 
 }
@@ -75,14 +74,7 @@ function getDirectory(path: ?string): ?Directory {
   if (path == null) {
     return null;
   }
-  if (RemoteUri.isRemote(path)) {
-    const connection = RemoteConnection.getForUri(path);
-    if (connection == null) {
-      return null;
-    }
-    return new RemoteDirectory(connection.getConnection(), path);
-  }
-  return new LocalDirectory(path);
+  return atom.project.getDirectories().find(dir => dir.getPath() === path);
 }
 
 function isValidDirectory(directory: ?Directory): boolean {
@@ -90,12 +82,4 @@ function isValidDirectory(directory: ?Directory): boolean {
     return true;
   }
   return FileTreeHelpers.isValidDirectory(directory);
-}
-
-function isValidCwdPath(path: ?string): boolean {
-  if (path == null) {
-    return true;
-  }
-  const validPaths = atom.project.getDirectories().map(directory => directory.getPath());
-  return validPaths.indexOf(path) !== -1;
 }
