@@ -166,7 +166,7 @@ export class ContextViewManager {
               editorPos.position
             );
           } catch (err) {
-            logger.error('nuclide-context-view: Error calling definition service: ', err);
+            logger.error('Error querying definition service: ', err);
             return null;
           }
         }).switchMap((queryResult: Promise<?DefinitionQueryResult>) => {
