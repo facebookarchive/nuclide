@@ -15,6 +15,7 @@ import type {
 } from './NuxModel';
 
 import analytics from '../../nuclide-analytics';
+import {maybeToString} from '../../commons-node/string';
 import {NuxView} from './NuxView';
 
 export class NuxTour {
@@ -106,7 +107,7 @@ export class NuxTour {
         tourId: this._id,
         step: `${this._currentStep + 1}/${this._nuxList.length + 1}`,
         completed: `${completed.toString()}`,
-        error: `${error}`,
+        error: maybeToString(error),
       },
     );
   }

@@ -15,6 +15,7 @@ import type {ProcessMessage} from './process-types';
 import child_process from 'child_process';
 import nuclideUri from '../nuclide-remote-uri';
 import {CompositeSubscription, observeStream, splitStream, takeWhileInclusive} from './stream';
+import {maybeToString} from './string';
 import {Observable} from 'rxjs';
 import {PromiseQueue} from './promise-executors';
 import {quote} from 'shell-quote';
@@ -609,10 +610,10 @@ export async function checkOutput(
   args: Array<string>,
   options: ?AsyncExecuteOptions = {},
 ): Promise<process$asyncExecuteRet> {
-  const result = await asyncExecute(command, args, options);
+  const result: process$asyncExecuteRet = await asyncExecute(command, args, options);
   if (result.exitCode !== 0) {
     const reason = result.exitCode != null ? `exitCode: ${result.exitCode}` :
-      `error: ${result.errorMessage}`;
+      `error: ${maybeToString(result.errorMessage)}`;
     throw new Error(
       `asyncExecute "${command}" failed with ${reason}, ` +
       `stderr: ${result.stderr}, stdout: ${result.stdout}.`

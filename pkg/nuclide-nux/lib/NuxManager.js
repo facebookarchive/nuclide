@@ -16,6 +16,7 @@ import {
 } from 'atom';
 
 import passesGK from '../../commons-node/passesGK';
+import {maybeToString} from '../../commons-node/string';
 import {arrayCompact} from '../../commons-node/collection';
 
 import {getLogger} from '../../nuclide-logging';
@@ -233,7 +234,7 @@ export class NuxManager {
       {
         tourId: id,
         message: `${message}`,
-        error: `${error}`,
+        error: maybeToString(error),
       },
     );
   }

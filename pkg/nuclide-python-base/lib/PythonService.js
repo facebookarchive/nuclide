@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {asyncExecute} from '../../commons-node/process';
+import {maybeToString} from '../../commons-node/string';
 import nuclideUri from '../../nuclide-remote-uri';
 import JediServerManager from './JediServerManager';
 
@@ -177,7 +178,7 @@ export async function formatCode(
     throw new Error(`"${libCommand}" failed, likely due to syntax errors.`);
   } else if (result.exitCode == null) {
     throw new Error(
-      `"${libCommand}" failed with error: ${result.errorMessage}, ` +
+      `"${libCommand}" failed with error: ${maybeToString(result.errorMessage)}, ` +
       `stderr: ${result.stderr}, stdout: ${result.stdout}.`
     );
   } else if (contents !== '' && result.stdout === '') {

@@ -15,6 +15,7 @@ import type {EditorLocation, Location} from './Location';
 import {
   setPositionAndScroll,
 } from '../../commons-atom/text-editor';
+import {maybeToString} from '../../commons-node/string';
 import {NavigationStack} from './NavigationStack';
 import invariant from 'assert';
 import nuclideUri from '../../nuclide-remote-uri';
@@ -98,34 +99,35 @@ export class NavigationStackController {
 
   updatePosition(editor: atom$TextEditor, newBufferPosition: atom$Point): void {
     log(
-      `updatePosition ${newBufferPosition.row}, ${newBufferPosition.column} ${editor.getPath()}`);
+      `updatePosition ${newBufferPosition.row}, ` +
+      `${newBufferPosition.column} ${maybeToString(editor.getPath())}`);
 
     this._updateStackLocation(editor);
   }
 
   // scrollTop is in Pixels
   updateScroll(editor: atom$TextEditor, scrollTop: number): void {
-    log(`updateScroll ${scrollTop} ${editor.getPath()}`);
+    log(`updateScroll ${scrollTop} ${maybeToString(editor.getPath())}`);
 
     this._updateStackLocation(editor);
   }
 
   onCreate(editor: atom$TextEditor): void {
-    log(`onCreate ${editor.getPath()}`);
+    log(`onCreate ${maybeToString(editor.getPath())}`);
 
     this._navigationStack.editorOpened(editor);
     this._updateStackLocation(editor);
   }
 
   onDestroy(editor: atom$TextEditor): void {
-    log(`onDestroy ${editor.getPath()}`);
+    log(`onDestroy ${maybeToString(editor.getPath())}`);
 
     this._navigationStack.editorClosed(editor);
   }
 
   // Open is always preceded by activate, unless opening the current file
   onOpen(editor: atom$TextEditor): void {
-    log(`onOpen ${editor.getPath()}`);
+    log(`onOpen ${maybeToString(editor.getPath())}`);
 
     // Hack alert, an atom.workspace.open of a location in the current editor,
     // we get the location update before the onDidOpen event, and we don't get
@@ -144,18 +146,18 @@ export class NavigationStackController {
   }
 
   onActivate(editor: atom$TextEditor): void {
-    log(`onActivate ${editor.getPath()}`);
+    log(`onActivate ${maybeToString(editor.getPath())}`);
     this._inActivate = true;
     this._updateStackLocation(editor);
   }
 
   onActiveStopChanging(editor: atom$TextEditor): void {
-    log(`onActivePaneStopChanging ${editor.getPath()}`);
+    log(`onActivePaneStopChanging ${maybeToString(editor.getPath())}`);
     this._inActivate = false;
   }
 
   onOptInNavigation(editor: atom$TextEditor): void {
-    log(`onOptInNavigation ${editor.getPath()}`);
+    log(`onOptInNavigation ${maybeToString(editor.getPath())}`);
     // Opt-in navigation is handled in the same way as a file open with no preceeding activation
     this.onOpen(editor);
   }

@@ -56,6 +56,8 @@ import pathModule from 'path';
 
 import url from 'url';
 
+import {maybeToString} from '../../commons-node/string';
+
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
 
 function isRemote(uri: NuclideUri): boolean {
@@ -108,7 +110,8 @@ function parse(uri: NuclideUri): ParsedUrl {
 
   invariant(
     parsedUri.path,
-    `Nuclide URIs must contain paths, '${parsedUri.path}' found while parsing '${uri}'`
+    'Nuclide URIs must contain paths, ' +
+    `${maybeToString(parsedUri.path)}' found while parsing '${uri}'`
   );
 
   let path = parsedUri.path;
@@ -120,7 +123,8 @@ function parse(uri: NuclideUri): ParsedUrl {
 
   invariant(
     parsedUri.pathname,
-    `Nuclide URIs must contain pathnamess, '${parsedUri.pathname}' found while parsing '${uri}'`
+    'Nuclide URIs must contain pathnamess, ' +
+    `'${maybeToString(parsedUri.pathname)}' found while parsing '${uri}'`
   );
   let pathname = parsedUri.pathname;
   // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
@@ -152,7 +156,7 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
   const parsedUri = parse(remoteUri);
   invariant(
     parsedUri.hostname,
-    `Remote Nuclide URIs must contain hostnames, '${parsedUri.hostname}' found ` +
+    `Remote Nuclide URIs must contain hostnames, '${maybeToString(parsedUri.hostname)}' found ` +
     `while parsing '${remoteUri}'`
   );
 

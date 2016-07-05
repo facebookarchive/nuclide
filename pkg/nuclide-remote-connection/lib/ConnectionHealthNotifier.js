@@ -140,7 +140,7 @@ export class ConnectionHealthNotifier {
           const port = socket.getServerPort();
           addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
                 '**Nuclide Server Is Not Reachable**<br/>' +
-                `It could be running on a port that is not accessible: ${port}.`,
+                `It could be running on a port that is not accessible: ${String(port)}.`,
                 /*dismissable*/ true,
                 /*askToReload*/ false);
           break;

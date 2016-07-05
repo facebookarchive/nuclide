@@ -12,6 +12,7 @@
 import type {ProcessMaker} from '../../commons-node/RpcProcess';
 
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
+import {maybeToString} from '../../commons-node/string';
 import RpcProcess from '../../commons-node/RpcProcess';
 import {getHackCommand, findHackConfigDir} from './hack-config';
 import {ServiceRegistry} from '../../nuclide-rpc';
@@ -73,7 +74,7 @@ async function getHackProcess(filePath: string): Promise<?HackProcess> {
 
 async function createHackProcess(command: string, configDir: string): Promise<?HackProcess> {
   logger.logInfo(`Creating new hack connection for ${configDir}: ${command}`);
-  logger.logInfo(`Current PATH: ${process.env.PATH}`);
+  logger.logInfo(`Current PATH: ${maybeToString(process.env.PATH)}`);
   const startServerResult = await asyncExecute(command, ['start', configDir]);
   logger.logInfo(
     `Hack connection start server results:\n${JSON.stringify(startServerResult, null, 2)}\n`);

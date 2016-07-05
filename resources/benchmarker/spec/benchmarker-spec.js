@@ -82,7 +82,7 @@ describe('Nuclide performance', () => {
         // $FlowFixMe
         resultFile = createResultFile(resultDir, benchmark, columns);
         setTestState({resultFile});
-        console.log(`Writing raw results for ${benchmark.name} to ${yellow(resultFile)}`);
+        console.log(`Writing raw results for ${String(benchmark.name)} to ${yellow(resultFile)}`);
       }
 
       // We are in no hurry. Give the new window 2 seconds to breathe before testing it.
@@ -90,7 +90,7 @@ describe('Nuclide performance', () => {
       await sleepUntilNoRequests();
 
       // Run the benchmark for this iteration/repetition and append the results to the result file.
-      console.log(yellow(`${benchmark.name}: ` +
+      console.log(yellow(`${String(benchmark.name)}: ` +
                           `iteration ${iteration + 1} of ${benchmark.iterations}, ` +
                           `repetition ${repetition + 1} of ${benchmark.repetitions}`));
       const result = await benchmark.run(iteration);
@@ -103,7 +103,7 @@ describe('Nuclide performance', () => {
       // Detect if we have reached the end of an individual benchmark or of the whole run (& exit).
       if (nextTestState.iteration === 0) {
         const processedResultFile = processResultFile(resultFile, benchmark);
-        console.log(`Results for ${benchmark.name} are in ${green(processedResultFile)}`);
+        console.log(`Results for ${String(benchmark.name)} are in ${green(processedResultFile)}`);
       }
       if (nextTestState.benchmarkIndex === 0) {
         console.log(`All results for the run are in ${green(resultDir)}`);

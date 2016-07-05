@@ -12,6 +12,7 @@
 import nuclideUri from '../../nuclide-remote-uri';
 import watchman from 'fb-watchman';
 import {serializeAsyncCall, sleep} from '../../commons-node/promise';
+import {maybeToString} from '../../commons-node/string';
 import {getWatchmanBinaryPath} from './path';
 import WatchmanSubscription from './WatchmanSubscription';
 import {getLogger} from '../../nuclide-logging';
@@ -129,7 +130,7 @@ class WatchmanClient {
       const stateLeave = response['state-leave'];
       const stateMessage = stateEnter != null
         ? `Entering ${stateEnter}`
-        : `Leaving ${stateLeave}`
+        : `Leaving ${maybeToString(stateLeave)}`
       ;
       logger.info(`Subscription state: ${stateMessage}`);
       return;

@@ -20,6 +20,7 @@ import VcsLogPaneItem from './VcsLogPaneItem';
 import featureConfig from '../../nuclide-feature-config';
 import invariant from 'assert';
 import {getAtomProjectRelativePath} from '../../commons-atom/projects';
+import {maybeToString} from '../../commons-node/string';
 import querystring from 'querystring';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {shortNameForAuthor as shortNameForAuthorFn} from './util';
@@ -198,7 +199,7 @@ function createLogPaneForPath(path: string): ?VcsLogPaneItem {
       files: [path],
       showDifferentialRevision,
     },
-    title: `${repository.getType()} log ${getAtomProjectRelativePath(path)}`,
+    title: `${repository.getType()} log ${maybeToString(getAtomProjectRelativePath(path))}`,
   });
 
   repository.log([path], MAX_NUM_LOG_RESULTS).then((response: VcsLogResponse) =>

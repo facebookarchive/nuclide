@@ -14,6 +14,7 @@ import type Rx from 'rxjs';
 import invariant from 'assert';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {isPromise} from '../../commons-node/promise';
+import {maybeToString} from '../../commons-node/string';
 import {track as rawTrack} from './track';
 import {HistogramTracker} from './HistogramTracker';
 
@@ -85,7 +86,7 @@ function trackTiming(eventName: ?string = null): any {
     descriptor.value = function(...args) {
       if (!eventName) {
         const constructorName = this.constructor ? this.constructor.name : undefined;
-        eventName = `${constructorName}.${name}`;
+        eventName = `${maybeToString(constructorName)}.${name}`;
       }
 
       return trackOperationTiming(eventName,

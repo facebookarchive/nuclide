@@ -11,6 +11,7 @@
 
 import type {node$CallSite} from './types';
 import singleton from '../../commons-node/singleton';
+import {maybeToString} from '../../commons-node/string';
 
 type PrepareStackTraceFunction = (error: Error, frames: Array<node$CallSite>) => any;
 
@@ -111,7 +112,7 @@ function structuredStackTraceHook(error: Error, frames: Array<node$CallSite>): v
 function defaultPrepareStackTrace(error: Error, frames: Array<node$CallSite>): string {
   let formattedStackTrace = error.message ? `${error.name}: ${error.message}` : `${error.name}`;
   frames.forEach(frame => {
-    formattedStackTrace += `\n    at ${frame.toString()}`;
+    formattedStackTrace += `\n    at ${maybeToString(frame.toString())}`;
   });
   return formattedStackTrace;
 }

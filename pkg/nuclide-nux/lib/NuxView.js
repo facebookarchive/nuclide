@@ -11,6 +11,7 @@
 
 import {CompositeDisposable, Disposable} from 'atom';
 import debounce from '../../commons-node/debounce';
+import {maybeToString} from '../../commons-node/string';
 import analytics from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 
@@ -263,7 +264,7 @@ export class NuxView {
       {
         tourId: this._tourId,
         message: `${message}`,
-        error: `${error}`,
+        error: maybeToString(error),
       },
     );
   }

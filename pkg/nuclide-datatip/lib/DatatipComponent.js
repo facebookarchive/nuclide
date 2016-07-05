@@ -10,6 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
+import {maybeToString} from '../../commons-node/string';
 
 export const DATATIP_ACTIONS = Object.freeze({
   PIN: 'PIN',
@@ -62,7 +63,7 @@ export class DatatipComponent extends React.Component {
     }
     return (
       <div
-        className={`${className} nuclide-datatip-container`}
+        className={`${maybeToString(className)} nuclide-datatip-container`}
         {...props}>
         <div className="nuclide-datatip-content">
           {children}

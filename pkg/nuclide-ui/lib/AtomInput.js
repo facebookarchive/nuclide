@@ -14,6 +14,8 @@ import classNames from 'classnames';
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 
+import {maybeToString} from '../../commons-node/string';
+
 type DefaultProps = {
   disabled: boolean;
   initialValue: string;
@@ -151,7 +153,7 @@ export class AtomInput extends React.Component {
   render(): React.Element<any> {
     const className = classNames(this.props.className, {
       'atom-text-editor-unstyled': this.props.unstyled,
-      [`atom-text-editor-${this.props.size}`]: (this.props.size != null),
+      [`atom-text-editor-${maybeToString(this.props.size)}`]: (this.props.size != null),
     });
 
     return (
