@@ -17,7 +17,7 @@
     },
     "tool-bar": {
       "versions": {
-        "^0.1.0": "consumeToolBar"
+        "^0 || ^1": "consumeToolBar"
       }
     },
     "nuclide-current-working-directory": {

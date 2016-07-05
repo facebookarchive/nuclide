@@ -61,7 +61,7 @@ class Activation {
     return this._tunnelVision.consumeDistractionFreeModeProvider(provider);
   }
 
-  consumeToolBar(getToolBar: GetToolBar): void {
+  consumeToolBar(getToolBar: GetToolBar): IDisposable {
     const toolBar = getToolBar('nuclide-distraction-free-mode');
     toolBar.addButton({
       icon: 'eye',
@@ -69,9 +69,9 @@ class Activation {
       tooltip: 'Toggle distraction-free mode',
       priority: 600,
     });
-    this._disposables.add(new Disposable(() => {
-      toolBar.removeItems();
-    }));
+    const disposable = new Disposable(() => { toolBar.removeItems(); });
+    this._disposables.add(disposable);
+    return disposable;
   }
 }
 
@@ -105,7 +105,7 @@ export function consumeDistractionFreeModeProvider(
   return activation.consumeDistractionFreeModeProvider(provider);
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
+export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   invariant(activation != null);
-  activation.consumeToolBar(getToolBar);
+  return activation.consumeToolBar(getToolBar);
 }

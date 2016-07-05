@@ -32,7 +32,7 @@ export function consumeGadgetsService(api: GadgetsService): IDisposable {
   return disposable;
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): void {
+export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   const priority = farEndPriority(500);
   const toolBar = getToolBar('nuclide-home');
   toolBar.addSpacer({
@@ -44,7 +44,7 @@ export function consumeToolBar(getToolBar: GetToolBar): void {
     tooltip: 'Open Nuclide Settings',
     priority,
   });
-  subscriptions.add(new Disposable(() => {
-    toolBar.removeItems();
-  }));
+  const disposable = new Disposable(() => { toolBar.removeItems(); });
+  subscriptions.add(disposable);
+  return disposable;
 }

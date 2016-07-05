@@ -151,6 +151,19 @@ class Activation {
     });
   }
 
+  addToolBar(getToolBar: GetToolBar): IDisposable {
+    const toolBar = getToolBar('nuclide-test-runner');
+    toolBar.addButton({
+      icon: 'checklist',
+      callback: 'nuclide-test-runner:toggle-panel',
+      tooltip: 'Toggle Test Runner',
+      priority: 400,
+    });
+    const disposable = new Disposable(() => { toolBar.removeItems(); });
+    this._disposables.add(disposable);
+    return disposable;
+  }
+
   getDistractionFreeModeProvider(): DistractionFreeModeProvider {
     return {
       name: 'nuclide-test-runner',
@@ -243,7 +256,6 @@ class Activation {
 }
 
 let activation: ?Activation;
-let toolBar: ?any = null;
 
 export function activate(state: ?Object): void {
   if (!activation) {
@@ -255,9 +267,6 @@ export function deactivate(): void {
   if (activation) {
     activation.dispose();
     activation = null;
-  }
-  if (toolBar) {
-    toolBar.removeItems();
   }
 }
 
@@ -276,14 +285,9 @@ export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu):
   return activation.addItemsToFileTreeContextMenu(contextMenu);
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): void {
-  toolBar = getToolBar('nuclide-test-runner');
-  toolBar.addButton({
-    icon: 'checklist',
-    callback: 'nuclide-test-runner:toggle-panel',
-    tooltip: 'Toggle Test Runner',
-    priority: 400,
-  });
+export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  invariant(activation);
+  return activation.addToolBar(getToolBar);
 }
 
 export function getHomeFragments(): HomeFragments {

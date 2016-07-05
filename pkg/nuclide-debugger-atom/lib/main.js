@@ -389,7 +389,6 @@ function createDatatipProvider(): DatatipProvider {
 }
 
 let activation = null;
-let toolBar: ?any = null;
 let datatipProvider: ?DatatipProvider;
 
 export function activate(state: ?SerializedState): void {
@@ -412,9 +411,6 @@ export function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;
-  }
-  if (toolBar) {
-    toolBar.removeItems();
   }
 }
 
@@ -499,14 +495,18 @@ export function consumeEvaluationExpressionProvider(
   });
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): void {
-  toolBar = getToolBar('nuclide-debugger');
+export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  const toolBar = getToolBar('nuclide-debugger');
   toolBar.addButton({
     icon: 'plug',
     callback: 'nuclide-debugger:toggle',
     tooltip: 'Toggle Debugger',
     priority: 100,
   });
+  const disposable = new Disposable(() => { toolBar.removeItems(); });
+  invariant(activation);
+  activation._disposables.add(disposable);
+  return disposable;
 }
 
 export function provideRemoteControlService(): RemoteControlService {

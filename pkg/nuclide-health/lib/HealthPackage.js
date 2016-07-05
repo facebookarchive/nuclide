@@ -95,7 +95,7 @@ export function deactivate() {
   }
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): void {
+export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   const toolBar = getToolBar('nuclide-health');
   toolBar.addButton({
     icon: 'dashboard',
@@ -103,9 +103,9 @@ export function consumeToolBar(getToolBar: GetToolBar): void {
     tooltip: 'Toggle Nuclide health stats',
     priority: farEndPriority(400),
   });
-  subscriptions.add(new Disposable(() => {
-    toolBar.removeItems();
-  }));
+  const disposable = new Disposable(() => { toolBar.removeItems(); });
+  subscriptions.add(disposable);
+  return disposable;
 }
 
 export function consumeGadgetsService(gadgetsApi: GadgetsService): void {

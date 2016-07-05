@@ -37,17 +37,17 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeToolBar(getToolBar: GetToolBar): void {
+  consumeToolBar(getToolBar: GetToolBar): IDisposable {
     const toolBar = getToolBar('nux-example-toolbar');
-    const toolBarButtonView = toolBar.addButton({
+    const {element} = toolBar.addButton({
       icon: 'mortar-board',
       callback: 'nux-example-toolbar:noop',
       tooltip: 'Example Nux Toolbar Item',
     });
-    toolBarButtonView.element.classList.add('sample-nux-toolbar-button');
-    this._disposables.add(new Disposable(() => {
-      toolBar.removeItems();
-    }));
+    element.classList.add('sample-nux-toolbar-button');
+    const disposable = new Disposable(() => { toolBar.removeItems(); });
+    this._disposables.add(disposable);
+    return disposable;
   }
 
   addDisposable(disposable: Disposable) {
@@ -70,9 +70,9 @@ export function deactivate() {
   }
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): void {
+export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   invariant(activation != null);
-  activation.consumeToolBar(getToolBar);
+  return activation.consumeToolBar(getToolBar);
 }
 
 function generateTestNuxTour(

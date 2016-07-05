@@ -36,12 +36,13 @@ describeRemotableTest('Diff View Toolbar Button Test', (context: TestContext) =>
     const textEditor = atom.workspace.getActiveTextEditor();
     invariant(textEditor, 'no active text editor!');
 
-    function getDiffCountElement() {
-      return document.querySelector('.diff-view-count');
+    function getDiffViewToolBarCount() {
+      const el = document.querySelector('.diff-view-count');
+      return el ? el.dataset.count : null;
     }
 
     waitsFor('diff-count element to register in the toolbar', 30000, () => {
-      return getDiffCountElement() != null;
+      return getDiffViewToolBarCount() != null;
     });
 
     waitsForPromise(
@@ -51,7 +52,7 @@ describeRemotableTest('Diff View Toolbar Button Test', (context: TestContext) =>
 
     runs(() => {
       // Initially we have no changed files so the diff view tool-bar counter should be empty.
-      expect(getDiffCountElement().innerText).toEqual('');
+      expect(getDiffViewToolBarCount()).toEqual('');
       textEditor.setText('cg');
     });
 
@@ -60,11 +61,11 @@ describeRemotableTest('Diff View Toolbar Button Test', (context: TestContext) =>
     waitsForPromise(() => Promise.resolve(textEditor.save()));
 
     waitsFor('uncommited file changes tool-bar counter to update', 10000, () => {
-      return getDiffCountElement().innerText;
+      return getDiffViewToolBarCount();
     });
 
     runs(() => {
-      expect(getDiffCountElement().innerText).toEqual('1');
+      expect(getDiffViewToolBarCount()).toEqual('1');
     });
   });
 });

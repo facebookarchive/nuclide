@@ -54,8 +54,6 @@ const PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY = 1300;
 const uiProviders: Array<UIProvider> = [];
 
 let subscriptions: ?CompositeDisposable = null;
-let toolBar: ?any = null;
-let changeCountElement: ?HTMLElement = null;
 let cwdApi: ?CwdApi = null;
 
 function formatDiffViewUrl(diffEntityOptions?: ?DiffEntityOptions): string {
@@ -148,21 +146,6 @@ function projectsContainPath(checkPath: string): boolean {
     }
     return true;
   });
-}
-
-function updateToolbarCount(diffViewButton: HTMLElement, count: number): void {
-  if (!changeCountElement) {
-    changeCountElement = document.createElement('span');
-    changeCountElement.className = 'diff-view-count';
-    diffViewButton.appendChild(changeCountElement);
-  }
-  if (count > 0) {
-    diffViewButton.classList.add('positive-count');
-  } else {
-    diffViewButton.classList.remove('positive-count');
-  }
-  const DiffCountComponent = require('./DiffCountComponent');
-  ReactDOM.render(<DiffCountComponent count={count} />, changeCountElement);
 }
 
 function diffActivePath(diffOptions?: Object): void {
@@ -379,20 +362,36 @@ module.exports = {
     }));
   },
 
-  consumeToolBar(getToolBar: GetToolBar): void {
-    toolBar = getToolBar('nuclide-diff-view');
+  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+    const toolBar = getToolBar('nuclide-diff-view');
     const button = toolBar.addButton({
       icon: 'git-branch',
       callback: 'nuclide-diff-view:open',
       tooltip: 'Open Diff View',
       priority: 300,
-    })[0];
+    }).element;
+    button.classList.add('diff-view-count');
+
     const diffModel = getDiffViewModel();
-    updateToolbarCount(button, diffModel.getState().dirtyFileChanges.size);
+    let lastCount = null;
+    const updateToolbarCount = () => {
+      const count = diffModel.getState().dirtyFileChanges.size;
+      if (count !== lastCount) {
+        button.classList.toggle('positive-count', count > 0);
+        button.classList.toggle('max-count', count > 99);
+        button.dataset.count = count === 0 ? '' : (count > 99 ? '99+' : String(count));
+        lastCount = count;
+      }
+    };
+    updateToolbarCount();
+
+    const toolBarSubscriptions = new CompositeDisposable(
+      diffModel.onDidUpdateState(() => { updateToolbarCount(); }),
+      new Disposable(() => { toolBar.removeItems(); })
+    );
     invariant(subscriptions);
-    subscriptions.add(diffModel.onDidUpdateState(() => {
-      updateToolbarCount(button, diffModel.getState().dirtyFileChanges.size);
-    }));
+    subscriptions.add(toolBarSubscriptions);
+    return toolBarSubscriptions;
   },
 
   getHomeFragments(): HomeFragments {
@@ -429,10 +428,6 @@ module.exports = {
   },
 
   deactivate(): void {
-    if (changeCountElement != null) {
-      ReactDOM.unmountComponentAtNode(changeCountElement);
-      changeCountElement = null;
-    }
     uiProviders.splice(0);
     if (subscriptions != null) {
       subscriptions.dispose();
@@ -443,10 +438,6 @@ module.exports = {
       diffViewModel = null;
     }
     activeDiffView = null;
-    if (toolBar != null) {
-      toolBar.removeItems();
-      toolBar = null;
-    }
   },
 
   /**

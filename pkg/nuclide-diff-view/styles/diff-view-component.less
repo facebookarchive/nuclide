@@ -173,26 +173,20 @@
   }
 }
 
-.diff-view-count {
-  color: @text-color;
-  font-size: 0.8em;
-  min-width: 2em;
-  position: absolute;
-  right: 0;
-  top: 13px;
-  text-shadow: 0 0px 2px @base-border-color;
-  text-align: center;
-}
-
-.tool-bar-btn.icon-git-branch {
-  position: relative;
-
+.diff-view-count.tool-bar-btn {
+  &::after {
+    content: attr(data-count);
+    font-size: 0.8em;
+    margin-top: 13px;
+    position: absolute;
+    text-shadow: 0 0px 2px @base-border-color;
+  }
+  &.max-count::after {
+    margin-left: -4px;
+  }
   &.positive-count {
     color: @text-color-warning;
     &:hover {
-      color: @text-color-warning;
-    }
-    .diff-view-count {
       color: @text-color-warning;
     }
   }

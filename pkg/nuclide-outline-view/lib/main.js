@@ -228,19 +228,19 @@ class Activation {
     return this._editorService.consumeProvider(provider);
   }
 
-  consumeToolBar(getToolBar: GetToolBar): void {
+  consumeToolBar(getToolBar: GetToolBar): IDisposable {
     const toolBar = getToolBar('nuclide-outline-view');
-    const toolBarButtonView = toolBar.addButton({
+    const {element} = toolBar.addButton({
       icon: 'list-unordered',
       callback: 'nuclide-outline-view:toggle',
       tooltip: 'Toggle Outline View',
       priority: 350, // Between diff view and test runner
     });
     // Class added is not defined elsewhere, and is just used to mark the toolbar button
-    toolBarButtonView.element.classList.add('nuclide-outline-view-toolbar-button');
-    this._disposables.add(new Disposable(() => {
-      toolBar.removeItems();
-    }));
+    element.classList.add('nuclide-outline-view-toolbar-button');
+    const disposable = new Disposable(() => { toolBar.removeItems(); });
+    this._disposables.add(disposable);
+    return disposable;
   }
 
   getDistractionFreeModeProvider(): DistractionFreeModeProvider {
@@ -292,9 +292,9 @@ export function consumeOutlineProvider(provider: OutlineProvider): IDisposable {
   return activation.consumeOutlineProvider(provider);
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
+export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   invariant(activation != null);
-  activation.consumeToolBar(getToolBar);
+  return activation.consumeToolBar(getToolBar);
 }
 
 export function getHomeFragments(): HomeFragments {

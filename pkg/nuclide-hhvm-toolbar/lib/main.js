@@ -64,13 +64,13 @@ class Activation {
     );
   }
 
-  consumeToolBar(getToolBar: GetToolBar): void {
+  consumeToolBar(getToolBar: GetToolBar): IDisposable {
     const toolBar = getToolBar('nuclide-buck-toolbar');
-    const toolBarButton = toolBar.addButton({
+    const {element} = toolBar.addButton({
       callback: 'nuclide-hhvm-toolbar:toggle',
       tooltip: 'Toggle HHVM Toolbar',
       priority: 500,
-    })[0];
+    });
     toolBar.addSpacer({
       priority: 501,
     });
@@ -78,14 +78,14 @@ class Activation {
       <div className="hhvm-toolbar-icon-container">
         <HhvmIcon width="37%" />
       </div>,
-      toolBarButton,
+      element,
     );
-    this._disposables.add(
-      new Disposable(() => {
-        ReactDOM.unmountComponentAtNode(toolBarButton);
-        toolBar.removeItems();
-      }),
-    );
+    const disposable = new Disposable(() => {
+      ReactDOM.unmountComponentAtNode(element);
+      toolBar.removeItems();
+    });
+    this._disposables.add(disposable);
+    return disposable;
   }
 
   consumeBuildSystemRegistry(registry: BuildSystemRegistry): void {
@@ -200,7 +200,7 @@ export function consumeCwdApi(api: CwdApi): IDisposable {
   });
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
+export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   invariant(activation);
   return activation.consumeToolBar(getToolBar);
 }

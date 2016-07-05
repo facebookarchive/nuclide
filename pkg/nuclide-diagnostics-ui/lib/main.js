@@ -14,9 +14,10 @@ import type {
   ObservableDiagnosticUpdater,
 } from '../../nuclide-diagnostics-base';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
+import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 
 import {track} from '../../nuclide-analytics';
 
@@ -116,8 +117,6 @@ function tryRecordActivationState(): void {
     }
   }
 }
-
-let toolBar: ?any = null;
 
 export function activate(state: ?Object): void {
   if (subscriptions) {
@@ -250,14 +249,18 @@ export function consumeStatusBar(statusBar: atom$StatusBar): void {
   getStatusBarTile().consumeStatusBar(statusBar);
 }
 
-export function consumeToolBar(getToolBar: (group: string) => Object): void {
-  toolBar = getToolBar('nuclide-diagnostics-ui');
+export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  const toolBar = getToolBar('nuclide-diagnostics-ui');
   toolBar.addButton({
     icon: 'law',
     callback: 'nuclide-diagnostics-ui:toggle-table',
     tooltip: 'Toggle Diagnostics Table',
     priority: 200,
   });
+  const disposable = new Disposable(() => { toolBar.removeItems(); });
+  invariant(subscriptions != null);
+  subscriptions.add(disposable);
+  return disposable;
 }
 
 export function deactivate(): void {
@@ -274,10 +277,6 @@ export function deactivate(): void {
   if (statusBarTile) {
     statusBarTile.dispose();
     statusBarTile = null;
-  }
-
-  if (toolBar) {
-    toolBar.removeItems();
   }
 
   consumeUpdatesCalled = false;
