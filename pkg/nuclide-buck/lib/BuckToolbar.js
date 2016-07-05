@@ -75,7 +75,7 @@ class BuckToolbar extends React.Component {
   async _requestOptions(inputText: string): Promise<Array<string>> {
     const project = this._buckToolbarStore.getMostRecentBuckProject();
     if (project == null) {
-      throw new Error('No active Buck project.');
+      throw new Error('No active Buck project. Check your Current Working Root.');
     }
 
     let aliases = this._projectAliasesCache.get(project);
