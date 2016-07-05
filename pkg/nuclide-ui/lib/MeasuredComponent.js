@@ -44,15 +44,11 @@ export class MeasuredComponent extends React.Component {
   // Listens to the container DOM node for mutations
   _mutationObserver: MutationObserver;
   _previousMeasurements: ?DOMMeasurements;
-  _domNode: HTMLElement;
+  _domNode: ?HTMLElement;
 
   constructor(props: Props) {
     super(props);
     this._previousMeasurements = null;
-    this._mutationObserver = new MutationObserver((mutations: Array<MutationRecord>) => {
-      // Invoke callback and update _previousMeasurements if measurements have changed
-      this._considerInvokingMutationCallback();
-    });
     (this: any)._updateDomNode = this._updateDomNode.bind(this);
   }
 
@@ -61,11 +57,10 @@ export class MeasuredComponent extends React.Component {
     this._considerInvokingMutationCallback();
   }
 
-  componentWillUnmount(): void {
-    this._mutationObserver.disconnect();
-  }
-
   _considerInvokingMutationCallback(): void {
+    if (this._domNode == null) {
+      return;
+    }
     const {
       clientHeight,
       clientWidth,
@@ -97,10 +92,19 @@ export class MeasuredComponent extends React.Component {
     this._previousMeasurements = measurements;
   }
 
-  _updateDomNode(node: HTMLElement): void {
+  _updateDomNode(node: ?HTMLElement): void {
+    if (node == null) {
+      this._domNode = null;
+      // _updateDomNode is called before component unmount, so don't need to disconect() in componentWillUnmount()
+      this._mutationObserver.disconnect();
+      return;
+    }
+    this._mutationObserver = new MutationObserver((mutations: Array<MutationRecord>) => {
+      // Invoke callback and update _previousMeasurements if measurements have changed
+      this._considerInvokingMutationCallback();
+    });
     this._domNode = node;
     this._mutationObserver.observe(this._domNode, observerConfig);
-    this._mutationObserver.disconnect();
   }
 
   render(): React.Element<any> {
