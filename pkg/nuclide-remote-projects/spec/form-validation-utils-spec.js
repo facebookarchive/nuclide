@@ -24,6 +24,7 @@ describe('validateFormInputs', () => {
     validProfileName = 'MyProfile';
     defaultServerCommand = 'defaultcommand';
     connectionProfileBase = {
+      displayTitle: 'testProfile',
       username: 'testuser',
       password: '',
       server: 'test@test.com',

@@ -313,14 +313,7 @@ export default class ConnectionDialog extends React.Component {
   }
 
   ok() {
-    const {
-      indexOfSelectedConnectionProfile,
-      mode,
-    } = this.state;
-
-    const {
-      connectionProfiles,
-    } = this.props;
+    const {mode} = this.state;
 
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
@@ -334,12 +327,8 @@ export default class ConnectionDialog extends React.Component {
         pathToPrivateKey,
         authMethod,
         password,
+        displayTitle,
       } = connectionDetailsForm.getFormFields();
-
-      let displayTitle = '';
-      if (connectionProfiles != null && indexOfSelectedConnectionProfile > -1) {
-        ({displayTitle} = connectionProfiles[indexOfSelectedConnectionProfile]);
-      }
 
       if (username && server && cwd && remoteServerCommand) {
         this.setState({
@@ -390,6 +379,7 @@ export default class ConnectionDialog extends React.Component {
     if (!connectionDetailsForm) {
       return null;
     }
+
     const {
       username,
       server,
@@ -398,6 +388,7 @@ export default class ConnectionDialog extends React.Component {
       sshPort,
       pathToPrivateKey,
       authMethod,
+      displayTitle,
     } = connectionDetailsForm.getFormFields();
     return {
       username,
@@ -407,6 +398,7 @@ export default class ConnectionDialog extends React.Component {
       sshPort,
       pathToPrivateKey,
       authMethod,
+      displayTitle,
     };
   }
 

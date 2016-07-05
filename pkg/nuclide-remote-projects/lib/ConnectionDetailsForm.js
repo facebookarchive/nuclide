@@ -35,6 +35,7 @@ type Props = {
   initialSshPort: string;
   initialPathToPrivateKey: string;
   initialAuthMethod: $Enum<typeof SupportedMethods>;
+  initialDisplayTitle: string;
   onCancel: () => mixed;
   onConfirm: () => mixed;
   onDidChange: () => mixed;
@@ -42,6 +43,7 @@ type Props = {
 
 type State = {
   cwd: string;
+  displayTitle: string;
   pathToPrivateKey: string;
   remoteServerCommand: string;
   selectedAuthMethodIndex: number;
@@ -67,6 +69,7 @@ export default class ConnectionDetailsForm extends React.Component {
       sshPort: props.initialSshPort,
       pathToPrivateKey: props.initialPathToPrivateKey,
       selectedAuthMethodIndex: authMethods.indexOf(props.initialAuthMethod),
+      displayTitle: props.initialDisplayTitle,
     };
 
     (this: any)._handleAuthMethodChange = this._handleAuthMethodChange.bind(this);
@@ -269,6 +272,7 @@ export default class ConnectionDetailsForm extends React.Component {
       pathToPrivateKey: this._getText('pathToPrivateKey'),
       authMethod: this._getAuthMethod(),
       password: this._getPassword(),
+      displayTitle: this.state.displayTitle,
     };
   }
 
@@ -285,6 +289,7 @@ export default class ConnectionDetailsForm extends React.Component {
     sshPort?: string;
     pathToPrivateKey?: string;
     authMethod?: NuclideRemoteAuthMethods;
+    displayTitle?: string;
   }): void {
     this._setText('username', fields.username);
     this._setText('server', fields.server);
@@ -293,6 +298,9 @@ export default class ConnectionDetailsForm extends React.Component {
     this._setText('sshPort', fields.sshPort);
     this._setText('pathToPrivateKey', fields.pathToPrivateKey);
     this._setAuthMethod(fields.authMethod);
+    // `displayTitle` is not editable and therefore has no `<atom-text-editor mini>`. Its value is
+    // stored only in local state.
+    this.setState({displayTitle: fields.displayTitle});
   }
 
   _getText(fieldName: string): string {

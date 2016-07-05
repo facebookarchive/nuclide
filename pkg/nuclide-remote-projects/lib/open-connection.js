@@ -230,6 +230,10 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
       ReactDOM.render(<ConnectionDialog {...initialDialogProps} />, hostEl);
     }
 
-    openBaseDialog();
+    // Select the last profile that was used. It's possible the config changed since the last time
+    // this was opened and the profile no longer exists. If the profile is not found,
+    // `openBaseDialog` will select the "default" / "Most Recent" option.
+    openBaseDialog(compositeConnectionProfiles.find(
+      profile => profile.displayTitle === defaultConnectionProfile.params.displayTitle));
   });
 }

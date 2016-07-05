@@ -27,6 +27,7 @@ export type NuclideRemoteConnectionParams = {
   sshPort: string;
   pathToPrivateKey: string;
   authMethod: NuclideRemoteAuthMethods;
+  displayTitle: string;
 };
 
 // The same as NuclideRemoteConnectionParams, minus `remoteServerCommand`.
@@ -37,6 +38,7 @@ export type NuclideNewConnectionProfileInitialFields = {
   sshPort: string;
   pathToPrivateKey: string;
   authMethod: NuclideRemoteAuthMethods;
+  displayTitle: string;
 };
 
 export type NuclideRemoteConnectionProfile = {
@@ -61,4 +63,5 @@ export type NuclideRemoteConnectionParamsWithPassword = {
   pathToPrivateKey: string;
   authMethod: NuclideRemoteAuthMethods;
   password: string;
+  displayTitle: string;
 };

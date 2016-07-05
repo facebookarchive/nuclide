@@ -87,7 +87,8 @@ export class MutableListSelector extends React.Component {
           key={item.id}
           className={classes}
           onClick={this._onItemClicked.bind(this, item.id)}
-          onDoubleClick={this._onItemDoubleClicked.bind(this, item.id)}>
+          onDoubleClick={this._onItemDoubleClicked.bind(this, item.id)}
+          tabIndex={0}>
           {item.displayTitle}
         </li>
       );

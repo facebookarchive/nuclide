@@ -237,6 +237,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
               initialSshPort={prefilledConnectionParams.sshPort}
               initialPathToPrivateKey={prefilledConnectionParams.pathToPrivateKey}
               initialAuthMethod={prefilledConnectionParams.authMethod}
+              initialDisplayTitle={prefilledConnectionParams.displayTitle}
               onConfirm={this.props.onConfirm}
               onCancel={this.props.onCancel}
               onDidChange={this._handleConnectionDetailsFormDidChange}
