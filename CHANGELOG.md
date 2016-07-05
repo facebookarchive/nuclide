@@ -1,5 +1,38 @@
 # Nuclide Changelog
 
+## v0.149.0
+
+### General
+
+* Atom 1.8.0 is now the officially supported version of Atom.
+* Clicking on Find References preview now takes you to the reference.
+* Fixed Remote Project reconnection after a network interruption (like bad wifi or waking).
+* Fixed a scrolling bug in Open Files when the selected entry is the active file.
+* Fixed remote searching for things that look like broken regexes (e.g. `foo(`).
+* Fixed the blame gutter not hiding if blame failed to load.
+
+### C/C++
+
+* Added local-only setting for specifying the clang library path.
+* Fixed Nuclide buck source level iOS debugging.
+* Show `#pragma mark` in Outline view.
+
+### Console
+
+* RN Packager output now appears in Console.
+* Multiple sources can be shown at once in the console.
+* Processes can be started and stopped from console source list.
+
+### File Tree
+
+* Added keyboard shortcut (`cmd-f`) to "Search in Directory" from the file-tree.
+* Fixed canceling a "save" after a file's remote project root is removed.
+* Fixed removing a project after a re-start when that project's directory no longer exists.
+
+### Hack
+
+* Hack grammar now handles `HEREDOC`'s correctly.
+
 ## v0.148.0
 
 **General**
