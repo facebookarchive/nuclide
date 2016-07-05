@@ -53,7 +53,7 @@ export type Task = {
 export interface BuildSystem {
   id: string;
   name: string;
-  getExtraUi?: () => ReactClass<any>;
+  getExtraUi?: () => ReactClass<any>; // activeTaskType will be provided as a nullable property.
   observeTasks: (callback: (tasks: Array<Task>) => mixed) => IDisposable;
   getIcon(): ReactClass<any>;
   runTask(taskName: string): TaskInfo;

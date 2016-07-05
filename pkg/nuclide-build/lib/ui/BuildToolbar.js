@@ -74,7 +74,7 @@ export class BuildToolbar extends React.Component {
               onClick={() => { this.props.stopTask(); }}
             />
           </div>
-          {ExtraUi ? <ExtraUi /> : null}
+          {ExtraUi ? <ExtraUi activeTaskType={this.props.activeTaskType} /> : null}
         </div>
         <ProgressBar
           progress={this.props.progress}
