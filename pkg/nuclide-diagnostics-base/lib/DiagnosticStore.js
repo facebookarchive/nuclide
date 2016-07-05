@@ -22,7 +22,7 @@ import type {
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {applyTextEdit} from '../../nuclide-textedit';
-import {arrayRemove} from '../../commons-node/collection';
+import {arrayRemove, MultiMap} from '../../commons-node/collection';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {MarkerTracker} from './MarkerTracker';
 import invariant from 'assert';
@@ -34,7 +34,7 @@ class DiagnosticStore {
   _providerToFileToMessages: Map<DiagnosticProvider, Map<NuclideUri, Array<FileDiagnosticMessage>>>;
   // A map from each file that has messages from any diagnostic provider
   // to the set of diagnostic providers that have messages for it.
-  _fileToProviders: Map<NuclideUri, Set<DiagnosticProvider>>;
+  _fileToProviders: MultiMap<NuclideUri, DiagnosticProvider>;
 
   // A map from each diagnostic provider to the array of project messages from it.
   _providerToProjectDiagnostics: Map<DiagnosticProvider, Array<ProjectDiagnosticMessage>>;
@@ -47,7 +47,7 @@ class DiagnosticStore {
 
   constructor() {
     this._providerToFileToMessages = new Map();
-    this._fileToProviders = new Map();
+    this._fileToProviders = new MultiMap();
     this._providerToProjectDiagnostics = new Map();
 
     this._fileChanges = new Subject();
@@ -117,12 +117,7 @@ class DiagnosticStore {
       // Update _providerToFileToMessages.
       fileToMessages.set(filePath, newMessagesForPath);
       // Update _fileToProviders.
-      let providers = this._fileToProviders.get(filePath);
-      if (!providers) {
-        providers = new Set();
-        this._fileToProviders.set(filePath, providers);
-      }
-      providers.add(diagnosticProvider);
+      this._fileToProviders.add(filePath, diagnosticProvider);
 
       this._emitFileMessages(filePath);
     });
@@ -175,10 +170,8 @@ class DiagnosticStore {
         fileToDiagnostics.delete(filePath);
       }
       // Update _fileToProviders.
-      const providers = this._fileToProviders.get(filePath);
-      if (providers) {
-        providers.delete(diagnosticProvider);
-      }
+      this._fileToProviders.delete(filePath, diagnosticProvider);
+
       this._emitFileMessages(filePath);
     }
   }
@@ -286,14 +279,12 @@ class DiagnosticStore {
   _getFileMessages(filePath: NuclideUri): Array<FileDiagnosticMessage> {
     let allFileMessages = [];
     const relevantProviders = this._fileToProviders.get(filePath);
-    if (relevantProviders) {
-      for (const provider of relevantProviders) {
-        const fileToMessages = this._providerToFileToMessages.get(provider);
-        invariant(fileToMessages != null);
-        const messages = fileToMessages.get(filePath);
-        invariant(messages != null);
-        allFileMessages = allFileMessages.concat(messages);
-      }
+    for (const provider of relevantProviders) {
+      const fileToMessages = this._providerToFileToMessages.get(provider);
+      invariant(fileToMessages != null);
+      const messages = fileToMessages.get(filePath);
+      invariant(messages != null);
+      allFileMessages = allFileMessages.concat(messages);
     }
     return allFileMessages;
   }
