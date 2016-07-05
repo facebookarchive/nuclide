@@ -21,6 +21,7 @@ export default class BasicStatsSectionComponent extends React.Component {
     lastKeyLatency: PropTypes.number.isRequired,
     activeHandles: PropTypes.number.isRequired,
     activeRequests: PropTypes.number.isRequired,
+    activeHandlesByType: PropTypes.object.isRequired,
   };
 
   render(): React.Element<any> {
@@ -40,6 +41,9 @@ export default class BasicStatsSectionComponent extends React.Component {
       }, {
         name: 'Handles',
         value: `${this.props.activeHandles}`,
+      }, {
+        name: 'Child processes',
+        value: `${this.props.activeHandlesByType.childprocess.length}`,
       }, {
         name: 'Event loop',
         value: `${this.props.activeRequests}`,

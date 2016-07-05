@@ -16,7 +16,6 @@ import HealthPaneItemComponent from './ui/HealthPaneItemComponent';
 import {React} from 'react-for-atom';
 
 type State = {
-  activeHandleObjects?: Array<Object>;
   stats?: HealthStats;
 };
 
@@ -57,9 +56,9 @@ export default function createHealthGadget(state$: Rx.Observable<?State>): Class
     }
 
     render() {
-      const {stats, activeHandleObjects} = this.state;
+      const {stats} = this.state;
 
-      if (stats == null || activeHandleObjects == null) {
+      if (stats == null) {
         return <div />;
       }
 
@@ -70,9 +69,9 @@ export default function createHealthGadget(state$: Rx.Observable<?State>): Class
             heapPercentage={stats.heapPercentage}
             memory={stats.rss}
             lastKeyLatency={stats.lastKeyLatency}
-            activeHandles={activeHandleObjects.length}
-            activeHandleObjects={activeHandleObjects}
+            activeHandles={stats.activeHandles}
             activeRequests={stats.activeRequests}
+            activeHandlesByType={stats.activeHandlesByType}
           />
         </div>
       );

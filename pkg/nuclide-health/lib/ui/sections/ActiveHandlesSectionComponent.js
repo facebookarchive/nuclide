@@ -12,63 +12,30 @@
 import nuclideUri from '../../../../nuclide-remote-uri';
 import {React} from 'react-for-atom';
 import HandlesTableComponent from './HandlesTableComponent';
-
 const {PropTypes} = React;
 
 export default class ActiveHandlesSectionComponent extends React.Component {
 
   static propTypes = {
-    activeHandleObjects: PropTypes.arrayOf(PropTypes.object).isRequired,
+    activeHandlesByType: PropTypes.object.isRequired,
   };
 
-  // Returns a list of handles which are not children of others (i.e. sockets as process pipes).
-  static getTopLevelHandles(handles: Array<Object>): Set<Object> {
-    const topLevelHandles: Set<Object> = new Set();
-    const seen: Set<Object> = new Set();
-    handles.forEach(handle => {
-      if (seen.has(handle)) {
-        return;
-      }
-      seen.add(handle);
-      topLevelHandles.add(handle);
-      if (handle.constructor.name === 'ChildProcess') {
-        seen.add(handle);
-        ['stdin', 'stdout', 'stderr', '_channel'].forEach(pipe => {
-          if (handle[pipe]) {
-            seen.add(handle[pipe]);
-          }
-        });
-      }
-    });
-    return topLevelHandles;
-  }
 
   render(): React.Element<any> {
-    if (!this.props.activeHandleObjects || this.props.activeHandleObjects.length === 0) {
+    if (
+      !this.props.activeHandlesByType ||
+      Object.keys(this.props.activeHandlesByType).length === 0
+    ) {
       return <div />;
     }
-
-    const handlesByType = {};
-    ActiveHandlesSectionComponent.getTopLevelHandles(this.props.activeHandleObjects).forEach(
-      handle => {
-        let type = handle.constructor.name.toLowerCase();
-        if (type !== 'childprocess' && type !== 'tlssocket') {
-          type = 'other';
-        }
-        if (!handlesByType[type]) {
-          handlesByType[type] = [];
-        }
-        handlesByType[type].push(handle);
-      }
-    );
 
     // Note that widthPercentage properties should add up to 90 since the ID column always adds 10.
     return (
       <div>
         <HandlesTableComponent
           key={1}
-          title="Processes"
-          handles={handlesByType.childprocess}
+          title="Child processes"
+          handles={this.props.activeHandlesByType.childprocess}
           keyed={process => process.pid}
           columns={[{
             title: 'Name',
@@ -99,7 +66,7 @@ export default class ActiveHandlesSectionComponent extends React.Component {
         <HandlesTableComponent
           key={2}
           title="TLS Sockets"
-          handles={handlesByType.tlssocket}
+          handles={this.props.activeHandlesByType.tlssocket}
           keyed={socket => socket.localPort}
           columns={[{
             title: 'Host',
@@ -118,7 +85,7 @@ export default class ActiveHandlesSectionComponent extends React.Component {
         <HandlesTableComponent
           key={3}
           title="Other handles"
-          handles={handlesByType.other}
+          handles={this.props.activeHandlesByType.other}
           keyed={(handle, h) => h}
           columns={[{
             title: 'Type',

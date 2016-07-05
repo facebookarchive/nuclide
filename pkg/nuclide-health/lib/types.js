@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+export type HandlesByType = {[type: string]: Array<Object>};
+
 export type HealthStats = {
   rss: number;
   heapUsed: number;
@@ -18,4 +20,5 @@ export type HealthStats = {
   lastKeyLatency: number;
   activeHandles: number;
   activeRequests: number;
+  activeHandlesByType: HandlesByType;
 };

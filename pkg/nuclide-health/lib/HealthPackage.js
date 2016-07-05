@@ -197,13 +197,13 @@ function updateAnalytics(): void {
 
     // All analyticsBuffer entries have the same keys; we use the first entry to know what they are.
     Object.keys(analyticsBuffer[0]).forEach(statsKey => {
-      if (statsKey === 'lastKeyLatency') {
+      // These values are not to be aggregated or sent.
+      if (statsKey === 'lastKeyLatency' || statsKey === 'activeHandlesByType') {
         return;
-        // This field is only used to for a sticky value in the status bar, and is not to be sent.
       }
 
       const aggregates = aggregate(
-        analyticsBuffer.map(stats => stats[statsKey]),
+        analyticsBuffer.map(stats => (typeof stats[statsKey] === 'number' ? stats[statsKey] : 0)),
         (statsKey === 'keyLatency'), // skipZeros: Don't use empty key latency values in aggregates.
       );
       Object.keys(aggregates).forEach(aggregatesKey => {
@@ -245,11 +245,14 @@ function aggregate(
 }
 
 function getHealthStats(): HealthStats {
-  const stats = process.memoryUsage();                               // RSS, heap and usage.
+  const stats = process.memoryUsage();                          // RSS, heap and usage.
 
   if (keyLatency) {
     lastKeyLatency = keyLatency;
   }
+
+  const activeHandles = getActiveHandles();
+  const activeHandlesByType = getActiveHandlesByType(Array.from(activeHandles));
 
   const result = {
     ...stats,
@@ -257,12 +260,12 @@ function getHealthStats(): HealthStats {
     cpuPercentage: os.loadavg()[0],                             // 1 minute CPU average.
     lastKeyLatency,
     keyLatency,
-    activeHandles: getActiveHandles().length,
+    activeHandles: activeHandles.length,
     activeRequests: getActiveRequests().length,
+    activeHandlesByType,
   };
 
   keyLatency = 0; // We only want to ever record a key latency time once, and so we reset it.
-
   return result;
 }
 
@@ -279,4 +282,42 @@ function getActiveRequests(): Array<Object> {
     return process._getActiveRequests();
   }
   return [];
+}
+
+function getActiveHandlesByType(handles: Array<Object>): {[type: string]: Array<Object>} {
+  const activeHandlesByType = {
+    childprocess: [],
+    tlssocket: [],
+    other: [],
+  };
+  getTopLevelHandles(handles).filter(handle => {
+    let type = handle.constructor.name.toLowerCase();
+    if (type !== 'childprocess' && type !== 'tlssocket') {
+      type = 'other';
+    }
+    activeHandlesByType[type].push(handle);
+  });
+  return activeHandlesByType;
+}
+
+// Returns a list of handles which are not children of others (i.e. sockets as process pipes).
+function getTopLevelHandles(handles: Array<Object>): Array<Object> {
+  const topLevelHandles: Array<Object> = [];
+  const seen: Set<Object> = new Set();
+  handles.forEach(handle => {
+    if (seen.has(handle)) {
+      return;
+    }
+    seen.add(handle);
+    topLevelHandles.push(handle);
+    if (handle.constructor.name === 'ChildProcess') {
+      seen.add(handle);
+      ['stdin', 'stdout', 'stderr', '_channel'].forEach(pipe => {
+        if (handle[pipe]) {
+          seen.add(handle[pipe]);
+        }
+      });
+    }
+  });
+  return topLevelHandles;
 }

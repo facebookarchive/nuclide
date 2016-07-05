@@ -24,7 +24,7 @@ export default class HealthPaneItemComponent extends React.Component {
     lastKeyLatency: PropTypes.number.isRequired,
     activeHandles: PropTypes.number.isRequired,
     activeRequests: PropTypes.number.isRequired,
-    activeHandleObjects: PropTypes.arrayOf(PropTypes.object).isRequired,
+    activeHandlesByType: PropTypes.object.isRequired,
   };
 
   render(): React.Element<any> {
@@ -33,7 +33,7 @@ export default class HealthPaneItemComponent extends React.Component {
       Stats:
         <BasicStatsSectionComponent {...this.props} />,
       Handles:
-        <ActiveHandlesSectionComponent activeHandleObjects={this.props.activeHandleObjects} />,
+        <ActiveHandlesSectionComponent activeHandlesByType={this.props.activeHandlesByType} />,
     };
 
     // For each section, we use settings-view to get a familiar look for table cells.
@@ -50,4 +50,5 @@ export default class HealthPaneItemComponent extends React.Component {
       </div>
     );
   }
+
 }
