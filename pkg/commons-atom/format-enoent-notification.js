@@ -10,6 +10,7 @@
  */
 
 import featureConfig from '../nuclide-feature-config';
+import {maybeToString} from '../commons-node/string';
 
 type Options = {
   feature: string;
@@ -29,7 +30,7 @@ export default function formatEnoentNotification(options: Options): Result {
   const schema = featureConfig.getSchema(pathSetting);
   const settingTitle = schema.title;
   const categoryTitle = capitalize(pathSetting.split('.').shift());
-  const command = featureConfig.get(pathSetting);
+  const command: string = (featureConfig.get(pathSetting): any);
   const capitalizedFeature = capitalize(feature);
   const description =
     `${capitalizedFeature} needs *${toolName}* but Nuclide couldn't find it at \`${command}\`.
@@ -41,8 +42,8 @@ export default function formatEnoentNotification(options: Options): Result {
 3. Atom doesn't know about PATH modifications made in your shell config (".bash_profile", ".zshrc",
    etc.). If *${toolName}* is installed and you can run it successfully from your terminal using the
    command \`${command}\`, Nuclide may just not be looking in the right place. Update the command by
-   changing the **${settingTitle}** setting (under **${categoryTitle}**) on the Nuclide settings
-   page.`;
+   changing the **${maybeToString(settingTitle)}** setting (under **${categoryTitle}**) on the
+   Nuclide settings page.`;
 
   return {
     message: `Nuclide couldn't find *${toolName}*!`,
