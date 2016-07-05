@@ -48,3 +48,14 @@ atom-panel.modal .nuclide-connections-dialog-input-unstyled[mini] {
    */
   margin: 0;
 }
+
+.nuclide-connection-details-prompt .connection-profiles {
+  padding-bottom: @component-padding;
+  padding-top: @component-padding;
+}
+
+/* Prefix with `.list-group` to match specificity from themes */
+.list-group .connection-details-icon-info:before {
+  cursor: help;
+  margin-right: 0;
+}

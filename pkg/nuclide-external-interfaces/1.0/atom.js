@@ -459,6 +459,8 @@ declare class atom$ThemeManager {
   requireStylesheet(stylesheetPath: string): IDisposable;
 }
 
+type atom$TooltipsPlacementOption = 'top' | 'bottom' | 'left' | 'right' | 'auto';
+
 type atom$TooltipsAddOptions = {
   title: string;
   keyBindingCommand?: string;
@@ -466,7 +468,7 @@ type atom$TooltipsAddOptions = {
   animation?: boolean;
   container?: string | false;
   delay?: number | {show: number; hide: number};
-  placement?: 'top' | 'bottom' | 'left' | 'right' | 'auto';
+  placement?: atom$TooltipsPlacementOption | () => atom$TooltipsPlacementOption;
 };
 
 declare class atom$TooltipManager {
