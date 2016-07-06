@@ -10,15 +10,13 @@
  */
 
 
-import {isDirKey, keyToName, keyToPath, buildHashKey} from './FileTreeHelpers';
+import {MomoizedFieldsDeriver} from './MomoizedFieldsDeriver';
 import nuclideUri from '../../nuclide-remote-uri';
 import Immutable from 'immutable';
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
-import type {WorkingSet} from '../../nuclide-working-sets/lib/types';
-import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
 
 
 export type FileTreeNodeOptions = {
@@ -93,16 +91,14 @@ export type ImmutableNodeSettableFields = {
 * links no properties are to be updated after the creation.
 *
 *   The class contains multiple derived fields. The derived fields are calculated from the options,
-* from the configuration values and even from chieldren's properties. Once calculated the properties
-* are immutable.
+* from the configuration values and even from children's properties. Once calculated the properties
+* are immutable. This calculation is handled by a separate class - `MemoizedFieldsDeriver`. It
+* is optimized to avoid redundant recalculations.
 *
 *   Setting any of the properties (except for the aforementioned links to parent and siblings) will
 * create a new instance of the class, with required properties set. If, however, the set operation
 * is a no-op (such if setting a property to the same value it already has), new instance creation
 * is not skipped and same instance is returned instead.
-*
-*   When possible, the class
-* strives not to recompute the derived fields, but reuses the previous values.
 *
 *
 * THE CONFIGURATION
@@ -123,7 +119,7 @@ export type ImmutableNodeSettableFields = {
 * needs to find the parent of a node. Parent property, however, can't be one of the node's immutable
 * fields, otherwise it'd create circular references. Therefore the parent property is never given
 * to the node's constructor, but rather set by the parent itself when the node is assigned to it.
-* This means that we need to avoid the state when same node node is contained in the .children map
+* This means that we must avoid the state when same node node is contained in the .children map
 * of several other nodes. As only the latest one it was assigned to is considered its parent from
 * the node's perspective.
 *
@@ -135,13 +131,6 @@ export type ImmutableNodeSettableFields = {
 * visible sub-tree.
 *
 *   All property derivation and links set-up is done with one traversal only over the children.
-*
-*
-* HACKS
-*   In order to make things efficient the recalculation of the derived fields is being avoided when
-* possible. For instance, when setting an unrelated property, when an instance is created all
-* of the derived fields are just copied over in the `options` instance even though they don't
-* match the type definition of the options.
 */
 export class FileTreeNode {
   // Mutable properties - set when the node is assigned to its parent (and are immutable after)
@@ -150,6 +139,7 @@ export class FileTreeNode {
   prevSibling: ?FileTreeNode;
 
   conf: StoreConfigData;
+  _deriver: MomoizedFieldsDeriver;
 
   uri: NuclideUri;
   rootUri: NuclideUri;
@@ -203,7 +193,11 @@ export class FileTreeNode {
   /**
   * The _derivedChange param is not for external use.
   */
-  constructor(options: FileTreeNodeOptions, conf: StoreConfigData, _derivedChange: boolean = true) {
+  constructor(
+    options: FileTreeNodeOptions,
+    conf: StoreConfigData,
+    _deriver: ?MomoizedFieldsDeriver = null,
+  ) {
     this.parent = null;
     this.nextSibling = null;
     this.prevSibling = null;
@@ -211,15 +205,9 @@ export class FileTreeNode {
 
     this._assignOptions(options);
 
-    // Perf optimization:
-    // when conf does not change the derived fields will be passed along with the options
-    // it's not type-safe, but it's way more efficient than recalculate them
-    if (_derivedChange) {
-      const derived = this._buildDerivedFields(options.uri, options.rootUri, conf);
-      this._assignDerived(derived);
-    } else {
-      this._assignDerived(options);
-    }
+    this._deriver = _deriver || new MomoizedFieldsDeriver(options.uri, options.rootUri);
+    const derived = this._deriver.buildDerivedFields(conf);
+    this._assignDerived(derived);
 
     this._handleChildren();
   }
@@ -352,20 +340,6 @@ export class FileTreeNode {
       subscription: this.subscription,
       highlightedText: this.highlightedText,
       matchesFilter: this.matchesFilter,
-
-      // Derived fields
-      isRoot: this.isRoot,
-      name: this.name,
-      hashKey: this.hashKey,
-      relativePath: this.relativePath,
-      localPath: this.localPath,
-      isContainer: this.isContainer,
-      shouldBeShown: this.shouldBeShown,
-      shouldBeSoftened: this.shouldBeSoftened,
-      vcsStatusCode: this.vcsStatusCode,
-      repo: this.repo,
-      isIgnored: this.isIgnored,
-      checkedStatus: this.checkedStatus,
     };
   }
 
@@ -420,7 +394,7 @@ export class FileTreeNode {
       return this;
     }
 
-    return this.newNode(props, this.conf, false);
+    return this.newNode(props, this.conf);
   }
 
   /**
@@ -615,129 +589,6 @@ export class FileTreeNode {
     return depth;
   }
 
-  _buildDerivedFields(uri: NuclideUri, rootUri: NuclideUri, conf: StoreConfigData): Object {
-    const isContainer = isDirKey(uri);
-    const rootVcsStatuses = conf.vcsStatuses[rootUri] || {};
-    const repo = conf.reposByRoot[rootUri];
-    const isIgnored = this._deriveIsIgnored(uri, rootUri, repo, conf);
-    const checkedStatus = this._deriveCheckedStatus(uri, isContainer, conf.editedWorkingSet);
-
-    return {
-      isRoot: uri === rootUri,
-      name: keyToName(uri),
-      hashKey: buildHashKey(uri),
-      isContainer,
-      relativePath: uri.slice(rootUri.length),
-      localPath: keyToPath(nuclideUri.isRemote(uri) ? nuclideUri.parse(uri).pathname : uri),
-      isIgnored,
-      shouldBeShown: this._deriveShouldBeShown(uri, rootUri, isContainer, repo, conf, isIgnored),
-      shouldBeSoftened: this._deriveShouldBeSoftened(uri, isContainer, conf),
-      vcsStatusCode: rootVcsStatuses[uri] || StatusCodeNumber.CLEAN,
-      repo,
-      checkedStatus,
-    };
-  }
-
-  _deriveCheckedStatus(
-    uri: NuclideUri,
-    isContainer: boolean,
-    editedWorkingSet: WorkingSet,
-  ): NodeCheckedStatus {
-    if (editedWorkingSet.isEmpty()) {
-      return 'clear';
-    }
-
-    if (isContainer) {
-      if (editedWorkingSet.containsFile(uri)) {
-        return 'checked';
-      } else if (editedWorkingSet.containsDir(uri)) {
-        return 'partial';
-      } else {
-        return 'clear';
-      }
-    }
-
-    return editedWorkingSet.containsFile(uri) ? 'checked' : 'clear';
-  }
-
-  _deriveShouldBeShown(
-    uri: NuclideUri,
-    rootUri: NuclideUri,
-    isContainer: boolean,
-    repo: ?atom$Repository,
-    conf: StoreConfigData,
-    isIgnored: boolean,
-  ): boolean {
-    if (isIgnored && conf.excludeVcsIgnoredPaths) {
-      return false;
-    }
-
-    if (conf.hideIgnoredNames && conf.ignoredPatterns.some(pattern => pattern.match(uri))) {
-      return false;
-    }
-
-    if (conf.isEditingWorkingSet) {
-      return true;
-    }
-
-    if (isContainer) {
-      return conf.workingSet.containsDir(uri) ||
-        (!conf.openFilesWorkingSet.isEmpty() && conf.openFilesWorkingSet.containsDir(uri));
-    } else {
-      return conf.workingSet.containsFile(uri) ||
-        (!conf.openFilesWorkingSet.isEmpty() && conf.openFilesWorkingSet.containsFile(uri));
-    }
-  }
-
-  _deriveIsIgnored(
-    uri: NuclideUri,
-    rootUri: NuclideUri,
-    repo: ?atom$Repository,
-    conf: StoreConfigData,
-  ): boolean {
-    if (
-      repo != null &&
-      repo.isProjectAtRoot() &&
-      repo.isPathIgnored(uri)
-    ) {
-      return true;
-    }
-
-    return false;
-  }
-
-  _deriveShouldBeSoftened(
-    uri: NuclideUri,
-    isContainer: boolean,
-    conf: StoreConfigData,
-  ): boolean {
-    if (conf.isEditingWorkingSet) {
-      return false;
-    }
-
-    if (conf.workingSet.isEmpty() || conf.openFilesWorkingSet.isEmpty()) {
-      return false;
-    }
-
-    if (isContainer) {
-      if (
-        !conf.workingSet.containsDir(uri) &&
-        conf.openFilesWorkingSet.containsDir(uri)) {
-        return true;
-      }
-
-      return false;
-    } else {
-      if (
-        !conf.workingSet.containsFile(uri) &&
-        conf.openFilesWorkingSet.containsFile(uri)) {
-        return true;
-      }
-
-      return false;
-    }
-  }
-
   _propsAreTheSame(props: Object): boolean {
     if (props.isSelected !== undefined && this.isSelected !== props.isSelected) {
       return false;
@@ -785,14 +636,13 @@ export class FileTreeNode {
   newNode(
     props: ImmutableNodeSettableFields,
     conf: StoreConfigData,
-    derivedChange: boolean = true,
   ): FileTreeNode {
     return new FileTreeNode({
       ...this._buildOptions(),
       ...props,
     },
     conf,
-    derivedChange,
+    this._deriver,
     );
   }
 

@@ -49,7 +49,7 @@ export type ExportStoreData = {
 };
 
 export type StoreConfigData = {
-    vcsStatuses: {[rootUri: NuclideUri]: {[path: NuclideUri]: StatusCodeNumberValue}};
+    vcsStatuses: Immutable.Map<NuclideUri, {[path: NuclideUri]: StatusCodeNumberValue}>;
     workingSet: WorkingSet;
     hideIgnoredNames: boolean;
     excludeVcsIgnoredPaths: boolean;
@@ -65,7 +65,7 @@ export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';
 
 
 const DEFAULT_CONF = {
-  vcsStatuses: {},
+  vcsStatuses: new Immutable.Map(),
   workingSet: new WorkingSet(),
   editedWorkingSet: new WorkingSet(),
   hideIgnoredNames: true,
@@ -630,7 +630,9 @@ export class FileTreeStore {
     });
 
     if (this._vcsStatusesAreDifferent(rootKey, enrichedVcsStatuses)) {
-      this._updateConf(conf => { conf.vcsStatuses[rootKey] = enrichedVcsStatuses; });
+      this._updateConf(conf => {
+        conf.vcsStatuses = conf.vcsStatuses.set(rootKey, enrichedVcsStatuses);
+      });
     }
   }
 
@@ -638,7 +640,7 @@ export class FileTreeStore {
     rootKey: NuclideUri,
     newVcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
   ): boolean {
-    const currentStatuses = this._conf.vcsStatuses[rootKey];
+    const currentStatuses = this._conf.vcsStatuses.get(rootKey);
     if (currentStatuses == null || newVcsStatuses == null) {
       if (currentStatuses !== newVcsStatuses) {
         return true;

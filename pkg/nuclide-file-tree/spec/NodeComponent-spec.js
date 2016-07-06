@@ -35,7 +35,7 @@ function renderEntryComponentIntoDocument(
   };
 
   const nodeConf = {
-    vcsStatuses: {},
+    vcsStatuses: new Immutable.Map(),
     workingSet: new WorkingSet(),
     editedWorkingSet: new WorkingSet(),
     hideIgnoredNames: true,
