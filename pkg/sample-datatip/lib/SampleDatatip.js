@@ -11,7 +11,7 @@
 
 import type {Datatip} from '../../nuclide-datatip/lib/types';
 
-import wordAtPosition from '../../commons-atom/word-at-position';
+import {wordAtPosition} from '../../commons-atom/range';
 import {makeSampleDatatipComponent} from './SampleDatatipComponent';
 
 const WORD_REGEX = /\w+/gi;

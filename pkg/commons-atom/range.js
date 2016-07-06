@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-export default function wordAtPosition(
+export function wordAtPosition(
   editor: atom$TextEditor,
   position: atom$Point,
   wordRegex: ?RegExp,

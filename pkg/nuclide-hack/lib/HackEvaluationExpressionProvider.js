@@ -11,7 +11,7 @@
 
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/service';
 
-import wordAtPosition from '../../commons-atom/word-at-position';
+import {wordAtPosition} from '../../commons-atom/range';
 
 // A heuristic for named variables in Hack.
 // TODO: Replace RegExp with AST-based, more accurate approach.

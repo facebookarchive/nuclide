@@ -15,7 +15,7 @@ import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import {getConfig} from './config';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import invariant from 'assert';
-import wordAtPosition from '../../commons-atom/word-at-position';
+import {wordAtPosition} from '../../commons-atom/range';
 import passesGK from '../../commons-node/passesGK';
 
 const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;

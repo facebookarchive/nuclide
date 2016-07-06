@@ -12,7 +12,7 @@
 import type {TypeHint} from '../../nuclide-type-hint/lib/types';
 
 import invariant from 'assert';
-import wordAtPosition from '../../commons-atom/word-at-position';
+import {wordAtPosition} from '../../commons-atom/range';
 import featureConfig from '../../nuclide-feature-config';
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 import {Range} from 'atom';

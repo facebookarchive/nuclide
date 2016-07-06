@@ -16,7 +16,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {Point} from 'atom';
 
 import {getBuckProject} from '../../nuclide-buck-base';
-import wordAtPosition from '../../commons-atom/word-at-position';
+import {wordAtPosition} from '../../commons-atom/range';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import nuclideUri from '../../nuclide-remote-uri';
