@@ -36,10 +36,10 @@ export default class HyperclickForTextEditor {
   _lastSuggestionAtMouse: ?HyperclickSuggestion;
   _navigationMarkers: ?Array<atom$Marker>;
   _lastWordRange: ?atom$Range;
-  _onMouseMove: (event: MouseEvent) => void;
-  _onMouseDown: (event: MouseEvent) => void;
-  _onKeyDown: (event: SyntheticKeyboardEvent) => void;
-  _onKeyUp: (event: SyntheticKeyboardEvent) => void;
+  _onMouseMove: (event: Event) => void;
+  _onMouseDown: (event: Event) => void;
+  _onKeyDown: (event: Event) => void;
+  _onKeyUp: (event: Event) => void;
   _subscriptions: atom$CompositeDisposable;
   _isDestroyed: boolean;
   _isLoading: boolean;
@@ -92,7 +92,6 @@ export default class HyperclickForTextEditor {
       if (this._textEditorView.component == null) {
         return;
       }
-      // $FlowFixMe (most)
       getLinesDomNode().removeEventListener('mousedown', this._onMouseDown);
     };
     const addMouseDownListener = () => {
@@ -113,7 +112,8 @@ export default class HyperclickForTextEditor {
     }
   }
 
-  _onMouseMove(event: MouseEvent): void {
+  _onMouseMove(event: Event): void {
+    const mouseEvent: MouseEvent = (event: any);
     if (this._isLoading) {
       // Show the loading cursor.
       this._textEditorView.classList.add('hyperclick-loading');
@@ -123,8 +123,8 @@ export default class HyperclickForTextEditor {
     // pressing the key without moving the mouse again. We only save the
     // relevant properties to prevent retaining a reference to the event.
     this._lastMouseEvent = ({
-      clientX: event.clientX,
-      clientY: event.clientY,
+      clientX: mouseEvent.clientX,
+      clientY: mouseEvent.clientY,
     }: any);
 
 
@@ -143,7 +143,7 @@ export default class HyperclickForTextEditor {
     const {range} = getWordTextAndRange(this._textEditor, this._getMousePositionAsBufferPosition());
     this._lastWordRange = range;
 
-    if (this._isHyperclickEvent(event)) {
+    if (this._isHyperclickEvent(mouseEvent)) {
       // Clear the suggestion if the mouse moved out of the range.
       if (!this._isMouseAtLastSuggestion()) {
         this._clearSuggestion();
@@ -154,8 +154,9 @@ export default class HyperclickForTextEditor {
     }
   }
 
-  _onMouseDown(event: MouseEvent): void {
-    if (!this._isHyperclickEvent(event) || !this._isMouseAtLastSuggestion()) {
+  _onMouseDown(event: Event): void {
+    const mouseEvent: MouseEvent = (event: any);
+    if (!this._isHyperclickEvent(mouseEvent) || !this._isMouseAtLastSuggestion()) {
       return;
     }
 
@@ -168,15 +169,17 @@ export default class HyperclickForTextEditor {
     this._clearSuggestion();
   }
 
-  _onKeyDown(event: SyntheticKeyboardEvent): void {
+  _onKeyDown(event: Event): void {
+    const mouseEvent: MouseEvent = (event: any);
     // Show the suggestion at the last known mouse position.
-    if (this._isHyperclickEvent(event)) {
+    if (this._isHyperclickEvent(mouseEvent)) {
       this._setSuggestionForLastMouseEvent();
     }
   }
 
-  _onKeyUp(event: SyntheticKeyboardEvent): void {
-    if (!this._isHyperclickEvent(event)) {
+  _onKeyUp(event: Event): void {
+    const mouseEvent: MouseEvent = (event: any);
+    if (!this._isHyperclickEvent(mouseEvent)) {
       this._clearSuggestion();
     }
   }
@@ -341,11 +344,8 @@ export default class HyperclickForTextEditor {
   dispose() {
     this._isDestroyed = true;
     this._clearSuggestion();
-    // $FlowFixMe (most)
     this._textEditorView.removeEventListener('mousemove', this._onMouseMove);
-    // $FlowFixMe (most)
     this._textEditorView.removeEventListener('keydown', this._onKeyDown);
-    // $FlowFixMe (most)
     this._textEditorView.removeEventListener('keyup', this._onKeyUp);
     this._subscriptions.dispose();
   }
