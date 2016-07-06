@@ -58,7 +58,7 @@ export class TreeNodeComponent extends React.Component {
   }
 
   render(): React.Element<any> {
-    const rowClassNameObj: {[key: string]: boolean} = {
+    const rowClassNameObj: {[key: string]: ?boolean} = {
       // Support for selectors in the "file-icons" package.
       // @see {@link https://atom.io/packages/file-icons|file-icons}
       'entry file list-item': true,
