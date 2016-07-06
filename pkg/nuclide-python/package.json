@@ -31,6 +31,12 @@
         "default": "python",
         "description": "Absolute path to the python executable on your system."
       },
+      "pathToFlake8": {
+        "title": "Path to Flake8 Executable",
+        "type": "string",
+        "default": "flake8",
+        "description": "Absolute path to the flake8 linter executable on your system."
+      },
       "showGlobalVariables": {
         "title": "Show global variables",
         "type": "boolean",
@@ -50,6 +56,11 @@
     "nuclide-definition-provider": {
       "versions": {
         "0.0.0": "provideDefinitions"
+      }
+    },
+    "linter": {
+      "versions": {
+        "1.0.0": "provideLint"
       }
     },
     "nuclide-find-references.provider": {
