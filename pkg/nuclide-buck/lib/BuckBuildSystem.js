@@ -19,6 +19,7 @@ import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {CompositeDisposable} from 'atom';
 import {Dispatcher} from 'flux';
+import {quote} from 'shell-quote';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -178,9 +179,14 @@ export class BuckBuildSystem {
     }
 
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
+    const settings = store.getTaskSettings()[taskType] || {};
 
     const subcommand = taskType === 'run' || taskType === 'debug' ? 'install' : taskType;
-    this._logOutput(`Starting "buck ${subcommand} ${buildTarget}"`, 'log');
+    let argString = '';
+    if (settings.arguments != null && settings.arguments.length > 0) {
+      argString = ' ' + quote(settings.arguments);
+    }
+    this._logOutput(`Starting "buck ${subcommand} ${buildTarget}${argString}"`, 'log');
 
     const buckProject = createBuckProject(buckRoot);
     return Observable.fromPromise(buckProject.getHTTPServerPort())
@@ -201,7 +207,7 @@ export class BuckBuildSystem {
           buckProject,
           buildTarget,
           subcommand,
-          [],
+          settings.arguments || [],
           taskType === 'debug',
           httpPort < 0,
         );
