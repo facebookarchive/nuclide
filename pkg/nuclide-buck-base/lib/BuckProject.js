@@ -32,7 +32,6 @@ export type dontRunOptions = {
 export type doRunOptions = {
   run: true;
   debug: boolean;
-  appArgs: Array<string>;
 };
 
 export type BuckRunOptions = dontRunOptions | doRunOptions;
@@ -100,6 +99,7 @@ export type BaseBuckBuildOptions = {
   runOptions?: ?BuckRunOptions;
   // The service framework doesn't support imported types
   commandOptions?: Object /*AsyncExecuteOptions*/;
+  extraArguments?: Array<string>;
 };
 type FullBuckBuildOptions = {
   baseOptions: BaseBuckBuildOptions;
@@ -285,8 +285,6 @@ export class BuckProject {
    *   telling the launched application to stop at the loader breakpoint
    *   waiting for debugger to connect
    * @param simulator The UDID of the simulator to install the binary on.
-   * @param appArgs If 'run' is set to 'true', these are passed as the command line arguments to
-   *   the application being run.
    * @return Promise that resolves to a build report.
    */
   install(
@@ -342,8 +340,9 @@ export class BuckProject {
    */
   buildWithOutput(
     buildTargets: Array<string>,
+    extraArguments: Array<string>,
   ): Observable<ProcessMessage> {
-    return this._buildWithOutput(buildTargets, {});
+    return this._buildWithOutput(buildTargets, {extraArguments});
   }
 
   /**
@@ -359,8 +358,9 @@ export class BuckProject {
    */
   testWithOutput(
     buildTargets: Array<string>,
+    extraArguments: Array<string>,
   ): Observable<ProcessMessage> {
-    return this._buildWithOutput(buildTargets, {test: true});
+    return this._buildWithOutput(buildTargets, {test: true, extraArguments});
   }
 
   /**
@@ -376,10 +376,16 @@ export class BuckProject {
    */
   installWithOutput(
     buildTargets: Array<string>,
+    extraArguments: Array<string>,
     simulator: ?string,
     runOptions: ?BuckRunOptions,
   ): Observable<ProcessMessage> {
-    return this._buildWithOutput(buildTargets, {install: true, simulator, runOptions});
+    return this._buildWithOutput(buildTargets, {
+      install: true,
+      simulator,
+      runOptions,
+      extraArguments,
+    });
   }
 
   /**
@@ -417,6 +423,7 @@ export class BuckProject {
       install,
       simulator,
       test,
+      extraArguments,
     } = baseOptions;
     const runOptions = baseOptions.runOptions || {run: false};
 
@@ -438,11 +445,10 @@ export class BuckProject {
         if (runOptions.debug) {
           args.push('--wait-for-debugger');
         }
-        if (runOptions.appArgs) {
-          args.push('--');
-          args = args.concat(runOptions.appArgs);
-        }
       }
+    }
+    if (extraArguments != null) {
+      args = args.concat(extraArguments);
     }
     return args;
   }

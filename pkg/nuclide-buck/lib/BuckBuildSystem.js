@@ -201,6 +201,7 @@ export class BuckBuildSystem {
           buckProject,
           buildTarget,
           subcommand,
+          [],
           taskType === 'debug',
           httpPort < 0,
         );
@@ -267,6 +268,7 @@ export class BuckBuildSystem {
     buckProject: BuckProject,
     buildTarget: string,
     subcommand: BuckSubcommand,
+    args: Array<string>,
     debug: boolean,
     logOutput: boolean,
   ): Observable<BuckEvent> {
@@ -300,18 +302,20 @@ export class BuckBuildSystem {
       buckObservable = rnObservable.concat(
         buckProject.installWithOutput(
           [buildTarget],
+          args.concat(
+            isReactNativeServerMode ? ['--', '-executor-override', 'RCTWebSocketExecutor'] : [],
+          ),
           store.getSimulator(),
           {
             run: true,
             debug,
-            appArgs: isReactNativeServerMode ? ['-executor-override', 'RCTWebSocketExecutor'] : [],
           },
         ),
       );
     } else if (subcommand === 'build') {
-      buckObservable = buckProject.buildWithOutput([buildTarget]);
+      buckObservable = buckProject.buildWithOutput([buildTarget], args);
     } else if (subcommand === 'test') {
-      buckObservable = buckProject.testWithOutput([buildTarget]);
+      buckObservable = buckProject.testWithOutput([buildTarget], args);
     } else {
       throw Error(`Unknown subcommand: ${subcommand}`);
     }
