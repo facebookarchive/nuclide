@@ -49,6 +49,7 @@ export function parseMessages(raw: Observable<string>): Observable<Message> {
 
         if (!sawSourcesStart && !sawPreamble) {
           sawSourcesStart = line.match(SOURCE_LIST_START) != null;
+          return;
         }
 
         // Once we've seen the start of the source list, we need to accumulate a list until we see
