@@ -31,13 +31,25 @@ export type ExecutorPid = {
 
 export type ExecutorResponse = ExecutorResult | ExecutorError | ExecutorPid;
 
-// Requests coming from React Native
-
-export type RnRequest = {
+// Messages coming from React Native
+export type RnMessage = {
   id: number;
   method?: string;
   arguments?: Array<any>;
   url?: string;
   inject?: string;
   $close?: boolean;
+
+  // This shouldn't be present, but apparently can be in some situations?
+  replyID?: number;
+};
+
+// Messages from RN are basically forwarded directly to the executor, so the types are pretty much
+// identical.
+export type ExecutorRequest = {
+  id: number;
+  method?: string;
+  arguments?: Array<any>;
+  url?: string;
+  inject?: string;
 };

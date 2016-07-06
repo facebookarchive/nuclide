@@ -9,107 +9,146 @@
  * the root directory of this source tree.
  */
 
-import type {RnRequest} from './types';
+import type {ExecutorResponse, ExecutorResult, ExecutorRequest, RnMessage} from './types';
+import type {ConnectableObservable} from 'rxjs';
 
+import formatEnoentNotification from '../../../commons-atom/format-enoent-notification';
 import {DisposableSubscription} from '../../../commons-node/stream';
-import ChildManager from './ChildManager';
-import {CompositeDisposable, Disposable} from 'atom';
-import {EventEmitter} from 'events';
-import Rx from 'rxjs';
-import WS from 'ws';
+import {getLogger} from '../../../nuclide-logging';
+import {executeRequests} from './executeRequests';
+import {runApp} from './runApp';
+import invariant from 'assert';
+import {Observable, Subject, Subscription} from 'rxjs';
 
-const EXECUTOR_PORT = 8081;
-const WS_URL = `ws://localhost:${EXECUTOR_PORT}/debugger-proxy?role=debugger&name=Nuclide`;
-
+/**
+ * Debugging React Native involves running two processes in parallel: the React Native app, which
+ * runs in a simulator or device, and the executor, which executes JavaScript in a separate
+ * processes (and which is ultimately the process we debug). On the React Native App site,
+ * instructions are sent and results received via websocket. The executor, on the other hand,
+ * receives the instructions, executes them in a worker process, and emits the results. The whole
+ * thing, then, is one big loop.
+ *
+ * In our code, this is  modeled as streams of messages, with two transformations: one for the the
+ * React Native app and one for the executor. The input of each is the output of the other.
+ *
+ *                               rnMessages -> executorRequests
+ *
+ *                         +-----------------------------------------+
+ *                         |                                         |
+ *                         |                                         v
+ *                +--------+----------+                     +--------+----------+
+ *                |                   |                     |                   |
+ *                |                   |                     |                   |
+ *                | React Native App  |                     |     Executor      |
+ *                |                   |                     |                   |
+ *                |     (runApp)      |                     | (executeRequests) |
+ *                |                   |                     |                   |
+ *                |                   |                     |                   |
+ *                +--------+----------+                     +----------+--------+
+ *                         ^                                           |
+ *                         |                                           |
+ *                         +-------------------------------------------+
+ *
+ *                             executorResults <- executorResponses
+ *
+ */
 export class DebuggerProxyClient {
-
-  _children: Set<any>;
-  _shouldConnect: boolean;
-  _emitter: EventEmitter;
-  _wsDisposable: ?IDisposable;
+  _executorResponses: ConnectableObservable<ExecutorResponse>;
+  _rnMessages: ConnectableObservable<RnMessage>;
+  _pids: Observable<number>;
+  _subscription: ?Subscription;
 
   constructor() {
-    this._children = new Set();
-    this._shouldConnect = false;
-    this._emitter = new EventEmitter();
+    const executorResults: Subject<ExecutorResult> = new Subject();
+
+    this._rnMessages = runApp(executorResults)
+      .catch(err => {
+        atom.notifications.addError('There was an unexpected error with the React Native app', {
+          stack: err.stack,
+        });
+        return Observable.empty();
+      })
+      .finally(() => { this.disconnect(); })
+      .publish();
+
+    // Messages with `$close` are special instructions and messages with `replyID` are cross-talk
+    // from another executor (probably Chrome), so filter both out. Otherwise, the messages from RN
+    // are forwarded as-is to the executor.
+    const executorRequests = (
+      (this._rnMessages.filter(message => message.$close == null && message.replyID == null): any):
+      Observable<ExecutorRequest>
+    );
+
+    this._executorResponses = executeRequests(executorRequests)
+      .catch(err => {
+        if (err.code === 'ENOENT') {
+          const {message, meta} = formatEnoentNotification({
+            feature: 'React Native debugging',
+            toolName: 'node',
+            pathSetting: 'nuclide-react-native.pathToNode',
+          });
+          atom.notifications.addError(message, meta);
+          return Observable.empty();
+        }
+        getLogger().error(err);
+        return Observable.empty();
+      })
+      .finally(() => { this.disconnect(); })
+      .publish();
+
+    this._pids = this._executorResponses
+      .filter(response => response.kind === 'pid')
+      .map(response => (invariant(response.kind === 'pid'), response.pid));
+
+    // Send the executor results to the RN app. (Close the loop.)
+    (
+      (this._executorResponses.filter(response => response.kind === 'result'): any):
+      Observable<ExecutorResult>
+    )
+      .subscribe(executorResults);
+
+    // Disconnect when the RN app tells us to (via a specially-formatted message).
+    this._rnMessages
+      .filter(message => Boolean(message.$close))
+      .subscribe(() => { this.disconnect(); });
+
+    // Log executor errors.
+    this._executorResponses
+      .filter(response => response.kind === 'error')
+      .map(response => (invariant(response.kind === 'error'), response.message))
+      .subscribe(getLogger().error);
   }
 
   connect(): void {
-    if (this._shouldConnect) {
+    if (this._subscription != null) {
+      // We're already connecting.
       return;
     }
-    this._shouldConnect = true;
-    this._tryToConnect();
+
+    const sub = new Subscription();
+
+    sub.add(this._rnMessages.connect());
+
+    sub.add(this._executorResponses.connect());
+
+    // Null our subscription reference when the observable completes/errors. We'll use this to know
+    // if it's running.
+    sub.add(() => { this._subscription = null; });
+
+    this._subscription = sub;
   }
 
   disconnect(): void {
-    this._shouldConnect = false;
-    this._killConnection();
+    if (this._subscription == null) { return; }
+    this._subscription.unsubscribe();
   }
 
-  onDidEvalApplicationScript(callback: (pid: number) => void | Promise<void>): IDisposable {
-    this._emitter.on('eval_application_script', callback);
-    return new Disposable(() => {
-      this._emitter.removeListener('eval_application_script', callback);
-    });
-  }
-
-  _tryToConnect(): void {
-    this._killConnection();
-
-    if (!this._shouldConnect) {
-      return;
-    }
-
-    const ws = new WS(WS_URL);
-    const onReply = (replyID, result) => { ws.send(JSON.stringify({replyID, result})); };
-
-    // TODO(matthewwithanm): Don't share an emitter; add API for subscribing to what we want to
-    //   ChildManager.
-    const childManager = new ChildManager(onReply, this._emitter);
-    this._children.add(childManager);
-
-    const rnMessages = (
-      Rx.Observable.fromEvent(ws, 'message').map(JSON.parse): Rx.Observable<RnRequest>
-    );
-
-    this._wsDisposable = new CompositeDisposable(
-      new Disposable(() => {
-        childManager.killChild();
-        this._children.delete(childManager);
-      }),
-      new DisposableSubscription(
-        rnMessages.subscribe(message => {
-          if (message.$close) {
-            this.disconnect();
-            return;
-          }
-          childManager.handleMessage(message);
-        })
-      ),
-      // TODO: Add timeout
-      // If we can't connect, or get disconnected, keep trying to connect.
-      new DisposableSubscription(
-        Rx.Observable.merge(
-          Rx.Observable.fromEvent(ws, 'error').filter(err => err.code === 'ECONNREFUSED'),
-          Rx.Observable.fromEvent(ws, 'close'),
-        )
-          .subscribe(() => {
-            this._killConnection();
-
-            // Keep attempting to connect.
-            setTimeout(this._tryToConnect.bind(this), 500);
-          })
-      ),
-      new Disposable(() => { ws.close(); }),
+  /**
+   * An API for subscribing to the next worker process pid.
+   */
+  onDidEvalApplicationScript(callback: (pid: number) => mixed): IDisposable {
+    return new DisposableSubscription(
+      this._pids.subscribe(callback)
     );
   }
-
-  _killConnection(): void {
-    if (this._wsDisposable) {
-      this._wsDisposable.dispose();
-      this._wsDisposable = null;
-    }
-  }
-
 }
