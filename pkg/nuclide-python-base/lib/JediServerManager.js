@@ -88,7 +88,9 @@ export default class JediServerManager {
       return;
     }
     const service = await server.getService();
-    await service.add_paths([topLevelModulePath]);
+    // Add the parent dir of the top level module path, i.e. the closest
+    // directory that does NOT contain __init__.py.
+    await service.add_paths([nuclideUri.dirname(topLevelModulePath)]);
   }
 
   reset(src: string): void {

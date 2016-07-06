@@ -301,7 +301,7 @@ describe('PythonService', () => {
         while (response == null || response.length === 0) {
           // line 7: from potato import h
           // eslint-disable-next-line babel/no-await-in-loop
-          response = await getCompletions(projectFile, src, 6, 20);
+          response = await getCompletions(projectFile, src, 6, 28);
         }
 
         invariant(response);
