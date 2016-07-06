@@ -1,11 +1,8 @@
-// flow-typed signature: 64bf47cd0ce3dc174bb7368c3ac9b071
-// flow-typed version: f4c8529b8e/classnames_v2.x.x/flow_>=v0.23.x
+// flow-typed signature: 62bc5615b7c27f8f00718fec93336e7f
+// flow-typed version: ef0148e929/classnames_v2.x.x/flow_>=v0.28.x
 
 type $npm$classnames$Classes =
   string |
-  // We need both of these because if we just have the latter it won't accept objects typed
-  // explicitly as the former, due to mutation concerns.
-  {[className: string]: boolean } |
   {[className: string]: ?boolean } |
   Array<string> |
   void |

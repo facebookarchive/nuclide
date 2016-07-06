@@ -1,5 +1,5 @@
-// flow-typed signature: 0cbf6b1b6fbc1b025b58ec06d5f2bb3f
-// flow-typed version: b60fdb4c58/rxjs_v5.0.x/flow_>=v0.25.0
+// flow-typed signature: 4394a8b620387a7f57a12f848912bbcf
+// flow-typed version: cb94778ce4/rxjs_v5.0.x/flow_>=v0.25.0
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
@@ -26,7 +26,14 @@ type TeardownLogic = rx$ISubscription | () => void;
 declare module 'rxjs' {
   declare class Observable<+T> {
     // This is actually variadic, but we only support one or two other observables.
-    static combineLatest<T, U>(t: Observable<T>, u: Observable<U>): Observable<[T, U]>;
+    static combineLatest<T, U>(
+      t: Observable<T>,
+      u: Observable<U>,
+     // Prevents Flow from picking this case when it should pick the next one.
+     // Necessary with v0.28.0, but maybe not later versions. This can be
+     // removed if the tests pass without it.
+      _: void,
+    ): Observable<[T, U]>;
     static combineLatest<T, U, V>(
       t: Observable<T>,
       u: Observable<U>,
@@ -36,6 +43,7 @@ declare module 'rxjs' {
       t: Observable<T>,
       u: Observable<U>,
       v: Observable<V>,
+      _: void,
     ): Observable<[T, U, V]>;
     static combineLatest<T, U, V, W>(
       t: Observable<T>,
