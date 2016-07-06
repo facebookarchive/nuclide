@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.150.0
+
+* Hotfix a file-tree de-serialization bug resulting in an empty file-tree despite having a project mounted.
+
 ## v0.149.0
 
 ### General
