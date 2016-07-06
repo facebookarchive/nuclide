@@ -153,7 +153,12 @@
         'captures':
           '0':
             'name': 'punctuation.definition.comment.php'
-        'comment': 'This now only highlights a docblock if the first line contains only /**\n\t\t\t\t\t\t\t\t- this is to stop highlighting everything as invalid when people do comment banners with /******** ...\n\t\t\t\t\t\t\t\t- Now matches /**#@+ too - used for docblock templates: http://manual.phpdoc.org/HTMLframesConverter/default/phpDocumentor/tutorial_phpDocumentor.howto.pkg.html#basics.docblocktemplate'
+        'comment': '''
+          This now only highlights a docblock if the first line contains only /**
+          - this is to stop highlighting everything as invalid when people do comment banners with /******** ...
+          - Now matches /**#@+ too - used for docblock templates:
+            http://manual.phpdoc.org/HTMLframesConverter/default/phpDocumentor/tutorial_phpDocumentor.howto.pkg.html#basics.docblocktemplate
+          '''
         'end': '\\*/'
         'name': 'comment.block.documentation.phpdoc.php'
         'patterns': [
@@ -208,7 +213,16 @@
   'constants':
     'patterns': [
       {
-        'begin': '(?xi)(?=\n\t\t\t            (\n\t\t\t                (\\\\[a-z_][a-z_0-9]*\\\\[a-z_][a-z_0-9\\\\]*)|\n\t\t\t                ([a-z_][a-z_0-9]*\\\\[a-z_][a-z_0-9\\\\]*)\n\t\t\t            )\n\t\t\t            [^a-z_0-9\\\\])'
+        'begin': '''(?xi)
+          (?=
+            (
+              (\\\\[a-z_][a-z_0-9]*\\\\[a-z_][a-z_0-9\\\\]*)
+              |
+              ([a-z_][a-z_0-9]*\\\\[a-z_][a-z_0-9\\\\]*)
+            )
+            [^a-z_0-9\\\\]
+          )
+          '''
         'end': '(?i)([a-z_][a-z_0-9]*)?(?=[^a-z0-9_\\\\])'
         'endCaptures':
           '1':
@@ -256,7 +270,11 @@
             'name': 'support.constant.parser-token.php'
           }
           {
-            'comment': 'In PHP, any identifier which is not a variable is taken to be a constant.\n        \t\t\t\tHowever, if there is no constant defined with the given name then a notice\n        \t\t\t\tis generated and the constant is assumed to have the value of its name.'
+            'comment': '''
+              In PHP, any identifier which is not a variable is taken to be a constant.
+              However, if there is no constant defined with the given name then a notice
+              is generated and the constant is assumed to have the value of its name.
+              '''
             'match': '[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*'
             'name': 'constant.other.php'
           }
@@ -287,7 +305,13 @@
         'include': '#comments'
       }
       {
-        'begin': '(?x)\n\t\t\t\t\t\t\t\\s*(array) # Typehint\n\t\t\t\t\t\t\t\\s*(&)? \t\t\t\t\t# Reference\n\t\t\t\t\t\t\t\\s*((\\$+)[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*) # The variable name\n\t\t\t\t\t\t\t\\s*(=)\t# A default value\n\t\t\t\t\t\t\t\\s*(array)\\s*(\\()\n\t\t\t\t\t\t\t'
+        'begin': '''(?x)
+          \\s*(array)   # Typehint
+          \\s*(&)?      # Reference
+          \\s*((\\$+)[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*)  # The variable name
+          \\s*(=)       # A default value
+          \\s*(array)\\s*(\\()
+        '''
         'beginCaptures':
           '1':
             'name': 'storage.type.php'
@@ -322,7 +346,13 @@
         ]
       }
       {
-        'begin': '(?x)\n\t\t\t\t\t\t\t\\s*(array) # Typehint\n\t\t\t\t\t\t\t\\s*(&)? \t\t\t\t\t# Reference\n\t\t\t\t\t\t\t\\s*((\\$+)[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*) # The variable name\n\t\t\t\t\t\t\t\\s*(=)\t# A default value\n\t\t\t\t\t\t\t\\s*()\\s*(\\\[)\n\t\t\t\t\t\t\t'
+        'begin': '''(?x)
+          \\s*(array)   # Typehint
+          \\s*(&)?      # Reference
+          \\s*((\\$+)[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*)  # The variable name
+          \\s*(=)       # A default value
+          \\s*()\\s*(\\\[)
+          '''
         'beginCaptures':
           '1':
             'name': 'storage.type.php'
@@ -372,7 +402,15 @@
             'name': 'constant.language.php'
           '7':
             'name': 'invalid.illegal.non-null-typehinted.php'
-        'match': '(?xi)\n\t\t\t\t\t\t\t\\s*(array) # Typehint\n\t\t\t\t\t\t\t\\s*(&)? \t\t\t\t\t# Reference\n\t\t\t\t\t\t\t\\s*((\\$+)[a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*) # The variable name\n\t\t\t\t\t\t\t(?:\n\t\t\t\t\t\t\t\t\\s*(?:(=)\\s*(?:(null)|((?:\\S*?\\(\\))|(?:\\S*?))))\t# A default value\n\t\t\t\t\t\t\t)?\n\t\t\t\t\t\t\t\\s*(?=,|\\)|/[/*]|\\#|$) # A closing parentheses (end of argument list) or a comma or a comment\n\t\t\t\t\t\t\t'
+        'match': '''(?xi)
+          \\s*(array)   # Typehint
+          \\s*(&)?      # Reference
+          \\s*((\\$+)[a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*)  # The variable name
+          (?:           # A default value
+            \\s*(?:(=)\\s*(?:(null)|((?:\\S*?\\(\\))|(?:\\S*?))))
+          )?
+          \\s*(?=,|\\)|/[/*]|\\#|$) # A closing parentheses (end of argument list) or a comma or a comment
+          '''
         'name': 'meta.function.argument.array.php'
       }
       {
@@ -399,7 +437,15 @@
                 'name': 'constant.language.php'
               '7':
                 'name': 'invalid.illegal.non-null-typehinted.php'
-            'match': '(?xi)\n        \t\t\t\t\t\t\t\\s*([a-z_][a-z_0-9]*)? # Typehinted class name\n        \t\t\t\t\t\t\t\\s*(&)? \t\t\t\t\t# Reference\n        \t\t\t\t\t\t\t\\s*((\\$+)[a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*) # The variable name\n        \t\t\t\t\t\t\t(?:\n        \t\t\t\t\t\t\t\t\\s*(?:(=)\\s*(?:(null)|((?:\\S*?\\(\\))|(?:\\S*?))))\t# A default value\n        \t\t\t\t\t\t\t)?\n        \t\t\t\t\t\t\t\\s*(?=,|\\)|/[/*]|\\#|$) # A closing parentheses (end of argument list) or a comma\n\t\t\t\t\t        '
+            'match': '''(?xi)
+              \\s*([a-z_][a-z_0-9]*)?   # Typehinted class name
+              \\s*(&)?                  # Reference
+              \\s*((\\$+)[a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*)  # The variable name
+              (?:
+                \\s*(?:(=)\\s*(?:(null)|((?:\\S*?\\(\\))|(?:\\S*?))))     # A default value
+              )?
+              \\s*(?=,|\\)|/[/*]|\\#|$) # A closing parentheses (end of argument list) or a comma
+              '''
           }
         ]
       }
@@ -653,7 +699,12 @@
           }
           {
             'begin': '(?i)\\s*(?=[a-z_0-9\\\\])'
-            'end': '(?xi)(?:\n    \t\t\t                (?:\\s*(as)\\b\\s*([a-z_0-9]*)\\s*(?=,|;|$))\n    \t\t\t                |(?=,|;|$)\n    \t\t\t            )'
+            'end': '''(?xi)
+              (?:
+                (?:\\s*(as)\\b\\s*([a-z_0-9]*)\\s*(?=,|;|$))|
+                (?=,|;|$)
+              )
+              '''
             'endCaptures':
               '1':
                 'name': 'keyword.other.use-as.php'
@@ -868,7 +919,17 @@
         ]
       }
       {
-        'begin': '(?x)\\s*\n\t\t\t\t\t    ((?:(?:final|abstract|public|private|protected|static)\\s+)*)\n\t\t\t\t        (function)\n\t\t\t\t        (?:\\s+|(\\s*&\\s*))\n\t\t\t\t        (?:\n\t\t\t\t            (__(?:call|construct|destruct|get|set|isset|unset|tostring|clone|set_state|sleep|wakeup|autoload|invoke|callStatic))\n\t\t\t\t            |([a-zA-Z0-9_]+)\n\t\t\t\t        )\n\t\t\t\t        \\s*\n\t\t\t\t        (?=\\()'
+        'begin': '''(?x)
+          \\s*((?:(?:final|abstract|public|private|protected|static)\\s+)*)
+          (function)
+          (?:\\s+|(\\s*&\\s*))
+          (?:
+            (__(?:call|construct|destruct|get|set|isset|unset|tostring|clone|set_state|sleep|wakeup|autoload|invoke|callStatic))
+            |
+            ([a-zA-Z0-9_]+)
+          )
+          \\s*(?=\\()
+          '''
         'beginCaptures':
           '1':
             'patterns': [
@@ -919,8 +980,29 @@
         'include': '#invoke-call'
       }
       {
-        'begin': '(?xi)\\s*(?=\n\t\t\t\t        [a-z_0-9$\\\\]+(::)\n                        (?:\n        \t\t\t\t    ([a-z_][a-z_0-9]*)\\s*\\(\n        \t\t\t\t    |\n        \t\t\t\t    ((\\$+)[a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*)\n        \t\t\t\t    |\n        \t\t\t\t    ([a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*)\n        \t\t\t\t)?\n\t\t\t\t    )'
-        'end': '(?x)(::)\n                        (?:\n        \t\t\t\t    ([A-Za-z_][A-Za-z_0-9]*)\\s*\\(\n        \t\t\t\t    |\n        \t\t\t\t    ((\\$+)[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*)\n        \t\t\t\t    |\n        \t\t\t\t    ([a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*)\n        \t\t\t\t)?'
+        'begin': '''(?xi)
+          \\s*
+            (?=
+              [a-z_0-9$\\\\]+(::)
+              (?:
+                ([a-z_][a-z_0-9]*)\\s*\\(
+                |
+                ((\\$+)[a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*)
+                |
+                ([a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*)
+              )?
+            )
+          '''
+        'end': '''(?x)
+            (::)
+            (?:
+              ([A-Za-z_][A-Za-z_0-9]*)\\s*\\(
+              |
+              ((\\$+)[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*)
+              |
+              ([a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*)
+            )?
+          '''
         'endCaptures':
           '1':
             'name': 'keyword.operator.class.php'
@@ -1174,7 +1256,14 @@
             'name': 'variable.other.property.php'
           '4':
             'name': 'punctuation.definition.variable.php'
-        'match': '(?x)(->)\n            \t\t\t\t(?:\n            \t\t\t\t    ([A-Za-z_][A-Za-z_0-9]*)\\s*\\(\n            \t\t\t\t    |\n            \t\t\t\t    ((\\$+)?[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*)\n            \t\t\t\t)?'
+        'match': '''(?x)
+          (->)
+            (?:
+              ([A-Za-z_][A-Za-z_0-9]*)\\s*\\(
+              |
+              ((\\$+)?[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*)
+            )?
+          '''
       }
     ]
   'parameter-default-types':
@@ -1225,7 +1314,13 @@
         'include': '#instantiation'
       }
       {
-        'begin': '(?xi)\\s*(?=\n\t\t\t\t        [a-z_0-9\\\\]+(::)\n    \t\t\t\t    ([a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*)?\n\t\t\t\t    )'
+        'begin': '''(?xi)
+          \\s*
+          (?=
+            [a-z_0-9\\\\]+(::)
+            ([a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*)?
+          )
+          '''
         'end': '(?i)(::)([a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*)?'
         'endCaptures':
           '1':
@@ -1280,7 +1375,9 @@
       }
     ]
   'regex-double-quoted':
-    'begin': '(?x)"/ (?= (\\\\.|[^"/])++/[imsxeADSUXu]*" )'
+    'begin': '''(?x)
+      "/ (?=(\\\\.|[^"/])++/[imsxeADSUXu]*")
+      '''
     'beginCaptures':
       '0':
         'name': 'punctuation.definition.string.begin.php'
@@ -1326,7 +1423,9 @@
       }
     ]
   'regex-single-quoted':
-    'begin': '(?x)\'/ (?= (\\\\.|[^\'/])++/[imsxeADSUXu]*\' )'
+    'begin': '''(?x)
+      '/ (?=(\\\\.|[^\'/])++/[imsxeADSUXu]*\')
+      '''
     'beginCaptures':
       '0':
         'name': 'punctuation.definition.string.begin.php'
@@ -1399,12 +1498,18 @@
         'name': 'constant.character.escape.php'
       }
       {
-        'comment': 'Unclosed strings must be captured to avoid them eating the remainder of the PHP script\n\t\t\t\t\tSample case: $sql = "SELECT * FROM bar WHERE foo = \'" . $variable . "\'"'
+        'comment': '''
+          Unclosed strings must be captured to avoid them eating the remainder of the PHP script
+          Sample case: $sql = "SELECT * FROM bar WHERE foo = \'" . $variable . "\'"
+          '''
         'match': '\'(?=((\\\\\')|[^\'"])*("|$))'
         'name': 'string.quoted.single.unclosed.sql'
       }
       {
-        'comment': 'Unclosed strings must be captured to avoid them eating the remainder of the PHP script\n\t\t\t\t\tSample case: $sql = "SELECT * FROM bar WHERE foo = \'" . $variable . "\'"'
+        'comment': '''
+          Unclosed strings must be captured to avoid them eating the remainder of the PHP script
+          Sample case: $sql = "SELECT * FROM bar WHERE foo = \'" . $variable . "\'"
+          '''
         'match': '`(?=((\\\\`)|[^`"])*("|$))'
         'name': 'string.quoted.other.backtick.unclosed.sql'
       }
@@ -1460,12 +1565,18 @@
         'name': 'constant.character.escape.php'
       }
       {
-        'comment': 'Unclosed strings must be captured to avoid them eating the remainder of the PHP script\n\t\t\t\t\tSample case: $sql = "SELECT * FROM bar WHERE foo = \'" . $variable . "\'"'
+        'comment': '''
+          Unclosed strings must be captured to avoid them eating the remainder of the PHP script
+          Sample case: $sql = "SELECT * FROM bar WHERE foo = \'" . $variable . "\'"
+          '''
         'match': '`(?=((\\\\`)|[^`\'])*(\'|$))'
         'name': 'string.quoted.other.backtick.unclosed.sql'
       }
       {
-        'comment': 'Unclosed strings must be captured to avoid them eating the remainder of the PHP script\n\t\t\t\t\tSample case: $sql = "SELECT * FROM bar WHERE foo = \'" . $variable . "\'"'
+        'comment': '''
+          Unclosed strings must be captured to avoid them eating the remainder of the PHP script
+          Sample case: $sql = "SELECT * FROM bar WHERE foo = \'" . $variable . "\'"
+          '''
         'match': '"(?=((\\\\")|[^"\'])*(\'|$))'
         'name': 'string.quoted.double.unclosed.sql'
       }
@@ -1973,7 +2084,12 @@
         'captures':
           '1':
             'name': 'punctuation.definition.variable.php'
-        'match': '(?x)\n        \t\t\t            (\\$+)[a-zA-Z_\\x{7f}-\\x{ff}]\n        \t\t\t            [a-zA-Z0-9_\\x{7f}-\\x{ff}]*?\\b'
+        'match': '''(?x)
+          (\\$+)
+          [a-zA-Z_\\x{7f}-\\x{ff}]
+          [a-zA-Z0-9_\\x{7f}-\\x{ff}]*?
+          \\b
+          '''
         'name': 'variable.other.php'
       }
     ]
@@ -2020,7 +2136,16 @@
           '11':
             'name': 'punctuation.section.array.end.php'
         'comment': 'Simple syntax: $foo, $foo[0], $foo[$bar], $foo->bar'
-        'match': '(?x)\n\t\t\t\t\t\t((\\$)(?<name>[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*))\n\t\t\t\t\t\t(?:\n\t\t\t\t\t\t\t(->)(\\g<name>)\n\t\t\t\t\t\t\t|\n\t\t\t\t\t\t\t(\\[)\n\t\t\t\t\t\t\t\t(?:(\\d+)|((\\$)\\g<name>)|(\\w+))\n\t\t\t\t\t\t\t(\\])\n\t\t\t\t\t\t)?\n\t\t\t\t\t\t'
+        'match': '''(?x)
+          ((\\$)(?<name>[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*))
+          (?:
+            (->)(\\g<name>)
+            |
+            (\\[)
+              (?:(\\d+)|((\\$)\\g<name>)|(\\w+))
+            (\\])
+          )?
+          '''
       }
       {
         'captures':
@@ -2031,7 +2156,9 @@
           '4':
             'name': 'punctuation.definition.variable.php'
         'comment': 'Simple syntax with braces: "foo${bar}baz"'
-        'match': '(?x)\n\t\t\t\t\t\t((\\$\\{)(?<name>[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*)(\\}))\n\t\t\t\t\t\t'
+        'match': '''(?x)
+          ((\\$\\{)(?<name>[a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*)(\\}))
+          '''
       }
     ]
   'variables':
