@@ -21,6 +21,7 @@ import {QueuedTransport} from './QueuedTransport';
 import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 import invariant from 'assert';
 import {attachEvent} from '../../commons-node/event';
+import {maybeToString} from '../../commons-node/string';
 
 const logger = require('../../nuclide-logging').getLogger();
 
@@ -82,7 +83,8 @@ export class NuclideSocket {
     });
 
     const {protocol, host} = url.parse(serverUri);
-    this._websocketUri = `ws${protocol === 'https:' ? 's' : ''}://${host}`;
+    // TODO verify that `host` is non-null rather than using maybeToString
+    this._websocketUri = `ws${protocol === 'https:' ? 's' : ''}://${maybeToString(host)}`;
 
     this._heartbeat = new XhrConnectionHeartbeat(serverUri, options);
     this._heartbeat.onConnectionRestored(() => {

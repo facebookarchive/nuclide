@@ -11,6 +11,7 @@
 
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
+import {maybeToString} from '../../commons-node/string';
 
 type DefaultProps = {
   className: string;
@@ -71,7 +72,7 @@ export class Dropdown extends React.Component {
     );
     const selectClassName = classnames('nuclide-dropdown', {
       'btn': !this.props.isFlat,
-      [`btn-${this.props.size}`]: !this.props.isFlat && this.props.size != null,
+      [`btn-${maybeToString(this.props.size)}`]: !this.props.isFlat && this.props.size != null,
       'nuclide-dropdown-flat': this.props.isFlat,
     });
 

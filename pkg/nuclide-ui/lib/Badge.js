@@ -14,6 +14,8 @@ import type {Octicon} from './Octicons';
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
+import {maybeToString} from '../../commons-node/string';
+
 type BadgeSize = 'medium' | 'small' | 'large';
 type BadgeColor = 'info' | 'success' | 'warning' | 'error';
 
@@ -69,7 +71,7 @@ export const Badge = (props: Props) => {
     {
       [sizeClassName]: size != null,
       [colorClassName]: color != null,
-      [`icon icon-${icon}`]: icon != null,
+      [`icon icon-${maybeToString(icon)}`]: icon != null,
     },
   );
   return (

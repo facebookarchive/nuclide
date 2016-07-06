@@ -13,6 +13,7 @@ import type {Octicon} from './Octicons';
 
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
+import {maybeToString} from '../../commons-node/string';
 
 export type ButtonType = 'PRIMARY' | 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
 export type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
@@ -81,7 +82,7 @@ export const Button = (props: Props) => {
     className,
     'btn',
     {
-      [`icon icon-${icon}`]: icon != null,
+      [`icon icon-${maybeToString(icon)}`]: icon != null,
       [sizeClassname]: size != null,
       selected,
       [buttonTypeClassname]: buttonType != null,
