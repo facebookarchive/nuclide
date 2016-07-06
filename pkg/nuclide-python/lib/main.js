@@ -15,6 +15,8 @@ import type {FindReferencesProvider} from '../../nuclide-find-references';
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type {LinterProvider} from '../../nuclide-diagnostics-base';
 
+import invariant from 'assert';
+import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import {GRAMMAR_SET} from './constants';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
@@ -23,7 +25,10 @@ import ReferenceHelpers from './ReferenceHelpers';
 import CodeFormatHelpers from './CodeFormatHelpers';
 import LintHelpers from './LintHelpers';
 
+let busySignalProvider: ?DedupedBusySignalProviderBase = null;
+
 export function activate() {
+  busySignalProvider = new DedupedBusySignalProviderBase();
 }
 
 export function createAutocompleteProvider(): atom$AutocompleteProvider {
@@ -92,9 +97,18 @@ export function provideLint(): LinterProvider {
     lintOnFly: false,
     name: 'nuclide-python',
     lint(editor) {
-      return LintHelpers.lint(editor);
+      invariant(busySignalProvider);
+      return busySignalProvider.reportBusy(
+        `Python: Waiting for flake8 lint results for \`${editor.getTitle()}\``,
+        () => LintHelpers.lint(editor),
+      );
     },
   };
+}
+
+export function provideBusySignal(): DedupedBusySignalProviderBase {
+  invariant(busySignalProvider);
+  return busySignalProvider;
 }
 
 export function deactivate() {
