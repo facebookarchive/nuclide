@@ -75,12 +75,19 @@ export class WorkingSet {
     }
 
     try {
-      const tokens = nuclideUri.split(uri);
-      return this._containsPathFor(tokens, /* mustHaveLeaf */ true);
+      return this.containsFileBySplitPath(nuclideUri.split(uri));
     } catch (e) {
       logger.error(e);
       return true;
     }
+  }
+
+  containsFileBySplitPath(tokens: Array<string>) : boolean {
+    if (this.isEmpty()) {
+      return true;
+    }
+
+    return this._containsPathFor(tokens, /* mustHaveLeaf */ true);
   }
 
   containsDir(uri: NuclideUri): boolean {
@@ -89,12 +96,19 @@ export class WorkingSet {
     }
 
     try {
-      const tokens = nuclideUri.split(uri);
-      return this._containsPathFor(tokens, /* mustHaveLeaf */ false);
+      return this.containsDirBySplitPath(nuclideUri.split(uri));
     } catch (e) {
       logger.error(e);
       return true;
     }
+  }
+
+  containsDirBySplitPath(tokens: Array<string>): boolean {
+    if (this.isEmpty()) {
+      return true;
+    }
+
+    return this._containsPathFor(tokens, /* mustHaveLeaf */ false);
   }
 
   isEmpty(): boolean {

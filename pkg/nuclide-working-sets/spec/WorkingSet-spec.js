@@ -149,4 +149,32 @@ describe('WorkingSet', () => {
     expect(processedUris.length).toBe(1);
     expect(processedUris[0]).toBe('/aaa/bbb/ccc/ddd.txt');
   });
+
+  it('tests by split path properly', () => {
+    const mix = new WorkingSet([
+      '/aaa/bbb',
+      'nuclide://some.host/ccc/ddd',
+    ]);
+    expect(mix.containsFileBySplitPath(['/'])).toBe(false);
+    expect(mix.containsFileBySplitPath(['/', 'aaa'])).toBe(false);
+    expect(mix.containsFileBySplitPath(['/', 'aaa', 'bbb'])).toBe(true);
+    expect(mix.containsFileBySplitPath(['/', 'aaa', 'bbb', 'ccc'])).toBe(true);
+
+    expect(mix.containsFileBySplitPath(['nuclide://some.host/'])).toBe(false);
+    expect(mix.containsFileBySplitPath(['nuclide://some.host/', 'ccc'])).toBe(false);
+    expect(mix.containsFileBySplitPath(['nuclide://some.host/', 'ccc', 'ddd'])).toBe(true);
+    expect(mix.containsFileBySplitPath(['nuclide://some.host/', 'ccc', 'ddd', 'eee'])).toBe(true);
+
+    expect(mix.containsDirBySplitPath(['/'])).toBe(true);
+    expect(mix.containsDirBySplitPath(['/', 'aaa'])).toBe(true);
+    expect(mix.containsDirBySplitPath(['/', 'zzz'])).toBe(false);
+    expect(mix.containsDirBySplitPath(['/', 'aaa', 'bbb'])).toBe(true);
+    expect(mix.containsDirBySplitPath(['/', 'aaa', 'bbb', 'ccc'])).toBe(true);
+
+    expect(mix.containsDirBySplitPath(['nuclide://some.host/'])).toBe(true);
+    expect(mix.containsDirBySplitPath(['nuclide://some.host/', 'ccc'])).toBe(true);
+    expect(mix.containsDirBySplitPath(['nuclide://some.host/', 'zzz'])).toBe(false);
+    expect(mix.containsDirBySplitPath(['nuclide://some.host/', 'ccc', 'ddd'])).toBe(true);
+    expect(mix.containsDirBySplitPath(['nuclide://some.host/', 'ccc', 'ddd', 'eee'])).toBe(true);
+  });
 });
