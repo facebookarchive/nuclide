@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Message} from './types';
+import type {Message, OutputProviderStatus} from './types';
 import type {ConnectableObservable} from 'rxjs';
 
 import {DisposableSubscription} from '../../commons-node/stream';
@@ -38,7 +38,7 @@ export class LogTailer {
   _eventNames: TrackingEventNames;
   _subscription: ?rx$ISubscription;
   _messages: ConnectableObservable<Message>;
-  _running: BehaviorSubject<boolean>;
+  _statuses: BehaviorSubject<OutputProviderStatus>;
 
   constructor(options: Options) {
     this._name = options.name;
@@ -70,7 +70,7 @@ export class LogTailer {
       })
       .share()
       .publish();
-    this._running = new BehaviorSubject(false);
+    this._statuses = new BehaviorSubject('stopped');
   }
 
   start(): void {
@@ -88,22 +88,20 @@ export class LogTailer {
   }
 
   observeStatus(cb: (status: 'running' | 'stopped') => void): IDisposable {
-    return new DisposableSubscription(
-      this._running.map(isRunning => (isRunning ? 'running' : 'stopped')).subscribe(cb)
-    );
+    return new DisposableSubscription(this._statuses.subscribe(cb));
   }
 
   _start(trackCall: boolean = true): void {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
 
-    if (this._running.getValue()) {
+    if (this._statuses.getValue() !== 'stopped') {
       return;
     }
     if (trackCall) {
       track(this._eventNames.start);
     }
 
-    this._running.next(true);
+    this._statuses.next('running');
 
     if (this._subscription != null) {
       this._subscription.unsubscribe();
@@ -117,14 +115,14 @@ export class LogTailer {
       this._subscription.unsubscribe();
     }
 
-    if (!this._running.getValue()) {
+    if (this._statuses.getValue() === 'stopped') {
       return;
     }
     if (trackCall) {
       track(this._eventNames.stop);
     }
 
-    this._running.next(false);
+    this._statuses.next('stopped');
   }
 
   getMessages(): Observable<Message> {
