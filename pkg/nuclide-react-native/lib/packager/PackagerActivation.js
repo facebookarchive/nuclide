@@ -93,6 +93,12 @@ function getPackagerObservable(): Observable<Message> {
         case 'stdout':
           return Observable.of(event.data);
         case 'exit':
+          if (event.exitCode !== 0) {
+            return Observable.throw(
+              new Error(`Packager exited with non-zero exit code (${event.exitCode})`)
+            );
+          }
+          return Observable.empty();
         case 'stderr':
         default:
           // We just ignore these.
