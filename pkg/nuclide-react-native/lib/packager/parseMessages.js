@@ -1,4 +1,6 @@
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,40 +10,45 @@
  * the root directory of this source tree.
  */
 
-import type {Message} from '../../../nuclide-console/lib/types';
+exports.parseMessages = parseMessages;
 
-import {Observable} from 'rxjs';
+var _rxjsBundlesRxUmdMinJs2;
 
-const PORT_LINE = /.*(Running packager on port.*?)\s*│/;
-const SOURCE_LIST_START = /Looking for JS files in/;
-const NORMAL_LINE = /^\s*\[(\d+):(\d+):(\d+) (A|P)M\]\s*(.*?)\s*$/;
-const ERROR_LINE = /^\s*ERROR\s*(.*?)\s*$/;
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
+
+var PORT_LINE = /.*(Running packager on port.*?)\s*│/;
+var SOURCE_LIST_START = /Looking for JS files in/;
+var NORMAL_LINE = /^\s*\[(\d+):(\d+):(\d+) (A|P)M\]\s*(.*?)\s*$/;
+var ERROR_LINE = /^\s*ERROR\s*(.*?)\s*$/;
 
 /**
  * Parses output from the packager into messages.
  */
-export function parseMessages(raw: Observable<string>): Observable<Message> {
-  return Observable.create(observer => {
-    let sawPreamble = false;
-    let sawPortLine = false;
-    let sawSourcesStart = false;
-    let sawSourcesEnd = false;
-    const sourceDirectories = [];
+
+function parseMessages(raw) {
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.create(function (observer) {
+    var sawPreamble = false;
+    var sawPortLine = false;
+    var sawSourcesStart = false;
+    var sawSourcesEnd = false;
+    var sourceDirectories = [];
 
     return raw.subscribe({
-      next: line => {
+      next: function next(line) {
         // If we've seen the port and the sources, that's the preamble! Or, if we get to a line that
         // starts with a "[", we probably missed the closing of the preamble somehow. (Like the
         // packager output changed).
-        sawPreamble = sawPreamble || (sawPortLine && sawSourcesEnd) || line.startsWith('[');
+        sawPreamble = sawPreamble || sawPortLine && sawSourcesEnd || line.startsWith('[');
 
         if (!sawPortLine && !sawPreamble) {
-          const match = line.match(PORT_LINE);
+          var match = line.match(PORT_LINE);
           if (match != null) {
             sawPortLine = true;
             observer.next({
               level: 'info',
-              text: match[1],
+              text: match[1]
             });
             return;
           }
@@ -62,7 +69,7 @@ export function parseMessages(raw: Observable<string>): Observable<Message> {
             sawSourcesEnd = true;
             observer.next({
               level: 'info',
-              text: `Looking for JS files in: ${sourceDirectories.join(',')}`,
+              text: 'Looking for JS files in: ' + sourceDirectories.join(',')
             });
             return;
           }
@@ -70,7 +77,9 @@ export function parseMessages(raw: Observable<string>): Observable<Message> {
 
         if (sawPreamble) {
           // Drop all blank lines that come after the preamble.
-          if (isBlankLine(line)) { return; }
+          if (isBlankLine(line)) {
+            return;
+          }
 
           observer.next(parseRegularMessage(line));
           return;
@@ -80,28 +89,31 @@ export function parseMessages(raw: Observable<string>): Observable<Message> {
         // the lines we want to ignore, so don't do anything.
       },
       error: observer.error.bind(observer),
-      complete: observer.complete.bind(observer),
+      complete: observer.complete.bind(observer)
     });
   });
 }
 
-const isBlankLine = line => /^\s*$/.test(line);
+var isBlankLine = function isBlankLine(line) {
+  return (/^\s*$/.test(line)
+  );
+};
 
-function parseRegularMessage(line: string): Message {
-  const normalMatch = line.match(NORMAL_LINE);
+function parseRegularMessage(line) {
+  var normalMatch = line.match(NORMAL_LINE);
   if (normalMatch != null) {
     // TODO (matthewwithanm): Add support for showing timestamps and include that in the message.
     return {
       level: 'log',
-      text: normalMatch[5],
+      text: normalMatch[5]
     };
   }
 
-  const errorMatch = line.match(ERROR_LINE);
+  var errorMatch = line.match(ERROR_LINE);
   if (errorMatch != null) {
     return {
       level: 'error',
-      text: errorMatch[1],
+      text: errorMatch[1]
     };
   }
 
@@ -110,6 +122,6 @@ function parseRegularMessage(line: string): Message {
   // /hot", "React packager ready.").
   return {
     level: 'log',
-    text: line,
+    text: line
   };
 }

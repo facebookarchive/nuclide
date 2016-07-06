@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +10,12 @@
  * the root directory of this source tree.
  */
 
-import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+exports.default = bookmarkIsEqual;
 
 // Returns true if the given bookmarks are not void and are deeply equal.
-export default function bookmarkIsEqual(a: ?BookmarkInfo, b: ?BookmarkInfo) {
-  return a != null
-    && b != null
-    && a.rev === b.rev
-    && a.bookmark === b.bookmark;
+
+function bookmarkIsEqual(a, b) {
+  return a != null && b != null && a.rev === b.rev && a.bookmark === b.bookmark;
 }
+
+module.exports = exports.default;

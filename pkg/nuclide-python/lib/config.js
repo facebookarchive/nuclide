@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getAutocompleteArguments = getAutocompleteArguments;
+exports.getIncludeOptionalArguments = getIncludeOptionalArguments;
+exports.getPythonPath = getPythonPath;
+exports.getShowGlobalVariables = getShowGlobalVariables;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +16,24 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
+var _nuclideFeatureConfig2;
 
-export function getAutocompleteArguments(): boolean {
-  return (featureConfig.get('nuclide-python.autocompleteArguments'): any);
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
 }
 
-export function getIncludeOptionalArguments(): boolean {
-  return (featureConfig.get('nuclide-python.includeOptionalArguments'): any);
+function getAutocompleteArguments() {
+  return (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-python.autocompleteArguments');
 }
 
-export function getPythonPath(): string {
-  return (featureConfig.get('nuclide-python.pathToPython'): any);
+function getIncludeOptionalArguments() {
+  return (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-python.includeOptionalArguments');
 }
 
-export function getShowGlobalVariables(): boolean {
-  return (featureConfig.get('nuclide-python.showGlobalVariables'): any);
+function getPythonPath() {
+  return (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-python.pathToPython');
+}
+
+function getShowGlobalVariables() {
+  return (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-python.showGlobalVariables');
 }

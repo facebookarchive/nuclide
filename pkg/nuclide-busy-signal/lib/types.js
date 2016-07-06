@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +10,6 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+// Must be unique to the provider. Used to cancel the message later.
 
-export type BusySignalMessage = BusySignalMessageBusy | BusySignalMessageDone;
-
-export type BusySignalMessageBusy = {
-  status: 'busy';
-  // Must be unique to the provider. Used to cancel the message later.
-  id: number;
-  message: string;
-};
-
-export type BusySignalMessageDone = {
-  status: 'done';
-  // Cancel the busy signal with this identifier.
-  id: number;
-};
-
-export type BusySignalProvider = {
-  messages: Observable<BusySignalMessage>;
-};
+// Cancel the busy signal with this identifier.

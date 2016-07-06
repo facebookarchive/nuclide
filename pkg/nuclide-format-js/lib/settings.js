@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,80 +10,87 @@
  * the root directory of this source tree.
  */
 
-import type ModuleMap from '../../nuclide-format-js-base/lib/state/ModuleMap';
-import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
-import type {TransformKey} from '../../nuclide-format-js-base/lib/types/transforms';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import featureConfig from '../../nuclide-feature-config';
-import formatJSBase from '../../nuclide-format-js-base';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.observeSettings = observeSettings;
+exports.calculateOptions = calculateOptions;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _nuclideFeatureConfig2;
+
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
+}
+
+var _nuclideFormatJsBase2;
+
+function _nuclideFormatJsBase() {
+  return _nuclideFormatJsBase2 = _interopRequireDefault(require('../../nuclide-format-js-base'));
+}
 
 // Nuclide package settings used to calculate the module map,
 // the blacklist, and control the plugin behavior.
-export type Settings = {
-  aliases: Array<[string, string]>;
-  builtIns: Array<string>;
-  builtInTypes: Array<string>;
-  nuclideFixHeader: boolean;
-  requiresTransferComments: boolean;
-  requiresRemoveUnusedRequires: boolean;
-  requiresAddMissingRequires: boolean;
-  requiresRemoveUnusedTypes: boolean;
-  requiresAddMissingTypes: boolean;
-  requiresFormatRequires: boolean;
-  runOnSave: boolean;
-};
 
-const {createModuleMap} = formatJSBase;
+var createModuleMap = (_nuclideFormatJsBase2 || _nuclideFormatJsBase()).default.createModuleMap;
+
 // We need this in array formats.
-const defaultAliases = Array.from(formatJSBase.defaultAliases);
-const defaultBuiltIns = Array.from(formatJSBase.defaultBuiltIns);
-const defaultBuiltInTypes = Array.from(formatJSBase.defaultBuiltInTypes);
+var defaultAliases = Array.from((_nuclideFormatJsBase2 || _nuclideFormatJsBase()).default.defaultAliases);
+var defaultBuiltIns = Array.from((_nuclideFormatJsBase2 || _nuclideFormatJsBase()).default.defaultBuiltIns);
+var defaultBuiltInTypes = Array.from((_nuclideFormatJsBase2 || _nuclideFormatJsBase()).default.defaultBuiltInTypes);
 
 /**
  * Observes the relevant Nuclide package settings.
  */
-export function observeSettings(callback: (value: Settings) => void): IDisposable {
-  return featureConfig.observe('nuclide-format-js', settings =>
-    callback({
-      ...settings,
-      aliases: fixAliases(settings.aliases),
-    })
-  );
+
+function observeSettings(callback) {
+  return (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.observe('nuclide-format-js', function (settings) {
+    return callback(_extends({}, settings, {
+      aliases: fixAliases(settings.aliases)
+    }));
+  });
 }
 
 /**
  * Calculates the current options according to the Nuclide configuration object.
  * This may get expensive in the future as the module map becomes smarter.
  */
-export function calculateOptions(settings: Settings): SourceOptions {
+
+function calculateOptions(settings) {
   return {
     blacklist: calculateBlacklist(settings),
-    moduleMap: calculateModuleMap(settings),
+    moduleMap: calculateModuleMap(settings)
   };
 }
 
 /**
  * Calculates a module map from the settings.
  */
-function calculateModuleMap(settings: Settings): ModuleMap {
+function calculateModuleMap(settings) {
   // Construct the aliases.
-  const aliases = new Map(settings.aliases);
-  for (const entry of defaultAliases) {
-    const [key, value] = entry;
+  var aliases = new Map(settings.aliases);
+  for (var entry of defaultAliases) {
+    var _entry = _slicedToArray(entry, 2);
+
+    var key = _entry[0];
+    var _value = _entry[1];
+
     if (!aliases.has(key)) {
-      aliases.set(key, value);
+      aliases.set(key, _value);
     }
   }
 
   // Construct the built ins.
-  const builtIns = new Set(defaultBuiltIns);
-  for (const builtIn of settings.builtIns) {
+  var builtIns = new Set(defaultBuiltIns);
+  for (var builtIn of settings.builtIns) {
     builtIns.add(builtIn);
   }
 
   // Construct built in types.
-  const builtInTypes = new Set(defaultBuiltInTypes);
-  for (const builtInType of settings.builtInTypes) {
+  var builtInTypes = new Set(defaultBuiltInTypes);
+  for (var builtInType of settings.builtInTypes) {
     builtInTypes.add(builtInType);
   }
 
@@ -90,18 +98,18 @@ function calculateModuleMap(settings: Settings): ModuleMap {
   return createModuleMap({
     paths: [],
     pathsToRelativize: [],
-    aliases,
+    aliases: aliases,
     aliasesToRelativize: new Map(),
-    builtIns,
-    builtInTypes,
+    builtIns: builtIns,
+    builtInTypes: builtInTypes
   });
 }
 
 /**
  * Calculates the blacklist from the settings.
  */
-function calculateBlacklist(settings: Settings): Set<TransformKey> {
-  const blacklist = new Set();
+function calculateBlacklist(settings) {
+  var blacklist = new Set();
   if (!settings.nuclideFixHeader) {
     blacklist.add('nuclide.fixHeader');
   }
@@ -132,10 +140,10 @@ function calculateBlacklist(settings: Settings): Set<TransformKey> {
  * Nuclide can't handle nested arrays well in settings, so we save it in a
  * flat array and fix up each pair or entries before using it in the transform
  */
-function fixAliases(aliases: ?Array<string>): Array<[string, string]> {
+function fixAliases(aliases) {
   aliases = aliases || [];
-  const pairs = [];
-  for (let i = 0; i < aliases.length - 1; i += 2) {
+  var pairs = [];
+  for (var i = 0; i < aliases.length - 1; i += 2) {
     pairs.push([aliases[i], aliases[i + 1]]);
   }
   return pairs;
