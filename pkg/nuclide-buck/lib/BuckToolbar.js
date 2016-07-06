@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TaskType} from './types';
+import type {TaskType, TaskSettings} from './types';
 
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
@@ -19,7 +19,9 @@ import {lastly} from '../../commons-node/promise';
 import {createBuckProject} from '../../nuclide-buck-base';
 import SimulatorDropdown from './SimulatorDropdown';
 import BuckToolbarActions from './BuckToolbarActions';
+import BuckToolbarSettings from './ui/BuckToolbarSettings';
 import BuckToolbarStore from './BuckToolbarStore';
+import {Button, ButtonSizes} from '../../nuclide-ui/lib/Button';
 import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {LoadingSpinner} from '../../nuclide-ui/lib/LoadingSpinner';
@@ -35,6 +37,7 @@ type PropTypes = {
 
 class BuckToolbar extends React.Component {
   props: PropTypes;
+  state: {settingsVisible: boolean};
 
   _disposables: CompositeDisposable;
   _buckToolbarStore: BuckToolbarStore;
@@ -61,6 +64,8 @@ class BuckToolbar extends React.Component {
 
     // Re-render whenever the data in the store changes.
     this._disposables.add(this._buckToolbarStore.subscribe(() => { this.forceUpdate(); }));
+
+    this.state = {settingsVisible: false};
   }
 
   componentWillUnmount() {
@@ -144,6 +149,7 @@ class BuckToolbar extends React.Component {
       }
     }
 
+    const {activeTaskType} = this.props;
     return (
       <div>
         <Combobox
@@ -158,7 +164,22 @@ class BuckToolbar extends React.Component {
           placeholderText="Buck build target"
           width={BUCK_TARGET_INPUT_WIDTH}
         />
+        <Button
+          className="nuclide-buck-settings icon icon-gear"
+          size={ButtonSizes.SMALL}
+          disabled={activeTaskType == null || this.props.store.getCurrentBuckRoot() == null}
+          onClick={() => this._showSettings()}
+        />
         {widgets}
+        {this.state.settingsVisible && activeTaskType != null ?
+          <BuckToolbarSettings
+            currentBuckRoot ={this.props.store.getCurrentBuckRoot()}
+            settings={this.props.store.getTaskSettings()[activeTaskType] || {}}
+            buildType={activeTaskType}
+            onDismiss={() => this._hideSettings()}
+            onSave={settings => this._saveSettings(activeTaskType, settings)}
+          /> :
+          null}
       </div>
     );
   }
@@ -173,6 +194,19 @@ class BuckToolbar extends React.Component {
 
   _handleReactNativeServerModeChanged(checked: boolean) {
     this._buckToolbarActions.updateReactNativeServerMode(checked);
+  }
+
+  _showSettings() {
+    this.setState({settingsVisible: true});
+  }
+
+  _hideSettings() {
+    this.setState({settingsVisible: false});
+  }
+
+  _saveSettings(taskType: TaskType, settings: TaskSettings) {
+    this._buckToolbarActions.updateTaskSettings(taskType, settings);
+    this._hideSettings();
   }
 
 }
