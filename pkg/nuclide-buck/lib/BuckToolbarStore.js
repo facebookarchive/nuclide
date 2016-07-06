@@ -10,7 +10,7 @@
  */
 
 import type {BuckProject} from '../../nuclide-buck-base';
-import type {SerializedState} from './types';
+import type {SerializedState, TaskSettings, TaskType} from './types';
 
 import {Emitter} from 'atom';
 import {Dispatcher} from 'flux';
@@ -26,6 +26,7 @@ export default class BuckToolbarStore {
   _buildRuleType: string;
   _simulator: ?string;
   _isReactNativeServerMode: boolean;
+  _taskSettings: {[key: TaskType]: TaskSettings};
 
   constructor(dispatcher: Dispatcher, initialState: ?SerializedState) {
     this._dispatcher = dispatcher;
@@ -39,6 +40,7 @@ export default class BuckToolbarStore {
     this._buildTarget = initialState && initialState.buildTarget || '';
     this._buildRuleType = '';
     this._isReactNativeServerMode = initialState && initialState.isReactNativeServerMode || false;
+    this._taskSettings = initialState && initialState.taskSettings || {};
   }
 
   _setupActions() {
@@ -64,6 +66,13 @@ export default class BuckToolbarStore {
           break;
         case BuckToolbarActions.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE:
           this._isReactNativeServerMode = action.serverMode;
+          this.emitChange();
+          break;
+        case BuckToolbarActions.ActionType.UPDATE_TASK_SETTINGS:
+          this._taskSettings = {
+            ...this._taskSettings,
+            [action.taskType]: action.settings,
+          };
           this.emitChange();
           break;
       }
@@ -112,6 +121,10 @@ export default class BuckToolbarStore {
 
   getSimulator(): ?string {
     return this._simulator;
+  }
+
+  getTaskSettings(): {[key: TaskType]: TaskSettings} {
+    return this._taskSettings;
   }
 
 }

@@ -10,6 +10,7 @@
  */
 
 import type BuckToolbarStore from './BuckToolbarStore';
+import type {TaskSettings} from './types';
 
 import {Dispatcher} from 'flux';
 import {keyMirror} from '../../commons-node/collection';
@@ -30,6 +31,7 @@ export default class BuckToolbarActions {
     UPDATE_PROJECT: null,
     UPDATE_REACT_NATIVE_SERVER_MODE: null,
     UPDATE_SIMULATOR: null,
+    UPDATE_TASK_SETTINGS: null,
   }));
 
   constructor(
@@ -96,6 +98,14 @@ export default class BuckToolbarActions {
     this._dispatcher.dispatch({
       actionType: BuckToolbarActions.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE,
       serverMode,
+    });
+  }
+
+  updateTaskSettings(taskType: string, settings: TaskSettings): void {
+    this._dispatcher.dispatch({
+      actionType: BuckToolbarActions.ActionType.UPDATE_TASK_SETTINGS,
+      taskType,
+      settings,
     });
   }
 

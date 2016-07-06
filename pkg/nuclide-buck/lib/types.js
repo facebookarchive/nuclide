@@ -11,7 +11,12 @@
 
 export type TaskType = 'build' | 'test' | 'run' | 'debug';
 
+export type TaskSettings = {
+  arguments?: Array<string>;
+};
+
 export type SerializedState = {
   buildTarget: ?string;
   isReactNativeServerMode: boolean;
+  taskSettings?: {[key: TaskType]: TaskSettings};
 };
