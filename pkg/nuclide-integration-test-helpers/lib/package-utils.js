@@ -28,6 +28,13 @@ export async function activateAllPackages(): Promise<Array<string>> {
     'tool-bar',
   ];
 
+  // Manually call `triggerDeferredActivationHooks` since Atom doesn't call it via
+  // `atom.packages.activate()` during tests. Calling this before we activate
+  // Nuclide packages sets `deferredActivationHooks` to `null`, so that deferred
+  // activation hooks are triggered as needed instead of batched.
+  // https://github.com/atom/atom/blob/v1.8.0/src/package-manager.coffee#L467-L472
+  atom.packages.triggerDeferredActivationHooks();
+
   const packageNames = atom.packages.getAvailablePackageNames().filter(name => {
     const pack = atom.packages.loadPackage(name);
     if (pack == null) {

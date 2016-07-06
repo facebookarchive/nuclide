@@ -267,6 +267,7 @@ declare class atom$PackageManager {
   loadPackages(): void;
   serviceHub: atom$ServiceHub;
   packageDirPaths: Array<string>;
+  triggerDeferredActivationHooks(): void;
   unloadPackage(name: string): void;
   unloadPackages(): void;
 }
