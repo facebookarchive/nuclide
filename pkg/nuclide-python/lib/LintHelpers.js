@@ -12,9 +12,9 @@
 import type {LinterMessage} from '../../nuclide-diagnostics-base';
 
 import invariant from 'assert';
-import {Range} from 'atom';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
+import {getDiagnosticRange} from './diagnostic-range';
 
 export default class LintHelpers {
 
@@ -28,18 +28,12 @@ export default class LintHelpers {
     invariant(service);
 
     const diagnostics = await service.getDiagnostics(src, editor.getText());
-
-    const buffer = editor.getBuffer();
-
     return diagnostics.map(diagnostic => ({
       name: 'flake8: ' + diagnostic.code,
       type: diagnostic.type,
       text: diagnostic.message,
       filePath: diagnostic.file,
-      range: new Range(
-        [diagnostic.line, 0],
-        [diagnostic.line, buffer.lineLengthForRow(diagnostic.line)],
-      ),
+      range: getDiagnosticRange(diagnostic, editor),
     }));
   }
 
