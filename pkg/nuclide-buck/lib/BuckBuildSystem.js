@@ -149,6 +149,14 @@ export class BuckBuildSystem {
         this._logOutput('Build cancelled.', 'warning');
         taskInfo.cancel();
       },
+      getTrackingData: () => {
+        const {store} = this._getFlux();
+        return {
+          buckRoot: store.getCurrentBuckRoot(),
+          buildTarget: store.getBuildTarget(),
+          taskSettings: store.getTaskSettings(),
+        };
+      },
     };
   }
 
