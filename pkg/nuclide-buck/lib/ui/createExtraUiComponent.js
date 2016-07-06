@@ -11,6 +11,7 @@
 
 import type BuckToolbarActions from '../BuckToolbarActions';
 import type BuckToolbarStore from '../BuckToolbarStore';
+import type {TaskType} from '../types';
 
 import BuckToolbar from '../BuckToolbar';
 import {React} from 'react-for-atom';
@@ -28,9 +29,17 @@ export function createExtraUiComponent(
 
   return class ExtraUi extends React.Component {
 
+    props: {
+      activeTaskType: ?TaskType;
+    };
+
     render(): React.Element<any> {
       return (
-        <BuckToolbar store={store} actions={actions} />
+        <BuckToolbar
+          activeTaskType={this.props.activeTaskType}
+          store={store}
+          actions={actions}
+        />
       );
     }
 

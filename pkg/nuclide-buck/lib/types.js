@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+export type TaskType = 'build' | 'test' | 'run' | 'debug';
+
 export type SerializedState = {
   buildTarget: ?string;
   isReactNativeServerMode: boolean;

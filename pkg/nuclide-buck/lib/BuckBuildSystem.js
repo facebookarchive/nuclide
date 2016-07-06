@@ -12,7 +12,7 @@
 import type {BuildEvent, Task, TaskInfo} from '../../nuclide-build/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base';
-import type {SerializedState} from './types';
+import type {SerializedState, TaskType} from './types';
 import type {BuckEvent} from './BuckEventStream';
 
 import invariant from 'assert';
@@ -38,7 +38,6 @@ type Flux = {
   store: BuckToolbarStore;
 };
 
-type TaskType = 'build' | 'test' | 'run' | 'debug';
 type BuckSubcommand = 'build' | 'install' | 'test';
 
 export class BuckBuildSystem {
@@ -341,6 +340,7 @@ export class BuckBuildSystem {
 
 }
 
+// Make sure that TaskType reflects the types listed below.
 const TASKS = [
   {
     type: 'build',

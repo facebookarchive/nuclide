@@ -10,6 +10,7 @@
  */
 
 import type {BuckProject} from '../../nuclide-buck-base';
+import type {TaskType} from './types';
 
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
@@ -25,7 +26,15 @@ import addTooltip from '../../nuclide-ui/lib/add-tooltip';
 
 const BUCK_TARGET_INPUT_WIDTH = 400;
 
+type PropTypes = {
+  activeTaskType: ?TaskType;
+  store: BuckToolbarStore;
+  actions: BuckToolbarActions;
+};
+
 class BuckToolbar extends React.Component {
+  props: PropTypes;
+
   /**
    * The toolbar makes an effort to keep track of which BuckProject to act on, based on the last
    * TextEditor that had focus that corresponded to a BuckProject. This means that if a user opens
@@ -44,12 +53,7 @@ class BuckToolbar extends React.Component {
   // Putting the cache here allows the user to refresh it by toggling the UI.
   _projectAliasesCache: WeakMap<BuckProject, Promise<Array<string>>>;
 
-  static propTypes = {
-    store: React.PropTypes.instanceOf(BuckToolbarStore).isRequired,
-    actions: React.PropTypes.instanceOf(BuckToolbarActions).isRequired,
-  };
-
-  constructor(props: mixed) {
+  constructor(props: PropTypes) {
     super(props);
     (this: any)._handleBuildTargetChange =
       debounce(this._handleBuildTargetChange.bind(this), 100, false);
