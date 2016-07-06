@@ -21,6 +21,7 @@ import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import {observeTextEditorsPositions} from '../../commons-atom/debounced';
 import {Observable} from 'rxjs';
+import {trackOperationTiming} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 import {ContextViewPanel} from './ContextViewPanel';
 import {ProviderContainer} from './ProviderContainer';
@@ -153,22 +154,20 @@ export class ContextViewManager {
 
   updateSubscription(): void {
     // Only subscribe if panel showing and there's something to subscribe to
-    if (this.isVisible() && this._definitionService !== null) {
+    if (this.isVisible() && this._definitionService != null) {
       this._defServiceSubscription = observeTextEditorsPositions(
         EDITOR_DEBOUNCE_INTERVAL, POSITION_DEBOUNCE_INTERVAL)
-        .filter((pos: ?EditorPosition) => pos != null)
-        .map(async (editorPos: ?EditorPosition) => {
-          invariant(editorPos != null);
-          invariant(this._definitionService != null);
-          try {
-            return await this._definitionService.getDefinition(
-              editorPos.editor,
-              editorPos.position
-            );
-          } catch (err) {
-            logger.error('Error querying definition service: ', err);
-            return null;
-          }
+        .filter((editorPos: ?EditorPosition) => editorPos != null)
+        .map((editorPos: ?EditorPosition) => {
+          return trackOperationTiming('nuclide-context-view:getDefinition', () => {
+            invariant(editorPos != null);
+            invariant(this._definitionService != null);
+            return this._definitionService.getDefinition(editorPos.editor, editorPos.position)
+              .catch(error => {
+                logger.error('Error querying definition service: ', error);
+                return null;
+              });
+          });
         }).switchMap((queryResult: Promise<?DefinitionQueryResult>) => {
           return (queryResult != null)
             ? Observable.fromPromise(queryResult)
