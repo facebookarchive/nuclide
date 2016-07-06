@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {BuckProject} from '../../nuclide-buck-base';
 import type {SerializedState, TaskSettings, TaskType} from './types';
 
 import {Emitter} from 'atom';
@@ -20,7 +19,7 @@ export default class BuckToolbarStore {
 
   _dispatcher: Dispatcher;
   _emitter: Emitter;
-  _mostRecentBuckProject: ?BuckProject;
+  _currentBuckRoot: ?string;
   _isLoadingRule: boolean;
   _buildTarget: string;
   _buildRuleType: string;
@@ -46,8 +45,8 @@ export default class BuckToolbarStore {
   _setupActions() {
     this._dispatcher.register(action => {
       switch (action.actionType) {
-        case BuckToolbarActions.ActionType.UPDATE_PROJECT:
-          this._mostRecentBuckProject = action.project;
+        case BuckToolbarActions.ActionType.UPDATE_BUCK_ROOT:
+          this._currentBuckRoot = action.buckRoot;
           break;
         case BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET:
           this._buildTarget = action.buildTarget;
@@ -95,8 +94,8 @@ export default class BuckToolbarStore {
     return this._buildTarget;
   }
 
-  getMostRecentBuckProject(): ?BuckProject {
-    return this._mostRecentBuckProject;
+  getCurrentBuckRoot(): ?string {
+    return this._currentBuckRoot;
   }
 
   isLoadingRule(): boolean {

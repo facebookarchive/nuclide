@@ -124,6 +124,9 @@ const BLOCKING_BUCK_COMMAND_QUEUE_PREFIX = 'buck';
 /**
  * Represents a Buck project on disk. All Buck commands for a project should be
  * done through an instance of this class.
+ *
+ * TODO(hansonw): This should be a stateless set of global functions.
+ * In the meantime, don't introduce any additional state here.
  */
 export class BuckProject {
 

@@ -14,7 +14,7 @@ import type {TaskSettings} from './types';
 
 import {Dispatcher} from 'flux';
 import {keyMirror} from '../../commons-node/collection';
-import {getBuckProject} from '../../nuclide-buck-base';
+import {getBuckProjectRoot, createBuckProject} from '../../nuclide-buck-base';
 
 export default class BuckToolbarActions {
 
@@ -28,7 +28,7 @@ export default class BuckToolbarActions {
     UPDATE_IS_LOADING_RULE: null,
     UPDATE_RULE_TYPE: null,
     UPDATE_PANEL_VISIBILITY: null,
-    UPDATE_PROJECT: null,
+    UPDATE_BUCK_ROOT: null,
     UPDATE_REACT_NATIVE_SERVER_MODE: null,
     UPDATE_SIMULATOR: null,
     UPDATE_TASK_SETTINGS: null,
@@ -44,11 +44,11 @@ export default class BuckToolbarActions {
   }
 
   async updateProjectPath(path: string): Promise<void> {
-    const buckProject = await getBuckProject(path);
-    if (buckProject != null && buckProject !== this._store.getMostRecentBuckProject()) {
+    const buckRoot = await getBuckProjectRoot(path);
+    if (buckRoot != null && buckRoot !== this._store.getCurrentBuckRoot()) {
       this._dispatcher.dispatch({
-        actionType: BuckToolbarActions.ActionType.UPDATE_PROJECT,
-        project: buckProject,
+        actionType: BuckToolbarActions.ActionType.UPDATE_BUCK_ROOT,
+        buckRoot,
       });
       // Update the build target information as well.
       this.updateBuildTarget(this._store.getBuildTarget());
@@ -62,18 +62,20 @@ export default class BuckToolbarActions {
     });
 
     // Find the rule type, if applicable.
-    const buckProject = this._store.getMostRecentBuckProject();
-    if (buckProject != null) {
+    const buckRoot = this._store.getCurrentBuckRoot();
+    if (buckRoot != null) {
       if (this._loadingRules++ === 0) {
         this._dispatcher.dispatch({
           actionType: BuckToolbarActions.ActionType.UPDATE_IS_LOADING_RULE,
           isLoadingRule: true,
         });
       }
+      const buckProject = createBuckProject(buckRoot);
       const buildRuleType = buildTarget === '' ? null :
         await buckProject.buildRuleTypeFor(buildTarget)
           // Most likely, this is an invalid target, so do nothing.
           .catch(e => null);
+      buckProject.dispose();
       this._dispatcher.dispatch({
         actionType: BuckToolbarActions.ActionType.UPDATE_RULE_TYPE,
         ruleType: buildRuleType,

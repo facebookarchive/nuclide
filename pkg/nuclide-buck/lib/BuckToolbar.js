@@ -9,13 +9,14 @@
  * the root directory of this source tree.
  */
 
-import type {BuckProject} from '../../nuclide-buck-base';
 import type {TaskType} from './types';
 
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 
 import debounce from '../../commons-node/debounce';
+import {lastly} from '../../commons-node/promise';
+import {createBuckProject} from '../../nuclide-buck-base';
 import SimulatorDropdown from './SimulatorDropdown';
 import BuckToolbarActions from './BuckToolbarActions';
 import BuckToolbarStore from './BuckToolbarStore';
@@ -35,23 +36,13 @@ type PropTypes = {
 class BuckToolbar extends React.Component {
   props: PropTypes;
 
-  /**
-   * The toolbar makes an effort to keep track of which BuckProject to act on, based on the last
-   * TextEditor that had focus that corresponded to a BuckProject. This means that if a user opens
-   * an editor for a file in a Buck project, types in a build target, focuses an editor for a file
-   * that is not part of a Buck project, and hits "Build," the toolbar will build the target in the
-   * project that corresponds to the editor that previously had focus.
-   *
-   * Ultimately, we should have a dropdown to let the user specify the Buck project when it is
-   * ambiguous.
-   */
   _disposables: CompositeDisposable;
   _buckToolbarStore: BuckToolbarStore;
   _buckToolbarActions: BuckToolbarActions;
 
   // Querying Buck can be slow, so cache aliases by project.
   // Putting the cache here allows the user to refresh it by toggling the UI.
-  _projectAliasesCache: WeakMap<BuckProject, Promise<Array<string>>>;
+  _projectAliasesCache: Map<string, Promise<Array<string>>>;
 
   constructor(props: PropTypes) {
     super(props);
@@ -64,7 +55,7 @@ class BuckToolbar extends React.Component {
 
     this._buckToolbarActions = this.props.actions;
     this._buckToolbarStore = this.props.store;
-    this._projectAliasesCache = new WeakMap();
+    this._projectAliasesCache = new Map();
 
     this._disposables = new CompositeDisposable();
 
@@ -77,15 +68,19 @@ class BuckToolbar extends React.Component {
   }
 
   async _requestOptions(inputText: string): Promise<Array<string>> {
-    const project = this._buckToolbarStore.getMostRecentBuckProject();
-    if (project == null) {
+    const buckRoot = this._buckToolbarStore.getCurrentBuckRoot();
+    if (buckRoot == null) {
       throw new Error('No active Buck project. Check your Current Working Root.');
     }
 
-    let aliases = this._projectAliasesCache.get(project);
+    let aliases = this._projectAliasesCache.get(buckRoot);
     if (!aliases) {
-      aliases = project.listAliases();
-      this._projectAliasesCache.set(project, aliases);
+      const buckProject = createBuckProject(buckRoot);
+      aliases = lastly(
+        buckProject.listAliases(),
+        () => buckProject.dispose(),
+      );
+      this._projectAliasesCache.set(buckRoot, aliases);
     }
 
     const result = (await aliases).slice();

@@ -23,6 +23,7 @@ import {Dispatcher} from 'flux';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {observableToBuildTaskInfo} from '../../commons-node/observableToBuildTaskInfo';
+import {createBuckProject} from '../../nuclide-buck-base';
 import {getLogger} from '../../nuclide-logging';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {BuckIcon} from './ui/BuckIcon';
@@ -61,8 +62,7 @@ export class BuckBuildSystem {
 
   getTasks() {
     const {store} = this._getFlux();
-    const allEnabled = store.getMostRecentBuckProject() != null &&
-      Boolean(store.getBuildTarget());
+    const allEnabled = store.getCurrentBuckRoot() != null && Boolean(store.getBuildTarget());
     return TASKS
       .map(task => {
         let enabled = allEnabled;
@@ -170,9 +170,9 @@ export class BuckBuildSystem {
 
   _runTaskType(taskType: TaskType): Observable<BuildEvent> {
     const {store} = this._getFlux();
-    const buckProject = store.getMostRecentBuckProject();
+    const buckRoot = store.getCurrentBuckRoot();
     const buildTarget = store.getBuildTarget();
-    if (buckProject == null || buildTarget == null) {
+    if (buckRoot == null || buildTarget == null) {
       // All tasks should have been disabled.
       return Observable.empty();
     }
@@ -182,6 +182,7 @@ export class BuckBuildSystem {
     const subcommand = taskType === 'run' || taskType === 'debug' ? 'install' : taskType;
     this._logOutput(`Starting "buck ${subcommand} ${buildTarget}"`, 'log');
 
+    const buckProject = createBuckProject(buckRoot);
     return Observable.fromPromise(buckProject.getHTTPServerPort())
       .catch(err => {
         getLogger().warn(`Failed to get httpPort for ${buildTarget}`, err);
@@ -258,6 +259,7 @@ export class BuckBuildSystem {
               .concat(Observable.of(null))
           );
       })
+      .finally(() => buckProject.dispose())
       .share();
   }
 

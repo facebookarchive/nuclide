@@ -46,6 +46,12 @@ export async function getBuckProjectRoot(filePath: string): Promise<?string> {
   return directory;
 }
 
+export function createBuckProject(rootPath: string): BuckProject {
+  const buckService: ?BuckService = getServiceByNuclideUri('BuckProject', rootPath);
+  invariant(buckService != null);
+  return new buckService.BuckProject({rootPath});
+}
+
 /**
  * Given a file path, returns the BuckProject for its project root (if it exists).
  */
@@ -59,11 +65,7 @@ export async function getBuckProject(filePath: string): Promise<?BuckProject> {
   if (buckProject != null) {
     return buckProject;
   }
-
-  const buckService: ?BuckService = getServiceByNuclideUri('BuckProject', filePath);
-  if (buckService) {
-    buckProject = new buckService.BuckProject({rootPath});
-    buckProjectForBuckProjectDirectory.set(rootPath, buckProject);
-  }
+  buckProject = createBuckProject(rootPath);
+  buckProjectForBuckProjectDirectory.set(rootPath, buckProject);
   return buckProject;
 }
