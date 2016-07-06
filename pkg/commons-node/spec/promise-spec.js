@@ -17,6 +17,7 @@ import {
   asyncFilter,
   asyncObjFilter,
   asyncSome,
+  lastly,
   retryLimit,
   RequestSerializer,
 } from '../promise';
@@ -402,6 +403,38 @@ describe('promises::asyncSome()', () => {
       );
       expect(result).toEqual(true);
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3]);
+    });
+  });
+});
+
+describe('promises::lastly', () => {
+  it('executes after a resolved promise', () => {
+    waitsForPromise(async () => {
+      const spy = jasmine.createSpy('spy');
+      const result = await lastly(Promise.resolve(1), spy);
+      expect(result).toBe(1);
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  it('executes after a rejected promise', () => {
+    waitsForPromise(async () => {
+      const spy = jasmine.createSpy('spy');
+      await expectAsyncFailure(lastly(Promise.reject(2), spy), err => {
+        expect(err).toBe(2);
+      });
+      expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  it('works for async functions', () => {
+    waitsForPromise(async () => {
+      const spy = jasmine.createSpy('spy');
+      const result = await lastly(Promise.resolve(1), async () => {
+        spy();
+      });
+      expect(result).toBe(1);
+      expect(spy).toHaveBeenCalled();
     });
   });
 });

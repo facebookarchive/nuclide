@@ -473,3 +473,21 @@ export async function asyncSome<T>(
 export function isPromise(object: any): boolean {
   return Boolean(object) && typeof object === 'object' && typeof object.then === 'function';
 }
+
+/**
+ * We can't name a function 'finally', so use lastly instead.
+ * fn() will be executed (and completed) after the provided promise resolves/rejects.
+ */
+export function lastly<T>(
+  promise: Promise<T>,
+  fn: () => Promise<mixed> | mixed,
+): Promise<T> {
+  return promise
+    .then(ret => {
+      return Promise.resolve(fn())
+        .then(() => ret);
+    }, err => {
+      return Promise.resolve(fn())
+        .then(() => Promise.reject(err));
+    });
+}
