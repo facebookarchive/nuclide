@@ -186,7 +186,8 @@ export async function getDiagnostics(
   }
 
   if (!result) {
-    const command = global.atom && atom.config.get('nuclide-python.pathToFlake8') || 'flake8';
+    const command =
+      global.atom && atom.config.get('nuclide.nuclide-python.pathToFlake8') || 'flake8';
     const args = [];
 
     if (configPath) {
