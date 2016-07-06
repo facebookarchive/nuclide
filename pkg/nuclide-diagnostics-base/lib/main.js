@@ -135,6 +135,11 @@ export type LinterMessage = {
   type: 'Error' | 'Warning';
   text?: string;
   html?: string;
+  /*
+   * Allows overriding of the LinterProvider name per message. Useful for when
+   * a provider's messages come from multiple lint sources.
+   */
+  name?: string;
   filePath?: NuclideUri;
   range?: atom$Range;
   trace?: Array<LinterTrace>;

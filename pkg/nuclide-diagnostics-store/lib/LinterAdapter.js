@@ -39,7 +39,7 @@ export function linterMessageToDiagnosticMessage(
   if (msg.filePath) {
     return ({
       scope: 'file',
-      providerName,
+      providerName: msg.name != null ? msg.name : providerName,
       type: msg.type,
       filePath: msg.filePath,
       text: msg.text,
@@ -55,7 +55,7 @@ export function linterMessageToDiagnosticMessage(
   } else {
     return ({
       scope: 'project',
-      providerName,
+      providerName: msg.name != null ? msg.name : providerName,
       type: msg.type,
       text: msg.text,
       html: msg.html,

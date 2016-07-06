@@ -163,6 +163,13 @@ describe('message transformation functions', () => {
     filePath: '/fu/bar',
   };
 
+  const fileMessageWithName = {
+    type: 'Error',
+    text: 'Uh oh',
+    filePath: '/fu/bar',
+    name: 'Custom Linter Name',
+  };
+
   const projectMessage = {
     type: 'Warning',
     text: 'Oh no!',
@@ -223,6 +230,24 @@ describe('message transformation functions', () => {
       invariant(messages != null);
       const resultMessage = messages[0];
       expect(resultMessage.providerName).toEqual('Unnamed Linter');
+    });
+
+    it('should use the LinterProvider name when one is not specified in message', () => {
+      const result = runWith([fileMessage]);
+      invariant(result.filePathToMessages);
+      const messages = result.filePathToMessages.get(fileMessage.filePath);
+      invariant(messages != null);
+      const resultMessage = messages[0];
+      expect(resultMessage.providerName).toEqual('provider');
+    });
+
+    it('should use the provider name specified in message when available', () => {
+      const result = runWith([fileMessageWithName]);
+      invariant(result.filePathToMessages);
+      const messages = result.filePathToMessages.get(fileMessageWithName.filePath);
+      invariant(messages != null);
+      const resultMessage = messages[0];
+      expect(resultMessage.providerName).toEqual('Custom Linter Name');
     });
 
     it('should provide both project messages and file messages', () => {
