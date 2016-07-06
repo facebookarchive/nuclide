@@ -9,11 +9,13 @@
  * the root directory of this source tree.
  */
 
+import typeof * as PythonService from '../../nuclide-python-base';
 import type {PythonCompletion} from '../../nuclide-python-base/lib/PythonService';
 
+import invariant from 'assert';
 import {trackTiming} from '../../nuclide-analytics';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {TYPES} from './constants';
-import {getCompletions} from './jedi-client-helpers';
 import {getAutocompleteArguments, getIncludeOptionalArguments} from './config';
 
 const VALID_EMPTY_SUFFIX = /(\.|\()$/;
@@ -69,17 +71,30 @@ export default class AutocompleteHelpers {
       }
     }
 
-    let result;
-    try {
-      result = await getCompletions(editor);
-    } catch (e) {
-      return [];
-    }
-    if (result == null) {
+    const src = editor.getPath();
+    if (!src) {
       return [];
     }
 
-    return result.map(completion => {
+    const cursor = editor.getLastCursor();
+    const line = cursor.getBufferRow();
+    const column = cursor.getBufferColumn();
+
+    const service: ?PythonService = getServiceByNuclideUri('PythonService', src);
+    invariant(service);
+
+    const results = await service.getCompletions(
+      src,
+      editor.getText(),
+      line,
+      column,
+    );
+
+    if (!results) {
+      return [];
+    }
+
+    return results.map(completion => {
       // Always display optional arguments in the UI.
       const displayText = getText(completion);
       // Only autocomplete arguments if the include optional arguments setting is on.
