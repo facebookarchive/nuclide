@@ -232,10 +232,12 @@ export class FileTreeStore {
       this.openFilesExpanded = data.openFilesExpanded;
     }
 
+    const normalizedPaths = atom.project.getPaths().map(nuclideUri.ensureTrailingSeparator);
     this._setRoots(new Immutable.OrderedMap(
       data.rootKeys
       .filter(rootUri => {
-        return nuclideUri.isRemote(rootUri) || atom.project.getPaths().indexOf(rootUri) >= 0;
+        const normalizedRootUri = nuclideUri.ensureTrailingSeparator(rootUri);
+        return nuclideUri.isRemote(rootUri) || normalizedPaths.indexOf(normalizedRootUri) >= 0;
       })
       .map(rootUri => [rootUri, buildNode(rootUri, rootUri)])
     ));
