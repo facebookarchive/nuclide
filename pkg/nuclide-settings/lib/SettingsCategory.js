@@ -9,12 +9,8 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
-import invariant from 'assert';
 import {React} from 'react-for-atom';
-import SettingsCheckbox from './SettingsCheckbox';
-import SettingsInput from './SettingsInput';
-import SettingsSelect from './SettingsSelect';
+import SettingsControl from './SettingsControl';
 
 type Props = {
   name: string;
@@ -31,9 +27,13 @@ export default class SettingsCategory extends React.Component {
       const settingsArray = getSortedSettingsArray(pkgData.settings, pkgName);
       const elements = settingsArray.map(settingName => {
         const settingData = pkgData.settings[settingName];
-        const settingElement = renderSetting(pkgName, settingData);
         return (
-          <ControlGroup key={settingName}>{settingElement}</ControlGroup>
+          <ControlGroup key={settingName}>
+            <SettingsControl
+              packageName={pkgName}
+              settingData={settingData}
+            />
+          </ControlGroup>
         );
       });
       // We create a control group for the whole group of controls and then another for each
@@ -79,88 +79,4 @@ function getSortedSettingsArray(settings: Object, pkgName: string): Array<string
     .sort()
     .sort((a, b) => settings[a].order - settings[b].order);
   return settingsArray;
-}
-
-function renderSetting(packageName: string, settingData: Object): ?React.Element<any> {
-  const {description, keyPath, name, onChange, title, value} = settingData;
-  invariant(keyPath === (packageName + '.' + name));
-  const schema = featureConfig.getSchema(keyPath);
-
-  if (schema) {
-    if (schema.enum) {
-      return (
-        <SettingsSelect
-          description={description}
-          keyPath={keyPath}
-          onChange={onChange}
-          title={title}
-          value={value}
-        />
-      );
-    } else if (schema.type === 'color') {
-      invariant(false); // Not implemented.
-    } else if (isBoolean(value) || schema.type === 'boolean') {
-      return (
-        <SettingsCheckbox
-          description={description}
-          keyPath={keyPath}
-          onChange={onChange}
-          title={title}
-          value={value}
-        />
-      );
-    } else if (Array.isArray(value) || schema.type === 'array') {
-      if (isEditableArray(value)) {
-        return (
-          <SettingsInput
-            description={description}
-            keyPath={keyPath}
-            onChange={onChange}
-            title={title}
-            value={value}
-            type="array"
-          />
-        );
-      }
-    } else if (isObject(value) || schema.type === 'object') {
-      invariant(false); // Not implemented.
-    } else {
-      const type = isNumber(value) ? 'number' : 'string';
-      return (
-        <SettingsInput
-          description={description}
-          keyPath={keyPath}
-          onChange={onChange}
-          title={title}
-          value={value}
-          type={type}
-        />
-      );
-    }
-  }
-
-  return null;
-}
-
-function isBoolean(obj) {
-  return obj === true || obj === false || toString.call(obj) === '[object Boolean]';
-}
-
-function isNumber(obj) {
-  return toString.call(obj) === '[object Number]';
-}
-
-function isObject(obj) {
-  const type = typeof obj;
-  return type === 'function' || type === 'object' && Boolean(obj);
-}
-
-function isEditableArray(array): boolean {
-  for (let i = 0, len = array.length; i < len; i++) {
-    const item = array[i];
-    if (typeof item !== 'string') {
-      return false;
-    }
-  }
-  return true;
 }
