@@ -15,8 +15,8 @@ import {asyncRequest} from './utils';
 import {Emitter} from 'event-kit';
 import {HEARTBEAT_CHANNEL} from './config';
 
-const HEARTBEAT_INTERVAL_MS = 5000;
-const HEARTBEAT_TIMEOUT_MS = 5000;
+const HEARTBEAT_INTERVAL_MS = 10000;
+const HEARTBEAT_TIMEOUT_MS = 10000;
 const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 
 export class XhrConnectionHeartbeat {
