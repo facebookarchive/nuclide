@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
 import SettingsCheckbox from './SettingsCheckbox';
 import SettingsInput from './SettingsInput';
 import SettingsSelect from './SettingsSelect';
@@ -17,15 +16,15 @@ import invariant from 'assert';
 import {React} from 'react-for-atom';
 
 type Props = {
-  packageName: string;
-  settingData: Object;
+  keyPath: string;
+  schema: atom$ConfigSchema;
+  value: any;
+  onChange: (value: any) => mixed;
 };
 
 export default function SettingsControl(props: Props): ?React.Element<any> {
-  const {settingData, packageName} = props;
-  const {description, keyPath, name, onChange, title, value} = settingData;
-  invariant(keyPath === (packageName + '.' + name));
-  const schema = featureConfig.getSchema(keyPath);
+  const {keyPath, value, onChange, schema} = props;
+  const {description, title} = schema;
 
   if (schema) {
     if (schema.enum) {

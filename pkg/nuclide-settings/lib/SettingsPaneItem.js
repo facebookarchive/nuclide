@@ -87,13 +87,15 @@ export default class NuclideSettingsPaneItem extends React.Component {
           const keyPath = pkgName + '.' + settingName;
           const schema = featureConfig.getSchema(keyPath);
           settings[settingName] = {
-            name: settingName,
-            description: getDescription(schema),
             keyPath,
-            onChange: value => { this._handleComponentChange(keyPath, value); },
-            order: getOrder(schema),
-            title: getTitle(schema, settingName),
             value: featureConfig.get(keyPath),
+            onChange: value => { this._handleComponentChange(keyPath, value); },
+            schema: {
+              ...schema,
+              description: getDescription(schema),
+              order: getOrder(schema),
+              title: getTitle(schema, settingName),
+            },
           };
 
           if (disposables) {
