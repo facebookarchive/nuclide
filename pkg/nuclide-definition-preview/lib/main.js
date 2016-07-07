@@ -66,8 +66,8 @@ export function deactivate() {
   }
 }
 
-export function consumeNuclideContextView(contextView: NuclideContextView) {
+export async function consumeNuclideContextView(contextView: NuclideContextView): Promise<void> {
   invariant(activation != null);
-  const registration = contextView.registerProvider(activation.getContextProvider());
+  const registration = await contextView.registerProvider(activation.getContextProvider());
   activation.setContextViewRegistration(registration);
 }

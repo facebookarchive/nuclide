@@ -143,7 +143,6 @@ export class ContextViewManager {
    * re-renders if necessary.
    */
   consumeDefinitionService(service: ?DefinitionService): void {
-    // TODO (reesjones) handle case when definition service is deactivated
     this._definitionService = service;
     this.updateSubscription();
 

@@ -14,25 +14,26 @@ import type {DefinitionService} from '../../nuclide-definition-service';
 
 import {ContextViewManager} from './ContextViewManager';
 import {Disposable} from 'atom';
+import passesGK from '../../commons-node/passesGK';
 import invariant from 'assert';
 
-const INITIAL_PANEL_WIDTH: number = 300;
-const INITIAL_PANEL_VISIBILITY: boolean = false;
+const INITIAL_PANEL_WIDTH = 300;
+const INITIAL_PANEL_VISIBILITY = false;
+const CONTEXT_VIEW_GK = 'nuclide_context_view';
 
 let currentService: ?DefinitionService = null;
 let manager: ?ContextViewManager = null;
+const initialViewState = {};
 
-export function activate(state: ContextViewConfig = {}): void {
-  if (manager === null) {
-    manager = new ContextViewManager(
-      state.width || INITIAL_PANEL_WIDTH,
-      state.visible || INITIAL_PANEL_VISIBILITY,
-    );
-  }
+export function activate(activationState: ContextViewConfig = {}): void {
+  initialViewState.width = activationState.width || INITIAL_PANEL_WIDTH;
+  initialViewState.visible = activationState.visible || INITIAL_PANEL_VISIBILITY;
 }
 
 export function deactivate(): void {
+  currentService = null;
   if (manager != null) {
+    manager.consumeDefinitionService(null);
     manager.dispose();
     manager = null;
   }
@@ -44,10 +45,16 @@ export function serialize(): ?ContextViewConfig {
   }
 }
 
-function updateService(): void {
-  if (manager != null) {
-    manager.consumeDefinitionService(currentService);
+/** Returns the singleton ContextViewManager instance of this package, or null
+ * if the user doesn't pass the Context View GK check. */
+async function getContextViewManager(): Promise<?ContextViewManager> {
+  if (!await passesGK(CONTEXT_VIEW_GK)) {
+    return null;
   }
+  if (manager == null) {
+    manager = new ContextViewManager(initialViewState.width, initialViewState.visible);
+  }
+  return manager;
 }
 
 /**
@@ -56,27 +63,34 @@ function updateService(): void {
  * nuclide-context-view service and register themselves as a provider.
  */
 const Service = {
-  registerProvider(provider: ContextProvider): Disposable {
-    invariant(manager != null, 'Cannot register context provider with null ContextViewManager');
+  async registerProvider(provider: ContextProvider): Promise<Disposable> {
     invariant(provider != null, 'Cannot register null context provider');
-    manager.registerProvider(provider);
+    const contextViewManager = await getContextViewManager();
+    if (contextViewManager == null) {
+      return new Disposable();
+    }
+    contextViewManager.registerProvider(provider);
     return new Disposable(() => {
-      if (manager != null) {
-        manager.deregisterProvider(provider.id);
-      }
+      contextViewManager.deregisterProvider(provider.id);
     });
   },
 };
 
 export function consumeDefinitionService(service: DefinitionService): IDisposable {
-  if (service !== currentService) {
-    currentService = service;
-    updateService();
-  }
+  getContextViewManager().then((contextViewManager: ?ContextViewManager) => {
+    if (contextViewManager == null) {
+      return;
+    }
+    if (service !== currentService) {
+      currentService = service;
+      contextViewManager.consumeDefinitionService(currentService);
+    }
+  });
   return new Disposable(() => {
-    invariant(currentService === service);
     currentService = null;
-    updateService();
+    if (manager != null) {
+      manager.consumeDefinitionService(null);
+    }
   });
 }
 
