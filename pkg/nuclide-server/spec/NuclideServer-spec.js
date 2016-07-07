@@ -66,7 +66,7 @@ describe('Nuclide Server test suite', () => {
       const message4 = JSON.stringify({foo4: 'bar4'});
 
       // Wait for the connection to exist on the server.
-      waitsForPromise(() => server._clients.size === 1);
+      waitsFor(() => server._clients.size === 1);
 
       let serverSocketClient = null;
       runs(() => {
