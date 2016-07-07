@@ -27,6 +27,10 @@ const basePath = '/tmp/project';
 const filePath = '/tmp/project/file.hh';
 const contents = `<?hh // strict
 class HackClass {}`;
+const contents2 = `<?hh // strict
+fclass HackClass {}`;
+const contents3 = `<?hh // strict
+HH\\fclass HackClass {}`;
 
 describe('ServerHackLanguage', () => {
   let mockService: Object = (null: any);
@@ -91,15 +95,16 @@ describe('ServerHackLanguage', () => {
       };
       mockService.getCompletions.andReturn(serviceResults);
 
-      const result = await hackLanguage.getCompletions(filePath, contents, 15);
+      const result = await hackLanguage.getCompletions(filePath, contents2, 16);
 
       expect(mockService.getCompletions).toHaveBeenCalledWith(filePath, `<?hh // strict
-AUTO332class HackClass {}`);
+fAUTO332class HackClass {}`);
       expect(result).toEqual([
         {
           matchSnippet: 'foo(${1:p1}, ${2:p2})',
           matchText: 'foo',
           matchType: 'foo_type',
+          prefix: 'f',
         },
       ]);
     });
@@ -134,15 +139,16 @@ AUTO332class HackClass {}`);
       };
       mockService.getCompletions.andReturn(serviceResults);
 
-      const result = await hackLanguage.getCompletions(filePath, contents, 15);
+      const result = await hackLanguage.getCompletions(filePath, contents3, 19);
 
       expect(mockService.getCompletions).toHaveBeenCalledWith(filePath, `<?hh // strict
-AUTO332class HackClass {}`);
+HH\\fAUTO332class HackClass {}`);
       expect(result).toEqual([
         {
           matchSnippet: 'HH\\\\foo(${1:p1}, ${2:p2})',
           matchText: 'HH\\foo',
           matchType: 'foo_type',
+          prefix: 'HH\\f',
         },
       ]);
     });

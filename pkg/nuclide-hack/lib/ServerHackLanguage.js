@@ -60,7 +60,7 @@ export class ServerHackLanguage {
     if (completionsResult) {
       completions = completionsResult.completions;
     }
-    return processCompletions(completions);
+    return processCompletions(completions, contents, offset);
   }
 
   async formatSource(
@@ -225,14 +225,35 @@ function matchSnippet(name: string, params: ?Array<{name: string}>): string {
   }
 }
 
-function processCompletions(completionsResponse: Array<HackCompletion>):
-    Array<CompletionResult> {
+// Returns the length of the largest match between a suffix of contents
+// and a prefix of match.
+function matchLength(contents: string, match: string): number {
+  for (let i = match.length; i > 0; i--) {
+    const toMatch = match.substring(0, i);
+    if (contents.endsWith(toMatch)) {
+      return i;
+    }
+  }
+  return 0;
+}
+
+function processCompletions(
+  completionsResponse: Array<HackCompletion>,
+  contents: string,
+  offset: number,
+): Array<CompletionResult> {
+  const contentsLine = contents.substring(
+    contents.lastIndexOf('\n', offset - 1) + 1,
+    offset).toLowerCase();
   return completionsResponse.map(completion => {
     const {name, type, func_details: functionDetails} = completion;
     return {
       matchSnippet: matchSnippet(name, functionDetails && functionDetails.params),
       matchText: name,
       matchType: matchTypeOfType(type),
+      prefix: contents.substring(
+        offset - matchLength(contentsLine, name.toLowerCase()),
+        offset),
     };
   });
 }

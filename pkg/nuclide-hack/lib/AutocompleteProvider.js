@@ -38,7 +38,7 @@ export default class AutocompleteProvider {
     return completions.map(completion => {
       return {
         snippet: completion.matchSnippet,
-        replacementPrefix,
+        replacementPrefix: (completion.prefix === '') ? replacementPrefix : completion.prefix,
         rightLabel: completion.matchType,
       };
     });
@@ -120,6 +120,12 @@ export function compareHackCompletions(token: string)
   const tokenLowerCase = token.toLowerCase();
 
   return (completion1: CompletionResult, completion2: CompletionResult) => {
+    // Prefer completions with larger prefixes.
+    const prefixComparison = completion2.prefix.length - completion1.prefix.length;
+    if (prefixComparison !== 0) {
+      return prefixComparison;
+    }
+
     const matchTexts = [completion1.matchText, completion2.matchText];
     const scores = matchTexts.map((matchText, i) => {
       if (matchText.startsWith(token)) {

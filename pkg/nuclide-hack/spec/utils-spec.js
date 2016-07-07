@@ -13,11 +13,12 @@ import type {CompletionResult} from '../lib/HackLanguage';
 
 import {compareHackCompletions} from '../lib/AutocompleteProvider';
 
-function createCompletion(text: string): CompletionResult {
+function createCompletion(text: string, prefix: string = ''): CompletionResult {
   return {
     matchSnippet: text + '()',
     matchText: text,
     matchType: 'function',
+    prefix,
   };
 }
 
@@ -73,6 +74,16 @@ describe('utils', () => {
       const compartor = compareHackCompletions('getA');
       expect(completions.sort(compartor)).toEqual(
         [c7, c6]
+      );
+    });
+
+    it('prefer completions with longer prefixes', () => {
+      const comp1 = createCompletion(':foo', ':f');
+      const comp2 = createCompletion('foo', 'f');
+      const completions = [comp2, comp1];
+      const compartor = compareHackCompletions('f');
+      expect(completions.sort(compartor)).toEqual(
+        [comp1, comp2]
       );
     });
 

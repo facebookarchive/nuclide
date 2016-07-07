@@ -27,6 +27,7 @@ export type CompletionResult = {
   matchSnippet: string;
   matchText: string;
   matchType: string;
+  prefix: string;
 };
 
 export type DefinitionResult = {
