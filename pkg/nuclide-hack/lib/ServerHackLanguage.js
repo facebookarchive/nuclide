@@ -92,7 +92,7 @@ export class ServerHackLanguage {
     if (response == null) {
       return [];
     }
-    return response.positions.map(hackRangeToAtomRange);
+    return response.map(hackRangeToAtomRange);
   }
 
   async getDiagnostics(

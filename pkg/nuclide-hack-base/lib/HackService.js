@@ -128,10 +128,7 @@ export type HackTypeAtPosResult = {
   pos: ?HackRange;
 };
 
-export type HackFindLvarRefsResult = {
-  positions: Array<HackRange>;
-  internal_error: boolean;
-};
+export type HackHighlightRefsResult = Array<HackRange>;
 
 export type HackFormatSourceResult = {
   error_message: string;
@@ -378,9 +375,9 @@ export async function getSourceHighlights(
   contents: string,
   line: number,
   column: number,
-): Promise<?HackFindLvarRefsResult> {
+): Promise<?HackHighlightRefsResult> {
   const hhResult = await callHHClient(
-    /*args*/ ['--find-lvar-refs', formatLineColumn(line, column)],
+    /*args*/ ['--ide-highlight-refs', formatLineColumn(line, column)],
     /*errorStream*/ false,
     /*outputJson*/ true,
     /*processInput*/ contents,

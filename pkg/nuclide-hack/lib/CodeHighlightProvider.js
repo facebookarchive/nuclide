@@ -31,7 +31,7 @@ async function codeHighlightFromEditor(
   invariant(filePath != null);
 
   const id = getIdentifierAtPosition(editor, position);
-  if (id == null || !id.startsWith('$')) {
+  if (id == null) {
     return [];
   }
 

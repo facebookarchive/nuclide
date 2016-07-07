@@ -16,7 +16,7 @@ import type {
   HackDiagnosticsResult,
   HackTypedRegion,
   HackTypeAtPosResult,
-  HackFindLvarRefsResult,
+  HackHighlightRefsResult,
   HackFormatSourceResult,
   HackReferencesResult,
 } from '../../nuclide-hack-base/lib/HackService';
@@ -172,23 +172,20 @@ HH\\fAUTO332class HackClass {}`);
 
   it('highlightSource', () => {
     waitsForPromise(async () => {
-      const serviceResults: HackFindLvarRefsResult = {
-        positions: [
-          {
-            filename: filePath,
-            line: 1,
-            char_start: 2,
-            char_end: 2,
-          },
-          {
-            filename: filePath,
-            line: 2,
-            char_start: 4,
-            char_end: 6,
-          },
-        ],
-        internal_error: false,
-      };
+      const serviceResults: HackHighlightRefsResult = [
+        {
+          filename: filePath,
+          line: 1,
+          char_start: 2,
+          char_end: 2,
+        },
+        {
+          filename: filePath,
+          line: 2,
+          char_start: 4,
+          char_end: 6,
+        },
+      ];
       mockService.getSourceHighlights.andReturn(serviceResults);
 
       const result = await hackLanguage.highlightSource(filePath, contents, 4, 6);
