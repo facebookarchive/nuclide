@@ -286,9 +286,9 @@ function observeAllModifiedStatusChanges(): Observable<void> {
   return paneItemChangeEvents
   .map(getCurrentBuffers)
   .switchMap(buffers => Observable.merge(
-    ...buffers.map(buffer => {
+    ...(buffers.map(buffer => {
       return observableFromSubscribeFunction(buffer.onDidChangeModified.bind(buffer));
-    })
+    }): Array<Observable<void>>)
   ));
 }
 

@@ -378,7 +378,7 @@ function _createProcessStream(
         .merge(throwOnError ? errors.flatMap(Observable.throw) : Observable.empty())
         .takeUntil(completion)
         .subscribe(observer),
-      () => { disposed = true; maybeKill(); },
+      (() => { disposed = true; maybeKill(); }: () => void),
     );
   });
   // TODO: We should really `.share()` this observable, but there seem to be issues with that and

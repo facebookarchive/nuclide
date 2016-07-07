@@ -29,25 +29,25 @@ describe('HyperclickProvider', () => {
       spyOn(buckProject, 'getBuckConfig').andReturn(Promise.resolve(null));
       waitsForPromise(async () => {
         let target = await parseTarget(
-            [':target1', null, 'target1'],
+            ([':target1', null, 'target1']: Array<?string>),
             null,
             buckProject);
         expect(target).toBe(null);
 
         target = await parseTarget(
-            [':target1', null, 'target1'],
+            ([':target1', null, 'target1']: Array<?string>),
             projectPath + 'test/BUCK',
             buckProject);
         expect(target).toEqual({path: projectPath + 'test/BUCK', name: 'target1'});
 
         target = await parseTarget(
-            ['//Apps/TestApp:w3ird', '//Apps/TestApp', 'w3ird'],
+            (['//Apps/TestApp:w3ird', '//Apps/TestApp', 'w3ird']: Array<string>),
             null,
             buckProject);
         expect(target).toEqual(null);
 
         target = await parseTarget(
-            ['//Apps/TestApp:w3ird', '//Apps/TestApp', 'w3ird'],
+            (['//Apps/TestApp:w3ird', '//Apps/TestApp', 'w3ird']: Array<string>),
             '//test/BUCK',
             buckProject);
         expect(target).toEqual({path: projectPath + 'Apps/TestApp/BUCK', name: 'w3ird'});

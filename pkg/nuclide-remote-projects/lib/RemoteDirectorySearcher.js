@@ -10,6 +10,7 @@
  */
 
 import typeof * as FindInProjectService from '../../nuclide-remote-search';
+import type {search$FileResult} from '../../nuclide-remote-search';
 
 import {Observable, ReplaySubject} from 'rxjs';
 import {RemoteDirectory} from '../../nuclide-remote-connection';
@@ -43,9 +44,11 @@ class RemoteDirectorySearcher {
     // Get the remote service that corresponds to each remote directory.
     const services = directories.map(dir => this._serviceProvider(dir));
 
+    const searchStreams: Array<Observable<search$FileResult>> = directories.map((dir, index) =>
+      services[index].findInProjectSearch(dir.getPath(), regex, options.inclusions));
+
     // Start the search in each directory, and merge the resulting streams.
-    const searchStream = Observable.merge(...directories.map((dir, index) =>
-      services[index].findInProjectSearch(dir.getPath(), regex, options.inclusions)));
+    const searchStream = Observable.merge(...searchStreams);
 
     // Create a subject that we can use to track search completion.
     const searchCompletion = new ReplaySubject();

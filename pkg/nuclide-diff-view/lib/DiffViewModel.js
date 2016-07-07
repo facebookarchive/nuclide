@@ -1020,7 +1020,7 @@ class DiffViewModel {
         }
         return splitMessages;
       });
-    const levelStreams = [];
+    const levelStreams: Array<Rx.Observable<Array<{level: string; text: string}>>> = [];
     for (const level of ['log', 'error']) {
       const levelStream = stream
         .filter(
