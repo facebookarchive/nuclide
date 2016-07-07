@@ -99,13 +99,13 @@ async function fetchCompletionsForEditor(
   // insentively.
   const tokenLowerCase = prefix.toLowerCase();
 
-  const hackCompletionsCompartor = compareHackCompletions(prefix);
+  const hackCompletionsComparator = compareHackCompletions(prefix);
   return completions
     .filter(completion => completion.matchText.toLowerCase().indexOf(tokenLowerCase) >= 0)
     // Sort the auto-completions based on a scoring function considering:
     // case sensitivity, position in the completion, private functions and alphabetical order.
     .sort((completion1, completion2) =>
-      hackCompletionsCompartor(completion1.matchText, completion2.matchText));
+      hackCompletionsComparator(completion1, completion2));
 }
 
 const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
@@ -116,11 +116,11 @@ const MATCH_PRIVATE_FUNCTION_PENALTY = -4;
 const MATCH_APLHABETICAL_SCORE = 1;
 
 export function compareHackCompletions(token: string)
-    : (matchText1: string, matchText2: string) => number {
+    : (completion1: CompletionResult, completion2: CompletionResult) => number {
   const tokenLowerCase = token.toLowerCase();
 
-  return (matchText1: string, matchText2: string) => {
-    const matchTexts = [matchText1, matchText2];
+  return (completion1: CompletionResult, completion2: CompletionResult) => {
+    const matchTexts = [completion1.matchText, completion2.matchText];
     const scores = matchTexts.map((matchText, i) => {
       if (matchText.startsWith(token)) {
         // Matches starting with the prefix gets the highest score.

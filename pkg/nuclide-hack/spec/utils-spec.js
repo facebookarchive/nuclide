@@ -9,7 +9,25 @@
  * the root directory of this source tree.
  */
 
+import type {CompletionResult} from '../lib/HackLanguage';
+
 import {compareHackCompletions} from '../lib/AutocompleteProvider';
+
+function createCompletion(text: string): CompletionResult {
+  return {
+    matchSnippet: text + '()',
+    matchText: text,
+    matchType: 'function',
+  };
+}
+
+const c1:CompletionResult = createCompletion('GetAaa');
+const c2:CompletionResult = createCompletion('getAzzz');
+const c3:CompletionResult = createCompletion('aa_getaaa');
+const c4:CompletionResult = createCompletion('zz_getAaa');
+const c5:CompletionResult = createCompletion('aa_getAaa');
+const c6:CompletionResult = createCompletion('_aa_getAaa');
+const c7:CompletionResult = createCompletion('zz_getaaaa');
 
 describe('utils', () => {
 
@@ -17,64 +35,64 @@ describe('utils', () => {
 
     it('prefers prefix case sensitive matches to prefix case insensitive + alphabetical'
       + ' order', () => {
-      const matchTexts = ['GetAaa()', 'getAzzz()'];
+      const completions = [c1, c2];
       const compartor = compareHackCompletions('getA');
-      expect(matchTexts.sort(compartor)).toEqual(
-        ['getAzzz()', 'GetAaa()']
+      expect(completions.sort(compartor)).toEqual(
+        [c2, c1]
       );
     });
 
     it('prefers prefix case insensitive matches to case insensitive non-prefix matches +'
       + ' alphabetical order', () => {
-      const matchTexts = ['aa_getAaa()', 'getAzzz()'];
+      const completions = [c3, c2];
       const compartor = compareHackCompletions('getA');
-      expect(matchTexts.sort(compartor)).toEqual(
-        ['getAzzz()', 'aa_getAaa()']
+      expect(completions.sort(compartor)).toEqual(
+        [c2, c3]
       );
     });
 
     it('prefers non-prefix case sensitive matches to case insensitive non-prefix matches +'
       + ' alphabetical order', () => {
-      const matchTexts = ['aa_getaaa()', 'zz_getAaa()'];
+      const completions = [c3, c4];
       const compartor = compareHackCompletions('getA');
-      expect(matchTexts.sort(compartor)).toEqual(
-        ['zz_getAaa()', 'aa_getaaa()']
+      expect(completions.sort(compartor)).toEqual(
+        [c4, c3]
       );
     });
 
     it('prefers alphabetical order when both are of the same type', () => {
-      const matchTexts = ['zz_getAaa()', 'aa_getAaa()'];
+      const completions = [c4, c5];
       const compartor = compareHackCompletions('getA');
-      expect(matchTexts.sort(compartor)).toEqual(
-        ['aa_getAaa()', 'zz_getAaa()']
+      expect(completions.sort(compartor)).toEqual(
+        [c5, c4]
       );
     });
 
     it('penalizes a match if is private function, even if matching with case sensitivity', () => {
-      const matchTexts = ['_aa_getAaa()', 'zz_getaaaa()'];
+      const completions = [c6, c7];
       const compartor = compareHackCompletions('getA');
-      expect(matchTexts.sort(compartor)).toEqual(
-        ['zz_getaaaa()', '_aa_getAaa()']
+      expect(completions.sort(compartor)).toEqual(
+        [c7, c6]
       );
     });
 
     it('sorts the completion results in a meaningful order', () => {
-      const matchTexts = [
-        '_getAbc()',
-        '_getAab()',
-        'getAppend()',
-        'getAddendum()',
-        'doOrGetACup()',
-        '_doOrGetACup()',
+      const comps = [
+        createCompletion('_getAbc()'),
+        createCompletion('_getAab()'),
+        createCompletion('getAppend()'),
+        createCompletion('getAddendum()'),
+        createCompletion('doOrGetACup()'),
+        createCompletion('_doOrGetACup()'),
       ];
       const compartor = compareHackCompletions('getA');
-      expect(matchTexts.sort(compartor)).toEqual([
-        'getAddendum()',
-        'getAppend()',
-        'doOrGetACup()',
-        '_getAab()',
-        '_getAbc()',
-        '_doOrGetACup()',
+      expect(comps.sort(compartor)).toEqual([
+        createCompletion('getAddendum()'),
+        createCompletion('getAppend()'),
+        createCompletion('doOrGetACup()'),
+        createCompletion('_getAab()'),
+        createCompletion('_getAbc()'),
+        createCompletion('_doOrGetACup()'),
       ]);
     });
   });
