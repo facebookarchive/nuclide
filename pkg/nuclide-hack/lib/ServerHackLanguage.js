@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {CompletionResult, Definition} from './HackLanguage';
 import type {
+  HackParameterDetails,
   HackCompletion,
   HackDiagnostic,
   HackRange,
@@ -213,7 +214,7 @@ function escapeName(name: string): string {
   return name.replace(/\\/g, '\\\\');
 }
 
-function matchSnippet(name: string, params: ?Array<{name: string}>): string {
+function matchSnippet(name: string, params: ?Array<HackParameterDetails>): string {
   const escapedName = escapeName(name);
   if (params != null) {
     // Construct the snippet: e.g. myFunction(${1:$arg1}, ${2:$arg2});
@@ -245,10 +246,10 @@ function processCompletions(
   const contentsLine = contents.substring(
     contents.lastIndexOf('\n', offset - 1) + 1,
     offset).toLowerCase();
-  return completionsResponse.map(completion => {
-    const {name, type, func_details: functionDetails} = completion;
+  return completionsResponse.map((completion: HackCompletion) => {
+    const {name, type, func_details} = completion;
     return {
-      matchSnippet: matchSnippet(name, functionDetails && functionDetails.params),
+      matchSnippet: matchSnippet(name, func_details && func_details.params),
       matchText: name,
       matchType: matchTypeOfType(type),
       prefix: contents.substring(

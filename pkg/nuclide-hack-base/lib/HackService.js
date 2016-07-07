@@ -48,8 +48,16 @@ export type SingleHackMessage = {
   end: number;
 };
 
+export type HackParameterDetails = {
+  name: string;
+  type: string;
+  variadic: boolean;
+};
+
 export type HackFunctionDetails = {
-  params: Array<{name: string}>;
+  min_arity: number;
+  return_type: string;
+  params: Array<HackParameterDetails>;
 };
 
 // Note that all line/column values are 1-based.
@@ -74,6 +82,7 @@ export type HackCompletion = {
   type: string;
   pos: HackRange;
   func_details: ?HackFunctionDetails;
+  expected_ty: boolean;
 };
 
 export type HackCompletionsResult = {

@@ -74,12 +74,18 @@ describe('ServerHackLanguage', () => {
           {
             name: 'foo',
             func_details: {
+              min_arity: 2,
+              return_type: 'string',
               params: [
                 {
                   name: 'p1',
+                  type: 'string',
+                  variadic: false,
                 },
                 {
                   name: 'p2',
+                  type: 'string',
+                  variadic: false,
                 },
               ],
             },
@@ -90,6 +96,7 @@ describe('ServerHackLanguage', () => {
               char_start: 0,
               char_end: 10,
             },
+            expected_ty: false,
           },
         ],
       };
@@ -118,12 +125,18 @@ fAUTO332class HackClass {}`);
           {
             name: 'HH\\foo',
             func_details: {
+              min_arity: 2,
+              return_type: 'string',
               params: [
                 {
                   name: 'p1',
+                  type: 'string',
+                  variadic: false,
                 },
                 {
                   name: 'p2',
+                  type: 'string',
+                  variadic: false,
                 },
               ],
             },
@@ -134,6 +147,7 @@ fAUTO332class HackClass {}`);
               char_start: 0,
               char_end: 10,
             },
+            expected_ty: false,
           },
         ],
       };
