@@ -212,6 +212,43 @@ export function reconcileSetDiffs<T>(
   );
 }
 
+/**
+ * Given a stream of sets, perform a side-effect whenever an item is added (i.e. is present in a
+ * set but wasn't in the previous set in the stream), and a corresponding cleanup when it's removed.
+ * **IMPORTANT:** These sets are assumed to be immutable by convention. Don't mutate them!
+ *
+ * Example:
+ *
+ *    const dogs = Observable.of(
+ *      new Set([{name: 'Winston', id: 1}, {name: 'Penelope', id: 2}]),
+ *      new Set([{name: 'Winston', id: 1}]),
+ *    );
+ *    const disposable = reconcileSets(
+ *      dogs,
+ *      dog => {
+ *        const notification = atom.notifications.addSuccess(
+ *          `${dog.name} was added!`,
+ *          {dismissable: true},
+ *        );
+ *        return new Disposable(() => { notification.dismiss(); });
+ *      },
+ *      dog => dog.id,
+ *    );
+ *
+ * The above code will first add notifications saying "Winston was added!" and "Penelope was
+ * added!", then dismiss the "Penelope" notification. Since the Winston object is in the final set
+ * of the dogs observable, his notification will remain until `disposable.dispose()` is called, at
+ * which point the cleanup for all remaining items will be performed.
+ */
+export function reconcileSets<T>(
+  sets: Observable<Set<T>>,
+  addAction: (addedItem: T) => IDisposable,
+  hash?: (v: T) => any,
+): IDisposable {
+  const diffs = diffSets(sets, hash);
+  return reconcileSetDiffs(diffs, addAction, hash);
+}
+
 export function toggle<T>(
   source: Observable<T>,
   toggler: Observable<boolean>,

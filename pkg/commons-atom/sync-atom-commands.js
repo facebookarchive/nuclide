@@ -15,7 +15,7 @@ export type AtomCommands = {
   };
 };
 
-import {diffSets, reconcileSetDiffs} from '../commons-node/stream';
+import {reconcileSets} from '../commons-node/stream';
 import {CompositeDisposable} from 'atom';
 import {Observable} from 'rxjs';
 
@@ -37,8 +37,8 @@ export default function syncAtomCommands<T>(
     .concat(Observable.of(new Set()))
     .catch(err => Observable.of(new Set()).concat(Observable.throw(err)));
 
-  return reconcileSetDiffs(
-    diffSets(sets),
+  return reconcileSets(
+    sets,
     item => {
       const commands = project(item);
       const disposables = Object.keys(commands).map(target => (
