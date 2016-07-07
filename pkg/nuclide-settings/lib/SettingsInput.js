@@ -51,10 +51,7 @@ export default class SettingsInput extends React.Component {
     }
 
     newValue = parseValue(this.props.type, newValue);
-    this.props.onChange({
-      keyPath: this.props.keyPath,
-      newValue,
-    });
+    this.props.onChange(newValue);
   }
 
   _onFocus() {

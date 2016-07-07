@@ -9,18 +9,11 @@
  * the root directory of this source tree.
  */
 
-export type SettingsEvent = {
-  keyPath: string;
-  newValue: any;
-};
-
-export type SettingsChanged = (event: SettingsEvent) => void;
-
 export type SettingsData = {
   name: string;
   description: string;
   keyPath: string;
-  onChange: SettingsChanged;
+  onChange: (value: any) => mixed;
   title: string;
   value: ?any;
 };
@@ -29,5 +22,5 @@ export type SettingsPropsDefault = {
   title: string;
   description: string;
   keyPath: string;
-  onChange: SettingsChanged;
+  onChange: (value: any) => mixed;
 };

@@ -28,10 +28,7 @@ export default class SettingsSelect extends React.Component {
 
   _handleChange(event: SyntheticEvent) {
     const value = ((event.target: any): HTMLInputElement).value;
-    this.props.onChange({
-      keyPath: this.props.keyPath,
-      newValue: value,
-    });
+    this.props.onChange(value);
   }
 
   render(): React.Element<any> {

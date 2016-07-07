@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {SettingsEvent} from './types';
-
 import {CompositeDisposable} from 'atom';
 import featureConfig from '../../nuclide-feature-config';
 import {React} from 'react-for-atom';
@@ -92,7 +90,7 @@ export default class NuclideSettingsPaneItem extends React.Component {
             name: settingName,
             description: getDescription(schema),
             keyPath,
-            onChange: this._handleComponentChange,
+            onChange: value => { this._handleComponentChange(keyPath, value); },
             order: getOrder(schema),
             title: getTitle(schema, settingName),
             value: featureConfig.get(keyPath),
@@ -121,8 +119,8 @@ export default class NuclideSettingsPaneItem extends React.Component {
     setTimeout(() => this.setState(this._getConfigData()));
   }
 
-  _handleComponentChange(event: SettingsEvent) {
-    featureConfig.set(event.keyPath, event.newValue);
+  _handleComponentChange(keyPath: string, value: any): void {
+    featureConfig.set(keyPath, value);
   }
 
   render(): React.Element<any> {

@@ -28,10 +28,7 @@ export default class SettingsCheckbox extends React.Component {
 
   _handleChange(event: SyntheticEvent) {
     const isChecked = ((event.target: any): HTMLInputElement).checked;
-    this.props.onChange({
-      keyPath: this.props.keyPath,
-      newValue: isChecked,
-    });
+    this.props.onChange(isChecked);
   }
 
   render(): React.Element<any> {
