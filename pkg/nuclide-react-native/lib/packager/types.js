@@ -9,8 +9,18 @@
  * the root directory of this source tree.
  */
 
+import type {Message} from '../../../nuclide-console/lib/types';
+
 export type CommandInfo = {
   command: string;
   cwd: string;
   args?: Array<string>;
 };
+
+type ReadyEvent = {kind: 'ready'};
+type MessageEvent = {
+  kind: 'message';
+  message: Message;
+};
+
+export type PackagerEvent = ReadyEvent | MessageEvent;

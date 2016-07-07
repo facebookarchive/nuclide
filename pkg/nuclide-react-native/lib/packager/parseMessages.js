@@ -9,6 +9,7 @@
  */
 
 import type {Message} from '../../../nuclide-console/lib/types';
+import type {PackagerEvent} from './types';
 
 import {Observable} from 'rxjs';
 
@@ -16,16 +17,18 @@ const PORT_LINE = /.*(Running packager on port.*?)\s*│/;
 const SOURCE_LIST_START = /Looking for JS files in/;
 const NORMAL_LINE = /^\s*\[(\d+):(\d+):(\d+) (A|P)M\]\s*(.*?)\s*$/;
 const ERROR_LINE = /^\s*ERROR\s*(.*?)\s*$/;
+const READY_LINE = /React packager ready/i;
 
 /**
  * Parses output from the packager into messages.
  */
-export function parseMessages(raw: Observable<string>): Observable<Message> {
+export function parseMessages(raw: Observable<string>): Observable<PackagerEvent> {
   return Observable.create(observer => {
     let sawPreamble = false;
     let sawPortLine = false;
     let sawSourcesStart = false;
     let sawSourcesEnd = false;
+    let sawReadyMessage = false;
     const sourceDirectories = [];
 
     return raw.subscribe({
@@ -40,8 +43,11 @@ export function parseMessages(raw: Observable<string>): Observable<Message> {
           if (match != null) {
             sawPortLine = true;
             observer.next({
-              level: 'info',
-              text: match[1],
+              kind: 'message',
+              message: {
+                level: 'info',
+                text: match[1],
+              },
             });
             return;
           }
@@ -62,8 +68,11 @@ export function parseMessages(raw: Observable<string>): Observable<Message> {
             // We've gotten our list!
             sawSourcesEnd = true;
             observer.next({
-              level: 'info',
-              text: `Looking for JS files in: ${sourceDirectories.join(',')}`,
+              kind: 'message',
+              message: {
+                level: 'info',
+                text: `Looking for JS files in: ${sourceDirectories.join(',')}`,
+              },
             });
             return;
           }
@@ -73,7 +82,13 @@ export function parseMessages(raw: Observable<string>): Observable<Message> {
           // Drop all blank lines that come after the preamble.
           if (isBlankLine(line)) { return; }
 
-          observer.next(parseRegularMessage(line));
+          observer.next({kind: 'message', message: parseRegularMessage(line)});
+
+          if (!sawReadyMessage && READY_LINE.test('React packager ready')) {
+            sawReadyMessage = true;
+            observer.next({kind: 'ready'});
+          }
+
           return;
         }
 

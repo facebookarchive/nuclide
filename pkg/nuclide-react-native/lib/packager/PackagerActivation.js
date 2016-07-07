@@ -9,13 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {Message, OutputService} from '../../../nuclide-console/lib/types';
+import type {OutputService} from '../../../nuclide-console/lib/types';
+import type {PackagerEvent} from './types';
 
 import {LogTailer} from '../../../nuclide-console/lib/LogTailer';
 import {observeProcess, safeSpawn} from '../../../commons-node/process';
 import {getCommandInfo} from './getCommandInfo';
 import {parseMessages} from './parseMessages';
 import {CompositeDisposable, Disposable} from 'atom';
+import invariant from 'assert';
 import {Observable} from 'rxjs';
 
 /**
@@ -27,9 +29,17 @@ export class PackagerActivation {
   _disposables: CompositeDisposable;
 
   constructor() {
+    const packagerEvents = Observable.defer(getPackagerObservable).share();
+    const messages = packagerEvents
+      .filter(event => event.kind === 'message')
+      .map(event => (invariant(event.kind === 'message'), event.message));
+    const ready = packagerEvents
+      .filter(message => message.kind === 'ready')
+      .mapTo(undefined);
     this._logTailer = new LogTailer({
       name: 'React Native Packager',
-      messages: Observable.defer(getPackagerObservable),
+      messages,
+      ready,
       trackingEvents: {
         start: 'react-native-packager:start',
         stop: 'react-native-packager:stop',
@@ -75,7 +85,7 @@ class NoReactNativeProjectError extends Error {
 /**
  * Create an observable that runs the packager and and collects its output.
  */
-function getPackagerObservable(): Observable<Message> {
+function getPackagerObservable(): Observable<PackagerEvent> {
   const stdout = Observable.fromPromise(getCommandInfo())
     .switchMap(commandInfo => (
       commandInfo == null
