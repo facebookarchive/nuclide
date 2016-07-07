@@ -174,6 +174,20 @@ describe('diffSets', () => {
     });
   });
 
+  it('correctly identifies removed items when a hash function is used', () => {
+    waitsForPromise(async () => {
+      const source = new Subject();
+      const diffsPromise = diffSets(source, x => x.key).toArray().toPromise();
+      const firstItems = [{key: 1}, {key: 2}, {key: 3}];
+      const secondItems = [{key: 1}, {key: 2}];
+      source.next(new Set(firstItems));
+      source.next(new Set(secondItems));
+      source.complete();
+      const diffs = await diffsPromise;
+      expect(setsAreEqual(diffs[1].removed, new Set([firstItems[2]]))).toBe(true);
+    });
+  });
+
   it('correctly identifies added items', () => {
     waitsForPromise(async () => {
       const source = new Subject();
@@ -186,12 +200,41 @@ describe('diffSets', () => {
     });
   });
 
+  it('correctly identifies added items when a hash function is used', () => {
+    waitsForPromise(async () => {
+      const source = new Subject();
+      const diffsPromise = diffSets(source, x => x.key).toArray().toPromise();
+      const firstItems = [{key: 1}, {key: 2}];
+      const secondItems = [{key: 1}, {key: 2}, {key: 3}];
+      source.next(new Set(firstItems));
+      source.next(new Set(secondItems));
+      source.complete();
+      const diffs = await diffsPromise;
+      expect(setsAreEqual(diffs[1].added, new Set([secondItems[2]]))).toBe(true);
+    });
+  });
+
   it("doesn't emit a diff when nothing changes", () => {
     waitsForPromise(async () => {
       const source = new Subject();
       const diffsPromise = diffSets(source).toArray().toPromise();
       source.next(new Set([1, 2, 3]));
       source.next(new Set([1, 2, 3]));
+      source.complete();
+      const diffs = await diffsPromise;
+      // Make sure we only get one diff (from the implicit initial empty set).
+      expect(diffs.length).toBe(1);
+    });
+  });
+
+  it("doesn't emit a diff when nothing changes and a hash function is used", () => {
+    waitsForPromise(async () => {
+      const source = new Subject();
+      const diffsPromise = diffSets(source, x => x.key).toArray().toPromise();
+      const firstItems = [{key: 1}, {key: 2}, {key: 3}];
+      const secondItems = [{key: 1}, {key: 2}, {key: 3}];
+      source.next(new Set(firstItems));
+      source.next(new Set(secondItems));
       source.complete();
       const diffs = await diffsPromise;
       // Make sure we only get one diff (from the implicit initial empty set).
@@ -247,6 +290,26 @@ describe('reconcileSetDiffs', () => {
       removed: new Set(),
     });
     reconciliationDisposable.dispose();
+    expect(disposables.a.dispose).toHaveBeenCalled();
+    expect(disposables.b.dispose).toHaveBeenCalled();
+  });
+
+  it("disposes for each item that's removed when a hash function is used", () => {
+    const diffs = new Subject();
+    const disposables = {
+      a: createDisposable(),
+      b: createDisposable(),
+    };
+    const addAction = item => disposables[item.key];
+    reconcileSetDiffs(diffs, addAction, x => x.key);
+    diffs.next({
+      added: new Set([{key: 'a'}, {key: 'b'}]),
+      removed: new Set(),
+    });
+    diffs.next({
+      added: new Set(),
+      removed: new Set([{key: 'a'}, {key: 'b'}]),
+    });
     expect(disposables.a.dispose).toHaveBeenCalled();
     expect(disposables.b.dispose).toHaveBeenCalled();
   });

@@ -141,10 +141,17 @@ type Diff<T> = {
   removed: Set<T>;
 };
 
-function subtractSet<T>(a: Set<T>, b: Set<T>): Set<T> {
+function subtractSet<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): Set<T> {
+  if (a.size === 0) {
+    return new Set();
+  } else if (b.size === 0) {
+    return new Set(a);
+  }
   const result = new Set();
+  const hash = hash_ || (x => x);
+  const bHashes = hash_ == null ? b : new Set(Array.from(b.values()).map(hash));
   a.forEach(value => {
-    if (!b.has(value)) {
+    if (!bHashes.has(hash(value))) {
       result.add(value);
     }
   });
@@ -152,36 +159,21 @@ function subtractSet<T>(a: Set<T>, b: Set<T>): Set<T> {
 }
 
 /**
- * Shallowly compare two Sets.
- */
-function setsAreEqual<T>(a: Set<T>, b: Set<T>): boolean {
-  if (a.size !== b.size) {
-    return false;
-  }
-  for (const item of a) {
-    if (!b.has(item)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/**
  * Given a stream of sets, return a stream of diffs.
  * **IMPORTANT:** These sets are assumed to be immutable by convention. Don't mutate them!
  */
-export function diffSets<T>(stream: Observable<Set<T>>): Observable<Diff<T>> {
+export function diffSets<T>(sets: Observable<Set<T>>, hash?: (v: T) => any): Observable<Diff<T>> {
   return Observable.concat(
       Observable.of(new Set()), // Always start with no items with an empty set
-      stream,
+      sets,
     )
-    .distinctUntilChanged(setsAreEqual)
     // $FlowFixMe(matthewwithanm): Type this.
     .pairwise()
     .map(([previous, next]) => ({
-      added: subtractSet(next, previous),
-      removed: subtractSet(previous, next),
-    }));
+      added: subtractSet(next, previous, hash),
+      removed: subtractSet(previous, next, hash),
+    }))
+    .filter(diff => diff.added.size > 0 || diff.removed.size > 0);
 }
 
 /**
@@ -191,10 +183,12 @@ export function diffSets<T>(stream: Observable<Set<T>>): Observable<Diff<T>> {
 export function reconcileSetDiffs<T>(
   diffs: Observable<Diff<T>>,
   addAction: (addedItem: T) => IDisposable,
+  hash_?: (v: T) => any,
 ): IDisposable {
+  const hash = hash_ || (x => x);
   const itemsToDisposables = new Map();
   const disposeItem = item => {
-    const disposable = itemsToDisposables.get(item);
+    const disposable = itemsToDisposables.get(hash(item));
     invariant(disposable != null);
     disposable.dispose();
     itemsToDisposables.delete(item);
@@ -208,7 +202,7 @@ export function reconcileSetDiffs<T>(
     new DisposableSubscription(
       diffs.subscribe(diff => {
         // For every item that got added, perform the add action.
-        diff.added.forEach(item => { itemsToDisposables.set(item, addAction(item)); });
+        diff.added.forEach(item => { itemsToDisposables.set(hash(item), addAction(item)); });
 
         // "Undo" the add action for each item that got removed.
         diff.removed.forEach(disposeItem);
