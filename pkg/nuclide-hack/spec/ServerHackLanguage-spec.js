@@ -105,6 +105,49 @@ AUTO332class HackClass {}`);
     });
   });
 
+  it('getCompletions - escaping', () => {
+    waitsForPromise(async () => {
+      const serviceResults: HackCompletionsResult = {
+        hackRoot: basePath,
+        completions: [
+          {
+            name: 'HH\\foo',
+            func_details: {
+              params: [
+                {
+                  name: 'p1',
+                },
+                {
+                  name: 'p2',
+                },
+              ],
+            },
+            type: 'foo_type',
+            pos: {
+              filename: filePath,
+              line: 42,
+              char_start: 0,
+              char_end: 10,
+            },
+          },
+        ],
+      };
+      mockService.getCompletions.andReturn(serviceResults);
+
+      const result = await hackLanguage.getCompletions(filePath, contents, 15);
+
+      expect(mockService.getCompletions).toHaveBeenCalledWith(filePath, `<?hh // strict
+AUTO332class HackClass {}`);
+      expect(result).toEqual([
+        {
+          matchSnippet: 'HH\\\\foo(${1:p1}, ${2:p2})',
+          matchText: 'HH\\foo',
+          matchType: 'foo_type',
+        },
+      ]);
+    });
+  });
+
   it('formatSource', () => {
     waitsForPromise(async () => {
       const serviceResult: HackFormatSourceResult = {

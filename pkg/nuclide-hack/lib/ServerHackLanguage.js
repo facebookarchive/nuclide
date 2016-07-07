@@ -209,14 +209,19 @@ function matchTypeOfType(type: string): string {
   return type;
 }
 
+function escapeName(name: string): string {
+  return name.replace(/\\/g, '\\\\');
+}
+
 function matchSnippet(name: string, params: ?Array<{name: string}>): string {
+  const escapedName = escapeName(name);
   if (params != null) {
     // Construct the snippet: e.g. myFunction(${1:$arg1}, ${2:$arg2});
     const paramsString = params.map(
       (param, index) => `\${${index + 1}:${param.name}}`).join(', ');
-    return `${name}(${paramsString})`;
+    return `${escapedName}(${paramsString})`;
   } else {
-    return name;
+    return escapedName;
   }
 }
 
