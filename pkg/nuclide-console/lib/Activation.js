@@ -63,6 +63,11 @@ class Activation {
           atom.clipboard.write(el.innerText);
         },
       ),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-console:clear',
+        () => this._commands.clearRecords(),
+      ),
       featureConfig.observe(
         'nuclide-console.maximumMessageCount',
         maxMessageCount => this._commands.setMaxMessageCount(maxMessageCount),

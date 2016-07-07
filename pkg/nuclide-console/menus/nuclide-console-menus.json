@@ -1,4 +1,32 @@
 {
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Console",
+          "submenu": [
+            {
+              "label": "Toggle",
+              "command": "nuclide-console:toggle"
+            },
+            {
+              "label": "Show",
+              "command": "nuclide-console:show"
+            },
+            {
+              "label": "Hide",
+              "command": "nuclide-console:hide"
+            },
+            {
+              "label": "Clear",
+              "command": "nuclide-console:clear"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "context-menu": {
     ".nuclide-console-table-wrapper": [
       {
