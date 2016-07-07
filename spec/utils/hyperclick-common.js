@@ -45,7 +45,9 @@ export function waitsForMultipleHyperclickResults(
   let results;
   waitsFor(() => {
     // Convert from a NodeList to an actual array.
-    results = [...atom.views.getView(atom.workspace).querySelectorAll('.hyperclick-result-item')];
+    results = Array.from(
+      atom.views.getView(atom.workspace).querySelectorAll('.hyperclick-result-item')
+    );
     return results.length > 0;
   });
 

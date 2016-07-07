@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 export type AutocompleteSuggestion = {
   word: string;
   leftLabel: string;
@@ -33,13 +35,22 @@ export function getAutocompleteSuggestions(): Array<AutocompleteSuggestion> {
     return [];
   }
 
-  // $FlowIssue: NodeList should be iterable
   const items = Array.from(view.querySelectorAll('li'));
-  return items.map(node => ({
-    word: node.querySelector('.word').innerText,
-    leftLabel: node.querySelector('.left-label').innerText,
-    rightLabel: node.querySelector('.right-label').innerText,
-  }));
+
+  return items.map(node => {
+    const word = node.querySelector('.word').innerText;
+    const leftLabel = node.querySelector('.left-label').innerText;
+    const rightLabel = node.querySelector('.right-label').innerText;
+    invariant(word != null);
+    invariant(leftLabel != null);
+    invariant(rightLabel != null);
+    return {
+      word,
+      leftLabel,
+      rightLabel,
+    };
+  });
+
 }
 
 export function getAutocompleteDescription(): ?string {

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 import {
   activateAllPackages,
   busySignal,
@@ -90,7 +92,9 @@ describe('Clang Integration Test (objc)', () => {
       const errors = atom.views.getView(atom.workspace)
         .querySelector('.nuclide-diagnostics-highlight-group > :first-child');
       if (errors instanceof HTMLElement) {
-        return errors.innerText.trim() === '1';
+        const innerText = errors.innerText;
+        invariant(innerText != null);
+        return innerText.trim() === '1';
       }
     });
 

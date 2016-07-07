@@ -145,7 +145,9 @@ describe('Buck building via toolbar', () => {
         const consoleOutput = workspaceView.querySelectorAll('.nuclide-console-record pre');
         if (consoleOutput.length > 0) {
           const lastOutput = consoleOutput[consoleOutput.length - 1];
-          return lastOutput.innerText.indexOf('Buck exited') !== -1;
+          const innerText = lastOutput.innerText;
+          invariant(innerText != null);
+          return innerText.indexOf('Buck exited') !== -1;
         }
         return true;
       },
