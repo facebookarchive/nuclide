@@ -20,7 +20,7 @@ export type SettingsData = {
   name: string;
   description: string;
   keyPath: string;
-  onChanged: SettingsChanged;
+  onChange: SettingsChanged;
   title: string;
   value: ?any;
 };
@@ -29,5 +29,5 @@ export type SettingsPropsDefault = {
   title: string;
   description: string;
   keyPath: string;
-  onChanged: SettingsChanged;
+  onChange: SettingsChanged;
 };

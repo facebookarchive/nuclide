@@ -34,7 +34,7 @@ export default class SettingsInput extends React.Component {
     super(props);
     this._ignoreInputCallback = false;
 
-    (this: any)._onChanged = this._onChanged.bind(this);
+    (this: any)._handleChange = this._handleChange.bind(this);
     (this: any)._onFocus = this._onFocus.bind(this);
     (this: any)._onBlur = this._onBlur.bind(this);
   }
@@ -45,13 +45,13 @@ export default class SettingsInput extends React.Component {
     this._ignoreInputCallback = false;
   }
 
-  _onChanged(newValue: string) {
+  _handleChange(newValue: string) {
     if (this._ignoreInputCallback) {
       return;
     }
 
     newValue = parseValue(this.props.type, newValue);
-    this.props.onChanged({
+    this.props.onChange({
       keyPath: this.props.keyPath,
       newValue,
     });
@@ -119,7 +119,7 @@ export default class SettingsInput extends React.Component {
               <AtomInput
                 className={id}
                 initialValue={value}
-                onDidChange={this._onChanged}
+                onDidChange={this._handleChange}
                 onFocus={this._onFocus}
                 onBlur={this._onBlur}
                 placeholderText={placeholder}

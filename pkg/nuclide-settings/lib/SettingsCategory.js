@@ -82,7 +82,7 @@ function getSortedSettingsArray(settings: Object, pkgName: string): Array<string
 }
 
 function renderSetting(packageName: string, settingData: Object): ?React.Element<any> {
-  const {description, keyPath, name, onChanged, title, value} = settingData;
+  const {description, keyPath, name, onChange, title, value} = settingData;
   invariant(keyPath === (packageName + '.' + name));
   const schema = featureConfig.getSchema(keyPath);
 
@@ -92,7 +92,7 @@ function renderSetting(packageName: string, settingData: Object): ?React.Element
         <SettingsSelect
           description={description}
           keyPath={keyPath}
-          onChanged={onChanged}
+          onChange={onChange}
           title={title}
           value={value}
         />
@@ -104,7 +104,7 @@ function renderSetting(packageName: string, settingData: Object): ?React.Element
         <SettingsCheckbox
           description={description}
           keyPath={keyPath}
-          onChanged={onChanged}
+          onChange={onChange}
           title={title}
           value={value}
         />
@@ -115,7 +115,7 @@ function renderSetting(packageName: string, settingData: Object): ?React.Element
           <SettingsInput
             description={description}
             keyPath={keyPath}
-            onChanged={onChanged}
+            onChange={onChange}
             title={title}
             value={value}
             type="array"
@@ -130,7 +130,7 @@ function renderSetting(packageName: string, settingData: Object): ?React.Element
         <SettingsInput
           description={description}
           keyPath={keyPath}
-          onChanged={onChanged}
+          onChange={onChange}
           title={title}
           value={value}
           type={type}
