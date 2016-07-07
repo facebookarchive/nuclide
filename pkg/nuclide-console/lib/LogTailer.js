@@ -15,7 +15,7 @@ import type {ConnectableObservable} from 'rxjs';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
 type TrackingEventNames = {
   start: string;
@@ -27,6 +27,10 @@ type Options = {
   name: string;
   messages: Observable<Message>;
   trackingEvents: TrackingEventNames;
+
+  // Signals that the source is ready ("running"). This allows us to account for sources that need
+  // some initialization without having to worry about it in cases that don't.
+  ready?: Observable<void>;
 };
 
 /**
@@ -38,11 +42,13 @@ export class LogTailer {
   _eventNames: TrackingEventNames;
   _subscription: ?rx$ISubscription;
   _messages: ConnectableObservable<Message>;
+  _ready: ?Observable<void>;
   _statuses: BehaviorSubject<OutputProviderStatus>;
 
   constructor(options: Options) {
     this._name = options.name;
     this._eventNames = options.trackingEvents;
+    this._ready = options.ready;
     this._messages = options.messages
       .do({
         complete: () => {
@@ -87,7 +93,7 @@ export class LogTailer {
     this._start(false);
   }
 
-  observeStatus(cb: (status: 'running' | 'stopped') => void): IDisposable {
+  observeStatus(cb: (status: 'starting' | 'running' | 'stopped') => void): IDisposable {
     return new DisposableSubscription(this._statuses.subscribe(cb));
   }
 
@@ -101,13 +107,27 @@ export class LogTailer {
       track(this._eventNames.start);
     }
 
-    this._statuses.next('running');
+    // If the LogTailer was created with a way of detecting when the source was ready, the initial
+    // status is "starting." Otherwise, assume that it's started immediately.
+    const initialStatus = this._ready == null ? 'running' : 'starting';
+    this._statuses.next(initialStatus);
 
     if (this._subscription != null) {
       this._subscription.unsubscribe();
     }
 
-    this._subscription = this._messages.connect();
+    const sub = new Subscription();
+
+    if (this._ready != null) {
+      sub.add(
+        this._ready
+          .takeUntil(this._statuses.filter(status => status !== 'starting'))
+          .subscribe(() => { this._statuses.next('running'); })
+      );
+    }
+
+    sub.add(this._messages.connect());
+    this._subscription = sub;
   }
 
   _stop(trackCall: boolean = true): void {
