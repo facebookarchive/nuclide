@@ -162,10 +162,17 @@ export async function getOutline(
   return service.get_outline(src, contents);
 }
 
+// Set to false if flake8 isn't found, so we don't repeatedly fail.
+let shouldRunFlake8 = true;
+
 export async function getDiagnostics(
   src: NuclideUri,
   contents: string,
 ): Promise<Array<PythonDiagnostic>> {
+  if (!shouldRunFlake8) {
+    return [];
+  }
+
   const dirName = nuclideUri.dirname(nuclideUri.getPath(src));
   const baseName = nuclideUri.basename(nuclideUri.getPath(src));
 
@@ -206,6 +213,12 @@ export async function getDiagnostics(
   if (result.exitCode && result.exitCode > 1) {
     return [];
   } else if (result.exitCode == null) {
+    // Don't throw if flake8 is not found on the user's system.
+    if (result.errorCode === 'ENOENT') {
+      // Don't retry again.
+      shouldRunFlake8 = false;
+      return [];
+    }
     throw new Error(
       `flake8 failed with error: ${maybeToString(result.errorMessage)}, ` +
       `stderr: ${result.stderr}, stdout: ${result.stdout}`
