@@ -201,26 +201,33 @@ function hackRangeToAtomRange(position: HackRange): atom$Range {
       );
 }
 
+function matchTypeOfType(type: string): string {
+  // strip parens if present
+  if (type[0] === '(' && type[type.length - 1] === ')') {
+    return type.substring(1, type.length - 1);
+  }
+  return type;
+}
+
+function matchSnippet(name: string, params: ?Array<{name: string}>): string {
+  if (params != null) {
+    // Construct the snippet: e.g. myFunction(${1:$arg1}, ${2:$arg2});
+    const paramsString = params.map(
+      (param, index) => `\${${index + 1}:${param.name}}`).join(', ');
+    return `${name}(${paramsString})`;
+  } else {
+    return name;
+  }
+}
+
 function processCompletions(completionsResponse: Array<HackCompletion>):
     Array<CompletionResult> {
   return completionsResponse.map(completion => {
-    const {name, func_details: functionDetails} = completion;
-    let {type} = completion;
-    if (type && type.indexOf('(') === 0 && type.lastIndexOf(')') === type.length - 1) {
-      type = type.substring(1, type.length - 1);
-    }
-    let matchSnippet = name;
-    if (functionDetails) {
-      const {params} = functionDetails;
-      // Construct the snippet: e.g. myFunction(${1:$arg1}, ${2:$arg2});
-      const paramsString = params.map(
-        (param, index) => '${' + (index + 1) + ':' + param.name + '}').join(', ');
-      matchSnippet = name + '(' + paramsString + ')';
-    }
+    const {name, type, func_details: functionDetails} = completion;
     return {
-      matchSnippet,
+      matchSnippet: matchSnippet(name, functionDetails && functionDetails.params),
       matchText: name,
-      matchType: type,
+      matchType: matchTypeOfType(type),
     };
   });
 }
