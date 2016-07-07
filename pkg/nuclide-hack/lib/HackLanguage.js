@@ -23,13 +23,6 @@ import {ServerConnection, RemoteConnection} from '../../nuclide-remote-connectio
 import nuclideUri from '../../nuclide-remote-uri';
 import {getHackEnvironmentDetails} from './utils';
 
-export type CompletionResult = {
-  matchSnippet: string;
-  matchText: string;
-  matchType: string;
-  prefix: string;
-};
-
 export type DefinitionResult = {
   path: NuclideUri;
   line: number;
@@ -64,7 +57,7 @@ export type HackLanguage = {
     filePath: NuclideUri,
     contents: string,
     offset: number
-  ): Promise<Array<CompletionResult>>;
+  ): Promise<Array<atom$AutocompleteSuggestion>>;
 
   formatSource(
     contents: string,

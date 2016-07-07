@@ -9,26 +9,24 @@
  * the root directory of this source tree.
  */
 
-import type {CompletionResult} from '../lib/HackLanguage';
-
 import {compareHackCompletions} from '../lib/AutocompleteProvider';
 
-function createCompletion(text: string, prefix: string = ''): CompletionResult {
+function createCompletion(text: string, prefix: string = ''): atom$AutocompleteSuggestion {
   return {
-    matchSnippet: text + '()',
-    matchText: text,
-    matchType: 'function',
-    prefix,
+    snippet: text + '()',
+    text,
+    rightLabel: 'function',
+    replacementPrefix: prefix,
   };
 }
 
-const c1:CompletionResult = createCompletion('GetAaa');
-const c2:CompletionResult = createCompletion('getAzzz');
-const c3:CompletionResult = createCompletion('aa_getaaa');
-const c4:CompletionResult = createCompletion('zz_getAaa');
-const c5:CompletionResult = createCompletion('aa_getAaa');
-const c6:CompletionResult = createCompletion('_aa_getAaa');
-const c7:CompletionResult = createCompletion('zz_getaaaa');
+const c1:atom$AutocompleteSuggestion = createCompletion('GetAaa');
+const c2:atom$AutocompleteSuggestion = createCompletion('getAzzz');
+const c3:atom$AutocompleteSuggestion = createCompletion('aa_getaaa');
+const c4:atom$AutocompleteSuggestion = createCompletion('zz_getAaa');
+const c5:atom$AutocompleteSuggestion = createCompletion('aa_getAaa');
+const c6:atom$AutocompleteSuggestion = createCompletion('_aa_getAaa');
+const c7:atom$AutocompleteSuggestion = createCompletion('zz_getaaaa');
 
 describe('utils', () => {
 

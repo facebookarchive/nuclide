@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
-import type {CompletionResult, Definition} from './HackLanguage';
+import type {Definition} from './HackLanguage';
 import type {
   HackParameterDetails,
   HackCompletion,
@@ -54,7 +54,7 @@ export class ServerHackLanguage {
     filePath: NuclideUri,
     contents: string,
     offset: number,
-  ): Promise<Array<CompletionResult>> {
+  ): Promise<Array<atom$AutocompleteSuggestion>> {
     const markedContents = markFileForCompletion(contents, offset);
     let completions = [];
     const completionsResult = await this._hackService.getCompletions(filePath, markedContents);
@@ -242,17 +242,17 @@ function processCompletions(
   completionsResponse: Array<HackCompletion>,
   contents: string,
   offset: number,
-): Array<CompletionResult> {
+): Array<atom$AutocompleteSuggestion> {
   const contentsLine = contents.substring(
     contents.lastIndexOf('\n', offset - 1) + 1,
     offset).toLowerCase();
   return completionsResponse.map((completion: HackCompletion) => {
     const {name, type, func_details} = completion;
     return {
-      matchSnippet: matchSnippet(name, func_details && func_details.params),
-      matchText: name,
-      matchType: matchTypeOfType(type),
-      prefix: contents.substring(
+      snippet: matchSnippet(name, func_details && func_details.params),
+      text: name,
+      rightLabel: matchTypeOfType(type),
+      replacementPrefix: contents.substring(
         offset - matchLength(contentsLine, name.toLowerCase()),
         offset),
     };

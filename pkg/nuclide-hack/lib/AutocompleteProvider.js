@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {CompletionResult} from './HackLanguage';
-
 import {Point, Range} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
 import {getHackLanguageForUri} from './HackLanguage';
@@ -37,9 +35,9 @@ export default class AutocompleteProvider {
 
     return completions.map(completion => {
       return {
-        snippet: completion.matchSnippet,
-        replacementPrefix: (completion.prefix === '') ? replacementPrefix : completion.prefix,
-        rightLabel: completion.matchType,
+        ...completion,
+        replacementPrefix: (completion.replacementPrefix === '')
+          ? replacementPrefix : completion.replacementPrefix,
       };
     });
   }
@@ -81,7 +79,7 @@ function findHackPrefix(editor: atom$TextEditor): string {
 async function fetchCompletionsForEditor(
   editor: atom$TextEditor,
   prefix: string,
-): Promise<Array<CompletionResult>> {
+): Promise<Array<atom$AutocompleteSuggestion>> {
   const hackLanguage = await getHackLanguageForUri(editor.getPath());
   const filePath = editor.getPath();
   if (!hackLanguage || !filePath) {
@@ -101,7 +99,10 @@ async function fetchCompletionsForEditor(
 
   const hackCompletionsComparator = compareHackCompletions(prefix);
   return completions
-    .filter(completion => completion.matchText.toLowerCase().indexOf(tokenLowerCase) >= 0)
+    .filter(completion => {
+      invariant(completion.text != null);
+      return completion.text.toLowerCase().indexOf(tokenLowerCase) >= 0;
+    })
     // Sort the auto-completions based on a scoring function considering:
     // case sensitivity, position in the completion, private functions and alphabetical order.
     .sort((completion1, completion2) =>
@@ -115,29 +116,35 @@ const MATCH_TOKEN_CASE_INSENSITIVE_SCORE = 0;
 const MATCH_PRIVATE_FUNCTION_PENALTY = -4;
 const MATCH_APLHABETICAL_SCORE = 1;
 
-export function compareHackCompletions(token: string)
-    : (completion1: CompletionResult, completion2: CompletionResult) => number {
+export function compareHackCompletions(
+  token: string,
+): (completion1: atom$AutocompleteSuggestion, completion2: atom$AutocompleteSuggestion) => number {
   const tokenLowerCase = token.toLowerCase();
 
-  return (completion1: CompletionResult, completion2: CompletionResult) => {
+  return (completion1: atom$AutocompleteSuggestion, completion2: atom$AutocompleteSuggestion) => {
     // Prefer completions with larger prefixes.
-    const prefixComparison = completion2.prefix.length - completion1.prefix.length;
+    invariant(completion1.replacementPrefix != null);
+    invariant(completion2.replacementPrefix != null);
+    const prefixComparison =
+      completion2.replacementPrefix.length - completion1.replacementPrefix.length;
     if (prefixComparison !== 0) {
       return prefixComparison;
     }
 
-    const matchTexts = [completion1.matchText, completion2.matchText];
-    const scores = matchTexts.map((matchText, i) => {
-      if (matchText.startsWith(token)) {
+    invariant(completion1.text != null);
+    invariant(completion2.text != null);
+    const texts: Array<string> = [completion1.text, completion2.text];
+    const scores = texts.map((text, i) => {
+      if (text.startsWith(token)) {
         // Matches starting with the prefix gets the highest score.
         return MATCH_PREFIX_CASE_SENSITIVE_SCORE;
-      } else if (matchText.toLowerCase().startsWith(tokenLowerCase)) {
+      } else if (text.toLowerCase().startsWith(tokenLowerCase)) {
         // Ignore case score matches gets a good score.
         return MATCH_PREFIX_CASE_INSENSITIVE_SCORE;
       }
 
       let score;
-      if (matchText.indexOf(token) !== -1) {
+      if (text.indexOf(token) !== -1) {
         // Small score for a match that contains the token case-sensitive.
         score = MATCH_TOKEN_CASE_SENSITIVE_SCORE;
       } else {
@@ -146,13 +153,13 @@ export function compareHackCompletions(token: string)
       }
 
       // Private functions gets negative score.
-      if (matchText.startsWith('_')) {
+      if (text.startsWith('_')) {
         score += MATCH_PRIVATE_FUNCTION_PENALTY;
       }
       return score;
     });
     // Finally, consider the alphabetical order, but not higher than any other score.
-    if (matchTexts[0] < matchTexts[1]) {
+    if (texts[0] < texts[1]) {
       scores[0] += MATCH_APLHABETICAL_SCORE;
     } else {
       scores[1] += MATCH_APLHABETICAL_SCORE;

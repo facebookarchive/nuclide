@@ -108,10 +108,10 @@ describe('ServerHackLanguage', () => {
 fAUTO332class HackClass {}`);
       expect(result).toEqual([
         {
-          matchSnippet: 'foo(${1:p1}, ${2:p2})',
-          matchText: 'foo',
-          matchType: 'foo_type',
-          prefix: 'f',
+          snippet: 'foo(${1:p1}, ${2:p2})',
+          text: 'foo',
+          rightLabel: 'foo_type',
+          replacementPrefix: 'f',
         },
       ]);
     });
@@ -159,10 +159,10 @@ fAUTO332class HackClass {}`);
 HH\\fAUTO332class HackClass {}`);
       expect(result).toEqual([
         {
-          matchSnippet: 'HH\\\\foo(${1:p1}, ${2:p2})',
-          matchText: 'HH\\foo',
-          matchType: 'foo_type',
-          prefix: 'HH\\f',
+          snippet: 'HH\\\\foo(${1:p1}, ${2:p2})',
+          text: 'HH\\foo',
+          rightLabel: 'foo_type',
+          replacementPrefix: 'HH\\f',
         },
       ]);
     });
