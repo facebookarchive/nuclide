@@ -50,7 +50,9 @@ export class PackagerActivation {
     this._disposables = new CompositeDisposable(
       new Disposable(() => { this._logTailer.stop(); }),
       atom.commands.add('atom-workspace', {
-        'nuclide-react-native:start-packager': () => this._logTailer.start(),
+        'nuclide-react-native:start-packager': event => {
+          this._logTailer.start(event.detail == null ? undefined : event.detail);
+        },
         'nuclide-react-native:stop-packager': () => this._logTailer.stop(),
         'nuclide-react-native:restart-packager': () => this._logTailer.restart(),
       }),

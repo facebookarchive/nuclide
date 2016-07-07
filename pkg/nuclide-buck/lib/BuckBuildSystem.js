@@ -26,6 +26,7 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {observableToBuildTaskInfo} from '../../commons-node/observableToBuildTaskInfo';
 import {createBuckProject} from '../../nuclide-buck-base';
 import {getLogger} from '../../nuclide-logging';
+import {startPackager} from '../../nuclide-react-native/lib/packager/startPackager';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
@@ -301,17 +302,17 @@ export class BuckBuildSystem {
       let rnObservable = Observable.empty();
       const isReactNativeServerMode = store.isReactNativeServerMode();
       if (isReactNativeServerMode) {
-        rnObservable = Observable.defer(() => {
-          atom.commands.dispatch(
-            atom.views.getView(atom.workspace),
-            'nuclide-react-native:start-packager',
-          );
-          atom.commands.dispatch(
-            atom.views.getView(atom.workspace),
-            'nuclide-react-native:start-debugging',
-          );
-          return Observable.empty();
-        });
+        rnObservable = Observable.concat(
+          Observable.fromPromise(startPackager()),
+          Observable.defer(() => {
+            atom.commands.dispatch(
+              atom.views.getView(atom.workspace),
+              'nuclide-react-native:start-debugging',
+            );
+            return Observable.empty();
+          }),
+        )
+          .ignoreElements();
       }
       buckObservable = rnObservable.concat(
         buckProject.installWithOutput(

@@ -33,6 +33,14 @@ type Options = {
   ready?: Observable<void>;
 };
 
+type StartOptions = {
+  // A node-style error-first callback. This API is used because: Atom commands don't let us return
+  // values (an Observable or Promise would work well here) and we want to have success and error
+  // messages use the same channel (instead of a separate `onRunning` and `onRunningError`
+  // callback).
+  onRunning: (err?: Error) => mixed;
+};
+
 /**
  * A utility for writing packages that tail log sources. Just give it a cold observable and let it
  * handle the rest.
@@ -79,8 +87,8 @@ export class LogTailer {
     this._statuses = new BehaviorSubject('stopped');
   }
 
-  start(): void {
-    this._start();
+  start(options?: StartOptions): void {
+    this._start(true, options);
   }
 
   stop(): void {
@@ -97,20 +105,46 @@ export class LogTailer {
     return new DisposableSubscription(this._statuses.subscribe(cb));
   }
 
-  _start(trackCall: boolean = true): void {
+  _start(trackCall: boolean, options?: StartOptions): void {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
 
-    if (this._statuses.getValue() !== 'stopped') {
-      return;
-    }
-    if (trackCall) {
-      track(this._eventNames.start);
+    const shouldRun = this._statuses.getValue() === 'stopped';
+
+    if (shouldRun) {
+      if (trackCall) {
+        track(this._eventNames.start);
+      }
+
+      // If the LogTailer was created with a way of detecting when the source was ready, the initial
+      // status is "starting." Otherwise, assume that it's started immediately.
+      const initialStatus = this._ready == null ? 'running' : 'starting';
+      this._statuses.next(initialStatus);
     }
 
-    // If the LogTailer was created with a way of detecting when the source was ready, the initial
-    // status is "starting." Otherwise, assume that it's started immediately.
-    const initialStatus = this._ready == null ? 'running' : 'starting';
-    this._statuses.next(initialStatus);
+    // If the user provided an `onRunning` callback, hook it up.
+    if (options != null) {
+      const {onRunning} = options;
+      Observable.merge(
+        this._statuses,
+        this._messages.ignoreElements(), // For the errors
+      )
+        .takeWhile(status => status !== 'stopped')
+        .first(status => status === 'running')
+        .catch(err => {
+          // If it's stopped before it starts running, emit a special error.
+          if (err.name === 'EmptyError') { throw new ProcessCancelledError(this._name); }
+          throw err;
+        })
+        .mapTo(undefined)
+        .subscribe(
+          () => { onRunning(); },
+          err => { onRunning(err); },
+        );
+    }
+
+    if (!shouldRun) {
+      return;
+    }
 
     if (this._subscription != null) {
       this._subscription.unsubscribe();
@@ -149,4 +183,11 @@ export class LogTailer {
     return this._messages;
   }
 
+}
+
+class ProcessCancelledError extends Error {
+  constructor(logProducerName: string) {
+    super(`${logProducerName} was stopped`);
+    this.name = 'ProcessCancelledError';
+  }
 }
