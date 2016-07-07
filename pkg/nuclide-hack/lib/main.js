@@ -26,6 +26,7 @@ import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {OutlineViewProvider} from './OutlineViewProvider';
 import {HackDefinitionProvider} from './HackDefinitionProvider';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
+import AutocompleteProvider from './AutocompleteProvider';
 
 const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
 const PACKAGE_NAME = 'nuclide-hack';
@@ -52,7 +53,6 @@ export function activate() {
 
 /** Provider for autocomplete service. */
 export function createAutocompleteProvider(): atom$AutocompleteProvider {
-  const AutocompleteProvider = require('./AutocompleteProvider');
   const autocompleteProvider = new AutocompleteProvider();
 
   return {

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {compareHackCompletions} from '../lib/utils';
+import {compareHackCompletions} from '../lib/AutocompleteProvider';
 
 describe('utils', () => {
 
