@@ -25,7 +25,7 @@ const logger = require('../../nuclide-logging').getLogger();
 
 // Sync word and regex pattern for parsing command stdout.
 const READY_TIMEOUT_MS = 60 * 1000;
-const SFTP_TIMEOUT_MS = 10 * 1000;
+const SFTP_TIMEOUT_MS = 20 * 1000;
 
 export type SshConnectionConfiguration = {
   host: string; // host nuclide server is running on
@@ -290,7 +290,7 @@ export class SshHandshake {
 
   async _startRemoteServer(): Promise<boolean> {
     let sftpTimer = null;
-    return (new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let stdOut = '';
       const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
       //TODO: escape any single quotes
@@ -319,9 +319,17 @@ export class SshHandshake {
                 new Error(),
               );
               sftpTimer = null;
+              this._connection.end();
               resolve(false);
             }, SFTP_TIMEOUT_MS);
             this._connection.sftp(async (error, sftp) => {
+              if (sftpTimer != null) {
+                // Clear the sftp timer once we get a response.
+                clearTimeout(sftpTimer);
+              } else {
+                // If the timer already triggered, we timed out. Just exit.
+                return;
+              }
               if (error) {
                 this._error(
                   'Failed to start sftp connection',
@@ -390,12 +398,6 @@ export class SshHandshake {
           stdOut += data;
         });
       });
-    })).then(result => {
-      // Clear the sftp timeout to avoid the stray error message.
-      if (sftpTimer != null) {
-        clearTimeout(sftpTimer);
-      }
-      return result;
     });
   }
 
