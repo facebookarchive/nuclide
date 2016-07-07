@@ -109,9 +109,12 @@ fAUTO332class HackClass {}`);
       expect(result).toEqual([
         {
           snippet: 'foo(${1:p1}, ${2:p2})',
-          text: 'foo',
-          rightLabel: 'foo_type',
+          displayText: 'foo',
+          description: 'foo_type',
+          rightLabel: '(string p1, string p2)',
+          leftLabel: 'string',
           replacementPrefix: 'f',
+          type: 'function',
         },
       ]);
     });
@@ -160,9 +163,12 @@ HH\\fAUTO332class HackClass {}`);
       expect(result).toEqual([
         {
           snippet: 'HH\\\\foo(${1:p1}, ${2:p2})',
-          text: 'HH\\foo',
-          rightLabel: 'foo_type',
+          displayText: 'HH\\foo',
+          description: 'foo_type',
+          rightLabel: '(string p1, string p2)',
+          leftLabel: 'string',
           replacementPrefix: 'HH\\f',
+          type: 'function',
         },
       ]);
     });

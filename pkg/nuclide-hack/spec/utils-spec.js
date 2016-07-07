@@ -14,7 +14,7 @@ import {compareHackCompletions} from '../lib/AutocompleteProvider';
 function createCompletion(text: string, prefix: string = ''): atom$AutocompleteSuggestion {
   return {
     snippet: text + '()',
-    text,
+    displayText: text,
     rightLabel: 'function',
     replacementPrefix: prefix,
   };

@@ -100,8 +100,8 @@ async function fetchCompletionsForEditor(
   const hackCompletionsComparator = compareHackCompletions(prefix);
   return completions
     .filter(completion => {
-      invariant(completion.text != null);
-      return completion.text.toLowerCase().indexOf(tokenLowerCase) >= 0;
+      invariant(completion.displayText != null);
+      return completion.displayText.toLowerCase().indexOf(tokenLowerCase) >= 0;
     })
     // Sort the auto-completions based on a scoring function considering:
     // case sensitivity, position in the completion, private functions and alphabetical order.
@@ -131,9 +131,9 @@ export function compareHackCompletions(
       return prefixComparison;
     }
 
-    invariant(completion1.text != null);
-    invariant(completion2.text != null);
-    const texts: Array<string> = [completion1.text, completion2.text];
+    invariant(completion1.displayText != null);
+    invariant(completion2.displayText != null);
+    const texts: Array<string> = [completion1.displayText, completion2.displayText];
     const scores = texts.map((text, i) => {
       if (text.startsWith(token)) {
         // Matches starting with the prefix gets the highest score.

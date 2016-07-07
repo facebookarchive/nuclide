@@ -214,6 +214,11 @@ function escapeName(name: string): string {
   return name.replace(/\\/g, '\\\\');
 }
 
+function paramSignature(params: Array<HackParameterDetails>): ?string {
+  const paramStrings = params.map(param => `${param.type} ${param.name}`);
+  return `(${paramStrings.join(', ')})`;
+}
+
 function matchSnippet(name: string, params: ?Array<HackParameterDetails>): string {
   const escapedName = escapeName(name);
   if (params != null) {
@@ -248,14 +253,28 @@ function processCompletions(
     offset).toLowerCase();
   return completionsResponse.map((completion: HackCompletion) => {
     const {name, type, func_details} = completion;
-    return {
-      snippet: matchSnippet(name, func_details && func_details.params),
-      text: name,
-      rightLabel: matchTypeOfType(type),
+    const commonResult = {
+      displayText: name,
       replacementPrefix: contents.substring(
         offset - matchLength(contentsLine, name.toLowerCase()),
         offset),
+      description: matchTypeOfType(type),
     };
+    if (func_details != null) {
+      return {
+        ...commonResult,
+        snippet: matchSnippet(name, func_details.params),
+        leftLabel: func_details.return_type,
+        rightLabel: paramSignature(func_details.params),
+        type: 'function',
+      };
+    } else {
+      return {
+        ...commonResult,
+        snippet: matchSnippet(name),
+        rightLabel: matchTypeOfType(type),
+      };
+    }
   });
 }
 
