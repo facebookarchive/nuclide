@@ -57,61 +57,45 @@ const logger = getLogger();
  */
 export class ContextViewManager {
 
-  _atomPanel: atom$Panel;
+  _atomPanel: ?atom$Panel;
   _contextProviders: Array<ContextProvider>;
-  currentDefinition: ?Definition;
+  _defServiceSubscription: ?rx$ISubscription;
   _definitionService: ?DefinitionService;
   _disposables: CompositeDisposable;
+  _isVisible: boolean;
   _panelDOMElement: ?HTMLElement;
-  _defServiceSubscription: ?rx$ISubscription;
   _width: number;
+  currentDefinition: ?Definition;
 
   constructor(width: number, isVisible: boolean) {
-    this._width = width;
-    this._disposables = new CompositeDisposable();
+    this._atomPanel = null;
     this._contextProviders = [];
-    this.currentDefinition = null;
-    this._definitionService = null;
     this._defServiceSubscription = null;
+    this._definitionService = null;
+    this._disposables = new CompositeDisposable();
+    this._isVisible = isVisible;
+    this._panelDOMElement = null;
+    this._width = width;
+    this.currentDefinition = null;
 
-    this._panelDOMElement = document.createElement('div');
+    (this: any).hide = this.hide.bind(this);
+    (this: any)._onResize = this._onResize.bind(this);
 
-    // Otherwise it does not fill the whole panel, which might be alright except it means that the
-    // resize-handle doesn't extend all the way to the bottom.
-    //
-    // Use 'flex' to fit Atom v1.6.0+ and `height: inherit` to fit Atom <v1.6.0. The latter uses
-    // `height: 100%;` down the hierarchy and becomes innocuous in 1.6.0 because inheriting will
-    // give `height: auto;`.
-    this._panelDOMElement.style.display = 'flex';
-    this._panelDOMElement.style.height = 'inherit';
-    this.render();
-
-    this._atomPanel = atom.workspace.addRightPanel({
-      item: ((this._panelDOMElement: any): HTMLElement),
-      visible: isVisible,
-      priority: 200,
-    });
+    this._render();
     this._bindShortcuts();
   }
 
   dispose(): void {
-    this.disposeView();
+    this._disposeView();
     this._disposables.dispose();
   }
 
-  getWidth(): number {
-    return this._width;
-  }
-
   hide(): void {
-    if (this._atomPanel.isVisible()) {
-      this._atomPanel.hide();
+    if (this._isVisible) {
+      this._isVisible = false;
+      this._render();
     }
     this.updateSubscription();
-  }
-
-  isVisible(): boolean {
-    return (this._atomPanel.isVisible());
   }
 
   registerProvider(newProvider: ContextProvider): boolean {
@@ -121,19 +105,15 @@ export class ContextViewManager {
         return false;
       }
     }
-
     this._contextProviders.push(newProvider);
-
-    if (this.isVisible()) {
-      this.render();
-    }
+    this._render();
     return true;
   }
 
   serialize(): ContextViewConfig {
     return {
       width: this._width,
-      visible: this.isVisible(),
+      visible: this._isVisible,
     };
   }
 
@@ -145,15 +125,12 @@ export class ContextViewManager {
   consumeDefinitionService(service: ?DefinitionService): void {
     this._definitionService = service;
     this.updateSubscription();
-
-    if (this.isVisible()) {
-      this.render();
-    }
+    this._render();
   }
 
   updateSubscription(): void {
     // Only subscribe if panel showing and there's something to subscribe to
-    if (this.isVisible() && this._definitionService != null) {
+    if (this._isVisible && this._definitionService != null) {
       this._defServiceSubscription = observeTextEditorsPositions(
         EDITOR_DEBOUNCE_INTERVAL, POSITION_DEBOUNCE_INTERVAL)
         .filter((editorPos: ?EditorPosition) => editorPos != null)
@@ -181,25 +158,26 @@ export class ContextViewManager {
       return;
     }
     // Otherwise, unsubscribe if there is a subscription
-    if (this._defServiceSubscription !== null) {
-      invariant(this._defServiceSubscription != null);
+    if (this._defServiceSubscription != null) {
       this._defServiceSubscription.unsubscribe();
       this._defServiceSubscription = null;
     }
   }
 
   show(): void {
-    if (!this.isVisible()) {
-      this.render();
-      this._atomPanel.show();
+    if (!this._isVisible) {
+      this._isVisible = true;
+      this._render();
     }
     this.updateSubscription();
   }
 
   toggle(): void {
-    (this.isVisible())
-      ? this.hide()
-      : this.show();
+    if (this._isVisible) {
+      this.hide();
+    } else {
+      this.show();
+    }
   }
 
   deregisterProvider(idToRemove: string): boolean {
@@ -211,10 +189,7 @@ export class ContextViewManager {
         wasRemoved = true;
       }
     }
-
-    if (this.isVisible()) {
-      this.render();
-    }
+    this._render();
     return wasRemoved;
   }
 
@@ -224,9 +199,7 @@ export class ContextViewManager {
     }
 
     this.currentDefinition = newDefinition;
-    if (this.isVisible()) {
-      this.render();
-    }
+    this._render();
   }
 
   _bindShortcuts() {
@@ -258,21 +231,22 @@ export class ContextViewManager {
     );
   }
 
-  disposeView(): void {
-    const tempHandle = this._panelDOMElement;
-    if (tempHandle != null) {
+  _disposeView(): void {
+    if (this._panelDOMElement != null) {
       ReactDOM.unmountComponentAtNode(this._panelDOMElement);
-      this._atomPanel.destroy();
+      this._panelDOMElement = null;
     }
-
-    this._panelDOMElement = null;
+    if (this._atomPanel != null) {
+      this._atomPanel.destroy();
+      this._atomPanel = null;
+    }
   }
 
   _onResize(newWidth: number): void {
     this._width = newWidth;
   }
 
-  render(): void {
+  _renderProviders(): void {
     // Create collection of provider React elements to render, and
     // display them in order
     const providerElements: Array<React.Element<any>> =
@@ -292,16 +266,38 @@ export class ContextViewManager {
     }
 
     // Render the panel in atom workspace
+    if (!this._panelDOMElement) {
+      this._panelDOMElement = document.createElement('div');
+      this._panelDOMElement.style.display = 'flex';
+    }
+
     ReactDOM.render(
       <ContextViewPanel
         initialWidth={this._width}
-        onResize={this._onResize.bind(this)}
+        onResize={this._onResize}
         definition={this.currentDefinition}
-        onHide={this.hide.bind(this)}>
+        onHide={this.hide}>
         {providerElements}
       </ContextViewPanel>,
       this._panelDOMElement
     );
+
+    if (!this._atomPanel) {
+      invariant(this._panelDOMElement != null);
+      this._atomPanel = atom.workspace.addRightPanel({
+        item: this._panelDOMElement,
+        visible: true,
+        priority: 200,
+      });
+    }
+  }
+
+  _render(): void {
+    if (this._isVisible) {
+      this._renderProviders();
+    } else {
+      this._disposeView();
+    }
   }
 
 }
