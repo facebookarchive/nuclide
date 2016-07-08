@@ -431,7 +431,7 @@ function registerConsoleExecutor(
     ));
     watchExpressionStore._triggerReevaluation();
   };
-  const output: Observable<{result: EvaluationResult}> = rawOutput
+  const output: Observable<{result?: EvaluationResult}> = rawOutput
     .map(result => {
       invariant(result != null);
       return {result};

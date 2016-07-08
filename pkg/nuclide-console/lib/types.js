@@ -85,7 +85,7 @@ export type Executor = {
   id: string;
   name: string;
   send(message: string): void;
-  output: Rx.Observable<Message> | Rx.Observable<{result: EvaluationResult}>;
+  output: Rx.Observable<Message> | Rx.Observable<{result?: EvaluationResult}>;
   scopeName?: string;
   getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>;
   renderValue?: ReactClass<any>;

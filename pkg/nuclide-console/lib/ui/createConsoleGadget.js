@@ -79,13 +79,17 @@ export default function createConsoleGadget(
 
     render(): ?React.Element<any> {
       const sources = Array.from(this.state.providers.values())
-        .map(source => ({
-          id: source.id,
-          name: source.id,
-          status: this.state.providerStatuses.get(source.id),
-          start: source.start,
-          stop: source.stop,
-        }));
+        .map((source: OutputProvider) => {
+          // $FlowFixMe
+          const status: OutputProviderStatus = this.state.providerStatuses.get(source.id);
+          return {
+            id: source.id,
+            name: source.id,
+            status,
+            start: source.start != null ? source.start : undefined,
+            stop: source.stop != null ? source.stop : undefined,
+          };
+        });
       // TODO(matthewwithanm): serialize and restore `initialSelectedSourceId`
       return (
         <Console
