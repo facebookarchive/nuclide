@@ -102,18 +102,12 @@ async function getClangService(
  * Compiles the specified source file (automatically determining the correct compilation flags).
  * It currently returns an Observable just to circumvent the 60s service timeout for Promises.
  * TODO(9519963): Stream back more detailed compile status message.
- *
- * If `clean` is provided, any existing Clang server for the file is restarted.
  */
 export function compile(
   src: NuclideUri,
   contents: string,
-  clean: boolean,
   defaultFlags?: ?Array<string>,
 ): Observable<?ClangCompileResult> {
-  if (clean) {
-    serverManager.reset(src);
-  }
   const doCompile = async () => {
     // Note: restarts the server if the flags changed.
     const server = await serverManager.getClangServer(src, contents, defaultFlags, true);
@@ -228,8 +222,9 @@ export async function formatCode(
 /**
  * Kill the Clang server for a particular source file,
  * as well as all the cached compilation flags.
+ * If no file is provided, all servers are reset.
  */
-export function reset(src: NuclideUri): void {
+export function reset(src?: NuclideUri): void {
   serverManager.reset(src);
 }
 

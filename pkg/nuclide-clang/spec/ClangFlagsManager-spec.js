@@ -164,9 +164,9 @@ describe('ClangFlagsManager', () => {
       let result = await flagsManager.getFlagsForSrc('test.cpp');
       expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
 
-      // Make sure this is cached.
+      // Make sure this is cached (different file, but same target).
       spyOn(buckProject, 'build').andCallThrough();
-      result = await flagsManager.getFlagsForSrc('test.cpp');
+      result = await flagsManager.getFlagsForSrc('test.h');
       expect(result && result.flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(buckProject.build).not.toHaveBeenCalled();
 

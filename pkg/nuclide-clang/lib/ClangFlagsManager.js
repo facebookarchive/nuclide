@@ -74,6 +74,7 @@ function overrideIncludePath(src: string): string {
 
 class ClangFlagsManager {
   _cachedBuckProjects: Map<string, BuckProject>;
+  _cachedBuckFlags: Map<string, Promise<Map<string, ClangFlags>>>;
   _compilationDatabases: Set<string>;
   _realpathCache: Object;
   _pathToFlags: Map<string, Promise<?ClangFlags>>;
@@ -86,6 +87,7 @@ class ClangFlagsManager {
   constructor() {
     this._pathToFlags = new Map();
     this._cachedBuckProjects = new Map();
+    this._cachedBuckFlags = new Map();
     this._compilationDatabases = new Set();
     this._realpathCache = {};
     this._flagFileObservables = new Map();
@@ -96,6 +98,7 @@ class ClangFlagsManager {
   reset() {
     this._pathToFlags.clear();
     this._cachedBuckProjects.clear();
+    this._cachedBuckFlags.clear();
     this._compilationDatabases.clear();
     this._realpathCache = {};
     this._flagFileObservables.clear();
@@ -241,19 +244,34 @@ class ClangFlagsManager {
   }
 
   async _loadFlagsFromBuck(src: string): Promise<Map<string, ClangFlags>> {
-    const flags = new Map();
     const buckProject = await this._getBuckProject(src);
     if (!buckProject) {
-      return flags;
+      return new Map();
     }
 
     const target = (await buckProject.getOwner(src))
       .find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
 
     if (target == null) {
-      return flags;
+      return new Map();
     }
 
+    const buckProjectRoot = await buckProject.getPath();
+    const key = buckProjectRoot + ':' + target;
+    let cached = this._cachedBuckFlags.get(key);
+    if (cached != null) {
+      return cached;
+    }
+    cached = this._loadFlagsForBuckTarget(buckProject, buckProjectRoot, target);
+    this._cachedBuckFlags.set(key, cached);
+    return cached;
+  }
+
+  async _loadFlagsForBuckTarget(
+    buckProject: BuckProject,
+    buckProjectRoot: string,
+    target: string,
+  ): Promise<Map<string, ClangFlags>> {
     // TODO(mbolin): The architecture should be chosen from a dropdown menu like
     // it is in Xcode rather than hardcoding things to iphonesimulator-x86_64.
     let arch;
@@ -275,16 +293,17 @@ class ClangFlagsManager {
       logger.error(error);
       throw error;
     }
-    const buckProjectRoot = await buckProject.getPath();
     let pathToCompilationDatabase = buildReport.results[buildTarget].output;
     pathToCompilationDatabase = nuclideUri.join(
-        buckProjectRoot,
-        pathToCompilationDatabase);
+      buckProjectRoot,
+      pathToCompilationDatabase,
+    );
 
     const compilationDatabaseJsonBuffer = await fsPromise.readFile(pathToCompilationDatabase);
     const compilationDatabaseJson = compilationDatabaseJsonBuffer.toString('utf8');
     const compilationDatabase = JSON.parse(compilationDatabaseJson);
 
+    const flags = new Map();
     const buildFile = await buckProject.getBuildFile(target);
     const changes = buildFile == null ? Observable.empty() : this._watchFlagFile(buildFile);
     compilationDatabase.forEach(item => {

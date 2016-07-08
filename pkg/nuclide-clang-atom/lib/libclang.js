@@ -34,11 +34,12 @@ function getDefaultFlags(): ?Array<string> {
   return config.defaultFlags;
 }
 
+const clangServices = new WeakSet();
+
 module.exports = {
 
   async getDiagnostics(
     editor: atom$TextEditor,
-    clean: boolean,
   ): Promise<?ClangCompileResult> {
     const src = editor.getPath();
     if (src == null) {
@@ -50,8 +51,15 @@ module.exports = {
     const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
     invariant(service);
 
+    // When we fetch diagnostics for the first time, reset the server state.
+    // This is so the user can easily refresh the Clang + Buck state by reloading Atom.
+    if (!clangServices.has(service)) {
+      clangServices.add(service);
+      await service.reset();
+    }
+
     return service
-        .compile(src, contents, clean, defaultFlags)
+        .compile(src, contents, defaultFlags)
         .toPromise();
   },
 

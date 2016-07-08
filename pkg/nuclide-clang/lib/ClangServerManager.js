@@ -121,8 +121,12 @@ export default class ClangServerManager {
     }
   }
 
-  reset(src: string): void {
-    this._servers.del(src);
+  reset(src?: string): void {
+    if (src != null) {
+      this._servers.del(src);
+    } else {
+      this._servers.reset();
+    }
     this._flagsManager.reset();
   }
 
