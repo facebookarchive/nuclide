@@ -503,7 +503,7 @@ export class HgService {
       output = await this._hgAsyncExecute(args, options);
     } catch (e) {
       getLogger().error(
-          `Error when running hg diff for paths: ${filePaths} \n\tError: ${e.stderr}`);
+          `Error when running hg diff for paths: ${filePaths.toString()} \n\tError: ${e.stderr}`);
       return null;
     }
     const pathToDiffInfo = parseMultiFileHgDiffUnifiedOutput(output.stdout);

@@ -64,7 +64,7 @@ export async function callHHClient(
 
     let execResult = null;
     try {
-      logger.logTrace(`Calling Hack: ${hackCommand} with ${allArgs}`);
+      logger.logTrace(`Calling Hack: ${hackCommand} with ${allArgs.toString()}`);
       execResult = await asyncExecute(hackCommand, allArgs, {stdin: processInput});
     } catch (err) {
       reject(err);
@@ -80,7 +80,7 @@ export async function callHHClient(
     }
 
     const output = errorStream ? stderr : stdout;
-    logger.logTrace(`Hack output for ${allArgs}: ${output}`);
+    logger.logTrace(`Hack output for ${allArgs.toString()}: ${output}`);
     if (!outputJson) {
       resolve({result: output, hackRoot});
       return;
