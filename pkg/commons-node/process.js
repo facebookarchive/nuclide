@@ -135,6 +135,7 @@ function getPlatformPath(): Promise<string> {
         if (error) {
           reject(error);
         } else {
+          // $FlowFixMe (stdout is a Buffer, which does not have match)
           const match = stdout.match(DARWIN_PATH_HELPER_REGEXP);
           resolve((match && match.length > 1) ? match[1] : '');
         }

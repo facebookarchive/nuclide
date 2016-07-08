@@ -85,6 +85,7 @@ export type Executor = {
   id: string;
   name: string;
   send(message: string): void;
+  // $FlowFixMe
   output: Rx.Observable<Message> | Rx.Observable<{result?: EvaluationResult}>;
   scopeName?: string;
   getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>;

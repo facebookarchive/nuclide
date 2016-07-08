@@ -49,6 +49,7 @@ function printLiteral(print: Print, node: Literal, context: Context): Lines {
       } else {
         spaceNeeded = true;
       }
+      // $FlowFixMe(kad)
       return [
         i > 0 ? breakMarker : markers.empty,
         line,

@@ -31,7 +31,6 @@ describe('getFileForPath()', () => {
           port: 123,
         };
         connection = new ServerConnection(config);
-        // $FlowFixMe Skip the usage of the watcher service.
         connection._addHandlersForEntry = () => {};
       }
       return connection;

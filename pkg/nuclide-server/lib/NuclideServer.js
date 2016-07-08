@@ -126,7 +126,6 @@ class NuclideServer {
     // Setup error handler.
     this._app.use((error: ?connect$Error,
         request: http$fixed$IncomingMessage,
-        // $FlowFixMe (peterhal)
         response: http$fixed$ServerResponse,
         next: Function) => {
       if (error != null) {

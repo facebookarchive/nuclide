@@ -36,10 +36,12 @@ export async function echoDate(arg: Date): Promise<Date> {
   return arg;
 }
 export async function echoRegExp(arg: RegExp): Promise<RegExp> {
+  // $FlowFixMe
   assert(arg instanceof RegExp, `Argument to echoRegExp must be a RegExp. Not ${arg.constructor}`);
   return arg;
 }
 export async function echoBuffer(arg: Buffer): Promise<Buffer> {
+  // $FlowFixMe
   assert(arg instanceof Buffer, `Argument to echoBuffer must be a Buffer. Not ${arg.constructor}`);
   return arg;
 }

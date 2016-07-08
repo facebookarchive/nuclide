@@ -16,10 +16,8 @@ declare class connect$Error extends Error {
 
 type connect$ServerHandle = connect$HandleFunction | http$fixed$Server;
 type connect$SimpleHandleFunction =
-  // $FlowFixMe (peterhal)
   (req: http$fixed$IncomingMessage, res: http$fixed$ServerResponse) => mixed;
 type connect$NextHandleFunction =
-  // $FlowFixMe (peterhal)
   (req: http$fixed$IncomingMessage, res: http$fixed$ServerResponse, next: Function) => mixed;
 type connect$ErrorHandleFunction = (err: ?connect$Error, req: http$fixed$IncomingMessage,
   res: http$fixed$ServerResponse, next: Function) => mixed;

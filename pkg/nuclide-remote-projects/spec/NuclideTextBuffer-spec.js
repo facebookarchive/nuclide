@@ -30,7 +30,6 @@ describe('NuclideTextBuffer', () => {
     };
     connection = new ServerConnection(config);
     // Mock watcher service handlers registry.
-    // $FlowFixMe override instance method.
     connection._addHandlersForEntry = () => {};
     buffer = new NuclideTextBuffer(connection, {});
     // Disable file watch subscriptions, not needed here.

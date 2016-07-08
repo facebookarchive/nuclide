@@ -195,7 +195,6 @@ export default class Commands {
             item.element,
           );
 
-          // $FlowIssue(t10268095)
           this._observer.next({
             type: ActionTypes.UPDATE_PANE_ITEM,
             payload: {

@@ -301,7 +301,6 @@ describe('RemoteFile', () => {
         });
         waitsFor(() => skippedError);
         runs(() => {
-          // $FlowFixMe non-standard property.
           expect(skippedError.code).toBe('ENOENT');
           expect(handleError).not.toBeDefined();
         });

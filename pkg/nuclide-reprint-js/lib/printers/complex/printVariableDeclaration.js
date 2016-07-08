@@ -29,6 +29,7 @@ function printVariableDeclaration(
       if (i === 0) {
         return print(declNode);
       } else {
+        // $FlowFixMe(kad)
         return [
           ',',
           markers.space,

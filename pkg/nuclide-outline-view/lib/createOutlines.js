@@ -89,6 +89,7 @@ function treeToUiTree(outlineTree: OutlineTree): OutlineTreeForUi {
 // original.
 function highlightCurrentNode(outline: OutlineForUi, cursorLocation: atom$Point): OutlineForUi {
   invariant(outline.kind === 'outline');
+  // $FlowIssue
   return {
     ...outline,
     outlineTrees: highlightCurrentNodeInTrees(outline.outlineTrees, cursorLocation),

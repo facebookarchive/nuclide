@@ -58,7 +58,6 @@ describe('createStateStream', () => {
             type: ActionTypes.SELECT_BUILD_SYSTEM,
             payload: {id: 'new-build-system'},
           };
-          // $FlowIssue: Flow is getting tripped up on our union types.
           const finalState = await getStateAfterActions([action], initialState);
           expect(finalState.previousSessionActiveBuildSystemId).toBe(null);
         });

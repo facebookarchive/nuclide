@@ -10,10 +10,10 @@
   "flow": {
     "clientOnly": false,
     "dependency": "flow",
-    "version": "0.27.0",
-    "version-output": "Flow, a static type checker for JavaScript, version 0.27.0",
-    "url": "https://github.com/facebook/flow/releases/download/v0.27.0/flow-osx-v0.27.0.zip",
-    "shasum": "f563b0ca2a810fcbb8524dfe0aec31ab4a1a0550326b4c5b10cd5240bbe17a6f"
+    "version": "0.28.0",
+    "version-output": "Flow, a static type checker for JavaScript, version 0.28.0",
+    "url": "https://github.com/facebook/flow/releases/download/v0.28.0/flow-osx-v0.28.0.zip",
+    "shasum": "139792bce77d99207db372a296c84ce039dc7474d7820136967c2dcfc28f65e6"
   },
   "node": {
     "clientOnly": false,

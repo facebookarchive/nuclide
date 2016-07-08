@@ -153,6 +153,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
     });
 
     runs(() => {
+      // $FlowFixMe
       expect(datatip.getModel().getText()).toBe('TestClass<int>');
 
       // Hyperclick on TestClass

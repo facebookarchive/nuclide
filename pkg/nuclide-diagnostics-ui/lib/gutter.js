@@ -219,6 +219,7 @@ function showPopupFor(
   // on top of everything.
   const workspaceElement = atom.views.getView((atom.workspace: Object));
   const hostElement = window.document.createElement('div');
+  // $FlowFixMe check parentNode for null
   workspaceElement.parentNode.appendChild(hostElement);
 
   // Move it down vertically so it does not end up under the mouse pointer.
