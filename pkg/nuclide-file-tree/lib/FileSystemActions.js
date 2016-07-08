@@ -98,7 +98,7 @@ class FileSystemActions {
               await hgRepository.addAll([newFile.getPath()]);
             } catch (e) {
               atom.notifications.addError(
-                `Failed to add '${newFile.getPath}' to version control.  Error: ${e.toString()}`,
+                `Failed to add '${newFile.getPath()}' to version control.  Error: ${e.toString()}`,
               );
             }
           }

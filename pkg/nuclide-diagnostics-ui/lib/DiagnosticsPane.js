@@ -86,7 +86,7 @@ function messageColumnCellDataGetter(
     } else if (message.text != null) {
       text += message.text + ' ';
     } else {
-      throw new Error(`Neither text nor html property defined on: ${message}`);
+      throw new Error('Neither text nor html property defined on message');
     }
   }
   return {

@@ -236,7 +236,7 @@ class SearchResultManager {
         const providersForDirectory = newProvidersByDirectories.get(directory);
         invariant(
           providersForDirectory != null,
-          `Providers for directory ${directory} not defined`
+          `Providers for directory ${directory.getPath()} not defined`
         );
         providersForDirectory.add(provider);
       }
