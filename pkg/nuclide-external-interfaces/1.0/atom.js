@@ -16,6 +16,7 @@
 
 declare class atom$Model {
   destroy(): void;
+  isDestroyed(): boolean;
 }
 
 declare class atom$Package {

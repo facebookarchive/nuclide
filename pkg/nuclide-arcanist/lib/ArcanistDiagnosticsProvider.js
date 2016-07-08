@@ -123,7 +123,11 @@ export class ArcanistDiagnosticsProvider {
       const diagnosticsUpdate = {
         filePathToMessages: new Map([[filePath, fileDiagnostics]]),
       };
-      this._providerBase.publishMessageUpdate(diagnosticsUpdate);
+      // If the editor has been closed since we made the request, we don't want to display the
+      // errors. This ties in with the fact that we invalidate errors for a file when it is closed.
+      if (!textEditor.isDestroyed()) {
+        this._providerBase.publishMessageUpdate(diagnosticsUpdate);
+      }
     } catch (error) {
       const logger = require('../../nuclide-logging').getLogger();
       logger.error(error);
