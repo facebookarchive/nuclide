@@ -22,9 +22,7 @@ describe('ClangServerManager', () => {
 
   it('uses flags from manager if available', () => {
     waitsForPromise(async () => {
-      serverManager._flagsManager.getFlagsForSrc.andReturn(Promise.resolve({
-        flags: ['a'],
-      }));
+      serverManager._flagsManager.getFlagsForSrc.andReturn(Promise.resolve(['a']));
       const flagsResult = await serverManager._getFlags('test.cpp');
       expect(flagsResult).toEqual({flags: ['a'], usesDefaultFlags: false});
     });

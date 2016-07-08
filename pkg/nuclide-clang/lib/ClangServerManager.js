@@ -112,8 +112,8 @@ export default class ClangServerManager {
         getLogger().error(`Error getting flags for ${src}:`, e);
         return null;
       });
-    if (trueFlags != null && trueFlags.flags != null) {
-      return {flags: trueFlags.flags, usesDefaultFlags: false};
+    if (trueFlags != null) {
+      return {flags: trueFlags, usesDefaultFlags: false};
     } else if (defaultFlags != null) {
       return {flags: await augmentDefaultFlags(src, defaultFlags), usesDefaultFlags: true};
     } else {

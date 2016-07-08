@@ -140,23 +140,28 @@ class ClangFlagsManager {
    *     about the src file. For example, null will be returned if src is not
    *     under the project root.
    */
-  async getFlagsForSrc(src: string): Promise<?ClangFlags> {
+  async getFlagsForSrc(src: string): Promise<?Array<string>> {
+    const data = await this._getFlagsForSrcCached(src);
+    if (data == null) {
+      return null;
+    }
+    // Subscribe to changes.
+    this._subscriptions.push(data.changes.subscribe({
+      next: change => {
+        this._flagsChanged.add(src);
+      },
+      error: () => {},
+    }));
+    return data.flags;
+  }
+
+  async _getFlagsForSrcCached(src: string): Promise<?ClangFlags> {
     let cached = this._pathToFlags.get(src);
-    if (cached != null) {
-      return cached;
+    if (cached == null) {
+      cached = this._getFlagsForSrcImpl(src);
+      this._pathToFlags.set(src, cached);
     }
-    cached = this._getFlagsForSrcImpl(src);
-    this._pathToFlags.set(src, cached);
-    const flags = await cached;
-    if (flags != null) {
-      this._subscriptions.push(flags.changes.subscribe({
-        next: change => {
-          this._flagsChanged.add(src);
-        },
-        error: () => {},
-      }));
-    }
-    return flags;
+    return cached;
   }
 
   @trackTiming('nuclide-clang.get-flags')
@@ -189,7 +194,7 @@ class ClangFlagsManager {
       }
       const sourceFile = await ClangFlagsManager._findSourceFileForHeader(src, projectRoot);
       if (sourceFile != null) {
-        return this.getFlagsForSrc(sourceFile);
+        return this._getFlagsForSrcCached(sourceFile);
       }
     }
 
