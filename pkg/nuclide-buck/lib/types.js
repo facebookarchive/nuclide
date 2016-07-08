@@ -11,6 +11,8 @@
 
 export type TaskType = 'build' | 'test' | 'run' | 'debug';
 
+export type BuckSubcommand = 'build' | 'install' | 'test';
+
 export type TaskSettings = {
   arguments?: Array<string>;
 };

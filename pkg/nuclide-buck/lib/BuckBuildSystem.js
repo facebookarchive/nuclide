@@ -12,7 +12,7 @@
 import type {BuildEvent, Task, TaskInfo} from '../../nuclide-build/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base';
-import type {SerializedState, TaskType} from './types';
+import type {BuckSubcommand, SerializedState, TaskType} from './types';
 import type {BuckEvent} from './BuckEventStream';
 
 import invariant from 'assert';
@@ -32,7 +32,11 @@ import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
-import {getEventsFromSocket, getEventsFromProcess, isBuildFinishEvent} from './BuckEventStream';
+import {
+  combineEventStreams,
+  getEventsFromSocket,
+  getEventsFromProcess,
+} from './BuckEventStream';
 
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 
@@ -40,8 +44,6 @@ type Flux = {
   actions: BuckToolbarActions;
   store: BuckToolbarStore;
 };
-
-type BuckSubcommand = 'build' | 'install' | 'test';
 
 export class BuckBuildSystem {
   _flux: ?Flux;
@@ -204,59 +206,31 @@ export class BuckBuildSystem {
         return Observable.of(-1);
       })
       .switchMap(httpPort => {
-        let socketStream = Observable.empty();
+        let socketEvents = null;
         if (httpPort > 0) {
-          socketStream = getEventsFromSocket(buckProject.getWebSocketStream(httpPort))
+          socketEvents = getEventsFromSocket(buckProject.getWebSocketStream(httpPort))
             .share();
         } else {
           this._logOutput('Enable httpserver in your .buckconfig for better output.', 'warning');
         }
 
-        const buckObservable = this._runBuckCommand(
+        const processEvents = this._runBuckCommand(
           buckProject,
           buildTarget,
           subcommand,
           settings.arguments || [],
           taskType === 'debug',
-          httpPort < 0,
         );
 
-        let eventStream;
-        if (httpPort <= 0) {
+        let mergedEvents;
+        if (socketEvents == null) {
           // Without a websocket, just pipe the Buck output directly.
-          eventStream = buckObservable;
+          mergedEvents = processEvents;
         } else {
-          eventStream = socketStream.merge(
-            // Skip everything from Buck's output until the first non-log message.
-            // We ensure that error/info logs will not duplicate messages from the websocket.
-            // $FlowFixMe: add skipWhile to flow-typed rx definitions
-            buckObservable.skipWhile(event => event.type !== 'log' || event.level === 'log')
-          );
-          if (taskType === 'test') {
-            // The websocket does not reliably provide test output.
-            // After the build finishes, fall back to the Buck output stream.
-            eventStream = eventStream
-              .takeUntil(socketStream.filter(isBuildFinishEvent))
-              .concat(buckObservable);
-          } else if (subcommand === 'install') {
-            // Add a message indicating that install has started after build completes.
-            // The websocket does not naturally provide any indication.
-            eventStream = eventStream.merge(
-              socketStream.switchMap(event => {
-                if (isBuildFinishEvent(event)) {
-                  return Observable.of({
-                    type: 'log',
-                    message: 'Installing...',
-                    level: 'info',
-                  });
-                }
-                return Observable.empty();
-              })
-            );
-          }
+          mergedEvents = combineEventStreams(subcommand, socketEvents, processEvents);
         }
 
-        return eventStream
+        return mergedEvents
           .switchMap(event => {
             if (event.type === 'progress') {
               return Observable.of({
@@ -267,13 +241,7 @@ export class BuckBuildSystem {
               this._logOutput(event.message, event.level);
             }
             return Observable.empty();
-          })
-          .takeUntil(
-            buckObservable
-              .ignoreElements()
-              // Despite the docs, takeUntil doesn't respond to completion.
-              .concat(Observable.of(null))
-          );
+          });
       })
       .finally(() => buckProject.dispose())
       .share();
@@ -285,7 +253,6 @@ export class BuckBuildSystem {
     subcommand: BuckSubcommand,
     args: Array<string>,
     debug: boolean,
-    logOutput: boolean,
   ): Observable<BuckEvent> {
     const {store} = this._getFlux();
 

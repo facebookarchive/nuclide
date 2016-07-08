@@ -12,6 +12,7 @@
 import type {Level} from '../../nuclide-console/lib/types';
 import type {BuckWebSocketMessage} from '../../nuclide-buck-base/lib/BuckProject';
 import type {ProcessMessage} from '../../commons-node/process-types';
+import type {BuckSubcommand} from './types';
 
 import {Observable} from 'rxjs';
 import stripAnsi from 'strip-ansi';
@@ -135,4 +136,59 @@ export function getEventsFromProcess(
           throw new Error('impossible');
       }
     });
+}
+
+export function combineEventStreams(
+  subcommand: BuckSubcommand,
+  socketEvents: Observable<BuckEvent>,
+  processEvents: Observable<BuckEvent>,
+): Observable<BuckEvent> {
+  let mergedEvents = Observable.merge(
+    socketEvents,
+    // Skip everything from Buck's output until the first non-log message.
+    // We ensure that error/info logs will not duplicate messages from the websocket.
+    // $FlowFixMe: add skipWhile to flow-typed rx definitions
+    processEvents.skipWhile(event => event.type !== 'log' || event.level === 'log')
+  );
+  if (subcommand === 'test') {
+    // The websocket does not reliably provide test output.
+    // After the build finishes, fall back to the Buck output stream.
+    mergedEvents = Observable.concat(
+      mergedEvents
+        .takeUntil(socketEvents.filter(isBuildFinishEvent)),
+      // Return to indeterminate progress.
+      Observable.of({type: 'progress', progress: null}),
+      processEvents,
+    );
+  } else if (subcommand === 'install') {
+    // Add a message indicating that install has started after build completes.
+    // The websocket does not naturally provide any indication.
+    mergedEvents = Observable.merge(
+      mergedEvents,
+      socketEvents
+        .filter(isBuildFinishEvent)
+        // $FlowFixMe: add switchMapTo to flow-typed
+        .switchMapTo(
+          Observable.of(
+            {
+              type: 'progress',
+              progress: null,
+            },
+            {
+              type: 'log',
+              message: 'Installing...',
+              level: 'info',
+            },
+          )
+        ),
+    );
+  }
+  return mergedEvents
+    // Socket stream never stops, so use the process lifetime.
+    .takeUntil(
+      processEvents
+        .ignoreElements()
+        // Despite the docs, takeUntil doesn't respond to completion.
+        .concat(Observable.of(null))
+    );
 }
