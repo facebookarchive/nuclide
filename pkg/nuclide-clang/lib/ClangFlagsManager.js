@@ -49,7 +49,13 @@ const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(
 const INCLUDE_SEARCH_TIMEOUT = 15000;
 
 export type ClangFlags = {
-  flags: ?Array<string>;
+  // Will be computed and memoized from rawData on demand.
+  flags?: ?Array<string>;
+  rawData: ?{
+    flags: Array<string>;
+    file: string;
+    directory: string;
+  };
   // Emits file change events for the underlying flags file.
   // (rename, change)
   changes: Observable<string>;
@@ -145,13 +151,22 @@ class ClangFlagsManager {
     if (data == null) {
       return null;
     }
-    // Subscribe to changes.
-    this._subscriptions.push(data.changes.subscribe({
-      next: change => {
-        this._flagsChanged.add(src);
-      },
-      error: () => {},
-    }));
+    if (data.flags === undefined) {
+      const {rawData} = data;
+      data.flags = rawData == null ? null :
+        ClangFlagsManager.sanitizeCommand(
+          rawData.file,
+          rawData.flags,
+          rawData.directory,
+        );
+      // Subscribe to changes.
+      this._subscriptions.push(data.changes.subscribe({
+        next: change => {
+          this._flagsChanged.add(src);
+        },
+        error: () => {},
+      }));
+    }
     return data.flags;
   }
 
@@ -207,7 +222,7 @@ class ClangFlagsManager {
     const buildFile = await ClangFlagsManager._guessBuildFile(src);
     if (buildFile != null) {
       return {
-        flags: null,
+        rawData: null,
         changes: this._watchFlagFile(buildFile),
       };
     }
@@ -234,7 +249,11 @@ class ClangFlagsManager {
         if (await fsPromise.exists(filename)) {
           const realpath = await fsPromise.realpath(filename, this._realpathCache);
           const result = {
-            flags: ClangFlagsManager.sanitizeCommand(file, args, directory),
+            rawData: {
+              flags: args,
+              file,
+              directory,
+            },
             changes,
           };
           flags.set(realpath, result);
@@ -304,9 +323,9 @@ class ClangFlagsManager {
       pathToCompilationDatabase,
     );
 
-    const compilationDatabaseJsonBuffer = await fsPromise.readFile(pathToCompilationDatabase);
-    const compilationDatabaseJson = compilationDatabaseJsonBuffer.toString('utf8');
-    const compilationDatabase = JSON.parse(compilationDatabaseJson);
+    const compilationDatabase = JSON.parse(
+      await fsPromise.readFile(pathToCompilationDatabase, 'utf8')
+    );
 
     const flags = new Map();
     const buildFile = await buckProject.getBuildFile(target);
@@ -314,11 +333,11 @@ class ClangFlagsManager {
     compilationDatabase.forEach(item => {
       const {file} = item;
       const result = {
-        flags: ClangFlagsManager.sanitizeCommand(
+        rawData: {
+          flags: item.arguments,
           file,
-          item.arguments,
-          buckProjectRoot,
-        ),
+          directory: buckProjectRoot,
+        },
         changes,
       };
       flags.set(file, result);
