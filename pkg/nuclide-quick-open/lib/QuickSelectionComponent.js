@@ -214,7 +214,7 @@ export default class QuickSelectionComponent extends React.Component {
     this.onUserDidChangeSelection();
   }
 
-  handleDocumentMouseDown(event: SyntheticMouseEvent): void {
+  handleDocumentMouseDown(event: Event): void {
     const modal = this.refs.modal;
     // If the click did not happen on the modal or on any of its descendants,
     // the click was elsewhere on the document and should close the modal.

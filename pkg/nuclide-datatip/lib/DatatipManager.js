@@ -116,8 +116,9 @@ export class DatatipManager {
     );
   }
 
-  handleMouseMove(event: MouseEvent, editor: TextEditor, editorView: atom$TextEditorElement): void {
-    this._debouncedMouseMove(event, editor, editorView);
+  handleMouseMove(event: Event, editor: TextEditor, editorView: atom$TextEditorElement): void {
+    const mouseEvent: MouseEvent = (event: any);
+    this._debouncedMouseMove(mouseEvent, editor, editorView);
   }
 
   toggleDatatip(): void {
@@ -148,7 +149,7 @@ export class DatatipManager {
     this._isHoveringDatatip = false;
   }
 
-  _handleElementMouseEnter(event: SyntheticEvent): void {
+  _handleElementMouseEnter(event: Event): void {
     this._isHoveringDatatip = true;
   }
 
