@@ -114,7 +114,7 @@ describe('getTypeHintTree', () => {
     };
   }
 
-  function makeFunType(paramToType: Map<String, Object>, returnType: Object): Object {
+  function makeFunType(paramToType: Map<string, Object>, returnType: Object): Object {
     return {
       kind: 'FunT',
       funType: {
