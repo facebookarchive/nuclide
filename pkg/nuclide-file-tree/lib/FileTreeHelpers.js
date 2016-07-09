@@ -10,13 +10,13 @@
  */
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {RemoteDirectory, RemoteFile} from '../../nuclide-remote-connection';
 
 import {Directory as LocalDirectory} from 'atom';
 import {File as LocalFile} from 'atom';
 import {
   RemoteConnection,
-  RemoteDirectory,
-  RemoteFile,
+  ServerConnection,
 } from '../../nuclide-remote-connection';
 import nuclideUri from '../../nuclide-remote-uri';
 
@@ -79,11 +79,11 @@ function getDirectoryByKey(key: string): ?Directory {
   if (!isDirKey(key)) {
     return null;
   } else if (nuclideUri.isRemote(path)) {
-    const connection = RemoteConnection.getForUri(path);
+    const connection = ServerConnection.getForUri(path);
     if (connection == null) {
       return null;
     }
-    return new RemoteDirectory(connection.getConnection(), path);
+    return connection.createDirectory(path);
   } else {
     return new LocalDirectory(path);
   }
@@ -94,12 +94,11 @@ function getFileByKey(key: string): ?File {
   if (isDirKey(key)) {
     return null;
   } else if (nuclideUri.isRemote(path)) {
-    const connection = RemoteConnection.getForUri(path);
+    const connection = ServerConnection.getForUri(path);
     if (connection == null) {
-      return;
+      return null;
     }
-
-    return new RemoteFile(connection.getConnection(), path);
+    return connection.createFile(path);
   } else {
     return new LocalFile(path);
   }

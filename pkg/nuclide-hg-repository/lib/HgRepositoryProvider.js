@@ -43,7 +43,6 @@ function getRepositoryDescription(
   workingDirectory: atom$Directory | RemoteDirectoryType;
   workingDirectoryLocalPath: string;
 } {
-  const {RemoteDirectory} = require('../../nuclide-remote-connection');
   if (directory instanceof RemoteDirectoryType) {
     const repositoryDescription = directory.getHgRepositoryDescription();
     if (repositoryDescription == null
@@ -61,7 +60,7 @@ function getRepositoryDescription(
     return {
       originURL,
       repoPath: repoUri,
-      workingDirectory: new RemoteDirectory(serverConnection, workingDirectoryUri),
+      workingDirectory: serverConnection.createDirectory(workingDirectoryUri),
       workingDirectoryLocalPath,
     };
   } else {
