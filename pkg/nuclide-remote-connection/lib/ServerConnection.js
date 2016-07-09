@@ -230,6 +230,11 @@ class ServerConnection {
     // Future getClient calls should fail, if it has a cached ServerConnection instance.
     this._closed = true;
 
+    Object.keys(this._entries).forEach(path => {
+      this._entries[path].dispose();
+    });
+    this._entries = {};
+
     // The Rpc channel owns the socket.
     if (this._client != null) {
       this._client.dispose();

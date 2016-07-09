@@ -71,6 +71,11 @@ export class RemoteDirectory {
     this._deleted = false;
   }
 
+  dispose() {
+    this._subscriptionCount = 0;
+    this._unsubscribeFromNativeChangeEvents();
+  }
+
   onDidChange(callback: () => any): IDisposable {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-change', callback));

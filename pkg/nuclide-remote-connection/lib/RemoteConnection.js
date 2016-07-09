@@ -72,10 +72,6 @@ export class RemoteConnection {
     this._displayTitle = displayTitle;
   }
 
-  dispose(): void {
-    this._subscriptions.dispose();
-  }
-
   static _createInsecureConnectionForTesting(
     cwd: string,
     port: number,
@@ -226,6 +222,7 @@ export class RemoteConnection {
   }
 
   async close(shutdownIfLast: boolean): Promise<void> {
+    this._subscriptions.dispose();
     await this._connection.removeConnection(this, shutdownIfLast);
     _emitter.emit('did-close', this);
   }
