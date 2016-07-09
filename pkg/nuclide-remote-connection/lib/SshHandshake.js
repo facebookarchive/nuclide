@@ -24,7 +24,7 @@ import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 const logger = require('../../nuclide-logging').getLogger();
 
 // Sync word and regex pattern for parsing command stdout.
-const READY_TIMEOUT_MS = 60 * 1000;
+const READY_TIMEOUT_MS = 120 * 1000;
 const SFTP_TIMEOUT_MS = 20 * 1000;
 
 export type SshConnectionConfiguration = {
