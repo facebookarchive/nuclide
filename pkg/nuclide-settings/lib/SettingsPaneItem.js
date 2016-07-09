@@ -40,7 +40,7 @@ export default class NuclideSettingsPaneItem extends React.Component {
 
     const configData = {};
     const nuclidePackages =
-      atom.packages.getActivePackages().filter(pkg => pkg.metadata && pkg.metadata.nuclide);
+      atom.packages.getLoadedPackages().filter(pkg => pkg.metadata && pkg.metadata.nuclide);
 
     // Config data is organized as a series of nested objects. First, by category
     // and then by packages in each category. Each package contains a title and an
