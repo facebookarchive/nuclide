@@ -1,5 +1,35 @@
 # Nuclide Changelog
 
+## v0.151.0
+
+### General
+
+* [Fixed] Working Sets are significantly faster now.
+
+### React Native
+
+* Improve ADB Logcat errors.
+* Notify when the packager is running.
+
+### Buck
+
+* Added settings to allow providing of extra arguments to build/test/run.
+* Fixed an issue where Buck project would not be found after reloading Atom.
+
+### Python
+
+* Builtin flake8 linting, uses configuration from the nearest .flake8 file.
+
+### C/C++
+
+* Fixed instability while working with (local) files in large Buck targets.
+
+### Hack
+
+* [Fixed] Autocomplete and XHP, don't insert duplicate ':'
+* Improved the Autocomplete UI. In particular make function signatures easily visible.
+* Code highlighting now highlights all symbols, not just local variables.
+
 ## v0.150.0
 
 * Hotfix a file-tree de-serialization bug resulting in an empty file-tree despite having a project mounted.
