@@ -14,15 +14,15 @@
     },
     "config": {
       "consumeLegacyLinters": {
-        "title": "Consume Legacy Linters",
+        "title": "Consume Linters for the `linter` package",
         "type": "boolean",
         "default": true
       },
       "legacyLintOnTheFly": {
-        "title": "Legacy Linters 'lint-on-the-fly'",
+        "title": "'lint-on-the-fly' for `linter` package linters",
         "type": "boolean",
         "default": false,
-        "description": "Used only for legacy linters"
+        "description": "Does not apply to packages using diagnostics, since they can send updates whenever they want."
       }
     },
     "packageType": "Atom",
