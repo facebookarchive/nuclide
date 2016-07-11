@@ -206,7 +206,7 @@ export class FlowProcess {
       '--no-auto-start',
     ];
     try {
-      const result = await FlowProcess.execFlowClient(args, options);
+      const result = await FlowProcess.execFlowClient(args, this._root, options);
       this._updateServerStatus(result);
       return result;
     } catch (e) {
@@ -317,6 +317,7 @@ export class FlowProcess {
    */
   static async execFlowClient(
     args: Array<any>,
+    root: string | null,
     options?: Object = {},
   ): Promise<?process$asyncExecuteRet> {
     args = [

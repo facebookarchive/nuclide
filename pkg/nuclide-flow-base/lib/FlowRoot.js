@@ -375,7 +375,7 @@ export class FlowRoot {
     const args = ['version', '--json'];
     let json;
     try {
-      const result = await FlowProcess.execFlowClient(args, {cwd: this._root});
+      const result = await FlowProcess.execFlowClient(args, this._root, {cwd: this._root});
       if (result == null) {
         return null;
       }
@@ -396,7 +396,7 @@ export class FlowRoot {
 
     let json;
     try {
-      const result = await FlowProcess.execFlowClient(args, options);
+      const result = await FlowProcess.execFlowClient(args, null, options);
       if (result == null) {
         return null;
       }
