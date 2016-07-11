@@ -8,10 +8,11 @@
 
 from __future__ import print_function
 
-from clang.cindex import Config, Cursor, CursorKind, Index
+from clang.cindex import Config, Cursor, CursorKind, Index, TokenKind
 from utils import range_dict_relative
 
 import ctypes
+import itertools
 import json
 import os
 import re
@@ -61,8 +62,16 @@ VAR_KINDS = set([
     'VAR_DECL',
 ])
 
+# Capture the ubiquitous GTest-style TEST/TEST_F macros.
+GTEST_MACROS = set(['TEST', 'TEST_F'])
+MACRO_INSTANTIATION = 'MACRO_INSTANTIATION'
+
+OTHER_KINDS = set([
+    MACRO_INSTANTIATION,
+])
+
 # Record any of the cursor types listed above.
-ALL_KINDS = FUNCTION_KINDS | CLASS_KINDS | MEMBER_KINDS | VAR_KINDS
+ALL_KINDS = FUNCTION_KINDS | CLASS_KINDS | MEMBER_KINDS | VAR_KINDS | OTHER_KINDS
 
 
 # People like adding a '-' by convention, but strip that out.
@@ -110,6 +119,25 @@ def visit_cursor(libclang, cursor):
             child_outline = visit_cursor(libclang, child)
             if child_outline is not None:
                 children.append(child_outline)
+
+    if kind == MACRO_INSTANTIATION:
+        params = []
+        if name in GTEST_MACROS:
+            # Should look like TEST(id, id).
+            tokens = list(itertools.islice(cursor.get_tokens(), 1, 6))
+            if len(tokens) == 5 and (
+                tokens[0].kind == TokenKind.PUNCTUATION and
+                tokens[1].kind == TokenKind.IDENTIFIER and
+                tokens[2].kind == TokenKind.PUNCTUATION and
+                tokens[3].kind == TokenKind.IDENTIFIER and
+                tokens[4].kind == TokenKind.PUNCTUATION
+            ):
+                params = [tokens[1].spelling, tokens[3].spelling]
+            else:
+                return None
+        else:
+            # TODO(hansonw): Handle other special macros like DEFINE_ params.
+            return None
 
     ret = {
         'name': name,

@@ -310,6 +310,24 @@ describe('ClangServer', () => {
             },
           ],
         },
+        {
+          cursor_kind: 'MACRO_INSTANTIATION',
+          extent: {
+            end: {
+              column: 16,
+              line: 41,
+            },
+            start: {
+              column: 0,
+              line: 41,
+            },
+          },
+          name: 'TEST_F',
+          params: [
+            'a',
+            'b',
+          ],
+        },
       ]);
     });
   });

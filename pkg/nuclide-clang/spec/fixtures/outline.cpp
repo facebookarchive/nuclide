@@ -36,3 +36,7 @@ enum TestEnum {
   ENUM_VALUE_1,
   ENUM_VALUE_2,
 };
+
+#define TEST_F(x, y) 1
+
+TEST_F ( a , b ) {}
