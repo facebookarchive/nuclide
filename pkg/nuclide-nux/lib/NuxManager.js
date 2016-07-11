@@ -140,6 +140,7 @@ export class NuxManager {
       nuxTourModel.id,
       nuxViews,
       nuxTourModel.trigger,
+      nuxTourModel.gatekeeperID,
     );
 
     this._emitter.emit(
@@ -176,7 +177,7 @@ export class NuxManager {
   }
 
   // Handles triggered NUXes that are ready to be displayed
-  _handleReadyTour(nuxTour: NuxTour) {
+  _handleReadyTour(nuxTour: NuxTour): void {
     if (this._activeNuxTour == null && this._numNuxesDisplayed < NUX_PER_SESSION_LIMIT) {
       this._numNuxesDisplayed++;
       this._activeNuxTour = nuxTour;
@@ -190,52 +191,100 @@ export class NuxManager {
     }
   }
 
-  _handleActivePaneItemChanged(paneItem: ?mixed): void {
-    this._disposables.add(onceGkInitialized(() => {
-      // Check GK for internal users; Always return true for OSS users
-      const shouldShowNuxes =
-        isGkEnabled('cpe_nuclide') ? isGkEnabled('nuclide_all_nuxes') : true;
-      if (!shouldShowNuxes) {
-        return;
+  /*
+   * An internal function that tries to trigger a NUX if its trigger type is
+   * 'editor' and its `isReady` function returns to `true`.
+   * Called every time the active pane item changes.
+   */
+  async _handleActivePaneItemChanged(paneItem: ?mixed): Promise<void> {
+    // The `paneItem` is not guaranteed to be an instance of `TextEditor` from
+    // Atom's API, but usually is.  We return if the type is not `TextEditor`
+    // since `NuxTour.isReady` expects a `TextEditor` as its argument.
+    if (!atom.workspace.isTextEditor(paneItem)) {
+      return;
+    }
+    // Flow doesn't understand the refinement done above.
+    const textEditor: atom$TextEditor = (paneItem: any);
+
+    for (const [id: string, nux: NuxTour] of this._pendingNuxes.entries()) {
+      if (nux.getTriggerType() !== 'editor' || !nux.isReady(textEditor)) {
+        continue;
       }
-      // The `paneItem` is not guaranteed to be an instance of `TextEditor` from
-      // Atom's API, but usually is.  We return if the type is not `TextEditor`
-      // since the `NuxTour.isReady` expects a `TextEditor` as its argument.
-      if (!atom.workspace.isTextEditor(paneItem)) {
-        return;
-      }
-      // Flow doesn't understand the refinement done above.
-      const textEditor: atom$TextEditor = (paneItem: any);
-      this._pendingNuxes.forEach((nux: NuxTour, id: string) => {
-        if (nux.getTriggerType() !== 'editor' || !nux.isReady(textEditor)) {
-          return;
+      // Remove NUX from pending list.
+      this._pendingNuxes.delete(id);
+      // We do the above regardless of whether the following GK checks pass/fail
+      // to avoid repeating the checks again.
+      const gkID = nux.getGatekeeperID();
+      try {
+        // Disable the linter suggestion to use `Promise.all` as we want to trigger NUXes
+        // as soon as each promise resolves rather than waiting for them all to.
+        // eslint-disable-next-line babel/no-await-in-loop
+        if (await this._canTriggerNux(gkID)) {
+          this._emitter.emit(READY_TOUR_EVENT, nux);
         }
-        this._pendingNuxes.delete(id);
-        this._emitter.emit(READY_TOUR_EVENT, nux);
-      });
-    }));
+      } catch (err) {
+        // Errors if the NuxManager was disposed while awaiting the result
+        // so we don't search the rest of the list.
+        return;
+      }
+    }
   }
 
-  tryTriggerNux(id: string): void {
-    this._disposables.add(onceGkInitialized(() => {
-      // Check GK for internal users; Always return true for OSS users
-      const shouldShowNuxes =
-        isGkEnabled('cpe_nuclide') ? isGkEnabled('nuclide_all_nuxes') : true;
-      if (!shouldShowNuxes) {
-        return;
+  /*
+   * A function exposed externally via a service that tries to trigger a NUX.
+   */
+  async tryTriggerNux(id: string): Promise<void> {
+    const nuxToTrigger = this._pendingNuxes.get(id);
+    // Silently fail if the NUX is not found or has already been completed.
+    // This isn't really an "error" to log, since the NUX may be triggered quite
+    // often even after it has been seen as it is tied to a package that is
+    // instantiated every single time a window is opened.
+    if (nuxToTrigger == null || nuxToTrigger.completed) {
+      return;
+    }
+
+    // Remove NUX from pending list.
+    this._pendingNuxes.delete(id);
+    // We do the above regardless of whether the following GK checks pass/fail
+    // to avoid repeating the checks again.
+    const gkID = nuxToTrigger.getGatekeeperID();
+    try {
+      if (await this._canTriggerNux(gkID)) {
+        this._emitter.emit(READY_TOUR_EVENT, nuxToTrigger);
       }
-      const nuxToTrigger = this._pendingNuxes.get(id);
-      // Silently fail if the NUX is not found or has already been completed.
-      // This isn't really an "error" to log, since the NUX may be triggered quite
-      // often even after it has been seen as it is tied to a package that is
-      // instantiated every single time a window is opened.
-      if (nuxToTrigger == null || nuxToTrigger.completed) {
-        return;
-      }
-      // Remove from pending list
-      this._pendingNuxes.delete(id);
-      this._emitter.emit(READY_TOUR_EVENT, nuxToTrigger);
-    }));
+    } catch (err) { }
+  }
+
+  /*
+   * Given a NUX-specific GK, determines whether the NUX can be displayed to the user.
+   *
+   * @return {Promise<boolean>} A promise that rejects if the manager disposes when waiting
+   *  on GKs, or resolves a boolean describing whether or not the NUX should be displayed.
+   */
+  _canTriggerNux(gkID: ?string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      const cleanupDisposable = new Disposable(() => {
+        gkDisposable.dispose();
+        reject(new Error('NuxManager was disposed while waiting on GKs.'));
+      });
+      const gkDisposable = onceGkInitialized(() => {
+        // Only show the NUX if
+        //  a) the user is an OSS user OR
+        //  b) the user is an internal user and passes the `nuclide_all_nuxes` GK AND
+        //     i) either there is no NUX-specific GK OR
+        //    ii) there is a NUX-specific GK and the user passes it
+        const shouldShowNuxes = isGkEnabled('cpe_nuclide') ?
+          isGkEnabled('nuclide_all_nuxes') && (gkID == null || isGkEnabled(gkID)) : true;
+
+        // No longer need to cleanup
+        this._disposables.remove(cleanupDisposable);
+        this._disposables.remove(gkDisposable);
+
+        // `isGkEnabled` returns a nullable boolean, so check for strict equality
+        resolve(shouldShowNuxes === true);
+      });
+      this._disposables.add(gkDisposable, cleanupDisposable);
+    });
   }
 
   dispose() : void {

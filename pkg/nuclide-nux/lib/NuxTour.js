@@ -24,11 +24,13 @@ export class NuxTour {
   _currentStep: number;
   _id: string;
   _trigger: ?NuxTriggerModel;
+  _gatekeeperID: ?string;
 
   constructor(
     id: string,
     nuxList : ?(Array<NuxView>),
     trigger: ?NuxTriggerModel,
+    gatekeeperID: ?string,
   ): void {
     if (nuxList == null || nuxList.length < 1) {
       throw new Error('You must create a NuxTour with at least one NuxView element!');
@@ -37,9 +39,14 @@ export class NuxTour {
     this._id = id;
     this._nuxList = nuxList;
     this._trigger = trigger;
+    this._gatekeeperID = gatekeeperID;
 
     const boundNextStep = this._nextStep.bind(this);
     nuxList.forEach(n => { n.setNuxCompleteCallback(boundNextStep); });
+  }
+
+  getGatekeeperID(): ?string {
+    return this._gatekeeperID;
   }
 
   begin(): void {
