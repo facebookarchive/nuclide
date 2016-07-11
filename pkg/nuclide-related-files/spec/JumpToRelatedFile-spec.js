@@ -10,20 +10,24 @@
  */
 
 import JumpToRelatedFile from '../lib/JumpToRelatedFile';
+import RelatedFileFinder from '../lib/RelatedFileFinder';
 
 describe('JumpToRelatedFile', () => {
   const relatedFiles = ['dir/Test.h', 'dir/Test.m', 'dir/TestInternal.h'];
   let currentFile = '';
-  const relatedFileFinder: any = {
-    find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
-  };
+
+  beforeEach(() => {
+    spyOn(RelatedFileFinder, 'find').andCallFake(() => {
+      return {relatedFiles, index: relatedFiles.indexOf(currentFile)};
+    });
+  });
 
   describe('@getNextRelatedFile_', () => {
     it('gets next related file at the start of the sequence', () => {
       waitsForPromise(async () => {
         currentFile = 'dir/Test.h';
 
-        const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
+        const jumpToRelatedFile = new JumpToRelatedFile();
         expect(await jumpToRelatedFile.getNextRelatedFile(currentFile))
             .toEqual('dir/TestInternal.h');
       });
@@ -33,7 +37,7 @@ describe('JumpToRelatedFile', () => {
       waitsForPromise(async () => {
         currentFile = 'dir/Test.m';
 
-        const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
+        const jumpToRelatedFile = new JumpToRelatedFile();
         expect(await jumpToRelatedFile.getNextRelatedFile(currentFile))
             .toEqual('dir/Test.h');
       });
@@ -43,7 +47,7 @@ describe('JumpToRelatedFile', () => {
       waitsForPromise(async () => {
         currentFile = 'dir/TestInternal.h';
 
-        const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
+        const jumpToRelatedFile = new JumpToRelatedFile();
         expect(await jumpToRelatedFile.getNextRelatedFile(currentFile))
             .toEqual('dir/Test.m');
       });
@@ -55,7 +59,7 @@ describe('JumpToRelatedFile', () => {
       waitsForPromise(async () => {
         currentFile = 'dir/Test.h';
 
-        const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
+        const jumpToRelatedFile = new JumpToRelatedFile();
         expect(await jumpToRelatedFile.getPreviousRelatedFile(currentFile))
             .toEqual('dir/Test.m');
       });
@@ -65,7 +69,7 @@ describe('JumpToRelatedFile', () => {
       waitsForPromise(async () => {
         currentFile = 'dir/Test.m';
 
-        const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
+        const jumpToRelatedFile = new JumpToRelatedFile();
         expect(await jumpToRelatedFile.getPreviousRelatedFile(currentFile))
             .toEqual('dir/TestInternal.h');
       });
@@ -75,7 +79,7 @@ describe('JumpToRelatedFile', () => {
       waitsForPromise(async () => {
         currentFile = 'dir/TestInternal.h';
 
-        const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
+        const jumpToRelatedFile = new JumpToRelatedFile();
         expect(await jumpToRelatedFile.getPreviousRelatedFile(currentFile))
             .toEqual('dir/Test.h');
       });

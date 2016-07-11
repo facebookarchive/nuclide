@@ -25,23 +25,24 @@ import nuclideUri from '../../nuclide-remote-uri';
  * For now, we only search in the given path's directory for related files.
  */
 export default class RelatedFileFinder {
-
   /**
    * Returns the related files and the given file's index in that array.
    * The given file must be in the related files array.
    * @param filePath The filepath for which to get related files.
    * @return The related files and the given path's index into it.
    */
-  async find(filePath: NuclideUri): Promise<{relatedFiles: Array<string>; index: number}> {
+  static async find(
+    filePath: NuclideUri,
+  ): Promise<{relatedFiles: Array<string>; index: number}> {
     const dirName = nuclideUri.dirname(filePath);
-    const prefix = this._getPrefix(filePath);
+    const prefix = getPrefix(filePath);
 
     const service = getServiceByNuclideUri('FileSystemService', filePath);
     invariant(service);
     const listing = await service.readdir(nuclideUri.getPath(dirName));
     const relatedFiles = listing
       .filter(otherFilePath => {
-        return otherFilePath.stats.isFile() && this._getPrefix(otherFilePath.file) === prefix;
+        return otherFilePath.stats.isFile() && getPrefix(otherFilePath.file) === prefix;
       })
       .map(otherFilePath => nuclideUri.join(dirName, otherFilePath.file))
       .sort();
@@ -56,17 +57,16 @@ export default class RelatedFileFinder {
       index,
     };
   }
+}
 
-  _getPrefix(filePath: NuclideUri): string {
-    let base = nuclideUri.basename(filePath);
-    // Strip off the extension.
-    const pos = base.lastIndexOf('.');
-    if (pos !== -1) {
-      base = base.substring(0, pos);
-    }
-    // In Objective-C we often have the X + XInternal.h for implementation methods.
-    // Similarly, C++ users often use X.h + X-inl.h.
-    return base.replace(/(Internal|-inl)$/, '');
+function getPrefix(filePath: NuclideUri): string {
+  let base = nuclideUri.basename(filePath);
+  // Strip off the extension.
+  const pos = base.lastIndexOf('.');
+  if (pos !== -1) {
+    base = base.substring(0, pos);
   }
-
+  // In Objective-C we often have the X + XInternal.h for implementation methods.
+  // Similarly, C++ users often use X.h + X-inl.h.
+  return base.replace(/(Internal|-inl)$/, '');
 }

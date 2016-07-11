@@ -13,7 +13,6 @@ import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 
 import JumpToRelatedFile from './JumpToRelatedFile';
-import RelatedFileFinder from './RelatedFileFinder';
 
 let jumpToRelatedFile: ?JumpToRelatedFile = null;
 let subscriptions: ?CompositeDisposable = null;
@@ -31,7 +30,7 @@ export function activate() {
   subscriptions = new CompositeDisposable();
   subscriptions.add(atom.workspace.observeTextEditors(textEditor => {
     if (jumpToRelatedFile == null) {
-      jumpToRelatedFile = new JumpToRelatedFile(new RelatedFileFinder());
+      jumpToRelatedFile = new JumpToRelatedFile();
       invariant(subscriptions);
       subscriptions.add(jumpToRelatedFile);
     }

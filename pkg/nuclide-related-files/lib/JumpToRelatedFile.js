@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type RelatedFileFinder from './RelatedFileFinder';
-
+import RelatedFileFinder from './RelatedFileFinder';
 import {trackOperationTiming} from '../../nuclide-analytics';
 import featureConfig from '../../nuclide-feature-config';
 
@@ -21,10 +20,8 @@ import featureConfig from '../../nuclide-feature-config';
  */
 export default class JumpToRelatedFile {
   _commandSubscriptionsMap: Map<any, any>;
-  _relatedFileFinder: RelatedFileFinder;
 
-  constructor(relatedFileFinder: RelatedFileFinder) {
-    this._relatedFileFinder = relatedFileFinder;
+  constructor() {
     this._commandSubscriptionsMap = new Map();
   }
 
@@ -79,7 +76,7 @@ export default class JumpToRelatedFile {
    * before the current one alphabetically.
    */
   async getNextRelatedFile(path: string): Promise<string> {
-    const {relatedFiles, index} = await this._relatedFileFinder.find(path);
+    const {relatedFiles, index} = await RelatedFileFinder.find(path);
     return relatedFiles[(relatedFiles.length + index - 1) % relatedFiles.length];
   }
 
@@ -88,7 +85,7 @@ export default class JumpToRelatedFile {
    * after the current one alphabetically.
    */
   async getPreviousRelatedFile(path: string): Promise<string> {
-    const {relatedFiles, index} = await this._relatedFileFinder.find(path);
+    const {relatedFiles, index} = await RelatedFileFinder.find(path);
     return relatedFiles[(index + 1) % relatedFiles.length];
   }
 
