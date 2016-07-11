@@ -218,8 +218,11 @@ export function serialize(): SerializedAppState {
 export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
   return {
     name: 'nuclide-build',
-    isVisible: () => (invariant(_states != null), _states.getValue().visible),
-    toggle: () => {
+    isVisible() {
+      invariant(_states != null);
+      return _states.getValue().visible;
+    },
+    toggle() {
       invariant(_commands != null);
       _commands.toggleToolbarVisibility();
     },

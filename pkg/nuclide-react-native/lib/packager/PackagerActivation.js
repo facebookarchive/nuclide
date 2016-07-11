@@ -32,7 +32,10 @@ export class PackagerActivation {
     const packagerEvents = Observable.defer(getPackagerObservable).share();
     const messages = packagerEvents
       .filter(event => event.kind === 'message')
-      .map(event => (invariant(event.kind === 'message'), event.message));
+      .map(event => {
+        invariant(event.kind === 'message');
+        return event.message;
+      });
     const ready = packagerEvents
       .filter(message => message.kind === 'ready')
       .mapTo(undefined);

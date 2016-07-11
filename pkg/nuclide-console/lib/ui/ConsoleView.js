@@ -99,8 +99,8 @@ export default class ConsoleView extends React.Component {
 
       this._shouldScrollToBottom = isScrolledToBottom;
 
-      // If we receive new messages after we've scrolled away from the bottom, show the "new messages"
-      // notification.
+      // If we receive new messages after we've scrolled away from the bottom, show the
+      // "new messages" notification.
       if (!isScrolledToBottom) {
         this.setState({unseenMessages: true});
       }

@@ -819,9 +819,9 @@
       "resolved": "https://registry.npmjs.org/jscodeshift/-/jscodeshift-0.3.20.tgz",
       "dependencies": {
         "ast-types": {
-          "version": "0.8.16",
-          "from": "ast-types@0.8.16",
-          "resolved": "https://registry.npmjs.org/ast-types/-/ast-types-0.8.16.tgz"
+          "version": "0.8.17",
+          "from": "ast-types@0.8.17",
+          "resolved": "https://registry.npmjs.org/ast-types/-/ast-types-0.8.17.tgz"
         },
         "async": {
           "version": "1.5.2",
@@ -834,9 +834,9 @@
           "resolved": "https://registry.npmjs.org/esprima/-/esprima-2.7.2.tgz"
         },
         "recast": {
-          "version": "0.11.8",
+          "version": "0.11.10",
           "from": "recast@>=0.11.0 <0.12.0",
-          "resolved": "https://registry.npmjs.org/recast/-/recast-0.11.8.tgz"
+          "resolved": "https://registry.npmjs.org/recast/-/recast-0.11.10.tgz"
         }
       }
     },
@@ -871,9 +871,9 @@
       "resolved": "https://registry.npmjs.org/jsonpointer/-/jsonpointer-2.0.0.tgz"
     },
     "jsprim": {
-      "version": "1.2.2",
+      "version": "1.3.0",
       "from": "jsprim@>=1.2.2 <2.0.0",
-      "resolved": "https://registry.npmjs.org/jsprim/-/jsprim-1.2.2.tgz"
+      "resolved": "https://registry.npmjs.org/jsprim/-/jsprim-1.3.0.tgz"
     },
     "kind-of": {
       "version": "3.0.3",

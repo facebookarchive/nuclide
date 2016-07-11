@@ -93,7 +93,8 @@ export function runTest(context: TestContext) {
       fs.unlinkSync(nuclideUri.join(repoPath, TEST_FILE_NAME));
     });
 
-    // Ensure that the new Diff View editor that is created when the file on the system is deleted is blank
+    // Ensure that the new Diff View editor that is created when the file on the system
+    // is deleted is blank
     waitsFor('diff view to create a new text editor on file deletion', () => {
       return getDiffEditorContents() === '';
     });

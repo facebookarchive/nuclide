@@ -1,5 +1,5 @@
 'use strict';
-/* @noflow */
+/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +9,39 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  'parser': 'babel-eslint',
+// To lint this file, run:
+// ./node_modules/.bin/eslint .eslintrc.js --no-ignore
 
-  'parserOptions': {
-    'ecmaVersion': 7,
-    'sourceType': 'module',
-    'ecmaFeatures': {
-      'globalReturn': true,
-      'jsx': true,
-      'experimentalObjectRestSpread': true
-    }
+module.exports = {
+  parser: 'babel-eslint',
+
+  parserOptions: {
+    ecmaVersion: 7,
+    sourceType: 'module',
+    ecmaFeatures: {
+      globalReturn: true,
+      jsx: true,
+      experimentalObjectRestSpread: true,
+    },
   },
 
   // https://github.com/sindresorhus/globals/blob/master/globals.json
-  'env': {
-    'atomtest': true,
-    'es6': true,
-    'jasmine': true,
-    'node': true
+  env: {
+    atomtest: true,
+    es6: true,
+    jasmine: true,
+    node: true,
   },
 
-  'globals': {
-    'atom': false,
-    'document': false,
-    'window': false,
-    'HTMLElement': false,
-    'WebSocket': false
+  globals: {
+    atom: false,
+    document: false,
+    window: false,
+    HTMLElement: false,
+    WebSocket: false,
   },
 
-  'rules': {
+  rules: {
     // Possible Errors (http://eslint.org/docs/rules/#possible-errors)
     'comma-dangle': [1, 'always-multiline'],
     'no-cond-assign': 1,
@@ -49,7 +52,7 @@ module.exports = {
     'no-dupe-args': 1,
     'no-dupe-keys': 1,
     'no-duplicate-case': 1,
-    'no-empty': [1, {'allowEmptyCatch': true}],
+    'no-empty': [1, {allowEmptyCatch: true}],
     'no-empty-character-class': 1,
     'no-ex-assign': 1,
     'no-extra-boolean-cast': 1,
@@ -61,6 +64,7 @@ module.exports = {
     'no-irregular-whitespace': 1,
     'no-negated-in-lhs': 1,
     'no-obj-calls': 1,
+    'no-prototype-builtins': 0,
     'no-regex-spaces': 1,
     'no-sparse-arrays': 1,
     'no-unexpected-multiline': 1,
@@ -116,7 +120,7 @@ module.exports = {
     'no-octal-escape': 1,
     // 'no-param-reassign': 1,
     'no-proto': 1,
-    'no-redeclare': [1, {'builtinGlobals': true}],
+    'no-redeclare': [1, {builtinGlobals: true}],
     'no-return-assign': 1,
     'no-script-url': 1,
     'no-self-assign': 1,
@@ -151,7 +155,7 @@ module.exports = {
     'no-undef': 1,
     'no-undef-init': 0,
     'no-undefined': 0,
-    'no-unused-vars': [1, {'args': 'none'}],
+    'no-unused-vars': [1, {args: 'none'}],
     'no-use-before-define': 0,
 
     // Node.js and CommonJS (http://eslint.org/docs/rules/#nodejs-and-commonjs)
@@ -166,10 +170,10 @@ module.exports = {
     'no-restricted-modules': 0,
     'no-sync': 0,
 
-    // // Stylistic Issues (http://eslint.org/docs/rules/#stylistic-issues)
+    // Stylistic Issues (http://eslint.org/docs/rules/#stylistic-issues)
     'array-bracket-spacing': 1,
     'block-spacing': 1,
-    'brace-style': [1, '1tbs', {'allowSingleLine': true}],
+    'brace-style': [1, '1tbs', {allowSingleLine: true}],
     'camelcase': 0,
     'comma-spacing': 1,
     'comma-style': 1,
@@ -181,14 +185,15 @@ module.exports = {
     'id-blacklist': 0,
     'id-length': 0,
     'id-match': 0,
-    'indent': [1, 2, {'SwitchCase': 1}],
+    'indent': [1, 2, {SwitchCase: 1}],
     'jsx-quotes': [1, 'prefer-double'],
-    'key-spacing': [1, {'beforeColon': false, 'afterColon': true}],
+    'key-spacing': [1, {beforeColon: false, afterColon: true}],
     'keyword-spacing': 1,
     'linebreak-style': 1,
     'lines-around-comment': 0,
     'max-depth': 0,
-    'max-len': [1, 100, {'tabWidth': 2, 'ignoreTrailingComments': true, 'ignoreUrls': true}],
+    'max-len': [1, 100, {tabWidth: 2, ignoreTrailingComments: true, ignoreUrls: true}],
+    'max-lines': 0,
     'max-nested-callbacks': 0,
     'max-params': 0,
     'max-statements': 0,
@@ -203,8 +208,9 @@ module.exports = {
     'no-continue': 0,
     'no-inline-comments': 0,
     'no-lonely-if': 0,
+    'no-mixed-operators': 0,
     'no-mixed-spaces-and-tabs': 1,
-    'no-multiple-empty-lines': [1, {'max': 2, 'maxBOF': 0, 'maxEOF': 1}],
+    'no-multiple-empty-lines': [1, {max: 2, maxBOF: 0, maxEOF: 1}],
     'no-negated-condition': 0,
     'no-nested-ternary': 0,
     'no-new-object': 1,
@@ -216,12 +222,14 @@ module.exports = {
     'no-underscore-dangle': 0,
     'no-unneeded-ternary': 0,
     'no-whitespace-before-property': 1,
+    'object-curly-newline': 0,
     'object-curly-spacing': 1,
+    'object-property-newline': 0,
     'one-var': [1, 'never'],
     'one-var-declaration-per-line': 0,
     'operator-assignment': 1,
     'operator-linebreak': 0,
-    // padded-blocks: [1, 'never'],
+    // 'padded-blocks': [1, 'never'],
     'quote-props': [1, 'consistent-as-needed'],
     'quotes': [1, 'single', 'avoid-escape'],
     'require-jsdoc': 0,
@@ -233,6 +241,8 @@ module.exports = {
     'space-in-parens': [1, 'never'],
     'space-infix-ops': 1,
     'space-unary-ops': 1,
+    'spaced-comment': 0,
+    'unicode-bom': [1, 'never'],
     'wrap-regex': 0,
 
     // ECMAScript 6 (http://eslint.org/docs/rules/#ecmascript-6)
@@ -242,7 +252,7 @@ module.exports = {
     'constructor-super': 1,
     'generator-star-spacing': 0,
     'no-class-assign': 1,
-    'no-confusing-arrow': [1, {'allowParens': true}],
+    'no-confusing-arrow': [1, {allowParens: true}],
     'no-const-assign': 1,
     'no-dupe-class-members': 1,
     'no-duplicate-imports': 0,
@@ -252,14 +262,16 @@ module.exports = {
     'no-useless-computed-key': 1,
     'no-useless-constructor': 0,
     'no-var': 1,
+    'no-useless-rename': 1,
     'object-shorthand': 0, // Enforced by babel/object-shorthand
-    'prefer-arrow-callback': [1, {'allowNamedFunctions': true}],
+    'prefer-arrow-callback': [1, {allowNamedFunctions: true}],
     'prefer-const': 1,
     'prefer-reflect': 0,
     'prefer-rest-params': 0,
     'prefer-spread': 0,
     'prefer-template': 0,
     'require-yield': 0,
+    'rest-spread-spacing': 1,
     'sort-imports': 0,
     'template-curly-spacing': 1,
     'yield-star-spacing': 1,
@@ -272,8 +284,9 @@ module.exports = {
     'babel/object-curly-spacing': 0,
     'babel/object-shorthand': 1,
     // Babel (not in eslint)
-    'babel/no-await-in-loop': 1,
     'babel/flow-object-type': [1, 'semicolon'],
+    // 'babel/func-params-comma-dangle': [1, 'always-multiline'],
+    'babel/no-await-in-loop': 1,
 
     // flow-vars (https://github.com/zertosh/eslint-plugin-flow-vars)
     'flow-vars/define-flow-type': 1,
@@ -305,20 +318,22 @@ module.exports = {
 
     // React (https://github.com/yannickcr/eslint-plugin-react)
     'react/display-name': 0,
-    'react/forbid-prop-types': 0,
+    // 'react/forbid-prop-types': 1,
     'react/jsx-boolean-value': 0,
-    'react/jsx-closing-bracket-location': [1, {'selfClosing': 'tag-aligned', 'nonEmpty': 'after-props'}],
+    'react/jsx-closing-bracket-location': [1, {selfClosing: 'tag-aligned', nonEmpty: 'after-props'}],
     'react/jsx-curly-spacing': [1, 'never'],
     'react/jsx-equals-spacing': 0,
+    'react/jsx-filename-extension': 0,
     'react/jsx-first-prop-new-line': 0,
     'react/jsx-handler-names': 0,
     'react/jsx-indent': 0,
     'react/jsx-indent-props': 0,
     'react/jsx-key': 1,
     'react/jsx-max-props-per-line': 0,
-    'react/jsx-no-bind': 0,
+    // 'react/jsx-no-bind': 1,
     'react/jsx-no-duplicate-props': 1,
     'react/jsx-no-literals': 0,
+    'react/jsx-no-target-blank': 0,
     'react/jsx-no-undef': 1,
     'react/jsx-pascal-case': 0,
     'react/jsx-sort-prop-types': 0,
@@ -326,6 +341,7 @@ module.exports = {
     'react/jsx-space-before-closing': 1,
     'react/jsx-uses-react': 1,
     'react/jsx-uses-vars': 1,
+    'react/no-comment-textnodes': 0,
     'react/no-danger': 0,
     'react/no-deprecated': 1,
     'react/no-did-mount-set-state': 0,
@@ -333,22 +349,24 @@ module.exports = {
     'react/no-direct-mutation-state': 0,
     'react/no-is-mounted': 0,
     'react/no-multi-comp': 0,
+    'react/no-render-return-value': 0,
     'react/no-set-state': 0,
     'react/no-string-refs': 0,
     'react/no-unknown-property': 1,
     'react/prefer-es6-class': 0,
-    'react/prefer-stateless-function': 0,
+    // 'react/prefer-stateless-function': 1,
     'react/prop-types': 1,
     'react/react-in-jsx-scope': 1,
     'react/require-extension': 0,
+    'react/require-optimization': 0,
     'react/require-render-return': 0,
-    'react/self-closing-comp': 0,
+    'react/self-closing-comp': 1,
     'react/sort-comp': 0,
     'react/sort-prop-types': 0,
     'react/wrap-multilines': 0,
   },
 
-  'plugins': [
+  plugins: [
     'babel',
     'flow-vars',
     'jasmine',

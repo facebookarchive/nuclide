@@ -26,7 +26,10 @@ export function createProcessStream(): Rx.Observable<string> {
       return event;
     })
     .filter(event => event.kind === 'stdout')
-    .map(event => (invariant(event.data != null), event.data))
+    .map(event => {
+      invariant(event.data != null);
+      return event.data;
+    })
     .reduce((acc, next) => acc + next, '')
     .map(rawJson => JSON.parse(rawJson));
 
@@ -53,7 +56,10 @@ export function createProcessStream(): Rx.Observable<string> {
           return event;
         })
         .filter(event => event.kind === 'stdout')
-        .map(event => (invariant(event.data != null), event.data))
+        .map(event => {
+          invariant(event.data != null);
+          return event.data;
+        })
     ));
 }
 

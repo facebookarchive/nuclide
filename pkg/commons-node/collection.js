@@ -93,7 +93,7 @@ export function setIntersect<T>(a: Set<T>, b: Set<T>): Set<T> {
  * O(1)-check if a given object is empty (has no properties, inherited or not)
  */
 export function isEmpty(obj: Object): boolean {
-  for (const key in obj) { // eslint-disable-line no-unused-vars
+  for (const key in obj) {
     return false;
   }
   return true;

@@ -42,7 +42,7 @@ describe('React Native Inspector', () => {
 
     waitsForPromise({timeout: 3000}, async () => {
       // Keep trying to connect to the server.
-      while (true) { // eslint-disable-line no-constant-condition
+      for (;;) {
         try {
           await tryToConnect(); // eslint-disable-line babel/no-await-in-loop
           return;

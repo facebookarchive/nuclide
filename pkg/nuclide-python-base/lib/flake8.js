@@ -40,7 +40,7 @@ export function parseFlake8Output(src: string, output: string): Array<Object> {
   const regex = /(\d+):(\d+):\s([A-Z]\d{2,3})\s+(.*)/g;
   const results = [];
 
-  do { // eslint-disable-line no-constant-condition
+  for (;;) {
     const match = regex.exec(output);
     if (match == null) {
       break;
@@ -54,7 +54,7 @@ export function parseFlake8Output(src: string, output: string): Array<Object> {
       type: classifyCode(code),
       message,
     });
-  } while (true);
+  }
 
   return results;
 }

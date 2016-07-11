@@ -587,7 +587,7 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function flattenUnionAlternates(types: Array<Type>): Array<Type> {
-    return [].concat(... types.map(alternate => {
+    return [].concat(...types.map(alternate => {
       const resolvedAlternate = resolvePossiblyNamedType(alternate);
       return resolvedAlternate.kind === 'union' ?
           flattenUnionAlternates(resolvedAlternate.types) :
@@ -647,7 +647,7 @@ export function validateDefinitions(definitions: Definitions): void {
   function errorLocations(locations: Array<Location>, message: string): Error {
     let fullMessage = `${locationToString(locations[0])}:${message}`;
     fullMessage = fullMessage.concat(
-      ... (locations.slice(1).map(location =>
+      ...(locations.slice(1).map(location =>
         `\n${locationToString(location)}: Related location`)));
     return new Error(fullMessage);
   }
@@ -655,7 +655,7 @@ export function validateDefinitions(definitions: Definitions): void {
   function errorDefinitions(defs: Array<Definition>, message: string): Error {
     let fullMessage = `${locationToString(defs[0].location)}:${message}`;
     fullMessage = fullMessage.concat(
-      ... (defs.slice(1).map(definition =>
+      ...(defs.slice(1).map(definition =>
         `\n${locationToString(definition.location)}: Related definition ${definition.name}`)));
     return new Error(fullMessage);
   }

@@ -141,7 +141,7 @@ class FileParser {
   _errorLocations(locations: Array<Location>, message: string): Error {
     let fullMessage = `${locationToString(locations[0])}:${message}`;
     fullMessage = fullMessage.concat(
-      ... (locations.slice(1).map(location =>
+      ...(locations.slice(1).map(location =>
         `\n${locationToString(location)}: Related location`)));
     return new Error(fullMessage);
   }

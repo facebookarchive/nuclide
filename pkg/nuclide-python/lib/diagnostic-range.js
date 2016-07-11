@@ -32,7 +32,7 @@ function getModuleNameRange(message: string, line: number, editor: atom$TextEdit
   const symbol = /'([^']+)'/.exec(message)[1];
   let foundImport = false;
   let lineNumber = line;
-  do { // eslint-disable-line no-constant-condition
+  for (;;) {
     let offset = 0;
     const tokenizedLine = tokenizedLineForRow(editor, lineNumber);
     if (!tokenizedLine) {
@@ -50,7 +50,7 @@ function getModuleNameRange(message: string, line: number, editor: atom$TextEdit
       offset += token.value.length;
     }
     lineNumber += 1;
-  } while (true);
+  }
 
   invariant(false, 'getModuleNameRange - should not reach this line');
 }

@@ -95,7 +95,8 @@ export class MeasuredComponent extends React.Component {
   _updateDomNode(node: ?HTMLElement): void {
     if (node == null) {
       this._domNode = null;
-      // _updateDomNode is called before component unmount, so don't need to disconect() in componentWillUnmount()
+      // _updateDomNode is called before component unmount, so don't need to disconect()
+      // in componentWillUnmount()
       this._mutationObserver.disconnect();
       return;
     }

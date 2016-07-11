@@ -98,7 +98,10 @@ export class DebuggerProxyClient {
 
     this._pids = this._executorResponses
       .filter(response => response.kind === 'pid')
-      .map(response => (invariant(response.kind === 'pid'), response.pid));
+      .map(response => {
+        invariant(response.kind === 'pid');
+        return response.pid;
+      });
 
     // Send the executor results to the RN app. (Close the loop.)
     (
@@ -115,7 +118,10 @@ export class DebuggerProxyClient {
     // Log executor errors.
     this._executorResponses
       .filter(response => response.kind === 'error')
-      .map(response => (invariant(response.kind === 'error'), response.message))
+      .map(response => {
+        invariant(response.kind === 'error');
+        return response.message;
+      })
       .subscribe(getLogger().error);
   }
 

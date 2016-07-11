@@ -70,7 +70,7 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
   // with fileName to pathToFile (or deleted the one that was cached), then we
   // would have a bug. This would probably be pretty rare, though.
   let currentPath = nuclideUri.resolve(pathToDirectory);
-  do { // eslint-disable-line no-constant-condition
+  for (;;) {
     const fileToFind = nuclideUri.join(currentPath, fileName);
     const hasFile = await exists(fileToFind); // eslint-disable-line babel/no-await-in-loop
     if (hasFile) {
@@ -80,7 +80,7 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
       return null;
     }
     currentPath = nuclideUri.dirname(currentPath);
-  } while (true);
+  }
 }
 
 /**
@@ -99,7 +99,7 @@ async function findFurthestFile(
 ): Promise<?string> {
   let currentPath = nuclideUri.resolve(pathToDirectory);
   let result = null;
-  do { // eslint-disable-line no-constant-condition
+  for (;;) {
     const fileToFind = nuclideUri.join(currentPath, fileName);
     const hasFile = await exists(fileToFind); // eslint-disable-line babel/no-await-in-loop
     if ((!hasFile && stopOnMissing) || nuclideUri.isRoot(currentPath)) {
@@ -108,7 +108,7 @@ async function findFurthestFile(
       result = currentPath;
     }
     currentPath = nuclideUri.dirname(currentPath);
-  } while (true);
+  }
 }
 
 function getCommonAncestorDirectory(filePaths: Array<string>): string {

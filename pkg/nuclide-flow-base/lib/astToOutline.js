@@ -22,6 +22,7 @@ import {
   whitespace,
   plain,
   // This is to work around a Flow parser bug.
+  // eslint-disable-next-line no-useless-rename
   type as type,
 } from '../../nuclide-tokenized-text';
 

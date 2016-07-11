@@ -61,12 +61,12 @@ const ButtonColorExample = (): React.Element<any> => (
 const ButtonIconExample = (): React.Element<any> => (
   <Block>
     <ButtonGroup>
-      <Button icon="gear"></Button>
-      <Button icon="cloud-download"></Button>
-      <Button icon="code"></Button>
-      <Button icon="check"></Button>
-      <Button icon="device-mobile"></Button>
-      <Button icon="alert"></Button>
+      <Button icon="gear" />
+      <Button icon="cloud-download" />
+      <Button icon="code" />
+      <Button icon="check" />
+      <Button icon="device-mobile" />
+      <Button icon="alert" />
     </ButtonGroup>
   </Block>
 );

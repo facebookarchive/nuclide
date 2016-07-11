@@ -36,8 +36,7 @@ class DiffViewToolbar extends React.Component {
     const hasActiveFile = filePath != null && filePath.length > 0;
     return (
       <Toolbar location="top">
-        <ToolbarLeft>
-        </ToolbarLeft>
+        <ToolbarLeft />
         <ToolbarCenter>
           {this.props.oldRevisionTitle == null ? '?' : this.props.oldRevisionTitle}
           {'...'}

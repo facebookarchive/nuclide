@@ -222,8 +222,8 @@ class TestRunnerPanel extends React.Component {
                 disabled={this.isDisabled() ||
                   this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
                 onClick={this.props.onClickClear}
-                title="Clear Output">
-              </Button>
+                title="Clear Output"
+              />
               {pathMsg}
             </ToolbarLeft>
             <ToolbarRight>
@@ -234,8 +234,8 @@ class TestRunnerPanel extends React.Component {
                 className="inline-block"
                 icon="x"
                 size={ButtonSizes.SMALL}
-                title="Close Panel">
-              </Button>
+                title="Close Panel"
+              />
             </ToolbarRight>
           </Toolbar>
           <div className="nuclide-test-runner-console" ref="paneContainer"></div>
