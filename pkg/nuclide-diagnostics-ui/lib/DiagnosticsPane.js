@@ -19,7 +19,6 @@ import {track} from '../../nuclide-analytics';
 
 type textAndType = {text: string; isPlainText: boolean};
 
-const {PropTypes} = React;
 const DEFAULT_LINE_TEXT_HEIGHT = 15;
 const PIXELS_PER_CHAR = 6;
 const MAX_ROW_LINES = 3;
@@ -142,13 +141,14 @@ function Cell(props: CellProps): React.Element<any> {
   );
 }
 
-class DiagnosticsPane extends React.Component {
-  static propTypes = {
-    diagnostics: PropTypes.array.isRequired,
-    showFileName: PropTypes.bool,
-    width: PropTypes.number.isRequired,
-  };
+type DiagnosticsPaneProps = {
+  diagnostics: Array<DiagnosticMessage>;
+  showFileName: ?boolean;
+  width: number;
+};
 
+class DiagnosticsPane extends React.Component {
+  props: DiagnosticsPaneProps;
   state: {widths: {[key: string]: number}};;
 
   constructor(props: mixed) {

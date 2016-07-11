@@ -9,20 +9,22 @@
  * the root directory of this source tree.
  */
 
+import type {HandlesByType} from '../../types';
+
 import {React} from 'react-for-atom';
-const {PropTypes} = React;
+
+type Props = {
+  cpuPercentage: number;
+  memory: number;
+  heapPercentage: number;
+  lastKeyLatency: number;
+  activeHandles: number;
+  activeRequests: number;
+  activeHandlesByType: HandlesByType;
+};
 
 export default class BasicStatsSectionComponent extends React.Component {
-
-  static propTypes = {
-    cpuPercentage: PropTypes.number.isRequired,
-    memory: PropTypes.number.isRequired,
-    heapPercentage: PropTypes.number.isRequired,
-    lastKeyLatency: PropTypes.number.isRequired,
-    activeHandles: PropTypes.number.isRequired,
-    activeRequests: PropTypes.number.isRequired,
-    activeHandlesByType: PropTypes.object.isRequired,
-  };
+  props: Props;
 
   render(): React.Element<any> {
     const stats = [

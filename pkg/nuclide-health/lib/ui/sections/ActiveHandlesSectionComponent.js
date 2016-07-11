@@ -9,17 +9,18 @@
  * the root directory of this source tree.
  */
 
+import type {HandlesByType} from '../../types';
+
 import nuclideUri from '../../../../nuclide-remote-uri';
 import {React} from 'react-for-atom';
 import HandlesTableComponent from './HandlesTableComponent';
-const {PropTypes} = React;
+
+type Props = {
+  activeHandlesByType: HandlesByType;
+};
 
 export default class ActiveHandlesSectionComponent extends React.Component {
-
-  static propTypes = {
-    activeHandlesByType: PropTypes.object.isRequired,
-  };
-
+  props: Props;
 
   render(): React.Element<any> {
     if (

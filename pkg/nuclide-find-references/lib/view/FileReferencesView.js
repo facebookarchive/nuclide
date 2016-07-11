@@ -16,40 +16,50 @@ import classnames from 'classnames';
 import FilePreview from './FilePreview';
 import nuclideUri from '../../../nuclide-remote-uri';
 
-const FileReferencesView = React.createClass({
-  propTypes: {
-    uri: React.PropTypes.string.isRequired,
-    grammar: React.PropTypes.object.isRequired,
-    previewText: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
-    refGroups: React.PropTypes.arrayOf(React.PropTypes.object /*ReferenceGroup*/).isRequired,
-    basePath: React.PropTypes.string.isRequired,
-    clickCallback: React.PropTypes.func.isRequired,
-    isSelected: React.PropTypes.bool.isRequired,
-  },
+type Props = {
+  uri: string;
+  grammar: atom$Grammar;
+  previewText: Array<string>;
+  refGroups: Array<ReferenceGroup>;
+  basePath: string;
+  clickCallback: () => void;
+  isSelected: boolean;
+};
 
-  getInitialState() {
-    return {
+type State = {
+  isExpanded: boolean;
+};
+
+export default class FileReferencesView extends React.Component {
+  props: Props;
+  state: State;
+
+  constructor(props: Props) {
+    super(props);
+    this.state = {
       isExpanded: true,
     };
-  },
+    (this: any)._onFileClick = this._onFileClick.bind(this);
+    (this: any)._onFileNameClick = this._onFileNameClick.bind(this);
+  }
 
   _onRefClick(ref: Reference) {
     atom.workspace.open(this.props.uri, {
       initialLine: ref.start.line - 1,
       initialColumn: ref.start.column - 1,
     });
-  },
+  }
 
   _onFileClick() {
     this.props.clickCallback();
     this.setState({
       isExpanded: !this.state.isExpanded,
     });
-  },
+  }
 
   _onFileNameClick() {
     atom.workspace.open(this.props.uri);
-  },
+  }
 
   render(): React.Element<any> {
     const groups = this.props.refGroups.map((group: ReferenceGroup, i) => {
@@ -110,7 +120,5 @@ const FileReferencesView = React.createClass({
         </ul>
       </li>
     );
-  },
-});
-
-module.exports = FileReferencesView;
+  }
+}

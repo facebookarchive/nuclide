@@ -9,23 +9,24 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-const {PropTypes} = React;
+import type {HandlesByType} from '../types';
 
+import {React} from 'react-for-atom';
 import BasicStatsSectionComponent from './sections/BasicStatsSectionComponent';
 import ActiveHandlesSectionComponent from './sections/ActiveHandlesSectionComponent';
 
-export default class HealthPaneItemComponent extends React.Component {
+type Props = {
+  cpuPercentage: number;
+  memory: number;
+  heapPercentage: number;
+  lastKeyLatency: number;
+  activeHandles: number;
+  activeRequests: number;
+  activeHandlesByType: HandlesByType;
+};
 
-  static propTypes = {
-    cpuPercentage: PropTypes.number.isRequired,
-    memory: PropTypes.number.isRequired,
-    heapPercentage: PropTypes.number.isRequired,
-    lastKeyLatency: PropTypes.number.isRequired,
-    activeHandles: PropTypes.number.isRequired,
-    activeRequests: PropTypes.number.isRequired,
-    activeHandlesByType: PropTypes.object.isRequired,
-  };
+export default class HealthPaneItemComponent extends React.Component {
+  props: Props;
 
   render(): React.Element<any> {
 

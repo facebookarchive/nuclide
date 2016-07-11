@@ -9,14 +9,17 @@
  * the root directory of this source tree.
  */
 
+import type {TextBuffer} from 'atom';
+
 import {AtomTextEditor} from '../../../nuclide-ui/lib/AtomTextEditor';
 import {React} from 'react-for-atom';
 
-class Console extends React.Component {
-  static propTypes = {
-    textBuffer: React.PropTypes.object.isRequired,
-  };
+type Props = {
+  textBuffer: TextBuffer;
+};
 
+class Console extends React.Component {
+  props: Props;
   render() {
     return (
       <AtomTextEditor

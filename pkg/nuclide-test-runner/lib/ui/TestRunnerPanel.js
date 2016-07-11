@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type TestSuiteModel from '../TestSuiteModel';
+import type {TestRunner} from '../types';
+
 import invariant from 'assert';
 import nuclideUri from '../../../nuclide-remote-uri';
 import Console from './Console';
@@ -27,11 +30,28 @@ import createPaneContainer from '../../../commons-atom/create-pane-container';
 import {React, ReactDOM} from 'react-for-atom';
 import TestClassTree from './TestClassTree';
 
+type Props = {
+  attachDebuggerBeforeRunning: ?boolean;
+  buffer: Object;
+  executionState: number;
+  onClickClear: (event: SyntheticMouseEvent) => mixed;
+  onClickClose: (event: SyntheticMouseEvent) => mixed;
+  onClickRun: (event: SyntheticMouseEvent) => mixed;
+  onClickStop: (event: SyntheticMouseEvent) => mixed;
+  onDebuggerCheckboxChanged: (isChecked: boolean) => mixed;
+  path: ?string;
+  progressValue: ?number;
+  runDuration: ?number;
+  testRunners: Array<TestRunner>;
+  testSuiteModel: ?TestSuiteModel;
+};
+
 type State = {
   selectedTestRunnerIndex: number;
 };
 
 class TestRunnerPanel extends React.Component {
+  props: Props;
   state: State;
   _paneContainer: Object;
   _leftPane: atom$Pane;
@@ -41,24 +61,6 @@ class TestRunnerPanel extends React.Component {
 
   // Bound Functions for use as callbacks.
   setSelectedTestRunnerIndex: Function;
-
-  static propTypes = {
-    attachDebuggerBeforeRunning: React.PropTypes.bool,
-    buffer: React.PropTypes.object.isRequired,
-    executionState: React.PropTypes.number.isRequired,
-    onClickClear: React.PropTypes.func.isRequired,
-    onClickClose: React.PropTypes.func.isRequired,
-    onClickRun: React.PropTypes.func.isRequired,
-    onClickStop: React.PropTypes.func.isRequired,
-    onDebuggerCheckboxChanged: React.PropTypes.func,
-    path: React.PropTypes.string,
-    progressValue: React.PropTypes.number,
-    runDuration: React.PropTypes.number,
-    // TODO: Should be `arrayOf(TestRunner)`, but that would require a real object since this is
-    // runtime code for React.
-    testRunners: React.PropTypes.arrayOf(Object).isRequired,
-    testSuiteModel: React.PropTypes.object,
-  };
 
   static ExecutionState = Object.freeze({
     RUNNING: 0,

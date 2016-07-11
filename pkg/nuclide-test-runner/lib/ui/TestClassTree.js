@@ -10,29 +10,31 @@
  */
 
 import type {LazyTreeNode} from '../../../nuclide-ui/lib/LazyTreeNode';
+import type TestSuiteModel from '../TestSuiteModel';
 
 import {React} from 'react-for-atom';
 import {PanelComponentScroller} from '../../../nuclide-ui/lib/PanelComponentScroller';
 import TestClassTreeNode from './TestClassTreeNode';
 import {TreeRootComponent} from '../../../nuclide-ui/lib/TreeRootComponent';
 
-const {PropTypes} = React;
-
 function labelClassNameForNode(): string {
   return 'icon icon-code';
 }
 
+type Props = {
+  isRunning: boolean;
+  testSuiteModel: ?TestSuiteModel;
+};
+
 class TestClassTree extends React.Component {
-  static propTypes = {
-    isRunning: PropTypes.bool.isRequired,
-    testSuiteModel: PropTypes.object,
-  };
+  props: Props;
 
   componentDidUpdate(prevProps: Object) {
-    if (this.props.testSuiteModel !== prevProps.testSuiteModel) {
+    const {testSuiteModel} = this.props;
+    if (testSuiteModel !== prevProps.testSuiteModel) {
       const roots = [];
-      if (this.props.testSuiteModel) {
-        for (const testClass of this.props.testSuiteModel.testClasses.values()) {
+      if (testSuiteModel) {
+        for (const testClass of testSuiteModel.testClasses.values()) {
           roots.push(new TestClassTreeNode(testClass));
         }
       }
@@ -72,12 +74,13 @@ class TestClassTree extends React.Component {
   }
 
   rowClassNameForNode(node: LazyTreeNode): ?string {
-    if (!this.props.testSuiteModel) {
+    const {testSuiteModel} = this.props;
+    if (!testSuiteModel) {
       return;
     }
 
     const item = node.getItem();
-    const testRun = this.props.testSuiteModel.testRuns.get(item.id);
+    const testRun = testSuiteModel.testRuns.get(item.id);
     if (testRun) {
       if (testRun.numFailures > 0) {
         // Red/error if the test class had errors.

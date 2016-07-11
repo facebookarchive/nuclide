@@ -318,7 +318,7 @@ module.exports = {
 
     // React (https://github.com/yannickcr/eslint-plugin-react)
     'react/display-name': 0,
-    // 'react/forbid-prop-types': 1,
+    'react/forbid-prop-types': 1,
     'react/jsx-boolean-value': 0,
     'react/jsx-closing-bracket-location': [1, {selfClosing: 'tag-aligned', nonEmpty: 'after-props'}],
     'react/jsx-curly-spacing': [1, 'never'],

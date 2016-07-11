@@ -10,16 +10,20 @@
  */
 
 import {React} from 'react-for-atom';
-const {PropTypes} = React;
+
+type Props = {
+  title: string;
+  handles: Array<Object>;
+  keyed: Function;
+  columns: Array<{
+    title: string;
+    value: (handle: any) => ?string;
+    widthPercentage: number;
+  }>;
+};
 
 export default class HandlesTableComponent extends React.Component {
-
-  static propTypes = {
-    title: PropTypes.string,
-    handles: PropTypes.arrayOf(PropTypes.object),
-    keyed: PropTypes.func.isRequired,
-    columns: PropTypes.arrayOf(PropTypes.object).isRequired,
-  };
+  props: Props;
 
   previousHandleSummaries: Object;
 
@@ -41,7 +45,7 @@ export default class HandlesTableComponent extends React.Component {
   }
 
   render(): React.Element<any> {
-    if (!this.props.handles || Object.keys(this.props.handles).length === 0) {
+    if (this.props.handles.length === 0) {
       return <div />;
     }
 
