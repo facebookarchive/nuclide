@@ -13,7 +13,7 @@ import type {Task} from '../lib/types';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {BehaviorSubject} from 'rxjs';
-import {Disposable} from 'event-kit';
+import {Disposable} from 'atom';
 
 const noop = () => {};
 const noopErrCallback = err => {}; // eslint-disable-line handle-callback-err
