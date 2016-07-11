@@ -199,4 +199,8 @@ export default class HgRepositoryClientAsync {
     return this._client.addAll(filePaths);
   }
 
+  onDidDestroy(callback: () => mixed): IDisposable {
+    return this._client.onDidDestroy(callback);
+  }
+
 }

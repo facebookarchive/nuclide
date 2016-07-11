@@ -1479,6 +1479,9 @@ declare class atom$Repository {
   // Checking Out
   checkoutHead: (aPath: string) => boolean;
   checkoutReference: (reference: string, create: boolean) => boolean;
+
+  // Event Subscription
+  onDidDestroy(callback: () => mixed): IDisposable;
 }
 
 // Taken from the interface of [`GitRepositoryAsync`][1], which is also implemented by Nuclide's
@@ -1506,6 +1509,9 @@ declare class atom$RepositoryAsync {
 
   // Checking Out
   checkoutReference: (reference: string, create: boolean) => Promise<void>;
+
+  // Event Subscription
+  onDidDestroy(callback: () => mixed): IDisposable;
 }
 
 // One of text or snippet is required.
