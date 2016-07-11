@@ -22,11 +22,9 @@ const LINK_TREE_SUFFIXES = {
 export default class LinkTreeManager {
 
   _cachedBuckProjects: Map<string, BuckProject>;
-  _cachedLinkTreePaths: Map<string, Array<string>>;
 
   constructor() {
     this._cachedBuckProjects = new Map();
-    this._cachedLinkTreePaths = new Map();
   }
 
   async _getBuckProject(src: string): Promise<?BuckProject> {
@@ -94,13 +92,9 @@ export default class LinkTreeManager {
   }
 
   async getLinkTreePaths(src: string): Promise<Array<string>> {
-    if (this._cachedLinkTreePaths.has(src)) {
-      return this._cachedLinkTreePaths.get(src);
-    }
     try {
       const project = await this._getBuckProject(src);
       if (!project) {
-        this._cachedLinkTreePaths.set(src, []);
         return [];
       }
       const basePath = await project.getPath();
@@ -115,14 +109,11 @@ export default class LinkTreeManager {
 
       // TODO: once we add link-tree flavor to buck, build the link tree of the
       // first binary.
-      const linkTreePaths = bins.map(bin => {
+      return bins.map(bin => {
         const linkTreeSuffix = LINK_TREE_SUFFIXES[kind];
         const binPath = this._getDirForBuckTarget(bin);
         return nuclideUri.join(basePath, BUCK_GEN_PATH, binPath + linkTreeSuffix);
       });
-
-      this._cachedLinkTreePaths.set(src, linkTreePaths);
-      return linkTreePaths;
     } catch (e) {
       return [];
     }

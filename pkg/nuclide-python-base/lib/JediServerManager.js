@@ -37,10 +37,19 @@ async function getServerArgs(src: string) {
 
 export default class JediServerManager {
 
+  // Cache the promises of additional paths to ensure that we never trigger two
+  // calls for the same file name from external calls to getLinkTreePaths and
+  // getTopLevelModulePath.
+  _cachedTopLevelModulePaths: Map<string, Promise<?string>>;
+  _cachedLinkTreePaths: Map<string, Promise<Array<string>>>;
+
   _linkTreeManager: LinkTreeManager;
   _servers: LRUCache<string, JediServer>;
 
   constructor() {
+    this._cachedTopLevelModulePaths = new Map();
+    this._cachedLinkTreePaths = new Map();
+
     this._linkTreeManager = new LinkTreeManager();
     this._servers = new LRUCache({
       max: 20,
@@ -67,8 +76,36 @@ export default class JediServerManager {
     return await server.getService();
   }
 
+  async getLinkTreePaths(src: string): Promise<Array<string>> {
+    let linkTreePathsPromise = this._cachedLinkTreePaths.get(src);
+    if (linkTreePathsPromise == null) {
+      linkTreePathsPromise = this._linkTreeManager.getLinkTreePaths(src);
+      this._cachedLinkTreePaths.set(src, linkTreePathsPromise);
+    }
+
+    return linkTreePathsPromise;
+  }
+
+  async getTopLevelModulePath(src: string): Promise<?string> {
+    let topLevelModulePathPromise = this._cachedTopLevelModulePaths.get(src);
+    // We don't need to explicitly check undefined since the cached promise
+    // itself is not nullable, though its content is.
+    if (topLevelModulePathPromise == null) {
+      // Find the furthest directory while an __init__.py is present, stopping
+      // search once a directory does not contain an __init__.py.
+      topLevelModulePathPromise = fsPromise.findFurthestFile(
+        '__init__.py',
+        nuclideUri.dirname(src),
+        true /* stopOnMissing */,
+      );
+      this._cachedTopLevelModulePaths.set(src, topLevelModulePathPromise);
+    }
+
+    return topLevelModulePathPromise;
+  }
+
   async _addLinkTreePaths(src: string, server: JediServer): Promise<void> {
-    const linkTreePaths = await this._linkTreeManager.getLinkTreePaths(src);
+    const linkTreePaths = await this.getLinkTreePaths(src);
     if (server.isDisposed() || linkTreePaths.length === 0) {
       return;
     }
@@ -77,13 +114,7 @@ export default class JediServerManager {
   }
 
   async _addTopLevelModulePath(src: string, server: JediServer): Promise<void> {
-    // Find the furthest directory while an __init__.py is present, stopping
-    // search once a directory does not contain an __init__.py.
-    const topLevelModulePath = await fsPromise.findFurthestFile(
-      '__init__.py',
-      nuclideUri.dirname(src),
-      true /* stopOnMissing */,
-    );
+    const topLevelModulePath = await this.getTopLevelModulePath(src);
     if (server.isDisposed() || !topLevelModulePath) {
       return;
     }

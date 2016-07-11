@@ -57,7 +57,7 @@ describe('LinkTreeManager', () => {
         nuclideUri.join(projectDir, 'buck-out/gen/testbin2#link-tree'),
       ];
 
-      let linkTreePaths = await linkTreeManager.getLinkTreePaths(srcPath);
+      const linkTreePaths = await linkTreeManager.getLinkTreePaths(srcPath);
       // rdeps query should be executed with the first owner found, and scoped to
       // the target of the source path's directory.
       expect(spy).toHaveBeenCalledWith(
@@ -65,13 +65,6 @@ describe('LinkTreeManager', () => {
       );
       // Properly resolve a link-tree path based on the source's firstly found
       // binary dependency.
-      expect(linkTreePaths).toEqual(expectedPaths);
-
-      // Second call with the same source path should retrieve from cache and
-      // not make a buck query.
-      mockBuckProject.query.reset();
-      linkTreePaths = await linkTreeManager.getLinkTreePaths(srcPath);
-      expect(spy).not.toHaveBeenCalled();
       expect(linkTreePaths).toEqual(expectedPaths);
     });
   });
