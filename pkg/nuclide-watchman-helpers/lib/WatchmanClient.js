@@ -29,6 +29,7 @@ type WatchmanSubscriptionResponse = {
   'state-enter'?: string;
   'state-leave'?: string;
   metadata?: Object;
+  canceled?: boolean;
 };
 
 export type FileChange = {
@@ -125,6 +126,12 @@ class WatchmanClient {
       return;
     }
     if (!Array.isArray(response.files)) {
+      if (response.canceled === true) {
+        logger.info(`Watch for ${response.root} was deleted.`);
+        // Ending the client will trigger a reconnect.
+        this._clientPromise.then(client => client.end());
+        return;
+      }
       // TODO(most): use state messages to decide on when to send updates.
       const stateEnter = response['state-enter'];
       const stateLeave = response['state-leave'];
