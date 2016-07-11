@@ -118,15 +118,27 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
       return;
     }
 
+    const confirmServerActionOnLastProject =
+      featureConfig.get('nuclide-remote-projects.confirmServerActionOnLastProject');
+    invariant(typeof confirmServerActionOnLastProject === 'boolean');
+
+    const shutdownServerAfterDisconnection =
+      featureConfig.get('nuclide-remote-projects.shutdownServerAfterDisconnection');
+    invariant(typeof shutdownServerAfterDisconnection === 'boolean');
+
+    if (!confirmServerActionOnLastProject) {
+      const shutdownIfLast = shutdownServerAfterDisconnection;
+      closeConnection(shutdownIfLast);
+      return;
+    }
+
     const buttons = ['Keep It', 'Shutdown'];
     const buttonToActions = new Map();
 
     buttonToActions.set(buttons[0], () => closeConnection(/* shutdownIfLast */ false));
     buttonToActions.set(buttons[1], () => closeConnection(/* shutdownIfLast */ true));
 
-    if (featureConfig.get(
-      'nuclide-remote-projects.shutdownServerAfterDisconnection',
-    )) {
+    if (shutdownServerAfterDisconnection) {
       // Atom takes the first button in the list as default option.
       buttons.reverse();
     }
