@@ -75,7 +75,7 @@ export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
       fixer(message);
     };
     fixButton = (
-      <Button size="EXTRA_SMALL" onClick={applyFix}>Fix</Button>
+      <Button className="btn-success" size="EXTRA_SMALL" onClick={applyFix}>Fix</Button>
     );
   }
   const header = (
