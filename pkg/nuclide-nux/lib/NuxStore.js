@@ -15,6 +15,8 @@ import type {
   NuxTourModel,
 } from './NuxModel';
 
+const NEW_NUX_EVENT = 'newNuxModel';
+
 export const NUX_SAVED_STORE = 'nuclide-nux.saved-nux-data-store';
 
 export class NuxStore {
@@ -50,7 +52,7 @@ export class NuxStore {
       nux.id,
       false,
     );
-    this._emitter.emit('newNux', nux);
+    this._emitter.emit(NEW_NUX_EVENT, nux);
   }
 
   serialize(): void {
@@ -70,7 +72,7 @@ export class NuxStore {
    * Register a change handler that is invoked whenever the store changes.
    */
   onNewNux(callback: (nux: NuxTourModel) => void): IDisposable {
-    return this._emitter.on('newNux', callback);
+    return this._emitter.on(NEW_NUX_EVENT, callback);
   }
 
   onNuxCompleted(nuxModel: NuxTourModel): void {

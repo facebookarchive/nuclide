@@ -33,6 +33,8 @@ import type {NuxTourModel} from './NuxModel';
 
 // Limits the number of NUXes displayed every session
 const NUX_PER_SESSION_LIMIT = 3;
+const NEW_TOUR_EVENT = 'nuxTourNew';
+const READY_TOUR_EVENT = 'nuxTourReady';
 
 const logger = getLogger();
 
@@ -61,8 +63,8 @@ export class NuxManager {
     this._activeNuxTour = null;
     this._numNuxesDisplayed = 0;
 
-    this._emitter.on('newTour', this._handleNewTour.bind(this));
-    this._emitter.on('nuxTourReady', this._handleReadyTour.bind(this));
+    this._emitter.on(NEW_TOUR_EVENT, this._handleNewTour.bind(this));
+    this._emitter.on(READY_TOUR_EVENT, this._handleReadyTour.bind(this));
 
     this._disposables.add(this._nuxStore.onNewNux(this._handleNewNux.bind(this)));
     this._disposables.add(
@@ -141,7 +143,7 @@ export class NuxManager {
     );
 
     this._emitter.emit(
-      'newTour',
+      NEW_TOUR_EVENT,
       {
         nuxTour,
         nuxTourModel,
@@ -156,7 +158,7 @@ export class NuxManager {
       return;
     }
     const nextNux = this._readyToDisplayNuxes.shift();
-    this._emitter.emit('nuxTourReady', nextNux);
+    this._emitter.emit(READY_TOUR_EVENT, nextNux);
   }
 
   // Handles NUX registry
@@ -209,7 +211,7 @@ export class NuxManager {
           return;
         }
         this._pendingNuxes.delete(id);
-        this._emitter.emit('nuxTourReady', nux);
+        this._emitter.emit(READY_TOUR_EVENT, nux);
       });
     }));
   }
@@ -232,7 +234,7 @@ export class NuxManager {
       }
       // Remove from pending list
       this._pendingNuxes.delete(id);
-      this._emitter.emit('nuxTourReady', nuxToTrigger);
+      this._emitter.emit(READY_TOUR_EVENT, nuxToTrigger);
     }));
   }
 
