@@ -219,7 +219,6 @@ describe('FlowProcess', () => {
       const [asyncExecuteArgs] = fakeCheckOutput.argsForCall;
       expect(asyncExecuteArgs[0]).toEqual('flow');
       expect(asyncExecuteArgs[1]).toEqual(['arg', '--from', 'nuclide']);
-      expect(asyncExecuteArgs[2]).toEqual({});
     });
   });
 });

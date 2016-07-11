@@ -197,8 +197,6 @@ export class FlowProcess {
       this._updateServerStatus(null);
       return null;
     }
-    const flowOptions = getFlowExecOptions(this._root);
-    options = {...flowOptions, ...options};
     args = [
       ...args,
       '--retry-if-init', 'false',
@@ -324,6 +322,10 @@ export class FlowProcess {
       ...args,
       '--from', 'nuclide',
     ];
+    options = {
+      ...getFlowExecOptions(root),
+      ...options,
+    };
     const pathToFlow = getPathToFlow();
     const ret = await asyncExecute(pathToFlow, args, options);
     if (ret.exitCode !== 0) {
