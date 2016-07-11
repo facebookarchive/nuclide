@@ -13,7 +13,6 @@ import type DebuggerProcessInfo from '../../../nuclide-debugger-atom/lib/Debugge
 import type {nuclide_debugger$Service} from '../../../nuclide-debugger-interfaces/service';
 
 import consumeFirstProvider from '../../../commons-atom/consumeFirstProvider';
-import {ReactNativeDebuggerInstance} from './ReactNativeDebuggerInstance';
 import {ReactNativeProcessInfo} from './ReactNativeProcessInfo';
 import {CompositeDisposable, Disposable} from 'atom';
 import Rx from 'rxjs';
@@ -69,7 +68,6 @@ export class DebuggingActivation {
     return {
       name: 'React Native',
       getProcessInfoList,
-      ReactNativeDebuggerInstance,
     };
   }
 

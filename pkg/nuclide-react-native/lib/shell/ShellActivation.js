@@ -13,7 +13,7 @@ import {ShellMessageManager} from './ShellMessageManager';
 
 export class ShellActivation {
 
-  _shellManager: ShellMessageManager;
+  _shellManager: ?ShellMessageManager;
 
   constructor() {
     // TODO: Enable following when RN changes land. Don't forget to call dispose in `dispose()`!
@@ -22,13 +22,16 @@ export class ShellActivation {
     //     'nuclide-react-native:reload-app': () => this._reload(),
     //   }),
     // );
-    this._shellManager = new ShellMessageManager();
+    this._shellManager = null;
   }
 
   dispose(): void {
   }
 
   _reload(): void {
+    if (this._shellManager == null) {
+      this._shellManager = new ShellMessageManager();
+    }
     const message = {
       version: 1,
       target: 'bridge',
