@@ -43,6 +43,25 @@ describe('combineEventStreams', () => {
     });
   });
 
+  it('falls back to process output when socket is empty', () => {
+    waitsForPromise(async () => {
+      const combinedStream = combineEventStreams('build', socketSubject, processSubject);
+      const promise = combinedStream.toArray().toPromise();
+
+      processSubject.next({type: 'log', message: 'take1', level: 'log'});
+      processSubject.next({type: 'log', message: 'take2', level: 'log'});
+      processSubject.next({type: 'log', message: 'take3', level: 'error'});
+      processSubject.complete();
+
+      const result = await promise;
+      expect(result).toEqual([
+        {type: 'log', message: 'take1', level: 'log'},
+        {type: 'log', message: 'take2', level: 'log'},
+        {type: 'log', message: 'take3', level: 'error'},
+      ]);
+    });
+  });
+
   it('test: takes process messages after build finishes', () => {
     waitsForPromise(async () => {
       const combinedStream = combineEventStreams('test', socketSubject, processSubject);
