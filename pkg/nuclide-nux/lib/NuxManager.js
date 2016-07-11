@@ -15,9 +15,12 @@ import {
   Emitter,
 } from 'atom';
 
-import passesGK from '../../commons-node/passesGK';
-import {maybeToString} from '../../commons-node/string';
 import {arrayCompact} from '../../commons-node/collection';
+import {
+  isGkEnabled,
+  onceGkInitialized,
+} from '../../commons-node/passesGK';
+import {maybeToString} from '../../commons-node/string';
 
 import {getLogger} from '../../nuclide-logging';
 import analytics from '../../nuclide-analytics';
@@ -28,7 +31,6 @@ import {NuxView} from './NuxView';
 
 import type {NuxTourModel} from './NuxModel';
 
-export const GK_NUX = 'nuclide_all_nuxes';
 // Limits the number of NUXes displayed every session
 const NUX_PER_SESSION_LIMIT = 3;
 
@@ -163,13 +165,11 @@ export class NuxManager {
       nuxTour,
       nuxTourModel,
     } = value;
-    if (nuxTourModel.gatekeeperID != null &&
-        !(passesGK(GK_NUX) && passesGK(nuxTourModel.gatekeeperID))) {
-      return;
-    }
+
     nuxTour.setNuxCompleteCallback(
         this._handleNuxCompleted.bind(this, nuxTourModel)
     );
+
     this._pendingNuxes.set(nuxTour.getID(), nuxTour);
   }
 
@@ -189,35 +189,51 @@ export class NuxManager {
   }
 
   _handleActivePaneItemChanged(paneItem: ?mixed): void {
-    // The `paneItem` is not guaranteed to be an instance of `TextEditor` from
-    // Atom's API, but usually is.  We return if the type is not `TextEditor`
-    // since the `NuxTour.isReady` expects a `TextEditor` as its argument.
-    if (!atom.workspace.isTextEditor(paneItem)) {
-      return;
-    }
-    // Flow doesn't understand the refinement done above.
-    const textEditor: atom$TextEditor = (paneItem: any);
-    this._pendingNuxes.forEach((nux: NuxTour, id: string) => {
-      if (nux.getTriggerType() !== 'editor' || !nux.isReady(textEditor)) {
+    this._disposables.add(onceGkInitialized(() => {
+      // Check GK for internal users; Always return true for OSS users
+      const shouldShowNuxes =
+        isGkEnabled('cpe_nuclide') ? isGkEnabled('nuclide_all_nuxes') : true;
+      if (!shouldShowNuxes) {
         return;
       }
-      this._pendingNuxes.delete(id);
-      this._emitter.emit('nuxTourReady', nux);
-    });
+      // The `paneItem` is not guaranteed to be an instance of `TextEditor` from
+      // Atom's API, but usually is.  We return if the type is not `TextEditor`
+      // since the `NuxTour.isReady` expects a `TextEditor` as its argument.
+      if (!atom.workspace.isTextEditor(paneItem)) {
+        return;
+      }
+      // Flow doesn't understand the refinement done above.
+      const textEditor: atom$TextEditor = (paneItem: any);
+      this._pendingNuxes.forEach((nux: NuxTour, id: string) => {
+        if (nux.getTriggerType() !== 'editor' || !nux.isReady(textEditor)) {
+          return;
+        }
+        this._pendingNuxes.delete(id);
+        this._emitter.emit('nuxTourReady', nux);
+      });
+    }));
   }
 
   tryTriggerNux(id: string): void {
-    const nuxToTrigger = this._pendingNuxes.get(id);
-    // Silently fail if the NUX is not found or has already been completed.
-    // This isn't really an "error" to log, since the NUX may be triggered quite
-    // often even after it has been seen as it is tied to a package that is
-    // instantiated every single time a window is opened.
-    if (nuxToTrigger == null || nuxToTrigger.completed) {
-      return;
-    }
-    // Remove from pending list
-    this._pendingNuxes.delete(id);
-    this._emitter.emit('nuxTourReady', nuxToTrigger);
+    this._disposables.add(onceGkInitialized(() => {
+      // Check GK for internal users; Always return true for OSS users
+      const shouldShowNuxes =
+        isGkEnabled('cpe_nuclide') ? isGkEnabled('nuclide_all_nuxes') : true;
+      if (!shouldShowNuxes) {
+        return;
+      }
+      const nuxToTrigger = this._pendingNuxes.get(id);
+      // Silently fail if the NUX is not found or has already been completed.
+      // This isn't really an "error" to log, since the NUX may be triggered quite
+      // often even after it has been seen as it is tied to a package that is
+      // instantiated every single time a window is opened.
+      if (nuxToTrigger == null || nuxToTrigger.completed) {
+        return;
+      }
+      // Remove from pending list
+      this._pendingNuxes.delete(id);
+      this._emitter.emit('nuxTourReady', nuxToTrigger);
+    }));
   }
 
   dispose() : void {

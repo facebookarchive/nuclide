@@ -15,8 +15,6 @@ import {
   Disposable,
 } from 'atom';
 
-import {GK_NUX} from '../../nuclide-nux/lib/NuxManager';
-
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {
@@ -98,10 +96,10 @@ function generateTestNuxTour(
     nuxList,
     trigger: null,
     /* Add your own gatekeeper to control who the NUX is displayed to.
-     * Use the global `GK_NUX` if you want the NUX to always appear.
+     * Use the global `nuclide_all_nuxes` if you want the NUX to always appear.
      * See `nuclide-nux/lib/NuxModel.js` for more details.
      */
-    gatekeeperID: GK_NUX,
+    gatekeeperID: 'nuclide_all_nuxes',
   };
 }
 
