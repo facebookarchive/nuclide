@@ -21,7 +21,7 @@
       "legacyLintOnTheFly": {
         "title": "'lint-on-the-fly' for `linter` package linters",
         "type": "boolean",
-        "default": false,
+        "default": true,
         "description": "Does not apply to packages using diagnostics, since they can send updates whenever they want."
       }
     },
