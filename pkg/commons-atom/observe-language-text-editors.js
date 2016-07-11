@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable, Disposable} from 'atom';
-import {EventEmitter} from 'events';
+import {CompositeDisposable, Emitter} from 'atom';
 import observeGrammarForTextEditors from './observe-grammar-for-text-editors';
 
 const START_OBSERVING_TEXT_EDITOR_EVENT = 'start-observing-text-editor';
@@ -24,7 +23,7 @@ const STOP_OBSERVING_TEXT_EDITOR_EVENT = 'stop-observing-text-editor';
  */
 class LanguageTextEditorsListener {
   _grammarScopes: Set<string>;
-  _emitter: EventEmitter;
+  _emitter: Emitter;
   _observedTextEditors: Set<TextEditor>;
   _destroySubscriptionsMap: Map<TextEditor, IDisposable>;
   _grammarSubscription: IDisposable;
@@ -32,7 +31,7 @@ class LanguageTextEditorsListener {
   constructor(grammarScopes: Set<string>) {
     this._grammarScopes = grammarScopes;
 
-    this._emitter = new EventEmitter();
+    this._emitter = new Emitter();
     this._observedTextEditors = new Set();
     this._destroySubscriptionsMap = new Map();
 
@@ -63,8 +62,9 @@ class LanguageTextEditorsListener {
   }
 
   observeLanguageTextEditors(
-      fn: (textEditor: TextEditor) => void,
-      cleanupFn: (textEditor: TextEditor) => void): Disposable {
+    fn: (textEditor: TextEditor) => void,
+    cleanupFn: (textEditor: TextEditor) => void,
+  ): IDisposable {
     // The event was already handled before `fn` was added to the emitter, so
     // we need to call it on all the existing editors.
     atom.workspace.getTextEditors()
@@ -73,16 +73,14 @@ class LanguageTextEditorsListener {
         // gets called with one arg (i.e. it matches the Flow annotation).
         .forEach(textEditor => fn(textEditor));
 
-    this._emitter.addListener(START_OBSERVING_TEXT_EDITOR_EVENT, fn);
-    this._emitter.addListener(STOP_OBSERVING_TEXT_EDITOR_EVENT, cleanupFn);
-    return new Disposable(() => {
-      this._emitter.removeListener(START_OBSERVING_TEXT_EDITOR_EVENT, fn);
-      this._emitter.removeListener(STOP_OBSERVING_TEXT_EDITOR_EVENT, cleanupFn);
-    });
+    return new CompositeDisposable(
+      this._emitter.on(START_OBSERVING_TEXT_EDITOR_EVENT, fn),
+      this._emitter.on(STOP_OBSERVING_TEXT_EDITOR_EVENT, cleanupFn),
+    );
   }
 
   dispose(): void {
-    this._emitter.removeAllListeners();
+    this._emitter.dispose();
     this._observedTextEditors.clear();
     this._destroySubscriptionsMap.forEach(subscription => subscription.dispose());
     this._destroySubscriptionsMap.clear();

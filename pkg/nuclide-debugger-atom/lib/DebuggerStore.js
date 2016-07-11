@@ -19,8 +19,7 @@ import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
 import type {DebuggerModeType} from './types';
 
-import {Disposable} from 'atom';
-import {EventEmitter} from 'events';
+import {Emitter} from 'atom';
 import Constants from './Constants';
 import {DebuggerSettings} from './DebuggerSettings';
 import invariant from 'assert';
@@ -38,7 +37,7 @@ const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
  */
 class DebuggerStore {
   _dispatcher: Dispatcher;
-  _eventEmitter: EventEmitter;
+  _emitter: Emitter;
   _dispatcherToken: any;
 
   // Stored values
@@ -56,7 +55,7 @@ class DebuggerStore {
 
   constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
-    this._eventEmitter = new EventEmitter();
+    this._emitter = new Emitter();
     this._dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
 
     this._debuggerSettings = new DebuggerSettings();
@@ -74,7 +73,7 @@ class DebuggerStore {
   }
 
   dispose() {
-    this._eventEmitter.removeAllListeners();
+    this._emitter.dispose();
     this._dispatcher.unregister(this._dispatcherToken);
     if (this._debuggerInstance) {
       this._debuggerInstance.dispose();
@@ -131,10 +130,8 @@ class DebuggerStore {
     return this._evaluationExpressionProviders;
   }
 
-  onChange(callback: () => void): Disposable {
-    const emitter = this._eventEmitter;
-    this._eventEmitter.on('change', callback);
-    return new Disposable(() => emitter.removeListener('change', callback));
+  onChange(callback: () => void): IDisposable {
+    return this._emitter.on('change', callback);
   }
 
   _handlePayload(payload: Object) {
@@ -202,7 +199,7 @@ class DebuggerStore {
       default:
         return;
     }
-    this._eventEmitter.emit('change');
+    this._emitter.emit('change');
   }
 }
 

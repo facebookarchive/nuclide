@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-import {EventEmitter} from 'events';
+import invariant from 'assert';
+import {CompositeDisposable, Emitter} from 'atom';
 import {LazyTreeNode} from './LazyTreeNode';
 import {TreeNodeComponent} from './TreeNodeComponent';
 import {forEachCachedNode} from './tree-node-traversals';
@@ -70,7 +70,7 @@ const FIRST_SELECTED_DESCENDANT_REF: string = 'firstSelectedDescendant';
  */
 export const TreeRootComponent = React.createClass({
   _allKeys: (null: ?Array<string>),
-  _emitter: (null: ?EventEmitter),
+  _emitter: (null: ?Emitter),
   _keyToNode: (null: ?{[key: string]: LazyTreeNode}),
   _rejectDidUpdateListenerPromise: (null: ?() => void),
   _subscriptions: (null: ?CompositeDisposable),
@@ -135,9 +135,8 @@ export const TreeRootComponent = React.createClass({
       }
     }
 
-    if (this._emitter) {
-      this._emitter.emit('did-update');
-    }
+    invariant(this._emitter);
+    this._emitter.emit('did-update');
   },
 
   _deselectDescendants(root: LazyTreeNode): void {
@@ -370,7 +369,7 @@ export const TreeRootComponent = React.createClass({
     );
 
     this._allKeys = allKeys;
-    this._emitter = new EventEmitter();
+    this._emitter = new Emitter();
     this._keyToNode = keyToNode;
     this._subscriptions = subscriptions;
   },
@@ -380,7 +379,7 @@ export const TreeRootComponent = React.createClass({
       this._subscriptions.dispose();
     }
     if (this._emitter) {
-      this._emitter.removeAllListeners();
+      this._emitter.dispose();
     }
   },
 
@@ -428,21 +427,16 @@ export const TreeRootComponent = React.createClass({
 
   _createDidUpdateListener(shouldResolve: () => boolean): Promise<void> {
     return new Promise((resolve, reject) => {
-      const listener = () => {
+      invariant(this._emitter);
+      const didUpdateDisposable = this._emitter.on('did-update', () => {
         if (shouldResolve()) {
           resolve(undefined);
 
           // Set this to null so this promise can't be rejected anymore.
           this._rejectDidUpdateListenerPromise = null;
-          if (this._emitter) {
-            this._emitter.removeListener('did-update', listener);
-          }
+          didUpdateDisposable.dispose();
         }
-      };
-
-      if (this._emitter) {
-        this._emitter.addListener('did-update', listener);
-      }
+      });
 
       // We need to reject the previous promise, so it doesn't get leaked.
       if (this._rejectDidUpdateListenerPromise) {
@@ -451,9 +445,7 @@ export const TreeRootComponent = React.createClass({
       }
       this._rejectDidUpdateListenerPromise = () => {
         reject(undefined);
-        if (this._emitter) {
-          this._emitter.removeListener('did-update', listener);
-        }
+        didUpdateDisposable.dispose();
       };
     });
   },

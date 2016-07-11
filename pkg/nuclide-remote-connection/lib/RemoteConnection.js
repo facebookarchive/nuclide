@@ -21,9 +21,8 @@ import type {RemoteDirectory} from './RemoteDirectory';
 import invariant from 'assert';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {ServerConnection} from './ServerConnection';
-import {CompositeDisposable, Disposable} from 'atom';
+import {CompositeDisposable, Emitter} from 'atom';
 import remoteUri from '../../nuclide-remote-uri';
-import {EventEmitter} from 'events';
 import {getConnectionConfig} from './RemoteConnectionConfigurationManager';
 
 const logger = require('../../nuclide-logging').getLogger();
@@ -41,8 +40,6 @@ export type RemoteConnectionConfiguration = {
   clientKey?: Buffer; // key for https connection.
 };
 
-const _emitter: EventEmitter = new EventEmitter();
-
 // A RemoteConnection represents a directory which has been opened in Nuclide on a remote machine.
 // This corresponds to what atom calls a 'root path' in a project.
 //
@@ -55,6 +52,8 @@ export class RemoteConnection {
   _hgRepositoryDescription: ?HgRepositoryDescription;
   _connection: ServerConnection;
   _displayTitle: string;
+
+  static _emitter = new Emitter();
 
   static async findOrCreate(config: RemoteConnectionConfiguration):
       Promise<RemoteConnection> {
@@ -168,7 +167,7 @@ export class RemoteConnection {
       // A workaround before Atom 2.0: see ::getHgRepoInfo.
       await this._setHgRepoInfo();
 
-      _emitter.emit('did-add', this);
+      RemoteConnection._emitter.emit('did-add', this);
       this._watchRootProjectDirectory();
     } catch (e) {
       this.close(attemptShutdown);
@@ -224,7 +223,7 @@ export class RemoteConnection {
   async close(shutdownIfLast: boolean): Promise<void> {
     this._subscriptions.dispose();
     await this._connection.removeConnection(this, shutdownIfLast);
-    _emitter.emit('did-close', this);
+    RemoteConnection._emitter.emit('did-close', this);
   }
 
   getConnection(): ServerConnection {
@@ -255,18 +254,12 @@ export class RemoteConnection {
     return {...this._connection.getConfig(), cwd: this._cwd, displayTitle: this._displayTitle};
   }
 
-  static onDidAddRemoteConnection(handler: (connection: RemoteConnection) => void): Disposable {
-    _emitter.on('did-add', handler);
-    return new Disposable(() => {
-      _emitter.removeListener('did-add', handler);
-    });
+  static onDidAddRemoteConnection(handler: (connection: RemoteConnection) => void): IDisposable {
+    return RemoteConnection._emitter.on('did-add', handler);
   }
 
-  static onDidCloseRemoteConnection(handler: (connection: RemoteConnection) => void): Disposable {
-    _emitter.on('did-close', handler);
-    return new Disposable(() => {
-      _emitter.removeListener('did-close', handler);
-    });
+  static onDidCloseRemoteConnection(handler: (connection: RemoteConnection) => void): IDisposable {
+    return RemoteConnection._emitter.on('did-close', handler);
   }
 
   static getForUri(uri: NuclideUri): ?RemoteConnection {

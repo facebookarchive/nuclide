@@ -22,9 +22,8 @@ import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';
 import {RemoteDirectory} from './RemoteDirectory';
 
-import {Disposable} from 'atom';
+import {Emitter} from 'atom';
 import nuclideUri from '../../nuclide-remote-uri';
-import {EventEmitter} from 'events';
 
 import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 import {getVersion} from '../../nuclide-version';
@@ -36,8 +35,6 @@ export type ServerConnectionConfiguration = {
   clientCertificate?: Buffer; // client certificate for https connection.
   clientKey?: Buffer; // key for https connection.
 };
-
-const _emitter: EventEmitter = new EventEmitter();
 
 // ServerConnection represents the client side of a connection to a remote machine.
 // There can be at most one connection to a given remote machine at a time. Clients should
@@ -57,6 +54,7 @@ class ServerConnection {
   _connections: Array<RemoteConnection>;
 
   static _connections: Map<string, ServerConnection> = new Map();
+  static _emitter = new Emitter();
 
   static async getOrCreate(config: ServerConnectionConfiguration): Promise<ServerConnection> {
     const existingConnection = ServerConnection.getByHostname(config.host);
@@ -219,7 +217,7 @@ class ServerConnection {
 
     ServerConnection._connections.set(this.getRemoteHostname(), this);
     setConnectionConfig(this._config);
-    _emitter.emit('did-add', this);
+    ServerConnection._emitter.emit('did-add', this);
   }
 
   close(): void {
@@ -243,7 +241,7 @@ class ServerConnection {
 
     // Remove from _connections to not be considered in future connection queries.
     if (ServerConnection._connections.delete(this.getRemoteHostname())) {
-      _emitter.emit('did-close', this);
+      ServerConnection._emitter.emit('did-close', this);
     }
   }
 
@@ -316,18 +314,12 @@ class ServerConnection {
     }
   }
 
-  static onDidAddServerConnection(handler: (connection: ServerConnection) => void): Disposable {
-    _emitter.on('did-add', handler);
-    return new Disposable(() => {
-      _emitter.removeListener('did-add', handler);
-    });
+  static onDidAddServerConnection(handler: (connection: ServerConnection) => void): IDisposable {
+    return ServerConnection._emitter.on('did-add', handler);
   }
 
-  static onDidCloseServerConnection(handler: (connection: ServerConnection) => void): Disposable {
-    _emitter.on('did-close', handler);
-    return new Disposable(() => {
-      _emitter.removeListener('did-close', handler);
-    });
+  static onDidCloseServerConnection(handler: (connection: ServerConnection) => void): IDisposable {
+    return ServerConnection._emitter.on('did-close', handler);
   }
 
   static getForUri(uri: NuclideUri): ?ServerConnection {

@@ -15,14 +15,14 @@ import type {Callstack} from './types';
 import {
   Disposable,
   CompositeDisposable,
+  Emitter,
 } from 'atom';
-import {EventEmitter} from 'events';
 import nuclideUri from '../../nuclide-remote-uri';
 import Constants from './Constants';
 
 export default class CallstackStore {
   _disposables: IDisposable;
-  _eventEmitter: EventEmitter;
+  _emitter: Emitter;
   _callstack: ?Callstack;
   _selectedCallFrameMarker: ?atom$Marker;
 
@@ -35,7 +35,7 @@ export default class CallstackStore {
     );
     this._callstack = null;
     this._selectedCallFrameMarker = null;
-    this._eventEmitter = new EventEmitter();
+    this._emitter = new Emitter();
   }
 
   _handlePayload(payload: Object) {
@@ -59,7 +59,7 @@ export default class CallstackStore {
 
   _updateCallstack(callstack: Callstack): void {
     this._callstack = callstack;
-    this._eventEmitter.emit('change');
+    this._emitter.emit('change');
   }
 
   _openSourceLocation(sourceURL: string, lineNumber: number): void {
@@ -109,10 +109,8 @@ export default class CallstackStore {
     }
   }
 
-  onChange(callback: () => void): Disposable {
-    const emitter = this._eventEmitter;
-    this._eventEmitter.on('change', callback);
-    return new Disposable(() => emitter.removeListener('change', callback));
+  onChange(callback: () => void): IDisposable {
+    return this._emitter.on('change', callback);
   }
 
   getCallstack(): ?Callstack {

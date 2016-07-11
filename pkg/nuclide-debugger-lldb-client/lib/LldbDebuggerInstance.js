@@ -14,13 +14,11 @@ import type {
 } from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 
-import {EventEmitter} from 'events';
 import utils from './utils';
 import {DebuggerInstance} from '../../nuclide-debugger-atom';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Emitter} from 'atom';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
 import remoteUri from '../../nuclide-remote-uri';
-import {Disposable} from 'atom';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {getConfig} from './utils';
 import WS from 'ws';
@@ -36,7 +34,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
   _chromeWebSocketServer: ?WS.Server;
   _chromeWebSocket: ?WebSocket;
   _disposables: atom$CompositeDisposable;
-  _emitter: EventEmitter;
+  _emitter: Emitter;
 
   constructor(
     processInfo: DebuggerProcessInfo,
@@ -53,7 +51,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     if (outputDisposable != null) {
       this._disposables.add(outputDisposable);
     }
-    this._emitter = new EventEmitter();
+    this._emitter = new Emitter();
     this._registerConnection(connection);
   }
 
@@ -142,9 +140,8 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     return Math.floor(Math.random() * (max - min) + min);
   }
 
-  onSessionEnd(callback: () => void): Disposable {
-    this._emitter.on(SESSION_END_EVENT, callback);
-    return (new Disposable(() => this._emitter.removeListener(SESSION_END_EVENT, callback)));
+  onSessionEnd(callback: () => void): IDisposable {
+    return this._emitter.on(SESSION_END_EVENT, callback);
   }
 
   _translateMessageIfNeeded(message: string): string {

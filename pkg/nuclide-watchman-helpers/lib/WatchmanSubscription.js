@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {EventEmitter} from 'events';
+import {Emitter} from 'event-kit';
 
 export type WatchmanSubscriptionOptions = {
   expression: ?Array<string>; // e.g. ['match', '*.js'],
@@ -26,7 +26,7 @@ export type WatchmanSubscriptionOptions = {
  *   Notably, this value should be undefined if subscriptionRoot is the same as
  *   subscriptionPath.
  */
-class WatchmanSubscription extends EventEmitter {
+class WatchmanSubscription extends Emitter {
   subscriptionCount: number;
   root: string;
   path: string;

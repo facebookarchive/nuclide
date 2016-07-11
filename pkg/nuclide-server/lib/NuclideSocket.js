@@ -15,7 +15,7 @@ import type {Observable} from 'rxjs';
 import url from 'url';
 import WS from 'ws';
 import uuid from 'uuid';
-import {EventEmitter} from 'events';
+import {Emitter} from 'event-kit';
 import {WebSocketTransport} from './WebSocketTransport';
 import {QueuedTransport} from './QueuedTransport';
 import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
@@ -59,12 +59,12 @@ export class NuclideSocket {
   _reconnectTimer: ?number; // ID from a setTimeout() call.
   _previouslyConnected: boolean;
   _websocketUri: string;
-  _emitter: EventEmitter;
+  _emitter: Emitter;
   _transport: ?QueuedTransport;
   _heartbeat: XhrConnectionHeartbeat;
 
   constructor(serverUri: string, options: ?AgentOptions) {
-    this._emitter = new EventEmitter();
+    this._emitter = new Emitter();
     this._serverUri = serverUri;
     this._options = options;
     this.id = uuid.v4();
@@ -271,19 +271,19 @@ export class NuclideSocket {
   }
 
   onStatus(callback: (connected: boolean) => mixed): IDisposable {
-    return attachEvent(this._emitter, 'status', callback);
+    return this._emitter.on('status', callback);
   }
 
   onConnect(callback: () => mixed): IDisposable {
-    return attachEvent(this._emitter, 'connect', callback);
+    return this._emitter.on('connect', callback);
   }
 
   onReconnect(callback: () => mixed): IDisposable {
-    return attachEvent(this._emitter, 'reconnect', callback);
+    return this._emitter.on('reconnect', callback);
   }
 
   onDisconnect(callback: () => mixed): IDisposable {
-    return attachEvent(this._emitter, 'disconnect', callback);
+    return this._emitter.on('disconnect', callback);
   }
 }
 

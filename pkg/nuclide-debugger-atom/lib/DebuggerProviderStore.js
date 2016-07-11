@@ -16,9 +16,8 @@ import type {
 } from '../../nuclide-debugger-interfaces/service';
 import type DebuggerActions from './DebuggerActions';
 
-import {CompositeDisposable, Disposable} from 'atom';
+import {CompositeDisposable, Disposable, Emitter} from 'atom';
 import Constants from './Constants';
-import {EventEmitter} from 'events';
 
 const CONNECTIONS_UPDATED_EVENT = 'CONNECTIONS_UPDATED_EVENT';
 
@@ -29,7 +28,7 @@ export class DebuggerProviderStore {
   _dispatcher: Dispatcher;
   _disposables: CompositeDisposable;
   _debuggerActions: DebuggerActions;
-  _eventEmitter: EventEmitter;
+  _emitter: Emitter;
   _debuggerProviders: Set<NuclideDebuggerProvider>;
   _connections: Array<string>;
 
@@ -40,7 +39,7 @@ export class DebuggerProviderStore {
       this._listenForProjectChange(),
     );
     this._debuggerActions = debuggerActions;
-    this._eventEmitter = new EventEmitter();
+    this._emitter = new Emitter();
     this._debuggerProviders = new Set();
     this._connections = [];
   }
@@ -64,9 +63,7 @@ export class DebuggerProviderStore {
    * Subscribe to new connection updates from DebuggerActions.
    */
   onConnectionsUpdated(callback: () => void): IDisposable {
-    const emitter = this._eventEmitter;
-    this._eventEmitter.on(CONNECTIONS_UPDATED_EVENT, callback);
-    return new Disposable(() => emitter.removeListener(CONNECTIONS_UPDATED_EVENT, callback));
+    return this._emitter.on(CONNECTIONS_UPDATED_EVENT, callback);
   }
 
   getConnections(): Array<string> {
@@ -104,7 +101,7 @@ export class DebuggerProviderStore {
         break;
       case Constants.Actions.UPDATE_CONNECTIONS:
         this._connections = payload.data;
-        this._eventEmitter.emit(CONNECTIONS_UPDATED_EVENT);
+        this._emitter.emit(CONNECTIONS_UPDATED_EVENT);
         break;
     }
   }

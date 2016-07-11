@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {EventEmitter} from 'events';
+import {Emitter} from 'event-kit';
 import fs from 'fs';
 import nuclideUri from '../../nuclide-remote-uri';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
@@ -249,7 +249,7 @@ describe('ClangFlagsManager', () => {
   it('tracks flag changes', () => {
     waitsForPromise(async () => {
       // Create a mock file watcher.
-      const watcher: any = new EventEmitter();
+      const watcher: any = new Emitter();
       watcher.close = jasmine.createSpy('watcher.close');
       let changedCallback = null;
       const watchSpy = spyOn(fs, 'watch').andCallFake((file, _options, cb) => {
