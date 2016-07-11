@@ -166,7 +166,7 @@ export class FlowProcess {
         '--max-workers', this._getMaxWorkers().toString(),
         this._root,
       ],
-      this._getFlowExecOptions(),
+      getFlowExecOptions(this._root),
     );
     const logIt = data => {
       const pid = serverProcess.pid;
@@ -197,7 +197,7 @@ export class FlowProcess {
       this._updateServerStatus(null);
       return null;
     }
-    const flowOptions = this._getFlowExecOptions();
+    const flowOptions = getFlowExecOptions(this._root);
     options = {...flowOptions, ...options};
     args = [
       ...args,
@@ -301,23 +301,6 @@ export class FlowProcess {
       .toPromise();
   }
 
-  /**
-  * If this returns null, then it is not safe to run flow.
-  */
-  _getFlowExecOptions(): {cwd: string} {
-    return {
-      cwd: this._root,
-      env: {
-        // Allows backtrace to be printed:
-        // http://caml.inria.fr/pub/docs/manual-ocaml/runtime.html#sec279
-        OCAMLRUNPARAM: 'b',
-        // Put this after so that if the user already has something set for OCAMLRUNPARAM we use
-        // that instead. They probably know what they're doing.
-        ...process.env,
-      },
-    };
-  }
-
   _getMaxWorkers(): number {
     return Math.max(os.cpus().length - 2, 1);
   }
@@ -348,4 +331,20 @@ export class FlowProcess {
     }
     return ret;
   }
+}
+
+// `string | null` forces the presence of an explicit argument (`?string` allows undefined which
+// means the argument can be left off altogether.
+function getFlowExecOptions(root: string | null): Object {
+  return {
+    cwd: root,
+    env: {
+      // Allows backtrace to be printed:
+      // http://caml.inria.fr/pub/docs/manual-ocaml/runtime.html#sec279
+      OCAMLRUNPARAM: 'b',
+      // Put this after so that if the user already has something set for OCAMLRUNPARAM we use
+      // that instead. They probably know what they're doing.
+      ...process.env,
+    },
+  };
 }
