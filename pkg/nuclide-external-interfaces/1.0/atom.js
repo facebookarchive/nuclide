@@ -177,7 +177,12 @@ declare class atom$Emitter {
   dispose(): void;
   on(name: string, callback: (v: any) => mixed): IDisposable;
   preempt(name: string, callback: (v: any) => void): IDisposable;
-  emit(name: string, value: any): IDisposable;
+  // This is a flow hack to prevent emitting more than one value.
+  // `EventEmitter` allows emitting any number of values - making this a land
+  // mine, since we tend to think of `emit` as interchangeable.
+  // This hack only works if the extra value is not `undefined`, so this isn't
+  // full-proof, but it works for most cases.
+  emit(name: string, value: any, ...no_extra_args_allowed: Array<void>): IDisposable;
 }
 
 declare class atom$Gutter {
