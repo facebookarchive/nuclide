@@ -102,10 +102,11 @@ describe('ServerHackLanguage', () => {
       };
       mockService.getCompletions.andReturn(serviceResults);
 
-      const result = await hackLanguage.getCompletions(filePath, contents2, 16);
+      const result = await hackLanguage.getCompletions(
+        filePath, contents2, 16, 2, 2);
 
       expect(mockService.getCompletions).toHaveBeenCalledWith(filePath, `<?hh // strict
-fAUTO332class HackClass {}`);
+fclass HackClass {}`, 16, 2, 2);
       expect(result).toEqual([
         {
           snippet: 'foo(${1:p1}, ${2:p2})',
@@ -156,10 +157,11 @@ fAUTO332class HackClass {}`);
       };
       mockService.getCompletions.andReturn(serviceResults);
 
-      const result = await hackLanguage.getCompletions(filePath, contents3, 19);
+      const result = await hackLanguage.getCompletions(
+        filePath, contents3, 19, 2, 5);
 
       expect(mockService.getCompletions).toHaveBeenCalledWith(filePath, `<?hh // strict
-HH\\fAUTO332class HackClass {}`);
+HH\\fclass HackClass {}`, 19, 2, 5);
       expect(result).toEqual([
         {
           snippet: 'HH\\\\foo(${1:p1}, ${2:p2})',

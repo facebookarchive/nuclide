@@ -56,10 +56,12 @@ export class ServerHackLanguage {
     filePath: NuclideUri,
     contents: string,
     offset: number,
+    line: number,
+    column: number,
   ): Promise<Array<atom$AutocompleteSuggestion>> {
-    const markedContents = markFileForCompletion(contents, offset);
     let completions = [];
-    const completionsResult = await this._hackService.getCompletions(filePath, markedContents);
+    const completionsResult = await this._hackService.getCompletions(
+      filePath, contents, offset, line, column);
     if (completionsResult) {
       completions = completionsResult.completions;
     }
@@ -278,11 +280,4 @@ function processCompletions(
       };
     }
   });
-}
-
-// Calculate the offset of the cursor from the beginning of the file.
-// Then insert AUTO332 in at this offset. (Hack uses this as a marker.)
-function markFileForCompletion(contents: string, offset: number): string {
-  return contents.substring(0, offset) +
-      'AUTO332' + contents.substring(offset, contents.length);
 }

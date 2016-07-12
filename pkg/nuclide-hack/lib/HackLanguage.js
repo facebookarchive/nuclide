@@ -56,7 +56,9 @@ export type HackLanguage = {
   getCompletions(
     filePath: NuclideUri,
     contents: string,
-    offset: number
+    offset: number,
+    line: number,
+    column: number,
   ): Promise<Array<atom$AutocompleteSuggestion>>;
 
   formatSource(

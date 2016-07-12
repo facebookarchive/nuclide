@@ -89,10 +89,12 @@ async function fetchCompletionsForEditor(
   invariant(filePath);
   const contents = editor.getText();
   const cursor = editor.getLastCursor();
-  const offset = editor.getBuffer().characterIndexForPosition(cursor.getBufferPosition());
+  const position = cursor.getBufferPosition();
+  const offset = editor.getBuffer().characterIndexForPosition(position);
   // The returned completions may have unrelated results, even though the offset is set on the end
   // of the prefix.
-  const completions = await hackLanguage.getCompletions(filePath, contents, offset);
+  const completions = await hackLanguage.getCompletions(
+    filePath, contents, offset, position.row + 1, position.column + 1);
   // Filter out the completions that do not contain the prefix as a token in the match text case
   // insentively.
   const tokenLowerCase = prefix.toLowerCase();
