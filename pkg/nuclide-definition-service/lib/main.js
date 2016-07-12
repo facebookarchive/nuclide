@@ -31,6 +31,7 @@ export type Definition = {
   range?: atom$Range;
   id?: string;
   name?: string;
+  language: string;
   projectRoot?: NuclideUri;
 };
 

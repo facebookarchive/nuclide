@@ -89,6 +89,7 @@ describe('HackDefinitionProvider', () => {
         line: 42,
         column: 12,
         name: 'symbol-name',
+        language: 'php',
       };
       hackLanguage.getIdeDefinition.andReturn(Promise.resolve([definition]));
       const result = await provider.getDefinition(editor, position);
@@ -99,6 +100,7 @@ describe('HackDefinitionProvider', () => {
           position: new Point(41, 11),
           id: 'symbol-name',
           name: 'symbol-name',
+          language: 'php',
         }],
       };
       expect(result).toEqual(expected);

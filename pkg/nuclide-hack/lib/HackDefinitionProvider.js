@@ -59,6 +59,7 @@ export class HackDefinitionProvider {
         // TODO: range, projectRoot
         id: definition.name,
         name: definition.name,
+        language: 'php',
       };
     }
     return {

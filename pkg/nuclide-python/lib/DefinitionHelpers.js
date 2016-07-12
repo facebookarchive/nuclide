@@ -68,6 +68,7 @@ export default class DefinitionHelpers {
       position: new Point(definition.line, definition.column),
       id: definition.text,
       name: definition.text,
+      language: 'python',
     }));
 
     return {
