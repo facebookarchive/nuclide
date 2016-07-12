@@ -20,13 +20,15 @@ import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
 import type {FindReferencesProvider} from '../../nuclide-find-references';
 
 import CodeHighlightProvider from './CodeHighlightProvider';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {OutlineViewProvider} from './OutlineViewProvider';
 import {HackDefinitionProvider} from './HackDefinitionProvider';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import AutocompleteProvider from './AutocompleteProvider';
+import {ServerConnection} from '../../nuclide-remote-connection';
+import {clearHackLanguageCache} from './HackLanguage';
 
 const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
 const PACKAGE_NAME = 'nuclide-hack';
@@ -49,6 +51,8 @@ export function activate() {
       hackDiagnosticsProvider.invalidateProjectPath(projectPath);
     }
   }));
+  subscriptions.add(ServerConnection.onDidCloseServerConnection(clearHackLanguageCache));
+  subscriptions.add(new Disposable(clearHackLanguageCache));
 }
 
 /** Provider for autocomplete service. */

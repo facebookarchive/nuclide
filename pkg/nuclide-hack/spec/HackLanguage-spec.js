@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import typeof * as ServerHackLanguageType from '../lib/ServerHackLanguage';
-import type {ServerHackLanguage} from '../lib/ServerHackLanguage';
+import typeof * as HackLanguageType from '../lib/HackLanguage';
+import type {HackLanguage} from '../lib/HackLanguage';
 import type {
   HackCompletionsResult,
   HackDiagnosticsResult,
@@ -32,9 +32,9 @@ fclass HackClass {}`;
 const contents3 = `<?hh // strict
 HH\\fclass HackClass {}`;
 
-describe('ServerHackLanguage', () => {
+describe('HackLanguage', () => {
   let mockService: Object = (null: any);
-  let hackLanguage: ServerHackLanguage = (null: any);
+  let hackLanguage: HackLanguage = (null: any);
 
   // Tests ToBeTested.functionToTest while mocking imported function toBeMocked.
   beforeEach(() => {
@@ -52,10 +52,10 @@ describe('ServerHackLanguage', () => {
       'findReferences',
     ]);
 
-    const ServerHackLanguageCtor =
-      ((uncachedRequire(require, '../lib/ServerHackLanguage'): any): ServerHackLanguageType)
-        .ServerHackLanguage;
-    hackLanguage = new ServerHackLanguageCtor((mockService: any), true, basePath);
+    const HackLanguageCtor =
+      ((uncachedRequire(require, '../lib/HackLanguage'): any): HackLanguageType)
+        .HackLanguage;
+    hackLanguage = new HackLanguageCtor((mockService: any), true, basePath);
   });
 
   it('isHackAvailable', () => {
@@ -488,6 +488,6 @@ HH\\fclass HackClass {}`, 19, 2, 5);
   });
 
   afterEach(() => {
-    clearRequireCache(require, '../lib/ServerHackLanguage');
+    clearRequireCache(require, '../lib/HackLanguage');
   });
 });
