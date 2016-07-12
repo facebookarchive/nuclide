@@ -51,8 +51,7 @@ function getLevel(atomNotificationType: string): Level {
     case 'warning':
       return 'warning';
     case 'success':
-      // TODO (matthewwithanm): Add a "success" level to nuclide-console?
-      return 'log';
+      return 'success';
     default:
       return 'log';
   }
