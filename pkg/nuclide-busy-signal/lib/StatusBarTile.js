@@ -36,10 +36,13 @@ export class StatusBarTile {
   }
 
   dispose(): void {
+    if (this._item) {
+      ReactDOM.unmountComponentAtNode(this._item);
+      this._item = null;
+    }
     if (this._tile) {
       this._tile.destroy();
       this._tile = null;
-      this._item = null;
     }
     if (this._tooltip) {
       this._tooltip.dispose();
