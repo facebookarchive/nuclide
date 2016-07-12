@@ -14,7 +14,6 @@ import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {BuildSystem, BuildSystemRegistry} from '../../nuclide-build/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
-import type NuclideToolbarType from './NuclideToolbar';
 import type ProjectStoreType from './ProjectStore';
 
 import {CompositeDisposable, Disposable} from 'atom';
@@ -22,6 +21,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 import HhvmIcon from './ui/HhvmIcon';
 import HhvmBuildSystem from './HhvmBuildSystem';
+import NuclideToolbar from './NuclideToolbar';
 
 class Activation {
 
@@ -29,7 +29,6 @@ class Activation {
   _item: ?HTMLElement;
   _panel: Object;
   _projectStore: ProjectStoreType;
-  _nuclideToolbar: ?NuclideToolbarType;
   _state: Object;
   _buildSystem: ?HhvmBuildSystem;
   _cwdApi: ?CwdApi;
@@ -113,18 +112,8 @@ class Activation {
   }
 
   _createToolbar() {
-    const NuclideToolbar = require('./NuclideToolbar');
     const item = document.createElement('div');
-
-    const component = ReactDOM.render(
-      <NuclideToolbar
-        projectStore={this._projectStore}
-      />,
-      item
-    );
-    invariant(component instanceof NuclideToolbar);
-    this._nuclideToolbar = component;
-
+    ReactDOM.render(<NuclideToolbar projectStore={this._projectStore} />, item);
     const panel = atom.workspace.addTopPanel({
       item,
       // Increase priority (default is 100) to ensure this toolbar comes after the 'tool-bar'
@@ -132,7 +121,10 @@ class Activation {
       // this ensures the popover in this build toolbar stacks on top of other UI.
       priority: 200,
     });
-    this._disposables.add(new Disposable(() => panel.destroy()));
+    this._disposables.add(new Disposable(() => {
+      ReactDOM.unmountComponentAtNode(item);
+      panel.destroy();
+    }));
     this._panel = panel;
     this._updatePanelVisibility();
   }
@@ -160,13 +152,6 @@ class Activation {
   }
 
   dispose() {
-    if (this._nuclideToolbar) {
-      const toolbarNode = ReactDOM.findDOMNode(this._nuclideToolbar);
-      // If the toolbar is currently hidden for some reason, then toolbarNode will be null.
-      if (toolbarNode) {
-        ReactDOM.unmountComponentAtNode(toolbarNode.parentNode);
-      }
-    }
     this._projectStore.dispose();
     this._disposables.dispose();
   }
