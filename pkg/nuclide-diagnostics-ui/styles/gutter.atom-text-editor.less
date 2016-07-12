@@ -24,7 +24,8 @@
   background: @app-background-color;
   box-shadow: 0px 1px 4px 0px rgba(0,0,0,1);
   position: absolute;
-  padding: 4px 10px;
+  padding-right: 10px;
+  padding-left: 10px;
 
   // Many themes set the editor's scrollbars to z-index: 3. We wish to appear
   // above the scrollbars because we appear at the atom-workspace's root, which
@@ -33,7 +34,10 @@
 }
 
 .nuclide-diagnostics-gutter-ui-popup-header {
-  margin: -4px -10px 4px;
+  display: flex;
+  justify-content: space-between;
+  margin-left: -10px;
+  margin-right: -10px;
   padding: 4px 10px;
 }
 
@@ -50,4 +54,9 @@
 .nuclide-diagnostics-gutter-ui-popup-warning
   .nuclide-diagnostics-gutter-ui-popup-header {
     background-color: fade(@text-color-warning, 20%);
+}
+
+.nuclide-diagnostics-gutter-ui-popup-message {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
