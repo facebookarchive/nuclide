@@ -228,12 +228,9 @@ HH\\fclass HackClass {}`, 19, 2, 5);
           },
         ],
       };
-      const serviceResults: HackDiagnosticsResult = {
-        hackRoot: basePath,
-        messages: [
-          message,
-        ],
-      };
+      const serviceResults: HackDiagnosticsResult = [
+        message,
+      ];
 
       mockService.getDiagnostics.andReturn(serviceResults);
 

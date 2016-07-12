@@ -28,13 +28,7 @@ import {logger} from './hack-config';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
-export type HackDiagnosticsResult = {
-  // The location of the .hhconfig where these messages came from.
-  hackRoot: NuclideUri;
-  messages: Array<{
-    message: HackDiagnostic;
-  }>;
-};
+export type HackDiagnosticsResult = Array<{message: HackDiagnostic}>;
 
 /**
  * Each error or warning can consist of any number of different messages from
@@ -144,9 +138,8 @@ export async function getDiagnostics(
   if (!hhResult) {
     return null;
   }
-  const {hackRoot, result} = hhResult;
   const messages = (
-    (result: any): {errors: Array<{message: HackDiagnostic}>}
+    (hhResult.result: any): {errors: Array<{message: HackDiagnostic}>}
   ).errors;
 
   // Use a consistent null 'falsy' value for the empty string, undefined, etc.
@@ -156,10 +149,7 @@ export async function getDiagnostics(
     });
   });
 
-  return {
-    hackRoot,
-    messages,
-  };
+  return messages;
 }
 
 export async function getCompletions(

@@ -126,19 +126,17 @@ export class HackLanguage {
     filePath: NuclideUri,
     contents: string,
   ): Promise<Array<{message: HackDiagnostic;}>> {
-    let diagnosticResult = null;
     try {
-      diagnosticResult = await this._hackService.getDiagnostics(filePath, contents);
+      const result = await this._hackService.getDiagnostics(filePath, contents);
+      if (result == null) {
+        getLogger().error('hh_client could not be reached');
+        return [];
+      }
+      return result;
     } catch (err) {
       getLogger().error(err);
       return [];
     }
-    if (!diagnosticResult) {
-      getLogger().error('hh_client could not be reached');
-      return [];
-    }
-    const hackDiagnostics = diagnosticResult;
-    return hackDiagnostics.messages;
   }
 
   async getTypeCoverage(
