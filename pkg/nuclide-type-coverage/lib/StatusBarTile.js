@@ -17,6 +17,7 @@ import type {CoverageResult, CoverageProvider} from './types';
 
 import invariant from 'assert';
 import {React} from 'react-for-atom';
+import {Subscription} from 'rxjs';
 
 import {StatusBarTileComponent} from './StatusBarTileComponent';
 
@@ -57,9 +58,13 @@ export class StatusBarTile extends React.Component {
 
   componentDidMount(): void {
     invariant(this.subscription == null);
-    this.subscription =
+    const subscription = this.subscription = new Subscription();
+    subscription.add(
       this.props.results.subscribe(result => this._consumeResult(result))
-        .add(this.props.isActive.subscribe(isActive => this._consumeIsActive(isActive)));
+    );
+    subscription.add(
+      this.props.isActive.subscribe(isActive => this._consumeIsActive(isActive))
+    );
   }
 
   componentWillUnmount(): void {

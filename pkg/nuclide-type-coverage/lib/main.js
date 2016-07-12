@@ -92,6 +92,7 @@ class Activation {
       item,
     );
     const disposable = new Disposable(() => {
+      ReactDOM.unmountComponentAtNode(item);
       statusBarTile.destroy();
     });
     this._disposables.add(disposable);
