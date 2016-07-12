@@ -21,8 +21,14 @@ import {
   callHHClient,
   getSearchResults,
 } from './HackHelpers';
-import {findHackConfigDir, setHackCommand, setUseIde, getHackExecOptions} from './hack-config';
-import {logger} from './hack-config';
+import {
+  findHackConfigDir,
+  setHackCommand,
+  setUseIdeConnection,
+  getHackExecOptions,
+} from './hack-config';
+import {getUseIdeConnection, logger} from './hack-config';
+import {getHackConnectionService} from './HackProcess';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -158,15 +164,34 @@ export async function getCompletions(
   line: number,
   column: number,
 ): Promise<?HackCompletionsResult> {
-  const markedContents = markFileForCompletion(contents, offset);
-  const result: any = await callHHClient(
-    /*args*/ ['--auto-complete'],
-    /*errorStream*/ false,
-    /*outputJson*/ true,
-    /*processInput*/ markedContents,
-    /*file*/ file,
-  );
-  return result;
+  if (getUseIdeConnection()) {
+    const service = await getHackConnectionService(file);
+    if (service == null) {
+      return null;
+    }
+
+    // The file notifications are a placeholder until we get
+    // full file synchronization implemented.
+    await service.didOpenFile(file);
+    try {
+      const VERSION_PLACEHOLDER = 1;
+      await service.didChangeFile(
+        file, VERSION_PLACEHOLDER, [{text: contents}]);
+      return await service.getCompletions(file, {line, column});
+    } finally {
+      await service.didCloseFile(file);
+    }
+  } else {
+    const markedContents = markFileForCompletion(contents, offset);
+    const result: any = await callHHClient(
+      /*args*/ ['--auto-complete'],
+      /*errorStream*/ false,
+      /*outputJson*/ true,
+      /*processInput*/ markedContents,
+      /*file*/ file,
+    );
+    return result;
+  }
 }
 
 export async function getDefinition(
@@ -226,7 +251,7 @@ export function getHackEnvironmentDetails(
   logLevel: LogLevel,
 ): Promise<?{hackRoot: NuclideUri; hackCommand: string}> {
   setHackCommand(hackCommand);
-  setUseIde(useIdeConnection);
+  setUseIdeConnection(useIdeConnection);
   logger.setLogLevel(logLevel);
   return getHackExecOptions(localFile);
 }

@@ -66,10 +66,10 @@ export async function getHackExecOptions(
   }
 }
 
-export function setUseIde(useIdeConnection: boolean): void {
+export function setUseIdeConnection(useIdeConnection: boolean): void {
   useConnection = useIdeConnection;
 }
 
-export function getUseIde(): boolean {
+export function getUseIdeConnection(): boolean {
   return useConnection;
 }
