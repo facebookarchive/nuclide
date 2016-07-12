@@ -54,7 +54,7 @@ class Header extends React.Component {
 
   render(): React.Element<any> {
     return (
-      <div className="panel-heading" >
+      <div className="panel-heading" style={{'flex-shrink': 0}}>
         <h4>
           <span>Context View</span>
           <Button icon="x" className="pull-right"
