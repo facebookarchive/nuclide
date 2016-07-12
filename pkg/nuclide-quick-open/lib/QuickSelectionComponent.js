@@ -84,6 +84,7 @@ export default class QuickSelectionComponent extends React.Component {
   _debouncedQueryHandler: () => void;
   _boundSelect: () => void;
   _boundHandleTabChange: (tab: ProviderSpec) => void;
+  _isMounted: boolean;
   state: {
     activeProviderName?: string;
     activeTab: ProviderSpec;
@@ -101,6 +102,7 @@ export default class QuickSelectionComponent extends React.Component {
     this._subscriptions = new CompositeDisposable();
     this._boundSelect = () => this.select();
     this._boundHandleTabChange = (tab: ProviderSpec) => this._handleTabChange(tab);
+    this._isMounted = false;
     this.state = {
       activeTab: searchResultManager.getProviderByName(searchResultManager.getActiveProviderName()),
       // treated as immutable
@@ -150,6 +152,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   componentDidMount(): void {
+    this._isMounted = true;
     this._modalNode = ReactDOM.findDOMNode(this);
     this._subscriptions.add(
       atom.commands.add(
@@ -190,6 +193,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   componentWillUnmount(): void {
+    this._isMounted = false;
     this._emitter.dispose();
     this._subscriptions.dispose();
   }
@@ -241,7 +245,11 @@ export default class QuickSelectionComponent extends React.Component {
 
   _updateQueryHandler(): void {
     this._debouncedQueryHandler = debounce(
-      () => this.setKeyboardQuery(this.getInputTextEditor().getModel().getText()),
+      () => {
+        if (this._isMounted) {
+          this.setKeyboardQuery(this.getInputTextEditor().getModel().getText());
+        }
+      },
       this.getProvider().debounceDelay || 0,
       false
     );
@@ -252,8 +260,12 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   handleResultsChange(): void {
-    const activeProviderName = searchResultManager.getActiveProviderName();
-    this._updateResults(activeProviderName);
+    // This function is running on a timer (debounced), it is possible that it
+    // may be called after the component has unmounted.
+    if (this._isMounted) {
+      const activeProviderName = searchResultManager.getActiveProviderName();
+      this._updateResults(activeProviderName);
+    }
   }
 
   _updateResults(activeProviderName: string): void {

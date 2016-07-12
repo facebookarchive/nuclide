@@ -270,6 +270,7 @@ class Activation {
 
   dispose(): void {
     this._subscriptions.dispose();
+    ReactDOM.unmountComponentAtNode(this._reactDiv);
   }
 }
 
