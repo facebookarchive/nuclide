@@ -29,6 +29,9 @@ export async function echoBoolean(arg: boolean): Promise<boolean> {
   assert(typeof arg === 'boolean', `Argument to echoBoolean must be a boolean, not ${typeof arg}.`);
   return arg;
 }
+export async function echoDefaultNumber(arg: number = 1): Promise<number> {
+  return arg;
+}
 
 // More Complex Objects.
 export async function echoDate(arg: Date): Promise<Date> {

@@ -66,6 +66,13 @@ describe('EchoServer', () => {
       expect(results).toBe(expected);
     });
   });
+  it('Echoes a number with a default value.', () => {
+    const expected = 1;
+    waitsForPromise(async () => {
+      const results = await service.echoDefaultNumber();
+      expect(results).toBe(expected);
+    });
+  });
 
   // More complex types.
   it('Echoes a date.', () => {

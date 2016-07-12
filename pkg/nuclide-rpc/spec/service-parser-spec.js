@@ -355,6 +355,15 @@ describe('Nuclide service parser test suite.', () => {
       parseServiceDefinition('fileName', code);
     }).toThrow();
   });
+
+  it('allows params with default values', () => {
+    const code = `
+      export function f(x: number = 1): void {}
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).not.toThrow();
+  });
 });
 
 function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {

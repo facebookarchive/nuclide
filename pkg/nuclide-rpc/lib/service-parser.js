@@ -475,6 +475,16 @@ class FileParser {
   }
 
   _parseParameter(param: Object): Parameter {
+    // Parameter with a default type, e.g. (x: number = 1).
+    // Babel's transpiled implementation will take care of actually setting the default.
+    if (param.type === 'AssignmentPattern') {
+      return this._parseParameter({
+        ...param.left,
+        // Having a default value implies that it's optional.
+        optional: true,
+      });
+    }
+
     if (!param.typeAnnotation) {
       throw this._error(param, `Parameter ${param.name} doesn't have type annotation.`);
     } else {
