@@ -28,7 +28,7 @@ const flowPathCache: LRUCache<string, boolean> = LRU({
   maxAge: 1000 * 30, // 30 seconds
 });
 
-function insertAutocompleteToken(contents: string, line: number, col: number): string {
+export function insertAutocompleteToken(contents: string, line: number, col: number): string {
   const lines = contents.split('\n');
   let theLine = lines[line];
   theLine = theLine.substring(0, col) + 'AUTO332' + theLine.substring(col);
@@ -41,7 +41,7 @@ function insertAutocompleteToken(contents: string, line: number, col: number): s
  * response, as documented here:
  * https://github.com/atom/autocomplete-plus/wiki/Provider-API
  */
-function processAutocompleteItem(replacementPrefix: string, flowItem: Object): Object {
+export function processAutocompleteItem(replacementPrefix: string, flowItem: Object): Object {
   // Truncate long types for readability
   const description = flowItem.type.length < 80
     ? flowItem.type
@@ -89,7 +89,7 @@ function getSnippetString(paramNames: Array<string>): string {
  * will be selected along with the last non-optional parameter and you can just type to overwrite
  * them.
  */
-function groupParamNames(paramNames: Array<string>): Array<Array<string>> {
+export function groupParamNames(paramNames: Array<string>): Array<Array<string>> {
   // Split the parameters into two groups -- all of the trailing optional paramaters, and the rest
   // of the parameters. Trailing optional means all optional parameters that have only optional
   // parameters after them.
@@ -124,7 +124,7 @@ function isOptional(param: string): boolean {
   return lastChar === '?';
 }
 
-async function isFlowInstalled(): Promise<boolean> {
+export async function isFlowInstalled(): Promise<boolean> {
   const flowPath = getPathToFlow();
   if (!flowPathCache.has(flowPath)) {
     flowPathCache.set(flowPath, await canFindFlow(flowPath));
@@ -148,13 +148,13 @@ async function canFindFlow(flowPath: string): Promise<boolean> {
  *   function in case the user updates his or her preferences in Atom, in which case the return
  *   value will be stale.
  */
-function getPathToFlow(): string {
+export function getPathToFlow(): string {
   // $UPFixMe: This should use nuclide-features-config
   // Does not currently do so because this is an npm module that may run on the server.
   return global.atom && global.atom.config.get('nuclide.nuclide-flow.pathToFlow') || 'flow';
 }
 
-function getStopFlowOnExit(): boolean {
+export function getStopFlowOnExit(): boolean {
   // $UPFixMe: This should use nuclide-features-config
   // Does not currently do so because this is an npm module that may run on the server.
   if (global.atom) {
@@ -163,7 +163,7 @@ function getStopFlowOnExit(): boolean {
   return true;
 }
 
-function findFlowConfigDir(localFile: string): Promise<?string> {
+export function findFlowConfigDir(localFile: string): Promise<?string> {
   if (!flowConfigDirCache.has(localFile)) {
     const flowConfigDir = fsPromise.findNearestFile('.flowconfig', nuclideUri.dirname(localFile));
     flowConfigDirCache.set(localFile, flowConfigDir);
@@ -171,7 +171,7 @@ function findFlowConfigDir(localFile: string): Promise<?string> {
   return flowConfigDirCache.get(localFile);
 }
 
-function flowCoordsToAtomCoords(flowCoords: FlowLocNoSource): FlowLocNoSource {
+export function flowCoordsToAtomCoords(flowCoords: FlowLocNoSource): FlowLocNoSource {
   return {
     start: {
       line: flowCoords.start.line - 1,
@@ -184,14 +184,3 @@ function flowCoordsToAtomCoords(flowCoords: FlowLocNoSource): FlowLocNoSource {
     },
   };
 }
-
-module.exports = {
-  findFlowConfigDir,
-  getPathToFlow,
-  getStopFlowOnExit,
-  insertAutocompleteToken,
-  isFlowInstalled,
-  processAutocompleteItem,
-  groupParamNames,
-  flowCoordsToAtomCoords,
-};
