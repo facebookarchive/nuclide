@@ -61,10 +61,9 @@ type State = {
   views: Map<string, ViewInstance>;
 };
 
-let disposables: CompositeDisposable;
-let item: HTMLElement;
+let disposables: ?CompositeDisposable;
 let logger: Logger;
-let panel: atom$Panel;
+let panel: ?atom$Panel;
 let panelComponent: ?PanelComponent;
 let state: State;
 
@@ -133,6 +132,11 @@ function focusPanel(): void {
 }
 
 function renderPanelSync(renderState: State, onDidRender?: ?() => mixed): void {
+  // This function is debounced, so it may run after the package has been deactivated.
+  if (panel == null) {
+    return;
+  }
+
   const activeViewInstance = getActiveViewInstance(renderState);
   const hidden = (activeViewInstance == null) || renderState.hidden;
   const activeViewId = activeViewInstance == null ? null : activeViewInstance.view.viewId;
@@ -160,7 +164,7 @@ function renderPanelSync(renderState: State, onDidRender?: ?() => mixed): void {
           : React.createElement(activeViewInstance.view.getComponent(), {hidden})}
       </SideBarPanelComponent>
     </PanelComponent>,
-    item,
+    panel.getItem(),
     onDidRender
   );
   invariant(component instanceof PanelComponent);
@@ -230,6 +234,7 @@ const Service = {
       // $FlowIssue Missing `CustomEvent` type in Flow's 'dom.js' library
       toggleView(view.viewId, event.detail);
     });
+    invariant(disposables != null);
     disposables.add(commandDisposable);
 
     // `Map` is not actually immutable, but use the immutable paradigm to keep updating consistent
@@ -249,6 +254,7 @@ const Service = {
       return;
     }
 
+    invariant(disposables != null);
     const commandDisposable = viewInstance.commandDisposable;
     disposables.remove(commandDisposable);
     commandDisposable.dispose();
@@ -304,7 +310,7 @@ export function activate(deserializedState: ?Object) {
     }
   }));
 
-  item = document.createElement('div');
+  const item = document.createElement('div');
   item.style.display = 'flex';
   item.style.height = 'inherit';
   panel = atom.workspace.addLeftPanel({item});
@@ -320,10 +326,16 @@ export function activate(deserializedState: ?Object) {
 }
 
 export function deactivate() {
-  ReactDOM.unmountComponentAtNode(item);
+  if (panel != null) {
+    ReactDOM.unmountComponentAtNode(panel.getItem());
+    panel.destroy();
+    panel = null;
+  }
   // Contains the `commandDisposable` Objects for all currently-registered views.
-  disposables.dispose();
-  panel.destroy();
+  if (disposables) {
+    disposables.dispose();
+    disposables = null;
+  }
   panelComponent = null;
 }
 
