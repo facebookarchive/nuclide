@@ -17,7 +17,7 @@ import invariant from 'assert';
 import {asyncExecute} from '../../commons-node/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import {SearchResultType} from '../../nuclide-hack-common';
-import {getHackExecOptions, getUseIde} from './hack-config';
+import {findHackConfigDir, getHackExecOptions, getUseIde} from './hack-config';
 import {callHHClientUsingProcess} from './HackProcess';
 
 const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
@@ -35,7 +35,7 @@ export async function callHHClient(
   errorStream: boolean,
   outputJson: boolean,
   processInput: ?string,
-  filePath: string): Promise<?{hackRoot: string; result: string | Object}> {
+  filePath: string): Promise<?(string | Object)> {
 
   if (getUseIde()) {
     return await callHHClientUsingProcess(args, processInput, filePath);
@@ -82,11 +82,11 @@ export async function callHHClient(
     const output = errorStream ? stderr : stdout;
     logger.logTrace(`Hack output for ${allArgs.toString()}: ${output}`);
     if (!outputJson) {
-      resolve({result: output, hackRoot});
+      resolve(output);
       return;
     }
     try {
-      resolve({result: JSON.parse(output), hackRoot});
+      resolve(JSON.parse(output));
     } catch (err) {
       const errorMessage = `hh_client error, args: [${args.join(',')}]
 stdout: ${stdout}, stderr: ${stderr}`;
@@ -102,7 +102,11 @@ export async function getSearchResults(
     filterTypes?: ?Array<SearchResultTypeValue>,
     searchPostfix?: string,
   ): Promise<?HackSearchResult> {
-  if (!search) {
+  if (search == null) {
+    return null;
+  }
+  const hackRoot = await findHackConfigDir(filePath);
+  if (hackRoot == null) {
     return null;
   }
 
@@ -121,22 +125,20 @@ export async function getSearchResults(
     pendingSearchPromises.set(search, searchPromise);
   }
 
-  let searchResponse: ?{hackRoot: string; result: Array<HHSearchPosition>} = null;
+  let searchResponse: ?Array<HHSearchPosition> = null;
   try {
     searchResponse = (
-      ((await searchPromise): any): {hackRoot: string; result: Array<HHSearchPosition>}
+      ((await searchPromise): any): ?Array<HHSearchPosition>
     );
-  } catch (error) {
-    throw error;
   } finally {
     pendingSearchPromises.delete(search);
   }
 
-  if (!searchResponse) {
+  if (searchResponse == null) {
     return null;
   }
 
-  const {result: searchResult, hackRoot} = searchResponse;
+  const searchResult = searchResponse;
   let result: Array<HackSearchPosition> = [];
   for (const entry of searchResult) {
     const resultFile = entry.filename;
