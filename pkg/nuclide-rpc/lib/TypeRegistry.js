@@ -67,6 +67,10 @@ function checkedSmartPromiseAll(arr: Array<any>): Array<any> | Promise<Array<any
   return arr;
 }
 
+function canBeUndefined(type: Type): boolean {
+  return type.kind === 'nullable' || type.kind === 'mixed' || type.kind === 'any';
+}
+
 function statsToObject(stats: fs.Stats): Object {
   const result = {
     dev: stats.dev,
@@ -153,13 +157,15 @@ export class TypeRegistry {
 
     // Register NullableType and NamedType
     this._registerKind('nullable', (value: any, type: Type, context: ObjectRegistry) => {
-      if (value === null || value === undefined || type.kind !== 'nullable') {
-        return null;
+      invariant(type.kind === 'nullable');
+      if (value === null || value === undefined) {
+        return value;
       }
       return this._marshal(context, value, type.type);
     }, (value: any, type: Type, context: ObjectRegistry) => {
-      if (value === null || value === undefined || type.kind !== 'nullable') {
-        return null;
+      invariant(type.kind === 'nullable');
+      if (value === null || value === undefined) {
+        return value;
       }
       return this._unmarshal(context, value, type.type);
     });
@@ -279,8 +285,10 @@ export class TypeRegistry {
     argTypes: Array<Parameter>,
   ): Promise<Array<any>> {
     return Promise.all(argTypes.map((arg, i) => {
-      invariant(Object.hasOwnProperty.call(args, arg.name),
-        `unmarshalArguments: Missing argument: ${arg.name}`);
+      invariant(
+        Object.hasOwnProperty.call(args, arg.name) || canBeUndefined(arg.type),
+        `unmarshalArguments: Missing argument: ${arg.name}`,
+      );
       return this.unmarshal(context, args[arg.name], arg.type);
     }));
   }

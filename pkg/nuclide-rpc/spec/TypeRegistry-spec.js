@@ -266,6 +266,16 @@ describe('TypeRegistry', () => {
       );
       expect(result2.a).toBeNull();
       expect(result2.b.equals(expected2.b)).toBeTruthy();
+
+      // Undefined is acceptable for nullable fields.
+      const expected3 = {a: undefined, b: new Buffer('test')};
+      const result3 = await typeRegistry.unmarshal(
+        context,
+        await typeRegistry.marshal(context, expected3, customObjectType),
+        customObjectType
+      );
+      expect(result3.a).toBe(undefined);
+      expect(result3.b.equals(expected3.b)).toBeTruthy();
     });
   });
 
@@ -506,6 +516,22 @@ describe('TypeRegistry', () => {
     });
   });
 
+  it('Can serialize / deserialize undefined values', () => {
+    waitsForPromise(async () => {
+      invariant(typeRegistry);
+
+      const data = undefined;
+      const type: NullableType = {
+        location: builtinLocation,
+        kind: 'nullable',
+        type: stringType,
+      };
+      const result = await typeRegistry.unmarshal(
+        context, await typeRegistry.marshal(context, data, type), type);
+      expect(result).toBe(undefined);
+    });
+  });
+
   it('works for very large values', () => {
     waitsForPromise(async () => {
       jasmine.unspy(Date, 'now');
@@ -533,7 +559,7 @@ describe('TypeRegistry', () => {
     });
   });
 
-  it('works for parameter names same name as members form Object.prototype', () => {
+  it('works for parameter names same name as members from Object.prototype', () => {
     waitsForPromise(async () => {
       invariant(typeRegistry);
 
@@ -550,6 +576,38 @@ describe('TypeRegistry', () => {
         parameters,
       );
       expect(results).toEqual([expected]);
+    });
+  });
+
+  it('accepts undefined parameters for nullable/mixed/any types', () => {
+    waitsForPromise(async () => {
+      invariant(typeRegistry);
+
+      const parameters = [
+        {
+          name: 'a',
+          type: {
+            location: builtinLocation,
+            kind: 'nullable',
+            type: stringType,
+          },
+        },
+        {
+          name: 'b',
+          type: anyType,
+        },
+        {
+          name: 'c',
+          type: mixedType,
+        },
+      ];
+
+      const results = await typeRegistry.unmarshalArguments(
+        context,
+        {}, // JSON.stringify removes all undefined values.
+        parameters,
+      );
+      expect(results).toEqual([undefined, undefined, undefined]);
     });
   });
 });
