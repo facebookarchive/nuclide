@@ -109,6 +109,7 @@ export default class RecordView extends React.Component {
 function getHighlightClassName(level: Level): string {
   switch (level) {
     case 'info': return 'highlight-info';
+    case 'success': return 'highlight-success';
     case 'warning': return 'highlight-warning';
     case 'error': return 'highlight-error';
     default: return 'highlight';
@@ -125,6 +126,8 @@ function getIconName(record: Record): ?string {
   switch (record.level) {
     case 'info':
       return 'info';
+    case 'success':
+      return 'check';
     case 'warning':
       return 'alert';
     case 'error':

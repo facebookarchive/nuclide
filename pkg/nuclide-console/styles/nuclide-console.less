@@ -12,6 +12,9 @@
 @nuclide-console-record-background-color-warning: lighten(@background-color-warning, 25%);
 @nuclide-console-record-text-color-warning: darken(@text-color-warning, 40%);
 @nuclide-console-record-border-color-warning: @background-color-warning;
+@nuclide-console-record-background-color-success: lighten(@background-color-success, 25%);
+@nuclide-console-record-text-color-success: darken(@text-color-success, 40%);
+@nuclide-console-record-border-color-success: @background-color-success;
 @nuclide-console-record-vertical-padding: 1px;
 @nuclide-console-record-horizontal-padding: 5px;
 @nuclide-console-icon-size: 11px;
@@ -128,6 +131,25 @@
 
     .icon {
       color: @nuclide-console-record-border-color-warning;
+    }
+  }
+
+  &.level-success {
+    background-color: @nuclide-console-record-background-color-success;
+    border-color: @nuclide-console-record-border-color-success;
+
+    // The border on both sides of the success message should be the success
+    // color unless it's a higher-level.
+    & + :not(.level-error):not(.level-warning) {
+      border-top-color: @nuclide-console-record-border-color-success;
+    }
+
+    pre, .nuclide-ui-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+      color: @nuclide-console-record-text-color-success;
+    }
+
+    .icon {
+      color: @nuclide-console-record-border-color-success;
     }
   }
 
