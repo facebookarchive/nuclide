@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,106 +10,36 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-
 // This file contains RPC definitions for jediserver.py.
 
-export type JediCompletion = {
-  type: string;
-  text: string;
-  description?: string;
-  params?: Array<string>;
-};
+var get_completions = _asyncToGenerator(function* (src, contents, line, column) {
+  throw new Error('RPC Stub');
+});
 
-export type JediDefinition = {
-  type: string;
-  text: string;
-  file: NuclideUri;
-  line: number;
-  column: number;
-};
+exports.get_completions = get_completions;
 
-export type JediReference = {
-  type: string;
-  text: string;
-  file: NuclideUri;
-  line: number;
-  column: number;
-  parentName?: string;
-};
+var get_definitions = _asyncToGenerator(function* (src, contents, line, column) {
+  throw new Error('RPC Stub');
+});
 
-export type Position = {
-  line: number;
-  column: number;
-};
+exports.get_definitions = get_definitions;
 
-export type JediFunctionItem = {
-  kind: 'function';
-  name: string;
-  start: Position;
-  end: Position;
-  children?: Array<JediOutlineItem>;
-  docblock?: string;
-  params?: Array<string>;
-};
+var get_references = _asyncToGenerator(function* (src, contents, line, column) {
+  throw new Error('RPC Stub');
+});
 
-export type JediClassItem = {
-  kind: 'class';
-  name: string;
-  start: Position;
-  end: Position;
-  children?: Array<JediOutlineItem>;
-  docblock?: string;
-  // Class params, i.e. superclasses.
-  params?: Array<string>;
-};
+exports.get_references = get_references;
+exports.get_outline = get_outline;
+exports.add_paths = add_paths;
 
-export type JediStatementItem = {
-  kind: 'statement';
-  name: string;
-  start: Position;
-  end: Position;
-  docblock?: string;
-};
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-export type JediOutlineItem = JediFunctionItem | JediClassItem | JediStatementItem;
-
-export async function get_completions(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?Array<JediCompletion>> {
+function get_outline(src, contents) {
   throw new Error('RPC Stub');
 }
 
-export async function get_definitions(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?Array<JediDefinition>> {
+function add_paths(paths) {
   throw new Error('RPC Stub');
 }
 
-export async function get_references(
-  src: NuclideUri,
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?Array<JediReference>> {
-  throw new Error('RPC Stub');
-}
-
-export function get_outline(
-  src: NuclideUri,
-  contents: string,
-): Promise<?Array<JediOutlineItem>> {
-  throw new Error('RPC Stub');
-}
-
-export function add_paths(
-  paths: Array<string>,
-): Promise<?Array<string>> {
-  throw new Error('RPC Stub');
-}
+// Class params, i.e. superclasses.

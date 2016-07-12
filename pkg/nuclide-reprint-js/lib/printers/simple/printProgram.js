@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +8,28 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {Program} from 'ast-types-flow';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import flatten from '../../utils/flatten';
-import printArrayOfStatements from '../common/printArrayOfStatements';
-import printComments from '../common/printComments';
+var _utilsFlatten2;
 
-function printProgram(print: Print, node: Program): Lines {
-  return flatten([
-    printComments(node.innerComments),
-    printArrayOfStatements(print, node.body),
-  ]);
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+var _commonPrintArrayOfStatements2;
+
+function _commonPrintArrayOfStatements() {
+  return _commonPrintArrayOfStatements2 = _interopRequireDefault(require('../common/printArrayOfStatements'));
+}
+
+var _commonPrintComments2;
+
+function _commonPrintComments() {
+  return _commonPrintComments2 = _interopRequireDefault(require('../common/printComments'));
+}
+
+function printProgram(print, node) {
+  return (0, (_utilsFlatten2 || _utilsFlatten()).default)([(0, (_commonPrintComments2 || _commonPrintComments()).default)(node.innerComments), (0, (_commonPrintArrayOfStatements2 || _commonPrintArrayOfStatements()).default)(print, node.body)]);
 }
 
 module.exports = printProgram;

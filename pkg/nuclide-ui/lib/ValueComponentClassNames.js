@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -10,11 +11,12 @@
  */
 
 // A very basic heuristic for coloring the values.
-export const ValueComponentClassNames = {
+var ValueComponentClassNames = {
   string: 'string quoted double',
   stringOpeningQuote: 'punctuation definition string begin',
   stringClosingQuote: 'punctuation definition string end',
   number: 'constant numeric',
   nullish: 'constant language null',
-  identifier: 'variable',
+  identifier: 'variable'
 };
+exports.ValueComponentClassNames = ValueComponentClassNames;

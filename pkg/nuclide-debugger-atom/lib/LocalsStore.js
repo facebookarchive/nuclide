@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,52 +10,75 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
-import type {ExpansionResult} from './types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {
-  Disposable,
-  CompositeDisposable,
-} from 'atom';
-import Rx from 'rxjs';
-import Constants from './Constants';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export default class LocalsStore {
-  _disposables: IDisposable;
-  /**
-   * Treat as immutable.
-   */
-  _locals: Rx.BehaviorSubject<ExpansionResult>;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor(dispatcher: Dispatcher) {
-    const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => {
-        dispatcher.unregister(dispatcherToken);
-      })
-    );
-    this._locals = new Rx.BehaviorSubject([]);
-  }
+var _atom2;
 
-  _handlePayload(payload: Object): void {
-    switch (payload.actionType) {
-      case Constants.Actions.UPDATE_LOCALS:
-        this._handleUpdateLocals(payload.data.locals);
-        break;
-      default:
-        return;
-    }
-  }
-
-  _handleUpdateLocals(locals: ExpansionResult): void {
-    this._locals.next(locals);
-  }
-
-  getLocals(): Rx.Observable<ExpansionResult> {
-    return this._locals.asObservable();
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
-  }
+function _atom() {
+  return _atom2 = require('atom');
 }
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = _interopRequireDefault(require('rxjs/bundles/Rx.umd.min.js'));
+}
+
+var _Constants2;
+
+function _Constants() {
+  return _Constants2 = _interopRequireDefault(require('./Constants'));
+}
+
+var LocalsStore = (function () {
+  function LocalsStore(dispatcher) {
+    _classCallCheck(this, LocalsStore);
+
+    var dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable(new (_atom2 || _atom()).Disposable(function () {
+      dispatcher.unregister(dispatcherToken);
+    }));
+    this._locals = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).default.BehaviorSubject([]);
+  }
+
+  _createClass(LocalsStore, [{
+    key: '_handlePayload',
+    value: function _handlePayload(payload) {
+      switch (payload.actionType) {
+        case (_Constants2 || _Constants()).default.Actions.UPDATE_LOCALS:
+          this._handleUpdateLocals(payload.data.locals);
+          break;
+        default:
+          return;
+      }
+    }
+  }, {
+    key: '_handleUpdateLocals',
+    value: function _handleUpdateLocals(locals) {
+      this._locals.next(locals);
+    }
+  }, {
+    key: 'getLocals',
+    value: function getLocals() {
+      return this._locals.asObservable();
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
+
+  return LocalsStore;
+})();
+
+exports.default = LocalsStore;
+module.exports = exports.default;
+
+/**
+ * Treat as immutable.
+ */

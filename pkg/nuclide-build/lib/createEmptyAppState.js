@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +10,9 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from './types';
+exports.createEmptyAppState = createEmptyAppState;
 
-export function createEmptyAppState(): AppState {
+function createEmptyAppState() {
   return {
     activeBuildSystemId: null,
     activeTaskType: null,
@@ -21,6 +22,6 @@ export function createEmptyAppState(): AppState {
     previousSessionActiveBuildSystemId: null,
     tasks: [],
     taskStatus: null,
-    visible: false,
+    visible: false
   };
 }

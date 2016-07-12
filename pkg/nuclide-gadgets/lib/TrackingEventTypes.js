@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,5 +10,7 @@
  * the root directory of this source tree.
  */
 
-export const GADGET_CREATED = 'gadget-created';
-export const GADGET_DESERIALIZED = 'gadget-deserialized';
+var GADGET_CREATED = 'gadget-created';
+exports.GADGET_CREATED = GADGET_CREATED;
+var GADGET_DESERIALIZED = 'gadget-deserialized';
+exports.GADGET_DESERIALIZED = GADGET_DESERIALIZED;
