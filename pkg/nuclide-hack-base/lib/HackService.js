@@ -11,6 +11,10 @@
 
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
+import type {
+  HackRange,
+  HackCompletion,
+} from './rpc-types';
 
 import fsPromise from '../../commons-node/fsPromise';
 import {retryLimit} from '../../commons-node/promise';
@@ -48,26 +52,6 @@ export type SingleHackMessage = {
   end: number;
 };
 
-export type HackParameterDetails = {
-  name: string;
-  type: string;
-  variadic: boolean;
-};
-
-export type HackFunctionDetails = {
-  min_arity: number;
-  return_type: string;
-  params: Array<HackParameterDetails>;
-};
-
-// Note that all line/column values are 1-based.
-export type HackRange = {
-  filename: NuclideUri;
-  line: number;
-  char_start: number;
-  char_end: number;
-};
-
 // Note that all line/column values are 1-based.
 export type HackSpan = {
   filename: NuclideUri;
@@ -77,13 +61,6 @@ export type HackSpan = {
   char_end: number;
 };
 
-export type HackCompletion = {
-  name: string;
-  type: string;
-  pos: HackRange;
-  func_details: ?HackFunctionDetails;
-  expected_ty: boolean;
-};
 
 export type HackCompletionsResult = {
   hackRoot: NuclideUri;

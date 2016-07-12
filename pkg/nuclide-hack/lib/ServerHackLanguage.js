@@ -14,8 +14,10 @@ import type {Definition} from './HackLanguage';
 import type {
   HackParameterDetails,
   HackCompletion,
-  HackDiagnostic,
   HackRange,
+} from '../../nuclide-hack-base/lib/rpc-types';
+import type {
+  HackDiagnostic,
   HackReference,
   HackIdeOutline,
   HackDefinition,
