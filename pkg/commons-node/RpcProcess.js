@@ -70,6 +70,10 @@ export default class RpcProcess {
     this._cleanup();
   }
 
+  isDisposed(): boolean {
+    return this._disposed;
+  }
+
   async getService(serviceName: string): Promise<Object> {
     await this._ensureProcess();
     invariant(this._rpcConnection != null);

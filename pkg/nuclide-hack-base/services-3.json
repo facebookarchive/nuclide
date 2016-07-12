@@ -1,0 +1,7 @@
+[
+  {
+    "implementation": "./lib/HackConnectionService.js",
+    "name": "HackConnectionService",
+    "preserveFunctionNames": true
+  }
+]
