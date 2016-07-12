@@ -26,6 +26,7 @@ import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-m
 import type {TrackingEvent} from '../../nuclide-analytics';
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
+import createPackage from '../../commons-atom/createPackage';
 import {compact, DisposableSubscription} from '../../commons-node/stream';
 import {trackEvent} from '../../nuclide-analytics';
 import * as ActionTypes from './ActionTypes';
@@ -37,200 +38,211 @@ import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import Rx from 'rxjs';
 
-let disposables: ?CompositeDisposable = null;
-let _commands: ?CommandsType = null;
-let _states: ?BehaviorSubject<AppState> = null;
+class Activation {
+  _disposables: CompositeDisposable;
+  _commands: CommandsType;
+  _states: BehaviorSubject<AppState>;
 
-export function activate(rawState: ?SerializedAppState): void {
-  invariant(disposables == null);
-  invariant(_commands == null);
+  constructor(rawState: ?SerializedAppState): void {
+    const initialState = {
+      ...createEmptyAppState(),
+      ...(rawState || {}),
+    };
 
-  const initialState = {
-    ...createEmptyAppState(),
-    ...(rawState || {}),
-  };
+    const rawActions = new Rx.Subject();
+    const actions = applyActionMiddleware(rawActions, () => this._states.getValue());
+    this._states = createStateStream(actions, initialState);
+    const dispatch = action => { rawActions.next(action); };
+    this._commands = new Commands(dispatch, () => this._states.getValue());
 
-  const rawActions = new Rx.Subject();
-  const actions = applyActionMiddleware(rawActions, () => states.getValue());
-  const states = _states = createStateStream(actions, initialState);
-  const dispatch = action => { rawActions.next(action); };
-  const commands = _commands = new Commands(dispatch, () => states.getValue());
+    // Add the panel.
+    this._commands.createPanel(this._states);
 
-  // Add the panel.
-  commands.createPanel(states);
-
-  disposables = new CompositeDisposable(
-    new Disposable(() => { commands.destroyPanel(); }),
-    new Disposable(() => {
-      _commands = null;
-      _states = null;
-    }),
-    atom.commands.add('atom-workspace', {
-      'nuclide-build:toggle-toolbar-visibility': event => {
-        const visible = event.detail == null ? undefined : event.detail.visible;
-        if (typeof visible === 'boolean') {
-          commands.setToolbarVisibility(visible);
-        } else {
-          commands.toggleToolbarVisibility();
-        }
-      },
-    }),
-
-    // Update the Atom palette commands to match our currently enabled tasks.
-    syncAtomCommands(
-      states
-        .debounceTime(500)
-        .map(state => state.tasks)
-        .distinctUntilChanged()
-        .map(tasks => new Set(tasks.filter(task => task.enabled).map(task => task.type))),
-      taskType => ({
-        'atom-workspace': {
-          [`nuclide-build:${taskType}`]: () => { commands.runTask(taskType); },
-        },
-      }),
-    ),
-
-    // Add Atom palette commands for selecting the build system.
-    syncAtomCommands(
-      states
-        .debounceTime(500)
-        .map(state => state.buildSystems)
-        .distinctUntilChanged()
-        .map(buildSystems => new Set(buildSystems.values())),
-      buildSystem => ({
-        'atom-workspace': {
-          [`nuclide-build:select-${buildSystem.name}-build-system`]: () => {
-            commands.selectBuildSystem(buildSystem.id);
-          },
-        },
-      }),
-    ),
-
-    // Track Build events.
-    new DisposableSubscription(
-      compact(
-        actions.map(action => {
-          switch (action.type) {
-            case ActionTypes.TASK_STARTED:
-              return createTrackingEvent('nuclide-build:task-started', action, states.getValue());
-            case ActionTypes.TASK_STOPPED:
-              return createTrackingEvent('nuclide-build:task-stopped', action, states.getValue());
-            case ActionTypes.TASK_COMPLETED:
-              return createTrackingEvent('nuclide-build:task-completed', action, states.getValue());
-            case ActionTypes.TASK_ERRORED:
-              return createTrackingEvent('nuclide-build:task-errored', action, states.getValue());
-            default:
-              return null;
+    this._disposables = new CompositeDisposable(
+      new Disposable(() => { this._commands.destroyPanel(); }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-build:toggle-toolbar-visibility': event => {
+          const visible = event.detail == null ? undefined : event.detail.visible;
+          if (typeof visible === 'boolean') {
+            this._commands.setToolbarVisibility(visible);
+          } else {
+            this._commands.toggleToolbarVisibility();
           }
-        })
-      )
-        .subscribe(event => { trackEvent(event); })
-    ),
+        },
+      }),
 
-    // Update the actions whenever the build system changes. This is a little weird because state
-    // changes are triggering commands that trigger state changes. Maybe there's a better place to
-    // do this?
-    new DisposableSubscription(
-      states.map(state => state.activeBuildSystemId)
-        .distinctUntilChanged()
-        .subscribe(() => { commands.refreshTasks(); })
-    ),
-  );
-}
+      // Update the Atom palette commands to match our currently enabled tasks.
+      syncAtomCommands(
+        this._states
+          .debounceTime(500)
+          .map(state => state.tasks)
+          .distinctUntilChanged()
+          .map(tasks => new Set(tasks.filter(task => task.enabled).map(task => task.type))),
+        taskType => ({
+          'atom-workspace': {
+            [`nuclide-build:${taskType}`]: () => { this._commands.runTask(taskType); },
+          },
+        }),
+      ),
 
-export function deactivate(): void {
-  invariant(disposables != null);
-  disposables.dispose();
-  disposables = null;
-}
+      // Add Atom palette commands for selecting the build system.
+      syncAtomCommands(
+        this._states
+          .debounceTime(500)
+          .map(state => state.buildSystems)
+          .distinctUntilChanged()
+          .map(buildSystems => new Set(buildSystems.values())),
+        buildSystem => ({
+          'atom-workspace': {
+            [`nuclide-build:select-${buildSystem.name}-build-system`]: () => {
+              this._commands.selectBuildSystem(buildSystem.id);
+            },
+          },
+        }),
+      ),
 
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
-  invariant(disposables != null);
-  const toolBar = getToolBar('nuclide-build');
-  const {element} = toolBar.addButton({
-    callback: 'nuclide-build:toggle-toolbar-visibility',
-    tooltip: 'Toggle Build Toolbar',
-    iconset: 'ion',
-    icon: 'hammer',
-    priority: 499.5,
-  });
-  element.className += ' nuclide-build-tool-bar-button';
+      // Track Build events.
+      new DisposableSubscription(
+        compact(
+          actions.map(action => {
+            switch (action.type) {
+              case ActionTypes.TASK_STARTED:
+                return createTrackingEvent(
+                  'nuclide-build:task-started',
+                  action,
+                  this._states.getValue(),
+                );
+              case ActionTypes.TASK_STOPPED:
+                return createTrackingEvent(
+                  'nuclide-build:task-stopped',
+                  action,
+                  this._states.getValue(),
+                );
+              case ActionTypes.TASK_COMPLETED:
+                return createTrackingEvent(
+                  'nuclide-build:task-completed',
+                  action,
+                  this._states.getValue(),
+                );
+              case ActionTypes.TASK_ERRORED:
+                return createTrackingEvent(
+                  'nuclide-build:task-errored',
+                  action,
+                  this._states.getValue(),
+                );
+              default:
+                return null;
+            }
+          })
+        )
+          .subscribe(event => { trackEvent(event); })
+      ),
 
-  invariant(_states != null);
+      // Update the actions whenever the build system changes. This is a little weird because state
+      // changes are triggering commands that trigger state changes. Maybe there's a better place to
+      // do this?
+      new DisposableSubscription(
+        this._states.map(state => state.activeBuildSystemId)
+          .distinctUntilChanged()
+          .subscribe(() => { this._commands.refreshTasks(); })
+      ),
+    );
+  }
 
-  const buttonUpdatesDisposable = new DisposableSubscription(
-    _states.subscribe(state => {
-      if (state.buildSystems.size > 0) {
-        element.removeAttribute('hidden');
-      } else {
-        element.setAttribute('hidden', 'hidden');
-      }
-    })
-  );
+  dispose(): void {
+    this._disposables.dispose();
+  }
 
-  // Remove the button from the toolbar.
-  const buttonPresenceDisposable = new Disposable(() => { toolBar.removeItems(); });
+  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+    const toolBar = getToolBar('nuclide-build');
+    const {element} = toolBar.addButton({
+      callback: 'nuclide-build:toggle-toolbar-visibility',
+      tooltip: 'Toggle Build Toolbar',
+      iconset: 'ion',
+      icon: 'hammer',
+      priority: 499.5,
+    });
+    element.className += ' nuclide-build-tool-bar-button';
 
-  // If this package is disabled, stop updating the button and remove it from the toolbar.
-  disposables.add(
-    buttonUpdatesDisposable,
-    buttonPresenceDisposable,
-  );
-
-  // If tool-bar is disabled, stop updating the button state and remove tool-bar related cleanup
-  // from this package's disposal actions.
-  return new Disposable(() => {
-    buttonUpdatesDisposable.dispose();
-    if (disposables != null) {
-      disposables.remove(buttonUpdatesDisposable);
-      disposables.remove(buttonPresenceDisposable);
-    }
-  });
-}
-
-export function provideBuildSystemRegistry(): BuildSystemRegistry {
-  return {
-    register(buildSystem: BuildSystem): IDisposable {
-      if (_commands != null) {
-        _commands.registerBuildSystem(buildSystem);
-      }
-      return new Disposable(() => {
-        if (_commands != null) {
-          _commands.unregisterBuildSystem(buildSystem);
+    const buttonUpdatesDisposable = new DisposableSubscription(
+      this._states.subscribe(state => {
+        if (state.buildSystems.size > 0) {
+          element.removeAttribute('hidden');
+        } else {
+          element.setAttribute('hidden', 'hidden');
         }
-      });
-    },
-  };
+      })
+    );
+
+    // Remove the button from the toolbar.
+    const buttonPresenceDisposable = new Disposable(() => { toolBar.removeItems(); });
+
+    // If this package is disabled, stop updating the button and remove it from the toolbar.
+    this._disposables.add(
+      buttonUpdatesDisposable,
+      buttonPresenceDisposable,
+    );
+
+    // If tool-bar is disabled, stop updating the button state and remove tool-bar related cleanup
+    // from this package's disposal actions.
+    return new Disposable(() => {
+      buttonUpdatesDisposable.dispose();
+      this._disposables.remove(buttonUpdatesDisposable);
+      this._disposables.remove(buttonPresenceDisposable);
+    });
+  }
+
+  provideBuildSystemRegistry(): BuildSystemRegistry {
+    let pkg = this; // eslint-disable-line consistent-this
+    this._disposables.add(new Disposable(() => { pkg = null; }));
+    return {
+      register: (buildSystem: BuildSystem) => {
+        invariant(pkg != null, 'Build system registry used after deactivation');
+        pkg._commands.registerBuildSystem(buildSystem);
+        return new Disposable(() => {
+          if (pkg != null) {
+            pkg._commands.unregisterBuildSystem(buildSystem);
+          }
+        });
+      },
+    };
+  }
+
+  serialize(): SerializedAppState {
+    const state = this._states.getValue();
+    return {
+      previousSessionActiveBuildSystemId:
+        state.activeBuildSystemId || state.previousSessionActiveBuildSystemId,
+      previousSessionActiveTaskType:
+        state.activeTaskType || state.previousSessionActiveTaskType,
+      visible: state.visible,
+    };
+  }
+
+  getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+    let pkg = this; // eslint-disable-line consistent-this
+    this._disposables.add(new Disposable(() => { pkg = null; }));
+    return {
+      name: 'nuclide-build',
+      isVisible() {
+        invariant(pkg != null);
+        return pkg._states.getValue().visible;
+      },
+      toggle() {
+        invariant(pkg != null);
+        pkg._commands.toggleToolbarVisibility();
+      },
+    };
+  }
+
+  // Exported for testing :'(
+  _getCommands() {
+    return this._commands;
+  }
+
 }
 
-export function serialize(): SerializedAppState {
-  invariant(_states != null);
-  const state = _states.getValue();
-  return {
-    previousSessionActiveBuildSystemId:
-      state.activeBuildSystemId || state.previousSessionActiveBuildSystemId,
-    previousSessionActiveTaskType:
-      state.activeTaskType || state.previousSessionActiveTaskType,
-    visible: state.visible,
-  };
-}
-
-export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
-  return {
-    name: 'nuclide-build',
-    isVisible() {
-      invariant(_states != null);
-      return _states.getValue().visible;
-    },
-    toggle() {
-      invariant(_commands != null);
-      _commands.toggleToolbarVisibility();
-    },
-  };
-}
-
-// Exported for testing :'(
-export const _getCommands = () => _commands;
+export default createPackage(Activation);
 
 function createTrackingEvent(
   type: string,

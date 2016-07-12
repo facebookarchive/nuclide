@@ -10,7 +10,7 @@
  */
 
 import {sleep} from '../pkg/commons-node/promise';
-import {_getCommands} from '../pkg/nuclide-build';
+import activation from '../pkg/nuclide-build';
 import {
   activateAllPackages,
   copyFixture,
@@ -50,7 +50,7 @@ describe('Buck building via toolbar', () => {
 
     runs(() => {
       // Select the Buck build system.
-      const commands = _getCommands();
+      const commands = activation._getCommands();
       invariant(commands != null);
       commands.selectBuildSystem('buck');
     });
