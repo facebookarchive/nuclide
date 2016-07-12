@@ -62,10 +62,7 @@ export type HackSpan = {
 };
 
 
-export type HackCompletionsResult = {
-  hackRoot: NuclideUri;
-  completions: Array<HackCompletion>;
-};
+export type HackCompletionsResult = Array<HackCompletion>;
 
 export type HackReferencesResult = {
   hackRoot: NuclideUri;
@@ -176,22 +173,17 @@ export async function getCompletions(
   column: number,
 ): Promise<?HackCompletionsResult> {
   const markedContents = markFileForCompletion(contents, offset);
-  const hhResult = await callHHClient(
+  const hhResult: any = await callHHClient(
     /*args*/ ['--auto-complete'],
     /*errorStream*/ false,
     /*outputJson*/ true,
     /*processInput*/ markedContents,
     /*file*/ file,
   );
-  if (!hhResult) {
+  if (hhResult == null) {
     return null;
   }
-  const {hackRoot, result} = hhResult;
-  const completions = ((result : any): Array<HackCompletion>);
-  return {
-    hackRoot,
-    completions,
-  };
+  return hhResult.result;
 }
 
 export async function getDefinition(

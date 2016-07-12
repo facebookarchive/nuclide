@@ -68,38 +68,35 @@ describe('HackLanguage', () => {
 
   it('getCompletions', () => {
     waitsForPromise(async () => {
-      const serviceResults: HackCompletionsResult = {
-        hackRoot: basePath,
-        completions: [
-          {
-            name: 'foo',
-            func_details: {
-              min_arity: 2,
-              return_type: 'string',
-              params: [
-                {
-                  name: 'p1',
-                  type: 'string',
-                  variadic: false,
-                },
-                {
-                  name: 'p2',
-                  type: 'string',
-                  variadic: false,
-                },
-              ],
-            },
-            type: 'foo_type',
-            pos: {
-              filename: filePath,
-              line: 42,
-              char_start: 0,
-              char_end: 10,
-            },
-            expected_ty: false,
+      const serviceResults: HackCompletionsResult = [
+        {
+          name: 'foo',
+          func_details: {
+            min_arity: 2,
+            return_type: 'string',
+            params: [
+              {
+                name: 'p1',
+                type: 'string',
+                variadic: false,
+              },
+              {
+                name: 'p2',
+                type: 'string',
+                variadic: false,
+              },
+            ],
           },
-        ],
-      };
+          type: 'foo_type',
+          pos: {
+            filename: filePath,
+            line: 42,
+            char_start: 0,
+            char_end: 10,
+          },
+          expected_ty: false,
+        },
+      ];
       mockService.getCompletions.andReturn(serviceResults);
 
       const result = await hackLanguage.getCompletions(
@@ -123,38 +120,35 @@ fclass HackClass {}`, 16, 2, 2);
 
   it('getCompletions - escaping', () => {
     waitsForPromise(async () => {
-      const serviceResults: HackCompletionsResult = {
-        hackRoot: basePath,
-        completions: [
-          {
-            name: 'HH\\foo',
-            func_details: {
-              min_arity: 2,
-              return_type: 'string',
-              params: [
-                {
-                  name: 'p1',
-                  type: 'string',
-                  variadic: false,
-                },
-                {
-                  name: 'p2',
-                  type: 'string',
-                  variadic: false,
-                },
-              ],
-            },
-            type: 'foo_type',
-            pos: {
-              filename: filePath,
-              line: 42,
-              char_start: 0,
-              char_end: 10,
-            },
-            expected_ty: false,
+      const serviceResults: HackCompletionsResult = [
+        {
+          name: 'HH\\foo',
+          func_details: {
+            min_arity: 2,
+            return_type: 'string',
+            params: [
+              {
+                name: 'p1',
+                type: 'string',
+                variadic: false,
+              },
+              {
+                name: 'p2',
+                type: 'string',
+                variadic: false,
+              },
+            ],
           },
-        ],
-      };
+          type: 'foo_type',
+          pos: {
+            filename: filePath,
+            line: 42,
+            char_start: 0,
+            char_end: 10,
+          },
+          expected_ty: false,
+        },
+      ];
       mockService.getCompletions.andReturn(serviceResults);
 
       const result = await hackLanguage.getCompletions(

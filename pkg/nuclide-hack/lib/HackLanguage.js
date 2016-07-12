@@ -82,11 +82,10 @@ export class HackLanguage {
     line: number,
     column: number,
   ): Promise<Array<atom$AutocompleteSuggestion>> {
-    let completions = [];
-    const completionsResult = await this._hackService.getCompletions(
+    const completions = await this._hackService.getCompletions(
       filePath, contents, offset, line, column);
-    if (completionsResult) {
-      completions = completionsResult.completions;
+    if (completions == null) {
+      return [];
     }
     return processCompletions(completions, contents, offset);
   }
