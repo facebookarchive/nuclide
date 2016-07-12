@@ -64,10 +64,7 @@ export type HackSpan = {
 
 export type HackCompletionsResult = Array<HackCompletion>;
 
-export type HackReferencesResult = {
-  hackRoot: NuclideUri;
-  references: Array<HackReference>;
-};
+export type HackReferencesResult = Array<HackReference>;
 
 export type HackSearchPosition = {
   path: NuclideUri;
@@ -242,15 +239,7 @@ export async function findReferences(
   if (hhResult == null) {
     return null;
   }
-
-  const references: ?Array<HackReference> = hhResult.result;
-  if (references == null) {
-    return null;
-  }
-  return {
-    hackRoot: hhResult.hackRoot,
-    references,
-  };
+  return hhResult.result;
 }
 
 export function getHackEnvironmentDetails(

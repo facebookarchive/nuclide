@@ -200,16 +200,13 @@ export class HackLanguage {
     line: number,
     column: number,
   ): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
-    const referencesResult =
+    const references =
       await this._hackService.findReferences(filePath, contents, line, column);
-    if (!referencesResult) {
-      return null;
-    }
-    const {hackRoot, references} = referencesResult;
     if (references == null || references.length === 0) {
       return null;
     }
-    return {baseUri: hackRoot, symbolName: references[0].name, references};
+    invariant(this._basePath != null);
+    return {baseUri: this._basePath, symbolName: references[0].name, references};
   }
 
   getBasePath(): ?string {

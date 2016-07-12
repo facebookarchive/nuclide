@@ -433,25 +433,22 @@ HH\\fclass HackClass {}`, 19, 2, 5);
 
   it('findReferences', () => {
     waitsForPromise(async () => {
-      const findResult: HackReferencesResult = {
-        hackRoot: basePath,
-        references: [
-          {
-            name: 'item_name',
-            filename: filePath,
-            line: 1,
-            char_start: 2,
-            char_end: 3,
-          },
-          {
-            name: 'item_name',
-            filename: filePath,
-            line: 11,
-            char_start: 4,
-            char_end: 7,
-          },
-        ],
-      };
+      const findResult: HackReferencesResult = [
+        {
+          name: 'item_name',
+          filename: filePath,
+          line: 1,
+          char_start: 2,
+          char_end: 3,
+        },
+        {
+          name: 'item_name',
+          filename: filePath,
+          line: 11,
+          char_start: 4,
+          char_end: 7,
+        },
+      ];
       mockService.findReferences.andReturn(findResult);
 
       const result = await hackLanguage.findReferences(filePath, contents, 2, 3);
