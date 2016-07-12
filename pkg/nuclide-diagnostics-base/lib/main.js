@@ -171,6 +171,10 @@ export type LinterProvider = {
    * than just files with specific grammar scopes.
    */
   allGrammarScopes?: boolean;
+  /**
+   * Extension: Clear file-level diagnostics when the file is closed.
+   */
+  invalidateOnClose?: boolean;
   scope: 'file' | 'project';
   lintOnFly: boolean;
   lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>;

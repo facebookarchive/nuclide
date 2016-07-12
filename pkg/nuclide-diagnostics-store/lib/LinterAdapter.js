@@ -119,6 +119,13 @@ export class LinterAdapter {
 
   _providerUtils: DiagnosticsProviderBase;
 
+  /**
+   * Keep track of the files with diagnostics for each text buffer.
+   * This way we can accurately invalidate diagnostics when files are renamed.
+   */
+  _filesForBuffer: WeakMap<atom$TextBuffer, Array<NuclideUri>>;
+  _onDestroyDisposables: Map<atom$TextBuffer, IDisposable>;
+
   constructor(
     provider: LinterProvider,
     ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
@@ -134,18 +141,39 @@ export class LinterAdapter {
     this._provider = provider;
     this._enabled = true;
     this._requestSerializer = new RequestSerializer();
+    this._filesForBuffer = new WeakMap();
+    this._onDestroyDisposables = new Map();
   }
 
   async _runLint(editor: TextEditor): Promise<void> {
     if (this._enabled) {
       const result = await this._requestSerializer.run(this._provider.lint(editor));
       if (result.status === 'success') {
+        const buffer = editor.getBuffer();
+        if (buffer.isDestroyed()) {
+          return;
+        }
+
+        if (this._provider.invalidateOnClose && !this._onDestroyDisposables.has(buffer)) {
+          const disposable = buffer.onDidDestroy(() => {
+            this._invalidateBuffer(buffer);
+            this._onDestroyDisposables.delete(buffer);
+            disposable.dispose();
+          });
+          this._onDestroyDisposables.set(buffer, disposable);
+        }
+
         const linterMessages = result.result;
         const diagnosticUpdate = linterMessagesToDiagnosticUpdate(
           editor.getPath(),
           linterMessages, this._provider.providerName || this._provider.name
         );
+        this._invalidateBuffer(buffer);
         this._providerUtils.publishMessageUpdate(diagnosticUpdate);
+        const {filePathToMessages} = diagnosticUpdate;
+        if (filePathToMessages != null) {
+          this._filesForBuffer.set(buffer, Array.from(filePathToMessages.keys()));
+        }
       }
     }
   }
@@ -171,6 +199,8 @@ export class LinterAdapter {
 
   dispose(): void {
     this._providerUtils.dispose();
+    this._onDestroyDisposables.forEach(disposable => disposable.dispose());
+    this._onDestroyDisposables.clear();
   }
 
   _lintInProgress(): boolean {
@@ -183,5 +213,12 @@ export class LinterAdapter {
 
   onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
     return this._providerUtils.onMessageInvalidation(callback);
+  }
+
+  _invalidateBuffer(buffer: atom$TextBuffer): void {
+    const filePaths = this._filesForBuffer.get(buffer);
+    if (filePaths != null) {
+      this._providerUtils.publishMessageInvalidation({scope: 'file', filePaths});
+    }
   }
 }

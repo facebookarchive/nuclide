@@ -1283,6 +1283,7 @@ declare class atom$TextBuffer {
   updateCachedDiskContents(flushCache?: boolean, callback?: () => mixed): Promise<void>;
   emitModifiedStatusChanged(changed: boolean): void;
   destroy(): void;
+  isDestroyed(): boolean;
 }
 
 declare class atom$Notification {

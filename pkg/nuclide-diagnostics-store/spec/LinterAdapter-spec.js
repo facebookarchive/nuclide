@@ -40,7 +40,9 @@ describe('LinterAdapter', () => {
   let subscribedToAny: any;
   let newUpdateSubscriber: any;
   let publishMessageUpdateSpy: any;
+  let publishMessageInvalidationSpy: any;
   let fakeDiagnosticsProviderBase: any;
+  let bufferDestroyCallback: any;
 
   class FakeDiagnosticsProviderBase {
     publishMessageUpdate: JasmineSpy;
@@ -53,6 +55,7 @@ describe('LinterAdapter', () => {
       this.publishMessageUpdate = jasmine.createSpy();
       publishMessageUpdateSpy = this.publishMessageUpdate;
       this.publishMessageInvalidation = jasmine.createSpy();
+      publishMessageInvalidationSpy = this.publishMessageInvalidation;
       this.dispose = jasmine.createSpy();
       fakeDiagnosticsProviderBase = this;  // eslint-disable-line consistent-this
     }
@@ -60,7 +63,8 @@ describe('LinterAdapter', () => {
       this.publishMessageUpdate.andCallFake(callback);
       return new Disposable(() => {});
     }
-    onMessageInvalidation() {
+    onMessageInvalidation(callback) {
+      this.publishMessageInvalidation.andCallFake(callback);
       return new Disposable(() => {});
     }
   }
@@ -70,9 +74,17 @@ describe('LinterAdapter', () => {
   }
 
   beforeEach(() => {
+    const fakeBuffer = {
+      onDidDestroy(callback) {
+        bufferDestroyCallback = callback;
+        return new Disposable(() => {});
+      },
+      isDestroyed: () => false,
+    };
     fakeEditor = {
       getPath() { return 'foo'; },
       getGrammar() { return {scopeName: grammar}; },
+      getBuffer() { return fakeBuffer; },
     };
     spyOn(atom.workspace, 'getActiveTextEditor').andReturn(fakeEditor);
     linterReturn = Promise.resolve([]);
@@ -153,6 +165,29 @@ describe('LinterAdapter', () => {
     expect(fakeDiagnosticsProviderBase.dispose).not.toHaveBeenCalled();
     linterAdapter.dispose();
     expect(fakeDiagnosticsProviderBase.dispose).toHaveBeenCalled();
+  });
+
+  it('implements invalidateOnClose', () => {
+    newLinterAdapter({
+      grammarScopes: [],
+      allGrammarScopes: true,
+      scope: 'file',
+      lintOnFly: true,
+      invalidateOnClose: true,
+      lint: () => Promise.resolve([
+        {type: 'Error', filePath: 'foo'},
+        {type: 'Error', filePath: 'bar'},
+      ]),
+    });
+    eventCallback(fakeEditor);
+    waitsFor(() => bufferDestroyCallback != null);
+    runs(() => {
+      bufferDestroyCallback();
+      expect(publishMessageInvalidationSpy).toHaveBeenCalledWith({
+        scope: 'file',
+        filePaths: ['foo', 'bar'],
+      });
+    });
   });
 });
 

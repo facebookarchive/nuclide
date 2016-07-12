@@ -22,6 +22,7 @@ module.exports = {
   grammarScopes: Array.from(GRAMMARS),
   scope: 'file',
   lintOnFly: false,
+  invalidateOnClose: true,
 
   lint(textEditor: atom$TextEditor): Promise<Array<LinterMessage>> {
     return trackOperationTiming('nuclide-ocaml.lint', async () => {
