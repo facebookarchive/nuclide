@@ -174,17 +174,6 @@ export async function getDiagnostics(
   }
 
   const dirName = nuclideUri.dirname(src);
-  const baseName = nuclideUri.basename(src);
-  const extName = nuclideUri.extname(src);
-
-
-  // Don't get diagnostics for Buck or conf files - considered Python grammar,
-  // but a lot of meaningless lint errors due to pseudo-keywords.
-  if (extName === '.cconf' || extName === '.mcconf' ||
-      baseName === 'BUCK' || baseName === 'TARGETS') {
-    return [];
-  }
-
   const configDir = await fsPromise.findNearestFile('.flake8', dirName);
   const configPath = configDir ? nuclideUri.join(configDir, '.flake8') : null;
 
