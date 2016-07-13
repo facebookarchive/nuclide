@@ -1,6 +1,0 @@
-var a = {...b};
-var c = [...d];
-var {e, ...f} = g;
-var [h, ...i] = j;
-f;
-i;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +10,46 @@
  * the root directory of this source tree.
  */
 
-import typeof * as PythonService from '../../nuclide-python-base';
-import type {PythonCompletion} from '../../nuclide-python-base/lib/PythonService';
+var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
 
-import invariant from 'assert';
-import {trackTiming} from '../../nuclide-analytics';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {TYPES} from './constants';
-import {getAutocompleteArguments, getIncludeOptionalArguments} from './config';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-const VALID_EMPTY_SUFFIX = /(\.|\()$/;
-const TRIGGER_COMPLETION_REGEX = /([\. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../../nuclide-remote-connection');
+}
+
+var _constants2;
+
+function _constants() {
+  return _constants2 = require('./constants');
+}
+
+var _config2;
+
+function _config() {
+  return _config2 = require('./config');
+}
+
+var VALID_EMPTY_SUFFIX = /(\.|\()$/;
+var TRIGGER_COMPLETION_REGEX = /([\. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
 
 /**
  * Generate a function-signature line string if completion is a function.
@@ -31,83 +61,83 @@ const TRIGGER_COMPLETION_REGEX = /([\. ]|[a-zA-Z_][a-zA-Z0-9_]*)$/;
  *   instead of plain text.
  * @return string               Textual representation of the completion.
  */
-function getText(
-  completion: PythonCompletion,
-  includeOptionalArgs: boolean = true,
-  createPlaceholders: boolean = false,
-): string {
-  if (completion.params) {
-    const params = includeOptionalArgs
-      ? completion.params
-      : completion.params.filter(param =>
-        param.indexOf('=') < 0 && param.indexOf('*') < 0
-      );
+function getText(completion) {
+  var includeOptionalArgs = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+  var createPlaceholders = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 
-    const paramTexts = params.map((param, index) => {
-      return createPlaceholders ? `\${${index + 1}:${param}}` : param;
+  if (completion.params) {
+    var params = includeOptionalArgs ? completion.params : completion.params.filter(function (param) {
+      return param.indexOf('=') < 0 && param.indexOf('*') < 0;
     });
-    return `${completion.text}(${paramTexts.join(', ')})`;
+
+    var paramTexts = params.map(function (param, index) {
+      return createPlaceholders ? '${' + (index + 1) + ':' + param + '}' : param;
+    });
+    return completion.text + '(' + paramTexts.join(', ') + ')';
   }
 
   return completion.text;
 }
 
-export default class AutocompleteHelpers {
-
-  @trackTiming('nuclide-python:getAutocompleteSuggestions')
-  static async getAutocompleteSuggestions(
-    request: atom$AutocompleteRequest,
-  ): Promise<Array<atom$AutocompleteSuggestion>> {
-    const {editor, activatedManually, prefix} = request;
-
-    if (!TRIGGER_COMPLETION_REGEX.test(prefix)) {
-      return [];
-    }
-
-    if (!activatedManually && prefix === '') {
-      const wordPrefix = editor.getLastCursor().getCurrentWordPrefix();
-      if (!VALID_EMPTY_SUFFIX.test(wordPrefix)) {
-        return [];
-      }
-    }
-
-    const src = editor.getPath();
-    if (!src) {
-      return [];
-    }
-
-    const cursor = editor.getLastCursor();
-    const line = cursor.getBufferRow();
-    const column = cursor.getBufferColumn();
-
-    const service: ?PythonService = getServiceByNuclideUri('PythonService', src);
-    invariant(service);
-
-    const results = await service.getCompletions(
-      src,
-      editor.getText(),
-      line,
-      column,
-    );
-
-    if (!results) {
-      return [];
-    }
-
-    return results.map(completion => {
-      // Always display optional arguments in the UI.
-      const displayText = getText(completion);
-      // Only autocomplete arguments if the include optional arguments setting is on.
-      const snippet = getAutocompleteArguments()
-        ? getText(completion, getIncludeOptionalArguments(), true /* createPlaceholders */)
-        : completion.text;
-      return {
-        displayText,
-        snippet,
-        type: TYPES[completion.type],
-        description: completion.description,
-      };
-    });
+var AutocompleteHelpers = (function () {
+  function AutocompleteHelpers() {
+    _classCallCheck(this, AutocompleteHelpers);
   }
 
-}
+  _createDecoratedClass(AutocompleteHelpers, null, [{
+    key: 'getAutocompleteSuggestions',
+    decorators: [(0, (_nuclideAnalytics2 || _nuclideAnalytics()).trackTiming)('nuclide-python:getAutocompleteSuggestions')],
+    value: _asyncToGenerator(function* (request) {
+      var editor = request.editor;
+      var activatedManually = request.activatedManually;
+      var prefix = request.prefix;
+
+      if (!TRIGGER_COMPLETION_REGEX.test(prefix)) {
+        return [];
+      }
+
+      if (!activatedManually && prefix === '') {
+        var wordPrefix = editor.getLastCursor().getCurrentWordPrefix();
+        if (!VALID_EMPTY_SUFFIX.test(wordPrefix)) {
+          return [];
+        }
+      }
+
+      var src = editor.getPath();
+      if (!src) {
+        return [];
+      }
+
+      var cursor = editor.getLastCursor();
+      var line = cursor.getBufferRow();
+      var column = cursor.getBufferColumn();
+
+      var service = (0, (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).getServiceByNuclideUri)('PythonService', src);
+      (0, (_assert2 || _assert()).default)(service);
+
+      var results = yield service.getCompletions(src, editor.getText(), line, column);
+
+      if (!results) {
+        return [];
+      }
+
+      return results.map(function (completion) {
+        // Always display optional arguments in the UI.
+        var displayText = getText(completion);
+        // Only autocomplete arguments if the include optional arguments setting is on.
+        var snippet = (0, (_config2 || _config()).getAutocompleteArguments)() ? getText(completion, (0, (_config2 || _config()).getIncludeOptionalArguments)(), true /* createPlaceholders */) : completion.text;
+        return {
+          displayText: displayText,
+          snippet: snippet,
+          type: (_constants2 || _constants()).TYPES[completion.type],
+          description: completion.description
+        };
+      });
+    })
+  }]);
+
+  return AutocompleteHelpers;
+})();
+
+exports.default = AutocompleteHelpers;
+module.exports = exports.default;

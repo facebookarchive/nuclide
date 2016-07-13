@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +10,12 @@
  * the root directory of this source tree.
  */
 
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
+exports.activate = activate;
+exports.provideNuclideDebuggerNode = provideNuclideDebuggerNode;
 
-export function activate(state: mixed): void {
-}
+function activate(state) {}
 
-export function provideNuclideDebuggerNode(): nuclide_debugger$Service {
-  const Service = require('./Service');
+function provideNuclideDebuggerNode() {
+  var Service = require('./Service');
   return Service;
 }

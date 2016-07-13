@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getFormatOnSave = getFormatOnSave;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +13,13 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
+var _nuclideFeatureConfig2;
 
-export function getFormatOnSave(): boolean {
-  const formatOnSave = (featureConfig.get('nuclide-code-format.formatOnSave'): any);
-  return (formatOnSave == null) ? false : formatOnSave;
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
+}
+
+function getFormatOnSave() {
+  var formatOnSave = (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-code-format.formatOnSave');
+  return formatOnSave == null ? false : formatOnSave;
 }
