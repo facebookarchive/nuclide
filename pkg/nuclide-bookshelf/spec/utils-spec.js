@@ -9,12 +9,20 @@
  * the root directory of this source tree.
  */
 
+import type {RepositoryShortHeadChange} from '../lib/types';
+
+import {
+  getDummyBookShelfState,
+  REPO_PATH_1 as DUMMY_REPO_PATH_1,
+} from './dummy';
 import {
   deserializeBookShelfState,
   getEmptBookShelfState,
+  getShortHeadChangesFromStateStream,
   serializeBookShelfState,
 } from '../lib/utils';
 import Immutable from 'immutable';
+import {Subject} from 'rxjs';
 
 describe('BookShelf Utils', () => {
 
@@ -135,6 +143,33 @@ describe('BookShelf Utils', () => {
       it('deserializing an invalid state throws an exception', () => {
         expect(() => deserializeBookShelfState(({repositoryPathToState: null}: any))).toThrow();
       });
+    });
+  });
+
+  describe('getShortHeadChangesFromStateStream', () => {
+    const states = new Subject();
+    const shortHeadChangesStream = getShortHeadChangesFromStateStream(states);
+
+    const shortHeadChanges: Array<RepositoryShortHeadChange> = [];
+    shortHeadChangesStream.subscribe(change => shortHeadChanges.push(change));
+
+    states.next(getDummyBookShelfState());
+
+    const newActiveShortHead = 'foo_bar';
+    const newStateWithShortHeadChange = getDummyBookShelfState();
+    const newRepositoryState = newStateWithShortHeadChange.repositoryPathToState
+      .get(DUMMY_REPO_PATH_1);
+    newRepositoryState.activeShortHead = newActiveShortHead;
+
+    states.next(newStateWithShortHeadChange);
+    states.complete();
+
+    waitsFor(() => shortHeadChanges.length === 1);
+
+    runs(() => {
+      const {repositoryPath, activeShortHead} = shortHeadChanges[0];
+      expect(repositoryPath).toBe(DUMMY_REPO_PATH_1);
+      expect(activeShortHead).toBe(newActiveShortHead);
     });
   });
 });

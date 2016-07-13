@@ -31,6 +31,11 @@ export type SerializedBookShelfRepositoryState = {
   shortHeadsToFileList: Array<[string, Array<string>]>;
 };
 
+export type RepositoryShortHeadChange = {
+  repositoryPath: NuclideUri;
+  activeShortHead: string;
+};
+
 export type ActionTypeValue = 'add-project-repository'
   | 'update-pane-item-state'
   | 'remove-project-repository'

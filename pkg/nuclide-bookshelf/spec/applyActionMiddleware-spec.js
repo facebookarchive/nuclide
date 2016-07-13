@@ -18,26 +18,19 @@ import type {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';
 
 import {applyActionMiddleware} from '../lib/applyActionMiddleware';
 import {ActionType, EMPTY_SHORTHEAD} from '../lib/constants';
+import {
+  getDummyBookShelfState,
+  REPO_PATH_1,
+  SHOTHEAD_1_1,
+  SHOTHEAD_1_2,
+} from './dummy';
 import {Disposable} from 'atom';
-import Immutable from 'immutable';
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 
 describe('BookShelf applyActionMiddleware', () => {
 
   let fakeRepository: atom$Repository = (null: any);
-  const REPO_PATH_1 = '/fake/path_1';
-  const SHOTHEAD_1_1 = 'foo';
-  const SHOTHEAD_1_2 = 'bar';
-  const ACTIVE_SHOTHEAD_1 = 'bar';
-  const REPO_STATE_1 = {
-    activeShortHead: ACTIVE_SHOTHEAD_1,
-    isRestoring: false,
-    shortHeadsToFileList: Immutable.Map([
-      [SHOTHEAD_1_1, ['c.txt', 'd.txt']],
-      [SHOTHEAD_1_2, ['e.txt']],
-    ]),
-  };
 
   let oneRepoState: BookShelfState = (null: any);
   let shortHeadChangeCallback: ?() => mixed = null;
@@ -73,9 +66,7 @@ describe('BookShelf applyActionMiddleware', () => {
     }: any);
     fakeRepository.async = fakeRepository;
 
-    oneRepoState = Object.freeze({
-      repositoryPathToState: Immutable.Map([[REPO_PATH_1, REPO_STATE_1]]),
-    });
+    oneRepoState = getDummyBookShelfState();
   });
 
   describe('ADD_PROJECT_REPOSITORY', () => {
@@ -107,7 +98,7 @@ describe('BookShelf applyActionMiddleware', () => {
         const firstAction = resultActions[0];
         expect(firstAction.type).toBe(ActionType.UPDATE_REPOSITORY_BOOKMARKS);
         invariant(firstAction.type === ActionType.UPDATE_REPOSITORY_BOOKMARKS);
-        expect(firstAction.payload.activeShortHead).toBe(ACTIVE_SHOTHEAD_1);
+        expect(firstAction.payload.activeShortHead).toBe(SHOTHEAD_1_2);
         expect(Array.from(firstAction.payload.bookmarkNames))
           .toEqual([SHOTHEAD_1_1, SHOTHEAD_1_2, EMPTY_SHORTHEAD]);
 

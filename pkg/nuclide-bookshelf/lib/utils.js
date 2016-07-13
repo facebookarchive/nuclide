@@ -11,12 +11,14 @@
 
 import type {
   BookShelfState,
+  RepositoryShortHeadChange,
   SerializedBookShelfState,
 } from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import Immutable from 'immutable';
 import invariant from 'assert';
+import {Observable} from 'rxjs';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 
 export function getEmptBookShelfState(): BookShelfState {
@@ -85,4 +87,30 @@ export function getRepoPathToEditors(): Map<NuclideUri, Array<atom$TextEditor>> 
       );
     });
   return reposToEditors;
+}
+
+export function getShortHeadChangesFromStateStream(
+  states: Observable<BookShelfState>,
+): Observable<RepositoryShortHeadChange> {
+  return states
+    // $FlowFixMe(matthewwithanm): Type this.
+    .pairwise()
+    .flatMap(([oldBookShelfState, newBookShelfState]: [BookShelfState, BookShelfState]) => {
+      const {repositoryPathToState: oldRepositoryPathToState} = oldBookShelfState;
+
+      return Observable.from(
+        Array.from(newBookShelfState.repositoryPathToState.entries())
+          .filter(([repositoryPath, newRepositoryState]) => {
+            const oldRepositoryState = oldRepositoryPathToState.get(repositoryPath);
+            return oldRepositoryState != null
+              && oldRepositoryState.activeShortHead !== newRepositoryState.activeShortHead;
+          }).map(([repositoryPath, newRepositoryState]) => {
+            const {activeShortHead} = newRepositoryState;
+            return {
+              repositoryPath,
+              activeShortHead,
+            };
+          })
+        );
+    });
 }

@@ -27,10 +27,14 @@ import {
   getEmptBookShelfState,
   serializeBookShelfState,
 } from './utils';
-import {getLogger} from '../../nuclide-logging';
 import {diffSets} from '../../commons-node/stream';
+import {getLogger} from '../../nuclide-logging';
+import invariant from 'assert';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {
+  getShortHeadChangesFromStateStream,
+} from './utils';
 
 function createStateStream(
   actions: Observable<Action>,
@@ -92,10 +96,22 @@ class Activation {
       commands.updatePaneItemState();
     });
 
+    const shortHeadChangeSubscription = getShortHeadChangesFromStateStream(states)
+      .switchMap(({repositoryPath, activeShortHead}) => {
+        const repository = atom.project.getRepositories().filter(repo => {
+          return repo != null && repo.getWorkingDirectory() === repositoryPath;
+        })[0];
+        invariant(repository != null, 'shortHead changed on a non-existing repository!');
+
+        // TODO(most): show bookmark change / restore state prompt.
+        return Observable.empty();
+      }).subscribe();
+
     this._disposables = new CompositeDisposable(
       new Disposable(actions.complete.bind(actions)),
       new DisposableSubscription(repoDiffsSubscription),
       new DisposableSubscription(paneStateChangeSubscription),
+      new DisposableSubscription(shortHeadChangeSubscription),
     );
   }
 
