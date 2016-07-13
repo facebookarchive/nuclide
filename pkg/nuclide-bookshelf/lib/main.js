@@ -10,12 +10,16 @@
  */
 
 import type {
+  Action,
   BookShelfState,
   SerializedBookShelfState,
 } from './types';
 
-import {BehaviorSubject} from 'rxjs';
-import {CompositeDisposable} from 'atom';
+import {accumulateState} from './accumulateState';
+import {applyActionMiddleware} from './applyActionMiddleware';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {Commands} from './Commands';
+import {Disposable, CompositeDisposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
 import {getLogger} from '../../nuclide-logging';
 import {
@@ -24,9 +28,19 @@ import {
   serializeBookShelfState,
 } from './utils';
 
+function createStateStream(
+  actions: Observable<Action>,
+  initialState: BookShelfState,
+): BehaviorSubject<BookShelfState> {
+  const states = new BehaviorSubject(initialState);
+  actions.scan(accumulateState, initialState).subscribe(states);
+  return states;
+}
+
 class Activation {
   _disposables: CompositeDisposable;
   _states: BehaviorSubject<BookShelfState>;
+  _commands: Commands;
 
   constructor(state: ?SerializedBookShelfState) {
     let initialState;
@@ -37,8 +51,21 @@ class Activation {
       initialState = getEmptBookShelfState();
     }
 
-    this._states = new BehaviorSubject(initialState);
-    this._disposables = new CompositeDisposable();
+    const actions = new Subject();
+    const states = this._states = createStateStream(
+      applyActionMiddleware(actions, () => this._states.getValue()),
+      initialState,
+    );
+
+    const dispatch = action => { actions.next(action); };
+    /* eslint-disable no-unused-vars */
+    // Will be used in stacked diffs.
+    const commands = new Commands(dispatch, () => states.getValue());
+    /* eslint-enable no-unused-vars */
+
+    this._disposables = new CompositeDisposable(
+      new Disposable(actions.complete.bind(actions)),
+    );
   }
 
   dispose() {

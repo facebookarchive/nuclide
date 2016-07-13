@@ -30,3 +30,8 @@ export type SerializedBookShelfRepositoryState = {
   activeShortHead: string;
   shortHeadsToFileList: Array<[string, Array<string>]>;
 };
+
+export type ActionTypeValue = 'todo-add-action';
+
+// TODO(most): action structure.
+export type Action = {type: ActionTypeValue};
