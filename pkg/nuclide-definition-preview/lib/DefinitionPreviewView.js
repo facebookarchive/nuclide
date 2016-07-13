@@ -12,6 +12,8 @@
 import type {Definition} from '../../nuclide-definition-service';
 
 import {React} from 'react-for-atom';
+import {ContextViewMessage, NO_DEFINITION_MESSAGE}
+  from '../../nuclide-context-view/lib/ContextViewMessage';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 
@@ -56,15 +58,15 @@ export class DefinitionPreviewView extends React.Component {
 
   render(): React.Element<any> {
     // Show either the definition in an editor or a message
-    const content: React.Element<any> = (this.props.definition != null)
-      ? this._previewDefinition(this.props.definition)
-      : <div>No definition selected!</div>;
-
-    return (
-      <div className="pane-item padded nuclide-definition-preview">
-        {content}
-      </div>
-    );
+    if (this.props.definition != null) {
+      return (
+        <div className="pane-item padded nuclide-definition-preview">
+          {this._previewDefinition(this.props.definition)}
+        </div>
+      );
+    } else {
+      return <ContextViewMessage message={NO_DEFINITION_MESSAGE} />;
+    }
   }
 
   _previewDefinition(definition: Definition): React.Element<any> {
