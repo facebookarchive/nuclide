@@ -470,20 +470,16 @@ export class BuckProject {
   }
 
   /**
-   * Currently, if `aliasOrTarget` contains a flavor, this will fail.
+   * Returns the build output metadata for the given target.
+   * This will contain one element if the target is unique; otherwise it will
+   * contain data for all the targets (e.g. for //path/to/targets:)
    *
-   * @return Promise resolves to absolute path to output file
+   * The build output path is typically contained in the 'buck.outputPath' key.
    */
-  async outputFileFor(aliasOrTarget: string): Promise<?string> {
-    const args = ['targets', '--show-output', aliasOrTarget];
+  async showOutput(aliasOrTarget: string): Promise<Array<Object>> {
+    const args = ['targets', '--json', '--show-output', aliasOrTarget];
     const result = await this._runBuckCommandFromProjectRoot(args);
-    const stdout = result.stdout.trim();
-    if (stdout.indexOf(' ') !== -1) {
-      const relativePath = stdout.split(' ')[1];
-      return nuclideUri.resolve(this._rootPath, relativePath);
-    } else {
-      return null;
-    }
+    return JSON.parse(result.stdout.trim());
   }
 
   async buildRuleTypeFor(aliasOrTarget: string): Promise<string> {
