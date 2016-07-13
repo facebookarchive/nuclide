@@ -39,6 +39,7 @@ export type RepositoryShortHeadChange = {
 export type ActionTypeValue = 'add-project-repository'
   | 'update-pane-item-state'
   | 'remove-project-repository'
+  | 'restore-pane-item-state'
   | 'update-repository-bookmarks'
 ;
 
@@ -63,6 +64,14 @@ export type RemoveProjectRepositoryAction = {
   type: 'remove-project-repository';
 };
 
+export type RestorePaneItemStateAction = {
+  payload: {
+    repository: atom$Repository;
+    shortHead: string;
+  };
+  type: 'restore-pane-item-state';
+};
+
 export type UpdateRepositoryBookmarksAction = {
   payload: {
     activeShortHead: string;
@@ -74,6 +83,7 @@ export type UpdateRepositoryBookmarksAction = {
 
 // Flow Issue: sorting alphabetically has a flow union issue.
 export type Action = UpdatePaneItemStateAction
+  | RestorePaneItemStateAction
   | UpdateRepositoryBookmarksAction
   | AddProjectRepositoryAction
   | RemoveProjectRepositoryAction

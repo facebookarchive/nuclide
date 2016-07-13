@@ -13,6 +13,7 @@ import type {Action, BookShelfState} from './types';
 
 import {ActionType} from './constants';
 import {getRepoPathToEditors} from './utils';
+import {track} from '../../nuclide-analytics';
 
 export class Commands {
   _dispatch: (action: Action) => void;
@@ -23,6 +24,7 @@ export class Commands {
     this._getState = getState;
 
     (this: any).addProjectRepository = this.addProjectRepository.bind(this);
+    (this: any).restorePaneItemState = this.restorePaneItemState.bind(this);
     (this: any).updatePaneItemState = this.updatePaneItemState.bind(this);
   }
 
@@ -41,6 +43,17 @@ export class Commands {
       payload: {
         repositoryPathToEditors: getRepoPathToEditors(),
       },
+    });
+  }
+
+  restorePaneItemState(repository: atom$Repository, newShortHead: string): void {
+    track('bookshelf-restore-files');
+    this._dispatch({
+      payload: {
+        repository,
+        shortHead: newShortHead,
+      },
+      type: ActionType.RESTORE_PANE_ITEM_STATE,
     });
   }
 

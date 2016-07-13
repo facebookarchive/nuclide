@@ -16,6 +16,7 @@ export const ActionType = Object.freeze({
   ADD_PROJECT_REPOSITORY: 'add-project-repository',
   UPDATE_PANE_ITEM_STATE: 'update-pane-item-state',
   REMOVE_PROJECT_REPOSITORY: 'remove-project-repository',
+  RESTORE_PANE_ITEM_STATE: 'restore-pane-item-state',
   UPDATE_REPOSITORY_BOOKMARKS: 'update-repository-bookmarks',
 });
 

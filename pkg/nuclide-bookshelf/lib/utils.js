@@ -19,7 +19,9 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import Immutable from 'immutable';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
+import remoteUri from '../../nuclide-remote-uri';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {track} from '../../nuclide-analytics';
 
 export function getEmptBookShelfState(): BookShelfState {
   return {
@@ -87,6 +89,45 @@ export function getRepoPathToEditors(): Map<NuclideUri, Array<atom$TextEditor>> 
       );
     });
   return reposToEditors;
+}
+
+export function shortHeadChangedNotification(
+  repository: atom$Repository,
+  newShortHead: string,
+  restorePaneItemState: (repository: atom$Repository, newShortHead: string) => mixed,
+): Observable<void> {
+  return Observable.create(observer => {
+    const workingDirectoryName = remoteUri.basename(repository.getWorkingDirectory());
+
+    // TODO(most): Should we handle empty bookmark switches differently?
+    const newShortHeadDisplayText = newShortHead.length > 0
+      ? `to \`${newShortHead}\``
+      : '';
+
+    const shortHeadChangeNotification = atom.notifications.addInfo(
+      `\`${workingDirectoryName}\`'s active bookmark have changed ${newShortHeadDisplayText}`, {
+        detail: 'Would you like to open the files you had active then?',
+        dismissable: true,
+        buttons: [{
+          onDidClick: () => {
+            restorePaneItemState(repository, newShortHead);
+            observer.complete();
+          },
+          text: 'Open files',
+        }],
+      }
+    );
+
+    const dismissSubscription = shortHeadChangeNotification.onDidDismiss(() => {
+      track('bookshelf-dismiss-restore-prompt');
+      observer.complete();
+    });
+
+    return function unsubscribe() {
+      dismissSubscription.dispose();
+      shortHeadChangeNotification.dismiss();
+    };
+  });
 }
 
 export function getShortHeadChangesFromStateStream(

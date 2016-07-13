@@ -33,6 +33,7 @@ import invariant from 'assert';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {
+  shortHeadChangedNotification,
   getShortHeadChangesFromStateStream,
 } from './utils';
 
@@ -103,8 +104,11 @@ class Activation {
         })[0];
         invariant(repository != null, 'shortHead changed on a non-existing repository!');
 
-        // TODO(most): show bookmark change / restore state prompt.
-        return Observable.empty();
+        return shortHeadChangedNotification(
+          repository,
+          activeShortHead,
+          commands.restorePaneItemState,
+        );
       }).subscribe();
 
     this._disposables = new CompositeDisposable(
