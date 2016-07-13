@@ -11,7 +11,14 @@
 
 import type {ActionTypeValue} from './types';
 
-export const ActionType = Object.freeze({});
+
+export const ActionType = Object.freeze({
+  ADD_PROJECT_REPOSITORY: 'add-project-repository',
+  REMOVE_PROJECT_REPOSITORY: 'remove-project-repository',
+  UPDATE_REPOSITORY_BOOKMARKS: 'update-repository-bookmarks',
+});
 
 // This is to work around flow's missing support of enums.
 (ActionType: { [key: string]: ActionTypeValue });
+
+export const EMPTY_SHORTHEAD = '';

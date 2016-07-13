@@ -16,17 +16,21 @@ import type {
 } from './types';
 
 import {accumulateState} from './accumulateState';
+import {arrayCompact} from '../../commons-node/collection';
 import {applyActionMiddleware} from './applyActionMiddleware';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {Commands} from './Commands';
 import {Disposable, CompositeDisposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
-import {getLogger} from '../../nuclide-logging';
 import {
   deserializeBookShelfState,
   getEmptBookShelfState,
   serializeBookShelfState,
 } from './utils';
+import {getLogger} from '../../nuclide-logging';
+import {diffSets} from '../../commons-node/stream';
+import {DisposableSubscription} from '../../commons-node/stream';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 
 function createStateStream(
   actions: Observable<Action>,
@@ -58,13 +62,28 @@ class Activation {
     );
 
     const dispatch = action => { actions.next(action); };
-    /* eslint-disable no-unused-vars */
-    // Will be used in stacked diffs.
     const commands = new Commands(dispatch, () => states.getValue());
-    /* eslint-enable no-unused-vars */
+
+    function getProjectRepositories() {
+      return new Set(
+        arrayCompact(atom.project.getRepositories())
+          .filter(repository => repository.getType() === 'hg')
+      );
+    }
+
+    const currentRepositories =
+      observableFromSubscribeFunction(atom.project.onDidChangePaths.bind(atom.project))
+      .startWith(null)
+      .map(() => getProjectRepositories());
+
+    const repoDiffsSubscription = diffSets(currentRepositories)
+      .subscribe(repoDiff => {
+        Array.from(repoDiff.added).forEach(commands.addProjectRepository);
+      });
 
     this._disposables = new CompositeDisposable(
       new Disposable(actions.complete.bind(actions)),
+      new DisposableSubscription(repoDiffsSubscription),
     );
   }
 

@@ -31,7 +31,36 @@ export type SerializedBookShelfRepositoryState = {
   shortHeadsToFileList: Array<[string, Array<string>]>;
 };
 
-export type ActionTypeValue = 'todo-add-action';
+export type ActionTypeValue = 'add-project-repository'
+  | 'remove-project-repository'
+  | 'update-repository-bookmarks'
+;
 
-// TODO(most): action structure.
-export type Action = {type: ActionTypeValue};
+export type AddProjectRepositoryAction = {
+  payload: {
+    repository: atom$Repository;
+  };
+  type: 'add-project-repository';
+};
+
+export type RemoveProjectRepositoryAction = {
+  payload: {
+    repository: atom$Repository;
+  };
+  type: 'remove-project-repository';
+};
+
+export type UpdateRepositoryBookmarksAction = {
+  payload: {
+    activeShortHead: string;
+    bookmarkNames: Set<string>;
+    repository: atom$Repository;
+  };
+  type: 'update-repository-bookmarks';
+};
+
+// Flow Issue: sorting alphabetically has a flow union issue.
+export type Action = UpdateRepositoryBookmarksAction
+  | AddProjectRepositoryAction
+  | RemoveProjectRepositoryAction
+;

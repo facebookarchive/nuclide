@@ -10,6 +10,9 @@
  */
 
 import type {Action, BookShelfState} from './types';
+
+import {ActionType} from './constants';
+
 export class Commands {
   _dispatch: (action: Action) => void;
   _getState: () => BookShelfState;
@@ -17,5 +20,16 @@ export class Commands {
   constructor(dispatch: (action: Action) => void, getState: () => BookShelfState) {
     this._dispatch = dispatch;
     this._getState = getState;
+
+    (this: any).addProjectRepository = this.addProjectRepository.bind(this);
+  }
+
+  addProjectRepository(repository: atom$Repository): void {
+    this._dispatch({
+      payload: {
+        repository,
+      },
+      type: ActionType.ADD_PROJECT_REPOSITORY,
+    });
   }
 }
