@@ -1,7 +1,8 @@
 # Nuclide Changelog
 
-## v0.152.0
+## v0.155.0
 
+* v0.152.0, v0.153.0, and v0.154.0 could not be packaged internally - skipping them.
 * Hotfix an overly-zealous python linter integration.
 
 ## v0.151.0
