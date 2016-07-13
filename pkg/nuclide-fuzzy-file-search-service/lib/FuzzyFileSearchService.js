@@ -17,7 +17,10 @@ export type FileSearchResult = {
   matchIndexes: Array<number>;
 };
 
-import {fileSearchForDirectory} from '../../nuclide-path-search';
+import {
+  fileSearchForDirectory,
+  disposeSearchForDirectory,
+} from '../../nuclide-path-search';
 import fsPromise from '../../commons-node/fsPromise';
 
 /**
@@ -40,4 +43,11 @@ export function isFuzzySearchAvailableFor(
   rootDirectory: NuclideUri,
 ): Promise<boolean> {
   return fsPromise.exists(rootDirectory);
+}
+
+/**
+ * This should be called when the directory is removed from Atom.
+ */
+export function disposeFuzzySearch(rootDirectory: NuclideUri): Promise<void> {
+  return disposeSearchForDirectory(rootDirectory);
 }

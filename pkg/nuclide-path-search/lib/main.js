@@ -96,12 +96,6 @@ async function newFileSearch(
   return new MainProcessFileSearch(task, directoryUri, ignoredNames);
 }
 
-/**
- * Currently, all the caller cares about is that the Promise resolves to an
- * object with a query() method.
- *
- * TODO(mbolin): Caller should also invoke dispose(), as appropriate.
- */
 export async function fileSearchForDirectory(
   directoryUri: string,
   ignoredNames: Array<string>,
@@ -119,4 +113,12 @@ export async function fileSearchForDirectory(
   const promise = newFileSearch(directoryUri, ignoredNames);
   fileSearchForDirectoryUri[directoryUri] = promise;
   return promise;
+}
+
+export async function disposeSearchForDirectory(directoryUri: string): Promise<void> {
+  const cached = fileSearchForDirectoryUri[directoryUri];
+  if (cached != null) {
+    const search = await cached;
+    search.dispose();
+  }
 }

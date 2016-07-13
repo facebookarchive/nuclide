@@ -80,6 +80,16 @@ function initSearch(projectPaths: Array<string>): void {
       });
     }
   });
+  // Clean up removed project roots.
+  projectRoots.forEach(projectPath => {
+    if (!newProjectRoots.has(projectPath)) {
+      const service: ?FuzzyFileSearchService = getServiceByNuclideUri(
+        'FuzzyFileSearchService', projectPath);
+      if (service != null) {
+        service.disposeFuzzySearch(projectPath);
+      }
+    }
+  });
   projectRoots = newProjectRoots;
 }
 
