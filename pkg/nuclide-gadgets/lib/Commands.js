@@ -320,6 +320,7 @@ export default class Commands {
   }
 
   unregisterGadget(gadgetId: string): void {
+    this.destroyGadget(gadgetId);
     this._observer.next({
       type: ActionTypes.UNREGISTER_GADGET,
       payload: {gadgetId},
