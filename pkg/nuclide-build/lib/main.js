@@ -10,38 +10,38 @@
  */
 
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {Commands as CommandsType} from './Commands';
 import type {
   AppState,
+  BoundActionCreators,
   BuildSystem,
   BuildSystemRegistry,
   SerializedAppState,
+  Store,
   TaskStartedAction,
   TaskStoppedAction,
   TaskCompletedAction,
   TaskErroredAction,
 } from './types';
-import type {BehaviorSubject} from 'rxjs';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
-import type {TrackingEvent} from '../../nuclide-analytics';
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import createPackage from '../../commons-atom/createPackage';
-import {compact, DisposableSubscription} from '../../commons-node/stream';
+import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
+import {DisposableSubscription} from '../../commons-node/stream';
 import {trackEvent} from '../../nuclide-analytics';
-import * as ActionTypes from './ActionTypes';
-import {applyActionMiddleware} from './applyActionMiddleware';
-import {Commands} from './Commands';
-import {createStateStream} from './createStateStream';
 import {createEmptyAppState} from './createEmptyAppState';
+import * as Actions from './redux/Actions';
+import * as Epics from './redux/Epics';
+import * as Reducers from './redux/Reducers';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
-import Rx from 'rxjs';
+import {applyMiddleware, bindActionCreators, createStore} from 'redux';
+import {Observable} from 'rxjs';
 
 class Activation {
   _disposables: CompositeDisposable;
-  _commands: CommandsType;
-  _states: BehaviorSubject<AppState>;
+  _actionCreators: BoundActionCreators;
+  _store: Store;
 
   constructor(rawState: ?SerializedAppState): void {
     const initialState = {
@@ -49,45 +49,52 @@ class Activation {
       ...(rawState || {}),
     };
 
-    const rawActions = new Rx.Subject();
-    const actions = applyActionMiddleware(rawActions, () => this._states.getValue());
-    this._states = createStateStream(actions, initialState);
-    const dispatch = action => { rawActions.next(action); };
-    this._commands = new Commands(dispatch, () => this._states.getValue());
+    const epics = Object.keys(Epics)
+      .map(k => Epics[k])
+      .filter(epic => typeof epic === 'function');
+    const rootEpic = combineEpics(...epics);
+    this._store = createStore(
+      Reducers.app,
+      initialState,
+      applyMiddleware(createEpicMiddleware(rootEpic), trackingMiddleware),
+    );
+    const states = Observable.from(this._store);
+    this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
 
     // Add the panel.
-    this._commands.createPanel(this._states);
+    // TODO: Defer this. We can subscribe to store and do this the first time visible === true
+    this._actionCreators.createPanel(this._store);
 
     this._disposables = new CompositeDisposable(
-      new Disposable(() => { this._commands.destroyPanel(); }),
+      new Disposable(() => { this._actionCreators.destroyPanel(); }),
       atom.commands.add('atom-workspace', {
         'nuclide-build:toggle-toolbar-visibility': event => {
           const visible = event.detail == null ? undefined : event.detail.visible;
           if (typeof visible === 'boolean') {
-            this._commands.setToolbarVisibility(visible);
+            this._actionCreators.setToolbarVisibility(visible);
           } else {
-            this._commands.toggleToolbarVisibility();
+            this._actionCreators.toggleToolbarVisibility();
           }
         },
       }),
 
       // Update the Atom palette commands to match our currently enabled tasks.
       syncAtomCommands(
-        this._states
+        states
           .debounceTime(500)
           .map(state => state.tasks)
           .distinctUntilChanged()
           .map(tasks => new Set(tasks.filter(task => task.enabled).map(task => task.type))),
         taskType => ({
           'atom-workspace': {
-            [`nuclide-build:${taskType}`]: () => { this._commands.runTask(taskType); },
+            [`nuclide-build:${taskType}`]: () => { this._actionCreators.runTask(taskType); },
           },
         }),
       ),
 
       // Add Atom palette commands for selecting the build system.
       syncAtomCommands(
-        this._states
+        states
           .debounceTime(500)
           .map(state => state.buildSystems)
           .distinctUntilChanged()
@@ -95,56 +102,19 @@ class Activation {
         buildSystem => ({
           'atom-workspace': {
             [`nuclide-build:select-${buildSystem.name}-build-system`]: () => {
-              this._commands.selectBuildSystem(buildSystem.id);
+              this._actionCreators.selectBuildSystem(buildSystem.id);
             },
           },
         }),
       ),
 
-      // Track Build events.
-      new DisposableSubscription(
-        compact(
-          actions.map(action => {
-            switch (action.type) {
-              case ActionTypes.TASK_STARTED:
-                return createTrackingEvent(
-                  'nuclide-build:task-started',
-                  action,
-                  this._states.getValue(),
-                );
-              case ActionTypes.TASK_STOPPED:
-                return createTrackingEvent(
-                  'nuclide-build:task-stopped',
-                  action,
-                  this._states.getValue(),
-                );
-              case ActionTypes.TASK_COMPLETED:
-                return createTrackingEvent(
-                  'nuclide-build:task-completed',
-                  action,
-                  this._states.getValue(),
-                );
-              case ActionTypes.TASK_ERRORED:
-                return createTrackingEvent(
-                  'nuclide-build:task-errored',
-                  action,
-                  this._states.getValue(),
-                );
-              default:
-                return null;
-            }
-          })
-        )
-          .subscribe(event => { trackEvent(event); })
-      ),
-
-      // Update the actions whenever the build system changes. This is a little weird because state
+      // Update the tasks whenever the build system changes. This is a little weird because state
       // changes are triggering commands that trigger state changes. Maybe there's a better place to
       // do this?
       new DisposableSubscription(
-        this._states.map(state => state.activeBuildSystemId)
+        states.map(state => state.activeBuildSystemId)
           .distinctUntilChanged()
-          .subscribe(() => { this._commands.refreshTasks(); })
+          .subscribe(() => { this._actionCreators.refreshTasks(); })
       ),
     );
   }
@@ -165,7 +135,8 @@ class Activation {
     element.className += ' nuclide-build-tool-bar-button';
 
     const buttonUpdatesDisposable = new DisposableSubscription(
-      this._states.subscribe(state => {
+      // $FlowFixMe: Update rx defs to accept ish with Symbol.observable
+      Observable.from(this._store).subscribe(state => {
         if (state.buildSystems.size > 0) {
           element.removeAttribute('hidden');
         } else {
@@ -198,10 +169,10 @@ class Activation {
     return {
       register: (buildSystem: BuildSystem) => {
         invariant(pkg != null, 'Build system registry used after deactivation');
-        pkg._commands.registerBuildSystem(buildSystem);
+        pkg._actionCreators.registerBuildSystem(buildSystem);
         return new Disposable(() => {
           if (pkg != null) {
-            pkg._commands.unregisterBuildSystem(buildSystem);
+            pkg._actionCreators.unregisterBuildSystem(buildSystem);
           }
         });
       },
@@ -209,7 +180,7 @@ class Activation {
   }
 
   serialize(): SerializedAppState {
-    const state = this._states.getValue();
+    const state = this._store.getState();
     return {
       previousSessionActiveBuildSystemId:
         state.activeBuildSystemId || state.previousSessionActiveBuildSystemId,
@@ -226,35 +197,35 @@ class Activation {
       name: 'nuclide-build',
       isVisible() {
         invariant(pkg != null);
-        return pkg._states.getValue().visible;
+        return pkg._store.getState().visible;
       },
       toggle() {
         invariant(pkg != null);
-        pkg._commands.toggleToolbarVisibility();
+        pkg._actionCreators.toggleToolbarVisibility();
       },
     };
   }
 
   // Exported for testing :'(
   _getCommands() {
-    return this._commands;
+    return this._actionCreators;
   }
 
 }
 
 export default createPackage(Activation);
 
-function createTrackingEvent(
+function trackBuildAction(
   type: string,
   action: TaskStartedAction | TaskStoppedAction | TaskCompletedAction | TaskErroredAction,
   state: AppState,
-): TrackingEvent {
+): void {
   const taskInfo = action.payload.taskInfo;
   const taskTrackingData = taskInfo != null && taskInfo.getTrackingData != null
     ? taskInfo.getTrackingData()
     : {};
-  const error = action.type === ActionTypes.TASK_ERRORED ? action.payload.error : null;
-  return {
+  const error = action.type === Actions.TASK_ERRORED ? action.payload.error : null;
+  trackEvent({
     type,
     data: {
       ...taskTrackingData,
@@ -263,5 +234,23 @@ function createTrackingEvent(
       errorMessage: error != null ? error.message : null,
       stackTrace: error != null ? String(error.stack) : null,
     },
-  };
+  });
 }
+
+const trackingMiddleware = store => next => action => {
+  switch (action.type) {
+    case Actions.TASK_STARTED:
+      trackBuildAction('nuclide-build:task-started', action, store.getState());
+      break;
+    case Actions.TASK_STOPPED:
+      trackBuildAction('nuclide-build:task-stopped', action, store.getState());
+      break;
+    case Actions.TASK_COMPLETED:
+      trackBuildAction('nuclide-build:task-completed', action, store.getState());
+      break;
+    case Actions.TASK_ERRORED:
+      trackBuildAction('nuclide-build:task-errored', action, store.getState());
+      break;
+  }
+  return next(action);
+};

@@ -72,40 +72,57 @@ export interface TaskInfo {
   getTrackingData?: () => Object;
 }
 
+export type Store = {
+  getState(): AppState;
+  dispatch(action: Action): void;
+};
+
+export type BoundActionCreators = {
+  createPanel(store: Store): void;
+  destroyPanel(): void;
+  refreshTasks(): void;
+  registerBuildSystem(buildSystem: BuildSystem): void;
+  runTask(taskType?: string): void;
+  selectBuildSystem(id: ?string): void;
+  selectTask(taskType: ?string): void;
+  setToolbarVisibility(visible: boolean): void;
+  stopTask(): void;
+  toggleToolbarVisibility(): void;
+  updateTasks(): void;
+  unregisterBuildSystem(buildSystem: BuildSystem): void;
+};
+
 //
 // Action types.
 //
 
-type PanelCreatedAction = {
+export type CreatePanelAction = {
+  type: 'CREATE_PANEL';
+  payload: {
+    store: Store;
+  };
+};
+
+export type DestroyPanelAction = {
+  type: 'DESTROY_PANEL';
+};
+
+export type PanelCreatedAction = {
   type: 'PANEL_CREATED';
   payload: {
     panel: Object;
   };
 };
 
-type PanelDestroyedAction = {
+export type PanelDestroyedAction = {
   type: 'PANEL_DESTROYED';
-  payload: {
-    panel: Object;
-  };
 };
 
-type RunTaskAction = {
-  type: 'RUN_TASK';
-  payload: {
-    taskType: string;
-  };
-};
-
-type SelectTaskAction = {
+export type SelectTaskAction = {
   type: 'SELECT_TASK';
   payload: {
     taskType: ?string;
   };
-};
-
-type StopTaskAction = {
-  type: 'STOP_TASK';
 };
 
 export type TaskCompletedAction = {
@@ -144,43 +161,69 @@ export type TaskStoppedAction = {
   };
 };
 
-type ToolbarVisibilityUpdatedAction = {
+export type ToolbarVisibilityUpdatedAction = {
   type: 'TOOLBAR_VISIBILITY_UPDATED';
   payload: {
     visible: boolean;
   };
 };
 
-type RefreshTasksAction = {
+export type RefreshTasksAction = {
   type: 'REFRESH_TASKS';
 };
 
-type RegisterBuildSystemAction = {
+export type RegisterBuildSystemAction = {
   type: 'REGISTER_BUILD_SYSTEM';
   payload: {
     buildSystem: BuildSystem;
   };
 };
 
-type SelectBuildSystemAction = {
+export type RunTaskAction = {
+  type: 'RUN_TASK';
+  payload: {
+    taskType: ?string;
+  };
+};
+
+export type SelectBuildSystemAction = {
   type: 'SELECT_BUILD_SYSTEM';
   payload: {
     id: ?string;
   };
 };
 
-type UnregisterBuildSystemAction = {
+export type SetToolbarVisibilityAction = {
+  type: 'SET_TOOLBAR_VISIBILITY';
+  payload: {
+    visible: boolean;
+  };
+};
+
+export type StopTaskAction = {
+  type: 'STOP_TASK';
+};
+
+export type ToggleToolbarVisibilityAction = {
+  type: 'TOGGLE_TOOLBAR_VISIBILITY';
+};
+
+export type TasksUpdatedAction = {
+  type: 'TASKS_UPDATED';
+  payload: {
+    tasks: Array<Task>;
+  };
+};
+
+export type UnregisterBuildSystemAction = {
   type: 'UNREGISTER_BUILD_SYSTEM';
   payload: {
     id: string;
   };
 };
 
-type TasksUpdatedAction = {
-  type: 'TASKS_UPDATED';
-  payload: {
-    tasks: Array<Task>;
-  };
+export type UpdateTasksAction = {
+  type: 'UPDATE_TASKS';
 };
 
 export type Action =
@@ -189,6 +232,7 @@ export type Action =
   | RefreshTasksAction
   | RunTaskAction
   | SelectTaskAction
+  | SetToolbarVisibilityAction
   | StopTaskAction
   | TaskCompletedAction
   | TaskProgressAction
@@ -196,9 +240,11 @@ export type Action =
   | TaskStartedAction
   | TaskStoppedAction
   | TasksUpdatedAction
+  | ToggleToolbarVisibilityAction
   | ToolbarVisibilityUpdatedAction
   | RegisterBuildSystemAction
   | UnregisterBuildSystemAction
+  | UpdateTasksAction
   | SelectBuildSystemAction;
 
 export type BuildSystemRegistry = {

@@ -9,36 +9,28 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState} from './types';
+import type {Action, AppState} from '../types';
 
-import * as ActionTypes from './ActionTypes';
-import Rx from 'rxjs';
+import * as Actions from './Actions';
 
-export function createStateStream(
-  actions: Rx.Observable<Action>,
-  initialState: AppState,
-): Rx.BehaviorSubject<AppState> {
-  const states = new Rx.BehaviorSubject(initialState);
-  actions.scan(accumulateState, initialState).subscribe(states);
-  return states;
-}
-
-function accumulateState(state: AppState, action: Action): AppState {
+// Normally there would be more than one reducer. Since we were using a single reducer here before
+// we ported to Redux, we just left it this way.
+export function app(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case ActionTypes.PANEL_CREATED: {
+    case Actions.PANEL_CREATED: {
       const {panel} = action.payload;
       return {
         ...state,
         panel,
       };
     }
-    case ActionTypes.PANEL_DESTROYED: {
+    case Actions.PANEL_DESTROYED: {
       return {
         ...state,
         panel: null,
       };
     }
-    case ActionTypes.SELECT_TASK: {
+    case Actions.SELECT_TASK: {
       const {taskType} = action.payload;
       return {
         ...state,
@@ -46,13 +38,13 @@ function accumulateState(state: AppState, action: Action): AppState {
         previousSessionActiveTaskType: null,
       };
     }
-    case ActionTypes.TASK_COMPLETED: {
+    case Actions.TASK_COMPLETED: {
       return {
         ...state,
         taskStatus: null,
       };
     }
-    case ActionTypes.TASK_PROGRESS: {
+    case Actions.TASK_PROGRESS: {
       const {progress} = action.payload;
       return {
         ...state,
@@ -62,13 +54,13 @@ function accumulateState(state: AppState, action: Action): AppState {
         },
       };
     }
-    case ActionTypes.TASK_ERRORED: {
+    case Actions.TASK_ERRORED: {
       return {
         ...state,
         taskStatus: null,
       };
     }
-    case ActionTypes.TASK_STARTED: {
+    case Actions.TASK_STARTED: {
       const {taskInfo} = action.payload;
       return {
         ...state,
@@ -78,19 +70,19 @@ function accumulateState(state: AppState, action: Action): AppState {
         },
       };
     }
-    case ActionTypes.TASK_STOPPED: {
+    case Actions.TASK_STOPPED: {
       return {
         ...state,
         taskStatus: null,
       };
     }
-    case ActionTypes.TOOLBAR_VISIBILITY_UPDATED: {
+    case Actions.TOOLBAR_VISIBILITY_UPDATED: {
       return {
         ...state,
         visible: action.payload.visible,
       };
     }
-    case ActionTypes.REGISTER_BUILD_SYSTEM: {
+    case Actions.REGISTER_BUILD_SYSTEM: {
       const {buildSystem} = action.payload;
       const newState = {
         ...state,
@@ -108,7 +100,7 @@ function accumulateState(state: AppState, action: Action): AppState {
 
       return newState;
     }
-    case ActionTypes.SELECT_BUILD_SYSTEM: {
+    case Actions.SELECT_BUILD_SYSTEM: {
       const {id} = action.payload;
       return {
         ...setBuildSystem(state, id),
@@ -118,7 +110,7 @@ function accumulateState(state: AppState, action: Action): AppState {
         previousSessionActiveBuildSystemId: null,
       };
     }
-    case ActionTypes.UNREGISTER_BUILD_SYSTEM: {
+    case Actions.UNREGISTER_BUILD_SYSTEM: {
       const {id} = action.payload;
       const buildSystems = new Map(state.buildSystems);
       buildSystems.delete(id);
@@ -127,7 +119,7 @@ function accumulateState(state: AppState, action: Action): AppState {
         buildSystems,
       };
     }
-    case ActionTypes.TASKS_UPDATED: {
+    case Actions.TASKS_UPDATED: {
       const {tasks} = action.payload;
       const newState = {
         ...state,
@@ -165,7 +157,7 @@ function accumulateState(state: AppState, action: Action): AppState {
     }
   }
 
-  throw new Error(`Unrecognized action type: ${action.type}`);
+  return state;
 }
 
 function setBuildSystem(state: AppState, buildSystemId: ?string): AppState {
