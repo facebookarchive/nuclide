@@ -31,6 +31,7 @@ import {
   isFlowInstalled,
   getPathToFlow,
   getStopFlowOnExit,
+  getFlowExecOptions,
 } from './FlowHelpers';
 
 import {ServerStatus} from './FlowConstants';
@@ -334,20 +335,4 @@ export class FlowProcess {
     }
     return ret;
   }
-}
-
-// `string | null` forces the presence of an explicit argument (`?string` allows undefined which
-// means the argument can be left off altogether.
-function getFlowExecOptions(root: string | null): Object {
-  return {
-    cwd: root,
-    env: {
-      // Allows backtrace to be printed:
-      // http://caml.inria.fr/pub/docs/manual-ocaml/runtime.html#sec279
-      OCAMLRUNPARAM: 'b',
-      // Put this after so that if the user already has something set for OCAMLRUNPARAM we use
-      // that instead. They probably know what they're doing.
-      ...process.env,
-    },
-  };
 }
