@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {ProcessMessage} from '../../commons-node/process-types';
 import type {BuildEvent, Task, TaskInfo} from '../../nuclide-build/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base';
 import type {BuckSubcommand, SerializedState, TaskType} from './types';
-import type {BuckEvent} from './BuckEventStream';
 
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
@@ -27,7 +27,6 @@ import {observableToBuildTaskInfo} from '../../commons-node/observableToBuildTas
 import {createBuckProject} from '../../nuclide-buck-base';
 import {getLogger} from '../../nuclide-logging';
 import {startPackager} from '../../nuclide-react-native/lib/packager/startPackager';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
@@ -37,8 +36,7 @@ import {
   getEventsFromSocket,
   getEventsFromProcess,
 } from './BuckEventStream';
-
-const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
+import {getLLDBInstallEvents} from './LLDBEventStream';
 
 type Flux = {
   actions: BuckToolbarActions;
@@ -214,13 +212,15 @@ export class BuckBuildSystem {
           this._logOutput('Enable httpserver in your .buckconfig for better output.', 'warning');
         }
 
-        const processEvents = this._runBuckCommand(
+        const isDebug = taskType === 'debug';
+        const processMessages = this._runBuckCommand(
           buckProject,
           buildTarget,
           subcommand,
           settings.arguments || [],
-          taskType === 'debug',
-        );
+          isDebug,
+        ).share();
+        const processEvents = getEventsFromProcess(processMessages).share();
 
         let mergedEvents;
         if (socketEvents == null) {
@@ -230,7 +230,13 @@ export class BuckBuildSystem {
           mergedEvents = combineEventStreams(subcommand, socketEvents, processEvents);
         }
 
-        return mergedEvents
+        return Observable.merge(
+          mergedEvents,
+          isDebug && subcommand === 'install' ? getLLDBInstallEvents(
+            processMessages,
+            buckProject,
+          ) : Observable.empty(),
+        )
           .switchMap(event => {
             if (event.type === 'progress') {
               return Observable.of({
@@ -253,7 +259,7 @@ export class BuckBuildSystem {
     subcommand: BuckSubcommand,
     args: Array<string>,
     debug: boolean,
-  ): Observable<BuckEvent> {
+  ): Observable<ProcessMessage> {
     const {store} = this._getFlux();
 
     if (debug) {
@@ -264,7 +270,6 @@ export class BuckBuildSystem {
         'nuclide-debugger:stop-debugging');
     }
 
-    let buckObservable;
     if (subcommand === 'install') {
       let rnObservable = Observable.empty();
       const isReactNativeServerMode = store.isReactNativeServerMode();
@@ -281,7 +286,7 @@ export class BuckBuildSystem {
         )
           .ignoreElements();
       }
-      buckObservable = rnObservable.concat(
+      return rnObservable.concat(
         buckProject.installWithOutput(
           [buildTarget],
           args.concat(
@@ -295,36 +300,12 @@ export class BuckBuildSystem {
         ),
       );
     } else if (subcommand === 'build') {
-      buckObservable = buckProject.buildWithOutput([buildTarget], args);
+      return buckProject.buildWithOutput([buildTarget], args);
     } else if (subcommand === 'test') {
-      buckObservable = buckProject.testWithOutput([buildTarget], args);
+      return buckProject.testWithOutput([buildTarget], args);
     } else {
       throw Error(`Unknown subcommand: ${subcommand}`);
     }
-
-    let lldbPid;
-    return getEventsFromProcess(buckObservable)
-      .do({
-        next: event => {
-          // For debug builds, watch for the lldb process ID.
-          if (debug && event.type === 'log') {
-            const pidMatch = event.message.match(LLDB_PROCESS_ID_REGEX);
-            if (pidMatch != null) {
-              lldbPid = parseInt(pidMatch[1], 10);
-            }
-          }
-        },
-        complete: async () => {
-          if (lldbPid != null) {
-            // Use commands here to trigger package activation.
-            atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-            const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
-            const buckProjectPath = await buckProject.getPath();
-            debuggerService.debugLLDB(lldbPid, buckProjectPath);
-          }
-        },
-      })
-      .share();
   }
 
 }

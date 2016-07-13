@@ -133,7 +133,6 @@ export function getEventsFromProcess(
     });
 }
 
-
 export function combineEventStreams(
   subcommand: BuckSubcommand,
   socketEvents: Observable<BuckEvent>,
