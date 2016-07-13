@@ -43,6 +43,26 @@ type Flux = {
   store: BuckToolbarStore;
 };
 
+function shouldEnableTask(taskType: TaskType, store: BuckToolbarStore): boolean {
+  switch (taskType) {
+    case 'run':
+    case 'debug':
+      return store.isInstallableRule();
+    default:
+      return true;
+  }
+}
+
+function getSubcommand(taskType: TaskType, store: BuckToolbarStore): BuckSubcommand {
+  switch (taskType) {
+    case 'run':
+    case 'debug':
+      return 'install';
+    default:
+      return taskType;
+  }
+}
+
 export class BuckBuildSystem {
   _flux: ?Flux;
   _disposables: CompositeDisposable;
@@ -66,16 +86,10 @@ export class BuckBuildSystem {
     const {store} = this._getFlux();
     const allEnabled = store.getCurrentBuckRoot() != null && Boolean(store.getBuildTarget());
     return TASKS
-      .map(task => {
-        let enabled = allEnabled;
-        if (task.type === 'run' || task.type === 'debug') {
-          enabled = enabled && store.isInstallableRule();
-        }
-        return {
-          ...task,
-          enabled,
-        };
-      });
+      .map(task => ({
+        ...task,
+        enabled: allEnabled && shouldEnableTask(task.type, store),
+      }));
   }
 
   observeTasks(cb: (tasks: Array<Task>) => mixed): IDisposable {
@@ -190,7 +204,7 @@ export class BuckBuildSystem {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
     const settings = store.getTaskSettings()[taskType] || {};
 
-    const subcommand = taskType === 'run' || taskType === 'debug' ? 'install' : taskType;
+    const subcommand = getSubcommand(taskType, store);
     let argString = '';
     if (settings.arguments != null && settings.arguments.length > 0) {
       argString = ' ' + quote(settings.arguments);
