@@ -82,7 +82,6 @@ export class ContextViewManager {
     (this: any)._onResize = this._onResize.bind(this);
 
     this._render();
-    this._bindShortcuts();
   }
 
   dispose(): void {
@@ -200,35 +199,6 @@ export class ContextViewManager {
 
     this.currentDefinition = newDefinition;
     this._render();
-  }
-
-  _bindShortcuts() {
-    // Toggle
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-context-view:toggle',
-        this.toggle.bind(this)
-      )
-    );
-
-    // Show
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-context-view:show',
-        this.show.bind(this)
-      )
-    );
-
-    // Hide
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-context-view:hide',
-        this.hide.bind(this)
-      )
-    );
   }
 
   _disposeView(): void {

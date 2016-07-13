@@ -13,7 +13,7 @@ import type {ContextViewConfig, ContextProvider} from './ContextViewManager';
 import type {DefinitionService} from '../../nuclide-definition-service';
 
 import {ContextViewManager} from './ContextViewManager';
-import {Disposable} from 'atom';
+import {Disposable, CompositeDisposable} from 'atom';
 import passesGK from '../../commons-node/passesGK';
 import invariant from 'assert';
 
@@ -23,15 +23,44 @@ const CONTEXT_VIEW_GK = 'nuclide_context_view';
 
 let currentService: ?DefinitionService = null;
 let manager: ?ContextViewManager = null;
+let disposables: CompositeDisposable;
 const initialViewState = {};
 
 export function activate(activationState: ContextViewConfig = {}): void {
   initialViewState.width = activationState.width || INITIAL_PANEL_WIDTH;
   initialViewState.visible = activationState.visible || INITIAL_PANEL_VISIBILITY;
+  disposables = new CompositeDisposable();
+  // Toggle
+  disposables.add(
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-context-view:toggle',
+      this.toggleContextView.bind(this)
+    )
+  );
+
+  // Show
+  disposables.add(
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-context-view:show',
+      this.showContextView.bind(this)
+    )
+  );
+
+  // Hide
+  disposables.add(
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-context-view:hide',
+      this.hideContextView.bind(this)
+    )
+  );
 }
 
 export function deactivate(): void {
   currentService = null;
+  disposables.dispose();
   if (manager != null) {
     manager.consumeDefinitionService(null);
     manager.dispose();
@@ -55,6 +84,27 @@ async function getContextViewManager(): Promise<?ContextViewManager> {
     manager = new ContextViewManager(initialViewState.width, initialViewState.visible);
   }
   return manager;
+}
+
+export async function toggleContextView(): Promise<void> {
+  const contextViewManager = await getContextViewManager();
+  if (contextViewManager != null) {
+    contextViewManager.toggle();
+  }
+}
+
+export async function showContextView(): Promise<void> {
+  const contextViewManager = await getContextViewManager();
+  if (contextViewManager != null) {
+    contextViewManager.show();
+  }
+}
+
+export async function hideContextView(): Promise<void> {
+  const contextViewManager = await getContextViewManager();
+  if (contextViewManager != null) {
+    contextViewManager.hide();
+  }
 }
 
 /**
