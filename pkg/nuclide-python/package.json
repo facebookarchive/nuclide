@@ -31,6 +31,12 @@
         "default": "python",
         "description": "Absolute path to the python executable on your system."
       },
+      "enableLinting": {
+        "title": "Lint code with Flake8",
+        "type": "boolean",
+        "default": true,
+        "description": "Show lint messages from flake8 with python files. Requires a valid flake8 path to be set."
+      },
       "pathToFlake8": {
         "title": "Path to Flake8 Executable",
         "type": "string",
