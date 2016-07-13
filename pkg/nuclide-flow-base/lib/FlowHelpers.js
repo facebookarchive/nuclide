@@ -19,7 +19,9 @@ import fsPromise from '../../commons-node/fsPromise';
 import LRU from 'lru-cache';
 import invariant from 'assert';
 
-const flowConfigDirCache: LRUCache<string, Promise<?string>> = LRU({
+// Map from file path to the closest ancestor directory containing a .flowconfig file (the file's
+// Flow root)
+const flowConfigDirCache: LRUCache<string, ?string> = LRU({
   max: 10,
   maxAge: 1000 * 30, //30 seconds
 });
@@ -163,9 +165,10 @@ export function getStopFlowOnExit(): boolean {
   return true;
 }
 
-export function findFlowConfigDir(localFile: string): Promise<?string> {
+export async function findFlowConfigDir(localFile: string): Promise<?string> {
   if (!flowConfigDirCache.has(localFile)) {
-    const flowConfigDir = fsPromise.findNearestFile('.flowconfig', nuclideUri.dirname(localFile));
+    const flowConfigDir =
+      await fsPromise.findNearestFile('.flowconfig', nuclideUri.dirname(localFile));
     flowConfigDirCache.set(localFile, flowConfigDir);
   }
   return flowConfigDirCache.get(localFile);
