@@ -173,12 +173,15 @@ export async function getDiagnostics(
     return [];
   }
 
-  const dirName = nuclideUri.dirname(nuclideUri.getPath(src));
-  const baseName = nuclideUri.basename(nuclideUri.getPath(src));
+  const dirName = nuclideUri.dirname(src);
+  const baseName = nuclideUri.basename(src);
+  const extName = nuclideUri.extname(src);
 
-  // Don't get diagnostics for Buck files - considered Python grammar, but
-  // a lot of meaningless lint errors due to pseudo-keywords.
-  if (baseName === 'BUCK' || baseName === 'TARGETS') {
+
+  // Don't get diagnostics for Buck or conf files - considered Python grammar,
+  // but a lot of meaningless lint errors due to pseudo-keywords.
+  if (extName === '.cconf' || extName === '.mcconf' ||
+      baseName === 'BUCK' || baseName === 'TARGETS') {
     return [];
   }
 
