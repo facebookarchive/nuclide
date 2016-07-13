@@ -9,20 +9,18 @@
  * the root directory of this source tree.
  */
 
-import type {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnection';
-import type {RemoteFile} from '../../nuclide-remote-connection/lib/RemoteFile';
+import type {ServerConnection} from './ServerConnection';
+import type {RemoteFile} from './RemoteFile';
 
 import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
 import {CompositeDisposable, TextBuffer} from 'atom';
 import {track} from '../../nuclide-analytics';
 
-const logger = getLogger();
-
 // Do not attempt to diff files larger than this limit.
 const DIFF_FILE_SIZE_LIMIT = 10000;
 
-class NuclideTextBuffer extends TextBuffer {
+export default class NuclideTextBuffer extends TextBuffer {
   _connection: ServerConnection;
   fileSubscriptions: CompositeDisposable;
   /* $FlowFixMe */
@@ -108,6 +106,7 @@ class NuclideTextBuffer extends TextBuffer {
     } catch (e) {
       // Timeouts occur quite frequently when the network is unstable.
       // Demote these to 'error' level.
+      const logger = getLogger();
       const logFunction = (/timeout/i).test(e.message) ? logger.error : logger.fatal;
       logFunction('Failed to save remote file.', e);
       let message = e.message;
@@ -221,5 +220,3 @@ class NuclideTextBuffer extends TextBuffer {
     }
   }
 }
-
-module.exports = NuclideTextBuffer;

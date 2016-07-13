@@ -14,6 +14,8 @@ import {RemoteDirectory} from './RemoteDirectory';
 import {RemoteFile} from './RemoteFile';
 import {ServerConnection} from './ServerConnection';
 
+import NuclideTextBuffer from './NuclideTextBuffer';
+
 import {
   SshHandshake,
   decorateSshConnectionDelegateWithTracking,
@@ -33,6 +35,7 @@ export {
   RemoteFile,
   ServerConnection,
   SshHandshake,
+  NuclideTextBuffer,
   decorateSshConnectionDelegateWithTracking,
   getFileForPath,
   getService,

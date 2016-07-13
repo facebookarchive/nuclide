@@ -15,11 +15,8 @@ import invariant from 'assert';
 import {TextBuffer} from 'atom';
 import {Observable} from 'rxjs';
 
-// TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
-import NuclideTextBuffer from '../nuclide-remote-projects/lib/NuclideTextBuffer';
 import nuclideUri from '../nuclide-remote-uri';
-import {ServerConnection} from '../nuclide-remote-connection';
-
+import {ServerConnection, NuclideTextBuffer} from '../nuclide-remote-connection';
 import {observableFromSubscribeFunction} from '../commons-node/event';
 
 /**

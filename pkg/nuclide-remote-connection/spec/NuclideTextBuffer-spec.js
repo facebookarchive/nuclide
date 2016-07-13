@@ -11,11 +11,13 @@
 
 import type {
   ServerConnectionConfiguration,
-} from '../../nuclide-remote-connection/lib/ServerConnection';
+} from '../lib/ServerConnection';
 
 import invariant from 'assert';
+
 import NuclideTextBuffer from '../lib/NuclideTextBuffer';
-import {RemoteFile, ServerConnection} from '../../nuclide-remote-connection';
+import {RemoteFile} from '../lib/RemoteFile';
+import {ServerConnection} from '../lib/ServerConnection';
 
 describe('NuclideTextBuffer', () => {
 
