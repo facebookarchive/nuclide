@@ -220,6 +220,10 @@ class NuclideBridge {
   }
 
   _handleCallFrameSelected(event: WebInspector.Event) {
+    // TODO(jonaldislarry): Extend chrome protocol as per t12187369.
+    if (this._debuggerPausedCount <= 1) {
+      return;
+    }
     const frame: WebInspector$CallFrame = event.data;
     const uiLocation =
       WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
@@ -230,6 +234,10 @@ class NuclideBridge {
   }
 
   _handleOpenSourceLocation(event: WebInspector.Event) {
+    // TODO(jonaldislarry): Extend chrome protocol as per t12187369.
+    if (this._debuggerPausedCount <= 1) {
+      return;
+    }
     const eventData = event.data;
     this.sendOpenSourceLocation(eventData.url, eventData.lineNumber);
   }
