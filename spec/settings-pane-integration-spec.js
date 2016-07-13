@@ -25,11 +25,20 @@ import {
 } from './utils/settings-pane-common';
 
 describe('Settings View Integration Test', () => {
+
+  beforeEach(() => {
+    // Activate nuclide packages.
+    waitsForPromise(activateAllPackages);
+  });
+
+  afterEach(() => {
+    // Deactivate nuclide packages.
+    deactivateAllPackages();
+  });
+
   it('tests my feature', () => {
     waitsForPromise(async () => {
       jasmineIntegrationTestSetup();
-      // Activate nuclide packages.
-      await activateAllPackages();
 
       // Show settings UI
       dispatchKeyboardEvent(',', document.activeElement, {cmd: true, alt: true});
@@ -64,8 +73,6 @@ describe('Settings View Integration Test', () => {
       const tmpClangFlagsValue = ['-E', '-g'];
       testSettingsInput(clangFlagsKeyPath, clangFlagsValue, tmpClangFlagsValue);
 
-      // Deactivate nuclide packages.
-      deactivateAllPackages();
     });
   });
 });
