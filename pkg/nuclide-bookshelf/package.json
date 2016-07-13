@@ -6,6 +6,25 @@
   "description": "Saves/Restores open files / tabs when switching between source control bookmarks/branches",
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": [
+        "IDE",
+        "Book Shelf"
+      ]
+    },
+    "config": {
+      "changeActiveBookmarkBehavior": {
+        "title": "Restore Open Files On Active Bookmark Changes",
+        "type": "string",
+        "default": "Prompt to Restore",
+        "description": "Specify the behavior when changing the active bookmark / branch on a project repository.",
+        "enum": [
+          "Always Ignore",
+          "Always Restore",
+          "Prompt to Restore"
+        ]
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

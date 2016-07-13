@@ -9,8 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {ActionTypeValue} from './types';
-
+import type {
+  ActionTypeValue,
+  ActiveShortHeadChangeBehaviorValue,
+} from './types';
 
 export const ActionType = Object.freeze({
   ADD_PROJECT_REPOSITORY: 'add-project-repository',
@@ -24,5 +26,16 @@ export const ActionType = Object.freeze({
 
 // This is to work around flow's missing support of enums.
 (ActionType: { [key: string]: ActionTypeValue });
+
+export const ActiveShortHeadChangeBehavior = Object.freeze({
+  ALWAYS_IGNORE: 'Always Ignore',
+  ALWAYS_RESTORE: 'Always Restore',
+  PROMPT_TO_RESTORE: 'Prompt to Restore',
+});
+
+(ActiveShortHeadChangeBehavior: { [key: string]: ActiveShortHeadChangeBehaviorValue });
+
+export const ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG =
+  'nuclide-bookshelf.changeActiveBookmarkBehavior';
 
 export const EMPTY_SHORTHEAD = '';

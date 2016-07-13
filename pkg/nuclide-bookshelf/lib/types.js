@@ -36,6 +36,11 @@ export type RepositoryShortHeadChange = {
   activeShortHead: string;
 };
 
+export type ActiveShortHeadChangeBehaviorValue = 'Always Ignore'
+  | 'Always Restore'
+  | 'Prompt to Restore'
+;
+
 export type ActionTypeValue = 'add-project-repository'
   | 'complete-restoring-repository-state'
   | 'remove-project-repository'

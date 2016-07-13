@@ -16,6 +16,10 @@ import type {
 } from './types';
 
 import {accumulateState} from './accumulateState';
+import {
+  ActiveShortHeadChangeBehavior,
+  ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG,
+} from './constants';
 import {arrayCompact} from '../../commons-node/collection';
 import {applyActionMiddleware} from './applyActionMiddleware';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
@@ -29,6 +33,7 @@ import {
 } from './utils';
 import {diffSets} from '../../commons-node/stream';
 import {getLogger} from '../../nuclide-logging';
+import featureConfig from '../../nuclide-feature-config';
 import invariant from 'assert';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -36,6 +41,7 @@ import {
   shortHeadChangedNotification,
   getShortHeadChangesFromStateStream,
 } from './utils';
+import {track} from '../../nuclide-analytics';
 
 function createStateStream(
   actions: Observable<Action>,
@@ -104,11 +110,27 @@ class Activation {
         })[0];
         invariant(repository != null, 'shortHead changed on a non-existing repository!');
 
-        return shortHeadChangedNotification(
-          repository,
-          activeShortHead,
-          commands.restorePaneItemState,
-        );
+        switch (featureConfig.get(ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG)) {
+          case ActiveShortHeadChangeBehavior.ALWAYS_IGNORE:
+            track('bookshelf-always-ignore');
+            return Observable.empty();
+          case ActiveShortHeadChangeBehavior.ALWAYS_RESTORE:
+            track('bookshelf-always-restore');
+            // The restore needs to wait for the change shorthead state update to complete
+            // before triggering a cascaded state update when handling the restore action.
+            // TODO(most): move away from `nextTick`.
+            process.nextTick(() => {
+              commands.restorePaneItemState(repository, activeShortHead);
+            });
+            return Observable.empty();
+          default: // Including ActiveShortHeadChangeBehavior.PROMPT_TO_RESTORE
+            track('bookshelf-prompt-restore');
+            return shortHeadChangedNotification(
+              repository,
+              activeShortHead,
+              commands.restorePaneItemState,
+            );
+        }
       }).subscribe();
 
     this._disposables = new CompositeDisposable(
