@@ -15,6 +15,11 @@
       "versions": {
         "0.0.0": "registerProvider"
       }
+    },
+    "nuclide-busy-signal": {
+      "versions": {
+        "0.1.0": "provideBusySignal"
+      }
     }
   }
 }
