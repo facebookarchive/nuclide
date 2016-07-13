@@ -87,6 +87,8 @@ export function destroyPanelEpic(
       if (panel == null) {
         return Observable.empty();
       }
+      const item = panel.getItem();
+      ReactDOM.unmountComponentAtNode(item);
       panel.destroy();
       return Observable.of({type: Actions.PANEL_DESTROYED});
     });
