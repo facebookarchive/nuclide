@@ -15,6 +15,7 @@ import type {
   BookShelfRepositoryState,
   BookShelfState,
   RemoveProjectRepositoryAction,
+  UpdateRepositoryBookmarksAction,
 } from './types';
 
 import {ActionType, EMPTY_SHORTHEAD} from './constants';
@@ -39,6 +40,8 @@ export function accumulateState(
     case ActionType.REMOVE_PROJECT_REPOSITORY:
       return accumulateRemoveProjectRepository(state, action);
 
+    case ActionType.UPDATE_REPOSITORY_BOOKMARKS:
+      return accumulateRepositoryStateAction(state, action);
     default:
       return state;
   }
@@ -69,5 +72,57 @@ function accumulateRemoveProjectRepository(
   return {
     ...state,
     repositoryPathToState: state.repositoryPathToState.delete(repositoryPath),
+  };
+}
+
+function accumulateRepositoryStateAction(
+  state: BookShelfState,
+  action: UpdateRepositoryBookmarksAction,
+): BookShelfState {
+  const repositoryPath = action.payload.repository.getWorkingDirectory();
+
+  const newRepositoryState = accumulateRepositoryState(
+    state.repositoryPathToState.get(repositoryPath),
+    action,
+  );
+  return {
+    ...state,
+    repositoryPathToState: state.repositoryPathToState
+      .set(repositoryPath, newRepositoryState),
+  };
+}
+
+function accumulateRepositoryState(
+  repositoryState: ?BookShelfRepositoryState,
+  action: Action,
+): BookShelfRepositoryState {
+  switch (action.type) {
+    case ActionType.UPDATE_REPOSITORY_BOOKMARKS:
+      return accumulateRepositoryStateUpdateBookmarks(repositoryState, action);
+    default:
+      return repositoryState || getEmptyRepositoryState();
+  }
+}
+
+function accumulateRepositoryStateUpdateBookmarks(
+  repositoryState: ?BookShelfRepositoryState,
+  action: UpdateRepositoryBookmarksAction,
+): BookShelfRepositoryState {
+
+  repositoryState = repositoryState || getEmptyRepositoryState();
+  const {bookmarkNames, activeShortHead} = action.payload;
+
+  let {shortHeadsToFileList} = repositoryState;
+  // Invalidate removed bookmarks data.
+  for (const shortHead of repositoryState.shortHeadsToFileList.keys()) {
+    if (!bookmarkNames.has(shortHead)) {
+      shortHeadsToFileList = shortHeadsToFileList.delete(shortHead);
+    }
+  }
+
+  return {
+    ...repositoryState,
+    activeShortHead,
+    shortHeadsToFileList,
   };
 }

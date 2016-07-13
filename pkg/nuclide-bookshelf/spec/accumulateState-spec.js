@@ -14,6 +14,7 @@ import type {
   BookShelfRepositoryState,
   BookShelfState,
   RemoveProjectRepositoryAction,
+  UpdateRepositoryBookmarksAction,
 } from '../lib/types';
 
 import {accumulateState} from '../lib/accumulateState';
@@ -27,7 +28,7 @@ describe('BookShelf accumulateState', () => {
   const REPO_PATH_1 = '/fake/path_1';
   const SHOTHEAD_1_1 = 'foo';
   const SHOTHEAD_1_2 = 'bar';
-  const ACTIVE_SHOTHEAD_1 = 'bar';
+  const ACTIVE_SHOTHEAD_1 = SHOTHEAD_1_1;
   const REPO_STATE_1 = {
     activeShortHead: ACTIVE_SHOTHEAD_1,
     isRestoring: false,
@@ -117,6 +118,53 @@ describe('BookShelf accumulateState', () => {
       const newState = accumulateState(emptyState, removeRepositoryAction);
       expect(fakeRepository.getWorkingDirectory).toHaveBeenCalled();
       expect(newState.repositoryPathToState).toBe(emptyState.repositoryPathToState);
+    });
+  });
+
+  describe('UPDATE_REPOSITORY_BOOKMARKS', () => {
+    it('creates a repository with bookmark state, if no one exists', () => {
+      const updateBookmarksAction: UpdateRepositoryBookmarksAction = {
+        payload: {
+          repository: fakeRepository,
+          bookmarkNames: new Set(['a', 'b', 'c']),
+          activeShortHead: 'a',
+        },
+        type: ActionType.UPDATE_REPOSITORY_BOOKMARKS,
+      };
+      const newState = accumulateState(emptyState, updateBookmarksAction);
+      expect(emptyState.repositoryPathToState.size).toBe(0);
+      expect(newState.repositoryPathToState.size).toBe(1);
+      const newRepositoryState: BookShelfRepositoryState = newState
+        .repositoryPathToState.get(REPO_PATH_1);
+      expect(newRepositoryState.activeShortHead).toBe('a');
+      expect(newRepositoryState.isRestoring).toBe(false);
+      expect(newRepositoryState.shortHeadsToFileList.size).toBe(0);
+    });
+
+    it('removes old cached short head data when its bookmarks are gone', () => {
+      const updateBookmarksAction: UpdateRepositoryBookmarksAction = {
+        payload: {
+          repository: fakeRepository,
+          bookmarkNames: new Set([SHOTHEAD_1_2]),
+          activeShortHead: SHOTHEAD_1_2,
+        },
+        type: ActionType.UPDATE_REPOSITORY_BOOKMARKS,
+      };
+      const oldRpositoryState = oneRepoState.repositoryPathToState.get(REPO_PATH_1);
+      expect(oldRpositoryState.shortHeadsToFileList.size).toBe(2);
+      expect(oldRpositoryState.shortHeadsToFileList.has(SHOTHEAD_1_1)).toBeTruthy();
+
+      const newState = accumulateState(oneRepoState, updateBookmarksAction);
+      expect(newState.repositoryPathToState.size).toBe(1);
+
+      const newRepositoryState: BookShelfRepositoryState = newState
+        .repositoryPathToState.get(REPO_PATH_1);
+      expect(newRepositoryState.activeShortHead).toBe(SHOTHEAD_1_2);
+      expect(newRepositoryState.isRestoring).toBe(false);
+      expect(newRepositoryState.shortHeadsToFileList.size).toBe(1);
+      expect(newRepositoryState.shortHeadsToFileList.has(SHOTHEAD_1_1)).toBeFalsy();
+      expect(newRepositoryState.shortHeadsToFileList.get(SHOTHEAD_1_2))
+        .toEqual(oldRpositoryState.shortHeadsToFileList.get(SHOTHEAD_1_2));
     });
   });
 });
