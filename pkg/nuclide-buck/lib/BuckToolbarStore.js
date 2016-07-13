@@ -118,6 +118,10 @@ export default class BuckToolbarStore {
     return this.canBeReactNativeApp() || this._buildRuleType === 'apk_genrule';
   }
 
+  isDebuggableRule(): boolean {
+    return this.isInstallableRule() || this._buildRuleType === 'cxx_test';
+  }
+
   getSimulator(): ?string {
     return this._simulator;
   }

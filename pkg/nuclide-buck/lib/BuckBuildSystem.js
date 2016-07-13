@@ -36,7 +36,10 @@ import {
   getEventsFromSocket,
   getEventsFromProcess,
 } from './BuckEventStream';
-import {getLLDBInstallEvents} from './LLDBEventStream';
+import {
+  getLLDBBuildEvents,
+  getLLDBInstallEvents,
+} from './LLDBEventStream';
 
 type Flux = {
   actions: BuckToolbarActions;
@@ -46,8 +49,9 @@ type Flux = {
 function shouldEnableTask(taskType: TaskType, store: BuckToolbarStore): boolean {
   switch (taskType) {
     case 'run':
-    case 'debug':
       return store.isInstallableRule();
+    case 'debug':
+      return store.isDebuggableRule();
     default:
       return true;
   }
@@ -56,8 +60,11 @@ function shouldEnableTask(taskType: TaskType, store: BuckToolbarStore): boolean 
 function getSubcommand(taskType: TaskType, store: BuckToolbarStore): BuckSubcommand {
   switch (taskType) {
     case 'run':
-    case 'debug':
       return 'install';
+    case 'debug':
+      // For mobile builds, install the build on the device.
+      // Otherwise, run a regular build and invoke the debugger on the output.
+      return store.isInstallableRule() ? 'install' : 'build';
     default:
       return taskType;
   }
@@ -249,6 +256,11 @@ export class BuckBuildSystem {
           isDebug && subcommand === 'install' ? getLLDBInstallEvents(
             processMessages,
             buckProject,
+          ) : Observable.empty(),
+          isDebug && subcommand === 'build' ? getLLDBBuildEvents(
+            processMessages,
+            buckProject,
+            buildTarget,
           ) : Observable.empty(),
         )
           .switchMap(event => {
