@@ -12,6 +12,7 @@
 import type {Action, BookShelfState} from './types';
 
 import {ActionType} from './constants';
+import {getRepoPathToEditors} from './utils';
 
 export class Commands {
   _dispatch: (action: Action) => void;
@@ -22,6 +23,7 @@ export class Commands {
     this._getState = getState;
 
     (this: any).addProjectRepository = this.addProjectRepository.bind(this);
+    (this: any).updatePaneItemState = this.updatePaneItemState.bind(this);
   }
 
   addProjectRepository(repository: atom$Repository): void {
@@ -32,4 +34,14 @@ export class Commands {
       type: ActionType.ADD_PROJECT_REPOSITORY,
     });
   }
+
+  updatePaneItemState(): void {
+    this._dispatch({
+      type: ActionType.UPDATE_PANE_ITEM_STATE,
+      payload: {
+        repositoryPathToEditors: getRepoPathToEditors(),
+      },
+    });
+  }
+
 }

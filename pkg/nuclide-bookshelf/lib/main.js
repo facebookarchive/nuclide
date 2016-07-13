@@ -81,9 +81,21 @@ class Activation {
         Array.from(repoDiff.added).forEach(commands.addProjectRepository);
       });
 
+    const paneStateChangeSubscription = Observable.merge(
+      observableFromSubscribeFunction(
+        atom.workspace.onDidAddPaneItem.bind(atom.workspace)
+      ),
+      observableFromSubscribeFunction(
+        atom.workspace.onDidDestroyPaneItem.bind(atom.workspace)
+      ),
+    ).subscribe(() => {
+      commands.updatePaneItemState();
+    });
+
     this._disposables = new CompositeDisposable(
       new Disposable(actions.complete.bind(actions)),
       new DisposableSubscription(repoDiffsSubscription),
+      new DisposableSubscription(paneStateChangeSubscription),
     );
   }
 

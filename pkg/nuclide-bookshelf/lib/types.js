@@ -32,6 +32,7 @@ export type SerializedBookShelfRepositoryState = {
 };
 
 export type ActionTypeValue = 'add-project-repository'
+  | 'update-pane-item-state'
   | 'remove-project-repository'
   | 'update-repository-bookmarks'
 ;
@@ -41,6 +42,13 @@ export type AddProjectRepositoryAction = {
     repository: atom$Repository;
   };
   type: 'add-project-repository';
+};
+
+export type UpdatePaneItemStateAction = {
+  payload: {
+    repositoryPathToEditors: Map<NuclideUri, Array<atom$TextEditor>>;
+  };
+  type: 'update-pane-item-state';
 };
 
 export type RemoveProjectRepositoryAction = {
@@ -60,7 +68,8 @@ export type UpdateRepositoryBookmarksAction = {
 };
 
 // Flow Issue: sorting alphabetically has a flow union issue.
-export type Action = UpdateRepositoryBookmarksAction
+export type Action = UpdatePaneItemStateAction
+  | UpdateRepositoryBookmarksAction
   | AddProjectRepositoryAction
   | RemoveProjectRepositoryAction
 ;

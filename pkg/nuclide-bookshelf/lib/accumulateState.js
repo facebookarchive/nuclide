@@ -14,9 +14,11 @@ import type {
   AddProjectRepositoryAction,
   BookShelfRepositoryState,
   BookShelfState,
+  UpdatePaneItemStateAction,
   RemoveProjectRepositoryAction,
   UpdateRepositoryBookmarksAction,
 } from './types';
+import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {ActionType, EMPTY_SHORTHEAD} from './constants';
 import Immutable from 'immutable';
@@ -40,8 +42,12 @@ export function accumulateState(
     case ActionType.REMOVE_PROJECT_REPOSITORY:
       return accumulateRemoveProjectRepository(state, action);
 
+    case ActionType.UPDATE_PANE_ITEM_STATE:
+      return accumulateUpdatePaneItemState(state, action);
+
     case ActionType.UPDATE_REPOSITORY_BOOKMARKS:
       return accumulateRepositoryStateAction(state, action);
+
     default:
       return state;
   }
@@ -124,5 +130,40 @@ function accumulateRepositoryStateUpdateBookmarks(
     ...repositoryState,
     activeShortHead,
     shortHeadsToFileList,
+  };
+}
+
+function accumulateUpdatePaneItemState(
+  state: BookShelfState,
+  action: UpdatePaneItemStateAction,
+): BookShelfState {
+  const {repositoryPathToEditors} = action.payload;
+  return {
+    ...state,
+    repositoryPathToState: Immutable.Map(
+      Array.from(state.repositoryPathToState.entries())
+        .map(([repositoryPath, repositoryState]) => {
+          const fileList = (repositoryPathToEditors.get(repositoryPath) || [])
+            .map(textEditor => textEditor.getPath() || '');
+          return [
+            repositoryPath,
+            accumulateRepositoryStateUpdatePaneItemState(repositoryState, fileList),
+          ];
+        })
+    ),
+  };
+}
+
+function accumulateRepositoryStateUpdatePaneItemState(
+  repositoryState: BookShelfRepositoryState,
+  fileList: Array<NuclideUri>,
+): BookShelfRepositoryState {
+  if (repositoryState.isRestoring) {
+    return repositoryState;
+  }
+  return {
+    ...repositoryState,
+    shortHeadsToFileList: repositoryState.shortHeadsToFileList
+      .set(repositoryState.activeShortHead, fileList),
   };
 }

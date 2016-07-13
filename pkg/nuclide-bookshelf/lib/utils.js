@@ -13,8 +13,11 @@ import type {
   BookShelfState,
   SerializedBookShelfState,
 } from './types';
+import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import Immutable from 'immutable';
+import invariant from 'assert';
+import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 
 export function getEmptBookShelfState(): BookShelfState {
   return {
@@ -62,4 +65,24 @@ export function deserializeBookShelfState(
   return {
     repositoryPathToState,
   };
+}
+
+export function getRepoPathToEditors(): Map<NuclideUri, Array<atom$TextEditor>> {
+  const reposToEditors = new Map();
+  atom.workspace.getTextEditors()
+    .filter(textEditor => textEditor.getPath() != null && textEditor.getPath() !== '')
+    .map(textEditor => ({
+      textEditor,
+      repository: repositoryForPath(textEditor.getPath() || ''),
+    }))
+    .filter(({repository}) => repository != null)
+    .forEach(({repository, textEditor}) => {
+      invariant(repository);
+      const repositoryPath = repository.getWorkingDirectory();
+      reposToEditors.set(
+        repositoryPath,
+        (reposToEditors.get(repositoryPath) || []).concat([textEditor])
+      );
+    });
+  return reposToEditors;
 }

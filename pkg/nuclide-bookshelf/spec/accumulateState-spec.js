@@ -14,8 +14,10 @@ import type {
   BookShelfRepositoryState,
   BookShelfState,
   RemoveProjectRepositoryAction,
+  UpdatePaneItemStateAction,
   UpdateRepositoryBookmarksAction,
 } from '../lib/types';
+import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {accumulateState} from '../lib/accumulateState';
 import {ActionType, EMPTY_SHORTHEAD} from '../lib/constants';
@@ -165,6 +167,53 @@ describe('BookShelf accumulateState', () => {
       expect(newRepositoryState.shortHeadsToFileList.has(SHOTHEAD_1_1)).toBeFalsy();
       expect(newRepositoryState.shortHeadsToFileList.get(SHOTHEAD_1_2))
         .toEqual(oldRpositoryState.shortHeadsToFileList.get(SHOTHEAD_1_2));
+    });
+  });
+
+  describe('UDATE_PANE_ITEM_STATE', () => {
+
+    const OTHER_REPO_PARH = '/another/repo/path';
+    let fakeEditor1: atom$TextEditor = (null: any);
+    let fakeEditor2: atom$TextEditor = (null: any);
+    let fakeEditor3: atom$TextEditor = (null: any);
+
+    function createFakeEditor(editorPath: NuclideUri): atom$TextEditor {
+      return ({
+        getPath: jasmine.createSpy().andReturn(editorPath),
+      }: any);
+    }
+
+    beforeEach(() => {
+      fakeEditor1 = createFakeEditor('file1.txt');
+      fakeEditor2 = createFakeEditor('file2.txt');
+      fakeEditor3 = createFakeEditor('file3.txt');
+    });
+
+    it('updates the tracked repos states with the new pane item state', () => {
+      const updatePaneItemAction: UpdatePaneItemStateAction = {
+        payload: {
+          repositoryPathToEditors: new Map([
+            [REPO_PATH_1, [fakeEditor1, fakeEditor2]],
+            [OTHER_REPO_PARH, [fakeEditor3]],
+          ]),
+        },
+        type: ActionType.UPDATE_PANE_ITEM_STATE,
+      };
+      const newState = accumulateState(oneRepoState, updatePaneItemAction);
+
+      const oldShortHeadsToFileList = oneRepoState
+        .repositoryPathToState.get(REPO_PATH_1).shortHeadsToFileList;
+      expect(oldShortHeadsToFileList.size).toBe(2);
+      expect(oldShortHeadsToFileList.get(SHOTHEAD_1_1)).toEqual(['c.txt', 'd.txt']);
+
+      // Doesn't add untracked repos.
+      expect(newState.repositoryPathToState.size).toBe(1);
+
+      const newShortHeadsToFileList = newState
+        .repositoryPathToState.get(REPO_PATH_1).shortHeadsToFileList;
+      expect(newShortHeadsToFileList.size).toBe(2);
+      expect(newShortHeadsToFileList.get(SHOTHEAD_1_1)).toEqual(['file1.txt', 'file2.txt']);
+      expect(newShortHeadsToFileList.get(SHOTHEAD_1_2)).toEqual(['e.txt']);
     });
   });
 });
