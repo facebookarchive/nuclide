@@ -66,7 +66,8 @@ class SimulatorDropdown extends React.Component {
 
   _buildMenuItems(devices: Array<Device>): void {
     const selectedIndex = IosSimulator.getActiveDeviceIndex(devices);
-    const value = devices[selectedIndex].udid;
+    const selectedDevice = devices[selectedIndex];
+    const value = selectedDevice == null ? '' : selectedDevice.udid;
     const options = devices.map(device => ({
       label: `${device.name} (${device.os})`,
       value: device.udid,
