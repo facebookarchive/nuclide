@@ -141,7 +141,7 @@ describe('BookShelf Utils', () => {
       });
 
       it('deserializing an invalid state throws an exception', () => {
-        expect(() => deserializeBookShelfState(({repositoryPathToState: null}: any))).toThrow();
+        expect(() => deserializeBookShelfState(({repositoryPathToState: 123}: any))).toThrow();
       });
     });
   });

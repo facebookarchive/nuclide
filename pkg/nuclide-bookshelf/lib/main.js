@@ -62,7 +62,7 @@ class Activation {
     try {
       initialState = deserializeBookShelfState(state);
     } catch (error) {
-      getLogger().error('failed to deserialize nuclide-bookshelf state', error);
+      getLogger().error('failed to deserialize nuclide-bookshelf state', state, error);
       initialState = getEmptBookShelfState();
     }
 

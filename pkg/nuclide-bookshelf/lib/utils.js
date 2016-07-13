@@ -51,7 +51,10 @@ export function serializeBookShelfState(
 export function deserializeBookShelfState(
   serializedBookShelfState: ?SerializedBookShelfState,
 ): BookShelfState {
-  if (serializedBookShelfState == null) {
+  if (
+    serializedBookShelfState == null ||
+    serializedBookShelfState.repositoryPathToState == null
+  ) {
     return getEmptBookShelfState();
   }
   const repositoryPathToState = Immutable.Map(
