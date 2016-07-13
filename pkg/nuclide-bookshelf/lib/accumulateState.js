@@ -14,14 +14,17 @@ import type {
   AddProjectRepositoryAction,
   BookShelfRepositoryState,
   BookShelfState,
-  UpdatePaneItemStateAction,
+  CompleteRestoringRepositoryStateAction,
   RemoveProjectRepositoryAction,
+  StartRestoringRepositoryStateAction,
+  UpdatePaneItemStateAction,
   UpdateRepositoryBookmarksAction,
 } from './types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {ActionType, EMPTY_SHORTHEAD} from './constants';
 import Immutable from 'immutable';
+import invariant from 'assert';
 
 function getEmptyRepositoryState(): BookShelfRepositoryState {
   return {
@@ -46,6 +49,8 @@ export function accumulateState(
       return accumulateUpdatePaneItemState(state, action);
 
     case ActionType.UPDATE_REPOSITORY_BOOKMARKS:
+    case ActionType.START_RESTORING_REPOSITORY_STATE:
+    case ActionType.COMPLETE_RESTORING_REPOSITORY_STATE:
       return accumulateRepositoryStateAction(state, action);
 
     default:
@@ -83,7 +88,9 @@ function accumulateRemoveProjectRepository(
 
 function accumulateRepositoryStateAction(
   state: BookShelfState,
-  action: UpdateRepositoryBookmarksAction,
+  action: UpdateRepositoryBookmarksAction
+    | StartRestoringRepositoryStateAction
+    | CompleteRestoringRepositoryStateAction,
 ): BookShelfState {
   const repositoryPath = action.payload.repository.getWorkingDirectory();
 
@@ -105,6 +112,18 @@ function accumulateRepositoryState(
   switch (action.type) {
     case ActionType.UPDATE_REPOSITORY_BOOKMARKS:
       return accumulateRepositoryStateUpdateBookmarks(repositoryState, action);
+    case ActionType.START_RESTORING_REPOSITORY_STATE:
+      invariant(repositoryState, 'repository state not found when starting to restore!');
+      return {
+        ...repositoryState,
+        isRestoring: true,
+      };
+    case ActionType.COMPLETE_RESTORING_REPOSITORY_STATE:
+      invariant(repositoryState, 'repository state not found when starting to restore!');
+      return {
+        ...repositoryState,
+        isRestoring: false,
+      };
     default:
       return repositoryState || getEmptyRepositoryState();
   }

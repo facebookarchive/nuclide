@@ -37,9 +37,11 @@ export type RepositoryShortHeadChange = {
 };
 
 export type ActionTypeValue = 'add-project-repository'
-  | 'update-pane-item-state'
+  | 'complete-restoring-repository-state'
   | 'remove-project-repository'
   | 'restore-pane-item-state'
+  | 'start-restoring-repository-state'
+  | 'update-pane-item-state'
   | 'update-repository-bookmarks'
 ;
 
@@ -64,6 +66,20 @@ export type RemoveProjectRepositoryAction = {
   type: 'remove-project-repository';
 };
 
+export type StartRestoringRepositoryStateAction = {
+  payload: {
+    repository: atom$Repository;
+  };
+  type: 'start-restoring-repository-state';
+};
+
+export type CompleteRestoringRepositoryStateAction = {
+  payload: {
+    repository: atom$Repository;
+  };
+  type: 'complete-restoring-repository-state';
+};
+
 export type RestorePaneItemStateAction = {
   payload: {
     repository: atom$Repository;
@@ -85,6 +101,8 @@ export type UpdateRepositoryBookmarksAction = {
 export type Action = UpdatePaneItemStateAction
   | RestorePaneItemStateAction
   | UpdateRepositoryBookmarksAction
+  | StartRestoringRepositoryStateAction
+  | CompleteRestoringRepositoryStateAction
   | AddProjectRepositoryAction
   | RemoveProjectRepositoryAction
 ;
