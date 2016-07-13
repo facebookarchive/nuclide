@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.152.0
+
+* Hotfix an overly-zealous python linter integration.
+
 ## v0.151.0
 
 ### General
