@@ -16,11 +16,10 @@ import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import once from '../../../commons-node/once';
 import {bindObservableAsProps} from '../../../nuclide-ui/lib/bindObservableAsProps';
 import {BuildToolbar} from '../ui/BuildToolbar';
-import {createPanelItem} from '../ui/createPanelItem';
 import {getActiveBuildSystem} from '../getActiveBuildSystem';
 import * as Actions from './Actions';
 import invariant from 'assert';
-import {React} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 import {Observable} from 'rxjs';
 
 
@@ -66,9 +65,10 @@ export function createPanelEpic(actions: ActionsObservable<Action>): Observable<
         });
 
       const StatefulBuildToolbar = bindObservableAsProps(props, BuildToolbar);
+      const container = document.createElement('div');
       // $FlowIssue: bindObservableAsProps doesn't handle props exactly right.
-      const item = createPanelItem(<StatefulBuildToolbar />);
-      const panel = atom.workspace.addTopPanel({item});
+      ReactDOM.render(<StatefulBuildToolbar />, container);
+      const panel = atom.workspace.addTopPanel({item: container});
 
       return {
         type: Actions.PANEL_CREATED,
