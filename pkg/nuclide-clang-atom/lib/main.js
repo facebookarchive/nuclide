@@ -10,7 +10,7 @@
  */
 
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
-import type {DiagnosticProvider} from '../../nuclide-diagnostics-base';
+import type {LinterProvider} from '../../nuclide-diagnostics-base';
 import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
@@ -23,12 +23,11 @@ import CodeFormatHelpers from './CodeFormatHelpers';
 import HyperclickHelpers from './HyperclickHelpers';
 import OutlineViewHelpers from './OutlineViewHelpers';
 import TypeHintHelpers from './TypeHintHelpers';
-import ClangDiagnosticsProvider from './ClangDiagnosticsProvider';
+import ClangLinter from './ClangLinter';
 import {GRAMMAR_SET, PACKAGE_NAME} from './constants';
 import {reset} from './libclang';
 
 let busySignalProvider: ?BusySignalProviderBase = null;
-let diagnosticProvider: ?ClangDiagnosticsProvider = null;
 let subscriptions: ?CompositeDisposable = null;
 
 export function activate() {
@@ -47,16 +46,10 @@ export function activate() {
         return;
       }
       await reset(editor);
-      if (diagnosticProvider != null) {
-        diagnosticProvider.invalidateBuffer(editor.getBuffer());
-        diagnosticProvider.runDiagnostics(editor);
-      }
     }),
   );
 
   busySignalProvider = new BusySignalProviderBase();
-  diagnosticProvider = new ClangDiagnosticsProvider(busySignalProvider);
-  subscriptions.add(diagnosticProvider);
 }
 
 /** Provider for autocomplete service. */
@@ -111,9 +104,24 @@ export function provideCodeFormat(): CodeFormatProvider {
   };
 }
 
-export function provideDiagnostics(): DiagnosticProvider {
-  invariant(diagnosticProvider);
-  return diagnosticProvider;
+export function provideLinter(): LinterProvider {
+  return {
+    grammarScopes: Array.from(GRAMMAR_SET),
+    scope: 'file',
+    lintOnFly: false,
+    name: 'Clang',
+    invalidateOnClose: true,
+    lint(editor) {
+      const getResult = () => ClangLinter.lint(editor);
+      if (busySignalProvider) {
+        return busySignalProvider.reportBusy(
+          `Clang: compiling \`${editor.getTitle()}\``,
+          getResult,
+        );
+      }
+      return getResult();
+    },
+  };
 }
 
 export function provideOutlineView(): OutlineProvider {
