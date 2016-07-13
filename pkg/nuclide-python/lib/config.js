@@ -26,3 +26,7 @@ export function getPythonPath(): string {
 export function getShowGlobalVariables(): boolean {
   return (featureConfig.get('nuclide-python.showGlobalVariables'): any);
 }
+
+export function getEnableLinting(): boolean {
+  return (featureConfig.get('nuclide-python.enableLinting'): any);
+}

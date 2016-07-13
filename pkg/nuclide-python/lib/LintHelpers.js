@@ -16,6 +16,7 @@ import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getDiagnosticRange} from './diagnostic-range';
 import nuclideUri from '../../nuclide-remote-uri';
+import {getEnableLinting} from './config';
 import {NO_LINT_EXTENSIONS} from './constants';
 
 export default class LintHelpers {
@@ -23,7 +24,7 @@ export default class LintHelpers {
   @trackTiming('nuclide-python.lint')
   static async lint(editor: TextEditor): Promise<Array<LinterMessage>> {
     const src = editor.getPath();
-    if (src == null) {
+    if (src == null || !getEnableLinting()) {
       return [];
     }
 
