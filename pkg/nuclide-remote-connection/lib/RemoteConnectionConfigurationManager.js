@@ -155,7 +155,9 @@ function decryptString(text: string, password: string, salt: string): string {
       new Buffer(password, 'base64'),
       new Buffer(salt, 'base64'));
 
+  // $FlowFixMe
   let decryptedString = decipher.update(text, 'base64', 'utf8');
+  // $FlowFixMe
   decryptedString += decipher.final('utf8');
 
   return decryptedString;

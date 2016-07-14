@@ -9,20 +9,6 @@
  * the root directory of this source tree.
  */
 
-export type node$CallSite = {
-  toString(): ?string;
-  getFunctionName(): ?string;
-  getMethodName(): ?string;
-  getFileName(): ?string;
-  getLineNumber(): ?number;
-  getColumnNumber(): ?number;
-  getEvalOrigin(): ?string;
-  isToplevel(): boolean;
-  isEval(): boolean;
-  isNative(): boolean;
-  isConstructor(): boolean;
-};
-
 export type Logger = {
   debug(...args: Array<any>): mixed;
   error(...args: Array<any>): mixed;

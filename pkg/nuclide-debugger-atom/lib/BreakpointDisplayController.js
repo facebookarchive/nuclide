@@ -99,6 +99,7 @@ class BreakpointDisplayController {
     this._disposables.add(this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)));
 
     // Update shadow breakpoints on debounced editor change and debounced view scroll
+    // $FlowFixMe: type mismatch in subscribe
     editorScrollTopDebounced(this._editor, 300, false)
       .subscribe(this._update.bind(this));
     editorChangesDebounced(this._editor, 300, false)

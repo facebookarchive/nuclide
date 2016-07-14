@@ -31,7 +31,6 @@ function validateStructuredStackTraceCreated(e: Error): void {
 
 describe('stacktrace hook', () => {
   afterEach(() => {
-    // $FlowFixMe
     delete Error.prepareStackTrace;
     __test__.resetPrepareStackTraceHooked();
   });
@@ -69,7 +68,6 @@ describe('stacktrace hook', () => {
   it('doesn\'t screw up previous customization', () => {
 
     const customizedStack = 'There is no spoon';
-    // $FlowFixMe
     Error.prepareStackTrace = (_, frames) => {
       return customizedStack;
     };
@@ -99,12 +97,10 @@ describe('stacktrace hook', () => {
     expect(typeof e.stack).toBe('string');
     validateStructuredStackTraceCreated(e);
 
-    // $FlowFixMe
     const originalPrepareStackTrace = Error.prepareStackTrace;
 
     // Add customization and verify it works.
     const customizedStack = 'There is no spoon';
-    // $FlowFixMe
     Error.prepareStackTrace = (_, frames) => {
       return customizedStack;
     };
@@ -114,7 +110,6 @@ describe('stacktrace hook', () => {
     validateStructuredStackTraceCreated(e);
 
     // Revert the customization and verify it has been reverted.
-    // $FlowFixMe
     Error.prepareStackTrace = originalPrepareStackTrace;
     e = new Error();
     // $FlowIssue

@@ -9,11 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {node$CallSite} from './types';
 import singleton from '../../commons-node/singleton';
 import {maybeToString} from '../../commons-node/string';
 
-type PrepareStackTraceFunction = (error: Error, frames: Array<node$CallSite>) => any;
+type PrepareStackTraceFunction = (error: Error, frames: Array<CallSite>) => any;
 
 const PREPARE_STACK_TRACE_HOOKED_KEY = '_nuclide_error_stack_trace_hooked';
 
@@ -82,7 +81,7 @@ function createHookedPrepareStackTrace(
 
   const hookedFunction = function nuclideHookedPrepareStackTrace(
     error: Error,
-    frames: Array<node$CallSite>,
+    frames: Array<CallSite>,
   ): any {
     structuredStackTraceHook(error, frames);
     return prepareStackTrace(error, frames);
@@ -91,7 +90,7 @@ function createHookedPrepareStackTrace(
   return hookedFunction;
 }
 
-function structuredStackTraceHook(error: Error, frames: Array<node$CallSite>): void {
+function structuredStackTraceHook(error: Error, frames: Array<CallSite>): void {
   // $FlowFixMe
   error.stackTrace = frames.map(frame => {
     return {
@@ -109,7 +108,7 @@ function structuredStackTraceHook(error: Error, frames: Array<node$CallSite>): v
   });
 }
 
-function defaultPrepareStackTrace(error: Error, frames: Array<node$CallSite>): string {
+function defaultPrepareStackTrace(error: Error, frames: Array<CallSite>): string {
   let formattedStackTrace = error.message ? `${error.name}: ${error.message}` : `${error.name}`;
   frames.forEach(frame => {
     formattedStackTrace += `\n    at ${maybeToString(frame.toString())}`;
