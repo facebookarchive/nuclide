@@ -46,9 +46,6 @@ export class DefinitionPreviewView extends React.Component {
   }
 
   componentWillReceiveProps(newProps: Props): void {
-    if (newProps.definition === this.props.definition) {
-      return;
-    }
     this._loadAndScroll = null;
   }
 
