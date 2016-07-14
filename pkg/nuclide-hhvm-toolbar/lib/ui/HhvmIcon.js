@@ -34,6 +34,7 @@ export default class HhvmIcon extends React.Component {
         x="0px"
         y="0px"
         width={this.props.width}
+        height="100%"
         viewBox="0 0 13.4 19.6">
         <polygon points="7,6.6 7,12.6 13,6.6"></polygon>
         <polygon points="13.4,6 13.4,0 7.4,6"></polygon>
