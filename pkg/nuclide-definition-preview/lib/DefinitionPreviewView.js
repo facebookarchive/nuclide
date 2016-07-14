@@ -11,9 +11,11 @@
 
 import type {Definition} from '../../nuclide-definition-service';
 
+import {Button, ButtonSizes} from '../../nuclide-ui/lib/Button';
 import {React} from 'react-for-atom';
 import {ContextViewMessage, NO_DEFINITION_MESSAGE}
   from '../../nuclide-context-view/lib/ContextViewMessage';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 
@@ -40,6 +42,7 @@ export class DefinitionPreviewView extends React.Component {
   constructor(props: Props) {
     super(props);
     this._loadAndScroll = null;
+    (this: any)._openFile = this._openFile.bind(this);
   }
 
   componentWillReceiveProps(newProps: Props): void {
@@ -112,10 +115,21 @@ export class DefinitionPreviewView extends React.Component {
           textBuffer={textBuffer}
           syncTextContents={false}
         />
+        <div className="nuclide-definition-preview-button-container">
+          <Button onClick={this._openFile} size={ButtonSizes.SMALL}>
+            Open in main editor
+          </Button>
+        </div>
       </div>
     );
   }
 
+  _openFile(): void {
+    const def = this.props.definition;
+    if (def != null) {
+      goToLocation(def.path, def.position.row, def.position.column, true);
+    }
+  }
   getEditor(): atom$TextEditor {
     return this.refs.editor.getModel();
   }
