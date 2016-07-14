@@ -10,7 +10,7 @@
  */
 
 import type {ProcessMessage} from '../../commons-node/process-types';
-import type {BuildEvent, Task, TaskInfo} from '../../nuclide-build/lib/types';
+import type {BuildEvent, Directory, Task, TaskInfo} from '../../nuclide-build/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base';
 import type {BuckSubcommand, SerializedState, TaskType} from './types';
@@ -136,7 +136,8 @@ export class BuckBuildSystem {
     return this._outputMessages;
   }
 
-  updateCwd(path: string): void {
+  setProjectRoot(projectRoot: ?Directory): void {
+    const path = projectRoot == null ? null : projectRoot.getPath();
     this._getFlux().actions.updateProjectPath(path);
   }
 
