@@ -10,7 +10,7 @@
  */
 
 import type {ProcessMessage} from '../../commons-node/process-types';
-import type {BuildEvent, Directory, Task, TaskInfo} from '../../nuclide-build/lib/types';
+import type {Directory, Task, TaskEvent, TaskInfo} from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base';
 import type {BuckSubcommand, SerializedState, TaskType} from './types';
@@ -23,7 +23,7 @@ import {quote} from 'shell-quote';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {observableToBuildTaskInfo} from '../../commons-node/observableToBuildTaskInfo';
+import {observableToTaskInfo} from '../../commons-node/observableToTaskInfo';
 import {createBuckProject} from '../../nuclide-buck-base';
 import {getLogger} from '../../nuclide-logging';
 import {startPackager} from '../../nuclide-react-native/lib/packager/startPackager';
@@ -168,7 +168,7 @@ export class BuckBuildSystem {
     );
 
     const resultStream = this._runTaskType(taskType);
-    const taskInfo = observableToBuildTaskInfo(resultStream);
+    const taskInfo = observableToTaskInfo(resultStream);
     invariant(taskInfo.observeProgress != null);
     return {
       // Flow can't check ...taskInfo due to the optional args.
@@ -207,7 +207,7 @@ export class BuckBuildSystem {
     };
   }
 
-  _runTaskType(taskType: TaskType): Observable<BuildEvent> {
+  _runTaskType(taskType: TaskType): Observable<TaskEvent> {
     const {store} = this._getFlux();
     const buckRoot = store.getCurrentBuckRoot();
     const buildTarget = store.getBuildTarget();

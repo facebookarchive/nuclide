@@ -54,7 +54,7 @@ export class TaskInfo {
   }
 }
 
-export class BuildSystem {
+export class TaskRunner {
   _tasks: BehaviorSubject<Array<Task>>;
 
   id: string;

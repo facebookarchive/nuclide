@@ -19,30 +19,30 @@ describe('Reducers', () => {
   describe('UPDATE_TASKS', () => {
 
     it("selects the previous session's active task if it becomes available", () => {
-      const buildSystem = new dummy.BuildSystem();
-      buildSystem.id = 'previous-build-system';
-      buildSystem.name = 'Build System';
+      const taskRunner = new dummy.TaskRunner();
+      taskRunner.id = 'previous-build-system';
+      taskRunner.name = 'Build System';
       const initialState = {
         ...createEmptyAppState(),
         activeTaskId: {
           type: 'test',
-          buildSystemId: 'some-build-system',
+          taskRunnerId: 'some-build-system',
         },
         previousSessionActiveTaskId: {
           type: 'other',
-          buildSystemId: 'previous-build-system',
+          taskRunnerId: 'previous-build-system',
         },
       };
       const action = {
         type: Actions.TASKS_UPDATED,
         payload: {
-          buildSystemId: 'previous-build-system',
+          taskRunnerId: 'previous-build-system',
           tasks: [createTask('other')],
         },
       };
       const finalState = [action].reduce(Reducers.app, initialState);
       expect(finalState.activeTaskId)
-        .toEqual({buildSystemId: 'previous-build-system', type: 'other'});
+        .toEqual({taskRunnerId: 'previous-build-system', type: 'other'});
     });
 
   });

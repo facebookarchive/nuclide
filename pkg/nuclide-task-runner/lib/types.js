@@ -16,7 +16,7 @@ export type Directory = LocalDirectory | RemoteDirectory;
 
 export type AppState = {
   activeTaskId: ?TaskId;
-  buildSystems: Map<string, BuildSystem>;
+  taskRunners: Map<string, TaskRunner>;
   panel: ?atom$Panel;
   previousSessionActiveTaskId: ?TaskId;
   projectRoot: ?Directory;
@@ -28,15 +28,15 @@ export type AppState = {
   visible: boolean;
 };
 
-type BuildProgressEvent = {
+type TaskProgressEvent = {
   kind: 'progress';
   progress: ?number;
 };
 
 /**
- * Currently, there's only one type of build event, but we may add more (e.g. status).
+ * Currently, there's only one type of task event, but we may add more (e.g. status).
  */
-export type BuildEvent = BuildProgressEvent;
+export type TaskEvent = TaskProgressEvent;
 
 export type SerializedAppState = {
   previousSessionActiveTaskId: ?TaskId;
@@ -45,7 +45,7 @@ export type SerializedAppState = {
 
 export type TaskId = {
   type: string;
-  buildSystemId: string;
+  taskRunnerId: string;
 };
 
 export type Task = {
@@ -58,11 +58,11 @@ export type Task = {
 };
 
 export type AnnotatedTask = Task & {
-  buildSystemId: string;
-  buildSystemName: string;
+  taskRunnerId: string;
+  taskRunnerName: string;
 };
 
-export interface BuildSystem {
+export interface TaskRunner {
   id: string;
   name: string;
   getExtraUi?: () => ReactClass<any>; // activeTaskType will be provided as a nullable property.
@@ -88,14 +88,14 @@ export type Store = {
 export type BoundActionCreators = {
   createPanel(store: Store): void;
   destroyPanel(): void;
-  registerBuildSystem(buildSystem: BuildSystem): void;
+  registerTaskRunner(taskRunner: TaskRunner): void;
   runTask(taskId: ?TaskId): void;
   selectTask(taskId: TaskId): void;
   setProjectRoot(dir: ?Directory): void;
   setToolbarVisibility(visible: boolean): void;
   stopTask(): void;
   toggleToolbarVisibility(): void;
-  unregisterBuildSystem(buildSystem: BuildSystem): void;
+  unregisterTaskRunner(taskRunner: TaskRunner): void;
 };
 
 //
@@ -174,10 +174,10 @@ export type ToolbarVisibilityUpdatedAction = {
   };
 };
 
-export type RegisterBuildSystemAction = {
-  type: 'REGISTER_BUILD_SYSTEM';
+export type RegisterTaskRunnerAction = {
+  type: 'REGISTER_TASK_RUNNER';
   payload: {
-    buildSystem: BuildSystem;
+    taskRunner: TaskRunner;
   };
 };
 
@@ -213,13 +213,13 @@ export type ToggleToolbarVisibilityAction = {
 export type TasksUpdatedAction = {
   type: 'TASKS_UPDATED';
   payload: {
-    buildSystemId: string;
+    taskRunnerId: string;
     tasks: Array<Task>;
   };
 };
 
-export type UnregisterBuildSystemAction = {
-  type: 'UNREGISTER_BUILD_SYSTEM';
+export type UnregisterTaskRunnerAction = {
+  type: 'UNREGISTER_TASK_RUNNER';
   payload: {
     id: string;
   };
@@ -241,9 +241,9 @@ export type Action =
   | TasksUpdatedAction
   | ToggleToolbarVisibilityAction
   | ToolbarVisibilityUpdatedAction
-  | RegisterBuildSystemAction
-  | UnregisterBuildSystemAction;
+  | RegisterTaskRunnerAction
+  | UnregisterTaskRunnerAction;
 
-export type BuildSystemRegistry = {
-  register(buildSystem: BuildSystem): IDisposable;
+export type TaskRunnerServiceApi = {
+  register(taskRunner: TaskRunner): IDisposable;
 };

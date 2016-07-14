@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Task} from '../../nuclide-build/lib/types';
+import type {Task} from '../../nuclide-task-runner/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import {Disposable} from 'atom';

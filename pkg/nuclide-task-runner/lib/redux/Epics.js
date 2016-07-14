@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState, BuildSystem, Store, Task, TaskId} from '../types';
+import type {Action, AppState, Store, Task, TaskId, TaskRunner} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import once from '../../../commons-node/once';
 import {bindObservableAsProps} from '../../../nuclide-ui/lib/bindObservableAsProps';
-import {BuildToolbar} from '../ui/BuildToolbar';
-import {getActiveBuildSystem} from '../getActiveBuildSystem';
+import {Toolbar} from '../ui/Toolbar';
+import {getActiveTaskRunner} from '../getActiveTaskRunner';
 import {getTask} from '../getTask';
 import * as Actions from './Actions';
 import invariant from 'assert';
@@ -40,25 +40,25 @@ export function createPanelEpic(actions: ActionsObservable<Action>): Observable<
         runTask: task => { store.dispatch(Actions.runTask(task)); },
         selectTask: task => { store.dispatch(Actions.selectTask(task)); },
         stopTask: () => { store.dispatch(Actions.stopTask()); },
-        getActiveBuildSystemIcon: () => {
-          const activeBuildSystem = getActiveBuildSystem(store.getState());
-          return activeBuildSystem && activeBuildSystem.getIcon();
+        getActiveTaskRunnerIcon: () => {
+          const activeTaskRunner = getActiveTaskRunner(store.getState());
+          return activeTaskRunner && activeTaskRunner.getIcon();
         },
       };
 
       const props = Observable.from(store)
-        // Delay the inital render. This way we (probably) won't wind up rendering the wrong build
-        // system before the correct one is registered.
+        // Delay the inital render. This way we (probably) won't wind up rendering the wrong task
+        // runner before the correct one is registered.
         .cache(1)
         .skipUntil(Observable.interval(300).first())
 
         .map(state => {
-          const activeBuildSystem = getActiveBuildSystem(state);
+          const activeTaskRunner = getActiveTaskRunner(state);
           return {
             ...staticProps,
-            buildSystemInfo: Array.from(state.buildSystems.values()),
-            getExtraUi: activeBuildSystem != null && activeBuildSystem.getExtraUi != null
-              ? activeBuildSystem.getExtraUi.bind(activeBuildSystem)
+            taskRunnerInfo: Array.from(state.taskRunners.values()),
+            getExtraUi: activeTaskRunner != null && activeTaskRunner.getExtraUi != null
+              ? activeTaskRunner.getExtraUi.bind(activeTaskRunner)
               : null,
             progress: state.taskStatus && state.taskStatus.progress,
             visible: state.visible,
@@ -68,10 +68,10 @@ export function createPanelEpic(actions: ActionsObservable<Action>): Observable<
           };
         });
 
-      const StatefulBuildToolbar = bindObservableAsProps(props, BuildToolbar);
+      const StatefulToolbar = bindObservableAsProps(props, Toolbar);
       const container = document.createElement('div');
       // $FlowIssue: bindObservableAsProps doesn't handle props exactly right.
-      ReactDOM.render(<StatefulBuildToolbar />, container);
+      ReactDOM.render(<StatefulToolbar />, container);
       const panel = atom.workspace.addTopPanel({item: container});
 
       return {
@@ -98,32 +98,32 @@ export function destroyPanelEpic(
     });
 }
 
-export function registerBuildSystemEpic(
+export function registerTaskRunnerEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(Actions.REGISTER_BUILD_SYSTEM).flatMap(action => {
-    invariant(action.type === Actions.REGISTER_BUILD_SYSTEM);
-    const {buildSystem} = action.payload;
+  return actions.ofType(Actions.REGISTER_TASK_RUNNER).flatMap(action => {
+    invariant(action.type === Actions.REGISTER_TASK_RUNNER);
+    const {taskRunner} = action.payload;
 
-    // Set the project root on the new build system.
-    const {setProjectRoot} = buildSystem;
+    // Set the project root on the new task runner.
+    const {setProjectRoot} = taskRunner;
     if (typeof setProjectRoot === 'function') {
       const projectRoot = store.getState().projectRoot;
-      setProjectRoot.call(buildSystem, projectRoot);
+      setProjectRoot.call(taskRunner, projectRoot);
     }
 
     const tasksToAction = tasks => ({
       type: Actions.TASKS_UPDATED,
       payload: {
-        buildSystemId: buildSystem.id,
+        taskRunnerId: taskRunner.id,
         tasks,
       },
     });
     const unregistrationEvents = actions.filter(a => (
-      a.type === Actions.UNREGISTER_BUILD_SYSTEM && a.payload.id === buildSystem.id
+      a.type === Actions.UNREGISTER_TASK_RUNNER && a.payload.id === taskRunner.id
     ));
-    return observableFromSubscribeFunction(buildSystem.observeTasks.bind(buildSystem))
+    return observableFromSubscribeFunction(taskRunner.observeTasks.bind(taskRunner))
       .map(tasksToAction)
       .takeUntil(unregistrationEvents);
   });
@@ -150,9 +150,9 @@ export function runTaskEpic(
           : Observable.of(Actions.selectTask(taskToRun)),
         Observable.defer(() => {
           const state = store.getState();
-          const activeBuildSystem = getActiveBuildSystem(state);
+          const activeTaskRunner = getActiveTaskRunner(state);
 
-          if (activeBuildSystem == null) {
+          if (activeTaskRunner == null) {
             return Observable.empty();
           }
 
@@ -163,7 +163,7 @@ export function runTaskEpic(
             return Observable.empty();
           }
 
-          return createTaskObservable(activeBuildSystem, task, () => store.getState())
+          return createTaskObservable(activeTaskRunner, task, () => store.getState())
             // Stop listening once the task is done.
             .takeUntil(
               actions.ofType(Actions.TASK_COMPLETED, Actions.TASK_ERRORED, Actions.TASK_STOPPED)
@@ -182,10 +182,10 @@ export function setProjectRootEpic(
       invariant(action.type === Actions.SET_PROJECT_ROOT);
       const {projectRoot} = action.payload;
 
-      // Set the project root on all registered build systems.
-      store.getState().buildSystems.forEach(buildSystem => {
-        if (typeof buildSystem.setProjectRoot === 'function') {
-          buildSystem.setProjectRoot(projectRoot);
+      // Set the project root on all registered task runners.
+      store.getState().taskRunners.forEach(taskRunner => {
+        if (typeof taskRunner.setProjectRoot === 'function') {
+          taskRunner.setProjectRoot(projectRoot);
         }
       });
     })
@@ -237,7 +237,7 @@ export function toggleToolbarVisibilityEpic(
  * Run a task and transform its output into domain-specific actions.
  */
 function createTaskObservable(
-  buildSystem: BuildSystem,
+  taskRunner: TaskRunner,
   task: Task,
   getState: () => AppState,
 ): Observable<Action> {
@@ -245,7 +245,7 @@ function createTaskObservable(
   // $FlowFixMe(matthewwithanm): Type this.
   return Observable.using(
     () => {
-      let taskInfo = buildSystem.runTask(task.type);
+      let taskInfo = taskRunner.runTask(task.type);
       // We may call cancel multiple times so let's make sure it's idempotent.
       taskInfo = {...taskInfo, cancel: once(taskInfo.cancel)};
       finished = false;
@@ -315,5 +315,5 @@ function createTaskObservable(
 
 function taskIdsAreEqual(a: ?TaskId, b: ?TaskId): boolean {
   if (a == null || b == null) { return false; }
-  return a.type === b.type && a.buildSystemId === b.buildSystemId;
+  return a.type === b.type && a.taskRunnerId === b.taskRunnerId;
 }

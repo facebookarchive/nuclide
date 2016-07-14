@@ -20,14 +20,14 @@ import {ProgressBar} from './ProgressBar';
 import {getTask} from '../getTask';
 import {React} from 'react-for-atom';
 
-type BuildSystemInfo = {
+type TaskRunnerInfo = {
   id: string;
   name: string;
 };
 
 type Props = {
-  buildSystemInfo: Array<BuildSystemInfo>;
-  getActiveBuildSystemIcon: () => ?ReactClass<any>;
+  taskRunnerInfo: Array<TaskRunnerInfo>;
+  getActiveTaskRunnerIcon: () => ?ReactClass<any>;
   getExtraUi: ?() => ReactClass<any>;
   progress: ?number;
   visible: boolean;
@@ -39,7 +39,7 @@ type Props = {
   tasks: Map<string, Array<AnnotatedTask>>;
 };
 
-export class BuildToolbar extends React.Component {
+export class Toolbar extends React.Component {
   props: Props;
 
   render(): ?React.Element<any> {
@@ -53,21 +53,21 @@ export class BuildToolbar extends React.Component {
       : getTask(activeTaskId, this.props.tasks);
 
     const ExtraUi = this.props.getExtraUi && this.props.getExtraUi();
-    const ActiveBuildSystemIcon = this.props.getActiveBuildSystemIcon();
-    const FallbackIcon = () => <div>{activeTask && activeTask.buildSystemName}</div>;
-    const IconComponent = ActiveBuildSystemIcon || FallbackIcon;
+    const ActiveTaskRunnerIcon = this.props.getActiveTaskRunnerIcon();
+    const FallbackIcon = () => <div>{activeTask && activeTask.taskRunnerName}</div>;
+    const IconComponent = ActiveTaskRunnerIcon || FallbackIcon;
     const ButtonComponent = props => (
-      <BuildSystemIconTaskButton {...props} iconComponent={IconComponent} />
+      <TaskRunnerIconTaskButton {...props} iconComponent={IconComponent} />
     );
 
     return (
-      <div className="nuclide-build-toolbar">
-        <div className="nuclide-build-toolbar-contents padded">
+      <div className="nuclide-task-runner-toolbar">
+        <div className="nuclide-task-runner-toolbar-contents padded">
           <div className="inline-block">
             <TaskButton
               activeTask={activeTask}
               buttonComponent={ButtonComponent}
-              buildSystemInfo={this.props.buildSystemInfo}
+              taskRunnerInfo={this.props.taskRunnerInfo}
               runTask={this.props.runTask}
               selectTask={this.props.selectTask}
               taskIsRunning={this.props.taskIsRunning}
@@ -92,11 +92,11 @@ export class BuildToolbar extends React.Component {
   }
 
   _renderIcon(): ?React.Element<any> {
-    const ActiveBuildSystemIcon = this.props.getActiveBuildSystemIcon();
-    if (ActiveBuildSystemIcon == null) { return; }
+    const ActiveTaskRunnerIcon = this.props.getActiveTaskRunnerIcon();
+    if (ActiveTaskRunnerIcon == null) { return; }
     return (
-      <div className="nuclide-build-system-icon-wrapper inline-block">
-        <ActiveBuildSystemIcon />
+      <div className="nuclide-task-runner-system-icon-wrapper inline-block">
+        <ActiveTaskRunnerIcon />
       </div>
     );
   }
@@ -106,7 +106,7 @@ export class BuildToolbar extends React.Component {
 type TaskButtonProps = {
   activeTask: ?AnnotatedTask;
   buttonComponent: ReactClass<any>;
-  buildSystemInfo: Array<BuildSystemInfo>;
+  taskRunnerInfo: Array<TaskRunnerInfo>;
   runTask: (taskId?: TaskId) => void;
   selectTask: (taskId: TaskId) => void;
   taskIsRunning: boolean;
@@ -138,15 +138,15 @@ function TaskButton(props: TaskButtonProps): React.Element<any> {
       </ButtonComponent>
     );
   } else {
-    const buildSystemInfo = props.buildSystemInfo.slice().sort((a, b) => abcSort(a.name, b.name));
+    const taskRunnerInfo = props.taskRunnerInfo.slice().sort((a, b) => abcSort(a.name, b.name));
     let taskOptions = [];
-    buildSystemInfo.forEach(info => {
-      const buildSystemName = info.name;
+    taskRunnerInfo.forEach(info => {
+      const taskRunnerName = info.name;
       const tasks = props.tasks.get(info.id) || [];
       if (tasks.length === 0) { return; }
       taskOptions.push({
         value: null,
-        label: buildSystemName,
+        label: taskRunnerName,
         disabled: true,
       });
       taskOptions.push(
@@ -173,7 +173,7 @@ function TaskButton(props: TaskButtonProps): React.Element<any> {
   }
 }
 
-type BuildSystemIconTaskButtonProps = {
+type TaskRunnerIconTaskButtonProps = {
   icon?: Octicon;
   selected?: boolean;
   size?: ButtonSize;
@@ -181,23 +181,23 @@ type BuildSystemIconTaskButtonProps = {
   iconComponent: ReactClass<any>;
 };
 
-function BuildSystemIconTaskButton(props: BuildSystemIconTaskButtonProps): React.Element<any> {
+function TaskRunnerIconTaskButton(props: TaskRunnerIconTaskButtonProps): React.Element<any> {
   const IconComponent = props.iconComponent;
   const buttonProps = {...props};
   delete buttonProps.icon;
   delete buttonProps.label;
   const icon = props.icon == null
     ? null
-    : <Icon icon={props.icon} className="nuclide-build-system-task-icon" />;
+    : <Icon icon={props.icon} className="nuclide-task-runner-system-task-icon" />;
   return (
     // $FlowFixMe
     <Button
       {...buttonProps}
-      className="nuclide-build-system-task-button">
-      <div className="nuclide-build-system-icon-wrapper">
+      className="nuclide-task-runner-system-task-button">
+      <div className="nuclide-task-runner-system-icon-wrapper">
         <IconComponent />
       </div>
-      <div className="nuclide-build-system-task-button-divider" />
+      <div className="nuclide-task-runner-system-task-button-divider" />
       {icon}
       {props.children}
     </Button>

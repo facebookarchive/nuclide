@@ -12,8 +12,8 @@
 import type {AnnotatedTask, TaskId} from './types';
 
 export function getTask(taskId: TaskId, tasks: Map<string, Array<AnnotatedTask>>): ?AnnotatedTask {
-  const tasksForBuildSystem = tasks.get(taskId.buildSystemId);
-  return tasksForBuildSystem == null
+  const tasksForRunner = tasks.get(taskId.taskRunnerId);
+  return tasksForRunner == null
     ? null
-    : tasksForBuildSystem.find(task => task.type === taskId.type);
+    : tasksForRunner.find(task => task.type === taskId.type);
 }

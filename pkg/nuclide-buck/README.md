@@ -9,4 +9,4 @@ Buck integration for Nuclide. Features include:
   * file paths in `BUCK` files
 * Syntax highlighting for `.buckconfig` files (if a package that recognizes the `source.ini`
 grammar is available).
-* A Buck build system for the nuclide-build toolbar.
+* A Buck build system for the nuclide-task-runner toolbar.

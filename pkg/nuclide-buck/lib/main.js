@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BuildSystemRegistry} from '../../nuclide-build/lib/types';
+import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {BuckBuildSystem as BuckBuildSystemType} from './BuckBuildSystem';
 import type {OutputService} from '../../nuclide-console/lib/types';
 import type {SerializedState} from './types';
@@ -42,7 +42,7 @@ export function deactivate(): void {
   disposables = null;
 }
 
-export function consumeBuildSystemRegistry(registry: BuildSystemRegistry): void {
+export function consumeBuildSystemRegistry(registry: TaskRunnerServiceApi): void {
   invariant(disposables != null);
   disposables.add(registry.register(getBuildSystem()));
 }

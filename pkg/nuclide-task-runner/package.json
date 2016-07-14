@@ -1,9 +1,9 @@
 {
-  "name": "nuclide-build",
+  "name": "nuclide-task-runner",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Build projects from Nuclide.",
+  "description": "Run tasks from Nuclide.",
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
@@ -11,9 +11,15 @@
   },
   "providedServices": {
     "nuclide.build-system-registry": {
+      "description": "Register a build system with Nuclide (Deprecated).",
+      "versions": {
+        "0.0.0": "provideTaskRunnerServiceApi"
+      }
+    },
+    "nuclide.task-runner": {
       "description": "Register a build system with Nuclide.",
       "versions": {
-        "0.0.0": "provideBuildSystemRegistry"
+        "0.0.0": "provideTaskRunnerServiceApi"
       }
     },
     "nuclide-distraction-free-mode": {

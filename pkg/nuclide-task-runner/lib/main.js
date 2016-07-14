@@ -13,14 +13,14 @@ import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {
   AppState,
   BoundActionCreators,
-  BuildSystem,
-  BuildSystemRegistry,
+  TaskRunnerServiceApi,
   SerializedAppState,
   Store,
   TaskStartedAction,
   TaskStoppedAction,
   TaskCompletedAction,
   TaskErroredAction,
+  TaskRunner,
 } from './types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
@@ -69,7 +69,7 @@ class Activation {
     this._disposables = new CompositeDisposable(
       new Disposable(() => { this._actionCreators.destroyPanel(); }),
       atom.commands.add('atom-workspace', {
-        'nuclide-build:toggle-toolbar-visibility': event => {
+        'nuclide-task-runner:toggle-toolbar-visibility': event => {
           const visible = event.detail == null ? undefined : event.detail.visible;
           if (typeof visible === 'boolean') {
             this._actionCreators.setToolbarVisibility(visible);
@@ -77,9 +77,9 @@ class Activation {
             this._actionCreators.toggleToolbarVisibility();
           }
         },
-        'nuclide-build:run-selected-task': event => {
+        'nuclide-task-runner:run-selected-task': event => {
           const detail = event != null ? (event: any).detail : null;
-          const taskId = detail != null && detail.buildSystemId && detail.type ? detail : null;
+          const taskId = detail != null && detail.taskRunnerId && detail.type ? detail : null;
           this._actionCreators.runTask(taskId);
         },
       }),
@@ -104,10 +104,10 @@ class Activation {
           }),
         task => ({
           'atom-workspace': {
-            [`nuclide-build:${task.type}`]: () => { this._actionCreators.runTask(task); },
+            [`nuclide-task-runner:${task.type}`]: () => { this._actionCreators.runTask(task); },
           },
         }),
-        task => `${task.buildSystemId}:${task.type}`,
+        task => `${task.taskRunnerId}:${task.type}`,
       ),
     );
   }
@@ -123,20 +123,20 @@ class Activation {
   }
 
   consumeToolBar(getToolBar: GetToolBar): IDisposable {
-    const toolBar = getToolBar('nuclide-build');
+    const toolBar = getToolBar('nuclide-task-runner');
     const {element} = toolBar.addButton({
-      callback: 'nuclide-build:toggle-toolbar-visibility',
-      tooltip: 'Toggle Build Toolbar',
+      callback: 'nuclide-task-runner:toggle-toolbar-visibility',
+      tooltip: 'Toggle Task Runner Toolbar',
       iconset: 'ion',
       icon: 'hammer',
       priority: 499.5,
     });
-    element.className += ' nuclide-build-tool-bar-button';
+    element.className += ' nuclide-task-runner-tool-bar-button';
 
     const buttonUpdatesDisposable = new DisposableSubscription(
       // $FlowFixMe: Update rx defs to accept ish with Symbol.observable
       Observable.from(this._store).subscribe(state => {
-        if (state.buildSystems.size > 0) {
+        if (state.taskRunners.size > 0) {
           element.removeAttribute('hidden');
         } else {
           element.setAttribute('hidden', 'hidden');
@@ -162,16 +162,16 @@ class Activation {
     });
   }
 
-  provideBuildSystemRegistry(): BuildSystemRegistry {
+  provideTaskRunnerServiceApi(): TaskRunnerServiceApi {
     let pkg = this; // eslint-disable-line consistent-this
     this._disposables.add(new Disposable(() => { pkg = null; }));
     return {
-      register: (buildSystem: BuildSystem) => {
-        invariant(pkg != null, 'Build system registry used after deactivation');
-        pkg._actionCreators.registerBuildSystem(buildSystem);
+      register: (taskRunner: TaskRunner) => {
+        invariant(pkg != null, 'Task runner service API used after deactivation');
+        pkg._actionCreators.registerTaskRunner(taskRunner);
         return new Disposable(() => {
           if (pkg != null) {
-            pkg._actionCreators.unregisterBuildSystem(buildSystem);
+            pkg._actionCreators.unregisterTaskRunner(taskRunner);
           }
         });
       },
@@ -190,7 +190,7 @@ class Activation {
     let pkg = this; // eslint-disable-line consistent-this
     this._disposables.add(new Disposable(() => { pkg = null; }));
     return {
-      name: 'nuclide-build',
+      name: 'nuclide-task-runner',
       isVisible() {
         invariant(pkg != null);
         return pkg._store.getState().visible;
@@ -211,7 +211,7 @@ class Activation {
 
 export default createPackage(Activation);
 
-function trackBuildAction(
+function trackTaskAction(
   type: string,
   action: TaskStartedAction | TaskStoppedAction | TaskCompletedAction | TaskErroredAction,
   state: AppState,
@@ -225,7 +225,7 @@ function trackBuildAction(
     type,
     data: {
       ...taskTrackingData,
-      buildSystemId: state.activeTaskId && state.activeTaskId.buildSystemId,
+      taskRunnerId: state.activeTaskId && state.activeTaskId.taskRunnerId,
       taskType: state.activeTaskId && state.activeTaskId.type,
       errorMessage: error != null ? error.message : null,
       stackTrace: error != null ? String(error.stack) : null,
@@ -236,16 +236,16 @@ function trackBuildAction(
 const trackingMiddleware = store => next => action => {
   switch (action.type) {
     case Actions.TASK_STARTED:
-      trackBuildAction('nuclide-build:task-started', action, store.getState());
+      trackTaskAction('nuclide-task-runner:task-started', action, store.getState());
       break;
     case Actions.TASK_STOPPED:
-      trackBuildAction('nuclide-build:task-stopped', action, store.getState());
+      trackTaskAction('nuclide-task-runner:task-stopped', action, store.getState());
       break;
     case Actions.TASK_COMPLETED:
-      trackBuildAction('nuclide-build:task-completed', action, store.getState());
+      trackTaskAction('nuclide-task-runner:task-completed', action, store.getState());
       break;
     case Actions.TASK_ERRORED:
-      trackBuildAction('nuclide-build:task-errored', action, store.getState());
+      trackTaskAction('nuclide-task-runner:task-errored', action, store.getState());
       break;
   }
   return next(action);

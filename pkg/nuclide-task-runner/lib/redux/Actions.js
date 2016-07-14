@@ -10,11 +10,11 @@
  */
 
 import type {
-  BuildSystem,
+  TaskRunner,
   CreatePanelAction,
   DestroyPanelAction,
   Directory,
-  RegisterBuildSystemAction,
+  RegisterTaskRunnerAction,
   RunTaskAction,
   SelectTaskAction,
   SetProjectRootAction,
@@ -23,14 +23,14 @@ import type {
   Store,
   TaskId,
   ToggleToolbarVisibilityAction,
-  UnregisterBuildSystemAction,
+  UnregisterTaskRunnerAction,
 } from '../types';
 
 export const CREATE_PANEL = 'CREATE_PANEL';
 export const DESTROY_PANEL = 'DESTROY_PANEL';
 export const PANEL_CREATED = 'PANEL_CREATED';
 export const PANEL_DESTROYED = 'PANEL_DESTROYED';
-export const REGISTER_BUILD_SYSTEM = 'REGISTER_BUILD_SYSTEM';
+export const REGISTER_TASK_RUNNER = 'REGISTER_TASK_RUNNER';
 export const RUN_TASK = 'RUN_TASK';
 export const SELECT_TASK = 'SELECT_TASK';
 export const SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';
@@ -44,7 +44,7 @@ export const TASK_ERRORED = 'TASK_ERRORED';
 export const TASKS_UPDATED = 'TASKS_UPDATED';
 export const TOGGLE_TOOLBAR_VISIBILITY = 'TOGGLE_TOOLBAR_VISIBILITY';
 export const TOOLBAR_VISIBILITY_UPDATED = 'TOOLBAR_VISIBILITY_UPDATED';
-export const UNREGISTER_BUILD_SYSTEM = 'UNREGISTER_BUILD_SYSTEM';
+export const UNREGISTER_TASK_RUNNER = 'UNREGISTER_TASK_RUNNER';
 
 export function createPanel(store: Store): CreatePanelAction {
   return {
@@ -57,10 +57,10 @@ export function destroyPanel(): DestroyPanelAction {
   return {type: DESTROY_PANEL};
 }
 
-export function registerBuildSystem(buildSystem: BuildSystem): RegisterBuildSystemAction {
+export function registerTaskRunner(taskRunner: TaskRunner): RegisterTaskRunnerAction {
   return {
-    type: REGISTER_BUILD_SYSTEM,
-    payload: {buildSystem},
+    type: REGISTER_TASK_RUNNER,
+    payload: {taskRunner},
   };
 }
 
@@ -100,11 +100,11 @@ export function toggleToolbarVisibility(): ToggleToolbarVisibilityAction {
   return {type: TOGGLE_TOOLBAR_VISIBILITY};
 }
 
-export function unregisterBuildSystem(buildSystem: BuildSystem): UnregisterBuildSystemAction {
+export function unregisterTaskRunner(taskRunner: TaskRunner): UnregisterTaskRunnerAction {
   return {
-    type: UNREGISTER_BUILD_SYSTEM,
+    type: UNREGISTER_TASK_RUNNER,
     payload: {
-      id: buildSystem.id,
+      id: taskRunner.id,
     },
   };
 }

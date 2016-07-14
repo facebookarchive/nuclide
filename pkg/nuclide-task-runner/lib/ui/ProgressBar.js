@@ -23,7 +23,7 @@ export class ProgressBar extends React.Component {
 
   render(): ?React.Element<any> {
     const className = classnames(
-      'nuclide-build-progress-bar', {
+      'nuclide-task-runner-progress-bar', {
         indeterminate: this._isIndeterminate(),
       },
     );
@@ -62,7 +62,7 @@ class Bar extends React.Component {
     );
     return (
       <div
-        className="nuclide-build-progress-bar-bar"
+        className="nuclide-task-runner-progress-bar-bar"
         style={{width: `${pct}%`}}
       />
     );

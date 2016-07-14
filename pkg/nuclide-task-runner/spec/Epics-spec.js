@@ -56,8 +56,8 @@ describe('Epics', () => {
         const cancelSpy = jasmine.createSpy('task.cancel');
         let completeTask;
 
-        const buildSystem = new dummy.BuildSystem();
-        spyOn(buildSystem, 'runTask').andReturn({
+        const taskRunner = new dummy.TaskRunner();
+        spyOn(taskRunner, 'runTask').andReturn({
           onDidComplete(cb) {
             completeTask = cb;
             return {dispose: () => {}};
@@ -72,14 +72,14 @@ describe('Epics', () => {
           ...createEmptyAppState(),
           activeTaskId: {
             type: 'test-task',
-            buildSystemId: 'test',
+            taskRunnerId: 'test',
           },
-          buildSystems: new Map([['test', buildSystem]]),
+          taskRunners: new Map([['test', taskRunner]]),
           tasks: new Map([['test', [
             {
               type: 'test-task',
-              buildSystemId: 'test',
-              buildSystemName: 'Build System',
+              taskRunnerId: 'test',
+              taskRunnerName: 'Build System',
               label: 'Test Task',
               description: 'A great task to test',
               enabled: true,
@@ -94,7 +94,7 @@ describe('Epics', () => {
             payload: {
               taskId: {
                 type: 'test-task',
-                buildSystemId: 'test',
+                taskRunnerId: 'test',
               },
             },
           }],

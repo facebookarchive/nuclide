@@ -10,7 +10,7 @@
  */
 
 import {sleep} from '../pkg/commons-node/promise';
-import activation from '../pkg/nuclide-build';
+import activation from '../pkg/nuclide-task-runner';
 import {
   activateAllPackages,
   copyFixture,
@@ -52,7 +52,7 @@ describe('Buck building via toolbar', () => {
       // Select the Buck build system.
       const commands = activation._getCommands();
       invariant(commands != null);
-      commands.selectTask({buildSystemId: 'buck', type: 'build'});
+      commands.selectTask({taskRunnerId: 'buck', type: 'build'});
     });
 
     waitsFor(
@@ -61,10 +61,10 @@ describe('Buck building via toolbar', () => {
       () => {
         atom.commands.dispatch(
           workspaceView,
-          'nuclide-build:toggle-toolbar-visibility',
+          'nuclide-task-runner:toggle-toolbar-visibility',
           {visible: true},
         );
-        buildToolbar = document.querySelector('.nuclide-build-toolbar');
+        buildToolbar = document.querySelector('.nuclide-task-runner-toolbar');
         return Boolean(buildToolbar);
       },
     );
@@ -119,11 +119,11 @@ describe('Buck building via toolbar', () => {
       await sleep(1000);
 
       // Run the project
-      atom.commands.dispatch(workspaceView, 'nuclide-build:build');
+      atom.commands.dispatch(workspaceView, 'nuclide-task-runner:build');
 
       // The Build task should be selected.
       const button = buildToolbar.querySelector(
-        '.nuclide-build-toolbar-contents .nuclide-ui-split-button-dropdown button'
+        '.nuclide-task-runner-toolbar-contents .nuclide-ui-split-button-dropdown button'
       );
       expect(button.textContent).toBe('Build');
     });

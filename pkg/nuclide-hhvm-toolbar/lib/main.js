@@ -11,7 +11,7 @@
 
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {BuildSystem, BuildSystemRegistry} from '../../nuclide-build/lib/types';
+import type {TaskRunner, TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import type ProjectStoreType from './ProjectStore';
@@ -87,11 +87,11 @@ class Activation {
     return disposable;
   }
 
-  consumeBuildSystemRegistry(registry: BuildSystemRegistry): void {
+  consumeBuildSystemRegistry(registry: TaskRunnerServiceApi): void {
     this._disposables.add(registry.register(this._getBuildSystem()));
   }
 
-  _getBuildSystem(): BuildSystem {
+  _getBuildSystem(): TaskRunner {
     if (this._buildSystem == null) {
       const buildSystem = new HhvmBuildSystem();
       if (this._cwdApi != null) {
@@ -170,7 +170,7 @@ export function activate(state: ?Object) {
   }
 }
 
-export function consumeBuildSystemRegistry(registry: BuildSystemRegistry): void {
+export function consumeBuildSystemRegistry(registry: TaskRunnerServiceApi): void {
   invariant(activation);
   activation.consumeBuildSystemRegistry(registry);
 }

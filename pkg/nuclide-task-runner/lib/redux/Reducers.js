@@ -89,33 +89,33 @@ export function app(state: AppState, action: Action): AppState {
         projectRoot,
       };
     }
-    case Actions.REGISTER_BUILD_SYSTEM: {
-      const {buildSystem} = action.payload;
+    case Actions.REGISTER_TASK_RUNNER: {
+      const {taskRunner} = action.payload;
       return {
         ...state,
-        buildSystems: new Map(state.buildSystems).set(buildSystem.id, buildSystem),
+        taskRunners: new Map(state.taskRunners).set(taskRunner.id, taskRunner),
       };
     }
-    case Actions.UNREGISTER_BUILD_SYSTEM: {
+    case Actions.UNREGISTER_TASK_RUNNER: {
       const {id} = action.payload;
-      const buildSystems = new Map(state.buildSystems);
+      const taskRunners = new Map(state.taskRunners);
       const tasks = new Map(state.tasks);
-      buildSystems.delete(id);
+      taskRunners.delete(id);
       tasks.delete(id);
       return {
         ...state,
-        buildSystems,
+        taskRunners,
         tasks,
       };
     }
     case Actions.TASKS_UPDATED: {
-      const {tasks, buildSystemId} = action.payload;
-      const buildSystem = state.buildSystems.get(buildSystemId);
-      const buildSystemName = buildSystem && buildSystem.name;
-      const annotatedTasks = tasks.map(task => ({...task, buildSystemId, buildSystemName}));
+      const {tasks, taskRunnerId} = action.payload;
+      const taskRunner = state.taskRunners.get(taskRunnerId);
+      const taskRunnerName = taskRunner && taskRunner.name;
+      const annotatedTasks = tasks.map(task => ({...task, taskRunnerId, taskRunnerName}));
       const newState = {
         ...state,
-        tasks: new Map(state.tasks).set(buildSystemId, annotatedTasks),
+        tasks: new Map(state.tasks).set(taskRunnerId, annotatedTasks),
       };
 
       const prevTaskId = state.previousSessionActiveTaskId;
@@ -124,7 +124,7 @@ export function app(state: AppState, action: Action): AppState {
       // session make it the active one.
       if (
         prevTaskId != null
-        && buildSystemId === prevTaskId.buildSystemId
+        && taskRunnerId === prevTaskId.taskRunnerId
         && annotatedTasks.some(task => task.type === prevTaskId.type)
       ) {
         return {
@@ -138,7 +138,7 @@ export function app(state: AppState, action: Action): AppState {
       const activeTaskWasRemoved = () => {
         if (state.activeTaskId == null) { return false; }
         const activeTaskType = state.activeTaskId.type;
-        return state.activeTaskId.buildSystemId === buildSystemId
+        return state.activeTaskId.taskRunnerId === taskRunnerId
           && !annotatedTasks.some(task => task.type === activeTaskType);
       };
       if (state.activeTaskId == null || activeTaskWasRemoved()) {
@@ -147,7 +147,7 @@ export function app(state: AppState, action: Action): AppState {
           ...newState,
           activeTaskId: activeTask == null
             ? null
-            : {type: activeTask.type, buildSystemId: activeTask.buildSystemId},
+            : {type: activeTask.type, taskRunnerId: activeTask.taskRunnerId},
           // Remember what we really wanted, so we can return to it later.
           previousSessionActiveTaskId: state.previousSessionActiveTaskId || state.activeTaskId,
         };

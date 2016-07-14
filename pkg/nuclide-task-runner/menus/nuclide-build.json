@@ -4,15 +4,15 @@
       "label": "Nuclide",
       "submenu": [
         {
-          "label": "Build",
+          "label": "Task Runner",
           "submenu": [
             {
               "label": "Toggle Toolbar Visibility",
-              "command": "nuclide-build:toggle-toolbar-visibility"
+              "command": "nuclide-task-runner:toggle-toolbar-visibility"
             },
             {
               "label": "Run Selected Task",
-              "command": "nuclide-build:run-selected-task"
+              "command": "nuclide-task-runner:run-selected-task"
             }
           ]
         }
@@ -20,9 +20,9 @@
     }
   ],
   "context-menu": {
-    ".nuclide-build-toolbar": [
+    ".nuclide-task-runner-toolbar": [
       {
-        "command": "nuclide-build:toggle-toolbar-visibility",
+        "command": "nuclide-task-runner:toggle-toolbar-visibility",
         "label": "Hide Toolbar"
       }
     ]

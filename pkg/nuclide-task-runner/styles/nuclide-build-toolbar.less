@@ -1,10 +1,10 @@
 @import 'ui-variables';
 
-@nuclide-build-indeterminate-bar-1-size: 1000px;
-@nuclide-build-indeterminate-bar-2-size: 1800px;
-@nuclide-build-indeterminate-bar-2-color: fade(@ui-site-color-1, 30%);
+@nuclide-task-runner-indeterminate-bar-1-size: 1000px;
+@nuclide-task-runner-indeterminate-bar-2-size: 1800px;
+@nuclide-task-runner-indeterminate-bar-2-color: fade(@ui-site-color-1, 30%);
 
-.nuclide-build-toolbar {
+.nuclide-task-runner-toolbar {
   border-bottom: 1px solid @tool-panel-border-color;
 
   // Make sure this appears over atom-tabs, including the "selected tab"
@@ -13,7 +13,7 @@
   z-index: 3;
 }
 
-.nuclide-build-progress-bar {
+.nuclide-task-runner-progress-bar {
   width: 100%;
   height: 2px;
   position: absolute;
@@ -31,7 +31,7 @@
       transparent 25%,
       transparent 100%,
     );
-    background-size: @nuclide-build-indeterminate-bar-1-size 100%;
+    background-size: @nuclide-task-runner-indeterminate-bar-1-size 100%;
     animation: animate-indeterminate-bar 8s linear infinite;
 
     &:before {
@@ -42,12 +42,12 @@
 
       background-image: repeating-linear-gradient(
         90deg,
-        @nuclide-build-indeterminate-bar-2-color 0%,
-        @nuclide-build-indeterminate-bar-2-color 25%,
+        @nuclide-task-runner-indeterminate-bar-2-color 0%,
+        @nuclide-task-runner-indeterminate-bar-2-color 25%,
         transparent 25%,
         transparent 100%,
       );
-      background-size: @nuclide-build-indeterminate-bar-2-size 100%;
+      background-size: @nuclide-task-runner-indeterminate-bar-2-size 100%;
       animation: animate-indeterminate-bar-2 8s linear infinite;
     }
   }
@@ -56,15 +56,15 @@
 
 @keyframes animate-indeterminate-bar {
    0% { background-position: 0 0; }
-   100% { background-position: @nuclide-build-indeterminate-bar-1-size 0; }
+   100% { background-position: @nuclide-task-runner-indeterminate-bar-1-size 0; }
 }
 
 @keyframes animate-indeterminate-bar-2 {
    0% { background-position: 0 0; }
-   100% { background-position: @nuclide-build-indeterminate-bar-2-size 0; }
+   100% { background-position: @nuclide-task-runner-indeterminate-bar-2-size 0; }
 }
 
-.nuclide-build-progress-bar-bar {
+.nuclide-task-runner-progress-bar-bar {
   position: absolute;
   height: 100%;
   left: 0;
@@ -73,12 +73,12 @@
   background-color: @ui-site-color-1;
 }
 
-.nuclide-build-toolbar-contents {
+.nuclide-task-runner-toolbar-contents {
   display: flex;
   align-items: center;
 }
 
-.nuclide-build-system-icon-wrapper {
+.nuclide-task-runner-system-icon-wrapper {
   display: flex;
   align-items: center;
   height: 15px;
@@ -88,14 +88,14 @@
   }
 }
 
-.nuclide-build-system-task-button,
-.nuclide-build-system-task-icon,
-.nuclide-build-system-task-icon::before {
+.nuclide-task-runner-system-task-button,
+.nuclide-task-runner-system-task-icon,
+.nuclide-task-runner-system-task-icon::before {
   display: flex;
   align-items: center;
 }
 
-.nuclide-build-system-task-button-divider {
+.nuclide-task-runner-system-task-button-divider {
   height: 10px;
   width: 1px;
   background-color: @button-border-color;
@@ -104,7 +104,7 @@
   margin-left: 8px;
 }
 
-.nuclide-build-system-task-icon {
+.nuclide-task-runner-system-task-icon {
   &::before {
     font-size: 11px;
     width: auto;
@@ -112,11 +112,11 @@
 }
 
 // The shortcut toolbar (suda/tool-bar) button
-.nuclide-build-tool-bar-button[hidden] {
+.nuclide-task-runner-tool-bar-button[hidden] {
   display: none;
 }
 
 // The shortcut toolbar (suda/tool-bar) button
-.nuclide-build-tool-bar-button[hidden] {
+.nuclide-task-runner-tool-bar-button[hidden] {
   display: none;
 }
