@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState} from '../types';
+import type {Action, AnnotatedTask, AppState} from '../types';
 
 import * as Actions from './Actions';
 
@@ -31,11 +31,11 @@ export function app(state: AppState, action: Action): AppState {
       };
     }
     case Actions.SELECT_TASK: {
-      const {taskType} = action.payload;
+      const {taskId} = action.payload;
       return {
         ...state,
-        activeTaskType: taskType,
-        previousSessionActiveTaskType: null,
+        activeTaskId: taskId,
+        previousSessionActiveTaskId: null,
       };
     }
     case Actions.TASK_COMPLETED: {
@@ -84,72 +84,65 @@ export function app(state: AppState, action: Action): AppState {
     }
     case Actions.REGISTER_BUILD_SYSTEM: {
       const {buildSystem} = action.payload;
-      const newState = {
+      return {
         ...state,
         buildSystems: new Map(state.buildSystems).set(buildSystem.id, buildSystem),
-      };
-
-      // If the newly selected build system is the one we were waiting to restore from the user's
-      // previous session (or we have no active build system), make it the active one.
-      if (
-        buildSystem.id === state.previousSessionActiveBuildSystemId ||
-        state.activeBuildSystemId == null
-      ) {
-        return setBuildSystem(newState, buildSystem.id);
-      }
-
-      return newState;
-    }
-    case Actions.SELECT_BUILD_SYSTEM: {
-      const {id} = action.payload;
-      return {
-        ...setBuildSystem(state, id),
-
-        // Now that the user has selected a build system, we no longer care about what the selected
-        // one was the last session.
-        previousSessionActiveBuildSystemId: null,
       };
     }
     case Actions.UNREGISTER_BUILD_SYSTEM: {
       const {id} = action.payload;
       const buildSystems = new Map(state.buildSystems);
+      const tasks = new Map(state.tasks);
       buildSystems.delete(id);
+      tasks.delete(id);
       return {
         ...state,
         buildSystems,
+        tasks,
       };
     }
     case Actions.TASKS_UPDATED: {
-      const {tasks} = action.payload;
+      const {tasks, buildSystemId} = action.payload;
+      const buildSystem = state.buildSystems.get(buildSystemId);
+      const buildSystemName = buildSystem && buildSystem.name;
+      const annotatedTasks = tasks.map(task => ({...task, buildSystemId, buildSystemName}));
       const newState = {
         ...state,
-        tasks: tasks.slice(),
+        tasks: new Map(state.tasks).set(buildSystemId, annotatedTasks),
       };
+
+      const prevTaskId = state.previousSessionActiveTaskId;
 
       // If the new tasks contain the one we were waiting to restore from the user's previous
       // session make it the active one.
-      if (tasks.some(task => task.type === state.previousSessionActiveTaskType)) {
+      if (
+        prevTaskId != null
+        && buildSystemId === prevTaskId.buildSystemId
+        && annotatedTasks.some(task => task.type === prevTaskId.type)
+      ) {
         return {
           ...newState,
-          activeTaskType: state.previousSessionActiveTaskType,
-          previousSessionActiveTaskType: null,
+          activeTaskId: state.previousSessionActiveTaskId,
+          previousSessionActiveTaskId: null,
         };
       }
 
-      // If there's no active task (or it was removed), change the active task to something
-      // sensible.
-      if (
-        (state.activeTaskType == null) || !tasks.some(task => task.type === state.activeTaskType)
-      ) {
-        const activeTaskType = tasks.length > 0
-          ? tasks[0].type
-          : null;
+      // If there's no active task (or it was removed), just pick one.
+      const activeTaskWasRemoved = () => {
+        if (state.activeTaskId == null) { return false; }
+        const activeTaskType = state.activeTaskId.type;
+        return state.activeTaskId.buildSystemId === buildSystemId
+          && !annotatedTasks.some(task => task.type === activeTaskType);
+      };
+      if (state.activeTaskId == null || activeTaskWasRemoved()) {
+        const activeTask = getFirstTask(newState.tasks);
         return {
           ...newState,
-          activeTaskType,
+          activeTaskId: activeTask == null
+            ? null
+            : {type: activeTask.type, buildSystemId: activeTask.buildSystemId},
           // Remember what we really wanted, so we can return to it later.
-          previousSessionActiveTaskType:
-            state.previousSessionActiveTaskType || state.activeTaskType,
+          previousSessionActiveTaskId: state.previousSessionActiveTaskId || state.activeTaskId,
         };
       }
 
@@ -160,14 +153,10 @@ export function app(state: AppState, action: Action): AppState {
   return state;
 }
 
-function setBuildSystem(state: AppState, buildSystemId: ?string): AppState {
-  return {
-    ...state,
-
-    // We're not sure if the new build system will have the currently active task type.
-    activeTaskType: null,
-    previousSessionActiveTaskType: state.previousSessionActiveTaskType || state.activeTaskType,
-
-    activeBuildSystemId: buildSystemId,
-  };
+function getFirstTask(tasks: Map<string, Array<AnnotatedTask>>): ?AnnotatedTask {
+  for (const tasksArray of tasks.values()) {
+    for (const task of tasksArray) {
+      return task;
+    }
+  }
 }

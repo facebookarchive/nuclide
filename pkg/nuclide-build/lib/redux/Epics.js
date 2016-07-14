@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState, BuildSystem, IconButtonOption, Store, Task} from '../types';
+import type {Action, AppState, BuildSystem, Store, Task, TaskId} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
@@ -17,6 +17,7 @@ import once from '../../../commons-node/once';
 import {bindObservableAsProps} from '../../../nuclide-ui/lib/bindObservableAsProps';
 import {BuildToolbar} from '../ui/BuildToolbar';
 import {getActiveBuildSystem} from '../getActiveBuildSystem';
+import {getTask} from '../getTask';
 import * as Actions from './Actions';
 import invariant from 'assert';
 import {React, ReactDOM} from 'react-for-atom';
@@ -36,9 +37,8 @@ export function createPanelEpic(actions: ActionsObservable<Action>): Observable<
       const {store} = action.payload;
 
       const staticProps = {
-        runTask: taskType => { store.dispatch(Actions.runTask(taskType)); },
-        selectBuildSystem: id => { store.dispatch(Actions.selectBuildSystem(id)); },
-        selectTask: taskType => { store.dispatch(Actions.selectTask(taskType)); },
+        runTask: task => { store.dispatch(Actions.runTask(task)); },
+        selectTask: task => { store.dispatch(Actions.selectTask(task)); },
         stopTask: () => { store.dispatch(Actions.stopTask()); },
         getActiveBuildSystemIcon: () => {
           const activeBuildSystem = getActiveBuildSystem(store.getState());
@@ -47,18 +47,22 @@ export function createPanelEpic(actions: ActionsObservable<Action>): Observable<
       };
 
       const props = Observable.from(store)
+        // Delay the inital render. This way we (probably) won't wind up rendering the wrong build
+        // system before the correct one is registered.
+        .cache(1)
+        .skipUntil(Observable.interval(300).first())
+
         .map(state => {
           const activeBuildSystem = getActiveBuildSystem(state);
           return {
             ...staticProps,
+            buildSystemInfo: Array.from(state.buildSystems.values()),
             getExtraUi: activeBuildSystem != null && activeBuildSystem.getExtraUi != null
               ? activeBuildSystem.getExtraUi.bind(activeBuildSystem)
               : null,
-            buildSystemOptions: getBuildSystemOptions(state),
-            activeBuildSystemId: activeBuildSystem && activeBuildSystem.id,
             progress: state.taskStatus && state.taskStatus.progress,
             visible: state.visible,
-            activeTaskType: state.activeTaskType,
+            activeTaskId: state.activeTaskId,
             taskIsRunning: state.taskStatus != null,
             tasks: state.tasks,
           };
@@ -94,19 +98,27 @@ export function destroyPanelEpic(
     });
 }
 
-/**
- * Update the tasks to match the active build system.
- */
-export function refreshTasksEpic(
+export function registerBuildSystemEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(Actions.REFRESH_TASKS)
-    .switchMap(action => (
-      // Only update the tasks if the toolbar is visible. Otherwise, they'll be updated when it
-      // becomes visible later. This prevents us from doing unnecessary work.
-      store.getState().visible ? Observable.of(Actions.updateTasks()) : Observable.empty()
+  return actions.ofType(Actions.REGISTER_BUILD_SYSTEM).flatMap(action => {
+    invariant(action.type === Actions.REGISTER_BUILD_SYSTEM);
+    const {buildSystem} = action.payload;
+    const tasksToAction = tasks => ({
+      type: Actions.TASKS_UPDATED,
+      payload: {
+        buildSystemId: buildSystem.id,
+        tasks,
+      },
+    });
+    const unregistrationEvents = actions.filter(a => (
+      a.type === Actions.UNREGISTER_BUILD_SYSTEM && a.payload.id === buildSystem.id
     ));
+    return observableFromSubscribeFunction(buildSystem.observeTasks.bind(buildSystem))
+      .map(tasksToAction)
+      .takeUntil(unregistrationEvents);
+  });
 }
 
 export function runTaskEpic(
@@ -116,18 +128,18 @@ export function runTaskEpic(
   return actions.ofType(Actions.RUN_TASK)
     .switchMap(action => {
       invariant(action.type === Actions.RUN_TASK);
-      const taskType = action.payload.taskType || store.getState().activeTaskType;
+      const taskToRun = action.payload.taskId || store.getState().activeTaskId;
 
       // Don't do anything if there's no active task.
-      if (taskType == null) { return Observable.empty(); }
+      if (taskToRun == null) { return Observable.empty(); }
 
       // Don't do anything if a task is already running.
       if (store.getState().taskStatus != null) { return Observable.empty(); }
 
       return Observable.concat(
-        store.getState().activeTaskType === taskType
+        taskIdsAreEqual(store.getState().activeTaskId, taskToRun)
           ? Observable.empty()
-          : Observable.of(Actions.selectTask(taskType)),
+          : Observable.of(Actions.selectTask(taskToRun)),
         Observable.defer(() => {
           const state = store.getState();
           const activeBuildSystem = getActiveBuildSystem(state);
@@ -136,7 +148,7 @@ export function runTaskEpic(
             return Observable.empty();
           }
 
-          const task = state.tasks.find(t => t.type === taskType);
+          const task = getTask(taskToRun, state.tasks);
           invariant(task != null);
 
           if (!task.enabled) {
@@ -158,18 +170,13 @@ export function setToolbarVisibilityEpic(
   store: Store,
 ): Observable<Action> {
   return actions.ofType(Actions.SET_TOOLBAR_VISIBILITY)
-    .switchMap(action => {
+    .map(action => {
       invariant(action.type === Actions.SET_TOOLBAR_VISIBILITY);
       const {visible} = action.payload;
-      const visibilityUpdatedAction = {
+      return {
         type: Actions.TOOLBAR_VISIBILITY_UPDATED,
         payload: {visible},
       };
-
-      // When the toolbar becomes visible, update the task list too.
-      return visible && !store.getState().visible
-        ? Observable.of(visibilityUpdatedAction, Actions.updateTasks())
-        : Observable.of(visibilityUpdatedAction);
     });
 }
 
@@ -196,29 +203,6 @@ export function toggleToolbarVisibilityEpic(
 ): Observable<Action> {
   return actions.ofType(Actions.TOGGLE_TOOLBAR_VISIBILITY)
     .map(action => Actions.setToolbarVisibility(!store.getState().visible));
-}
-
-export function updateTasksEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.UPDATE_TASKS)
-    .switchMap(action => {
-      const activeBuildSystem = getActiveBuildSystem(store.getState());
-      const tasksToAction = tasks => ({
-        type: Actions.TASKS_UPDATED,
-        payload: {tasks},
-      });
-      const noTasks = Observable.of(tasksToAction([]));
-      return activeBuildSystem == null
-        ? noTasks
-        : noTasks.concat(
-            observableFromSubscribeFunction(
-              activeBuildSystem.observeTasks.bind(activeBuildSystem)
-            )
-            .map(tasksToAction)
-          );
-    });
 }
 
 /**
@@ -301,11 +285,7 @@ function createTaskObservable(
     .share();
 }
 
-function getBuildSystemOptions(state: AppState): Array<IconButtonOption> {
-  // TODO: Sort alphabetically?
-  return Array.from(state.buildSystems.values())
-    .map(buildSystem => ({
-      value: buildSystem.id,
-      label: buildSystem.name,
-    }));
+function taskIdsAreEqual(a: ?TaskId, b: ?TaskId): boolean {
+  if (a == null || b == null) { return false; }
+  return a.type === b.type && a.buildSystemId === b.buildSystemId;
 }

@@ -9,58 +9,56 @@
  * the root directory of this source tree.
  */
 
-import type {IconButtonOption, Task} from '../types';
+import type {AnnotatedTask, TaskId} from '../types';
 
 import {Button, ButtonSizes} from '../../../nuclide-ui/lib/Button';
 import {SplitButtonDropdown} from '../../../nuclide-ui/lib/SplitButtonDropdown';
-import {BuildSystemButton} from './BuildSystemButton';
 import {ProgressBar} from './ProgressBar';
+import {getTask} from '../getTask';
 import {React} from 'react-for-atom';
 
+type BuildSystemInfo = {
+  id: string;
+  name: string;
+};
+
 type Props = {
-  activeBuildSystemId: ?string;
-  buildSystemOptions: Array<IconButtonOption>;
+  buildSystemInfo: Array<BuildSystemInfo>;
   getActiveBuildSystemIcon: () => ?ReactClass<any>;
   getExtraUi: ?() => ReactClass<any>;
   progress: ?number;
   visible: boolean;
-  runTask: (taskType?: string) => void;
-  activeTaskType: ?string;
-  selectBuildSystem: (id: string) => void;
-  selectTask: (taskType: ?string) => void;
+  runTask: (taskId?: TaskId) => void;
+  activeTaskId: ?TaskId;
+  selectTask: (taskId: TaskId) => void;
   stopTask: () => void;
   taskIsRunning: boolean;
-  tasks: Array<Task>;
+  tasks: Map<string, Array<AnnotatedTask>>;
 };
 
 export class BuildToolbar extends React.Component {
   props: Props;
 
   render(): ?React.Element<any> {
-    if (!this.props.visible || this.props.activeBuildSystemId == null) {
+    if (!this.props.visible) {
       return null;
     }
 
-    const activeBuildSystemIcon = this.props.getActiveBuildSystemIcon();
-    // Default to the first task if no task is currently active.
-    const activeTaskType = this.props.activeTaskType ||
-      (this.props.tasks[0] && this.props.tasks[0].type);
-    const activeTask = this.props.tasks.find(task => task.type === activeTaskType);
+    const activeTaskId = this.props.activeTaskId;
+    const activeTask = activeTaskId == null
+      ? null
+      : getTask(activeTaskId, this.props.tasks);
+
     const ExtraUi = this.props.getExtraUi && this.props.getExtraUi();
 
     return (
       <div className="nuclide-build-toolbar">
         <div className="nuclide-build-toolbar-contents padded">
-          <BuildSystemButton
-            icon={activeBuildSystemIcon}
-            value={this.props.activeBuildSystemId}
-            options={this.props.buildSystemOptions}
-            disabled={this.props.taskIsRunning}
-            onChange={value => { this.props.selectBuildSystem(value); }}
-          />
+          {this._renderIcon()}
           <div className="inline-block">
             <TaskButton
               activeTask={activeTask}
+              buildSystemInfo={this.props.buildSystemInfo}
               runTask={this.props.runTask}
               selectTask={this.props.selectTask}
               taskIsRunning={this.props.taskIsRunning}
@@ -74,7 +72,7 @@ export class BuildToolbar extends React.Component {
               onClick={() => { this.props.stopTask(); }}
             />
           </div>
-          {ExtraUi ? <ExtraUi activeTaskType={this.props.activeTaskType} /> : null}
+          {ExtraUi && activeTask ? <ExtraUi activeTaskType={activeTask.type} /> : null}
         </div>
         <ProgressBar
           progress={this.props.progress}
@@ -84,46 +82,77 @@ export class BuildToolbar extends React.Component {
     );
   }
 
+  _renderIcon(): ?React.Element<any> {
+    const ActiveBuildSystemIcon = this.props.getActiveBuildSystemIcon();
+    if (ActiveBuildSystemIcon == null) { return; }
+    return (
+      <div className="nuclide-build-system-icon-wrapper inline-block">
+        <ActiveBuildSystemIcon />
+      </div>
+    );
+  }
+
 }
 
 type TaskButtonProps = {
-  activeTask: ?Task;
-  runTask: (taskType?: string) => void;
-  selectTask: (taskType: ?string) => void;
+  activeTask: ?AnnotatedTask;
+  buildSystemInfo: Array<BuildSystemInfo>;
+  runTask: (taskId?: TaskId) => void;
+  selectTask: (taskId: TaskId) => void;
   taskIsRunning: boolean;
-  tasks: Array<Task>;
+  tasks: Map<string, Array<AnnotatedTask>>;
 };
 
 function TaskButton(props: TaskButtonProps): React.Element<any> {
-  const activeTaskType = props.activeTask == null ? undefined : props.activeTask.type;
   const confirmDisabled = props.taskIsRunning || !props.activeTask || !props.activeTask.enabled;
+  const run = () => {
+    if (props.activeTask != null) {
+      props.runTask(props.activeTask);
+    }
+  };
 
-  if (props.tasks.length <= 1) {
+  const taskCount = Array.from(props.tasks.values()).reduce((n, tasks) => n + tasks.length, 0);
+
+  if (taskCount <= 1) {
     // If there are no tasks, just show "Run" (but have it disabled). It's just less weird than some
     // kind of placeholder.
-    const task = props.tasks[0] || {value: null, label: 'Run', icon: 'triangle-right'};
+    const task = props.activeTask || {value: null, label: 'Run', icon: 'triangle-right'};
     return (
       <Button
         size={ButtonSizes.SMALL}
         disabled={confirmDisabled}
         icon={task.icon}
-        onClick={() => { props.runTask(activeTaskType); }}>
+        onClick={run}>
         {task.label}
       </Button>
     );
   } else {
-    const taskOptions = props.tasks.map(task => ({
-      value: task.type,
-      label: task.label,
-      icon: task.icon,
-    }));
-
+    const buildSystemInfo = props.buildSystemInfo.slice().sort((a, b) => abcSort(a.name, b.name));
+    let taskOptions = [];
+    buildSystemInfo.forEach(info => {
+      const buildSystemName = info.name;
+      const tasks = props.tasks.get(info.id) || [];
+      if (tasks.length === 0) { return; }
+      taskOptions.push({
+        value: null,
+        label: buildSystemName,
+        disabled: true,
+      });
+      taskOptions.push(
+        ...tasks.map(task => ({
+          value: task,
+          label: `  ${task.label}`,
+          selectedLabel: task.label,
+          icon: task.icon,
+        }))
+      );
+    });
     return (
       <SplitButtonDropdown
-        value={activeTaskType}
+        value={props.activeTask}
         options={taskOptions}
         onChange={value => { props.selectTask(value); }}
-        onConfirm={() => { props.runTask(activeTaskType); }}
+        onConfirm={run}
         confirmDisabled={confirmDisabled}
         changeDisabled={props.taskIsRunning}
         size={ButtonSizes.SMALL}
@@ -131,3 +160,5 @@ function TaskButton(props: TaskButtonProps): React.Element<any> {
     );
   }
 }
+
+const abcSort = (a, b) => (a.toLowerCase() < b.toLowerCase() ? -1 : 1);

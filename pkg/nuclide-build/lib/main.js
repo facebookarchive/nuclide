@@ -78,43 +78,30 @@ class Activation {
         },
       }),
 
-      // Update the Atom palette commands to match our currently enabled tasks.
+      // Add a command for each task type. If there's more than one of the same type enabled, the
+      // first is used.
+      // TODO: Instead, prompt user for which to use and remember their choice.
       syncAtomCommands(
         states
           .debounceTime(500)
           .map(state => state.tasks)
           .distinctUntilChanged()
-          .map(tasks => new Set(tasks.filter(task => task.enabled).map(task => task.type))),
-        taskType => ({
+          .map(tasks => {
+            const allTasks = Array.prototype.concat(...Array.from(tasks.values()));
+            const tasksByType = new Map();
+            allTasks.forEach(task => {
+              if (task.type && task.enabled && !tasksByType.has(task.type)) {
+                tasksByType.set(task.type, task);
+              }
+            });
+            return new Set(tasksByType.values());
+          }),
+        task => ({
           'atom-workspace': {
-            [`nuclide-build:${taskType}`]: () => { this._actionCreators.runTask(taskType); },
+            [`nuclide-build:${task.type}`]: () => { this._actionCreators.runTask(task); },
           },
         }),
-      ),
-
-      // Add Atom palette commands for selecting the build system.
-      syncAtomCommands(
-        states
-          .debounceTime(500)
-          .map(state => state.buildSystems)
-          .distinctUntilChanged()
-          .map(buildSystems => new Set(buildSystems.values())),
-        buildSystem => ({
-          'atom-workspace': {
-            [`nuclide-build:select-${buildSystem.name}-build-system`]: () => {
-              this._actionCreators.selectBuildSystem(buildSystem.id);
-            },
-          },
-        }),
-      ),
-
-      // Update the tasks whenever the build system changes. This is a little weird because state
-      // changes are triggering commands that trigger state changes. Maybe there's a better place to
-      // do this?
-      new DisposableSubscription(
-        states.map(state => state.activeBuildSystemId)
-          .distinctUntilChanged()
-          .subscribe(() => { this._actionCreators.refreshTasks(); })
+        task => `${task.buildSystemId}:${task.type}`,
       ),
     );
   }
@@ -182,10 +169,7 @@ class Activation {
   serialize(): SerializedAppState {
     const state = this._store.getState();
     return {
-      previousSessionActiveBuildSystemId:
-        state.activeBuildSystemId || state.previousSessionActiveBuildSystemId,
-      previousSessionActiveTaskType:
-        state.activeTaskType || state.previousSessionActiveTaskType,
+      previousSessionActiveTaskId: state.activeTaskId || state.previousSessionActiveTaskId,
       visible: state.visible,
     };
   }
@@ -229,8 +213,8 @@ function trackBuildAction(
     type,
     data: {
       ...taskTrackingData,
-      buildSystemId: state.activeBuildSystemId,
-      taskType: state.activeTaskType,
+      buildSystemId: state.activeTaskId && state.activeTaskId.buildSystemId,
+      taskType: state.activeTaskId && state.activeTaskId.type,
       errorMessage: error != null ? error.message : null,
       stackTrace: error != null ? String(error.stack) : null,
     },

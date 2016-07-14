@@ -52,7 +52,7 @@ describe('Buck building via toolbar', () => {
       // Select the Buck build system.
       const commands = activation._getCommands();
       invariant(commands != null);
-      commands.selectBuildSystem('buck');
+      commands.selectTask({buildSystemId: 'buck', type: 'build'});
     });
 
     waitsFor(

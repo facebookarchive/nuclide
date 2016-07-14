@@ -70,25 +70,32 @@ describe('Epics', () => {
 
         const state = {
           ...createEmptyAppState(),
-          activeBuildSystemId: 'test',
-          activeTaskType: 'test-task',
+          activeTaskId: {
+            type: 'test-task',
+            buildSystemId: 'test',
+          },
           buildSystems: new Map([['test', buildSystem]]),
-          tasks: [
+          tasks: new Map([['test', [
             {
               type: 'test-task',
+              buildSystemId: 'test',
+              buildSystemName: 'Build System',
               label: 'Test Task',
               description: 'A great task to test',
               enabled: true,
               icon: 'squirrel',
             },
-          ],
+          ]]]),
         };
 
         const output = runActions(
           [{
             type: Actions.RUN_TASK,
             payload: {
-              taskType: 'test-task',
+              taskId: {
+                type: 'test-task',
+                buildSystemId: 'test',
+              },
             },
           }],
           state,
@@ -103,107 +110,6 @@ describe('Epics', () => {
           Actions.TASK_COMPLETED,
         ]);
         expect(cancelSpy).not.toHaveBeenCalled();
-      });
-    });
-
-  });
-
-  describe('REFRESH_TASKS', () => {
-
-    let buildSystem;
-    let initialState;
-
-    beforeEach(() => {
-      buildSystem = new dummy.BuildSystem();
-      const tasks = [{
-        type: 'ex',
-        label: 'Test Task',
-        description: 'A great task to test',
-        enabled: true,
-        icon: 'squirrel',
-      }];
-      buildSystem._tasks.next(tasks);
-      spyOn(buildSystem, 'observeTasks').andCallThrough();
-      initialState = {
-        ...createEmptyAppState(),
-        activeBuildSystemId: buildSystem.id,
-        buildSystems: new Map([[buildSystem.id, buildSystem]]),
-      };
-    });
-
-    it('updates the tasks if the toolbar is visible', () => {
-      waitsForPromise(async () => {
-        const result = await runActions(
-          [{type: Actions.REFRESH_TASKS}],
-          {...initialState, visible: true},
-        ).toArray().toPromise();
-        expect(result).toEqual([{type: 'UPDATE_TASKS'}]);
-      });
-    });
-
-    it("doesn't update tasks if the toolbar isn't visible", () => {
-      waitsForPromise(async () => {
-        const result = await runActions(
-          [{type: Actions.REFRESH_TASKS}],
-          {...initialState, visible: false},
-        ).toArray().toPromise();
-        expect(result).toEqual([]);
-      });
-    });
-
-  });
-
-  describe('UPDATE_TASKS', () => {
-
-    let buildSystem;
-    let initialState;
-
-    beforeEach(() => {
-      buildSystem = new dummy.BuildSystem();
-      const tasks = [{
-        type: 'ex',
-        label: 'Test Task',
-        description: 'A great task to test',
-        enabled: true,
-        icon: 'squirrel',
-      }];
-      buildSystem._tasks.next(tasks);
-      spyOn(buildSystem, 'observeTasks').andCallThrough();
-      initialState = {
-        ...createEmptyAppState(),
-        activeBuildSystemId: buildSystem.id,
-        buildSystems: new Map([[buildSystem.id, buildSystem]]),
-      };
-    });
-
-    it("clears the tasks immediately (in cases the build system's observeTasks doesn't)", () => {
-      waitsForPromise(async () => {
-        const result = await runActions([{type: Actions.UPDATE_TASKS}], initialState)
-          .first()
-          .toPromise();
-        expect(result).toEqual({type: 'TASKS_UPDATED', payload: {tasks: []}});
-      });
-    });
-
-    it('gets tasks from the build system', () => {
-      waitsForPromise(async () => {
-        const result = await runActions([{type: Actions.UPDATE_TASKS}], initialState)
-          .skip(1)
-          .take(1)
-          .toPromise();
-        expect(result).toEqual({
-          type: 'TASKS_UPDATED',
-          payload: {
-            tasks: [{
-              type: 'ex',
-              label: 'Test Task',
-              description: 'A great task to test',
-              enabled: true,
-              icon: 'squirrel',
-            }],
-          },
-        });
-        expect(buildSystem.observeTasks).toHaveBeenCalled();
       });
     });
 

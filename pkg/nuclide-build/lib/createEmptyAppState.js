@@ -13,13 +13,11 @@ import type {AppState} from './types';
 
 export function createEmptyAppState(): AppState {
   return {
-    activeBuildSystemId: null,
-    activeTaskType: null,
+    activeTaskId: null,
+    previousSessionActiveTaskId: null,
     buildSystems: new Map(),
     panel: null,
-    previousSessionActiveTaskType: null,
-    previousSessionActiveBuildSystemId: null,
-    tasks: [],
+    tasks: new Map(),
     taskStatus: null,
     visible: false,
   };

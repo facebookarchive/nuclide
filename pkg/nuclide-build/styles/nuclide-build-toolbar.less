@@ -78,22 +78,14 @@
   align-items: center;
 }
 
-// Ramp up the specificity to override normal .btn padding.
-.btn.btn.nuclide-build-system-button {
-  align-items: center;
-  padding-right: 0;
+.nuclide-build-system-icon-wrapper {
+  height: 16px;
 
   .icon-path-fill {
     fill: @text-color;
   }
 }
 
-.nuclide-build-system-button-icon-wrapper {
-  display: inline-block;
-  height: 16px;
-  vertical-align: middle;
-}
-
 // The shortcut toolbar (suda/tool-bar) button
 .nuclide-build-tool-bar-button[hidden] {
   display: none;
@@ -102,15 +94,4 @@
 // The shortcut toolbar (suda/tool-bar) button
 .nuclide-build-tool-bar-button[hidden] {
   display: none;
-}
-
-.nuclide-build-system-button-arrow {
-  padding: 0 0.8em;
-
-  &:before {
-    font-size: 11px;
-    margin: 0;
-    padding: 0;
-    width: initial;
-  }
 }

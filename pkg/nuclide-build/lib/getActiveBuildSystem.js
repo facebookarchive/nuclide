@@ -12,7 +12,7 @@
 import type {AppState, BuildSystem} from './types';
 
 export function getActiveBuildSystem(state: AppState): ?BuildSystem {
-  const {activeBuildSystemId} = state;
+  const activeBuildSystemId = state.activeTaskId && state.activeTaskId.buildSystemId;
   return activeBuildSystemId == null
     ? null
     : state.buildSystems.get(activeBuildSystemId);

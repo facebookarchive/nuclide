@@ -11,13 +11,11 @@
 import type {Octicon} from '../../nuclide-ui/lib/Octicons';
 
 export type AppState = {
-  activeBuildSystemId: ?string;
-  activeTaskType: ?string;
+  activeTaskId: ?TaskId;
   buildSystems: Map<string, BuildSystem>;
   panel: ?atom$Panel;
-  previousSessionActiveTaskType: ?string;
-  previousSessionActiveBuildSystemId: ?string;
-  tasks: Array<Task>;
+  previousSessionActiveTaskId: ?TaskId;
+  tasks: Map<string, Array<AnnotatedTask>>;
   taskStatus: ?{
     info: TaskInfo;
     progress: ?number;
@@ -36,9 +34,13 @@ type BuildProgressEvent = {
 export type BuildEvent = BuildProgressEvent;
 
 export type SerializedAppState = {
-  previousSessionActiveBuildSystemId: ?string;
-  previousSessionActiveTaskType: ?string;
+  previousSessionActiveTaskId: ?TaskId;
   visible: boolean;
+};
+
+export type TaskId = {
+  type: string;
+  buildSystemId: string;
 };
 
 export type Task = {
@@ -50,6 +52,11 @@ export type Task = {
   icon: Octicon;
 };
 
+export type AnnotatedTask = Task & {
+  buildSystemId: string;
+  buildSystemName: string;
+};
+
 export interface BuildSystem {
   id: string;
   name: string;
@@ -58,11 +65,6 @@ export interface BuildSystem {
   getIcon(): ReactClass<any>;
   runTask(taskName: string): TaskInfo;
 }
-
-export type IconButtonOption = {
-  value: string;
-  label: string;
-};
 
 export interface TaskInfo {
   observeProgress?: (callback: (progress: ?number) => mixed) => IDisposable;
@@ -80,15 +82,12 @@ export type Store = {
 export type BoundActionCreators = {
   createPanel(store: Store): void;
   destroyPanel(): void;
-  refreshTasks(): void;
   registerBuildSystem(buildSystem: BuildSystem): void;
-  runTask(taskType?: string): void;
-  selectBuildSystem(id: ?string): void;
-  selectTask(taskType: ?string): void;
+  runTask(taskId?: TaskId): void;
+  selectTask(taskId: TaskId): void;
   setToolbarVisibility(visible: boolean): void;
   stopTask(): void;
   toggleToolbarVisibility(): void;
-  updateTasks(): void;
   unregisterBuildSystem(buildSystem: BuildSystem): void;
 };
 
@@ -121,7 +120,7 @@ export type PanelDestroyedAction = {
 export type SelectTaskAction = {
   type: 'SELECT_TASK';
   payload: {
-    taskType: ?string;
+    taskId: TaskId;
   };
 };
 
@@ -168,10 +167,6 @@ export type ToolbarVisibilityUpdatedAction = {
   };
 };
 
-export type RefreshTasksAction = {
-  type: 'REFRESH_TASKS';
-};
-
 export type RegisterBuildSystemAction = {
   type: 'REGISTER_BUILD_SYSTEM';
   payload: {
@@ -182,14 +177,7 @@ export type RegisterBuildSystemAction = {
 export type RunTaskAction = {
   type: 'RUN_TASK';
   payload: {
-    taskType: ?string;
-  };
-};
-
-export type SelectBuildSystemAction = {
-  type: 'SELECT_BUILD_SYSTEM';
-  payload: {
-    id: ?string;
+    taskId: ?TaskId;
   };
 };
 
@@ -211,6 +199,7 @@ export type ToggleToolbarVisibilityAction = {
 export type TasksUpdatedAction = {
   type: 'TASKS_UPDATED';
   payload: {
+    buildSystemId: string;
     tasks: Array<Task>;
   };
 };
@@ -222,14 +211,9 @@ export type UnregisterBuildSystemAction = {
   };
 };
 
-export type UpdateTasksAction = {
-  type: 'UPDATE_TASKS';
-};
-
 export type Action =
   PanelCreatedAction
   | PanelDestroyedAction
-  | RefreshTasksAction
   | RunTaskAction
   | SelectTaskAction
   | SetToolbarVisibilityAction
@@ -243,9 +227,7 @@ export type Action =
   | ToggleToolbarVisibilityAction
   | ToolbarVisibilityUpdatedAction
   | RegisterBuildSystemAction
-  | UnregisterBuildSystemAction
-  | UpdateTasksAction
-  | SelectBuildSystemAction;
+  | UnregisterBuildSystemAction;
 
 export type BuildSystemRegistry = {
   register(buildSystem: BuildSystem): IDisposable;
