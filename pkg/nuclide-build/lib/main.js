@@ -76,6 +76,11 @@ class Activation {
             this._actionCreators.toggleToolbarVisibility();
           }
         },
+        'nuclide-build:run-selected-task': event => {
+          const detail = event != null ? (event: any).detail : null;
+          const taskId = detail != null && detail.buildSystemId && detail.type ? detail : null;
+          this._actionCreators.runTask(taskId);
+        },
       }),
 
       // Add a command for each task type. If there's more than one of the same type enabled, the

@@ -83,7 +83,7 @@ export type BoundActionCreators = {
   createPanel(store: Store): void;
   destroyPanel(): void;
   registerBuildSystem(buildSystem: BuildSystem): void;
-  runTask(taskId?: TaskId): void;
+  runTask(taskId: ?TaskId): void;
   selectTask(taskId: TaskId): void;
   setToolbarVisibility(visible: boolean): void;
   stopTask(): void;
