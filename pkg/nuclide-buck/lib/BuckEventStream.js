@@ -115,7 +115,7 @@ export function getEventsFromProcess(
           return {
             type: 'log',
             message: `Buck exited with code ${message.exitCode}.`,
-            level: 'info',
+            level: message.exitCode === 0 ? 'success' : 'error',
           };
         case 'stderr':
         case 'stdout':
