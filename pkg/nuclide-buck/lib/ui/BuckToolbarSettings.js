@@ -16,6 +16,7 @@ import {parse, quote} from 'shell-quote';
 
 import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
 import {Button, ButtonTypes} from '../../../nuclide-ui/lib/Button';
+import {ButtonGroup} from '../../../nuclide-ui/lib/ButtonGroup';
 import {Modal} from '../../../nuclide-ui/lib/Modal';
 
 type PropTypes = {
@@ -43,7 +44,7 @@ export default class BuckToolbarSettings extends React.Component {
   render(): React.Element<any> {
     return (
       <Modal onDismiss={this.props.onDismiss}>
-        <div className="block padded">
+        <div className="block">
           <div className="block">
             <h5>
               Buck Settings for build type: <b>{this.props.buildType}</b>
@@ -63,15 +64,17 @@ export default class BuckToolbarSettings extends React.Component {
               onConfirm={this._onSave.bind(this)}
             />
           </div>
-          <div className="padded text-right">
-            <Button onClick={this.props.onDismiss}>
-              Cancel
-            </Button>
-            <Button
-              buttonType={ButtonTypes.PRIMARY}
-              onClick={this._onSave.bind(this)}>
-              Save
-            </Button>
+          <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+            <ButtonGroup>
+              <Button onClick={this.props.onDismiss}>
+                Cancel
+              </Button>
+              <Button
+                buttonType={ButtonTypes.PRIMARY}
+                onClick={this._onSave.bind(this)}>
+                Save
+              </Button>
+            </ButtonGroup>
           </div>
         </div>
       </Modal>
