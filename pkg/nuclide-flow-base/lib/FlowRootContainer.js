@@ -69,6 +69,15 @@ export class FlowRootContainer {
     return await f(instance);
   }
 
+  async runWithOptionalRoot<T>(
+    file: ?string,
+    f: (instance: ?FlowRoot) => Promise<T>,
+  ): Promise<T> {
+    this._checkForDisposal();
+    const instance = file == null ? null : await this.getRootForPath(file);
+    return await f(instance);
+  }
+
   getAllRoots(): Iterable<FlowRoot> {
     this._checkForDisposal();
     return this._flowRootMap.values();

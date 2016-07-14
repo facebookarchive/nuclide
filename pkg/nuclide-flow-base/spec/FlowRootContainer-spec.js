@@ -16,12 +16,15 @@ import invariant from 'assert';
 import {uncachedRequire} from '../../nuclide-test-helpers';
 
 describe('FlowRootContainer', () => {
-
   let flowRootContainer: FlowRootContainerType = (null: any);
+  let configDirPath: ?string = null;
+
   beforeEach(() => {
     waitsForPromise(async () => {
+      configDirPath = '/definitely/a/legit/path/';
+
       spyOn(require('../lib/FlowHelpers'), 'findFlowConfigDir')
-        .andReturn(Promise.resolve('/definitely/a/legit/path/'));
+        .andCallFake(async () => configDirPath);
 
       const {FlowRootContainer} = ((uncachedRequire(require, '../lib/FlowRootContainer'): any));
       flowRootContainer = new FlowRootContainer();
@@ -35,13 +38,47 @@ describe('FlowRootContainer', () => {
     });
   });
 
-  it('should run a command with the proper root', () => {
-    waitsForPromise(async () => {
-      const result = await flowRootContainer.runWithRoot('foo', async flowRoot => {
-        expect(flowRoot).not.toBeNull();
-        return 42;
+  describe('runWithRoot', () => {
+    it('should run a command with the proper root', () => {
+      waitsForPromise(async () => {
+        const result = await flowRootContainer.runWithRoot('foo', async flowRoot => {
+          expect(flowRoot).not.toBeNull();
+          return 42;
+        });
+        expect(result).toBe(42);
       });
-      expect(result).toBe(42);
+    });
+
+    it('should not run if no root is found', () => {
+      waitsForPromise(async () => {
+        configDirPath = null;
+        const callback = jasmine.createSpy().andReturn(Promise.resolve(42));
+        const result = await flowRootContainer.runWithRoot('foo', callback);
+        expect(result).toBeNull();
+        expect(callback).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('runWithOptionalRoot', () => {
+    it('should run a command with the proper root', () => {
+      waitsForPromise(async () => {
+        const callback = jasmine.createSpy().andReturn(Promise.resolve(42));
+        const result = await flowRootContainer.runWithOptionalRoot('foo', callback);
+        expect(result).toBe(42);
+        expect(callback).toHaveBeenCalled();
+        expect(callback.mostRecentCall.args[0]).not.toBeNull();
+      });
+    });
+    it('should run a command even without a root', () => {
+      waitsForPromise(async () => {
+        configDirPath = null;
+        const callback = jasmine.createSpy().andReturn(Promise.resolve(42));
+        const result = await flowRootContainer.runWithOptionalRoot('foo', callback);
+        expect(result).toBe(42);
+        expect(callback).toHaveBeenCalled();
+        expect(callback.mostRecentCall.args[0]).toBeNull();
+      });
     });
   });
 
