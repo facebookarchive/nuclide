@@ -74,6 +74,7 @@ type DefaultProps = {
   lineNumberGutterVisible: boolean;
   readOnly: boolean;
   syncTextContents: boolean;
+  tabIndex: string;
 };
 
 type Props = {
@@ -85,6 +86,7 @@ type Props = {
   readOnly: boolean;
   textBuffer?: TextBuffer;
   syncTextContents: boolean;
+  tabIndex: string;
 };
 
 export class AtomTextEditor extends React.Component {
@@ -94,6 +96,7 @@ export class AtomTextEditor extends React.Component {
     readOnly: false,
     autoGrow: false,
     syncTextContents: true,
+    tabIndex: '0',  // Keep in line with other input elements.
   };
 
   props: Props;
@@ -110,6 +113,7 @@ export class AtomTextEditor extends React.Component {
     const textEditorElement: atom$TextEditorElement = this._textEditorElement =
       (document.createElement('atom-text-editor'): any);
     textEditorElement.setModel(textEditor);
+    textEditorElement.setAttribute('tabindex', this.props.tabIndex);
     // HACK! This is a workaround for the ViewRegistry where Atom has a default view provider for
     // TextEditor (that we cannot override), which is responsible for creating the view associated
     // with the TextEditor that we create and adding a mapping for it in its private views map.
