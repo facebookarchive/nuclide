@@ -30,6 +30,7 @@ type Projector<T> = (item: T) => AtomCommands;
 export default function syncAtomCommands<T>(
   source: Observable<Set<T>>,
   project: Projector<T>,
+  hash?: (v: T) => any,
 ): IDisposable {
   // Add empty sets before completing and erroring to make sure that we remove remaining commands
   // in both cases.
@@ -46,5 +47,6 @@ export default function syncAtomCommands<T>(
       ));
       return new CompositeDisposable(...disposables);
     },
+    hash,
   );
 }
