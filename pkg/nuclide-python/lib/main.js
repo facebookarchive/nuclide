@@ -18,6 +18,7 @@ import type {LinterProvider} from '../../nuclide-diagnostics-base';
 import invariant from 'assert';
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import {GRAMMAR_SET} from './constants';
+import {getLintOnFly} from './config';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
 import OutlineHelpers from './OutlineHelpers';
@@ -94,7 +95,7 @@ export function provideLint(): LinterProvider {
   return {
     grammarScopes: Array.from(GRAMMAR_SET),
     scope: 'file',
-    lintOnFly: false,
+    lintOnFly: getLintOnFly(),
     name: 'nuclide-python',
     invalidateOnClose: true,
     lint(editor) {

@@ -30,3 +30,7 @@ export function getShowGlobalVariables(): boolean {
 export function getEnableLinting(): boolean {
   return (featureConfig.get('nuclide-python.enableLinting'): any);
 }
+
+export function getLintOnFly(): boolean {
+  return (featureConfig.get('nuclide-python.lintOnFly'): any);
+}
