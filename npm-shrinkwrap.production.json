@@ -957,6 +957,11 @@
       "from": "lru-cache@4.0.1",
       "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-4.0.1.tgz"
     },
+    "marked": {
+      "version": "0.3.5",
+      "from": "marked@0.3.5",
+      "resolved": "https://registry.npmjs.org/marked/-/marked-0.3.5.tgz"
+    },
     "micromatch": {
       "version": "2.3.10",
       "from": "micromatch@>=2.3.7 <3.0.0",
