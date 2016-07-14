@@ -31,6 +31,7 @@ type Option<T> = {
 
 type Props<T> = {
   value: T;
+  buttonComponent?: ReactClass<any>;
   options: Array<Option<T>>;
   onChange?: (value: T) => mixed;
   onConfirm: (value: T) => mixed;
@@ -50,15 +51,17 @@ export class SplitButtonDropdown<T> extends React.Component {
     const selectedOption =
       this.props.options.find(option => option.value === this.props.value) || this.props.options[0];
 
+    const ButtonComponent = this.props.buttonComponent || Button;
+
     return (
       <ButtonGroup className="nuclide-ui-split-button-dropdown">
-        <Button
+        <ButtonComponent
           size={this.props.size}
           disabled={this.props.confirmDisabled === true}
           icon={selectedOption.icon}
           onClick={this.props.onConfirm}>
           {selectedOption.selectedLabel || selectedOption.label}
-        </Button>
+        </ButtonComponent>
         <Button
           size={this.props.size}
           className="nuclide-ui-split-button-dropdown-toggle"
