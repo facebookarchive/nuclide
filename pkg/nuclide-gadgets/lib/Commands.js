@@ -44,6 +44,11 @@ export default class Commands {
   }
 
   deactivate(): void {
+    // Destroy all the gadgets.
+    this._getState().get('gadgets').forEach((gadget, gadgetId) => {
+      this.destroyGadget(gadgetId);
+    });
+
     this._observer.next({
       type: ActionTypes.DEACTIVATE,
     });
