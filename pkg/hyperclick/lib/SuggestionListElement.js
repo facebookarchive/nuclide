@@ -32,8 +32,12 @@ class SuggestionListElement extends HTMLElement {
     ReactDOM.render(<SuggestionList suggestionList={this._model} />, this);
   }
 
-  dispose() {
+  // $FlowIssue -- readonly props: t10620219
+  detachedCallback(): mixed {
     ReactDOM.unmountComponentAtNode(this);
+  }
+
+  dispose() {
     if (this.parentNode) {
       this.parentNode.removeChild(this);
     }

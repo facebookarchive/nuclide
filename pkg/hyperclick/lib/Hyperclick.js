@@ -72,6 +72,7 @@ export default class Hyperclick {
   }
 
   dispose() {
+    this._suggestionList.hide();
     if (this._suggestionListViewSubscription) {
       this._suggestionListViewSubscription.dispose();
     }
