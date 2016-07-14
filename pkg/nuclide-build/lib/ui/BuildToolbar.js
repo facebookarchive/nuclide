@@ -10,8 +10,11 @@
  */
 
 import type {AnnotatedTask, TaskId} from '../types';
+import type {ButtonSize} from '../../../nuclide-ui/lib/Button';
+import type {Octicon} from '../../../nuclide-ui/lib/Octicons';
 
 import {Button, ButtonSizes} from '../../../nuclide-ui/lib/Button';
+import {Icon} from '../../../nuclide-ui/lib/Icon';
 import {SplitButtonDropdown} from '../../../nuclide-ui/lib/SplitButtonDropdown';
 import {ProgressBar} from './ProgressBar';
 import {getTask} from '../getTask';
@@ -50,14 +53,20 @@ export class BuildToolbar extends React.Component {
       : getTask(activeTaskId, this.props.tasks);
 
     const ExtraUi = this.props.getExtraUi && this.props.getExtraUi();
+    const ActiveBuildSystemIcon = this.props.getActiveBuildSystemIcon();
+    const FallbackIcon = () => <div>{activeTask && activeTask.buildSystemName}</div>;
+    const IconComponent = ActiveBuildSystemIcon || FallbackIcon;
+    const ButtonComponent = props => (
+      <BuildSystemIconTaskButton {...props} iconComponent={IconComponent} />
+    );
 
     return (
       <div className="nuclide-build-toolbar">
         <div className="nuclide-build-toolbar-contents padded">
-          {this._renderIcon()}
           <div className="inline-block">
             <TaskButton
               activeTask={activeTask}
+              buttonComponent={ButtonComponent}
               buildSystemInfo={this.props.buildSystemInfo}
               runTask={this.props.runTask}
               selectTask={this.props.selectTask}
@@ -96,6 +105,7 @@ export class BuildToolbar extends React.Component {
 
 type TaskButtonProps = {
   activeTask: ?AnnotatedTask;
+  buttonComponent: ReactClass<any>;
   buildSystemInfo: Array<BuildSystemInfo>;
   runTask: (taskId?: TaskId) => void;
   selectTask: (taskId: TaskId) => void;
@@ -112,19 +122,20 @@ function TaskButton(props: TaskButtonProps): React.Element<any> {
   };
 
   const taskCount = Array.from(props.tasks.values()).reduce((n, tasks) => n + tasks.length, 0);
+  const ButtonComponent = props.buttonComponent;
 
   if (taskCount <= 1) {
     // If there are no tasks, just show "Run" (but have it disabled). It's just less weird than some
     // kind of placeholder.
     const task = props.activeTask || {value: null, label: 'Run', icon: 'triangle-right'};
     return (
-      <Button
+      <ButtonComponent
         size={ButtonSizes.SMALL}
         disabled={confirmDisabled}
         icon={task.icon}
         onClick={run}>
         {task.label}
-      </Button>
+      </ButtonComponent>
     );
   } else {
     const buildSystemInfo = props.buildSystemInfo.slice().sort((a, b) => abcSort(a.name, b.name));
@@ -149,6 +160,7 @@ function TaskButton(props: TaskButtonProps): React.Element<any> {
     });
     return (
       <SplitButtonDropdown
+        buttonComponent={ButtonComponent}
         value={props.activeTask}
         options={taskOptions}
         onChange={value => { props.selectTask(value); }}
@@ -159,6 +171,37 @@ function TaskButton(props: TaskButtonProps): React.Element<any> {
       />
     );
   }
+}
+
+type BuildSystemIconTaskButtonProps = {
+  icon?: Octicon;
+  selected?: boolean;
+  size?: ButtonSize;
+  children?: mixed;
+  iconComponent: ReactClass<any>;
+};
+
+function BuildSystemIconTaskButton(props: BuildSystemIconTaskButtonProps): React.Element<any> {
+  const IconComponent = props.iconComponent;
+  const buttonProps = {...props};
+  delete buttonProps.icon;
+  delete buttonProps.label;
+  const icon = props.icon == null
+    ? null
+    : <Icon icon={props.icon} className="nuclide-build-system-task-icon" />;
+  return (
+    // $FlowFixMe
+    <Button
+      {...buttonProps}
+      className="nuclide-build-system-task-button">
+      <div className="nuclide-build-system-icon-wrapper">
+        <IconComponent />
+      </div>
+      <div className="nuclide-build-system-task-button-divider" />
+      {icon}
+      {props.children}
+    </Button>
+  );
 }
 
 const abcSort = (a, b) => (a.toLowerCase() < b.toLowerCase() ? -1 : 1);
