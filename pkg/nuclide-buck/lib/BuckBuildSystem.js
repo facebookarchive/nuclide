@@ -91,11 +91,18 @@ export class BuckBuildSystem {
 
   getTasks() {
     const {store} = this._getFlux();
-    const allEnabled = store.getCurrentBuckRoot() != null && Boolean(store.getBuildTarget());
+    const buckRoot = store.getCurrentBuckRoot();
+
+    // If this isn't a buck project, there are no tasks.
+    if (buckRoot == null) {
+      return [];
+    }
+
+    const hasBuildTarget = Boolean(store.getBuildTarget());
     return TASKS
       .map(task => ({
         ...task,
-        enabled: allEnabled && shouldEnableTask(task.type, store),
+        enabled: hasBuildTarget && shouldEnableTask(task.type, store),
       }));
   }
 

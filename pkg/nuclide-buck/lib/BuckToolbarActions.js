@@ -45,14 +45,12 @@ export default class BuckToolbarActions {
 
   async updateProjectPath(path: string): Promise<void> {
     const buckRoot = await getBuckProjectRoot(path);
-    if (buckRoot != null && buckRoot !== this._store.getCurrentBuckRoot()) {
-      this._dispatcher.dispatch({
-        actionType: BuckToolbarActions.ActionType.UPDATE_BUCK_ROOT,
-        buckRoot,
-      });
-      // Update the build target information as well.
-      this.updateBuildTarget(this._store.getBuildTarget());
-    }
+    this._dispatcher.dispatch({
+      actionType: BuckToolbarActions.ActionType.UPDATE_BUCK_ROOT,
+      buckRoot,
+    });
+    // Update the build target information as well.
+    this.updateBuildTarget(this._store.getBuildTarget());
   }
 
   async updateBuildTarget(buildTarget: string): Promise<void> {
