@@ -102,7 +102,10 @@ function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
   });
 
   invariant(subscriptions);
-  subscriptions.add(destroySubscription);
+  subscriptions.add(
+    new Disposable(() => { hostElement.destroy(); }),
+    destroySubscription,
+  );
 
   const {track} = require('../../nuclide-analytics');
   track('diff-view-open');
