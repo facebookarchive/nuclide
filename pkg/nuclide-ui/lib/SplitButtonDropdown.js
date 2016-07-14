@@ -21,9 +21,17 @@ type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
 const Menu = remote.require('menu');
 const MenuItem = remote.require('menu-item');
 
+type Option<T> = {
+  value: T;
+  label: string;
+  selectedLabel?: string;
+  icon?: Octicon;
+  disabled?: boolean;
+};
+
 type Props<T> = {
   value: T;
-  options: Array<{value: T; label: string; icon?: Octicon}>;
+  options: Array<Option<T>>;
   onChange?: (value: T) => mixed;
   onConfirm: (value: T) => mixed;
   confirmDisabled?: boolean;
@@ -49,7 +57,7 @@ export class SplitButtonDropdown<T> extends React.Component {
           disabled={this.props.confirmDisabled === true}
           icon={selectedOption.icon}
           onClick={this.props.onConfirm}>
-          {selectedOption.label}
+          {selectedOption.selectedLabel || selectedOption.label}
         </Button>
         <Button
           size={this.props.size}
@@ -70,6 +78,7 @@ export class SplitButtonDropdown<T> extends React.Component {
         type: 'checkbox',
         checked: this.props.value === option.value,
         label: option.label,
+        enabled: option.disabled !== true,
         click: () => {
           if (this.props.onChange != null) {
             this.props.onChange(option.value);
