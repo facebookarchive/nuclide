@@ -50,31 +50,27 @@ export default class BuckToolbarStore {
           break;
         case BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET:
           this._buildTarget = action.buildTarget;
-          this.emitChange();
           break;
         case BuckToolbarActions.ActionType.UPDATE_IS_LOADING_RULE:
           this._isLoadingRule = action.isLoadingRule;
-          this.emitChange();
           break;
         case BuckToolbarActions.ActionType.UPDATE_RULE_TYPE:
           this._buildRuleType = action.ruleType;
-          this.emitChange();
           break;
         case BuckToolbarActions.ActionType.UPDATE_SIMULATOR:
           this._simulator = action.simulator;
           break;
         case BuckToolbarActions.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE:
           this._isReactNativeServerMode = action.serverMode;
-          this.emitChange();
           break;
         case BuckToolbarActions.ActionType.UPDATE_TASK_SETTINGS:
           this._taskSettings = {
             ...this._taskSettings,
             [action.taskType]: action.settings,
           };
-          this.emitChange();
           break;
       }
+      this.emitChange();
     });
   }
 
