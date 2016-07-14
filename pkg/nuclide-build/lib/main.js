@@ -22,6 +22,7 @@ import type {
   TaskCompletedAction,
   TaskErroredAction,
 } from './types';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
@@ -113,6 +114,12 @@ class Activation {
 
   dispose(): void {
     this._disposables.dispose();
+  }
+
+  consumeCurrentWorkingDirectory(api: CwdApi): void {
+    this._disposables.add(api.observeCwd(directory => {
+      this._actionCreators.setProjectRoot(directory);
+    }));
   }
 
   consumeToolBar(getToolBar: GetToolBar): IDisposable {

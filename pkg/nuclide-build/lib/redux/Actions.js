@@ -13,9 +13,11 @@ import type {
   BuildSystem,
   CreatePanelAction,
   DestroyPanelAction,
+  Directory,
   RegisterBuildSystemAction,
   RunTaskAction,
   SelectTaskAction,
+  SetProjectRootAction,
   SetToolbarVisibilityAction,
   StopTaskAction,
   Store,
@@ -31,6 +33,7 @@ export const PANEL_DESTROYED = 'PANEL_DESTROYED';
 export const REGISTER_BUILD_SYSTEM = 'REGISTER_BUILD_SYSTEM';
 export const RUN_TASK = 'RUN_TASK';
 export const SELECT_TASK = 'SELECT_TASK';
+export const SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';
 export const SET_TOOLBAR_VISIBILITY = 'SET_TOOLBAR_VISIBILITY';
 export const STOP_TASK = 'STOP_TASK';
 export const TASK_COMPLETED = 'TASK_COMPLETED';
@@ -72,6 +75,13 @@ export function selectTask(taskId: TaskId): SelectTaskAction {
   return {
     type: SELECT_TASK,
     payload: {taskId},
+  };
+}
+
+export function setProjectRoot(projectRoot: ?Directory): SetProjectRootAction {
+  return {
+    type: SET_PROJECT_ROOT,
+    payload: {projectRoot},
   };
 }
 

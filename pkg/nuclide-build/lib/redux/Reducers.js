@@ -82,6 +82,13 @@ export function app(state: AppState, action: Action): AppState {
         visible: action.payload.visible,
       };
     }
+    case Actions.SET_PROJECT_ROOT: {
+      const {projectRoot} = action.payload;
+      return {
+        ...state,
+        projectRoot,
+      };
+    }
     case Actions.REGISTER_BUILD_SYSTEM: {
       const {buildSystem} = action.payload;
       return {

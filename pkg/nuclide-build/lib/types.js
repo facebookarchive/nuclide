@@ -9,12 +9,17 @@
  */
 
 import type {Octicon} from '../../nuclide-ui/lib/Octicons';
+import type {RemoteDirectory} from '../../nuclide-remote-connection';
+import {Directory as LocalDirectory} from 'atom';
+
+export type Directory = LocalDirectory | RemoteDirectory;
 
 export type AppState = {
   activeTaskId: ?TaskId;
   buildSystems: Map<string, BuildSystem>;
   panel: ?atom$Panel;
   previousSessionActiveTaskId: ?TaskId;
+  projectRoot: ?Directory;
   tasks: Map<string, Array<AnnotatedTask>>;
   taskStatus: ?{
     info: TaskInfo;
@@ -64,6 +69,7 @@ export interface BuildSystem {
   observeTasks: (callback: (tasks: Array<Task>) => mixed) => IDisposable;
   getIcon(): ReactClass<any>;
   runTask(taskName: string): TaskInfo;
+  setProjectRoot?: (projectRoot: ?Directory) => void;
 }
 
 export interface TaskInfo {
@@ -85,6 +91,7 @@ export type BoundActionCreators = {
   registerBuildSystem(buildSystem: BuildSystem): void;
   runTask(taskId: ?TaskId): void;
   selectTask(taskId: TaskId): void;
+  setProjectRoot(dir: ?Directory): void;
   setToolbarVisibility(visible: boolean): void;
   stopTask(): void;
   toggleToolbarVisibility(): void;
@@ -181,6 +188,13 @@ export type RunTaskAction = {
   };
 };
 
+export type SetProjectRootAction = {
+  type: 'SET_PROJECT_ROOT';
+  payload: {
+    projectRoot: ?Directory;
+  };
+};
+
 export type SetToolbarVisibilityAction = {
   type: 'SET_TOOLBAR_VISIBILITY';
   payload: {
@@ -216,6 +230,7 @@ export type Action =
   | PanelDestroyedAction
   | RunTaskAction
   | SelectTaskAction
+  | SetProjectRootAction
   | SetToolbarVisibilityAction
   | StopTaskAction
   | TaskCompletedAction

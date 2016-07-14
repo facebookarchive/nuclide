@@ -17,6 +17,7 @@ export function createEmptyAppState(): AppState {
     previousSessionActiveTaskId: null,
     buildSystems: new Map(),
     panel: null,
+    projectRoot: null,
     tasks: new Map(),
     taskStatus: null,
     visible: false,

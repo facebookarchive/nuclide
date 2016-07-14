@@ -105,6 +105,14 @@ export function registerBuildSystemEpic(
   return actions.ofType(Actions.REGISTER_BUILD_SYSTEM).flatMap(action => {
     invariant(action.type === Actions.REGISTER_BUILD_SYSTEM);
     const {buildSystem} = action.payload;
+
+    // Set the project root on the new build system.
+    const {setProjectRoot} = buildSystem;
+    if (typeof setProjectRoot === 'function') {
+      const projectRoot = store.getState().projectRoot;
+      setProjectRoot.call(buildSystem, projectRoot);
+    }
+
     const tasksToAction = tasks => ({
       type: Actions.TASKS_UPDATED,
       payload: {
@@ -163,6 +171,26 @@ export function runTaskEpic(
         }),
       );
     });
+}
+
+export function setProjectRootEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.SET_PROJECT_ROOT)
+    .do(action => {
+      invariant(action.type === Actions.SET_PROJECT_ROOT);
+      const {projectRoot} = action.payload;
+
+      // Set the project root on all registered build systems.
+      store.getState().buildSystems.forEach(buildSystem => {
+        if (typeof buildSystem.setProjectRoot === 'function') {
+          buildSystem.setProjectRoot(projectRoot);
+        }
+      });
+    })
+    // This is just for side-effects
+    .ignoreElements();
 }
 
 export function setToolbarVisibilityEpic(
