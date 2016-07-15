@@ -21,9 +21,7 @@ import {
   string,
   whitespace,
   plain,
-  // This is to work around a Flow parser bug.
-  // eslint-disable-next-line no-useless-rename
-  type as type,
+  type,
 } from '../../nuclide-tokenized-text';
 
 import invariant from 'assert';

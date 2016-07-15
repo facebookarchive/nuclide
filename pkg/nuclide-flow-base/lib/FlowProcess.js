@@ -147,9 +147,6 @@ export class FlowProcess {
         // try again
       }
     }
-    // otherwise flow complains
-    // eslint-disable-next-line no-unreachable
-    return null;
   }
 
   /** Starts a Flow server in the current root */
