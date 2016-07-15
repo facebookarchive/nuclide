@@ -108,26 +108,26 @@ export type FlowCoverageResult = {
 };
 
 import {FlowRoot} from './FlowRoot';
+import {FlowServiceState} from './FlowServiceState';
 
-import {FlowRootContainer} from './FlowRootContainer';
-let rootContainer: ?FlowRootContainer = null;
+let state: ?FlowServiceState = null;
 
-function getRootContainer(): FlowRootContainer {
-  if (rootContainer == null) {
-    rootContainer = new FlowRootContainer();
+function getState(): FlowServiceState {
+  if (state == null) {
+    state = new FlowServiceState();
   }
-  return rootContainer;
+  return state;
 }
 
 export function dispose(): void {
-  if (rootContainer != null) {
-    rootContainer.dispose();
-    rootContainer = null;
+  if (state != null) {
+    state.dispose();
+    state = null;
   }
 }
 
 export function getServerStatusUpdates(): Observable<ServerStatusUpdate> {
-  return getRootContainer().getServerStatusUpdates();
+  return getState().getRootContainer().getServerStatusUpdates();
 }
 
 export function flowFindDefinition(
@@ -136,7 +136,7 @@ export function flowFindDefinition(
   line: number,
   column: number,
 ): Promise<?Loc> {
-  return getRootContainer().runWithRoot(
+  return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowFindDefinition(
       file,
@@ -151,7 +151,7 @@ export function flowFindDiagnostics(
   file: NuclideUri,
   currentContents: ?string,
 ): Promise<?Diagnostics> {
-  return getRootContainer().runWithRoot(
+  return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowFindDiagnostics(
       file,
@@ -168,7 +168,7 @@ export function flowGetAutocompleteSuggestions(
   prefix: string,
   activatedManually: boolean,
 ): Promise<any> {
-  return getRootContainer().runWithRoot(
+  return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowGetAutocompleteSuggestions(
       file,
@@ -188,7 +188,7 @@ export async function flowGetType(
   column: number,
   includeRawType: boolean,
 ): Promise<?{type: string; rawType: ?string}> {
-  return getRootContainer().runWithRoot(
+  return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowGetType(
       file,
@@ -203,7 +203,7 @@ export async function flowGetType(
 export async function flowGetCoverage(
   file: NuclideUri,
 ): Promise<?FlowCoverageResult> {
-  return getRootContainer().runWithRoot(
+  return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowGetCoverage(file),
   );
@@ -216,7 +216,7 @@ export function flowGetOutline(
 }
 
 export function allowServerRestart(): void {
-  for (const root of getRootContainer().getAllRoots()) {
+  for (const root of getState().getRootContainer().getAllRoots()) {
     root.allowServerRestart();
   }
 }
