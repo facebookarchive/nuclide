@@ -58,4 +58,54 @@ export async function activateAllPackages(): Promise<Array<string>> {
 export function deactivateAllPackages(): void {
   atom.packages.deactivatePackages();
   atom.packages.unloadPackages();
+
+  // TODO(asuarez): Switch to using ReactComponentTreeDevtool when we upgrade
+  // React. If this is ever missing, make sure we're not testing with the bundled
+  // version of React. And if it's still missing, then retire this test.
+
+  const ReactMountPath =
+    Object.keys(require.cache).find(x => x.endsWith('react/lib/ReactMount.js'));
+  expect(typeof ReactMountPath).toBe('string');
+
+  const ReactMount = require.cache[ReactMountPath].exports;
+  expect(ReactMount).not.toBeUndefined();
+  expect(ReactMount._instancesByReactRootID).not.toBeUndefined();
+
+  const instances =
+    Object.keys(ReactMount._instancesByReactRootID)
+      .map(x => ReactMount._instancesByReactRootID[x]);
+
+  instances.forEach(inst => {
+    const currElement = inst._renderedComponent._currentElement;
+    // eslint-disable-next-line no-console
+    console.error('Found a mounted component. ' +
+      `Did you forget to call React.unmountComponentAtNode on "${
+        currElement.type.displayName || currElement.type.name
+      }"?`
+    );
+  });
+
+  if (instances.length) {
+    // eslint-disable-next-line no-console
+    console.error(`\
++------------------------------------------------------------------------------+
+| Dear Developer, if you find yourself trying to figure why this is failing    |
+| with such an unhelpful message, try:                                         |
+|                                                                              |
+|   1. Load Atom with "atom --dev",                                            |
+|   2. Perform the steps you're testing,                                       |
+|   3. Disable the Nuclide package,                                            |
+|   4. Run:                                                                    |
+|       require.cache[                                                         |
+|         Object.keys(require.cache).find(x => x.endsWith('/ReactMount.js'))   |
+|       ].exports._instancesByReactRootID                                      |
+|                                                                              |
+| That should give you some clues on finding out what isn't getting unmounted. |
+|                                                                              |
+| Good luck!                                                                   |
++------------------------------------------------------------------------------+
+    `);
+  }
+
+  expect(instances.length).toBe(0);
 }
