@@ -42,19 +42,15 @@ export default class RelatedFileFinder {
     const listing = await service.readdir(nuclideUri.getPath(dirName));
     const relatedFiles = listing
       .filter(otherFilePath => {
-        return otherFilePath.stats.isFile() && getPrefix(otherFilePath.file) === prefix;
+        return otherFilePath.stats.isFile() && !otherFilePath.file.endsWith('~') &&
+          getPrefix(otherFilePath.file) === prefix;
       })
       .map(otherFilePath => nuclideUri.join(dirName, otherFilePath.file))
       .sort();
 
-    const index = relatedFiles.indexOf(filePath);
-    if (index === -1) {
-      throw new Error('Given path must be in `relatedFiles`: ' + filePath);
-    }
-
     return {
       relatedFiles,
-      index,
+      index: relatedFiles.indexOf(filePath),
     };
   }
 }

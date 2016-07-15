@@ -77,6 +77,9 @@ export default class JumpToRelatedFile {
    */
   async getNextRelatedFile(path: string): Promise<string> {
     const {relatedFiles, index} = await RelatedFileFinder.find(path);
+    if (index === -1) {
+      return path;
+    }
     return relatedFiles[(relatedFiles.length + index - 1) % relatedFiles.length];
   }
 
@@ -86,6 +89,9 @@ export default class JumpToRelatedFile {
    */
   async getPreviousRelatedFile(path: string): Promise<string> {
     const {relatedFiles, index} = await RelatedFileFinder.find(path);
+    if (index === -1) {
+      return path;
+    }
     return relatedFiles[(index + 1) % relatedFiles.length];
   }
 

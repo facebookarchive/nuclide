@@ -84,5 +84,15 @@ describe('JumpToRelatedFile', () => {
             .toEqual('dir/Test.h');
       });
     });
+
+    it('does nothing for missing files', () => {
+      waitsForPromise(async () => {
+        currentFile = 'dir/Test.h~';
+
+        const jumpToRelatedFile = new JumpToRelatedFile();
+        expect(await jumpToRelatedFile.getPreviousRelatedFile(currentFile))
+            .toEqual('dir/Test.h~');
+      });
+    });
   });
 });

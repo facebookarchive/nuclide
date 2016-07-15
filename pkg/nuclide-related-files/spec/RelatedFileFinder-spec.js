@@ -10,7 +10,6 @@
  */
 
 import RelatedFileFinder from '../lib/RelatedFileFinder';
-import {expectAsyncFailure} from '../../nuclide-test-helpers';
 
 function mockFiles(files: Array<string>) {
   spyOn(require('../../nuclide-remote-connection'), 'getServiceByNuclideUri').andReturn({
@@ -27,7 +26,7 @@ describe('RelatedFileFinder', () => {
   describe('@find', () => {
     it('finds related file with a different extension', () => {
       waitsForPromise(async () => {
-        mockFiles(['Test.h', 'Test.m']);
+        mockFiles(['Test.h', 'Test.m', 'Test.m~']);
         expect(await RelatedFileFinder.find('dir/Test.m')).toEqual({
           relatedFiles: ['dir/Test.h', 'dir/Test.m'],
           index: 1,
@@ -62,18 +61,6 @@ describe('RelatedFileFinder', () => {
           relatedFiles: ['dir/Test.m'],
           index: 0,
         });
-      });
-    });
-
-    it('throws an error if given path is not in `relatedFiles`', () => {
-      waitsForPromise(async () => {
-        mockFiles([]);
-        await expectAsyncFailure(
-          RelatedFileFinder.find('dir/Test.m'),
-          e => {
-            expect(e).toEqual(new Error('Given path must be in `relatedFiles`: dir/Test.m'));
-          },
-        );
       });
     });
   });
