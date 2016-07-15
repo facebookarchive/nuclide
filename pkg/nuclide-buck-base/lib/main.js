@@ -35,7 +35,9 @@ export async function getBuckProjectRoot(filePath: string): Promise<?string> {
   let directory = buckProjectDirectoryByPath.get(filePath);
   if (!directory) {
     const service: ?BuckService = getServiceByNuclideUri('BuckProject', filePath);
-    invariant(service != null);
+    if (service == null) {
+      return null;
+    }
     directory = await service.BuckProject.getRootForPath(filePath);
     if (directory == null) {
       return null;
