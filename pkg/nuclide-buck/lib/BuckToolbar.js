@@ -14,7 +14,6 @@ import type {TaskType, TaskSettings} from './types';
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 
-import debounce from '../../commons-node/debounce';
 import {lastly} from '../../commons-node/promise';
 import {createBuckProject} from '../../nuclide-buck-base';
 import SimulatorDropdown from './SimulatorDropdown';
@@ -49,8 +48,7 @@ class BuckToolbar extends React.Component {
 
   constructor(props: PropTypes) {
     super(props);
-    (this: any)._handleBuildTargetChange =
-      debounce(this._handleBuildTargetChange.bind(this), 100, false);
+    (this: any)._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
     (this: any)._handleSimulatorChange = this._handleSimulatorChange.bind(this);
     (this: any)._handleReactNativeServerModeChanged =
       this._handleReactNativeServerModeChanged.bind(this);
@@ -160,7 +158,8 @@ class BuckToolbar extends React.Component {
           size="sm"
           loadingMessage="Updating target names..."
           initialTextInput={this.props.store.getBuildTarget()}
-          onChange={this._handleBuildTargetChange}
+          onSelect={this._handleBuildTargetChange}
+          onBlur={this._handleBuildTargetChange}
           placeholderText="Buck build target"
           width={BUCK_TARGET_INPUT_WIDTH}
         />
@@ -185,7 +184,11 @@ class BuckToolbar extends React.Component {
   }
 
   _handleBuildTargetChange(value: string) {
-    this._buckToolbarActions.updateBuildTarget(value.trim());
+    const trimmed = value.trim();
+    if (this.props.store.getBuildTarget() === trimmed) {
+      return;
+    }
+    this._buckToolbarActions.updateBuildTarget(trimmed);
   }
 
   _handleSimulatorChange(simulator: string) {
