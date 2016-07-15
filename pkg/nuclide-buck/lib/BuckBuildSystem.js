@@ -93,13 +93,7 @@ export class BuckBuildSystem {
   getTasks() {
     const {store} = this._getFlux();
     const buckRoot = store.getCurrentBuckRoot();
-
-    // If this isn't a buck project, there are no tasks.
-    if (buckRoot == null) {
-      return [];
-    }
-
-    const hasBuildTarget = Boolean(store.getBuildTarget());
+    const hasBuildTarget = buckRoot != null && Boolean(store.getBuildTarget());
     return TASKS
       .map(task => ({
         ...task,
