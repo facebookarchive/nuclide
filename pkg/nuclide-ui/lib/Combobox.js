@@ -61,6 +61,7 @@ export class Combobox extends React.Component {
     onChange: React.PropTypes.func.isRequired,
     onRequestOptionsError: React.PropTypes.func,
     onSelect: React.PropTypes.func.isRequired,
+    onBlur: React.PropTypes.func,
     /**
      * promise-returning function; Gets called with
      * the current value of the input field as its only argument
@@ -232,6 +233,9 @@ export class Combobox extends React.Component {
     // case the blur was caused by a click inside the combobox. 150ms is empirically long enough to
     // let the stack clear from this blur event and for the click event to trigger.
     setTimeout(this._handleCancel, 150);
+    if (this.props.onBlur) {
+      this.props.onBlur(this.getText());
+    }
   }
 
   _handleItemClick(selectedValue: string, event: any) {
