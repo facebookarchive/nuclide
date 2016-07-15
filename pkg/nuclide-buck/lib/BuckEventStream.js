@@ -86,16 +86,19 @@ export function getEventsFromSocket(
     .share();
 
   // Periodically emit log events for progress updates.
+  const progressEvents = eventStream
+    .switchMap(event => {
+      if (event.type === 'progress' && event.progress != null &&
+          event.progress > 0 && event.progress < 1) {
+        return log(`Building... [${Math.round(event.progress * 100)}%]`);
+      }
+      return Observable.empty();
+    });
+
   return eventStream.merge(
-    eventStream
-      .flatMap(event => {
-        if (event.type === 'progress' && event.progress != null &&
-            event.progress > 0 && event.progress < 1) {
-          return log(`Building... [${Math.round(event.progress * 100)}%]`);
-        }
-        return Observable.empty();
-      })
-      .throttleTime(PROGRESS_OUTPUT_INTERVAL)
+    progressEvents
+      .take(1)
+      .concat(progressEvents.sampleTime(PROGRESS_OUTPUT_INTERVAL))
   );
 }
 
