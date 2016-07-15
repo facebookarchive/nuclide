@@ -9,11 +9,8 @@
  * the root directory of this source tree.
  */
 
-import typeof * as PythonService from '../../nuclide-python-base';
-
 import type {
-OutlineTree,
-Outline,
+  OutlineTree,
 } from '../../nuclide-outline-view';
 import type {TextToken} from '../../nuclide-tokenized-text';
 import type {
@@ -22,17 +19,15 @@ import type {
   PythonFunctionItem,
   PythonStatementItem,
 } from '../../nuclide-python-base';
-import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {Point} from 'atom';
 import {
- keyword,
- method,
- param,
- whitespace,
- plain,
+  keyword,
+  method,
+  param,
+  whitespace,
+  plain,
 } from '../../nuclide-tokenized-text';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 type ShowVariableMode = 'none' | 'constants' | 'all';
 
@@ -48,22 +43,6 @@ function itemToOutlineTree(
     case 'statement':
       return statementToOutlineTree(mode, item);
   }
-}
-
-function itemsToOutline(
-  mode: ShowVariableMode,
-  items: ?Array<PythonOutlineItem>,
-): Array<OutlineTree> {
-  if (!items || items.length === 0) {
-    return [];
-  }
-  const result = [];
-  items.map(i => itemToOutlineTree(mode, i)).forEach(tree => {
-    if (tree) {
-      result.push(tree);
-    }
-  });
-  return result;
 }
 
 function classToOutlineTree(
@@ -162,22 +141,18 @@ function itemToPositions(item: PythonOutlineItem): {
   };
 }
 
-export async function generateOutline(
-  src: NuclideUri,
-  contents: string,
+export function itemsToOutline(
   mode: ShowVariableMode,
-): Promise<?Outline> {
-  const service: ?PythonService = await getServiceByNuclideUri('PythonService', src);
-  if (!service) {
-    return null;
+  items: ?Array<PythonOutlineItem>,
+): Array<OutlineTree> {
+  if (!items || items.length === 0) {
+    return [];
   }
-
-  const result = await service.getOutline(src, contents);
-  if (result == null) {
-    return null;
-  }
-
-  return {
-    outlineTrees: itemsToOutline(mode, result),
-  };
+  const result = [];
+  items.map(i => itemToOutlineTree(mode, i)).forEach(tree => {
+    if (tree) {
+      result.push(tree);
+    }
+  });
+  return result;
 }

@@ -9,10 +9,12 @@
  * the root directory of this source tree.
  */
 
+import typeof * as PythonService from '../../nuclide-python-base';
 import type {Outline} from '../../nuclide-outline-view';
 
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getShowGlobalVariables} from './config';
-import {generateOutline} from './outline';
+import {itemsToOutline} from './outline';
 
 export default class OutlineHelpers {
   static async getOutline(editor: atom$TextEditor): Promise<?Outline> {
@@ -22,6 +24,19 @@ export default class OutlineHelpers {
     }
     const contents = editor.getText();
     const mode = getShowGlobalVariables() ? 'all' : 'constants';
-    return generateOutline(src, contents, mode);
+
+    const service: ?PythonService = await getServiceByNuclideUri('PythonService', src);
+    if (!service) {
+      return null;
+    }
+
+    const items = await service.getOutline(src, contents);
+    if (items == null) {
+      return null;
+    }
+
+    return {
+      outlineTrees: itemsToOutline(mode, items),
+    };
   }
 }
