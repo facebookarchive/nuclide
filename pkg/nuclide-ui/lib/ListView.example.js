@@ -11,7 +11,7 @@
 
 import {React} from 'react-for-atom';
 import {Block} from './Block';
-import {Listview} from './Listview';
+import {Listview} from './ListView';
 import {Checkbox} from './Checkbox';
 import {MultiSelectList} from './MultiSelectList';
 
