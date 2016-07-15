@@ -17,6 +17,7 @@ import {
 } from '../pkg/nuclide-integration-test-helpers';
 
 import featureConfig from '../pkg/nuclide-feature-config';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {getDefaultConfigValue} from '../pkg/nuclide-settings/lib/settings-utils';
 import {
   testSettingsCheckbox,

@@ -11,6 +11,7 @@
 
 import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {getHackEnvironmentDetails} from '../../nuclide-hack/lib/utils';
 
 /**

@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from '../../../nuclide-remote-uri';
 
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DebuggerProcessInfo} from '../../../nuclide-debugger-atom';
 import {ReactNativeDebuggerInstance} from './ReactNativeDebuggerInstance';
 

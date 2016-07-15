@@ -15,6 +15,7 @@ import type {
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 
 import utils from './utils';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DebuggerInstance} from '../../nuclide-debugger-atom';
 import {CompositeDisposable, Emitter} from 'atom';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';

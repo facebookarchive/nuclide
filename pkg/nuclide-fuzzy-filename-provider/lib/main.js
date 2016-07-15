@@ -16,7 +16,7 @@ import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-
 import {
   CompositeDisposable,
 } from 'atom';
-
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import {getServiceByNuclideUri} from '../../nuclide-client';
 import {getIgnoredNames} from './utils';

@@ -14,6 +14,7 @@ import type {CtagsResult, CtagsService} from '../../nuclide-remote-ctags-base';
 
 import {React} from 'react-for-atom';
 import featureConfig from '../../nuclide-feature-config';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {getHackService} from '../../nuclide-hack-symbol-provider/lib/getHackService';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../nuclide-remote-uri';

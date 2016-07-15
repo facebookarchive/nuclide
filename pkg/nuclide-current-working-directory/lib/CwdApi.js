@@ -13,6 +13,7 @@ import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {DisposableSubscription} from '../../commons-node/stream';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 import {CompositeDisposable, Directory as LocalDirectory} from 'atom';
 import Rx from 'rxjs';

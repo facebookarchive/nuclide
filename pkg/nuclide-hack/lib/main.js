@@ -164,6 +164,7 @@ export function provideOutlines(): OutlineProvider {
 
 function provideBusySignal(): BusySignalProviderBaseType {
   if (busySignalProvider == null) {
+    // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
     const {BusySignalProviderBase} = require('../../nuclide-busy-signal');
     busySignalProvider = new BusySignalProviderBase();
   }

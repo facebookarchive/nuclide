@@ -20,6 +20,7 @@ import typeof * as DebuggerRpcServiceInterface
   from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 
 import {registerOutputWindowLogging} from '../../nuclide-debugger-common/lib/OutputServiceManager';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import invariant from 'assert';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';

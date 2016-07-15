@@ -31,6 +31,7 @@ import classnames from 'classnames';
 import uiTreePath from '../../commons-atom/ui-tree-path';
 import nuclideUri from '../../nuclide-remote-uri';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {addPath, revertPath} from '../../nuclide-hg-repository/lib/actions';
 
 const REVERTABLE_STATUS_CODES = [

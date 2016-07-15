@@ -14,6 +14,7 @@ import type {BlameForEditor} from '../../nuclide-blame-base';
 import featureConfig from '../../nuclide-feature-config';
 import {hgRepositoryForEditor} from './common';
 import {trackOperationTiming} from '../../nuclide-analytics';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {shortNameForAuthor} from '../../nuclide-vcs-log';
 
 let logger;

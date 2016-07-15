@@ -22,6 +22,7 @@ let busySignalProvider: ?BusySignalProviderBase = null;
 
 function getBusySignalProvider(): BusySignalProviderBase {
   if (busySignalProvider == null) {
+    // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
     const {DedupedBusySignalProviderBase} = require('../../nuclide-busy-signal');
     busySignalProvider = new DedupedBusySignalProviderBase();
   }

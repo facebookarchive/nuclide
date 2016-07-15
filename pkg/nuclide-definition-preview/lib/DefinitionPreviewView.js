@@ -13,6 +13,7 @@ import type {Definition} from '../../nuclide-definition-service';
 
 import {Button, ButtonSizes} from '../../nuclide-ui/lib/Button';
 import {React} from 'react-for-atom';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {ContextViewMessage, NO_DEFINITION_MESSAGE}
   from '../../nuclide-context-view/lib/ContextViewMessage';
 import {goToLocation} from '../../commons-atom/go-to-location';

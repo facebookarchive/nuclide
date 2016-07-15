@@ -18,6 +18,7 @@ import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
 import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import FileTreeActions from '../lib/FileTreeActions';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {WorkingSet} from '../../nuclide-working-sets';
 
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';

@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {getHackEnvironmentDetails} from '../../nuclide-hack/lib/utils';
 import {CompositeDisposable, Emitter} from 'atom';
 import {getBuckProjectRoot} from '../../nuclide-buck-base';

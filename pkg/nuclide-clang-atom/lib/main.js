@@ -17,6 +17,7 @@ import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import CodeFormatHelpers from './CodeFormatHelpers';

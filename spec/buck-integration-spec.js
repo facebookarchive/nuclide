@@ -10,6 +10,7 @@
  */
 
 import {sleep} from '../pkg/commons-node/promise';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import activation from '../pkg/nuclide-task-runner';
 import {
   activateAllPackages,

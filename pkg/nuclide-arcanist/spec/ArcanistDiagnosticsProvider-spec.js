@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import {ArcanistDiagnosticsProvider} from '../lib/ArcanistDiagnosticsProvider';
 import fs from 'fs';

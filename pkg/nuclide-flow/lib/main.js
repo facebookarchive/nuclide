@@ -96,6 +96,7 @@ export function getHyperclickProvider(): HyperclickProvider {
 
 export function provideBusySignal(): BusySignalProviderBaseType {
   if (!busySignalProvider) {
+    // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
     const {DedupedBusySignalProviderBase} = require('../../nuclide-busy-signal');
     busySignalProvider = new DedupedBusySignalProviderBase();
   }

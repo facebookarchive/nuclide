@@ -16,6 +16,7 @@ import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type {LinterProvider} from '../../nuclide-diagnostics-base';
 
 import invariant from 'assert';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import {GRAMMAR_SET} from './constants';
 import {getLintOnFly} from './config';

@@ -26,6 +26,7 @@ import fs from 'fs';
 import invariant from 'assert';
 import {ReactDOM} from 'react-for-atom';
 import uiTreePath from '../pkg/commons-atom/ui-tree-path';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {NON_MERCURIAL_REPO_DISPLAY_NAME} from '../pkg/nuclide-diff-view/lib/constants';
 import nuclideUri from '../pkg/nuclide-remote-uri';
 import {fixtures} from '../pkg/nuclide-test-helpers';

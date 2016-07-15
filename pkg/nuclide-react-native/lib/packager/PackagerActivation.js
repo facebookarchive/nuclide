@@ -12,6 +12,7 @@
 import type {OutputService} from '../../../nuclide-console/lib/types';
 import type {PackagerEvent} from './types';
 
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {LogTailer} from '../../../nuclide-console/lib/LogTailer';
 import {observeProcess, safeSpawn} from '../../../commons-node/process';
 import {getCommandInfo} from './getCommandInfo';

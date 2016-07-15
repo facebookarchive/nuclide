@@ -16,6 +16,7 @@ import {
   ReactDOM,
   TestUtils,
 } from 'react-for-atom';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import * as hackService from '../../nuclide-hack-symbol-provider/lib/getHackService';
 import QuickOpenHelpers from '../lib/QuickOpenHelpers';
 
