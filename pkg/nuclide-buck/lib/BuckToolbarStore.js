@@ -22,7 +22,7 @@ export default class BuckToolbarStore {
   _currentBuckRoot: ?string;
   _isLoadingRule: boolean;
   _buildTarget: string;
-  _buildRuleType: string;
+  _buildRuleType: ?string;
   _simulator: ?string;
   _isReactNativeServerMode: boolean;
   _taskSettings: {[key: TaskType]: TaskSettings};
@@ -37,7 +37,7 @@ export default class BuckToolbarStore {
   _initState(initialState: ?SerializedState) {
     this._isLoadingRule = false;
     this._buildTarget = initialState && initialState.buildTarget || '';
-    this._buildRuleType = '';
+    this._buildRuleType = null;
     this._isReactNativeServerMode = initialState && initialState.isReactNativeServerMode || false;
     this._taskSettings = initialState && initialState.taskSettings || {};
   }
@@ -98,7 +98,7 @@ export default class BuckToolbarStore {
     return this._isLoadingRule;
   }
 
-  getRuleType(): string {
+  getRuleType(): ?string {
     return this._buildRuleType;
   }
 
