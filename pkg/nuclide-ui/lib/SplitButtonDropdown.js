@@ -21,7 +21,11 @@ type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
 const Menu = remote.require('menu');
 const MenuItem = remote.require('menu-item');
 
-type Option<T> = {
+type Separator = {
+  type: 'separator';
+};
+
+export type Option<T> = Separator | {
   value: T;
   label: string;
   selectedLabel?: string;
@@ -49,7 +53,9 @@ export class SplitButtonDropdown<T> extends React.Component {
 
   render(): React.Element<any> {
     const selectedOption =
-      this.props.options.find(option => option.value === this.props.value) || this.props.options[0];
+      this.props.options
+        .filter(option => option.type !== 'separator')
+        .find(option => option.value === this.props.value) || this.props.options[0];
 
     const ButtonComponent = this.props.buttonComponent || Button;
 
@@ -77,6 +83,10 @@ export class SplitButtonDropdown<T> extends React.Component {
     const currentWindow = remote.getCurrentWindow();
     const menu = new Menu();
     this.props.options.forEach(option => {
+      if (option.type === 'separator') {
+        menu.append(new MenuItem({type: 'separator'}));
+        return;
+      }
       menu.append(new MenuItem({
         type: 'checkbox',
         checked: this.props.value === option.value,

@@ -142,6 +142,7 @@ const SplitButtonDropdownExample = (() => {
     {value: 1, label: 'Build', icon: 'tools'},
     {value: 2, label: 'Run', icon: 'triangle-right', selectedLabel: 'Run It!'},
     {value: 3, label: 'Rocket', icon: 'rocket'},
+    {type: 'separator'},
     {value: 4, label: 'Squirrel', icon: 'squirrel'},
     {value: 5, label: 'Beaker', icon: 'beaker', disabled: true},
   ];
