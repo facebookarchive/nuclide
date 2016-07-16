@@ -9,6 +9,11 @@
  * the root directory of this source tree.
  */
 
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
+/* eslint-disable no-console */
+
 //------------------------------------------------------------------------------
 // NodeTranspiler is a wrapper around babel with:
 //  * Nuclide specific configuration, that must be shared among several
@@ -16,9 +21,6 @@
 //  * Lazy-loading of expensive libs like babel.
 //  * Support for externally loaded babel.
 //------------------------------------------------------------------------------
-
-/*eslint-disable no-console*/
-/*eslint-disable prefer-object-spread/prefer-object-spread*/
 
 const assert = require('assert');
 const crypto = require('crypto');

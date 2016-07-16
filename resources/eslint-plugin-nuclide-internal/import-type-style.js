@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
 const DEFAULT_TYPE_POSTFIX = 'Type';
 
 function endWithTypePostfix(value) {

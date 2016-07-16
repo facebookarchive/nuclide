@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
 // This rule is here because of a babel 5 bug, where "export type" is treated
 // as a value export. This results in the types file getting required. In most
 // cases, the types file gets transpiled to a mostly empty file (because types

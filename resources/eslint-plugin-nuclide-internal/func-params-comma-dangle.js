@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
 // Based on https://github.com/eslint/eslint/blob/v2.11.1/lib/rules/comma-dangle.js
 
 function last(arr) {

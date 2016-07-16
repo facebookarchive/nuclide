@@ -1,5 +1,5 @@
 'use babel';
-/* @noflow */
+/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -20,6 +20,7 @@ describe('CircularBuffer', () => {
 
       // This verifies that CircularBuffer implements Iterable correctly by demonstrating that it
       // works with for/of.
+      // $FlowIssue: t6187050
       for (const element of buffer) { // eslint-disable-line no-unused-vars
         throw new Error('Should not iterate anything when empty.');
       }
@@ -35,6 +36,7 @@ describe('CircularBuffer', () => {
       // works with for/of.
       buffer.push('foo');
       const elements1 = [];
+      // $FlowIssue: t6187050
       for (const element of buffer) {
         elements1.push(element);
       }
@@ -44,6 +46,7 @@ describe('CircularBuffer', () => {
       // overwrites the entire contents.
       const elements2 = [];
       buffer.push('bar');
+      // $FlowIssue: t6187050
       for (const element of buffer) {
         elements2.push(element);
       }
@@ -59,6 +62,7 @@ describe('CircularBuffer', () => {
       buffer.push('A');
       buffer.push('B');
       const elements = [];
+      // $FlowIssue: t6187050
       for (const element of buffer) {
         elements.push(element);
       }
@@ -76,6 +80,7 @@ describe('CircularBuffer', () => {
       buffer.push('C');
       buffer.push('D');
       const elements = [];
+      // $FlowIssue: t6187050
       for (const element of buffer) {
         elements.push(element);
       }
@@ -94,6 +99,7 @@ describe('CircularBuffer', () => {
       buffer.push('D');
       buffer.push('E');
       const elements = [];
+      // $FlowIssue: t6187050
       for (const element of buffer) {
         elements.push(element);
       }
@@ -117,6 +123,7 @@ describe('CircularBuffer', () => {
       buffer.push('E');
       buffer.push('F');
       const elements = [];
+      // $FlowIssue: t6187050
       for (const element of buffer) {
         elements.push(element);
       }
@@ -129,6 +136,7 @@ describe('CircularBuffer', () => {
       const buffer = new CircularBuffer(4);
       buffer.push('A');
       buffer.push('B');
+      // $FlowIssue: t6187050
       for (const element of buffer) { // eslint-disable-line no-unused-vars
         buffer.push('C');
       }

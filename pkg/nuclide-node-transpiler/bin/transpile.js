@@ -10,7 +10,10 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable no-console*/
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
+/* eslint-disable no-console */
 
 /**
  * This is a command-line utility to transpile a .js file in the same way that

@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
 // Some source will transpile such that the "use babel" will still be the first
 // in the file. This causes Atom to transpile those files twice in production
 // releases.

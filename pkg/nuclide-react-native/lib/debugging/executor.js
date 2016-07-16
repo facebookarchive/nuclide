@@ -1,3 +1,6 @@
+'use strict';
+/* @noflow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -6,18 +9,17 @@
  * the root directory of this source tree.
  */
 
-'use strict';
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
 
-/* eslint-disable no-var, no-console, prefer-arrow-callback */
+const http = require('http');
+const invariant = require('assert');
+const url = require('url');
+const vm = require('vm');
 
-var http = require('http');
-var invariant = require('assert');
-var url = require('url');
-var vm = require('vm');
+let currentContext = null;
 
-var currentContext = null;
-
-process.on('message', function(request) {
+process.on('message', request => {
   switch (request.method) {
     case 'prepareJSRuntime':
       currentContext = vm.createContext({console});
@@ -26,14 +28,14 @@ process.on('message', function(request) {
 
     case 'executeApplicationScript':
       // Modify the URL to make sure we get the inline source map.
-      var parsedUrl = url.parse(request.url, /* parseQueryString */ true);
+      const parsedUrl = url.parse(request.url, /* parseQueryString */ true);
       invariant(parsedUrl.query);
       parsedUrl.query.inlineSourceMap = true;
       delete parsedUrl.search;
       // $FlowIssue url.format() does not accept what url.parse() returns.
-      var scriptUrl = url.format(parsedUrl);
+      const scriptUrl = url.format(parsedUrl);
 
-      getScriptContents(scriptUrl, function(err, script) {
+      getScriptContents(scriptUrl, (err, script) => {
         if (err != null) {
           sendError('Failed to get script from packager: ' + err.message);
           return;
@@ -45,7 +47,7 @@ process.on('message', function(request) {
         }
 
         if (request.inject) {
-          for (var name in request.inject) {
+          for (const name in request.inject) {
             currentContext[name] = JSON.parse(request.inject[name]);
           }
         }
@@ -62,7 +64,7 @@ process.on('message', function(request) {
       return;
 
     default:
-      var returnValue = [[], [], [], [], []];
+      let returnValue = [[], [], [], [], []];
       try {
         if (currentContext != null && typeof currentContext.__fbBatchedBridge === 'object') {
           returnValue =
@@ -95,13 +97,13 @@ function sendError(message) {
 
 function getScriptContents(src, callback) {
   http
-    .get(src, function(res) {
+    .get(src, res => {
       res.setEncoding('utf8');
-      var buff = '';
-      res.on('data', function(chunk) { buff += chunk; });
+      let buff = '';
+      res.on('data', chunk => { buff += chunk; });
       res.on('end', () => {
         callback(null, buff);
       });
     })
-    .on('error', function(err) { callback(err); });
+    .on('error', err => { callback(err); });
 }

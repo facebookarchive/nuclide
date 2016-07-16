@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
 /**
  * This rule enforces a naming standard for external modules. Why?
  * 1. It improves the greppability of the code,

@@ -10,6 +10,11 @@
  * the root directory of this source tree.
  */
 
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
+/* eslint-disable no-console */
+
 // This file is both the main and worker process.
 if (process.send) {
   runChild();
@@ -54,7 +59,6 @@ function runParent() {
     assert(path.isAbsolute(filename));
   });
 
-  // eslint-disable-next-line no-console
   console.log('%s workers. %s files...', numWorkers, jsFiles.length);
 
   for (let i = 0; i < numWorkers; i++) {
@@ -81,7 +85,6 @@ function runParent() {
 
   process.once('exit', code => {
     if (code !== 0) { return; }
-    // eslint-disable-next-line no-console
     console.log(
       'transpiled: %s | skipped: %s | %ds',
       count.transpiled,

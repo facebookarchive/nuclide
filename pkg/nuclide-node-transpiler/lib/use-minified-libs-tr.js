@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
 const MINIFIED_LIBS = new Map([
   ['rxjs', 'rxjs/bundles/Rx.umd.min.js'],
 ]);

@@ -1,5 +1,5 @@
 'use strict';
-/* @flow */
+/* @noflow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +9,8 @@
  * the root directory of this source tree.
  */
 
-/**
- * THIS IS FILE IS NOT TRANSPILED - USE ELECTRON COMPATIBLE JAVASCRIPT
- */
-
-/* eslint-disable no-var */
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
 
 require('../../nuclide-node-transpiler');
 
@@ -26,8 +23,8 @@ window.XMLHttpRequest.prototype.open = (function(original) {
     'nuclide_',
   ];
   return function(method, url, async, user, password) {
-    var newUrl;
-    for (var i = 0; i < unmappedUrlPrefixes.length; i++) {
+    let newUrl;
+    for (let i = 0; i < unmappedUrlPrefixes.length; i++) {
       if (url.startsWith(unmappedUrlPrefixes[i]) ||
           url.startsWith('./' + unmappedUrlPrefixes[i])) {
         newUrl = url;

@@ -10,6 +10,9 @@
  * the root directory of this source tree.
  */
 
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
 // Regenerates the .proxy baseline files in the spec/fixtures directory.
 
 require('../../nuclide-node-transpiler');

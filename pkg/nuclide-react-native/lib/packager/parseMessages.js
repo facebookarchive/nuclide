@@ -1,3 +1,4 @@
+'use babel';
 /* @flow */
 
 /*

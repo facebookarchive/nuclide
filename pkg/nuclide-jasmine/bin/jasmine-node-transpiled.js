@@ -10,7 +10,10 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable no-console*/
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
+/* eslint-disable no-console */
 
 // Forwards the arguments from this script to ./run-jasmine-tests and runs it
 // under a timeout. This is used to help find tests that are not terminating

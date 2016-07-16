@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
 /**
  * This file installs the logic that modifies Node's built in require()
  * function to transpile .js files that start with either `'use babel'` or

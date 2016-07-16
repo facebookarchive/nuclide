@@ -10,27 +10,28 @@
  * the root directory of this source tree.
  */
 
-/*eslint-disable no-var, prefer-const, no-console*/
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
 
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+const path = require('path');
 
-var basedir = path.join(__dirname, '../..');
+const basedir = path.join(__dirname, '../..');
 
-var gitIgnorePath = path.join(basedir, '.gitignore');
-var npmIgnorePath = path.join(basedir, '.npmignore');
-var packageJsonPath = path.join(basedir, 'package.json');
+const gitIgnorePath = path.join(basedir, '.gitignore');
+const npmIgnorePath = path.join(basedir, '.npmignore');
+const packageJsonPath = path.join(basedir, 'package.json');
 
-var gitIgnore = fs.readFileSync(gitIgnorePath, 'utf8');
-var npmIgnore = fs.readFileSync(npmIgnorePath, 'utf8');
-var packageJson = fs.readFileSync(packageJsonPath, 'utf8');
+const gitIgnore = fs.readFileSync(gitIgnorePath, 'utf8');
+const npmIgnore = fs.readFileSync(npmIgnorePath, 'utf8');
+const packageJson = fs.readFileSync(packageJsonPath, 'utf8');
 
-var pkg = JSON.parse(packageJson);
+const pkg = JSON.parse(packageJson);
 
 /**
  * .gitignore:
  */
-var gitIgnoreLines = gitIgnore.split('\n');
+const gitIgnoreLines = gitIgnore.split('\n');
 gitIgnoreLines.push(
   '',
   '########################################################',
@@ -47,19 +48,19 @@ fs.writeFileSync(gitIgnorePath, gitIgnoreLines.join('\n'));
 /**
  * package.json:
  */
-var pkgCopy = JSON.parse(JSON.stringify(pkg));
+const pkgCopy = JSON.parse(JSON.stringify(pkg));
 delete pkgCopy.bin;
 delete pkgCopy.private;
 pkgCopy.main = './lib/main.js';
-var newPackageJson = JSON.stringify(pkgCopy, null, 2) + '\n';
+const newPackageJson = JSON.stringify(pkgCopy, null, 2) + '\n';
 fs.writeFileSync(packageJsonPath, newPackageJson);
 
 /**
  * npm-shrinkwrap.json:
  */
 try {
-  var prodShrinkwrapPath = require.resolve('../../npm-shrinkwrap.production.json');
-  var realShrinkwrapPath = require.resolve('../../npm-shrinkwrap.json');
+  const prodShrinkwrapPath = require.resolve('../../npm-shrinkwrap.production.json');
+  const realShrinkwrapPath = require.resolve('../../npm-shrinkwrap.json');
   fs.renameSync(prodShrinkwrapPath, realShrinkwrapPath);
 } catch (err) {
   if (!/Error: Cannot find module/.test(err)) {
