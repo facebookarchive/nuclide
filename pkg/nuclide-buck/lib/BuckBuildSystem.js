@@ -26,8 +26,7 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {observableToTaskInfo} from '../../commons-node/observableToTaskInfo';
 import {createBuckProject} from '../../nuclide-buck-base';
 import {getLogger} from '../../nuclide-logging';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {startPackager} from '../../nuclide-react-native/lib/packager/startPackager';
+import {startPackager} from '../../nuclide-react-native-common';
 import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
