@@ -3,8 +3,8 @@
 Pluggable text-clicking UI for [Atom](https://atom.io/).
 
 Hyperclick is triggered by two events:
-- `<alt>` or `<alt-mousemove>` underlines clickable text under the mouse.
-- `<alt-mousedown>` performs the action associated with the clickable text.
+- `<cmd>` or `<cmd-mousemove>` underlines clickable text under the mouse.
+- `<cmd-mousedown>` performs the action associated with the clickable text.
 - `<cmd-alt-enter>` performs the action on the text under the cursor.
 
 ## Known Providers
