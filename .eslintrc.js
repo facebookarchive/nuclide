@@ -306,7 +306,6 @@ module.exports = {
     // nuclide-internal (https://github.com/facebook/nuclide/tree/master/resources/eslint-plugin-nuclide-internal)
     'nuclide-internal/command-menu-items': 1,
     'nuclide-internal/consistent-import-name': 1,
-    // 'nuclide-internal/func-params-comma-dangle': 1,
     'nuclide-internal/import-type-style': 1,
     'nuclide-internal/license-header': 1,
     'nuclide-internal/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
