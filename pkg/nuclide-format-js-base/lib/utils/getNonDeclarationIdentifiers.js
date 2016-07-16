@@ -15,8 +15,8 @@ import getNamesFromID from './getNamesFromID';
 import jscs from 'jscodeshift';
 
 type ConfigEntry = {
-  searchTerms: [any, Object];
-  getNodes: (path: NodePath) => Array<Node>;
+  searchTerms: [any, Object],
+  getNodes: (path: NodePath) => Array<Node>,
 };
 
 const REACT_NODE = jscs.identifier('React');

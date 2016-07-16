@@ -24,7 +24,7 @@ const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 export function getIdentifierAndRange(
   editor: atom$TextEditor,
   position: atom$Point,
-): ?{id: string; range: atom$Range} {
+): ?{id: string, range: atom$Range} {
   const matchData = wordAtPosition(editor, position, HACK_WORD_REGEX);
   return (matchData == null || matchData.wordMatch.length === 0) ? null
       : {id: matchData.wordMatch[0], range: matchData.range};
@@ -44,11 +44,11 @@ function getHackService(filePath: NuclideUri): HackService {
 }
 
 export type HackEnvironment = {
-  hackService: HackService;
-  hackRoot: ?NuclideUri;
-  hackCommand: ?string;
-  isAvailable: boolean;
-  useIdeConnection: boolean;
+  hackService: HackService,
+  hackRoot: ?NuclideUri,
+  hackCommand: ?string,
+  isAvailable: boolean,
+  useIdeConnection: boolean,
 };
 
 export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<HackEnvironment> {

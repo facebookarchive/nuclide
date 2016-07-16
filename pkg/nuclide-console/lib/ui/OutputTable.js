@@ -15,10 +15,10 @@ import {React} from 'react-for-atom';
 import RecordView from './RecordView';
 
 type Props = {
-  records: Array<Record>;
-  showSourceLabels: boolean;
-  getExecutor: (id: string) => ?Executor;
-  getProvider: (id: string) => ?OutputProvider;
+  records: Array<Record>,
+  showSourceLabels: boolean,
+  getExecutor: (id: string) => ?Executor,
+  getProvider: (id: string) => ?OutputProvider,
 };
 
 export default class OutputTable extends React.Component {

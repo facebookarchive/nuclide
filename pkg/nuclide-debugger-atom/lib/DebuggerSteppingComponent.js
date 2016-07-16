@@ -21,8 +21,8 @@ import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 import {DebuggerMode} from './DebuggerStore';
 
 type DebuggerSteppingComponentProps = {
-  actions: DebuggerActions;
-  debuggerMode: DebuggerModeType;
+  actions: DebuggerActions,
+  debuggerMode: DebuggerModeType,
 };
 
 export class DebuggerSteppingComponent extends React.Component {

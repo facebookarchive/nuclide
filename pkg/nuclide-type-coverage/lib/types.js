@@ -11,18 +11,18 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 export type UncoveredRegion = {
-  range: atom$Range;
-  message?: string;
+  range: atom$Range,
+  message?: string,
 };
 
 export type CoverageResult = {
-  percentage: number;
-  uncoveredRegions: Array<UncoveredRegion>;
+  percentage: number,
+  uncoveredRegions: Array<UncoveredRegion>,
 };
 
 export interface CoverageProvider {
-  getCoverage(path: NuclideUri): Promise<?CoverageResult>;
-  priority: number;
-  grammarScopes: Array<string>;
-  displayName: string;
+  getCoverage(path: NuclideUri): Promise<?CoverageResult>,
+  priority: number,
+  grammarScopes: Array<string>,
+  displayName: string,
 }

@@ -22,9 +22,9 @@ import PathSetUpdater from './PathSetUpdater';
 const logger = getLogger();
 
 export type FileSearchResult = {
-  score: number;
-  path: string;
-  matchIndexes: Array<number>;
+  score: number,
+  path: string,
+  matchIndexes: Array<number>,
 };
 
 class FileSearch {

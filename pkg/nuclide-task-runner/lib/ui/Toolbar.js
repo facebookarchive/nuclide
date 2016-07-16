@@ -18,17 +18,17 @@ import {getTask} from '../getTask';
 import {React} from 'react-for-atom';
 
 type Props = {
-  taskRunnerInfo: Array<TaskRunnerInfo>;
-  getActiveTaskRunnerIcon: () => ?ReactClass<any>;
-  getExtraUi: ?() => ReactClass<any>;
-  progress: ?number;
-  visible: boolean;
-  runTask: (taskId?: TaskId) => void;
-  activeTaskId: ?TaskId;
-  selectTask: (taskId: TaskId) => void;
-  stopTask: () => void;
-  taskIsRunning: boolean;
-  tasks: Map<string, Array<AnnotatedTask>>;
+  taskRunnerInfo: Array<TaskRunnerInfo>,
+  getActiveTaskRunnerIcon: () => ?ReactClass<any>,
+  getExtraUi: ?() => ReactClass<any>,
+  progress: ?number,
+  visible: boolean,
+  runTask: (taskId?: TaskId) => void,
+  activeTaskId: ?TaskId,
+  selectTask: (taskId: TaskId) => void,
+  stopTask: () => void,
+  taskIsRunning: boolean,
+  tasks: Map<string, Array<AnnotatedTask>>,
 };
 
 export class Toolbar extends React.Component {

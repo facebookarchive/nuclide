@@ -18,15 +18,15 @@ import {
 } from '../../nuclide-ui/lib/Button';
 
 type Props = {
-  isEditing: boolean;
-  initialName: string;
-  onUpdate: (prevName: string, name: string) => void;
-  onSave: (name: string) => void;
-  onCancel: () => void;
+  isEditing: boolean,
+  initialName: string,
+  onUpdate: (prevName: string, name: string) => void,
+  onSave: (name: string) => void,
+  onCancel: () => void,
 };
 
 type State = {
-  name: string;
+  name: string,
 };
 
 export class WorkingSetNameAndSaveComponent extends React.Component {

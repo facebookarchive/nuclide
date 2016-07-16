@@ -16,13 +16,13 @@ import {Point, Range} from 'atom';
 import parse from 'babel-core/lib/helpers/parse';
 
 type BabelPos = {
-  line: number;
-  column: number;
+  line: number,
+  column: number,
 };
 
 type BabelLoc = {
-  start: BabelPos;
-  end: BabelPos;
+  start: BabelPos,
+  end: BabelPos,
 };
 
 /**

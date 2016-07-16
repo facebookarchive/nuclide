@@ -16,22 +16,22 @@ import {React} from 'react-for-atom';
 
 export type RunCommandOptions = {
   /* A title for the tab of the newly opened pane. */
-  tabTitle: string;
+  tabTitle: string,
   /* The ProcessOutputStore that provides the data to display. */
-  processOutputStore: ProcessOutputStore;
+  processOutputStore: ProcessOutputStore,
   /**
    * An optional ProcessOutputHandler that is appropriate for the expected output. See the
    * constructor of ProcessOutputView for more information.
    */
-  processOutputHandler?: ProcessOutputHandler;
+  processOutputHandler?: ProcessOutputHandler,
   /* An optional React component that will be placed at the top of the process output view. */
-  processOutputViewTopElement?: React.Element<any>;
+  processOutputViewTopElement?: React.Element<any>,
   /* If true, before opening the new tab, it will close any existing tab with the same title. */
-  destroyExistingPane?: boolean;
+  destroyExistingPane?: boolean,
 };
 export type RunCommandFunctionAndCleanup = {
-  runCommandInNewPane: (options: RunCommandOptions) => Promise<atom$TextEditor>;
-  disposable: IDisposable;
+  runCommandInNewPane: (options: RunCommandOptions) => Promise<atom$TextEditor>,
+  disposable: IDisposable,
 };
 
 import {CompositeDisposable, Disposable} from 'atom';
@@ -44,9 +44,9 @@ const PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
 const PROCESS_OUTPUT_STORE_KEY = 'nuclide-processOutputStore';
 const PROCESS_OUTPUT_VIEW_TOP_ELEMENT = 'nuclide-processOutputViewTopElement';
 type CreateProcessOutputViewOptions = {
-  'nuclide-processOutputHandler': ?ProcessOutputHandler;
-  'nuclide-processOutputStore': ProcessOutputStore;
-  'nuclide-processOutputViewTopElement': ?React.Element<any>;
+  'nuclide-processOutputHandler': ?ProcessOutputHandler,
+  'nuclide-processOutputStore': ProcessOutputStore,
+  'nuclide-processOutputViewTopElement': ?React.Element<any>,
 };
 
 let subscriptions: ?CompositeDisposable;

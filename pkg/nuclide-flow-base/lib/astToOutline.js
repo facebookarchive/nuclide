@@ -27,8 +27,8 @@ import {
 import invariant from 'assert';
 
 type Extent = {
-  startPosition: Point;
-  endPosition: Point;
+  startPosition: Point,
+  endPosition: Point,
 };
 
 export function astToOutline(ast: any): Array<FlowOutlineTree> {

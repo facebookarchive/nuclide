@@ -17,15 +17,15 @@ import {ButtonGroup} from '../../../nuclide-ui/lib/ButtonGroup';
 import {Checkbox} from '../../../nuclide-ui/lib/Checkbox';
 
 type Props = {
-  targetUri: NuclideUri;
+  targetUri: NuclideUri,
 };
 
 // TODO: All this needs to be serialized by the package, so we're going to need to hoist it and use
 //   actions.
 type State = {
-  startPackager: boolean;
-  tailIosLogs: boolean;
-  tailAdbLogs: boolean;
+  startPackager: boolean,
+  tailIosLogs: boolean,
+  tailAdbLogs: boolean,
 };
 
 export class DebugUiComponent extends React.Component {

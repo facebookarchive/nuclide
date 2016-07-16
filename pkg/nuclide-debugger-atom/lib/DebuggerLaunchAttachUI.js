@@ -18,22 +18,22 @@ import {React} from 'react-for-atom';
 import nuclideUri from '../../nuclide-remote-uri';
 
 type PropsType = {
-  store: DebuggerProviderStore;
-  debuggerActions: DebuggerActions;
+  store: DebuggerProviderStore,
+  debuggerActions: DebuggerActions,
 };
 
 type StateType = {
-  connectionsUpdatedDisposable: IDisposable;
+  connectionsUpdatedDisposable: IDisposable,
   // Current available Nuclide connections.
-  connections: Array<string>;
+  connections: Array<string>,
   // Availble launch/attach providers for current selected connection.
-  availableProviders: Array<DebuggerLaunchAttachProvider>;
+  availableProviders: Array<DebuggerLaunchAttachProvider>,
   // Customized launch/attach actions supported by this (connection + provider) combination.
-  providerActions: Array<string>;
-  connectionsDropdownIndex: number;
-  debuggingTypeDropdownIndex: number;
-  providerActionsDropdownIndex: number;
-  element: ?React.Element<any>;
+  providerActions: Array<string>,
+  connectionsDropdownIndex: number,
+  debuggingTypeDropdownIndex: number,
+  providerActionsDropdownIndex: number,
+  element: ?React.Element<any>,
 };
 
 export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, StateType> {

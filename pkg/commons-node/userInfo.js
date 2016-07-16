@@ -18,11 +18,11 @@
 import os from 'os';
 
 export type UserInfo = {
-  uid: number;
-  gid: number;
-  username: string;
-  homedir: string;
-  shell: ?string;
+  uid: number,
+  gid: number,
+  username: string,
+  homedir: string,
+  shell: ?string,
 };
 
 export default function(): UserInfo {

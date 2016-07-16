@@ -16,28 +16,28 @@ export type HyperclickProvider = {
     textEditor: atom$TextEditor,
     text: string,
     range: atom$Range,
-  ) => Promise<?HyperclickSuggestion>;
+  ) => Promise<?HyperclickSuggestion>,
 
-  wordRegExp?: RegExp;
+  wordRegExp?: RegExp,
 
   // Use this to provide a suggestion if it can have non-contiguous ranges.
   // A primary use-case for this is Objective-C methods.
   getSuggestion?: (
     textEditor: atom$TextEditor,
     position: atom$Point,
-  ) => Promise<?HyperclickSuggestion>;
+  ) => Promise<?HyperclickSuggestion>,
 
   // The higher this is, the more precedence the provider gets. Defaults to 0.
-  priority?: number;
+  priority?: number,
 
   // Must be unique. Used for analytics.
-  providerName?: string;
+  providerName?: string,
 };
 
 export type HyperclickSuggestion = {
   // The range(s) to underline to provide as a visual cue for clicking.
-  range: ?atom$Range | ?Array<atom$Range>;
+  range: ?atom$Range | ?Array<atom$Range>,
 
   // The function to call when the underlined text is clicked.
-  callback: (() => mixed) | Array<{rightLabel?: string; title: string; callback: () => mixed}>;
+  callback: (() => mixed) | Array<{rightLabel?: string, title: string, callback: () => mixed}>,
 };

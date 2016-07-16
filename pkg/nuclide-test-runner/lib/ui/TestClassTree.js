@@ -22,8 +22,8 @@ function labelClassNameForNode(): string {
 }
 
 type Props = {
-  isRunning: boolean;
-  testSuiteModel: ?TestSuiteModel;
+  isRunning: boolean,
+  testSuiteModel: ?TestSuiteModel,
 };
 
 class TestClassTree extends React.Component {

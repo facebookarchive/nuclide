@@ -30,7 +30,7 @@ import {CompositeDisposable, TextBuffer} from 'atom';
 import {DisposableSubscription} from '../../commons-node/stream';
 
 type DiffRevisionViewProps = {
-  revision: RevisionInfo;
+  revision: RevisionInfo,
 };
 
 class DiffRevisionView extends React.Component {
@@ -52,11 +52,11 @@ class DiffRevisionView extends React.Component {
 }
 
 type Props = {
-  message: ?string;
-  publishMode: PublishModeType;
-  publishModeState: PublishModeStateType;
-  headRevision: ?RevisionInfo;
-  diffModel: DiffViewModel;
+  message: ?string,
+  publishMode: PublishModeType,
+  publishModeState: PublishModeStateType,
+  headRevision: ?RevisionInfo,
+  diffModel: DiffViewModel,
 };
 
 class DiffPublishView extends React.Component {

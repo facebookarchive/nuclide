@@ -13,11 +13,11 @@ import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
-  children?: mixed;
-  flexDirection?: 'column';
-  overflowX?: string;
-  onScroll?: (event: Event) => void;
-  onFocus?: (event: SyntheticEvent) => void;
+  children?: mixed,
+  flexDirection?: 'column',
+  overflowX?: string,
+  onScroll?: (event: Event) => void,
+  onFocus?: (event: SyntheticEvent) => void,
 };
 
 export class PanelComponentScroller extends React.Component {

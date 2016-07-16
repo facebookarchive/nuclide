@@ -19,8 +19,8 @@ import Bridge from './Bridge';
 import {Button} from '../../nuclide-ui/lib/Button';
 
 type State = {
-  processSocket: ?string;
-  debuggerStoreChangeListener?: IDisposable;
+  processSocket: ?string,
+  debuggerStoreChangeListener?: IDisposable,
 };
 
 function getStateFromStore(store: DebuggerStore): State {

@@ -16,7 +16,7 @@ import {React} from 'react-for-atom';
 import HandlesTableComponent from './HandlesTableComponent';
 
 type Props = {
-  activeHandlesByType: HandlesByType;
+  activeHandlesByType: HandlesByType,
 };
 
 export default class ActiveHandlesSectionComponent extends React.Component {

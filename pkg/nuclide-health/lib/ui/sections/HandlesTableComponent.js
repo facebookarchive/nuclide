@@ -12,14 +12,14 @@
 import {React} from 'react-for-atom';
 
 type Props = {
-  title: string;
-  handles: Array<Object>;
-  keyed: Function;
+  title: string,
+  handles: Array<Object>,
+  keyed: Function,
   columns: Array<{
-    title: string;
-    value: (handle: any) => ?string;
-    widthPercentage: number;
-  }>;
+    title: string,
+    value: (handle: any) => ?string,
+    widthPercentage: number,
+  }>,
 };
 
 export default class HandlesTableComponent extends React.Component {

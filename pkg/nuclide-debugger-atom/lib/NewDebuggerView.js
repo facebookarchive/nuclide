@@ -33,8 +33,8 @@ import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
 import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
 
 type Props = {
-  model: DebuggerModel;
-  watchExpressionListStore: WatchExpressionListStore;
+  model: DebuggerModel,
+  watchExpressionListStore: WatchExpressionListStore,
 };
 
 function storeBreakpointsToViewBreakpoints(
@@ -57,9 +57,9 @@ function storeBreakpointsToViewBreakpoints(
 export class NewDebuggerView extends React.Component {
   props: Props;
   state: {
-    debuggerMode: DebuggerModeType;
-    callstack: ?Callstack;
-    breakpoints: ?FileLineBreakpoints;
+    debuggerMode: DebuggerModeType,
+    callstack: ?Callstack,
+    breakpoints: ?FileLineBreakpoints,
   };
   _watchExpressionComponentWrapped: ReactClass<any>;
   _localsComponentWrapped: ReactClass<any>;

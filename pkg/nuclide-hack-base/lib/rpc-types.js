@@ -12,29 +12,29 @@
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 export type HackParameterDetails = {
-  name: string;
-  type: string;
-  variadic: boolean;
+  name: string,
+  type: string,
+  variadic: boolean,
 };
 
 export type HackFunctionDetails = {
-  min_arity: number;
-  return_type: string;
-  params: Array<HackParameterDetails>;
+  min_arity: number,
+  return_type: string,
+  params: Array<HackParameterDetails>,
 };
 
 // Note that all line/column values are 1-based.
 export type HackRange = {
-  filename: NuclideUri;
-  line: number;
-  char_start: number;
-  char_end: number;
+  filename: NuclideUri,
+  line: number,
+  char_start: number,
+  char_end: number,
 };
 
 export type HackCompletion = {
-  name: string;
-  type: string;
-  pos: HackRange;
-  func_details: ?HackFunctionDetails;
-  expected_ty: boolean;
+  name: string,
+  type: string,
+  pos: HackRange,
+  func_details: ?HackFunctionDetails,
+  expected_ty: boolean,
 };

@@ -36,16 +36,16 @@ const logger = require('../../nuclide-logging').getLogger();
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
 
 export type ArcDiagnostic = {
-  type: string;
-  text: string;
-  filePath: NuclideUri;
-  row: number;
-  col: number;
-  code: ?string;
+  type: string,
+  text: string,
+  filePath: NuclideUri,
+  row: number,
+  col: number,
+  code: ?string,
 
   // For autofix
-  original?: string;
-  replacement?: string;
+  original?: string,
+  replacement?: string,
 };
 
 // Exported for testing
@@ -146,7 +146,7 @@ async function getCommitBasedArcConfigDirectory(filePath: string): Promise<?stri
 function _callArcDiff(
   filePath: NuclideUri,
   extraArcDiffArgs: Array<string>,
-): Observable<{stderr?: string; stdout?: string;}> {
+): Observable<{stderr?: string, stdout?: string}> {
   const args = ['diff', '--json'].concat(extraArcDiffArgs);
 
   return Observable
@@ -164,7 +164,7 @@ function _callArcDiff(
 
 export function createPhabricatorRevision(
   filePath: NuclideUri,
-): Observable<{stderr?: string; stdout?: string;}> {
+): Observable<{stderr?: string, stdout?: string}> {
   return _callArcDiff(filePath, ['--verbatim']);
 }
 
@@ -172,7 +172,7 @@ export function updatePhabricatorRevision(
   filePath: NuclideUri,
   message: string,
   allowUntracked: boolean,
-): Observable<{stderr?: string; stdout?: string;}> {
+): Observable<{stderr?: string, stdout?: string}> {
   const args = ['-m', message];
   if (allowUntracked) {
     args.push('--allow-untracked');
@@ -233,13 +233,13 @@ async function execArcLint(cwd: string, filePaths: Array<NuclideUri>, skip: Arra
 function convertLints(
   pathToFile: string,
   lints: Array<{
-    severity: string;
-    line: number;
-    char: number;
-    code: string;
-    description: string;
-    original?: string;
-    replacement?: string;
+    severity: string,
+    line: number,
+    char: number,
+    code: string,
+    description: string,
+    original?: string,
+    replacement?: string,
   }>,
 ): Array<ArcDiagnostic> {
   return lints.map(lint => {

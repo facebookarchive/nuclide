@@ -14,13 +14,13 @@ import type {HandlesByType} from '../../types';
 import {React} from 'react-for-atom';
 
 type Props = {
-  cpuPercentage: number;
-  memory: number;
-  heapPercentage: number;
-  lastKeyLatency: number;
-  activeHandles: number;
-  activeRequests: number;
-  activeHandlesByType: HandlesByType;
+  cpuPercentage: number,
+  memory: number,
+  heapPercentage: number,
+  lastKeyLatency: number,
+  activeHandles: number,
+  activeRequests: number,
+  activeHandlesByType: HandlesByType,
 };
 
 export default class BasicStatsSectionComponent extends React.Component {

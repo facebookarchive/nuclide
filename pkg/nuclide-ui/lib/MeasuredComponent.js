@@ -21,17 +21,17 @@ const observerConfig = {
 };
 
 export type DOMMeasurements = {
-  clientHeight: number;
-  clientWidth: number;
-  offsetHeight: number;
-  offsetWidth: number;
-  scrollHeight: number;
-  scrollWidth: number;
+  clientHeight: number,
+  clientWidth: number,
+  offsetHeight: number,
+  offsetWidth: number,
+  scrollHeight: number,
+  scrollWidth: number,
 };
 
 type Props = {
-  onMeasurementsChanged: (measurements: DOMMeasurements) => void;
-  children?: React.Element<any>;
+  onMeasurementsChanged: (measurements: DOMMeasurements) => void,
+  children?: React.Element<any>,
 };
 
 /** A container which invokes a callback function supplied in props whenever the

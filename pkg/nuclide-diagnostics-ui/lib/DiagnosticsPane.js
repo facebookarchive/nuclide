@@ -17,7 +17,7 @@ import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScrolle
 import {React} from 'react-for-atom';
 import {track} from '../../nuclide-analytics';
 
-type textAndType = {text: string; isPlainText: boolean};
+type textAndType = {text: string, isPlainText: boolean};
 
 const DEFAULT_LINE_TEXT_HEIGHT = 15;
 const PIXELS_PER_CHAR = 6;
@@ -77,7 +77,7 @@ function messageColumnCellDataGetter(
   let text = '';
   let isPlainText = true;
   const traces = diagnostic.trace || [];
-  const allMessages: Array<{html?: string; text?: string}> = [diagnostic, ...traces];
+  const allMessages: Array<{html?: string, text?: string}> = [diagnostic, ...traces];
   for (const message of allMessages) {
     if (message.html != null) {
       text += message.html + ' ';
@@ -122,9 +122,9 @@ function onRowClick(
 }
 
 type CellProps = {
-  children?: mixed;
-  style?: Object;
-  title?: string;
+  children?: mixed,
+  style?: Object,
+  title?: string,
 };
 
 /*
@@ -142,9 +142,9 @@ function Cell(props: CellProps): React.Element<any> {
 }
 
 type DiagnosticsPaneProps = {
-  diagnostics: Array<DiagnosticMessage>;
-  showFileName: ?boolean;
-  width: number;
+  diagnostics: Array<DiagnosticMessage>,
+  showFileName: ?boolean,
+  width: number,
 };
 
 class DiagnosticsPane extends React.Component {

@@ -31,8 +31,8 @@ const EDITOR_DEBOUNCE_INTERVAL = 500;
 const POSITION_DEBOUNCE_INTERVAL = 500;
 
 export type ContextViewConfig = {
-  width?: number;
-  visible?: boolean;
+  width?: number,
+  visible?: boolean,
 };
 
 export type ContextProvider = {
@@ -41,10 +41,10 @@ export type ContextProvider = {
    * components. This gives Context View the ability to set the props (which
    * contains the currentDefinition) of each provider.
    */
-  getElementFactory: () => ((props: {definition: ?Definition}) => React.Element<any>);
-  id: string; // Unique ID of the provider (suggested: use the package name of the provider)
-  title: string; // Display name
-  isEditorBased: boolean; // Whether the context provider displays an AtomTextEditor. This flag
+  getElementFactory: () => ((props: {definition: ?Definition}) => React.Element<any>),
+  id: string, // Unique ID of the provider (suggested: use the package name of the provider)
+  title: string, // Display name
+  isEditorBased: boolean, // Whether the context provider displays an AtomTextEditor. This flag
   // allows context view to display editor-based providers more nicely.
 };
 

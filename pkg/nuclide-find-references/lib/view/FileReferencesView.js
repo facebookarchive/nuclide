@@ -17,17 +17,17 @@ import FilePreview from './FilePreview';
 import nuclideUri from '../../../nuclide-remote-uri';
 
 type Props = {
-  uri: string;
-  grammar: atom$Grammar;
-  previewText: Array<string>;
-  refGroups: Array<ReferenceGroup>;
-  basePath: string;
-  clickCallback: () => void;
-  isSelected: boolean;
+  uri: string,
+  grammar: atom$Grammar,
+  previewText: Array<string>,
+  refGroups: Array<ReferenceGroup>,
+  basePath: string,
+  clickCallback: () => void,
+  isSelected: boolean,
 };
 
 type State = {
-  isExpanded: boolean;
+  isExpanded: boolean,
 };
 
 export default class FileReferencesView extends React.Component {

@@ -17,8 +17,8 @@ import {React} from 'react-for-atom';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 
 type DiagnosticsTraceItemProps = {
-  trace: Trace;
-  goToLocation: (path: string, line: number) => mixed;
+  trace: Trace,
+  goToLocation: (path: string, line: number) => mixed,
 };
 
 // TODO move LESS styles to nuclide-ui

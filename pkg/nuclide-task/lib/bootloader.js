@@ -14,9 +14,9 @@ import nuclideUri from '../../nuclide-remote-uri';
 import {EventEmitter} from 'events';
 
 export type InvokeRemoteMethodParams = {
-  file: string;
-  method: ?string;
-  args: ?Array<any>;
+  file: string,
+  method: ?string,
+  args: ?Array<any>,
 };
 
 /**

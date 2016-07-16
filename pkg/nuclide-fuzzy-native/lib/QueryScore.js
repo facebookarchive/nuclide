@@ -10,7 +10,7 @@
  */
 
 export type QueryScore = {
-  value: string;
-  score: number;
-  matchIndexes?: Array<number>;
+  value: string,
+  score: number,
+  matchIndexes?: Array<number>,
 };

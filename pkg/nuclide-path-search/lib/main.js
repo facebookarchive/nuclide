@@ -20,8 +20,8 @@ export type FileSearchResult = FileSearchResultType;
 
 type DirectoryUri = string;
 export type FileSearch = {
-  query: (query: string) => Promise<Array<FileSearchResult>>;
-  dispose: () => void;
+  query: (query: string) => Promise<Array<FileSearchResult>>,
+  dispose: () => void,
 };
 
 const logger = getLogger();

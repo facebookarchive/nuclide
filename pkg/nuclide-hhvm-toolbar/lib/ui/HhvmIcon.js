@@ -12,11 +12,11 @@
 import {React} from 'react-for-atom';
 
 type DefaultProps = {
-  width: string;
+  width: string,
 };
 
 type Props = {
-  width?: string;
+  width?: string,
 };
 
 export default class HhvmIcon extends React.Component {

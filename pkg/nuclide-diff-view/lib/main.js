@@ -30,18 +30,18 @@ import DiffViewElement from './DiffViewElement';
 import nuclideUri from '../../nuclide-remote-uri';
 
 type SerializedDiffViewState = {
-  visible: false;
+  visible: false,
 } | {
-  visible: true;
-  activeFilePath: NuclideUri;
-  viewMode: DiffModeType;
-  commitMode: CommitModeType;
+  visible: true,
+  activeFilePath: NuclideUri,
+  viewMode: DiffModeType,
+  commitMode: CommitModeType,
 };
 
 let diffViewModel: ?DiffViewModelType = null;
 let activeDiffView: ?{
-  component: React.Component<any, any, any>;
-  element: HTMLElement;
+  component: React.Component<any, any, any>,
+  element: HTMLElement,
 } = null;
 
 // This url style is the one Atom uses for the welcome and settings pages.

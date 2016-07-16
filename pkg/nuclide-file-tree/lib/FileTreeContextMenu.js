@@ -20,19 +20,19 @@ import {FileTreeStore} from './FileTreeStore';
 import nuclideUri from '../../nuclide-remote-uri';
 
 type MenuItemSingle = {
-  label: string;
-  command: string;
-  shouldDisplay?: (event: MouseEvent) => boolean;
+  label: string,
+  command: string,
+  shouldDisplay?: (event: MouseEvent) => boolean,
 };
 
 type MenuItemGroup = {
-  label: string;
-  submenu: Array<atom$ContextMenuItem>;
-  shouldDisplay?: (event: MouseEvent) => boolean;
+  label: string,
+  submenu: Array<atom$ContextMenuItem>,
+  shouldDisplay?: (event: MouseEvent) => boolean,
 };
 
 type MenuItemSeparator = {
-  type: string;
+  type: string,
 };
 
 type MenuItemDefinition = MenuItemSingle | MenuItemGroup | MenuItemSeparator;
@@ -41,15 +41,15 @@ type MenuItemDefinition = MenuItemSingle | MenuItemGroup | MenuItemSeparator;
 // It's just atom$ContextMenuItem with an optional `callback` property added.
 // I wish flow would let add it in a more elegant way.
 type AtomContextMenuItemWithCallback = {
-  command?: string;
-  callback?: () => mixed;
-  created?: (event: MouseEvent) => void;
-  enabled?: boolean;
-  label?: string;
-  shouldDisplay?: (event: MouseEvent) => boolean;
-  submenu?: Array<atom$ContextMenuItem>;
-  type?: string;
-  visible?: boolean;
+  command?: string,
+  callback?: () => mixed,
+  created?: (event: MouseEvent) => void,
+  enabled?: boolean,
+  label?: string,
+  shouldDisplay?: (event: MouseEvent) => boolean,
+  submenu?: Array<atom$ContextMenuItem>,
+  type?: string,
+  visible?: boolean,
 };
 
 export type FileTreeContextMenuItem = atom$ContextMenuItem | AtomContextMenuItemWithCallback;
@@ -389,8 +389,8 @@ class FileTreeContextMenu {
 }
 
 function initCommandIfPresent(item: FileTreeContextMenuItem): {
-  itemDisposable: CompositeDisposable;
-  item: atom$ContextMenuItem;
+  itemDisposable: CompositeDisposable,
+  item: atom$ContextMenuItem,
 } {
   const itemDisposable = new CompositeDisposable();
   if (item.callback != null && item.label != null) {

@@ -17,17 +17,17 @@ type Props = {
   /**
    * Whether to shade even and odd items differently.
    */
-  alternateBackground?: boolean;
-  children?: React.Element<any>;
+  alternateBackground?: boolean,
+  children?: React.Element<any>,
   /**
    * Whether items can be selected.
    * If specified, `onSelect` must also be specified.
    */
-  selectable?: boolean;
+  selectable?: boolean,
   /**
    * Handler to be called upon selection. Called iff `selectable` is `true`.
    */
-  onSelect?: (selectedIndex: number, event: SyntheticMouseEvent) => mixed;
+  onSelect?: (selectedIndex: number, event: SyntheticMouseEvent) => mixed,
 };
 
 /**

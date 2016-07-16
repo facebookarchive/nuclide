@@ -19,11 +19,11 @@ import classnames from 'classnames';
 import {DiagnosticsMessage} from '../../nuclide-ui/lib/DiagnosticsMessage';
 
 type DiagnosticsPopupProps = {
-  messages: Array<FileDiagnosticMessage>;
-  goToLocation: (filePath: NuclideUri, line: number) => mixed;
-  fixer: (message: FileDiagnosticMessage) => void;
-  left: number;
-  top: number;
+  messages: Array<FileDiagnosticMessage>,
+  goToLocation: (filePath: NuclideUri, line: number) => mixed,
+  fixer: (message: FileDiagnosticMessage) => void,
+  left: number,
+  top: number,
 };
 
 function renderMessage(

@@ -16,21 +16,21 @@ import escapeStringRegexp from 'escape-string-regexp';
 import {React} from 'react-for-atom';
 
 type Props = {
-  records: Array<Record>;
-  clearRecords: () => void;
-  execute: (code: string) => void;
-  currentExecutor: ?Executor;
-  executors: Map<string, Executor>;
-  getProvider: (id: string) => ?OutputProvider;
-  initialSelectedSourceIds: Array<string>;
-  selectExecutor: (executorId: string) => void;
-  sources: Array<Source>;
+  records: Array<Record>,
+  clearRecords: () => void,
+  execute: (code: string) => void,
+  currentExecutor: ?Executor,
+  executors: Map<string, Executor>,
+  getProvider: (id: string) => ?OutputProvider,
+  initialSelectedSourceIds: Array<string>,
+  selectExecutor: (executorId: string) => void,
+  sources: Array<Source>,
 };
 
 type State = {
-  filterText: string;
-  enableRegExpFilter: boolean;
-  selectedSourceIds: Array<string>;
+  filterText: string,
+  enableRegExpFilter: boolean,
+  selectedSourceIds: Array<string>,
 };
 
 /**
@@ -53,7 +53,7 @@ export default class Console extends React.Component {
     (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
   }
 
-  _getFilterPattern(filterText: string, isRegExp: boolean): {pattern: ?RegExp; isValid: boolean} {
+  _getFilterPattern(filterText: string, isRegExp: boolean): {pattern: ?RegExp, isValid: boolean} {
     if (filterText === '') {
       return {pattern: null, isValid: true};
     }

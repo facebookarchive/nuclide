@@ -22,15 +22,15 @@ import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
 import {HR} from '../../nuclide-ui/lib/HR';
 
 type Props = {
-  workingSetsStore: WorkingSetsStore;
-  onClose: () => void;
-  onEditWorkingSet: (name: string, uris: Array<string>) => void;
+  workingSetsStore: WorkingSetsStore,
+  onClose: () => void,
+  onEditWorkingSet: (name: string, uris: Array<string>) => void,
 };
 
 type State = {
-  selectionIndex: number;
-  applicableDefinitions: Array<WorkingSetDefinition>;
-  notApplicableDefinitions: Array<WorkingSetDefinition>;
+  selectionIndex: number,
+  applicableDefinitions: Array<WorkingSetDefinition>,
+  notApplicableDefinitions: Array<WorkingSetDefinition>,
 };
 
 export class WorkingSetSelectionComponent extends React.Component {
@@ -190,13 +190,13 @@ export class WorkingSetSelectionComponent extends React.Component {
 }
 
 type ApplicableDefinitionLineProps = {
-  def: WorkingSetDefinition;
-  index: number;
-  selected: boolean;
-  toggleWorkingSet: (name: string, active: boolean) => void;
-  onSelect: (index: number) => void;
-  onDeleteWorkingSet: (name: string) => void;
-  onEditWorkingSet: (name: string, uris: Array<string>) => void;
+  def: WorkingSetDefinition,
+  index: number,
+  selected: boolean,
+  toggleWorkingSet: (name: string, active: boolean) => void,
+  onSelect: (index: number) => void,
+  onDeleteWorkingSet: (name: string) => void,
+  onEditWorkingSet: (name: string, uris: Array<string>) => void,
 };
 
 class ApplicableDefinitionLine extends React.Component {
@@ -259,8 +259,8 @@ class ApplicableDefinitionLine extends React.Component {
 }
 
 type NonApplicableDefinitionLineProps = {
-  def: WorkingSetDefinition;
-  onDeleteWorkingSet: (name: string) => void;
+  def: WorkingSetDefinition,
+  onDeleteWorkingSet: (name: string) => void,
 };
 
 class NonApplicableDefinitionLine extends React.Component {

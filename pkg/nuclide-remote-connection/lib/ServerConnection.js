@@ -29,11 +29,11 @@ import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 import {getVersion} from '../../nuclide-version';
 
 export type ServerConnectionConfiguration = {
-  host: string; // host nuclide server is running on.
-  port: number; // port to connect to.
-  certificateAuthorityCertificate?: Buffer; // certificate of certificate authority.
-  clientCertificate?: Buffer; // client certificate for https connection.
-  clientKey?: Buffer; // key for https connection.
+  host: string, // host nuclide server is running on.
+  port: number, // port to connect to.
+  certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
+  clientCertificate?: Buffer, // client certificate for https connection.
+  clientKey?: Buffer, // key for https connection.
 };
 
 // ServerConnection represents the client side of a connection to a remote machine.

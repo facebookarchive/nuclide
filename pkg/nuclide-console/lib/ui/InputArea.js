@@ -15,8 +15,8 @@ import Rx from 'rxjs';
 import {DisposableSubscription} from '../../../commons-node/stream';
 
 type Props = {
-  onSubmit: (value: string) => mixed;
-  scopeName: ?string;
+  onSubmit: (value: string) => mixed,
+  scopeName: ?string,
 };
 
 const ENTER_KEY_CODE = 13;

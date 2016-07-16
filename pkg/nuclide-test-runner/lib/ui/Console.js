@@ -15,7 +15,7 @@ import {AtomTextEditor} from '../../../nuclide-ui/lib/AtomTextEditor';
 import {React} from 'react-for-atom';
 
 type Props = {
-  textBuffer: TextBuffer;
+  textBuffer: TextBuffer,
 };
 
 class Console extends React.Component {

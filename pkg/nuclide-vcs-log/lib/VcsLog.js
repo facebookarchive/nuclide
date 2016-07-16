@@ -18,12 +18,12 @@ import shell from 'shell';
 import {shortNameForAuthor} from './util';
 
 type Props = {
-  files: Array<NuclideUri>;
-  showDifferentialRevision: boolean;
+  files: Array<NuclideUri>,
+  showDifferentialRevision: boolean,
 };
 
 type State = {
-  logEntries: ?Array<VcsLogEntry>;
+  logEntries: ?Array<VcsLogEntry>,
 };
 
 export default class VcsLog extends React.Component {

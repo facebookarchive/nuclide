@@ -27,17 +27,17 @@ import {LazyNestedValueComponent} from '../../nuclide-ui/lib/LazyNestedValueComp
 import SimpleValueComponent from '../../nuclide-ui/lib/SimpleValueComponent';
 
 type WatchExpressionComponentProps = {
-  watchExpressions: EvaluatedExpressionList;
-  onAddWatchExpression: (expression: string) => void;
-  onRemoveWatchExpression: (index: number) => void;
-  onUpdateWatchExpression: (index: number, newExpression: string) => void;
-  watchExpressionStore: WatchExpressionStore;
+  watchExpressions: EvaluatedExpressionList,
+  onAddWatchExpression: (expression: string) => void,
+  onRemoveWatchExpression: (index: number) => void,
+  onUpdateWatchExpression: (index: number, newExpression: string) => void,
+  watchExpressionStore: WatchExpressionStore,
 };
 
 export class WatchExpressionComponent extends React.Component {
   props: WatchExpressionComponentProps;
   state: {
-    rowBeingEdited: ?number;
+    rowBeingEdited: ?number,
   };
   coreCancelDisposable: ?IDisposable;
 

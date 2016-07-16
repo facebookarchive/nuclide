@@ -24,13 +24,13 @@ import type {OrderedMap} from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 
 type State = {
-  elementHeight: number;
+  elementHeight: number,
 };
 
 type Props = {
-  containerHeight: number;
-  containerScrollTop: number;
-  scrollToPosition: (top: number, height: number) => void;
+  containerHeight: number,
+  containerScrollTop: number,
+  scrollToPosition: (top: number, height: number) => void,
 };
 
 const BUFFER_ELEMENTS = 15;

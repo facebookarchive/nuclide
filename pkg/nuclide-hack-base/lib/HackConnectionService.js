@@ -14,15 +14,15 @@ import type {HackCompletion} from './rpc-types';
 
 // Note that all line/column values are 1-based.
 export type Position = {
-  line: number;
-  column: number;
+  line: number,
+  column: number,
 };
 
 // end is exclusive, so start == end implies a 0 length range.
 // end must be >= start.
 export type Range = {
-  start: Position;
-  end: Position;
+  start: Position,
+  end: Position,
 };
 
 // Indicates that the text at range in the file has been
@@ -30,8 +30,8 @@ export type Range = {
 // is set to text.
 // inserts are represented as ranges with start == end.
 export type TextEdit = {
-  range?: Range;
-  text: string;
+  range?: Range,
+  text: string,
 };
 
 // Inidicates that the file has been opened by the IDE.
@@ -73,8 +73,8 @@ export type FileEventType =
   | 'Saved';
 
 export type FileEvent = {
-  filename: NuclideUri;
-  type: FileEventType;
+  filename: NuclideUri,
+  type: FileEventType,
 };
 
 // Indicates that the set of files in the Hack project has changed.

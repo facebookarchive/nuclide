@@ -13,16 +13,16 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {HackSearchPosition} from './HackService';
 
 export type HHSearchPosition = {
-  filename: string;
-  line: number;
-  char_start: number;
-  char_end: number;
-  scope: string;
-  name: string;
-  desc: string;
+  filename: string,
+  line: number,
+  char_start: number,
+  char_end: number,
+  scope: string,
+  name: string,
+  desc: string,
 };
 
 export type HackSearchResult = {
-  hackRoot: NuclideUri;
-  result: Array<HackSearchPosition>;
+  hackRoot: NuclideUri,
+  result: Array<HackSearchPosition>,
 };

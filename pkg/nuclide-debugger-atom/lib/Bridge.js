@@ -17,16 +17,16 @@ import type {
 } from './types';
 
 type ExpressionResult = ChromeProtocolResponse & {
-  expression: string;
+  expression: string,
 };
 
 type GetPropertiesResult = ChromeProtocolResponse & {
-  objectId: string;
+  objectId: string,
 };
 
 type ChromeProtocolResponse = {
-  result: ?EvaluationResult | ?GetPropertiesResult;
-  error: ?Object;
+  result: ?EvaluationResult | ?GetPropertiesResult,
+  error: ?Object,
 };
 
 import invariant from 'assert';
@@ -259,7 +259,7 @@ class Bridge {
     // addEventListener expects its callback to take an Event. I'm not sure how to reconcile it with
     // the type that is expected here.
     // $FlowFixMe(jeffreytan)
-    const event: {channel: string; args: any[]} = stdEvent;
+    const event: {channel: string, args: any[]} = stdEvent;
     switch (event.channel) {
       case 'notification':
         switch (event.args[0]) {
@@ -357,11 +357,11 @@ class Bridge {
     this._debuggerModel.getActions().clearInterface();
   }
 
-  _setSelectedCallFrameLine(options: ?{sourceURL: string; lineNumber: number}): void {
+  _setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}): void {
     this._debuggerModel.getActions().setSelectedCallFrameline(options);
   }
 
-  _openSourceLocation(options: ?{sourceURL: string; lineNumber: number}): void {
+  _openSourceLocation(options: ?{sourceURL: string, lineNumber: number}): void {
     if (options == null) {
       return;
     }
@@ -371,7 +371,7 @@ class Bridge {
     );
   }
 
-  _addBreakpoint(location: {sourceURL: string; lineNumber: number}) {
+  _addBreakpoint(location: {sourceURL: string, lineNumber: number}) {
     const path = nuclideUri.uriToNuclideUri(location.sourceURL);
     // only handle real files for now.
     if (path) {
@@ -384,7 +384,7 @@ class Bridge {
     }
   }
 
-  _removeBreakpoint(location: {sourceURL: string; lineNumber: number}) {
+  _removeBreakpoint(location: {sourceURL: string, lineNumber: number}) {
     const path = nuclideUri.uriToNuclideUri(location.sourceURL);
     // only handle real files for now.
     if (path) {

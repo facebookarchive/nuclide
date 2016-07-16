@@ -14,28 +14,28 @@ import classnames from 'classnames';
 import {React, ReactDOM} from 'react-for-atom';
 
 type Option = {
-  label: React.Children;
-  value: any;
+  label: React.Children,
+  value: any,
 };
 
 type Props = {
-  optionComponent?: (props: OptionComponentProps) => React.Element<any>;
-  className?: string;
-  options: Array<Option>;
-  value: Array<any>;
-  onChange: (value: Array<any>) => void;
-  commandScope?: HTMLElement;
+  optionComponent?: (props: OptionComponentProps) => React.Element<any>,
+  className?: string,
+  options: Array<Option>,
+  value: Array<any>,
+  onChange: (value: Array<any>) => void,
+  commandScope?: HTMLElement,
 };
 
 type State = {
-  selectedValue: any;
+  selectedValue: any,
 };
 
 type DefaultProps = {
-  onChange: (value: Array<any>) => void;
-  optionComponent: ReactClass<OptionComponentProps>;
-  value: Array<any>;
-  options: Array<Option>;
+  onChange: (value: Array<any>) => void,
+  optionComponent: ReactClass<OptionComponentProps>,
+  value: Array<any>,
+  options: Array<Option>,
 };
 
 export class MultiSelectList extends React.Component {
@@ -156,9 +156,9 @@ export class MultiSelectList extends React.Component {
 }
 
 export type OptionComponentProps = {
-  option: Option;
-  active: boolean;
-  selected: boolean;
+  option: Option,
+  active: boolean,
+  selected: boolean,
 };
 
 function DefaultOptionComponent(props: OptionComponentProps) {

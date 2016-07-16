@@ -13,48 +13,48 @@ import type Rx from 'rxjs';
 
 /* Evaluation & values */
 export type EvaluationResult = {
-  _type: string;
+  _type: string,
   // Either:
-  value?: string;
+  value?: string,
   // Or:
-  _description? : string;
-  _objectId?: string;
+  _description? : string,
+  _objectId?: string,
 };
 
 export type ExpansionResult = Array<{
-  name: string;
-  value: EvaluationResult;
+  name: string,
+  value: EvaluationResult,
 }>;
 
 export type Expression = string;
 export type EvaluatedExpression = {
-  expression: Expression;
-  value: Rx.Observable<?EvaluationResult>;
+  expression: Expression,
+  value: Rx.Observable<?EvaluationResult>,
 };
 export type EvaluatedExpressionList = Array<EvaluatedExpression>;
 
 /* Breakpoints */
 export type FileLineBreakpoint = {
-  path: string;
-  line: number;
-  enabled: boolean;
-  resolved: boolean;
+  path: string,
+  line: number,
+  enabled: boolean,
+  resolved: boolean,
 };
 export type FileLineBreakpoints = Array<FileLineBreakpoint>;
 
 export type SerializedBreakpoint = {
-  line: number;
-  sourceURL: string;
+  line: number,
+  sourceURL: string,
 };
 
 /* Callstack */
 type CallstackItem = {
-  name: string;
+  name: string,
   location: {
-    path: string;
-    line: number;
-    column?: number;
-  };
+    path: string,
+    line: number,
+    column?: number,
+  },
 };
 export type Callstack = Array<CallstackItem>;
 

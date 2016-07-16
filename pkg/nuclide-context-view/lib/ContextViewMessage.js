@@ -15,7 +15,7 @@ export const NO_DEFINITION_MESSAGE = 'No definition selected.';
 export const LOADING_MESSAGE = 'Loading...';
 
 type Props = {
-  message: string;
+  message: string,
 };
 
 /** A message view to be shown in Context View. */

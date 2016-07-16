@@ -16,9 +16,9 @@ import {asyncExecute} from '../../commons-node/process';
 let fbFindClangServerArgs;
 
 export default async function findClangServerArgs(): Promise<{
-  libClangLibraryFile: ?string;
-  pythonExecutable: string;
-  pythonPathEnv: ?string;
+  libClangLibraryFile: ?string,
+  pythonExecutable: string,
+  pythonPathEnv: ?string,
 }> {
   if (fbFindClangServerArgs === undefined) {
     fbFindClangServerArgs = null;

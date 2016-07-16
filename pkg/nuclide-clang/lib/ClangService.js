@@ -197,7 +197,7 @@ export async function formatCode(
   cursor: number,
   offset?: number,
   length?: number,
-): Promise<{newCursor: number; formatted: string}> {
+): Promise<{newCursor: number, formatted: string}> {
   const args = [
     '-style=file',
     `-assume-filename=${src}`,

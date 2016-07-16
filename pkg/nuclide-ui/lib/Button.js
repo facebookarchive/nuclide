@@ -21,17 +21,17 @@ type ButtonNodeName = 'button' | 'a';
 
 type Props = {
   /** Octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon?: Octicon;
+  icon?: Octicon,
   /** Optional specifier for special buttons, e.g. primary, info, success or error buttons. */
-  buttonType?: ButtonType;
-  selected?: boolean;
+  buttonType?: ButtonType,
+  selected?: boolean,
   /**  */
-  size?: ButtonSize;
-  className?: string;
+  size?: ButtonSize,
+  className?: string,
   /** The button's content; generally a string. */
-  children?: mixed;
+  children?: mixed,
   /** Allows specifying an element other than `button` to be used as the wrapper node. */
-  wrapperElement?: ButtonNodeName;
+  wrapperElement?: ButtonNodeName,
 };
 
 export const ButtonSizes = Object.freeze({

@@ -21,11 +21,11 @@ const logger = getLogger();
  * be translated directly to/from JSON.
  */
 type SerializableServerConnectionConfiguration = {
-  host: string;
-  port: number;
-  certificateAuthorityCertificate?: string;
-  clientCertificate?: string;
-  clientKey?: string;
+  host: string,
+  port: number,
+  certificateAuthorityCertificate?: string,
+  clientCertificate?: string,
+  clientKey?: string,
 };
 
 // Insecure configs are used for testing only.
@@ -163,7 +163,7 @@ function decryptString(text: string, password: string, salt: string): string {
   return decryptedString;
 }
 
-function encryptString(text: string): {password: string; salt: string; encryptedString: string} {
+function encryptString(text: string): {password: string, salt: string, encryptedString: string} {
   const password = crypto.randomBytes(16).toString('base64');
   const salt = crypto.randomBytes(16).toString('base64');
 

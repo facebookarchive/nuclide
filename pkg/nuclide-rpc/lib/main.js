@@ -28,30 +28,30 @@ import type {
 } from './types';
 
 export type RpcContext = {
-  callRemoteFunction(functionName: string, returnType: ReturnKind, args: Object): any;
+  callRemoteFunction(functionName: string, returnType: ReturnKind, args: Object): any,
   callRemoteMethod(
     objectId: number,
     methodName: string,
     returnType: ReturnKind,
     args: Object
-  ): any;
+  ): any,
   createRemoteObject(
     interfaceName: string,
     thisArg: Object,
     unmarshalledArgs: Array<any>,
     argTypes: Array<Parameter>
-  ): void;
-  disposeRemoteObject(object: Object): Promise<void>;
-  marshal(value: any, type: Type): any;
-  unmarshal(value: any, type: Type): any;
+  ): void,
+  disposeRemoteObject(object: Object): Promise<void>,
+  marshal(value: any, type: Type): any,
+  unmarshal(value: any, type: Type): any,
   marshalArguments(
     args: Array<any>,
     argTypes: Array<Parameter>
-  ): Promise<Object>;
+  ): Promise<Object>,
   unmarshalArguments(
     args: Object,
     argTypes: Array<Parameter>
-  ): Promise<Array<any>>;
+  ): Promise<Array<any>>,
 };
 
 export type ProxyFactory = (context: RpcContext) => Object;

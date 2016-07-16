@@ -22,12 +22,12 @@ const PROGRESS_OUTPUT_INTERVAL = 5 * 1000;
 const BUILD_FAILED_MESSAGE = 'BUILD FAILED:';
 
 export type BuckEvent = {
-  type: 'progress';
-  progress: ?number;
+  type: 'progress',
+  progress: ?number,
 } | {
-  type: 'log';
-  message: string;
-  level: Level;
+  type: 'log',
+  message: string,
+  level: Level,
 };
 
 function convertJavaLevel(level: string): Level {

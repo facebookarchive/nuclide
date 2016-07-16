@@ -25,12 +25,12 @@ import {Emitter} from 'event-kit';
 // onClose handlers will be called before close() returns.
 // May not call send() after transport has closed..
 export type UnreliableTransport = {
-  send(message: string): Promise<boolean>;
-  onClose(callback: () => mixed): IDisposable;
-  onMessage(): Observable<string>;
-  onError(callback: (error: Object) => mixed): IDisposable;
-  close(): void;
-  isClosed(): boolean;
+  send(message: string): Promise<boolean>,
+  onClose(callback: () => mixed): IDisposable,
+  onMessage(): Observable<string>,
+  onError(callback: (error: Object) => mixed): IDisposable,
+  close(): void,
+  isClosed(): boolean,
 };
 
 // Adapter to make an UnreliableTransport a reliable Transport

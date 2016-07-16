@@ -13,24 +13,24 @@ import {Observable} from 'rxjs';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 export type AttachTargetInfo = {
-  pid: number;
-  name: string;
-  commandName: string;
-  basepath?: string;
+  pid: number,
+  name: string,
+  commandName: string,
+  basepath?: string,
 };
 
 export type LaunchTargetInfo = {
-  executablePath: string;
-  arguments: string;
-  environmentVariables: ?Array<string>;
-  workingDirectory: string;
+  executablePath: string,
+  arguments: string,
+  environmentVariables: ?Array<string>,
+  workingDirectory: string,
   basepath?: string
 };
 
 export type DebuggerConfig = {
-  logLevel: LogLevel;
-  pythonBinaryPath: string;
-  buckConfigRootFile: string;
+  logLevel: LogLevel,
+  pythonBinaryPath: string,
+  buckConfigRootFile: string,
 };
 
 export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {

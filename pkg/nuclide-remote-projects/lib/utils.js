@@ -21,10 +21,10 @@ const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
 const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
 
 export type OpenFileEditorInstance = {
-  pane: atom$Pane;
-  editor: atom$TextEditor;
-  uri: NuclideUri;
-  filePath: string;
+  pane: atom$Pane,
+  editor: atom$TextEditor,
+  uri: NuclideUri,
+  filePath: string,
 };
 
 /**

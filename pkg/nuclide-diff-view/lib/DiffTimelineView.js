@@ -24,12 +24,12 @@ import {
 } from '../../nuclide-ui/lib/Button';
 
 type DiffTimelineViewProps = {
-  diffModel: DiffViewModel;
-  onSelectionChange: (revisionInfo: RevisionInfo) => any;
+  diffModel: DiffViewModel,
+  onSelectionChange: (revisionInfo: RevisionInfo) => any,
 };
 
 type DiffTimelineViewState = {
-  revisionsState: ?RevisionsState;
+  revisionsState: ?RevisionsState,
 };
 
 export default class DiffTimelineView extends React.Component {
@@ -100,13 +100,13 @@ export default class DiffTimelineView extends React.Component {
 }
 
 type RevisionsComponentProps = {
-  diffModel: DiffViewModel;
-  compareRevisionId: number;
-  dirtyFileCount: number;
-  onSelectionChange: (revisionInfo: RevisionInfo) => mixed;
-  onClickPublish: () => mixed;
-  revisions: Array<RevisionInfo>;
-  diffStatuses: Map<number, DiffStatusDisplay>;
+  diffModel: DiffViewModel,
+  compareRevisionId: number,
+  dirtyFileCount: number,
+  onSelectionChange: (revisionInfo: RevisionInfo) => mixed,
+  onClickPublish: () => mixed,
+  revisions: Array<RevisionInfo>,
+  diffStatuses: Map<number, DiffStatusDisplay>,
 };
 
 function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Element<any> {

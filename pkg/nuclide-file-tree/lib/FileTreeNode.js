@@ -20,38 +20,38 @@ import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/H
 
 
 export type FileTreeNodeOptions = {
-  uri: NuclideUri;
-  rootUri: NuclideUri;
-  isExpanded?: boolean;
-  isSelected?: boolean;
-  isFocused?: boolean;
-  isDragHovered?: boolean;
-  isLoading?: boolean;
-  wasFetched?: boolean;
-  isCwd?: boolean;
-  isTracked?: boolean;
-  children?: Immutable.OrderedMap<string, FileTreeNode>;
-  connectionTitle?: string;
-  checkedStatus?: NodeCheckedStatus;
-  subscription?: ?IDisposable;
-  highlightedText?: string;
-  matchesFilter?: boolean;
+  uri: NuclideUri,
+  rootUri: NuclideUri,
+  isExpanded?: boolean,
+  isSelected?: boolean,
+  isFocused?: boolean,
+  isDragHovered?: boolean,
+  isLoading?: boolean,
+  wasFetched?: boolean,
+  isCwd?: boolean,
+  isTracked?: boolean,
+  children?: Immutable.OrderedMap<string, FileTreeNode>,
+  connectionTitle?: string,
+  checkedStatus?: NodeCheckedStatus,
+  subscription?: ?IDisposable,
+  highlightedText?: string,
+  matchesFilter?: boolean,
 };
 
 type DefaultFileTreeNodeOptions = {
-  isExpanded: boolean;
-  isSelected: boolean;
-  isFocused: boolean;
-  isDragHovered: boolean;
-  isLoading: boolean;
-  wasFetched: boolean;
-  isCwd: boolean;
-  isTracked: boolean;
-  children: Immutable.OrderedMap<string, FileTreeNode>;
-  connectionTitle: string;
-  subscription: ?IDisposable;
-  highlightedText: string;
-  matchesFilter: boolean;
+  isExpanded: boolean,
+  isSelected: boolean,
+  isFocused: boolean,
+  isDragHovered: boolean,
+  isLoading: boolean,
+  wasFetched: boolean,
+  isCwd: boolean,
+  isTracked: boolean,
+  children: Immutable.OrderedMap<string, FileTreeNode>,
+  connectionTitle: string,
+  subscription: ?IDisposable,
+  highlightedText: string,
+  matchesFilter: boolean,
 };
 
 const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
@@ -71,18 +71,18 @@ const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
 };
 
 export type ImmutableNodeSettableFields = {
-  isExpanded?: boolean;
-  isSelected?: boolean;
-  isFocused?: boolean;
-  isDragHovered?: boolean;
-  isLoading?: boolean;
-  wasFetched?: boolean;
-  isCwd?: boolean;
-  isTracked?: boolean;
-  children?: Immutable.OrderedMap<string, FileTreeNode>;
-  subscription?: ?IDisposable;
-  highlightedText?: string;
-  matchesFilter?: boolean;
+  isExpanded?: boolean,
+  isSelected?: boolean,
+  isFocused?: boolean,
+  isDragHovered?: boolean,
+  isLoading?: boolean,
+  wasFetched?: boolean,
+  isCwd?: boolean,
+  isTracked?: boolean,
+  children?: Immutable.OrderedMap<string, FileTreeNode>,
+  subscription?: ?IDisposable,
+  highlightedText?: string,
+  matchesFilter?: boolean,
 };
 
 /**

@@ -24,14 +24,14 @@ import {WorkingSet} from '../../nuclide-working-sets';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
 type Props = {
-  workingSetsStore: WorkingSetsStore;
+  workingSetsStore: WorkingSetsStore,
 };
 
 type State = {
-  selectionIsActive: boolean;
-  definitionsAreEmpty: boolean;
-  isUpdatingExistingWorkingSet: boolean;
-  updatedWorkingSetName: string;
+  selectionIsActive: boolean,
+  definitionsAreEmpty: boolean,
+  isUpdatingExistingWorkingSet: boolean,
+  updatedWorkingSetName: string,
 };
 
 export class FileTreeToolbarComponent extends React.Component {
@@ -241,9 +241,9 @@ export class FileTreeToolbarComponent extends React.Component {
 
 class SelectWorkingSetButton extends React.Component {
   props: {
-    highlight: boolean;
-    onClick: () => void;
-    onFocus: () => void;
+    highlight: boolean,
+    onClick: () => void,
+    onFocus: () => void,
   };
 
   render(): React.Element<any> {
@@ -271,8 +271,8 @@ class SelectWorkingSetButton extends React.Component {
 
 class DefineWorkingSetButton extends React.Component {
   props: {
-    isActive: boolean;
-    onClick: () => void;
+    isActive: boolean,
+    onClick: () => void,
   };
 
   render(): React.Element<any> {

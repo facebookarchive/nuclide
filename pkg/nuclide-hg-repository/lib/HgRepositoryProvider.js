@@ -38,10 +38,10 @@ function getLogger() {
 function getRepositoryDescription(
   directory: atom$Directory | RemoteDirectoryType,
 ): ?{
-  originURL: ?string;
-  repoPath: string;
-  workingDirectory: atom$Directory | RemoteDirectoryType;
-  workingDirectoryLocalPath: string;
+  originURL: ?string,
+  repoPath: string,
+  workingDirectory: atom$Directory | RemoteDirectoryType,
+  workingDirectoryLocalPath: string,
 } {
   if (directory instanceof RemoteDirectoryType) {
     const repositoryDescription = directory.getHgRepositoryDescription();

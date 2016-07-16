@@ -29,7 +29,7 @@ You are missing one of these.`;
 const TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY = 2000;
 
 type BlameGutter = {
-  destroy: () => void;
+  destroy: () => void,
 };
 
 type BlameGutterClass = () => BlameGutter;

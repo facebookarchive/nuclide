@@ -13,15 +13,15 @@ import {React} from 'react-for-atom';
 import remote from 'remote';
 
 type PromptOption = {
-  id: string;
-  label: string;
+  id: string,
+  label: string,
 };
 
 type Props = {
-  value: string;
-  onChange: (value: string) => void;
-  children: ?any;
-  options: Array<PromptOption>;
+  value: string,
+  onChange: (value: string) => void,
+  children: ?any,
+  options: Array<PromptOption>,
 };
 
 export default class PromptButton extends React.Component {

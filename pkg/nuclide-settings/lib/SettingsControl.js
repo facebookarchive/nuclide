@@ -16,10 +16,10 @@ import invariant from 'assert';
 import {React} from 'react-for-atom';
 
 type Props = {
-  keyPath: string;
-  schema: atom$ConfigSchema;
-  value: any;
-  onChange: (value: any) => mixed;
+  keyPath: string,
+  schema: atom$ConfigSchema,
+  value: any,
+  onChange: (value: any) => mixed,
 };
 
 export default function SettingsControl(props: Props): ?React.Element<any> {

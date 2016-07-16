@@ -13,7 +13,7 @@ import {React} from 'react-for-atom';
 import classnames from 'classnames';
 
 type Props = {
-  busy: boolean;
+  busy: boolean,
 };
 
 export class StatusBarTileComponent extends React.Component {

@@ -15,8 +15,8 @@ import {
 import classnames from 'classnames';
 
 type Props = {
-  filter: string;
-  found: boolean;
+  filter: string,
+  found: boolean,
 };
 
 class FileTreeSidebarFilterComponent extends React.Component {

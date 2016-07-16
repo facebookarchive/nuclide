@@ -20,15 +20,15 @@ import loadServicesConfig from './loadServicesConfig';
 export {loadServicesConfig};
 
 export type ConfigEntry = {
-  name: string;
-  definition:string;
-  implementation: string;
+  name: string,
+  definition:string,
+  implementation: string,
   // When true, doesn't mangle in the service name into the method names for functions.
-  preserveFunctionNames?: boolean;
+  preserveFunctionNames?: boolean,
 };
 
 export type Transport = {
-  send(message: string): void;
-  onMessage(): Observable<string>;
-  close(): void;
+  send(message: string): void,
+  onMessage(): Observable<string>,
+  close(): void,
 };

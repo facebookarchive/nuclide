@@ -46,7 +46,7 @@ function shouldDisplayActionTreeItem(
   }
 }
 
-function getActivePathAndHgRepository(): ?{activePath: string; repository: HgRepositoryClient;} {
+function getActivePathAndHgRepository(): ?{activePath: string, repository: HgRepositoryClient} {
   const editor = atom.workspace.getActiveTextEditor();
   if (editor == null || !editor.getPath()) {
     return null;

@@ -21,9 +21,9 @@ import {Subject} from 'rxjs';
 import ActiveEditorRegistry from '../ActiveEditorRegistry';
 
 type TestProvider = {
-  priority: number;
-  grammarScopes: Array<string>;
-  updateOnEdit?: boolean;
+  priority: number,
+  grammarScopes: Array<string>,
+  updateOnEdit?: boolean,
 };
 
 describe('ActiveEditorRegistry', () => {

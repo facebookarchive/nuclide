@@ -20,48 +20,48 @@ export type NuclideRemoteAuthMethods =
   SshHandshake.SupportedMethods.PRIVATE_KEY;
 
 export type NuclideRemoteConnectionParams = {
-  username: string;
-  server: string;
-  cwd: string;
-  remoteServerCommand: string;
-  sshPort: string;
-  pathToPrivateKey: string;
-  authMethod: NuclideRemoteAuthMethods;
-  displayTitle: string;
+  username: string,
+  server: string,
+  cwd: string,
+  remoteServerCommand: string,
+  sshPort: string,
+  pathToPrivateKey: string,
+  authMethod: NuclideRemoteAuthMethods,
+  displayTitle: string,
 };
 
 // The same as NuclideRemoteConnectionParams, minus `remoteServerCommand`.
 export type NuclideNewConnectionProfileInitialFields = {
-  username: string;
-  server: string;
-  cwd: string;
-  sshPort: string;
-  pathToPrivateKey: string;
-  authMethod: NuclideRemoteAuthMethods;
-  displayTitle: string;
+  username: string,
+  server: string,
+  cwd: string,
+  sshPort: string,
+  pathToPrivateKey: string,
+  authMethod: NuclideRemoteAuthMethods,
+  displayTitle: string,
 };
 
 export type NuclideRemoteConnectionProfile = {
-  deletable: boolean;
-  displayTitle: string;
-  params: NuclideRemoteConnectionParams;
-  saveable: boolean;
+  deletable: boolean,
+  displayTitle: string,
+  params: NuclideRemoteConnectionParams,
+  saveable: boolean,
 };
 
 export type NuclideSavedConnectionDialogConfig = {
-  config: NuclideRemoteConnectionParams;
-  lastOfficialRemoteServerCommand: string;
+  config: NuclideRemoteConnectionParams,
+  lastOfficialRemoteServerCommand: string,
 };
 
 // This type should not be saved -- it contains the user's password.
 export type NuclideRemoteConnectionParamsWithPassword = {
-  username: string;
-  server: string;
-  cwd: string;
-  remoteServerCommand: string;
-  sshPort: string;
-  pathToPrivateKey: string;
-  authMethod: NuclideRemoteAuthMethods;
-  password: string;
-  displayTitle: string;
+  username: string,
+  server: string,
+  cwd: string,
+  remoteServerCommand: string,
+  sshPort: string,
+  pathToPrivateKey: string,
+  authMethod: NuclideRemoteAuthMethods,
+  password: string,
+  displayTitle: string,
 };

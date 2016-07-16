@@ -15,7 +15,7 @@ import {React} from 'react-for-atom';
 import type {SettingsPropsDefault} from './types';
 
 type Props = SettingsPropsDefault & {
-  value: number;
+  value: number,
 };
 
 export default class SettingsSelect extends React.Component {

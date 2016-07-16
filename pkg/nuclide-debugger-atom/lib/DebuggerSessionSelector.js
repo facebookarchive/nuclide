@@ -20,9 +20,9 @@ import {
 import {ButtonToolbar} from '../../nuclide-ui/lib/ButtonToolbar';
 
 type State = {
-  selectedProcess: ?DebuggerProcessInfo;
-  processes: Array<DebuggerProcessInfo>;
-  debuggerStoreChangeListener: ?IDisposable;
+  selectedProcess: ?DebuggerProcessInfo,
+  processes: Array<DebuggerProcessInfo>,
+  debuggerStoreChangeListener: ?IDisposable,
 };
 
 /**

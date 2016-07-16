@@ -42,8 +42,8 @@ import {
 } from './LLDBEventStream';
 
 type Flux = {
-  actions: BuckToolbarActions;
-  store: BuckToolbarStore;
+  actions: BuckToolbarActions,
+  store: BuckToolbarStore,
 };
 
 function shouldEnableTask(taskType: TaskType, store: BuckToolbarStore): boolean {

@@ -21,11 +21,11 @@ import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
 
 type Props = {
-  filePath: NuclideUri;
-  newRevisionTitle: ?string;
-  oldRevisionTitle: ?string;
-  onSwitchToEditor: () => mixed;
-  onSwitchMode: (mode: DiffModeType) => mixed;
+  filePath: NuclideUri,
+  newRevisionTitle: ?string,
+  oldRevisionTitle: ?string,
+  onSwitchToEditor: () => mixed,
+  onSwitchMode: (mode: DiffModeType) => mixed,
 };
 
 class DiffViewToolbar extends React.Component {

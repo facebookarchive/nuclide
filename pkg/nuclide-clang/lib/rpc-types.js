@@ -20,32 +20,32 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 export type ClangCursorType = string;
 
 export type ClangCursorExtent = {
-  start: {line: number; column: number};
-  end: {line: number; column: number};
+  start: {line: number, column: number},
+  end: {line: number, column: number},
 };
 
 export type ClangLocation = {
-  column: number;
-  file: ?NuclideUri;
-  line: number;
+  column: number,
+  file: ?NuclideUri,
+  line: number,
 };
 
 export type ClangSourceRange = {
-  file: NuclideUri;
-  start: {line: number; column: number};
-  end: {line: number; column: number};
+  file: NuclideUri,
+  start: {line: number, column: number},
+  end: {line: number, column: number},
 };
 
 export type ClangCompileResult = {
   diagnostics: Array<{
-    spelling: string;
-    severity: number;
-    location: ClangLocation;
-    ranges: ?Array<ClangSourceRange>;
+    spelling: string,
+    severity: number,
+    location: ClangLocation,
+    ranges: ?Array<ClangSourceRange>,
     fixits?: Array<{
-      range: ClangSourceRange;
-      value: string;
-    }>;
+      range: ClangSourceRange,
+      value: string,
+    }>,
     // Diagnostics often have children. This happens for errors like bad function args.
     // Clang emits one diagnostic saying "matching invocation of function f not found"
     // with one or more child diagnostics listing the reasons.
@@ -55,55 +55,55 @@ export type ClangCompileResult = {
     // use for them so they are omitted.
     // In theory, these can also have child diagnostics! Unclear if this ever occurs in practice.
     children?: Array<{
-      spelling: string;
-      location: ClangLocation;
-      ranges: Array<ClangSourceRange>;
-    }>;
-  }>;
+      spelling: string,
+      location: ClangLocation,
+      ranges: Array<ClangSourceRange>,
+    }>,
+  }>,
   // If defaultFlags was provided and used, this will be set to true.
   // `diagnostics` is likely to be inaccurate if this was the case.
-  accurateFlags?: boolean;
+  accurateFlags?: boolean,
 };
 
 export type ClangCompletion = {
   chunks: Array<{
-    spelling: string;
-    isPlaceHolder: boolean;
-    kind?: string;
-  }>;
-  result_type: string;
-  spelling: string;
-  cursor_kind: string;
-  brief_comment: ?string;
+    spelling: string,
+    isPlaceHolder: boolean,
+    kind?: string,
+  }>,
+  result_type: string,
+  spelling: string,
+  cursor_kind: string,
+  brief_comment: ?string,
 };
 
 export type ClangDeclaration = {
-  file: NuclideUri;
-  line: number;
-  column: number;
-  spelling: ?string;
-  type: ?string;
-  extent: ClangCursorExtent;
+  file: NuclideUri,
+  line: number,
+  column: number,
+  spelling: ?string,
+  type: ?string,
+  extent: ClangCursorExtent,
 };
 
 export type ClangCursor = {
-  name: string;
-  type: ClangCursorType;
-  cursor_usr: ?string;
-  file: ?NuclideUri;
+  name: string,
+  type: ClangCursorType,
+  cursor_usr: ?string,
+  file: ?NuclideUri,
 };
 
 export type ClangOutlineTree = {
-  name: string;
-  extent: ClangCursorExtent;
-  cursor_kind: ClangCursorType;
+  name: string,
+  extent: ClangCursorExtent,
+  cursor_kind: ClangCursorType,
   // Will be non-null for variables/typedefs only.
-  cursor_type?: string;
+  cursor_type?: string,
   // Will be non-null for functions and methods only.
   // Contains a list of the names of parameters.
-  params?: Array<string>;
+  params?: Array<string>,
   // List of template parameters (functions/methods only).
-  tparams?: Array<string>;
+  tparams?: Array<string>,
   // Will be non-null for class-like containers only.
-  children?: Array<ClangOutlineTree>;
+  children?: Array<ClangOutlineTree>,
 };

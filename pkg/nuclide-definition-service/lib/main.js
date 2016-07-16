@@ -26,35 +26,35 @@ import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 // projectRoot is the root directory of the project containing this definition.
 // name is required, and projectRoot is encouraged, when returning multiple results.
 export type Definition = {
-  path: NuclideUri;
-  position: atom$Point;
-  range?: atom$Range;
-  id?: string;
-  name?: string;
-  language: string;
-  projectRoot?: NuclideUri;
+  path: NuclideUri,
+  position: atom$Point,
+  range?: atom$Range,
+  id?: string,
+  name?: string,
+  language: string,
+  projectRoot?: NuclideUri,
 };
 
 // Definition queries supply a point.
 // The returned queryRange is the range within which the returned definition is valid.
 // Typically queryRange spans the containing identifier around the query point.
 export type DefinitionQueryResult = {
-  queryRange: atom$Range;
-  definitions: Array<Definition>;
+  queryRange: atom$Range,
+  definitions: Array<Definition>,
 };
 
 // Provides definitions for a set of language grammars.
 export type DefinitionProvider = {
-  name: string;
+  name: string,
   // If there are multiple providers for a given grammar, the one with the highest priority will be
   // used.
-  priority: number;
-  grammarScopes: Array<string>;
-  getDefinition: (editor: TextEditor, position: atom$Point) => Promise<?DefinitionQueryResult>;
+  priority: number,
+  grammarScopes: Array<string>,
+  getDefinition: (editor: TextEditor, position: atom$Point) => Promise<?DefinitionQueryResult>,
 };
 
 export type DefinitionService = {
-  getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult>;
+  getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult>,
 };
 
 // Provides definitions given a file & position.

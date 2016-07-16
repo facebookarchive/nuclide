@@ -20,17 +20,17 @@ import userInfo from './userInfo';
 import uuid from 'uuid';
 
 export type RuntimeInformation = {
-  sessionId: string;
-  user: string;
-  osType: string;
-  timestamp: number;
-  isClient: boolean;
-  isDevelopment: boolean;
-  atomVersion: string;
-  nuclideVersion: string;
-  installerPackageVersion: number;
-  serverVersion: number;
-  uptime: number;
+  sessionId: string,
+  user: string,
+  osType: string,
+  timestamp: number,
+  isClient: boolean,
+  isDevelopment: boolean,
+  atomVersion: string,
+  nuclideVersion: string,
+  installerPackageVersion: number,
+  serverVersion: number,
+  uptime: number,
 };
 
 let cachedInformation = null;

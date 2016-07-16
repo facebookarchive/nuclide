@@ -17,11 +17,11 @@ import invariant from 'assert';
 // State is set to null indicates that the observable has not
 // produced a value yet.
 export type State<T> = {
-  data: ?T;
+  data: ?T,
 };
 
 export type Props<T> = {
-  data: Observable<?T>;
+  data: Observable<?T>,
 };
 
 // Derived classes must override render()

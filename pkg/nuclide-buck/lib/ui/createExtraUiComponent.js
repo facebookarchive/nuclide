@@ -30,7 +30,7 @@ export function createExtraUiComponent(
   return class ExtraUi extends React.Component {
 
     props: {
-      activeTaskType: ?TaskType;
+      activeTaskType: ?TaskType,
     };
 
     render(): React.Element<any> {

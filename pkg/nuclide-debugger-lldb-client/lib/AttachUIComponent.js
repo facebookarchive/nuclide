@@ -24,15 +24,15 @@ import {
 } from '../../nuclide-ui/lib/Button';
 
 type PropsType = {
-  store: LaunchAttachStore;
-  actions: LaunchAttachActions;
+  store: LaunchAttachStore,
+  actions: LaunchAttachActions,
 };
 
 type StateType = {
-  targetListChangeDisposable: IDisposable;
-  attachTargetInfos: Array<AttachTargetInfo>;
-  selectedAttachTarget: ?AttachTargetInfo;
-  filterText: string;
+  targetListChangeDisposable: IDisposable,
+  attachTargetInfos: Array<AttachTargetInfo>,
+  selectedAttachTarget: ?AttachTargetInfo,
+  filterText: string,
 };
 
 export class AttachUIComponent extends React.Component<void, PropsType, StateType> {

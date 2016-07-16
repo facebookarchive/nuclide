@@ -16,41 +16,41 @@ export type RequestMessage = CallMessage | NewObjectMessage |
   CallObjectMessage | DisposeMessage | UnsubscribeMessage;
 
 export type CallMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'call';
-  method: string;
-  id: number;
-  args: Object;
+  protocol: 'service_framework3_rpc',
+  type: 'call',
+  method: string,
+  id: number,
+  args: Object,
 };
 
 export type NewObjectMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'new';
-  interface: string;
-  id: number;
-  args: Object;
+  protocol: 'service_framework3_rpc',
+  type: 'new',
+  interface: string,
+  id: number,
+  args: Object,
 };
 
 export type CallObjectMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'call-object';
-  method: string;
-  id: number;
-  objectId: number;
-  args: Object;
+  protocol: 'service_framework3_rpc',
+  type: 'call-object',
+  method: string,
+  id: number,
+  objectId: number,
+  args: Object,
 };
 
 export type DisposeMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'dispose';
-  id: number;
-  objectId: number;
+  protocol: 'service_framework3_rpc',
+  type: 'dispose',
+  id: number,
+  objectId: number,
 };
 
 export type UnsubscribeMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'unsubscribe';
-  id: number;
+  protocol: 'service_framework3_rpc',
+  type: 'unsubscribe',
+  id: number,
 };
 
 // Encodes the structure of messages that can be sent from the server to the client.
@@ -58,37 +58,37 @@ export type ResponseMessage = PromiseResponseMessage | ErrorResponseMessage
   | NextMessage | CompleteMessage | ErrorMessage;
 
 export type ErrorResponseMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'error-response';
-  id: number;
-  error: any;
+  protocol: 'service_framework3_rpc',
+  type: 'error-response',
+  id: number,
+  error: any,
 };
 
 export type PromiseResponseMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'response';
-  id: number;
-  result: any;
+  protocol: 'service_framework3_rpc',
+  type: 'response',
+  id: number,
+  result: any,
 };
 
 export type NextMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'next';
-  id: number;
-  value: any;
+  protocol: 'service_framework3_rpc',
+  type: 'next',
+  id: number,
+  value: any,
 };
 
 export type CompleteMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'complete';
-  id: number;
+  protocol: 'service_framework3_rpc',
+  type: 'complete',
+  id: number,
 };
 
 export type ErrorMessage = {
-  protocol: 'service_framework3_rpc';
-  type: 'error';
-  id: number;
-  error: any;
+  protocol: 'service_framework3_rpc',
+  type: 'error',
+  id: number,
+  error: any,
 };
 
 // TODO: This should be a custom marshaller registered in the TypeRegistry

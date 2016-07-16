@@ -15,12 +15,12 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {TextEdit} from '../../nuclide-textedit';
 
 export type InvalidationMessage = {
-  scope: 'file';
-  filePaths: Array<NuclideUri>;
+  scope: 'file',
+  filePaths: Array<NuclideUri>,
 } | {
-  scope: 'project';
+  scope: 'project',
 } | {
-  scope: 'all';
+  scope: 'all',
 };
 
 export type MessageUpdateCallback = (update: DiagnosticProviderUpdate) => mixed;
@@ -30,13 +30,13 @@ export type MessageInvalidationCallback = (message: InvalidationMessage) => mixe
 // it was just activated and wants diagnostic messages without having to wait
 // for an event to occur)
 export type CallbackDiagnosticProvider = {
-  onMessageUpdate: (callback: MessageUpdateCallback) => IDisposable;
-  onMessageInvalidation: (callback: MessageInvalidationCallback) => IDisposable;
+  onMessageUpdate: (callback: MessageUpdateCallback) => IDisposable,
+  onMessageInvalidation: (callback: MessageInvalidationCallback) => IDisposable,
 };
 
 export type ObservableDiagnosticProvider = {
-  updates: Observable<DiagnosticProviderUpdate>;
-  invalidations: Observable<InvalidationMessage>;
+  updates: Observable<DiagnosticProviderUpdate>,
+  invalidations: Observable<InvalidationMessage>,
 };
 
 export type DiagnosticProvider = CallbackDiagnosticProvider | ObservableDiagnosticProvider;
@@ -49,58 +49,58 @@ export type DiagnosticProvider = CallbackDiagnosticProvider | ObservableDiagnost
 // - All previous 'project' scope messages are invalidated whenever
 // projectMessages is populated.
 export type DiagnosticProviderUpdate = {
-  filePathToMessages?: Map<NuclideUri, Array<FileDiagnosticMessage>>;
-  projectMessages?: Array<ProjectDiagnosticMessage>;
+  filePathToMessages?: Map<NuclideUri, Array<FileDiagnosticMessage>>,
+  projectMessages?: Array<ProjectDiagnosticMessage>,
 };
 
 export type MessageType = 'Error' | 'Warning';
 
 export type Trace = {
-  type: 'Trace';
-  text?: string;
-  html?: string;
-  filePath?: NuclideUri;
-  range?: atom$Range;
+  type: 'Trace',
+  text?: string,
+  html?: string,
+  filePath?: NuclideUri,
+  range?: atom$Range,
 };
 
 export type FileDiagnosticMessage = {
-  scope: 'file';
-  providerName: string;
-  type: MessageType;
-  filePath: NuclideUri;
-  text?: string;
-  html?: string;
-  range?: atom$Range;
-  trace?: Array<Trace>;
-  fix?: TextEdit;
+  scope: 'file',
+  providerName: string,
+  type: MessageType,
+  filePath: NuclideUri,
+  text?: string,
+  html?: string,
+  range?: atom$Range,
+  trace?: Array<Trace>,
+  fix?: TextEdit,
 };
 
 export type ProjectDiagnosticMessage = {
-  scope: 'project';
-  providerName: string;
-  type: MessageType;
-  text?: string;
-  html?: string;
-  range?: atom$Range;
-  trace?: Array<Trace>;
+  scope: 'project',
+  providerName: string,
+  type: MessageType,
+  text?: string,
+  html?: string,
+  range?: atom$Range,
+  trace?: Array<Trace>,
 };
 
 export type FileMessageUpdate = {
-  filePath: NuclideUri;
-  messages: Array<FileDiagnosticMessage>;
+  filePath: NuclideUri,
+  messages: Array<FileDiagnosticMessage>,
 };
 
 export type DiagnosticMessage = FileDiagnosticMessage | ProjectDiagnosticMessage;
 
 export type DiagnosticUpdater = {
   onFileMessagesDidUpdate:
-    (callback: (update: FileMessageUpdate) => mixed, filePath: NuclideUri) => IDisposable;
+    (callback: (update: FileMessageUpdate) => mixed, filePath: NuclideUri) => IDisposable,
   onProjectMessagesDidUpdate:
-    (callback: (messages: Array<ProjectDiagnosticMessage>) => mixed) => IDisposable;
+    (callback: (messages: Array<ProjectDiagnosticMessage>) => mixed) => IDisposable,
   onAllMessagesDidUpdate:
-    (callback: (messages: Array<DiagnosticMessage>) => mixed) => IDisposable;
-  applyFix: (message: FileDiagnosticMessage) => void;
-  applyFixesForFile: (file: NuclideUri) => void;
+    (callback: (messages: Array<DiagnosticMessage>) => mixed) => IDisposable,
+  applyFix: (message: FileDiagnosticMessage) => void,
+  applyFixesForFile: (file: NuclideUri) => void,
 };
 
 export type ObservableDiagnosticUpdater = {
@@ -108,13 +108,13 @@ export type ObservableDiagnosticUpdater = {
 
   // Sent only when the messages for a given file change. Consumers may use this to avoid
   // unnecessary work if the file(s) they are interested in are not changed.
-  getFileMessageUpdates: (filePath: NuclideUri) => Observable<FileMessageUpdate>;
+  getFileMessageUpdates: (filePath: NuclideUri) => Observable<FileMessageUpdate>,
   // Sent whenever any project message changes.
-  projectMessageUpdates: Observable<Array<ProjectDiagnosticMessage>>;
+  projectMessageUpdates: Observable<Array<ProjectDiagnosticMessage>>,
   // Sent whenever any message changes, and includes all messages.
-  allMessageUpdates: Observable<Array<DiagnosticMessage>>;
-  applyFix: (message: FileDiagnosticMessage) => void;
-  applyFixesForFile: (file: NuclideUri) => void;
+  allMessageUpdates: Observable<Array<DiagnosticMessage>>,
+  applyFix: (message: FileDiagnosticMessage) => void,
+  applyFixesForFile: (file: NuclideUri) => void,
 };
 
 import DiagnosticStore from './DiagnosticStore';
@@ -124,60 +124,60 @@ import DiagnosticStore from './DiagnosticStore';
  */
 
 export type LinterTrace = {
-  type: 'Trace';
-  text?: string;
-  html?: string;
-  filePath: string;
-  range?: atom$Range;
+  type: 'Trace',
+  text?: string,
+  html?: string,
+  filePath: string,
+  range?: atom$Range,
 };
 
 export type LinterMessage = {
-  type: 'Error' | 'Warning';
-  text?: string;
-  html?: string;
+  type: 'Error' | 'Warning',
+  text?: string,
+  html?: string,
   /*
    * Allows overriding of the LinterProvider name per message. Useful for when
    * a provider's messages come from multiple lint sources.
    */
-  name?: string;
-  filePath?: NuclideUri;
-  range?: atom$Range;
-  trace?: Array<LinterTrace>;
+  name?: string,
+  filePath?: NuclideUri,
+  range?: atom$Range,
+  trace?: Array<LinterTrace>,
   fix?: {
-    range: atom$Range;
-    newText: string;
-    oldText?: string;
-  };
+    range: atom$Range,
+    newText: string,
+    oldText?: string,
+  },
 };
 
 export type LinterProvider = {
   /**
    * Extension: Allows a provider to include a display name that will be shown with its messages.
    */
-  providerName?: string;
+  providerName?: string,
   /**
    * In the official Linter API, the providerName is just "name".
    */
-  name?: string;
+  name?: string,
   /**
    * Extension: Intended for developers who want to provide both interfaces to cater towards people
    * who use only the `linter` package. This way you can provide both, but tell Nuclide to ignore
    * the `linter` provider so that duplicate results do not appear.
    */
-  disabledForNuclide?: boolean;
-  grammarScopes: Array<string>;
+  disabledForNuclide?: boolean,
+  grammarScopes: Array<string>,
   /**
    * Extension: Overrides `grammarScopes` and triggers the linter on changes to any file, rather
    * than just files with specific grammar scopes.
    */
-  allGrammarScopes?: boolean;
+  allGrammarScopes?: boolean,
   /**
    * Extension: Clear file-level diagnostics when the file is closed.
    */
-  invalidateOnClose?: boolean;
-  scope: 'file' | 'project';
-  lintOnFly: boolean;
-  lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>;
+  invalidateOnClose?: boolean,
+  scope: 'file' | 'project',
+  lintOnFly: boolean,
+  lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>,
 };
 
 module.exports = {

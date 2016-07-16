@@ -17,9 +17,9 @@ type Props = {
    * Use `indefinite mode` to indicate an initializing period,
    * Prefer using the `LoadingSpinner` component for surfacing non-deterministic progress.
    */
-  value?: number;
+  value?: number,
   /** Determines the scaling of `value`. `min` is implicitly set to `0`. */
-  max?: number;
+  max?: number,
 };
 
 /** A Progressbar for showing deterministic progress. */

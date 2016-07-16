@@ -60,8 +60,8 @@ export class WatchExpressionListStore {
   }
 
   _getExpressionEvaluationFor(expression: Expression): {
-    expression: Expression;
-    value: Rx.Observable<?EvaluationResult>;
+    expression: Expression,
+    value: Rx.Observable<?EvaluationResult>,
   } {
     return {
       expression,

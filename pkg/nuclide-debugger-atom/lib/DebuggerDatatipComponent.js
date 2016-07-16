@@ -19,9 +19,9 @@ import {LazyNestedValueComponent} from '../../nuclide-ui/lib/LazyNestedValueComp
 import SimpleValueComponent from '../../nuclide-ui/lib/SimpleValueComponent';
 
 type DebuggerDatatipComponentProps = {
-  expression: string;
-  evaluationResult: EvaluationResult;
-  watchExpressionStore: WatchExpressionStore;
+  expression: string,
+  evaluationResult: EvaluationResult,
+  watchExpressionStore: WatchExpressionStore,
 };
 
 export class DebuggerDatatipComponent extends React.Component {

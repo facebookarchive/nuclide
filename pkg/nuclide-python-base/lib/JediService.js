@@ -14,61 +14,61 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 // This file contains RPC definitions for jediserver.py.
 
 export type JediCompletion = {
-  type: string;
-  text: string;
-  description?: string;
-  params?: Array<string>;
+  type: string,
+  text: string,
+  description?: string,
+  params?: Array<string>,
 };
 
 export type JediDefinition = {
-  type: string;
-  text: string;
-  file: NuclideUri;
-  line: number;
-  column: number;
+  type: string,
+  text: string,
+  file: NuclideUri,
+  line: number,
+  column: number,
 };
 
 export type JediReference = {
-  type: string;
-  text: string;
-  file: NuclideUri;
-  line: number;
-  column: number;
-  parentName?: string;
+  type: string,
+  text: string,
+  file: NuclideUri,
+  line: number,
+  column: number,
+  parentName?: string,
 };
 
 export type Position = {
-  line: number;
-  column: number;
+  line: number,
+  column: number,
 };
 
 export type JediFunctionItem = {
-  kind: 'function';
-  name: string;
-  start: Position;
-  end: Position;
-  children?: Array<JediOutlineItem>;
-  docblock?: string;
-  params?: Array<string>;
+  kind: 'function',
+  name: string,
+  start: Position,
+  end: Position,
+  children?: Array<JediOutlineItem>,
+  docblock?: string,
+  params?: Array<string>,
 };
 
 export type JediClassItem = {
-  kind: 'class';
-  name: string;
-  start: Position;
-  end: Position;
-  children?: Array<JediOutlineItem>;
-  docblock?: string;
+  kind: 'class',
+  name: string,
+  start: Position,
+  end: Position,
+  children?: Array<JediOutlineItem>,
+  docblock?: string,
   // Class params, i.e. superclasses.
-  params?: Array<string>;
+  params?: Array<string>,
 };
 
 export type JediStatementItem = {
-  kind: 'statement';
-  name: string;
-  start: Position;
-  end: Position;
-  docblock?: string;
+  kind: 'statement',
+  name: string,
+  start: Position,
+  end: Position,
+  docblock?: string,
 };
 
 export type JediOutlineItem = JediFunctionItem | JediClassItem | JediStatementItem;

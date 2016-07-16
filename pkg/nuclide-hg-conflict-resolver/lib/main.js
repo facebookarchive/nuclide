@@ -18,28 +18,28 @@ import {MercurialConflictDetector} from './MercurialConflictDetector';
 let conflictDetector: ?MercurialConflictDetector;
 
 export type RepositoryContext = {
-  workingDirectory: atom$Directory | RemoteDirectory;
-  priority: number;
-  resolveText: string;
+  workingDirectory: atom$Directory | RemoteDirectory,
+  priority: number,
+  resolveText: string,
 
-  readConflicts(): Promise<Array<MergeConflict>>;
-  isResolvedFile(filePath: NuclideUri): Promise<boolean>;
-  checkoutSide(sideName: CheckoutSideName, filePath: NuclideUri): Promise<void>;
-  resolveFile(filePath: NuclideUri): Promise<void>;
-  isRebasing(): boolean;
-  complete(wasRebasing: boolean): void;
-  quit(wasRebasing: boolean): void;
-  joinPath(relativePath: string): NuclideUri;
+  readConflicts(): Promise<Array<MergeConflict>>,
+  isResolvedFile(filePath: NuclideUri): Promise<boolean>,
+  checkoutSide(sideName: CheckoutSideName, filePath: NuclideUri): Promise<void>,
+  resolveFile(filePath: NuclideUri): Promise<void>,
+  isRebasing(): boolean,
+  complete(wasRebasing: boolean): void,
+  quit(wasRebasing: boolean): void,
+  joinPath(relativePath: string): NuclideUri,
 };
 
 export type ConflictsContextApi = {
-  getContext(): Promise<?RepositoryContext>;
+  getContext(): Promise<?RepositoryContext>,
 };
 
 export type ConflictsApi = {
-  registerContextApi(contextApi: ConflictsContextApi): void;
-  showForContext(repositoryContext: RepositoryContext): void;
-  hideForContext(repositoryContext: RepositoryContext): void;
+  registerContextApi(contextApi: ConflictsContextApi): void,
+  showForContext(repositoryContext: RepositoryContext): void,
+  hideForContext(repositoryContext: RepositoryContext): void,
 };
 
 export function activate() {

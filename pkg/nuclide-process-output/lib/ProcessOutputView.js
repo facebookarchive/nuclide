@@ -19,11 +19,11 @@ import {React, ReactDOM} from 'react-for-atom';
 const PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';
 
 type Props = {
-  title: string;
-  processOutputStore: ProcessOutputStore;
-  processOutputHandler: ?ProcessOutputHandler;
-  processOutputViewTopElement: ?HTMLElement;
-  textBuffer: TextBuffer;
+  title: string,
+  processOutputStore: ProcessOutputStore,
+  processOutputHandler: ?ProcessOutputHandler,
+  processOutputViewTopElement: ?HTMLElement,
+  textBuffer: TextBuffer,
 };
 
 class ProcessOutputView extends React.Component<void, Props, void> {

@@ -12,11 +12,11 @@
 import {Emitter} from 'event-kit';
 
 export type WatchmanSubscriptionOptions = {
-  expression: ?Array<string>; // e.g. ['match', '*.js'],
-  fields: ?Array<string>; // e.g. ['name', 'size', 'exists', 'mode']
-  expression?: Array<mixed>; // e.g. ['dirname', relativePath]
-  since?: string; // e.g. "c:1439492655:58601:1:14195"
-  defer_vcs?: boolean;
+  expression: ?Array<string>, // e.g. ['match', '*.js'],
+  fields: ?Array<string>, // e.g. ['name', 'size', 'exists', 'mode']
+  expression?: Array<mixed>, // e.g. ['dirname', relativePath]
+  since?: string, // e.g. "c:1439492655:58601:1:14195"
+  defer_vcs?: boolean,
 };
 
 /**

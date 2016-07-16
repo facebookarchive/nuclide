@@ -10,15 +10,15 @@
 
 // Separated out for RPC usage.
 export type ProcessMessage = {
-  kind: 'stdout';
-  data: string;
+  kind: 'stdout',
+  data: string,
 } | {
-  kind: 'stderr';
-  data: string;
+  kind: 'stderr',
+  data: string,
 } | {
-  kind: 'exit';
-  exitCode: number;
+  kind: 'exit',
+  exitCode: number,
 } | {
-  kind: 'error';
-  error: Object;
+  kind: 'error',
+  error: Object,
 };

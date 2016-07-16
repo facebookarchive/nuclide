@@ -16,7 +16,7 @@ import ReactDOM from 'react-dom';
 const WebInspector: typeof WebInspector = window.WebInspector;
 
 type StateType = {
-  threadData: ?ThreadData;
+  threadData: ?ThreadData,
 };
 
 class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {

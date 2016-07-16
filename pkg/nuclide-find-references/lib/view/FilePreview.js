@@ -15,12 +15,12 @@ import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
 import {React} from 'react-for-atom';
 
 type Props = {
-  text: string;
-  grammar: atom$Grammar;
-  references: Array<Reference>;
-  startLine: number;
-  endLine: number;
-  onClick: (event: SyntheticMouseEvent) => mixed;
+  text: string,
+  grammar: atom$Grammar,
+  references: Array<Reference>,
+  startLine: number,
+  endLine: number,
+  onClick: (event: SyntheticMouseEvent) => mixed,
 };
 
 export default class FilePreview extends React.Component {

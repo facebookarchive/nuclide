@@ -50,15 +50,15 @@ const INCLUDE_SEARCH_TIMEOUT = 15000;
 
 export type ClangFlags = {
   // Will be computed and memoized from rawData on demand.
-  flags?: ?Array<string>;
+  flags?: ?Array<string>,
   rawData: ?{
-    flags: Array<string>;
-    file: string;
-    directory: string;
-  };
+    flags: Array<string>,
+    file: string,
+    directory: string,
+  },
   // Emits file change events for the underlying flags file.
   // (rename, change)
-  changes: Observable<string>;
+  changes: Observable<string>,
 };
 
 let _overrideIncludePath = undefined;

@@ -40,13 +40,13 @@ const STATUS_DEBOUNCE_DELAY_MS = 300;
 
 type HgRepositoryOptions = {
   /** The origin URL of this repository. */
-  originURL: ?string;
+  originURL: ?string,
 
   /** The working directory of this repository. */
-  workingDirectory: atom$Directory | RemoteDirectory;
+  workingDirectory: atom$Directory | RemoteDirectory,
 
   /** The root directory that is opened in Atom, which this Repository serves. **/
-  projectRootDirectory: atom$Directory;
+  projectRootDirectory: atom$Directory,
 };
 
 /**
@@ -228,7 +228,7 @@ export class HgRepositoryClient {
   }
 
   onDidChangeStatus(
-    callback: (event: {path: string; pathStatus: StatusCodeNumberValue}) => mixed,
+    callback: (event: {path: string, pathStatus: StatusCodeNumberValue}) => mixed,
   ): IDisposable {
     return this._emitter.on('did-change-status', callback);
   }
@@ -302,7 +302,7 @@ export class HgRepositoryClient {
   }
 
   // TODO This is a stub.
-  getCachedUpstreamAheadBehindCount(path: ?NuclideUri): {ahead: number; behind: number;} {
+  getCachedUpstreamAheadBehindCount(path: ?NuclideUri): {ahead: number, behind: number} {
     return {
       ahead: 0,
       behind: 0,
@@ -326,7 +326,7 @@ export class HgRepositoryClient {
   // TODO This is a stub.
   getReferences(
     path: ?NuclideUri,
-  ): {heads: Array<string>; remotes: Array<string>; tags: Array<string>;} {
+  ): {heads: Array<string>, remotes: Array<string>, tags: Array<string>} {
     return {
       heads: [],
       remotes: [],
@@ -673,7 +673,7 @@ export class HgRepositoryClient {
    *
    */
 
-  getDiffStats(filePath: ?NuclideUri): {added: number; deleted: number;} {
+  getDiffStats(filePath: ?NuclideUri): {added: number, deleted: number} {
     const cleanStats = {added: 0, deleted: 0};
     if (!filePath) {
       return cleanStats;

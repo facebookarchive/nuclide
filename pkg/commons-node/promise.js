@@ -12,10 +12,10 @@
 import invariant from 'assert';
 
 type RunReturn<T> = {
-  status: 'success';
-  result: T;
+  status: 'success',
+  result: T,
 } | {
-  status: 'outdated';
+  status: 'outdated',
 };
 
 /**

@@ -18,8 +18,8 @@ import {React} from 'react-for-atom';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
 
 type SimpleValueComponentProps = {
-  expression: ?string;
-  evaluationResult: EvaluationResult;
+  expression: ?string,
+  evaluationResult: EvaluationResult,
 };
 
 function renderNullish(evaluationResult: EvaluationResult): ?React.Element<any> {

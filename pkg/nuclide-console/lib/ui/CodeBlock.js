@@ -13,8 +13,8 @@ import {AtomTextEditor} from '../../../nuclide-ui/lib/AtomTextEditor';
 import {React} from 'react-for-atom';
 
 type Props = {
-  scopeName: ?string;
-  text: string;
+  scopeName: ?string,
+  text: string,
 };
 
 export default class CodeBlock extends React.Component {

@@ -13,8 +13,8 @@ import {asyncExecute} from './process';
 import nuclideUri from '../nuclide-remote-uri';
 
 type VcsInfo = {
-  vcs: string;
-  root: string;
+  vcs: string,
+  root: string,
 };
 
 const vcsInfoCache: {[src: string]: VcsInfo} = {};

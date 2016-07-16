@@ -18,20 +18,20 @@ import FileTreeHelpers from '../lib/FileTreeHelpers';
 import {track} from '../../nuclide-analytics';
 
 type OpenFileEntry = {
-  name: string;
-  uri: NuclideUri;
-  isModified: boolean;
-  isSelected: boolean;
+  name: string,
+  uri: NuclideUri,
+  isModified: boolean,
+  isSelected: boolean,
 };
 
 type Props = {
-  uris: Array<NuclideUri>;
-  modifiedUris: Array<NuclideUri>;
-  activeUri: ?NuclideUri;
+  uris: Array<NuclideUri>,
+  modifiedUris: Array<NuclideUri>,
+  activeUri: ?NuclideUri,
 };
 
 type State = {
-  hoveredUri: ?NuclideUri;
+  hoveredUri: ?NuclideUri,
 };
 
 export class OpenFilesListComponent extends React.Component {

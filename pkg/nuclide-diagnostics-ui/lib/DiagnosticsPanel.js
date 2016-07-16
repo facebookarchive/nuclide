@@ -27,16 +27,16 @@ import {
 import {track} from '../../nuclide-analytics';
 
 type Props = {
-  diagnostics: Array<DiagnosticMessage>;
-  height: number;
-  width: number;
-  onDismiss: () => mixed;
-  onResize: () => mixed;
-  pathToActiveTextEditor: ?NuclideUri;
-  filterByActiveTextEditor: boolean;
-  onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed;
-  warnAboutLinter: boolean;
-  disableLinter: () => mixed;
+  diagnostics: Array<DiagnosticMessage>,
+  height: number,
+  width: number,
+  onDismiss: () => mixed,
+  onResize: () => mixed,
+  pathToActiveTextEditor: ?NuclideUri,
+  filterByActiveTextEditor: boolean,
+  onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
+  warnAboutLinter: boolean,
+  disableLinter: () => mixed,
 };
 
 /**

@@ -13,9 +13,9 @@ import {React} from 'react-for-atom';
 
 type DiagnosticsMessageTextProps = {
   message: {
-    html?: string;
-    text?: string;
-  };
+    html?: string,
+    text?: string,
+  },
 };
 
 export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {

@@ -24,12 +24,12 @@ import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 type PropsType = {
-  targetUri: NuclideUri;
+  targetUri: NuclideUri,
 };
 
 type StateType = {
-  pathsDropdownIndex: number;
-  pathMenuItems: Array<{label: string; value: number}>;
+  pathsDropdownIndex: number,
+  pathMenuItems: Array<{label: string, value: number}>,
 };
 
 export class LaunchUiComponent extends React.Component<void, PropsType, StateType> {
@@ -81,7 +81,7 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
     );
   }
 
-  _getPathMenuItems(): Array<{label: string; value: number}> {
+  _getPathMenuItems(): Array<{label: string, value: number}> {
     const connections = RemoteConnection.getByHostname(remoteUri.getHostname(this.props.targetUri));
     return connections.map((connection, index) => {
       const pathToProject = connection.getPathForInitialWorkingDirectory();

@@ -33,7 +33,7 @@ export default class RelatedFileFinder {
    */
   static async find(
     filePath: NuclideUri,
-  ): Promise<{relatedFiles: Array<string>; index: number}> {
+  ): Promise<{relatedFiles: Array<string>, index: number}> {
     const dirName = nuclideUri.dirname(filePath);
     const prefix = getPrefix(filePath);
 

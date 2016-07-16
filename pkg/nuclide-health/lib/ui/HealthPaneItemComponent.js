@@ -16,13 +16,13 @@ import BasicStatsSectionComponent from './sections/BasicStatsSectionComponent';
 import ActiveHandlesSectionComponent from './sections/ActiveHandlesSectionComponent';
 
 type Props = {
-  cpuPercentage: number;
-  memory: number;
-  heapPercentage: number;
-  lastKeyLatency: number;
-  activeHandles: number;
-  activeRequests: number;
-  activeHandlesByType: HandlesByType;
+  cpuPercentage: number,
+  memory: number,
+  heapPercentage: number,
+  lastKeyLatency: number,
+  activeHandles: number,
+  activeRequests: number,
+  activeHandlesByType: HandlesByType,
 };
 
 export default class HealthPaneItemComponent extends React.Component {

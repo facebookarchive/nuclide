@@ -17,13 +17,13 @@ import classnames from 'classnames';
 
 type Props = {
   result: ?{
-    percentage: number;
-    providerName: string;
-  };
-  pending: boolean;
+    percentage: number,
+    providerName: string,
+  },
+  pending: boolean,
   // true iff we are currently displaying uncovered regions in the editor.
-  isActive: boolean;
-  onClick: Function;
+  isActive: boolean,
+  onClick: Function,
 };
 
 const REALLY_BAD_THRESHOLD = 50;

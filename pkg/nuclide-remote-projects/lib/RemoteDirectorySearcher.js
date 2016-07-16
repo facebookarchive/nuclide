@@ -16,8 +16,8 @@ import {Observable, ReplaySubject} from 'rxjs';
 import {RemoteDirectory} from '../../nuclide-remote-connection';
 
 type RemoteDirectorySearch = {
-  then: (onFullfilled: any, onRejected: any) => Promise<any>;
-  cancel: () => void;
+  then: (onFullfilled: any, onRejected: any) => Promise<any>,
+  cancel: () => void,
 };
 
 class RemoteDirectorySearcher {

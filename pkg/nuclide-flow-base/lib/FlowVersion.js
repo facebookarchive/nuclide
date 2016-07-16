@@ -12,8 +12,8 @@
 import {VERSION_TIMEOUT_MS} from './FlowConstants';
 
 type VersionWithTimestamp = {
-  version: ?string;
-  receivedTime: number;
+  version: ?string,
+  receivedTime: number,
 };
 
 /*

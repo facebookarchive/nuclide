@@ -124,7 +124,7 @@ describe('DefinitionHyperclick', () => {
       expect(result.range).toEqual(defs.queryRange);
       expect(service.getDefinition).toHaveBeenCalledWith(editor, position);
       expect(goToLocation).not.toHaveBeenCalled();
-      const callbacks: Array<{title: string; callback: () => mixed}> = (result.callback: any);
+      const callbacks: Array<{title: string, callback: () => mixed}> = (result.callback: any);
 
       expect(callbacks.length).toBe(2);
       expect(callbacks[0].title).toBe('d1 (b/path1)');

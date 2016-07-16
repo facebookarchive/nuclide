@@ -10,30 +10,30 @@
  */
 
 export type NuxViewModel = {
-  content: string;
-  isCustomContent: boolean;
-  selector: ?string;
-  selectorFunction: ?(() => HTMLElement);
-  position: 'top' | 'bottom' | 'left' | 'right' | 'auto';
-  completionPredicate: ?(() => boolean);
+  content: string,
+  isCustomContent: boolean,
+  selector: ?string,
+  selectorFunction: ?(() => HTMLElement),
+  position: 'top' | 'bottom' | 'left' | 'right' | 'auto',
+  completionPredicate: ?(() => boolean),
 };
 
 export type NuxTourModel = {
-  completed: boolean;
-  id: string;
-  nuxList: Array<NuxViewModel>;
-  trigger: ?NuxTriggerModel;
+  completed: boolean,
+  id: string,
+  nuxList: Array<NuxViewModel>,
+  trigger: ?NuxTriggerModel,
   /**
    * An optional gatekeeper ID to to pass in with this NUX.
    * If omitted, the NUX will always show.
    * If supplied, the NUX will show iff both this and the global `nuclide_all_nuxes` pass.
    */
-  gatekeeperID: ?string;
+  gatekeeperID: ?string,
 };
 
 export type NuxTriggerModel = {
-  triggerType: NuxTriggerType;
-  triggerCallback: ((editor: atom$TextEditor) => boolean);
+  triggerType: NuxTriggerType,
+  triggerCallback: ((editor: atom$TextEditor) => boolean),
 };
 
 // TODO: [ @rageandqq | 05-23-16 ]: Add more trigger types as use cases are developed
@@ -41,6 +41,6 @@ export type NuxTriggerType = 'editor' | null;
 
 // Represents the 'viewed' state of a NUX
 export type NuxStateModel = {
-  id: string;
-  completed: boolean;
+  id: string,
+  completed: boolean,
 };

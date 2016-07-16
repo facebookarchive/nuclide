@@ -10,8 +10,8 @@
  */
 
 export type TrackEvent = {
-  key: string;
-  values: {[key: string]: mixed};
+  key: string,
+  values: {[key: string]: mixed},
 };
 
 // This extra module enables adding spies during testing.

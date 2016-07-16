@@ -40,15 +40,15 @@ function TreeItemWithLoadingSpinner(): React.Element<any> {
 }
 
 type LoadableValueComponentProps = {
-  children?: ExpansionResult;
-  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
-  path: string;
-  expandedValuePaths: Map<string, NodeData>;
-  onExpandedStateChange: (path: string, isExpanded: boolean) => void;
-  simpleValueComponent: ReactClass<any>;
-  shouldCacheChildren: boolean;
-  getCachedChildren: (path: string) => ?ExpansionResult;
-  setCachedChildren: (path: string, children: ExpansionResult) => void;
+  children?: ExpansionResult,
+  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>,
+  path: string,
+  expandedValuePaths: Map<string, NodeData>,
+  onExpandedStateChange: (path: string, isExpanded: boolean) => void,
+  simpleValueComponent: ReactClass<any>,
+  shouldCacheChildren: boolean,
+  getCachedChildren: (path: string) => ?ExpansionResult,
+  setCachedChildren: (path: string, children: ExpansionResult) => void,
 };
 
 /**
@@ -116,22 +116,22 @@ function renderValueLine(
 }
 
 type LazyNestedValueComponentProps = {
-  evaluationResult: ?EvaluationResult;
-  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
-  expression: ?string;
-  isRoot?: boolean;
-  expandedValuePaths: Map<string, NodeData>;
-  onExpandedStateChange: (path: string, expanded: boolean) => void;
-  path: string;
-  simpleValueComponent: ReactClass<any>;
-  shouldCacheChildren: boolean;
-  getCachedChildren: (path: string) => ?ExpansionResult;
-  setCachedChildren: (path: string, children: ExpansionResult) => void;
+  evaluationResult: ?EvaluationResult,
+  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>,
+  expression: ?string,
+  isRoot?: boolean,
+  expandedValuePaths: Map<string, NodeData>,
+  onExpandedStateChange: (path: string, expanded: boolean) => void,
+  path: string,
+  simpleValueComponent: ReactClass<any>,
+  shouldCacheChildren: boolean,
+  getCachedChildren: (path: string) => ?ExpansionResult,
+  setCachedChildren: (path: string, children: ExpansionResult) => void,
 };
 
 type LazyNestedValueComponentState = {
-  isExpanded: boolean;
-  children: ?Observable<?ExpansionResult>;
+  isExpanded: boolean,
+  children: ?Observable<?ExpansionResult>,
 };
 
 /**
@@ -311,17 +311,17 @@ class ValueComponent extends React.Component {
 }
 
 type TopLevelValueComponentProps = {
-  evaluationResult: ?EvaluationResult;
-  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>;
-  expression: ?string;
-  simpleValueComponent: ReactClass<any>;
+  evaluationResult: ?EvaluationResult,
+  fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>,
+  expression: ?string,
+  simpleValueComponent: ReactClass<any>,
   // $FlowIssue -- Flow's object spread operator inference is buggy.
-  shouldCacheChildren: ?boolean;
+  shouldCacheChildren: ?boolean,
 };
 
 type NodeData = {
-  isExpanded: boolean;
-  cachedChildren: ?ExpansionResult;
+  isExpanded: boolean,
+  cachedChildren: ?ExpansionResult,
 };
 
 /**

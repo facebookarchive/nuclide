@@ -19,8 +19,8 @@ export default class CodeFormatHelpers {
 
   @trackTiming('python.formatCode')
   static async formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor?: number;
-    formatted: string;
+    newCursor?: number,
+    formatted: string,
   }> {
     const buffer = editor.getBuffer();
     const src = editor.getPath();

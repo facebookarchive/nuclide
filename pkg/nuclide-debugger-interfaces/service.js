@@ -16,26 +16,26 @@ import type {
 import type {NuclideUri} from '../nuclide-remote-uri';
 
 export type nuclide_debugger$Service = {
-  name: string;
-  getProcessInfoList(): Promise<Array<DebuggerProcessInfo>>;
+  name: string,
+  getProcessInfoList(): Promise<Array<DebuggerProcessInfo>>,
 };
 
 export type NuclideDebuggerProvider = {
-  name: string;
-  getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider;
+  name: string,
+  getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider,
 };
 
 export type NuclideEvaluationExpression = {
-  range: atom$Range;
-  expression: string;
+  range: atom$Range,
+  expression: string,
 };
 
 export type NuclideEvaluationExpressionProvider = {
-  name: string;
+  name: string,
   // A comma-separated list of Atom grammars understood by the provider, e.g. 'source.js.jsx'
-  selector: string;
+  selector: string,
   getEvaluationExpression(
     editor: atom$TextEditor,
     position: atom$Point,
-  ): Promise<?NuclideEvaluationExpression>;
+  ): Promise<?NuclideEvaluationExpression>,
 };

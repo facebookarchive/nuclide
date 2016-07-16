@@ -22,24 +22,24 @@ import invariant from 'assert';
 import shallowEqual from 'shallowequal';
 
 type Props = {
-  records: Array<Record>;
-  clearRecords: () => void;
-  execute: (code: string) => void;
-  currentExecutor: ?Executor;
-  executors: Map<string, Executor>;
-  invalidFilterInput: boolean;
-  enableRegExpFilter: boolean;
-  selectedSourceIds: Array<string>;
-  selectExecutor: (executorId: string) => void;
-  selectSources: (sourceIds: Array<string>) => void;
-  sources: Array<Source>;
-  toggleRegExpFilter: () => void;
-  updateFilterText: (filterText: string) => void;
-  getProvider: (id: string) => ?OutputProvider;
+  records: Array<Record>,
+  clearRecords: () => void,
+  execute: (code: string) => void,
+  currentExecutor: ?Executor,
+  executors: Map<string, Executor>,
+  invalidFilterInput: boolean,
+  enableRegExpFilter: boolean,
+  selectedSourceIds: Array<string>,
+  selectExecutor: (executorId: string) => void,
+  selectSources: (sourceIds: Array<string>) => void,
+  sources: Array<Source>,
+  toggleRegExpFilter: () => void,
+  updateFilterText: (filterText: string) => void,
+  getProvider: (id: string) => ?OutputProvider,
 };
 
 type State = {
-  unseenMessages: boolean;
+  unseenMessages: boolean,
 };
 
 export default class ConsoleView extends React.Component {

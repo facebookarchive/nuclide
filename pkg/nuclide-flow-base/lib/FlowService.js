@@ -16,8 +16,8 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 // Diagnostic information, returned from findDiagnostics.
 export type Diagnostics = {
   // The location of the .flowconfig where these messages came from.
-  flowRoot: NuclideUri;
-  messages: Array<Diagnostic>;
+  flowRoot: NuclideUri,
+  messages: Array<Diagnostic>,
 };
 
 /*
@@ -26,29 +26,29 @@ export type Diagnostics = {
  * of interest.
  */
 export type Diagnostic = {
-  level: string;
-  messageComponents: Array<MessageComponent>;
+  level: string,
+  messageComponents: Array<MessageComponent>,
 };
 
 export type MessageComponent = {
-  descr: string;
-  range: ?Range;
+  descr: string,
+  range: ?Range,
 };
 
 export type Range = {
-  file: NuclideUri;
-  start: Point;
-  end: Point;
+  file: NuclideUri,
+  start: Point,
+  end: Point,
 };
 
 export type Point = {
-  line: number;
-  column: number;
+  line: number,
+  column: number,
 };
 
 export type Loc = {
-  file: NuclideUri;
-  point: Point;
+  file: NuclideUri,
+  point: Point,
 };
 
 // If types are added here, make sure to also add them to FlowConstants.js. This needs to be the
@@ -63,16 +63,16 @@ export type ServerStatusType =
   'ready';
 
 export type ServerStatusUpdate = {
-  pathToRoot: NuclideUri;
-  status: ServerStatusType;
+  pathToRoot: NuclideUri,
+  status: ServerStatusType,
 };
 
 export type FlowOutlineTree = {
-  tokenizedText: TokenizedText;
-  representativeName?: string;
-  children: Array<FlowOutlineTree>;
-  startPosition: Point;
-  endPosition: Point;
+  tokenizedText: TokenizedText,
+  representativeName?: string,
+  children: Array<FlowOutlineTree>,
+  startPosition: Point,
+  endPosition: Point,
 };
 
 // The origin of this type is at nuclide-tokenized-text/lib/main.js
@@ -91,8 +91,8 @@ export type TokenKind = 'keyword'
 // The origin of this type is at nuclide-tokenized-text/lib/main.js
 // When updating update both locations!
 export type TextToken = {
-  kind: TokenKind;
-  value: string;
+  kind: TokenKind,
+  value: string,
 };
 
 // The origin of this type is at nuclide-tokenized-text/lib/main.js
@@ -100,11 +100,11 @@ export type TextToken = {
 export type TokenizedText = Array<TextToken>;
 
 export type FlowCoverageResult = {
-  percentage: number;
+  percentage: number,
   uncoveredRanges: Array<{
-    start: Point;
-    end: Point;
-  }>;
+    start: Point,
+    end: Point,
+  }>,
 };
 
 import {FlowRoot} from './FlowRoot';
@@ -187,7 +187,7 @@ export async function flowGetType(
   line: number,
   column: number,
   includeRawType: boolean,
-): Promise<?{type: string; rawType: ?string}> {
+): Promise<?{type: string, rawType: ?string}> {
   return getState().getRootContainer().runWithRoot(
     file,
     root => root.flowGetType(

@@ -16,14 +16,14 @@ import {MeasuredComponent} from './MeasuredComponent';
 import {Button} from './Button';
 
 type Props = {
-  children?: React.Element<any>;
-  maxHeight: number; // Maximum height of the component in px
-  showMoreByDefault?: boolean;
+  children?: React.Element<any>,
+  maxHeight: number, // Maximum height of the component in px
+  showMoreByDefault?: boolean,
 };
 
 type State = {
-  showingMore: boolean;
-  currentHeight: number;
+  showingMore: boolean,
+  currentHeight: number,
 };
 
 /** A component which sets a max height and includes a "Show More" button

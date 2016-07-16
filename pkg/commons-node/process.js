@@ -24,20 +24,20 @@ export type process$asyncExecuteRet = {
   // If the process fails to even start up, exitCode will not be set
   // and errorCode / errorMessage will contain the actual error message.
   // Otherwise, exitCode will always be defined.
-  command?: string;
-  errorMessage?: string;
-  errorCode?: string;
-  exitCode?: number;
-  stderr: string;
-  stdout: string;
+  command?: string,
+  errorMessage?: string,
+  errorCode?: string,
+  exitCode?: number,
+  stderr: string,
+  stdout: string,
 };
 
 type ProcessSystemErrorOptions = {
-  command: string;
-  args: Array<string>;
-  options: Object;
-  code: string;
-  originalError: Error;
+  command: string,
+  args: Array<string>,
+  options: Object,
+  code: string,
+  originalError: Error,
 };
 
 export class ProcessSystemError extends Error {
@@ -59,12 +59,12 @@ export class ProcessSystemError extends Error {
 }
 
 type ProcessExitErrorOptions = {
-  command: string;
-  args: Array<string>;
-  options: Object;
-  code: number;
-  stdout: string;
-  stderr: string;
+  command: string,
+  args: Array<string>,
+  options: Object,
+  code: number,
+  stdout: string,
+  stderr: string,
 };
 
 export class ProcessExitError extends Error {
@@ -91,15 +91,15 @@ export type ProcessError = ProcessSystemError | ProcessExitError;
 
 export type AsyncExecuteOptions = child_process$spawnOpts & {
   // The queue on which to block dependent calls.
-  queueName?: string;
+  queueName?: string,
   // The contents to write to stdin.
-  stdin?: ?string;
+  stdin?: ?string,
   // A command to pipe output through.
-  pipedCommand?: string;
+  pipedCommand?: string,
   // Arguments to the piped command.
-  pipedArgs?: Array<string>;
+  pipedArgs?: Array<string>,
   // Timeout (in milliseconds).
-  timeout?: number;
+  timeout?: number,
 };
 
 let platformPathPromise: ?Promise<string>;
@@ -298,7 +298,7 @@ export function scriptSafeSpawnAndObserveOutput(
   command: string,
   args?: Array<string> = [],
   options?: Object = {},
-): Observable<{stderr?: string; stdout?: string;}> {
+): Observable<{stderr?: string, stdout?: string}> {
   return Observable.create((observer: Observer<any>) => {
     let childProcess;
     scriptSafeSpawn(command, args, options).then(proc => {

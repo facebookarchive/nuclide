@@ -13,8 +13,8 @@ import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
-  onClick: () => mixed;
-  visible: boolean;
+  onClick: () => mixed,
+  visible: boolean,
 };
 
 export default class NewMessagesNotification extends React.Component {

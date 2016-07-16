@@ -106,7 +106,7 @@ export default class ClangServerManager {
   async _getFlags(
     src: string,
     defaultFlags: ?Array<string>,
-  ): Promise<?{flags: Array<string>; usesDefaultFlags: boolean}> {
+  ): Promise<?{flags: Array<string>, usesDefaultFlags: boolean}> {
     const trueFlags = await this._flagsManager.getFlagsForSrc(src)
       .catch(e => {
         getLogger().error(`Error getting flags for ${src}:`, e);

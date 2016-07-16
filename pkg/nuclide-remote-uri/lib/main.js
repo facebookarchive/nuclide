@@ -17,37 +17,37 @@
 export type NuclideUri = string;
 
 type ParsedUrl = {
-  auth: ?string;
-  href: string;
-  host: ?string;
-  hostname: ?string;
-  path: string;
-  pathname: string;
-  protocol: ?string;
-  query: ?any;
-  search: ?string;
-  slashes: ?boolean;
+  auth: ?string,
+  href: string,
+  host: ?string,
+  hostname: ?string,
+  path: string,
+  pathname: string,
+  protocol: ?string,
+  query: ?any,
+  search: ?string,
+  slashes: ?boolean,
 };
 
 type ParsedRemoteUrl = {
-  auth: ?string;
-  href: string;
-  host: ?string;
-  hostname: string;
-  path: string;
-  pathname: string;
-  protocol: ?string;
-  query: ?any;
-  search: ?string;
-  slashes: ?boolean;
+  auth: ?string,
+  href: string,
+  host: ?string,
+  hostname: string,
+  path: string,
+  pathname: string,
+  protocol: ?string,
+  query: ?any,
+  search: ?string,
+  slashes: ?boolean,
 };
 
 type ParsedPath = {
-  root: string;
-  dir: string;
-  base: string;
-  ext: string;
-  name: string;
+  root: string,
+  dir: string,
+  base: string,
+  ext: string,
+  name: string,
 };
 
 import invariant from 'assert';

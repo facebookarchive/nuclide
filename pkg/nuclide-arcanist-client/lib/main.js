@@ -63,7 +63,7 @@ async function findDiagnostics(
 
 function createPhabricatorRevision(
   filePath: NuclideUri,
-): Observable<{stderr?: string; stdout?: string;}> {
+): Observable<{stderr?: string, stdout?: string}> {
   return getService(filePath)
     .createPhabricatorRevision(filePath)
     .share();
@@ -73,7 +73,7 @@ function updatePhabricatorRevision(
   filePath: NuclideUri,
   message: string,
   allowUntracked: boolean,
-): Observable<{stderr?: string; stdout?: string;}> {
+): Observable<{stderr?: string, stdout?: string}> {
   return getService(filePath)
     .updatePhabricatorRevision(filePath, message, allowUntracked)
     .share();

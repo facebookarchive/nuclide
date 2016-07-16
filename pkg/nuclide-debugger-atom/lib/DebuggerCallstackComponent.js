@@ -20,8 +20,8 @@ import nuclideUri from '../../nuclide-remote-uri';
 import {Listview} from '../../nuclide-ui/lib/ListView';
 
 type DebuggerCallstackComponentProps = {
-  actions: DebuggerActions;
-  callstack: ?Callstack;
+  actions: DebuggerActions,
+  callstack: ?Callstack,
 };
 
 export class DebuggerCallstackComponent extends React.Component {

@@ -17,16 +17,16 @@ import {getScrollTop} from '../../commons-atom/text-editor';
 // A location which can be navigated to. Includes the file (as uri for closed files and as
 // atom$TextEditor for open files) as well as the cursor position and scroll.
 export type UriLocation = {
-  type: 'uri';
-  uri: NuclideUri;
-  bufferPosition: atom$Point;
-  scrollTop: number;
+  type: 'uri',
+  uri: NuclideUri,
+  bufferPosition: atom$Point,
+  scrollTop: number,
 };
 export type EditorLocation = {
-  type: 'editor';
-  editor: atom$TextEditor;
-  bufferPosition: atom$Point;
-  scrollTop: number;
+  type: 'editor',
+  editor: atom$TextEditor,
+  bufferPosition: atom$Point,
+  scrollTop: number,
 };
 export type Location = EditorLocation | UriLocation;
 

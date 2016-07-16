@@ -14,8 +14,8 @@ import {React} from 'react-for-atom';
 import {maybeToString} from '../../commons-node/string';
 
 type Props = {
-  children?: mixed;
-  location?: 'top' | 'bottom';
+  children?: mixed,
+  location?: 'top' | 'bottom',
 };
 
 export const Toolbar = (props: Props) => {

@@ -16,29 +16,29 @@ import {React, ReactDOM} from 'react-for-atom';
 const MINIMUM_LENGTH = 100;
 
 type DefaultProps = {
-  hidden: boolean;
-  initialLength: number;
-  noScroll: boolean;
-  onResize: (width: number) => mixed;
+  hidden: boolean,
+  initialLength: number,
+  noScroll: boolean,
+  onResize: (width: number) => mixed,
 };
 
 type Props = {
-  children?: mixed;
-  dock: 'left' | 'bottom' | 'right';
-  hidden: boolean;
-  initialLength: number;
+  children?: mixed,
+  dock: 'left' | 'bottom' | 'right',
+  hidden: boolean,
+  initialLength: number,
   /*
    * When `true`, this component does not wrap its children in a scrolling container and instead
    * provides a simple container with visible (the default in CSS) overflow. Default: false.
    */
-  noScroll: boolean;
-  onResize: (width: number) => mixed;
-  overflowX?: string;
+  noScroll: boolean,
+  onResize: (width: number) => mixed,
+  overflowX?: string,
 };
 
 type State = {
-  isResizing: boolean;
-  length: number;
+  isResizing: boolean,
+  length: number,
 };
 
 /**

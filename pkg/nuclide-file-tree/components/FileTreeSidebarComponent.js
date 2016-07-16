@@ -32,17 +32,17 @@ import {Section} from '../../nuclide-ui/lib/Section';
 import featureConfig from '../../nuclide-feature-config';
 
 type State = {
-  shouldRenderToolbar: boolean;
-  scrollerHeight: number;
-  scrollerScrollTop: number;
-  showOpenFiles: boolean;
-  openFilesUris: Array<NuclideUri>;
-  modifiedUris: Array<NuclideUri>;
-  activeUri: ?NuclideUri;
+  shouldRenderToolbar: boolean,
+  scrollerHeight: number,
+  scrollerScrollTop: number,
+  showOpenFiles: boolean,
+  openFilesUris: Array<NuclideUri>,
+  modifiedUris: Array<NuclideUri>,
+  activeUri: ?NuclideUri,
 };
 
 type Props = {
-  hidden: boolean;
+  hidden: boolean,
 };
 
 const SHOW_OPEN_FILE_CONFIG_KEY = 'nuclide-file-tree.showOpenFiles';

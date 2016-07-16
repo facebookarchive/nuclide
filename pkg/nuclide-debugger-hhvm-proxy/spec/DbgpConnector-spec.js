@@ -17,8 +17,8 @@ import {EventEmitter} from 'events';
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
 
 declare class ServerType extends events$EventEmitter {
-  close(): void;
-  listen(): void;
+  close(): void,
+  listen(): void,
 }
 
 const payload1 =

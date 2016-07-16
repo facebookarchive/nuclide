@@ -21,45 +21,45 @@ export type Action =
 
 // The duplication of string literals here is necessary to make the disjoint unions work properly.
 export type CreatePaneItemAction = {
-  type: 'CREATE_PANE_ITEM';
+  type: 'CREATE_PANE_ITEM',
   payload: {
-    component?: React.Component<any, any, any>;
-    gadgetId: string;
-    item: Object;
-    props?: Object;
-    isNew: boolean;
-  };
+    component?: React.Component<any, any, any>,
+    gadgetId: string,
+    item: Object,
+    props?: Object,
+    isNew: boolean,
+  },
 };
 
 export type DeactivateAction = {
-  type: 'DEACTIVATE';
+  type: 'DEACTIVATE',
 };
 
 export type DestroyPaneItemAction = {
-  type: 'DESTROY_PANE_ITEM';
+  type: 'DESTROY_PANE_ITEM',
   payload: {
-    item: Object;
-  };
+    item: Object,
+  },
 };
 
 export type RegisterGadgetAction = {
-  type: 'REGISTER_GADGET';
+  type: 'REGISTER_GADGET',
   payload: {
-    gadget: Object;
-  };
+    gadget: Object,
+  },
 };
 
 export type UnregisterGadgetAction = {
-  type: 'UNREGISTER_GADGET';
+  type: 'UNREGISTER_GADGET',
   payload: {
-    gadgetId: string;
-  };
+    gadgetId: string,
+  },
 };
 
 export type UpdatePaneItemAction = {
-  type: 'UPDATE_PANE_ITEM';
+  type: 'UPDATE_PANE_ITEM',
   payload: {
-    item: Object;
-    props: Object;
-  };
+    item: Object,
+    props: Object,
+  },
 };

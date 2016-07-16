@@ -39,25 +39,25 @@ import {bufferForUri} from '../../commons-atom/text-editor';
 import {DiffMode} from './constants';
 
 type Props = {
-  diffModel: DiffViewModel;
+  diffModel: DiffViewModel,
 };
 
 type EditorState = {
-  revisionTitle: string;
-  text: string;
-  offsets: OffsetMap;
+  revisionTitle: string,
+  text: string,
+  offsets: OffsetMap,
   highlightedLines: {
-    added: Array<number>;
-    removed: Array<number>;
-  };
-  inlineElements: Array<UIElement>;
+    added: Array<number>,
+    removed: Array<number>,
+  },
+  inlineElements: Array<UIElement>,
 };
 
 type State = {
-  filePath: NuclideUri;
-  oldEditorState: EditorState;
-  newEditorState: EditorState;
-  toolbarVisible: boolean;
+  filePath: NuclideUri,
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+  toolbarVisible: boolean,
 };
 
 function initialEditorState(): EditorState {

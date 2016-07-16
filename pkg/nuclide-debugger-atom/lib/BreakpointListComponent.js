@@ -19,8 +19,8 @@ import {Listview} from '../../nuclide-ui/lib/ListView';
 import type {FileLineBreakpoints} from './types';
 
 type BreakpointListComponentProps = {
-  actions: DebuggerActions;
-  breakpoints: ?FileLineBreakpoints;
+  actions: DebuggerActions,
+  breakpoints: ?FileLineBreakpoints,
 };
 
 export class BreakpointListComponent extends React.Component {

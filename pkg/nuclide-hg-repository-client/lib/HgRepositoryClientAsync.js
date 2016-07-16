@@ -96,11 +96,11 @@ export default class HgRepositoryClientAsync {
   // TODO This is a stub.
   getCachedUpstreamAheadBehindCount(
     path: ?NuclideUri,
-  ): Promise<{ahead: number; behind: number;}> {
+  ): Promise<{ahead: number, behind: number}> {
     return Promise.resolve(this._client.getCachedUpstreamAheadBehindCount(path));
   }
 
-  getDiffStats(filePath: NuclideUri): Promise<{added: number; deleted: number;}> {
+  getDiffStats(filePath: NuclideUri): Promise<{added: number, deleted: number}> {
     return Promise.resolve(this._client.getDiffStats(filePath));
   }
 
@@ -186,7 +186,7 @@ export default class HgRepositoryClientAsync {
   }
 
   onDidChangeStatus(
-    callback: (event: {path: string; pathStatus: StatusCodeNumberValue}) => mixed,
+    callback: (event: {path: string, pathStatus: StatusCodeNumberValue}) => mixed,
   ): IDisposable {
     return this._client.onDidChangeStatus(callback);
   }

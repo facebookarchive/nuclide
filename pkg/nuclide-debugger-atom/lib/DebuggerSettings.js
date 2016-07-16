@@ -11,7 +11,7 @@
 
 export class DebuggerSettings {
   _settings: {
-    SupportThreadsWindow: boolean;
+    SupportThreadsWindow: boolean,
   };
 
   constructor() {

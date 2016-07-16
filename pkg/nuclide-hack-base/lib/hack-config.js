@@ -54,7 +54,7 @@ export function getHackCommand(): Promise<string> {
 
 export async function getHackExecOptions(
   localFile: string,
-): Promise<?{hackRoot: string; hackCommand: string}> {
+): Promise<?{hackRoot: string, hackCommand: string}> {
   const [currentHackCommand, hackRoot] = await Promise.all([
     hackCommand,
     findHackConfigDir(localFile),

@@ -27,10 +27,10 @@ import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
 
 type Props = {
-  commitMessage: ?string;
-  commitMode: string;
-  commitModeState: CommitModeStateType;
-  diffModel: DiffViewModel;
+  commitMessage: ?string,
+  commitMode: string,
+  commitModeState: CommitModeStateType,
+  diffModel: DiffViewModel,
 };
 
 class DiffCommitView extends React.Component {

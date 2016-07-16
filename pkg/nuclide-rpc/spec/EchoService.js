@@ -53,7 +53,7 @@ export async function echoBuffer(arg: Buffer): Promise<Buffer> {
 export async function echoArrayOfArrayOfDate(arg: Array<Array<Date>>): Promise<Array<Array<Date>>> {
   return arg;
 }
-export async function echoObject(arg: {a: ?string; b: Buffer}): Promise<{a: ?string; b: Buffer}> {
+export async function echoObject(arg: {a: ?string, b: Buffer}): Promise<{a: ?string, b: Buffer}> {
   return arg;
 }
 export async function echoSet(arg: Set<string>): Promise<Set<string>> {
@@ -69,9 +69,9 @@ export async function echoTuple(arg: [number, string]): Promise<[number, string]
 // Value Type
 export type BufferAlias = Buffer;
 export type ValueTypeA = {
-  a: Date;
-  b: BufferAlias;
-  c?: number; // Note that as of 5.8.14, there is a bug with parsing optional props in Babel.
+  a: Date,
+  b: BufferAlias,
+  c?: number, // Note that as of 5.8.14, there is a bug with parsing optional props in Babel.
 };
 export async function echoValueType(arg: ValueTypeA): Promise<ValueTypeA> {
   return arg;

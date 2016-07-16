@@ -13,70 +13,70 @@ import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService'
 
 type DeleteBookmark = {
   payload: {
-    bookmark: BookmarkInfo;
-    repository: atom$Repository;
-  };
-  type: 'delete-bookmark';
+    bookmark: BookmarkInfo,
+    repository: atom$Repository,
+  },
+  type: 'delete-bookmark',
 };
 
 type FetchProjectDirectoriesAction = {
-  type: 'fetch-project-repositories';
+  type: 'fetch-project-repositories',
 };
 
 type RenameBookmark = {
   payload: {
-    bookmark: BookmarkInfo;
-    nextName: string;
-    repository: atom$Repository;
-  };
-  type: 'rename-bookmark';
+    bookmark: BookmarkInfo,
+    nextName: string,
+    repository: atom$Repository,
+  },
+  type: 'rename-bookmark',
 };
 
 export type SetBookmarkIsLoading = {
   payload: {
-    bookmark: BookmarkInfo;
-    repository: atom$Repository;
-  };
-  type: 'set-bookmark-is-loading';
+    bookmark: BookmarkInfo,
+    repository: atom$Repository,
+  },
+  type: 'set-bookmark-is-loading',
 };
 
 type SetDirectoryRepository = {
   payload: {
-    directory: atom$Directory;
-    repository: atom$Repository;
-  };
-  type: 'set-directory-repository';
+    directory: atom$Directory,
+    repository: atom$Repository,
+  },
+  type: 'set-directory-repository',
 };
 
 type SetProjectDirectoriesAction = {
   payload: {
-    projectDirectories: Array<atom$Directory>;
-  };
-  type: 'set-project-directories';
+    projectDirectories: Array<atom$Directory>,
+  },
+  type: 'set-project-directories',
 };
 
 type SetRepositoryBookmarks = {
   payload: {
-    bookmarks: Array<BookmarkInfo>;
-    repository: atom$Repository;
-  };
-  type: 'set-repository-bookmarks';
+    bookmarks: Array<BookmarkInfo>,
+    repository: atom$Repository,
+  },
+  type: 'set-repository-bookmarks',
 };
 
 export type UnsetBookmarkIsLoading = {
   payload: {
-    bookmark: BookmarkInfo;
-    repository: atom$Repository;
-  };
-  type: 'unset-bookmark-is-loading';
+    bookmark: BookmarkInfo,
+    repository: atom$Repository,
+  },
+  type: 'unset-bookmark-is-loading',
 };
 
 type UpdateToBookmarkAction = {
   payload: {
-    bookmark: BookmarkInfo;
-    repository: atom$Repository;
-  };
-  type: 'update-to-bookmark';
+    bookmark: BookmarkInfo,
+    repository: atom$Repository,
+  },
+  type: 'update-to-bookmark',
 };
 
 export type Action =

@@ -10,9 +10,9 @@
  */
 
 export type PhabricatorRevisionInfo = {
- url: string;
- id: number;
- name: string;
+ url: string,
+ id: number,
+ name: string,
 };
 
 const DIFFERENTIAL_REVISION_REGEX = /^Differential Revision:\s*(\S+)/im;

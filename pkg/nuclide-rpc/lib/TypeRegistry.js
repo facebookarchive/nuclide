@@ -133,15 +133,15 @@ function objectToStats(jsonStats: Object): fs.Stats {
 export class TypeRegistry {
   /** Store marshallers and and unmarshallers, index by the kind of the type. */
   _kindMarshallers: Map<string, {
-      marshaller: Transformer;
-      unmarshaller: Transformer;
+      marshaller: Transformer,
+      unmarshaller: Transformer,
     }>;
 
   /** Store marshallers and and unmarshallers, index by the name of the type. */
   _namedMarshallers: Map<string, {
-      location: Location;
-      marshaller: NamedTransformer;
-      unmarshaller: NamedTransformer;
+      location: Location,
+      marshaller: NamedTransformer,
+      unmarshaller: NamedTransformer,
     }>;
 
   constructor() {

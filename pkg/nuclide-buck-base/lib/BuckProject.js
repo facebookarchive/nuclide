@@ -26,89 +26,89 @@ import createBuckWebSocket from './createBuckWebSocket';
 const logger = require('../../nuclide-logging').getLogger();
 
 export type dontRunOptions = {
-  run: false;
+  run: false,
 };
 
 export type doRunOptions = {
-  run: true;
-  debug: boolean;
+  run: true,
+  debug: boolean,
 };
 
 export type BuckRunOptions = dontRunOptions | doRunOptions;
 
 export type BuckWebSocketMessage = {
-  type: 'BuildProgressUpdated';
-  progressValue: number;
+  type: 'BuildProgressUpdated',
+  progressValue: number,
 } | {
-  type: 'BuildFinished';
-  exitCode: number;
+  type: 'BuildFinished',
+  exitCode: number,
 } | {
-  type: 'BuildStarted';
+  type: 'BuildStarted',
 } | {
-  type: 'ConsoleEvent';
-  message: string;
+  type: 'ConsoleEvent',
+  message: string,
   level: {
-    name: 'OFF' | 'SEVERE' | 'WARNING' | 'INFO' | 'CONFIG' | 'FINE' | 'FINER' | 'FINEST' | 'ALL';
-  };
+    name: 'OFF' | 'SEVERE' | 'WARNING' | 'INFO' | 'CONFIG' | 'FINE' | 'FINER' | 'FINEST' | 'ALL',
+  },
 } | {
-  type: 'ParseStarted';
+  type: 'ParseStarted',
 } | {
-  type: 'ParseFinished';
+  type: 'ParseFinished',
 } | {
-  type: 'InstallFinished';
-  success: boolean;
-  pid?: number;
+  type: 'InstallFinished',
+  success: boolean,
+  pid?: number,
 } | {
-  type: 'RunStarted';
+  type: 'RunStarted',
 } | {
-  type: 'RunComplete';
+  type: 'RunComplete',
 } | {
-  type: 'ResultsAvailable';
+  type: 'ResultsAvailable',
   results: {
     buildTarget: {
-      shortName: string;
-      baseName: string;
-    };
-    success: boolean;
-    failureCount: number;
-    totalNumberOfTests: number;
+      shortName: string,
+      baseName: string,
+    },
+    success: boolean,
+    failureCount: number,
+    totalNumberOfTests: number,
     testCases: Array<{
-      success: boolean;
-      failureCount: number;
-      skippedCount: number;
-      testCaseName: string;
+      success: boolean,
+      failureCount: number,
+      skippedCount: number,
+      testCaseName: string,
       testResults: Array<{
-        testCaseName: string;
-        testName: string;
-        type: string;
-        time: number;
-        message: string;
-        stacktrace: ?string;
-        stdOut: string;
-        stdErr: string;
-      }>;
-    }>;
-  };
+        testCaseName: string,
+        testName: string,
+        type: string,
+        time: number,
+        message: string,
+        stacktrace: ?string,
+        stdOut: string,
+        stdErr: string,
+      }>,
+    }>,
+  },
 };
 
 type BuckConfig = Object;
 export type BaseBuckBuildOptions = {
-  install?: boolean;
-  test?: boolean;
-  simulator?: ?string;
-  runOptions?: ?BuckRunOptions;
+  install?: boolean,
+  test?: boolean,
+  simulator?: ?string,
+  runOptions?: ?BuckRunOptions,
   // The service framework doesn't support imported types
-  commandOptions?: Object /*AsyncExecuteOptions*/;
-  extraArguments?: Array<string>;
+  commandOptions?: Object /*AsyncExecuteOptions*/,
+  extraArguments?: Array<string>,
 };
 type FullBuckBuildOptions = {
-  baseOptions: BaseBuckBuildOptions;
-  pathToBuildReport?: string;
-  buildTargets: Array<string>;
+  baseOptions: BaseBuckBuildOptions,
+  pathToBuildReport?: string,
+  buildTargets: Array<string>,
 };
 type BuckCommandAndOptions = {
-  pathToBuck: string;
-  buckCommandOptions: AsyncExecuteOptions;
+  pathToBuck: string,
+  buckCommandOptions: AsyncExecuteOptions,
 };
 
 /**
@@ -182,7 +182,7 @@ export class BuckProject {
   _runBuckCommandFromProjectRoot(
     args: Array<string>,
     commandOptions?: AsyncExecuteOptions,
-  ): Promise<{stdout: string; stderr: string; exitCode?: number}> {
+  ): Promise<{stdout: string, stderr: string, exitCode?: number}> {
     const {pathToBuck, buckCommandOptions: options} =
       this._getBuckCommandAndOptions(commandOptions);
     logger.debug('Buck command:', pathToBuck, args, options);

@@ -45,7 +45,7 @@ const fakeGetProjectPaths = () => fakeGetProjectPathsImpl();
 // Per https://github.com/facebook/react/issues/4692#issuecomment-163029873
 class Wrapper extends React.Component {
   props: {
-    children?: any;
+    children?: any,
   };
   render(): React.Element<any> {
     return <div>{this.props.children}</div>;

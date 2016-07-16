@@ -16,7 +16,7 @@ import HealthPaneItemComponent from './ui/HealthPaneItemComponent';
 import {React} from 'react-for-atom';
 
 type State = {
-  stats?: HealthStats;
+  stats?: HealthStats,
 };
 
 export default function createHealthGadget(state$: Rx.Observable<?State>): Class<any> {

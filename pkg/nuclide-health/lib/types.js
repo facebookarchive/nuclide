@@ -12,13 +12,13 @@
 export type HandlesByType = {[type: string]: Array<Object>};
 
 export type HealthStats = {
-  rss: number;
-  heapUsed: number;
-  heapTotal: number;
-  heapPercentage: number;
-  cpuPercentage: number;
-  lastKeyLatency: number;
-  activeHandles: number;
-  activeRequests: number;
-  activeHandlesByType: HandlesByType;
+  rss: number,
+  heapUsed: number,
+  heapTotal: number,
+  heapPercentage: number,
+  cpuPercentage: number,
+  lastKeyLatency: number,
+  activeHandles: number,
+  activeRequests: number,
+  activeHandlesByType: HandlesByType,
 };

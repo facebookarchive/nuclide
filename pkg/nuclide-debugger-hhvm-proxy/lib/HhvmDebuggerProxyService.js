@@ -20,22 +20,22 @@ import type {Observable} from 'rxjs';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 export type HhvmDebuggerSessionConfig = {
-  xdebugAttachPort: number;
-  xdebugLaunchingPort: number;
-  launchScriptPath?: string;
-  pid?: number;
-  scriptRegex?: string;
-  idekeyRegex?: string;
-  endDebugWhenNoRequests?: boolean;
-  logLevel: LogLevel;
-  targetUri: string;
-  phpRuntimePath: string;
-  dummyRequestFilePath: string;
+  xdebugAttachPort: number,
+  xdebugLaunchingPort: number,
+  launchScriptPath?: string,
+  pid?: number,
+  scriptRegex?: string,
+  idekeyRegex?: string,
+  endDebugWhenNoRequests?: boolean,
+  logLevel: LogLevel,
+  targetUri: string,
+  phpRuntimePath: string,
+  dummyRequestFilePath: string,
 };
 
 export type NotificationMessage = {
-  type: 'info' | 'warning' | 'error' | 'fatalError';
-  message: string;
+  type: 'info' | 'warning' | 'error' | 'fatalError',
+  message: string,
 };
 
 // Connection states

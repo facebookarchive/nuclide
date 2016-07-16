@@ -17,8 +17,8 @@ import {Observable} from 'rxjs';
 import {DisposableSubscription} from '../../commons-node/stream';
 
 type NotificationMessage = {
-  type: 'info' | 'warning' | 'error' | 'fatalError';
-  message: string;
+  type: 'info' | 'warning' | 'error' | 'fatalError',
+  message: string,
 };
 
 /**

@@ -18,8 +18,8 @@ import ini from 'ini';
 import nuclideUri from '../../nuclide-remote-uri';
 
 type PartialCommandInfo = {
-  command: string;
-  args: Array<string>;
+  command: string,
+  args: Array<string>,
 };
 
 /**

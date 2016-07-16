@@ -23,20 +23,20 @@ const WATCHMAN_SETTLE_TIME_MS = 2500;
 import type {WatchmanSubscriptionOptions} from './WatchmanSubscription';
 
 type WatchmanSubscriptionResponse = {
-  root: string;
-  subscription: string;
-  files?: Array<FileChange>;
-  'state-enter'?: string;
-  'state-leave'?: string;
-  metadata?: Object;
-  canceled?: boolean;
+  root: string,
+  subscription: string,
+  files?: Array<FileChange>,
+  'state-enter'?: string,
+  'state-leave'?: string,
+  metadata?: Object,
+  canceled?: boolean,
 };
 
 export type FileChange = {
-  name: string;
-  new: boolean;
-  exists: boolean;
-  mode: number;
+  name: string,
+  new: boolean,
+  exists: boolean,
+  mode: number,
 };
 
 class WatchmanClient {

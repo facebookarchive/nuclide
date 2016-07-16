@@ -19,24 +19,24 @@ import {MultiSelectList} from './MultiSelectList';
 import {React} from 'react-for-atom';
 
 type Option = {
-  label: React.Children;
-  value: any;
+  label: React.Children,
+  value: any,
 };
 
 type Props = {
-  labelComponent?: (props: LabelComponentProps) => React.Element<any>;
-  optionComponent?: (props: OptionComponentProps) => React.Element<any>;
-  className?: string;
-  disabled?: boolean;
-  options: Array<Option>;
-  value: Array<any>;
-  onChange: (value: Array<any>) => void;
-  size?: ButtonSize; // TODO: We really need to be consistent about these. SMALL or sm??
+  labelComponent?: (props: LabelComponentProps) => React.Element<any>,
+  optionComponent?: (props: OptionComponentProps) => React.Element<any>,
+  className?: string,
+  disabled?: boolean,
+  options: Array<Option>,
+  value: Array<any>,
+  onChange: (value: Array<any>) => void,
+  size?: ButtonSize, // TODO: We really need to be consistent about these. SMALL or sm??
 };
 
 type State = {
-  activeValues: Array<any>;
-  showModal: boolean;
+  activeValues: Array<any>,
+  showModal: boolean,
 };
 
 /**
@@ -155,7 +155,7 @@ export class ModalMultiSelect extends React.Component {
 }
 
 type LabelComponentProps = {
-  selectedOptions: Array<any>;
+  selectedOptions: Array<any>,
 };
 
 function DefaultLabelComponent(props: LabelComponentProps) {

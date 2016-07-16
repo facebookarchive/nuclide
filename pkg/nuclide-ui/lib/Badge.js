@@ -20,13 +20,13 @@ type BadgeSize = 'medium' | 'small' | 'large';
 type BadgeColor = 'info' | 'success' | 'warning' | 'error';
 
 type Props = {
-  className?: string;
-  color?: BadgeColor;
+  className?: string,
+  color?: BadgeColor,
   /** Octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon?: Octicon;
-  size?: BadgeSize;
+  icon?: Octicon,
+  size?: BadgeSize,
   /** The value displayed inside the badge. */
-  value: number;
+  value: number,
 };
 
 export const BadgeSizes = Object.freeze({

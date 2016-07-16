@@ -28,28 +28,28 @@ const authMethods = [
 ];
 
 type Props = {
-  initialUsername: string;
-  initialServer: string;
-  initialCwd: string;
-  initialRemoteServerCommand: string;
-  initialSshPort: string;
-  initialPathToPrivateKey: string;
-  initialAuthMethod: $Enum<typeof SupportedMethods>;
-  initialDisplayTitle: string;
-  onCancel: () => mixed;
-  onConfirm: () => mixed;
-  onDidChange: () => mixed;
+  initialUsername: string,
+  initialServer: string,
+  initialCwd: string,
+  initialRemoteServerCommand: string,
+  initialSshPort: string,
+  initialPathToPrivateKey: string,
+  initialAuthMethod: $Enum<typeof SupportedMethods>,
+  initialDisplayTitle: string,
+  onCancel: () => mixed,
+  onConfirm: () => mixed,
+  onDidChange: () => mixed,
 };
 
 type State = {
-  cwd: string;
-  displayTitle: string;
-  pathToPrivateKey: string;
-  remoteServerCommand: string;
-  selectedAuthMethodIndex: number;
-  server: string;
-  sshPort: string;
-  username: string;
+  cwd: string,
+  displayTitle: string,
+  pathToPrivateKey: string,
+  remoteServerCommand: string,
+  selectedAuthMethodIndex: number,
+  server: string,
+  sshPort: string,
+  username: string,
 };
 
 /** Component to prompt the user for connection details. */
@@ -282,14 +282,14 @@ export default class ConnectionDetailsForm extends React.Component {
 
   // Note: 'password' is not settable. The only exposed method is 'clearPassword'.
   setFormFields(fields: {
-    username?: string;
-    server?: string;
-    cwd?: string;
-    remoteServerCommand?: string;
-    sshPort?: string;
-    pathToPrivateKey?: string;
-    authMethod?: NuclideRemoteAuthMethods;
-    displayTitle?: string;
+    username?: string,
+    server?: string,
+    cwd?: string,
+    remoteServerCommand?: string,
+    sshPort?: string,
+    pathToPrivateKey?: string,
+    authMethod?: NuclideRemoteAuthMethods,
+    displayTitle?: string,
   }): void {
     this._setText('username', fields.username);
     this._setText('server', fields.server);

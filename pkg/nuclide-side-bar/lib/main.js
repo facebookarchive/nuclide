@@ -21,8 +21,8 @@ import {React, ReactDOM} from 'react-for-atom';
 import SideBarPanelComponent from './SideBarPanelComponent';
 
 type ViewInstance = {
-  commandDisposable: IDisposable;
-  view: View;
+  commandDisposable: IDisposable,
+  view: View,
 };
 
 /**
@@ -46,19 +46,19 @@ type ViewInstance = {
  *   view with the same ID has no effect.
  */
 type View = {
-  getComponent: () => Class<any>; // TODO(ssorallen): Should be polymorphic `Class<React.Component>`
-  onDidShow: () => mixed;
-  title: string;
-  toggleCommand: string;
-  viewId: string;
+  getComponent: () => Class<any>, // TODO(ssorallen): Should be polymorphic `Class<React.Component>`
+  onDidShow: () => mixed,
+  title: string,
+  toggleCommand: string,
+  viewId: string,
 };
 
 type State = {
-  activeViewId: ?string;
-  autoViewId: ?string;
-  hidden: boolean;
-  initialLength: number;
-  views: Map<string, ViewInstance>;
+  activeViewId: ?string,
+  autoViewId: ?string,
+  hidden: boolean,
+  initialLength: number,
+  views: Map<string, ViewInstance>,
 };
 
 let disposables: ?CompositeDisposable;

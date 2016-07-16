@@ -36,9 +36,9 @@ const logger = getLogger();
  * Stores the host and cwd of a remote connection.
  */
 type SerializableRemoteConnectionConfiguration = {
-  host: string;
-  cwd: string;
-  displayTitle: string;
+  host: string,
+  cwd: string,
+  displayTitle: string,
 };
 
 let packageSubscriptions: ?CompositeDisposable = null;

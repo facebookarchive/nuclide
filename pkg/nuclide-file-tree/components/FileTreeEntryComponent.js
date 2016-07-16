@@ -25,7 +25,7 @@ const store = FileTreeStore.getInstance();
 const getActions = FileTreeActions.getInstance;
 
 type Props = {
-  node: FileTreeNode;
+  node: FileTreeNode,
 };
 
 const INDENT_LEVEL = 17;

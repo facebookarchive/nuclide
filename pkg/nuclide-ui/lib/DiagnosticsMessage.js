@@ -23,9 +23,9 @@ import {DiagnosticsTraceItem} from './DiagnosticsTraceItem';
 import nuclideUri from '../../nuclide-remote-uri';
 
 type DiagnosticsMessageProps = {
-  message: FileDiagnosticMessage;
-  goToLocation: (path: string, line: number) => mixed;
-  fixer: (message: FileDiagnosticMessage) => void;
+  message: FileDiagnosticMessage,
+  goToLocation: (path: string, line: number) => mixed,
+  fixer: (message: FileDiagnosticMessage) => void,
 };
 
 function plainTextForItem(item: FileDiagnosticMessage | Trace): string {

@@ -10,9 +10,9 @@
  */
 
 type ComboboxOption = {
-  value: string;
-  valueLowercase: string;
-  matchIndex: number;
+  value: string,
+  valueLowercase: string,
+  matchIndex: number,
 };
 
 import Rx from 'rxjs';
@@ -21,21 +21,21 @@ import {AtomInput} from './AtomInput';
 import {React, ReactDOM} from 'react-for-atom';
 
 type DefaultProps = {
-  className: string;
-  maxOptionCount: number;
-  onChange: (newValue: string) => mixed;
-  onSelect: (newValue: string) => mixed;
-  width: number;
+  className: string,
+  maxOptionCount: number,
+  onChange: (newValue: string) => mixed,
+  onSelect: (newValue: string) => mixed,
+  width: number,
 };
 
 type State = {
-  error: ?Error;
-  filteredOptions: Array<Object>;
-  loadingOptions: boolean;
-  options: Array<string>;
-  optionsVisible: boolean;
-  selectedIndex: number;
-  textInput: string;
+  error: ?Error,
+  filteredOptions: Array<Object>,
+  loadingOptions: boolean,
+  options: Array<string>,
+  optionsVisible: boolean,
+  selectedIndex: number,
+  textInput: string,
 };
 
 /**

@@ -27,14 +27,14 @@ import {
 import invariant from 'assert';
 
 type Props = {
-  clear: () => void;
-  invalidFilterInput: boolean;
-  enableRegExpFilter: boolean;
-  selectedSourceIds: Array<string>;
-  sources: Array<Source>;
-  onFilterTextChange: (filterText: string) => void;
-  toggleRegExpFilter: () => void;
-  onSelectedSourcesChange: (sourceIds: Array<string>) => void;
+  clear: () => void,
+  invalidFilterInput: boolean,
+  enableRegExpFilter: boolean,
+  selectedSourceIds: Array<string>,
+  sources: Array<Source>,
+  onFilterTextChange: (filterText: string) => void,
+  toggleRegExpFilter: () => void,
+  onSelectedSourcesChange: (sourceIds: Array<string>) => void,
 };
 
 export default class ConsoleHeader extends React.Component {
@@ -101,7 +101,7 @@ export default class ConsoleHeader extends React.Component {
     );
   }
 
-  _renderOption(optionProps: {option: {label: string; value: string}}): React.Element<any> {
+  _renderOption(optionProps: {option: {label: string, value: string}}): React.Element<any> {
     const {option} = optionProps;
     const source = this.props.sources.find(s => s.id === option.value);
     invariant(source != null);
@@ -185,7 +185,7 @@ function sortAlpha(a: string, b: string): number {
 }
 
 type LabelProps = {
-  selectedOptions: Array<{value: string; label: string}>;
+  selectedOptions: Array<{value: string, label: string}>,
 };
 
 function MultiSelectLabel(props: LabelProps): React.Element<any> {

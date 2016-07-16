@@ -16,19 +16,19 @@ import {
 } from 'react-for-atom';
 
 type DefaultProps = {
-  disabled: boolean;
-  indeterminate: boolean;
-  label: string;
-  onClick: (event: SyntheticEvent) => mixed;
+  disabled: boolean,
+  indeterminate: boolean,
+  label: string,
+  onClick: (event: SyntheticEvent) => mixed,
 };
 
 type Props = {
-  checked: boolean;
-  disabled: boolean;
-  indeterminate: boolean;
-  label: string;
-  onChange: (isChecked: boolean) => mixed;
-  onClick: (event: SyntheticEvent) => mixed;
+  checked: boolean,
+  disabled: boolean,
+  indeterminate: boolean,
+  label: string,
+  onChange: (isChecked: boolean) => mixed,
+  onClick: (event: SyntheticEvent) => mixed,
 };
 
 /**

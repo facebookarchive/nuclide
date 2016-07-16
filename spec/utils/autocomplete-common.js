@@ -12,9 +12,9 @@
 import invariant from 'assert';
 
 export type AutocompleteSuggestion = {
-  word: string;
-  leftLabel: string;
-  rightLabel: string;
+  word: string,
+  leftLabel: string,
+  rightLabel: string,
 };
 
 export function getAutocompleteView(): ?HTMLElement {

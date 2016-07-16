@@ -14,11 +14,11 @@ export type TaskType = 'build' | 'test' | 'run' | 'debug';
 export type BuckSubcommand = 'build' | 'install' | 'test';
 
 export type TaskSettings = {
-  arguments?: Array<string>;
+  arguments?: Array<string>,
 };
 
 export type SerializedState = {
-  buildTarget: ?string;
-  isReactNativeServerMode: boolean;
-  taskSettings?: {[key: TaskType]: TaskSettings};
+  buildTarget: ?string,
+  isReactNativeServerMode: boolean,
+  taskSettings?: {[key: TaskType]: TaskSettings},
 };

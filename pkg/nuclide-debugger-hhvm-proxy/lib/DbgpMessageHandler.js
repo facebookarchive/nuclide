@@ -16,8 +16,8 @@ import singleton from '../../commons-node/singleton';
 const GLOBAL_HHVM_DEBUGGER_KEY = '_global_hhvm_debugger_key';
 
 type DbgpMessage = {
-  length: number;
-  content: string;
+  length: number,
+  content: string,
 };
 
 export class DbgpMessageHandler {

@@ -31,13 +31,13 @@ const FILE_WATCHER_SERVICE = 'FileWatcherService';
 const FILE_SYSTEM_SERVICE = 'FileSystemService';
 
 export type RemoteConnectionConfiguration = {
-  host: string; // host nuclide server is running on.
-  port: number; // port to connect to.
-  cwd: string; // Path to remote directory user should start in upon connection.
-  displayTitle: string; // Name of the saved connection profile.
-  certificateAuthorityCertificate?: Buffer; // certificate of certificate authority.
-  clientCertificate?: Buffer; // client certificate for https connection.
-  clientKey?: Buffer; // key for https connection.
+  host: string, // host nuclide server is running on.
+  port: number, // port to connect to.
+  cwd: string, // Path to remote directory user should start in upon connection.
+  displayTitle: string, // Name of the saved connection profile.
+  certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
+  clientCertificate?: Buffer, // client certificate for https connection.
+  clientKey?: Buffer, // key for https connection.
 };
 
 // A RemoteConnection represents a directory which has been opened in Nuclide on a remote machine.

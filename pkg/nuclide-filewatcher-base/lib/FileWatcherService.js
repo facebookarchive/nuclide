@@ -20,8 +20,8 @@ import {getLogger} from '../../nuclide-logging';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 
 export type WatchResult = {
-  path: NuclideUri;
-  type: string;
+  path: NuclideUri,
+  type: string,
 };
 
 type WatchEvent = 'change' | 'delete';

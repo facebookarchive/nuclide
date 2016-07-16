@@ -30,16 +30,16 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-base/lib/utils';
 
 type FileDiffState = {
-  revisionInfo: RevisionInfo;
-  committedContents: string;
-  filesystemContents: string;
+  revisionInfo: RevisionInfo,
+  committedContents: string,
+  filesystemContents: string,
 };
 
 export type DiffEntityOptions = {
-  file?: NuclideUri;
-  directory?: NuclideUri;
-  viewMode?: DiffModeType;
-  commitMode?: CommitModeType;
+  file?: NuclideUri,
+  directory?: NuclideUri,
+  viewMode?: DiffModeType,
+  commitMode?: CommitModeType,
 };
 
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-base/lib/utils';
@@ -166,17 +166,17 @@ function notifyRevisionStatus(
 }
 
 type State = {
-  viewMode: DiffModeType;
-  commitMessage: ?string;
-  commitMode: CommitModeType;
-  commitModeState: CommitModeStateType;
-  publishMessage: ?string;
-  publishMode: PublishModeType;
-  publishModeState: PublishModeStateType;
-  headRevision: ?RevisionInfo;
-  dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  showNonHgRepos: boolean;
+  viewMode: DiffModeType,
+  commitMessage: ?string,
+  commitMode: CommitModeType,
+  commitModeState: CommitModeStateType,
+  publishMessage: ?string,
+  publishMode: PublishModeType,
+  publishModeState: PublishModeStateType,
+  headRevision: ?RevisionInfo,
+  dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
+  selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>,
+  showNonHgRepos: boolean,
 };
 
 class DiffViewModel {
@@ -812,7 +812,7 @@ class DiffViewModel {
 
   async _promptToCleanDirtyChanges(
     commitMessage: ?string,
-  ): Promise<?{allowUntracked: boolean; amended: boolean;}> {
+  ): Promise<?{allowUntracked: boolean, amended: boolean}> {
     const activeStack = this._activeRepositoryStack;
     invariant(activeStack != null, 'No active repository stack when cleaning dirty changes');
 
@@ -950,7 +950,7 @@ class DiffViewModel {
     let fatalError = false;
     stream = stream
       // Split stream into single lines.
-      .flatMap((message: {stderr?: string; stdout?: string}) => {
+      .flatMap((message: {stderr?: string, stdout?: string}) => {
         const lines = [];
         for (const fd of ['stderr', 'stdout']) {
           let out = message[fd];
@@ -964,7 +964,7 @@ class DiffViewModel {
         return lines;
       })
       // Unpack JSON
-      .flatMap((message: {stderr?: string; stdout?: string}) => {
+      .flatMap((message: {stderr?: string, stdout?: string}) => {
         const stdout = message.stdout;
         const messages = [];
         if (stdout != null) {
@@ -985,7 +985,7 @@ class DiffViewModel {
         return messages;
       })
       // Process message type.
-      .flatMap((decodedJSON: {type: string; message: string}) => {
+      .flatMap((decodedJSON: {type: string, message: string}) => {
         const messages = [];
         switch (decodedJSON.type) {
           case 'phutil:out':
@@ -1011,7 +1011,7 @@ class DiffViewModel {
         return messages;
       })
       // Split messages on new line characters.
-      .flatMap((message: {level: string; text: string}) => {
+      .flatMap((message: {level: string, text: string}) => {
         const splitMessages = [];
         // Split on newlines without removing new line characters.  This will remove empty
         // strings but that's OK.
@@ -1020,18 +1020,18 @@ class DiffViewModel {
         }
         return splitMessages;
       });
-    const levelStreams: Array<Rx.Observable<Array<{level: string; text: string}>>> = [];
+    const levelStreams: Array<Rx.Observable<Array<{level: string, text: string}>>> = [];
     for (const level of ['log', 'error']) {
       const levelStream = stream
         .filter(
-          (message: {level: string; text: string}) => message.level === level,
+          (message: {level: string, text: string}) => message.level === level,
         )
         .share();
       levelStreams.push(bufferUntil(levelStream, message => message.text.endsWith('\n')));
     }
     await Rx.Observable.merge(...levelStreams)
       .do(
-        (messages: Array<{level: string; text: string}>) => {
+        (messages: Array<{level: string, text: string}>) => {
           if (messages.length > 0) {
             this._publishUpdates.next({
               level: messages[0].level,
@@ -1163,8 +1163,8 @@ class DiffViewModel {
   }
 
   async _getActiveHeadRevisionDetails(): Promise<{
-    headRevision: RevisionInfo;
-    phabricatorRevision: ?PhabricatorRevisionInfo;
+    headRevision: RevisionInfo,
+    phabricatorRevision: ?PhabricatorRevisionInfo,
   }> {
     const revisionsState = await this.getActiveRevisionsState();
     if (revisionsState == null) {

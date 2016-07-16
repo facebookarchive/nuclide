@@ -25,8 +25,8 @@ import nuclideUri from '../../pkg/nuclide-remote-uri';
 import invariant from 'assert';
 
 export type TestContext = {
-  setProject(localProjectPath: string): Promise<void>;
-  getProjectRelativePath(relativePath: string): NuclideUri;
+  setProject(localProjectPath: string): Promise<void>,
+  getProjectRelativePath(relativePath: string): NuclideUri,
 };
 
 class LocalTestContext {

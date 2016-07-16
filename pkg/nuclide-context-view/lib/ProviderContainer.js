@@ -15,13 +15,13 @@ import {ShowMoreComponent} from '../../nuclide-ui/lib/ShowMoreComponent';
 import analytics from '../../nuclide-analytics';
 
 type Props = {
-  title: string;
-  isEditorBased: boolean;
-  children?: React.Element<any>;
+  title: string,
+  isEditorBased: boolean,
+  children?: React.Element<any>,
 };
 
 type State = {
-  collapsed: boolean;
+  collapsed: boolean,
 };
 
 /**

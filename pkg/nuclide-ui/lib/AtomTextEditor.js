@@ -69,24 +69,24 @@ function setupTextEditor(props: Object): atom$TextEditor {
 }
 
 type DefaultProps = {
-  autoGrow: boolean;
-  gutterHidden: boolean;
-  lineNumberGutterVisible: boolean;
-  readOnly: boolean;
-  syncTextContents: boolean;
-  tabIndex: string;
+  autoGrow: boolean,
+  gutterHidden: boolean,
+  lineNumberGutterVisible: boolean,
+  readOnly: boolean,
+  syncTextContents: boolean,
+  tabIndex: string,
 };
 
 type Props = {
-  autoGrow: boolean;
-  className?: string;
-  gutterHidden: boolean;
-  grammar?: ?Object;
-  path?: string;
-  readOnly: boolean;
-  textBuffer?: TextBuffer;
-  syncTextContents: boolean;
-  tabIndex: string;
+  autoGrow: boolean,
+  className?: string,
+  gutterHidden: boolean,
+  grammar?: ?Object,
+  path?: string,
+  readOnly: boolean,
+  textBuffer?: TextBuffer,
+  syncTextContents: boolean,
+  tabIndex: string,
 };
 
 export class AtomTextEditor extends React.Component {

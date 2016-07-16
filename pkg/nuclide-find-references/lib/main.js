@@ -18,26 +18,26 @@ import {track} from '../../nuclide-analytics';
 import FindReferencesElement from './FindReferencesElement';
 
 export type FindReferencesData = {
-  type: 'data';
-  baseUri: string;
-  referencedSymbolName: string;
-  references: Array<Reference>;
+  type: 'data',
+  baseUri: string,
+  referencedSymbolName: string,
+  references: Array<Reference>,
 };
 
 export type FindReferencesError = {
-  type: 'error';
-  message: string;
+  type: 'error',
+  message: string,
 };
 
 export type FindReferencesReturn = FindReferencesData | FindReferencesError;
 
 export type FindReferencesProvider = {
   // Return true if your provider supports finding references for the provided TextEditor.
-  isEditorSupported(editor: TextEditor): Promise<boolean>;
+  isEditorSupported(editor: TextEditor): Promise<boolean>,
 
   // `findReferences` will only be called if `isEditorSupported` previously returned true
   // for the given TextEditor.
-  findReferences(editor: TextEditor, position: atom$Point): Promise<?FindReferencesReturn>;
+  findReferences(editor: TextEditor, position: atom$Point): Promise<?FindReferencesReturn>,
 };
 
 const FIND_REFERENCES_URI = 'atom://nuclide/find-references/';

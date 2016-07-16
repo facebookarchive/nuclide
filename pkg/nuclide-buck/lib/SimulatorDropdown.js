@@ -17,10 +17,10 @@ import invariant from 'assert';
 import {React} from 'react-for-atom';
 
 type DefaultProps = {
-  className: string;
-  disabled: boolean;
-  onSelectedSimulatorChange: (simulator: string) => void;
-  title: string;
+  className: string,
+  disabled: boolean,
+  onSelectedSimulatorChange: (simulator: string) => void,
+  title: string,
 };
 
 class SimulatorDropdown extends React.Component {
@@ -41,8 +41,8 @@ class SimulatorDropdown extends React.Component {
   };
 
   state: {
-    options: Array<{label: string; value: string}>;
-    value: string;
+    options: Array<{label: string, value: string}>,
+    value: string,
   };
 
   constructor(props: Object) {

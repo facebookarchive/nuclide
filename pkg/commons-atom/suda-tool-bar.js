@@ -13,21 +13,21 @@ export type GetToolBar = (group: string) => ToolBarManager;
 
 type ToolBarManager = {
   addButton(options: {
-    priority?: number;
-    tooltip?: string;
-    iconset?: string;
-    icon?: string;
-    callback?: string | () => void;
-  }): ToolBarButtonView;
+    priority?: number,
+    tooltip?: string,
+    iconset?: string,
+    icon?: string,
+    callback?: string | () => void,
+  }): ToolBarButtonView,
   addSpacer(options: {
-    priority?: number;
-  }): ToolBarButtonView;
-  removeItems(): void;
+    priority?: number,
+  }): ToolBarButtonView,
+  removeItems(): void,
   onDidDestroy(callback: () => void): Disposable
 };
 
 type ToolBarButtonView = {
-  setEnabled(enabled: boolean): void;
-  destroy(): void;
-  element: HTMLElement;
+  setEnabled(enabled: boolean): void,
+  destroy(): void,
+  element: HTMLElement,
 };

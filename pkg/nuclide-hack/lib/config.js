@@ -13,9 +13,9 @@ import featureConfig from '../../nuclide-feature-config';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 type HackConfig = {
-  hhClientPath: string;
-  useIdeConnection: boolean;
-  logLevel: LogLevel;
+  hhClientPath: string,
+  useIdeConnection: boolean,
+  logLevel: LogLevel,
 };
 
 export const HACK_CONFIG_PATH = 'nuclide-hack';

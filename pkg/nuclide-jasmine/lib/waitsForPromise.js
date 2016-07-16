@@ -12,8 +12,8 @@
 import invariant from 'assert';
 
 type WaitsForPromiseOptions = {
-  shouldReject?: boolean;
-  timeout?: number;
+  shouldReject?: boolean,
+  timeout?: number,
 };
 
 function waitsForPromise(...args: Array<WaitsForPromiseOptions | () => Promise<mixed>>): void {

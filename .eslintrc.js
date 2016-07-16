@@ -284,7 +284,7 @@ module.exports = {
     'babel/object-curly-spacing': 0,
     'babel/object-shorthand': 1,
     // Babel (not in eslint)
-    'babel/flow-object-type': [1, 'semicolon'],
+    'babel/flow-object-type': [1, 'comma'],
     'babel/func-params-comma-dangle': [1, 'always-multiline'],
     'babel/no-await-in-loop': 1,
 

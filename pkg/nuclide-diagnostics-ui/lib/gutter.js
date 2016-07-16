@@ -155,7 +155,7 @@ function createGutterItem(
   messages: Array<FileDiagnosticMessage>,
   gutterMarkerCssClass: string,
   fixer: (message: FileDiagnosticMessage) => void,
-): {item: HTMLElement; dispose: () => void} {
+): {item: HTMLElement, dispose: () => void} {
   const item = window.document.createElement('span');
   item.innerText = '\uf05a'; // The triangle-right icon in the octicon font.
   item.className = gutterMarkerCssClass;

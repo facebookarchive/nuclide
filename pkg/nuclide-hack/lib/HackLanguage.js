@@ -33,24 +33,24 @@ import {convertTypedRegionsToCoverageResult} from './TypedRegions';
 import invariant from 'assert';
 
 export type DefinitionResult = {
-  path: NuclideUri;
-  line: number;
-  column: number;
-  name: string;
-  length: number;
-  scope: string;
-  additionalInfo: string;
-  searchStartColumn?: number;
-  searchEndColumn?: number;
+  path: NuclideUri,
+  line: number,
+  column: number,
+  name: string,
+  length: number,
+  scope: string,
+  additionalInfo: string,
+  searchStartColumn?: number,
+  searchEndColumn?: number,
 };
 
 export type Definition = {
-  name: string;
-  path: NuclideUri;
-  line: number;
-  column: number;
+  name: string,
+  path: NuclideUri,
+  line: number,
+  column: number,
   // Range in the input where the symbol reference occurs.
-  queryRange: atom$Range;
+  queryRange: atom$Range,
 };
 
 /**
@@ -125,7 +125,7 @@ export class HackLanguage {
   async getDiagnostics(
     filePath: NuclideUri,
     contents: string,
-  ): Promise<Array<{message: HackDiagnostic;}>> {
+  ): Promise<Array<{message: HackDiagnostic}>> {
     try {
       const result = await this._hackService.getDiagnostics(filePath, contents);
       if (result == null) {
@@ -197,7 +197,7 @@ export class HackLanguage {
     contents: string,
     line: number,
     column: number,
-  ): Promise<?{baseUri: string; symbolName: string; references: Array<HackReference>}> {
+  ): Promise<?{baseUri: string, symbolName: string, references: Array<HackReference>}> {
     const references =
       await this._hackService.findReferences(filePath, contents, line, column);
     if (references == null || references.length === 0) {

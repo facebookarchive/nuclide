@@ -30,10 +30,10 @@ import SideBarComponent from './SideBarComponent';
 import {track} from '../../nuclide-analytics';
 
 export type AppState = {
-  projectBookmarks: Map<string, Array<BookmarkInfo>>;
-  projectDirectories: Array<atom$Directory>;
-  projectRepositories: Map<string, atom$Repository>;
-  repositoryBookmarksIsLoading: WeakMap<atom$Repository, Array<BookmarkInfo>>;
+  projectBookmarks: Map<string, Array<BookmarkInfo>>,
+  projectDirectories: Array<atom$Directory>,
+  projectRepositories: Map<string, atom$Repository>,
+  repositoryBookmarksIsLoading: WeakMap<atom$Repository, Array<BookmarkInfo>>,
 };
 
 function createStateStream(

@@ -19,10 +19,10 @@ import SimpleValueComponent from '../../../nuclide-ui/lib/SimpleValueComponent';
 import invariant from 'assert';
 
 type Props = {
-  record: Record;
-  showSourceLabel: boolean;
-  getExecutor: (id: string) => ?Executor;
-  getProvider: (id: string) => ?OutputProvider;
+  record: Record,
+  showSourceLabel: boolean,
+  getExecutor: (id: string) => ?Executor,
+  getProvider: (id: string) => ?OutputProvider,
 };
 
 export default class RecordView extends React.Component {

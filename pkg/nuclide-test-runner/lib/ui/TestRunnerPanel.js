@@ -31,23 +31,23 @@ import {React, ReactDOM} from 'react-for-atom';
 import TestClassTree from './TestClassTree';
 
 type Props = {
-  attachDebuggerBeforeRunning: ?boolean;
-  buffer: Object;
-  executionState: number;
-  onClickClear: (event: SyntheticMouseEvent) => mixed;
-  onClickClose: (event: SyntheticMouseEvent) => mixed;
-  onClickRun: (event: SyntheticMouseEvent) => mixed;
-  onClickStop: (event: SyntheticMouseEvent) => mixed;
-  onDebuggerCheckboxChanged: (isChecked: boolean) => mixed;
-  path: ?string;
-  progressValue: ?number;
-  runDuration: ?number;
-  testRunners: Array<TestRunner>;
-  testSuiteModel: ?TestSuiteModel;
+  attachDebuggerBeforeRunning: ?boolean,
+  buffer: Object,
+  executionState: number,
+  onClickClear: (event: SyntheticMouseEvent) => mixed,
+  onClickClose: (event: SyntheticMouseEvent) => mixed,
+  onClickRun: (event: SyntheticMouseEvent) => mixed,
+  onClickStop: (event: SyntheticMouseEvent) => mixed,
+  onDebuggerCheckboxChanged: (isChecked: boolean) => mixed,
+  path: ?string,
+  progressValue: ?number,
+  runDuration: ?number,
+  testRunners: Array<TestRunner>,
+  testSuiteModel: ?TestSuiteModel,
 };
 
 type State = {
-  selectedTestRunnerIndex: number;
+  selectedTestRunnerIndex: number,
 };
 
 class TestRunnerPanel extends React.Component {

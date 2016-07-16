@@ -27,11 +27,11 @@ import {builtinLocation} from './builtin-types';
 
 const logger = require('../../nuclide-logging').getLogger();
 
-export type FunctionImplementation = {localImplementation: Function; type: FunctionType};
-export type ClassDefinition = {localImplementation: any; definition: InterfaceDefinition};
+export type FunctionImplementation = {localImplementation: Function, type: FunctionType};
+export type ClassDefinition = {localImplementation: any, definition: InterfaceDefinition};
 export type ServiceDefinition = {
-  name: string;
-  factory: ProxyFactory; // Maps from RpcContext to proxy
+  name: string,
+  factory: ProxyFactory, // Maps from RpcContext to proxy
 };
 
 export class ServiceRegistry {

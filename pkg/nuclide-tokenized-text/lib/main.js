@@ -26,8 +26,8 @@ export type TokenKind = 'keyword'
 // This type is duplicated in nuclide-flow-base/lib/FlowService.js
 // When updating update both locations!
 export type TextToken = {
-  kind: TokenKind;
-  value: string;
+  kind: TokenKind,
+  value: string,
 };
 
 // This type is duplicated in nuclide-flow-base/lib/FlowService.js

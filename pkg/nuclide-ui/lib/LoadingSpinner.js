@@ -14,14 +14,14 @@ import {React} from 'react-for-atom';
 
 type LoadingSpinnerSize = 'EXTRA_SMALL' | 'SMALL' | 'MEDIUM' | 'LARGE';
 type Props = {
-  className? : string;
+  className? : string,
   /** The size of the LoadingSpinner. Defaults to MEDIUM. */
-  size?: LoadingSpinnerSize;
+  size?: LoadingSpinnerSize,
   /**
    * An optional delay (in milliseconds) between mounting the component and actually rendering
    * the spinner to avoid UI churn.
    */
-  delay?: number;
+  delay?: number,
 };
 
 export const LoadingSpinnerSizes = Object.freeze({

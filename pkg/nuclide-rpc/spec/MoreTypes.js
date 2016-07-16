@@ -14,5 +14,5 @@ import type {ImportedType as AliasImportedType} from './Types';
 // Use ImportedType from another file - testing, multiple
 // imports the same file.
 export type AnotherImportedType = {
-  field: AliasImportedType;
+  field: AliasImportedType,
 };

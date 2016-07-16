@@ -127,8 +127,8 @@ function argsToText(args: Array<string>): Array<TextToken> {
 }
 
 function itemToPositions(item: PythonOutlineItem): {
-  startPosition: atom$Point;
-  endPosition: atom$Point;
+  startPosition: atom$Point,
+  endPosition: atom$Point,
 } {
   const {start, end} = item;
   return {

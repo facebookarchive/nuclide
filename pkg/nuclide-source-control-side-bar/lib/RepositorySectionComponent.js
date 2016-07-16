@@ -19,17 +19,17 @@ import invariant from 'assert';
 import {React} from 'react-for-atom';
 
 type Props = {
-  bookmarks: ?Array<BookmarkInfo>;
-  bookmarksIsLoading: ?Array<BookmarkInfo>;
-  hasSeparator: boolean;
-  onBookmarkClick: (bookmark: BookmarkInfo, repository: atom$Repository) => mixed;
+  bookmarks: ?Array<BookmarkInfo>,
+  bookmarksIsLoading: ?Array<BookmarkInfo>,
+  hasSeparator: boolean,
+  onBookmarkClick: (bookmark: BookmarkInfo, repository: atom$Repository) => mixed,
   onBookmarkContextMenu:
-    (bookmark: BookmarkInfo, repository: atom$Repository, event: SyntheticMouseEvent) => mixed;
-  onRepoGearClick: (repository: atom$Repository, event: SyntheticMouseEvent) => mixed;
-  onUncommittedChangesClick: (repository: atom$Repository) => mixed;
-  repository: ?atom$Repository;
-  selectedItem: ?SelectableItem;
-  title: string;
+    (bookmark: BookmarkInfo, repository: atom$Repository, event: SyntheticMouseEvent) => mixed,
+  onRepoGearClick: (repository: atom$Repository, event: SyntheticMouseEvent) => mixed,
+  onUncommittedChangesClick: (repository: atom$Repository) => mixed,
+  repository: ?atom$Repository,
+  selectedItem: ?SelectableItem,
+  title: string,
 };
 
 const ACTIVE_BOOKMARK_TITLE = 'Active bookmark';

@@ -14,10 +14,10 @@ import memoize from 'lodash.memoize';
 import {Observable} from 'rxjs';
 
 export type Device = {
-  name: string;
-  udid: string;
-  state: string;
-  os: string;
+  name: string,
+  udid: string,
+  state: string,
+  os: string,
 };
 
 const DeviceState = {

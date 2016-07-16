@@ -23,12 +23,12 @@ import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 type PropsType = {
-  targetUri: NuclideUri;
+  targetUri: NuclideUri,
 };
 
 type StateType = {
-  selectedPathIndex: number;
-  pathMenuItems: Array<{label: string; value: number}>;
+  selectedPathIndex: number,
+  pathMenuItems: Array<{label: string, value: number}>,
 };
 
 export class AttachUiComponent extends React.Component<void, PropsType, StateType> {
@@ -70,7 +70,7 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
     );
   }
 
-  _getPathMenuItems(): Array<{label: string; value: number}> {
+  _getPathMenuItems(): Array<{label: string, value: number}> {
     const connections = RemoteConnection.getByHostname(
       nuclideUri.getHostname(this.props.targetUri),
     );

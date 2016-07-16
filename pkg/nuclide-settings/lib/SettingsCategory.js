@@ -13,8 +13,8 @@ import {React} from 'react-for-atom';
 import SettingsControl from './SettingsControl';
 
 type Props = {
-  name: string;
-  packages: Object;
+  name: string,
+  packages: Object,
 };
 
 export default class SettingsCategory extends React.Component {

@@ -18,7 +18,7 @@ import {React} from 'react-for-atom';
 import {DiagnosticsMessage} from '../../nuclide-ui/lib/DiagnosticsMessage';
 
 type DiagnosticsDatatipComponentProps = {
-  message: FileDiagnosticMessage;
+  message: FileDiagnosticMessage,
 };
 
 const NOOP = () => {};

@@ -18,10 +18,10 @@ import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 
 type Props = {
-  bookmark: BookmarkInfo;
-  onCancel: () => mixed;
-  onRename: (bookmark: BookmarkInfo, nextName: string, repo: atom$Repository) => mixed;
-  repository: atom$Repository;
+  bookmark: BookmarkInfo,
+  onCancel: () => mixed,
+  onRename: (bookmark: BookmarkInfo, nextName: string, repo: atom$Repository) => mixed,
+  repository: atom$Repository,
 };
 
 export default class RenameBookmarkModal extends React.Component {

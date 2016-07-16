@@ -14,23 +14,23 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 import {getInstance} from './MerlinProcess';
 
 export type MerlinPosition = {
-  line: number; // 1-indexed
-  col: number;  // 0-indexed
+  line: number, // 1-indexed
+  col: number,  // 0-indexed
 };
 
 export type MerlinType = {
-  start: MerlinPosition;
-  end: MerlinPosition;
-  type: string;
-  tail: 'no' | 'position' | 'call';
+  start: MerlinPosition,
+  end: MerlinPosition,
+  type: string,
+  tail: 'no' | 'position' | 'call',
 };
 
 export type MerlinError = {
-  start: MerlinPosition;
-  end: MerlinPosition;
-  valid: boolean;
-  message: string;
-  type: 'type' | 'parser' | 'env' | 'warning' | 'unknown';
+  start: MerlinPosition,
+  end: MerlinPosition,
+  valid: boolean,
+  message: string,
+  type: 'type' | 'parser' | 'env' | 'warning' | 'unknown',
 };
 
 export async function pushDotMerlinPath(path: NuclideUri): Promise<?any> {
@@ -49,11 +49,11 @@ export async function locate(
   col: number,
   kind: string,
 ): Promise<?{
-  file: NuclideUri;
+  file: NuclideUri,
   pos: {
-    line: number;
-    col: number;
-  };
+    line: number,
+    col: number,
+  },
 }> {
   const instance = await getInstance(path);
   return instance ? await instance.locate(path, line, col, kind) : null;

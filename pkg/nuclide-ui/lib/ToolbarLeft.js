@@ -12,7 +12,7 @@
 import {React} from 'react-for-atom';
 
 type Props = {
-  children?: mixed;
+  children?: mixed,
 };
 
 export const ToolbarLeft = (props: Props) => {

@@ -23,18 +23,18 @@ import invariant from 'assert';
 const CHANGE_DEBOUNCE_DELAY_MS = 5;
 
 type Props = {
-  filePath: NuclideUri;
-  textBuffer: atom$TextBuffer;
-  offsets: OffsetMap;
+  filePath: NuclideUri,
+  textBuffer: atom$TextBuffer,
+  offsets: OffsetMap,
   highlightedLines: {
-    added: Array<number>;
-    removed: Array<number>;
-  };
-  textContent?: string;
-  inlineElements: Array<UIElement>;
-  readOnly: boolean;
-  onChange: (newContents: string) => any;
-  onDidUpdateTextEditorElement: () => mixed;
+    added: Array<number>,
+    removed: Array<number>,
+  },
+  textContent?: string,
+  inlineElements: Array<UIElement>,
+  readOnly: boolean,
+  onChange: (newContents: string) => any,
+  onDidUpdateTextEditorElement: () => mixed,
 };
 
 export default class DiffViewEditorPane extends React.Component {

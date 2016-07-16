@@ -17,35 +17,35 @@ import {React, ReactDOM} from 'react-for-atom';
 import {maybeToString} from '../../commons-node/string';
 
 type DefaultProps = {
-  disabled: boolean;
-  initialValue: string;
-  tabIndex: string;
-  onClick: (event: SyntheticMouseEvent) => mixed;
-  onDidChange: (text: string) => mixed;
-  onFocus: () => mixed;
-  onBlur: () => mixed;
-  unstyled: boolean;
+  disabled: boolean,
+  initialValue: string,
+  tabIndex: string,
+  onClick: (event: SyntheticMouseEvent) => mixed,
+  onDidChange: (text: string) => mixed,
+  onFocus: () => mixed,
+  onBlur: () => mixed,
+  unstyled: boolean,
 };
 
 type Props = {
-  className?: string;
-  disabled: boolean;
-  initialValue: string;
-  placeholderText?: string;
-  tabIndex: string;
-  onFocus: () => mixed;
-  onClick: (event: SyntheticMouseEvent) => mixed;
-  onDidChange: (text: string) => mixed;
-  onConfirm?: () => mixed;
-  onCancel?: () => mixed;
-  onBlur: () => mixed;
-  size?: 'xs' | 'sm' | 'lg';
-  unstyled: boolean;
-  width?: number;
+  className?: string,
+  disabled: boolean,
+  initialValue: string,
+  placeholderText?: string,
+  tabIndex: string,
+  onFocus: () => mixed,
+  onClick: (event: SyntheticMouseEvent) => mixed,
+  onDidChange: (text: string) => mixed,
+  onConfirm?: () => mixed,
+  onCancel?: () => mixed,
+  onBlur: () => mixed,
+  size?: 'xs' | 'sm' | 'lg',
+  unstyled: boolean,
+  width?: number,
 };
 
 type State = {
-  value: string;
+  value: string,
 };
 
 /**

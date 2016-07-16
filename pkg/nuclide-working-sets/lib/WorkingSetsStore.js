@@ -19,8 +19,8 @@ import nuclideUri from '../../nuclide-remote-uri';
 import type {WorkingSetDefinition} from './types';
 
 type ApplicabilitySortedDefinitions = {
-  applicable: Array<WorkingSetDefinition>;
-  notApplicable: Array<WorkingSetDefinition>;
+  applicable: Array<WorkingSetDefinition>,
+  notApplicable: Array<WorkingSetDefinition>,
 };
 
 const NEW_WORKING_SET_EVENT = 'new-working-set';

@@ -35,8 +35,8 @@ const VCS_LOG_URI_PREFIX = 'atom://nucide-vcs-log/view';
 const VCS_LOG_URI_PATHS_QUERY_PARAM = 'path';
 
 type VcsService = {
-  getType(): string;
-  log(filePaths: Array<NuclideUri>, limit?: ?number): Promise<VcsLogResponse>;
+  getType(): string,
+  log(filePaths: Array<NuclideUri>, limit?: ?number): Promise<VcsLogResponse>,
 };
 
 class Activation {

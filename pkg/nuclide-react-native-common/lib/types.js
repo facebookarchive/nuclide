@@ -10,7 +10,7 @@
  */
 
 export type CommandInfo = {
-  command: string;
-  cwd: string;
-  args?: Array<string>;
+  command: string,
+  cwd: string,
+  args?: Array<string>,
 };

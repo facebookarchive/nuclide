@@ -14,8 +14,8 @@ import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
-  progress: ?number;
-  visible: boolean;
+  progress: ?number,
+  visible: boolean,
 };
 
 export class ProgressBar extends React.Component {
@@ -50,7 +50,7 @@ export class ProgressBar extends React.Component {
 }
 
 type BarProps = {
-  progress: number;
+  progress: number,
 };
 
 class Bar extends React.Component {

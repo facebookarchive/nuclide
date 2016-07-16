@@ -12,39 +12,39 @@
 import invariant from 'assert';
 
 export type WId = {
-  site: number;
-  h: number;
+  site: number,
+  h: number,
 };
 
 export type WChar = {
-  id: WId;
-  visible: boolean;
-  degree: number;
+  id: WId,
+  visible: boolean,
+  degree: number,
 };
 
 export type WCharRun = {
-  startId: WId;
-  visible: boolean;
-  startDegree: number;
-  length: number;
+  startId: WId,
+  visible: boolean,
+  startDegree: number,
+  length: number,
 };
 
 export type WOpType = 'INS' | 'DEL';
 
 export type WOp = {
-  type: WOpType;
-  text?: string;
-  char?: WCharRun;
-  runs?: Array<WCharRun>;
-  next?: WChar;
-  prev?: WChar;
+  type: WOpType,
+  text?: string,
+  char?: WCharRun,
+  runs?: Array<WCharRun>,
+  next?: WChar,
+  prev?: WChar,
 };
 
 // Represents a concrete change to a string.  That is, the result of applying
 // the WOp to the local string.
 export type WChange = {
-  addition?: {pos: number; text: string};
-  removals?: Array<{pos: number; count: number}>;
+  addition?: {pos: number, text: string},
+  removals?: Array<{pos: number, count: number}>,
 };
 
 function idLess(idLeft: WId, idRight: WId): boolean {
@@ -396,7 +396,7 @@ export class WString {
     return {type: 'DEL', runs: this.charsToRuns(chars)};
   }
 
-  visibleRanges(runs: Array<WCharRun>): Array<{pos: number; count: number}> {
+  visibleRanges(runs: Array<WCharRun>): Array<{pos: number, count: number}> {
     let pos = -1;
     let count = 1;
     const ranges = [];

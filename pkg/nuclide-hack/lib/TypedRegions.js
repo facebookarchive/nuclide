@@ -22,22 +22,22 @@ import invariant from 'assert';
 // Line/start/end are 1 based.
 // end is inclusive.
 export type TypeCoverageRegion = {
-  type: 'unchecked' | 'partial';
-  line: number;
-  start: number;
-  end: number;
+  type: 'unchecked' | 'partial',
+  line: number,
+  start: number,
+  end: number,
 };
 
 type UnfilteredTypeCoverageRegion = {
-  type: 'unchecked' | 'partial' | 'default' | 'checked';
-  line: number;
-  start: number;
-  end: number;
+  type: 'unchecked' | 'partial' | 'default' | 'checked',
+  line: number,
+  start: number,
+  end: number,
 };
 
 export type HackCoverageResult = {
-  percentage: number;
-  uncoveredRegions: Array<TypeCoverageRegion>;
+  percentage: number,
+  uncoveredRegions: Array<TypeCoverageRegion>,
 };
 
 export function convertTypedRegionsToCoverageResult(

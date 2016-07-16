@@ -19,72 +19,72 @@ import JediServerManager from './JediServerManager';
 import {parseFlake8Output} from './flake8';
 
 export type PythonCompletion = {
-  type: string;
-  text: string;
-  description?: string;
-  params?: Array<string>;
+  type: string,
+  text: string,
+  description?: string,
+  params?: Array<string>,
 };
 
 export type PythonDefinition = {
-  type: string;
-  text: string;
-  file: NuclideUri;
-  line: number;
-  column: number;
+  type: string,
+  text: string,
+  file: NuclideUri,
+  line: number,
+  column: number,
 };
 
 export type PythonReference = {
-  type: string;
-  text: string;
-  file: NuclideUri;
-  line: number;
-  column: number;
-  parentName?: string;
+  type: string,
+  text: string,
+  file: NuclideUri,
+  line: number,
+  column: number,
+  parentName?: string,
 };
 
 export type Position = {
-  line: number;
-  column: number;
+  line: number,
+  column: number,
 };
 
 export type PythonFunctionItem = {
-  kind: 'function';
-  name: string;
-  start: Position;
-  end: Position;
-  children?: Array<PythonOutlineItem>;
-  docblock?: string;
-  params?: Array<string>;
+  kind: 'function',
+  name: string,
+  start: Position,
+  end: Position,
+  children?: Array<PythonOutlineItem>,
+  docblock?: string,
+  params?: Array<string>,
 };
 
 export type PythonClassItem = {
-  kind: 'class';
-  name: string;
-  start: Position;
-  end: Position;
-  children?: Array<PythonOutlineItem>;
-  docblock?: string;
+  kind: 'class',
+  name: string,
+  start: Position,
+  end: Position,
+  children?: Array<PythonOutlineItem>,
+  docblock?: string,
   // Class params, i.e. superclasses.
-  params?: Array<string>;
+  params?: Array<string>,
 };
 
 export type PythonStatementItem = {
-  kind: 'statement';
-  name: string;
-  start: Position;
-  end: Position;
-  docblock?: string;
+  kind: 'statement',
+  name: string,
+  start: Position,
+  end: Position,
+  docblock?: string,
 };
 
 export type PythonOutlineItem = PythonFunctionItem | PythonClassItem | PythonStatementItem;
 
 export type PythonDiagnostic = {
-  file: NuclideUri;
-  code: string;
-  message: string;
-  type: string;
-  line: number;
-  column: number;
+  file: NuclideUri,
+  code: string,
+  message: string,
+  type: string,
+  line: number,
+  column: number,
 };
 
 let formatterPath;

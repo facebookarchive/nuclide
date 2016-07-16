@@ -12,8 +12,8 @@
 import type {Datatip} from './types';
 
 type Position = {
-  x: number;
-  y: number;
+  x: number,
+  y: number,
 };
 
 import {CompositeDisposable, Disposable} from 'atom';

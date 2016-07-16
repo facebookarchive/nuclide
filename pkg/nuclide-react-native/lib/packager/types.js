@@ -13,8 +13,8 @@ import type {Message} from '../../../nuclide-console/lib/types';
 
 type ReadyEvent = {kind: 'ready'};
 type MessageEvent = {
-  kind: 'message';
-  message: Message;
+  kind: 'message',
+  message: Message,
 };
 
 export type PackagerEvent = ReadyEvent | MessageEvent;

@@ -41,25 +41,25 @@ type ActionPayload = Object;
 type ChangeListener = () => mixed;
 
 export type ExportStoreData = {
-  childKeyMap: { [key: string]: Array<string> };
-  expandedKeysByRoot: { [key: string]: Array<string> };
-  rootKeys: Array<string>;
-  selectedKeysByRoot: { [key: string]: Array<string> };
-  version: number;
-  openFilesExpanded?: boolean;
+  childKeyMap: { [key: string]: Array<string> },
+  expandedKeysByRoot: { [key: string]: Array<string> },
+  rootKeys: Array<string>,
+  selectedKeysByRoot: { [key: string]: Array<string> },
+  version: number,
+  openFilesExpanded?: boolean,
 };
 
 export type StoreConfigData = {
-    vcsStatuses: Immutable.Map<NuclideUri, {[path: NuclideUri]: StatusCodeNumberValue}>;
-    workingSet: WorkingSet;
-    hideIgnoredNames: boolean;
-    excludeVcsIgnoredPaths: boolean;
-    ignoredPatterns: Immutable.Set<Minimatch>;
-    usePreviewTabs: boolean;
-    isEditingWorkingSet: boolean;
-    openFilesWorkingSet: WorkingSet;
-    reposByRoot: {[rootUri: NuclideUri]: atom$Repository};
-    editedWorkingSet: WorkingSet;
+    vcsStatuses: Immutable.Map<NuclideUri, {[path: NuclideUri]: StatusCodeNumberValue}>,
+    workingSet: WorkingSet,
+    hideIgnoredNames: boolean,
+    excludeVcsIgnoredPaths: boolean,
+    ignoredPatterns: Immutable.Set<Minimatch>,
+    usePreviewTabs: boolean,
+    isEditingWorkingSet: boolean,
+    openFilesWorkingSet: WorkingSet,
+    reposByRoot: {[rootUri: NuclideUri]: atom$Repository},
+    editedWorkingSet: WorkingSet,
 };
 
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';

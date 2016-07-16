@@ -14,23 +14,23 @@ import classnames from 'classnames';
 
 type SectionSize = 'large' | 'small';
 type Props = {
-  headline: React.Element<any> | string;
-  className?: string;
-  children?: React.Element<any>;
+  headline: React.Element<any> | string,
+  className?: string,
+  children?: React.Element<any>,
   // Option A: Specify just `collapsable` for uncontrolled toggle behavior.
-  collapsable?: boolean;
+  collapsable?: boolean,
   // `collapsable` overrides this when specified.
-  collapsedByDefault?: boolean;
+  collapsedByDefault?: boolean,
 
   // Option B: Also specify `collapsed` and `onChange` for controlled toggle behavior.
-  collapsed?: boolean;
-  onChange?: (isCollapsed: boolean) => mixed;
+  collapsed?: boolean,
+  onChange?: (isCollapsed: boolean) => mixed,
 
-  size?: SectionSize;
+  size?: SectionSize,
 };
 
 type State = {
-  isCollapsed: boolean;
+  isCollapsed: boolean,
 };
 
 /** A vertical divider with a title.

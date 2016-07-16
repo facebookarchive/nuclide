@@ -17,19 +17,19 @@ import type {
 } from './types';
 
 type ResultContext = {
-  nonEmptyResults: GroupedResult;
-  serviceNames: Array<ServiceName>;
-  currentServiceIndex: number;
-  currentService: Object;
-  directoryNames: Array<DirectoryName>;
-  currentDirectoryIndex: number;
-  currentDirectory: Object;
+  nonEmptyResults: GroupedResult,
+  serviceNames: Array<ServiceName>,
+  currentServiceIndex: number,
+  currentService: Object,
+  directoryNames: Array<DirectoryName>,
+  currentDirectoryIndex: number,
+  currentDirectory: Object,
 };
 
 type Selection = {
-  selectedDirectory: string;
-  selectedService: string;
-  selectedItemIndex: number;
+  selectedDirectory: string,
+  selectedService: string,
+  selectedItemIndex: number,
 };
 
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
@@ -86,14 +86,14 @@ export default class QuickSelectionComponent extends React.Component {
   _boundHandleTabChange: (tab: ProviderSpec) => void;
   _isMounted: boolean;
   state: {
-    activeProviderName?: string;
-    activeTab: ProviderSpec;
-    hasUserSelection: boolean;
-    resultsByService: GroupedResult;
-    renderableProviders: Array<ProviderSpec>;
-    selectedService: string;
-    selectedDirectory: string;
-    selectedItemIndex: number;
+    activeProviderName?: string,
+    activeTab: ProviderSpec,
+    hasUserSelection: boolean,
+    resultsByService: GroupedResult,
+    renderableProviders: Array<ProviderSpec>,
+    selectedService: string,
+    selectedDirectory: string,
+    selectedItemIndex: number,
   };
 
   constructor(props: Object) {
@@ -471,7 +471,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _getOuterResults(arrayOperation: Function):
-    ?{serviceName: string; directoryName: string; results: Array<mixed>} {
+    ?{serviceName: string, directoryName: string, results: Array<mixed>} {
     const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
     const serviceName = arrayOperation.call(sortServiceNames(Object.keys(nonEmptyResults)));
     if (!serviceName) {

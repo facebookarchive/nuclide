@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-type Target = {path: NuclideUri; name: string};
+type Target = {path: NuclideUri, name: string};
 
 import type {BuckProject} from '../../nuclide-buck-base';
 import type {NuclideUri} from '../../nuclide-remote-uri';
@@ -150,10 +150,10 @@ module.exports = {
 };
 
 type HyperclickMatch = {
-  path: string;
-  line: number;
-  column: number;
-  range: atom$Range;
+  path: string,
+  line: number,
+  column: number,
+  range: atom$Range,
 };
 
 const TARGET_REGEX = /(\/(?:\/[\w\-\.]*)*){0,1}:([\w\-\.]+)/;

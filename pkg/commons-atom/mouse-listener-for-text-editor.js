@@ -14,8 +14,8 @@ import {CompositeDisposable, Disposable, Emitter, Point} from 'atom';
 import debounce from '../commons-node/debounce';
 
 type PositionChangeEvent = {
-  nativeEvent: MouseEvent;
-  position: Point;
+  nativeEvent: MouseEvent,
+  position: Point,
 };
 
 const DEBOUNCE_TIME = 200;

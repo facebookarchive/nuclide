@@ -80,10 +80,10 @@ function vcsClassNameForEntry(entry: FileChange): string {
 }
 
 type Props = {
-  activeFilePath: ?NuclideUri;
-  diffModel: DiffViewModel;
-  fileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  showNonHgRepos: boolean;
+  activeFilePath: ?NuclideUri,
+  diffModel: DiffViewModel,
+  fileChanges: Map<NuclideUri, FileChangeStatusValue>,
+  showNonHgRepos: boolean,
 };
 
 export default class DiffViewTree extends React.Component {

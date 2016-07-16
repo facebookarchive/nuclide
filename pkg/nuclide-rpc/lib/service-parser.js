@@ -101,10 +101,10 @@ class ServiceParser {
 }
 
 type Import = {
-  imported: string;
-  file: string;
-  added: boolean;
-  location: Location;
+  imported: string,
+  file: string,
+  added: boolean,
+  location: Location,
 };
 
 type FileType = 'import' | 'service';
@@ -400,7 +400,7 @@ class FileParser {
    * @returns A record containing the name of the method, and a FunctionType object
    *   encoding the arguments and return type of the method.
    */
-  _parseMethodDefinition(definition: any): {name: string; type: FunctionType} {
+  _parseMethodDefinition(definition: any): {name: string, type: FunctionType} {
     this._assert(definition, definition.type === 'MethodDefinition',
         'This is a MethodDefinition object.');
     this._assert(definition, definition.key && definition.key.type === 'Identifier',
@@ -429,7 +429,7 @@ class FileParser {
    * @returns A record containing the name of the method, and a FunctionType object
    *   encoding the arguments and return type of the method.
    */
-  _parseInterfaceMethodDefinition(definition: any): {name: string; type: FunctionType} {
+  _parseInterfaceMethodDefinition(definition: any): {name: string, type: FunctionType} {
     this._assert(definition, definition.type === 'ObjectTypeProperty',
         'This is a ObjectTypeProperty object.');
     this._assert(definition, definition.key && definition.key.type === 'Identifier',

@@ -94,75 +94,75 @@ export type StatusCodeNumberValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type HgStatusOptionValue = 1 | 2 | 3;
 
 export type LineDiff = {
-  oldStart: number;
-  oldLines: number;
-  newStart: number;
-  newLines: number;
+  oldStart: number,
+  oldLines: number,
+  newStart: number,
+  newLines: number,
 };
 
 export type BookmarkInfo = {
-  active: boolean;
-  bookmark: string;
-  node: string;
-  rev: number;
+  active: boolean,
+  bookmark: string,
+  node: string,
+  rev: number,
 };
 
 export type DiffInfo = {
-  added: number;
-  deleted: number;
-  lineDiffs: Array<LineDiff>;
+  added: number,
+  deleted: number,
+  lineDiffs: Array<LineDiff>,
 };
 
 export type RevisionInfo = {
-  id: number;
-  hash: string;
-  title: string;
-  author: string;
-  date: Date;
-  description: string;
+  id: number,
+  hash: string,
+  title: string,
+  author: string,
+  date: Date,
+  description: string,
   // List of bookmarks at this revision.
-  bookmarks: Array<string>;
+  bookmarks: Array<string>,
 };
 
 export type AsyncExecuteRet = {
-  command?: string;
-  errorMessage?: string;
-  exitCode: number;
-  stderr: string;
-  stdout: string;
+  command?: string,
+  errorMessage?: string,
+  exitCode: number,
+  stderr: string,
+  stdout: string,
 };
 
 export type RevisionFileCopy = {
-  from: NuclideUri;
-  to: NuclideUri;
+  from: NuclideUri,
+  to: NuclideUri,
 };
 
 export type RevisionFileChanges = {
-  all: Array<NuclideUri>;
-  added: Array<NuclideUri>;
-  deleted: Array<NuclideUri>;
-  copied: Array<RevisionFileCopy>;
-  modified: Array<NuclideUri>;
+  all: Array<NuclideUri>,
+  added: Array<NuclideUri>,
+  deleted: Array<NuclideUri>,
+  copied: Array<RevisionFileCopy>,
+  modified: Array<NuclideUri>,
 };
 
 export type HgStatusCommandOptions = {
-  hgStatusOption: HgStatusOptionValue;
+  hgStatusOption: HgStatusOptionValue,
 };
 
 export type VcsLogEntry = {
-  node: string;
-  user: string;
-  desc: string;
-  date: [number, number];
+  node: string,
+  user: string,
+  desc: string,
+  date: [number, number],
 };
 
 export type VcsLogResponse = {
-  entries: Array<VcsLogEntry>;
+  entries: Array<VcsLogEntry>,
 };
 
 export type MergeConflict = {
-  path: string;
-  message: MergeConflictStatusValue;
+  path: string,
+  message: MergeConflictStatusValue,
 };
 
 export type CheckoutSideName = 'ours' | 'theirs';

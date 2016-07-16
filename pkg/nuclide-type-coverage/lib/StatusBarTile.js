@@ -22,18 +22,18 @@ import {Subscription} from 'rxjs';
 import {StatusBarTileComponent} from './StatusBarTileComponent';
 
 type Props = {
-  results: Observable<Result<CoverageProvider, ?CoverageResult>>;
-  isActive: Observable<boolean>;
-  onClick: Function;
+  results: Observable<Result<CoverageProvider, ?CoverageResult>>,
+  isActive: Observable<boolean>,
+  onClick: Function,
 };
 
 type State = {
   result: ?{
-    percentage: number;
-    providerName: string;
-  };
-  pending: boolean;
-  isActive: boolean;
+    percentage: number,
+    providerName: string,
+  },
+  pending: boolean,
+  isActive: boolean,
 };
 
 export class StatusBarTile extends React.Component {

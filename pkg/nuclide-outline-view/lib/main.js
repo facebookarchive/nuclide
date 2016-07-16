@@ -35,27 +35,27 @@ const GK_NUX_OUTLINE_VIEW = 'nuclide_outline_view_nux';
 
 export type OutlineTree = {
   // Must be one or the other. If both are present, tokenizedText is preferred.
-  plainText?: string;
-  tokenizedText?: TokenizedText;
-  representativeName?: string;
+  plainText?: string,
+  tokenizedText?: TokenizedText,
+  representativeName?: string,
 
-  startPosition: atom$Point;
-  endPosition?: atom$Point;
-  children: Array<OutlineTree>;
+  startPosition: atom$Point,
+  endPosition?: atom$Point,
+  children: Array<OutlineTree>,
 };
 
 export type Outline = {
-  outlineTrees: Array<OutlineTree>;
+  outlineTrees: Array<OutlineTree>,
 };
 
 export type OutlineTreeForUi = {
-  plainText?: string;
-  tokenizedText?: TokenizedText;
+  plainText?: string,
+  tokenizedText?: TokenizedText,
 
-  startPosition: atom$Point;
-  endPosition?: atom$Point;
-  children: Array<OutlineTreeForUi>;
-  highlighted: boolean;
+  startPosition: atom$Point,
+  endPosition?: atom$Point,
+  children: Array<OutlineTreeForUi>,
+  highlighted: boolean,
 };
 
 /**
@@ -64,50 +64,50 @@ export type OutlineTreeForUi = {
  */
 export type OutlineForUi = {
   // The initial state at startup.
-  kind: 'empty';
+  kind: 'empty',
 } | {
   // The thing that currently has focus is not a text editor.
-  kind: 'not-text-editor';
+  kind: 'not-text-editor',
 } | {
   // Currently awaiting results from a provider (for longer than a certain delay).
-  kind: 'loading';
+  kind: 'loading',
 } | {
   // Indicates that no provider is registered for the given grammar.
-  kind: 'no-provider';
+  kind: 'no-provider',
   // Human-readable name for the grammar.
-  grammar: string;
+  grammar: string,
 } | {
   // Indicates that a provider is registered but that it did not return an outline.
-  kind: 'provider-no-outline';
+  kind: 'provider-no-outline',
 } | {
-  kind: 'outline';
-  outlineTrees: Array<OutlineTreeForUi>;
+  kind: 'outline',
+  outlineTrees: Array<OutlineTreeForUi>,
   /**
    * Use a TextEditor instead of a path so that:
    * - If there are multiple editors for a file, we always jump to outline item
    *   locations in the correct editor.
    * - Jumping to outline item locations works for new, unsaved files.
    */
-  editor: atom$TextEditor;
+  editor: atom$TextEditor,
 };
 
 export type OutlineProvider = {
-  name: string;
+  name: string,
   // If there are multiple providers for a given grammar, the one with the highest priority will be
   // used.
-  priority: number;
-  grammarScopes: Array<string>;
-  updateOnEdit?: boolean;
-  getOutline: (editor: TextEditor) => Promise<?Outline>;
+  priority: number,
+  grammarScopes: Array<string>,
+  updateOnEdit?: boolean,
+  getOutline: (editor: TextEditor) => Promise<?Outline>,
 };
 
 type OutlineViewState = {
-  width: number;
-  visible: boolean;
+  width: number,
+  visible: boolean,
 };
 
 export type ResultsStreamProvider = {
-  getResultsStream: () => Observable<Result<OutlineProvider, ?Outline>>;
+  getResultsStream: () => Observable<Result<OutlineProvider, ?Outline>>,
 };
 
 const DEFAULT_WIDTH = 300; // px

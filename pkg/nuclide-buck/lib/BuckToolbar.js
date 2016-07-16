@@ -29,9 +29,9 @@ import addTooltip from '../../nuclide-ui/lib/add-tooltip';
 const BUCK_TARGET_INPUT_WIDTH = 400;
 
 type PropTypes = {
-  activeTaskType: ?TaskType;
-  store: BuckToolbarStore;
-  actions: BuckToolbarActions;
+  activeTaskType: ?TaskType,
+  store: BuckToolbarStore,
+  actions: BuckToolbarActions,
 };
 
 class BuckToolbar extends React.Component {

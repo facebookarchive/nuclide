@@ -30,11 +30,11 @@ const https: https$fixed = (require('https'): any);
 const logger = getLogger();
 
 type NuclideServerOptions = {
-  port: number;
-  serverKey?: Buffer;
-  serverCertificate?: Buffer;
-  certificateAuthorityCertificate?: Buffer;
-  trackEventLoop?: boolean;
+  port: number,
+  serverKey?: Buffer,
+  serverCertificate?: Buffer,
+  certificateAuthorityCertificate?: Buffer,
+  trackEventLoop?: boolean,
 };
 
 class NuclideServer {

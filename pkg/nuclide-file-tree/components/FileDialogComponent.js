@@ -48,13 +48,13 @@ class FileDialogComponent extends React.Component {
   };
 
   static defaultProps: {
-    additionalOptions: Object;
+    additionalOptions: Object,
   } = {
     additionalOptions: {},
   };
 
   state: {
-    options: Object;
+    options: Object,
   };
 
   constructor() {

@@ -17,16 +17,16 @@ import type {RpcContext} from './main';
 const logger = getLogger();
 
 type ObjectRegistration = {
-  interface: string;
-  remoteId: number;
-  object: RemoteObject;
+  interface: string,
+  remoteId: number,
+  object: RemoteObject,
 };
 
 // All remotable objects have some set of named functions,
 // and they also have a dispose method.
 export type RemoteObject = {
   [id:string]: Function;
-  dispose: () => void;
+  dispose: () => void,
 };
 
 type RegistryKind = 'server' | 'client';

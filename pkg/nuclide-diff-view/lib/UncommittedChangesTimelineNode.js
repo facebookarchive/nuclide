@@ -20,8 +20,8 @@ import {
 import {DiffMode, CommitMode} from './constants';
 
 type Props = {
-  dirtyFileCount: number;
-  diffModel: DiffViewModel;
+  dirtyFileCount: number,
+  diffModel: DiffViewModel,
 };
 
 export default class UncommittedChangesTimelineNode extends React.Component {

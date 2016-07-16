@@ -13,14 +13,14 @@ import featureConfig from '../nuclide-feature-config';
 import {maybeToString} from '../commons-node/string';
 
 type Options = {
-  feature: string;
-  toolName: string;
-  pathSetting: string;
+  feature: string,
+  toolName: string,
+  pathSetting: string,
 };
 
 type Result = {
-  message: string;
-  meta: atom$NotificationOptions;
+  message: string,
+  meta: atom$NotificationOptions,
 };
 
 const capitalize = str => str[0].toUpperCase() + str.substr(1);

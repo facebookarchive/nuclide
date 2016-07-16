@@ -14,42 +14,42 @@ export type ServerReplyCallback = (replyId: number, result: ?Object) => void;
 // Output from executor.js
 
 export type ExecutorResult = {
-  kind: 'result';
-  replyId: number;
-  result: ?Object;
+  kind: 'result',
+  replyId: number,
+  result: ?Object,
 };
 
 export type ExecutorError = {
-  kind: 'error';
-  message: string;
+  kind: 'error',
+  message: string,
 };
 
 export type ExecutorPid = {
-  kind: 'pid';
-  pid: number;
+  kind: 'pid',
+  pid: number,
 };
 
 export type ExecutorResponse = ExecutorResult | ExecutorError | ExecutorPid;
 
 // Messages coming from React Native
 export type RnMessage = {
-  id: number;
-  method?: string;
-  arguments?: Array<any>;
-  url?: string;
-  inject?: string;
-  $close?: boolean;
+  id: number,
+  method?: string,
+  arguments?: Array<any>,
+  url?: string,
+  inject?: string,
+  $close?: boolean,
 
   // This shouldn't be present, but apparently can be in some situations?
-  replyID?: number;
+  replyID?: number,
 };
 
 // Messages from RN are basically forwarded directly to the executor, so the types are pretty much
 // identical.
 export type ExecutorRequest = {
-  id: number;
-  method?: string;
-  arguments?: Array<any>;
-  url?: string;
-  inject?: string;
+  id: number,
+  method?: string,
+  arguments?: Array<any>,
+  url?: string,
+  inject?: string,
 };

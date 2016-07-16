@@ -42,8 +42,8 @@ import {Observable, Subject} from 'rxjs';
 // specific action type into something of type { type: string }
 type Action = {type: any};
 type Store<T: Action, U> = {
-  dispatch(action: T): void;
-  getState(): U;
+  dispatch(action: T): void,
+  getState(): U,
 };
 type Next<T: Action> = (action: T) => T;
 export type Epic<T: Action, U> =

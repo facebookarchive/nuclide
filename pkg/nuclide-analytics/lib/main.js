@@ -19,8 +19,8 @@ import {track as rawTrack} from './track';
 import {HistogramTracker} from './HistogramTracker';
 
 export type TrackingEvent = {
-  type: string;
-  data?: Object;
+  type: string,
+  data?: Object,
 };
 
 function track(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {

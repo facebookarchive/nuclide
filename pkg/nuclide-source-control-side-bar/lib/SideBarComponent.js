@@ -24,32 +24,32 @@ import url from 'url';
 const Menu = remote.require('menu');
 
 type Props = {
-  createBookmark: (name: string, repo: atom$Repository) => mixed;
-  deleteBookmark: (bookmark: BookmarkInfo, repo: atom$Repository) => mixed;
-  projectBookmarks: Map<string, Array<BookmarkInfo>>;
-  projectDirectories: Array<Directory>;
-  projectRepositories: Map<string, atom$Repository>;
-  renameBookmark: (bookmarkInfo: BookmarkInfo, nextName: string, repo: atom$Repository) => mixed;
-  repositoryBookmarksIsLoading: WeakMap<atom$Repository, Array<BookmarkInfo>>;
-  updateToBookmark: (bookmarkInfo: BookmarkInfo, repo: atom$Repository) => mixed;
+  createBookmark: (name: string, repo: atom$Repository) => mixed,
+  deleteBookmark: (bookmark: BookmarkInfo, repo: atom$Repository) => mixed,
+  projectBookmarks: Map<string, Array<BookmarkInfo>>,
+  projectDirectories: Array<Directory>,
+  projectRepositories: Map<string, atom$Repository>,
+  renameBookmark: (bookmarkInfo: BookmarkInfo, nextName: string, repo: atom$Repository) => mixed,
+  repositoryBookmarksIsLoading: WeakMap<atom$Repository, Array<BookmarkInfo>>,
+  updateToBookmark: (bookmarkInfo: BookmarkInfo, repo: atom$Repository) => mixed,
 };
 
 type BookmarkItem = {
-  bookmark: BookmarkInfo;
-  repository: atom$Repository;
-  type: 'bookmark';
+  bookmark: BookmarkInfo,
+  repository: atom$Repository,
+  type: 'bookmark',
 };
 
 type UncommittedChangesItem = {
-  repository: atom$Repository;
-  type: 'uncommitted';
+  repository: atom$Repository,
+  type: 'uncommitted',
 };
 
 export type SelectableItem = BookmarkItem | UncommittedChangesItem;
 
 type State = {
-  activeModalComponent?: ?Object;
-  selectedItem?: SelectableItem;
+  activeModalComponent?: ?Object,
+  selectedItem?: SelectableItem,
 };
 
 export default class SideBarComponent extends React.Component {

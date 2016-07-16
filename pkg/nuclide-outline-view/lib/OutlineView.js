@@ -24,11 +24,11 @@ import {LoadingSpinner, LoadingSpinnerSizes} from '../../nuclide-ui/lib/LoadingS
 const logger = getLogger();
 
 type State = {
-  outline: OutlineForUi;
+  outline: OutlineForUi,
 };
 
 type Props = {
-  outlines: Observable<OutlineForUi>;
+  outlines: Observable<OutlineForUi>,
 };
 
 const TOKEN_KIND_TO_CLASS_NAME_MAP = {
@@ -84,7 +84,7 @@ export class OutlineView extends React.Component {
 }
 
 type OutlineViewComponentProps = {
-  outline: OutlineForUi;
+  outline: OutlineForUi,
 };
 
 class OutlineViewComponent extends React.Component {

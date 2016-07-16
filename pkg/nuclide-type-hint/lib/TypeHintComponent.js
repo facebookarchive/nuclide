@@ -16,12 +16,12 @@ import {React} from 'react-for-atom';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 
 type TypeHintComponentProps = {
-  content: string | HintTree;
-  grammar: atom$Grammar;
+  content: string | HintTree,
+  grammar: atom$Grammar,
 };
 
 type TypeHintComponentState = {
-  expandedNodes: Set<HintTree>;
+  expandedNodes: Set<HintTree>,
 };
 
 export function makeTypeHintComponent(

@@ -21,12 +21,12 @@ const logger = getLogger();
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 type InnerNode = {
-  kind: 'inner';
-  children: Map<string, TreeNode>;
+  kind: 'inner',
+  children: Map<string, TreeNode>,
 };
 
 type LeafNode = {
-  kind: 'leaf';
+  kind: 'leaf',
 };
 
 type TreeNode = InnerNode | LeafNode;

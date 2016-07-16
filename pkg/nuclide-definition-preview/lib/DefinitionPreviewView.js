@@ -21,22 +21,22 @@ import {bufferForUri} from '../../commons-atom/text-editor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 
 export type Location = {
-  path: string;
-  position: atom$Point;
+  path: string,
+  position: atom$Point,
 };
 
 export type PreviewContent = {
-  location: Location;
-  grammar: atom$Grammar;
+  location: Location,
+  grammar: atom$Grammar,
 };
 
 type Props = {
-  definition: ?Definition;
+  definition: ?Definition,
 };
 
 export class DefinitionPreviewView extends React.Component {
 
-  _loadAndScroll: ?() =>Promise<void>;
+  _loadAndScroll: ?() => Promise<void>;
 
   props: Props;
 

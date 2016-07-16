@@ -24,13 +24,13 @@ describe('DiffViewModel', () => {
     spyOn(messages, 'next').andCallThrough();
   });
 
-  function stdoutLine(message: string): {stdout?: string; stderr?: string} {
+  function stdoutLine(message: string): {stdout?: string, stderr?: string} {
     return {stdout: JSON.stringify({type: 'phutil:out', message})};
   }
 
   async function testInput(
-    input: Array<{stdout?: string; stderr?: string}>,
-    expectedOutput: Array<{level: string; text: string}>,
+    input: Array<{stdout?: string, stderr?: string}>,
+    expectedOutput: Array<{level: string, text: string}>,
   ): Promise<void> {
     const stream = Rx.Observable.from(input);
     invariant(messages != null);
@@ -45,8 +45,8 @@ describe('DiffViewModel', () => {
   }
 
   function testInputSync(
-    input: Array<{stdout?: string; stderr?: string}>,
-    expectedOutput: Array<{level: string; text: string}>,
+    input: Array<{stdout?: string, stderr?: string}>,
+    expectedOutput: Array<{level: string, text: string}>,
   ): void {
     waitsForPromise(async () => {
       await testInput(input, expectedOutput);

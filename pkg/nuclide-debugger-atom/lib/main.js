@@ -58,7 +58,7 @@ export {
 };
 
 export type SerializedState = {
-  breakpoints: ?Array<SerializedBreakpoint>;
+  breakpoints: ?Array<SerializedBreakpoint>,
 };
 
 const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
@@ -67,13 +67,13 @@ const GK_DEBUGGER_UI_REVAMP = 'nuclide_debugger_ui_revamp';
 const GK_TIMEOUT = 5000;
 
 type Props = {
-  model: DebuggerModel;
-  useRevampedUi: boolean;
+  model: DebuggerModel,
+  useRevampedUi: boolean,
 };
 class DebuggerView extends React.Component {
   props: Props;
   state: {
-    showOldView: boolean;
+    showOldView: boolean,
   };
 
   constructor(props: Props) {

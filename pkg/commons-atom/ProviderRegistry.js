@@ -10,8 +10,8 @@
  */
 
 export type Provider = {
-  priority: number;
-  grammarScopes: Array<string>;
+  priority: number,
+  grammarScopes: Array<string>,
 };
 
 export default class ProviderRegistry<T: Provider> {

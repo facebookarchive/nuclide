@@ -68,7 +68,7 @@ function hackMessageToTrace(traceError: SingleHackMessage): Object {
 }
 
 function hackMessageToDiagnosticMessage(
-  hackDiagnostic: {message: HackDiagnostic;},
+  hackDiagnostic: {message: HackDiagnostic},
 ): FileDiagnosticMessage {
   const {message: hackMessages} = hackDiagnostic;
 
@@ -166,7 +166,7 @@ class HackDiagnosticsProvider {
     this._providerBase.publishMessageUpdate(this._processDiagnostics(diagnostics));
   }
 
-  _processDiagnostics(diagnostics: Array<{message: HackDiagnostic;}>): DiagnosticProviderUpdate {
+  _processDiagnostics(diagnostics: Array<{message: HackDiagnostic}>): DiagnosticProviderUpdate {
     // Convert array messages to Error Objects with Traces.
     const fileDiagnostics = diagnostics.map(hackMessageToDiagnosticMessage);
 
@@ -244,7 +244,7 @@ class HackDiagnosticsProvider {
 
 async function findDiagnostics(
   editor: atom$TextEditor,
-): Promise<Array<{message: HackDiagnostic;}>> {
+): Promise<Array<{message: HackDiagnostic}>> {
   const filePath = editor.getPath();
   const hackLanguage = await getHackLanguageForUri(filePath);
   if (!hackLanguage || !filePath) {

@@ -13,9 +13,9 @@ import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 
 type Props = {
-  onCancel: () => mixed;
-  onCreate: (name: string, repo: atom$Repository) => mixed;
-  repo: atom$Repository;
+  onCancel: () => mixed,
+  onCreate: (name: string, repo: atom$Repository) => mixed,
+  repo: atom$Repository,
 };
 
 export default class CreateBookmarkModal extends React.Component {

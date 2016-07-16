@@ -14,31 +14,31 @@ import {React} from 'react-for-atom';
 import {maybeToString} from '../../commons-node/string';
 
 type DefaultProps = {
-  className: string;
-  disabled: boolean;
-  isFlat: boolean;
-  onChange: (value: any) => void;
-  options: Array<{label: React.Children; value: any}>;
-  value: any;
-  title: string;
+  className: string,
+  disabled: boolean,
+  isFlat: boolean,
+  onChange: (value: any) => void,
+  options: Array<{label: React.Children, value: any}>,
+  value: any,
+  title: string,
 };
 
 type Props = {
-  className: string;
-  disabled: boolean;
-  isFlat: boolean;
-  options: Array<{label: React.Children; value: any}>;
-  value: any;
+  className: string,
+  disabled: boolean,
+  isFlat: boolean,
+  options: Array<{label: React.Children, value: any}>,
+  value: any,
   /**
    * A function that gets called with the new value on change.
    */
-  onChange: (value: any) => void;
+  onChange: (value: any) => void,
   /**
    * Size of dropdown. Sizes match .btn classes in Atom's style guide. Default is medium (which
    * does not have an associated 'size' string).
    */
-  size?: 'xs' | 'sm' | 'lg';
-  title: string;
+  size?: 'xs' | 'sm' | 'lg',
+  title: string,
 };
 
 export class Dropdown extends React.Component {

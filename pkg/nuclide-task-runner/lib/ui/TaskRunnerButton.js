@@ -17,11 +17,11 @@ import {Icon} from '../../../nuclide-ui/lib/Icon';
 import {React} from 'react-for-atom';
 
 type Props = {
-  icon?: Octicon;
-  selected?: boolean;
-  size?: ButtonSize;
-  children?: mixed;
-  iconComponent: ReactClass<any>;
+  icon?: Octicon,
+  selected?: boolean,
+  size?: ButtonSize,
+  children?: mixed,
+  iconComponent: ReactClass<any>,
 };
 
 export function TaskRunnerButton(props: Props): React.Element<any> {

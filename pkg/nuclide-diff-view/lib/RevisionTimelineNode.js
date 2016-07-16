@@ -19,12 +19,12 @@ import {React} from 'react-for-atom';
 import {track} from '../../nuclide-analytics';
 
 type RevisionTimelineNodeProps = {
-  diffStatus: ?DiffStatusDisplay;
-  index: number;
-  onSelectionChange: (revisionInfo: RevisionInfo) => any;
-  revision: RevisionInfo;
-  revisionsCount: number;
-  selectedIndex: number;
+  diffStatus: ?DiffStatusDisplay,
+  index: number,
+  onSelectionChange: (revisionInfo: RevisionInfo) => any,
+  revision: RevisionInfo,
+  revisionsCount: number,
+  selectedIndex: number,
 };
 
 export default class RevisionTimelineNode extends React.Component {

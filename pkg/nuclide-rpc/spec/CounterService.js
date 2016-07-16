@@ -12,9 +12,9 @@
 import {Observable, Subject} from 'rxjs';
 
 export type CounterChangeEvent = {
-  type: string;
-  oldValue: number;
-  newValue: number;
+  type: string,
+  oldValue: number,
+  newValue: number,
 };
 
 export class Counter {

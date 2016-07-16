@@ -18,19 +18,19 @@ import {getLogger} from '../../nuclide-logging';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
 type TrackingEventNames = {
-  start: string;
-  stop: string;
-  restart: string;
+  start: string,
+  stop: string,
+  restart: string,
 };
 
 type Options = {
-  name: string;
-  messages: Observable<Message>;
-  trackingEvents: TrackingEventNames;
+  name: string,
+  messages: Observable<Message>,
+  trackingEvents: TrackingEventNames,
 
   // Signals that the source is ready ("running"). This allows us to account for sources that need
   // some initialization without having to worry about it in cases that don't.
-  ready?: Observable<void>;
+  ready?: Observable<void>,
 };
 
 type StartOptions = {
@@ -38,7 +38,7 @@ type StartOptions = {
   // values (an Observable or Promise would work well here) and we want to have success and error
   // messages use the same channel (instead of a separate `onRunning` and `onRunningError`
   // callback).
-  onRunning: (err?: Error) => mixed;
+  onRunning: (err?: Error) => mixed,
 };
 
 /**

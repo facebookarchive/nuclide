@@ -31,47 +31,47 @@ const logger = getLogger();
 import ProviderRegistry from './ProviderRegistry';
 
 export type Provider = {
-  priority: number;
-  grammarScopes: Array<string>;
+  priority: number,
+  grammarScopes: Array<string>,
   // This overrides the updateOnEdit setting in ActiveEditorRegistry's config.
-  updateOnEdit?: boolean;
+  updateOnEdit?: boolean,
 };
 
 export type Result<T, V> = {
-  kind: 'not-text-editor';
+  kind: 'not-text-editor',
 } | {
-  kind: 'no-provider';
-  grammar: atom$Grammar;
+  kind: 'no-provider',
+  grammar: atom$Grammar,
 } | {
-  kind: 'provider-error';
-  provider: T;
+  kind: 'provider-error',
+  provider: T,
 } | {
   // Since providers can be slow, the pane-change and edit events are emitted immediately in case
   // the UI needs to clear outdated results.
-  kind: 'pane-change';
-  editor: atom$TextEditor;
+  kind: 'pane-change',
+  editor: atom$TextEditor,
 } | {
-  kind: 'edit';
-  editor: atom$TextEditor;
+  kind: 'edit',
+  editor: atom$TextEditor,
 } | {
-  kind: 'save';
-  editor: atom$TextEditor;
+  kind: 'save',
+  editor: atom$TextEditor,
 } | {
-  kind: 'result';
-  result: V;
+  kind: 'result',
+  result: V,
   // The editor that the result was computed from
-  editor: atom$TextEditor;
+  editor: atom$TextEditor,
   // The provider that computed the result
   // TODO Use a type paramater for this type
-  provider: T;
+  provider: T,
 };
 
 export type ResultFunction<T, V> = (provider: T, editor: atom$TextEditor) => Promise<V>;
 
 export type EventSources = {
-  activeEditors: Observable<?atom$TextEditor>;
-  changesForEditor: (editor: atom$TextEditor) => Observable<void>;
-  savesForEditor: (editor: atom$TextEditor) => Observable<void>;
+  activeEditors: Observable<?atom$TextEditor>,
+  changesForEditor: (editor: atom$TextEditor) => Observable<void>,
+  savesForEditor: (editor: atom$TextEditor) => Observable<void>,
 };
 
 export type Config = {
@@ -79,11 +79,11 @@ export type Config = {
    * If true, we will query providers for updates whenever the text in the editor is changed.
    * Otherwise, we will query only when there is a save event.
    */
-  updateOnEdit?: boolean;
+  updateOnEdit?: boolean,
 };
 
 type ConcreteConfig = {
-  updateOnEdit: boolean;
+  updateOnEdit: boolean,
 };
 
 const DEFAULT_CONFIG: ConcreteConfig = {

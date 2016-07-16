@@ -22,8 +22,8 @@ import {
 } from './settings-utils';
 
 type Props = SettingsPropsDefault & {
-  type: string;
-  value: (number | string | Array<any>);
+  type: string,
+  value: (number | string | Array<any>),
 };
 
 export default class SettingsInput extends React.Component {

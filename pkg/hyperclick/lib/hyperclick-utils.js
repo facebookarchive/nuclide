@@ -25,7 +25,7 @@ export function defaultWordRegExpForEditor(
  * Returns the text and range for the word that contains the given position.
  */
 
-type WordTextAndRange = {text: string; range: Range};
+type WordTextAndRange = {text: string, range: Range};
 
 export function getWordTextAndRange(
   textEditor: TextEditor,

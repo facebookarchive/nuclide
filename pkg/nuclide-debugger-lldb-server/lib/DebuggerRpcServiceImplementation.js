@@ -32,15 +32,15 @@ import {
 import {checkOutput} from '../../commons-node/process';
 
 type AttachInfoArgsType = {
-  pid: string;
-  basepath: string;
+  pid: string,
+  basepath: string,
 };
 
 type LaunchInfoArgsType = {
-  executable_path: string;
-  launch_arguments: string;
-  working_directory: string;
-  basepath: string;
+  executable_path: string,
+  launch_arguments: string,
+  working_directory: string,
+  basepath: string,
 };
 
 type LaunchAttachArgsType = AttachInfoArgsType | LaunchInfoArgsType;

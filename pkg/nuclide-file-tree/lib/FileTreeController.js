@@ -34,7 +34,7 @@ import type {
 import type {FileTreeNode} from './FileTreeNode';
 
 export type FileTreeControllerState = {
-  tree: ExportStoreData;
+  tree: ExportStoreData,
 };
 
 const VALID_FILTER_CHARS = '!#./0123456789-:;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ' +

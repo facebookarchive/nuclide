@@ -27,7 +27,7 @@ import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 const logger = require('../../nuclide-logging').getLogger();
 
 export type TestRunnerControllerState = {
-  panelVisible?: boolean;
+  panelVisible?: boolean,
 };
 
 export class TestRunnerController {

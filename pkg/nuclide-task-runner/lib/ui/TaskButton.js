@@ -16,13 +16,13 @@ import {SplitButtonDropdown} from '../../../nuclide-ui/lib/SplitButtonDropdown';
 import {React} from 'react-for-atom';
 
 type Props = {
-  activeTask: ?AnnotatedTask;
-  buttonComponent: ReactClass<any>;
-  taskRunnerInfo: Array<TaskRunnerInfo>;
-  runTask: (taskId?: TaskId) => void;
-  selectTask: (taskId: TaskId) => void;
-  taskIsRunning: boolean;
-  tasks: Map<string, Array<AnnotatedTask>>;
+  activeTask: ?AnnotatedTask,
+  buttonComponent: ReactClass<any>,
+  taskRunnerInfo: Array<TaskRunnerInfo>,
+  runTask: (taskId?: TaskId) => void,
+  selectTask: (taskId: TaskId) => void,
+  taskIsRunning: boolean,
+  tasks: Map<string, Array<AnnotatedTask>>,
 };
 
 export function TaskButton(props: Props): React.Element<any> {

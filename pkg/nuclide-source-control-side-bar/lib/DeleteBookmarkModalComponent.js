@@ -14,10 +14,10 @@ import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService'
 import {React} from 'react-for-atom';
 
 type Props = {
-  bookmark: BookmarkInfo;
-  onCancel: () => mixed;
-  onDelete: (bookmark: BookmarkInfo, repo: atom$Repository) => mixed;
-  repository: atom$Repository;
+  bookmark: BookmarkInfo,
+  onCancel: () => mixed,
+  onDelete: (bookmark: BookmarkInfo, repo: atom$Repository) => mixed,
+  repository: atom$Repository,
 };
 
 export default class DeleteBookmarkModalComponent extends React.Component {

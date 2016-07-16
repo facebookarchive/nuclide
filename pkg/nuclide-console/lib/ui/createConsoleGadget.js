@@ -19,18 +19,18 @@ import {React} from 'react-for-atom';
 import {Observable} from 'rxjs';
 
 type State = {
-  currentExecutor: ?Executor;
-  providers: Map<string, OutputProvider>;
-  providerStatuses: Map<string, OutputProviderStatus>;
-  ready: boolean;
-  records: Array<Record>;
-  executors: Map<string, Executor>;
+  currentExecutor: ?Executor,
+  providers: Map<string, OutputProvider>,
+  providerStatuses: Map<string, OutputProviderStatus>,
+  ready: boolean,
+  records: Array<Record>,
+  executors: Map<string, Executor>,
 };
 
 type BoundActionCreators = {
-  execute: (code: string) => void;
-  selectExecutor: (executorId: string) => void;
-  clearRecords: () => void;
+  execute: (code: string) => void,
+  selectExecutor: (executorId: string) => void,
+  clearRecords: () => void,
 };
 
 export default function createConsoleGadget(store: Store): Gadget {

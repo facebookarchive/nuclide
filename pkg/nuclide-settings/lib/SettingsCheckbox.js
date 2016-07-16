@@ -15,7 +15,7 @@ import {normalizeIdentifier} from './settings-utils';
 import {React} from 'react-for-atom';
 
 type Props = SettingsPropsDefault & {
-  value: boolean;
+  value: boolean,
 };
 
 export default class SettingsCheckbox extends React.Component {

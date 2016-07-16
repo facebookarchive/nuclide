@@ -13,29 +13,29 @@ import {Disposable} from 'atom';
 import invariant from 'assert';
 
 type Item = {
-  type: 'item';
-  item: atom$ContextMenuItem;
-  priority: number;
+  type: 'item',
+  item: atom$ContextMenuItem,
+  priority: number,
 };
 
 type Menu = {
-  type: 'menu';
-  menu: ContextMenu;
-  priority: number;
+  type: 'menu',
+  menu: ContextMenu,
+  priority: number,
 };
 
 type InternalItem = Item | Menu;
 
 type RootMenuOptions = {
-  type: 'root';
-  cssSelector: string;
+  type: 'root',
+  cssSelector: string,
 };
 
 type SubmenuOptions = {
-  type: 'submenu';
-  label: string;
-  parent: ContextMenu;
-  shouldDisplay?: (e: MouseEvent) => boolean;
+  type: 'submenu',
+  label: string,
+  parent: ContextMenu,
+  shouldDisplay?: (e: MouseEvent) => boolean,
 };
 
 type MenuOptions = RootMenuOptions | SubmenuOptions;

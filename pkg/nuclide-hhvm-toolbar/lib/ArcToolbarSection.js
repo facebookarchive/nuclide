@@ -30,7 +30,7 @@ function formatRequestOptionsErrorMessage(): string {
 }
 
 type Props = {
-  model: ArcToolbarModel;
+  model: ArcToolbarModel,
 };
 
 export default class ArcToolbarSection extends React.Component {

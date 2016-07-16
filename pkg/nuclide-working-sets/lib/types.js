@@ -12,7 +12,7 @@ export type {WorkingSet} from './WorkingSet';
 export type {WorkingSetsStore} from './WorkingSetsStore';
 
 export type WorkingSetDefinition = {
-  name: string;
-  active: boolean;
-  uris: Array<string>;
+  name: string,
+  active: boolean,
+  uris: Array<string>,
 };

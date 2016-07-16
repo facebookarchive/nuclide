@@ -12,8 +12,8 @@
 import {React, ReactDOM} from 'react-for-atom';
 
 type Props = {
-  children?: any;
-  onDismiss: () => void;
+  children?: any,
+  onDismiss: () => void,
 };
 
 /**

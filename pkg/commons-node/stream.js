@@ -137,8 +137,8 @@ export function cacheWhileSubscribed<T>(input: Observable<T>): Observable<T> {
 }
 
 type Diff<T> = {
-  added: Set<T>;
-  removed: Set<T>;
+  added: Set<T>,
+  removed: Set<T>,
 };
 
 function subtractSet<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): Set<T> {

@@ -86,8 +86,8 @@ export function editorScrollTopDebounced(
 }
 
 export type EditorPosition = {
-  editor: atom$TextEditor;
-  position: atom$Point;
+  editor: atom$TextEditor,
+  position: atom$Point,
 };
 
 // Yields null when the current pane is not an editor,

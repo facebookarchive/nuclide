@@ -76,7 +76,7 @@ export default class CallstackStore {
     this._setSelectedCallFrameLine(null);
   }
 
-  _setSelectedCallFrameLine(options: ?{sourceURL: string; lineNumber: number}) {
+  _setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}) {
     if (options) {
       const path = nuclideUri.uriToNuclideUri(options.sourceURL);
       const {lineNumber} = options;

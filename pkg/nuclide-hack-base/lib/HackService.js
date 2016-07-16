@@ -42,21 +42,21 @@ export type HackDiagnosticsResult = Array<{message: HackDiagnostic}>;
 export type HackDiagnostic = Array<SingleHackMessage>;
 
 export type SingleHackMessage = {
-  path: ?NuclideUri;
-  descr: string;
-  code: number;
-  line: number;
-  start: number;
-  end: number;
+  path: ?NuclideUri,
+  descr: string,
+  code: number,
+  line: number,
+  start: number,
+  end: number,
 };
 
 // Note that all line/column values are 1-based.
 export type HackSpan = {
-  filename: NuclideUri;
-  line_start: number;
-  char_start: number;
-  line_end: number;
-  char_end: number;
+  filename: NuclideUri,
+  line_start: number,
+  char_start: number,
+  line_end: number,
+  char_end: number,
 };
 
 
@@ -65,59 +65,59 @@ export type HackCompletionsResult = Array<HackCompletion>;
 export type HackReferencesResult = Array<HackReference>;
 
 export type HackSearchPosition = {
-  path: NuclideUri;
-  line: number;
-  column: number;
-  name: string;
-  length: number;
-  scope: string;
-  additionalInfo: string;
+  path: NuclideUri,
+  line: number,
+  column: number,
+  name: string,
+  length: number,
+  scope: string,
+  additionalInfo: string,
 };
 
 export type HackReference = {
-  name: string;
-  filename: NuclideUri;
-  line: number;
-  char_start: number;
-  char_end: number;
+  name: string,
+  filename: NuclideUri,
+  line: number,
+  char_start: number,
+  char_end: number,
 };
 
 export type HackTypedRegion = {
-  color: 'default' | 'checked' | 'partial' | 'unchecked';
-  text: string;
+  color: 'default' | 'checked' | 'partial' | 'unchecked',
+  text: string,
 };
 
 export type HackIdeOutlineItem = {
   kind: 'function' | 'class' | 'property' | 'method' | 'const'
-    | 'enum' | 'typeconst' | 'param' | 'trait' | 'interface';
-  name: string;
-  position: HackRange;
-  span: HackSpan;
-  modifiers: ?Array<string>;
-  children?: Array<HackIdeOutlineItem>;
-  params?: Array<HackIdeOutlineItem>;
-  docblock?: string;
+    | 'enum' | 'typeconst' | 'param' | 'trait' | 'interface',
+  name: string,
+  position: HackRange,
+  span: HackSpan,
+  modifiers: ?Array<string>,
+  children?: Array<HackIdeOutlineItem>,
+  params?: Array<HackIdeOutlineItem>,
+  docblock?: string,
 };
 
 export type HackIdeOutline = Array<HackIdeOutlineItem>;
 
 export type HackTypeAtPosResult = {
-  type: ?string;
-  pos: ?HackRange;
+  type: ?string,
+  pos: ?HackRange,
 };
 
 export type HackHighlightRefsResult = Array<HackRange>;
 
 export type HackFormatSourceResult = {
-  error_message: string;
-  result: string;
-  internal_error: boolean;
+  error_message: string,
+  result: string,
+  internal_error: boolean,
 };
 
 export type HackDefinition = {
-  definition_pos: ?HackRange;
-  name: string;
-  pos: HackRange;
+  definition_pos: ?HackRange,
+  name: string,
+  pos: HackRange,
 };
 
 const HH_DIAGNOSTICS_DELAY_MS = 600;
@@ -249,7 +249,7 @@ export function getHackEnvironmentDetails(
   hackCommand: string,
   useIdeConnection: boolean,
   logLevel: LogLevel,
-): Promise<?{hackRoot: NuclideUri; hackCommand: string}> {
+): Promise<?{hackRoot: NuclideUri, hackCommand: string}> {
   setHackCommand(hackCommand);
   setUseIdeConnection(useIdeConnection);
   logger.setLogLevel(logLevel);

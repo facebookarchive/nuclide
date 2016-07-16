@@ -22,9 +22,9 @@ import nuclideUri from '../../../nuclide-remote-uri';
 import fsPromise from '../../../commons-node/fsPromise';
 
 export type FileWithStats = {
-  file: string;
-  stats: ?fs.Stats;
-  isSymbolicLink: boolean;
+  file: string,
+  stats: ?fs.Stats,
+  isSymbolicLink: boolean,
 };
 
 // Attempting to read large files just crashes node, so just fail.
@@ -297,7 +297,7 @@ async function copyFilePermissions(sourcePath: string, destinationPath: string):
  * TODO: move to nuclide-commons and rename to writeFileAtomic
  */
 export async function writeFile(path: string, data: string,
-    options: ?{encoding?: string; mode?: number; flag?:string}): Promise<void> {
+    options: ?{encoding?: string, mode?: number, flag?:string}): Promise<void> {
 
   let complete = false;
   const tempFilePath = await fsPromise.tempfile('nuclide');

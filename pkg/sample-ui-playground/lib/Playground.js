@@ -43,16 +43,16 @@ const playgroundComponents = [
 ];
 
 type ComponentSpec = {
-  sectionName: string;
-  description: string;
+  sectionName: string,
+  description: string,
   examples: Array<{
-    title: string;
-    component: ReactClass<any> | () => React.Element<any>;
-  }>;
+    title: string,
+    component: ReactClass<any> | () => React.Element<any>,
+  }>,
 };
 
 type State = {
-  collapsedSections: Set<string>;
+  collapsedSections: Set<string>,
 };
 
 export class Playground extends React.Component {

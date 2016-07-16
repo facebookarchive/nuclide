@@ -22,26 +22,26 @@ const Menu = remote.require('menu');
 const MenuItem = remote.require('menu-item');
 
 type Separator = {
-  type: 'separator';
+  type: 'separator',
 };
 
 export type Option<T> = Separator | {
-  value: T;
-  label: string;
-  selectedLabel?: string;
-  icon?: Octicon;
-  disabled?: boolean;
+  value: T,
+  label: string,
+  selectedLabel?: string,
+  icon?: Octicon,
+  disabled?: boolean,
 };
 
 type Props<T> = {
-  value: T;
-  buttonComponent?: ReactClass<any>;
-  options: Array<Option<T>>;
-  onChange?: (value: T) => mixed;
-  onConfirm: (value: T) => mixed;
-  confirmDisabled?: boolean;
-  changeDisabled?: boolean;
-  size: ?ButtonSize;
+  value: T,
+  buttonComponent?: ReactClass<any>,
+  options: Array<Option<T>>,
+  onChange?: (value: T) => mixed,
+  onConfirm: (value: T) => mixed,
+  confirmDisabled?: boolean,
+  changeDisabled?: boolean,
+  size: ?ButtonSize,
 };
 
 export class SplitButtonDropdown<T> extends React.Component {

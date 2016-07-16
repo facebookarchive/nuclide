@@ -10,25 +10,25 @@
 
 export type TestRunnerParams = {
   /** Absolute paths to tests to run. Could be paths to files or directories. */
-  testPaths: Array<string>;
+  testPaths: Array<string>,
   /** A boolean indicating whether or not the tests are running headless. */
-  headless: boolean;
+  headless: boolean,
   /** Creates the `atom` global object. */
-  buildAtomEnvironment: (params: BuildAtomEnvironmentParams) => AtomGlobal;
+  buildAtomEnvironment: (params: BuildAtomEnvironmentParams) => AtomGlobal,
   /** Currently undocumnted, but seemingly necessary to use buildAtomEnvironment(). */
-  buildDefaultApplicationDelegate: () => Object;
+  buildDefaultApplicationDelegate: () => Object,
   /** An optional path to a log file to which test output should be logged. */
-  logFile: ?string;
+  logFile: ?string,
   /** Unclear what the contract of this is, but we will not be using it. */
-  legacyTestRunner: () => void;
+  legacyTestRunner: () => void,
 };
 
 export type BuildAtomEnvironmentParams = {
-  applicationDelegate: Object;
-  window: Object;
-  document: Object;
-  configDirPath?: string;
-  enablePersistence?: boolean;
+  applicationDelegate: Object,
+  window: Object,
+  document: Object,
+  configDirPath?: string,
+  enablePersistence?: boolean,
 };
 
 export type ExitCode = number;

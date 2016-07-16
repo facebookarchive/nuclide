@@ -16,10 +16,10 @@ import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
 
 export default class SideBarPanelComponent extends React.Component {
   props: {
-    children?: React.Element<any>;
-    menuItems: Array<{label: string; value: string}>;
-    onSelectedViewMenuItemChange: (value: ?string) => void;
-    selectedViewMenuItemValue: ?string;
+    children?: React.Element<any>,
+    menuItems: Array<{label: string, value: string}>,
+    onSelectedViewMenuItemChange: (value: ?string) => void,
+    selectedViewMenuItemValue: ?string,
   };
 
   focus() {
