@@ -9,32 +9,20 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from './types';
+import type {Action, AppState} from '../types';
 
-import * as ActionTypes from './ActionTypes';
-import Rx from 'rxjs';
+import * as Actions from './Actions';
 
-export default function createStateStream(
-  action$: Rx.Observable<Object>,
-  initialState: AppState,
-): Rx.Observable<AppState> {
-  return action$.scan(accumulateState, initialState);
-}
-
-function accumulateState(state: AppState, action: Object): AppState {
+export default function accumulateState(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case ActionTypes.EXECUTE: {
-      // No-op. This is only for side-effects.
-      return state;
-    }
-    case ActionTypes.MESSAGE_RECEIVED: {
+    case Actions.RECORD_RECEIVED: {
       const {record} = action.payload;
       return {
         ...state,
         records: state.records.concat(record).slice(-state.maxMessageCount),
       };
     }
-    case ActionTypes.MAX_MESSAGE_COUNT_UPDATED: {
+    case Actions.SET_MAX_MESSAGE_COUNT: {
       const {maxMessageCount} = action.payload;
       if (maxMessageCount <= 0) {
         return state;
@@ -45,67 +33,56 @@ function accumulateState(state: AppState, action: Object): AppState {
         records: state.records.slice(-maxMessageCount),
       };
     }
-    case ActionTypes.PROVIDER_REGISTERED: {
-      const {recordProvider, subscription} = action.payload;
+    case Actions.REGISTER_RECORD_PROVIDER: {
+      const {recordProvider} = action.payload;
       return {
         ...state,
         providers: new Map(state.providers).set(recordProvider.id, recordProvider),
-        providerSubscriptions:
-          new Map(state.providerSubscriptions).set(recordProvider.id, subscription),
       };
     }
-    case ActionTypes.RECORDS_CLEARED: {
+    case Actions.CLEAR_RECORDS: {
       return {
         ...state,
         records: [],
       };
     }
-    case ActionTypes.REGISTER_EXECUTOR: {
+    case Actions.REGISTER_EXECUTOR: {
       const {executor} = action.payload;
       return {
         ...state,
         executors: new Map(state.executors).set(executor.id, executor),
       };
     }
-    case ActionTypes.SELECT_EXECUTOR: {
+    case Actions.SELECT_EXECUTOR: {
       const {executorId} = action.payload;
       return {
         ...state,
         currentExecutorId: executorId,
       };
     }
-    case ActionTypes.SOURCE_REMOVED: {
-      const {source} = action.payload;
+    case Actions.REMOVE_SOURCE: {
+      const {sourceId} = action.payload;
       const providers = new Map(state.providers);
       const providerStatuses = new Map(state.providerStatuses);
-      const providerSubscriptions = new Map(state.providerSubscriptions);
-      providers.delete(source);
-      providerStatuses.delete(source);
-      providerSubscriptions.delete(source);
+      const executors = new Map(state.executors);
+      providers.delete(sourceId);
+      providerStatuses.delete(sourceId);
+      executors.delete(sourceId);
       return {
         ...state,
         providers,
         providerStatuses,
-        providerSubscriptions,
+        executors,
       };
     }
-    case ActionTypes.STATUS_UPDATED: {
+    case Actions.UPDATE_STATUS: {
       const {status, providerId} = action.payload;
       return {
         ...state,
         providerStatuses: new Map(state.providerStatuses).set(providerId, status),
       };
     }
-    case ActionTypes.UNREGISTER_EXECUTOR: {
-      const {executor} = action.payload;
-      const executors = new Map(state.executors);
-      executors.delete(executor.id);
-      return {
-        ...state,
-        executors,
-      };
-    }
   }
 
-  throw new Error(`Unrecognized action type: ${action.type}`);
+  return state;
 }

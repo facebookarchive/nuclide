@@ -10,40 +10,34 @@
  */
 
 import type {GadgetsService, Gadget} from '../../nuclide-gadgets/lib/types';
-import type {AppState, OutputProvider, OutputService, RegisterExecutorFunction} from './types';
+import type {
+  AppState,
+  OutputProvider,
+  OutputService,
+  RegisterExecutorFunction,
+  Store,
+} from './types';
 
 import createPackage from '../../commons-atom/createPackage';
-import {DisposableSubscription} from '../../commons-node/stream';
+import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import {CompositeDisposable, Disposable} from 'atom';
-import * as ActionTypes from './ActionTypes';
-import Commands from './Commands';
 import createConsoleGadget from './ui/createConsoleGadget';
-import createStateStream from './createStateStream';
 import featureConfig from '../../nuclide-feature-config';
+import * as Actions from './redux/Actions';
+import * as Epics from './redux/Epics';
+import Reducers from './redux/Reducers';
 import invariant from 'assert';
-import Rx from 'rxjs';
+import {applyMiddleware, createStore} from 'redux';
 
 class Activation {
-  _commands: Commands;
   _disposables: CompositeDisposable;
   _outputService: ?OutputService;
+  _rawState: ?Object;
   _registerExecutorFunction: ?RegisterExecutorFunction;
-  _state$: Rx.BehaviorSubject<AppState>;
+  _store: Store;
 
   constructor(rawState: ?Object) {
-    const action$ = new Rx.Subject();
-    const initialState = deserializeAppState(rawState);
-    this._state$ = new Rx.BehaviorSubject(initialState);
-    createStateStream(
-      action$.asObservable(),
-      initialState,
-    )
-      .sampleTime(100)
-      .subscribe(this._state$);
-    this._commands = new Commands(
-      action$,
-      () => this._state$.getValue(),
-    );
+    this._rawState = rawState;
     this._disposables = new CompositeDisposable(
       atom.contextMenu.add({
         '.nuclide-console-record': [
@@ -67,27 +61,29 @@ class Activation {
       atom.commands.add(
         'atom-workspace',
         'nuclide-console:clear',
-        () => this._commands.clearRecords(),
+        () => this._getStore().dispatch(Actions.clearRecords()),
       ),
       featureConfig.observe(
         'nuclide-console.maximumMessageCount',
-        maxMessageCount => this._commands.setMaxMessageCount(maxMessageCount),
-      ),
-
-      // Action side-effects
-      new DisposableSubscription(
-        action$.subscribe(action => {
-          if (action.type !== ActionTypes.EXECUTE) {
-            return;
-          }
-          const {executorId, code} = action.payload;
-          const executors = this._state$.getValue().executors;
-          const executor = executors.get(executorId);
-          invariant(executor);
-          executor.send(code);
-        })
+        maxMessageCount => this._getStore().dispatch(Actions.setMaxMessageCount(maxMessageCount)),
       ),
     );
+  }
+
+  _getStore(): Store {
+    if (this._store == null) {
+      const initialState = deserializeAppState(this._rawState);
+      const epics = Object.keys(Epics)
+        .map(k => Epics[k])
+        .filter(epic => typeof epic === 'function');
+      const rootEpic = combineEpics(...epics);
+      this._store = createStore(
+        Reducers,
+        initialState,
+        applyMiddleware(createEpicMiddleware(rootEpic)),
+      );
+    }
+    return this._store;
   }
 
   dispose() {
@@ -95,25 +91,24 @@ class Activation {
   }
 
   consumeGadgetsService(gadgetsApi: GadgetsService): void {
-    const OutputGadget = createConsoleGadget(this._state$.asObservable(), this._commands);
+    const OutputGadget = createConsoleGadget(this._getStore());
     this._disposables.add(gadgetsApi.registerGadget(((OutputGadget: any): Gadget)));
   }
 
   provideOutputService(): OutputService {
     if (this._outputService == null) {
-      // Create a local, nullable reference so that the service consumers don't keep the `Commands`
+      // Create a local, nullable reference so that the service consumers don't keep the store
       // instance in memory.
-      let commands = this._commands;
-      this._disposables.add(new Disposable(() => { commands = null; }));
+      let store = this._getStore();
+      this._disposables.add(new Disposable(() => { store = null; }));
 
       this._outputService = {
         registerOutputProvider(outputProvider: OutputProvider): IDisposable {
-          if (commands != null) {
-            commands.registerOutputProvider(outputProvider);
-          }
+          invariant(store != null, 'Output service used after deactivation');
+          store.dispatch(Actions.registerOutputProvider(outputProvider));
           return new Disposable(() => {
-            if (commands != null) {
-              commands.removeSource(outputProvider.id);
+            if (store != null) {
+              store.dispatch(Actions.unregisterOutputProvider(outputProvider));
             }
           });
         },
@@ -124,18 +119,17 @@ class Activation {
 
   provideRegisterExecutor(): RegisterExecutorFunction {
     if (this._registerExecutorFunction == null) {
-      // Create a local, nullable reference so that the service consumers don't keep the `Commands`
+      // Create a local, nullable reference so that the service consumers don't keep the store
       // instance in memory.
-      let commands = this._commands;
-      this._disposables.add(new Disposable(() => { commands = null; }));
+      let store = this._getStore();
+      this._disposables.add(new Disposable(() => { store = null; }));
 
       this._registerExecutorFunction = executor => {
-        if (commands != null) {
-          commands.registerExecutor(executor);
-        }
+        invariant(store != null, 'Executor registration attempted after deactivation');
+        store.dispatch(Actions.registerExecutor(executor));
         return new Disposable(() => {
-          if (commands != null) {
-            commands.unregisterExecutor(executor);
+          if (store != null) {
+            store.dispatch(Actions.unregisterExecutor(executor));
           }
         });
       };
@@ -144,9 +138,11 @@ class Activation {
   }
 
   serialize(): Object {
-    const state = this._state$.getValue();
+    if (this._store == null) {
+      return {};
+    }
     return {
-      records: state.records,
+      records: this._store.getState().records,
     };
   }
 
@@ -160,7 +156,6 @@ function deserializeAppState(rawState: ?Object): AppState {
     records: rawState.records || [],
     providers: new Map(),
     providerStatuses: new Map(),
-    providerSubscriptions: new Map(),
 
     // This value will be replaced with the value form the config. We just use `POSITIVE_INFINITY`
     // here to conform to the AppState type defintion.

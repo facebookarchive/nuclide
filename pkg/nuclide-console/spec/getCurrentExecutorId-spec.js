@@ -12,7 +12,7 @@
 import type {Executor} from '../lib/types';
 
 import getCurrentExecutorId from '../lib/getCurrentExecutorId';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 const baseAppState = {
   currentExecutorId: 'a',
@@ -22,7 +22,6 @@ const baseAppState = {
   ]]),
   providers: new Map(),
   providerStatuses: new Map(),
-  providerSubscriptions: new Map(),
   records: [],
 };
 
@@ -48,6 +47,6 @@ function createDummyExecutor(id: string): Executor {
     id,
     name: id,
     send: (code: string) => {},
-    output: Rx.Observable.create(observer => {}),
+    output: Observable.create(observer => {}),
   };
 }

@@ -11,24 +11,21 @@
 
 import type {AppState} from '../lib/types';
 
-import * as ActionTypes from '../lib/ActionTypes';
-import Commands from '../lib/Commands';
+import {ActionsObservable} from '../../commons-node/redux-observable';
+import * as Actions from '../lib/redux/Actions';
+import * as Epics from '../lib/redux/Epics';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-describe('Commands', () => {
+describe('Epics', () => {
 
-  describe('registerOutputProvider', () => {
+  describe('registerOutputProviderEpic', () => {
 
     it('observes the status', () => {
-      const actions = [];
-      const getState = () => (({}: any): AppState);
-      const observer = {
-        next: actions.push.bind(actions),
-        error: () => {},
-        complete: () => {},
+      const mockStore = {
+        dispatch: () => {},
+        getState: () => (({}: any): AppState),
       };
-      const commands = new Commands(observer, getState);
       let setStatus;
       const provider = {
         id: 'test',
@@ -37,18 +34,22 @@ describe('Commands', () => {
         start: () => {},
         stop: () => {},
       };
-      commands.registerOutputProvider(provider);
+      const actions = new ActionsObservable(
+        Observable.of(Actions.registerOutputProvider(provider))
+      );
+      const results = [];
+      Epics.registerRecordProviderEpic(actions, mockStore).subscribe(results.push.bind(results));
       invariant(setStatus != null);
       setStatus('running');
       setStatus('stopped');
       setStatus('running');
-      expect(actions.map(action => action.type)).toEqual([
-        ActionTypes.PROVIDER_REGISTERED,
-        ActionTypes.STATUS_UPDATED,
-        ActionTypes.STATUS_UPDATED,
-        ActionTypes.STATUS_UPDATED,
-      ]);
-      expect(actions.slice(1).map(action => action.payload.status))
+      expect(results.length).toBe(3);
+      expect(
+        results.map(action => {
+          invariant(action.type === Actions.UPDATE_STATUS);
+          return action.payload.status;
+        })
+      )
         .toEqual(['running', 'stopped', 'running']);
     });
 

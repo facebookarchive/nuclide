@@ -38,9 +38,8 @@ export type AppState = {
   executors: Map<string, Executor>;
   maxMessageCount: number;
   records: Array<Record>;
-  providers: Map<string, OutputProvider>;
+  providers: Map<string, RecordProvider>;
   providerStatuses: Map<string, OutputProviderStatus>;
-  providerSubscriptions: Map<string, rx$ISubscription>;
 };
 
 export type OutputProviderStatus = 'starting' | 'running' | 'stopped';
@@ -93,3 +92,80 @@ export type Executor = {
 };
 
 export type RegisterExecutorFunction = (executor: Executor) => IDisposable;
+
+export type Store = {
+  getState(): AppState;
+  dispatch(action: Action): void;
+};
+
+export type ClearRecordsAction = {
+  type: 'CLEAR_RECORDS';
+};
+
+export type RegisterExecutorAction = {
+  type: 'REGISTER_EXECUTOR';
+  payload: {
+    executor: Executor;
+  };
+};
+
+export type ExecuteAction = {
+  type: 'EXECUTE';
+  payload: {
+    code: string;
+  };
+};
+
+export type RecordReceivedAction = {
+  type: 'RECORD_RECEIVED';
+  payload: {
+    record: Record;
+  };
+};
+
+export type RegisterRecordProviderAction = {
+  type: 'REGISTER_RECORD_PROVIDER';
+  payload: {
+    recordProvider: RecordProvider;
+  };
+};
+
+export type RemoveSourceAction = {
+  type: 'REMOVE_SOURCE';
+  payload: {
+    sourceId: string;
+  };
+};
+
+export type SelectExecutorAction = {
+  type: 'SELECT_EXECUTOR';
+  payload: {
+    executorId: string;
+  };
+};
+
+export type SetMaxMessageCountAction = {
+  type: 'SET_MAX_MESSAGE_COUNT';
+  payload: {
+    maxMessageCount: number;
+  };
+};
+
+export type UpdateStatusAction = {
+  type: 'UPDATE_STATUS';
+  payload: {
+    providerId: string;
+    status: OutputProviderStatus;
+  };
+};
+
+export type Action =
+  ClearRecordsAction
+  | ExecuteAction
+  | RecordReceivedAction
+  | RegisterExecutorAction
+  | RegisterRecordProviderAction
+  | RemoveSourceAction
+  | SelectExecutorAction
+  | SetMaxMessageCountAction
+  | UpdateStatusAction;
