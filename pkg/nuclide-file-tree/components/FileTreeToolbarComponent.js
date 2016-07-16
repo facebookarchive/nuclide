@@ -63,7 +63,7 @@ export class FileTreeToolbarComponent extends React.Component {
       definitions => {
         const empty = definitions.applicable.length + definitions.notApplicable.length === 0;
         this.setState({definitionsAreEmpty: empty});
-      }
+      },
     ));
 
     (this: any)._toggleWorkingSetsSelector = this._toggleWorkingSetsSelector.bind(this);

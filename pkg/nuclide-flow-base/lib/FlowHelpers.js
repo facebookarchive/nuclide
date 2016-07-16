@@ -106,7 +106,7 @@ export function groupParamNames(paramNames: Array<string>): Array<Array<string>>
       }
       return [ordinary, optional];
     },
-    [[], []]
+    [[], []],
   );
 
   const groupedParams = ordinaryParams.map(param => [param]);

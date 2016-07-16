@@ -61,8 +61,8 @@ class Activation {
         'nuclide-test-runner:toggle-panel',
         () => {
           this._getController().togglePanel();
-        }
-      )
+        },
+      ),
     );
     // Listen for run events on files in the file tree
     this._disposables.add(
@@ -74,8 +74,8 @@ class Activation {
           this._getController().runTests(target.dataset.path);
           // Ensure ancestors of this element don't attempt to run tests as well.
           event.stopPropagation();
-        }
-      )
+        },
+      ),
     );
     // Listen for run events on directories in the file tree
     this._disposables.add(
@@ -87,8 +87,8 @@ class Activation {
           this._getController().runTests(target.dataset.path);
           // Ensure ancestors of this element don't attempt to run tests as well.
           event.stopPropagation();
-        }
-      )
+        },
+      ),
     );
 
     // The panel should be visible because of the last serialized state, initialize it immediately.

@@ -137,7 +137,7 @@ export class WorkingSetsStore {
 
   _updateCurrentWorkingSet(activeApplicable: Array<WorkingSetDefinition>): void {
     const combinedUris = [].concat(
-      ...activeApplicable.map(d => d.uris)
+      ...activeApplicable.map(d => d.uris),
     );
 
     const newWorkingSet = new WorkingSet(combinedUris);

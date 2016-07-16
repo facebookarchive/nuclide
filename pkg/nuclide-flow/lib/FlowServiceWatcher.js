@@ -79,7 +79,7 @@ async function handleFailure(pathToRoot: NuclideUri): Promise<void> {
         the "Restart Flow Server" command from the command palette later.`,
       dismissable: true,
       buttons,
-    }
+    },
   );
 }
 
@@ -106,6 +106,6 @@ function handleNotInstalled(pathToRoot: NuclideUri): void {
         },
         text: 'Do not show again (can be reverted in settings)',
       }],
-    }
+    },
   );
 }

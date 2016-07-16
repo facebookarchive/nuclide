@@ -35,7 +35,7 @@ function removeLeadingComments(root: Collection): Array<Node> {
   let transferLastcomment = false;
   const lastComment = first.comments.reduce(
     (curr, next) => (next.leading ? next : curr),
-    null
+    null,
   );
   if (lastComment && first.start != null && lastComment.end != null) {
     const difference = Math.abs(first.start - lastComment.end);

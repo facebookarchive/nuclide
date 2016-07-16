@@ -63,13 +63,13 @@ export function applyActionMiddleware(
               Rx.Observable.merge(
                 observableFromSubscribeFunction(
                   // Re-fetch when the list of bookmarks changes.
-                  repositoryAsync.onDidChangeBookmarks.bind(repositoryAsync)
+                  repositoryAsync.onDidChangeBookmarks.bind(repositoryAsync),
                 ),
                 observableFromSubscribeFunction(
                   // Re-fetch when the active bookmark changes (called "short head" to match
                   // Atom's Git API).
-                  repositoryAsync.onDidChangeShortHead.bind(repositoryAsync)
-                )
+                  repositoryAsync.onDidChangeShortHead.bind(repositoryAsync),
+                ),
               )
               .startWith(null) // Kick it off the first time
               .switchMap(() => {
@@ -81,7 +81,7 @@ export function applyActionMiddleware(
                   repository,
                 },
                 type: ActionType.SET_REPOSITORY_BOOKMARKS,
-              }))
+              })),
             );
           }
 
@@ -161,7 +161,7 @@ export function applyActionMiddleware(
                   },
                   type: ActionType.UNSET_BOOKMARK_IS_LOADING,
                 });
-              })
+              }),
           );
         });
       }),
@@ -215,7 +215,7 @@ export function applyActionMiddleware(
                   },
                   type: ActionType.UNSET_BOOKMARK_IS_LOADING,
                 });
-              })
+              }),
           );
         });
       }),

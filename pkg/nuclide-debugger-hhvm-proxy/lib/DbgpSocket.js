@@ -228,7 +228,7 @@ class DbgpSocket {
     // space in it(e.g. function evaluation).
     const result = await this._callDebugger(
       'property_value',
-      `-d ${frameIndex} -n "${escapedExpression}"`
+      `-d ${frameIndex} -n "${escapedExpression}"`,
     );
     if (result.error && result.error.length > 0) {
       return {
@@ -338,7 +338,7 @@ class DbgpSocket {
   async setBreakpoint(filename: string, lineNumber: number): Promise<string> {
     const response = await this._callDebugger(
       'breakpoint_set',
-      `-t line -f ${filename} -n ${lineNumber}`
+      `-t line -f ${filename} -n ${lineNumber}`,
     );
     if (response.error) {
       throw new Error('Error setting breakpoint: ' + JSON.stringify(response));

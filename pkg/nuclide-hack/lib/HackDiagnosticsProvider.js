@@ -53,7 +53,7 @@ function extractRange(message: SingleHackMessage): atom$Range {
   // does, but this has the desired effect in the UI, in practice.
   return new Range(
     [message.line - 1, message.start - 1],
-    [message.line - 1, message.end]
+    [message.line - 1, message.end],
   );
 }
 

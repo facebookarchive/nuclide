@@ -31,7 +31,7 @@ function renderMatchedSubsequence(seq: string, key: Key): ?React.Element<any> {
     {
       key,
       className: 'quick-open-file-search-match',
-    }
+    },
   );
 }
 

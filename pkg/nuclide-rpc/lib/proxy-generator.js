@@ -80,7 +80,7 @@ const trackOperationTimingCall = (eventName, operation) =>
       t.arrowFunctionExpression([], t.blockStatement([
         t.returnStatement(operation),
       ])),
-    ]
+    ],
   );
 
 // Generates `Object.defineProperty(module.exports, name, {value: …})`
@@ -106,9 +106,9 @@ const dependenciesNodes = names => {
           t.assignmentExpression('=',
             t.identifier(name),
             t.memberExpression(t.identifier('arguments'), t.literal(i)),
-          )
-        ))
-      )
+          ),
+        )),
+      ),
     ),
   };
 };
@@ -133,7 +133,7 @@ export function generateProxy(
   statements.push(
     t.variableDeclaration('const', [
       t.variableDeclarator(t.identifier('remoteModule'), emptyObject),
-    ])
+    ]),
   );
 
   defs.forEach(definition => {
@@ -218,7 +218,7 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
   // function(arg0, ... argN) { return ... }
   const args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
   return t.functionExpression(null, args, t.blockStatement(
-    [t.returnStatement(result)]
+    [t.returnStatement(result)],
   ));
 }
 
@@ -237,7 +237,7 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
       generateFunctionProxy(`${def.name}/${methodName}`, funcType),
       'method',
       false,
-      true
+      true,
     ));
   });
 
@@ -290,7 +290,7 @@ function generateRemoteConstructor(className: string, constructorArgs: Array<Par
       t.thisExpression(),
       argsArray,
       argTypes,
-    ]
+    ],
   );
 
   // constructor(arg0, arg1, ..., argN) { ... }
@@ -340,8 +340,8 @@ function generateRemoteDispatch(methodName: string, thisType: NamedType, funcTyp
     // Wrap in trackOperationTiming if result returns a promise.
     t.returnStatement(funcType.returnType.kind === 'promise'
       ? trackOperationTimingCall(`${thisType.name}.${methodName}`, result)
-      : result
-    )])
+      : result,
+    )]),
   );
 
   return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);
@@ -452,14 +452,14 @@ function objectToLiteral(obj: any): any {
         // new Map([...])
         ? [objectToLiteral(Array.from(obj.entries()))]
         // new Map()
-        : null
+        : null,
     );
   } else if (typeof obj === 'object') {
     // {a: 1, b: 2}
     return t.objectExpression(
       Object.keys(obj).map(key =>
-        t.property('init', t.identifier(key), objectToLiteral(obj[key]))
-      )
+        t.property('init', t.identifier(key), objectToLiteral(obj[key])),
+      ),
     );
   }
 

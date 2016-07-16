@@ -32,9 +32,9 @@ describe('babelParse', () => {
     `;
 
     expect(
-      babelParse(source)
+      babelParse(source),
     ).toEqual(
-      babel.parse(source)
+      babel.parse(source),
     );
   });
 });

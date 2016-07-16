@@ -35,13 +35,13 @@ class Activation {
         const element = new WebViewPane();
         element.src = uriToOpen.substring(URI_PREFIX.length);
         return element;
-      })
+      }),
     );
     this._subscriptions.add(
       atom.commands.add(
         'atom-workspace',
         'sample-web-view:open-url',
-        () => this._openUrl())
+        () => this._openUrl()),
     );
   }
 

@@ -145,15 +145,15 @@ export function consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvi
 
   compositeDisposable.add(
     new DisposableSubscription(
-      provider.updates.subscribe(update => store.updateMessages(provider, update))
-    )
+      provider.updates.subscribe(update => store.updateMessages(provider, update)),
+    ),
   );
   compositeDisposable.add(
     new DisposableSubscription(
       provider.invalidations.subscribe(
-        invalidation => store.invalidateMessages(provider, invalidation)
-      )
-    )
+        invalidation => store.invalidateMessages(provider, invalidation),
+      ),
+    ),
   );
   compositeDisposable.add(new Disposable(() => {
     store.invalidateMessages(provider, {scope: 'all'});

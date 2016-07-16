@@ -37,7 +37,7 @@ describe('utils', () => {
       const completions = [c1, c2];
       const compartor = compareHackCompletions('getA');
       expect(completions.sort(compartor)).toEqual(
-        [c2, c1]
+        [c2, c1],
       );
     });
 
@@ -46,7 +46,7 @@ describe('utils', () => {
       const completions = [c3, c2];
       const compartor = compareHackCompletions('getA');
       expect(completions.sort(compartor)).toEqual(
-        [c2, c3]
+        [c2, c3],
       );
     });
 
@@ -55,7 +55,7 @@ describe('utils', () => {
       const completions = [c3, c4];
       const compartor = compareHackCompletions('getA');
       expect(completions.sort(compartor)).toEqual(
-        [c4, c3]
+        [c4, c3],
       );
     });
 
@@ -63,7 +63,7 @@ describe('utils', () => {
       const completions = [c4, c5];
       const compartor = compareHackCompletions('getA');
       expect(completions.sort(compartor)).toEqual(
-        [c5, c4]
+        [c5, c4],
       );
     });
 
@@ -71,7 +71,7 @@ describe('utils', () => {
       const completions = [c6, c7];
       const compartor = compareHackCompletions('getA');
       expect(completions.sort(compartor)).toEqual(
-        [c7, c6]
+        [c7, c6],
       );
     });
 
@@ -81,7 +81,7 @@ describe('utils', () => {
       const completions = [comp2, comp1];
       const compartor = compareHackCompletions('f');
       expect(completions.sort(compartor)).toEqual(
-        [comp1, comp2]
+        [comp1, comp2],
       );
     });
 

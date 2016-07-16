@@ -217,14 +217,14 @@ export class PinnedDatatip {
           type: 'overlay',
           position: 'head',
           item: this._hostElement,
-        }
+        },
       );
       this._rangeDecoration = _editor.decorateMarker(
         marker,
         {
           type: 'highlight',
           class: rangeClassname,
-        }
+        },
       );
     } else {
       // `this._rangeDecoration` is guaranteed to exist iff `this._marker` exists.

@@ -176,7 +176,7 @@ function getChildIds(id: ObjectId): Array<ObjectId> {
       childId = pagedObjectId(
         id,
         id.fullname,
-        {pagesize, startIndex: childStartIndex, count: childCount}
+        {pagesize, startIndex: childStartIndex, count: childCount},
       );
     }
 

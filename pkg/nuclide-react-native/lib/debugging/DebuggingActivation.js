@@ -52,7 +52,7 @@ export class DebuggingActivation {
     atom.commands.dispatch(workspace, 'nuclide-debugger:show');
 
     const debuggerServiceStream = Rx.Observable.fromPromise(
-      consumeFirstProvider('nuclide-debugger.remote')
+      consumeFirstProvider('nuclide-debugger.remote'),
     );
     const processInfoLists = Rx.Observable.fromPromise(getProcessInfoList());
     this._startDebuggingSubscription = debuggerServiceStream.combineLatest(processInfoLists)

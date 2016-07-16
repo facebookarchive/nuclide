@@ -79,7 +79,7 @@ class FileDialogComponent extends React.Component {
       {
         'core:confirm': this._confirm,
         'core:cancel': this._close,
-      }
+      },
     ));
     const path = this.props.initialValue;
     input.focus();

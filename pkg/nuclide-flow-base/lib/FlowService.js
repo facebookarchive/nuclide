@@ -143,7 +143,7 @@ export function flowFindDefinition(
       currentContents,
       line,
       column,
-    )
+    ),
   );
 }
 
@@ -156,7 +156,7 @@ export function flowFindDiagnostics(
     root => root.flowFindDiagnostics(
       file,
       currentContents,
-    )
+    ),
   );
 }
 
@@ -177,7 +177,7 @@ export function flowGetAutocompleteSuggestions(
       column,
       prefix,
       activatedManually,
-    )
+    ),
   );
 }
 
@@ -196,7 +196,7 @@ export async function flowGetType(
       line,
       column,
       includeRawType,
-    )
+    ),
   );
 }
 

@@ -77,7 +77,7 @@ describe('pane item change events', () => {
             // Split out an empty observable after waiting 20 ms.
             .race(Observable.empty().delay(20))
             .toArray()
-            .toPromise()
+            .toPromise(),
         ).toEqual([]);
       });
     });
@@ -112,7 +112,7 @@ describe('pane item change events', () => {
             // Split out an empty observable after waiting 20 ms.
             .race(Observable.empty().delay(20))
             .toArray()
-            .toPromise()
+            .toPromise(),
         ).toEqual([editor1]);
       });
     });
@@ -219,7 +219,7 @@ describe('editorChangesDebounced', () => {
     waitsForPromise(async () => {
       const eventsPromise = editorChanges
         .takeUntil(
-          Observable.of(null).delay(50)
+          Observable.of(null).delay(50),
         )
         .toArray()
         .toPromise();

@@ -65,7 +65,7 @@ describe('nuclide-side-bar main', () => {
     atom.commands.dispatch(
       workspaceElement,
       view.toggleCommand,
-      {display: false}
+      {display: false},
     );
   }
 
@@ -73,7 +73,7 @@ describe('nuclide-side-bar main', () => {
     atom.commands.dispatch(
       workspaceElement,
       view.toggleCommand,
-      {display: true}
+      {display: true},
     );
   }
 

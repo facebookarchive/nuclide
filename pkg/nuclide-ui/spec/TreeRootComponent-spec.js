@@ -50,26 +50,26 @@ describe('TreeRootComponent', () => {
     //  / \
     // B   C
     nodes.A = new LazyTestTreeNode(
-      {label: 'A'}, /* parent */ null, true, async () => [nodes.B, nodes.C]
+      {label: 'A'}, /* parent */ null, true, async () => [nodes.B, nodes.C],
     );
     nodes.B = new LazyTestTreeNode(
-      {label: 'B'}, /* parent */ nodes.A, false, async () => null
+      {label: 'B'}, /* parent */ nodes.A, false, async () => null,
     );
     nodes.C = new LazyTestTreeNode(
-      {label: 'C'}, /* parent */ nodes.A, false, async () => null
+      {label: 'C'}, /* parent */ nodes.A, false, async () => null,
     );
 
     //   D
     //  / \
     // E   F
     nodes.D = new LazyTestTreeNode(
-      {label: 'D'}, /* parent */ null, true, async () => [nodes.E, nodes.F]
+      {label: 'D'}, /* parent */ null, true, async () => [nodes.E, nodes.F],
     );
     nodes.E = new LazyTestTreeNode(
-      {label: 'E'}, /* parent */ nodes.D, false, async () => null
+      {label: 'E'}, /* parent */ nodes.D, false, async () => null,
     );
     nodes.F = new LazyTestTreeNode(
-      {label: 'F'}, /* parent */ nodes.D, false, async () => null
+      {label: 'F'}, /* parent */ nodes.D, false, async () => null,
     );
 
     //      G
@@ -78,22 +78,22 @@ describe('TreeRootComponent', () => {
     //  /   /   \
     // J   K     H(2)
     nodes.G = new LazyTestTreeNode(
-      {label: 'G'}, /* parent */ null, true, async () => [nodes.H, nodes.I]
+      {label: 'G'}, /* parent */ null, true, async () => [nodes.H, nodes.I],
     );
     nodes.H = new LazyTestTreeNode(
-      {label: 'H'}, /* parent */ nodes.G, true, async () => [nodes.J]
+      {label: 'H'}, /* parent */ nodes.G, true, async () => [nodes.J],
     );
     nodes.I = new LazyTestTreeNode(
-      {label: 'I'}, /* parent */ nodes.G, true, async () => [nodes.K, nodes.H2]
+      {label: 'I'}, /* parent */ nodes.G, true, async () => [nodes.K, nodes.H2],
     );
     nodes.J = new LazyTestTreeNode(
-      {label: 'J'}, /* parent */ nodes.H, false, async () => null
+      {label: 'J'}, /* parent */ nodes.H, false, async () => null,
     );
     nodes.K = new LazyTestTreeNode(
-      {label: 'K'}, /* parent */ nodes.I, false, async () => null
+      {label: 'K'}, /* parent */ nodes.I, false, async () => null,
     );
     nodes.H2 = new LazyTestTreeNode(
-      {label: 'H'}, /* parent */ nodes.I, false, async () => null
+      {label: 'H'}, /* parent */ nodes.I, false, async () => null,
     );
 
     hostEl = document.createElement('div');
@@ -101,7 +101,7 @@ describe('TreeRootComponent', () => {
     renderComponent = componentProps => {
       const component = ReactDOM.render(
         <TreeRootComponent {...componentProps} />,
-        hostEl
+        hostEl,
       );
       invariant(component instanceof TreeRootComponent);
       return component;
@@ -683,7 +683,7 @@ describe('TreeRootComponent', () => {
 
           TestUtils.Simulate.mouseDown(
             ReactDOM.findDOMNode(nodeComponents.H),
-            {button: 0, ctrlKey: true}
+            {button: 0, ctrlKey: true},
           );
           expect(component.getSelectedNodes()).toEqual([nodeComponents.H.props.node]);
 

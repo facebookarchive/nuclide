@@ -81,7 +81,7 @@ export function deactivateAllPackages(): void {
     console.error('Found a mounted component. ' +
       `Did you forget to call React.unmountComponentAtNode on "${
         currElement.type.displayName || currElement.type.name
-      }"?`
+      }"?`,
     );
   });
 

@@ -29,7 +29,7 @@ describe('Dropdown', () => {
         ]}
         onChange={newValue => {}}
         value={'vbar'}
-      />
+      />,
     );
 
     const select = scryRenderedDOMComponentsWithTag(component, 'select');
@@ -48,7 +48,7 @@ describe('Dropdown', () => {
           changedValue = value;
         }}
         value="vfoo"
-      />
+      />,
     );
 
     const select = scryRenderedDOMComponentsWithTag(component, 'select');

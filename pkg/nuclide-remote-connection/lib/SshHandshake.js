@@ -257,7 +257,7 @@ export class SshHandshake {
         }
         socket.pipe(stream);
         stream.pipe(socket);
-      }
+      },
     );
   }
 

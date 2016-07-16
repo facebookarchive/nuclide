@@ -31,7 +31,7 @@ export function runTest(context: TestContext) {
     const providerElems = element.querySelectorAll('span.icon-gear');
     const providerElemWithText = Array.prototype.find.call(
       providerElems,
-      providerSpanElem => providerSpanElem.innerHTML === text
+      providerSpanElem => providerSpanElem.innerHTML === text,
     );
     return providerElemWithText != null;
   }

@@ -21,7 +21,7 @@ describe('debugger-hhvm-proxy PageHandler', () => {
     clientCallback = ((
       jasmine.createSpyObj(
         'clientCallback',
-        ['replyToCommand', 'replyWithError', 'sendMethod']
+        ['replyToCommand', 'replyWithError', 'sendMethod'],
       ): any
     ): ClientCallbackType);
     handler = new PageHandler(clientCallback);

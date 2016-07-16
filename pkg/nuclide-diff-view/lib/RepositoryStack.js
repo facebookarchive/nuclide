@@ -371,7 +371,7 @@ export default class RepositoryStack {
           this._revisionIdToFileChanges.set(id, changes);
         }
         return changes;
-      })
+      }),
     );
 
     return revisionsFileHistory;

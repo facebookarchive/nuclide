@@ -168,7 +168,7 @@ function accumulateUpdatePaneItemState(
             repositoryPath,
             accumulateRepositoryStateUpdatePaneItemState(repositoryState, fileList),
           ];
-        })
+        }),
     ),
   };
 }

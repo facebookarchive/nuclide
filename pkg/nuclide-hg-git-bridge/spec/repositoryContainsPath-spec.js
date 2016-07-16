@@ -69,7 +69,7 @@ describe('repositoryContainsPath', () => {
           originURL: 'testURL',
           workingDirectory: new Directory(repoRoot),
           projectRootDirectory: new Directory(repoRoot),
-        }
+        },
       );
 
       const hgRepository: atom$Repository = (hgRepositoryClient: any);

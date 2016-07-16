@@ -161,7 +161,7 @@ function test(input, output) {
     output.indexOf('|') >= 0 &&
     output.indexOf('|') === output.lastIndexOf('|'),
     'Invalid test cases. Both input and output must have exactly one | in ' +
-    'each test case.'
+    'each test case.',
   );
 
   const startSource = input.replace('|', '');

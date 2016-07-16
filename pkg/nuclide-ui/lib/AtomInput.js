@@ -95,7 +95,7 @@ export class AtomInput extends React.Component {
             this.props.onCancel();
           }
         },
-      })
+      }),
     );
     const placeholderText = this.props.placeholderText;
     if (placeholderText != null) {

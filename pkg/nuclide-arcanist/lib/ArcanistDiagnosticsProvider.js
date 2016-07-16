@@ -78,7 +78,7 @@ export class ArcanistDiagnosticsProvider {
       const blacklistedLinters: Array<string> =
         (featureConfig.get('nuclide-arcanist.blacklistedLinters'): any);
       const result = await this._requestSerializer.run(
-        require('../../nuclide-arcanist-client').findDiagnostics([filePath], blacklistedLinters)
+        require('../../nuclide-arcanist-client').findDiagnostics([filePath], blacklistedLinters),
       );
       if (result.status === 'outdated') {
         return;
@@ -87,7 +87,7 @@ export class ArcanistDiagnosticsProvider {
       const fileDiagnostics = diagnostics.map(diagnostic => {
         const range = new Range(
           [diagnostic.row, diagnostic.col],
-          [diagnostic.row, textEditor.getBuffer().lineLengthForRow(diagnostic.row)]
+          [diagnostic.row, textEditor.getBuffer().lineLengthForRow(diagnostic.row)],
         );
         let text;
         if (Array.isArray(diagnostic.text)) {

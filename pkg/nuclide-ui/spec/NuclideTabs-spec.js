@@ -30,11 +30,11 @@ describe('Checkbox', () => {
       onActiveTabChange: onChange,
     };
     const component = renderIntoDocument(
-      <Tabs {...props} />
+      <Tabs {...props} />,
     );
     const node = scryRenderedDOMComponentsWithClass(
       component,
-      'title'
+      'title',
     )[1];
 
     Simulate.click(node);
@@ -52,11 +52,11 @@ describe('Checkbox', () => {
       onActiveTabChange: onChange,
     };
     const component = renderIntoDocument(
-      <Tabs {...props} />
+      <Tabs {...props} />,
     );
     const node = scryRenderedDOMComponentsWithClass(
       component,
-      'title'
+      'title',
     )[1];
 
     // `Simulate` does not currently support mouseEnter: https://github.com/facebook/react/issues/1297.

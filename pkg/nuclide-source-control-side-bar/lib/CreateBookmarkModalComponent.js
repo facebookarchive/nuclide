@@ -31,7 +31,7 @@ export default class CreateBookmarkModal extends React.Component {
 
   componentDidMount(): void {
     this.disposables.add(
-      atom.commands.add(ReactDOM.findDOMNode(this), 'core:confirm', this._handleCreateClick)
+      atom.commands.add(ReactDOM.findDOMNode(this), 'core:confirm', this._handleCreateClick),
     );
     this.refs.atomTextEditor.focus();
   }

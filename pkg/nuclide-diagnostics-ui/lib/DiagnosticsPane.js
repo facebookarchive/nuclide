@@ -223,7 +223,7 @@ class DiagnosticsPane extends React.Component {
           <Cell style={{width: `${this._getMessageWidth()}px`}}>
             {messageColumnCellRenderer(messageColumnCellDataGetter('message', diag))}
           </Cell>
-        </div>
+        </div>,
       );
     }
 
@@ -234,7 +234,7 @@ class DiagnosticsPane extends React.Component {
             <em>Max results ({MAX_RESULTS_COUNT}) reached. Fix diagnostics or show only diagnostics
             for the current file to view more.</em>
           </div>
-        </div>
+        </div>,
       );
     }
 

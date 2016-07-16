@@ -78,7 +78,7 @@ class Activation {
     function getProjectRepositories() {
       return new Set(
         arrayCompact(atom.project.getRepositories())
-          .filter(repository => repository.getType() === 'hg')
+          .filter(repository => repository.getType() === 'hg'),
       );
     }
 
@@ -94,10 +94,10 @@ class Activation {
 
     const paneStateChangeSubscription = Observable.merge(
       observableFromSubscribeFunction(
-        atom.workspace.onDidAddPaneItem.bind(atom.workspace)
+        atom.workspace.onDidAddPaneItem.bind(atom.workspace),
       ),
       observableFromSubscribeFunction(
-        atom.workspace.onDidDestroyPaneItem.bind(atom.workspace)
+        atom.workspace.onDidDestroyPaneItem.bind(atom.workspace),
       ),
     ).subscribe(() => {
       commands.updatePaneItemState();

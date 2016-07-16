@@ -69,22 +69,22 @@ export class NewDebuggerView extends React.Component {
     super(props);
     this._watchExpressionComponentWrapped = bindObservableAsProps(
       props.model.getWatchExpressionListStore().getWatchExpressions().map(
-        watchExpressions => ({watchExpressions})
+        watchExpressions => ({watchExpressions}),
       ),
-      WatchExpressionComponent
+      WatchExpressionComponent,
     );
     this._localsComponentWrapped = bindObservableAsProps(
       props.model.getLocalsStore().getLocals().map(
-        locals => ({locals})
+        locals => ({locals}),
       ),
-      LocalsComponent
+      LocalsComponent,
     );
     this._disposables = new CompositeDisposable();
     this.state = {
       debuggerMode: props.model.getStore().getDebuggerMode(),
       callstack: props.model.getCallstackStore().getCallstack(),
       breakpoints: storeBreakpointsToViewBreakpoints(
-        props.model.getBreakpointStore().getAllBreakpoints()
+        props.model.getBreakpointStore().getAllBreakpoints(),
       ),
     };
   }
@@ -96,7 +96,7 @@ export class NewDebuggerView extends React.Component {
         this.setState({
           debuggerMode: debuggerStore.getDebuggerMode(),
         });
-      })
+      }),
     );
     const callstackStore = this.props.model.getCallstackStore();
     this._disposables.add(
@@ -104,7 +104,7 @@ export class NewDebuggerView extends React.Component {
         this.setState({
           callstack: callstackStore.getCallstack(),
         });
-      })
+      }),
     );
     const breakpointStore = this.props.model.getBreakpointStore();
     this._disposables.add(
@@ -112,7 +112,7 @@ export class NewDebuggerView extends React.Component {
         this.setState({
           breakpoints: storeBreakpointsToViewBreakpoints(breakpointStore.getAllBreakpoints()),
         });
-      })
+      }),
     );
   }
 

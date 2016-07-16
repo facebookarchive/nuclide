@@ -49,7 +49,7 @@ function connectToRnApp(): Observable<WS> {
       const ws = new WS(WS_URL);
       return {ws, unsubscribe: () => { ws.close(); }};
     },
-    ({ws}) => Observable.of(ws)
+    ({ws}) => Observable.of(ws),
   )
     .switchMap(ws => (
       Observable.merge(

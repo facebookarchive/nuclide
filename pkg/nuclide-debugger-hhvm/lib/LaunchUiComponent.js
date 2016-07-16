@@ -130,14 +130,14 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
   _showDebuggerPanel(): void {
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
-      'nuclide-debugger:show'
+      'nuclide-debugger:show',
     );
   }
 
   _handleCancelButtonClick(): void {
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
-      'nuclide-debugger:toggle-launch-attach'
+      'nuclide-debugger:toggle-launch-attach',
     );
   }
 }

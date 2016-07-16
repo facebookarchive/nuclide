@@ -140,7 +140,7 @@ class Call {
       this.cleanup();
       this._reject(new Error(
         `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for id: ` +
-        `${this._message.id}, ${this._timeoutMessage}.`
+        `${this._message.id}, ${this._timeoutMessage}.`,
       ));
     }
   }
@@ -248,7 +248,7 @@ export class RpcConnection<TransportType: Transport> {
     return this._sendMessageAndListenForResult(
       createCallMessage(functionName, this._generateRequestId(), args),
       returnType,
-      `Calling function ${functionName}`
+      `Calling function ${functionName}`,
     );
   }
 
@@ -269,7 +269,7 @@ export class RpcConnection<TransportType: Transport> {
     return this._sendMessageAndListenForResult(
       createCallObjectMessage(methodName, objectId, this._generateRequestId(), args),
       returnType,
-      `Calling remote method ${methodName}.`
+      `Calling remote method ${methodName}.`,
     );
   }
 
@@ -293,7 +293,7 @@ export class RpcConnection<TransportType: Transport> {
       return this._sendMessageAndListenForResult(
         createNewObjectMessage(interfaceName, this._generateRequestId(), marshalledArgs),
         'promise',
-        `Creating instance of ${interfaceName}`
+        `Creating instance of ${interfaceName}`,
       );
     })();
     this._objectRegistry.addProxy(thisArg, idPromise);

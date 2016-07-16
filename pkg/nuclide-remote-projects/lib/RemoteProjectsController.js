@@ -34,8 +34,8 @@ class RemoteProjectsController {
     this._disposables.add(
       atom.workspace.onDidChangeActivePaneItem(this._disposeSubscription.bind(this)),
       onWorkspaceDidStopChangingActivePaneItem(
-        this._updateConnectionStatus.bind(this)
-      )
+        this._updateConnectionStatus.bind(this),
+      ),
     );
   }
 
@@ -93,7 +93,7 @@ class RemoteProjectsController {
 
     const tooltip = atom.tooltips.add(
       this._statusBarDiv,
-      {title: 'Click to show details of connection.'}
+      {title: 'Click to show details of connection.'},
     );
     invariant(this._statusBarDiv);
     const rightTile = statusBar.addLeftTile({

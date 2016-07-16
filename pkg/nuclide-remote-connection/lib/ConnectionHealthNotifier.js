@@ -165,7 +165,7 @@ export class ConnectionHealthNotifier {
     };
     this._subscription = new CompositeDisposable(
       socket.onHeartbeat(onHeartbeat),
-      socket.onHeartbeatError(onHeartbeatError)
+      socket.onHeartbeatError(onHeartbeatError),
     );
   }
 

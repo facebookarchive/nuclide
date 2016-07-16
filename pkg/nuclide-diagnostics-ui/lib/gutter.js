@@ -242,7 +242,7 @@ function showPopupFor(
       fixer={trackedFixer}
       goToLocation={trackedGoToLocation}
     />,
-    hostElement
+    hostElement,
   );
   // Check to see whether the popup is within the bounds of the TextEditor. If not, display it above
   // the glyph rather than below it.

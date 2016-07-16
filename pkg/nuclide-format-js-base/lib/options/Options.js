@@ -28,7 +28,7 @@ function validateModuleMapOptions(options: ModuleMapOptions): void {
   invariant(options.aliases, '`aliases` must be provided.');
   invariant(
     options.aliasesToRelativize,
-    '`aliasesToRelativze` must be provided.'
+    '`aliasesToRelativze` must be provided.',
   );
   invariant(options.builtIns, '`builtIns` must be provided.');
   invariant(options.builtInTypes, '`builtInTypes` must be provided.');
@@ -58,12 +58,12 @@ function validateSourceOptions(options: SourceOptions): void {
   if (options.sourcePath != null) {
     invariant(
       isAbsolute(options.sourcePath),
-      'If a "sourcePath" is given it must be an absolute path.'
+      'If a "sourcePath" is given it must be an absolute path.',
     );
   }
   invariant(
     options.moduleMap,
-    'A "moduleMap" must be provided in order to transform the source.'
+    'A "moduleMap" must be provided in order to transform the source.',
   );
 }
 

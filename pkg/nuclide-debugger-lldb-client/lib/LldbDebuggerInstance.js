@@ -63,7 +63,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
       connection.getServerMessageObservable().subscribe(
         this._handleServerMessage.bind(this),
         this._handleServerError.bind(this),
-        this._handleSessionEnd.bind(this)
+        this._handleSessionEnd.bind(this),
     )));
   }
 

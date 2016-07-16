@@ -28,7 +28,7 @@ export async function setRootDirectoryUri(directoryUri: string): Promise<void> {
   // TODO: make xdebug_includes.php path configurable from hhconfig.
   const hackDummyRequestFilePath = nuclideUri.join(
     (hackRootDirectory ? hackRootDirectory : ''),
-    '/scripts/xdebug_includes.php'
+    '/scripts/xdebug_includes.php',
   );
 
   // Use hackDummyRequestFilePath if possible.

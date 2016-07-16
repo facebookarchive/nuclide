@@ -84,7 +84,7 @@ class UnresolvedBreakpointsSidebarPane extends WebInspector.SidebarPane {
 
     ReactDOM.render(
       <UnresolvedBreakpointsComponent />,
-      this.bodyElement
+      this.bodyElement,
     );
 
     this.expand();

@@ -56,7 +56,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
     it('updates the underlying models grammar', () => {
       const element = TestUtils.renderIntoDocument(
-        <AtomTextEditor path=".ansi" grammar={grammar2} />
+        <AtomTextEditor path=".ansi" grammar={grammar2} />,
       );
       expect(element.getModel().getGrammar().scopeName).toEqual('text.ansi2');
     });

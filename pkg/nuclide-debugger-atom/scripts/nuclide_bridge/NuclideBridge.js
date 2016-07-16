@@ -129,7 +129,7 @@ class NuclideBridge {
             internalProperties,
             skipProto,
             value,
-            emptyPlaceholder
+            emptyPlaceholder,
           );
         }
         // $FlowFixMe.
@@ -155,7 +155,7 @@ class NuclideBridge {
         WebInspector.RemoteObject.loadFromObject(
           this.object,
           Boolean(this.ignoreHasOwnProperty),
-          callback.bind(this)
+          callback.bind(this),
         );
       };
   }

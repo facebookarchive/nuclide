@@ -121,7 +121,7 @@ class BuckToolbar extends React.Component {
       widgets.push(
         <div key="status" className="nuclide-buck-status inline-block text-center">
           {status}
-        </div>
+        </div>,
       );
     } else {
       if (buckToolbarStore.getRuleType() === 'apple_bundle') {
@@ -131,7 +131,7 @@ class BuckToolbar extends React.Component {
             className="inline-block"
             title="Choose target device"
             onSelectedSimulatorChange={this._handleSimulatorChange}
-          />
+          />,
         );
       }
       if (buckToolbarStore.canBeReactNativeApp()) {
@@ -142,7 +142,7 @@ class BuckToolbar extends React.Component {
               onChange={this._handleReactNativeServerModeChanged}
               label={'React Native Server Mode'}
             />
-          </div>
+          </div>,
         );
       }
     }

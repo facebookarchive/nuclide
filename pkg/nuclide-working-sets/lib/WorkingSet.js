@@ -62,7 +62,7 @@ export class WorkingSet {
       this._root = this._buildDirTree(this._uris);
     } catch (e) {
       logger.error(
-        'Failed to initialize a WorkingSet with URIs ' + uris.join(',') + '. ' + e.message
+        'Failed to initialize a WorkingSet with URIs ' + uris.join(',') + '. ' + e.message,
       );
       this._uris = [];
       this._root = null;

@@ -55,7 +55,7 @@ export class DebuggerHandler extends Handler {
     this._files = new FileCache(clientCallback);
     this._emitter = new EventEmitter();
     this._statusSubscription = this._connectionMultiplexer.onStatus(
-      this._onStatusChanged.bind(this)
+      this._onStatusChanged.bind(this),
     );
   }
 
@@ -120,7 +120,7 @@ export class DebuggerHandler extends Handler {
         const compatParams = makeExpressionHphpdCompatible(params);
         const result = await this._connectionMultiplexer.evaluateOnCallFrame(
           Number(compatParams.callFrameId),
-          compatParams.expression
+          compatParams.expression,
         );
         this.replyToCommand(id, result);
         break;

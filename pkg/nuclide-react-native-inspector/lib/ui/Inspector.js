@@ -47,7 +47,7 @@ class Inspector extends React.Component {
       `initializeElementInspector(
         ${JSON.stringify(inspectorDevTools)},
         ${JSON.stringify(requirePaths)}
-      );`
+      );`,
     );
   }
 }

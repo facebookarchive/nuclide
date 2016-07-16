@@ -148,7 +148,7 @@ class FileTreeContextMenu {
       {
         type: 'root',
         cssSelector: EVENT_HANDLER_SELECTOR,
-      }
+      },
     );
     this._subscriptions = new CompositeDisposable();
     this._store = FileTreeStore.getInstance();

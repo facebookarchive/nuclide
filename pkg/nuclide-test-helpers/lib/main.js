@@ -151,7 +151,7 @@ function loggingObserver(message: string): Observer<any> {
     },
     () => {
       console.log('Completed: ' + message); // eslint-disable-line no-console
-    }
+    },
   );
 }
 

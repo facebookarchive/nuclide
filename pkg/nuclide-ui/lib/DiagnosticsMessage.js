@@ -94,7 +94,7 @@ export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
         key={i}
         trace={traceItem}
         goToLocation={goToLocation}
-      />
+      />,
     )
     : null;
   return (

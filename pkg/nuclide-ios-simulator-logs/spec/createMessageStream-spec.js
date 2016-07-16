@@ -20,7 +20,7 @@ describe('createMessageStream', () => {
     // $UPFixMe: With UP, the default settings are set by the loader, but I don't have a good way to
     // do that just for tests (yet).
     Object.keys(config).forEach(k =>
-      featureConfig.setSchema(`nuclide-ios-simulator-logs.${k}`, config[k])
+      featureConfig.setSchema(`nuclide-ios-simulator-logs.${k}`, config[k]),
     );
   });
 

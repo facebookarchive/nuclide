@@ -60,7 +60,7 @@ export class WorkingSetSelectionComponent extends React.Component {
         if (definitions.applicable.length + definitions.notApplicable.length === 0) {
           this.props.onClose();
         }
-      })
+      }),
     );
 
     (this: any)._checkFocus = this._checkFocus.bind(this);
@@ -82,7 +82,7 @@ export class WorkingSetSelectionComponent extends React.Component {
           this._toggleWorkingSet(def.name, def.active);
         },
         'core:cancel': this.props.onClose,
-      }
+      },
     ));
   }
 

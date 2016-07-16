@@ -123,7 +123,7 @@ export class FileTreeStore {
     this._dispatcher = FileTreeDispatcher.getInstance();
     this._emitter = new Emitter();
     this._dispatcher.register(
-      payload => this._onDispatch(payload)
+      payload => this._onDispatch(payload),
     );
     this._logger = getLogger();
 
@@ -171,7 +171,7 @@ export class FileTreeStore {
           }
 
           return true;
-        }
+        },
       );
 
       expandedKeysByRoot[root.uri] = expandedKeys;
@@ -204,7 +204,7 @@ export class FileTreeStore {
       const rootSelectedKeys = data.selectedKeysByRoot[rootUri] || [];
       const childrenUris = data.childKeyMap[uri] || [];
       const children = FileTreeNode.childrenFromArray(
-        childrenUris.map(childUri => buildNode(rootUri, childUri))
+        childrenUris.map(childUri => buildNode(rootUri, childUri)),
       );
 
       const isExpanded = rootExpandedKeys.indexOf(uri) >= 0;
@@ -237,15 +237,15 @@ export class FileTreeStore {
     const normalizedDataPaths = data.rootKeys
       .map(nuclideUri.ensureTrailingSeparator)
       .filter(rootUri =>
-        nuclideUri.isRemote(rootUri) || normalizedAtomPaths.indexOf(rootUri) >= 0
+        nuclideUri.isRemote(rootUri) || normalizedAtomPaths.indexOf(rootUri) >= 0,
       );
     const pathsMissingInData = normalizedAtomPaths.filter(rootUri =>
-      normalizedDataPaths.indexOf(rootUri) === -1
+      normalizedDataPaths.indexOf(rootUri) === -1,
     );
     const combinedPaths = normalizedDataPaths.concat(pathsMissingInData);
 
     this._setRoots(new Immutable.OrderedMap(
-      combinedPaths.map(rootUri => [rootUri, buildNode(rootUri, rootUri)])
+      combinedPaths.map(rootUri => [rootUri, buildNode(rootUri, rootUri)]),
     ));
   }
 
@@ -543,7 +543,7 @@ export class FileTreeStore {
             subNode => (subNode.containsSelection ? null : subNode),
             subNode => subNode.setIsSelected(false),
           );
-        }
+        },
       );
     });
   }
@@ -565,7 +565,7 @@ export class FileTreeStore {
         }
 
         return trackedNode == null && node.containsTrackedNode;
-      }
+      },
     );
 
     return trackedNode;
@@ -793,7 +793,7 @@ export class FileTreeStore {
           });
 
           this._clearLoading(nodeKey);
-        }
+        },
       );
 
     this._setLoading(nodeKey, promise);
@@ -1016,7 +1016,7 @@ export class FileTreeStore {
           }
 
           return n;
-        }
+        },
       );
     });
   }
@@ -1069,7 +1069,7 @@ export class FileTreeStore {
           } else {
             return childNode.set({isSelected: false, subscription: null});
           }
-        }
+        },
       );
     });
   }
@@ -1124,7 +1124,7 @@ export class FileTreeStore {
   _setSelectedAndFocusedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._clearSelection(rootKey, nodeKey);
     this._updateNodeAtRoot(rootKey, nodeKey, node =>
-      node.set({isSelected: true, isFocused: true})
+      node.set({isSelected: true, isFocused: true}),
     );
     this._setTrackedNode(rootKey, nodeKey);
   }
@@ -1135,7 +1135,7 @@ export class FileTreeStore {
 
   _unselectNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._updateNodeAtRoot(rootKey, nodeKey, node =>
-      node.set({isSelected: false, isFocused: false})
+      node.set({isSelected: false, isFocused: false}),
     );
   }
 
@@ -1280,7 +1280,7 @@ export class FileTreeStore {
         if (node.subscription != null) {
           node.subscription.dispose();
         }
-      }
+      },
     ));
     this._setRoots(roots);
 

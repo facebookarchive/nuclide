@@ -63,14 +63,14 @@ export function activate(rawState: Object): void {
   const actions = new Rx.Subject();
   states = createStateStream(
     applyActionMiddleware(actions, () => states.getValue()),
-    initialState
+    initialState,
   );
 
   const dispatch = action => { actions.next(action); };
   commands = new Commands(dispatch, () => states.getValue());
 
   const subscription = observableFromSubscribeFunction(
-      atom.project.onDidChangePaths.bind(atom.project)
+      atom.project.onDidChangePaths.bind(atom.project),
     )
     .startWith(null) // Start with a fake event to fetch initial directories.
     .subscribe(() => {
@@ -78,7 +78,7 @@ export function activate(rawState: Object): void {
     });
 
   disposables = new CompositeDisposable(
-    new DisposableSubscription(subscription)
+    new DisposableSubscription(subscription),
   );
 }
 
@@ -179,7 +179,7 @@ function accumulateState(state: AppState, action: Action): AppState {
         ...state,
         projectRepositories: state.projectRepositories.set(
           action.payload.directory.getPath(),
-          action.payload.repository
+          action.payload.repository,
         ),
       };
     case ActionType.SET_PROJECT_DIRECTORIES:
@@ -230,11 +230,11 @@ function accumulateState(state: AppState, action: Action): AppState {
         ...state,
         projectBookmarks: state.projectBookmarks.set(
           repository.getPath(),
-          bookmarks
+          bookmarks,
         ),
         repositoryBookmarksIsLoading: state.repositoryBookmarksIsLoading.set(
           repository,
-          nextBookmarksIsLoading
+          nextBookmarksIsLoading,
         ),
       };
   }

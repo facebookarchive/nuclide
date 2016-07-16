@@ -60,7 +60,7 @@ class Activation {
         // Make sure a non-zero number of paths have been specified.
         const path = query[VCS_LOG_URI_PATHS_QUERY_PARAM];
         return createLogPaneForPath(path);
-      })
+      }),
     );
 
     // TODO(mbolin): Once the nuclide-file-tree.context-menu is generalized to automatically add
@@ -203,7 +203,7 @@ function createLogPaneForPath(path: string): ?VcsLogPaneItem {
   });
 
   repository.log([path], MAX_NUM_LOG_RESULTS).then((response: VcsLogResponse) =>
-    pane.updateWithLogEntries(response.entries)
+    pane.updateWithLogEntries(response.entries),
   );
 
   return pane;

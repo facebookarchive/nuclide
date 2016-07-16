@@ -40,7 +40,7 @@ module.exports = {
     const packages = PACKAGES[iteration].split(',').map(p => p.trim()).filter(p => p !== '');
     result.packages = packages.join(',');
     const {time: activate} = await timedAsync(
-      Promise.all(packages.map(p => atom.packages.activatePackage(p)))
+      Promise.all(packages.map(p => atom.packages.activatePackage(p))),
     );
     result.activate = activate;
 

@@ -67,7 +67,7 @@ export function TaskButton(props: Props): React.Element<any> {
           label: `  ${task.label}`,
           selectedLabel: task.label,
           icon: task.icon,
-        }))
+        })),
       );
     });
     return (

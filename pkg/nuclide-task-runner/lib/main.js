@@ -141,7 +141,7 @@ class Activation {
         } else {
           element.setAttribute('hidden', 'hidden');
         }
-      })
+      }),
     );
 
     // Remove the button from the toolbar.

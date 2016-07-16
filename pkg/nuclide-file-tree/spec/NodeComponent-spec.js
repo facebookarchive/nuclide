@@ -70,7 +70,7 @@ describe('Directory FileTreeEntryComponent', () => {
           uri: '/a/b/',
           isSelected: true,
           isContainer: true,
-        }
+        },
       );
 
       // The onClick is listened not by the <li> element, but by its first child.
@@ -97,7 +97,7 @@ describe('File FileTreeEntryComponent', () => {
           uri: '/a/b',
           isSelected: true,
           isContainer: false,
-        }
+        },
       );
       const domNode = ReactDOM.findDOMNode(nodeComponent);
       TestUtils.Simulate.click(domNode);

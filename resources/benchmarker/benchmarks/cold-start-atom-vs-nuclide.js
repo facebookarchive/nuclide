@@ -62,13 +62,13 @@ module.exports = {
 
     const {time: realLoadTime, promiseTime: realPromiseLoadTime} = await timedAsync(
       // $FlowFixMe: Not sure for what versions of Atom this worked
-      atom.packages.loadPackages()
+      atom.packages.loadPackages(),
     );
     const loadedPackages = atom.packages.getLoadedPackages().filter(isNotTheme);
     const loadedCount = loadedPackages.length;
 
     const {time: realActivateTime, promiseTime: realPromiseActivateTime} = await timedAsync(
-      atom.packages.activate()
+      atom.packages.activate(),
     );
     const activePackages = atom.packages.getActivePackages().filter(isNotTheme);
     const activeCount = activePackages.length;

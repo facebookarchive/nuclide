@@ -116,7 +116,7 @@ class Activation {
 
 
     let updateOpenFilesWorkingSet = this._fileTreeController.updateOpenFilesWorkingSet.bind(
-      this._fileTreeController
+      this._fileTreeController,
     );
 
     this._subscriptions.add(new Disposable(() => {
@@ -183,7 +183,7 @@ class Activation {
         // in quick succession.
         this._paneItemSubscription = onWorkspaceDidStopChangingActivePaneItem(
           reveal,
-          ACTIVE_PANE_DEBOUNCE_INTERVAL_MS
+          ACTIVE_PANE_DEBOUNCE_INTERVAL_MS,
         );
         this._subscriptions.add(this._paneItemSubscription);
       }
@@ -312,7 +312,7 @@ export function consumeNuclideSideBar(sidebar: NuclideSideBarService): IDisposab
       if (featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
         atom.commands.dispatch(
           atom.views.getView(atom.workspace),
-          'nuclide-file-tree:reveal-active-file'
+          'nuclide-file-tree:reveal-active-file',
         );
       }
     },

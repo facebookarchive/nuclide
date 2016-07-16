@@ -297,7 +297,7 @@ export class RemoteDirectory {
       invariant(entry);
       const uri = nuclideUri.createRemoteUri(
         this._host,
-        nuclideUri.join(this._localPath, entry.file)
+        nuclideUri.join(this._localPath, entry.file),
       );
       const symlink = entry.isSymbolicLink;
       if (entry.stats && entry.stats.isFile()) {

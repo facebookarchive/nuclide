@@ -127,15 +127,15 @@ class Activation {
     this._subscriptions = new CompositeDisposable();
     this._subscriptions.add(
       atom.commands.add('atom-workspace',
-      'nuclide-clipboard-path:copy-absolute-path', copyAbsolutePath)
+      'nuclide-clipboard-path:copy-absolute-path', copyAbsolutePath),
     );
     this._subscriptions.add(
       atom.commands.add('atom-workspace',
-      'nuclide-clipboard-path:copy-repository-relative-path', copyRepositoryRelativePath)
+      'nuclide-clipboard-path:copy-repository-relative-path', copyRepositoryRelativePath),
     );
     this._subscriptions.add(
       atom.commands.add('atom-workspace',
-      'nuclide-clipboard-path:copy-project-relative-path', copyProjectRelativePath)
+      'nuclide-clipboard-path:copy-project-relative-path', copyProjectRelativePath),
     );
   }
 

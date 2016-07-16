@@ -299,7 +299,7 @@ describe('FileTreeController', () => {
           store._updateNodeAtRoot(
             rootKey,
             dir1Key,
-            node => node.set({isLoading: true, isExpanded: true})
+            node => node.set({isLoading: true, isExpanded: true}),
           );
         });
       });

@@ -120,7 +120,7 @@ export function getLLDBInstallEvents(
           return parseInt(pidMatch[1], 10);
         }
       }
-    })
+    }),
   )
     .take(1)
     .switchMap(lldbPid => {

@@ -309,7 +309,7 @@ export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
     toggle(): void {
       atom.commands.dispatch(
         atom.views.getView(atom.workspace),
-        'nuclide-diagnostics-ui:toggle-table'
+        'nuclide-diagnostics-ui:toggle-table',
       );
     },
   };

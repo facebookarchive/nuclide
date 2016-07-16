@@ -57,7 +57,7 @@ export default class ArcBuildSystem {
       );
     }
     return new DisposableSubscription(
-      this._tasks.subscribe({next: cb})
+      this._tasks.subscribe({next: cb}),
     );
   }
 

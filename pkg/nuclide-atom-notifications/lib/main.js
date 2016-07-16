@@ -24,7 +24,7 @@ class Activation {
 
   consumeOutputService(api: OutputService): void {
     const messages = observableFromSubscribeFunction(
-      atom.notifications.onDidAddNotification.bind(atom.notifications)
+      atom.notifications.onDidAddNotification.bind(atom.notifications),
     )
       .map(notification => ({
         // TODO (matthewwithanm): Add timestamp once nuclide-console supports it.

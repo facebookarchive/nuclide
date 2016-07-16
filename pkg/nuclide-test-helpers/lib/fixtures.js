@@ -83,7 +83,7 @@ export async function generateFixture(
   await asyncLimit(
     dirsToMake,
     MAX_CONCURRENT_FILE_OPS,
-    dirname => fsPromise.mkdirp(dirname)
+    dirname => fsPromise.mkdirp(dirname),
   );
 
   await asyncLimit(
@@ -103,7 +103,7 @@ export async function generateFixture(
           }
         });
       });
-    }
+    },
   );
 
   return tempDir;

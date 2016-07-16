@@ -47,7 +47,7 @@ export class DebuggerSteppingComponent extends React.Component {
             onClick={
               actions.triggerDebuggerAction.bind(
                 actions,
-                ChromeActionRegistryActions.PAUSE // Toggles paused state
+                ChromeActionRegistryActions.PAUSE, // Toggles paused state
               )
             }
           />

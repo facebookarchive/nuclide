@@ -23,7 +23,7 @@ describeRemote('Remote Connection', (context: TestContext) => {
       const repoPath = await copyFixture('flow_project_1');
       await context.setProject(repoPath);
       const editor = await atom.workspace.open(
-        context.getProjectRelativePath(NEW_FILE_NAME)
+        context.getProjectRelativePath(NEW_FILE_NAME),
       );
       expect(editor).not.toBeNull();
       expect(editor.isModified()).toBe(true);

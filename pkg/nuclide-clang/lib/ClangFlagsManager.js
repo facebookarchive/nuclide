@@ -43,7 +43,7 @@ const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
 
 const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(
   Array.from(CLANG_FLAGS_THAT_TAKE_PATHS)
-    .filter(item => item.length === 2)
+    .filter(item => item.length === 2),
 );
 
 const INCLUDE_SEARCH_TIMEOUT = 15000;
@@ -324,7 +324,7 @@ class ClangFlagsManager {
     );
 
     const compilationDatabase = JSON.parse(
-      await fsPromise.readFile(pathToCompilationDatabase, 'utf8')
+      await fsPromise.readFile(pathToCompilationDatabase, 'utf8'),
     );
 
     const flags = new Map();
@@ -414,7 +414,7 @@ class ClangFlagsManager {
     const normalizedSourceFile = nuclideUri.normalize(sourceFile);
     args = args.filter(arg =>
       normalizedSourceFile !== arg &&
-      normalizedSourceFile !== nuclideUri.resolve(basePath, arg)
+      normalizedSourceFile !== nuclideUri.resolve(basePath, arg),
     );
 
     // Resolve relative path arguments against the Buck project root.

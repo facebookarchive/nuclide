@@ -180,13 +180,13 @@ class Activation {
       (provider, editor) => {
         track('nuclide-outline-view-getoutline');
         return provider.getOutline(editor);
-      }
+      },
     );
 
     const panel = this._panel = new OutlineViewPanelState(
       createOutlines(this._editorService),
       state.width,
-      state.visible
+      state.visible,
     );
     this._disposables.add(panel);
 
@@ -195,21 +195,21 @@ class Activation {
         'atom-workspace',
         'nuclide-outline-view:toggle',
         panel.toggle.bind(panel),
-      )
+      ),
     );
     this._disposables.add(
       atom.commands.add(
         'atom-workspace',
         'nuclide-outline-view:show',
         panel.show.bind(panel),
-      )
+      ),
     );
     this._disposables.add(
       atom.commands.add(
         'atom-workspace',
         'nuclide-outline-view:hide',
         panel.hide.bind(panel),
-      )
+      ),
     );
   }
 

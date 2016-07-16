@@ -47,7 +47,7 @@ describe('commons-node/process', () => {
     it('don\'t overwrite the PATH if it\'s different than process.env.PATH', () => {
       waitsForPromise(async () => {
         expect(
-          await createExecEnvironment({foo: 'bar', PATH: '/bin'}, ['/abc/def'])
+          await createExecEnvironment({foo: 'bar', PATH: '/bin'}, ['/abc/def']),
         ).toEqual({foo: 'bar', PATH: '/bin'});
       });
     });
@@ -58,7 +58,7 @@ describe('commons-node/process', () => {
         invariant(PATH != null);
         const delimitedPath = nuclideUri.splitPathList(PATH);
         expect(
-          await createExecEnvironment({foo: 'bar', PATH}, ['/abc/def'])
+          await createExecEnvironment({foo: 'bar', PATH}, ['/abc/def']),
         ).toEqual({foo: 'bar', PATH: nuclideUri.joinPathList([...delimitedPath, '/abc/def'])});
       });
     });
@@ -334,7 +334,7 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         spyOn(console, 'error'); // suppress error printing
         const createProcess = jasmine.createSpy().andCallFake(
-          () => safeSpawn('fakeCommand')
+          () => safeSpawn('fakeCommand'),
         );
         try {
           await createProcessStream(createProcess)

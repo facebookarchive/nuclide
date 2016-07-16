@@ -166,7 +166,7 @@ export class LinterAdapter {
         const linterMessages = result.result;
         const diagnosticUpdate = linterMessagesToDiagnosticUpdate(
           editor.getPath(),
-          linterMessages, this._provider.providerName || this._provider.name
+          linterMessages, this._provider.providerName || this._provider.name,
         );
         this._invalidateBuffer(buffer);
         this._providerUtils.publishMessageUpdate(diagnosticUpdate);

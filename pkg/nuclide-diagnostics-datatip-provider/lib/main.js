@@ -42,7 +42,7 @@ export async function datatip(editor: TextEditor, position: atom$Point): Promise
     return null;
   }
   const messagesAtPosition = messagesForFile.filter(
-    message => message.range != null && message.range.containsPoint(position)
+    message => message.range != null && message.range.containsPoint(position),
   );
   if (messagesAtPosition.length === 0) {
     return null;

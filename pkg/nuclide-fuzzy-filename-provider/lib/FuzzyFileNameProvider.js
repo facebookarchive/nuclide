@@ -65,7 +65,7 @@ const FuzzyFileNameProvider: Provider = {
     if (directory == null) {
       throw new Error(
         'FuzzyFileNameProvider is a directory-specific provider but its executeQuery method was'
-        + ' called without a directory argument.'
+        + ' called without a directory argument.',
       );
     }
 

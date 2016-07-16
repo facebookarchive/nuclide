@@ -103,7 +103,7 @@ const DebuggerSessionSelector = React.createClass({
       .map((item, index) =>
         <option key={item.toString()} value={index}>
           {item.toString()}
-        </option>
+        </option>,
       );
   },
 

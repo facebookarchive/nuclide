@@ -185,8 +185,8 @@ describe('FlowRoot', () => {
           expect(
             hasEqualElements(
               await getNameSet(options),
-              new Set(['BigLongNameOne', 'BigLongNameTwo'])
-            )
+              new Set(['BigLongNameOne', 'BigLongNameTwo']),
+            ),
           ).toBe(true);
         });
       });
@@ -265,7 +265,7 @@ describe('FlowRoot', () => {
         // this causes some errors to get logged, but I don't think it's a big
         // deal and I don't know how to mock a module
         expect(
-          await flowRoot.flowGetType(file, currentContents, line, column, false)
+          await flowRoot.flowGetType(file, currentContents, line, column, false),
         ).toBe(null);
       });
     });

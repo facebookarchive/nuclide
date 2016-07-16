@@ -160,7 +160,7 @@ describe('nuclide-arcanist-base', () => {
         .andCallFake((command, args, options) => {
           execArgs.push(args);
           return arcResult;
-        }
+        },
       );
       arcanistBaseService = (uncachedRequire(require, '../lib/ArcanistBaseService'): any);
       // Add these paths to the arcConfigDirectoryMap as a roundabout way to mock

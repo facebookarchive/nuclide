@@ -206,7 +206,7 @@ export function reconcileSetDiffs<T>(
 
         // "Undo" the add action for each item that got removed.
         diff.removed.forEach(disposeItem);
-      })
+      }),
     ),
     new Disposable(disposeAll),
   );

@@ -54,19 +54,19 @@ export class DatatipManager {
     this._subscriptions.add(atom.commands.add(
       'atom-text-editor',
       'nuclide-datatip:toggle',
-      this.toggleDatatip.bind(this)
+      this.toggleDatatip.bind(this),
     ));
     this._subscriptions.add(atom.commands.add(
       'atom-text-editor',
       'core:cancel',
-      this._boundHideDatatip
+      this._boundHideDatatip,
     ));
     this._debouncedMouseMove = () => {};
     this._subscriptions.add(
       featureConfig.observe(
         'nuclide-datatip.datatipDebounceDelay',
         debounceDelay => this.updateDebounceDelay(debounceDelay),
-      )
+      ),
     );
     // TODO(most): Replace with @jjiaa's mouseListenerForTextEditor introduced in D2005545.
     this._subscriptions.add(atom.workspace.observeTextEditors(editor => {
@@ -112,7 +112,7 @@ export class DatatipManager {
         this._datatipForMouseEvent(event, editor, editorView);
       },
       debounceDelay,
-      /* immediate */ false
+      /* immediate */ false,
     );
   }
 
@@ -242,7 +242,7 @@ export class DatatipManager {
           action,
           actionTitle,
         };
-      })
+      }),
     );
     const nonEmptyDatatips = datatips.filter(datatip => datatip != null);
     if (nonEmptyDatatips.length === 0) {
@@ -277,7 +277,7 @@ export class DatatipManager {
 
     ReactDOM.render(
       <div>{renderedProviders}</div>,
-      this._ephemeralDatatipElement
+      this._ephemeralDatatipElement,
     );
     // This relative positioning is to work around the issue that `position: 'head'`
     // doesn't work for overlay decorators are rendered on the bottom right of the given range.
@@ -293,14 +293,14 @@ export class DatatipManager {
         type: 'overlay',
         position: 'head',
         item: this._ephemeralDatatipElement,
-      }
+      },
     );
     editor.decorateMarker(
       marker,
       {
         type: 'highlight',
         class: 'nuclide-datatip-highlight-region',
-      }
+      },
     );
     this._subscribeToGlobalKeydown();
   }

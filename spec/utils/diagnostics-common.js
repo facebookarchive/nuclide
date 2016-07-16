@@ -57,7 +57,7 @@ export function clickStatusBarItem(): void {
 
 function getGutterElement(): ?HTMLElement {
   return atom.views.getView(atom.workspace).querySelector(
-    'atom-workspace /deep/ .nuclide-diagnostics-gutter-ui-gutter-error'
+    'atom-workspace /deep/ .nuclide-diagnostics-gutter-ui-gutter-error',
   );
 }
 

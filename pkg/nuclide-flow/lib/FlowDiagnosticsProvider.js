@@ -64,7 +64,7 @@ function extractRange(message: MessageComponent): atom$Range | void {
   } else {
     return new Range(
       [range.start.line - 1, range.start.column - 1],
-      [range.end.line - 1, range.end.column]
+      [range.end.line - 1, range.end.column],
     );
   }
 }
@@ -154,7 +154,7 @@ class FlowDiagnosticsProvider {
     const flowService = getFlowServiceByNuclideUri(file);
     invariant(flowService);
     const result = await this._requestSerializer.run(
-      flowService.flowFindDiagnostics(file, /* currentContents */ null)
+      flowService.flowFindDiagnostics(file, /* currentContents */ null),
     );
     if (result.status === 'outdated') {
       return;

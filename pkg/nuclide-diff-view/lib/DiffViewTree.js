@@ -153,7 +153,7 @@ export default class DiffViewTree extends React.Component {
         if (filePath != null && filePath.length) {
           atom.workspace.open(filePath);
         }
-      }
+      },
     ));
     this._subscriptions.add(atom.commands.add(
       '.nuclide-diff-view-tree .entry.file-change',
@@ -161,7 +161,7 @@ export default class DiffViewTree extends React.Component {
       event => {
         const filePath = uiTreePath(event);
         atom.clipboard.write(nuclideUri.getPath(filePath || ''));
-      }
+      },
     ));
     this._subscriptions.add(atom.commands.add(
       '.nuclide-diff-view-tree .entry.file-change',
@@ -169,7 +169,7 @@ export default class DiffViewTree extends React.Component {
       event => {
         const filePath = uiTreePath(event);
         atom.clipboard.write(nuclideUri.getPath(filePath || ''));
-      }
+      },
     ));
     this._subscriptions.add(atom.commands.add(
       '.nuclide-diff-view-tree .entry.file-change',
@@ -179,7 +179,7 @@ export default class DiffViewTree extends React.Component {
         if (filePath != null && filePath.length) {
           addPath(filePath);
         }
-      }
+      },
     ));
     this._subscriptions.add(atom.commands.add(
       '.nuclide-diff-view-tree .entry.file-change',
@@ -189,7 +189,7 @@ export default class DiffViewTree extends React.Component {
         if (filePath != null && filePath.length) {
           revertPath(filePath);
         }
-      }
+      },
     ));
   }
 
@@ -207,7 +207,7 @@ export default class DiffViewTree extends React.Component {
           true, /* isContainer */
           this._rootChildrenFetcher.bind(this), /* root children fetcher */
         );
-      })
+      }),
     );
     const treeRoot = this.refs.tree;
     const noOp = () => {};
@@ -227,21 +227,21 @@ export default class DiffViewTree extends React.Component {
     if (repository == null || repository.getType() !== 'hg') {
       const nodeName = NON_MERCURIAL_REPO_DISPLAY_NAME;
       childNodes.push(
-        new DiffViewTreeNode({filePath: nodeName}, rootNode, false, noChildrenFetcher)
+        new DiffViewTreeNode({filePath: nodeName}, rootNode, false, noChildrenFetcher),
       );
     } else {
       const {fileChanges} = this.props;
       const filePaths = Array.from(fileChanges.keys())
         .sort((filePath1, filePath2) =>
           remoteUri.basename(filePath1).toLowerCase().localeCompare(
-            remoteUri.basename(filePath2).toLowerCase()
-          )
+            remoteUri.basename(filePath2).toLowerCase(),
+          ),
         );
       for (const filePath of filePaths) {
         if (filePath.startsWith(rootPath)) {
           const statusCode = fileChanges.get(filePath);
           childNodes.push(
-            new DiffViewTreeNode({filePath, statusCode}, rootNode, false, noChildrenFetcher)
+            new DiffViewTreeNode({filePath, statusCode}, rootNode, false, noChildrenFetcher),
           );
         }
       }

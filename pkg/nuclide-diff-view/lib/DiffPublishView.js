@@ -78,8 +78,8 @@ class DiffPublishView extends React.Component {
       new DisposableSubscription(
         this.props.diffModel
           .getPublishUpdates()
-          .subscribe(this._onPublishUpdate.bind(this))
-      )
+          .subscribe(this._onPublishUpdate.bind(this)),
+      ),
     );
     this._setPublishText();
   }

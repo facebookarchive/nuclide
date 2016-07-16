@@ -99,7 +99,7 @@ class FileTreeSidebarComponent extends React.Component {
       ),
       this._monitorActiveUri(),
       new DisposableSubscription(
-        this._showOpenConfigValues.subscribe(showOpenFiles => this.setState({showOpenFiles}))
+        this._showOpenConfigValues.subscribe(showOpenFiles => this.setState({showOpenFiles})),
       ),
       new Disposable(() => {
         window.removeEventListener('resize', this._onViewChange);
@@ -238,7 +238,7 @@ class FileTreeSidebarComponent extends React.Component {
         }
 
         this.setState({activeUri: editor.getPath()});
-      })
+      }),
     );
   }
 
@@ -288,7 +288,7 @@ function observeAllModifiedStatusChanges(): Observable<void> {
   .switchMap(buffers => Observable.merge(
     ...(buffers.map(buffer => {
       return observableFromSubscribeFunction(buffer.onDidChangeModified.bind(buffer));
-    }): Array<Observable<void>>)
+    }): Array<Observable<void>>),
   ));
 }
 

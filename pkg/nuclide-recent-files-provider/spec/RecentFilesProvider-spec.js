@@ -130,18 +130,18 @@ describe('RecentFilesProvider', () => {
       expect(
         TestUtils.scryRenderedDOMComponentsWithClass(
           renderedComponent,
-          'recent-files-provider-file-name'
-        ).length
+          'recent-files-provider-file-name',
+        ).length,
       ).toBe(1);
       expect(
         TestUtils.scryRenderedDOMComponentsWithClass(
           renderedComponent,
-          'recent-files-provider-file-path'
-        ).length
+          'recent-files-provider-file-path',
+        ).length,
       ).toBe(1);
       const datetimeLabels = TestUtils.scryRenderedDOMComponentsWithClass(
         renderedComponent,
-        'recent-files-provider-datetime-label'
+        'recent-files-provider-datetime-label',
       );
       expect(datetimeLabels.length).toBe(1);
     });

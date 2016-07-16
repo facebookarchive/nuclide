@@ -66,7 +66,7 @@ class Activation {
         observeStatus: cb => this._logTailer.observeStatus(cb),
         start: () => { this._logTailer.start(); },
         stop: () => { this._logTailer.stop(); },
-      })
+      }),
     );
   }
 

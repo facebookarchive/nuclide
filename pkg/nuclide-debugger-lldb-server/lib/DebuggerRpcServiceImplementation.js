@@ -267,7 +267,7 @@ export class DebuggerRpcService {
             child.kill();
           }
         },
-        error => logError(`argumentsStream error: ${JSON.stringify(error)}`)
+        error => logError(`argumentsStream error: ${JSON.stringify(error)}`),
     )));
   }
 

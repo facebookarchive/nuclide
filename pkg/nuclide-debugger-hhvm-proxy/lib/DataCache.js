@@ -190,14 +190,14 @@ export class DataCache {
       properties = await this._socket.getPropertiesByFullnameAllConexts(
         id.frameIndex,
         fullname,
-        page
+        page,
       );
     } else {
       properties = await this._socket.getPropertiesByFullname(
         id.frameIndex,
         id.contextId,
         fullname,
-        page
+        page,
       );
     }
     return convertProperties(id, properties);

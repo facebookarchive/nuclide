@@ -287,7 +287,7 @@ export class TestRunnerController {
             this._appendToBuffer(TestRunModel.formatStatusMessage(
               testInfo.name,
               testInfo.durationSecs,
-              testInfo.status
+              testInfo.status,
             ));
             this._renderPanel();
             break;
@@ -373,7 +373,7 @@ export class TestRunnerController {
         testSuiteModel={this._testSuiteModel}
       />,
       root,
-      didRender
+      didRender,
     );
     invariant(component instanceof TestRunnerPanel);
     this._testRunnerPanel = component;

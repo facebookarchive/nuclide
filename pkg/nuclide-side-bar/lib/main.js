@@ -165,7 +165,7 @@ function renderPanelSync(renderState: State, onDidRender?: ?() => mixed): void {
       </SideBarPanelComponent>
     </PanelComponent>,
     panel.getItem(),
-    onDidRender
+    onDidRender,
   );
   invariant(component instanceof PanelComponent);
   panelComponent = component;

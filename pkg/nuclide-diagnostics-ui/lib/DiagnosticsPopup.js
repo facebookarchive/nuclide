@@ -39,7 +39,7 @@ function renderMessage(
     {
       'nuclide-diagnostics-gutter-ui-popup-error': message.type === 'Error',
       'nuclide-diagnostics-gutter-ui-popup-warning': message.type !== 'Error',
-    }
+    },
   );
   return (
     <div className={className} key={index} tabIndex={-1}>

@@ -156,7 +156,7 @@ export class LogTailer {
       sub.add(
         this._ready
           .takeUntil(this._statuses.filter(status => status !== 'starting'))
-          .subscribe(() => { this._statuses.next('running'); })
+          .subscribe(() => { this._statuses.next('running'); }),
       );
     }
 

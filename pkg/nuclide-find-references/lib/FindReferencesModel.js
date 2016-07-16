@@ -106,8 +106,8 @@ class FindReferencesModel {
   ): Promise<Array<FileReferences>> {
     const fileReferences: Array<?FileReferences> = await Promise.all(
       this._references.slice(offset, offset + limit).map(
-        this._makeFileReferences.bind(this)
-      )
+        this._makeFileReferences.bind(this),
+      ),
     );
     return arrayCompact(fileReferences);
   }

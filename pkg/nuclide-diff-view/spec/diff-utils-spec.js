@@ -28,7 +28,7 @@ on multiline
 same end line`,
 `on multiline
 added text
-same end line`
+same end line`,
       );
 
       expect(addedLines).toEqual([1]); // the second line is newly added.
@@ -53,7 +53,7 @@ replacing the two lines removed above!
 our tests will be BAD.
 The slightest change in layout,
 could break a large number of tests.
-adding a non-new-line line`
+adding a non-new-line line`,
       );
 
       expect(addedLines).toEqual([2, 3, 7]); // 2 lines were added in the middle and one at the end.

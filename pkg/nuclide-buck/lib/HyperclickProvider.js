@@ -91,7 +91,7 @@ async function findTargetLocation(target: Target): Promise<any> {
       '[\'"]' + // opening quotation mark
       escapeStringRegExp(target.name) + // target name
       '[\'"]' + // closing quotation mark
-      ',?$' // optional trailling comma
+      ',?$', // optional trailling comma
   );
 
   let lineIndex = 0;

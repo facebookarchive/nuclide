@@ -61,7 +61,7 @@ describe('LinkTreeManager', () => {
       // rdeps query should be executed with the first owner found, and scoped to
       // the target of the source path's directory.
       expect(spy).toHaveBeenCalledWith(
-        `kind(python_binary, rdeps(//test1:, owner(${srcPath})))`
+        `kind(python_binary, rdeps(//test1:, owner(${srcPath})))`,
       );
       // Properly resolve a link-tree path based on the source's firstly found
       // binary dependency.
@@ -79,7 +79,7 @@ describe('LinkTreeManager', () => {
       const srcPath = nuclideUri.join(projectDir, 'test1/test1.py');
       const linkTreePaths = await linkTreeManager.getLinkTreePaths(srcPath);
       expect(spy).toHaveBeenCalledWith(
-        `kind(python_unittest, rdeps(//test1:, owner(${srcPath})))`
+        `kind(python_unittest, rdeps(//test1:, owner(${srcPath})))`,
       );
       expect(linkTreePaths).toEqual([]);
     });

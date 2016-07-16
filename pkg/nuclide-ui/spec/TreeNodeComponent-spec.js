@@ -44,7 +44,7 @@ describe('TreeNodeComponent', () => {
     spyOn(props, 'onDoubleClick');
 
     treeNodeComponent = TestUtils.renderIntoDocument(
-        <TreeNodeComponent {...props} />
+        <TreeNodeComponent {...props} />,
       );
   });
 
@@ -64,7 +64,7 @@ describe('TreeNodeComponent', () => {
 
       const iconComponent = TestUtils.findRenderedDOMComponentWithClass(
         treeNodeComponent,
-        iconClassName
+        iconClassName,
       );
 
       expect(ReactDOM.findDOMNode(iconComponent).dataset.name).toEqual(label);
@@ -89,7 +89,7 @@ describe('TreeNodeComponent', () => {
     it('calls its `onClickArrow` callback, not its `onClick` callback', () => {
       const arrow = TestUtils.findRenderedDOMComponentWithClass(
           treeNodeComponent,
-          'nuclide-tree-component-item-arrow'
+          'nuclide-tree-component-item-arrow',
         );
 
       TestUtils.Simulate.click(arrow);

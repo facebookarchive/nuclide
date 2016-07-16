@@ -40,7 +40,7 @@ function getText(
     const params = includeOptionalArgs
       ? completion.params
       : completion.params.filter(param =>
-        param.indexOf('=') < 0 && param.indexOf('*') < 0
+        param.indexOf('=') < 0 && param.indexOf('*') < 0,
       );
 
     const paramTexts = params.map((param, index) => {

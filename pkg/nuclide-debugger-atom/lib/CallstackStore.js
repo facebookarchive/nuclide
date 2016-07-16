@@ -31,7 +31,7 @@ export default class CallstackStore {
     this._disposables = new CompositeDisposable(
       new Disposable(() => {
         dispatcher.unregister(dispatcherToken);
-      })
+      }),
     );
     this._callstack = null;
     this._selectedCallFrameMarker = null;

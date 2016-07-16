@@ -45,7 +45,7 @@ class Activation {
       () => {
         track('distraction-free-mode:toggle');
         this._tunnelVision.toggleDistractionFreeMode();
-      }
+      },
     ));
   }
 

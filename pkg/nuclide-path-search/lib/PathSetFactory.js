@@ -64,7 +64,7 @@ function getTrackedHgFiles(localDirectory: string): Promise<Array<string>> {
     'hg',
     ['locate', '--fullpath', '--include', '.'],
     localDirectory,
-    filePath => filePath.slice(localDirectory.length + 1)
+    filePath => filePath.slice(localDirectory.length + 1),
   );
 }
 
@@ -102,7 +102,7 @@ function getFilesFromHg(localDirectory: string): Promise<Array<string>> {
     returnedFiles => {
       const [trackedFiles, untrackedFiles] = returnedFiles;
       return trackedFiles.concat(untrackedFiles);
-    }
+    },
   );
 }
 
@@ -132,7 +132,7 @@ function getFilesFromGit(localDirectory: string): Promise<Array<string>> {
     returnedFiles => {
       const [trackedFiles, untrackedFiles] = returnedFiles;
       return trackedFiles.concat(untrackedFiles);
-    }
+    },
   );
 }
 

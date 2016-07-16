@@ -65,7 +65,7 @@ export default class BasicStatsSectionComponent extends React.Component {
             <tr key={s}>
               <th>{stat.name}</th>
               <td>{stat.value}</td>
-            </tr>
+            </tr>,
           )}
         </tbody>
       </table>

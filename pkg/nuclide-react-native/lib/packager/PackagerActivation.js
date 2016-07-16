@@ -75,7 +75,7 @@ export class PackagerActivation {
         observeStatus: cb => this._logTailer.observeStatus(cb),
         start: () => { this._logTailer.start(); },
         stop: () => { this._logTailer.stop(); },
-      })
+      }),
     );
   }
 
@@ -111,7 +111,7 @@ function getPackagerObservable(): Observable<PackagerEvent> {
         case 'exit':
           if (event.exitCode !== 0) {
             return Observable.throw(
-              new Error(`Packager exited with non-zero exit code (${event.exitCode})`)
+              new Error(`Packager exited with non-zero exit code (${event.exitCode})`),
             );
           }
           return Observable.empty();

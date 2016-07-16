@@ -73,7 +73,7 @@ function createHomePaneItem(
       const welcomes = [];
       const features = [];
       const sortedHomeFragments = Array.from(this.state.allHomeFragments).sort(
-        (fragmentA, fragmentB) => (fragmentB.priority || 0) - (fragmentA.priority || 0)
+        (fragmentA, fragmentB) => (fragmentB.priority || 0) - (fragmentA.priority || 0),
       );
       sortedHomeFragments.forEach(fragment => {
         const {welcome, feature} = fragment;

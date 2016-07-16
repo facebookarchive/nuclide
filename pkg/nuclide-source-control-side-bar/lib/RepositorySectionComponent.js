@@ -118,7 +118,7 @@ export default class RepositorySectionComponent extends React.Component {
             const liClassName = classnames(
               'list-item nuclide-source-control-side-bar--list-item', {
                 selected: isSelected,
-              }
+              },
             );
 
             let title;
@@ -194,7 +194,7 @@ export default class RepositorySectionComponent extends React.Component {
       'list-item nuclide-source-control-side-bar--list-item',
       {
         selected: selectedItem != null && selectedItem.type === 'uncommitted',
-      }
+      },
     );
     return (
       <li>

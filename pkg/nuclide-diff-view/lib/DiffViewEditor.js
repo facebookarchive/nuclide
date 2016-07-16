@@ -94,9 +94,9 @@ export default class DiffViewEditor {
       marker.destroy();
     }
     this._highlightMarkers = addedLines.map(
-      lineNumber => this._createLineMarker(lineNumber, 'insert')
+      lineNumber => this._createLineMarker(lineNumber, 'insert'),
     ).concat(removedLines.map(
-      lineNumber => this._createLineMarker(lineNumber, 'delete')
+      lineNumber => this._createLineMarker(lineNumber, 'delete'),
     ));
   }
 

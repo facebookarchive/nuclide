@@ -60,7 +60,7 @@ class DebuggerModel {
     this._watchExpressionStore = new WatchExpressionStore(this._dispatcher, this._bridge);
     this._watchExpressionListStore = new WatchExpressionListStore(
       this._watchExpressionStore,
-      this._dispatcher
+      this._dispatcher,
     );
     this._debuggerActionStore = new DebuggerActionsStore(this._dispatcher, this._bridge);
     this._callstackStore = new CallstackStore(this._dispatcher);

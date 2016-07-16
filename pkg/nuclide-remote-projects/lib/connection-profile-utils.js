@@ -100,7 +100,7 @@ export function onSavedConnectionProfilesDidChange(
       const newProfiles = event.newValue;
       prepareSavedConnectionProfilesForDisplay(newProfiles);
       callback(newProfiles);
-    }
+    },
   );
 }
 

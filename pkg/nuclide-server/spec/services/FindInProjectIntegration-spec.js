@@ -25,7 +25,7 @@ describe('FindInProjectService-Integration', () => {
     const regex = new RegExp('\\/\\/localhost/*' + __dirname, 'g');
     return JSON.parse(
       JSON.stringify(jsonObject, null, 2)
-        .replace(regex, 'VARIABLE')
+        .replace(regex, 'VARIABLE'),
       );
   }
 
@@ -54,7 +54,7 @@ describe('FindInProjectService-Integration', () => {
         /hello world/i, []).toArray().toPromise();
 
       const expected = JSON.parse(
-        fs.readFileSync(input_dir + '.json', {encoding: 'utf8'})
+        fs.readFileSync(input_dir + '.json', {encoding: 'utf8'}),
       );
       expect(makePortable(updates)).diffJson(expected);
       testHelper.stop();

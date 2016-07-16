@@ -18,7 +18,7 @@ describe('_findAvailableDevice', () => {
   it('identifies the active simulator', () => {
     waitsForPromise(async () => {
       const simctlOutput = await fsPromise.readFile(
-        nuclideUri.join(__dirname, 'fixtures', 'simctl-output.json')
+        nuclideUri.join(__dirname, 'fixtures', 'simctl-output.json'),
       );
       const {devices} = JSON.parse(simctlOutput);
       const device = _findAvailableDevice(devices);

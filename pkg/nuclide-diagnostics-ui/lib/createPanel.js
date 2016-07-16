@@ -109,7 +109,7 @@ function createDiagnosticsPanel(
       props.diagnostics = messages;
       diagnosticsNeedSorting = true;
       render();
-    }
+    },
   );
 
   function setWarnAboutLinter(warn: boolean) {

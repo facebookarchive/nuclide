@@ -60,10 +60,10 @@ export class StatusBarTile extends React.Component {
     invariant(this.subscription == null);
     const subscription = this.subscription = new Subscription();
     subscription.add(
-      this.props.results.subscribe(result => this._consumeResult(result))
+      this.props.results.subscribe(result => this._consumeResult(result)),
     );
     subscription.add(
-      this.props.isActive.subscribe(isActive => this._consumeIsActive(isActive))
+      this.props.isActive.subscribe(isActive => this._consumeIsActive(isActive)),
     );
   }
 

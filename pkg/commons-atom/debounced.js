@@ -81,7 +81,7 @@ export function editorScrollTopDebounced(
   debounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
 ): Observable<number> {
   return observableFromSubscribeFunction(
-    callback => atom.views.getView(editor).onDidChangeScrollTop(callback)
+    callback => atom.views.getView(editor).onDidChangeScrollTop(callback),
   ).debounceTime(debounceInterval);
 }
 

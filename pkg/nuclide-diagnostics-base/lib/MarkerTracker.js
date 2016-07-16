@@ -59,7 +59,7 @@ export class MarkerTracker {
             this._addMarker(editor, message);
           }
         }
-      })
+      }),
     );
   }
 

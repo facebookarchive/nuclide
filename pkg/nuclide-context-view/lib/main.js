@@ -35,8 +35,8 @@ export function activate(activationState: ContextViewConfig = {}): void {
     atom.commands.add(
       'atom-workspace',
       'nuclide-context-view:toggle',
-      this.toggleContextView.bind(this)
-    )
+      this.toggleContextView.bind(this),
+    ),
   );
 
   // Show
@@ -44,8 +44,8 @@ export function activate(activationState: ContextViewConfig = {}): void {
     atom.commands.add(
       'atom-workspace',
       'nuclide-context-view:show',
-      this.showContextView.bind(this)
-    )
+      this.showContextView.bind(this),
+    ),
   );
 
   // Hide
@@ -53,8 +53,8 @@ export function activate(activationState: ContextViewConfig = {}): void {
     atom.commands.add(
       'atom-workspace',
       'nuclide-context-view:hide',
-      this.hideContextView.bind(this)
-    )
+      this.hideContextView.bind(this),
+    ),
   );
 }
 

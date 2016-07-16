@@ -365,7 +365,7 @@ export const TreeRootComponent = React.createClass({
         'core:move-down': () => this._moveSelectionDown(),
 
         'core:confirm': () => this._confirmSelection(),
-      })
+      }),
     );
 
     this._allKeys = allKeys;
@@ -572,7 +572,7 @@ export const TreeRootComponent = React.createClass({
 
     if (node && node.isContainer()) {
       const promise = this._createDidUpdateListener(
-        /* shouldResolve */ () => !this.state.expandedKeys.has(nodeKey)
+        /* shouldResolve */ () => !this.state.expandedKeys.has(nodeKey),
       );
       this._toggleNodeExpanded(node, false /* forceExpanded */);
       return promise;

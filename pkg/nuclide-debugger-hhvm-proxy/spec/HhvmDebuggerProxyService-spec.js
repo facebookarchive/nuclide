@@ -24,7 +24,7 @@ describe('debugger-hhvm-proxy proxy', () => {
   beforeEach(() => {
     translater = jasmine.createSpyObj(
       'MessageTranslator',
-      ['onSessionEnd', 'dispose', 'handleCommand']
+      ['onSessionEnd', 'dispose', 'handleCommand'],
     );
     MessageTranslator = spyOn(require('../lib/MessageTranslator'), 'MessageTranslator').andCallFake(
       callback => {

@@ -110,7 +110,7 @@ export class HgRepositoryProvider {
       });
     } catch (err) {
       getLogger().error(
-        'Failed to create an HgRepositoryClient for ', directory.getPath(), ', error: ', err
+        'Failed to create an HgRepositoryClient for ', directory.getPath(), ', error: ', err,
       );
       return null;
     }

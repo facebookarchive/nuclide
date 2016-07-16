@@ -95,7 +95,7 @@ describe('searchResultHelper', () => {
   describe('flattenResults', () => {
     it('returns an array of flattened results', () => {
       expect(flattenResults(SEARCH_RESULTS_FIXTURE)).toEqual(
-        [{path: 'foo'}, {path: 'bar'}]
+        [{path: 'foo'}, {path: 'bar'}],
       );
     });
   });

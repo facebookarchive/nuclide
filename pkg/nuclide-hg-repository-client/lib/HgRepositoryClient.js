@@ -635,7 +635,7 @@ export class HgRepositoryClient {
     addAllParentDirectoriesToCache(
       this._modifiedDirectoryCache,
       filePath,
-      this._projectDirectory.getParent().getPath()
+      this._projectDirectory.getParent().getPath(),
     );
   }
 
@@ -643,7 +643,7 @@ export class HgRepositoryClient {
     removeAllParentDirectoriesFromCache(
       this._modifiedDirectoryCache,
       filePath,
-      this._projectDirectory.getParent().getPath()
+      this._projectDirectory.getParent().getPath(),
     );
   }
 

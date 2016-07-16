@@ -59,7 +59,7 @@ class Activation {
         'body',
         'nuclide-hhvm-toolbar:toggle',
         () => { this.togglePanel(); },
-      )
+      ),
     );
   }
 

@@ -197,7 +197,7 @@ export class RemoteConnection {
 
       const loggedErrorMessage = error.message || error;
       logger.error(
-        `Watcher failed to start - watcher features disabled! Error: ${loggedErrorMessage}`
+        `Watcher failed to start - watcher features disabled! Error: ${loggedErrorMessage}`,
       );
 
       const FileSystemService = this.getService(FILE_SYSTEM_SERVICE);

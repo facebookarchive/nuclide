@@ -90,7 +90,7 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
               getCachedChildren={getCachedChildren}
               setCachedChildren={setCachedChildren}
             />
-          </TreeItem>
+          </TreeItem>,
         )
       }
     </span>
@@ -280,7 +280,7 @@ class ValueComponent extends React.Component {
       } else {
         const ChildrenComponent = bindObservableAsProps(
           children.map(childrenValue => ({children: childrenValue})).startWith({children: null}),
-          LoadableValueComponent
+          LoadableValueComponent,
         );
         childListElement = (
           <ChildrenComponent

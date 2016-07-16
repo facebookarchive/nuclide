@@ -59,7 +59,7 @@ export function highlightOnUpdate<T : ReactClass<any>>(
           this.timeout = null;
           this.forceUpdate();
         },
-        unhighlightDelay
+        unhighlightDelay,
       );
     }
 

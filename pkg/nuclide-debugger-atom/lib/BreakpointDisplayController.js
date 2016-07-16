@@ -73,7 +73,7 @@ class BreakpointDisplayController {
     gutterView.addEventListener('click', boundClickHandler);
 
     this._disposables.add(
-      new Disposable(() => gutterView.removeEventListener('click', boundClickHandler))
+      new Disposable(() => gutterView.removeEventListener('click', boundClickHandler)),
     );
 
     // Add click listeners into line number gutter for setting breakpoints.
@@ -248,7 +248,7 @@ class BreakpointDisplayController {
         const elem: HTMLAnchorElement = document.createElement('a');
         elem.classList.add(
           'nuclide-debugger-atom-shadow-breakpoint',
-          `nuclide-debugger-atom-shadow-${line}`
+          `nuclide-debugger-atom-shadow-${line}`,
         );
         gutter.decorateMarker(shadowMarker, {item: elem});
         this._shadowMarkerRows.add(line);

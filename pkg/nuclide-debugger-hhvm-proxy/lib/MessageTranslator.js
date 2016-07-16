@@ -40,14 +40,14 @@ export class MessageTranslator {
     this._clientCallback = clientCallback;
     this._debuggerHandler = new DebuggerHandler(
       clientCallback,
-      this._connectionMultiplexer
+      this._connectionMultiplexer,
     );
     this._addHandler(this._debuggerHandler);
     this._addHandler(new PageHandler(clientCallback));
     this._addHandler(new ConsoleHandler(clientCallback));
     this._addHandler(new RuntimeHandler(
       clientCallback,
-      this._connectionMultiplexer
+      this._connectionMultiplexer,
     ));
   }
 

@@ -131,7 +131,7 @@ class FileSystemActions {
      */
     let newPath = nuclideUri.resolve(
       // Trim leading and trailing whitespace to prevent bad filenames.
-      nuclideUri.join(nuclideUri.dirname(nodePath), newBasename.trim())
+      nuclideUri.join(nuclideUri.dirname(nodePath), newBasename.trim()),
     );
 
     // Create a remote nuclide uri when the node being moved is remote.
@@ -276,7 +276,7 @@ class FileSystemActions {
     atomPanel = atom.workspace.addModalPanel({item: dialogHostElement});
     dialogComponent = ReactDOM.render(
       <FileDialogComponent {...props} />,
-      dialogHostElement
+      dialogHostElement,
     );
   }
 

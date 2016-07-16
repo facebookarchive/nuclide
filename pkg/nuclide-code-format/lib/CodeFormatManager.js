@@ -26,7 +26,7 @@ class CodeFormatManager {
       'atom-text-editor',
       'nuclide-code-format:format-code',
       // Atom doesn't accept in-command modification of the text editor contents.
-      () => process.nextTick(this._formatCodeInActiveTextEditor.bind(this))
+      () => process.nextTick(this._formatCodeInActiveTextEditor.bind(this)),
     ));
     subscriptions.add(atom.workspace.observeTextEditors(this._addEditor.bind(this)));
     this._codeFormatProviders = [];

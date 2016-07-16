@@ -119,6 +119,6 @@ function filterResults(
 ): Array<TypeCoverageRegion> {
   // Flow doesn't understand filter so we cast.
   return (unfilteredResults.filter(region =>
-    region.type === 'unchecked' || region.type === 'partial'
+    region.type === 'unchecked' || region.type === 'partial',
   ): any);
 }

@@ -46,7 +46,7 @@ export default class HealthPaneItemComponent extends React.Component {
             <div className="settings-view">
               {sections[title]}
             </div>
-          </div>
+          </div>,
         )}
       </div>
     );

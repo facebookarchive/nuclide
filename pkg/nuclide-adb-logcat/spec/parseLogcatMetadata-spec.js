@@ -42,7 +42,7 @@ describe('parseLogcatMetadata', () => {
 
   it('parses weird tags', () => {
     const parsed = parseLogcatMetadata(
-      '[ 05-10 17:49:43.925  5846: 5993 D/fb4a(:<default>):PeriodicForegroundScheduler ]'
+      '[ 05-10 17:49:43.925  5846: 5993 D/fb4a(:<default>):PeriodicForegroundScheduler ]',
     );
     invariant(parsed != null);
     expect(parsed.tag).toBe('fb4a(:<default>):PeriodicForegroundScheduler');

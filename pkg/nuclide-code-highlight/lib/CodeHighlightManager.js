@@ -58,7 +58,7 @@ export default class CodeHighlightManager {
     // Destroy old highlighted sections and highlight new ones
     this._destroyMarkers();
     this._markers = highlightedRanges.map(
-      range => editor.markBufferRange(range, {})
+      range => editor.markBufferRange(range, {}),
     );
     this._markers.forEach(marker => {
       editor.decorateMarker(

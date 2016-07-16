@@ -60,12 +60,12 @@ class Activation {
         'atom-workspace',
         'nuclide-type-coverage:toggle-inline-display',
         () => this._toggleEvents.next(),
-      )
+      ),
     );
 
     this._disposables.add(new DisposableSubscription(
-        this._toggleEvents.subscribe(() => track('nuclide-type-coverage:toggle'))
-      )
+        this._toggleEvents.subscribe(() => track('nuclide-type-coverage:toggle')),
+      ),
     );
   }
 

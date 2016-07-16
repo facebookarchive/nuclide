@@ -131,7 +131,7 @@ export default class QuickSelectionComponent extends React.Component {
             setImmediate(() => this.setQuery(this.refs.queryInput.getText()));
             this._updateQueryHandler();
             this._emitter.emit('items-changed', newResults);
-          }
+          },
         );
       }
     }
@@ -158,7 +158,7 @@ export default class QuickSelectionComponent extends React.Component {
       atom.commands.add(
         this._modalNode,
         'core:move-to-bottom',
-        this.handleMoveToBottom.bind(this)
+        this.handleMoveToBottom.bind(this),
       ),
       atom.commands.add(this._modalNode, 'core:move-to-top', this.handleMoveToTop.bind(this)),
       atom.commands.add(this._modalNode, 'core:move-down', this.handleMoveDown.bind(this)),
@@ -179,11 +179,11 @@ export default class QuickSelectionComponent extends React.Component {
     this._subscriptions.add(
       searchResultManager.on(
         searchResultManager.PROVIDERS_CHANGED,
-        this.handleProvidersChange
+        this.handleProvidersChange,
       ),
       searchResultManager.on(
         searchResultManager.RESULTS_CHANGED,
-        debounce(this.handleResultsChange, RESULTS_CHANGED_DEBOUNCE_DELAY, false)
+        debounce(this.handleResultsChange, RESULTS_CHANGED_DEBOUNCE_DELAY, false),
       ),
     );
 
@@ -251,7 +251,7 @@ export default class QuickSelectionComponent extends React.Component {
         }
       },
       this.getProvider().debounceDelay || 0,
-      false
+      false,
     );
   }
 
@@ -271,7 +271,7 @@ export default class QuickSelectionComponent extends React.Component {
   _updateResults(activeProviderName: string): void {
     const updatedResults = searchResultManager.getResults(
       this.refs.queryInput.getText(),
-      activeProviderName
+      activeProviderName,
     );
     const [topProviderName] = sortServiceNames(Object.keys(updatedResults));
     this.setState({
@@ -364,7 +364,7 @@ export default class QuickSelectionComponent extends React.Component {
       this.setSelectedIndex(
         this.state.selectedService,
         this.state.selectedDirectory,
-        this.state.selectedItemIndex + 1
+        this.state.selectedItemIndex + 1,
       );
     } else {
       // otherwise go to next directory...
@@ -372,7 +372,7 @@ export default class QuickSelectionComponent extends React.Component {
         this.setSelectedIndex(
           this.state.selectedService,
           context.directoryNames[context.currentDirectoryIndex + 1],
-          0
+          0,
         );
       } else {
         // ...or the next service...
@@ -401,7 +401,7 @@ export default class QuickSelectionComponent extends React.Component {
       this.setSelectedIndex(
         this.state.selectedService,
         this.state.selectedDirectory,
-        this.state.selectedItemIndex - 1
+        this.state.selectedItemIndex - 1,
       );
     } else {
       // otherwise, go to the previous directory...
@@ -410,7 +410,7 @@ export default class QuickSelectionComponent extends React.Component {
           this.state.selectedService,
           context.directoryNames[context.currentDirectoryIndex - 1],
           context.currentService
-            .results[context.directoryNames[context.currentDirectoryIndex - 1]].results.length - 1
+            .results[context.directoryNames[context.currentDirectoryIndex - 1]].results.length - 1,
         );
       } else {
         // ...or the previous service...
@@ -429,7 +429,7 @@ export default class QuickSelectionComponent extends React.Component {
           this.setSelectedIndex(
             newServiceName,
             newDirectoryName,
-            resultsForDirectory.results.length - 1
+            resultsForDirectory.results.length - 1,
           );
         } else {
           // ...or wrap around to the very bottom
@@ -490,7 +490,7 @@ export default class QuickSelectionComponent extends React.Component {
     return this.getItemAtIndex(
       this.state.selectedService,
       this.state.selectedDirectory,
-      this.state.selectedItemIndex
+      this.state.selectedItemIndex,
     );
   }
 

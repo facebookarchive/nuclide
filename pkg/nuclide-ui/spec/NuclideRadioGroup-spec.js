@@ -22,13 +22,13 @@ describe('RadioGroup', () => {
 
   it('honors the selectedIndex param', () => {
     const component = renderIntoDocument(
-      <RadioGroup optionLabels={['foo', 'bar']} selectedIndex={1} />
+      <RadioGroup optionLabels={['foo', 'bar']} selectedIndex={1} />,
     );
     expect(component.props.selectedIndex).toBe(1);
 
     const radioInputs = scryRenderedDOMComponentsWithTag(
       component,
-      'input'
+      'input',
     );
 
     expect(ReactDOM.findDOMNode(radioInputs[0]).checked).toBe(false);
@@ -39,21 +39,21 @@ describe('RadioGroup', () => {
   it('should use the correct, unique radio group name', () => {
     const props = {optionLabels: ['foo', 'bar'], selectedIndex: 1};
     const component = renderIntoDocument(
-      <RadioGroup {...props} />
+      <RadioGroup {...props} />,
     );
     const radioInputs = scryRenderedDOMComponentsWithTag(
       component,
-      'input'
+      'input',
     );
     // Global uid is `1` as this point, since this is the second RadioGroup component to be created.
     expect(ReactDOM.findDOMNode(radioInputs[0]).getAttribute('name')).toEqual('radiogroup-1');
     expect(ReactDOM.findDOMNode(radioInputs[1]).getAttribute('name')).toEqual('radiogroup-1');
     const component2 = renderIntoDocument(
-      <RadioGroup {...props} />
+      <RadioGroup {...props} />,
     );
     const radioInputs2 = scryRenderedDOMComponentsWithTag(
       component2,
-      'input'
+      'input',
     );
     expect(ReactDOM.findDOMNode(radioInputs2[0]).getAttribute('name')).toEqual('radiogroup-2');
     expect(ReactDOM.findDOMNode(radioInputs2[1]).getAttribute('name')).toEqual('radiogroup-2');
@@ -69,11 +69,11 @@ describe('RadioGroup', () => {
       onSelectedChange,
     };
     const component = renderIntoDocument(
-      <RadioGroup {...props} />
+      <RadioGroup {...props} />,
     );
     const radioInputs = scryRenderedDOMComponentsWithTag(
       component,
-      'input'
+      'input',
     );
 
     Simulate.change(ReactDOM.findDOMNode(radioInputs[1]));

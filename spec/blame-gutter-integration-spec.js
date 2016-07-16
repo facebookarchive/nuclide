@@ -36,7 +36,7 @@ describeRemotableTest('Blame gutter integration test', (context: TestContext) =>
 
     waitsFor('gutter blame UI to show up', 10000, () => {
       blameGutter = textEditorView.querySelector(
-        'atom-text-editor /deep/ [gutter-name=nuclide-blame]'
+        'atom-text-editor /deep/ [gutter-name=nuclide-blame]',
       );
       return blameGutter;
     });

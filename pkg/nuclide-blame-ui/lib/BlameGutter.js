@@ -67,7 +67,7 @@ export default class {
       const onClick: (evt: Event) => Promise<void> = this._onClick.bind(this);
       gutterView.addEventListener('click', onClick);
       this._subscriptions.add(this._gutter.onDidDestroy(
-          () => gutterView.removeEventListener('click', onClick)
+          () => gutterView.removeEventListener('click', onClick),
       ));
     }
 

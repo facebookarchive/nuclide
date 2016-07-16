@@ -39,7 +39,7 @@ export class NuxStore {
   initialize(): void {
     // TODO [ @rageandqq | 05-25-16 ]: Replace with `IndexedDB` since `localStorage` is blocking
     this._nuxMap = new Map(
-      JSON.parse(window.localStorage.getItem(NUX_SAVED_STORE))
+      JSON.parse(window.localStorage.getItem(NUX_SAVED_STORE)),
     );
   }
 

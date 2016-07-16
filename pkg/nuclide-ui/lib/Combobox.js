@@ -110,7 +110,7 @@ export class Combobox extends React.Component {
       atom.commands.add(node, 'core:move-down', this._handleMoveDown),
       atom.commands.add(node, 'core:cancel', this._handleCancel),
       atom.commands.add(node, 'core:confirm', this._handleConfirm),
-      this.refs.freeformInput.onDidChange(this._handleTextInputChange)
+      this.refs.freeformInput.onDidChange(this._handleTextInputChange),
     );
     this.requestUpdate(this.state.textInput);
   }
@@ -133,7 +133,7 @@ export class Combobox extends React.Component {
     this.setState({error: null, loadingOptions: true});
 
     this._updateSubscription = Rx.Observable.fromPromise(
-      this.props.requestOptions(textInput)
+      this.props.requestOptions(textInput),
     )
       .subscribe(
         options => this.receiveUpdate(options),
@@ -189,9 +189,9 @@ export class Combobox extends React.Component {
             valueLowercase,
             matchIndex: valueLowercase.indexOf(lowerCaseState),
           };
-        }
+        },
       ).filter(
-        option => option.matchIndex !== -1
+        option => option.matchIndex !== -1,
       ).slice(0, this.props.maxOptionCount);
   }
 
@@ -300,7 +300,7 @@ export class Combobox extends React.Component {
       options.push(
         <li key="loading-text" className="loading">
           <span className="loading-message">{this.props.loadingMessage}</span>
-        </li>
+        </li>,
       );
     }
 
@@ -309,7 +309,7 @@ export class Combobox extends React.Component {
       options.push(
         <li className="text-error">
           {message}
-        </li>
+        </li>,
       );
     }
 
@@ -319,11 +319,11 @@ export class Combobox extends React.Component {
         const endOfMatchIndex = option.matchIndex + this.state.textInput.length;
         const highlightedMatch = option.value.substring(
           option.matchIndex,
-          endOfMatchIndex
+          endOfMatchIndex,
         );
         const afterMatch = option.value.substring(
           endOfMatchIndex,
-          option.value.length
+          option.value.length,
         );
         const isSelected = i === this.state.selectedIndex;
         return (
@@ -344,7 +344,7 @@ export class Combobox extends React.Component {
         options.push(
           <li className="text-subtle" key="no-results-found">
             No results found
-          </li>
+          </li>,
         );
       }
 

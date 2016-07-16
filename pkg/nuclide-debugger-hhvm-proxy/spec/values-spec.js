@@ -34,7 +34,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
           size: 15,
           encoding: 'base64',
         },
-      }
+      },
     )).toEqual({
       type: 'string',
       value: 'test-client.php',
@@ -52,7 +52,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
           address: '140735826684880',
           type: 'int',
         },
-      }
+      },
     )).toEqual({
       type: 'number',
       value: '1',
@@ -70,7 +70,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
           address: '140735826684880',
           type: 'int',
         },
-      }
+      },
     )).toEqual({
       type: 'number',
       value: '-5560108255872548864',
@@ -88,7 +88,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
           address: '140735826684880',
           type: 'float',
         },
-      }
+      },
     )).toEqual({
       type: 'number',
       value: '42.5',
@@ -106,7 +106,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
           address: '140735826684880',
           type: 'bool',
         },
-      }
+      },
     )).toEqual({
       type: 'boolean',
       value: true,
@@ -123,7 +123,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
           address: '140735826684880',
           type: 'null',
         },
-      }
+      },
     )).toEqual({
       type: 'undefined',
       subtype: 'null',
@@ -158,7 +158,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
             },
           },
         ],
-      }
+      },
     )).toEqual({
       description: 'Array[1]',
       type: 'object',
@@ -181,7 +181,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
           page: 0,
           pagesize: 32,
         },
-      }
+      },
     )).toEqual({
       description: 'CLS',
       type: 'object',

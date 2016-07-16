@@ -62,7 +62,7 @@ async function hgActionToPath(
   try {
     await action(hgRepositoryAsync);
     atom.notifications.addSuccess(
-      `${actionDoneMessage} \`${repository.relativize(nodePath)}\` successfully.`
+      `${actionDoneMessage} \`${repository.relativize(nodePath)}\` successfully.`,
     );
   } catch (error) {
     atom.notifications.addError(

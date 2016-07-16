@@ -19,7 +19,7 @@ function transform(source: string, options: SourceOptions): string {
   }
   return source.replace(
     '\'use babel\';\n\n/* @flow */',
-    '\'use babel\';\n/* @flow */'
+    '\'use babel\';\n/* @flow */',
   );
 }
 

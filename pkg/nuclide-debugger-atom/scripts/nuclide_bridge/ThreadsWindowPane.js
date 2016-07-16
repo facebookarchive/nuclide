@@ -137,14 +137,14 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
         const indicator = this._getIndicator(
           thread,
           threadData.stopThreadId,
-          threadData.selectedThreadId
+          threadData.selectedThreadId,
         );
         const rowStyle = {};
         if (thread.id === threadData.selectedThreadId) {
           rowStyle.backgroundColor = '#cfcfcf';
         }
         if (indicator === '>') {
-          children.push((
+          children.push(
             <tr
               align="center"
               onDoubleClick={this._handleDoubleClick.bind(this, thread)}
@@ -154,10 +154,10 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
               <td>{thread.id}</td>
               <td>{thread.address}</td>
               <td>{thread.stopReason}</td>
-            </tr>
-          ));
+            </tr>,
+          );
         } else {
-          children.push((
+          children.push(
             <tr
               align="center"
               onDoubleClick={this._handleDoubleClick.bind(this, thread)}
@@ -166,8 +166,8 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
               <td>{thread.id}</td>
               <td>{thread.address}</td>
               <td>{thread.stopReason}</td>
-            </tr>
-          ));
+            </tr>,
+          );
         }
       }
     }

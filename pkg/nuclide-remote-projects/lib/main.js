@@ -356,7 +356,7 @@ export function activate(
   subscriptions.add(atom.commands.add(
     'atom-workspace',
     'nuclide-remote-projects:connect',
-    () => openConnectionDialog()
+    () => openConnectionDialog(),
   ));
 
   subscriptions.add(atom.commands.add(

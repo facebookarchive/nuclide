@@ -72,7 +72,7 @@ describe('outlineFromHackIdeOutline', () => {
             char_start: 10,
           },
         },
-      ]
+      ],
     );
     expect(actualOutline).toEqual(
       {
@@ -274,7 +274,7 @@ describe('outlineFromHackIdeOutline', () => {
             char_end: 16,
           },
         },
-      ]
+      ],
     );
     expect(actualOutline).toEqual(
       {
@@ -410,7 +410,7 @@ describe('outlineFromHackIdeOutline', () => {
             line_start: 19,
           },
         },
-      ]
+      ],
     );
     expect(actualOutline).toEqual(
       {
@@ -485,7 +485,7 @@ describe('outlineFromHackIdeOutline', () => {
             ],
           },
         ],
-      }
+      },
     );
   });
 
@@ -511,7 +511,7 @@ describe('outlineFromHackIdeOutline', () => {
           name: 'I',
           children: [],
         },
-      ]
+      ],
     );
     expect(actualOutline).toEqual(
       {
@@ -543,7 +543,7 @@ describe('outlineFromHackIdeOutline', () => {
             children: [],
           },
         ],
-      }
+      },
     );
   });
 
@@ -588,7 +588,7 @@ describe('outlineFromHackIdeOutline', () => {
           },
           kind: 'enum',
         },
-      ]
+      ],
     );
     expect(actualOutline).toEqual(
       {

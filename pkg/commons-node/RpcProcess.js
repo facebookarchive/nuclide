@@ -56,7 +56,7 @@ export default class RpcProcess {
     this._rpcConnection = null;
     this._disposed = false;
     this._ensureProcess = serializeAsyncCall(() =>
-      this._ensureProcessImpl(createProcess)
+      this._ensureProcessImpl(createProcess),
     );
   }
 

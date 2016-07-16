@@ -23,7 +23,7 @@ export class PathsObserver {
     this._workingSetsStore = workingSetsStore;
 
     this._disposable = atom.project.onDidChangePaths(
-      this._didChangePaths.bind(this)
+      this._didChangePaths.bind(this),
     );
   }
 

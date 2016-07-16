@@ -79,8 +79,8 @@ class Activation {
       new DisposableSubscription(
         observeNavigatingEditors().subscribe(editor => {
           controller.onOptInNavigation(editor);
-        })
-      )
+        }),
+      ),
     );
 
     this._disposables.add(

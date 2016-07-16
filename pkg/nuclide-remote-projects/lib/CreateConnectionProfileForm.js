@@ -70,7 +70,7 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
       // Hitting enter when this panel has focus should confirm the dialog.
       atom.commands.add(root, 'core:confirm', this._clickSave),
       // Hitting escape when this panel has focus should cancel the dialog.
-      atom.commands.add(root, 'core:cancel', this._clickCancel)
+      atom.commands.add(root, 'core:cancel', this._clickCancel),
     );
     this.refs['profile-name'].focus();
   }

@@ -39,12 +39,12 @@ function getRecentFilesMatching(query: string): Array<FileResult> {
   }
   const projectPaths = atom.project.getPaths();
   const openFiles = new Set(arrayCompact(
-    atom.workspace.getTextEditors().map(editor => editor.getPath())
+    atom.workspace.getTextEditors().map(editor => editor.getPath()),
   ));
   const validRecentFiles = _recentFilesService.getRecentFiles()
     .filter(result =>
       !openFiles.has(result.path) &&
-      projectPaths.some(projectPath => result.path.indexOf(projectPath) !== -1)
+      projectPaths.some(projectPath => result.path.indexOf(projectPath) !== -1),
     );
   const timestamps: Map<FilePath, TimeStamp> = new Map();
   const matcher = new Matcher(validRecentFiles.map(recentFile => {
@@ -89,8 +89,8 @@ function opacityForTimestamp(timestamp: number): number {
     1,
     Math.max(
       1 - (FALLOFF * Math.log10(((ageInMS - SHELF) / MS_PER_DAY) + 1)),
-      MIN_OPACITY
-    )
+      MIN_OPACITY,
+    ),
   );
 }
 

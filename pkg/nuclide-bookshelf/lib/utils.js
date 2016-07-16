@@ -41,7 +41,7 @@ export function serializeBookShelfState(
         shortHeadsToFileList: Array.from(repositoryState.shortHeadsToFileList.entries()),
       };
       return [repositoryPath, serializedShortHeadToFileList];
-    }
+    },
   );
   return {
     repositoryPathToState: serializedRepositoryPathToState,
@@ -67,7 +67,7 @@ export function deserializeBookShelfState(
           shortHeadsToFileList: Immutable.Map(repositoryState.shortHeadsToFileList),
         },
       ];
-    })
+    }),
   );
   return {
     repositoryPathToState,
@@ -88,7 +88,7 @@ export function getRepoPathToEditors(): Map<NuclideUri, Array<atom$TextEditor>> 
       const repositoryPath = repository.getWorkingDirectory();
       reposToEditors.set(
         repositoryPath,
-        (reposToEditors.get(repositoryPath) || []).concat([textEditor])
+        (reposToEditors.get(repositoryPath) || []).concat([textEditor]),
       );
     });
   return reposToEditors;
@@ -119,7 +119,7 @@ export function shortHeadChangedNotification(
           },
           text: 'Open files',
         }],
-      }
+      },
     );
 
     const dismissSubscription = shortHeadChangeNotification.onDidDismiss(() => {
@@ -155,7 +155,7 @@ export function getShortHeadChangesFromStateStream(
               repositoryPath,
               activeShortHead,
             };
-          })
+          }),
         );
     });
 }

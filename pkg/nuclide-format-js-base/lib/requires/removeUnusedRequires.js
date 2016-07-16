@@ -27,7 +27,7 @@ function removeUnusedRequires(
   const nonRequires = getDeclaredIdentifiers(
     root,
     options,
-    [path => !hasOneRequireDeclaration(path.node)]
+    [path => !hasOneRequireDeclaration(path.node)],
   );
 
   // Remove unused requires.

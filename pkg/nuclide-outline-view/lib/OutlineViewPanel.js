@@ -171,6 +171,6 @@ class OutlineViewHeader extends React.Component {
 function hideOutlineView() {
   atom.commands.dispatch(
     atom.views.getView(atom.workspace),
-    'nuclide-outline-view:hide'
+    'nuclide-outline-view:hide',
   );
 }

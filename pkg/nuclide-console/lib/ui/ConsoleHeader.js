@@ -62,7 +62,7 @@ export default class ConsoleHeader extends React.Component {
         // We don't actually allow no sources to be selected. What would be the point? If nothing is
         // selected, treat it as though everything is.
         ? this.props.sources.map(source => source.id)
-        : sourceIds
+        : sourceIds,
     );
   }
 

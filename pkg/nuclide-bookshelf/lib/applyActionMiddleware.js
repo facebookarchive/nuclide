@@ -65,19 +65,19 @@ function watchProjectRepository(
   return Observable.merge(
     observableFromSubscribeFunction(
       // Re-fetch when the list of bookmarks changes.
-      repositoryAsync.onDidChangeBookmarks.bind(repositoryAsync)
+      repositoryAsync.onDidChangeBookmarks.bind(repositoryAsync),
     ),
     observableFromSubscribeFunction(
       // Re-fetch when the active bookmark changes (called "short head" to match
       // Atom's Git API).
-      repositoryAsync.onDidChangeShortHead.bind(repositoryAsync)
-    )
+      repositoryAsync.onDidChangeShortHead.bind(repositoryAsync),
+    ),
   )
   .startWith(null) // Kick it off the first time
   .switchMap(() => Observable.fromPromise(repositoryAsync.getBookmarks()))
   .map(bookmarks => {
     const bookmarkNames = new Set(
-      bookmarks.map(bookmark => bookmark.bookmark).concat([EMPTY_SHORTHEAD])
+      bookmarks.map(bookmark => bookmark.bookmark).concat([EMPTY_SHORTHEAD]),
     );
 
     const activeBookmark = bookmarks.filter(bookmark => bookmark.active)[0];

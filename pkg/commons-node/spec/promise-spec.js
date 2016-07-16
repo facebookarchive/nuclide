@@ -250,7 +250,7 @@ describe('promises::asyncLimit()', () => {
             [1, 2, 3],
           1,
           item => waitPromise(10, item + 1),
-        ]
+        ],
       );
       expect(parallelismHistory).toEqual([1, 1, 1]);
       expect(result).toEqual([2, 3, 4]);
@@ -265,7 +265,7 @@ describe('promises::asyncLimit()', () => {
             [1, 2, 3, 4, 5, 6, 7, 8, 9],
           3,
           item => waitPromise(10 + item, item - 1),
-        ]
+        ],
       );
       expect(result).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3, 3, 3, 3, 3]);
@@ -310,7 +310,7 @@ describe('promises::asyncFilter()', () => {
         [
             [1, 2, 3, 4, 5],
           item => waitPromise(10 + item, item > 2),
-        ]
+        ],
       );
       expect(filtered).toEqual([3, 4, 5]);
       expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
@@ -325,7 +325,7 @@ describe('promises::asyncFilter()', () => {
             [1, 2, 3, 4, 5],
           item => waitPromise(10 + item, item > 2),
           3,
-        ]
+        ],
       );
       expect(filtered).toEqual([3, 4, 5]);
       // Increasing promise resolve time will gurantee maximum parallelization.
@@ -347,7 +347,7 @@ describe('promises::asyncObjFilter()', () => {
         [
             {a: 1, b: 2, c: 3, d: 4, e: 5},
           (value, key) => waitPromise(5 + value, value > 2),
-        ]
+        ],
       );
       expect(filtered).toEqual({c: 3, d: 4, e: 5});
       expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
@@ -362,7 +362,7 @@ describe('promises::asyncObjFilter()', () => {
             {a: 1, b: 2, c: 3, d: 4, e: 5},
           (value, key) => waitPromise(5 + value, value > 2),
           3,
-        ]
+        ],
       );
       expect(filtered).toEqual({c: 3, d: 4, e: 5});
       // Increasing promise resolve time will gurantee maximum parallelization.
@@ -384,7 +384,7 @@ describe('promises::asyncSome()', () => {
         [
             [1, 2, 3, 4, 5],
           item => waitPromise(10, item === 6),
-        ]
+        ],
       );
       expect(result).toEqual(false);
       expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
@@ -399,7 +399,7 @@ describe('promises::asyncSome()', () => {
             [1, 2, 3, 4, 5],
           item => waitPromise(10 + item, item === 5),
           3,
-        ]
+        ],
       );
       expect(result).toEqual(true);
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3]);

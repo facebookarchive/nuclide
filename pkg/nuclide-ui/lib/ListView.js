@@ -62,7 +62,7 @@ export class Listview extends React.Component {
             {child}
           </div>
         );
-      }
+      },
     );
     const className = classnames({
       'nuclide-ui-listview': true,

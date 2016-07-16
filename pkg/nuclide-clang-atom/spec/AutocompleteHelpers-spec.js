@@ -67,7 +67,7 @@ describe('AutocompleteHelpers', () => {
       expect(body).toBe(
               'ArgumentOne:${1:arg1}\n' +
         '             arg2:${2:argTwo}\n' +
-        '        Argument3:${3:argument3}\n'
+        '        Argument3:${3:argument3}\n',
       );
     });
 
@@ -134,7 +134,7 @@ describe('AutocompleteHelpers', () => {
               'Arg1:${1:argumentOne}\n' +
         '         arg2:${2:argTwo}\n' +
         '    Argument3:${3:argument3}\n' +
-        '      test123:${4:this_is_a_test_placeholder}\n'
+        '      test123:${4:this_is_a_test_placeholder}\n',
       );
     });
 

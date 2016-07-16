@@ -54,7 +54,7 @@ function hasPrefix(
   ): boolean {
   const priorChars = editor.getTextInBufferRange(new Range(
     new Point(bufferPosition.row, bufferPosition.column - prefixLookback),
-    bufferPosition
+    bufferPosition,
   ));
   return checkPrefixes.some(prefix => priorChars.endsWith(prefix));
 }

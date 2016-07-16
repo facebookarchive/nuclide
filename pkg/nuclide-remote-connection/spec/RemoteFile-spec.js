@@ -282,7 +282,7 @@ describe('RemoteFile', () => {
       it('notifies ::onWillThrowWatchError observers', () => {
         const notExistingFile = new RemoteFile(
           connectionMock,
-          nuclideUri.join(tempDir, 'no_existing.txt')
+          nuclideUri.join(tempDir, 'no_existing.txt'),
         );
         let skippedError;
         let handleError;
@@ -346,7 +346,7 @@ describe('RemoteFile', () => {
       waitsForPromise(async () => {
         const notExistingFile = new RemoteFile(
           connectionMock,
-          nuclideUri.join(tempDir, 'no_existing.txt')
+          nuclideUri.join(tempDir, 'no_existing.txt'),
         );
         const exists = await notExistingFile.exists();
         expect(exists).toBe(false);

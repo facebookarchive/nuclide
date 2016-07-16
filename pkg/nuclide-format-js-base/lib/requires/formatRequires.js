@@ -40,7 +40,7 @@ const CONFIG: Array<ConfigEntry> = [
     ],
     comparator: (node1, node2) => compareStrings(
       node1.specifiers[0].local.name,
-      node2.specifiers[0].local.name
+      node2.specifiers[0].local.name,
     ),
     mapper: node => reprintRequire(node),
   },
@@ -54,7 +54,7 @@ const CONFIG: Array<ConfigEntry> = [
     ],
     comparator: (node1, node2) => compareStrings(
       node1.expression.arguments[0].value,
-      node2.expression.arguments[0].value
+      node2.expression.arguments[0].value,
     ),
     mapper: node => reprintRequire(node),
   },
@@ -69,7 +69,7 @@ const CONFIG: Array<ConfigEntry> = [
     ],
     comparator: (node1, node2) => compareStrings(
       getDeclarationName(node1),
-      getDeclarationName(node2)
+      getDeclarationName(node2),
     ),
     mapper: node => reprintRequire(node),
   },
@@ -84,7 +84,7 @@ const CONFIG: Array<ConfigEntry> = [
     ],
     comparator: (node1, node2) => compareStrings(
       getDeclarationName(node1),
-      getDeclarationName(node2)
+      getDeclarationName(node2),
     ),
     mapper: node => reprintRequire(node),
   },
@@ -144,12 +144,12 @@ function isValidRequireDeclaration(node: Node): boolean {
   }
   if (jscs.ObjectPattern.check(declaration.id)) {
     return declaration.id.properties.every(
-      prop => prop.shorthand && jscs.Identifier.check(prop.key)
+      prop => prop.shorthand && jscs.Identifier.check(prop.key),
     );
   }
   if (jscs.ArrayPattern.check(declaration.id)) {
     return declaration.id.elements.every(
-      element => jscs.Identifier.check(element)
+      element => jscs.Identifier.check(element),
     );
   }
   return false;

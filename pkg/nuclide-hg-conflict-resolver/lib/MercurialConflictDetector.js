@@ -41,8 +41,8 @@ export class MercurialConflictDetector {
   _updateRepositories(): void {
     const repositories = new Set(
       atom.project.getRepositories().filter(
-        repository => repository != null && repository.getType() === 'hg'
-      )
+        repository => repository != null && repository.getType() === 'hg',
+      ),
     );
     // Dispose removed projects repositories, if any.
     for (const [repository, repositorySubscription] of this._repositorySubscriptions) {

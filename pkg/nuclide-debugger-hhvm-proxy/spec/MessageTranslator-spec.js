@@ -22,7 +22,7 @@ describe('debugger-hhvm-proxy MessageTranslator', () => {
   beforeEach(() => {
     connectionMultiplexer = jasmine.createSpyObj(
       'connectionMultiplexer',
-      ['dispose', 'onStatus', 'onConnectionError']
+      ['dispose', 'onStatus', 'onConnectionError'],
     );
     ConnectionMultiplexer = spyOn(require('../lib/ConnectionMultiplexer'), 'ConnectionMultiplexer')
       .andReturn(connectionMultiplexer);
@@ -58,7 +58,7 @@ describe('debugger-hhvm-proxy MessageTranslator', () => {
       await translater.handleCommand('{"id": 1, "method": "foo.enable"}');
       expect(clientCallback.replyWithError).toHaveBeenCalledWith(
         1,
-        'Unknown domain: {"id": 1, "method": "foo.enable"}'
+        'Unknown domain: {"id": 1, "method": "foo.enable"}',
       );
     });
   });

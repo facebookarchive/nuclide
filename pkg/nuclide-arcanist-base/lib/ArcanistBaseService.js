@@ -99,7 +99,7 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>, skip: Arra
         }
         files.push(file);
       }
-    })
+    }),
   );
 
   // Kick off all the arc execs at once, then await later so they all happen in parallel.

@@ -37,7 +37,7 @@ export default class CodeFormatHelpers {
       src,
       buffer.getText(),
       range.start.row + 1,
-      range.end.row + 1
+      range.end.row + 1,
     );
 
     return {formatted};

@@ -126,7 +126,7 @@ class ModuleMap {
       literal = ModuleMapUtils.relativizeForRequire(
         options.sourcePath,
         // $FlowFixMe(kad)
-        this._aliasesToRelativize.get(id)
+        this._aliasesToRelativize.get(id),
       );
     } else if (
       this._defaults.has(id) &&
@@ -153,7 +153,7 @@ class ModuleMap {
       for (const filePath of this._defaultsToRelativize.get(id)) {
         literal = ModuleMapUtils.relativizeForRequire(
           nonNullSourcePath,
-          filePath
+          filePath,
         );
         break;
       }
@@ -197,9 +197,9 @@ class ModuleMap {
           oneLineObjectPattern(jscs.objectPattern([property])),
           jscs.callExpression(
             jscs.identifier('require'),
-            [literalNode]
-          )
-        )]
+            [literalNode],
+          ),
+        )],
       );
     } else if (!destructure && !options.typeImport) {
       // var foo = require('foo');
@@ -209,9 +209,9 @@ class ModuleMap {
           idNode,
           jscs.callExpression(
             jscs.identifier('require'),
-            [literalNode]
-          )
-        )]
+            [literalNode],
+          ),
+        )],
       );
     }
 

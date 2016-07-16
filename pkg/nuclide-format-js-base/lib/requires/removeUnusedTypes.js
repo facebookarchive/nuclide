@@ -45,7 +45,7 @@ function removeUnusedTypes(root: Collection, options: SourceOptions): void {
   const nonTypeImport = getDeclaredTypes(
     root,
     options,
-    [path => !isTypeImportDeclaration(path.node)]
+    [path => !isTypeImportDeclaration(path.node)],
   );
   // Remove things based on the config.
   CONFIG.forEach(config => {
@@ -53,7 +53,7 @@ function removeUnusedTypes(root: Collection, options: SourceOptions): void {
       .find(config.searchTerms[0], config.searchTerms[1])
       .filter(path => config.filters.every(filter => filter(path)))
       .filter(path => config.getNames(path.node).every(
-        name => !used.has(name) || declared.has(name) || nonTypeImport.has(name)
+        name => !used.has(name) || declared.has(name) || nonTypeImport.has(name),
       ))
       .remove();
   });

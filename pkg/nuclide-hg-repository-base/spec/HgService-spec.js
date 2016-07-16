@@ -130,7 +130,7 @@ describe('HgService', () => {
         await hgService.createBookmark(BOOKMARK_NAME);
         expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
           ['bookmark', BOOKMARK_NAME],
-          {cwd: TEST_WORKING_DIRECTORY}
+          {cwd: TEST_WORKING_DIRECTORY},
         );
       });
     });
@@ -141,7 +141,7 @@ describe('HgService', () => {
         await hgService.createBookmark(BOOKMARK_NAME, BASE_REVISION);
         expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
           ['bookmark', '--rev', BASE_REVISION, BOOKMARK_NAME],
-          {cwd: TEST_WORKING_DIRECTORY}
+          {cwd: TEST_WORKING_DIRECTORY},
         );
       });
     });
@@ -156,7 +156,7 @@ describe('HgService', () => {
         await hgService.deleteBookmark(BOOKMARK_NAME);
         expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
           ['bookmarks', '--delete', BOOKMARK_NAME],
-          {cwd: TEST_WORKING_DIRECTORY}
+          {cwd: TEST_WORKING_DIRECTORY},
         );
       });
     });
@@ -171,7 +171,7 @@ describe('HgService', () => {
         await hgService.renameBookmark(BOOKMARK_NAME, 'fried-chicken');
         expect(hgService._hgAsyncExecute).toHaveBeenCalledWith(
           ['bookmarks', '--rename', BOOKMARK_NAME, 'fried-chicken'],
-          {cwd: TEST_WORKING_DIRECTORY}
+          {cwd: TEST_WORKING_DIRECTORY},
         );
       });
     });

@@ -43,7 +43,7 @@ describe('Scan Handler Tests', () => {
 
       const results = await search(folder, /hello world/i, []).toArray().toPromise();
       const expected = JSON.parse(
-        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'basic.json'), 'utf8')
+        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'basic.json'), 'utf8'),
       );
 
       // Sort results by filename to normalize order.
@@ -63,7 +63,7 @@ describe('Scan Handler Tests', () => {
 
       const results = await search(folder, /hello world/, []).toArray().toPromise();
       const expected = JSON.parse(
-        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'casesensitive.json'), 'utf8')
+        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'casesensitive.json'), 'utf8'),
       );
 
       // Sort the list of matches by filename to normalize order.
@@ -84,10 +84,10 @@ describe('Scan Handler Tests', () => {
       fs.mkdirSync(nuclideUri.join(folder, 'dir3'));
       fs.writeFileSync(nuclideUri.join(folder, 'dir3', 'file.txt'), testCode);
       const results = await search(
-        folder, /hello world/i, ['dir2', 'dir3', 'nonexistantdir']
+        folder, /hello world/i, ['dir2', 'dir3', 'nonexistantdir'],
       ).toArray().toPromise();
       const expected = JSON.parse(
-        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'subdirs.json'), 'utf8')
+        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'subdirs.json'), 'utf8'),
       );
 
       // Sort the list of matches by filename to normalize order.
@@ -105,10 +105,10 @@ describe('Scan Handler Tests', () => {
       fs.writeFileSync(nuclideUri.join(folder, 'foo.js'), fileContents);
       fs.writeFileSync(nuclideUri.join(folder, 'foo.py'), fileContents);
       const results = await search(
-        folder, /a wildcard appears/i, ['*.js']
+        folder, /a wildcard appears/i, ['*.js'],
       ).toArray().toPromise();
       const expected = JSON.parse(
-        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'wildcard.json'), 'utf8')
+        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'wildcard.json'), 'utf8'),
       );
 
       sortResults(results);
@@ -136,7 +136,7 @@ describe('Scan Handler Tests', () => {
 
       const results = await search(folder, /hello world/i, []).toArray().toPromise();
       const expected = JSON.parse(
-        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'repo.json'), 'utf8')
+        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'repo.json'), 'utf8'),
       );
 
       // Sort the list of matches by filename to normalize order.
@@ -170,7 +170,7 @@ describe('Scan Handler Tests', () => {
 
       const results = await search(folder, /hello world()/i, []).toArray().toPromise();
       const expected = JSON.parse(
-        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'repo.json'), 'utf8')
+        fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', 'repo.json'), 'utf8'),
       );
 
       // Sort the list of matches by filename to normalize order.

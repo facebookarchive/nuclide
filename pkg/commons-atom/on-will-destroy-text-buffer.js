@@ -23,7 +23,7 @@ export default function onWillDestroyTextBuffer(
     const openBufferCount = editor.getBuffer().refcount;
     invariant(
       openBufferCount !== 0,
-      'The file that is about to be closed should still be open.'
+      'The file that is about to be closed should still be open.',
     );
     if (openBufferCount === 1) {
       callback(editor.getBuffer());

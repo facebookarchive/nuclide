@@ -185,20 +185,20 @@ describe('RemoteDirectory::contains()', () => {
   it('returns false when passed dir at same level with similar name', () => {
     const remoteDirectory = new RemoteDirectory(
       connectionMock,
-      'nuclide://example.com/www'
+      'nuclide://example.com/www',
     );
     expect(
-      remoteDirectory.contains('nuclide://example.com/www-base')
+      remoteDirectory.contains('nuclide://example.com/www-base'),
     ).toBe(false);
   });
 
   it('returns false when has slash and passed dir with similar name', () => {
     const remoteDirectory = new RemoteDirectory(
       connectionMock,
-      'nuclide://example.com/www/'
+      'nuclide://example.com/www/',
     );
     expect(
-      remoteDirectory.contains('nuclide://example.com/www-base')
+      remoteDirectory.contains('nuclide://example.com/www-base'),
     ).toBe(false);
   });
 });

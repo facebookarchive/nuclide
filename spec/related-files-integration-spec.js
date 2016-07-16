@@ -30,7 +30,7 @@ describeRemotableTest('Related Files Integration Test', context => {
       // Create a temporary directory and some test files.
       const testDir = await fixtures.generateFixture(
         'related-files',
-        new Map(TEST_FILES.concat(BAD_FILES).map(f => [f]))
+        new Map(TEST_FILES.concat(BAD_FILES).map(f => [f])),
       );
 
       await context.setProject(testDir);
@@ -45,7 +45,7 @@ describeRemotableTest('Related Files Integration Test', context => {
         const path = textEditor.getPath();
         invariant(path != null);
         expect(nuclideUri.basename(path)).toBe(
-          TEST_FILES[(TEST_FILES.length - i) % TEST_FILES.length]
+          TEST_FILES[(TEST_FILES.length - i) % TEST_FILES.length],
         );
         const textEditorView = atom.views.getView(textEditor);
         dispatchKeyboardEvent('n', textEditorView, {cmd: true, alt: true});

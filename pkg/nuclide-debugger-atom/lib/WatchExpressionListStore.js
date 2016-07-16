@@ -38,7 +38,7 @@ export class WatchExpressionListStore {
     this._disposables = new CompositeDisposable(
       new Disposable(() => {
         dispatcher.unregister(dispatcherToken);
-      })
+      }),
     );
     this._watchExpressions = new Rx.BehaviorSubject([]);
   }

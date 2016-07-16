@@ -39,7 +39,7 @@ class BreakpointStore {
     this._disposables = new CompositeDisposable(
       new Disposable(() => {
         dispatcher.unregister(dispatcherToken);
-      })
+      }),
     );
     this._breakpoints = new Multimap();
     this._emitter = new Emitter();

@@ -69,7 +69,7 @@ export class NuxManager {
     this._disposables.add(this._nuxStore.onNewNux(this._handleNewNux.bind(this)));
     this._disposables.add(
       atom.workspace.onDidStopChangingActivePaneItem(
-        this._handleActivePaneItemChanged.bind(this)
+        this._handleActivePaneItemChanged.bind(this),
       ),
     );
 
@@ -170,7 +170,7 @@ export class NuxManager {
     } = value;
 
     nuxTour.setNuxCompleteCallback(
-        this._handleNuxCompleted.bind(this, nuxTourModel)
+        this._handleNuxCompleted.bind(this, nuxTourModel),
     );
 
     this._pendingNuxes.set(nuxTour.getID(), nuxTour);

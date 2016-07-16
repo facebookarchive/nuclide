@@ -81,7 +81,7 @@ export const getDevices = memoize(() => (
 
 export function getActiveDeviceIndex(devices: Device[]): number {
   const bootedDeviceIndex = devices.findIndex(
-    device => device.state === DeviceState.Booted
+    device => device.state === DeviceState.Booted,
   );
   if (bootedDeviceIndex > -1) {
     return bootedDeviceIndex;

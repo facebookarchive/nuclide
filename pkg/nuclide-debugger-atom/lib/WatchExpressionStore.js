@@ -55,7 +55,7 @@ export class WatchExpressionStore {
     this._disposables.add(
       new Disposable(() => {
         dispatcher.unregister(_dispatcherToken);
-      })
+      }),
     );
   }
 
@@ -80,7 +80,7 @@ export class WatchExpressionStore {
       Rx.Observable
       .fromPromise(callback())
       .merge(Rx.Observable.never())
-      .subscribe(subject)
+      .subscribe(subject),
     );
   }
 

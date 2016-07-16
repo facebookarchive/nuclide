@@ -85,7 +85,7 @@ export class MultiSelectList extends React.Component {
             }
           },
         },
-      )
+      ),
     );
   }
 

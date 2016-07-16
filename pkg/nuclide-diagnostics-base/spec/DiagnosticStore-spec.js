@@ -145,11 +145,11 @@ describe('DiagnosticStore', () => {
 
     expect(spy_fileA.calls.length).toBe(2);
     expect(spy_fileA.mostRecentCall.args).toEqual(
-      [{filePath: 'fileA', messages: [fileMessageA]}]
+      [{filePath: 'fileA', messages: [fileMessageA]}],
     );
     expect(spy_project.callCount).toBe(2);
     expect(spy_project.mostRecentCall.args).toEqual(
-      [[projectMessageA]]
+      [[projectMessageA]],
     );
     expect(spy_allMessages.calls.length).toBe(2);
     expect(spy_allMessages.mostRecentCall.args[0].length).toBe(2);
@@ -176,7 +176,7 @@ describe('DiagnosticStore', () => {
     setSpies();
     expect(spy_fileA.callCount).toBe(1);
     expect(spy_fileA).toHaveBeenCalledWith(
-      {filePath: 'fileA', messages: [fileMessageA]}
+      {filePath: 'fileA', messages: [fileMessageA]},
     );
     expect(spy_fileB.callCount).toBe(1);
     expect(spy_fileB).toHaveBeenCalledWith({filePath: 'fileB', messages: []});
@@ -198,7 +198,7 @@ describe('DiagnosticStore', () => {
     // spy_fileB is called from updateB.
     expect(spy_fileB.callCount).toBe(2);
     expect(spy_fileB.mostRecentCall.args).toEqual(
-      [{filePath: 'fileB', messages: [fileMessageB]}]
+      [{filePath: 'fileB', messages: [fileMessageB]}],
     );
 
     // spy_project and spy_allMessages are called from data from the initial state
@@ -252,7 +252,7 @@ describe('DiagnosticStore', () => {
     // initial state and updateA2.
     expect(spy_fileA.calls.length).toBe(2);
     expect(spy_fileA.mostRecentCall.args).toEqual(
-      [{filePath: 'fileA', messages: [fileMessageA2]}]
+      [{filePath: 'fileA', messages: [fileMessageA2]}],
     );
     expect(spy_project.calls.length).toBe(2);
     expect(spy_project.mostRecentCall.args[0].length).toBe(2);
@@ -307,7 +307,7 @@ describe('DiagnosticStore', () => {
 
       expect(spy_fileA.calls.length).toBe(2);
       expect(spy_fileA.mostRecentCall.args).toEqual(
-        [{filePath: 'fileA', messages: []}]
+        [{filePath: 'fileA', messages: []}],
       );
       expect(spy_allMessages.calls.length).toBe(2);
       expect(spy_allMessages.mostRecentCall.args[0].length).toBe(3);

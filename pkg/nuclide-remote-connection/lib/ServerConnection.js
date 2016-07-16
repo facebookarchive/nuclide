@@ -282,7 +282,7 @@ class ServerConnection {
     return Boolean(
         this._config.certificateAuthorityCertificate
         && this._config.clientCertificate
-        && this._config.clientKey
+        && this._config.clientKey,
     );
   }
 

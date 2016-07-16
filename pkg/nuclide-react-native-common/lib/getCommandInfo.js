@@ -64,7 +64,7 @@ async function getCommandFromNodeModules(dir: string): Promise<?CommandInfo> {
   }
 
   const command = await getCommandForCli(
-    nuclideUri.join(nodeModulesParent, 'node_modules', 'react-native')
+    nuclideUri.join(nodeModulesParent, 'node_modules', 'react-native'),
   );
 
   return command == null ? null : {

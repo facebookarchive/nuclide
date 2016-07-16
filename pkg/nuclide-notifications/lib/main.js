@@ -68,7 +68,7 @@ function raiseNativeNotification(title: string, body: string): void {
     title, {
       body,
       icon: 'atom://nuclide/pkg/nuclide-notifications/notification.png',
-    }
+    },
   );
 }
 

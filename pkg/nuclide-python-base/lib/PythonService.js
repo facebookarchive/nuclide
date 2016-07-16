@@ -213,7 +213,7 @@ export async function getDiagnostics(
     }
     throw new Error(
       `flake8 failed with error: ${maybeToString(result.errorMessage)}, ` +
-      `stderr: ${result.stderr}, stdout: ${result.stdout}`
+      `stderr: ${result.stderr}, stdout: ${result.stdout}`,
     );
   }
   return parseFlake8Output(src, result.stdout);
@@ -247,7 +247,7 @@ export async function formatCode(
   } else if (result.exitCode == null) {
     throw new Error(
       `"${libCommand}" failed with error: ${maybeToString(result.errorMessage)}, ` +
-      `stderr: ${result.stderr}, stdout: ${result.stdout}.`
+      `stderr: ${result.stderr}, stdout: ${result.stdout}.`,
     );
   } else if (contents !== '' && result.stdout === '') {
     // Throw error if the yapf output is empty, which is almost never desirable.

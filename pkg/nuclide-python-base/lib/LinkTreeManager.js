@@ -76,7 +76,7 @@ export default class LinkTreeManager {
         // Not using Promise.all since we want to break as soon as one query returns
         // a non-empty result, and we don't want concurrent buck queries.
         const results = await project.query( // eslint-disable-line babel/no-await-in-loop
-          `kind(${kind}, rdeps(${searchRoot}, owner(${src})))`
+          `kind(${kind}, rdeps(${searchRoot}, owner(${src})))`,
         );
         if (results.length > 0) {
           return results;

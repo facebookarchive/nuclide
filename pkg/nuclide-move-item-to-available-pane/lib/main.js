@@ -28,7 +28,7 @@ class Activation {
         'nuclide-move-item-to-available-pane:left': () => moveLeft(),
         'nuclide-move-item-to-available-pane:up': () => moveUp(),
         'nuclide-move-item-to-available-pane:down': () => moveDown(),
-      }
+      },
     ));
   }
 

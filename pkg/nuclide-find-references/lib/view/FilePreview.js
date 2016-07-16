@@ -55,7 +55,7 @@ export default class FilePreview extends React.Component {
       lineNumbers.push(
         <div key={i} className="nuclide-find-references-line-number">
           {i}
-        </div>
+        </div>,
       );
     }
     return (

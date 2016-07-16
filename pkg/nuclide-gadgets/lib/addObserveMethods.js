@@ -99,7 +99,7 @@ function createObserveFunction(comparer: Comparer = strictEquals): Result {
   // observables (by accepting Observers as well as callbacks).
   return {
     observe: callback => new DisposableSubscription(
-      distinctValue$.subscribe(value => callback(value))
+      distinctValue$.subscribe(value => callback(value)),
     ),
     notify(getValue) {
       // Don't calculate the next value unless somebody's listening.

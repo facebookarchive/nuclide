@@ -137,7 +137,7 @@ function hgRepositoryForPath(filePath: NuclideUri): HgRepositoryClient {
     const type = repository ? repository.getType() : 'no repository';
     throw new Error(
       'Diff view only supports `Mercurial` repositories, ' +
-      `but found \`${type}\` at path: \`${filePath}\``
+      `but found \`${type}\` at path: \`${filePath}\``,
     );
   }
   return (repository: any);
@@ -228,8 +228,8 @@ class DiffViewModel {
   _updateRepositories(): void {
     const repositories = new Set(
       atom.project.getRepositories().filter(
-        repository => repository != null && repository.getType() === 'hg'
-      )
+        repository => repository != null && repository.getType() === 'hg',
+      ),
     );
     // Dispose removed projects repositories, if any.
     for (const [repository, repositoryStack] of this._repositoryStacks) {
@@ -271,7 +271,7 @@ class DiffViewModel {
     if (filePath && !repositories.has((repositoryForPath(filePath): any))) {
       getLogger().info(
         'Diff View\'s active buffer was belonging to a removed project.\n' +
-        'Clearing the UI state.'
+        'Clearing the UI state.',
       );
       this._activeSubscriptions.dispose();
       this._setActiveFileState(getInitialFileChangeState());
@@ -286,10 +286,10 @@ class DiffViewModel {
     const subscriptions = new CompositeDisposable();
     subscriptions.add(
       repositoryStack.onDidUpdateDirtyFileChanges(
-        this._updateDirtyChangedStatus.bind(this)
+        this._updateDirtyChangedStatus.bind(this),
       ),
       repositoryStack.onDidUpdateSelectedFileChanges(
-        this._updateSelectedFileChanges.bind(this)
+        this._updateSelectedFileChanges.bind(this),
       ),
       repositoryStack.onDidChangeRevisions(revisionsState => {
         this._updateChangedRevisions(repositoryStack, revisionsState, true)
@@ -307,7 +307,7 @@ class DiffViewModel {
   _updateDirtyChangedStatus(): void {
     const dirtyFileChanges = mapUnion(
       ...Array.from(this._repositoryStacks.values())
-      .map(repositoryStack => repositoryStack.getDirtyFileChanges())
+      .map(repositoryStack => repositoryStack.getDirtyFileChanges()),
     );
     this._updateViewChangedFilesStatus(dirtyFileChanges);
   }
@@ -323,7 +323,7 @@ class DiffViewModel {
   _updateSelectedFileChanges(): void {
     const selectedFileChanges = mapUnion(
       ...Array.from(this._repositoryStacks.values())
-      .map(repositoryStack => repositoryStack.getSelectedFileChanges())
+      .map(repositoryStack => repositoryStack.getSelectedFileChanges()),
     );
     this._updateViewChangedFilesStatus(
       null,
@@ -526,7 +526,7 @@ class DiffViewModel {
         // However, this is caught earlier with a better error message.
         throw new Error(
           'No active repository stack and non-diffable entity:' +
-          JSON.stringify(entityOption)
+          JSON.stringify(entityOption),
         );
       } else {
         getLogger().error('Non diffable entity:', entityOption);
@@ -567,7 +567,7 @@ class DiffViewModel {
     this._activeSubscriptions.add(buffer.onDidDestroy(() => {
       getLogger().info(
         'Diff View\'s active buffer has been destroyed.\n' +
-        'The underlying file could have been removed.'
+        'The underlying file could have been removed.',
       );
       this._activeSubscriptions.dispose();
       this._setActiveFileState(getInitialFileChangeState());
@@ -837,7 +837,7 @@ class DiffViewModel {
     }
     const untrackedChanges: Map<NuclideUri, FileChangeStatusValue> = new Map(
       Array.from(dirtyFileChanges.entries())
-        .filter(fileChange => fileChange[1] === FileChangeStatus.UNTRACKED)
+        .filter(fileChange => fileChange[1] === FileChangeStatus.UNTRACKED),
     );
     if (untrackedChanges.size > 0) {
       const untrackedChoice = atom.confirm({
@@ -857,7 +857,7 @@ class DiffViewModel {
     }
     const revertableChanges: Map<NuclideUri, FileChangeStatusValue> = new Map(
       Array.from(dirtyFileChanges.entries())
-        .filter(fileChange => fileChange[1] !== FileChangeStatus.UNTRACKED)
+        .filter(fileChange => fileChange[1] !== FileChangeStatus.UNTRACKED),
     );
     if (revertableChanges.size > 0) {
       const cleanChoice = atom.confirm({
@@ -1024,7 +1024,7 @@ class DiffViewModel {
     for (const level of ['log', 'error']) {
       const levelStream = stream
         .filter(
-          (message: {level: string; text: string}) => message.level === level
+          (message: {level: string; text: string}) => message.level === level,
         )
         .share();
       levelStreams.push(bufferUntil(levelStream, message => message.text.endsWith('\n')));
@@ -1048,7 +1048,7 @@ class DiffViewModel {
       throw new Error(
         'Failed publish to Phabricator\n' +
         'You could have missed test plan or mistyped reviewers.\n' +
-        'Please fix and try again.'
+        'Please fix and try again.',
       );
     }
   }

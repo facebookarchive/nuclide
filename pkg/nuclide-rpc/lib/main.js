@@ -62,7 +62,7 @@ const proxiesCache: Map<string, ProxyFactory> = new Map();
 export function proxyFilename(definitionPath: string): string {
   invariant(
     nuclideUri.isAbsolute(definitionPath),
-    `"${definitionPath}" definition path must be absolute.`
+    `"${definitionPath}" definition path must be absolute.`,
   );
   const dir = nuclideUri.dirname(definitionPath);
   const name = nuclideUri.basename(definitionPath, nuclideUri.extname(definitionPath));

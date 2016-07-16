@@ -32,7 +32,7 @@ export class CwdApi {
       // Adding/removing projects can affect the validity of cwdPath.
       .merge(
         observableFromSubscribeFunction(cb => atom.project.onDidChangePaths(cb))
-          .mapTo(null)
+          .mapTo(null),
       )
       .map(() => this.getCwd())
       .map(directory => (isValidDirectory(directory) ? directory : null))
@@ -50,7 +50,7 @@ export class CwdApi {
 
   observeCwd(callback: (directory: ?Directory) => void): IDisposable {
     const disposable = new DisposableSubscription(
-      this._cwd$.subscribe(directory => { callback(directory); })
+      this._cwd$.subscribe(directory => { callback(directory); }),
     );
     this._disposables.add(disposable);
     return disposable;

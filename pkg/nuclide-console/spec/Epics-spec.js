@@ -35,7 +35,7 @@ describe('Epics', () => {
         stop: () => {},
       };
       const actions = new ActionsObservable(
-        Observable.of(Actions.registerOutputProvider(provider))
+        Observable.of(Actions.registerOutputProvider(provider)),
       );
       const results = [];
       Epics.registerRecordProviderEpic(actions, mockStore).subscribe(results.push.bind(results));
@@ -48,7 +48,7 @@ describe('Epics', () => {
         results.map(action => {
           invariant(action.type === Actions.UPDATE_STATUS);
           return action.payload.status;
-        })
+        }),
       )
         .toEqual(['running', 'stopped', 'running']);
     });

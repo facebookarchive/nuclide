@@ -227,7 +227,7 @@ export class ContextViewManager {
             {createElementFn({definition: this.currentDefinition})}
           </ProviderContainer>
         );
-      }
+      },
     );
 
     // If there are no context providers to show, show a message instead
@@ -249,7 +249,7 @@ export class ContextViewManager {
         onHide={this.hide}>
         {providerElements}
       </ContextViewPanel>,
-      this._panelDOMElement
+      this._panelDOMElement,
     );
 
     if (!this._atomPanel) {

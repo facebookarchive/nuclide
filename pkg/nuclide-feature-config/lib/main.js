@@ -78,7 +78,7 @@ module.exports = {
   ): IDisposable {
     return atom.config.onDidChange(
       formatKeyPath(keyPath),
-      ...Array.prototype.slice.call(arguments, 1)
+      ...Array.prototype.slice.call(arguments, 1),
     );
   },
 
@@ -107,7 +107,7 @@ module.exports = {
   ): void {
     return atom.config.setSchema(
       formatKeyPath(keyPath),
-      ...Array.prototype.slice.call(arguments, 1)
+      ...Array.prototype.slice.call(arguments, 1),
     );
   },
 

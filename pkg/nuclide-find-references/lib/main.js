@@ -66,7 +66,7 @@ async function getProviderData(): Promise<?FindReferencesReturn> {
     return null;
   }
   const providerData = await Promise.all(supported.map(
-    provider => provider.findReferences(editor, point)
+    provider => provider.findReferences(editor, point),
   ));
   return providerData.filter(x => Boolean(x))[0];
 }
@@ -97,7 +97,7 @@ async function tryCreateView(): Promise<?HTMLElement> {
       const model = new FindReferencesModel(
         baseUri,
         referencedSymbolName,
-        references
+        references,
       );
 
       return new FindReferencesElement().initialize(model);
@@ -135,7 +135,7 @@ export function activate(state: ?any): void {
         // The new tab opens instantly, so this is no longer needed.
         disposable.dispose();
       }
-    }
+    },
   ));
 
   // Mark text editors with a working provider with a special CSS class.
@@ -176,7 +176,7 @@ export function activate(state: ?any): void {
     () => {
       const selectedText = window.getSelection().toString();
       atom.clipboard.write(selectedText);
-    }
+    },
   ));
 }
 

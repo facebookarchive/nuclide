@@ -130,7 +130,7 @@ function createDebuggerView(model: DebuggerModel, useRevampedUi: boolean): HTMLE
       model={model}
       useRevampedUi={useRevampedUi}
     />,
-    elem
+    elem,
   );
   return elem;
 }
@@ -220,8 +220,8 @@ class Activation {
     this._disposables.add(
       atom.views.addViewProvider(
         DebuggerModel,
-        (model: DebuggerModel) => createDebuggerView(model, useRevampedUi)
-      )
+        (model: DebuggerModel) => createDebuggerView(model, useRevampedUi),
+      ),
     );
   }
 

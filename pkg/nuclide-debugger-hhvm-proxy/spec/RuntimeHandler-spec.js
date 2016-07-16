@@ -72,7 +72,7 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
       expect(connectionMultiplexer.getProperties).toHaveBeenCalledWith(objectId);
       expect(clientCallback.replyToCommand).toHaveBeenCalledWith(
         1,
-        {result: 'the-result'}, undefined
+        {result: 'the-result'}, undefined,
       );
     });
   });
@@ -93,13 +93,13 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
           {
             expression,
             objectGroup: 'console',
-          }
+          },
         );
         expect(connectionMultiplexer.runtimeEvaluate).toHaveBeenCalledWith(expression);
         expect(clientCallback.replyToCommand).toHaveBeenCalledWith(
           1,
           'the-result',
-          undefined
+          undefined,
         );
       });
     });
@@ -112,7 +112,7 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
           {
             expression,
             objectGroup: 'other',
-          }
+          },
         );
         expect(connectionMultiplexer.runtimeEvaluate).not.toHaveBeenCalled();
         expect(clientCallback.replyWithError).toHaveBeenCalledWith(1, jasmine.any(String));

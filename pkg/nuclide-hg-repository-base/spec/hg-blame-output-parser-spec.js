@@ -50,7 +50,7 @@ describe('hg-blame-output-parser', () => {
         expectedBlame.set('0', 'Abbot B a@b.com 0559394b');
         expectedBlame.set('1', 'a@b.com null');
         expect(parseResults).toEqual(expectedBlame);
-      }
+      },
     );
 
     it('gracefully handles unexpected output, e.g. if the error message changes.', () => {

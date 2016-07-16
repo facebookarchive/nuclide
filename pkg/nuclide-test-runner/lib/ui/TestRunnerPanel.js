@@ -96,7 +96,7 @@ class TestRunnerPanel extends React.Component {
     this.renderConsole();
 
     ReactDOM.findDOMNode(this.refs.paneContainer).appendChild(
-      atom.views.getView(this._paneContainer)
+      atom.views.getView(this._paneContainer),
     );
   }
 
@@ -187,7 +187,7 @@ class TestRunnerPanel extends React.Component {
           className="inline-block nuclide-test-runner__runner-dropdown"
           disabled={this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
           options={this.props.testRunners.map((testRunner, index) =>
-            ({label: testRunner.label, value: index})
+            ({label: testRunner.label, value: index}),
           )}
           onChange={this.setSelectedTestRunnerIndex}
           ref="dropdown"
@@ -267,7 +267,7 @@ class TestRunnerPanel extends React.Component {
         isRunning={this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
         testSuiteModel={this.props.testSuiteModel}
       />,
-      atom.views.getView(this._leftPane).querySelector('.item-views')
+      atom.views.getView(this._leftPane).querySelector('.item-views'),
     );
     invariant(component instanceof TestClassTree);
     this._tree = component;
@@ -276,7 +276,7 @@ class TestRunnerPanel extends React.Component {
   renderConsole() {
     ReactDOM.render(
       <Console textBuffer={this.props.buffer} />,
-      atom.views.getView(this._rightPane).querySelector('.item-views')
+      atom.views.getView(this._rightPane).querySelector('.item-views'),
     );
   }
 }

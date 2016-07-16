@@ -110,7 +110,7 @@ export default class ConnectionDetailsForm extends React.Component {
         setTimeout(() => {
           ReactDOM.findDOMNode(this.refs.pathToPrivateKey).focus();
         }, 0);
-      }
+      },
     );
   }
 
@@ -122,7 +122,7 @@ export default class ConnectionDetailsForm extends React.Component {
       },
       () => {
         ReactDOM.findDOMNode(this.refs.password).focus();
-      }
+      },
     );
   }
 
@@ -244,14 +244,14 @@ export default class ConnectionDetailsForm extends React.Component {
     disposables.add(atom.commands.add(
       root,
       'core:confirm',
-      event => this.props.onConfirm()
+      event => this.props.onConfirm(),
     ));
 
     // Hitting escape should cancel the dialog.
     disposables.add(atom.commands.add(
       'atom-workspace',
       'core:cancel',
-      event => this.props.onCancel()
+      event => this.props.onCancel(),
     ));
   }
 

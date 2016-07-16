@@ -231,7 +231,7 @@ class FileTreeActions {
     const pane = atom.workspace.getActivePane();
     atom.workspace.openURIInPane(
       FileTreeHelpers.keyToPath(nodeKey),
-      pane.split(orientation, side)
+      pane.split(orientation, side),
     );
   }
 
@@ -248,10 +248,10 @@ class FileTreeActions {
    */
   async updateRepositories(rootDirectories: Array<atom$Directory>): Promise<void> {
     const rootKeys = rootDirectories.map(
-      directory => FileTreeHelpers.dirPathToKey(directory.getPath())
+      directory => FileTreeHelpers.dirPathToKey(directory.getPath()),
     );
     const rootRepos: Array<?atom$Repository> = await Promise.all(rootDirectories.map(
-      directory => repositoryForPath(directory.getPath())
+      directory => repositoryForPath(directory.getPath()),
     ));
 
     // t7114196: Given the current implementation of HgRepositoryClient, each root directory will

@@ -1111,7 +1111,7 @@ describe('PHP grammar', () => {
         expect(grammar).toBeTruthy();
         grammar = grammar || {};
         const tokens = grammar.tokenizeLines(
-          '<?hh\nfunction array_test(array $value = array()) {}'
+          '<?hh\nfunction array_test(array $value = array()) {}',
         );
         expect(tokens[1][0]).toEqual({
           value: 'function',

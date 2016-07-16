@@ -135,7 +135,7 @@ class DiffCommitView extends React.Component {
   _onToggleAmend(isChecked: boolean): void {
     this.props.diffModel.setCommitMode(isChecked
       ? CommitMode.AMEND
-      : CommitMode.COMMIT
+      : CommitMode.COMMIT,
     );
   }
 

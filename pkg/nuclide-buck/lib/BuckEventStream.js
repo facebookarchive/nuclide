@@ -98,7 +98,7 @@ export function getEventsFromSocket(
   return eventStream.merge(
     progressEvents
       .take(1)
-      .concat(progressEvents.sampleTime(PROGRESS_OUTPUT_INTERVAL))
+      .concat(progressEvents.sampleTime(PROGRESS_OUTPUT_INTERVAL)),
   );
 }
 
@@ -154,7 +154,7 @@ export function combineEventStreams(
       processEvents
         .ignoreElements()
         // Despite the docs, takeUntil doesn't respond to completion.
-        .concat(Observable.of(null))
+        .concat(Observable.of(null)),
     )
     .share();
   let mergedEvents = Observable.merge(
@@ -174,7 +174,7 @@ export function combineEventStreams(
           .takeUntil(processEvents.filter(e => !isRegularLogMessage(e)))
           .first()
           .ignoreElements()
-          .catch(() => Observable.of(null))
+          .catch(() => Observable.of(null)),
       )
       .switchMap(([events]) => Observable.from(events)),
 
@@ -213,7 +213,7 @@ export function combineEventStreams(
               message: 'Installing...',
               level: 'info',
             },
-          )
+          ),
         ),
     );
   }

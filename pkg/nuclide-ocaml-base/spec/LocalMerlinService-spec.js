@@ -36,7 +36,7 @@ describe('LocalMerlinService', () => {
               return {cursor: {line: 1, col: 0}, marker: false};
             }
             return null;
-          }
+          },
         );
 
         const result = await merlinService.pushDotMerlinPath(filename);
@@ -84,7 +84,7 @@ describe('LocalMerlinService', () => {
         // within the same file; make sure we normalize this by
         // adding the path.
         const merlinService = await getMockedMerlinService(
-          async command => { return {cursor: {line: 1, col: 0}, marker: false}; }
+          async command => { return {cursor: {line: 1, col: 0}, marker: false}; },
         );
 
         const result = await merlinService.locate('derp.ml', 1, 1, 'ml');
@@ -98,7 +98,7 @@ describe('LocalMerlinService', () => {
         const merlinService = await getMockedMerlinService(
           async command => {
             return {cursor: {line: 1, col: 0}, marker: false, file: 'notderp.ml'};
-          }
+          },
         );
 
         const result = await merlinService.locate('yesderp.ml', 1, 1, 'ml');
@@ -131,7 +131,7 @@ describe('LocalMerlinService', () => {
             }
 
             return null;
-          }
+          },
         );
 
         const result = await merlinService.complete('derp.ml', 5, 2, 'FoodTest.');

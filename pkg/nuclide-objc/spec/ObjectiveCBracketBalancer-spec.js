@@ -31,28 +31,28 @@ describe('ObjectiveCBracketBalancer', () => {
     it('inserts an open bracket at the start of an unbalanced simple expression', () => {
       expect(getOpenBracketInsertPosition(
         new TextBuffer('self setEnabled:NO]'),
-        Point.fromObject([0, 18])
+        Point.fromObject([0, 18]),
       )).toEqual(Point.fromObject([0, 0]));
     });
 
     it('does not insert an open bracket when completing a balanced simple expression', () => {
       expect(getOpenBracketInsertPosition(
         new TextBuffer('[self setEnabled:NO]'),
-        Point.fromObject([0, 19])
+        Point.fromObject([0, 19]),
       )).toEqual(null);
     });
 
     it('inserts an open bracket at the beginning of an unbalanced nested expression', () => {
       expect(getOpenBracketInsertPosition(
         new TextBuffer('[self foo] setEnabled:NO]'),
-        Point.fromObject([0, 24])
+        Point.fromObject([0, 24]),
       )).toEqual(Point.fromObject([0, 0]));
     });
 
     it('does not insert an open bracket when completing a balanced nested expression', () => {
       expect(getOpenBracketInsertPosition(
         new TextBuffer('[[self foo] setEnabled:NO]'),
-        Point.fromObject([0, 25])
+        Point.fromObject([0, 25]),
       )).toEqual(null);
     });
 
@@ -60,7 +60,7 @@ describe('ObjectiveCBracketBalancer', () => {
       + ' bracket in a string literal', () => {
       expect(getOpenBracketInsertPosition(
         new TextBuffer('[self fooWithBar:@"tricky ["] setEnabled:NO]'),
-        Point.fromObject([0, 43])
+        Point.fromObject([0, 43]),
       )).toEqual(Point.fromObject([0, 0]));
     });
 
@@ -68,7 +68,7 @@ describe('ObjectiveCBracketBalancer', () => {
       + ' bracket in a char literal', () => {
       expect(getOpenBracketInsertPosition(
         new TextBuffer("[self fooWithBar:'['] setEnabled:NO]"),
-        Point.fromObject([0, 35])
+        Point.fromObject([0, 35]),
       )).toEqual(Point.fromObject([0, 0]));
     });
 
@@ -76,7 +76,7 @@ describe('ObjectiveCBracketBalancer', () => {
       + ' open bracket in a char literal', () => {
       expect(getOpenBracketInsertPosition(
         new TextBuffer("[foo('[') setEnabled:NO]"),
-        Point.fromObject([0, 23])
+        Point.fromObject([0, 23]),
       )).toEqual(null);
     });
 
@@ -88,7 +88,7 @@ describe('ObjectiveCBracketBalancer', () => {
       // Ending with: [self setFoo:[@"bar" ]]
       expect(getOpenBracketInsertPosition(
         new TextBuffer('[self setFoo:@"bar" ]'),
-        Point.fromObject([0, 20])
+        Point.fromObject([0, 20]),
       )).toEqual(Point.fromObject([0, 13]));
     });
 
@@ -96,23 +96,23 @@ describe('ObjectiveCBracketBalancer', () => {
       () => {
         expect(getOpenBracketInsertPosition(
           new TextBuffer('foo setFoo:@"foo"\nbar:@"bar"\nbaz:@"baz"]'),
-          Point.fromObject([2, 10])
+          Point.fromObject([2, 10]),
         )).toEqual(Point.fromObject([0, 0]));
-      }
+      },
     );
 
     it('does not insert an open bracket at the beginning of a balanced expression across multiple'
       + ' lines', () => {
       expect(getOpenBracketInsertPosition(
         new TextBuffer('[foo setFoo:@"foo"\nbar:@"bar"\nbaz:@"baz"]'),
-        Point.fromObject([2, 10])
+        Point.fromObject([2, 10]),
       )).toEqual(null);
     });
 
     it('inserts an open bracket after an equals sign when initalizing or messaging a class', () => {
       expect(getOpenBracketInsertPosition(
         new TextBuffer('NSObject *foo = NSObject alloc]'),
-        Point.fromObject([0, 30])
+        Point.fromObject([0, 30]),
       )).toEqual(Point.fromObject([0, 16]));
     });
 
@@ -120,7 +120,7 @@ describe('ObjectiveCBracketBalancer', () => {
       + ' with balanced brackets', () => {
       expect(getOpenBracketInsertPosition(
         new TextBuffer('[[NSObject alloc] init]'),
-        Point.fromObject([0, 22])
+        Point.fromObject([0, 22]),
       )).toEqual(null);
     });
   });

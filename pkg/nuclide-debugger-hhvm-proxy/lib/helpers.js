@@ -111,7 +111,7 @@ export function launchPhpScriptWithXDebugEnabled(
     logger.log(`child_process(${proc.pid}) error: ${err}`);
     if (sendToOutputWindowAndResolve != null) {
       sendToOutputWindowAndResolve(
-        `The process running script: ${scriptPath} encountered an error: ${err}`
+        `The process running script: ${scriptPath} encountered an error: ${err}`,
       );
     }
   });

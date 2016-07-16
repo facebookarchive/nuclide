@@ -35,12 +35,12 @@ export default function createPackage(Activation: Class<any>): Object {
     if (property === 'activate') {
       throw new Error(
         'Your activation class contains an "activate" method, but that work should be done in the'
-        + ' constructor.'
+        + ' constructor.',
       );
     }
     if (property === 'deactivate') {
       throw new Error(
-        'Your activation class contains an "deactivate" method. Please use "dispose" instead.'
+        'Your activation class contains an "deactivate" method. Please use "dispose" instead.',
       );
     }
 

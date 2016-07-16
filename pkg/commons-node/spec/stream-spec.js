@@ -63,7 +63,7 @@ describe('commons-node/stream', () => {
         observeStream(stream).subscribe(
           v => output.push(v),
           e => resolve(e),
-          () => {}
+          () => {},
         );
       });
       const error = new Error('Had an error');

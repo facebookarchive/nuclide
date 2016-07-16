@@ -111,7 +111,7 @@ function parse(uri: NuclideUri): ParsedUrl {
   invariant(
     parsedUri.path,
     'Nuclide URIs must contain paths, ' +
-    `${maybeToString(parsedUri.path)}' found while parsing '${uri}'`
+    `${maybeToString(parsedUri.path)}' found while parsing '${uri}'`,
   );
 
   let path = parsedUri.path;
@@ -124,7 +124,7 @@ function parse(uri: NuclideUri): ParsedUrl {
   invariant(
     parsedUri.pathname,
     'Nuclide URIs must contain pathnamess, ' +
-    `'${maybeToString(parsedUri.pathname)}' found while parsing '${uri}'`
+    `'${maybeToString(parsedUri.pathname)}' found while parsing '${uri}'`,
   );
   let pathname = parsedUri.pathname;
   // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
@@ -157,7 +157,7 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
   invariant(
     parsedUri.hostname,
     `Remote Nuclide URIs must contain hostnames, '${maybeToString(parsedUri.hostname)}' found ` +
-    `while parsing '${remoteUri}'`
+    `while parsing '${remoteUri}'`,
   );
 
   // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
@@ -212,7 +212,7 @@ function normalize(uri: NuclideUri): NuclideUri {
     const {hostname, path} = parseRemoteUri(uri);
     return createRemoteUri(
       hostname,
-      uriPathModule.normalize(path)
+      uriPathModule.normalize(path),
     );
   } else {
     return uriPathModule.normalize(uri);
@@ -253,7 +253,7 @@ function dirname(uri: NuclideUri): NuclideUri {
     const {hostname, path} = parseRemoteUri(uri);
     return createRemoteUri(
       hostname,
-      uriPathModule.dirname(path)
+      uriPathModule.dirname(path),
     );
   } else {
     return uriPathModule.dirname(uri);
@@ -348,7 +348,7 @@ function contains(parent: NuclideUri, child: NuclideUri): boolean {
  */
 function collapse(paths: Array<NuclideUri>): Array<NuclideUri> {
   return paths.filter(p =>
-    !paths.some(fp => contains(fp, p) && fp !== p)
+    !paths.some(fp => contains(fp, p) && fp !== p),
   );
 }
 

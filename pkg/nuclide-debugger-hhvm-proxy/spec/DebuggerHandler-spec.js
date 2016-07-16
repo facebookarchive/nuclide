@@ -205,7 +205,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       expect(connectionMultiplexer.sendContinuationCommand).not.toHaveBeenCalled();
 
       connectionMultiplexer.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(
-        Promise.resolve({stack: []})
+        Promise.resolve({stack: []}),
       );
 
       await handler.handleMethod(1, chromeCommand);

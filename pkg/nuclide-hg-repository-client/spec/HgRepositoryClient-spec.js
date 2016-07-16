@@ -278,7 +278,7 @@ describe('HgRepositoryClient', () => {
           await repo._updateChangedPaths(mockUpdate);
           expect(repo._serializedRefreshStatusesCache).toHaveBeenCalled();
         });
-      }
+      },
     );
 
     it(
@@ -303,7 +303,7 @@ describe('HgRepositoryClient', () => {
             {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
           );
         });
-      }
+      },
     );
 
     it(
@@ -320,7 +320,7 @@ describe('HgRepositoryClient', () => {
           {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
         );
       });
-    }
+    },
     );
   });
 

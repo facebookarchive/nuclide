@@ -31,7 +31,7 @@ export default class LocalsStore {
     this._disposables = new CompositeDisposable(
       new Disposable(() => {
         dispatcher.unregister(dispatcherToken);
-      })
+      }),
     );
     this._locals = new Rx.BehaviorSubject([]);
   }

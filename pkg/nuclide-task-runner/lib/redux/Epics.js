@@ -166,7 +166,7 @@ export function runTaskEpic(
           return createTaskObservable(activeTaskRunner, task, () => store.getState())
             // Stop listening once the task is done.
             .takeUntil(
-              actions.ofType(Actions.TASK_COMPLETED, Actions.TASK_ERRORED, Actions.TASK_STOPPED)
+              actions.ofType(Actions.TASK_COMPLETED, Actions.TASK_ERRORED, Actions.TASK_STOPPED),
             );
         }),
       );
@@ -276,14 +276,14 @@ function createTaskObservable(
           progressStream.map(progress => ({
             type: Actions.TASK_PROGRESS,
             payload: {progress},
-          }))
+          })),
         )
         .merge(
           observableFromSubscribeFunction(taskInfo.onDidError.bind(taskInfo))
-            .map(err => { throw err; })
+            .map(err => { throw err; }),
         )
         .takeUntil(
-          observableFromSubscribeFunction(taskInfo.onDidComplete.bind(taskInfo))
+          observableFromSubscribeFunction(taskInfo.onDidComplete.bind(taskInfo)),
         )
         .concat(Observable.of({
           type: Actions.TASK_COMPLETED,

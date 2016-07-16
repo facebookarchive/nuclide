@@ -493,7 +493,7 @@ export function asyncExecute(
       lastChild = child_process.spawn(
         localOptions.pipedCommand,
         localOptions.pipedArgs,
-        localOptions
+        localOptions,
       );
       monitorStreamErrors(lastChild, command, args, localOptions);
       // pipe() normally pauses the writer when the reader errors (closes).
@@ -599,7 +599,7 @@ export function asyncExecute(
     error => {
       localOptions.env = localOptions.env || process.env;
       return makePromise();
-    }
+    },
   );
 }
 
@@ -617,7 +617,7 @@ export async function checkOutput(
       `error: ${maybeToString(result.errorMessage)}`;
     throw new Error(
       `asyncExecute "${command}" failed with ${reason}, ` +
-      `stderr: ${result.stderr}, stdout: ${result.stdout}.`
+      `stderr: ${result.stderr}, stdout: ${result.stdout}.`,
     );
   }
   return result;

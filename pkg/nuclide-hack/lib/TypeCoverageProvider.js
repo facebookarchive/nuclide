@@ -53,7 +53,7 @@ export class TypeCoverageProvider {
     }
 
     const result = await this._requestSerializer.run(
-      hackLanguage.getTypeCoverage(path)
+      hackLanguage.getTypeCoverage(path),
     );
     if (result.status === 'outdated') {
       return null;
@@ -64,7 +64,7 @@ export class TypeCoverageProvider {
       return null;
     }
     const uncoveredRegions = hackCoverageResult.uncoveredRegions.map(
-      region => convertHackRegionToCoverageRegion(path, region)
+      region => convertHackRegionToCoverageRegion(path, region),
     );
     return {
       percentage: hackCoverageResult.percentage,

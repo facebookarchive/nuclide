@@ -33,7 +33,7 @@ export const Tabs = React.createClass({
   _handleTabChange(selectedTabName: string) {
     if (typeof this.props.onActiveTabChange === 'function') {
       this.props.onActiveTabChange(
-        this.props.tabs.find(tab => tab.name === selectedTabName)
+        this.props.tabs.find(tab => tab.name === selectedTabName),
       );
     }
   },

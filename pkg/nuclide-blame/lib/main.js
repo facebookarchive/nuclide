@@ -70,7 +70,7 @@ class Activation {
           if (this._canHideBlame()) {
             this._hideBlame();
           }
-        }
+        },
       ),
     );
   }
@@ -126,12 +126,12 @@ class Activation {
         });
       } else {
         atom.notifications.addInfo(
-          'Could not open blame: no blame information currently available for this file.'
+          'Could not open blame: no blame information currently available for this file.',
         );
         const logger = require('../../nuclide-logging').getLogger();
         logger.info(
           'nuclide-blame: Could not open blame: no blame provider currently available for this ' +
-          `file: ${String(editor.getPath())}`
+          `file: ${String(editor.getPath())}`,
         );
       }
     }

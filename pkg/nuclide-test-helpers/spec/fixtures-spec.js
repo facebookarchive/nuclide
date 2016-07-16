@@ -47,7 +47,7 @@ describe('generateFixture', () => {
         new Map([
           ['foo.js'],
           ['bar/baz.txt', 'some text'],
-        ])
+        ]),
       );
 
       expect(nuclideUri.isAbsolute(fixturePath)).toBe(true);

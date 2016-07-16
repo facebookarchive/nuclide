@@ -30,7 +30,7 @@ class FindReferencesElement extends HTMLElement {
   attachedCallback(): mixed {
     ReactDOM.render(
       <FindReferencesView model={this._model} />,
-      this
+      this,
     );
   }
 

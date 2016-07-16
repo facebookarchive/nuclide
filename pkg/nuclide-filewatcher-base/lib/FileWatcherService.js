@@ -55,7 +55,7 @@ function watchEntity(
   isFile: boolean,
 ): Observable<WatchResult> {
   return Observable.fromPromise(
-    getRealPath(entityPath, isFile)
+    getRealPath(entityPath, isFile),
   ).flatMap(realPath => {
     let observable = entityObservable.get(realPath);
     if (observable != null) {
@@ -84,7 +84,7 @@ async function getRealPath(entityPath: string, isFile: boolean): Promise<string>
   }
   if (stat.isFile() !== isFile) {
     getLogger().warn(
-      `FileWatcherService: expected ${entityPath} to be a ${isFile ? 'file' : 'directory'}`
+      `FileWatcherService: expected ${entityPath} to be a ${isFile ? 'file' : 'directory'}`,
     );
   }
   return await fsPromise.realpath(entityPath);
@@ -98,7 +98,7 @@ export function watchDirectoryRecursive(
     return Observable.of('EXISTING');
   }
   return Observable.fromPromise(
-    client.watchDirectoryRecursive(directoryPath)
+    client.watchDirectoryRecursive(directoryPath),
   ).flatMap(watcher => {
     // Listen for watcher changes to route them to watched files and directories.
     watcher.on('change', entries => {

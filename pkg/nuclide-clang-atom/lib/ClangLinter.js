@@ -29,7 +29,7 @@ const DEFAULT_FLAGS_WARNING =
 function atomRangeFromSourceRange(clangRange: ClangSourceRange): atom$Range {
   return new Range(
     [clangRange.start.line, clangRange.start.column],
-    [clangRange.end.line, clangRange.end.column]
+    [clangRange.end.line, clangRange.end.column],
   );
 }
 

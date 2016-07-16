@@ -196,7 +196,7 @@ function addFileTreeCommands(commandName: string, diffOptions?: Object): void {
         file: filePath || '',
         ...diffOptions,
       }));
-    }
+    },
   ));
 
   subscriptions.add(atom.commands.add(
@@ -208,7 +208,7 @@ function addFileTreeCommands(commandName: string, diffOptions?: Object): void {
         directory: directoryPath || '',
         ...diffOptions,
       }));
-    }
+    },
   ));
 }
 
@@ -294,7 +294,7 @@ module.exports = {
         if (filePath != null && filePath.length) {
           atom.workspace.open(filePath);
         }
-      }
+      },
     ));
 
     addFileTreeCommands('nuclide-diff-view:open-context');
@@ -390,7 +390,7 @@ module.exports = {
 
     const toolBarSubscriptions = new CompositeDisposable(
       diffModel.onDidUpdateState(() => { updateToolbarCount(); }),
-      new Disposable(() => { toolBar.removeItems(); })
+      new Disposable(() => { toolBar.removeItems(); }),
     );
     invariant(subscriptions);
     subscriptions.add(toolBarSubscriptions);

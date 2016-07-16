@@ -87,7 +87,7 @@ export class BreakpointStore {
         const [connection, map] = entry;
         map.set(
           breakpiontId,
-          connection.setExceptionBreakpoint(PAUSE_ALL_EXCEPTION_NAME)
+          connection.setExceptionBreakpoint(PAUSE_ALL_EXCEPTION_NAME),
         );
       }
     } else {
@@ -129,13 +129,13 @@ export class BreakpointStore {
     this._breakpoints.forEach(breakpoint => {
       map.set(
         breakpoint.storeId,
-        connection.setBreakpoint(breakpoint.filename, breakpoint.lineNumber)
+        connection.setBreakpoint(breakpoint.filename, breakpoint.lineNumber),
       );
     });
     if (this._pauseAllExceptionBreakpointId) {
       map.set(
         this._pauseAllExceptionBreakpointId,
-        connection.setExceptionBreakpoint(PAUSE_ALL_EXCEPTION_NAME)
+        connection.setExceptionBreakpoint(PAUSE_ALL_EXCEPTION_NAME),
       );
     }
 

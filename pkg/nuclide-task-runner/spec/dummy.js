@@ -32,7 +32,7 @@ export class TaskInfo {
 
   observeProgress(callback: (progress: ?number) => mixed): IDisposable {
     return new DisposableSubscription(
-      this._progress.subscribe(progress => { callback(progress); })
+      this._progress.subscribe(progress => { callback(progress); }),
     );
   }
 
@@ -72,7 +72,7 @@ export class TaskRunner {
 
   observeTasks(callback: (tasks: Array<Task>) => mixed): IDisposable {
     return new DisposableSubscription(
-      this._tasks.subscribe(tasks => { callback(tasks); })
+      this._tasks.subscribe(tasks => { callback(tasks); }),
     );
   }
 

@@ -154,7 +154,7 @@ export class DebuggerProxyClient {
    */
   onDidEvalApplicationScript(callback: (pid: number) => mixed): IDisposable {
     return new DisposableSubscription(
-      this._pids.subscribe(callback)
+      this._pids.subscribe(callback),
     );
   }
 }

@@ -120,7 +120,7 @@ async function _moveNodesUnprotected(
     const filteredNodes = nodes.filter(node => isValidRename(node, destPath));
     // Collapse paths that are in the same subtree, keeping only the subtree root.
     paths = nuclideUri.collapse(filteredNodes.map(node =>
-      FileTreeHelpers.keyToPath(node.uri)
+      FileTreeHelpers.keyToPath(node.uri),
     ));
 
     if (paths.length === 0) {
@@ -161,7 +161,7 @@ async function deleteNodes(nodes: Array<FileTreeNode>): Promise<void> {
   // Filter out children nodes to avoid ENOENTs that happen when parents are
   // deleted before its children. Convert to List so we can use groupBy.
   const paths = Immutable.List(nuclideUri.collapse(
-    nodes.map(node => FileTreeHelpers.keyToPath(node.uri))
+    nodes.map(node => FileTreeHelpers.keyToPath(node.uri)),
   ));
   const localPaths = paths.filter(path => nuclideUri.isLocal(path));
   const remotePaths = paths.filter(path => nuclideUri.isRemote(path));
@@ -188,7 +188,7 @@ async function deleteNodes(nodes: Array<FileTreeNode>): Promise<void> {
 
   await Promise.all(nodesByHgRepository.map(async ([hgRepository, repoNodes]) => {
     const hgPaths = nuclideUri.collapse(
-      repoNodes.map(node => FileTreeHelpers.keyToPath(node.uri)).toJS()
+      repoNodes.map(node => FileTreeHelpers.keyToPath(node.uri)).toJS(),
     );
     await hgRepository.remove(hgPaths, true /* after */);
   }));

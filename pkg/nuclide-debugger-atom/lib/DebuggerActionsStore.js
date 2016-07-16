@@ -28,7 +28,7 @@ export default class DebuggerActionsStore {
     this._disposables = new CompositeDisposable(
       new Disposable(() => {
         dispatcher.unregister(dispatcherToken);
-      })
+      }),
     );
   }
 

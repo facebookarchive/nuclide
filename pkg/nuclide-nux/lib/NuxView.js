@@ -202,7 +202,7 @@ export class NuxView {
                     <div class="tooltip-arrow"></div>
                     <div class="tooltip-inner"></div>
                   </div>`,
-      }
+      },
     );
     this._disposables.add(this._tooltipDisposable);
 

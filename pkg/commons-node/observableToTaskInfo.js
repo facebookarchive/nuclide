@@ -26,17 +26,17 @@ export function observableToTaskInfo(observable: Observable<TaskEvent>): TaskInf
   return {
     observeProgress(callback: (progress: ?number) => mixed): IDisposable {
       return new DisposableSubscription(
-        events.map(event => event.progress).subscribe({next: callback, error: () => {}})
+        events.map(event => event.progress).subscribe({next: callback, error: () => {}}),
       );
     },
     onDidComplete(callback: () => mixed): IDisposable {
       return new DisposableSubscription(
-        events.subscribe({complete: callback, error: () => {}})
+        events.subscribe({complete: callback, error: () => {}}),
       );
     },
     onDidError(callback: (error: Error) => mixed): IDisposable {
       return new DisposableSubscription(
-        events.subscribe({error: callback})
+        events.subscribe({error: callback}),
       );
     },
     cancel(): void {

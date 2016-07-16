@@ -82,7 +82,7 @@ export class Section extends React.Component {
         'icon-chevron-down': collapsable && !collapsed,
         'icon-chevron-right': collapsable && collapsed,
         'nuclide-ui-section-collapsable': collapsable,
-      }
+      },
     );
     const conditionalProps = {};
     if (collapsable) {

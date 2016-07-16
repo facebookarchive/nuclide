@@ -262,7 +262,7 @@ describe('TypeRegistry', () => {
       const result2 = await typeRegistry.unmarshal(
         context,
         await typeRegistry.marshal(context, expected2, customObjectType),
-        customObjectType
+        customObjectType,
       );
       expect(result2.a).toBeNull();
       expect(result2.b.equals(expected2.b)).toBeTruthy();
@@ -272,7 +272,7 @@ describe('TypeRegistry', () => {
       const result3 = await typeRegistry.unmarshal(
         context,
         await typeRegistry.marshal(context, expected3, customObjectType),
-        customObjectType
+        customObjectType,
       );
       expect(result3.a).toBe(undefined);
       expect(result3.b.equals(expected3.b)).toBeTruthy();

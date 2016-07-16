@@ -46,7 +46,7 @@ export function observeSettings(callback: (value: Settings) => void): IDisposabl
     callback({
       ...settings,
       aliases: fixAliases(settings.aliases),
-    })
+    }),
   );
 }
 

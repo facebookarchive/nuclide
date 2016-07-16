@@ -29,7 +29,7 @@ export function activate(state: ?Object): void {
     'atom-text-editor',
     'nuclide-format-js:format',
     // Atom prevents in-command modification to text editor content.
-    () => process.nextTick(() => formatCode(options))
+    () => process.nextTick(() => formatCode(options)),
   ));
 
   // Keep settings up to date with Nuclide config and precalculate options.

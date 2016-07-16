@@ -103,7 +103,7 @@ describe('FlowProcess', () => {
             '--from', 'nuclide',
             '--max-workers', expectedWorkers.toString(),
             '/path/to/flow/root',
-          ]
+          ],
         );
         expect(args[2].cwd).toEqual(root);
         expect(args[2].env.OCAMLRUNPARAM).toEqual('b');

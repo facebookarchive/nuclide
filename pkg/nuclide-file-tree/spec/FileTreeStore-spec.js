@@ -453,7 +453,7 @@ describe('FileTreeStore', () => {
     waitsForPromise(async () => {
       const map: Map<string, string> = await buildTempDirTree(
         'dir3/dir31/foo31.txt',
-        'dir3/dir32/bar32.txt'
+        'dir3/dir32/bar32.txt',
       );
       const dir3 = map.get('dir3');
       const dir31 = map.get('dir3/dir31');
@@ -472,7 +472,7 @@ describe('FileTreeStore', () => {
     waitsForPromise(async () => {
       const map: Map<string, string> = await buildTempDirTree(
         'dir3/dir31/foo31.txt',
-        'dir3/dir32/bar32.txt'
+        'dir3/dir32/bar32.txt',
       );
       const dir3 = map.get('dir3');
       const dir31 = map.get('dir3/dir31');

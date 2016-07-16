@@ -65,7 +65,7 @@ export class BusySignalProviderBase {
         }
       }),
       // We can't add displayedDisposable directly because its value may change.
-      new Disposable(disposeDisplayed)
+      new Disposable(disposeDisplayed),
     );
   }
 

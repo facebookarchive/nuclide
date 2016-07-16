@@ -60,7 +60,7 @@ describe('validateFormInputs', () => {
       );
       expect(resultFromProfileWithPrivateKey.validatedProfile).toBeDefined();
       expect(resultFromProfileWithPrivateKey.warningMessage).not.toBeDefined();
-    }
+    },
   );
 
   it(
@@ -72,7 +72,7 @@ describe('validateFormInputs', () => {
       );
       expect(resultFromProfileWithPassword.validatedProfile).toBeDefined();
       expect(resultFromProfileWithPassword.warningMessage).not.toBeDefined();
-    }
+    },
   );
 
   it(
@@ -84,7 +84,7 @@ describe('validateFormInputs', () => {
       );
       expect(resultFromProfileWithSshAgent.validatedProfile).toBeDefined();
       expect(resultFromProfileWithSshAgent.warningMessage).not.toBeDefined();
-    }
+    },
   );
 
   /**
@@ -245,7 +245,7 @@ describe('validateFormInputs', () => {
       defaultServerCommand,
     );
     expect(
-      resultFromProfileWithDefaultRSC.validatedProfile.params.remoteServerCommand
+      resultFromProfileWithDefaultRSC.validatedProfile.params.remoteServerCommand,
     ).toBe('');
 
     minimumValidParamsWithPassword.remoteServerCommand = 'differentCommand';
@@ -255,7 +255,7 @@ describe('validateFormInputs', () => {
       defaultServerCommand,
     );
     expect(
-      resultFromProfileWithDifferentRSC.validatedProfile.params.remoteServerCommand
+      resultFromProfileWithDifferentRSC.validatedProfile.params.remoteServerCommand,
     ).toBe('differentCommand');
   });
 });

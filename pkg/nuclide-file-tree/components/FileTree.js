@@ -87,7 +87,7 @@ export class FileTree extends React.Component {
             this._afRequestId = null;
             this._measureHeights();
           });
-        }
+        },
       ),
       new Disposable(() => {
         window.removeEventListener('resize', this._measureHeights);

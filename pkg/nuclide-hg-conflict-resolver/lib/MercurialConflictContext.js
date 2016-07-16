@@ -129,14 +129,14 @@ export class MercurialConflictContext {
             } catch (error) {
               atom.notifications.addError(
                 'Failed to continue rebase\n' +
-                'You will have to run `hg rebase --continue` manually.'
+                'You will have to run `hg rebase --continue` manually.',
               );
             }
           },
           text: 'Continue',
         }],
         dismissable: true,
-      }
+      },
     );
   }
 
@@ -162,14 +162,14 @@ export class MercurialConflictContext {
             } catch (error) {
               atom.notifications.addError(
                 'Failed to abort rebase\n' +
-                'You will have to run `hg rebase --abort` manually.'
+                'You will have to run `hg rebase --abort` manually.',
               );
             }
           },
           text: 'Abort',
         }],
         dismissable: true,
-      }
+      },
     );
   }
 }

@@ -22,7 +22,7 @@ describe('side-bar', () => {
     runs(() => {
       // Ensure the test passes all GKs, the one for the source-control-side-bar in particular.
       spyOnDefault(
-        require.resolve('../pkg/commons-node/passesGK')
+        require.resolve('../pkg/commons-node/passesGK'),
       ).andReturn(Promise.resolve(true));
       jasmineIntegrationTestSetup();
     });
@@ -36,7 +36,7 @@ describe('side-bar', () => {
 
   it('renders options for each of its clients, responds to registered commands', () => {
     expect(
-      document.querySelectorAll('.left.tool-panel:last-child .nuclide-dropdown option').length
+      document.querySelectorAll('.left.tool-panel:last-child .nuclide-dropdown option').length,
     ).toBe(2);
 
     // file-tree is the first client, it should show up first
@@ -44,7 +44,7 @@ describe('side-bar', () => {
 
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
-      'nuclide-source-control-side-bar:toggle'
+      'nuclide-source-control-side-bar:toggle',
     );
 
     let dropdown;
@@ -74,7 +74,7 @@ describe('side-bar', () => {
       // The source-control-side-bar was toggled above, toggling again hides the side-bar
       atom.commands.dispatch(
         atom.views.getView(atom.workspace),
-        'nuclide-source-control-side-bar:toggle'
+        'nuclide-source-control-side-bar:toggle',
       );
     });
 

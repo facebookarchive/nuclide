@@ -39,7 +39,7 @@ function flowCoverageToCoverage(flowCoverage: ?FlowCoverageResult): ?CoverageRes
           [flowRange.start.line, flowRange.start.column],
           [flowRange.end.line, flowRange.end.column],
         ),
-      })
+      }),
     ),
   };
 }

@@ -134,7 +134,7 @@ function _convertArgsToMultiLineSnippet(
   //
 
   const colonPosition = Math.max.apply(null,
-    args.map(arg => arg.offset + arg.text.length)
+    args.map(arg => arg.offset + arg.text.length),
   );
 
   return args.reduce((body, arg, index) => {

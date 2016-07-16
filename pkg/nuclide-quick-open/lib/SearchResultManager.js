@@ -129,7 +129,7 @@ class SearchResultManager {
     this._debouncedCleanCache = debounce(
       () => this._cleanCache(),
       CACHE_CLEAN_DEBOUNCE_DELAY,
-      /* immediate */false
+      /* immediate */false,
     );
     // `updateDirectories` joins providers and directories, which don't know anything about each
     // other. Debounce this call to reduce churn at startup, and when new providers get activated or
@@ -137,7 +137,7 @@ class SearchResultManager {
     this._debouncedUpdateDirectories = debounce(
       () => this._updateDirectories(),
       UPDATE_DIRECTORIES_DEBOUNCE_DELAY,
-      /* immediate */false
+      /* immediate */false,
     );
     this._queryLruQueue = new Map();
     this._emitter = new Emitter();
@@ -146,7 +146,7 @@ class SearchResultManager {
     // Check is required for testing.
     if (atom.project) {
       this._subscriptions.add(atom.project.onDidChangePaths(
-        this._debouncedUpdateDirectories.bind(this))
+        this._debouncedUpdateDirectories.bind(this)),
       );
       this._debouncedUpdateDirectories();
     }
@@ -204,7 +204,7 @@ class SearchResultManager {
       for (const provider of this._registeredProviders[DIRECTORY_KEY].values()) {
         invariant(
           provider.isEligibleForDirectory != null,
-          `Directory provider ${provider.getName()} must provide \`isEligibleForDirectory()\`.`
+          `Directory provider ${provider.getName()} must provide \`isEligibleForDirectory()\`.`,
         );
         eligibilities.push(
           provider.isEligibleForDirectory(directory).then(isEligible => ({
@@ -236,7 +236,7 @@ class SearchResultManager {
         const providersForDirectory = newProvidersByDirectories.get(directory);
         invariant(
           providersForDirectory != null,
-          `Providers for directory ${directory.getPath()} not defined`
+          `Providers for directory ${directory.getPath()} not defined`,
         );
         providersForDirectory.add(provider);
       }
@@ -461,7 +461,7 @@ class SearchResultManager {
     }
     invariant(
       dirProviderName != null,
-      `Provider ${providerName} is not registered with quick-open.`
+      `Provider ${providerName} is not registered with quick-open.`,
     );
     return dirProviderName;
   }

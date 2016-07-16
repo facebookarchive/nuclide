@@ -54,10 +54,10 @@ export default class DiffNavigationBar extends React.Component {
 
     // Here are the mapping between the offset line numbers to the original line number.
     const addedLinesWithOffsets = new Map(addedLines.map(
-      addedLine => [getOffsetLineNumber(addedLine, newOffsets), addedLine]
+      addedLine => [getOffsetLineNumber(addedLine, newOffsets), addedLine],
     ));
     const removedLinesWithOffsets = new Map(removedLines.map(
-      removedLine => [getOffsetLineNumber(removedLine, oldOffsets), removedLine]
+      removedLine => [getOffsetLineNumber(removedLine, oldOffsets), removedLine],
     ));
     // Interset the added and removed lines maps, taking the values of the added lines.
     const changedLinesWithOffsets = new Map(
@@ -66,7 +66,7 @@ export default class DiffNavigationBar extends React.Component {
       .map(changedLineWithOffset => [
         changedLineWithOffset,
         addedLinesWithOffsets.get(changedLineWithOffset),
-      ])
+      ]),
     );
 
     // These regions will now be 'modified' regions.
@@ -88,7 +88,7 @@ export default class DiffNavigationBar extends React.Component {
           isAddedLine={true}
           containerHeight={elementHeight}
           onClick={this._handleClick}
-        />
+        />,
       );
     }
 
@@ -103,7 +103,7 @@ export default class DiffNavigationBar extends React.Component {
           isAddedLine={true}
           containerHeight={elementHeight}
           onClick={this._handleClick}
-        />
+        />,
       );
     }
 
@@ -118,7 +118,7 @@ export default class DiffNavigationBar extends React.Component {
           isAddedLine={false}
           containerHeight={elementHeight}
           onClick={this._handleClick}
-        />
+        />,
       );
     }
 

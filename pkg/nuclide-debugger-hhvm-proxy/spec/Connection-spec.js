@@ -44,7 +44,7 @@ describe('debugger-hhvm-proxy Connection', () => {
       'sendBreakCommand',
       'sendStdoutRequest',
       'sendStderrRequest',
-      'dispose']
+      'dispose'],
     ): any): DbgpSocketType);
     DbgpSocketConstructor = (
       (spyOn(require('../lib/DbgpSocket'), 'DbgpSocket').andReturn(dbgpSocket): any)
@@ -52,7 +52,7 @@ describe('debugger-hhvm-proxy Connection', () => {
     );
 
     dataCache = ((jasmine.createSpyObj('dataCache', [
-      'evaluateOnCallFrame', 'getProperties', 'getScopesForFrame']
+      'evaluateOnCallFrame', 'getProperties', 'getScopesForFrame'],
     ): any): DataCacheType);
     DataCacheConstructor = (
       (spyOn(require('../lib/DataCache'), 'DataCache').andReturn(dataCache): any)

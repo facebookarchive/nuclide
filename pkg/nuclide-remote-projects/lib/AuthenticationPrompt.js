@@ -35,14 +35,14 @@ export default class AuthenticationPrompt extends React.Component<void, Props, v
     this._disposables.add(atom.commands.add(
       this.refs.root,
       'core:confirm',
-      event => this.props.onConfirm())
+      event => this.props.onConfirm()),
     );
 
     // Hitting escape should cancel the dialog.
     this._disposables.add(atom.commands.add(
       'atom-workspace',
       'core:cancel',
-      event => this.props.onCancel())
+      event => this.props.onCancel()),
     );
 
     this.refs.password.focus();

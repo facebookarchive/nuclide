@@ -37,8 +37,8 @@ describe('getPackageUrlForRange', () => {
       getPackageUrlForRange(
         sampleJSON,
         '"npm-package"',
-        new Range([5, 4], [5, 17])
-      )
+        new Range([5, 4], [5, 17]),
+      ),
     ).toEqual('https://www.npmjs.com/package/npm-package/');
   });
 
@@ -47,8 +47,8 @@ describe('getPackageUrlForRange', () => {
       getPackageUrlForRange(
         sampleJSON,
         '"something-else"',
-        new Range([6, 4], [6, 20])
-      )
+        new Range([6, 4], [6, 20]),
+      ),
     ).toBeNull();
   });
 
@@ -57,8 +57,8 @@ describe('getPackageUrlForRange', () => {
       getPackageUrlForRange(
         sampleJSON,
         '"what-is-this"',
-        new Range([7, 6], [7, 20])
-      )
+        new Range([7, 6], [7, 20]),
+      ),
     ).toBeNull();
   });
 
@@ -67,22 +67,22 @@ describe('getPackageUrlForRange', () => {
       getPackageUrlForRange(
         sampleJSON,
         '"git-url"',
-        new Range([9, 4], [9, 13])
-      )
+        new Range([9, 4], [9, 13]),
+      ),
     ).toBeNull();
     expect(
       getPackageUrlForRange(
         sampleJSON,
         '"file-path"',
-        new Range([10, 4], [10, 15])
-      )
+        new Range([10, 4], [10, 15]),
+      ),
     ).toBeNull();
     expect(
       getPackageUrlForRange(
         sampleJSON,
         '"http-url"',
-        new Range([11, 4], [11, 14])
-      )
+        new Range([11, 4], [11, 14]),
+      ),
     ).toBeNull();
   });
 
@@ -91,15 +91,15 @@ describe('getPackageUrlForRange', () => {
       getPackageUrlForRange(
         sampleJSON,
         '"github"',
-        new Range([12, 4], [12, 12])
-      )
+        new Range([12, 4], [12, 12]),
+      ),
     ).toEqual('https://github.com/facebook/nuclide/tree/v0.130.0');
     expect(
       getPackageUrlForRange(
         sampleJSON,
         '"github-prefix"',
-        new Range([13, 4], [13, 19])
-      )
+        new Range([13, 4], [13, 19]),
+      ),
     ).toEqual('https://github.com/facebook/nuclide');
   });
 
@@ -108,8 +108,8 @@ describe('getPackageUrlForRange', () => {
       getPackageUrlForRange(
         sampleJSON,
         '"dependencies"',
-        new Range([4, 2], [4, 16])
-      )
+        new Range([4, 2], [4, 16]),
+      ),
     ).toBeNull();
   });
 
@@ -118,8 +118,8 @@ describe('getPackageUrlForRange', () => {
       getPackageUrlForRange(
         sampleJSON,
         '"thing"',
-        new Range([2, 4], [2, 11])
-      )
+        new Range([2, 4], [2, 11]),
+      ),
     ).toBeNull();
   });
 });

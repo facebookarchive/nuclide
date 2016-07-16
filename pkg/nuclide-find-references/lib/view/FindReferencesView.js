@@ -47,7 +47,7 @@ const FindReferencesView = React.createClass({
   async _fetchMore(count: number): Promise<void> {
     const next = await this.props.model.getFileReferences(
       this.state.fetched,
-      PAGE_SIZE
+      PAGE_SIZE,
     );
     this.setState({
       loading: false,
@@ -80,7 +80,7 @@ const FindReferencesView = React.createClass({
         {...fileRefs}
         basePath={this.props.model.getBasePath()}
         clickCallback={() => this._childClick(i)}
-      />
+      />,
     );
 
     const refCount = this.props.model.getReferenceCount();
@@ -90,7 +90,7 @@ const FindReferencesView = React.createClass({
         <div
           key="loading"
           className="nuclide-find-references-loading loading-spinner-medium"
-        />
+        />,
       );
     }
 

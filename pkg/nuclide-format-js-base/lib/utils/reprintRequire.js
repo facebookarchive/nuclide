@@ -71,7 +71,7 @@ function reprintRequireHelper(node: Node): Node {
     // Sort the specifiers.
     node.specifiers.sort((one, two) => compareStrings(
       one.local.name,
-      two.local.name
+      two.local.name,
     ));
     // TODO: Properly remove new lines from the node.
     return node;

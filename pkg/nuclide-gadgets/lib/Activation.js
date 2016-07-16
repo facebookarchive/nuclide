@@ -47,18 +47,18 @@ class Activation {
         observableFromSubscribeFunction(atom.workspace.observePaneItems.bind(atom.workspace))
           .merge(
             observableFromSubscribeFunction(
-              atom.workspace.onDidChangeActivePaneItem.bind(atom.workspace)
-            )
+              atom.workspace.onDidChangeActivePaneItem.bind(atom.workspace),
+            ),
           )
           .merge(gadget$)
           .sampleTime(100)
-          .subscribe(() => this.commands.renderPaneItems())
+          .subscribe(() => this.commands.renderPaneItems()),
       ),
 
       // Clean up when pane items are destroyed.
       new DisposableSubscription(
         observableFromSubscribeFunction(atom.workspace.onDidDestroyPaneItem.bind(atom.workspace))
-          .subscribe(({item}) => this.commands.cleanUpDestroyedPaneItem(item))
+          .subscribe(({item}) => this.commands.cleanUpDestroyedPaneItem(item)),
       ),
 
       // Keep the atom commands up to date with the registered gadgets.
@@ -90,7 +90,7 @@ class Activation {
           .filter(paneItemContainer => {
             return ('getItems' in paneItemContainer) && ('getFlexScale' in paneItemContainer);
           })
-          .subscribe(paneItemContainer => this.commands.updateExpandedFlexScale(paneItemContainer))
+          .subscribe(paneItemContainer => this.commands.updateExpandedFlexScale(paneItemContainer)),
       ),
     );
   }

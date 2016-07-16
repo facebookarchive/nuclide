@@ -77,7 +77,7 @@ export default class SideBarComponent extends React.Component {
 
   componentDidMount(): void {
     this._disposables.add(
-      atom.commands.add('atom-workspace', 'core:cancel', this._destroyActiveModal)
+      atom.commands.add('atom-workspace', 'core:cancel', this._destroyActiveModal),
     );
   }
 
@@ -221,7 +221,7 @@ export default class SideBarComponent extends React.Component {
         this._menuPopupTimeout = setTimeout(() => {
           menu.popup(remote.getCurrentWindow(), clientX, clientY);
         }, 35);
-      }
+      },
     );
   }
 

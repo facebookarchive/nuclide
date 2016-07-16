@@ -104,8 +104,8 @@ describe('checkIfMatchesCamelCaseLetters', () => {
     expect(
       checkIfMatchesCamelCaseLetters(
         'fbide',
-        'FaceBookIntegratedDevelopmentEnvironment'
-      )
+        'FaceBookIntegratedDevelopmentEnvironment',
+      ),
     ).toBe(true);
     expect(checkIfMatchesCamelCaseLetters('fb', 'FooBar.js')).toBe(true);
     expect(checkIfMatchesCamelCaseLetters('fb', 'FooBarBaz.js')).toBe(false);
@@ -189,22 +189,22 @@ describe('importantCharactersForString', () => {
   it('returns the set of important characters for a given string', () => {
     expect(areSetsEqual(
       importantCharactersForString('foobar'),
-      new Set(['f', 'o'])
+      new Set(['f', 'o']),
     )).toBe(true);
 
     expect(areSetsEqual(
       importantCharactersForString('fooBar'),
-      new Set(['f', 'o', 'B'])
+      new Set(['f', 'o', 'B']),
     )).toBe(true);
 
     expect(areSetsEqual(
       importantCharactersForString('foo.bar'),
-      new Set(['f', 'o', 'b'])
+      new Set(['f', 'o', 'b']),
     )).toBe(true);
 
     expect(areSetsEqual(
       importantCharactersForString('foobar'),
-      new Set(['f', 'o'])
+      new Set(['f', 'o']),
     )).toBe(true);
 
   });

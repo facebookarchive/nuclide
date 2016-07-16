@@ -43,7 +43,7 @@ export function createProcessStream(): Rx.Observable<string> {
         },
         {event: null, lastError: null},
       )
-      .map(acc => acc.event)
+      .map(acc => acc.event),
   )
 
     // Only get the text from stdout.
@@ -59,7 +59,7 @@ export function createProcessStream(): Rx.Observable<string> {
 function spawnAdbLogcat(): Promise<child_process$ChildProcess> {
   return safeSpawn(
     ((featureConfig.get('nuclide-adb-logcat.pathToAdb'): any): string),
-    ['logcat', '-v', 'long', '-T', '1']
+    ['logcat', '-v', 'long', '-T', '1'],
   );
 }
 

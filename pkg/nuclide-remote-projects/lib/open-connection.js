@@ -208,7 +208,7 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
             connectionProfiles: compositeConnectionProfiles,
           };
           ReactDOM.render(<ConnectionDialog {...newDialogProps} />, hostEl);
-        }
+        },
       );
 
       basePanel = atom.workspace.addModalPanel({item: hostEl});

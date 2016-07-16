@@ -80,7 +80,7 @@ export function testSettingsCheckbox(keyPath: string, value: boolean) {
       if (element.checked !== newValue) {
         element.click();
       }
-    }
+    },
   );
 }
 
@@ -94,9 +94,9 @@ export function testSettingsSelect(keyPath: string, value: mixed, tmpValue: mixe
     (element: HTMLInputElement, newValue: string) => {
       TestUtils.Simulate.change(
         element,
-        {target: element.children[parseInt(newValue, 10)]}
+        {target: element.children[parseInt(newValue, 10)]},
       );
-    }
+    },
   );
 }
 

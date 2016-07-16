@@ -57,7 +57,7 @@ const trackProviderChange = debounce(providerName => {
     {
       'quickopen-provider': providerName,
       'quickopen-session': analyticsSessionId,
-    }
+    },
   );
 }, AnalyticsDebounceDelays.CHANGE_TAB);
 
@@ -117,7 +117,7 @@ class Activation {
           'quickopen-session': analyticsSessionId || '',
           // Because the `provider` is usually OmniSearch, also track the original provider.
           'quickopen-provider-source': sourceProvider,
-        }
+        },
       );
       this.closeSearchPanel();
     });
@@ -127,7 +127,7 @@ class Activation {
         if (this._searchPanel && this._searchPanel.isVisible()) {
           this.closeSearchPanel();
         }
-      })
+      }),
     );
 
     this._searchComponent.onCancellation(() => this.closeSearchPanel());
@@ -141,7 +141,7 @@ class Activation {
             'quickopen-selected-service': selection.selectedService,
             'quickopen-selected-directory': selection.selectedDirectory,
             'quickopen-session': analyticsSessionId,
-          }
+          },
         );
       }
     }, AnalyticsDebounceDelays.CHANGE_SELECTION));
@@ -172,7 +172,7 @@ class Activation {
         maxScrollableAreaHeight={this._maxScrollableAreaHeight}
         onBlur={this.closeSearchPanel.bind(this)}
       />,
-      this._reactDiv
+      this._reactDiv,
     );
     invariant(component instanceof QuickSelectionComponent);
     return component;
@@ -198,7 +198,7 @@ class Activation {
       {
         'quickopen-provider': providerName,
         'quickopen-session': analyticsSessionId,
-      }
+      },
     );
     const provider = getSearchResultManager().getProviderByName(providerName);
     // "toggle" behavior
@@ -226,7 +226,7 @@ class Activation {
         AnalyticsEvents.OPEN_PANEL,
         {
           'quickopen-session': analyticsSessionId || '',
-        }
+        },
       );
       // showSearchPanel gets called when changing providers even if it's already shown.
       const isAlreadyVisible = this._searchPanel.isVisible();
@@ -248,7 +248,7 @@ class Activation {
         AnalyticsEvents.CLOSE_PANEL,
         {
           'quickopen-session': analyticsSessionId || '',
-        }
+        },
       );
       this._searchPanel.hide();
       this._searchComponent.blur();

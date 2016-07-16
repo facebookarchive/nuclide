@@ -36,7 +36,7 @@ const ExactStringMatchProvider = {
   isRenderable: () => true,
   getTabTitle: () => 'Nothing to see here',
   executeQuery: query => Promise.resolve(
-    TEST_STRINGS.filter(s => s === query).map(s => ({path: s}))
+    TEST_STRINGS.filter(s => s === query).map(s => ({path: s})),
   ),
 };
 
@@ -89,7 +89,7 @@ describe('SearchResultManager', () => {
           searchResultManager.PROVIDERS_CHANGED,
           () => {
             providersChangedCallCount++;
-          }
+          },
         );
         await searchResultManager._updateDirectories();
         let renderableProviders = searchResultManager.getRenderableProviders();
@@ -121,7 +121,7 @@ describe('SearchResultManager', () => {
             ],
             loading: false,
             error: null,
-          }
+          },
         ));
       });
     });
@@ -144,7 +144,7 @@ describe('SearchResultManager', () => {
               ],
               loading: false,
               error: null,
-            }
+            },
           ));
         }));
       });

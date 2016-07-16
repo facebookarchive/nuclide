@@ -90,7 +90,7 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
   _cancelClick(): void {
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
-      'nuclide-debugger:toggle-launch-attach'
+      'nuclide-debugger:toggle-launch-attach',
     );
   }
 

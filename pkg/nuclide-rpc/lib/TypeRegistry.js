@@ -598,7 +598,7 @@ export class TypeRegistry {
         serialized.map(entry => checkedSmartPromiseAll([
           this._unmarshal(context, entry[0], keyType),
           this._unmarshal(context, entry[1], valueType),
-        ]))
+        ])),
       );
       if (entries instanceof Promise) {
         return entries.then(x => new Map(x));

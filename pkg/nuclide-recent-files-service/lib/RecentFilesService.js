@@ -43,7 +43,7 @@ class RecentFilesService {
         if (editorPath != null) {
           this.touchFile(editorPath);
         }
-      })
+      }),
     );
   }
 
@@ -62,7 +62,7 @@ class RecentFilesService {
       ({
         path: pair[0],
         timestamp: pair[1],
-      })
+      }),
     );
   }
 

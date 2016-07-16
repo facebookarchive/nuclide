@@ -42,7 +42,7 @@ export default function addTooltip(
         {
           keyBindingTarget: node,
           ...options,
-        }
+        },
       );
     }
   };

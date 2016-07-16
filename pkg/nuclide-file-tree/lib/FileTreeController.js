@@ -66,7 +66,7 @@ class FileTreeController {
     this._updateRootDirectories();
     // Subsequent root directories updated on change
     this._subscriptions.add(
-      atom.project.onDidChangePaths(() => this._updateRootDirectories())
+      atom.project.onDidChangePaths(() => this._updateRootDirectories()),
     );
 
     this._subscriptions.add(
@@ -91,7 +91,7 @@ class FileTreeController {
         'nuclide-file-tree:force-refresh-roots': this._updateRootDirectories.bind(this),
         /* eslint-enable nuclide-internal/command-menu-items */
         'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
-      })
+      }),
     );
     const letterKeyBindings = {
       'nuclide-file-tree:remove-letter':
@@ -144,12 +144,12 @@ class FileTreeController {
         'nuclide-file-tree:show-in-file-manager': this._showInFileManager.bind(this),
         'nuclide-file-tree:set-current-working-root': this._setCwdToSelection.bind(this),
         ...letterKeyBindings,
-      })
+      }),
     );
     this._subscriptions.add(
       atom.commands.add('[is="tabs-tab"]', {
         'nuclide-file-tree:reveal-tab-file': this._revealTabFileOnClick.bind(this),
-      })
+      }),
     );
     if (state && state.tree) {
       this._store.loadData(state.tree);
@@ -216,7 +216,7 @@ class FileTreeController {
       FileTreeHelpers.isValidDirectory(directory)
     ));
     const rootKeys = rootDirectories.map(
-      directory => FileTreeHelpers.dirPathToKey(directory.getPath())
+      directory => FileTreeHelpers.dirPathToKey(directory.getPath()),
     );
     this._actions.setRootKeys(rootKeys);
     this._actions.updateRepositories(rootDirectories);
@@ -253,7 +253,7 @@ class FileTreeController {
       atom.commands.dispatch(
         atom.views.getView(atom.workspace),
         'nuclide-file-tree:toggle',
-        {display: true}
+        {display: true},
       );
     }
 
@@ -280,7 +280,7 @@ class FileTreeController {
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
       'nuclide-file-tree:toggle',
-      {display: true}
+      {display: true},
     );
     this.revealNodeKey(filePath);
   }
@@ -573,7 +573,7 @@ class FileTreeController {
     // box.
     atom.commands.dispatch(
       targetElement,
-      'project-find:show-in-current-directory'
+      'project-find:show-in-current-directory',
     );
     if (shouldClearPath) {
       delete targetElement.dataset.path;

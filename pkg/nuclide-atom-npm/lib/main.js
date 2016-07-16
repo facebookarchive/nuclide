@@ -45,7 +45,7 @@ function loadGrammarsSync(packagePath: string) {
   fs.traverseTreeSync(
     grammarsDir,
     file => atom.grammars.loadGrammarSync(file),
-    directory => null
+    directory => null,
   );
 }
 

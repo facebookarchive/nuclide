@@ -49,7 +49,7 @@ xdescribe('QuickSelectionComponent', () => {
       <QuickSelectionComponent
         provider={testProvider}
       />,
-      componentRoot
+      componentRoot,
     );
     invariant(untypedComponent instanceof QuickSelectionComponent);
     component = untypedComponent;
@@ -74,7 +74,7 @@ xdescribe('QuickSelectionComponent', () => {
         <QuickSelectionComponent
           provider={new TestQuickSelectionProvider(items)}
         />,
-        componentRoot
+        componentRoot,
       );
       invariant(untypedComponent instanceof QuickSelectionComponent);
       component = untypedComponent;
@@ -305,7 +305,7 @@ xdescribe('QuickSelectionComponent', () => {
           {testDirectory: {testProvider: Promise.resolve({results: [5, 6, 7]})}},
           () => {
             expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
-          }
+          },
         );
       });
     });

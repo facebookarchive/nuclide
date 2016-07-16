@@ -138,10 +138,10 @@ async function fetchRevisions(
   } catch (e) {
     logger.warn(
       'Failed to get revision info for revisions' +
-      ` ${revisionExpression}: ${e.stderr || e}, ${e.command}`
+      ` ${revisionExpression}: ${e.stderr || e}, ${e.command}`,
     );
     throw new Error(
-      `Could not fetch revision info for revisions: ${revisionExpression}`
+      `Could not fetch revision info for revisions: ${revisionExpression}`,
     );
   }
 }

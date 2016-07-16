@@ -107,7 +107,7 @@ class ObjectiveCColonIndenter {
           ];
           textEditor.setCursorBufferPosition(newCursorPosition);
           textEditor.scrollToBufferPosition(newCursorPosition);
-        }
+        },
       );
     }));
   }

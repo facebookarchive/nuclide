@@ -17,7 +17,7 @@ import markers from '../../constants/markers';
 
 function printSwitchCase(print: Print, node: SwitchCase): Lines {
   const consequentParts = flatten(node.consequent.map(
-    nodePart => print(nodePart)
+    nodePart => print(nodePart),
   ));
   if (node.consequent.length > 0) {
     // We want a new line separating cases if they had a consequent.

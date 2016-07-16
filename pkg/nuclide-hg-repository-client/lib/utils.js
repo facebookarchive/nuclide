@@ -38,7 +38,7 @@ function addAllParentDirectoriesToCache(
     directories,
     modifiedPath,
     pathPrefixToSkip,
-    ADD_ACTION
+    ADD_ACTION,
   );
 }
 
@@ -54,7 +54,7 @@ function removeAllParentDirectoriesFromCache(
     directories,
     modifiedPath,
     pathPrefixToSkip,
-    REMOVE_ACTION
+    REMOVE_ACTION,
   );
 }
 

@@ -621,7 +621,7 @@ export class HgService {
     const forkBaseName = await getForkBaseName(this._workingDirectory);
     return await fetchRevisionInfo(
       expressionForCommonAncestor(forkBaseName),
-      this._workingDirectory
+      this._workingDirectory,
     );
   }
 
@@ -664,7 +664,7 @@ export class HgService {
       return (await this._hgAsyncExecute(args, execOptions)).stdout.trim();
     } catch (e) {
       getLogger().error(
-        `Failed to fetch Hg config for key ${key}.  Error: ${e.toString()}`
+        `Failed to fetch Hg config for key ${key}.  Error: ${e.toString()}`,
       );
       return null;
     }

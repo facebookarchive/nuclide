@@ -36,7 +36,7 @@ export default class RenameBookmarkModal extends React.Component {
 
   componentDidMount(): void {
     this._disposables.add(
-      atom.commands.add(ReactDOM.findDOMNode(this), 'core:confirm', this._handleRenameClick)
+      atom.commands.add(ReactDOM.findDOMNode(this), 'core:confirm', this._handleRenameClick),
     );
     this.refs.atomTextEditor.focus();
   }

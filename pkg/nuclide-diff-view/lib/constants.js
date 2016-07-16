@@ -99,7 +99,7 @@ export const HgStatusToFileChangeStatus
     [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,
     [HgStatusCodeNumber.REMOVED]: FileChangeStatus.REMOVED,
     [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED,
-  }
+  },
 );
 
 export const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = Object.freeze({

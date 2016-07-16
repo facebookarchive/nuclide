@@ -38,7 +38,7 @@ describe('debugger-hhvm-proxy properties', () => {
           size: 15,
           encoding: 'base64',
         },
-      }
+      },
     )).toEqual({
       configurable: false,
       enumerable: true,
@@ -74,7 +74,7 @@ describe('debugger-hhvm-proxy properties', () => {
             type: 'int',
           },
         },
-      ]
+      ],
     )).toEqual([
       {
         configurable: false,
@@ -110,7 +110,7 @@ describe('debugger-hhvm-proxy properties', () => {
           startIndex: 0,
           count: 63,
         },
-      })
+      }),
     ).toEqual([
       {
         configurable: false,
@@ -126,7 +126,7 @@ describe('debugger-hhvm-proxy properties', () => {
               contextId: 2,
               fullname: 'fullname-value',
               page: 0,
-            }
+            },
           ),
         },
       },
@@ -144,7 +144,7 @@ describe('debugger-hhvm-proxy properties', () => {
               contextId: 2,
               fullname: 'fullname-value',
               page: 1,
-            }
+            },
           ),
         },
       },
@@ -164,7 +164,7 @@ describe('debugger-hhvm-proxy properties', () => {
           startIndex: 0,
           count: 32 * 32 * 32 + 1,
         },
-      })
+      }),
     ).toEqual([
       {
         configurable: false,
@@ -184,7 +184,7 @@ describe('debugger-hhvm-proxy properties', () => {
                 startIndex: 0,
                 count: 32 * 32 * 32,
               },
-            }
+            },
           ),
         },
       },
@@ -202,7 +202,7 @@ describe('debugger-hhvm-proxy properties', () => {
               contextId: 2,
               fullname: 'fullname-value',
               page: 1024,
-            }
+            },
           ),
         },
       },

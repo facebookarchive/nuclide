@@ -22,7 +22,7 @@ import {Matcher} from '../../nuclide-fuzzy-native';
 function getOpenTabsMatching(query: string): Array<FileResult> {
   const matcher = new Matcher(arrayCompact(
     atom.workspace.getTextEditors()
-      .map(editor => editor.getPath())
+      .map(editor => editor.getPath()),
   ));
   return matcher.match(query, {recordMatchIndexes: true})
     .map(result => ({

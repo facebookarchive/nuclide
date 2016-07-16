@@ -76,7 +76,7 @@ function diagnosticsForResult(
   const providerName = result.provider.displayName;
 
   const diagnostics = value.uncoveredRegions.map(
-    region => uncoveredRangeToDiagnostic(region, editorPath, providerName)
+    region => uncoveredRangeToDiagnostic(region, editorPath, providerName),
   );
 
   return {
