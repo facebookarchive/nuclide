@@ -25,7 +25,6 @@ import {
   onWorkspaceDidStopChangingActivePaneItem,
 } from '../../commons-atom/debounced';
 import featureConfig from '../../nuclide-feature-config';
-import {farEndPriority} from '../../commons-atom/suda-tool-bar';
 
 // Imports from within this Nuclide package.
 import createHealthGadget from './createHealthGadget';
@@ -101,7 +100,7 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
     icon: 'dashboard',
     callback: 'nuclide-health:toggle',
     tooltip: 'Toggle Nuclide health stats',
-    priority: farEndPriority(400),
+    priority: -400,
   });
   const disposable = new Disposable(() => { toolBar.removeItems(); });
   subscriptions.add(disposable);

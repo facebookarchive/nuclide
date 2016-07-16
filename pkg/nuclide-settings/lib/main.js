@@ -12,7 +12,6 @@
 import type {Gadget, GadgetsService} from '../../nuclide-gadgets/lib/types';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
-import {farEndPriority} from '../../commons-atom/suda-tool-bar';
 import {CompositeDisposable, Disposable} from 'atom';
 import SettingsPaneItem from './SettingsPaneItem';
 
@@ -33,16 +32,15 @@ export function consumeGadgetsService(api: GadgetsService): IDisposable {
 }
 
 export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
-  const priority = farEndPriority(500);
   const toolBar = getToolBar('nuclide-home');
   toolBar.addSpacer({
-    priority: priority - 1,
+    priority: -501,
   });
   toolBar.addButton({
     icon: 'gear',
     callback: 'nuclide-settings:show',
     tooltip: 'Open Nuclide Settings',
-    priority,
+    priority: -500,
   });
   const disposable = new Disposable(() => { toolBar.removeItems(); });
   subscriptions.add(disposable);
