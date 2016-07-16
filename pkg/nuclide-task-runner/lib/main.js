@@ -128,7 +128,7 @@ class Activation {
       callback: 'nuclide-task-runner:toggle-toolbar-visibility',
       tooltip: 'Toggle Task Runner Toolbar',
       iconset: 'ion',
-      icon: 'hammer',
+      icon: 'play',
       priority: 499.5,
     });
     element.className += ' nuclide-task-runner-tool-bar-button';
