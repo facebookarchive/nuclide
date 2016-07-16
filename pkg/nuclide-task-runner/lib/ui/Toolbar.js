@@ -9,21 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {AnnotatedTask, TaskId} from '../types';
-import type {ButtonSize} from '../../../nuclide-ui/lib/Button';
-import type {Octicon} from '../../../nuclide-ui/lib/Octicons';
+import type {AnnotatedTask, TaskId, TaskRunnerInfo} from '../types';
 
-import {Button, ButtonSizes} from '../../../nuclide-ui/lib/Button';
-import {Icon} from '../../../nuclide-ui/lib/Icon';
-import {SplitButtonDropdown} from '../../../nuclide-ui/lib/SplitButtonDropdown';
+import {TaskButton} from './TaskButton';
+import {TaskRunnerButton} from './TaskRunnerButton';
 import {ProgressBar} from './ProgressBar';
 import {getTask} from '../getTask';
 import {React} from 'react-for-atom';
-
-type TaskRunnerInfo = {
-  id: string;
-  name: string;
-};
 
 type Props = {
   taskRunnerInfo: Array<TaskRunnerInfo>;
@@ -57,7 +49,7 @@ export class Toolbar extends React.Component {
     const FallbackIcon = () => <div>{activeTask && activeTask.taskRunnerName}</div>;
     const IconComponent = ActiveTaskRunnerIcon || FallbackIcon;
     const ButtonComponent = props => (
-      <TaskRunnerIconTaskButton {...props} iconComponent={IconComponent} />
+      <TaskRunnerButton {...props} iconComponent={IconComponent} />
     );
 
     return (
@@ -102,106 +94,3 @@ export class Toolbar extends React.Component {
   }
 
 }
-
-type TaskButtonProps = {
-  activeTask: ?AnnotatedTask;
-  buttonComponent: ReactClass<any>;
-  taskRunnerInfo: Array<TaskRunnerInfo>;
-  runTask: (taskId?: TaskId) => void;
-  selectTask: (taskId: TaskId) => void;
-  taskIsRunning: boolean;
-  tasks: Map<string, Array<AnnotatedTask>>;
-};
-
-function TaskButton(props: TaskButtonProps): React.Element<any> {
-  const confirmDisabled = props.taskIsRunning || !props.activeTask || !props.activeTask.enabled;
-  const run = () => {
-    if (props.activeTask != null) {
-      props.runTask(props.activeTask);
-    }
-  };
-
-  const taskCount = Array.from(props.tasks.values()).reduce((n, tasks) => n + tasks.length, 0);
-  const ButtonComponent = props.buttonComponent;
-
-  if (taskCount <= 1) {
-    // If there are no tasks, just show "Run" (but have it disabled). It's just less weird than some
-    // kind of placeholder.
-    const task = props.activeTask || {value: null, label: 'Run', icon: 'triangle-right'};
-    return (
-      <ButtonComponent
-        size={ButtonSizes.SMALL}
-        disabled={confirmDisabled}
-        icon={task.icon}
-        onClick={run}>
-        {task.label}
-      </ButtonComponent>
-    );
-  } else {
-    const taskRunnerInfo = props.taskRunnerInfo.slice().sort((a, b) => abcSort(a.name, b.name));
-    let taskOptions = [];
-    taskRunnerInfo.forEach(info => {
-      const taskRunnerName = info.name;
-      const tasks = props.tasks.get(info.id) || [];
-      if (tasks.length === 0) { return; }
-      taskOptions.push({
-        value: null,
-        label: taskRunnerName,
-        disabled: true,
-      });
-      taskOptions.push(
-        ...tasks.map(task => ({
-          value: task,
-          label: `  ${task.label}`,
-          selectedLabel: task.label,
-          icon: task.icon,
-        }))
-      );
-    });
-    return (
-      <SplitButtonDropdown
-        buttonComponent={ButtonComponent}
-        value={props.activeTask}
-        options={taskOptions}
-        onChange={value => { props.selectTask(value); }}
-        onConfirm={run}
-        confirmDisabled={confirmDisabled}
-        changeDisabled={props.taskIsRunning}
-        size={ButtonSizes.SMALL}
-      />
-    );
-  }
-}
-
-type TaskRunnerIconTaskButtonProps = {
-  icon?: Octicon;
-  selected?: boolean;
-  size?: ButtonSize;
-  children?: mixed;
-  iconComponent: ReactClass<any>;
-};
-
-function TaskRunnerIconTaskButton(props: TaskRunnerIconTaskButtonProps): React.Element<any> {
-  const IconComponent = props.iconComponent;
-  const buttonProps = {...props};
-  delete buttonProps.icon;
-  delete buttonProps.label;
-  const icon = props.icon == null
-    ? null
-    : <Icon icon={props.icon} className="nuclide-task-runner-system-task-icon" />;
-  return (
-    // $FlowFixMe
-    <Button
-      {...buttonProps}
-      className="nuclide-task-runner-system-task-button">
-      <div className="nuclide-task-runner-system-icon-wrapper">
-        <IconComponent />
-      </div>
-      <div className="nuclide-task-runner-system-task-button-divider" />
-      {icon}
-      {props.children}
-    </Button>
-  );
-}
-
-const abcSort = (a, b) => (a.toLowerCase() < b.toLowerCase() ? -1 : 1);

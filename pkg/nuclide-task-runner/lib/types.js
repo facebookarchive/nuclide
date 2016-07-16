@@ -72,6 +72,11 @@ export interface TaskRunner {
   setProjectRoot?: (projectRoot: ?Directory) => void;
 }
 
+export type TaskRunnerInfo = {
+  id: string;
+  name: string;
+};
+
 export interface TaskInfo {
   observeProgress?: (callback: (progress: ?number) => mixed) => IDisposable;
   onDidComplete(callback: () => mixed): IDisposable;
