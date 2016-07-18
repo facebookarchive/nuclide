@@ -88,7 +88,9 @@ export class NuclideSocket {
 
     this._heartbeat = new XhrConnectionHeartbeat(serverUri, options);
     this._heartbeat.onConnectionRestored(() => {
-      this._scheduleReconnect();
+      if (this.isDisconnected()) {
+        this._scheduleReconnect();
+      }
     });
 
     this._reconnect();
@@ -157,6 +159,9 @@ export class NuclideSocket {
               } else {
                 logger.error('pingId mismatch');
               }
+            });
+            ws.onMessage().subscribe(() => {
+              this._schedulePing(pingId, ws);
             });
             this._schedulePing(pingId, ws);
             invariant(this._transport != null);
