@@ -1,5 +1,34 @@
 # Nuclide Changelog
 
+## v0.156.0
+
+### General
+
+* [New Feature] **Bookshelf** feature for tracking open files per bookmark and prompt to open those files on active bookmark changes and customize behavior to '**Always Restore**', '**Always Ignore**' or '**Prompt to Restore**' from Nuclide Settings.
+* Added setting controlling the server shutdown confirmation dialog.
+* Atom messages now show up in the console.
+* [Fixed] Starting the RN debugger no longer pauses in the Executor.js file unexpectedly.
+* Context View: Change hotkey from cmd+B to cmd+I to match OSX “Get Info” pattern.
+* Context View: Add “open in main editor” button to Definition Preview which opens the currently selected definition displayed in Definition Preview in the main editor pane.
+* Turn lint-on-fly on by default for packages compatible with the 'linter' package.
+
+### C/C++
+
+* GTest TEST/TEST_F macros now show up in clang outline view.
+* One-click debugging of C++ unit tests via the "Debug" button in the Buck toolbar.
+
+
+### Python
+
+* Added a setting to disable linting in Python.
+* Added a setting to enable linting on the fly.
+* [Fixed] A bug with Python flake8 linting where unused `from .. import ..`s would crash the linter.
+
+### UI
+
+* Display a loading indicator while fuzzy filename search is starting up.
+
+
 ## v0.155.0
 
 * v0.152.0, v0.153.0, and v0.154.0 could not be packaged internally - skipping them.
