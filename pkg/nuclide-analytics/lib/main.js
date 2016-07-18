@@ -159,7 +159,6 @@ function startTracking(eventName: string): TimingTracker {
  * Returns (or throws) the result of the operation.
  */
 function trackOperationTiming<T>(eventName: string, operation: () => T): T {
-
   const tracker = startTracking(eventName);
 
   try {
