@@ -34,8 +34,12 @@ export default async function findClangServerArgs(): Promise<{
   if (process.platform === 'darwin') {
     const result = await asyncExecute('xcode-select', ['--print-path']);
     if (result.exitCode === 0) {
-      libClangLibraryFile = result.stdout.trim() +
-        '/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib';
+      libClangLibraryFile = result.stdout.trim();
+      // If the user only has Xcode Command Line Tools installed, the path is different.
+      if (nuclideUri.basename(libClangLibraryFile) !== 'CommandLineTools') {
+        libClangLibraryFile += '/Toolchains/XcodeDefault.xctoolchain';
+      }
+      libClangLibraryFile += '/usr/lib/libclang.dylib';
     }
   }
 
