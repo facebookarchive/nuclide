@@ -20,7 +20,7 @@ import {TextBuffer} from 'atom';
 
 const doNothing = () => {};
 
-function setupTextEditor(props: Object): atom$TextEditor {
+function setupTextEditor(props: Props): atom$TextEditor {
   const textBuffer = props.textBuffer || new TextBuffer();
   if (props.path) {
     textBuffer.setPath(props.path);
@@ -35,6 +35,7 @@ function setupTextEditor(props: Object): atom$TextEditor {
   if (props.grammar != null) {
     textEditor.setGrammar(props.grammar);
   }
+  textEditor.setSoftWrapped(props.softWrapped);
 
   // As of the introduction of atom.workspace.buildTextEditor(), it is no longer possible to
   // subclass TextEditor to create a ReadOnlyTextEditor. Instead, the way to achieve this effect
@@ -75,6 +76,7 @@ type DefaultProps = {
   readOnly: boolean,
   syncTextContents: boolean,
   tabIndex: string,
+  softWrapped: boolean,
 };
 
 type Props = {
@@ -87,6 +89,7 @@ type Props = {
   textBuffer?: TextBuffer,
   syncTextContents: boolean,
   tabIndex: string,
+  softWrapped: boolean,
 };
 
 export class AtomTextEditor extends React.Component {
@@ -97,6 +100,7 @@ export class AtomTextEditor extends React.Component {
     autoGrow: false,
     syncTextContents: true,
     tabIndex: '0',  // Keep in line with other input elements.
+    softWrapped: false,
   };
 
   props: Props;
@@ -147,6 +151,9 @@ export class AtomTextEditor extends React.Component {
     }
     if (nextProps.grammar !== this.props.grammar) {
       this.getModel().setGrammar(nextProps.grammar);
+    }
+    if (nextProps.softWrapped !== this.props.softWrapped) {
+      this.getModel().setSoftWrapped(nextProps.softWrapped);
     }
   }
 
