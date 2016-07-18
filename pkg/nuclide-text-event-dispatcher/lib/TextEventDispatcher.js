@@ -237,7 +237,11 @@ class TextEventDispatcher {
       this._getEditorListenerDisposable().add(buffer.onDidStopChanging(makeDispatch('did-change')));
       this._getEditorListenerDisposable().add(buffer.onDidSave(makeDispatch('did-save')));
       this._getEditorListenerDisposable().add(buffer.onDidReload(makeDispatch('did-reload')));
-      this._dispatchEvents(editor, 'did-open');
+      // During reload, many text editors are opened simultaneously.
+      // Due to the debounce on the event callback, this means that many editors never receive
+      // a 'did-open' event. To work around this, defer editor open events so that simultaneous
+      // open events are properly registered as pending.
+      setImmediate(() => this._dispatchEvents(editor, 'did-open'));
     }));
   }
 

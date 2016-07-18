@@ -10,6 +10,7 @@
  */
 
 import {Disposable} from 'atom';
+import {sleep} from '../../commons-node/promise';
 
 import {
   TextEventDispatcher,
@@ -174,6 +175,31 @@ describe('TextEventDispatcher', () => {
     activeEditor = fakeTextEditor2;
     paneSwitchCallbacks.forEach(f => f());
     expect(callback).toHaveBeenCalledWith(fakeTextEditor2);
+  });
+
+  it('should register simultaneous open events as pending', () => {
+    jasmine.useRealClock();
+    waitsForPromise(async () => {
+      const callback = jasmine.createSpy();
+
+      // Initially, both fakeTextEditor/fakeTextEditor2 are opened.
+      textEventDispatcher.onFileChange([grammar], callback);
+
+      // Open events need a tick to process.
+      await sleep(0);
+
+      // Only fakeTextEditor should have opened; the other one should be pending.
+      expect(callback).toHaveBeenCalledWith(fakeTextEditor);
+      expect(callback).not.toHaveBeenCalledWith(fakeTextEditor2);
+
+      // Prevent the next open event from being debounced.
+      await sleep(100);
+
+      // Switching to fakeTextEditor2 should now trigger its pending open event.
+      activeEditor = fakeTextEditor2;
+      paneSwitchCallbacks.forEach(f => f());
+      expect(callback).toHaveBeenCalledWith(fakeTextEditor2);
+    });
   });
 
   it('should always dispatch to clients that request all changes', () => {
