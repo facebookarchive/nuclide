@@ -96,7 +96,7 @@ export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>
 
 export class DebuggerConnection {
   _clientCallback: ClientCallback;
-  _lldbWebSocket: WS;
+  _lldbWebSocket: ?WS;
   _lldbProcess: child_process$ChildProcess;
   _subscriptions: CompositeDisposable;
 
@@ -130,17 +130,18 @@ export class DebuggerConnection {
 
   async sendCommand(message: string): Promise<void> {
     const lldbWebSocket = this._lldbWebSocket;
-    if (lldbWebSocket) {
+    if (lldbWebSocket != null) {
       logTrace(`forward client message to lldb: ${message}`);
       lldbWebSocket.send(message);
     } else {
-      logError('Why is not lldb socket available?');
+      logError(`Nuclide sent message to LLDB after socket closed: ${message}`);
     }
   }
 
   async dispose(): Promise<void> {
     log('DebuggerConnection disposed');
     this._subscriptions.dispose();
+    this._lldbWebSocket = null;
   }
 }
 
@@ -153,9 +154,7 @@ export class DebuggerRpcService {
     this._clientCallback = new ClientCallback();
     this._config = config;
     setLogLevel(config.logLevel);
-    this._subscriptions = new CompositeDisposable(
-      new Disposable(() => this._clientCallback.dispose()),
-    );
+    this._subscriptions = new CompositeDisposable(this._clientCallback);
   }
 
   getOutputWindowObservable(): Observable<string> {
