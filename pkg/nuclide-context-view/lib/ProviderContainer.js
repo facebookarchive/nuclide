@@ -11,7 +11,6 @@
 
 import {React} from 'react-for-atom';
 import {Section} from '../../nuclide-ui/lib/Section';
-import {ShowMoreComponent} from '../../nuclide-ui/lib/ShowMoreComponent';
 import analytics from '../../nuclide-analytics';
 
 type Props = {
@@ -47,7 +46,7 @@ export class ProviderContainer extends React.Component {
           collapsable={true}
           onChange={this._setCollapsed}
           collapsed={this.state.collapsed}>
-          {this.props.isEditorBased ? this.props.children : this._textBasedComponent()}
+          {this.props.children}
         </Section>
       </div>
     );
@@ -59,13 +58,5 @@ export class ProviderContainer extends React.Component {
       title: this.props.title,
       collapsed: String(collapsed),
     });
-  }
-
-  _textBasedComponent(): React.Element<any> {
-    return (
-      <ShowMoreComponent maxHeight={600} showMoreByDefault={false}>
-        {this.props.children}
-      </ShowMoreComponent>
-    );
   }
 }
