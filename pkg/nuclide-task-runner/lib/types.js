@@ -22,7 +22,7 @@ export type AppState = {
   projectRoot: ?Directory,
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
   taskStatus: ?{
-    info: TaskInfo,
+    task: Task,
     progress: ?number,
   },
   visible: boolean,
@@ -68,7 +68,7 @@ export interface TaskRunner {
   getExtraUi?: () => ReactClass<any>, // activeTaskType will be provided as a nullable property.
   observeTaskList: (callback: (taskList: Array<TaskMetadata>) => mixed) => IDisposable,
   getIcon(): ReactClass<any>,
-  runTask(taskName: string): TaskInfo,
+  runTask(taskName: string): Task,
   setProjectRoot?: (projectRoot: ?Directory) => void,
 }
 
@@ -77,7 +77,7 @@ export type TaskRunnerInfo = {
   name: string,
 };
 
-export interface TaskInfo {
+export interface Task {
   observeProgress?: (callback: (progress: ?number) => mixed) => IDisposable,
   onDidComplete(callback: () => mixed): IDisposable,
   onDidError(callback: (error: Error) => mixed): IDisposable,
@@ -139,7 +139,7 @@ export type SelectTaskAction = {
 export type TaskCompletedAction = {
   type: 'TASK_COMPLETED',
   payload: {
-    taskInfo: TaskInfo,
+    task: Task,
   },
 };
 
@@ -154,21 +154,21 @@ export type TaskErroredAction = {
   type: 'TASK_ERRORED',
   payload: {
     error: Error,
-    taskInfo: ?TaskInfo,
+    task: ?Task,
   },
 };
 
 export type TaskStartedAction = {
   type: 'TASK_STARTED',
   payload: {
-    taskInfo: TaskInfo,
+    task: Task,
   },
 };
 
 export type TaskStoppedAction = {
   type: 'TASK_STOPPED',
   payload: {
-    taskInfo: TaskInfo,
+    task: Task,
   },
 };
 

@@ -32,18 +32,18 @@ describe('Epics', () => {
 
     it('cancels the current task', () => {
       waitsForPromise(async () => {
-        const taskInfo = new dummy.TaskInfo();
-        spyOn(taskInfo, 'cancel');
+        const task = new dummy.Task();
+        spyOn(task, 'cancel');
         const state = {
           ...createEmptyAppState(),
           taskStatus: {
-            info: taskInfo,
+            task,
             progress: 0,
           },
         };
         const result = await runActions([{type: Actions.STOP_TASK}], state).toArray().toPromise();
         expect(result.map(action => action.type)).toEqual([Actions.TASK_STOPPED]);
-        expect(taskInfo.cancel).toHaveBeenCalled();
+        expect(task.cancel).toHaveBeenCalled();
       });
     });
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TaskEvent, TaskInfo, TaskMetadata} from '../../nuclide-task-runner/lib/types';
+import type {Task, TaskEvent, TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Message} from '../../nuclide-console/lib/types';
@@ -85,7 +85,7 @@ export default class HhvmBuildSystem {
     return this._outputMessages;
   }
 
-  runTask(taskType: string): TaskInfo {
+  runTask(taskType: string): Task {
     if (!this._model.getTaskList().some(task => task.type === taskType)) {
       throw new Error(`There's no hhvm task named "${taskType}"`);
     }

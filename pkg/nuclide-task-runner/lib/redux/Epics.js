@@ -215,12 +215,12 @@ export function stopTaskEpic(
   return actions.ofType(Actions.STOP_TASK)
     .switchMap(action => {
       const {taskStatus} = store.getState();
-      const taskInfo = taskStatus == null ? null : taskStatus.info;
-      if (taskInfo == null) { return Observable.empty(); }
-      taskInfo.cancel();
+      const task = taskStatus == null ? null : taskStatus.task;
+      if (task == null) { return Observable.empty(); }
+      task.cancel();
       return Observable.of({
         type: Actions.TASK_STOPPED,
-        payload: {taskInfo},
+        payload: {task},
       });
     });
 }
@@ -280,32 +280,32 @@ function createTaskObservable(
   // $FlowFixMe(matthewwithanm): Type this.
   return Observable.using(
     () => {
-      let taskInfo = taskRunner.runTask(taskMeta.type);
+      let task = taskRunner.runTask(taskMeta.type);
       // We may call cancel multiple times so let's make sure it's idempotent.
-      taskInfo = {...taskInfo, cancel: once(taskInfo.cancel)};
+      task = {...task, cancel: once(task.cancel)};
       finished = false;
       return {
-        taskInfo,
+        task,
         unsubscribe() {
           if (!finished) {
-            taskInfo.cancel();
+            task.cancel();
           }
         },
       };
     },
-    ({taskInfo}) => Observable.of(taskInfo),
+    ({task}) => Observable.of(task),
   )
-    .switchMap(taskInfo => {
-      const progressStream = taskInfo.observeProgress == null
+    .switchMap(task => {
+      const progressStream = task.observeProgress == null
         ? Observable.empty()
         : observableFromSubscribeFunction(
-            taskInfo.observeProgress.bind(taskInfo),
+            task.observeProgress.bind(task),
           );
 
       return Observable
         .of({
           type: Actions.TASK_STARTED,
-          payload: {taskInfo},
+          payload: {task},
         })
         .concat(
           progressStream.map(progress => ({
@@ -314,15 +314,15 @@ function createTaskObservable(
           })),
         )
         .merge(
-          observableFromSubscribeFunction(taskInfo.onDidError.bind(taskInfo))
+          observableFromSubscribeFunction(task.onDidError.bind(task))
             .map(err => { throw err; }),
         )
         .takeUntil(
-          observableFromSubscribeFunction(taskInfo.onDidComplete.bind(taskInfo)),
+          observableFromSubscribeFunction(task.onDidComplete.bind(task)),
         )
         .concat(Observable.of({
           type: Actions.TASK_COMPLETED,
-          payload: {taskInfo},
+          payload: {task},
         }));
     })
     .catch(error => {
@@ -338,7 +338,7 @@ function createTaskObservable(
         type: Actions.TASK_ERRORED,
         payload: {
           error,
-          taskInfo: taskStatus == null ? null : taskStatus.info,
+          task: taskStatus == null ? null : taskStatus.task,
         },
       });
     })

@@ -18,7 +18,7 @@ import {Disposable} from 'atom';
 const noop = () => {};
 const noopErrCallback = err => {}; // eslint-disable-line handle-callback-err
 
-export class TaskInfo {
+export class Task {
   // In the real version, you'd be able to add multiple callbacks for each event.
   _complete: () => mixed;
   _error: (error: Error) => mixed;
@@ -76,7 +76,7 @@ export class TaskRunner {
     );
   }
 
-  runTask(taskName: string): TaskInfo {
-    return ((null: any): TaskInfo);
+  runTask(taskName: string): Task {
+    return ((null: any): Task);
   }
 }

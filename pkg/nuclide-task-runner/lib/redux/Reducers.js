@@ -61,11 +61,11 @@ export function app(state: AppState, action: Action): AppState {
       };
     }
     case Actions.TASK_STARTED: {
-      const {taskInfo} = action.payload;
+      const {task} = action.payload;
       return {
         ...state,
         taskStatus: {
-          info: taskInfo,
+          task,
           progress: null,
         },
       };

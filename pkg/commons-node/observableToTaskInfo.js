@@ -10,7 +10,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {TaskEvent, TaskInfo} from '../nuclide-task-runner/lib/types';
+import type {TaskEvent, Task} from '../nuclide-task-runner/lib/types';
 
 import {DisposableSubscription} from './stream';
 
@@ -19,7 +19,7 @@ import {DisposableSubscription} from './stream';
  * allows us to interop with other packages without forcing them to use Rx, but internally,
  * Observables are probably how we'll always build the functionality.
  */
-export function observableToTaskInfo(observable: Observable<TaskEvent>): TaskInfo {
+export function observableToTaskInfo(observable: Observable<TaskEvent>): Task {
   const events = observable.share().publish();
   const subscription = events.connect();
 

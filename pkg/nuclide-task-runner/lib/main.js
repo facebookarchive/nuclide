@@ -235,9 +235,9 @@ function trackTaskAction(
   action: TaskStartedAction | TaskStoppedAction | TaskCompletedAction | TaskErroredAction,
   state: AppState,
 ): void {
-  const taskInfo = action.payload.taskInfo;
-  const taskTrackingData = taskInfo != null && taskInfo.getTrackingData != null
-    ? taskInfo.getTrackingData()
+  const task = action.payload.task;
+  const taskTrackingData = task != null && task.getTrackingData != null
+    ? task.getTrackingData()
     : {};
   const error = action.type === Actions.TASK_ERRORED ? action.payload.error : null;
   trackEvent({

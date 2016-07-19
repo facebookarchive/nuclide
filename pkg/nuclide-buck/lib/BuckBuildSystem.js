@@ -13,7 +13,7 @@ import type {ProcessMessage} from '../../commons-node/process-types';
 import type {
   Directory,
   TaskEvent,
-  TaskInfo,
+  Task,
   TaskMetadata,
 } from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
@@ -159,7 +159,7 @@ export class BuckBuildSystem {
     return this._flux;
   }
 
-  runTask(taskType: string): TaskInfo {
+  runTask(taskType: string): Task {
     invariant(
       taskType === 'build' || taskType === 'test' ||
       taskType === 'run' || taskType === 'debug',
