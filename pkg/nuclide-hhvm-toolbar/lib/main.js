@@ -11,8 +11,9 @@
 
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {TaskRunner, TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
+import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {OutputService} from '../../nuclide-console/lib/types';
 
 import type ProjectStoreType from './ProjectStore';
 
@@ -91,7 +92,16 @@ class Activation {
     this._disposables.add(registry.register(this._getBuildSystem()));
   }
 
-  _getBuildSystem(): TaskRunner {
+  consumeOutputService(api: OutputService): void {
+    this._disposables.add(
+      api.registerOutputProvider({
+        id: 'Arc Build',
+        messages: this._getBuildSystem().getOutputMessages(),
+      }),
+    );
+  }
+
+  _getBuildSystem(): HhvmBuildSystem {
     if (this._buildSystem == null) {
       const buildSystem = new HhvmBuildSystem();
       if (this._cwdApi != null) {
@@ -193,6 +203,11 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
 export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
   invariant(activation != null);
   return activation.getDistractionFreeModeProvider();
+}
+
+export function consumeOutputService(api: OutputService): void {
+  invariant(activation != null);
+  activation.consumeOutputService(api);
 }
 
 export function deactivate() {

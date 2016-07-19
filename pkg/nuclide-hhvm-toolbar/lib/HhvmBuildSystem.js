@@ -9,28 +9,37 @@
  * the root directory of this source tree.
  */
 
-import type {Task, TaskInfo} from '../../nuclide-task-runner/lib/types';
+import type {Task, TaskEvent, TaskInfo} from '../../nuclide-task-runner/lib/types';
 import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {Message} from '../../nuclide-console/lib/types';
 
+import {CompositeDisposable} from 'atom';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import HhvmIcon from './ui/HhvmIcon';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
+import {observableToTaskInfo} from '../../commons-node/observableToTaskInfo';
 
-export default class ArcBuildSystem {
+export default class HhvmBuildSystem {
   _model: ArcToolbarModelType;
   _extraUi: ?ReactClass<any>;
   id: string;
   name: string;
   _tasks: ?Observable<Array<Task>>;
   _cwdApi: ?CwdApi;
+  _outputMessages: Subject<Message>;
+  _disposables: CompositeDisposable;
 
   constructor() {
     this.id = 'hhvm';
+    this._outputMessages = new Subject();
     this._model = this._getModel();
     this.name = this._model.getName();
+    this._disposables = new CompositeDisposable(
+      new DisposableSubscription(this._outputMessages),
+    );
   }
 
   setCwdApi(cwdApi: ?CwdApi): void {
@@ -45,7 +54,7 @@ export default class ArcBuildSystem {
     } catch (_) {
       ArcToolbarModel = require('./ArcToolbarModel').ArcToolbarModel;
     }
-    return new ArcToolbarModel();
+    return new ArcToolbarModel(this._outputMessages);
   }
 
   observeTasks(cb: (tasks: Array<Task>) => mixed): IDisposable {
@@ -72,37 +81,28 @@ export default class ArcBuildSystem {
     return HhvmIcon;
   }
 
+  getOutputMessages(): Observable<Message> {
+    return this._outputMessages;
+  }
+
   runTask(taskType: string): TaskInfo {
     if (!this._model.getTasks().some(task => task.type === taskType)) {
       throw new Error(`There's no hhvm task named "${taskType}"`);
     }
 
-    const run = getTaskRunFunction(this._model, taskType);
-    const resultStream = Observable.fromPromise(run());
+    const taskFunction = getTaskRunFunction(this._model, taskType);
+    return observableToTaskInfo(taskFunction());
+  }
 
-    // Currently, the `arc build` has no meaningul progress reporting,
-    // So, we omit `observeProgress` and just use the indeterminate progress bar.
-    return {
-      cancel() {
-        // FIXME: How can we cancel tasks?
-      },
-      onDidError(cb) {
-        return new DisposableSubscription(
-          resultStream.subscribe({error: cb}),
-        );
-      },
-      onDidComplete(cb) {
-        return new DisposableSubscription(
-          // Add an empty error handler to avoid the "Unhandled Error" message. (We're handling it
-          // above via the onDidError interface.)
-          resultStream.subscribe({next: cb, error: () => {}}),
-        );
-      },
-    };
+  dispose(): void {
+    this._disposables.dispose();
   }
 }
 
-function getTaskRunFunction(model: ArcToolbarModelType, taskType: string): () => Promise<any> {
+function getTaskRunFunction(
+  model: ArcToolbarModelType,
+  taskType: string,
+): () => Observable<TaskEvent> {
   switch (taskType) {
     case 'build':
       return () => model.arcBuild();

@@ -9,8 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {Task} from '../../nuclide-task-runner/lib/types';
+import type {TaskEvent, Task} from '../../nuclide-task-runner/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {Level, Message} from '../../nuclide-console/lib/types';
+import type {Observable, Subject} from 'rxjs';
 
 import {Disposable} from 'atom';
 
@@ -23,9 +25,18 @@ export const TASKS: Array<Task> = [];
 export class ArcToolbarModel {
 
   _cwdApi: ?CwdApi;
+  _outputMessages: Subject<Message>;
+
+  constructor(outputMessages: Subject<Message>) {
+    this._outputMessages = outputMessages;
+  }
 
   setCwdApi(cwdApi: ?CwdApi): void {
     this._cwdApi = cwdApi;
+  }
+
+  logOutput(text: string, level: Level) {
+    this._outputMessages.next({text, level});
   }
 
   getActiveProjectPath(): ?string {
@@ -64,7 +75,7 @@ export class ArcToolbarModel {
     return TASKS;
   }
 
-  async arcBuild(): Promise<void> {
+  async arcBuild(): Observable<TaskEvent> {
     throw new Error('arc build not supported');
   }
 

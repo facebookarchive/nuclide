@@ -23,6 +23,11 @@
       "versions": {
         "0.0.0": "consumeCwdApi"
       }
+    },
+    "nuclide-output": {
+      "versions": {
+        "0.0.0": "consumeOutputService"
+      }
     }
   },
   "providedServices": {
