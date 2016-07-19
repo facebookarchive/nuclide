@@ -11,6 +11,7 @@
 
 import type {ContextViewConfig, ContextProvider} from './ContextViewManager';
 import type {DefinitionService} from '../../nuclide-definition-service';
+import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import {ContextViewManager} from './ContextViewManager';
 import {Disposable, CompositeDisposable} from 'atom';
@@ -142,6 +143,23 @@ export function consumeDefinitionService(service: DefinitionService): IDisposabl
       manager.consumeDefinitionService(null);
     }
   });
+}
+
+export async function consumeToolBar(getToolBar: GetToolBar): Promise<IDisposable> {
+  const contextViewManager = await getContextViewManager();
+  if (contextViewManager != null) {
+    const toolBar = getToolBar('nuclide-context-view');
+    const {element} = toolBar.addButton({
+      icon: 'info',
+      callback: 'nuclide-context-view:toggle',
+      tooltip: 'Toggle Context View',
+    });
+    element.classList.add('nuclide-context-view-toolbar-button');
+    const disposable = new Disposable(() => { toolBar.removeItems(); });
+    disposables.add(disposable);
+    return disposable;
+  }
+  return new Disposable();
 }
 
 export type NuclideContextView = typeof Service;
