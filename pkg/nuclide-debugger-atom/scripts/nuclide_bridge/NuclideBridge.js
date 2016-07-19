@@ -203,6 +203,10 @@ class NuclideBridge {
         break;
       case 'triggerDebuggerAction':
         this._triggerDebuggerAction(args[0]);
+        break;
+      case 'setPauseOnException':
+        this._setPauseOnException(args[0]);
+        break;
     }
   }
 
@@ -349,6 +353,10 @@ class NuclideBridge {
         });
       },
     );
+  }
+
+  _setPauseOnException(pauseOnExceptionEnabled: boolean): void {
+    WebInspector.settings.pauseOnExceptionEnabled.set(pauseOnExceptionEnabled);
   }
 
   _triggerDebuggerAction(actionId: string): void {

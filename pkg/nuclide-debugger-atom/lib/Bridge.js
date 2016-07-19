@@ -169,6 +169,16 @@ class Bridge {
     }
   }
 
+  setPauseOnException(pauseOnExceptionEnabled: boolean): void {
+    if (this._webview) {
+      this._webview.send(
+        'command',
+        'setPauseOnException',
+        pauseOnExceptionEnabled,
+      );
+    }
+  }
+
   _evaluateOnSelectedCallFrame(expression: string): Promise<?EvaluationResult> {
     return this._cachedSendCommand(
       this._expressionsInFlight,

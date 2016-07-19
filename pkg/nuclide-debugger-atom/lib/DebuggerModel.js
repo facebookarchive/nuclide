@@ -45,7 +45,7 @@ class DebuggerModel {
 
   constructor(state: ?SerializedState) {
     this._dispatcher = new Dispatcher();
-    this._store = new DebuggerStore(this._dispatcher);
+    this._store = new DebuggerStore(this._dispatcher, this);
     this._actions = new DebuggerActions(this._dispatcher, this._store);
     this._breakpointStore = new BreakpointStore(
       this._dispatcher,

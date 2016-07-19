@@ -15,6 +15,7 @@ import type {
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type DebuggerInstance from './DebuggerInstance';
+import type DebuggerModel from './DebuggerModel';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
 import type {DebuggerModeType} from './types';
@@ -36,9 +37,10 @@ const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
  * Flux style Store holding all data used by the debugger plugin.
  */
 class DebuggerStore {
+  _model: DebuggerModel;
   _dispatcher: Dispatcher;
-  _emitter: Emitter;
   _dispatcherToken: any;
+  _emitter: Emitter;
 
   // Stored values
   _debuggerSettings: DebuggerSettings;
@@ -54,8 +56,9 @@ class DebuggerStore {
   _consoleDisposable: ?IDisposable;
   loaderBreakpointResumePromise: Promise<void>;
 
-  constructor(dispatcher: Dispatcher) {
+  constructor(dispatcher: Dispatcher, model: DebuggerModel) {
     this._dispatcher = dispatcher;
+    this._model = model;
     this._emitter = new Emitter();
     this._dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
 
@@ -164,7 +167,9 @@ class DebuggerStore {
         this._debuggerInstance = payload.data;
         break;
       case Constants.Actions.TOGGLE_PAUSE_ON_EXCEPTION:
-        this._togglePauseOnException = payload.data;
+        const pauseOnException = payload.data;
+        this._togglePauseOnException = pauseOnException;
+        this._model.getBridge().setPauseOnException(pauseOnException);
         break;
       case Constants.Actions.DEBUGGER_MODE_CHANGE:
         this._debuggerMode = payload.data;

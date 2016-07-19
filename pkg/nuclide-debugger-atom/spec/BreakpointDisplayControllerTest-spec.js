@@ -52,7 +52,8 @@ describe('BreakpointDisplayController', () => {
 
       dispatcher = new Dispatcher();
       store = new BreakpointStore(dispatcher);
-      debuggerStore = new DebuggerStore(dispatcher);
+      const mockModel = ({}: any);
+      debuggerStore = new DebuggerStore(dispatcher, mockModel);
       actions = new DebuggerActions(dispatcher, debuggerStore);
       // BreakpointDisplayController is created for side-effects /:
       const controller = new BreakpointDisplayController(
