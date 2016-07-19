@@ -15,9 +15,11 @@ import type {TaskSettings} from './types';
 import {Dispatcher} from 'flux';
 import {keyMirror} from '../../commons-node/collection';
 import {getBuckProjectRoot, createBuckProject} from '../../nuclide-buck-base';
+import * as IosSimulator from './IosSimulator';
 
 export default class BuckToolbarActions {
 
+  _devicesSubscription: rx$ISubscription;
   _dispatcher: Dispatcher;
   _store: BuckToolbarStore;
   // TODO(hansonw): Will be obsolete when this is an observable stream.
@@ -32,6 +34,7 @@ export default class BuckToolbarActions {
     UPDATE_REACT_NATIVE_SERVER_MODE: null,
     UPDATE_SIMULATOR: null,
     UPDATE_TASK_SETTINGS: null,
+    UPDATE_DEVICES: null,
   }));
 
   constructor(
@@ -85,6 +88,22 @@ export default class BuckToolbarActions {
         });
       }
     }
+  }
+
+  fetchDevices(): void {
+    if (this._devicesSubscription != null) {
+      this._devicesSubscription.unsubscribe();
+    }
+    this._dispatcher.dispatch({
+      actionType: BuckToolbarActions.ActionType.UPDATE_DEVICES,
+      devices: [],
+    });
+    this._devicesSubscription = IosSimulator.getDevices().subscribe(devices => {
+      this._dispatcher.dispatch({
+        actionType: BuckToolbarActions.ActionType.UPDATE_DEVICES,
+        devices,
+      });
+    });
   }
 
   updateSimulator(simulator: string): void {

@@ -11,18 +11,18 @@
 
 import type {TaskType, TaskSettings} from './types';
 
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import {React} from 'react-for-atom';
 
 import {lastly} from '../../commons-node/promise';
 import {createBuckProject} from '../../nuclide-buck-base';
-import SimulatorDropdown from './SimulatorDropdown';
 import BuckToolbarActions from './BuckToolbarActions';
 import BuckToolbarSettings from './ui/BuckToolbarSettings';
 import BuckToolbarStore from './BuckToolbarStore';
 import {Button, ButtonSizes} from '../../nuclide-ui/lib/Button';
 import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {LoadingSpinner} from '../../nuclide-ui/lib/LoadingSpinner';
 import addTooltip from '../../nuclide-ui/lib/add-tooltip';
 
@@ -41,6 +41,7 @@ class BuckToolbar extends React.Component {
   _disposables: CompositeDisposable;
   _buckToolbarStore: BuckToolbarStore;
   _buckToolbarActions: BuckToolbarActions;
+  _fetchDevicesTimeoutId: ?number;
 
   // Querying Buck can be slow, so cache aliases by project.
   // Putting the cache here allows the user to refresh it by toggling the UI.
@@ -64,6 +65,15 @@ class BuckToolbar extends React.Component {
     this._disposables.add(this._buckToolbarStore.subscribe(() => { this.forceUpdate(); }));
 
     this.state = {settingsVisible: false};
+  }
+
+  componentWillMount(): void {
+    // Schedule the update to avoid the Flux "dispatching during a dispatch" error.
+    this._fetchDevicesTimeoutId = setTimeout(
+      () => { this._buckToolbarActions.fetchDevices(); },
+      0,
+    );
+    this._disposables.add(new Disposable(() => { clearTimeout(this._fetchDevicesTimeoutId); }));
   }
 
   componentWillUnmount() {
@@ -95,8 +105,11 @@ class BuckToolbar extends React.Component {
 
   render(): React.Element<any> {
     const buckToolbarStore = this._buckToolbarStore;
+    const isAppleBundle = buckToolbarStore.getRuleType() === 'apple_bundle';
+    const devices = buckToolbarStore.getDevices();
+    const isLoading = buckToolbarStore.isLoadingRule() || (isAppleBundle && devices.length < 1);
     let status;
-    if (buckToolbarStore.isLoadingRule()) {
+    if (isLoading) {
       status =
         <div ref={addTooltip({title: 'Waiting on rule info...', delay: 0})}>
           <LoadingSpinner
@@ -124,13 +137,22 @@ class BuckToolbar extends React.Component {
         </div>,
       );
     } else {
-      if (buckToolbarStore.getRuleType() === 'apple_bundle') {
+      const deviceId = buckToolbarStore.getSimulator();
+      if (isAppleBundle && !isLoading && deviceId != null && devices.length > 0) {
+        const options = devices.map(device => ({
+          label: `${device.name} (${device.os})`,
+          value: device.udid,
+        }));
+
         widgets.push(
-          <SimulatorDropdown
+          <Dropdown
             key="simulator-dropdown"
             className="inline-block"
-            title="Choose target device"
-            onSelectedSimulatorChange={this._handleSimulatorChange}
+            value={deviceId}
+            options={options}
+            onChange={this._handleSimulatorChange}
+            size="sm"
+            title="Choose a device"
           />,
         );
       }
@@ -191,8 +213,8 @@ class BuckToolbar extends React.Component {
     this._buckToolbarActions.updateBuildTarget(trimmed);
   }
 
-  _handleSimulatorChange(simulator: string) {
-    this._buckToolbarActions.updateSimulator(simulator);
+  _handleSimulatorChange(deviceId: string) {
+    this._buckToolbarActions.updateSimulator(deviceId);
   }
 
   _handleReactNativeServerModeChanged(checked: boolean) {

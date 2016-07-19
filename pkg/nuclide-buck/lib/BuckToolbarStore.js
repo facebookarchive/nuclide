@@ -10,6 +10,7 @@
  */
 
 import type {SerializedState, TaskSettings, TaskType} from './types';
+import type {Device} from './IosSimulator';
 
 import {Emitter} from 'atom';
 import {Dispatcher} from 'flux';
@@ -17,6 +18,7 @@ import BuckToolbarActions from './BuckToolbarActions';
 
 export default class BuckToolbarStore {
 
+  _devices: Array<Device>;
   _dispatcher: Dispatcher;
   _emitter: Emitter;
   _currentBuckRoot: ?string;
@@ -35,6 +37,7 @@ export default class BuckToolbarStore {
   }
 
   _initState(initialState: ?SerializedState) {
+    this._devices = [];
     this._isLoadingRule = false;
     this._buildTarget = initialState && initialState.buildTarget || '';
     this._buildRuleType = null;
@@ -69,6 +72,15 @@ export default class BuckToolbarStore {
             [action.taskType]: action.settings,
           };
           break;
+        case BuckToolbarActions.ActionType.UPDATE_DEVICES:
+          this._devices = action.devices;
+          const currentDeviceId = this._simulator;
+          const isInvalidSimulator = currentDeviceId == null
+            || !this._devices.some(device => device.udid === currentDeviceId);
+          if (isInvalidSimulator && this._devices.length) {
+            this._simulator = this._devices[0].udid;
+          }
+          break;
       }
       this.emitChange();
     });
@@ -92,6 +104,10 @@ export default class BuckToolbarStore {
 
   getCurrentBuckRoot(): ?string {
     return this._currentBuckRoot;
+  }
+
+  getDevices(): Array<Device> {
+    return this._devices;
   }
 
   isLoadingRule(): boolean {
