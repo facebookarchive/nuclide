@@ -181,44 +181,7 @@ export class MerlinProcess {
    * on a single line).
    */
   runSingleCommand(command: mixed): Promise<Object> {
-    const commandString = JSON.stringify(command);
-    const stdin = this._proc.stdin;
-    const stdout = this._proc.stdout;
-
-    return new Promise((resolve, reject) => {
-      const reader = readline.createInterface({
-        input: stdout,
-        terminal: false,
-      });
-
-      reader.on('line', line => {
-        reader.close();
-        let response;
-        try {
-          response = JSON.parse(line);
-        } catch (err) {
-          response = null;
-        }
-        if (!response || !Array.isArray(response) || response.length !== 2) {
-          logger.error('Unexpected response from ocamlmerlin: ${line}');
-          reject(Error('Unexpected ocamlmerlin output format'));
-          return;
-        }
-
-        const status = response[0];
-        const content = response[1];
-
-        if (ERROR_RESPONSES.has(status)) {
-          logger.error('Ocamlmerlin raised an error: ' + line);
-          reject(Error('Ocamlmerlin returned an error'));
-          return;
-        }
-
-        resolve(content);
-      });
-
-      stdin.write(commandString);
-    });
+    return runSingleCommand(this._proc, command);
   }
 
   dispose() {
@@ -291,4 +254,50 @@ async function isInstalled(merlinPath: string): Promise<boolean> {
     }
   }
   return isInstalledCache;
+}
+
+/**
+ * Run a command; parse the json output, return an object. This assumes
+ * that merlin's protocol is line-based (results are json objects rendered
+ * on a single line).
+ */
+function runSingleCommand(process: child_process$ChildProcess, command: mixed): Promise<Object> {
+  const commandString = JSON.stringify(command);
+  const stdin = process.stdin;
+  const stdout = process.stdout;
+
+  return new Promise((resolve, reject) => {
+    const reader = readline.createInterface({
+      input: stdout,
+      terminal: false,
+    });
+
+    reader.on('line', line => {
+      reader.close();
+      let response;
+      try {
+        response = JSON.parse(line);
+      } catch (err) {
+        response = null;
+      }
+      if (!response || !Array.isArray(response) || response.length !== 2) {
+        logger.error('Unexpected response from ocamlmerlin: ${line}');
+        reject(Error('Unexpected ocamlmerlin output format'));
+        return;
+      }
+
+      const status = response[0];
+      const content = response[1];
+
+      if (ERROR_RESPONSES.has(status)) {
+        logger.error('Ocamlmerlin raised an error: ' + line);
+        reject(Error('Ocamlmerlin returned an error'));
+        return;
+      }
+
+      resolve(content);
+    });
+
+    stdin.write(commandString);
+  });
 }
