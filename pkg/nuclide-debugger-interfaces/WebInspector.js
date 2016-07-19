@@ -248,12 +248,14 @@ declare class WebInspector$SidebarPane extends WebInspector$View {
 }
 
 declare class WebInspector$Settings {
-  breakpoints: WebInspector$Setting,
+  breakpoints: WebInspector$Setting<Array<mixed>>,
+  pauseOnExceptionEnabled: WebInspector$Setting<boolean>,
 }
 
-declare class WebInspector$Setting {
+declare class WebInspector$Setting<T> {
   addChangeListener(callback: (event: WebInspector$Event) => void, thisObj?: Object): void,
-  set(value: any): void,
+  set(value: T): void,
+  get(): T,
 }
 
 declare class WebInspector$UILocation {
