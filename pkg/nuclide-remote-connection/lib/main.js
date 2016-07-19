@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Directory as LocalDirectoryType} from 'atom';
+
 import {RemoteConnection} from './RemoteConnection';
 import {RemoteDirectory} from './RemoteDirectory';
 import {RemoteFile} from './RemoteFile';
@@ -42,3 +44,5 @@ export {
   getServiceByNuclideUri,
   getServiceLogger,
 };
+
+export type Directory = LocalDirectoryType | RemoteDirectory;
