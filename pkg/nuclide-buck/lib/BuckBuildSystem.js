@@ -198,6 +198,7 @@ export class BuckBuildSystem {
       buildTarget: store.getBuildTarget(),
       isReactNativeServerMode: store.isReactNativeServerMode(),
       taskSettings: store.getTaskSettings(),
+      simulator: store.getSimulator(),
     };
   }
 

@@ -43,6 +43,7 @@ export default class BuckToolbarStore {
     this._buildRuleType = null;
     this._isReactNativeServerMode = initialState && initialState.isReactNativeServerMode || false;
     this._taskSettings = initialState && initialState.taskSettings || {};
+    this._simulator = initialState && initialState.simulator || null;
   }
 
   _setupActions() {

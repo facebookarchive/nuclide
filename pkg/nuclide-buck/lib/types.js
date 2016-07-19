@@ -21,4 +21,5 @@ export type SerializedState = {
   buildTarget: ?string,
   isReactNativeServerMode: boolean,
   taskSettings?: {[key: TaskType]: TaskSettings},
+  simulator: ?string,
 };
