@@ -14,6 +14,7 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
+import classnames from 'classnames';
 
 type DefaultProps = {
   disabled: boolean,
@@ -23,6 +24,7 @@ type DefaultProps = {
 };
 
 type Props = {
+  className?: string,
   checked: boolean,
   disabled: boolean,
   indeterminate: boolean,
@@ -78,17 +80,26 @@ export class Checkbox extends React.Component {
   }
 
   render(): React.Element<any> {
+    const {
+      checked,
+      className,
+      disabled,
+      label,
+      onClick,
+    } = this.props;
     return (
-      <label className="nuclide-ui-checkbox-label" onClick={this.props.onClick}>
+      <label
+        className={classnames(className, 'nuclide-ui-checkbox-label')}
+        onClick={onClick}>
         <input
-          checked={this.props.checked}
+          checked={checked}
           className="nuclide-ui-checkbox"
-          disabled={this.props.disabled}
+          disabled={disabled}
           onChange={this._onChange}
           ref="input"
           type="checkbox"
         />
-        {' '}{this.props.label}
+        {' '}{label}
       </label>
     );
   }
