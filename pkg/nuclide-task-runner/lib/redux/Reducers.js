@@ -102,11 +102,11 @@ export function app(state: AppState, action: Action): AppState {
       const tasks = new Map(state.tasks);
       taskRunners.delete(id);
       tasks.delete(id);
-      return {
+      return validateActiveTask({
         ...state,
         taskRunners,
         tasks,
-      };
+      });
     }
     case Actions.TASKS_UPDATED: {
       const {tasks, taskRunnerId} = action.payload;
@@ -134,30 +134,43 @@ export function app(state: AppState, action: Action): AppState {
         };
       }
 
-      // If there's no active task (or it was removed), just pick one.
-      const activeTaskWasRemoved = () => {
-        if (state.activeTaskId == null) { return false; }
-        const activeTaskType = state.activeTaskId.type;
-        return state.activeTaskId.taskRunnerId === taskRunnerId
-          && !annotatedTasks.some(task => task.type === activeTaskType);
-      };
-      if (state.activeTaskId == null || activeTaskWasRemoved()) {
-        const activeTask = getFirstTask(newState.tasks);
-        return {
-          ...newState,
-          activeTaskId: activeTask == null
-            ? null
-            : {type: activeTask.type, taskRunnerId: activeTask.taskRunnerId},
-          // Remember what we really wanted, so we can return to it later.
-          previousSessionActiveTaskId: state.previousSessionActiveTaskId || state.activeTaskId,
-        };
-      }
-
-      return newState;
+      return validateActiveTask(newState);
     }
   }
 
   return state;
+}
+
+/**
+ * Ensure that the active task is in the task list. If not, pick a fallback.
+ */
+function validateActiveTask(state: AppState): AppState {
+  if (activeTaskIsValid(state)) { return state; }
+  const firstTask = getFirstTask(state.tasks);
+  return {
+    ...state,
+    activeTaskId: firstTask == null
+      ? null
+      : {type: firstTask.type, taskRunnerId: firstTask.taskRunnerId},
+    // Remember what we really wanted, so we can return to it later.
+    previousSessionActiveTaskId: state.previousSessionActiveTaskId || state.activeTaskId,
+  };
+}
+
+/**
+ * Is the active task a valid one according to the tasks we have?
+ */
+function activeTaskIsValid(state: AppState): boolean {
+  if (state.activeTaskId == null) { return false; }
+  const {activeTaskId} = state;
+  for (const tasks of state.tasks.values()) {
+    for (const task of tasks) {
+      if (task.taskRunnerId === activeTaskId.taskRunnerId && task.type === activeTaskId.type) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function getFirstTask(tasks: Map<string, Array<AnnotatedTask>>): ?AnnotatedTask {
