@@ -16,7 +16,7 @@ describe('LocalMerlinService', () => {
     const MerlinProcess: any = uncachedRequire(require, '../lib/MerlinProcess');
 
     spyOn(MerlinProcess, 'getInstance').andCallFake(() => {
-      const mockedProcess = new MerlinProcess.MerlinProcess({on: () => null});
+      const mockedProcess = new MerlinProcess.MerlinProcessV2_3_1({on: () => null});
       spyOn(mockedProcess, 'runSingleCommand').andCallFake(callback);
       return Promise.resolve(mockedProcess);
     });

@@ -30,12 +30,68 @@ const ERROR_RESPONSES = new Set([
 /**
  * Wraps an ocamlmerlin process; provides api access to
  * ocamlmerlin's json-over-stdin/stdout protocol.
- *
- * This is based on the protocol description at:
- *   https://github.com/the-lambda-church/merlin/blob/master/doc/dev/PROTOCOL.md
- *   https://github.com/the-lambda-church/merlin/tree/master/src/frontend
+ * Derived classes spec which version of the protocol to speak.
  */
-export class MerlinProcess {
+export type MerlinProcess = {
+
+  isRunning(): bool,
+
+  /**
+   * Tell merlin where to find its per-repo .merlin config file.
+   *
+   * Configuration file format description:
+   *   https://github.com/the-lambda-church/merlin/wiki/project-configuration
+   *
+   * @return a dummy cursor position on success
+   */
+  pushDotMerlinPath(file: NuclideUri): Promise<mixed>,
+
+  /**
+   * Set the buffer content to query against. Merlin uses an internal
+   * buffer (name + content) that is independent from file content on
+   * disk.
+   *
+   * @return on success: a cursor position pointed at the end of the buffer
+   */
+  pushNewBuffer(name: NuclideUri, content: string): Promise<mixed>,
+
+  /**
+   * Find definition
+   *
+   * `kind` is one of 'ml' or 'mli'
+   *
+   * Note: ocamlmerlin line numbers are 1-based.
+   * @return null if nothing was found; a position of the form
+   *   {"file": "somepath", "pos": {"line": 41, "col": 5}}.
+   */
+  locate(
+    file: NuclideUri,
+    line: number,
+    col: number,
+    kind: string,
+  ): Promise<?{file: string, pos: {line: number, col: number}}>,
+
+  enclosingType(
+    file: NuclideUri,
+    line: number,
+    col: number,
+  ): Promise<Array<MerlinType>>,
+
+  complete(file: NuclideUri, line: number, col: number, prefix: string): Promise<mixed>,
+
+  errors(): Promise<Array<MerlinError>>,
+
+  /**
+   * Run a command; parse the json output, return an object. This assumes
+   * that merlin's protocol is line-based (results are json objects rendered
+   * on a single line).
+   */
+  runSingleCommand(command: mixed): Promise<Object>,
+
+  dispose(): void,
+};
+
+class MerlinProcessBase {
   _proc: child_process$ChildProcess;
   _promiseQueue: PromiseQueue;
   _running: bool;
@@ -51,14 +107,29 @@ export class MerlinProcess {
     return this._running;
   }
 
-  /**
-   * Tell merlin where to find its per-repo .merlin config file.
-   *
-   * Configuration file format description:
-   *   https://github.com/the-lambda-church/merlin/wiki/project-configuration
-   *
-   * @return a dummy cursor position on success
-   */
+  runSingleCommand(command: mixed): Promise<Object> {
+    return runSingleCommand(this._proc, command);
+  }
+
+  dispose() {
+    this._proc.kill();
+  }
+}
+
+/**
+ * Wraps an ocamlmerlin process which talks v1 protocol; provides api access to
+ * ocamlmerlin's json-over-stdin/stdout protocol.
+ *
+ * This is based on the protocol description at:
+ *   https://github.com/the-lambda-church/merlin/blob/merlin1/PROTOCOL.md
+ *   https://github.com/the-lambda-church/merlin/tree/master/src/frontend
+ */
+export class MerlinProcessV2_3_1 extends MerlinProcessBase {
+
+  constructor(proc: child_process$ChildProcess) {
+    super(proc);
+  }
+
   async pushDotMerlinPath(file: NuclideUri): Promise<mixed> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
       const result = await this.runSingleCommand([
@@ -71,13 +142,6 @@ export class MerlinProcess {
     });
   }
 
-  /**
-   * Set the buffer content to query against. Merlin uses an internal
-   * buffer (name + content) that is independent from file content on
-   * disk.
-   *
-   * @return on success: a cursor position pointed at the end of the buffer
-   */
   async pushNewBuffer(name: NuclideUri, content: string): Promise<mixed> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
       await this.runSingleCommand([
@@ -103,15 +167,6 @@ export class MerlinProcess {
     });
   }
 
-  /**
-   * Find definition
-   *
-   * `kind` is one of 'ml' or 'mli'
-   *
-   * Note: ocamlmerlin line numbers are 1-based.
-   * @return null if nothing was found; a position of the form
-   *   {"file": "somepath", "pos": {"line": 41, "col": 5}}.
-   */
   async locate(
     file: NuclideUri,
     line: number,
@@ -174,19 +229,6 @@ export class MerlinProcess {
         .catch(reject);
     });
   }
-
-  /**
-   * Run a command; parse the json output, return an object. This assumes
-   * that merlin's protocol is line-based (results are json objects rendered
-   * on a single line).
-   */
-  runSingleCommand(command: mixed): Promise<Object> {
-    return runSingleCommand(this._proc, command);
-  }
-
-  dispose() {
-    this._proc.kill();
-  }
 }
 
 let merlinProcessInstance: ?MerlinProcess;
@@ -211,7 +253,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
 
   logger.info('Spawning new ocamlmerlin process');
   const process = await safeSpawn(merlinPath, flags, options);
-  merlinProcessInstance = new MerlinProcess(process);
+  merlinProcessInstance = new MerlinProcessV2_3_1(process);
 
   if (dotMerlinPath) {
     // TODO(pieter) add support for multiple .dotmerlin files
