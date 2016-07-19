@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {AnnotatedTask, TaskId, TaskRunnerInfo} from '../types';
+import type {AnnotatedTaskMetadata, TaskId, TaskRunnerInfo} from '../types';
 
 import {TaskButton} from './TaskButton';
 import {ProgressBar} from './ProgressBar';
-import {getTask} from '../getTask';
+import {getTaskMetadata} from '../getTaskMetadata';
 import {React} from 'react-for-atom';
 
 type Props = {
@@ -27,7 +27,7 @@ type Props = {
   selectTask: (taskId: TaskId) => void,
   stopTask: () => void,
   taskIsRunning: boolean,
-  tasks: Map<string, Array<AnnotatedTask>>,
+  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
 };
 
 export class Toolbar extends React.Component {
@@ -58,7 +58,7 @@ export class Toolbar extends React.Component {
     const activeTaskId = this.props.activeTaskId;
     const activeTask = activeTaskId == null
       ? null
-      : getTask(activeTaskId, this.props.tasks);
+      : getTaskMetadata(activeTaskId, this.props.taskLists);
 
     return (
       <div className="nuclide-task-runner-toolbar">
@@ -71,7 +71,7 @@ export class Toolbar extends React.Component {
               runTask={this.props.runTask}
               selectTask={this.props.selectTask}
               taskIsRunning={this.props.taskIsRunning}
-              tasks={this.props.tasks}
+              taskLists={this.props.taskLists}
             />
           </div>
           <div className="inline-block">

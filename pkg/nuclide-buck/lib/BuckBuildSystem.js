@@ -10,7 +10,12 @@
  */
 
 import type {ProcessMessage} from '../../commons-node/process-types';
-import type {Directory, Task, TaskEvent, TaskInfo} from '../../nuclide-task-runner/lib/types';
+import type {
+  Directory,
+  TaskEvent,
+  TaskInfo,
+  TaskMetadata,
+} from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-base';
 import type {BuckSubcommand, SerializedState, TaskType} from './types';
@@ -77,7 +82,7 @@ export class BuckBuildSystem {
   id: string;
   name: string;
   _initialState: ?SerializedState;
-  _tasks: Observable<Array<Task>>;
+  _tasks: Observable<Array<TaskMetadata>>;
   _outputMessages: Subject<Message>;
 
   constructor(initialState: ?SerializedState) {
@@ -89,7 +94,7 @@ export class BuckBuildSystem {
     this._disposables.add(new DisposableSubscription(this._outputMessages));
   }
 
-  getTasks() {
+  getTaskList() {
     const {store} = this._getFlux();
     const buckRoot = store.getCurrentBuckRoot();
     const hasBuildTarget = buckRoot != null && Boolean(store.getBuildTarget());
@@ -100,13 +105,13 @@ export class BuckBuildSystem {
       }));
   }
 
-  observeTasks(cb: (tasks: Array<Task>) => mixed): IDisposable {
+  observeTaskList(cb: (taskLIst: Array<TaskMetadata>) => mixed): IDisposable {
     if (this._tasks == null) {
       const {store} = this._getFlux();
       this._tasks = Observable.concat(
-        Observable.of(this.getTasks()),
+        Observable.of(this.getTaskList()),
         observableFromSubscribeFunction(store.subscribe.bind(store))
-          .map(() => this.getTasks()),
+          .map(() => this.getTaskList()),
       );
     }
     return new DisposableSubscription(

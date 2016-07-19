@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState, Store, Task, TaskId, TaskRunner} from '../types';
+import type {Action, AppState, Store, TaskId, TaskMetadata, TaskRunner} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
@@ -17,7 +17,7 @@ import once from '../../../commons-node/once';
 import {bindObservableAsProps} from '../../../nuclide-ui/lib/bindObservableAsProps';
 import {Toolbar} from '../ui/Toolbar';
 import {getActiveTaskRunner} from '../getActiveTaskRunner';
-import {getTask} from '../getTask';
+import {getTaskMetadata} from '../getTaskMetadata';
 import * as Actions from './Actions';
 import invariant from 'assert';
 import {React, ReactDOM} from 'react-for-atom';
@@ -37,8 +37,8 @@ export function createPanelEpic(actions: ActionsObservable<Action>): Observable<
       const {store} = action.payload;
 
       const staticProps = {
-        runTask: task => { store.dispatch(Actions.runTask(task)); },
-        selectTask: task => { store.dispatch(Actions.selectTask(task)); },
+        runTask: taskId => { store.dispatch(Actions.runTask(taskId)); },
+        selectTask: taskId => { store.dispatch(Actions.selectTask(taskId)); },
         stopTask: () => { store.dispatch(Actions.stopTask()); },
         getActiveTaskRunnerIcon: () => {
           const activeTaskRunner = getActiveTaskRunner(store.getState());
@@ -64,7 +64,7 @@ export function createPanelEpic(actions: ActionsObservable<Action>): Observable<
             visible: state.visible,
             activeTaskId: state.activeTaskId,
             taskIsRunning: state.taskStatus != null,
-            tasks: state.tasks,
+            taskLists: state.taskLists,
           };
         });
 
@@ -113,18 +113,18 @@ export function registerTaskRunnerEpic(
       setProjectRoot.call(taskRunner, projectRoot);
     }
 
-    const tasksToAction = tasks => ({
-      type: Actions.TASKS_UPDATED,
+    const taskListToAction = taskList => ({
+      type: Actions.TASK_LIST_UPDATED,
       payload: {
         taskRunnerId: taskRunner.id,
-        tasks,
+        taskList,
       },
     });
     const unregistrationEvents = actions.filter(a => (
       a.type === Actions.UNREGISTER_TASK_RUNNER && a.payload.id === taskRunner.id
     ));
-    return observableFromSubscribeFunction(taskRunner.observeTasks.bind(taskRunner))
-      .map(tasksToAction)
+    return observableFromSubscribeFunction(taskRunner.observeTaskList.bind(taskRunner))
+      .map(taskListToAction)
       .takeUntil(unregistrationEvents);
   });
 }
@@ -156,14 +156,14 @@ export function runTaskEpic(
             return Observable.empty();
           }
 
-          const task = getTask(taskToRun, state.tasks);
-          invariant(task != null);
+          const taskMeta = getTaskMetadata(taskToRun, state.taskLists);
+          invariant(taskMeta != null);
 
-          if (!task.enabled) {
+          if (!taskMeta.enabled) {
             return Observable.empty();
           }
 
-          return createTaskObservable(activeTaskRunner, task, () => store.getState())
+          return createTaskObservable(activeTaskRunner, taskMeta, () => store.getState())
             // Stop listening once the task is done.
             .takeUntil(
               actions.ofType(Actions.TASK_COMPLETED, Actions.TASK_ERRORED, Actions.TASK_STOPPED),
@@ -248,8 +248,8 @@ export function toggleToolbarVisibilityEpic(
       }
 
       // Choose the first task for that task runner.
-      const tasksForRunner = state.tasks.get(taskRunnerId) || [];
-      const taskIdToSelect = tasksForRunner.length > 0 ? tasksForRunner[0] : null;
+      const taskListForRunner = state.taskLists.get(taskRunnerId) || [];
+      const taskIdToSelect = taskListForRunner.length > 0 ? taskListForRunner[0] : null;
       if (taskIdToSelect == null) {
         const taskRunner = state.taskRunners.get(taskRunnerId);
         invariant(taskRunner != null);
@@ -273,14 +273,14 @@ export function toggleToolbarVisibilityEpic(
  */
 function createTaskObservable(
   taskRunner: TaskRunner,
-  task: Task,
+  taskMeta: TaskMetadata,
   getState: () => AppState,
 ): Observable<Action> {
   let finished;
   // $FlowFixMe(matthewwithanm): Type this.
   return Observable.using(
     () => {
-      let taskInfo = taskRunner.runTask(task.type);
+      let taskInfo = taskRunner.runTask(taskMeta.type);
       // We may call cancel multiple times so let's make sure it's idempotent.
       taskInfo = {...taskInfo, cancel: once(taskInfo.cancel)};
       finished = false;
@@ -327,7 +327,7 @@ function createTaskObservable(
     })
     .catch(error => {
       atom.notifications.addError(
-        `The task "${task.label}" failed`,
+        `The task "${taskMeta.label}" failed`,
         {
           description: error.message,
           dismissable: true,

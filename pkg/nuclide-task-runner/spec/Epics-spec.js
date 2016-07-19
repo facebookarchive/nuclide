@@ -75,7 +75,7 @@ describe('Epics', () => {
             taskRunnerId: 'test',
           },
           taskRunners: new Map([['test', taskRunner]]),
-          tasks: new Map([['test', [
+          taskLists: new Map([['test', [
             {
               type: 'test-task',
               taskRunnerId: 'test',

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {AnnotatedTask, TaskId, TaskRunnerInfo} from '../types';
+import type {AnnotatedTaskMetadata, TaskId, TaskRunnerInfo} from '../types';
 import type {Option} from '../../../nuclide-ui/lib/SplitButtonDropdown';
 
 import {Button, ButtonSizes} from '../../../nuclide-ui/lib/Button';
@@ -18,13 +18,13 @@ import {TaskRunnerButton} from './TaskRunnerButton';
 import {React} from 'react-for-atom';
 
 type Props = {
-  activeTask: ?AnnotatedTask,
+  activeTask: ?AnnotatedTaskMetadata,
   getActiveTaskRunnerIcon: () => ?ReactClass<any>,
   taskRunnerInfo: Array<TaskRunnerInfo>,
   runTask: (taskId?: TaskId) => void,
   selectTask: (taskId: TaskId) => void,
   taskIsRunning: boolean,
-  tasks: Map<string, Array<AnnotatedTask>>,
+  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
 };
 
 export function TaskButton(props: Props): React.Element<any> {
@@ -37,7 +37,7 @@ export function TaskButton(props: Props): React.Element<any> {
 
   const {activeTask} = props;
   const taskRunnerInfo = props.taskRunnerInfo.slice().sort((a, b) => abcSort(a.name, b.name));
-  const taskOptions = getTaskOptions(props.tasks, taskRunnerInfo);
+  const taskOptions = getTaskOptions(props.taskLists, taskRunnerInfo);
 
   const ActiveTaskRunnerIcon = props.getActiveTaskRunnerIcon && props.getActiveTaskRunnerIcon();
   const TaskRunnerIcon = ActiveTaskRunnerIcon != null
@@ -52,8 +52,9 @@ export function TaskButton(props: Props): React.Element<any> {
 
   // If there's only one task runner, and it doesn't have multiple tasks, don't bother showing the
   // dropdown.
-  const taskCount = Array.from(props.tasks.values()).reduce((n, tasks) => n + tasks.length, 0);
-  if (props.tasks.size <= 1 && taskCount <= 1) {
+  const taskCount = Array.from(props.taskLists.values())
+    .reduce((n, taskLists) => n + taskLists.length, 0);
+  if (props.taskLists.size <= 1 && taskCount <= 1) {
     // If there's no active task, just show "Run" (but have it disabled). It's just less weird than
     // some kind of placeholder. The parent component (Toolbar) will explain the situation.
     return (
@@ -85,7 +86,7 @@ const abcSort = (a, b) => (a.toLowerCase() < b.toLowerCase() ? -1 : 1);
 const indent = label => `   ${label}`;
 
 function getTaskOptions(
-  tasks: Map<string, Array<AnnotatedTask>>,
+  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
   taskRunnerInfo: Array<TaskRunnerInfo>,
 ): Array<Option<mixed>> {
   const taskOptions = [];
@@ -99,8 +100,8 @@ function getTaskOptions(
   // Add a block for each task runner.
   taskRunnerInfo.forEach(info => {
     const taskRunnerName = info.name;
-    const tasksForRunner = tasks.get(info.id) || [];
-    if (tasksForRunner.length === 0) {
+    const taskListForRunner = taskLists.get(info.id) || [];
+    if (taskListForRunner.length === 0) {
       tasklessRunners.push(taskRunnerName);
       return;
     }
@@ -111,11 +112,11 @@ function getTaskOptions(
       disabled: true,
     });
     taskOptions.push(
-      ...tasksForRunner.map(task => ({
-        value: task,
-        label: indent(task.label),
-        selectedLabel: task.label,
-        icon: task.icon,
+      ...taskListForRunner.map(taskMeta => ({
+        value: taskMeta,
+        label: indent(taskMeta.label),
+        selectedLabel: taskMeta.label,
+        icon: taskMeta.icon,
       })),
     );
   });

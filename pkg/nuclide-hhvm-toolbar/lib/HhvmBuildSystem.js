@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Task, TaskEvent, TaskInfo} from '../../nuclide-task-runner/lib/types';
+import type {TaskEvent, TaskInfo, TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Message} from '../../nuclide-console/lib/types';
@@ -27,7 +27,7 @@ export default class HhvmBuildSystem {
   _extraUi: ?ReactClass<any>;
   id: string;
   name: string;
-  _tasks: ?Observable<Array<Task>>;
+  _tasks: ?Observable<Array<TaskMetadata>>;
   _cwdApi: ?CwdApi;
   _outputMessages: Subject<Message>;
   _disposables: CompositeDisposable;
@@ -57,12 +57,12 @@ export default class HhvmBuildSystem {
     return new ArcToolbarModel(this._outputMessages);
   }
 
-  observeTasks(cb: (tasks: Array<Task>) => mixed): IDisposable {
+  observeTaskList(cb: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
     if (this._tasks == null) {
       this._tasks = Observable.concat(
-        Observable.of(this._model.getTasks()),
+        Observable.of(this._model.getTaskList()),
         observableFromSubscribeFunction(this._model.onChange.bind(this._model))
-          .map(() => this._model.getTasks()),
+          .map(() => this._model.getTaskList()),
       );
     }
     return new DisposableSubscription(
@@ -86,7 +86,7 @@ export default class HhvmBuildSystem {
   }
 
   runTask(taskType: string): TaskInfo {
-    if (!this._model.getTasks().some(task => task.type === taskType)) {
+    if (!this._model.getTaskList().some(task => task.type === taskType)) {
       throw new Error(`There's no hhvm task named "${taskType}"`);
     }
 

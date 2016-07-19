@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-import type {TaskEvent, Task} from '../../nuclide-task-runner/lib/types';
+import type {TaskEvent, TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {Observable, Subject} from 'rxjs';
 
 import {Disposable} from 'atom';
 
-export const TASKS: Array<Task> = [];
+export const TASKS: Array<TaskMetadata> = [];
 
 /*
  * This will provide the toolbar functionality for the open-source-supported HHVM targets.
@@ -71,7 +71,7 @@ export class ArcToolbarModel {
     return 'HHVM';
   }
 
-  getTasks(): Array<Task> {
+  getTaskList(): Array<TaskMetadata> {
     return TASKS;
   }
 

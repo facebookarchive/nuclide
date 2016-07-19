@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AnnotatedTask, AppState} from '../types';
+import type {Action, AnnotatedTaskMetadata, AppState} from '../types';
 
 import * as Actions from './Actions';
 
@@ -99,23 +99,24 @@ export function app(state: AppState, action: Action): AppState {
     case Actions.UNREGISTER_TASK_RUNNER: {
       const {id} = action.payload;
       const taskRunners = new Map(state.taskRunners);
-      const tasks = new Map(state.tasks);
+      const taskLists = new Map(state.taskLists);
       taskRunners.delete(id);
-      tasks.delete(id);
+      taskLists.delete(id);
       return validateActiveTask({
         ...state,
         taskRunners,
-        tasks,
+        taskLists,
       });
     }
-    case Actions.TASKS_UPDATED: {
-      const {tasks, taskRunnerId} = action.payload;
+    case Actions.TASK_LIST_UPDATED: {
+      const {taskList, taskRunnerId} = action.payload;
       const taskRunner = state.taskRunners.get(taskRunnerId);
       const taskRunnerName = taskRunner && taskRunner.name;
-      const annotatedTasks = tasks.map(task => ({...task, taskRunnerId, taskRunnerName}));
+      const annotatedTaskList = taskList
+        .map(taskMeta => ({...taskMeta, taskRunnerId, taskRunnerName}));
       const newState = {
         ...state,
-        tasks: new Map(state.tasks).set(taskRunnerId, annotatedTasks),
+        taskLists: new Map(state.taskLists).set(taskRunnerId, annotatedTaskList),
       };
 
       const prevTaskId = state.previousSessionActiveTaskId;
@@ -125,7 +126,7 @@ export function app(state: AppState, action: Action): AppState {
       if (
         prevTaskId != null
         && taskRunnerId === prevTaskId.taskRunnerId
-        && annotatedTasks.some(task => task.type === prevTaskId.type)
+        && annotatedTaskList.some(taskMeta => taskMeta.type === prevTaskId.type)
       ) {
         return {
           ...newState,
@@ -146,7 +147,7 @@ export function app(state: AppState, action: Action): AppState {
  */
 function validateActiveTask(state: AppState): AppState {
   if (activeTaskIsValid(state)) { return state; }
-  const firstTask = getFirstTask(state.tasks);
+  const firstTask = getFirstTask(state.taskLists);
   return {
     ...state,
     activeTaskId: firstTask == null
@@ -163,9 +164,12 @@ function validateActiveTask(state: AppState): AppState {
 function activeTaskIsValid(state: AppState): boolean {
   if (state.activeTaskId == null) { return false; }
   const {activeTaskId} = state;
-  for (const tasks of state.tasks.values()) {
-    for (const task of tasks) {
-      if (task.taskRunnerId === activeTaskId.taskRunnerId && task.type === activeTaskId.type) {
+  for (const taskList of state.taskLists.values()) {
+    for (const taskMeta of taskList) {
+      if (
+        taskMeta.taskRunnerId === activeTaskId.taskRunnerId
+        && taskMeta.type === activeTaskId.type
+      ) {
         return true;
       }
     }
@@ -173,10 +177,13 @@ function activeTaskIsValid(state: AppState): boolean {
   return false;
 }
 
-function getFirstTask(tasks: Map<string, Array<AnnotatedTask>>): ?AnnotatedTask {
-  for (const tasksArray of tasks.values()) {
-    for (const task of tasksArray) {
-      return task;
+function getFirstTask(
+  taskLists: Map<string,
+  Array<AnnotatedTaskMetadata>>,
+): ?AnnotatedTaskMetadata {
+  for (const taskList of taskLists.values()) {
+    for (const taskMeta of taskList) {
+      return taskMeta;
     }
   }
 }

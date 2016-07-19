@@ -90,24 +90,26 @@ class Activation {
       syncAtomCommands(
         states
           .debounceTime(500)
-          .map(state => state.tasks)
+          .map(state => state.taskLists)
           .distinctUntilChanged()
-          .map(tasks => {
-            const allTasks = Array.prototype.concat(...Array.from(tasks.values()));
-            const tasksByType = new Map();
-            allTasks.forEach(task => {
-              if (task.type && task.enabled && !tasksByType.has(task.type)) {
-                tasksByType.set(task.type, task);
+          .map(taskLists => {
+            const allTasks = Array.prototype.concat(...Array.from(taskLists.values()));
+            const taskMetaByType = new Map();
+            allTasks.forEach(taskMeta => {
+              if (taskMeta.type && taskMeta.enabled && !taskMetaByType.has(taskMeta.type)) {
+                taskMetaByType.set(taskMeta.type, taskMeta);
               }
             });
-            return new Set(tasksByType.values());
+            return new Set(taskMetaByType.values());
           }),
-        task => ({
+        taskMeta => ({
           'atom-workspace': {
-            [`nuclide-task-runner:${task.type}`]: () => { this._actionCreators.runTask(task); },
+            [`nuclide-task-runner:${taskMeta.type}`]: () => {
+              this._actionCreators.runTask(taskMeta);
+            },
           },
         }),
-        task => `${task.taskRunnerId}:${task.type}`,
+        taskMeta => `${taskMeta.taskRunnerId}:${taskMeta.type}`,
       ),
 
       // Add a toggle command for each task runner.

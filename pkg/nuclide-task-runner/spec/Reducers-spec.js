@@ -34,10 +34,10 @@ describe('Reducers', () => {
         },
       };
       const action = {
-        type: Actions.TASKS_UPDATED,
+        type: Actions.TASK_LIST_UPDATED,
         payload: {
           taskRunnerId: 'previous-build-system',
-          tasks: [createTask('other')],
+          taskList: [createTask('other')],
         },
       };
       const finalState = [action].reduce(Reducers.app, initialState);

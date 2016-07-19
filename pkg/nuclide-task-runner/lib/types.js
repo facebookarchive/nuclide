@@ -20,7 +20,7 @@ export type AppState = {
   panel: ?atom$Panel,
   previousSessionActiveTaskId: ?TaskId,
   projectRoot: ?Directory,
-  tasks: Map<string, Array<AnnotatedTask>>,
+  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
   taskStatus: ?{
     info: TaskInfo,
     progress: ?number,
@@ -48,7 +48,7 @@ export type TaskId = {
   taskRunnerId: string,
 };
 
-export type Task = {
+export type TaskMetadata = {
   type: string,
   label: string,
   description: string,
@@ -57,7 +57,7 @@ export type Task = {
   icon: Octicon,
 };
 
-export type AnnotatedTask = Task & {
+export type AnnotatedTaskMetadata = TaskMetadata & {
   taskRunnerId: string,
   taskRunnerName: string,
 };
@@ -66,7 +66,7 @@ export interface TaskRunner {
   id: string,
   name: string,
   getExtraUi?: () => ReactClass<any>, // activeTaskType will be provided as a nullable property.
-  observeTasks: (callback: (tasks: Array<Task>) => mixed) => IDisposable,
+  observeTaskList: (callback: (taskList: Array<TaskMetadata>) => mixed) => IDisposable,
   getIcon(): ReactClass<any>,
   runTask(taskName: string): TaskInfo,
   setProjectRoot?: (projectRoot: ?Directory) => void,
@@ -218,11 +218,11 @@ export type ToggleToolbarVisibilityAction = {
   },
 };
 
-export type TasksUpdatedAction = {
-  type: 'TASKS_UPDATED',
+export type TaskListUpdatedAction = {
+  type: 'TASK_LIST_UPDATED',
   payload: {
     taskRunnerId: string,
-    tasks: Array<Task>,
+    taskList: Array<TaskMetadata>,
   },
 };
 
@@ -244,9 +244,9 @@ export type Action =
   | TaskCompletedAction
   | TaskProgressAction
   | TaskErroredAction
+  | TaskListUpdatedAction
   | TaskStartedAction
   | TaskStoppedAction
-  | TasksUpdatedAction
   | ToggleToolbarVisibilityAction
   | ToolbarVisibilityUpdatedAction
   | RegisterTaskRunnerAction

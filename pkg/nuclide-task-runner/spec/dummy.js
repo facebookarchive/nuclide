@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Task} from '../lib/types';
+import type {TaskMetadata} from '../lib/types';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {BehaviorSubject} from 'rxjs';
@@ -55,7 +55,7 @@ export class TaskInfo {
 }
 
 export class TaskRunner {
-  _tasks: BehaviorSubject<Array<Task>>;
+  _taskLists: BehaviorSubject<Array<TaskMetadata>>;
 
   id: string;
   name: string;
@@ -63,16 +63,16 @@ export class TaskRunner {
   constructor() {
     this.id = 'build-system';
     this.name = 'Build System';
-    this._tasks = new BehaviorSubject([]);
+    this._taskLists = new BehaviorSubject([]);
   }
 
   getIcon(): ReactClass<any> {
     return ((null: any): ReactClass<any>);
   }
 
-  observeTasks(callback: (tasks: Array<Task>) => mixed): IDisposable {
+  observeTaskList(callback: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
     return new DisposableSubscription(
-      this._tasks.subscribe(tasks => { callback(tasks); }),
+      this._taskLists.subscribe(taskList => { callback(taskList); }),
     );
   }
 
