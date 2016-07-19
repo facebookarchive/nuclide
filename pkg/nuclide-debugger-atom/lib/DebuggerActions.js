@@ -383,6 +383,15 @@ class DebuggerActions {
     });
   }
 
+  togglePauseOnException(pauseOnException: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.TOGGLE_PAUSE_ON_EXCEPTION,
+      data: {
+        pauseOnException,
+      },
+    });
+  }
+
   updateLocals(locals: ExpansionResult): void {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.UPDATE_LOCALS,

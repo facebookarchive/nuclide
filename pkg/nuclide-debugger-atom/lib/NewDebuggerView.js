@@ -133,6 +133,7 @@ export class NewDebuggerView extends React.Component {
           <DebuggerSteppingComponent
             actions={actions}
             debuggerMode={this.state.debuggerMode}
+            pauseOnException={false/* TODO jxg wire up to store */}
           />
         </Section>
         <Section collapsable={true} headline="Call Stack">

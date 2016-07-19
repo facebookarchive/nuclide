@@ -17,12 +17,14 @@ import {
 } from 'react-for-atom';
 import {Button} from '../../nuclide-ui/lib/Button';
 import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
+import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 import {DebuggerMode} from './DebuggerStore';
 
 type DebuggerSteppingComponentProps = {
   actions: DebuggerActions,
   debuggerMode: DebuggerModeType,
+  pauseOnException: boolean,
 };
 
 export class DebuggerSteppingComponent extends React.Component {
@@ -36,10 +38,11 @@ export class DebuggerSteppingComponent extends React.Component {
     const {
       actions,
       debuggerMode,
+      pauseOnException,
     } = this.props;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     return (
-      <div>
+      <div className="nuclide-debugger-atom-stepping-component">
         <ButtonGroup>
           <Button
             icon={isPaused ? 'playback-play' : 'playback-pause'}
@@ -73,6 +76,12 @@ export class DebuggerSteppingComponent extends React.Component {
             }
           />
         </ButtonGroup>
+        <Checkbox
+          className="nuclide-debugger-atom-paused-on-exception-checkbox"
+          onChange={() => actions.togglePauseOnException(!pauseOnException)}
+          checked={pauseOnException}
+          label="Pause on exception"
+        />
       </div>
     );
   }
