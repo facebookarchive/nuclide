@@ -12,7 +12,6 @@
 import type {AnnotatedTask, TaskId, TaskRunnerInfo} from '../types';
 
 import {TaskButton} from './TaskButton';
-import {TaskRunnerButton} from './TaskRunnerButton';
 import {ProgressBar} from './ProgressBar';
 import {getTask} from '../getTask';
 import {React} from 'react-for-atom';
@@ -34,6 +33,23 @@ type Props = {
 export class Toolbar extends React.Component {
   props: Props;
 
+  _renderExtraUi(): ?React.Element<any> {
+    if (this.props.activeTaskId) {
+      const ExtraUi = this.props.getExtraUi && this.props.getExtraUi();
+      return ExtraUi ? <ExtraUi activeTaskType={this.props.activeTaskId.type} /> : null;
+    }
+    const runnerCount = this.props.taskRunnerInfo.length;
+    switch (runnerCount) {
+      case 0:
+        return <span>Please install and enable a task runner</span>;
+      case 1:
+        const runnerName = this.props.taskRunnerInfo[0].name;
+        return <span>Waiting for tasks from {runnerName}...</span>;
+      default:
+        return <span>Waiting for tasks from {runnerCount} task runners...</span>;
+    }
+  }
+
   render(): ?React.Element<any> {
     if (!this.props.visible) {
       return null;
@@ -44,21 +60,13 @@ export class Toolbar extends React.Component {
       ? null
       : getTask(activeTaskId, this.props.tasks);
 
-    const ExtraUi = this.props.getExtraUi && this.props.getExtraUi();
-    const ActiveTaskRunnerIcon = this.props.getActiveTaskRunnerIcon();
-    const FallbackIcon = () => <div>{activeTask && activeTask.taskRunnerName}</div>;
-    const IconComponent = ActiveTaskRunnerIcon || FallbackIcon;
-    const ButtonComponent = props => (
-      <TaskRunnerButton {...props} iconComponent={IconComponent} />
-    );
-
     return (
       <div className="nuclide-task-runner-toolbar">
         <div className="nuclide-task-runner-toolbar-contents padded">
           <div className="inline-block">
             <TaskButton
               activeTask={activeTask}
-              buttonComponent={ButtonComponent}
+              getActiveTaskRunnerIcon={this.props.getActiveTaskRunnerIcon}
               taskRunnerInfo={this.props.taskRunnerInfo}
               runTask={this.props.runTask}
               selectTask={this.props.selectTask}
@@ -73,7 +81,7 @@ export class Toolbar extends React.Component {
               onClick={() => { this.props.stopTask(); }}
             />
           </div>
-          {ExtraUi && activeTask ? <ExtraUi activeTaskType={activeTask.type} /> : null}
+          {this._renderExtraUi()}
         </div>
         <ProgressBar
           progress={this.props.progress}
