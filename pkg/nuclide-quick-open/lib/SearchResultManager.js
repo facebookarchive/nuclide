@@ -31,7 +31,6 @@ import {
   Emitter,
 } from 'atom';
 import {triggerAfterWait} from '../../commons-node/promise';
-import passesGK from '../../commons-node/passesGK';
 import debounce from '../../commons-node/debounce';
 import QuickSelectionDispatcher from './QuickSelectionDispatcher';
 import QuickSelectionActions from './QuickSelectionActions';
@@ -69,7 +68,6 @@ const CACHE_CLEAN_DEBOUNCE_DELAY = 5000;
 const UPDATE_DIRECTORIES_DEBOUNCE_DELAY = 100;
 const GLOBAL_KEY = 'global';
 const DIRECTORY_KEY = 'directory';
-const GK_BASIC_RANKED_OMNISEARCH = 'nuclide_quickopen_basic_ranked_omnisearch';
 
 function isValidProvider(provider): boolean {
   return (
@@ -106,7 +104,6 @@ class SearchResultManager {
   _registeredProviders: {[key: string]: Map<string, Provider>;};
   _activeProviderName: string;
   _isDisposed: boolean;
-  _shouldRankProviders: boolean;
 
   static getInstance(): SearchResultManager {
     if (!searchResultManagerInstance) {
@@ -150,14 +147,8 @@ class SearchResultManager {
       );
       this._debouncedUpdateDirectories();
     }
-    this._setupGkConfig();
     this._setUpFlux();
     this._activeProviderName = OMNISEARCH_PROVIDER.name;
-  }
-
-  async _setupGkConfig(): Promise<void> {
-    this._shouldRankProviders = false;
-    this._shouldRankProviders = await passesGK(GK_BASIC_RANKED_OMNISEARCH);
   }
 
   _setUpFlux(): void {
@@ -547,12 +538,10 @@ class SearchResultManager {
         'Search ' + providerName,
       title: provider.getTabTitle && provider.getTabTitle() || providerName,
     };
-    if (this._shouldRankProviders) {
-      // $FlowIssue priority property is optional
-      providerSpec.priority = typeof provider.getPriority === 'function'
-        ? provider.getPriority()
-        : Number.POSITIVE_INFINITY;
-    }
+    // $FlowIssue priority property is optional
+    providerSpec.priority = typeof provider.getPriority === 'function'
+      ? provider.getPriority()
+      : Number.POSITIVE_INFINITY;
     return providerSpec;
   }
 

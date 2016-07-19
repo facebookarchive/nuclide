@@ -27,6 +27,7 @@ const FakeProviderSpec = {
   name: 'FakeProvider',
   prompt: 'Search FakeProvider',
   title: 'Nothing to see here',
+  priority: Number.POSITIVE_INFINITY,
 };
 
 const TEST_STRINGS = ['yolo', 'foo', 'bar'];
