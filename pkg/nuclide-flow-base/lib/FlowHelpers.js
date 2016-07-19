@@ -34,11 +34,6 @@ const flowConfigDirCache: LRUCache<string, ?string> = LRU({
   maxAge: 1000 * 30, //30 seconds
 });
 
-const flowPathCache: LRUCache<string, boolean> = LRU({
-  max: 10,
-  maxAge: 1000 * 30, // 30 seconds
-});
-
 // Map from Flow root directory (or null for "no root" e.g. files outside of a Flow root, or unsaved
 // files. Useful for outline view) to FlowExecInfo. A null value means that the Flow binary cannot
 // be found for that root. It is possible for Flow to be available in some roots but not others
@@ -164,15 +159,6 @@ async function computeFlowExecInfo(root: string | null): Promise<?FlowExecInfo> 
   };
 }
 
-export async function isFlowInstalled(): Promise<boolean> {
-  const flowPath = getPathToFlow();
-  if (!flowPathCache.has(flowPath)) {
-    flowPathCache.set(flowPath, await canFindFlow(flowPath));
-  }
-
-  return flowPathCache.get(flowPath);
-}
-
 async function canFindFlow(flowPath: string): Promise<boolean> {
   try {
     // https://github.com/facebook/nuclide/issues/561
@@ -188,7 +174,7 @@ async function canFindFlow(flowPath: string): Promise<boolean> {
  *   function in case the user updates his or her preferences in Atom, in which case the return
  *   value will be stale.
  */
-export function getPathToFlow(): string {
+function getPathToFlow(): string {
   // $UPFixMe: This should use nuclide-features-config
   // Does not currently do so because this is an npm module that may run on the server.
   return global.atom && global.atom.config.get('nuclide.nuclide-flow.pathToFlow') || 'flow';
@@ -228,7 +214,7 @@ export function flowCoordsToAtomCoords(flowCoords: FlowLocNoSource): FlowLocNoSo
 
 // `string | null` forces the presence of an explicit argument (`?string` allows undefined which
 // means the argument can be left off altogether.
-export function getFlowExecOptions(root: string | null): Object {
+function getFlowExecOptions(root: string | null): Object {
   return {
     cwd: root,
     env: {
