@@ -65,20 +65,25 @@ export default function createConsoleGadget(store: Store): Gadget {
     }
 
     componentDidMount() {
-      // $FlowFixMe: How do we tell flow about Symbol.observable?
-      this._statesSubscription = Observable.from(store).subscribe(state => {
-        const currentExecutorId = getCurrentExecutorId(state);
-        const currentExecutor =
-          currentExecutorId != null ? state.executors.get(currentExecutorId) : null;
-        this.setState({
-          ready: true,
-          currentExecutor,
-          executors: state.executors,
-          providers: state.providers,
-          providerStatuses: state.providerStatuses,
-          records: state.records,
-        });
+      const raf = Observable.create(observer => {
+        window.requestAnimationFrame(observer.complete.bind(observer));
       });
+      // $FlowFixMe: How do we tell flow about Symbol.observable?
+      this._statesSubscription = Observable.from(store)
+        .audit(() => raf)
+        .subscribe(state => {
+          const currentExecutorId = getCurrentExecutorId(state);
+          const currentExecutor =
+            currentExecutorId != null ? state.executors.get(currentExecutorId) : null;
+          this.setState({
+            ready: true,
+            currentExecutor,
+            executors: state.executors,
+            providers: state.providers,
+            providerStatuses: state.providerStatuses,
+            records: state.records,
+          });
+        });
     }
 
     componentWillUnmount() {

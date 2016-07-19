@@ -55,6 +55,8 @@ export default class ConsoleView extends React.Component {
       unseenMessages: false,
     };
     this._shouldScrollToBottom = false;
+    (this: any)._getExecutor = this._getExecutor.bind(this);
+    (this: any)._getProvider = this._getProvider.bind(this);
     (this: any)._handleScrollPane = this._handleScrollPane.bind(this);
     (this: any)._handleScroll = this._handleScroll.bind(this);
     (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
@@ -111,6 +113,14 @@ export default class ConsoleView extends React.Component {
     return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
   }
 
+  _getExecutor(id: string): ?Executor {
+    return this.props.executors.get(id);
+  }
+
+  _getProvider(id: string): ?OutputProvider {
+    return this.props.getProvider(id);
+  }
+
   render(): ?React.Element<any> {
     return (
       <div className="nuclide-console">
@@ -136,8 +146,8 @@ export default class ConsoleView extends React.Component {
             <OutputTable
               records={this.props.records}
               showSourceLabels={this.props.selectedSourceIds.length > 1}
-              getExecutor={id => this.props.executors.get(id)}
-              getProvider={this.props.getProvider}
+              getExecutor={this._getExecutor}
+              getProvider={this._getProvider}
             />
           </div>
           <UnseenMessagesNotification

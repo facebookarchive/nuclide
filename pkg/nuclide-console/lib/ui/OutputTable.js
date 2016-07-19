@@ -11,6 +11,7 @@
 
 import type {Record, Executor, OutputProvider} from '../types';
 
+import Hasher from '../../../commons-node/Hasher';
 import {React} from 'react-for-atom';
 import RecordView from './RecordView';
 
@@ -23,6 +24,14 @@ type Props = {
 
 export default class OutputTable extends React.Component {
   props: Props;
+  _hasher: Hasher<Record>;
+
+  constructor(props: Props) {
+    super(props);
+    this._hasher = new Hasher();
+    (this: any)._getExecutor = this._getExecutor.bind(this);
+    (this: any)._getProvider = this._getProvider.bind(this);
+  }
 
   render(): ?React.Element<any> {
     return (
@@ -34,12 +43,20 @@ export default class OutputTable extends React.Component {
     );
   }
 
+  _getExecutor(id: string): ?Executor {
+    return this.props.getExecutor(id);
+  }
+
+  _getProvider(id: string): ?OutputProvider {
+    return this.props.getProvider(id);
+  }
+
   _renderRow(record: Record, index: number): React.Element<any> {
     return (
       <RecordView
-        key={index}
-        getExecutor={this.props.getExecutor}
-        getProvider={this.props.getProvider}
+        key={this._hasher.getHash(record)}
+        getExecutor={this._getExecutor}
+        getProvider={this._getProvider}
         record={record}
         showSourceLabel={this.props.showSourceLabels}
       />

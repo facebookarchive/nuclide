@@ -17,6 +17,7 @@ import {React} from 'react-for-atom';
 import {LazyNestedValueComponent} from '../../../nuclide-ui/lib/LazyNestedValueComponent';
 import SimpleValueComponent from '../../../nuclide-ui/lib/SimpleValueComponent';
 import invariant from 'assert';
+import shallowEqual from 'shallowequal';
 
 type Props = {
   record: Record,
@@ -69,6 +70,10 @@ export default class RecordView extends React.Component {
       const text = record.text || ' ';
       return <pre>{text}</pre>;
     }
+  }
+
+  shouldComponentUpdate(nextProps: Props): boolean {
+    return !shallowEqual(this.props, nextProps);
   }
 
   render(): React.Element<any> {
