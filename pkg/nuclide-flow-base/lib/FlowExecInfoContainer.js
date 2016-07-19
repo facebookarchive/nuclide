@@ -12,6 +12,7 @@
 import type {LRUCache} from 'lru-cache';
 
 import LRU from 'lru-cache';
+import {CompositeDisposable} from 'event-kit';
 
 import nuclideUri from '../../nuclide-remote-uri';
 import {checkOutput} from '../../commons-node/process';
@@ -37,6 +38,10 @@ export class FlowExecInfoContainer {
   // not others because we will support root-specific installations of flow-bin.
   _flowExecInfoCache: LRUCache<?string, ?FlowExecInfo>;
 
+  _disposables: CompositeDisposable;
+
+  _pathToFlow: string;
+
   constructor() {
     this._flowConfigDirCache = LRU({
       max: 10,
@@ -47,9 +52,14 @@ export class FlowExecInfoContainer {
       max: 10,
       maxAge: 1000 * 30, // 30 seconds
     });
+
+    this._disposables = new CompositeDisposable();
+
+    this._observePathToFlow();
   }
 
   dispose() {
+    this._disposables.dispose();
     this._flowConfigDirCache.reset();
     this._flowExecInfoCache.reset();
   }
@@ -64,7 +74,7 @@ export class FlowExecInfoContainer {
   }
 
   async _computeFlowExecInfo(root: string | null): Promise<?FlowExecInfo> {
-    const flowPath = getPathToFlow();
+    const flowPath = this._pathToFlow;
     if (!await canFindFlow(flowPath)) {
       return null;
     }
@@ -82,6 +92,20 @@ export class FlowExecInfoContainer {
     }
     return this._flowConfigDirCache.get(localFile);
   }
+
+  _observePathToFlow(): void {
+    if (global.atom == null) {
+      this._pathToFlow = 'flow';
+    } else {
+      // $UPFixMe: This should use nuclide-features-config
+      // Does not currently do so because this is an npm module that may run on the server.
+      this._disposables.add(
+        atom.config.observe('nuclide.nuclide-flow.pathToFlow', path => {
+          this._pathToFlow = path;
+        }),
+      );
+    }
+  }
 }
 
 async function canFindFlow(flowPath: string): Promise<boolean> {
@@ -92,17 +116,6 @@ async function canFindFlow(flowPath: string): Promise<boolean> {
   } catch (e) {
     return false;
   }
-}
-
-/**
- * @return The path to Flow on the user's machine. It is recommended not to cache the result of this
- *   function in case the user updates his or her preferences in Atom, in which case the return
- *   value will be stale.
- */
-function getPathToFlow(): string {
-  // $UPFixMe: This should use nuclide-features-config
-  // Does not currently do so because this is an npm module that may run on the server.
-  return global.atom && global.atom.config.get('nuclide.nuclide-flow.pathToFlow') || 'flow';
 }
 
 // `string | null` forces the presence of an explicit argument (`?string` allows undefined which
