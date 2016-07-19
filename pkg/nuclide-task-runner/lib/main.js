@@ -109,6 +109,23 @@ class Activation {
         }),
         task => `${task.taskRunnerId}:${task.type}`,
       ),
+
+      // Add a toggle command for each task runner.
+      syncAtomCommands(
+        states
+          .debounceTime(500)
+          .map(state => state.taskRunners)
+          .distinctUntilChanged()
+          .map(taskRunners => new Set(taskRunners.values())),
+        taskRunner => ({
+          'atom-workspace': {
+            [`nuclide-task-runner:toggle-${taskRunner.name}-toolbar`]: () => {
+              this._actionCreators.toggleToolbarVisibility(taskRunner.id);
+            },
+          },
+        }),
+        taskRunner => taskRunner.id,
+      ),
     );
   }
 

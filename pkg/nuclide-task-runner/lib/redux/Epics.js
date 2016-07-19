@@ -230,7 +230,42 @@ export function toggleToolbarVisibilityEpic(
   store: Store,
 ): Observable<Action> {
   return actions.ofType(Actions.TOGGLE_TOOLBAR_VISIBILITY)
-    .map(action => Actions.setToolbarVisibility(!store.getState().visible));
+    .switchMap(action => {
+      invariant(action.type === Actions.TOGGLE_TOOLBAR_VISIBILITY);
+      const state = store.getState();
+      const {taskRunnerId} = action.payload;
+
+      // If no taskRunnerId is provided, just toggle the visibility.
+      if (taskRunnerId == null) {
+        return Observable.of(Actions.setToolbarVisibility(!state.visible));
+      }
+
+      // If the active task corresponds to the task runner you want to toggle, just toggle the
+      // visibility.
+      const {activeTaskId} = state;
+      if (activeTaskId != null && activeTaskId.taskRunnerId === taskRunnerId) {
+        return Observable.of(Actions.setToolbarVisibility(!state.visible));
+      }
+
+      // Choose the first task for that task runner.
+      const tasksForRunner = state.tasks.get(taskRunnerId) || [];
+      const taskIdToSelect = tasksForRunner.length > 0 ? tasksForRunner[0] : null;
+      if (taskIdToSelect == null) {
+        const taskRunner = state.taskRunners.get(taskRunnerId);
+        invariant(taskRunner != null);
+        atom.notifications.addWarning(`The ${taskRunner.name} task runner doesn't have any tasks!`);
+      }
+
+      return Observable.concat(
+        // Make sure the toolbar is shown.
+        Observable.of(Actions.setToolbarVisibility(true)),
+
+        // Select the task.
+        taskIdToSelect == null
+          ? Observable.empty()
+          : Observable.of(Actions.selectTask(taskIdToSelect)),
+      );
+    });
 }
 
 /**

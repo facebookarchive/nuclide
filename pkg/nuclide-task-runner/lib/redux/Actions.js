@@ -96,8 +96,11 @@ export function stopTask(): StopTaskAction {
   return {type: STOP_TASK};
 }
 
-export function toggleToolbarVisibility(): ToggleToolbarVisibilityAction {
-  return {type: TOGGLE_TOOLBAR_VISIBILITY};
+export function toggleToolbarVisibility(taskRunnerId?: string): ToggleToolbarVisibilityAction {
+  return {
+    type: TOGGLE_TOOLBAR_VISIBILITY,
+    payload: {taskRunnerId},
+  };
 }
 
 export function unregisterTaskRunner(taskRunner: TaskRunner): UnregisterTaskRunnerAction {

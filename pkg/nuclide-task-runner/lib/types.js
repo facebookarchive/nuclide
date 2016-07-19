@@ -213,6 +213,9 @@ export type StopTaskAction = {
 
 export type ToggleToolbarVisibilityAction = {
   type: 'TOGGLE_TOOLBAR_VISIBILITY',
+  payload: {
+    taskRunnerId: ?string,
+  },
 };
 
 export type TasksUpdatedAction = {
