@@ -28,10 +28,8 @@ import {
 } from '../../commons-node/process';
 
 import {
-  isFlowInstalled,
-  getPathToFlow,
   getStopFlowOnExit,
-  getFlowExecOptions,
+  getFlowExecInfo,
 } from './FlowHelpers';
 
 import {ServerStatus} from './FlowConstants';
@@ -151,20 +149,27 @@ export class FlowProcess {
 
   /** Starts a Flow server in the current root */
   async _startFlowServer(): Promise<void> {
-    const pathToFlow = getPathToFlow();
+    const flowExecInfo = await getFlowExecInfo(this._root);
+    if (flowExecInfo == null) {
+      // This should not happen in normal use. If Flow is not installed we should have caught it by
+      // now.
+      logger.error(`Could not find Flow to start server in ${this._root}`);
+      this._setServerStatus(ServerStatus.NOT_INSTALLED);
+      return;
+    }
     // `flow server` will start a server in the foreground. asyncExecute
     // will not resolve the promise until the process exits, which in this
     // case is never. We need to use spawn directly to get access to the
     // ChildProcess object.
     const serverProcess = await safeSpawn( // eslint-disable-line babel/no-await-in-loop
-      pathToFlow,
+      flowExecInfo.pathToFlow,
       [
         'server',
         '--from', 'nuclide',
         '--max-workers', this._getMaxWorkers().toString(),
         this._root,
       ],
-      getFlowExecOptions(this._root),
+      flowExecInfo.execOptions,
     );
     const logIt = data => {
       const pid = serverProcess.pid;
@@ -190,11 +195,6 @@ export class FlowProcess {
 
   /** Execute Flow with the given arguments */
   async _rawExecFlow(args: Array<any>, options?: Object = {}): Promise<?process$asyncExecuteRet> {
-    const installed = await isFlowInstalled();
-    if (!installed) {
-      this._updateServerStatus(null);
-      return null;
-    }
     args = [
       ...args,
       '--retry-if-init', 'false',
@@ -320,12 +320,15 @@ export class FlowProcess {
       ...args,
       '--from', 'nuclide',
     ];
+    const execInfo = await getFlowExecInfo(root);
+    if (execInfo == null) {
+      return null;
+    }
     options = {
-      ...getFlowExecOptions(root),
+      ...execInfo.execOptions,
       ...options,
     };
-    const pathToFlow = getPathToFlow();
-    const ret = await asyncExecute(pathToFlow, args, options);
+    const ret = await asyncExecute(execInfo.pathToFlow, args, options);
     if (ret.exitCode !== 0) {
       // TODO: bubble up the exit code via return value instead
       throw ret;

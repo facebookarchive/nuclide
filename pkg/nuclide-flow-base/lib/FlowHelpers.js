@@ -19,13 +19,31 @@ import fsPromise from '../../commons-node/fsPromise';
 import LRU from 'lru-cache';
 import invariant from 'assert';
 
+// All the information needed to execute Flow in a given root. The path to the Flow binary we want
+// to use may vary per root -- for now, only if we are using the version of Flow from `flow-bin`.
+// The options also vary, right now only because they set the cwd to the current Flow root.
+export type FlowExecInfo = {
+  pathToFlow: string,
+  execOptions: Object,
+};
+
 // Map from file path to the closest ancestor directory containing a .flowconfig file (the file's
 // Flow root)
 const flowConfigDirCache: LRUCache<string, ?string> = LRU({
   max: 10,
   maxAge: 1000 * 30, //30 seconds
 });
+
 const flowPathCache: LRUCache<string, boolean> = LRU({
+  max: 10,
+  maxAge: 1000 * 30, // 30 seconds
+});
+
+// Map from Flow root directory (or null for "no root" e.g. files outside of a Flow root, or unsaved
+// files. Useful for outline view) to FlowExecInfo. A null value means that the Flow binary cannot
+// be found for that root. It is possible for Flow to be available in some roots but not others
+// because we will support root-specific installations of flow-bin.
+const flowExecInfoCache: LRUCache<?string, ?FlowExecInfo> = LRU({
   max: 10,
   maxAge: 1000 * 30, // 30 seconds
 });
@@ -124,6 +142,26 @@ function isOptional(param: string): boolean {
   invariant(param.length > 0);
   const lastChar = param[param.length - 1];
   return lastChar === '?';
+}
+
+// Returns null iff Flow cannot be found.
+export async function getFlowExecInfo(root: string | null): Promise<?FlowExecInfo> {
+  if (!flowExecInfoCache.has(root)) {
+    const info = await computeFlowExecInfo(root);
+    flowExecInfoCache.set(root, info);
+  }
+  return flowExecInfoCache.get(root);
+}
+
+async function computeFlowExecInfo(root: string | null): Promise<?FlowExecInfo> {
+  const flowPath = getPathToFlow();
+  if (!await canFindFlow(flowPath)) {
+    return null;
+  }
+  return {
+    pathToFlow: flowPath,
+    execOptions: getFlowExecOptions(root),
+  };
 }
 
 export async function isFlowInstalled(): Promise<boolean> {
