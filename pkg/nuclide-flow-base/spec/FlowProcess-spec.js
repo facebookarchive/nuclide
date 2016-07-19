@@ -17,6 +17,7 @@ import type {FlowProcess as FlowProcessType} from '../lib/FlowProcess';
 import os from 'os';
 
 import {FLOW_RETURN_CODES} from '../lib/FlowProcess';
+import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
 
 import {uncachedRequire} from '../../nuclide-test-helpers';
 
@@ -59,7 +60,7 @@ describe('FlowProcess', () => {
     // we have to create another flow service here since we've mocked modules
     // we depend on since the outer beforeEach ran.
     FlowProcess = (uncachedRequire(require, flowProcessPath): any).FlowProcess;
-    flowProcess = new FlowProcess(root);
+    flowProcess = new FlowProcess(root, new FlowExecInfoContainer());
   });
 
   describe('Server startup and teardown', () => {
@@ -217,7 +218,7 @@ describe('FlowProcess', () => {
   describe('execFlowClient', () => {
     it('should call asyncExecute', () => {
       waitsForPromise(async () => {
-        await FlowProcess.execFlowClient(['arg']);
+        await FlowProcess.execFlowClient(['arg'], null, new FlowExecInfoContainer());
         const [asyncExecuteArgs] = fakeCheckOutput.argsForCall;
         expect(asyncExecuteArgs[0]).toEqual('flow');
         expect(asyncExecuteArgs[1]).toEqual(['arg', '--from', 'nuclide']);

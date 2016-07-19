@@ -12,6 +12,7 @@
 import type {Observable} from 'rxjs';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import type {ServerStatusType, FlowCoverageResult} from '..';
+import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 
 import type {
   Diagnostics,
@@ -43,10 +44,12 @@ export class FlowRoot {
   _root: string;
   _process: FlowProcess;
   _version: FlowVersion;
+  _execInfoContainer: FlowExecInfoContainer;
 
-  constructor(root: string) {
+  constructor(root: string, execInfoContainer: FlowExecInfoContainer) {
     this._root = root;
-    this._process = new FlowProcess(root);
+    this._execInfoContainer = execInfoContainer;
+    this._process = new FlowProcess(root, execInfoContainer);
     this._version = new FlowVersion(() => this._flowGetVersion());
     this._process.getServerStatusUpdates()
       .filter(state => state === 'not running')
@@ -375,7 +378,7 @@ export class FlowRoot {
     const args = ['version', '--json'];
     let json;
     try {
-      const result = await FlowProcess.execFlowClient(args, this._root);
+      const result = await FlowProcess.execFlowClient(args, this._root, this._execInfoContainer);
       if (result == null) {
         return null;
       }
@@ -387,7 +390,10 @@ export class FlowRoot {
     return json.semver;
   }
 
-  static async flowGetOutline(currentContents: string): Promise<?Array<FlowOutlineTree>> {
+  static async flowGetOutline(
+    currentContents: string,
+    execInfoContainer: FlowExecInfoContainer,
+  ): Promise<?Array<FlowOutlineTree>> {
     const options = {
       stdin: currentContents,
     };
@@ -396,7 +402,7 @@ export class FlowRoot {
 
     let json;
     try {
-      const result = await FlowProcess.execFlowClient(args, null, options);
+      const result = await FlowProcess.execFlowClient(args, null, execInfoContainer, options);
       if (result == null) {
         return null;
       }

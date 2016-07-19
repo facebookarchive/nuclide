@@ -10,21 +10,8 @@
  */
 
 import type {FlowLocNoSource} from './flowOutputTypes';
-import type {FlowExecInfo} from './FlowExecInfoContainer';
 
 import invariant from 'assert';
-
-import {FlowExecInfoContainer} from './FlowExecInfoContainer';
-
-const flowExecInfoContainer: FlowExecInfoContainer = new FlowExecInfoContainer();
-
-export function findFlowConfigDir(localFile: string): Promise<?string> {
-  return flowExecInfoContainer.findFlowConfigDir(localFile);
-}
-
-export function getFlowExecInfo(root: string | null): Promise<?FlowExecInfo> {
-  return flowExecInfoContainer.getFlowExecInfo(root);
-}
 
 export function insertAutocompleteToken(contents: string, line: number, col: number): string {
   const lines = contents.split('\n');

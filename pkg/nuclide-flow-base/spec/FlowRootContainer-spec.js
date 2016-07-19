@@ -13,7 +13,8 @@ import type {FlowRootContainer as FlowRootContainerType} from '../lib/FlowRootCo
 
 import invariant from 'assert';
 
-import {uncachedRequire} from '../../nuclide-test-helpers';
+import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
+import {FlowRootContainer} from '../lib/FlowRootContainer';
 
 describe('FlowRootContainer', () => {
   let flowRootContainer: FlowRootContainerType = (null: any);
@@ -23,11 +24,11 @@ describe('FlowRootContainer', () => {
     waitsForPromise(async () => {
       configDirPath = '/definitely/a/legit/path/';
 
-      spyOn(require('../lib/FlowHelpers'), 'findFlowConfigDir')
+      const execInfoContainer = new FlowExecInfoContainer();
+      spyOn(execInfoContainer, 'findFlowConfigDir')
         .andCallFake(async () => configDirPath);
 
-      const {FlowRootContainer} = ((uncachedRequire(require, '../lib/FlowRootContainer'): any));
-      flowRootContainer = new FlowRootContainer();
+      flowRootContainer = new FlowRootContainer(execInfoContainer);
     });
   });
 

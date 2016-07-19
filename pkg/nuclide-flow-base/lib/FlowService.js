@@ -212,7 +212,7 @@ export async function flowGetCoverage(
 export function flowGetOutline(
   currentContents: string,
 ): Promise<?Array<FlowOutlineTree>> {
-  return FlowRoot.flowGetOutline(currentContents);
+  return FlowRoot.flowGetOutline(currentContents, getState().getExecInfoContainer());
 }
 
 export function allowServerRestart(): void {

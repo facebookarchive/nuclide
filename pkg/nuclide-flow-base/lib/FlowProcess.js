@@ -13,6 +13,8 @@ import type {process$asyncExecuteRet} from '../../commons-node/process';
 
 import type {ServerStatusType} from '..';
 
+import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
+
 import os from 'os';
 
 import {BehaviorSubject, Observable} from 'rxjs';
@@ -29,7 +31,6 @@ import {
 
 import {
   getStopFlowOnExit,
-  getFlowExecInfo,
 } from './FlowHelpers';
 
 import {ServerStatus} from './FlowConstants';
@@ -58,8 +59,10 @@ export class FlowProcess {
   _serverStatus: BehaviorSubject<ServerStatusType>;
   // The path to the directory where the .flowconfig is -- i.e. the root of the Flow project.
   _root: string;
+  _execInfoContainer: FlowExecInfoContainer;
 
-  constructor(root: string) {
+  constructor(root: string, execInfoContainer: FlowExecInfoContainer) {
+    this._execInfoContainer = execInfoContainer;
     this._serverStatus = new BehaviorSubject(ServerStatus.UNKNOWN);
     this._root = root;
 
@@ -149,7 +152,7 @@ export class FlowProcess {
 
   /** Starts a Flow server in the current root */
   async _startFlowServer(): Promise<void> {
-    const flowExecInfo = await getFlowExecInfo(this._root);
+    const flowExecInfo = await this._execInfoContainer.getFlowExecInfo(this._root);
     if (flowExecInfo == null) {
       // This should not happen in normal use. If Flow is not installed we should have caught it by
       // now.
@@ -202,7 +205,12 @@ export class FlowProcess {
       '--no-auto-start',
     ];
     try {
-      const result = await FlowProcess.execFlowClient(args, this._root, options);
+      const result = await FlowProcess.execFlowClient(
+        args,
+        this._root,
+        this._execInfoContainer,
+        options,
+      );
       this._updateServerStatus(result);
       return result;
     } catch (e) {
@@ -314,13 +322,14 @@ export class FlowProcess {
   static async execFlowClient(
     args: Array<any>,
     root: string | null,
+    execInfoContainer: FlowExecInfoContainer,
     options?: Object = {},
   ): Promise<?process$asyncExecuteRet> {
     args = [
       ...args,
       '--from', 'nuclide',
     ];
-    const execInfo = await getFlowExecInfo(root);
+    const execInfo = await execInfoContainer.getFlowExecInfo(root);
     if (execInfo == null) {
       return null;
     }

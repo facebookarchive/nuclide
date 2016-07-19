@@ -11,6 +11,8 @@
 
 import type {FlowRoot as FlowRootType} from '../lib/FlowRoot';
 
+import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
+
 describe('FlowRoot', () => {
   const file = '/path/to/test.js';
   const root = '/path/to';
@@ -26,7 +28,7 @@ describe('FlowRoot', () => {
     // We do a require here instead of just importing at the top of the file because the describe
     // block below needs to mock things, and has to use uncachedRequire.
     const {FlowRoot} = require('../lib/FlowRoot');
-    return new FlowRoot(root);
+    return new FlowRoot(root, new FlowExecInfoContainer());
   }
 
   beforeEach(() => {

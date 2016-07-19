@@ -11,11 +11,11 @@
 
 import type {Observable} from 'rxjs';
 import type {ServerStatusUpdate} from '..';
+import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 
-import {findFlowConfigDir} from './FlowHelpers';
 import {FlowRoot} from './FlowRoot';
 
 export class FlowRootContainer {
@@ -26,8 +26,10 @@ export class FlowRootContainer {
   _flowRoot$: Subject<FlowRoot>;
 
   _disposed: boolean;
+  _execInfoContainer: FlowExecInfoContainer;
 
-  constructor() {
+  constructor(execInfoContainer: FlowExecInfoContainer) {
+    this._execInfoContainer = execInfoContainer;
     this._disposed = false;
     this._flowRootMap = new Map();
 
@@ -41,7 +43,7 @@ export class FlowRootContainer {
 
   async getRootForPath(path: string): Promise<?FlowRoot> {
     this._checkForDisposal();
-    const rootPath = await findFlowConfigDir(path);
+    const rootPath = await this._execInfoContainer.findFlowConfigDir(path);
     // During the await above, this may have been disposed. If so, return null to stop the current
     // operation.
     if (rootPath == null || this._disposed) {
@@ -50,7 +52,7 @@ export class FlowRootContainer {
 
     let instance = this._flowRootMap.get(rootPath);
     if (!instance) {
-      instance = new FlowRoot(rootPath);
+      instance = new FlowRoot(rootPath, this._execInfoContainer);
       this._flowRoot$.next(instance);
     }
     return instance;
