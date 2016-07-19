@@ -151,7 +151,9 @@ export class ContextViewManager {
         .map((queryResult: ?DefinitionQueryResult) => {
           return (queryResult != null)
             ? queryResult.definitions[0]
-            : null; // We do want to return null sometimes so providers can show "No definition selected"
+            // We do want to return null sometimes so providers can show
+            // "No definition selected"
+            : null;
         })
         .subscribe((def: ?Definition) => this.updateCurrentDefinition(def));
       return;

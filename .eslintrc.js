@@ -192,7 +192,7 @@ module.exports = {
     'linebreak-style': 1,
     'lines-around-comment': 0,
     'max-depth': 0,
-    'max-len': [1, 100, {tabWidth: 2, ignoreTrailingComments: true, ignoreUrls: true}],
+    'max-len': [1, 100, {tabWidth: 2, ignoreUrls: true}],
     'max-lines': 0,
     'max-nested-callbacks': 0,
     'max-params': 0,
