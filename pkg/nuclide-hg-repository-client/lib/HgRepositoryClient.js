@@ -898,6 +898,10 @@ export class HgRepositoryClient {
     return this._service.getSmartlog(ttyOutput, concise);
   }
 
+  copy(filePaths: Array<string>, destPath: string, after: boolean = false): Promise<void> {
+    return this._service.copy(filePaths, destPath, after);
+  }
+
   rename(filePaths: Array<string>, destPath: string, after: boolean = false): Promise<void> {
     return this._service.rename(filePaths, destPath, after);
   }

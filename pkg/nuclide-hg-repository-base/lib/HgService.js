@@ -953,4 +953,31 @@ export class HgService {
     return this._runSimpleInWorkingDirectory('rebase', ['--abort']);
   }
 
+  /**
+   * Copy files versioned under Hg.
+   * @param filePaths Which files should be copied.
+   * @param destPath What should the new file be named to.
+   */
+  async copy(
+    filePaths: Array<NuclideUri>,
+    destPath: NuclideUri,
+    after?: boolean,
+  ): Promise<void> {
+    const args = [
+      ...filePaths.map(p => nuclideUri.getPath(p)), // Sources
+      nuclideUri.getPath(destPath),                 // Dest
+    ];
+    if (after) {
+      args.unshift('--after');
+    }
+    try {
+      await this._runSimpleInWorkingDirectory('copy', args);
+    } catch (e) {
+      if (after) {
+        this._rethrowErrorIfHelpful(e);
+      } else {
+        throw e;
+      }
+    }
+  }
 }

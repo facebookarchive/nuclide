@@ -19,7 +19,27 @@ import {
 
 import nuclideUri from '../../nuclide-remote-uri';
 
-const {PropTypes} = React;
+type Options = {[key: string]: boolean};
+
+type AdditionalOptions = {
+  [key: string]: string;
+};
+
+type Props = {
+  // Extra options to show the user.
+  additionalOptions?: AdditionalOptions,
+  iconClassName?: string,
+  initialValue?: string,
+  // Message is displayed above the input.
+  message: React.Element<any>,
+  // Will be called (before `onClose`) if the user confirms.
+  onConfirm: (value: boolean, options: Options) => void,
+  // Will be called regardless of whether the user confirms.
+  onClose: () => void,
+  // Whether or not to initially select the base name of the path.
+  // This is useful for renaming files.
+  selectBasename?: boolean,
+};
 
 /**
  * Component that displays UI to create a new file.
@@ -28,33 +48,16 @@ class FileDialogComponent extends React.Component {
   _subscriptions: CompositeDisposable;
   _isClosed: boolean;
 
-  static propTypes = {
-    iconClassName: PropTypes.string,
-    initialValue: PropTypes.string,
-    // Message is displayed above the input.
-    message: PropTypes.element.isRequired,
-    // Will be called (before `onClose`) if the user confirms.  `onConfirm` will
-    // be called with two arguments, the value of the input field and a map of
-    // option name => bool (true if option was selected).
-    onConfirm: PropTypes.func.isRequired,
-    // Will be called regardless of whether the user confirms.
-    onClose: PropTypes.func.isRequired,
-    // Whether or not to initially select the base name of the path.
-    // This is useful for renaming files.
-    selectBasename: PropTypes.bool,
-    // Extra options to show the user.  Key is the name of the option and value
-    // is a description string that will be displayed.
-    additionalOptions: PropTypes.objectOf(PropTypes.string),
-  };
+  props: Props;
 
   static defaultProps: {
-    additionalOptions: Object,
+    additionalOptions: AdditionalOptions,
   } = {
     additionalOptions: {},
   };
 
   state: {
-    options: Object,
+    options: Options
   };
 
   constructor() {
@@ -83,7 +86,7 @@ class FileDialogComponent extends React.Component {
     ));
     const path = this.props.initialValue;
     input.focus();
-    if (this.props.selectBasename) {
+    if (this.props.selectBasename && path != null) {
       const {dir, name} = nuclideUri.parsePath(path);
       const selectionStart = dir ? dir.length + 1 : 0;
       const selectionEnd = selectionStart + name.length;

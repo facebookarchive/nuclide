@@ -162,7 +162,7 @@ class FileSystemActions {
     const hgRepository = this._getHgRepositoryForPath(newPath);
     if (hgRepository != null && addToVCS) {
       try {
-        await hgRepository.addAll([newPath]);
+        await hgRepository.copy([nodePath], newPath, /* after */ true);
       } catch (e) {
         const message = newPath + ' was duplicated, but there was an error adding it to ' +
           'version control.  Error: ' + e.toString();
@@ -170,8 +170,9 @@ class FileSystemActions {
         onDidConfirm(null);
         return;
       }
-      onDidConfirm(newPath);
     }
+
+    onDidConfirm(newPath);
   }
 
   openRenameDialog(): void {
