@@ -30,7 +30,7 @@ describe('FlowProcess', () => {
   // methods).
   let childSpy: any;
 
-  let FlowProcess = (null: any);
+  let FlowProcess: Class<FlowProcessType> = (null: any);
   let flowProcess: FlowProcessType = (null: any);
 
   const root = '/path/to/flow/root';
@@ -59,7 +59,8 @@ describe('FlowProcess', () => {
     });
     // we have to create another flow service here since we've mocked modules
     // we depend on since the outer beforeEach ran.
-    FlowProcess = (uncachedRequire(require, flowProcessPath): any).FlowProcess;
+    FlowProcess =
+      ((uncachedRequire(require, flowProcessPath): any).FlowProcess: Class<FlowProcessType>);
     flowProcess = new FlowProcess(root, new FlowExecInfoContainer());
   });
 
