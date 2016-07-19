@@ -14,6 +14,11 @@ import featureConfig from '../../nuclide-feature-config';
 import {React} from 'react-for-atom';
 import SettingsCategory from './SettingsCategory';
 
+import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {Section} from '../../nuclide-ui/lib/Section';
+
+import {matchesFilter} from './settings-utils';
+
 export default class NuclideSettingsPaneItem extends React.Component {
   static gadgetId = 'nuclide-settings';
   static defaultLocation = 'active-pane';
@@ -27,8 +32,10 @@ export default class NuclideSettingsPaneItem extends React.Component {
     // Bind callbacks first since we use these during config data generation.
     (this: any)._handleConfigChange = this._handleConfigChange.bind(this);
     (this: any)._handleComponentChange = this._handleComponentChange.bind(this);
-
-    this.state = this._getConfigData();
+    (this: any)._onFilterTextChanged = this._onFilterTextChanged.bind(this);
+    this.state = {
+      filter: '',
+    };
   }
 
   _getConfigData(): Object {
@@ -86,17 +93,22 @@ export default class NuclideSettingsPaneItem extends React.Component {
         Object.keys(nuclide.config).forEach(settingName => {
           const keyPath = pkgName + '.' + settingName;
           const schema = featureConfig.getSchema(keyPath);
-          settings[settingName] = {
-            keyPath,
-            value: featureConfig.get(keyPath),
-            onChange: value => { this._handleComponentChange(keyPath, value); },
-            schema: {
-              ...schema,
-              description: getDescription(schema),
+          const title = getTitle(schema, settingName);
+          const description = getDescription(schema);
+          if (this.state == null
+            || matchesFilter(this.state.filter, title)
+            || matchesFilter(this.state.filter, description)) {
+            settings[settingName] = {
+              name: settingName,
+              description,
+              keyPath,
+              onChange: value => { this._handleComponentChange(keyPath, value); },
               order: getOrder(schema),
-              title: getTitle(schema, settingName),
-            },
-          };
+              schema,
+              title,
+              value: featureConfig.get(keyPath),
+            };
+          }
 
           if (disposables) {
             const disposable = featureConfig.onDidChange(keyPath, this._handleConfigChange);
@@ -104,13 +116,14 @@ export default class NuclideSettingsPaneItem extends React.Component {
           }
         });
 
-        packages[pkgName] = {
-          title: packageTitle || pkgName,
-          settings,
-        };
+        if (Object.keys(settings).length !== 0) {
+          packages[pkgName] = {
+            title: packageTitle || pkgName,
+            settings,
+          };
+        }
       }
     });
-
     return configData;
   }
 
@@ -125,29 +138,52 @@ export default class NuclideSettingsPaneItem extends React.Component {
     featureConfig.set(keyPath, value);
   }
 
-  render(): React.Element<any> {
+  render(): ?React.Element<any> {
     const elements = [];
 
-    const configData = this.state;
+    const configData = this._getConfigData();
     Object.keys(configData).sort().forEach(categoryName => {
       const packages = configData[categoryName];
-      elements.push(
-        <SettingsCategory key={categoryName} name={categoryName} packages={packages} />,
-      );
+      if (Object.keys(packages).length > 0) {
+        elements.push(
+          <SettingsCategory
+            key={categoryName}
+            name={categoryName}
+            packages={packages}
+          />,
+        );
+      }
     });
-
+    const settings = (elements.length === 0) ? null : elements;
     return (
       <div className="pane-item padded settings-gadgets-pane">
-        <div className="settings-view">
-          <div className="panels">
-            <div className="panels-item">
-              <form className="general-panel section" />
-              {elements}
-            </div>
-          </div>
-        </div>
+         <div className="settings-view panels panels-item">
+           <div className="panels">
+             <div className="panels-item">
+              <section className="section">
+                 <Section
+                  headline="Filter"
+                  collapsable={true}>
+                    <AtomInput
+                     size="lg"
+                     placeholderText="Filter by setting title or description"
+                     onDidChange={this._onFilterTextChanged}
+                    />
+                 </Section>
+               </section>
+               {settings}
+             </div>
+           </div>
+         </div>
       </div>
     );
+  }
+
+  _onFilterTextChanged(filterText: string): void {
+    const filter = (filterText != null) ? filterText.trim() : '';
+    this.setState({
+      filter,
+    });
   }
 
   getTitle(): string {

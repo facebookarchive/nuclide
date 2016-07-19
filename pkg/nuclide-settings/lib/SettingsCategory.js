@@ -20,7 +20,7 @@ type Props = {
 export default class SettingsCategory extends React.Component {
   props: Props;
 
-  render(): React.Element<any> {
+  render(): ?React.Element<any> {
 
     const children = Object.keys(this.props.packages).sort().map(pkgName => {
       const pkgData = this.props.packages[pkgName];
@@ -52,7 +52,6 @@ export default class SettingsCategory extends React.Component {
         </ControlGroup>
       );
     });
-
     return (
       <section className="section settings-panel">
         {/* Category Title */}

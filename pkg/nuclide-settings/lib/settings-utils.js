@@ -62,3 +62,18 @@ export function valueToString(value: any): string {
     return value != null ? value.toString() : '';
   }
 }
+
+// Remove spaces and hypens
+export function strip(str: string): string {
+  return str.replace(/\s+/g, '').replace(/\-+/g, '');
+}
+
+/** Returns true if filter matches search string. Return true if filter is empty. */
+export function matchesFilter(filter: string, searchString: string): boolean {
+  if (filter.length === 0) {
+    return true;
+  }
+  const needle = strip(filter.toLowerCase());
+  const hay = strip(searchString.toLowerCase());
+  return hay.indexOf(needle) !== -1;
+}
