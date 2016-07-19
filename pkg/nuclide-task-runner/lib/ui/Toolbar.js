@@ -83,14 +83,4 @@ export class Toolbar extends React.Component {
     );
   }
 
-  _renderIcon(): ?React.Element<any> {
-    const ActiveTaskRunnerIcon = this.props.getActiveTaskRunnerIcon();
-    if (ActiveTaskRunnerIcon == null) { return; }
-    return (
-      <div className="nuclide-task-runner-system-icon-wrapper inline-block">
-        <ActiveTaskRunnerIcon />
-      </div>
-    );
-  }
-
 }
