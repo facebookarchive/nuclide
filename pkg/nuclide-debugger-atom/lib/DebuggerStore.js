@@ -48,6 +48,7 @@ class DebuggerStore {
   _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
   _processSocket: ?string;
   _debuggerMode: DebuggerModeType;
+  _togglePauseOnException: boolean;
   _onLoaderBreakpointResume: () => void;
   _registerExecutor: ?() => IDisposable;
   _consoleDisposable: ?IDisposable;
@@ -65,6 +66,7 @@ class DebuggerStore {
     this._evaluationExpressionProviders = new Set();
     this._processSocket = null;
     this._debuggerMode = DebuggerMode.STOPPED;
+    this._togglePauseOnException = false;
     this._registerExecutor = null;
     this._consoleDisposable = null;
     this.loaderBreakpointResumePromise = new Promise(resolve => {
@@ -122,6 +124,10 @@ class DebuggerStore {
     return this._debuggerMode;
   }
 
+  getTogglePauseOnException(): boolean {
+    return this._togglePauseOnException;
+  }
+
   getSettings(): DebuggerSettings {
     return this._debuggerSettings;
   }
@@ -156,6 +162,9 @@ class DebuggerStore {
         break;
       case Constants.Actions.SET_DEBUGGER_INSTANCE:
         this._debuggerInstance = payload.data;
+        break;
+      case Constants.Actions.TOGGLE_PAUSE_ON_EXCEPTION:
+        this._togglePauseOnException = payload.data;
         break;
       case Constants.Actions.DEBUGGER_MODE_CHANGE:
         this._debuggerMode = payload.data;

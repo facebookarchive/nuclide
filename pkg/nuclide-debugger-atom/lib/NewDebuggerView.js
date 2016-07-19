@@ -57,6 +57,7 @@ function storeBreakpointsToViewBreakpoints(
 export class NewDebuggerView extends React.Component {
   props: Props;
   state: {
+    togglePauseOnException: boolean,
     debuggerMode: DebuggerModeType,
     callstack: ?Callstack,
     breakpoints: ?FileLineBreakpoints,
@@ -82,6 +83,7 @@ export class NewDebuggerView extends React.Component {
     this._disposables = new CompositeDisposable();
     this.state = {
       debuggerMode: props.model.getStore().getDebuggerMode(),
+      togglePauseOnException: props.model.getStore().getTogglePauseOnException(),
       callstack: props.model.getCallstackStore().getCallstack(),
       breakpoints: storeBreakpointsToViewBreakpoints(
         props.model.getBreakpointStore().getAllBreakpoints(),
@@ -95,6 +97,7 @@ export class NewDebuggerView extends React.Component {
       debuggerStore.onChange(() => {
         this.setState({
           debuggerMode: debuggerStore.getDebuggerMode(),
+          togglePauseOnException: debuggerStore.getTogglePauseOnException(),
         });
       }),
     );
@@ -133,7 +136,7 @@ export class NewDebuggerView extends React.Component {
           <DebuggerSteppingComponent
             actions={actions}
             debuggerMode={this.state.debuggerMode}
-            pauseOnException={false/* TODO jxg wire up to store */}
+            pauseOnException={this.state.togglePauseOnException}
           />
         </Section>
         <Section collapsable={true} headline="Call Stack">
