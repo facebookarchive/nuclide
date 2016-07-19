@@ -102,6 +102,7 @@ export class FlowExecInfoContainer {
       this._disposables.add(
         atom.config.observe('nuclide.nuclide-flow.pathToFlow', path => {
           this._pathToFlow = path;
+          this._flowExecInfoCache.reset();
         }),
       );
     }
