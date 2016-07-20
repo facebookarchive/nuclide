@@ -171,4 +171,14 @@ describe('ContextViewManager', () => {
     expect(managerHidden._render).toHaveBeenCalled();
     expect(managerHidden.updateSubscription).toHaveBeenCalled();
   });
+  it('disposes correctly', () => {
+    managerShowing.consumeDefinitionService(defService);
+    // i.e. the subscription is unsubscribed if not null
+    invariant(managerShowing._defServiceSubscription != null,
+      'Subscription should exist if panel is visible and def. service consumed');
+    const subscription = managerShowing._defServiceSubscription;
+    spyOn(subscription, 'unsubscribe');
+    managerShowing.dispose();
+    expect(subscription.unsubscribe).toHaveBeenCalled();
+  });
 });

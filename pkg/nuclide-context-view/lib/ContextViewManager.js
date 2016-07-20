@@ -17,7 +17,6 @@ import type {
 import type {EditorPosition} from '../../commons-atom/debounced';
 
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import {observeTextEditorsPositions} from '../../commons-atom/debounced';
 import {Observable} from 'rxjs';
@@ -61,7 +60,6 @@ export class ContextViewManager {
   _contextProviders: Array<ContextProvider>;
   _defServiceSubscription: ?rx$ISubscription;
   _definitionService: ?DefinitionService;
-  _disposables: CompositeDisposable;
   _isVisible: boolean;
   _panelDOMElement: ?HTMLElement;
   _width: number;
@@ -72,7 +70,6 @@ export class ContextViewManager {
     this._contextProviders = [];
     this._defServiceSubscription = null;
     this._definitionService = null;
-    this._disposables = new CompositeDisposable();
     this._isVisible = isVisible;
     this._panelDOMElement = null;
     this._width = width;
@@ -86,7 +83,6 @@ export class ContextViewManager {
 
   dispose(): void {
     this._disposeView();
-    this._disposables.dispose();
   }
 
   hide(): void {
@@ -211,6 +207,10 @@ export class ContextViewManager {
     if (this._atomPanel != null) {
       this._atomPanel.destroy();
       this._atomPanel = null;
+    }
+    if (this._defServiceSubscription != null) {
+      this._defServiceSubscription.unsubscribe();
+      this._defServiceSubscription = null;
     }
   }
 
