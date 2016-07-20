@@ -41,6 +41,7 @@ export class FlowExecInfoContainer {
   _disposables: CompositeDisposable;
 
   _pathToFlow: string;
+  _canUseFlowBin: boolean;
 
   constructor() {
     this._flowConfigDirCache = LRU({
@@ -55,7 +56,7 @@ export class FlowExecInfoContainer {
 
     this._disposables = new CompositeDisposable();
 
-    this._observePathToFlow();
+    this._observeSettings();
   }
 
   dispose() {
@@ -74,14 +75,42 @@ export class FlowExecInfoContainer {
   }
 
   async _computeFlowExecInfo(root: string | null): Promise<?FlowExecInfo> {
-    const flowPath = this._pathToFlow;
-    if (!await canFindFlow(flowPath)) {
+    const flowPath = await this._getPathToFlow(root);
+    if (flowPath == null) {
       return null;
     }
     return {
       pathToFlow: flowPath,
       execOptions: getFlowExecOptions(root),
     };
+  }
+
+  // Return the path we should use to execute Flow for the given root, or null if Flow cannot be
+  // found.
+  async _getPathToFlow(root: string | null): Promise<?string> {
+    const flowBinPath = await this._getFlowBinPath(root);
+    if (flowBinPath != null && await canFindFlow(flowBinPath)) {
+      return flowBinPath;
+    }
+
+    // Pull this into a local on the off chance that the setting changes while we are doing the
+    // check.
+    const systemFlowPath = this._pathToFlow;
+    if (await canFindFlow(systemFlowPath)) {
+      return systemFlowPath;
+    }
+
+    return null;
+  }
+
+  async _getFlowBinPath(root: string | null): Promise<?string> {
+    if (root == null) {
+      return null;
+    }
+    if (!this._canUseFlowBin) {
+      return null;
+    }
+    return nuclideUri.join(root, 'node_modules/.bin/flow');
   }
 
   async findFlowConfigDir(localFile: string): Promise<?string> {
@@ -93,15 +122,20 @@ export class FlowExecInfoContainer {
     return this._flowConfigDirCache.get(localFile);
   }
 
-  _observePathToFlow(): void {
+  _observeSettings(): void {
     if (global.atom == null) {
       this._pathToFlow = 'flow';
+      this._canUseFlowBin = false;
     } else {
       // $UPFixMe: This should use nuclide-features-config
       // Does not currently do so because this is an npm module that may run on the server.
       this._disposables.add(
         atom.config.observe('nuclide.nuclide-flow.pathToFlow', path => {
           this._pathToFlow = path;
+          this._flowExecInfoCache.reset();
+        }),
+        atom.config.observe('nuclide.nuclide-flow.canUseFlowBin', canUseFlowBin => {
+          this._canUseFlowBin = canUseFlowBin;
           this._flowExecInfoCache.reset();
         }),
       );
