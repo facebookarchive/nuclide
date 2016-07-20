@@ -46,22 +46,19 @@ export class ContextViewPanel extends React.Component {
   }
 }
 
-class Header extends React.Component {
+type HeaderProps = {
+  onHide: () => void,
+};
 
-  static propTypes = {
-    onHide: React.PropTypes.func,
-  };
-
-  render(): React.Element<any> {
-    return (
-      <div className="panel-heading" style={{'flex-shrink': 0}}>
-        <h4>
-          <span>Context View</span>
-          <Button icon="x" className="pull-right"
-            onClick={this.props.onHide} title="Hide context view"
-          />
-        </h4>
-      </div>
-    );
-  }
-}
+const Header = (props: HeaderProps) => {
+  return (
+    <div className="panel-heading" style={{'flex-shrink': 0}}>
+      <h4>
+        <span>Context View</span>
+        <Button icon="x" className="pull-right"
+          onClick={props.onHide} title="Hide context view"
+        />
+      </h4>
+    </div>
+  );
+};
