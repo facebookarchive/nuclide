@@ -14,6 +14,7 @@ import type {
   Callstack,
   EvaluationResult,
   ExpansionResult,
+  ObjectGroup,
 } from './types';
 
 type ExpressionResult = ChromeProtocolResponse & {
@@ -148,12 +149,12 @@ class Bridge {
   }
 
   evaluateWatchExpression(expression: string): Promise<?EvaluationResult> {
-    return this._evaluateOnSelectedCallFrame(expression);
+    return this._evaluateOnSelectedCallFrame(expression, 'watch-group');
   }
 
   evaluateConsoleExpression(expression: string): Promise<?EvaluationResult> {
     if (this._debuggerModel.getStore().getDebuggerMode() === 'paused') {
-      return this._evaluateOnSelectedCallFrame(expression);
+      return this._evaluateOnSelectedCallFrame(expression, 'console');
     } else {
       return this._runtimeEvaluate(expression);
     }
@@ -179,11 +180,15 @@ class Bridge {
     }
   }
 
-  _evaluateOnSelectedCallFrame(expression: string): Promise<?EvaluationResult> {
+  _evaluateOnSelectedCallFrame(
+    expression: string,
+    objectGroup: ObjectGroup,
+  ): Promise<?EvaluationResult> {
     return this._cachedSendCommand(
       this._expressionsInFlight,
       'evaluateOnSelectedCallFrame',
       expression,
+      objectGroup,
     );
   }
 
@@ -198,19 +203,21 @@ class Bridge {
   async _cachedSendCommand<T>(
     cache: Map<string, Deferred<?T>>,
     command: string,
-    value: string,
+    ...args: Array<mixed>
   ): Promise<?T> {
     const webview = this._webview;
     if (webview == null) {
       return null;
     }
+    const value = args[0];
+    invariant(typeof value === 'string');
     let deferred;
     if (cache.has(value)) {
       deferred = cache.get(value);
     } else {
       deferred = new Deferred();
       cache.set(value, deferred);
-      webview.send('command', command, value);
+      webview.send('command', command, ...args);
     }
     invariant(deferred != null);
     let result;

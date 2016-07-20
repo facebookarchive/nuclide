@@ -10,6 +10,8 @@
 
 /* eslint-disable no-unused-vars */
 
+import type {ObjectGroup} from '../nuclide-debugger-atom/lib/types';
+
 /**
  * Interfaces for Chrome Dev Tools internal APIs.
  *
@@ -68,7 +70,7 @@ declare class WebInspector$RuntimeModel {
 declare class WebInspector$ExecutionContext {
   evaluate(
     expression: string,
-    objectGroup: string,
+    objectGroup: ObjectGroup,
     includeCommandLineAPI: boolean,
     doNotPauseOnExceptionsAndMuteConsole: boolean,
     returnByValue: boolean,

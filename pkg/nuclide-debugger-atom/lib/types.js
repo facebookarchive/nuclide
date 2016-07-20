@@ -60,3 +60,5 @@ export type Callstack = Array<CallstackItem>;
 
 /* Debugger mode */
 export type DebuggerModeType = 'starting' | 'running' | 'paused' | 'stopping' | 'stopped';
+
+export type ObjectGroup = 'watch-group' | 'console';

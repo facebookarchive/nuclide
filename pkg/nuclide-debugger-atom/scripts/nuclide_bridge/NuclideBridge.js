@@ -17,9 +17,9 @@ import {
   endTimerTracking,
 } from '../../lib/AnalyticsHelper';
 
+import type {ObjectGroup} from '../../lib/types';
+
 const WebInspector: typeof WebInspector = window.WebInspector;
-// Re-use 'watch-group' since some backends throw when they encounted an unrecognized object group.
-const NUCLIDE_DEBUGGER_WATCH_OBJECT_GROUP = 'watch-group';
 const NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
 
 const DebuggerSettingsChangedEvent = 'debugger-settings-updated';
@@ -193,7 +193,7 @@ class NuclideBridge {
         this._stepOut();
         break;
       case 'evaluateOnSelectedCallFrame':
-        this._evaluateOnSelectedCallFrame(args[0]);
+        this._evaluateOnSelectedCallFrame(args[0], args[1]);
         break;
       case 'runtimeEvaluate':
         this._runtimeEvaluate(args[0]);
@@ -306,14 +306,14 @@ class NuclideBridge {
     );
   }
 
-  _evaluateOnSelectedCallFrame(expression: string): void {
+  _evaluateOnSelectedCallFrame(expression: string, objectGroup: ObjectGroup): void {
     const mainTarget = WebInspector.targetManager.mainTarget();
     if (mainTarget == null) {
       return;
     }
     mainTarget.debuggerModel.evaluateOnSelectedCallFrame(
       expression,
-      NUCLIDE_DEBUGGER_WATCH_OBJECT_GROUP,
+      objectGroup,
       false, /* includeCommandLineAPI */
       true, /* doNotPauseOnExceptionsAndMuteConsole */
       false,  /* returnByValue */
