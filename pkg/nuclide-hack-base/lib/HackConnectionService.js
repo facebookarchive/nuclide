@@ -90,3 +90,8 @@ export function getCompletions(
 ): Promise<Array<HackCompletion>> {
   throw new Error('RPC stub');
 }
+
+// Gracefully terminates the connection.
+export function disconnect(): void {
+  throw new Error('RPC stub');
+}

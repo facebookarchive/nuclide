@@ -54,8 +54,18 @@ class HackProcess extends RpcProcess {
   }
 
   dispose(): void {
-    super.dispose();
+    this._dispose();
+  }
+
+  async _dispose(): Promise<void> {
     processes.delete(this._hhconfigPath);
+    // Atempt to send disconnect message
+    try {
+      (await this.getConnectionService()).disconnect();
+    } catch (e) {
+      logger.logError('Error disconnecting from Hack connection.');
+    }
+    super.dispose();
   }
 }
 
