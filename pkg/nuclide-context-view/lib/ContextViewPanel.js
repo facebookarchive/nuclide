@@ -38,6 +38,10 @@ export class ContextViewPanel extends React.Component {
         <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
           <Header onHide={this.props.onHide} />
           <div className="nuclide-context-view-content">
+            <p>
+              Place your cursor over a function, class, variable, or method in
+              <code>www</code> to see more information about it.
+            </p>
             {this.props.children}
           </div>
         </div>
