@@ -10,11 +10,12 @@
  */
 
 import type {ContextProvider} from '../lib/ContextViewManager';
-import type {Definition} from '../../nuclide-definition-service';
+import type {Definition, DefinitionService} from '../../nuclide-definition-service';
 
 import {CompositeDisposable} from 'atom';
 import {ContextViewManager} from '../lib/ContextViewManager';
 import {React} from 'react-for-atom';
+import invariant from 'assert';
 
 const PROVIDER1_ID = 'context-provider-1';
 const PROVIDER1_TITLE = 'Provider One';
@@ -24,9 +25,11 @@ const PROVIDER2_TITLE = 'Provider Two';
 describe('ContextViewManager', () => {
 
   let managerShowing: ContextViewManager; // Initialized as showing
+  let managerHidden: ContextViewManager; // Initialized as hidden
   let disposables: CompositeDisposable;
   let provider1: ContextProvider;
   let provider2: ContextProvider;
+  let defService: DefinitionService;
 
   function elementFactory() {
     return (props: {definition: ?Definition}) => {
@@ -38,6 +41,7 @@ describe('ContextViewManager', () => {
     disposables = new CompositeDisposable();
 
     managerShowing = new ContextViewManager(300, true);
+    managerHidden = new ContextViewManager(300, false);
     provider1 = {
       getElementFactory: elementFactory,
       id: PROVIDER1_ID,
@@ -50,7 +54,13 @@ describe('ContextViewManager', () => {
       title: PROVIDER2_TITLE,
       isEditorBased: false,
     };
+    defService = {
+      getDefinition: (editor: TextEditor, position: atom$Point) => {
+        return Promise.resolve(null);
+      },
+    };
     disposables.add(managerShowing);
+    disposables.add(managerHidden);
   });
 
   afterEach(() => {
@@ -99,5 +109,66 @@ describe('ContextViewManager', () => {
     const deregistered2 = managerShowing.deregisterProvider(PROVIDER2_ID);
     expect(deregistered2).toBe(false);
     expect(managerShowing._contextProviders.length).toBe(1);
+  });
+
+  /** Actions affecting definition service subscription */
+  it('consumes the definition service when showing', () => {
+    spyOn(managerShowing, 'updateSubscription').andCallThrough();
+    spyOn(managerShowing, '_render').andCallThrough();
+    spyOn(managerShowing, '_renderProviders');
+    expect(managerShowing._defServiceSubscription).toBeNull();
+    managerShowing.consumeDefinitionService(defService);
+    expect(managerShowing._definitionService).toBe(defService);
+    expect(managerShowing.updateSubscription).toHaveBeenCalled();
+    expect(managerShowing._defServiceSubscription).toBeTruthy();
+    expect(managerShowing._render).toHaveBeenCalled();
+    expect(managerShowing._renderProviders).toHaveBeenCalled();
+    // Deregister def service
+    invariant(managerShowing._defServiceSubscription != null,
+      'Subscription must be non-null if in visible state and consuming def. service');
+    const subscription = managerShowing._defServiceSubscription;
+    spyOn(subscription, 'unsubscribe').andCallThrough();
+    managerShowing.consumeDefinitionService(null);
+    expect(managerShowing._definitionService).toBeNull();
+    expect(managerShowing._defServiceSubscription).toBeNull();
+    expect(subscription.unsubscribe).toHaveBeenCalled();
+  });
+  it('consumes the definition service when hidden', () => {
+    spyOn(managerHidden, 'updateSubscription').andCallThrough();
+    spyOn(managerHidden, '_render').andCallThrough();
+    spyOn(managerHidden, '_renderProviders');
+    spyOn(managerHidden, '_disposeView');
+    expect(managerHidden._defServiceSubscription).toBeNull();
+    managerHidden.consumeDefinitionService(defService);
+    expect(managerHidden._definitionService).toBe(defService);
+    expect(managerHidden.updateSubscription).toHaveBeenCalled();
+    expect(managerHidden._defServiceSubscription).toBeNull();
+    expect(managerHidden._render).toHaveBeenCalled();
+    expect(managerHidden._disposeView).toHaveBeenCalled();
+    expect(managerHidden._renderProviders).not.toHaveBeenCalled();
+    // Deregister def service
+    managerHidden.consumeDefinitionService(null);
+    expect(managerHidden._definitionService).toBeNull();
+    expect(managerHidden._defServiceSubscription).toBeNull();
+  });
+  it('shows and hides correctly', () => {
+    managerShowing.consumeDefinitionService(defService);
+    managerHidden.consumeDefinitionService(defService);
+    spyOn(managerShowing, '_render').andCallThrough();
+    spyOn(managerShowing, '_disposeView');
+    spyOn(managerShowing, 'updateSubscription').andCallThrough();
+    spyOn(managerHidden, '_render').andCallThrough();
+    spyOn(managerHidden, '_disposeView');
+    spyOn(managerHidden, 'updateSubscription').andCallThrough();
+    managerShowing.hide();
+    expect(managerShowing._isVisible).toBe(false);
+    expect(managerShowing._render).toHaveBeenCalled();
+    expect(managerShowing._disposeView).toHaveBeenCalled();
+    expect(managerShowing.updateSubscription).toHaveBeenCalled();
+    expect(managerShowing._defServiceSubscription).toBeNull();
+    managerHidden.show();
+    expect(managerHidden._isVisible).toBe(true);
+    expect(managerHidden._render).toHaveBeenCalled();
+    expect(managerHidden.updateSubscription).toHaveBeenCalled();
   });
 });
