@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,66 +10,72 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileMessageUpdate,
-  ObservableDiagnosticUpdater,
-} from '../../nuclide-diagnostics-base';
-import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+exports.activate = activate;
+exports.consumeDiagnosticUpdates = consumeDiagnosticUpdates;
+exports.consumeStatusBar = consumeStatusBar;
+exports.consumeToolBar = consumeToolBar;
+exports.deactivate = deactivate;
+exports.serialize = serialize;
+exports.getHomeFragments = getHomeFragments;
+exports.getDistractionFreeModeProvider = getDistractionFreeModeProvider;
 
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {track} from '../../nuclide-analytics';
+var _assert2;
 
-import type DiagnosticsPanel from './DiagnosticsPanel';
-import type StatusBarTile from './StatusBarTile';
-import type {HomeFragments} from '../../nuclide-home/lib/types';
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-import {DisposableSubscription} from '../../commons-node/stream';
+var _atom2;
 
-const DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
-const DEFAULT_TABLE_HEIGHT = 200;
-const DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
-const LINTER_PACKAGE = 'linter';
+function _atom() {
+  return _atom2 = require('atom');
+}
 
-let subscriptions: ?CompositeDisposable = null;
-let bottomPanel: ?atom$Panel = null;
-let getDiagnosticsPanel: ?(() => ?DiagnosticsPanel);
-let statusBarTile: ?StatusBarTile;
+var _nuclideAnalytics2;
 
-type ActivationState = {
-  hideDiagnosticsPanel: boolean,
-  diagnosticsPanelHeight: number,
-  filterByActiveTextEditor: boolean,
-};
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
 
-let activationState: ?ActivationState = null;
+var _commonsNodeStream2;
 
-let consumeUpdatesCalled = false;
+function _commonsNodeStream() {
+  return _commonsNodeStream2 = require('../../commons-node/stream');
+}
 
-function createPanel(
-  diagnosticUpdater: ObservableDiagnosticUpdater,
-  disposables: CompositeDisposable,
-) {
-  invariant(activationState);
-  const {
-    atomPanel: panel,
-    getDiagnosticsPanel: getDiagnosticsPanelFn,
-    setWarnAboutLinter,
-  } = require('./createPanel').createDiagnosticsPanel(
-    diagnosticUpdater,
-    activationState.diagnosticsPanelHeight,
-    activationState.filterByActiveTextEditor,
-    disableLinter);
+var DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
+var DEFAULT_TABLE_HEIGHT = 200;
+var DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
+var LINTER_PACKAGE = 'linter';
+
+var subscriptions = null;
+var bottomPanel = null;
+var getDiagnosticsPanel = undefined;
+var statusBarTile = undefined;
+
+var activationState = null;
+
+var consumeUpdatesCalled = false;
+
+function createPanel(diagnosticUpdater, disposables) {
+  (0, (_assert2 || _assert()).default)(activationState);
+
+  var _require$createDiagnosticsPanel = require('./createPanel').createDiagnosticsPanel(diagnosticUpdater, activationState.diagnosticsPanelHeight, activationState.filterByActiveTextEditor, disableLinter);
+
+  var panel = _require$createDiagnosticsPanel.atomPanel;
+  var getDiagnosticsPanelFn = _require$createDiagnosticsPanel.getDiagnosticsPanel;
+  var setWarnAboutLinter = _require$createDiagnosticsPanel.setWarnAboutLinter;
+
   logPanelIsDisplayed();
   bottomPanel = panel;
   getDiagnosticsPanel = getDiagnosticsPanelFn;
 
   activationState.hideDiagnosticsPanel = false;
 
-  const onDidChangeVisibleSubscription = panel.onDidChangeVisible((visible: boolean) => {
-    invariant(activationState);
+  var onDidChangeVisibleSubscription = panel.onDidChangeVisible(function (visible) {
+    (0, (_assert2 || _assert()).default)(activationState);
     activationState.hideDiagnosticsPanel = !visible;
   });
   disposables.add(onDidChangeVisibleSubscription);
@@ -80,49 +87,47 @@ function disableLinter() {
   atom.packages.disablePackage(LINTER_PACKAGE);
 }
 
-function watchForLinter(
-    setWarnAboutLinter: (warn: boolean) => void,
-    disposables: CompositeDisposable): void {
+function watchForLinter(setWarnAboutLinter, disposables) {
   if (atom.packages.isPackageActive(LINTER_PACKAGE)) {
     setWarnAboutLinter(true);
   }
-  disposables.add(atom.packages.onDidActivatePackage(pkg => {
+  disposables.add(atom.packages.onDidActivatePackage(function (pkg) {
     if (pkg.name === LINTER_PACKAGE) {
       setWarnAboutLinter(true);
     }
   }));
-  disposables.add(atom.packages.onDidDeactivatePackage(pkg => {
+  disposables.add(atom.packages.onDidDeactivatePackage(function (pkg) {
     if (pkg.name === LINTER_PACKAGE) {
       setWarnAboutLinter(false);
     }
   }));
 }
 
-function getStatusBarTile(): StatusBarTile {
+function getStatusBarTile() {
   if (!statusBarTile) {
     statusBarTile = new (require('./StatusBarTile'))();
   }
   return statusBarTile;
 }
 
-function tryRecordActivationState(): void {
-  invariant(activationState);
+function tryRecordActivationState() {
+  (0, (_assert2 || _assert()).default)(activationState);
   if (bottomPanel && bottomPanel.isVisible()) {
     activationState.diagnosticsPanelHeight = bottomPanel.getItem().clientHeight;
 
-    invariant(getDiagnosticsPanel);
-    const diagnosticsPanel = getDiagnosticsPanel();
+    (0, (_assert2 || _assert()).default)(getDiagnosticsPanel);
+    var diagnosticsPanel = getDiagnosticsPanel();
     if (diagnosticsPanel) {
       activationState.filterByActiveTextEditor = diagnosticsPanel.props.filterByActiveTextEditor;
     }
   }
 }
 
-export function activate(state: ?Object): void {
+function activate(state) {
   if (subscriptions) {
     return;
   }
-  subscriptions = new CompositeDisposable();
+  subscriptions = new (_atom2 || _atom()).CompositeDisposable();
 
   // Ensure the integrity of the ActivationState created from state.
   if (!state) {
@@ -140,9 +145,7 @@ export function activate(state: ?Object): void {
   activationState = state;
 }
 
-export function consumeDiagnosticUpdates(
-  diagnosticUpdater: ObservableDiagnosticUpdater,
-): void {
+function consumeDiagnosticUpdates(diagnosticUpdater) {
   getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
   gutterConsumeDiagnosticUpdates(diagnosticUpdater);
 
@@ -156,36 +159,38 @@ export function consumeDiagnosticUpdates(
   addAtomCommands(diagnosticUpdater);
 }
 
-function gutterConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
-  const {applyUpdateToEditor} = require('./gutter');
+function gutterConsumeDiagnosticUpdates(diagnosticUpdater) {
+  var _require = require('./gutter');
 
-  const fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
+  var applyUpdateToEditor = _require.applyUpdateToEditor;
 
-  invariant(subscriptions != null);
-  subscriptions.add(atom.workspace.observeTextEditors((editor: TextEditor) => {
-    const filePath = editor.getPath();
+  var fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
+
+  (0, (_assert2 || _assert()).default)(subscriptions != null);
+  subscriptions.add(atom.workspace.observeTextEditors(function (editor) {
+    var filePath = editor.getPath();
     if (!filePath) {
       return; // The file is likely untitled.
     }
 
-    const callback = (update: FileMessageUpdate) => {
+    var callback = function callback(update) {
       applyUpdateToEditor(editor, update, fixer);
     };
-    const disposable = new DisposableSubscription(
-      diagnosticUpdater.getFileMessageUpdates(filePath).subscribe(callback),
-    );
+    var disposable = new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription(diagnosticUpdater.getFileMessageUpdates(filePath).subscribe(callback));
 
     // Be sure to remove the subscription on the DiagnosticStore once the editor is closed.
-    editor.onDidDestroy(() => disposable.dispose());
+    editor.onDidDestroy(function () {
+      return disposable.dispose();
+    });
   }));
 }
 
-function tableConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
-  invariant(subscriptions != null);
-  const lazilyCreateTable = createPanel.bind(null, diagnosticUpdater, subscriptions);
+function tableConsumeDiagnosticUpdates(diagnosticUpdater) {
+  (0, (_assert2 || _assert()).default)(subscriptions != null);
+  var lazilyCreateTable = createPanel.bind(null, diagnosticUpdater, subscriptions);
 
-  const toggleTable = () => {
-    const bottomPanelRef = bottomPanel;
+  var toggleTable = function toggleTable() {
+    var bottomPanelRef = bottomPanel;
     if (bottomPanelRef == null) {
       lazilyCreateTable();
     } else if (bottomPanelRef.isVisible()) {
@@ -197,73 +202,62 @@ function tableConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUp
     }
   };
 
-  const showTable = () => {
+  var showTable = function showTable() {
     if (bottomPanel == null || !bottomPanel.isVisible()) {
       toggleTable();
     }
   };
 
-  subscriptions.add(atom.commands.add(
-    atom.views.getView(atom.workspace),
-    'nuclide-diagnostics-ui:toggle-table',
-    toggleTable,
-  ));
+  subscriptions.add(atom.commands.add(atom.views.getView(atom.workspace), 'nuclide-diagnostics-ui:toggle-table', toggleTable));
 
-  subscriptions.add(atom.commands.add(
-    atom.views.getView(atom.workspace),
-    'nuclide-diagnostics-ui:show-table',
-    showTable,
-  ));
+  subscriptions.add(atom.commands.add(atom.views.getView(atom.workspace), 'nuclide-diagnostics-ui:show-table', showTable));
 
-  invariant(activationState);
+  (0, (_assert2 || _assert()).default)(activationState);
   if (!activationState.hideDiagnosticsPanel) {
     lazilyCreateTable();
   }
 }
 
-function addAtomCommands(diagnosticUpdater: ObservableDiagnosticUpdater): void {
-  const fixAllInCurrentFile = () => {
-    const editor = atom.workspace.getActiveTextEditor();
+function addAtomCommands(diagnosticUpdater) {
+  var fixAllInCurrentFile = function fixAllInCurrentFile() {
+    var editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       return;
     }
-    const path = editor.getPath();
+    var path = editor.getPath();
     if (path == null) {
       return;
     }
-    track('diagnostics-autofix-all-in-file');
+    (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('diagnostics-autofix-all-in-file');
     diagnosticUpdater.applyFixesForFile(path);
   };
 
-  invariant(subscriptions != null);
+  (0, (_assert2 || _assert()).default)(subscriptions != null);
 
-  subscriptions.add(atom.commands.add(
-    atom.views.getView(atom.workspace),
-    'nuclide-diagnostics-ui:fix-all-in-current-file',
-    fixAllInCurrentFile,
-  ));
-
+  subscriptions.add(atom.commands.add(atom.views.getView(atom.workspace), 'nuclide-diagnostics-ui:fix-all-in-current-file', fixAllInCurrentFile));
 }
 
-export function consumeStatusBar(statusBar: atom$StatusBar): void {
+function consumeStatusBar(statusBar) {
   getStatusBarTile().consumeStatusBar(statusBar);
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
-  const toolBar = getToolBar('nuclide-diagnostics-ui');
+function consumeToolBar(getToolBar) {
+  var toolBar = getToolBar('nuclide-diagnostics-ui');
   toolBar.addButton({
     icon: 'law',
     callback: 'nuclide-diagnostics-ui:toggle-table',
     tooltip: 'Toggle Diagnostics Table',
-    priority: 200,
+    priority: 200
   });
-  const disposable = new Disposable(() => { toolBar.removeItems(); });
-  invariant(subscriptions != null);
+  var disposable = new (_atom2 || _atom()).Disposable(function () {
+    toolBar.removeItems();
+  });
+  (0, (_assert2 || _assert()).default)(subscriptions != null);
   subscriptions.add(disposable);
   return disposable;
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (subscriptions) {
     subscriptions.dispose();
     subscriptions = null;
@@ -282,39 +276,36 @@ export function deactivate(): void {
   consumeUpdatesCalled = false;
 }
 
-export function serialize(): ActivationState {
+function serialize() {
   tryRecordActivationState();
-  invariant(activationState);
+  (0, (_assert2 || _assert()).default)(activationState);
   return activationState;
 }
 
-export function getHomeFragments(): HomeFragments {
+function getHomeFragments() {
   return {
     feature: {
       title: 'Diagnostics',
       icon: 'law',
       description: 'Displays diagnostics, errors, and lint warnings for your files and projects.',
-      command: 'nuclide-diagnostics-ui:show-table',
+      command: 'nuclide-diagnostics-ui:show-table'
     },
-    priority: 4,
+    priority: 4
   };
 }
 
-export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+function getDistractionFreeModeProvider() {
   return {
     name: 'nuclide-diagnostics-ui',
-    isVisible(): boolean {
+    isVisible: function isVisible() {
       return bottomPanel != null && bottomPanel.isVisible();
     },
-    toggle(): void {
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-diagnostics-ui:toggle-table',
-      );
-    },
+    toggle: function toggle() {
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-diagnostics-ui:toggle-table');
+    }
   };
 }
 
 function logPanelIsDisplayed() {
-  track('diagnostics-show-table');
+  (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('diagnostics-show-table');
 }

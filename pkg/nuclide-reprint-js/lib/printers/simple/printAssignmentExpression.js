@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +8,25 @@
  * the root directory of this source tree.
  */
 
-import type {AssignmentExpression} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import markers from '../../constants/markers';
-import wrapExpression from '../../wrappers/simple/wrapExpression';
+var _constantsMarkers2;
 
-function printAssignmentExpression(
-  print: Print,
-  node: AssignmentExpression,
-): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    print(node.left),
-    markers.noBreak,
-    markers.space,
-    node.operator,
-    markers.noBreak,
-    markers.space,
-    print(node.right),
-  ]);
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+var _wrappersSimpleWrapExpression2;
+
+function _wrappersSimpleWrapExpression() {
+  return _wrappersSimpleWrapExpression2 = _interopRequireDefault(require('../../wrappers/simple/wrapExpression'));
+}
+
+function printAssignmentExpression(print, node) {
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapExpression2 || _wrappersSimpleWrapExpression()).default)(print, node, x);
+  };
+  return wrap([print(node.left), (_constantsMarkers2 || _constantsMarkers()).default.noBreak, (_constantsMarkers2 || _constantsMarkers()).default.space, node.operator, (_constantsMarkers2 || _constantsMarkers()).default.noBreak, (_constantsMarkers2 || _constantsMarkers()).default.space, print(node.right)]);
 }
 
 module.exports = printAssignmentExpression;

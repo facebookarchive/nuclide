@@ -1,5 +1,26 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+exports.observeStream = observeStream;
+exports.observeRawStream = observeRawStream;
+exports.splitStream = splitStream;
+exports.bufferUntil = bufferUntil;
+exports.cacheWhileSubscribed = cacheWhileSubscribed;
+exports.diffSets = diffSets;
+exports.reconcileSetDiffs = reconcileSetDiffs;
+exports.reconcileSets = reconcileSets;
+exports.toggle = toggle;
+exports.compact = compact;
+exports.takeWhileInclusive = takeWhileInclusive;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +30,37 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'event-kit';
-import {Observable, ReplaySubject, Subscription} from 'rxjs';
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _eventKit2;
+
+function _eventKit() {
+  return _eventKit2 = require('event-kit');
+}
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
 
 /**
  * Observe a stream like stdout or stderr.
  */
-export function observeStream(stream: stream$Readable): Observable<string> {
-  return observeRawStream(stream).map(data => data.toString());
+
+function observeStream(stream) {
+  return observeRawStream(stream).map(function (data) {
+    return data.toString();
+  });
 }
 
-export function observeRawStream(stream: stream$Readable): Observable<Buffer> {
-  const error = Observable.fromEvent(stream, 'error').flatMap(Observable.throw);
-  return Observable
-    .fromEvent(stream, 'data')
-    .merge(error)
-    .takeUntil(Observable.fromEvent(stream, 'end'));
+function observeRawStream(stream) {
+  var error = (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromEvent(stream, 'error').flatMap((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.throw);
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromEvent(stream, 'data').merge(error).takeUntil((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromEvent(stream, 'end'));
 }
 
 /**
@@ -34,9 +69,10 @@ export function observeRawStream(stream: stream$Readable): Observable<Buffer> {
  * Sends any non-newline terminated data before closing.
  * Never sends an empty string.
  */
-export function splitStream(input: Observable<string>): Observable<string> {
-  return Observable.create(observer => {
-    let current: string = '';
+
+function splitStream(input) {
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.create(function (observer) {
+    var current = '';
 
     function onEnd() {
       if (current !== '') {
@@ -45,81 +81,95 @@ export function splitStream(input: Observable<string>): Observable<string> {
       }
     }
 
-    return input.subscribe(
-      value => {
-        const lines = (current + value).split('\n');
-        current = lines.pop();
-        lines.forEach(line => observer.next(line + '\n'));
-      },
-      error => { onEnd(); observer.error(error); },
-      () => { onEnd(); observer.complete(); },
-    );
+    return input.subscribe(function (value) {
+      var lines = (current + value).split('\n');
+      current = lines.pop();
+      lines.forEach(function (line) {
+        return observer.next(line + '\n');
+      });
+    }, function (error) {
+      onEnd();observer.error(error);
+    }, function () {
+      onEnd();observer.complete();
+    });
   });
 }
 
-export class DisposableSubscription {
-  _subscription: rx$ISubscription;
+var DisposableSubscription = (function () {
+  function DisposableSubscription(subscription) {
+    _classCallCheck(this, DisposableSubscription);
 
-  constructor(subscription: rx$ISubscription) {
     this._subscription = subscription;
   }
 
-  dispose(): void {
-    this._subscription.unsubscribe();
-  }
-}
+  _createClass(DisposableSubscription, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._subscription.unsubscribe();
+    }
+  }]);
 
-type TeardownLogic = (() => void) | rx$ISubscription;
+  return DisposableSubscription;
+})();
 
-export class CompositeSubscription {
-  _subscription: Subscription;
+exports.DisposableSubscription = DisposableSubscription;
 
-  constructor(...subscriptions: Array<TeardownLogic>) {
-    this._subscription = new Subscription();
-    subscriptions.forEach(sub => {
-      this._subscription.add(sub);
+var CompositeSubscription = (function () {
+  function CompositeSubscription() {
+    var _this = this;
+
+    _classCallCheck(this, CompositeSubscription);
+
+    this._subscription = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Subscription();
+
+    for (var _len = arguments.length, subscriptions = Array(_len), _key = 0; _key < _len; _key++) {
+      subscriptions[_key] = arguments[_key];
+    }
+
+    subscriptions.forEach(function (sub) {
+      _this._subscription.add(sub);
     });
   }
 
-  unsubscribe(): void {
-    this._subscription.unsubscribe();
-  }
-}
+  // TODO: We used to use `stream.buffer(stream.filter(...))` for this but it doesn't work in RxJS 5.
+  //  See https://github.com/ReactiveX/rxjs/issues/1610
 
-// TODO: We used to use `stream.buffer(stream.filter(...))` for this but it doesn't work in RxJS 5.
-//  See https://github.com/ReactiveX/rxjs/issues/1610
-export function bufferUntil<T>(
-  stream: Observable<T>,
-  condition: (item: T) => boolean,
-): Observable<Array<T>> {
-  return Observable.create(observer => {
-    let buffer = null;
-    const flush = () => {
+  _createClass(CompositeSubscription, [{
+    key: 'unsubscribe',
+    value: function unsubscribe() {
+      this._subscription.unsubscribe();
+    }
+  }]);
+
+  return CompositeSubscription;
+})();
+
+exports.CompositeSubscription = CompositeSubscription;
+
+function bufferUntil(stream, condition) {
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.create(function (observer) {
+    var buffer = null;
+    var flush = function flush() {
       if (buffer != null) {
         observer.next(buffer);
         buffer = null;
       }
     };
-    return stream
-      .subscribe(
-        x => {
-          if (buffer == null) {
-            buffer = [];
-          }
-          buffer.push(x);
-          if (condition(x)) {
-            flush();
-          }
-        },
-        err => {
-          flush();
-          observer.error(err);
-        },
-        () => {
-          flush();
-          observer.complete();
-        },
-      );
+    return stream.subscribe(function (x) {
+      if (buffer == null) {
+        buffer = [];
+      }
+      buffer.push(x);
+      if (condition(x)) {
+        flush();
+      }
+    }, function (err) {
+      flush();
+      observer.error(err);
+    }, function () {
+      flush();
+      observer.complete();
+    });
   });
 }
 
@@ -132,25 +182,25 @@ export function bufferUntil<T>(
  * be just fine because the hot Observable will continue producing values even when there are no
  * subscribers, so you can be assured that the cached values are up-to-date.
  */
-export function cacheWhileSubscribed<T>(input: Observable<T>): Observable<T> {
-  return input.multicast(() => new ReplaySubject(1)).refCount();
+
+function cacheWhileSubscribed(input) {
+  return input.multicast(function () {
+    return new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).ReplaySubject(1);
+  }).refCount();
 }
 
-type Diff<T> = {
-  added: Set<T>,
-  removed: Set<T>,
-};
-
-function subtractSet<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): Set<T> {
+function subtractSet(a, b, hash_) {
   if (a.size === 0) {
     return new Set();
   } else if (b.size === 0) {
     return new Set(a);
   }
-  const result = new Set();
-  const hash = hash_ || (x => x);
-  const bHashes = hash_ == null ? b : new Set(Array.from(b.values()).map(hash));
-  a.forEach(value => {
+  var result = new Set();
+  var hash = hash_ || function (x) {
+    return x;
+  };
+  var bHashes = hash_ == null ? b : new Set(Array.from(b.values()).map(hash));
+  a.forEach(function (value) {
     if (!bHashes.has(hash(value))) {
       result.add(value);
     }
@@ -162,54 +212,57 @@ function subtractSet<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): Set<T> {
  * Given a stream of sets, return a stream of diffs.
  * **IMPORTANT:** These sets are assumed to be immutable by convention. Don't mutate them!
  */
-export function diffSets<T>(sets: Observable<Set<T>>, hash?: (v: T) => any): Observable<Diff<T>> {
-  return Observable.concat(
-      Observable.of(new Set()), // Always start with no items with an empty set
-      sets,
-    )
-    // $FlowFixMe(matthewwithanm): Type this.
-    .pairwise()
-    .map(([previous, next]) => ({
+
+function diffSets(sets, hash) {
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.concat((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of(new Set()), // Always start with no items with an empty set
+  sets)
+  // $FlowFixMe(matthewwithanm): Type this.
+  .pairwise().map(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2);
+
+    var previous = _ref2[0];
+    var next = _ref2[1];
+    return {
       added: subtractSet(next, previous, hash),
-      removed: subtractSet(previous, next, hash),
-    }))
-    .filter(diff => diff.added.size > 0 || diff.removed.size > 0);
+      removed: subtractSet(previous, next, hash)
+    };
+  }).filter(function (diff) {
+    return diff.added.size > 0 || diff.removed.size > 0;
+  });
 }
 
 /**
  * Give a stream of diffs, perform an action for each added item and dispose of the returned
  * disposable when the item is removed.
  */
-export function reconcileSetDiffs<T>(
-  diffs: Observable<Diff<T>>,
-  addAction: (addedItem: T) => IDisposable,
-  hash_?: (v: T) => any,
-): IDisposable {
-  const hash = hash_ || (x => x);
-  const itemsToDisposables = new Map();
-  const disposeItem = item => {
-    const disposable = itemsToDisposables.get(hash(item));
-    invariant(disposable != null);
+
+function reconcileSetDiffs(diffs, addAction, hash_) {
+  var hash = hash_ || function (x) {
+    return x;
+  };
+  var itemsToDisposables = new Map();
+  var disposeItem = function disposeItem(item) {
+    var disposable = itemsToDisposables.get(hash(item));
+    (0, (_assert2 || _assert()).default)(disposable != null);
     disposable.dispose();
     itemsToDisposables.delete(item);
   };
-  const disposeAll = () => {
-    itemsToDisposables.forEach(disposable => { disposable.dispose(); });
+  var disposeAll = function disposeAll() {
+    itemsToDisposables.forEach(function (disposable) {
+      disposable.dispose();
+    });
     itemsToDisposables.clear();
   };
 
-  return new CompositeDisposable(
-    new DisposableSubscription(
-      diffs.subscribe(diff => {
-        // For every item that got added, perform the add action.
-        diff.added.forEach(item => { itemsToDisposables.set(hash(item), addAction(item)); });
+  return new (_eventKit2 || _eventKit()).CompositeDisposable(new DisposableSubscription(diffs.subscribe(function (diff) {
+    // For every item that got added, perform the add action.
+    diff.added.forEach(function (item) {
+      itemsToDisposables.set(hash(item), addAction(item));
+    });
 
-        // "Undo" the add action for each item that got removed.
-        diff.removed.forEach(disposeItem);
-      }),
-    ),
-    new Disposable(disposeAll),
-  );
+    // "Undo" the add action for each item that got removed.
+    diff.removed.forEach(disposeItem);
+  })), new (_eventKit2 || _eventKit()).Disposable(disposeAll));
 }
 
 /**
@@ -240,46 +293,40 @@ export function reconcileSetDiffs<T>(
  * of the dogs observable, his notification will remain until `disposable.dispose()` is called, at
  * which point the cleanup for all remaining items will be performed.
  */
-export function reconcileSets<T>(
-  sets: Observable<Set<T>>,
-  addAction: (addedItem: T) => IDisposable,
-  hash?: (v: T) => any,
-): IDisposable {
-  const diffs = diffSets(sets, hash);
+
+function reconcileSets(sets, addAction, hash) {
+  var diffs = diffSets(sets, hash);
   return reconcileSetDiffs(diffs, addAction, hash);
 }
 
-export function toggle<T>(
-  source: Observable<T>,
-  toggler: Observable<boolean>,
-): Observable<T> {
-  return toggler
-    .distinctUntilChanged()
-    .switchMap(enabled => (enabled ? source : Observable.empty()));
+function toggle(source, toggler) {
+  return toggler.distinctUntilChanged().switchMap(function (enabled) {
+    return enabled ? source : (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.empty();
+  });
 }
 
-export function compact<T>(source: Observable<?T>): Observable<T> {
+function compact(source) {
   // Flow does not understand the semantics of `filter`
-  return (source.filter(x => x != null): any);
+  return source.filter(function (x) {
+    return x != null;
+  });
 }
 
 /**
  * Like `takeWhile`, but includes the first item that doesn't match the predicate.
  */
-export function takeWhileInclusive<T>(
-  source: Observable<T>,
-  predicate: (value: T) => boolean,
-): Observable<T> {
-  return Observable.create(observer => (
-    source.subscribe(
-      x => {
-        observer.next(x);
-        if (!predicate(x)) {
-          observer.complete();
-        }
-      },
-      err => { observer.error(err); },
-      () => { observer.complete(); },
-    )
-  ));
+
+function takeWhileInclusive(source, predicate) {
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.create(function (observer) {
+    return source.subscribe(function (x) {
+      observer.next(x);
+      if (!predicate(x)) {
+        observer.complete();
+      }
+    }, function (err) {
+      observer.error(err);
+    }, function () {
+      observer.complete();
+    });
+  });
 }

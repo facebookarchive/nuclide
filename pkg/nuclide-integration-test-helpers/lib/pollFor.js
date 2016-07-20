@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = pollFor;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,7 +10,6 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
 
 /**
  * Helps to easily poll in integration tests for a DOM (or any other) change.
@@ -30,17 +31,17 @@
  *   );
  * }
  */
-export default function pollFor(
-  predicate: () => boolean,
-  errorMessage: ?string = null,
-  maxWaitTime: number = 1000,
-  periodicity: number = 100,
-): Promise<void> {
-  const startTime = Date.now();
 
-  return new Promise((resolve, reject) => {
-    const periodicCheck = () => {
-      const res = predicate();
+function pollFor(predicate) {
+  var errorMessage = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+  var maxWaitTime = arguments.length <= 2 || arguments[2] === undefined ? 1000 : arguments[2];
+  var periodicity = arguments.length <= 3 || arguments[3] === undefined ? 100 : arguments[3];
+
+  var startTime = Date.now();
+
+  return new Promise(function (resolve, reject) {
+    var periodicCheck = function periodicCheck() {
+      var res = predicate();
       if (res) {
         expect(res).toBe(true); // For the assertion count
         resolve();
@@ -50,7 +51,7 @@ export default function pollFor(
           setTimeout(periodicCheck, periodicity);
         } else {
           if (errorMessage != null) {
-            expect('polling').toBe(`finished by now. ${errorMessage}`);
+            expect('polling').toBe('finished by now. ' + errorMessage);
             reject(new Error(errorMessage));
           } else {
             expect('polling').toBe('finished by now');
@@ -63,3 +64,5 @@ export default function pollFor(
     periodicCheck();
   });
 }
+
+module.exports = exports.default;

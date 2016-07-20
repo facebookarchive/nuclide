@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.default = createPackage;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +16,11 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
 /**
  * Create an Atom package from an Activation constructor.
@@ -20,62 +31,66 @@ import invariant from 'assert';
  * sense to build packages as instances, constructed when a package is activated and destroyed when
  * the package is deactivated.
  */
-export default function createPackage(Activation: Class<any>): Object {
-  let activation = null;
-  const pkg = {};
+
+function createPackage(Activation) {
+  var activation = null;
+  var pkg = {};
 
   // Proxy method calls on the package to the activation object.
-  for (const property of getPropertyList(Activation.prototype)) {
+
+  var _loop = function (property) {
     if (typeof Activation.prototype[property] !== 'function') {
-      continue;
+      return 'continue';
     }
     if (property === 'constructor') {
-      continue;
+      return 'continue';
     }
     if (property === 'activate') {
-      throw new Error(
-        'Your activation class contains an "activate" method, but that work should be done in the'
-        + ' constructor.',
-      );
+      throw new Error('Your activation class contains an "activate" method, but that work should be done in the' + ' constructor.');
     }
     if (property === 'deactivate') {
-      throw new Error(
-        'Your activation class contains an "deactivate" method. Please use "dispose" instead.',
-      );
+      throw new Error('Your activation class contains an "deactivate" method. Please use "dispose" instead.');
     }
 
-    pkg[property] = function(...args) {
-      invariant(activation != null, 'Package not activated');
-      return activation[property](...args);
+    pkg[property] = function () {
+      var _activation;
+
+      (0, (_assert2 || _assert()).default)(activation != null, 'Package not activated');
+      return (_activation = activation)[property].apply(_activation, arguments);
     };
+  };
+
+  for (var property of getPropertyList(Activation.prototype)) {
+    var _ret = _loop(property);
+
+    if (_ret === 'continue') continue;
   }
 
-  return {
-    ...pkg,
+  return _extends({}, pkg, {
 
     /**
      * Calling `activate()` creates a new instance.
      */
-    activate(initialState: ?Object): void {
-      invariant(activation == null, 'Package already activated');
+    activate: function activate(initialState) {
+      (0, (_assert2 || _assert()).default)(activation == null, 'Package already activated');
       activation = new Activation(initialState);
     },
 
     /**
      * The `deactivate()` method is special-cased to null our activation instance reference.
      */
-    deactivate(): void {
-      invariant(activation != null, 'Package not activated');
+    deactivate: function deactivate() {
+      (0, (_assert2 || _assert()).default)(activation != null, 'Package not activated');
       if (typeof activation.dispose === 'function') {
         activation.dispose();
       }
       activation = null;
-    },
-  };
+    }
+  });
 }
 
-function getPrototypeChain(prototype: Class<any>): Array<Class<any>> {
-  const prototypes = [];
+function getPrototypeChain(prototype) {
+  var prototypes = [];
   while (prototype != null) {
     prototypes.push(prototype);
     prototype = Object.getPrototypeOf(prototype);
@@ -87,15 +102,16 @@ function getPrototypeChain(prototype: Class<any>): Array<Class<any>> {
  * List the properties (including inherited ones) of the provided prototype, excluding the ones
  * inherited from `Object`.
  */
-function getPropertyList(prototype: Class<any>): Array<string> {
-  const properties = [];
-  for (const proto of getPrototypeChain(prototype)) {
-    if (proto === (Object: any).prototype) {
+function getPropertyList(prototype) {
+  var properties = [];
+  for (var proto of getPrototypeChain(prototype)) {
+    if (proto === Object.prototype) {
       break;
     }
-    for (const property of Object.getOwnPropertyNames(proto)) {
+    for (var property of Object.getOwnPropertyNames(proto)) {
       properties.push(property);
     }
   }
   return properties;
 }
+module.exports = exports.default;

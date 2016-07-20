@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,129 +10,170 @@
  * the root directory of this source tree.
  */
 
-import typeof * as JediService from './JediService';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import LRUCache from 'lru-cache';
-import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../nuclide-remote-uri';
-import JediServer from './JediServer';
-import LinkTreeManager from './LinkTreeManager';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-async function getServerArgs(src: string) {
-  let overrides = {};
+var getServerArgs = _asyncToGenerator(function* (src) {
+  var overrides = {};
   try {
     // Override the python path and additional sys paths
     // if override script is present.
-    overrides = await require('./fb/find-jedi-server-args')(src);
+    overrides = yield require('./fb/find-jedi-server-args')(src);
   } catch (e) {
     // Ignore.
   }
 
-  return {
+  return _extends({
     // Default to assuming that python is in system PATH.
     pythonPath: 'python',
-    paths: [],
-    ...overrides,
-  };
+    paths: []
+  }, overrides);
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _lruCache2;
+
+function _lruCache() {
+  return _lruCache2 = _interopRequireDefault(require('lru-cache'));
 }
 
-export default class JediServerManager {
+var _commonsNodeFsPromise2;
 
-  // Cache the promises of additional paths to ensure that we never trigger two
-  // calls for the same file name from external calls to getLinkTreePaths and
-  // getTopLevelModulePath.
-  _cachedTopLevelModulePaths: Map<string, Promise<?string>>;
-  _cachedLinkTreePaths: Map<string, Promise<Array<string>>>;
+function _commonsNodeFsPromise() {
+  return _commonsNodeFsPromise2 = _interopRequireDefault(require('../../commons-node/fsPromise'));
+}
 
-  _linkTreeManager: LinkTreeManager;
-  _servers: LRUCache<string, JediServer>;
+var _nuclideRemoteUri2;
 
-  constructor() {
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = _interopRequireDefault(require('../../nuclide-remote-uri'));
+}
+
+var _JediServer2;
+
+function _JediServer() {
+  return _JediServer2 = _interopRequireDefault(require('./JediServer'));
+}
+
+var _LinkTreeManager2;
+
+function _LinkTreeManager() {
+  return _LinkTreeManager2 = _interopRequireDefault(require('./LinkTreeManager'));
+}
+
+var JediServerManager = (function () {
+  function JediServerManager() {
+    _classCallCheck(this, JediServerManager);
+
     this._cachedTopLevelModulePaths = new Map();
     this._cachedLinkTreePaths = new Map();
 
-    this._linkTreeManager = new LinkTreeManager();
-    this._servers = new LRUCache({
+    this._linkTreeManager = new (_LinkTreeManager2 || _LinkTreeManager()).default();
+    this._servers = new (_lruCache2 || _lruCache()).default({
       max: 20,
-      dispose(key: string, val: JediServer) {
+      dispose: function dispose(key, val) {
         val.dispose();
-      },
+      }
     });
   }
 
-  async getJediService(src: string): Promise<JediService> {
-    let server = this._servers.get(src);
-    if (server == null) {
-      const {pythonPath, paths} = await getServerArgs(src);
-      // Create a JediServer using default python path.
-      server = new JediServer(src, pythonPath, paths);
-      this._servers.set(src, server);
+  _createClass(JediServerManager, [{
+    key: 'getJediService',
+    value: _asyncToGenerator(function* (src) {
+      var server = this._servers.get(src);
+      if (server == null) {
+        var _ref = yield getServerArgs(src);
 
-      // Add link tree and top-level module paths without awaiting,
-      // so we don't block the service from returning.
-      this._addLinkTreePaths(src, server);
-      this._addTopLevelModulePath(src, server);
+        var pythonPath = _ref.pythonPath;
+        var paths = _ref.paths;
+
+        // Create a JediServer using default python path.
+        server = new (_JediServer2 || _JediServer()).default(src, pythonPath, paths);
+        this._servers.set(src, server);
+
+        // Add link tree and top-level module paths without awaiting,
+        // so we don't block the service from returning.
+        this._addLinkTreePaths(src, server);
+        this._addTopLevelModulePath(src, server);
+      }
+
+      return yield server.getService();
+    })
+  }, {
+    key: 'getLinkTreePaths',
+    value: _asyncToGenerator(function* (src) {
+      var linkTreePathsPromise = this._cachedLinkTreePaths.get(src);
+      if (linkTreePathsPromise == null) {
+        linkTreePathsPromise = this._linkTreeManager.getLinkTreePaths(src);
+        this._cachedLinkTreePaths.set(src, linkTreePathsPromise);
+      }
+
+      return linkTreePathsPromise;
+    })
+  }, {
+    key: 'getTopLevelModulePath',
+    value: _asyncToGenerator(function* (src) {
+      var topLevelModulePathPromise = this._cachedTopLevelModulePaths.get(src);
+      // We don't need to explicitly check undefined since the cached promise
+      // itself is not nullable, though its content is.
+      if (topLevelModulePathPromise == null) {
+        // Find the furthest directory while an __init__.py is present, stopping
+        // search once a directory does not contain an __init__.py.
+        topLevelModulePathPromise = (_commonsNodeFsPromise2 || _commonsNodeFsPromise()).default.findFurthestFile('__init__.py', (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.dirname(src), true /* stopOnMissing */
+        );
+        this._cachedTopLevelModulePaths.set(src, topLevelModulePathPromise);
+      }
+
+      return topLevelModulePathPromise;
+    })
+  }, {
+    key: '_addLinkTreePaths',
+    value: _asyncToGenerator(function* (src, server) {
+      var linkTreePaths = yield this.getLinkTreePaths(src);
+      if (server.isDisposed() || linkTreePaths.length === 0) {
+        return;
+      }
+      var service = yield server.getService();
+      yield service.add_paths(linkTreePaths);
+    })
+  }, {
+    key: '_addTopLevelModulePath',
+    value: _asyncToGenerator(function* (src, server) {
+      var topLevelModulePath = yield this.getTopLevelModulePath(src);
+      if (server.isDisposed() || !topLevelModulePath) {
+        return;
+      }
+      var service = yield server.getService();
+      // Add the parent dir of the top level module path, i.e. the closest
+      // directory that does NOT contain __init__.py.
+      yield service.add_paths([(_nuclideRemoteUri2 || _nuclideRemoteUri()).default.dirname(topLevelModulePath)]);
+    })
+  }, {
+    key: 'reset',
+    value: function reset(src) {
+      this._servers.del(src);
+      this._linkTreeManager.reset(src);
     }
-
-    return await server.getService();
-  }
-
-  async getLinkTreePaths(src: string): Promise<Array<string>> {
-    let linkTreePathsPromise = this._cachedLinkTreePaths.get(src);
-    if (linkTreePathsPromise == null) {
-      linkTreePathsPromise = this._linkTreeManager.getLinkTreePaths(src);
-      this._cachedLinkTreePaths.set(src, linkTreePathsPromise);
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._servers.reset();
+      this._linkTreeManager.dispose();
     }
+  }]);
 
-    return linkTreePathsPromise;
-  }
+  return JediServerManager;
+})();
 
-  async getTopLevelModulePath(src: string): Promise<?string> {
-    let topLevelModulePathPromise = this._cachedTopLevelModulePaths.get(src);
-    // We don't need to explicitly check undefined since the cached promise
-    // itself is not nullable, though its content is.
-    if (topLevelModulePathPromise == null) {
-      // Find the furthest directory while an __init__.py is present, stopping
-      // search once a directory does not contain an __init__.py.
-      topLevelModulePathPromise = fsPromise.findFurthestFile(
-        '__init__.py',
-        nuclideUri.dirname(src),
-        true /* stopOnMissing */,
-      );
-      this._cachedTopLevelModulePaths.set(src, topLevelModulePathPromise);
-    }
+exports.default = JediServerManager;
+module.exports = exports.default;
 
-    return topLevelModulePathPromise;
-  }
-
-  async _addLinkTreePaths(src: string, server: JediServer): Promise<void> {
-    const linkTreePaths = await this.getLinkTreePaths(src);
-    if (server.isDisposed() || linkTreePaths.length === 0) {
-      return;
-    }
-    const service = await server.getService();
-    await service.add_paths(linkTreePaths);
-  }
-
-  async _addTopLevelModulePath(src: string, server: JediServer): Promise<void> {
-    const topLevelModulePath = await this.getTopLevelModulePath(src);
-    if (server.isDisposed() || !topLevelModulePath) {
-      return;
-    }
-    const service = await server.getService();
-    // Add the parent dir of the top level module path, i.e. the closest
-    // directory that does NOT contain __init__.py.
-    await service.add_paths([nuclideUri.dirname(topLevelModulePath)]);
-  }
-
-  reset(src: string): void {
-    this._servers.del(src);
-    this._linkTreeManager.reset(src);
-  }
-
-  dispose(): void {
-    this._servers.reset();
-    this._linkTreeManager.dispose();
-  }
-
-}
+// Cache the promises of additional paths to ensure that we never trigger two
+// calls for the same file name from external calls to getLinkTreePaths and
+// getTopLevelModulePath.

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +10,11 @@
  * the root directory of this source tree.
  */
 
-import type {AnnotatedTask, TaskId} from './types';
+exports.getTask = getTask;
 
-export function getTask(taskId: TaskId, tasks: Map<string, Array<AnnotatedTask>>): ?AnnotatedTask {
-  const tasksForRunner = tasks.get(taskId.taskRunnerId);
-  return tasksForRunner == null
-    ? null
-    : tasksForRunner.find(task => task.type === taskId.type);
+function getTask(taskId, tasks) {
+  var tasksForRunner = tasks.get(taskId.taskRunnerId);
+  return tasksForRunner == null ? null : tasksForRunner.find(function (task) {
+    return task.type === taskId.type;
+  });
 }

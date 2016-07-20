@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +8,7 @@
  * the root directory of this source tree.
  */
 
-const Actions = Object.freeze({
+var Actions = Object.freeze({
   SET_DEBUGGER_INSTANCE: 'SET_DEBUGGER_INSTANCE',
   SET_ERROR: 'SET_ERROR',
   ADD_SERVICE: 'ADD_SERVICE',
@@ -36,9 +35,9 @@ const Actions = Object.freeze({
   ADD_BREAKPOINT: 'ADD_BREAKPOINT',
   DELETE_BREAKPOINT: 'DELETE_BREAKPOINT',
   TOGGLE_BREAKPOINT: 'TOGGLE_BREAKPOINT',
-  UPDATE_LOCALS: 'UPDATE_LOCALS',
+  UPDATE_LOCALS: 'UPDATE_LOCALS'
 });
 
 module.exports = {
-  Actions,
+  Actions: Actions
 };

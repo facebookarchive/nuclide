@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,6 +10,5 @@
  * the root directory of this source tree.
  */
 
-export const GRAMMARS = new Set([
-  'source.ocaml',
-]);
+var GRAMMARS = new Set(['source.ocaml']);
+exports.GRAMMARS = GRAMMARS;

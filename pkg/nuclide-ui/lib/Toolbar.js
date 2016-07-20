@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +14,31 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
-import {maybeToString} from '../../commons-node/string';
+var _classnames2;
 
-type Props = {
-  children?: mixed,
-  location?: 'top' | 'bottom',
-};
+function _classnames() {
+  return _classnames2 = _interopRequireDefault(require('classnames'));
+}
 
-export const Toolbar = (props: Props) => {
-  const className = classnames('nuclide-ui-toolbar', {
-    [`nuclide-ui-toolbar--${maybeToString(props.location)}`]: props.location != null,
-  });
+var _reactForAtom2;
 
-  return (
-    <div className={className}>
-      {props.children}
-    </div>
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _commonsNodeString2;
+
+function _commonsNodeString() {
+  return _commonsNodeString2 = require('../../commons-node/string');
+}
+
+var Toolbar = function Toolbar(props) {
+  var className = (0, (_classnames2 || _classnames()).default)('nuclide-ui-toolbar', _defineProperty({}, 'nuclide-ui-toolbar--' + (0, (_commonsNodeString2 || _commonsNodeString()).maybeToString)(props.location), props.location != null));
+
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'div',
+    { className: className },
+    props.children
   );
 };
+exports.Toolbar = Toolbar;
