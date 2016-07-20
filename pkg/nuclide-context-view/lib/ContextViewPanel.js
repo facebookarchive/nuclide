@@ -28,7 +28,7 @@ export class ContextViewPanel extends React.Component {
     onHide: React.PropTypes.func,
   };
 
-  render() {
+  render(): ?React.Element<any> {
     return (
       <PanelComponent
       dock="right"
