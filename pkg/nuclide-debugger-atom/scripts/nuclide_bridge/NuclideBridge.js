@@ -9,6 +9,13 @@
  * the root directory of this source tree.
  */
 
+import type {
+  ObjectGroup,
+  WebInspector$CallFrame,
+  WebInspector$Event,
+  WebInspector$UILocation,
+} from '../../lib/types';
+
 import Emitter from './Emitter';
 import Multimap from '../../lib/Multimap';
 import ipc from 'ipc';
@@ -16,10 +23,8 @@ import {
   beginTimerTracking,
   endTimerTracking,
 } from '../../lib/AnalyticsHelper';
+import WebInspector from '../../lib/WebInspector';
 
-import type {ObjectGroup} from '../../lib/types';
-
-const WebInspector: typeof WebInspector = window.WebInspector;
 const NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
 
 const DebuggerSettingsChangedEvent = 'debugger-settings-updated';

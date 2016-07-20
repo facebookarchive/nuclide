@@ -9,11 +9,12 @@
  * the root directory of this source tree.
  */
 
+import type {ThreadData} from '../../lib/types';
+
 import NuclideBridge from './NuclideBridge';
 import React from 'react';
 import ReactDOM from 'react-dom';
-
-const WebInspector: typeof WebInspector = window.WebInspector;
+import WebInspector from '../../lib/WebInspector';
 
 type StateType = {
   threadData: ?ThreadData,

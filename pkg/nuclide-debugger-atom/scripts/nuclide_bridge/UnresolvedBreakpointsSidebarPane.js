@@ -15,8 +15,7 @@ import ReactDOM from 'react-dom';
 import nuclideUri from '../../../nuclide-remote-uri';
 import url from 'url';
 import invariant from 'assert';
-
-const WebInspector: typeof WebInspector = window.WebInspector;
+import WebInspector from '../../lib/WebInspector';
 
 const UnresolvedBreakpointsComponent = React.createClass({
   _changeHandler: ({dispose: () => {}}: IDisposable),

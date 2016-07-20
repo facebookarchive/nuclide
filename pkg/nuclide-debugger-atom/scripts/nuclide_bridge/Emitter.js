@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const WebInspector: typeof WebInspector = window.WebInspector;
+import WebInspector from '../../lib/WebInspector';
 
 /**
  * Wrapper around `WebInspector.Object` to act like `atom.Emitter`.

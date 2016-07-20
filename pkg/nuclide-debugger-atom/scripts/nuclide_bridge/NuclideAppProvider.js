@@ -12,10 +12,7 @@
 import NuclideBridge from './NuclideBridge';
 import UnresolvedBreakpointsSidebarPane from './UnresolvedBreakpointsSidebarPane';
 import ThreadsWindowPane from './ThreadsWindowPane';
-
-// Supress ESLint no-undef about using WebInspector without window, which would
-// not have flow types attached.
-const WebInspector: typeof WebInspector = window.WebInspector;
+import WebInspector from '../../lib/WebInspector';
 
 /**
  * The App is declared in `module.json` and the highest priority one is loaded
