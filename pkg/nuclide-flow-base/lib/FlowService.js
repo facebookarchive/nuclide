@@ -210,9 +210,13 @@ export async function flowGetCoverage(
 }
 
 export function flowGetOutline(
+  file: ?NuclideUri,
   currentContents: string,
 ): Promise<?Array<FlowOutlineTree>> {
-  return FlowRoot.flowGetOutline(currentContents, getState().getExecInfoContainer());
+  return getState().getRootContainer().runWithOptionalRoot(
+    file,
+    root => FlowRoot.flowGetOutline(root, currentContents, getState().getExecInfoContainer()),
+  );
 }
 
 export function allowServerRestart(): void {

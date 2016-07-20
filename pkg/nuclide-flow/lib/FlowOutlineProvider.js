@@ -35,7 +35,7 @@ export class FlowOutlineProvider {
       flowService = getLocalFlowService();
     }
     invariant(flowService != null);
-    const flowOutline = await flowService.flowGetOutline(editor.getText());
+    const flowOutline = await flowService.flowGetOutline(filePath, editor.getText());
     if (flowOutline != null) {
       return flowOutlineToNormalOutline(flowOutline);
     } else {

@@ -390,7 +390,12 @@ export class FlowRoot {
     return json.semver;
   }
 
+  // This static function takes an optional FlowRoot instance so that *if* it is part of a Flow
+  // root, it can use the appropriate flow-bin installation (which may be the only Flow
+  // installation) but if it lives outside of a Flow root, outlining still works using the system
+  // Flow.
   static async flowGetOutline(
+    root: ?FlowRoot,
     currentContents: string,
     execInfoContainer: FlowExecInfoContainer,
   ): Promise<?Array<FlowOutlineTree>> {
@@ -398,11 +403,18 @@ export class FlowRoot {
       stdin: currentContents,
     };
 
+    const flowRootPath = root == null ? null : root.getPathToRoot();
+
     const args = ['ast'];
 
     let json;
     try {
-      const result = await FlowProcess.execFlowClient(args, null, execInfoContainer, options);
+      const result = await FlowProcess.execFlowClient(
+        args,
+        flowRootPath,
+        execInfoContainer,
+        options,
+      );
       if (result == null) {
         return null;
       }
