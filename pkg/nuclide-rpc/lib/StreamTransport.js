@@ -12,23 +12,35 @@
 import type {Observable} from 'rxjs';
 import {observeStream, splitStream} from '../../commons-node/stream';
 import invariant from 'assert';
+import type {MessageLogger} from './index';
 
 export class StreamTransport {
   _output: stream$Writable;
   _messages: Observable<string>;
+  _messageLogger: MessageLogger;
 
-  constructor(output: stream$Writable, input: stream$Readable) {
+  constructor(
+    output: stream$Writable,
+    input: stream$Readable,
+    messageLogger: MessageLogger = (direction, message) => { return; },
+  ) {
+    this._messageLogger = messageLogger;
     this._output = output;
-    this._messages = splitStream(observeStream(input));
+    this._messages = splitStream(observeStream(input))
+      .do(message => { this._messageLogger('receive', message); });
   }
+
   send(message: string): void {
+    this._messageLogger('send', message);
     invariant(message.indexOf('\n') === -1,
       'StreamTransport.send - unexpected newline in JSON message');
     this._output.write(message + '\n');
   }
+
   onMessage(): Observable<string> {
     return this._messages;
   }
+
   close(): void {
   }
 }

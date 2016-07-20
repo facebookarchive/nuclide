@@ -10,7 +10,7 @@
  */
 
 import type {Subscription} from 'rxjs';
-import type {ServiceRegistry} from '../nuclide-rpc';
+import type {ServiceRegistry, MessageLogger} from '../nuclide-rpc';
 import type {ProcessMessage} from './process-types';
 
 import {StreamTransport, RpcConnection} from '../nuclide-rpc';
@@ -50,13 +50,18 @@ export default class RpcProcess {
    * @param createProcess  a function to used create the child process when needed,
    *                       both during initialization and on restart
    */
-  constructor(name: string, serviceRegistry: ServiceRegistry, createProcess: ProcessMaker) {
+  constructor(
+    name: string,
+    serviceRegistry: ServiceRegistry,
+    createProcess: ProcessMaker,
+    messageLogger: MessageLogger = (direction, message) => { return; },
+  ) {
     this._name = name;
     this._serviceRegistry = serviceRegistry;
     this._rpcConnection = null;
     this._disposed = false;
     this._ensureProcess = serializeAsyncCall(() =>
-      this._ensureProcessImpl(createProcess),
+      this._ensureProcessImpl(createProcess, messageLogger),
     );
   }
 
@@ -84,7 +89,10 @@ export default class RpcProcess {
    * Ensures that the child process is available. Asynchronously creates the child process,
    * only if it is currently null.
    */
-  async _ensureProcessImpl(createProcess: ProcessMaker): Promise<void> {
+  async _ensureProcessImpl(
+    createProcess: ProcessMaker,
+    messageLogger: MessageLogger,
+  ): Promise<void> {
     if (this._process) {
       return;
     }
@@ -99,7 +107,7 @@ export default class RpcProcess {
       this._rpcConnection = new RpcConnection(
         'client',
         this._serviceRegistry,
-        new StreamTransport(proc.stdin, proc.stdout));
+        new StreamTransport(proc.stdin, proc.stdout, messageLogger));
       this._subscription = getOutputStream(proc)
         .subscribe(this._onProcessMessage.bind(this));
       this._process = proc;

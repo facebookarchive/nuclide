@@ -19,6 +19,8 @@ export {StreamTransport} from './StreamTransport';
 import loadServicesConfig from './loadServicesConfig';
 export {loadServicesConfig};
 
+export type MessageLogger = (direction: 'send' | 'receive', message: string) => void;
+
 export type ConfigEntry = {
   name: string,
   definition:string,

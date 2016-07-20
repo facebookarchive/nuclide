@@ -533,8 +533,20 @@ export class RpcConnection<TransportType: Transport> {
     return this._transport;
   }
 
+  _parseMessage(value: string): ?Object {
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      logger.error(`Recieved invalid JSON message: '${value}'`);
+      return null;
+    }
+  }
+
   _handleMessage(value: string): void {
-    const message: RequestMessage | ResponseMessage = JSON.parse(value);
+    const message: ?(RequestMessage | ResponseMessage) = this._parseMessage(value);
+    if (message == null) {
+      return;
+    }
 
     // TODO: advinsky uncomment after version 0.136 and below are phased out
     // invariant(message.protocol === SERVICE_FRAMEWORK3_PROTOCOL);
