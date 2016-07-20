@@ -165,11 +165,13 @@ export async function getCompletions(
   column: number,
 ): Promise<?HackCompletionsResult> {
   if (getUseIdeConnection()) {
+    logger.logTrace(`Attempting Hack Autocomplete: ${file}, ${line}, ${column}`);
     const service = await getHackConnectionService(file);
     if (service == null) {
       return null;
     }
 
+    logger.logTrace('Got Hack Service');
     // The file notifications are a placeholder until we get
     // full file synchronization implemented.
     await service.didOpenFile(file);

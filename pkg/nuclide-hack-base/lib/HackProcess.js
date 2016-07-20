@@ -36,11 +36,15 @@ function getServiceRegistry(): ServiceRegistry {
   return serviceRegistry;
 }
 
+function logMessage(direction: string, message: string): void {
+  logger.logInfo(`Hack Connection message ${direction}: '${message}'`);
+}
+
 class HackProcess extends RpcProcess {
   _hhconfigPath: string;
 
   constructor(name: string, createProcess: ProcessMaker, hhconfigPath: string) {
-    super(name, getServiceRegistry(), createProcess);
+    super(name, getServiceRegistry(), createProcess, logMessage);
     this._hhconfigPath = hhconfigPath;
   }
 
