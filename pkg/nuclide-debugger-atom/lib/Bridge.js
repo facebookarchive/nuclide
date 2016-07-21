@@ -294,6 +294,7 @@ class Bridge {
             this._updateDebuggerSettings();
             this._sendAllBreakpoints();
             this._injectCSS();
+            this._syncPauseOnExceptionState();
             break;
           case 'CallFrameSelected':
             this._setSelectedCallFrameLine(event.args[1]);
@@ -348,6 +349,12 @@ class Bridge {
         this._debuggerModel.getStore().getSettings().getSerializedData(),
       );
     }
+  }
+
+  _syncPauseOnExceptionState(): void {
+    const store = this._debuggerModel.getStore();
+    this.setPauseOnException(store.getTogglePauseOnException());
+    this.setPauseOnCaughtException(store.getTogglePauseOnCaughtException());
   }
 
   _handleLoaderBreakpointHit(additionalData: {sourceUrl?: string}): void {
