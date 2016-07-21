@@ -29,21 +29,40 @@
  *    }
  */
 export default class Hasher<K> {
-  _hashes: WeakMap<K, number>;
-  _nextHash: number;
+  _hashes: WeakMap<K, string>;
+  _objectCount: number;
 
   constructor() {
     this._hashes = new WeakMap();
-    this._nextHash = 0;
+    this._objectCount = 0;
   }
 
-  getHash(item: K): number {
-    let hash = this._hashes.get(item);
-    if (hash == null) {
-      hash = this._nextHash;
-      this._hashes.set(item, hash);
-      this._nextHash = hash + 1 === Number.MAX_SAFE_INTEGER ? Number.MIN_SAFE_INTEGER : hash + 1;
+  getHash(item: K): string | number {
+    if (item === null) {
+      return 'null';
     }
-    return hash;
+    const type = typeof item;
+    switch (typeof item) {
+      case 'object': {
+        let hash = this._hashes.get(item);
+        if (hash == null) {
+          hash = `${type}:${this._objectCount}`;
+          this._hashes.set(item, hash);
+          this._objectCount = this._objectCount + 1 === Number.MAX_SAFE_INTEGER
+            ? Number.MIN_SAFE_INTEGER
+            : this._objectCount + 1;
+        }
+        return hash;
+      }
+      case 'undefined':
+        return 'undefined';
+      case 'string':
+      case 'boolean':
+        return `${type}:${item.toString()}`;
+      case 'number':
+        return item;
+      default:
+        throw new Error('Unhashable object');
+    }
   }
 }
