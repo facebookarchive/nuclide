@@ -41,7 +41,7 @@ export function sanitizeNuclideUri(uri: string): string {
   }
   // Add the missing slash, if removed through a path.normalize() call.
   if (uri.startsWith(NUCLIDE_PROTOCOL_PREFIX) &&
-      uri[NUCLIDE_PROTOCOL_PREFIX_LENGTH] !== '/' /*protocol missing last slash*/) {
+      uri[NUCLIDE_PROTOCOL_PREFIX_LENGTH] !== '/' /* protocol missing last slash */) {
 
     uri = uri.substring(0, NUCLIDE_PROTOCOL_PREFIX_LENGTH) +
         '/' + uri.substring(NUCLIDE_PROTOCOL_PREFIX_LENGTH);

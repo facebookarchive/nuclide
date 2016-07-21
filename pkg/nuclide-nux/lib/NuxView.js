@@ -76,7 +76,7 @@ export class NuxView {
     if (selectorFunction != null) {
       this._selector = selectorFunction;
     } else if (selectorString != null) {
-      //$FlowIgnore - selectorString complains even with the explicit check above.
+      // $FlowIgnore - selectorString complains even with the explicit check above.
       this._selector = () => document.querySelector(selectorString);
     } else {
       throw new Error('Either the selector or selectorFunction must be non-null!');
@@ -129,7 +129,7 @@ export class NuxView {
 
     // Destroy the NUX if the element it is bound to is no longer visible.
     const tryDismissTooltip = element => {
-      //ヽ༼ຈل͜ຈ༽/ Yay for documentation! ᕕ( ᐛ )ᕗ
+      // ヽ༼ຈل͜ຈ༽/ Yay for documentation! ᕕ( ᐛ )ᕗ
       // According to https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent,
       // `offsetParent` returns `null` if the parent or element is hidden.
       // However, it also returns null if the `position` CSS of the element is

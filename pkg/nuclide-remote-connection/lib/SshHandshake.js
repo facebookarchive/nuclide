@@ -293,8 +293,8 @@ export class SshHandshake {
     return new Promise((resolve, reject) => {
       let stdOut = '';
       const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
-      //TODO: escape any single quotes
-      //TODO: the timeout value shall be configurable using .json file too (t6904691).
+      // TODO: escape any single quotes
+      // TODO: the timeout value shall be configurable using .json file too (t6904691).
       const cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd}`
         + ` --common-name=${this._config.host} --json-output-file=${remoteTempFile} -t 60`;
 

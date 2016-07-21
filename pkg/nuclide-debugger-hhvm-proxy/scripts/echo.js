@@ -47,7 +47,7 @@ const server = net.createServer(
     });
   });
 
-server.listen(port, () => { //'listening' listener
+server.listen(port, () => { // 'listening' listener
   console.log('server bound');
 });
 

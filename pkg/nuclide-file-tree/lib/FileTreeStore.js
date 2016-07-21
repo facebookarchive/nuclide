@@ -1027,7 +1027,7 @@ export class FileTreeStore {
    */
   _expandNodeDeep(rootKey: NuclideUri, nodeKey: NuclideUri): Promise<void> {
     // Stop the traversal after 100 nodes were added to the tree
-    const itNodes = new FileTreeStoreBfsIterator(this, rootKey, nodeKey, /* limit*/ 100);
+    const itNodes = new FileTreeStoreBfsIterator(this, rootKey, nodeKey, /* limit */ 100);
     const promise = new Promise(resolve => {
       const expand = () => {
         const traversedNodeKey = itNodes.traversedNode();

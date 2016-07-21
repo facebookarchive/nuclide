@@ -111,11 +111,11 @@ export async function getSearchResults(
   let searchPromise = pendingSearchPromises.get(search);
   if (!searchPromise) {
     searchPromise = callHHClient(
-        /*args*/ ['--search' + (searchPostfix || ''), search],
-        /*errorStream*/ false,
-        /*outputJson*/ true,
-        /*processInput*/ null,
-        /*file*/ filePath,
+        /* args */ ['--search' + (searchPostfix || ''), search],
+        /* errorStream */ false,
+        /* outputJson */ true,
+        /* processInput */ null,
+        /* file */ filePath,
     );
     pendingSearchPromises.set(search, searchPromise);
   }

@@ -500,7 +500,7 @@ export class WString {
       );
       invariant(op.text);
       return {addition: {pos, text: op.text}};
-    } else { //DEL
+    } else { // DEL
       if (op.runs == null) {
         throw new Error('DEL operation invalid');
       }

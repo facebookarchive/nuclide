@@ -45,7 +45,7 @@ type HgRepositoryOptions = {
   /** The working directory of this repository. */
   workingDirectory: atom$Directory | RemoteDirectory,
 
-  /** The root directory that is opened in Atom, which this Repository serves. **/
+  /** The root directory that is opened in Atom, which this Repository serves. */
   projectRootDirectory: atom$Directory,
 };
 

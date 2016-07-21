@@ -598,7 +598,7 @@ export default class QuickSelectionComponent extends React.Component {
 
   _renderTabs(): React.Element<any> {
     const tabs = this.state.renderableProviders.map(tab => {
-      let keyBinding = null;//TODO
+      let keyBinding = null; // TODO
       const humanizedKeybinding = _findKeybindingForAction(tab.action || '', this._modalNode);
       if (humanizedKeybinding !== '') {
         keyBinding = (
@@ -694,7 +694,7 @@ export default class QuickSelectionComponent extends React.Component {
           );
         });
         let directoryLabel = null;
-        //hide folders if only 1 level would be shown, or if no results were found
+        // hide folders if only 1 level would be shown, or if no results were found
         const showDirectories = directoryNames.length > 1 &&
           (!isOmniSearchActive || resultsForDirectory.results.length > 0);
         if (showDirectories) {

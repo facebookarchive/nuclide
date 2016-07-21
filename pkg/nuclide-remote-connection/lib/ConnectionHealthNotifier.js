@@ -102,8 +102,8 @@ export class ConnectionHealthNotifier {
         addHeartbeatNotification(HEARTBEAT_NOTIFICATION_WARNING, code,
           `Nuclide server cannot be reached at "${serverUri}".<br/>` +
           'Nuclide will reconnect when the network is restored.',
-          /*dismissable*/ true,
-          /*askToReload*/ false);
+          /* dismissable */ true,
+          /* askToReload */ false);
       }
     };
 
@@ -130,8 +130,8 @@ export class ConnectionHealthNotifier {
           addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
                 '**Nuclide Server Crashed**<br/>' +
                 'Please reload Atom to restore your remote project connection.',
-                /*dismissable*/ true,
-                /*askToReload*/ true);
+                /* dismissable */ true,
+                /* askToReload */ true);
             // TODO(most) reconnect ServerConnection, restore the current project state,
             // and finally change dismissable to false and type to 'WARNING'.
           break;
@@ -141,8 +141,8 @@ export class ConnectionHealthNotifier {
           addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
                 '**Nuclide Server Is Not Reachable**<br/>' +
                 `It could be running on a port that is not accessible: ${String(port)}.`,
-                /*dismissable*/ true,
-                /*askToReload*/ false);
+                /* dismissable */ true,
+                /* askToReload */ false);
           break;
         case 'INVALID_CERTIFICATE':
             // Notify the client certificate is not accepted by nuclide server
@@ -152,8 +152,8 @@ export class ConnectionHealthNotifier {
                 'This could be caused by the client certificate mismatching the ' +
                   'server certificate.<br/>' +
                 'Please reload Atom to restore your remote project connection.',
-                /*dismissable*/ true,
-                /*askToReload*/ true);
+                /* dismissable */ true,
+                /* askToReload */ true);
             // TODO(most): reconnect ServerConnection, restore the current project state.
             // and finally change dismissable to false and type to 'WARNING'.
           break;

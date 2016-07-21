@@ -367,7 +367,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri._pathModuleFor('D:\\abc\\aaa bbb')).toBe(win32Path);
     expect(nuclideUri._pathModuleFor('\\abc\\def')).toBe(win32Path);
 
-    //Default to Posix
+    // Default to Posix
     expect(nuclideUri._pathModuleFor('abcdef')).toBe(posixPath);
   });
 

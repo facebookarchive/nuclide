@@ -355,7 +355,7 @@ describe('wootr', () => {
 
       expect(wstring.pos(wstring.charFromRun(wchar1, 0), true)).toEqual(3);
       expect(wstring.pos(wstring.charFromRun(wchar2, 0), true)).toEqual(-1);
-      expect(wstring.pos(wstring.charFromRun(wchar2, 0), /*visibleOnly*/ false)).toEqual(1);
+      expect(wstring.pos(wstring.charFromRun(wchar2, 0), /* visibleOnly */ false)).toEqual(1);
       expect(wstring.pos(wstring.charFromRun(wchar3, 0), true)).toEqual(1);
       expect(wstring.pos(wstring.charFromRun(wchar4, 0), true)).toEqual(2);
     });

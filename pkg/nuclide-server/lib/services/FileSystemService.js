@@ -31,11 +31,9 @@ export type FileWithStats = {
 // Atom can't handle files of this scale anyway.
 const READFILE_SIZE_LIMIT = 10 * 1024 * 1024;
 
-///////////////////
-//
+//------------------------------------------------------------------------------
 // Services
-//
-//////////////////
+//------------------------------------------------------------------------------
 
 /**
  * Checks a certain path for existence and returns 'true'/'false' accordingly

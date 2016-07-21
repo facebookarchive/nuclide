@@ -218,7 +218,7 @@ class DbgpSocket {
     page: number,
   ): Promise<Array<DbgpProperty>> {
     // Pass zero as contextId to search all contexts.
-    return await this.getPropertiesByFullname(frameIndex, /*contextId*/'0', fullname, page);
+    return await this.getPropertiesByFullname(frameIndex, /* contextId */ '0', fullname, page);
   }
 
   async evaluateOnCallFrame(frameIndex: number, expression: string): Promise<EvaluationResult> {

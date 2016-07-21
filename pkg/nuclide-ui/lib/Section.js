@@ -37,7 +37,7 @@ type State = {
  * Specifying `collapsable` prop as true will add a clickable chevron icon that
  * collapses the component children. Optionally specify collapsedByDefault
  * (defaults to false)
- **/
+ */
 export class Section extends React.Component {
 
   props: Props;

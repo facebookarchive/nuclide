@@ -312,7 +312,7 @@ xdescribe('QuickSelectionComponent', () => {
 
     it('should keep the selection index at -1 when there are no items', () => {
       withItemsSetTo({}, () => {
-        //enable setTimeout: https://discuss.atom.io/t/solved-settimeout-not-working-firing-in-specs-tests/11427
+        // enable setTimeout: https://discuss.atom.io/t/solved-settimeout-not-working-firing-in-specs-tests/11427
         jasmine.unspy(window, 'setTimeout');
 
         expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);

@@ -29,7 +29,7 @@ type State = {
 /** A component which sets a max height and includes a "Show More" button
  * aligned at the bottom. Clicking "Show More" will remove the max height restriction
  * and expand the component to full height.
- **/
+ */
 export class ShowMoreComponent extends React.Component {
 
   props: Props;

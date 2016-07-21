@@ -98,7 +98,7 @@ export type BaseBuckBuildOptions = {
   simulator?: ?string,
   runOptions?: ?BuckRunOptions,
   // The service framework doesn't support imported types
-  commandOptions?: Object /*AsyncExecuteOptions*/,
+  commandOptions?: Object /* AsyncExecuteOptions */,
   extraArguments?: Array<string>,
 };
 type FullBuckBuildOptions = {

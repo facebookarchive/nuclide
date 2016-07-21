@@ -49,14 +49,14 @@ const debugConsole = global.console;
 
 // https://github.com/nodejs/node/blob/v5.1.1/lib/console.js
 const outputConsole = new Console(
-  { /*stdout*/
+  { /* stdout */
     write(chunk) {
       if (!STDOUT_FILTERS.some(re => re.test(chunk))) {
         ipcRenderer.send('write-to-stdout', chunk);
       }
     },
   },
-  { /*stderr*/
+  { /* stderr */
     write(chunk) {
       if (!STDERR_FILTERS.some(re => re.test(chunk))) {
         ipcRenderer.send('write-to-stderr', chunk);

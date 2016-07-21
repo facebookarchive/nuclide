@@ -242,7 +242,7 @@ module.exports = {
     'space-in-parens': [1, 'never'],
     'space-infix-ops': 1,
     'space-unary-ops': 1,
-    'spaced-comment': 0,
+    'spaced-comment': [1, 'always', {line: {exceptions: ['-']}, block: {balanced: true}}],
     'unicode-bom': [1, 'never'],
     'wrap-regex': 0,
 

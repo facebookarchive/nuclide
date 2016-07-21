@@ -118,11 +118,13 @@ class FileTreeController {
         'nuclide-file-tree:add-folder': () => {
           FileSystemActions.openAddFolderDialog(this._openAndRevealDirectoryPath.bind(this));
         },
-        'nuclide-file-tree:collapse-directory': this._collapseSelection.bind(this, /*deep*/ false),
-        'nuclide-file-tree:recursive-collapse-directory': this._collapseSelection.bind(this, true),
+        'nuclide-file-tree:collapse-directory':
+          this._collapseSelection.bind(this, /* deep */ false),
+        'nuclide-file-tree:recursive-collapse-directory':
+          this._collapseSelection.bind(this, true),
         'nuclide-file-tree:recursive-collapse-all': this._collapseAll.bind(this),
         'nuclide-file-tree:copy-full-path': this._copyFullPath.bind(this),
-        'nuclide-file-tree:expand-directory': this._expandSelection.bind(this, /*deep*/ false),
+        'nuclide-file-tree:expand-directory': this._expandSelection.bind(this, /* deep */ false),
         'nuclide-file-tree:recursive-expand-directory': this._expandSelection.bind(this, true),
         'nuclide-file-tree:open-selected-entry': this._openSelectedEntry.bind(this),
         'nuclide-file-tree:open-selected-entry-up':

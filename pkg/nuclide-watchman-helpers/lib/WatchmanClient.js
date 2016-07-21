@@ -171,12 +171,12 @@ class WatchmanClient {
       }
       // relativePath is undefined if watchRoot is the same as directoryPath.
       const subscription = new WatchmanSubscription(
-        /*subscriptionRoot*/ watchRoot,
-        /*pathFromSubscriptionRootToSubscriptionPath*/ relativePath,
-        /*subscriptionPath*/ localDirectoryPath,
-        /*subscriptionName*/ subscriptionName,
-        /*subscriptionCount*/ 1,
-        /*subscriptionOptions*/ options,
+        /* subscriptionRoot */ watchRoot,
+        /* pathFromSubscriptionRootToSubscriptionPath */ relativePath,
+        /* subscriptionPath */ localDirectoryPath,
+        /* subscriptionName */ subscriptionName,
+        /* subscriptionCount */ 1,
+        /* subscriptionOptions */ options,
       );
       this._setSubscription(subscriptionName, subscription);
       await this._subscribe(watchRoot, subscriptionName, options);

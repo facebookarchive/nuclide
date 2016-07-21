@@ -133,7 +133,7 @@ function decryptConfig(
 
   const restoredClientKey = decryptString(encryptedString, password, salt);
   //  "nolint" is to suppress ArcanistPrivateKeyLinter errors
-  if (!restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')) { /*nolint*/
+  if (!restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')) { /* nolint */
     getLogger().error(
       `decrypted client key did not start with expected header: ${restoredClientKey}`);
   }

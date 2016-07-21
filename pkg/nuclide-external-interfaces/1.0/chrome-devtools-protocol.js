@@ -10,7 +10,9 @@
 
 /* eslint-disable no-unused-vars */
 
-/************ Runtime domain types. ****************/
+//------------------------------------------------------------------------------
+// Runtime domain types.
+//------------------------------------------------------------------------------
 
 // description wins over value in display
 type Runtime$RemoteObject = {
@@ -35,7 +37,9 @@ type Runtime$PropertyDescriptor = {
   writable?: boolean,
 };
 
-/************ Debugger domain types. ****************/
+//------------------------------------------------------------------------------
+// Debugger domain types.
+//------------------------------------------------------------------------------
 
 // scope.object.description shows on RHS
 type Debugger$Scope = {

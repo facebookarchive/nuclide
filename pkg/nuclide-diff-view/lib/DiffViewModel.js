@@ -846,12 +846,12 @@ class DiffViewModel {
         buttons: ['Cancel', 'Add', 'Allow Untracked'],
       });
       getLogger().info('Untracked changes choice:', untrackedChoice);
-      if (untrackedChoice === 0) /*Cancel*/ {
+      if (untrackedChoice === 0) /* Cancel */ {
         return null;
-      } else if (untrackedChoice === 1) /*Add*/ {
+      } else if (untrackedChoice === 1) /* Add */ {
         await activeStack.addAll(Array.from(untrackedChanges.keys()));
         shouldAmend = true;
-      } else if (untrackedChoice === 2) /*Allow Untracked*/ {
+      } else if (untrackedChoice === 2) /* Allow Untracked */ {
         allowUntracked = true;
       }
     }
@@ -866,15 +866,15 @@ class DiffViewModel {
         buttons: ['Cancel', 'Revert', 'Amend'],
       });
       getLogger().info('Dirty changes clean choice:', cleanChoice);
-      if (cleanChoice === 0) /*Cancel*/ {
+      if (cleanChoice === 0) /* Cancel */ {
         return null;
-      } else if (cleanChoice === 1) /*Revert*/ {
+      } else if (cleanChoice === 1) /* Revert */ {
         const canRevertFilePaths: Array<NuclideUri> =
           Array.from(dirtyFileChanges.entries())
           .filter(fileChange => fileChange[1] !== FileChangeStatus.UNTRACKED)
           .map(fileChange => fileChange[0]);
         await activeStack.revert(canRevertFilePaths);
-      } else if (cleanChoice === 2) /*Amend*/ {
+      } else if (cleanChoice === 2) /* Amend */ {
         shouldAmend = true;
       }
     }

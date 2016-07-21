@@ -129,11 +129,11 @@ export async function getDiagnostics(
 ): Promise<?HackDiagnosticsResult> {
   const hhResult = await retryLimit(
     () => callHHClient(
-      /*args*/ [],
-      /*errorStream*/ true,
-      /*outputJson*/ true,
-      /*processInput*/ null,
-      /*file*/ file,
+      /* args */ [],
+      /* errorStream */ true,
+      /* outputJson */ true,
+      /* processInput */ null,
+      /* file */ file,
     ),
     result => result != null,
     HH_CLIENT_MAX_TRIES,
@@ -186,11 +186,11 @@ export async function getCompletions(
   } else {
     const markedContents = markFileForCompletion(contents, offset);
     const result: any = await callHHClient(
-      /*args*/ ['--auto-complete'],
-      /*errorStream*/ false,
-      /*outputJson*/ true,
-      /*processInput*/ markedContents,
-      /*file*/ file,
+      /* args */ ['--auto-complete'],
+      /* errorStream */ false,
+      /* outputJson */ true,
+      /* processInput */ markedContents,
+      /* file */ file,
     );
     return result;
   }
@@ -203,11 +203,11 @@ export async function getDefinition(
   column: number,
 ): Promise<Array<HackDefinition>> {
   const result: any = await callHHClient(
-    /*args*/ ['--ide-get-definition', formatLineColumn(line, column)],
-    /*errorStream*/ false,
-    /*outputJson*/ true,
-    /*processInput*/ contents,
-    /*cwd*/ file,
+    /* args */ ['--ide-get-definition', formatLineColumn(line, column)],
+    /* errorStream */ false,
+    /* outputJson */ true,
+    /* processInput */ contents,
+    /* cwd */ file,
   );
   if (result == null) {
     return [];
@@ -237,11 +237,11 @@ export async function findReferences(
   column: number,
 ): Promise<?HackReferencesResult> {
   const result: any = await callHHClient(
-    /*args*/ ['--ide-find-refs', formatLineColumn(line, column)],
-    /*errorStream*/ false,
-    /*outputJson*/ true,
-    /*processInput*/ contents,
-    /*cwd*/ file,
+    /* args */ ['--ide-find-refs', formatLineColumn(line, column)],
+    /* errorStream */ false,
+    /* outputJson */ true,
+    /* processInput */ contents,
+    /* cwd */ file,
   );
   return result;
 }
@@ -295,11 +295,11 @@ export async function queryHack(
 export async function getTypedRegions(filePath: NuclideUri):
     Promise<?Array<HackTypedRegion>> {
   const result = await callHHClient(
-    /*args*/ ['--colour', filePath],
-    /*errorStream*/ false,
-    /*outputJson*/ true,
-    /*processInput*/ null,
-    /*file*/ filePath,
+    /* args */ ['--colour', filePath],
+    /* errorStream */ false,
+    /* outputJson */ true,
+    /* processInput */ null,
+    /* file */ filePath,
   );
   return (result: any);
 }
@@ -309,10 +309,10 @@ export async function getIdeOutline(
   contents: string,
 ): Promise<?HackIdeOutline> {
   const result = await callHHClient(
-    /*args*/ ['--ide-outline'],
-    /*errorStream*/ false,
-    /*outputJson*/ true,
-    /*processInput*/ contents,
+    /* args */ ['--ide-outline'],
+    /* errorStream */ false,
+    /* outputJson */ true,
+    /* processInput */ contents,
     filePath,
   );
   return (result: any);
@@ -325,11 +325,11 @@ export async function getTypeAtPos(
   column: number,
 ): Promise<?HackTypeAtPosResult> {
   const result = await callHHClient(
-    /*args*/ ['--type-at-pos', formatLineColumn(line, column)],
-    /*errorStream*/ false,
-    /*outputJson*/ true,
-    /*processInput*/ contents,
-    /*file*/ filePath,
+    /* args */ ['--type-at-pos', formatLineColumn(line, column)],
+    /* errorStream */ false,
+    /* outputJson */ true,
+    /* processInput */ contents,
+    /* file */ filePath,
   );
   return (result: any);
 }
@@ -341,11 +341,11 @@ export async function getSourceHighlights(
   column: number,
 ): Promise<?HackHighlightRefsResult> {
   const result = await callHHClient(
-    /*args*/ ['--ide-highlight-refs', formatLineColumn(line, column)],
-    /*errorStream*/ false,
-    /*outputJson*/ true,
-    /*processInput*/ contents,
-    /*file*/ filePath,
+    /* args */ ['--ide-highlight-refs', formatLineColumn(line, column)],
+    /* errorStream */ false,
+    /* outputJson */ true,
+    /* processInput */ contents,
+    /* file */ filePath,
   );
   return (result: any);
 }
@@ -357,11 +357,11 @@ export async function formatSource(
   endOffset: number,
 ): Promise<?HackFormatSourceResult> {
   const result = await callHHClient(
-    /*args*/ ['--format', startOffset, endOffset],
-    /*errorStream*/ false,
-    /*outputJson*/ true,
-    /*processInput*/ contents,
-    /*file*/ filePath,
+    /* args */ ['--format', startOffset, endOffset],
+    /* errorStream */ false,
+    /* outputJson */ true,
+    /* processInput */ contents,
+    /* file */ filePath,
   );
   return (result: any);
 }

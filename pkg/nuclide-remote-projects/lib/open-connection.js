@@ -170,7 +170,7 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
         indexOfInitiallySelectedConnectionProfile,
         onAddProfileClicked,
         onCancel: () => {
-          resolve(/*connection*/ null);
+          resolve(/* connection */ null);
           cleanupSubscriptionFunc();
         },
         onClosed: () => {
@@ -186,7 +186,7 @@ export function openConnectionDialog(props?: Object): Promise<?RemoteConnection>
           cleanupSubscriptionFunc();
         },
         onError: (err_, config) => {
-          resolve(/*connection*/ null);
+          resolve(/* connection */ null);
           saveConnectionConfig(config, getOfficialRemoteServerCommand());
           cleanupSubscriptionFunc();
         },
