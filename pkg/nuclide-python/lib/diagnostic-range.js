@@ -32,7 +32,9 @@ function tokenizedLineForRow(
 // Assumes that the module name exists.
 // Ported from https://github.com/AtomLinter/linter-flake8
 function getModuleNameRange(message: string, line: number, editor: atom$TextEditor): Range {
-  const symbol = /'([^']+)'/.exec(message)[1].split('.').pop();
+  // Split on space or dot to get the basename or alias, i.e. retrieve <a> in
+  // "from .. import <a>" or "from .. import .. as <a>".
+  const symbol = /'([^']+)'/.exec(message)[1].split(/\s|\./).pop();
 
   let foundImport = false;
   let lineNumber = line;
@@ -140,11 +142,10 @@ export function getDiagnosticRange(diagnostic: PythonDiagnostic, editor: atom$Te
         break;
     }
   } catch (e) {
-    logger.error(`
-      Failed to find flake8 diagnostic range:
-      ${diagnostic.file}:${unsafeLine}:${column} - ${code}: ${message},
-      Error: ${e.message}
-    `);
+    const diagnosticAsString = `${diagnostic.file}:${unsafeLine}:${column} - ${code}: ${message}`;
+    logger.error(
+      `Failed to find flake8 diagnostic range: ${diagnosticAsString}, Error: ${e.message}`,
+    );
   }
 
   return new Range([line, trimmedStartCol], [line, trimmedEndCol]);
