@@ -81,6 +81,20 @@ class NuclideBridge {
       this._handleDebuggerPaused,
       this);
 
+    WebInspector.targetManager.addModelListener(
+        WebInspector.DebuggerModel,
+        WebInspector.DebuggerModel.Events.ThreadsUpdateIPC,
+        this._handleThreadsUpdated,
+        this,
+      );
+
+    WebInspector.targetManager.addModelListener(
+        WebInspector.DebuggerModel,
+        WebInspector.DebuggerModel.Events.StopThreadSwitched,
+        this._handleStopThreadSwitched,
+        this,
+      );
+
     WebInspector.workspace.addEventListener(
       WebInspector.Workspace.Events.UISourceCodeAdded,
       this._handleUISourceCodeAdded,
@@ -594,6 +608,23 @@ class NuclideBridge {
       }
     });
     return result;
+  }
+
+  _handleThreadsUpdated(event: WebInspector.Event): void {
+    ipc.sendToHost('notification', 'ThreadsUpdate', event.data);
+  }
+
+  _handleStopThreadSwitched(event: WebInspector.Event): void {
+    if (this._debuggerPausedCount <= 1) {
+      return;
+    }
+    const uiLocation =
+      WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(event.data.location);
+    ipc.sendToHost('notification', 'StopThreadSwitch', {
+      sourceURL: uiLocation.uiSourceCode.uri(),
+      lineNumber: uiLocation.lineNumber,
+      message: event.data.message,
+    });
   }
 }
 

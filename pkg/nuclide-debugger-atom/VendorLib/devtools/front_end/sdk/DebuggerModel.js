@@ -97,7 +97,9 @@ WebInspector.DebuggerModel.Events = {
     ConsoleCommandEvaluatedInSelectedCallFrame: "ConsoleCommandEvaluatedInSelectedCallFrame",
     PromiseUpdated: "PromiseUpdated",
     ThreadsUpdated: "ThreadsUpdated",
+    ThreadsUpdateIPC: "ThreadsUpdateIPC",
     SelectedThreadChanged: "SelectedThreadChanged",
+    StopThreadSwitched: "StopThreadSwitched",
 }
 
 /** @enum {string} */
@@ -340,6 +342,7 @@ WebInspector.DebuggerModel.prototype = {
     _threadsUpdated: function(eventData)
     {
         this.threadStore.update(eventData);
+        this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ThreadsUpdateIPC, eventData)
     },
 
     _globalObjectCleared: function()
@@ -458,17 +461,34 @@ WebInspector.DebuggerModel.prototype = {
 
     /**
      * @param {?WebInspector.DebuggerPausedDetails} debuggerPausedDetails
+     * @param {string=} ThreadSwitchNotification
      */
-    _setDebuggerPausedDetails: function(debuggerPausedDetails)
+    _setDebuggerPausedDetails: function(debuggerPausedDetails, threadSwitchMessage)
     {
         this._isPausing = false;
         this._debuggerPausedDetails = debuggerPausedDetails;
         if (this._debuggerPausedDetails) {
             this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPausedDetails);
             this.selectFirstCallFrame(this._debuggerPausedDetails.callFrames, /*needSource*/ true);
+            if (threadSwitchMessage !=  null) {
+              this.sendStopThreadSwitchNotification(this._debuggerPausedDetails.callFrames, threadSwitchMessage);
+            }
         } else {
             this.setSelectedCallFrame(null);
         }
+    },
+
+    /**
+     * @param {!Array.<!DebuggerAgent.CallFrame>} frames
+     * @param {string=} message
+     */
+    sendStopThreadSwitchNotification: function(frames, message) {
+      var frame = this._getFirstFrameWithSource(frames, true /*needSource*/) || frames[0]; // We need this frame for the location info
+      var data = {
+        location: frame.location(),
+        message: message,
+      }
+      this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.StopThreadSwitched, data)
     },
 
     selectFirstCallFrame: function(frames, needSource)
@@ -498,10 +518,12 @@ WebInspector.DebuggerModel.prototype = {
      * @param {!Object|undefined} auxData
      * @param {!Array.<string>} breakpointIds
      * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
+     * @param {string=} threadSwitchMessage
      */
-    _pausedScript: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
+    _pausedScript: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace, threadSwitchMessage)
     {
-        this._setDebuggerPausedDetails(new WebInspector.DebuggerPausedDetails(this.target(), callFrames, reason, auxData, breakpointIds, asyncStackTrace));
+        this._setDebuggerPausedDetails(new WebInspector.DebuggerPausedDetails(this.target(), callFrames, reason,
+          auxData, breakpointIds, asyncStackTrace), threadSwitchMessage);
         if (this._pendingLiveEditCallback) {
             var callback = this._pendingLiveEditCallback;
             delete this._pendingLiveEditCallback;
@@ -804,13 +826,15 @@ WebInspector.DebuggerDispatcher.prototype = {
      * @override
      * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
      * @param {string} reason
+     * @param {string=} threadSwitchMessage
      * @param {!Object=} auxData
      * @param {!Array.<string>=} breakpointIds
      * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
      */
-    paused: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
+    paused: function(callFrames, reason, threadSwitchMessage, auxData, breakpointIds, asyncStackTrace)
     {
-        this._debuggerModel._pausedScript(callFrames, reason, auxData, breakpointIds || [], asyncStackTrace);
+        this._debuggerModel._pausedScript(callFrames, reason, auxData, breakpointIds || [], asyncStackTrace,
+          threadSwitchMessage);
     },
 
     /**

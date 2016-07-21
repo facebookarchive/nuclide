@@ -88,7 +88,7 @@ declare class WebInspector$Script {
 declare class WebInspector$DebuggerModel$Location {
   lineNumber: number,
   columnNumber?: number,
-  uiSourceCode: WebInspector$UISourceCode,
+  scriptId: string,
 }
 
 declare class WebInspector$CallFrame {
@@ -140,7 +140,9 @@ declare class WebInspector$DebuggerModel {
     DebuggerResumed: string,
     DebuggerPaused: string,
     ThreadsUpdated: string,
+    ThreadsUpdateIPC: string,
     SelectedThreadChanged: string,
+    StopThreadSwitched: string,
   },
 
   threadStore: WebInspector$ThreadStore,
