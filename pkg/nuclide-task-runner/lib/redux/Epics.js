@@ -47,12 +47,10 @@ export function createPanelEpic(actions: ActionsObservable<Action>): Observable<
         },
       };
 
-      const props = Observable.from(store)
-        // Delay the inital render. This way we (probably) won't wind up rendering the wrong task
-        // runner before the correct one is registered.
-        .cache(1)
-        .skipUntil(Observable.interval(300).first())
-
+      // Delay the inital render. This way we (probably) won't wind up rendering the wrong task
+      // runner before the correct one is registered.
+      const props = Observable.interval(300).first()
+        .switchMap(() => Observable.from(store))
         .map(state => {
           const activeTaskRunner = getActiveTaskRunner(state);
           return {
