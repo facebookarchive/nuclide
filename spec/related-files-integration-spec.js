@@ -52,23 +52,5 @@ describeRemotableTest('Related Files Integration Test', context => {
       });
       waitsForFile(TEST_FILES[TEST_FILES.length - i - 1]);
     }
-
-    // Reverse direction.
-    for (let i = 0; i < TEST_FILES.length; i++) {
-      runs(() => {
-        const textEditor = atom.workspace.getActiveTextEditor();
-        invariant(textEditor);
-        const path = textEditor.getPath();
-        invariant(path != null);
-        expect(nuclideUri.basename(path)).toBe(TEST_FILES[i]);
-        const textEditorView = atom.views.getView(textEditor);
-        // No keyboard shortcut for this.
-        atom.commands.dispatch(
-          textEditorView,
-          'nuclide-related-files:jump-to-previous-related-file',
-        );
-      });
-      waitsForFile(TEST_FILES[(i + 1) % TEST_FILES.length]);
-    }
   });
 });
