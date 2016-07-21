@@ -57,7 +57,7 @@ describe('LinterAdapter', () => {
       this.publishMessageInvalidation = jasmine.createSpy();
       publishMessageInvalidationSpy = this.publishMessageInvalidation;
       this.dispose = jasmine.createSpy();
-      fakeDiagnosticsProviderBase = this;  // eslint-disable-line consistent-this
+      fakeDiagnosticsProviderBase = this;
     }
     onMessageUpdate(callback) {
       this.publishMessageUpdate.andCallFake(callback);

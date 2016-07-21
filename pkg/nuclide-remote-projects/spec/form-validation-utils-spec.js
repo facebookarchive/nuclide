@@ -197,7 +197,8 @@ describe('validateFormInputs', () => {
     expect(resultFromEmptyAuthMethod.errorMessage).not.toBeNull();
   });
 
-  it('rejects a profile if the Authentication Method selected is "Private Key", and a Private Key File is missing', () => { //eslint-disable-line max-len
+  // eslint-disable-next-line max-len
+  it('rejects a profile if the Authentication Method selected is "Private Key", and a Private Key File is missing', () => {
     minimumValidParamsWithPrivateKey.pathToPrivateKey = '';
     const resultFromEmptyPathToPrivateKey: any = validateFormInputs(
       validProfileName,
@@ -207,7 +208,8 @@ describe('validateFormInputs', () => {
     expect(resultFromEmptyPathToPrivateKey.errorMessage).not.toBeNull();
   });
 
-  it('does not reject a profile if the Private Key File is missing, but the Authentication Method selected is not "Private Key"', () => { //eslint-disable-line max-len
+  // eslint-disable-next-line max-len
+  it('does not reject a profile if the Private Key File is missing, but the Authentication Method selected is not "Private Key"', () => {
     const passwordAuthMethodProfile: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPassword,
@@ -226,7 +228,8 @@ describe('validateFormInputs', () => {
   /**
    * Section: Special Cases
    */
-  it('strips a password, if it is provided and the "Password" Authentication Method is chosen, and provides a warning message.', () => { //eslint-disable-line max-len
+  // eslint-disable-next-line max-len
+  it('strips a password, if it is provided and the "Password" Authentication Method is chosen, and provides a warning message.', () => {
     minimumValidParamsWithPassword.password = 'secretpassword';
     const resultFromProfileWithPassword: any = validateFormInputs(
       validProfileName,

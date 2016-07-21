@@ -42,13 +42,15 @@ function startServer(args) {
     };
 
     _webServer = https.createServer(webServerOptions, handleRequest);
-    console.log('running in secure mode'); //eslint-disable-line no-console
+    // eslint-disable-next-line no-console
+    console.log('running in secure mode');
   } else {
     _webServer = http.createServer(handleRequest);
   }
 
   _webServer.on('listening', () => {
-    console.log('listening on port ' + args.port); //eslint-disable-line no-console
+    // eslint-disable-next-line no-console
+    console.log('listening on port ' + args.port);
   });
 
   _webServer.listen(args.port || 8084, '::');

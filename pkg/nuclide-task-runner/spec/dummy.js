@@ -16,7 +16,7 @@ import {BehaviorSubject} from 'rxjs';
 import {Disposable} from 'atom';
 
 const noop = () => {};
-const noopErrCallback = err => {}; // eslint-disable-line handle-callback-err
+const noopErrCallback = err_ => {};
 
 export class Task {
   // In the real version, you'd be able to add multiple callbacks for each event.

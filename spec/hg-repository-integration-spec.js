@@ -50,7 +50,8 @@ describe('Mercurial Repository Integration Tests', () => {
       expect(repository.getPath().endsWith('/.hg')).toBe(true);
       // Remove project
       atom.project.removePath(repoPath);
-      expect(console.error).not.toHaveBeenCalled(); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      expect(console.error).not.toHaveBeenCalled();
     });
   });
 

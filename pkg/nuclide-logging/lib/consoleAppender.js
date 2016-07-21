@@ -36,7 +36,8 @@ function layout(loggingEvent: any): Array<any> {
  */
 function consoleAppender(): (loggingEvent: any) => void {
   return loggingEvent => {
-    console.log.apply(console, layout(loggingEvent)); // eslint-disable-line no-console
+    // eslint-disable-next-line no-console
+    console.log.apply(console, layout(loggingEvent));
   };
 }
 

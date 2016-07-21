@@ -8,6 +8,8 @@
  * @flow
  */
 
+/* eslint-disable */
+
 export class Foo {
   bar(): void {
 

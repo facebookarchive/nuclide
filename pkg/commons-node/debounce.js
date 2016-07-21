@@ -42,7 +42,7 @@ export default function debounce<T: Function>(
 
   // $FlowIssue -- Flow's type system isn't expressive enough to type debounce.
   return function() {
-    context = this; // eslint-disable-line consistent-this
+    context = this;
     args = arguments;
     timestamp = Date.now();
     const callNow = immediate && !timeout;

@@ -47,7 +47,8 @@ describe('Nuclide Server test suite', () => {
     waitsFor(() => opened);
   });
 
-  xdescribe('reconnect websocket flow', () => { // eslint-disable-line jasmine/no-disabled-tests
+  // eslint-disable-next-line jasmine/no-disabled-tests
+  xdescribe('reconnect websocket flow', () => {
     it('server sent messages, while disconnected will still be delievered', () => {
       // Here is the initial message.
       const nuclideSocket = socket;

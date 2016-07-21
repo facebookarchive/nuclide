@@ -374,10 +374,9 @@ class NuclideBridge {
         WebInspector.actionRegistry.execute(actionId);
         break;
       default:
-        /* eslint-disable no-console */
         // console.error because throwing can fatal the Chrome dev tools.
+        // eslint-disable-next-line no-console
         console.error('_triggerDebuggerAction: unrecognized actionId', actionId);
-        /* eslint-enable no-console */
         break;
     }
   }

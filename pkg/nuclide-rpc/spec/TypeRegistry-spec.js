@@ -549,10 +549,10 @@ describe('TypeRegistry', () => {
         type: stringType,
       });
       const mem = process.memoryUsage().heapUsed - heapUsed;
-      /* eslint-disable no-console */
+      // eslint-disable-next-line no-console
       console.log('time taken: %d seconds', (Date.now() - startTime) / 1000);
+      // eslint-disable-next-line no-console
       console.log('memory used: %d', mem);
-      /* eslint-enable no-console */
 
       // 10MB is a very reasonable upper bound.
       // In contrast, using promises takes 152MB!

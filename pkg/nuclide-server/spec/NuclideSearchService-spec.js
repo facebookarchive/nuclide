@@ -19,7 +19,8 @@ const pathToTestFile = nuclideUri.join(pathToTestDir, 'testfile.txt');
 let server;
 let client;
 
-xdescribe('NuclideSearch test suite', () => { // eslint-disable-line jasmine/no-disabled-tests
+// eslint-disable-next-line jasmine/no-disabled-tests
+xdescribe('NuclideSearch test suite', () => {
   beforeEach(() => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     waitsForPromise(async () => {

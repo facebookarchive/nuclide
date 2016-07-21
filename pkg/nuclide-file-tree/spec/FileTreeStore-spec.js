@@ -53,7 +53,6 @@ class MockRepository {
  * nodes 'dir1', 'dir1/dir2', 'dir1/dir2' and 'dir1/dir2/foo.txt' entries will be
  * present in the returned map
  */
- /*eslint babel/no-await-in-loop:0 */
 async function buildTempDirTree(...paths: Array<string>): Promise<Map<string, string>> {
   const rootPath = await tempMkDir('/');
   const fileMap = new Map();
@@ -64,8 +63,10 @@ async function buildTempDirTree(...paths: Array<string>): Promise<Map<string, st
     const itemGlobalDirPath = nuclideUri.join(rootPath, ...arrPathItemParts.slice(0, -1));
     const itemLocalFileName = arrPathItemParts[arrPathItemParts.length - 1];
 
+    // eslint-disable-next-line babel/no-await-in-loop
     await mkdir(itemGlobalDirPath);
     if (itemLocalFileName) {
+      // eslint-disable-next-line babel/no-await-in-loop
       await touch(nuclideUri.join(itemGlobalDirPath, itemLocalFileName));
     }
 

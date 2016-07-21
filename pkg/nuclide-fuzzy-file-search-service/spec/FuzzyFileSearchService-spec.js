@@ -34,7 +34,8 @@ describe('FuzzyFileSearchService.isFuzzySearchAvailableFor', () => {
 
   it('cant search non-existing directories', () => {
     waitsForPromise(async () => {
-      const nonExistentPath = __dirname + 'xxx'; //eslint-disable-line no-path-concat
+      // eslint-disable-next-line no-path-concat
+      const nonExistentPath = __dirname + 'xxx';
       expect(await isFuzzySearchAvailableFor(nonExistentPath)).toBe(false);
     });
   });

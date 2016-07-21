@@ -237,7 +237,7 @@ async function reloadRemoteProjects(
   // The 90% use case is to have multiple remote projects for a single connection;
   // after the first one succeeds the rest should require no user action.
   for (const config of remoteProjects) {
-    /* eslint-disable babel/no-await-in-loop */
+    // eslint-disable-next-line babel/no-await-in-loop
     const connection = await createRemoteConnection(config);
     if (!connection) {
       logger.info(
@@ -278,10 +278,10 @@ async function reloadRemoteProjects(
       const {cwd, host, displayTitle} = config;
       if (connection.getPathForInitialWorkingDirectory() !== cwd &&
           connection.getRemoteHostname() === host) {
+        // eslint-disable-next-line babel/no-await-in-loop
         await RemoteConnection.createConnectionBySavedConfig(host, cwd, displayTitle);
       }
     }
-    /* eslint-enable babel/no-await-in-loop */
   }
 }
 

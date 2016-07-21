@@ -8,7 +8,9 @@
  * @flow
  */
 
-const num = 3; // eslint-disable-line no-unused-vars
+/* eslint-disable */
+
+const num = 3;
 
 import {Foo} from './Foo';
 

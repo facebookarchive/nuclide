@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* eslint-disable no-console */
+
 import type {ExitCode} from '../lib/types';
 
 export default async function runCommand(args: Array<string>): Promise<ExitCode> {
@@ -18,6 +20,6 @@ export default async function runCommand(args: Array<string>): Promise<ExitCode>
   }
 
   commands.sort();
-  commands.forEach(command => console.log(command)); // eslint-disable-line no-console
+  commands.forEach(command => console.log(command));
   return 0;
 }

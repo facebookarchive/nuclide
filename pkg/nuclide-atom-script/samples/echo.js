@@ -26,10 +26,12 @@
  * you must set the USE_DEV environment variable when running bootstrap.
  */
 
+/* eslint-disable no-console */
+
 import type {ExitCode} from '../lib/types';
 
 export default async function runCommand(args: Array<string>): Promise<ExitCode> {
   const message = args.length === 0 ? 'Please pass me an arg!' : args.join(' ');
-  console.log(message); // eslint-disable-line no-console
+  console.log(message);
   return 0;
 }

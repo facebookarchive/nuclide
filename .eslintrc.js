@@ -178,7 +178,7 @@ module.exports = {
     'comma-spacing': 1,
     'comma-style': 1,
     'computed-property-spacing': 1,
-    'consistent-this': 1,
+    'consistent-this': 0,
     'eol-last': 1,
     'func-names': 0,
     'func-style': 0,

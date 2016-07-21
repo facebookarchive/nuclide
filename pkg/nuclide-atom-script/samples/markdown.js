@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
+/* eslint-disable no-console */
+
 import type {ExitCode} from '../lib/types';
 
 import fs from 'fs';
 import invariant from 'assert';
 import nuclideUri from '../../nuclide-remote-uri';
 import yargs from 'yargs';
-
-/* eslint-disable no-console */
 
 export default async function runCommand(args: Array<string>): Promise<ExitCode> {
   const argv = await new Promise((resolve, reject) => {

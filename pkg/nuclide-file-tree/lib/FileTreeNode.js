@@ -500,7 +500,6 @@ export class FileTreeNode {
     }
 
     // Not really an alias, but an iterating reference
-    // eslint-disable-next-line consistent-this
     let it = this;
     while (it != null) {
       const nextShownSibling = it.findNextShownSibling();

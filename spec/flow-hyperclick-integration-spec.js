@@ -19,9 +19,9 @@ describeRemotableTest('Flow Hyperclick', context => {
     setup(context);
 
     waitsForHyperclickResult(
-      [14, 13],
+      [16, 13],
       'Foo.js',
-      [11, 2],
+      [13, 2],
     );
   });
 });

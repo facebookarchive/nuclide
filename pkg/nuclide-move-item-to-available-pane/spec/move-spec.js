@@ -111,7 +111,7 @@ function dispatchCmdKRight() {
   expect(wasDispatched).toBe(true);
 }
 
-/* eslint-disable no-unused-vars */
+// eslint-disable-next-line no-unused-vars
 function dispatchCmdKLeft() {
   const activeEditor = atom.workspace.getActiveTextEditor();
   invariant(activeEditor);
@@ -121,7 +121,6 @@ function dispatchCmdKLeft() {
   );
   expect(wasDispatched).toBe(true);
 }
-/* eslint-enable no-unused-vars */
 
 function dispatchCmdKCmdLeft() {
   // In test mode, the command appears to get dispatched successfully, but the focus does not get
@@ -142,7 +141,7 @@ function dispatchCmdKCmdLeft() {
   panes[newIndex].activate();
 }
 
-/* eslint-disable no-unused-vars */
+// eslint-disable-next-line no-unused-vars
 function dispatchCmdKCmdRight() {
   // In test mode, the command appears to get dispatched successfully, but the focus does not get
   // updated properly, so we have to provide some help.
@@ -161,4 +160,3 @@ function dispatchCmdKCmdRight() {
   const newIndex = Math.min(panes.length - 1, index + 1);
   panes[newIndex].activate();
 }
-/* eslint-enable no-unused-vars */

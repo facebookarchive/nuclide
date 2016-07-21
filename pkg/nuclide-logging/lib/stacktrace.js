@@ -58,10 +58,8 @@ export default function addPrepareStackTraceHook(): void {
       // doesn't work well with our customization of stacktrace. So here we temporarily
       // walk around this by following hack, until https://github.com/atom/atom/issues/9641
       // get addressed.
-      /* eslint-disable no-extend-native */
-      /* $FlowFixMe */
+      /* $FlowFixMe */ // eslint-disable-next-line no-extend-native
       Error.prototype.getRawStack = null;
-      /* eslint-enable no-extend-native */
       return true;
     },
   );

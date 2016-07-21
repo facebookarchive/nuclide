@@ -111,7 +111,8 @@ module.exports = {
       slowestClaimedActivate,
     };
 
-    console.log(JSON.stringify(result)); // eslint-disable-line no-console
+    // eslint-disable-next-line no-console
+    console.log(JSON.stringify(result));
     return result;
 
   },

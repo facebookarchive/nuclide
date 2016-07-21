@@ -20,7 +20,8 @@ let server: NuclideServer;
 let socket: NuclideSocket;
 let serverSocketClient: RpcConnection<any>;
 
-xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-disabled-tests
+// eslint-disable-next-line jasmine/no-disabled-tests
+xdescribe('NuclideSocket test suite', () => {
   beforeEach(() => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     waitsForPromise(async () => {

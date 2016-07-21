@@ -36,9 +36,8 @@ class _Task {
     const options = {silent: true}; // Needed so stdout/stderr are available.
     const child = this._child = child_process
         .fork(nuclideUri.join(__dirname, '/bootstrap.js'), options);
-    /*eslint-disable no-console*/
+    // eslint-disable-next-line no-console
     const log = buffer => console.log(`TASK(${child.pid}): ${buffer}`);
-    /*eslint-enable no-console*/
     child.stdout.on('data', log);
     child.stderr.on('data', log);
     // The Flow error on the following line is due to a bug in Flow:

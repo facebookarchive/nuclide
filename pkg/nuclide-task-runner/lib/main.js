@@ -182,7 +182,7 @@ class Activation {
   }
 
   provideTaskRunnerServiceApi(): TaskRunnerServiceApi {
-    let pkg = this; // eslint-disable-line consistent-this
+    let pkg = this;
     this._disposables.add(new Disposable(() => { pkg = null; }));
     return {
       register: (taskRunner: TaskRunner) => {
@@ -206,7 +206,7 @@ class Activation {
   }
 
   getDistractionFreeModeProvider(): DistractionFreeModeProvider {
-    let pkg = this; // eslint-disable-line consistent-this
+    let pkg = this;
     this._disposables.add(new Disposable(() => { pkg = null; }));
     return {
       name: 'nuclide-task-runner',

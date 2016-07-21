@@ -44,10 +44,12 @@ describe('React Native Inspector', () => {
       // Keep trying to connect to the server.
       for (;;) {
         try {
-          await tryToConnect(); // eslint-disable-line babel/no-await-in-loop
+          // eslint-disable-next-line babel/no-await-in-loop
+          await tryToConnect();
           return;
         } catch (err) {
-          await sleep(500); // eslint-disable-line babel/no-await-in-loop
+          // eslint-disable-next-line babel/no-await-in-loop
+          await sleep(500);
         }
       }
     });

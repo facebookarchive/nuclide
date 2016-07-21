@@ -28,14 +28,13 @@ import {trackOperationTiming} from '../../nuclide-analytics';
  * Calls the given functions and returns the first non-null return value.
  */
 async function findTruthyReturnValue(fns: Array<void | () => Promise<any>>): Promise<any> {
-  /* eslint-disable babel/no-await-in-loop */
   for (const fn of fns) {
+    // eslint-disable-next-line babel/no-await-in-loop
     const result = typeof fn === 'function' ? await fn() : null;
     if (result) {
       return result;
     }
   }
-  /* eslint-enable babel/no-await-in-loop */
 }
 
 /**

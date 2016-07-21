@@ -196,9 +196,8 @@ export async function createExecEnvironment(
 
 function logError(...args) {
   // Can't use nuclide-logging here to not cause cycle dependency.
-  /*eslint-disable no-console*/
+  // eslint-disable-next-line no-console
   console.error(...args);
-  /*eslint-enable no-console*/
 }
 
 function monitorStreamErrors(process: child_process$ChildProcess, command, args, options): void {

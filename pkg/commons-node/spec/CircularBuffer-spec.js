@@ -20,8 +20,8 @@ describe('CircularBuffer', () => {
 
       // This verifies that CircularBuffer implements Iterable correctly by demonstrating that it
       // works with for/of.
-      // $FlowIssue: t6187050
-      for (const element of buffer) { // eslint-disable-line no-unused-vars
+      /* $FlowIssue: t6187050 */ // eslint-disable-next-line no-unused-vars
+      for (const element of buffer) {
         throw new Error('Should not iterate anything when empty.');
       }
     });
@@ -136,8 +136,8 @@ describe('CircularBuffer', () => {
       const buffer = new CircularBuffer(4);
       buffer.push('A');
       buffer.push('B');
-      // $FlowIssue: t6187050
-      for (const element of buffer) { // eslint-disable-line no-unused-vars
+      /* $FlowIssue: t6187050 */ // eslint-disable-next-line no-unused-vars
+      for (const element of buffer) {
         buffer.push('C');
       }
     })

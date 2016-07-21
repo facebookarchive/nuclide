@@ -27,18 +27,21 @@ describe('TestRunnerController', () => {
   describe('on initialization', () => {
 
     it('does not create a panel if `panelVisible` is false', () => {
-      new TestRunnerController({panelVisible: false}, testRunners); // eslint-disable-line no-new
+      const testRunnerController = new TestRunnerController({panelVisible: false}, testRunners);
       expect(atom.workspace.getBottomPanels().length).toEqual(0);
+      testRunnerController.destroy();
     });
 
     it('does not create a panel if no state is provided', () => {
-      new TestRunnerController(undefined, testRunners); // eslint-disable-line no-new
+      const testRunnerController = new TestRunnerController(undefined, testRunners);
       expect(atom.workspace.getBottomPanels().length).toEqual(0);
+      testRunnerController.destroy();
     });
 
     it('creates a panel if `panelVisible` is true', () => {
-      new TestRunnerController({panelVisible: true}, testRunners); // eslint-disable-line no-new
+      const testRunnerController = new TestRunnerController({panelVisible: true}, testRunners);
       expect(atom.workspace.getBottomPanels().length).toEqual(1);
+      testRunnerController.destroy();
     });
 
   });

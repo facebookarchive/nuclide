@@ -1,7 +1,8 @@
 'use babel';
 /* @flow */
 
-/*eslint-disable nuclide-internal/license-header*/
+/* eslint-disable nuclide-internal/license-header */
+
 import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import grammarTest from 'atom-grammar-test';

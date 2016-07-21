@@ -144,13 +144,16 @@ function loggingObserver(message: string): Observer<any> {
   const Rx = require('rxjs');
   return Rx.Observer.create(
     value => {
-      console.log(`${message}: ${JSON.stringify(value)}`); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.log(`${message}: ${JSON.stringify(value)}`);
     },
     error => {
-      console.log(`Error ${message}: ${error.toString()}`); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.log(`Error ${message}: ${error.toString()}`);
     },
     () => {
-      console.log('Completed: ' + message); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.log('Completed: ' + message);
     },
   );
 }

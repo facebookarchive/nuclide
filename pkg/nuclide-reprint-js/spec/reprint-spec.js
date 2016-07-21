@@ -49,8 +49,9 @@ describe('reprint', () => {
   });
 });
 
-function firstDifference(a, b) { //eslint-disable-line no-unused-vars
-  /*eslint-disable no-console*/
+// eslint-disable-next-line no-unused-vars
+function firstDifference(a, b) {
+  /* eslint-disable no-console */
   for (let i = 0; i < a.length && i < b.length; i++) {
     if (a.charAt(i) !== b.charAt(i)) {
       console.log();
@@ -61,4 +62,5 @@ function firstDifference(a, b) { //eslint-disable-line no-unused-vars
       break;
     }
   }
+  /* eslint-enable no-console */
 }

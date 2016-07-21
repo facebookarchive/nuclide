@@ -34,15 +34,16 @@ export async function getCommandInfo(): Promise<?CommandInfo> {
     .filter(uri => !nuclideUri.isRemote(uri));
 
   for (const dir of localDirectories) {
-    const commandInfo =
-      await getCommandFromNodePackage(dir); // eslint-disable-line babel/no-await-in-loop
+    // eslint-disable-next-line babel/no-await-in-loop
+    const commandInfo = await getCommandFromNodePackage(dir);
     if (commandInfo != null) {
       return commandInfo;
     }
   }
 
   for (const dir of localDirectories) {
-    const commandInfo = await getCommandFromBuck(dir); // eslint-disable-line babel/no-await-in-loop
+    // eslint-disable-next-line babel/no-await-in-loop
+    const commandInfo = await getCommandFromBuck(dir);
     if (commandInfo != null) {
       return commandInfo;
     }

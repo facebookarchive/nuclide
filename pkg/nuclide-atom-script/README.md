@@ -17,7 +17,7 @@ import type {ExitCode} from 'nuclide-atom-script';
 
 export default async function runCommand(args: Array<string>): Promise<ExitCode> {
   const message = args.length === 0 ? 'Please pass me an arg!' : args.join(' ');
-  console.log(message); // eslint-disable-line no-console
+  console.log(message);
   return 0;
 }
 ```
@@ -50,7 +50,7 @@ export default async function runCommand(args: Array<string>): Promise<ExitCode>
   }
 
   commands.sort();
-  commands.forEach(command => console.log(command)); // eslint-disable-line no-console
+  commands.forEach(command => console.log(command));
   return 0;
 }
 ```
