@@ -146,10 +146,12 @@ export class ConnectionMultiplexer {
 
     this._status = STATUS_RUNNING;
 
-    this._clientCallback.sendUserMessage('console', {
+    const pleaseWaitMessage = {
       level: 'warning',
       text: 'Pre-loading, please wait...',
-    });
+    };
+    this._clientCallback.sendUserMessage('console', pleaseWaitMessage);
+    this._clientCallback.sendUserMessage('outputWindow', pleaseWaitMessage);
     this._dummyRequestProcess = sendDummyRequest();
 
     if (launchScriptPath != null) {
@@ -191,10 +193,9 @@ export class ConnectionMultiplexer {
     });
     this._dummyConnection = dummyConnection;
 
-    this._clientCallback.sendUserMessage('console', {
-      level: 'warning',
-      text: 'Pre-loading is done. You can use console window now.',
-    });
+    const text = 'Pre-loading is done! You can use console window now.';
+    this._clientCallback.sendUserMessage('console', {text, level: 'warning'});
+    this._clientCallback.sendUserMessage('outputWindow', {text, level: 'success'});
   }
 
   // For testing purpose.
