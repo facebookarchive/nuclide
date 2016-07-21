@@ -134,7 +134,7 @@ export class DebuggerConnection {
       logTrace(`forward client message to lldb: ${message}`);
       lldbWebSocket.send(message);
     } else {
-      logError(`Nuclide sent message to LLDB after socket closed: ${message}`);
+      logInfo(`Nuclide sent message to LLDB after socket closed: ${message}`);
     }
   }
 
