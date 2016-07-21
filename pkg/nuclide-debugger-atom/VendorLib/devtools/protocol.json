@@ -3747,6 +3747,7 @@
                 "parameters": [
                     { "name": "callFrames", "type": "array", "items": { "$ref": "CallFrame" }, "description": "Call stack the virtual machine stopped on." },
                     { "name": "reason", "type": "string", "enum": [ "XHR", "DOM", "EventListener", "exception", "assert", "CSPViolation", "debugCommand", "promiseRejection", "AsyncOperation", "other" ], "description": "Pause reason." },
+                    { "name": "threadSwitchMessage", "type": "string","optional": true, "description": "The message to be shown to the user when the thread changes."},                    
                     { "name": "data", "type": "object", "optional": true, "description": "Object containing break-specific auxiliary properties." },
                     { "name": "hitBreakpoints", "type": "array", "optional": true, "items": { "type": "string" }, "description": "Hit breakpoints IDs", "hidden": true },
                     { "name": "asyncStackTrace", "$ref": "StackTrace", "optional": true, "description": "Async stack trace, if any.", "hidden": true }

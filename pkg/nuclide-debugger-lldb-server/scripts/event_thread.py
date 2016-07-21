@@ -141,13 +141,22 @@ class LLDBListenerThread(Thread):
         output = 'Debugger paused at thread(%d) because of: %s' % (
             thread.GetThreadID(),
             self._debugger_store.thread_manager.get_thread_stop_description(thread))
-
         self._send_user_output('log', output)
-        params = {
-          "callFrames": self._debugger_store.thread_manager.get_thread_stack(thread),
-          "reason": serialize.StopReason_to_string(thread.GetStopReason()),
-          "data": {},
-        }
+        threadSwitchMessage = self._debugger_store.thread_manager.get_thread_switch_message()
+        if threadSwitchMessage:
+            self._send_user_output('info', threadSwitchMessage)
+            params = {
+              "callFrames": self._debugger_store.thread_manager.get_thread_stack(thread),
+              "reason": serialize.StopReason_to_string(thread.GetStopReason()),
+              "threadSwitchMessage": threadSwitchMessage,
+              "data": {},
+              }
+        else:
+            params = {
+              "callFrames": self._debugger_store.thread_manager.get_thread_stack(thread),
+              "reason": serialize.StopReason_to_string(thread.GetStopReason()),
+              "data": {},
+              }
         self._send_notification('Debugger.paused', params)
 
     def _update_stop_thread(self, process):

@@ -21,6 +21,8 @@ class ThreadManager(object):
         """Initialize a ThreadManager for a given connection.
         """
         self._debugger_store = debugger_store
+        self._previousStopThreadId = None
+        self._threadSwitchMessage = None
 
     def update(self, process):
         """Update threads status for input process."""
@@ -41,10 +43,16 @@ class ThreadManager(object):
                 'stopReason': self.get_thread_stop_description(thread),
                 'description': description_stream.GetData(),
             })
-
+        stopThreadId = process.GetSelectedThread().GetThreadID()
+        if self._previousStopThreadId != stopThreadId:
+            self._threadSwitchMessage = "Switching from thread {0} to thread {1}".format(
+                self._previousStopThreadId, stopThreadId)
+        else:
+            self._threadSwitchMessage = None
+        self._previousStopThreadId = stopThreadId
         params = {
             'owningProcessId': process.id,
-            'stopThreadId': process.GetSelectedThread().GetThreadID(),
+            'stopThreadId': stopThreadId,
             'threads': threads_array,
         }
         self._debugger_store.chrome_channel.send_notification('Debugger.threadsUpdated', params)
@@ -81,6 +89,9 @@ class ThreadManager(object):
         offset = frame.GetPCAddress().GetLoadAddress(target) \
             - frame.GetSymbol().GetStartAddress().GetLoadAddress(target)
         return "%s +%x" % (frame.name, offset)
+
+    def get_thread_switch_message(self):
+        return self._threadSwitchMessage
 
     def release(self):
         self._debugger_store.remote_object_manager.release_object_group(CALL_STACK_OBJECT_GROUP)
