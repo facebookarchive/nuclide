@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.157.0
+
+* Hotfix service framework erroring on undefined object values (fixes remote Flow type tooltips).
+
 ## v0.156.0
 
 ### General
