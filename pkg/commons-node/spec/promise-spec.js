@@ -550,8 +550,7 @@ describe('promises::RequestSerializer()', () => {
       const {status: oldStatus} = await oldPromise;
       expect(oldStatus).toBe('outdated');
       const newResult = await newPromise;
-      expect(newResult.status).toBe('success');
-      invariant(newResult.result);
+      invariant(newResult.status === 'success');
       expect(newResult.result).toBe('NEW');
     });
   });

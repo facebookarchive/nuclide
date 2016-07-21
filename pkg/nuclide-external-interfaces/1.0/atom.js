@@ -1278,6 +1278,7 @@ declare class atom$TextBuffer {
   cachedDiskContents: ?string,
   emitter: atom$Emitter,
   refcount: number,
+  loaded: boolean,
   wasModifiedBeforeRemove: boolean,
   finishLoading(): atom$TextBuffer,
   updateCachedDiskContents(flushCache?: boolean, callback?: () => mixed): Promise<void>,
@@ -1564,4 +1565,5 @@ declare module 'electron' {
   declare var app: any;
   declare var BrowserWindow: any;
   declare function ipcRenderer(channel: string, ...args: any[]): void;
+  declare var remote: {};
 }
