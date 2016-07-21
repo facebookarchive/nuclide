@@ -25,6 +25,7 @@ type DebuggerSteppingComponentProps = {
   actions: DebuggerActions,
   debuggerMode: DebuggerModeType,
   pauseOnException: boolean,
+  pauseOnCaughtException: boolean,
 };
 
 export class DebuggerSteppingComponent extends React.Component {
@@ -39,11 +40,12 @@ export class DebuggerSteppingComponent extends React.Component {
       actions,
       debuggerMode,
       pauseOnException,
+      pauseOnCaughtException,
     } = this.props;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     return (
       <div className="nuclide-debugger-atom-stepping-component">
-        <ButtonGroup>
+        <ButtonGroup className="nuclide-debugger-atom-stepping-buttongroup">
           <Button
             icon={isPaused ? 'playback-play' : 'playback-pause'}
             title={isPaused ? 'pause' : 'continue'}
@@ -77,11 +79,36 @@ export class DebuggerSteppingComponent extends React.Component {
           />
         </ButtonGroup>
         <Checkbox
-          className="nuclide-debugger-atom-paused-on-exception-checkbox"
+          className="nuclide-debugger-atom-exception-checkbox"
           onChange={() => actions.togglePauseOnException(!pauseOnException)}
           checked={pauseOnException}
-          label="Pause on exception"
+          label={pauseOnException ? 'Pause on' : 'Pause on exception'}
         />
+        {pauseOnException
+          ?
+          [
+            <ButtonGroup key="first">
+              <Button
+                size="EXTRA_SMALL"
+                selected={!pauseOnCaughtException}
+                onClick={() => actions.togglePauseOnCaughtException(false)}>
+                uncaught
+              </Button>
+              <Button
+                size="EXTRA_SMALL"
+                selected={pauseOnCaughtException}
+                onClick={() => actions.togglePauseOnCaughtException(true)}>
+                any
+              </Button>
+            </ButtonGroup>,
+            <span
+              key="second"
+              className="nuclide-debugger-atom-exception-fragment">
+              {' exception'}
+            </span>,
+          ]
+          : null
+        }
       </div>
     );
   }

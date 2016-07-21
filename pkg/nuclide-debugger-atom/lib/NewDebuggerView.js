@@ -58,6 +58,7 @@ export class NewDebuggerView extends React.Component {
   props: Props;
   state: {
     togglePauseOnException: boolean,
+    togglePauseOnCaughtException: boolean,
     debuggerMode: DebuggerModeType,
     callstack: ?Callstack,
     breakpoints: ?FileLineBreakpoints,
@@ -84,6 +85,7 @@ export class NewDebuggerView extends React.Component {
     this.state = {
       debuggerMode: props.model.getStore().getDebuggerMode(),
       togglePauseOnException: props.model.getStore().getTogglePauseOnException(),
+      togglePauseOnCaughtException: props.model.getStore().getTogglePauseOnCaughtException(),
       callstack: props.model.getCallstackStore().getCallstack(),
       breakpoints: storeBreakpointsToViewBreakpoints(
         props.model.getBreakpointStore().getAllBreakpoints(),
@@ -98,6 +100,7 @@ export class NewDebuggerView extends React.Component {
         this.setState({
           debuggerMode: debuggerStore.getDebuggerMode(),
           togglePauseOnException: debuggerStore.getTogglePauseOnException(),
+          togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
         });
       }),
     );
@@ -137,6 +140,7 @@ export class NewDebuggerView extends React.Component {
             actions={actions}
             debuggerMode={this.state.debuggerMode}
             pauseOnException={this.state.togglePauseOnException}
+            pauseOnCaughtException={this.state.togglePauseOnCaughtException}
           />
         </Section>
         <Section collapsable={true} headline="Call Stack">

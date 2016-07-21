@@ -51,6 +51,7 @@ class DebuggerStore {
   _processSocket: ?string;
   _debuggerMode: DebuggerModeType;
   _togglePauseOnException: boolean;
+  _togglePauseOnCaughtException: boolean;
   _onLoaderBreakpointResume: () => void;
   _registerExecutor: ?() => IDisposable;
   _consoleDisposable: ?IDisposable;
@@ -70,6 +71,7 @@ class DebuggerStore {
     this._processSocket = null;
     this._debuggerMode = DebuggerMode.STOPPED;
     this._togglePauseOnException = false;
+    this._togglePauseOnCaughtException = false;
     this._registerExecutor = null;
     this._consoleDisposable = null;
     this.loaderBreakpointResumePromise = new Promise(resolve => {
@@ -131,6 +133,10 @@ class DebuggerStore {
     return this._togglePauseOnException;
   }
 
+  getTogglePauseOnCaughtException(): boolean {
+    return this._togglePauseOnCaughtException;
+  }
+
   getSettings(): DebuggerSettings {
     return this._debuggerSettings;
   }
@@ -170,6 +176,11 @@ class DebuggerStore {
         const pauseOnException = payload.data;
         this._togglePauseOnException = pauseOnException;
         this._model.getBridge().setPauseOnException(pauseOnException);
+        break;
+      case Constants.Actions.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION:
+        const pauseOnCaughtException = payload.data;
+        this._togglePauseOnCaughtException = pauseOnCaughtException;
+        this._model.getBridge().setPauseOnCaughtException(pauseOnCaughtException);
         break;
       case Constants.Actions.DEBUGGER_MODE_CHANGE:
         this._debuggerMode = payload.data;

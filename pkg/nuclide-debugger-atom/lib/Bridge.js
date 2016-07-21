@@ -180,6 +180,16 @@ class Bridge {
     }
   }
 
+  setPauseOnCaughtException(pauseOnCaughtExceptionEnabled: boolean): void {
+    if (this._webview) {
+      this._webview.send(
+        'command',
+        'setPauseOnCaughtException',
+        pauseOnCaughtExceptionEnabled,
+      );
+    }
+  }
+
   _evaluateOnSelectedCallFrame(
     expression: string,
     objectGroup: ObjectGroup,

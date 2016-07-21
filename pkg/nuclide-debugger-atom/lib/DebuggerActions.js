@@ -390,6 +390,13 @@ class DebuggerActions {
     });
   }
 
+  togglePauseOnCaughtException(pauseOnCaughtException: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION,
+      data: pauseOnCaughtException,
+    });
+  }
+
   updateLocals(locals: ExpansionResult): void {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.UPDATE_LOCALS,

@@ -302,6 +302,7 @@ declare class WebInspector$SidebarPane extends WebInspector$View {
 declare class WebInspector$Settings {
   breakpoints: WebInspector$Setting<Array<mixed>>,
   pauseOnExceptionEnabled: WebInspector$Setting<boolean>,
+  pauseOnCaughtException: WebInspector$Setting<boolean>,
 }
 
 declare class WebInspector$Setting<T> {

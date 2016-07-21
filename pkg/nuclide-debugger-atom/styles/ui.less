@@ -143,10 +143,19 @@ Use flexbox cross-axis stretch to fill the vertical space.
 /* Stepping controls */
 .nuclide-debugger-atom-stepping-component {
   display: flex;
+  flex-wrap: wrap;
 }
 
-.nuclide-debugger-atom-paused-on-exception-checkbox {
+.nuclide-debugger-atom-stepping-buttongroup {
+  margin-right: 1em;
+}
+
+.nuclide-debugger-atom-exception-checkbox {
   cursor: pointer;
-  margin-left: 1em;
+  margin-right: 0.5em;
   margin-top: 4px;
+}
+
+.nuclide-debugger-atom-exception-fragment {
+  margin: 5px 0 0 0.5em;
 }

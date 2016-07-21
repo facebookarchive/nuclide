@@ -212,6 +212,9 @@ class NuclideBridge {
       case 'setPauseOnException':
         this._setPauseOnException(args[0]);
         break;
+      case 'setPauseOnCaughtException':
+        this._setPauseOnCaughtException(args[0]);
+        break;
     }
   }
 
@@ -362,6 +365,10 @@ class NuclideBridge {
 
   _setPauseOnException(pauseOnExceptionEnabled: boolean): void {
     WebInspector.settings.pauseOnExceptionEnabled.set(pauseOnExceptionEnabled);
+  }
+
+  _setPauseOnCaughtException(pauseOnCaughtExceptionEnabled: boolean): void {
+    WebInspector.settings.pauseOnCaughtException.set(pauseOnCaughtExceptionEnabled);
   }
 
   _triggerDebuggerAction(actionId: string): void {
