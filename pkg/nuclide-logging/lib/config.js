@@ -82,6 +82,13 @@ module.exports = {
           },
         },
         {
+          type: 'logLevelFilter',
+          level: 'ALL',
+          appender: {
+            type: nuclideUri.join(__dirname, './nuclideConsoleAppender'),
+          },
+        },
+        {
           type: 'dateFile',
           alwaysIncludePattern: true,
           absolute: true,
