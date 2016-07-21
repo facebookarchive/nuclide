@@ -269,9 +269,11 @@ describe('TypeRegistry', () => {
 
       // Undefined is acceptable for nullable fields.
       const expected3 = {a: undefined, b: new Buffer('test')};
+      const marshalled = await typeRegistry.marshal(context, expected3, customObjectType);
       const result3 = await typeRegistry.unmarshal(
         context,
-        await typeRegistry.marshal(context, expected3, customObjectType),
+        // JSON omits undefined values, so accurately test that.
+        JSON.parse(JSON.stringify(marshalled)),
         customObjectType,
       );
       expect(result3.a).toBe(undefined);

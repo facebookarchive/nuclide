@@ -544,8 +544,9 @@ export class TypeRegistry {
           } else {
             newObj[prop.name] = value;
           }
-        } else if (!prop.optional) {
+        } else if (!prop.optional && !canBeUndefined(prop.type)) {
           // If the property is optional, it's okay for it to be missing.
+          // JSON omits undefined values, so they can also be missing.
           throw new Error(
             `Source object: ${JSON.stringify(obj)} is missing property ${prop.name}.`,
           );
