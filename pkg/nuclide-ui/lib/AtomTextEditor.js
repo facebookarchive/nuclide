@@ -37,6 +37,10 @@ function setupTextEditor(props: Props): atom$TextEditor {
   }
   textEditor.setSoftWrapped(props.softWrapped);
 
+  if (props.placeholderText) {
+    textEditor.setPlaceholderText(props.placeholderText);
+  }
+
   // As of the introduction of atom.workspace.buildTextEditor(), it is no longer possible to
   // subclass TextEditor to create a ReadOnlyTextEditor. Instead, the way to achieve this effect
   // is to create an ordinary TextEditor and then override any methods that would allow it to
@@ -85,6 +89,7 @@ type Props = {
   gutterHidden: boolean,
   grammar?: ?Object,
   path?: string,
+  placeholderText?: string,
   readOnly: boolean,
   textBuffer?: TextBuffer,
   syncTextContents: boolean,
