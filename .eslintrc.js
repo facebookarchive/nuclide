@@ -198,6 +198,7 @@ module.exports = {
     'max-params': 0,
     'max-statements': 0,
     'max-statements-per-line': 0,
+    'multiline-ternary': 0,
     'new-cap': 0,
     'new-parens': 1,
     'newline-after-var': 0,
