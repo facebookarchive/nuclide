@@ -10,7 +10,15 @@
  */
 
 import type {Gadget} from '../../../nuclide-gadgets/lib/types';
-import type {OutputProvider, OutputProviderStatus, Record, Store, Executor} from '../types';
+import type {
+  AppState,
+  Executor,
+  OutputProvider,
+  OutputProviderStatus,
+  Record,
+  Source,
+  Store,
+} from '../types';
 
 import getCurrentExecutorId from '../getCurrentExecutorId';
 import * as Actions from '../redux/Actions';
@@ -24,6 +32,7 @@ type State = {
   providerStatuses: Map<string, OutputProviderStatus>,
   ready: boolean,
   records: Array<Record>,
+  sources: Array<Source>,
   executors: Map<string, Executor>,
 };
 
@@ -53,6 +62,7 @@ export default function createConsoleGadget(store: Store): Gadget {
         providerStatuses: new Map(),
         executors: new Map(),
         records: [],
+        sources: [],
       };
     }
 
@@ -82,6 +92,7 @@ export default function createConsoleGadget(store: Store): Gadget {
             providers: state.providers,
             providerStatuses: state.providerStatuses,
             records: state.records,
+            sources: getSources(state),
           });
         });
     }
@@ -104,16 +115,6 @@ export default function createConsoleGadget(store: Store): Gadget {
     render(): ?React.Element<any> {
       if (!this.state.ready) { return <span />; }
 
-      const sources = Array.from(this.state.providers.values())
-        .map(source => {
-          return {
-            id: source.id,
-            name: source.id,
-            status: this.state.providerStatuses.get(source.id) || 'stopped',
-            start: source.start != null ? source.start : undefined,
-            stop: source.stop != null ? source.stop : undefined,
-          };
-        });
       const actionCreators = this._getBoundActionCreators();
       // TODO(matthewwithanm): serialize and restore `initialSelectedSourceId`
       return (
@@ -124,7 +125,7 @@ export default function createConsoleGadget(store: Store): Gadget {
           currentExecutor={this.state.currentExecutor}
           initialUnselectedSourceIds={[]}
           records={this.state.records}
-          sources={sources}
+          sources={this.state.sources}
           executors={this.state.executors}
           getProvider={id => this.state.providers.get(id)}
         />
@@ -134,4 +135,42 @@ export default function createConsoleGadget(store: Store): Gadget {
   }
 
   return ((OutputGadget: any): Gadget);
+}
+
+function getSources(state: AppState): Array<Source> {
+  // Convert the providers to a map of sources.
+  const mapOfSources = new Map(
+    Array.from(state.providers.entries()).map(
+      ([k, provider]) => {
+        const source = {
+          id: provider.id,
+          name: provider.id,
+          status: state.providerStatuses.get(provider.id) || 'stopped',
+          start: provider.start != null ? provider.start : undefined,
+          stop: provider.stop != null ? provider.stop : undefined,
+        };
+        return [k, source];
+      },
+    ),
+  );
+
+  // Some providers may have been unregistered, but still have records. Add sources for them too.
+  // TODO: Iterating over all the records to get this every time we get a new record is inefficient.
+  for (let i = 0, len = state.records.length; i < len; i++) {
+    const record = state.records[i];
+    if (!mapOfSources.has(record.sourceId)) {
+      mapOfSources.set(
+        record.sourceId,
+        {
+          id: record.sourceId,
+          name: record.sourceName || record.sourceId,
+          status: 'stopped',
+          start: undefined,
+          stop: undefined,
+        },
+      );
+    }
+  }
+
+  return Array.from(mapOfSources.values());
 }
