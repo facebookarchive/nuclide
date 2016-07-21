@@ -371,12 +371,13 @@ export class ConnectionMultiplexer {
 
   _reportEvaluationFailureIfNeeded(expression: string, result: EvaluationFailureResult): void {
     if (result.wasThrown) {
-      const message =
-        `Failed to evaluate "${expression}": (${result.error.$.code}) ${result.error.message[0]}`;
-      this._clientCallback.sendUserMessage('console', {
+      const message = {
+        text: 'Failed to evaluate '
+          + `"${expression}": (${result.error.$.code}) ${result.error.message[0]}`,
         level: 'error',
-        text: message,
-      });
+      };
+      this._clientCallback.sendUserMessage('console', message);
+      this._clientCallback.sendUserMessage('outputWindow', message);
     }
   }
 
