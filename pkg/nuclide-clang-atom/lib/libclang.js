@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,152 +10,132 @@
  * the root directory of this source tree.
  */
 
-import type {
-  ClangCompileResult,
-  ClangCompletion,
-  ClangDeclaration,
-  ClangOutlineTree,
-} from '../../nuclide-clang/lib/rpc-types';
-import typeof * as ClangService from '../../nuclide-clang';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import featureConfig from '../../nuclide-feature-config';
-import invariant from 'assert';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+var _nuclideFeatureConfig2;
 
-type NuclideClangConfig = {
-  enableDefaultFlags: boolean,
-  defaultFlags: Array<string>,
-};
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
+}
 
-function getDefaultFlags(): ?Array<string> {
-  const config: NuclideClangConfig = (featureConfig.get('nuclide-clang-atom'): any);
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../../nuclide-remote-connection');
+}
+
+function getDefaultFlags() {
+  var config = (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get('nuclide-clang-atom');
   if (!config.enableDefaultFlags) {
     return null;
   }
   return config.defaultFlags;
 }
 
-const clangServices = new WeakSet();
+var clangServices = new WeakSet();
 
 module.exports = {
 
-  async getDiagnostics(
-    editor: atom$TextEditor,
-  ): Promise<?ClangCompileResult> {
-    const src = editor.getPath();
+  getDiagnostics: _asyncToGenerator(function* (editor) {
+    var src = editor.getPath();
     if (src == null) {
       return null;
     }
-    const contents = editor.getText();
+    var contents = editor.getText();
 
-    const defaultFlags = getDefaultFlags();
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    var defaultFlags = getDefaultFlags();
+    var service = (0, (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
+    (0, (_assert2 || _assert()).default)(service);
 
     // When we fetch diagnostics for the first time, reset the server state.
     // This is so the user can easily refresh the Clang + Buck state by reloading Atom.
     if (!clangServices.has(service)) {
       clangServices.add(service);
-      await service.reset();
+      yield service.reset();
     }
 
-    return service
-        .compile(src, contents, defaultFlags)
-        .toPromise();
-  },
+    return service.compile(src, contents, defaultFlags).toPromise();
+  }),
 
-  async getCompletions(editor: atom$TextEditor, prefix: string): Promise<?Array<ClangCompletion>> {
-    const src = editor.getPath();
+  getCompletions: _asyncToGenerator(function* (editor, prefix) {
+    var src = editor.getPath();
     if (src == null) {
       return null;
     }
-    const cursor = editor.getLastCursor();
+    var cursor = editor.getLastCursor();
 
-    const line = cursor.getBufferRow();
-    const column = cursor.getBufferColumn();
-    const tokenStartColumn = column - prefix.length;
+    var line = cursor.getBufferRow();
+    var column = cursor.getBufferColumn();
+    var tokenStartColumn = column - prefix.length;
 
-    const defaultFlags = getDefaultFlags();
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    var defaultFlags = getDefaultFlags();
+    var service = (0, (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
+    (0, (_assert2 || _assert()).default)(service);
 
-    return service
-      .getCompletions(
-        src,
-        editor.getText(),
-        line,
-        column,
-        tokenStartColumn,
-        prefix,
-        defaultFlags,
-      );
-  },
+    return service.getCompletions(src, editor.getText(), line, column, tokenStartColumn, prefix, defaultFlags);
+  }),
 
   /**
    * If a location can be found for the declaration, it will be available via
    * the 'location' field on the returned object.
    */
-  async getDeclaration(
-    editor: atom$TextEditor,
-    line: number,
-    column: number,
-  ): Promise<?ClangDeclaration> {
-    const src = editor.getPath();
+  getDeclaration: _asyncToGenerator(function* (editor, line, column) {
+    var src = editor.getPath();
     if (src == null) {
       return null;
     }
-    const defaultFlags = getDefaultFlags();
+    var defaultFlags = getDefaultFlags();
 
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    var service = (0, (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
+    (0, (_assert2 || _assert()).default)(service);
 
-    return service
-        .getDeclaration(src, editor.getText(), line, column, defaultFlags);
-  },
+    return service.getDeclaration(src, editor.getText(), line, column, defaultFlags);
+  }),
 
-  async getOutline(editor: atom$TextEditor): Promise<?Array<ClangOutlineTree>> {
-    const src = editor.getPath();
+  getOutline: _asyncToGenerator(function* (editor) {
+    var src = editor.getPath();
     if (src == null) {
       return null;
     }
-    const defaultFlags = getDefaultFlags();
+    var defaultFlags = getDefaultFlags();
 
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-    invariant(service);
+    var service = (0, (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
+    (0, (_assert2 || _assert()).default)(service);
 
-    return service
-        .getOutline(src, editor.getText(), defaultFlags);
-  },
+    return service.getOutline(src, editor.getText(), defaultFlags);
+  }),
 
-  async formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    const fileUri = editor.getPath();
-    const buffer = editor.getBuffer();
-    const cursor = buffer.characterIndexForPosition(editor.getLastCursor().getBufferPosition());
+  formatCode: _asyncToGenerator(function* (editor, range) {
+    var fileUri = editor.getPath();
+    var buffer = editor.getBuffer();
+    var cursor = buffer.characterIndexForPosition(editor.getLastCursor().getBufferPosition());
     if (fileUri == null) {
       return {
-        formatted: editor.getText(),
+        formatted: editor.getText()
       };
     }
-    const startIndex = buffer.characterIndexForPosition(range.start);
-    const endIndex = buffer.characterIndexForPosition(range.end);
+    var startIndex = buffer.characterIndexForPosition(range.start);
+    var endIndex = buffer.characterIndexForPosition(range.end);
 
-    const service: ?ClangService = getServiceByNuclideUri('ClangService', fileUri);
-    invariant(service);
+    var service = (0, (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', fileUri);
+    (0, (_assert2 || _assert()).default)(service);
 
-    return {...(await service
-        .formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex))};
-  },
+    return _extends({}, (yield service.formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex)));
+  }),
 
-  reset(editor: atom$TextEditor) {
-    const src = editor.getPath();
+  reset: function reset(editor) {
+    var src = editor.getPath();
     if (src != null) {
-      const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
-      invariant(service);
+      var service = (0, (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).getServiceByNuclideUri)('ClangService', src);
+      (0, (_assert2 || _assert()).default)(service);
       return service.reset(src);
     }
-  },
+  }
 
 };

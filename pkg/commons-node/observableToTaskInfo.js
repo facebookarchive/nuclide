@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +10,38 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
-import type {TaskEvent, TaskInfo} from '../nuclide-task-runner/lib/types';
+exports.observableToTaskInfo = observableToTaskInfo;
 
-import {DisposableSubscription} from './stream';
+var _stream2;
+
+function _stream() {
+  return _stream2 = require('./stream');
+}
 
 /**
  * Subscribe to an observable and transform it into the TaskInfo interface. The TaskInfo interface
  * allows us to interop with other packages without forcing them to use Rx, but internally,
  * Observables are probably how we'll always build the functionality.
  */
-export function observableToTaskInfo(observable: Observable<TaskEvent>): TaskInfo {
-  const events = observable.share().publish();
-  const subscription = events.connect();
+
+function observableToTaskInfo(observable) {
+  var events = observable.share().publish();
+  var subscription = events.connect();
 
   return {
-    observeProgress(callback: (progress: ?number) => mixed): IDisposable {
-      return new DisposableSubscription(
-        events.map(event => event.progress).subscribe({next: callback, error: () => {}}),
-      );
+    observeProgress: function observeProgress(callback) {
+      return new (_stream2 || _stream()).DisposableSubscription(events.map(function (event) {
+        return event.progress;
+      }).subscribe({ next: callback, error: function error() {} }));
     },
-    onDidComplete(callback: () => mixed): IDisposable {
-      return new DisposableSubscription(
-        events.subscribe({complete: callback, error: () => {}}),
-      );
+    onDidComplete: function onDidComplete(callback) {
+      return new (_stream2 || _stream()).DisposableSubscription(events.subscribe({ complete: callback, error: function error() {} }));
     },
-    onDidError(callback: (error: Error) => mixed): IDisposable {
-      return new DisposableSubscription(
-        events.subscribe({error: callback}),
-      );
+    onDidError: function onDidError(callback) {
+      return new (_stream2 || _stream()).DisposableSubscription(events.subscribe({ error: callback }));
     },
-    cancel(): void {
+    cancel: function cancel() {
       subscription.unsubscribe();
-    },
+    }
   };
 }

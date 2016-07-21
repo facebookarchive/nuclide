@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.normalizeIdentifier = normalizeIdentifier;
+exports.isDefaultConfigValue = isDefaultConfigValue;
+exports.getDefaultConfigValue = getDefaultConfigValue;
+exports.getDefaultConfigValueString = getDefaultConfigValueString;
+exports.parseValue = parseValue;
+exports.valueToString = valueToString;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +18,23 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
+var _nuclideFeatureConfig2;
 
-function getConfigValueString(keyPath: string): string {
-  const value = featureConfig.get(keyPath);
+function _nuclideFeatureConfig() {
+  return _nuclideFeatureConfig2 = _interopRequireDefault(require('../../nuclide-feature-config'));
+}
+
+function getConfigValueString(keyPath) {
+  var value = (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get(keyPath);
   return valueToString(value);
 }
 
-export function normalizeIdentifier(id: string): string {
+function normalizeIdentifier(id) {
   return id.replace(/[^A-Za-z0-9_-]/g, '_');
 }
 
-export function isDefaultConfigValue(keyPath: string, value: ?any): boolean {
-  const defaultValue = getDefaultConfigValueString(keyPath);
+function isDefaultConfigValue(keyPath, value) {
+  var defaultValue = getDefaultConfigValueString(keyPath);
   if (value) {
     value = valueToString(value);
   } else {
@@ -30,32 +43,36 @@ export function isDefaultConfigValue(keyPath: string, value: ?any): boolean {
   return !value || defaultValue === value;
 }
 
-export function getDefaultConfigValue(keyPath: string): mixed {
-  const params = {excludeSources: [atom.config.getUserConfigPath()]};
-  return featureConfig.get(keyPath, params);
+function getDefaultConfigValue(keyPath) {
+  var params = { excludeSources: [atom.config.getUserConfigPath()] };
+  return (_nuclideFeatureConfig2 || _nuclideFeatureConfig()).default.get(keyPath, params);
 }
 
-export function getDefaultConfigValueString(keyPath: string): string {
+function getDefaultConfigValueString(keyPath) {
   return valueToString(getDefaultConfigValue(keyPath));
 }
 
-export function parseValue(type: string, value: any): any {
-  let result = value;
+function parseValue(type, value) {
+  var result = value;
   if (value === '') {
     result = undefined;
   } else if (type === 'number') {
-    const floatValue = parseFloat(value);
+    var floatValue = parseFloat(value);
     if (!isNaN(floatValue)) {
       result = floatValue;
     }
   } else if (type === 'array') {
-    const arrayValue = (value ? value : '').split(',');
-    result = arrayValue.filter(item => Boolean(item)).map(item => item.trim());
+    var arrayValue = (value ? value : '').split(',');
+    result = arrayValue.filter(function (item) {
+      return Boolean(item);
+    }).map(function (item) {
+      return item.trim();
+    });
   }
   return result;
 }
 
-export function valueToString(value: any): string {
+function valueToString(value) {
   if (Array.isArray(value)) {
     return value.join(', ');
   } else {

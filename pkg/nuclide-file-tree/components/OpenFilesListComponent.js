@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,135 +10,176 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {React, PureRenderMixin} from 'react-for-atom';
-import classnames from 'classnames';
-import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
-import FileTreeHelpers from '../lib/FileTreeHelpers';
-import {track} from '../../nuclide-analytics';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type OpenFileEntry = {
-  name: string,
-  uri: NuclideUri,
-  isModified: boolean,
-  isSelected: boolean,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-type Props = {
-  uris: Array<NuclideUri>,
-  modifiedUris: Array<NuclideUri>,
-  activeUri: ?NuclideUri,
-};
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-type State = {
-  hoveredUri: ?NuclideUri,
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export class OpenFilesListComponent extends React.Component {
-  props: Props;
-  state: State;
+var _reactForAtom2;
 
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      hoveredUri: null,
-    };
-    (this: any)._onListItemMouseLeave = this._onListItemMouseLeave.bind(this);
-  }
-
-  shouldComponentUpdate(nextProps: Object, nextState: State): boolean {
-    return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
-  }
-
-  componentDidUpdate(prevProps: Props): void {
-    const selectedRow = this.refs.selectedRow;
-    if (selectedRow != null && prevProps.activeUri !== this.props.activeUri) {
-      selectedRow.scrollIntoViewIfNeeded();
-    }
-  }
-
-  _onClick(entry: OpenFileEntry, event: SyntheticEvent): void {
-    if (event.defaultPrevented) {
-      return;
-    }
-
-    const uri = entry.uri;
-    track('filetree-open-from-open-files', {uri});
-    atom.workspace.open(uri, {searchAllPanes: true});
-  }
-
-  _onCloseClick(entry: OpenFileEntry, event: SyntheticEvent): void {
-    const uri = entry.uri;
-    track('filetree-close-from-open-files', {uri});
-    event.preventDefault();
-    atom.workspace.getPanes().forEach(pane => {
-      pane.getItems().filter(item => item.getPath && item.getPath() === uri).forEach(item => {
-        pane.destroyItem(item);
-      });
-    });
-  }
-
-  _onListItemMouseEnter(entry: OpenFileEntry) {
-    this.setState({
-      hoveredUri: entry.uri,
-    });
-  }
-
-  _onListItemMouseLeave() {
-    this.setState({
-      hoveredUri: null,
-    });
-  }
-
-  render(): React.Element<any> {
-    const sortedEntries = propsToEntries(this.props);
-
-    return (
-      <div className="nuclide-file-tree-open-files">
-        <PanelComponentScroller>
-          <ul className="list-tree nuclide-file-tree-open-files-list">
-          {sortedEntries.map(e => {
-            const isHoveredUri = this.state.hoveredUri === e.uri;
-            return (
-              <li
-                className={classnames('list-item', {
-                  'selected': e.isSelected,
-                  'text-highlight': isHoveredUri,
-                })}
-                key={e.uri}
-                onClick={this._onClick.bind(this, e)}
-                onMouseEnter={this._onListItemMouseEnter.bind(this, e)}
-                onMouseLeave={this._onListItemMouseLeave}
-                ref={e.isSelected ? 'selectedRow' : null}>
-                <span
-                  className={classnames('icon', {
-                    'icon-primitive-dot': e.isModified && !isHoveredUri,
-                    'icon-x': isHoveredUri || !e.isModified,
-                    'text-info': e.isModified,
-                  })}
-                  onClick={this._onCloseClick.bind(this, e)}
-                />
-                <span className="icon icon-file-text">
-                  {e.name}
-                </span>
-              </li>
-            );
-          })}
-          </ul>
-        </PanelComponentScroller>
-      </div>
-    );
-  }
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
 }
 
-function propsToEntries(props: Props): Array<OpenFileEntry> {
-  const entries = props.uris.map(uri => {
-    const isModified = props.modifiedUris.indexOf(uri) >= 0;
-    const isSelected = uri === props.activeUri;
-    return {uri, name: FileTreeHelpers.keyToName(uri), isModified, isSelected};
+var _classnames2;
+
+function _classnames() {
+  return _classnames2 = _interopRequireDefault(require('classnames'));
+}
+
+var _nuclideUiLibPanelComponentScroller2;
+
+function _nuclideUiLibPanelComponentScroller() {
+  return _nuclideUiLibPanelComponentScroller2 = require('../../nuclide-ui/lib/PanelComponentScroller');
+}
+
+var _libFileTreeHelpers2;
+
+function _libFileTreeHelpers() {
+  return _libFileTreeHelpers2 = _interopRequireDefault(require('../lib/FileTreeHelpers'));
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var OpenFilesListComponent = (function (_React$Component) {
+  _inherits(OpenFilesListComponent, _React$Component);
+
+  function OpenFilesListComponent(props) {
+    _classCallCheck(this, OpenFilesListComponent);
+
+    _get(Object.getPrototypeOf(OpenFilesListComponent.prototype), 'constructor', this).call(this, props);
+    this.state = {
+      hoveredUri: null
+    };
+    this._onListItemMouseLeave = this._onListItemMouseLeave.bind(this);
+  }
+
+  _createClass(OpenFilesListComponent, [{
+    key: 'shouldComponentUpdate',
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      return (_reactForAtom2 || _reactForAtom()).PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
+    }
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate(prevProps) {
+      var selectedRow = this.refs.selectedRow;
+      if (selectedRow != null && prevProps.activeUri !== this.props.activeUri) {
+        selectedRow.scrollIntoViewIfNeeded();
+      }
+    }
+  }, {
+    key: '_onClick',
+    value: function _onClick(entry, event) {
+      if (event.defaultPrevented) {
+        return;
+      }
+
+      var uri = entry.uri;
+      (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('filetree-open-from-open-files', { uri: uri });
+      atom.workspace.open(uri, { searchAllPanes: true });
+    }
+  }, {
+    key: '_onCloseClick',
+    value: function _onCloseClick(entry, event) {
+      var uri = entry.uri;
+      (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('filetree-close-from-open-files', { uri: uri });
+      event.preventDefault();
+      atom.workspace.getPanes().forEach(function (pane) {
+        pane.getItems().filter(function (item) {
+          return item.getPath && item.getPath() === uri;
+        }).forEach(function (item) {
+          pane.destroyItem(item);
+        });
+      });
+    }
+  }, {
+    key: '_onListItemMouseEnter',
+    value: function _onListItemMouseEnter(entry) {
+      this.setState({
+        hoveredUri: entry.uri
+      });
+    }
+  }, {
+    key: '_onListItemMouseLeave',
+    value: function _onListItemMouseLeave() {
+      this.setState({
+        hoveredUri: null
+      });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this = this;
+
+      var sortedEntries = propsToEntries(this.props);
+
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-file-tree-open-files' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibPanelComponentScroller2 || _nuclideUiLibPanelComponentScroller()).PanelComponentScroller,
+          null,
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'ul',
+            { className: 'list-tree nuclide-file-tree-open-files-list' },
+            sortedEntries.map(function (e) {
+              var isHoveredUri = _this.state.hoveredUri === e.uri;
+              return (_reactForAtom2 || _reactForAtom()).React.createElement(
+                'li',
+                {
+                  className: (0, (_classnames2 || _classnames()).default)('list-item', {
+                    'selected': e.isSelected,
+                    'text-highlight': isHoveredUri
+                  }),
+                  key: e.uri,
+                  onClick: _this._onClick.bind(_this, e),
+                  onMouseEnter: _this._onListItemMouseEnter.bind(_this, e),
+                  onMouseLeave: _this._onListItemMouseLeave,
+                  ref: e.isSelected ? 'selectedRow' : null },
+                (_reactForAtom2 || _reactForAtom()).React.createElement('span', {
+                  className: (0, (_classnames2 || _classnames()).default)('icon', {
+                    'icon-primitive-dot': e.isModified && !isHoveredUri,
+                    'icon-x': isHoveredUri || !e.isModified,
+                    'text-info': e.isModified
+                  }),
+                  onClick: _this._onCloseClick.bind(_this, e)
+                }),
+                (_reactForAtom2 || _reactForAtom()).React.createElement(
+                  'span',
+                  { className: 'icon icon-file-text' },
+                  e.name
+                )
+              );
+            })
+          )
+        )
+      );
+    }
+  }]);
+
+  return OpenFilesListComponent;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
+
+exports.OpenFilesListComponent = OpenFilesListComponent;
+
+function propsToEntries(props) {
+  var entries = props.uris.map(function (uri) {
+    var isModified = props.modifiedUris.indexOf(uri) >= 0;
+    var isSelected = uri === props.activeUri;
+    return { uri: uri, name: (_libFileTreeHelpers2 || _libFileTreeHelpers()).default.keyToName(uri), isModified: isModified, isSelected: isSelected };
   });
 
-  entries.sort((e1, e2) => e1.name.toLowerCase().localeCompare(e2.name.toLowerCase()));
+  entries.sort(function (e1, e2) {
+    return e1.name.toLowerCase().localeCompare(e2.name.toLowerCase());
+  });
   return entries;
 }

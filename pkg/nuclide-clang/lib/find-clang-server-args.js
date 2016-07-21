@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +16,21 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../nuclide-remote-uri';
+var _nuclideRemoteUri2;
 
-import {asyncExecute} from '../../commons-node/process';
+function _nuclideRemoteUri() {
+  return _nuclideRemoteUri2 = _interopRequireDefault(require('../../nuclide-remote-uri'));
+}
 
-let fbFindClangServerArgs;
+var _commonsNodeProcess2;
 
-export default async function findClangServerArgs(): Promise<{
-  libClangLibraryFile: ?string,
-  pythonExecutable: string,
-  pythonPathEnv: ?string,
-}> {
+function _commonsNodeProcess() {
+  return _commonsNodeProcess2 = require('../../commons-node/process');
+}
+
+var fbFindClangServerArgs = undefined;
+
+exports.default = _asyncToGenerator(function* () {
   if (fbFindClangServerArgs === undefined) {
     fbFindClangServerArgs = null;
     try {
@@ -30,13 +41,13 @@ export default async function findClangServerArgs(): Promise<{
     }
   }
 
-  let libClangLibraryFile;
+  var libClangLibraryFile = undefined;
   if (process.platform === 'darwin') {
-    const result = await asyncExecute('xcode-select', ['--print-path']);
+    var result = yield (0, (_commonsNodeProcess2 || _commonsNodeProcess()).asyncExecute)('xcode-select', ['--print-path']);
     if (result.exitCode === 0) {
       libClangLibraryFile = result.stdout.trim();
       // If the user only has Xcode Command Line Tools installed, the path is different.
-      if (nuclideUri.basename(libClangLibraryFile) !== 'CommandLineTools') {
+      if ((_nuclideRemoteUri2 || _nuclideRemoteUri()).default.basename(libClangLibraryFile) !== 'CommandLineTools') {
         libClangLibraryFile += '/Toolchains/XcodeDefault.xctoolchain';
       }
       libClangLibraryFile += '/usr/lib/libclang.dylib';
@@ -45,21 +56,22 @@ export default async function findClangServerArgs(): Promise<{
 
   // TODO(asuarez): Fix this when we have server-side settings.
   if (global.atom) {
-    const path = ((atom.config.get('nuclide.nuclide-clang-atom.libclangPath'): any): ?string);
+    var path = atom.config.get('nuclide.nuclide-clang-atom.libclangPath');
     if (path) {
       libClangLibraryFile = path.trim();
     }
   }
 
-  const clangServerArgs = {
-    libClangLibraryFile,
+  var clangServerArgs = {
+    libClangLibraryFile: libClangLibraryFile,
     pythonExecutable: 'python',
-    pythonPathEnv: nuclideUri.join(__dirname, '../VendorLib'),
+    pythonPathEnv: (_nuclideRemoteUri2 || _nuclideRemoteUri()).default.join(__dirname, '../VendorLib')
   };
   if (typeof fbFindClangServerArgs === 'function') {
-    const clangServerArgsOverrides = await fbFindClangServerArgs();
-    return {...clangServerArgs, ...clangServerArgsOverrides};
+    var clangServerArgsOverrides = yield fbFindClangServerArgs();
+    return _extends({}, clangServerArgs, clangServerArgsOverrides);
   } else {
     return clangServerArgs;
   }
-}
+});
+module.exports = exports.default;

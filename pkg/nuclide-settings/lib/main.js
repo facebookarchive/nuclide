@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +10,55 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget, GadgetsService} from '../../nuclide-gadgets/lib/types';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeGadgetsService = consumeGadgetsService;
+exports.consumeToolBar = consumeToolBar;
 
-import {CompositeDisposable, Disposable} from 'atom';
-import SettingsPaneItem from './SettingsPaneItem';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let subscriptions: CompositeDisposable = (null: any);
+var _atom2;
 
-export function activate(state: ?Object): void {
-  subscriptions = new CompositeDisposable();
+function _atom() {
+  return _atom2 = require('atom');
 }
 
-export function deactivate(): void {
+var _SettingsPaneItem2;
+
+function _SettingsPaneItem() {
+  return _SettingsPaneItem2 = _interopRequireDefault(require('./SettingsPaneItem'));
+}
+
+var subscriptions = null;
+
+function activate(state) {
+  subscriptions = new (_atom2 || _atom()).CompositeDisposable();
+}
+
+function deactivate() {
   subscriptions.dispose();
-  subscriptions = (null: any);
+  subscriptions = null;
 }
 
-export function consumeGadgetsService(api: GadgetsService): IDisposable {
-  const disposable = api.registerGadget(((SettingsPaneItem: any): Gadget));
+function consumeGadgetsService(api) {
+  var disposable = api.registerGadget((_SettingsPaneItem2 || _SettingsPaneItem()).default);
   return disposable;
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
-  const toolBar = getToolBar('nuclide-home');
+function consumeToolBar(getToolBar) {
+  var toolBar = getToolBar('nuclide-home');
   toolBar.addSpacer({
-    priority: -501,
+    priority: -501
   });
   toolBar.addButton({
     icon: 'gear',
     callback: 'nuclide-settings:show',
     tooltip: 'Open Nuclide Settings',
-    priority: -500,
+    priority: -500
   });
-  const disposable = new Disposable(() => { toolBar.removeItems(); });
+  var disposable = new (_atom2 || _atom()).Disposable(function () {
+    toolBar.removeItems();
+  });
   subscriptions.add(disposable);
   return disposable;
 }

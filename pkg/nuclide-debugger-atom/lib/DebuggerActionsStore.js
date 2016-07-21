@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,44 +10,60 @@
  * the root directory of this source tree.
  */
 
-import type Bridge from './Bridge';
-import type {Dispatcher} from 'flux';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {
-  Disposable,
-  CompositeDisposable,
-} from 'atom';
-import Constants from './Constants';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export default class DebuggerActionsStore {
-  _bridge: Bridge;
-  _disposables: IDisposable;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor(dispatcher: Dispatcher, bridge: Bridge) {
-    this._bridge = bridge;
-    const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => {
-        dispatcher.unregister(dispatcherToken);
-      }),
-    );
-  }
+var _atom2;
 
-  _handlePayload(payload: Object) {
-    switch (payload.actionType) {
-      case Constants.Actions.TRIGGER_DEBUGGER_ACTION:
-        this._triggerAction(payload.data.actionId);
-        break;
-      default:
-        return;
-    }
-  }
-
-  _triggerAction(actionId: string): void {
-    this._bridge.triggerAction(actionId);
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
-  }
+function _atom() {
+  return _atom2 = require('atom');
 }
+
+var _Constants2;
+
+function _Constants() {
+  return _Constants2 = _interopRequireDefault(require('./Constants'));
+}
+
+var DebuggerActionsStore = (function () {
+  function DebuggerActionsStore(dispatcher, bridge) {
+    _classCallCheck(this, DebuggerActionsStore);
+
+    this._bridge = bridge;
+    var dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable(new (_atom2 || _atom()).Disposable(function () {
+      dispatcher.unregister(dispatcherToken);
+    }));
+  }
+
+  _createClass(DebuggerActionsStore, [{
+    key: '_handlePayload',
+    value: function _handlePayload(payload) {
+      switch (payload.actionType) {
+        case (_Constants2 || _Constants()).default.Actions.TRIGGER_DEBUGGER_ACTION:
+          this._triggerAction(payload.data.actionId);
+          break;
+        default:
+          return;
+      }
+    }
+  }, {
+    key: '_triggerAction',
+    value: function _triggerAction(actionId) {
+      this._bridge.triggerAction(actionId);
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
+
+  return DebuggerActionsStore;
+})();
+
+exports.default = DebuggerActionsStore;
+module.exports = exports.default;
