@@ -56,7 +56,7 @@ type HeaderProps = {
 
 const Header = (props: HeaderProps) => {
   return (
-    <div className="panel-heading" style={{'flex-shrink': 0}}>
+    <div className="panel-heading" style={{flexShrink: 0}}>
       <h4>
         <span>Context View</span>
         <Button icon="x" className="pull-right"

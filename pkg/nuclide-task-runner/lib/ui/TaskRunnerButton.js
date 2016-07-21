@@ -29,6 +29,7 @@ export function TaskRunnerButton(props: Props): React.Element<any> {
   const buttonProps = {...props};
   delete buttonProps.icon;
   delete buttonProps.label;
+  delete buttonProps.iconComponent;
   const icon = props.icon == null
     ? null
     : <Icon icon={props.icon} className="nuclide-task-runner-system-task-icon" />;

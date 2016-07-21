@@ -147,7 +147,6 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
         if (indicator === '>') {
           children.push(
             <tr
-              align="center"
               onDoubleClick={this._handleDoubleClick.bind(this, thread)}
               style={rowStyle}
               ref={ref => this._setStoppedThread(ref)}>
@@ -160,7 +159,6 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
         } else {
           children.push(
             <tr
-              align="center"
               onDoubleClick={this._handleDoubleClick.bind(this, thread)}
               style={rowStyle}>
               <td>{indicator}</td>
@@ -183,14 +181,14 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
         <div style={containerStyle} className="nuclide-chrome-debugger-data-grid">
           <table width="100%">
             <thead>
-              <tr key={0} align="center">
+              <tr key={0}>
                 <td> </td>
                 <td>ID</td>
                 <td>Address</td>
                 <td>Stop Reason</td>
               </tr>
             </thead>
-            <tbody align="center">
+            <tbody>
               {children}
             </tbody>
           </table>

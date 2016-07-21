@@ -66,7 +66,7 @@ const DebuggerSessionSelector = React.createClass({
               className="form-control"
               onChange={this._handleSelectProcess}
               value={this.state.selectedProcess == null
-                ? null
+                ? ''
                 : this.state.processes.indexOf(this.state.selectedProcess)
               }>
               <option disabled>

@@ -50,6 +50,7 @@ export class DatatipComponent extends React.Component {
       actionTitle,
       ...props,
     } = this.props;
+    delete props.onActionClick;
     let actionButton;
     if (action != null && IconsForAction[action] != null) {
       const actionIcon = IconsForAction[action];

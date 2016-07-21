@@ -59,33 +59,28 @@ export function deactivateAllPackages(): void {
   atom.packages.deactivatePackages();
   atom.packages.unloadPackages();
 
-  // TODO(asuarez): Switch to using ReactComponentTreeDevtool when we upgrade
-  // React. If this is ever missing, make sure we're not testing with the bundled
-  // version of React. And if it's still missing, then retire this test.
+  // If ReactComponentTreeDevtool ever goes missing, make sure we're not testing
+  // with the bundled version of React. If it's still missing, then retire this test.
+  const ReactComponentTreeDevtoolPath =
+    Object.keys(require.cache).find(x => x.endsWith('react/lib/ReactComponentTreeDevtool.js'));
+  expect(typeof ReactComponentTreeDevtoolPath).toBe('string');
 
-  const ReactMountPath =
-    Object.keys(require.cache).find(x => x.endsWith('react/lib/ReactMount.js'));
-  expect(typeof ReactMountPath).toBe('string');
+  const ReactComponentTreeDevtool = require.cache[ReactComponentTreeDevtoolPath].exports;
+  expect(ReactComponentTreeDevtool).toBeDefined();
+  expect(typeof ReactComponentTreeDevtool.getRootIDs).toBe('function');
+  expect(typeof ReactComponentTreeDevtool.getDisplayName).toBe('function');
 
-  const ReactMount = require.cache[ReactMountPath].exports;
-  expect(ReactMount).not.toBeUndefined();
-  expect(ReactMount._instancesByReactRootID).not.toBeUndefined();
+  const rootDisplayNames = ReactComponentTreeDevtool.getRootIDs()
+    .map(rootID => ReactComponentTreeDevtool.getDisplayName(rootID));
 
-  const instances =
-    Object.keys(ReactMount._instancesByReactRootID)
-      .map(x => ReactMount._instancesByReactRootID[x]);
-
-  instances.forEach(inst => {
-    const currElement = inst._renderedComponent._currentElement;
+  rootDisplayNames.forEach(rootDisplayName => {
     // eslint-disable-next-line no-console
     console.error('Found a mounted component. ' +
-      `Did you forget to call React.unmountComponentAtNode on "${
-        currElement.type.displayName || currElement.type.name
-      }"?`,
+      `Did you forget to call React.unmountComponentAtNode on "${rootDisplayName}"?`,
     );
   });
 
-  if (instances.length) {
+  if (rootDisplayNames.length) {
     // eslint-disable-next-line no-console
     console.error(`\
 +------------------------------------------------------------------------------+
@@ -96,16 +91,18 @@ export function deactivateAllPackages(): void {
 |   2. Perform the steps you're testing,                                       |
 |   3. Disable the Nuclide package,                                            |
 |   4. Run:                                                                    |
-|       require.cache[                                                         |
-|         Object.keys(require.cache).find(x => x.endsWith('/ReactMount.js'))   |
-|       ].exports._instancesByReactRootID                                      |
-|                                                                              |
-| That should give you some clues on finding out what isn't getting unmounted. |
+|     ReactComponentTreeDevtool = require.cache[                               |
+|       Object.keys(require.cache)                                             |
+|       .find(x => x.endsWith('/ReactComponentTreeDevtool.js'))                |
+|     ].exports                                                                |
+|   5. Use "ReactComponentTreeDevtool.getRootIDs" and                          |
+|      "ReactComponentTreeDevtool.getElement" to find clues what isn't getting |
+|       unmounted.                                                             |
 |                                                                              |
 | Good luck!                                                                   |
 +------------------------------------------------------------------------------+
     `);
   }
 
-  expect(instances.length).toBe(0);
+  expect(rootDisplayNames.length).toBe(0);
 }

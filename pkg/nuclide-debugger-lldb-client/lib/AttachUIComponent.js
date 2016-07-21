@@ -94,11 +94,9 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
         if (isSelected) {
           hasSelectedItem = true;
         }
-        return <tr key={index + 1}
-            align="center"
-            className={
-              classnames({'attach-selected-row': isSelected})
-            }
+        return <tr
+            key={index + 1}
+            className={classnames({'attach-selected-row': isSelected})}
             onClick={this._handleClickTableRow.bind(this, item)}
             onDoubleClick={this._handleDoubleClickTableRow.bind(this, index)}>
           <td>{item.name}</td>
@@ -118,13 +116,13 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
         <div style={containerStyle}>
           <table className="nuclide-debugger-lldb-client-process-table" width="100%">
             <thead>
-            <tr key="0" align="center">
+            <tr key="0">
                 <td>Process Name</td>
                 <td>PID</td>
                 <td>Command Name</td>
               </tr>
             </thead>
-            <tbody align="center">
+            <tbody>
               {children}
             </tbody>
           </table>
