@@ -20,6 +20,7 @@ import {getActiveTaskRunner} from '../getActiveTaskRunner';
 import {getTaskMetadata} from '../getTaskMetadata';
 import * as Actions from './Actions';
 import invariant from 'assert';
+import memoize from 'lodash.memoize';
 import {React, ReactDOM} from 'react-for-atom';
 import {Observable} from 'rxjs';
 
@@ -57,9 +58,7 @@ export function createPanelEpic(actions: ActionsObservable<Action>): Observable<
           return {
             ...staticProps,
             taskRunnerInfo: Array.from(state.taskRunners.values()),
-            getExtraUi: activeTaskRunner != null && activeTaskRunner.getExtraUi != null
-              ? activeTaskRunner.getExtraUi.bind(activeTaskRunner)
-              : null,
+            getExtraUi: getExtraUiFactory(activeTaskRunner),
             progress: state.taskStatus && state.taskStatus.progress,
             visible: state.visible,
             activeTaskId: state.activeTaskId,
@@ -351,4 +350,19 @@ function createTaskObservable(
 function taskIdsAreEqual(a: ?TaskId, b: ?TaskId): boolean {
   if (a == null || b == null) { return false; }
   return a.type === b.type && a.taskRunnerId === b.taskRunnerId;
+}
+
+/**
+ * Since `getExtraUi` may create a React class dynamically, we want to ensure that we only ever call
+ * it once. To do that, we memoize the function and cache the result.
+ */
+const extraUiFactories = new WeakMap();
+function getExtraUiFactory(taskRunner: ?TaskRunner): ?() => ReactClass<any> {
+  let getExtraUi = extraUiFactories.get(taskRunner);
+  if (getExtraUi != null) { return getExtraUi; }
+  if (taskRunner == null) { return null; }
+  if (taskRunner.getExtraUi == null) { return null; }
+  getExtraUi = memoize(taskRunner.getExtraUi.bind(taskRunner));
+  extraUiFactories.set(taskRunner, getExtraUi);
+  return getExtraUi;
 }
