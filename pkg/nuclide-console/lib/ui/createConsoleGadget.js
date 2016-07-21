@@ -122,7 +122,7 @@ export default function createConsoleGadget(store: Store): Gadget {
           selectExecutor={actionCreators.selectExecutor}
           clearRecords={actionCreators.clearRecords}
           currentExecutor={this.state.currentExecutor}
-          initialSelectedSourceIds={sources.map(source => source.id)}
+          initialUnselectedSourceIds={[]}
           records={this.state.records}
           sources={sources}
           executors={this.state.executors}

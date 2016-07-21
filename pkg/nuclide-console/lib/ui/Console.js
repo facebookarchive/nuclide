@@ -22,7 +22,7 @@ type Props = {
   currentExecutor: ?Executor,
   executors: Map<string, Executor>,
   getProvider: (id: string) => ?OutputProvider,
-  initialSelectedSourceIds: Array<string>,
+  initialUnselectedSourceIds: Array<string>,
   selectExecutor: (executorId: string) => void,
   sources: Array<Source>,
 };
@@ -30,7 +30,11 @@ type Props = {
 type State = {
   filterText: string,
   enableRegExpFilter: boolean,
-  selectedSourceIds: Array<string>,
+
+  // A blacklist of sources. We must use a blacklist so that newly registered sources will be
+  // selected by default. It's not enough to just add them to the selection at registration time
+  // because that would clobber serialization--though we aren't currently doing any :(
+  unselectedSourceIds: Array<string>,
 };
 
 /**
@@ -45,7 +49,7 @@ export default class Console extends React.Component {
     this.state = {
       filterText: '',
       enableRegExpFilter: false,
-      selectedSourceIds: props.initialSelectedSourceIds,
+      unselectedSourceIds: props.initialUnselectedSourceIds,
     };
     (this: any)._selectSources = this._selectSources.bind(this);
     (this: any)._getExecutor = this._getExecutor.bind(this);
@@ -75,11 +79,15 @@ export default class Console extends React.Component {
     const {pattern, isValid} =
       this._getFilterPattern(this.state.filterText, this.state.enableRegExpFilter);
 
+    const selectedSourceIds = this.props.sources
+      .map(source => source.id)
+      .filter(sourceId => this.state.unselectedSourceIds.indexOf(sourceId) === -1);
+
     const records = filterRecords(
       this.props.records,
-      this.state.selectedSourceIds,
+      selectedSourceIds,
       pattern,
-      this.props.sources.length !== this.state.selectedSourceIds.length,
+      this.props.sources.length !== selectedSourceIds.length,
     );
 
     return (
@@ -88,7 +96,7 @@ export default class Console extends React.Component {
         records={records}
         enableRegExpFilter={this.state.enableRegExpFilter}
         getProvider={this.props.getProvider}
-        selectedSourceIds={this.state.selectedSourceIds}
+        selectedSourceIds={selectedSourceIds}
         selectSources={this._selectSources}
         toggleRegExpFilter={this._toggleRegExpFilter}
         updateFilterText={this._updateFilterText}
@@ -96,8 +104,11 @@ export default class Console extends React.Component {
     );
   }
 
-  _selectSources(sourceIds: Array<string>): void {
-    this.setState({selectedSourceIds: sourceIds});
+  _selectSources(selectedSourceIds: Array<string>): void {
+    const sourceIds = this.props.sources.map(source => source.id);
+    const unselectedSourceIds = sourceIds
+      .filter(sourceId => selectedSourceIds.indexOf(sourceId) === -1);
+    this.setState({unselectedSourceIds});
   }
 
   _toggleRegExpFilter(): void {
