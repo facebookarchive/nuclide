@@ -241,6 +241,7 @@
 }
 
 .nuclide-console-record-content-wrapper {
+  display: flex;
   width: 100%;
 
   // Give the source label a little breathing room. We don't apply this directly
@@ -249,8 +250,7 @@
 }
 
 .nuclide-console-record-source-label {
-  display: inline-block;
-  float: right;
+  align-self: flex-start;
   margin: 2px 0 0 4px;
   white-space: nowrap;
   font-size: 0.8em; // This makes the label < 1 line tall in most themes.

@@ -92,9 +92,9 @@ export default class RecordView extends React.Component {
       <div className={classNames}>
         {icon}
         <div className="nuclide-console-record-content-wrapper">
-          {sourceLabel}
           {this._renderContent(record)}
         </div>
+        {sourceLabel}
       </div>
     );
   }
