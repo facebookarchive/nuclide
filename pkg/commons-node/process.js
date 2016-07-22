@@ -20,6 +20,9 @@ import {Observable} from 'rxjs';
 import {PromiseQueue} from './promise-executors';
 import {quote} from 'shell-quote';
 
+// Node crashes if we allow buffers that are too large.
+const DEFAULT_MAX_BUFFER = 100 * 1024 * 1024;
+
 export type AsyncExecuteReturn = {
   // If the process fails to even start up, exitCode will not be set
   // and errorCode / errorMessage will contain the actual error message.
@@ -456,6 +459,7 @@ export async function asyncExecute(
       command,
       args,
       {
+        maxBuffer: DEFAULT_MAX_BUFFER,
         ...options,
         env,
       },

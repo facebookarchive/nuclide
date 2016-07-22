@@ -137,6 +137,12 @@ describe('commons-node/process', () => {
           expect(result.exitCode).toBe(0);
         });
       });
+      it('enforces maxBuffer', () => {
+        waitsForPromise(async () => {
+          const result = await asyncExecute('yes', [], {maxBuffer: 100});
+          expect(result.errorMessage).toContain('maxBuffer');
+        });
+      });
     }
   });
 
