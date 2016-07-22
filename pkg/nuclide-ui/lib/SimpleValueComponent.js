@@ -60,6 +60,15 @@ function renderNumber(evaluationResult: EvaluationResult): ?React.Element<any> {
   );
 }
 
+function renderBoolean(evaluationResult: EvaluationResult): ?React.Element<any> {
+  const {type, value} = evaluationResult;
+  return (
+    type === 'boolean'
+      ? <span className={ValueComponentClassNames.boolean}>{value}</span>
+      : null
+  );
+}
+
 function renderDefault(evaluationResult: EvaluationResult): ?string {
   return evaluationResult.value;
 }
@@ -69,6 +78,7 @@ const valueRenderers = [
   renderString,
   renderNumber,
   renderNullish,
+  renderBoolean,
   renderDefault,
 ];
 

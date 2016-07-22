@@ -17,4 +17,5 @@ export const ValueComponentClassNames = {
   number: 'constant numeric',
   nullish: 'constant language null',
   identifier: 'variable',
+  boolean: 'constant language boolean',
 };
