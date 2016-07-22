@@ -201,15 +201,13 @@ class JediServer:
         }
 
     def get_significant_parent(self, definition):
-        curr = definition.parent()
-        while curr is not None:
+        curr = definition
+        while curr is not None \
+                and curr.type != 'module' \
+                and curr.parent() is not None:
+            curr = curr.parent()
             if curr.type == 'function' or curr.type == 'class':
                 return curr
-            # Since results are already grouped by module, there is no point in
-            # returning a parent for a module-level reference.
-            elif curr.type == 'module':
-                return None
-            curr = definition.parent()
         return None
 
 

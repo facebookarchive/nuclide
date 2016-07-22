@@ -226,6 +226,45 @@ describe('PythonService', () => {
       });
     });
 
+    it('can find the references of imported modules', () => {
+      waitsForPromise(async () => {
+        // line 29: import decorated
+        const response = await getReferences(TEST_FILE, FILE_CONTENTS, 28, 8);
+        invariant(response);
+
+        expect(response).toEqual([
+          {
+            type: 'module',
+            text: 'decorated',
+            file: nuclideUri.join(__dirname, 'fixtures', 'decorated.py'),
+            line: 0,
+            column: 0,
+          },
+          {
+            type: 'import',
+            text: 'decorated',
+            file: TEST_FILE,
+            line: 8,
+            column: 5,
+          },
+          {
+            type: 'import',
+            text: 'decorated',
+            file: TEST_FILE,
+            line: 28,
+            column: 7,
+          },
+          {
+            type: 'statement',
+            text: 'decorated',
+            file: TEST_FILE,
+            line: 30,
+            column: 4,
+          },
+        ]);
+      });
+    });
+
     it('displays the caller name for references within functions', () => {
       waitsForPromise(async () => {
         // line 13: potato = 5
