@@ -16,7 +16,11 @@ import type {
   Result,
 } from '../ActiveEditorRegistry';
 
+import type {Observable} from 'rxjs';
+
 import {Subject} from 'rxjs';
+
+import {expectObservableToStartWith} from '../../nuclide-test-helpers';
 
 import ActiveEditorRegistry from '../ActiveEditorRegistry';
 
@@ -40,8 +44,8 @@ describe('ActiveEditorRegistry', () => {
   let editor1: atom$TextEditor = (null: any);
   let editor2: atom$TextEditor = (null: any);
 
-  let resultingEventsPromise: Promise<Array<string>> = (null: any);
-  let fullEventsPromise: Promise<Array<Result<TestProvider, void>>> = (null: any);
+  let events: Observable<Result<TestProvider, void>> = (null: any);
+  let eventNames: Observable<string> = (null: any);
 
   let shouldProviderError: boolean = (null: any);
 
@@ -52,18 +56,9 @@ describe('ActiveEditorRegistry', () => {
       eventSources,
     );
 
-    fullEventsPromise = activeEditorRegistry.getResultsStream()
-      .toArray()
-      .toPromise();
-    resultingEventsPromise = fullEventsPromise.then(arr => arr.map(result => result.kind));
-  }
-
-  // This doesn't happen in normal use but it's useful to be able to truncate the stream for
-  // testing.
-  function completeSources() {
-    activeEditors.complete();
-    editorChanges.complete();
-    editorSaves.complete();
+    events = activeEditorRegistry.getResultsStream().publishReplay();
+    eventNames = events.map(event => event.kind);
+    events.connect();
   }
 
   beforeEach(() => {
@@ -115,9 +110,7 @@ describe('ActiveEditorRegistry', () => {
 
         activeEditors.next(editor2);
 
-        completeSources();
-
-        expect(await resultingEventsPromise).toEqual([
+        await expectObservableToStartWith(eventNames, [
           'not-text-editor',
           'pane-change',
           'result',
@@ -127,7 +120,7 @@ describe('ActiveEditorRegistry', () => {
           'result',
         ]);
 
-        const fullEvents = await fullEventsPromise;
+        const fullEvents = await events.take(4).toArray().toPromise();
         expect(fullEvents[1]).toEqual({
           kind: 'pane-change',
           editor: editor1,
@@ -156,9 +149,7 @@ describe('ActiveEditorRegistry', () => {
         editorSaves.next(undefined);
         await waitForNextTick();
 
-        completeSources();
-
-        expect(await resultingEventsPromise).toEqual([
+        await expectObservableToStartWith(eventNames, [
           'pane-change',
           'result',
           'edit',
@@ -189,16 +180,14 @@ describe('ActiveEditorRegistry', () => {
           editorSaves.next(undefined);
           await waitForNextTick();
 
-          completeSources();
-
-          expect(await resultingEventsPromise).toEqual([
+          await expectObservableToStartWith(eventNames, [
             'pane-change',
             'result',
             'save',
             'result',
           ]);
 
-          const fullEvents = await fullEventsPromise;
+          const fullEvents = await events.take(3).toArray().toPromise();
           expect(fullEvents[2]).toEqual({
             kind: 'save',
             editor: editor1,
@@ -245,9 +234,7 @@ describe('ActiveEditorRegistry', () => {
           editorSaves.next(undefined);
           await waitForNextTick();
 
-          completeSources();
-
-          expect(await resultingEventsPromise).toEqual([
+          await expectObservableToStartWith(eventNames, [
             'pane-change',
             'result',
             'edit',
@@ -268,15 +255,13 @@ describe('ActiveEditorRegistry', () => {
         activeEditors.next(editor1);
         await waitForNextTick();
 
-        completeSources();
-
-        expect(await resultingEventsPromise).toEqual([
+        await expectObservableToStartWith(eventNames, [
           'pane-change',
           'provider-error',
         ]);
 
-        const fullEvents = await fullEventsPromise;
-        expect(fullEvents[1]).toEqual({
+        // $FlowFixMe https://github.com/flowtype/flow-typed/pull/213
+        expect(await events.elementAt(1).toPromise()).toEqual({
           kind: 'provider-error',
           provider,
         });
@@ -290,9 +275,7 @@ describe('ActiveEditorRegistry', () => {
         activeEditors.next(editor1);
         await waitForNextTick();
 
-        completeSources();
-
-        expect(await resultingEventsPromise).toEqual([
+        await expectObservableToStartWith(eventNames, [
           'pane-change',
           'no-provider',
         ]);
