@@ -16,15 +16,12 @@ import {ServerConnection} from './ServerConnection';
 import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
-import ServiceLogger from './ServiceLogger';
 import {
   LoopbackTransports,
   ServiceRegistry,
   RpcConnection,
 } from '../../nuclide-rpc';
 import {isRunningInTest} from '../../commons-node/system-info';
-
-const logger = require('../../nuclide-logging').getLogger();
 
 let localRpcClient: ?RpcConnection<Transport> = null;
 let knownLocalRpc = false;
@@ -90,22 +87,8 @@ function getService(serviceName: string, hostname: ?string): ?any {
   }
 }
 
-let serviceLogger: ?ServiceLogger;
-function getServiceLogger(): ServiceLogger {
-  if (!serviceLogger) {
-    serviceLogger = new ServiceLogger();
-    serviceLogger.onNewItem(item => {
-      // TODO(t8579744): Log these to a separate file. Note that whatever file is used should also
-      // be included in bug reports.
-      logger.debug('Service call:', item.service, item.method, item.isLocal, item.argInfo);
-    });
-  }
-  return serviceLogger;
-}
-
 module.exports = {
   getService,
   getServiceByNuclideUri,
-  getServiceLogger,
   setUseLocalRpc,
 };

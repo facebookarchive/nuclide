@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Directory as LocalDirectoryType} from 'atom';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 
@@ -19,7 +18,6 @@ import {RemoteConnection} from './RemoteConnection';
 import {RemoteDirectory} from './RemoteDirectory';
 import {RemoteFile} from './RemoteFile';
 import {ServerConnection} from './ServerConnection';
-
 import NuclideTextBuffer from './NuclideTextBuffer';
 
 import {
@@ -27,12 +25,9 @@ import {
   decorateSshConnectionDelegateWithTracking,
 } from './SshHandshake';
 
-import {getFileForPath} from './client';
-
 import {
   getService,
   getServiceByNuclideUri,
-  getServiceLogger,
 } from './service-manager';
 
 export {
@@ -43,13 +38,9 @@ export {
   SshHandshake,
   NuclideTextBuffer,
   decorateSshConnectionDelegateWithTracking,
-  getFileForPath,
   getService,
   getServiceByNuclideUri,
-  getServiceLogger,
 };
-
-export type Directory = LocalDirectoryType | RemoteDirectory;
 
 export function getFileSystemServiceByNuclideUri(uri: NuclideUri): FileSystemService {
   const service: ?FileSystemService = getServiceByNuclideUri('FileSystemService', uri);
