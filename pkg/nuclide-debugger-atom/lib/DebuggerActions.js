@@ -23,6 +23,7 @@ import type {
   Callstack,
   DebuggerModeType,
   ExpansionResult,
+  NuclideThreadData,
 } from './types';
 
 import Constants from './Constants';
@@ -409,6 +410,15 @@ class DebuggerActions {
   dispose() {
     endTimerTracking();
     this._disposables.dispose();
+  }
+
+  updateThreads(threadData: NuclideThreadData): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.UPDATE_THREADS,
+      data: {
+        threadData,
+      },
+    });
   }
 
   _handleDebugModeStart(): void {

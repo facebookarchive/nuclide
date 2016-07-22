@@ -15,6 +15,7 @@ import type {
   EvaluationResult,
   ExpansionResult,
   ObjectGroup,
+  NuclideThreadData,
 } from './types';
 
 type ExpressionResult = ChromeProtocolResponse & {
@@ -335,6 +336,9 @@ class Bridge {
           case 'LocalsUpdate':
             this._handleLocalsUpdate(event.args[1]);
             break;
+          case 'ThreadsUpdate':
+            this._handleThreadsUpdate(event.args[1]);
+            break;
         }
         break;
     }
@@ -433,6 +437,10 @@ class Bridge {
 
   _handleBreakpointStoreChange(path: string) {
     this._sendAllBreakpoints();
+  }
+
+  _handleThreadsUpdate(threadData: NuclideThreadData): void {
+    this._debuggerModel.getActions().updateThreads(threadData);
   }
 
   _sendAllBreakpoints() {
