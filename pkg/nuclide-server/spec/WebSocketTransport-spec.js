@@ -11,11 +11,12 @@
 
 import type WS from 'ws';
 
-import {Emitter} from 'event-kit';
+import {EventEmitter} from 'events';
 import {WebSocketTransport} from '../lib/WebSocketTransport';
+import {compress, decompress} from '../lib/compression';
 
 function mockSocket(): WS {
-  const result = (new Emitter(): any);
+  const result = (new EventEmitter(): any);
   result.close = () => { result.emit('close'); };
   spyOn(result, 'on').andCallThrough();
   return result;
@@ -27,7 +28,7 @@ describe('WebSocketTransport', () => {
 
   beforeEach(() => {
     socket = mockSocket();
-    transport = new WebSocketTransport('42', socket, false);
+    transport = new WebSocketTransport('42', socket, {syncCompression: false});
   });
 
   it('constructor', () => {
@@ -37,33 +38,33 @@ describe('WebSocketTransport', () => {
     expect(socket.on).toHaveBeenCalledWith('close', jasmine.any(Function));
   });
 
-  it('messsage', () => {
+  it('can receive a message', () => {
     const payload = JSON.stringify({foo: 42});
     let result;
     transport.onMessage().subscribe(message => { result = message; });
-    socket.emit('message', payload);
+    socket.emit('message', payload, {});
     expect(result).toEqual(payload);
   });
 
   it('send - success', () => {
     waitsForPromise(async () => {
       const s: any = socket;
-      s.send = jasmine.createSpy('send').andCallFake((data, callback) => callback(null));
+      s.send = jasmine.createSpy('send').andCallFake((data, _, callback) => callback(null));
       const data = JSON.stringify({foo: 42});
       const result = await transport.send(data);
       expect(result).toBe(true);
-      expect(socket.send).toHaveBeenCalledWith(data, jasmine.any(Function));
+      expect(socket.send).toHaveBeenCalledWith(data, jasmine.any(Object), jasmine.any(Function));
     });
   });
 
   it('send - error', () => {
     waitsForPromise(async () => {
       const s: any = socket;
-      s.send = jasmine.createSpy('send').andCallFake((data, callback) => callback(new Error()));
+      s.send = jasmine.createSpy('send').andCallFake((data, _, callback) => callback(new Error()));
       const data = JSON.stringify({foo: 42});
       const result = await transport.send(data);
       expect(result).toBe(false);
-      expect(socket.send).toHaveBeenCalledWith(data, jasmine.any(Function));
+      expect(socket.send).toHaveBeenCalledWith(data, jasmine.any(Object), jasmine.any(Function));
     });
   });
 
@@ -106,5 +107,28 @@ describe('WebSocketTransport', () => {
     socket.emit('error', expected);
 
     expect(error).toBe(expected);
+  });
+
+  it('can send compressed messages', () => {
+    waitsForPromise(async () => {
+      transport = new WebSocketTransport('42', socket, {syncCompression: true});
+      const s: any = socket;
+      s.send = jasmine.createSpy('send').andCallFake((data, _, callback) => callback(null));
+      const data = 'a'.repeat(10000);
+      const result = await transport.send(data);
+      expect(result).toBe(true);
+      expect(s.send).toHaveBeenCalled();
+      const buffer = s.send.calls[0].args[0];
+      expect(buffer instanceof Buffer).toBe(true);
+      expect(decompress(buffer)).toBe(data);
+    });
+  });
+
+  it('can receive compressed messages', () => {
+    const payload = compress('abcd');
+    let result;
+    transport.onMessage().subscribe(message => { result = message; });
+    socket.emit('message', payload, {binary: true});
+    expect(result).toEqual('abcd');
   });
 });

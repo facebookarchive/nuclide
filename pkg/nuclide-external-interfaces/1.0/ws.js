@@ -28,7 +28,8 @@ declare module 'ws' {
     onclose?: () => mixed,
     onerror?: () => mixed,
 
-    send(message: string, ack?: (error: ?Object) => void): void,
+    send(message: string | Buffer, ack?: (error: ?Object) => void): void,
+    send(message: string | Buffer, options: Object, ack: (error: ?Object) => void): void,
     close(): void,
     terminate(): void,
     ping(
