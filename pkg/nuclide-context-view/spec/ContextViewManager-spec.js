@@ -47,12 +47,14 @@ describe('ContextViewManager', () => {
       id: PROVIDER1_ID,
       title: PROVIDER1_TITLE,
       isEditorBased: false,
+      priority: 1,
     };
     provider2 = {
       getElementFactory: elementFactory,
       id: PROVIDER2_ID,
       title: PROVIDER2_TITLE,
       isEditorBased: false,
+      priority: 2,
     };
     defService = {
       getDefinition: (editor: TextEditor, position: atom$Point) => {
@@ -109,6 +111,30 @@ describe('ContextViewManager', () => {
     const deregistered2 = managerShowing.deregisterProvider(PROVIDER2_ID);
     expect(deregistered2).toBe(false);
     expect(managerShowing._contextProviders.length).toBe(1);
+  });
+  it('orders providers based on priority', () => {
+    const provider3 = {getElementFactory: elementFactory, id: '3',
+      title: '3', isEditorBased: false, priority: 3};
+    const provider4 = {getElementFactory: elementFactory, id: '4',
+      title: '4', isEditorBased: false, priority: 4};
+    const provider5 = {getElementFactory: elementFactory, id: '5',
+      title: '5', isEditorBased: false, priority: 5};
+    managerHidden.registerProvider(provider2);
+    managerHidden.registerProvider(provider1);
+    expect(managerHidden._contextProviders[0].id).toBe(PROVIDER1_ID);
+    expect(managerHidden._contextProviders[1].id).toBe(PROVIDER2_ID);
+    // Insert order: 4, 5, 1, 3, 2
+    // Provider list should end up as [1, 2, 3, 4, 5]
+    managerShowing.registerProvider(provider4);
+    managerShowing.registerProvider(provider5);
+    managerShowing.registerProvider(provider1);
+    managerShowing.registerProvider(provider3);
+    managerShowing.registerProvider(provider2);
+    expect(managerShowing._contextProviders[0].id).toBe(PROVIDER1_ID);
+    expect(managerShowing._contextProviders[1].id).toBe(PROVIDER2_ID);
+    expect(managerShowing._contextProviders[2].id).toBe('3');
+    expect(managerShowing._contextProviders[3].id).toBe('4');
+    expect(managerShowing._contextProviders[4].id).toBe('5');
   });
 
   /** Actions affecting definition service subscription */

@@ -32,6 +32,7 @@ class Activation {
       id: PROVIDER_ID,
       title: PROVIDER_TITLE,
       isEditorBased: true,
+      priority: 20,
     };
   }
 

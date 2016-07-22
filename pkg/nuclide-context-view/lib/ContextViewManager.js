@@ -45,6 +45,7 @@ export type ContextProvider = {
   title: string, // Display name
   isEditorBased: boolean, // Whether the context provider displays an AtomTextEditor. This flag
   // allows context view to display editor-based providers more nicely.
+  priority: number, // Defines display order in side panel. Lower number = closer to the top.
 };
 
 const logger = getLogger();
@@ -94,13 +95,24 @@ export class ContextViewManager {
   }
 
   registerProvider(newProvider: ContextProvider): boolean {
-    // Ensure provider with given ID isn't already registered
-    for (let i = 0; i < this._contextProviders.length; i++) {
-      if (newProvider.id === this._contextProviders[i].id) {
+    // Ensure provider with given ID isn't already registered,
+    // and find index to insert at based on priority
+    let insertIndex = -1;
+    let foundIndex = false;
+    const providers = this._contextProviders;
+    for (let i = 0; i < providers.length; i++) {
+      if (newProvider.id === providers[i].id) {
         return false;
       }
+      if (!foundIndex && newProvider.priority <= providers[i].priority) {
+        insertIndex = i;
+        foundIndex = true;
+      }
     }
-    this._contextProviders.push(newProvider);
+    if (insertIndex === -1) {
+      insertIndex = providers.length;
+    }
+    this._contextProviders.splice(insertIndex, 0, newProvider);
     this._render();
     return true;
   }
