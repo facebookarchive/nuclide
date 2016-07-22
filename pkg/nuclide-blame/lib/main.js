@@ -9,35 +9,25 @@
  * the root directory of this source tree.
  */
 
-import type {BlameProvider} from '../../nuclide-blame-base';
+import type {BlameProvider} from './types';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {FileTreeNode} from '../../nuclide-file-tree/lib/FileTreeNode';
 
 import {CompositeDisposable, Disposable} from 'atom';
-import {trackTiming} from '../../nuclide-analytics';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {goToLocation} from '../../commons-atom/go-to-location';
 import invariant from 'assert';
 
-const PACKAGES_MISSING_MESSAGE =
-`Could not open blame: the nuclide-blame package needs other Atom packages to provide:
-  - a gutter UI class
-  - at least one blame provider
+import BlameGutter from './BlameGutter';
+import {getLogger} from '../../nuclide-logging';
+import {goToLocation} from '../../commons-atom/go-to-location';
+import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {track, trackTiming} from '../../nuclide-analytics';
 
-You are missing one of these.`;
-
+const PACKAGES_MISSING_MESSAGE = 'Could not open blame. Missing at least one blame provider.';
 const TOGGLE_BLAME_FILE_TREE_CONTEXT_MENU_PRIORITY = 2000;
-
-type BlameGutter = {
-  destroy: () => void,
-};
-
-type BlameGutterClass = () => BlameGutter;
 
 class Activation {
   _packageDisposables: CompositeDisposable;
   _registeredProviders: Set<BlameProvider>;
-  _blameGutterClass: ?BlameGutterClass;
   // Map of a TextEditor to its BlameGutter, if it exists.
   _textEditorToBlameGutter: Map<atom$TextEditor, BlameGutter>;
   // Map of a TextEditor to the subscription on its ::onDidDestroy.
@@ -98,7 +88,7 @@ class Activation {
   }
 
   _showBlameGutterForEditor(editor: atom$TextEditor): void {
-    if (this._blameGutterClass == null || this._registeredProviders.size === 0) {
+    if (this._registeredProviders.size === 0) {
       atom.notifications.addInfo(PACKAGES_MISSING_MESSAGE);
       return;
     }
@@ -114,13 +104,11 @@ class Activation {
       }
 
       if (providerForEditor) {
-        const blameGutterClass = this._blameGutterClass;
-        invariant(blameGutterClass);
-        blameGutter = new blameGutterClass('nuclide-blame', editor, providerForEditor);
+        blameGutter = new BlameGutter('nuclide-blame', editor, providerForEditor);
         this._textEditorToBlameGutter.set(editor, blameGutter);
         const destroySubscription = editor.onDidDestroy(() => this._editorWasDestroyed(editor));
         this._textEditorToDestroySubscription.set(editor, destroySubscription);
-        const {track} = require('../../nuclide-analytics');
+
         track('blame-open', {
           editorPath: editor.getPath() || '',
         });
@@ -128,8 +116,8 @@ class Activation {
         atom.notifications.addInfo(
           'Could not open blame: no blame information currently available for this file.',
         );
-        const logger = require('../../nuclide-logging').getLogger();
-        logger.info(
+
+        getLogger().info(
           'nuclide-blame: Could not open blame: no blame provider currently available for this ' +
           `file: ${String(editor.getPath())}`,
         );
@@ -179,18 +167,6 @@ class Activation {
   /**
    * Section: Consuming Services
    */
-
-  consumeBlameGutterClass(blameGutterClass: BlameGutterClass): IDisposable {
-    // This package only expects one gutter UI. It will take the first one.
-    if (this._blameGutterClass == null) {
-      this._blameGutterClass = blameGutterClass;
-      return new Disposable(() => {
-        this._blameGutterClass = null;
-      });
-    } else {
-      return new Disposable(() => {});
-    }
-  }
 
   consumeBlameProvider(provider: BlameProvider): IDisposable {
     this._registeredProviders.add(provider);
@@ -256,11 +232,6 @@ export function deactivate() {
     activation.dispose();
     activation = null;
   }
-}
-
-export function consumeBlameGutterClass(blameGutter: BlameGutterClass): IDisposable {
-  invariant(activation);
-  return activation.consumeBlameGutterClass(blameGutter);
 }
 
 export function consumeBlameProvider(provider: BlameProvider): IDisposable {

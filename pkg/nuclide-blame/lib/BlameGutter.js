@@ -13,20 +13,20 @@ import type {
   BlameForEditor,
   BlameInfo,
   BlameProvider,
-} from '../../nuclide-blame-base';
+} from './types';
 
-import {BLAME_DECORATION_CLASS} from './constants';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 import shell from 'shell';
 
 const MS_TO_WAIT_BEFORE_SPINNER = 2000;
-const CHANGESET_CSS_CLASS = 'nuclide-blame-ui-hash';
-const CLICKABLE_CHANGESET_CSS_CLASS = 'nuclide-blame-ui-hash-clickable';
+const CHANGESET_CSS_CLASS = 'nuclide-blame-hash';
+const CLICKABLE_CHANGESET_CSS_CLASS = 'nuclide-blame-hash-clickable';
 const HG_CHANGESET_DATA_ATTRIBUTE = 'hgChangeset';
+const BLAME_DECORATION_CLASS = 'blame-decoration';
 
-export default class {
+export default class BlameGutter {
   _editor: atom$TextEditor;
   _blameProvider: BlameProvider;
   _changesetSpanClassName: string;
@@ -147,7 +147,7 @@ export default class {
     this._loadingSpinnerTimeoutId = window.setTimeout(() => {
       this._loadingSpinnerIsPending = false;
       this._loadingSpinnerDiv = document.createElement('div');
-      this._loadingSpinnerDiv.className = 'nuclide-blame-ui-spinner';
+      this._loadingSpinnerDiv.className = 'nuclide-blame-spinner';
       const gutterView = atom.views.getView(this._gutter);
       // $FlowFixMe
       gutterView.appendChild(this._loadingSpinnerDiv);

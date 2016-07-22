@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BlameForEditor} from '../../nuclide-blame-base';
+import type {BlameForEditor} from '../../nuclide-blame/lib/types';
 
 import featureConfig from '../../nuclide-feature-config';
 import {hgRepositoryForEditor} from './common';

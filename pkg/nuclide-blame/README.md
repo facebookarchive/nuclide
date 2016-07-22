@@ -6,16 +6,12 @@ Displays source control blame.
 
 ## Prerequisites
 
-The `nuclide-blame` feature requires at least two other things to function: at
-least one "blame provider" that fetches blame information; and exactly one
-"blame UI" that consumes the information and displays it.
+The `nuclide-blame` feature requires at least one "blame provider" that
+fetches blame information.
 
 Nuclide currently provides the `nuclide-blame-provider-hg` feature, which
 can fetch blame for files within Mercurial repositories. To support other types
 of source control, you would need other blame providers.
-
-Nuclide also provides the `nuclide-blame-ui` feature, which displays blame
-information in a custom gutter on an editor.
 
 ## How to Use
 
@@ -24,8 +20,6 @@ then select 'Toggle Blame'. 'Toggle Blame' will only be visible if you have a
 blame provider installed that can provide blame for the file in that editor.
 To remove blame, open the context menu as above, and select 'Toggle Blame'
 again.
-
-![How to Open Blame](readme/showBlame.png)
 
 ## How to Write a Blame Provider
 
