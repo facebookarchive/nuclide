@@ -32,7 +32,7 @@ const SPINNER_DELAY = 100; /* ms */
 const NOT_AVAILABLE_MESSAGE = '<not available>';
 
 function isObjectValue(result: EvaluationResult): boolean {
-  return result._objectId != null;
+  return result.objectId != null;
 }
 
 function TreeItemWithLoadingSpinner(): React.Element<any> {
@@ -166,12 +166,12 @@ class ValueComponent extends React.Component {
       nodeData.isExpanded &&
       this._shouldFetch() &&
       evaluationResult != null &&
-      evaluationResult._objectId != null &&
+      evaluationResult.objectId != null &&
       fetchChildren != null
     ) {
-      invariant(evaluationResult._objectId != null);
+      invariant(evaluationResult.objectId != null);
       this.setState({
-        children: fetchChildren(evaluationResult._objectId),
+        children: fetchChildren(evaluationResult.objectId),
         isExpanded: true,
       });
     }
@@ -184,12 +184,12 @@ class ValueComponent extends React.Component {
       nextProps.evaluationResult != null &&
       nextProps.fetchChildren != null
     ) {
-      const {_objectId} = nextProps.evaluationResult;
-      if (_objectId == null) {
+      const {objectId} = nextProps.evaluationResult;
+      if (objectId == null) {
         return;
       }
       this.setState({
-        children: nextProps.fetchChildren(_objectId),
+        children: nextProps.fetchChildren(objectId),
       });
     }
   }
@@ -216,9 +216,9 @@ class ValueComponent extends React.Component {
         this._shouldFetch() &&
         typeof fetchChildren === 'function' &&
         evaluationResult != null &&
-        evaluationResult._objectId != null
+        evaluationResult.objectId != null
       ) {
-        newState.children = fetchChildren(evaluationResult._objectId);
+        newState.children = fetchChildren(evaluationResult.objectId);
       }
     }
     onExpandedStateChange(path, newState.isExpanded);
@@ -253,7 +253,7 @@ class ValueComponent extends React.Component {
       );
       return isRoot ? simpleValueElement : <TreeItem>{simpleValueElement}</TreeItem>;
     }
-    const _description = evaluationResult._description || '<no description provided>';
+    const description = evaluationResult.description || '<no description provided>';
     const {
       children,
       isExpanded,
@@ -296,7 +296,7 @@ class ValueComponent extends React.Component {
         );
       }
     }
-    const title = renderValueLine(expression, _description);
+    const title = renderValueLine(expression, description);
     return (
       <TreeList showArrows={true}>
         <NestedTreeItem
@@ -406,8 +406,8 @@ function arePropsEqual(
   }
   return (
     evaluationResult1.value === evaluationResult2.value &&
-    evaluationResult1._type === evaluationResult2._type &&
-    evaluationResult1._description === evaluationResult2._description
+    evaluationResult1.type === evaluationResult2.type &&
+    evaluationResult1.description === evaluationResult2.description
   );
 }
 export const LazyNestedValueComponent = highlightOnUpdate(

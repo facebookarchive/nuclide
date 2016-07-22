@@ -10,6 +10,7 @@
  */
 
 import type {
+  EvaluationResult,
   ObjectGroup,
   WebInspector$CallFrame,
   WebInspector$Event,
@@ -26,7 +27,6 @@ import {
 import WebInspector from '../../lib/WebInspector';
 
 const NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
-
 const DebuggerSettingsChangedEvent = 'debugger-settings-updated';
 
 /**
@@ -319,8 +319,17 @@ class NuclideBridge {
       false, // accessorPropertiesOnly
       false, // generatePreview
       (error, properties, internalProperties) => {
+        let result = null;
+        if (properties != null) {
+          result = properties.map(property => {
+            return {
+              ...property,
+              value: normalizeRemoteObjectValue(property.value),
+            };
+          });
+        }
         ipc.sendToHost('notification', 'GetPropertiesResponse', {
-          result: properties,
+          result,
           error,
           objectId,
         });
@@ -342,7 +351,7 @@ class NuclideBridge {
       false, /* generatePreview */
       (remoteObject, wasThrown, error) => {
         ipc.sendToHost('notification', 'ExpressionEvaluationResponse', {
-          result: wasThrown ? null : remoteObject,
+          result: wasThrown ? null : normalizeRemoteObjectValue(remoteObject),
           error: wasThrown ? error : null,
           expression,
         });
@@ -369,7 +378,7 @@ class NuclideBridge {
       false, /* generatePreview */
       (remoteObject, wasThrown, error) => {
         ipc.sendToHost('notification', 'ExpressionEvaluationResponse', {
-          result: wasThrown ? null : remoteObject,
+          result: wasThrown ? null : normalizeRemoteObjectValue(remoteObject),
           error: wasThrown ? error : null,
           expression,
         });
@@ -626,6 +635,37 @@ class NuclideBridge {
       message: event.data.message,
     });
   }
+}
+
+function normalizeRemoteObjectValue(remoteObject: ?Object): ?EvaluationResult {
+  if (remoteObject == null) {
+    return null;
+  }
+  const modifiedProperties = {};
+  if (remoteObject.hasOwnProperty('_type')) {
+    modifiedProperties.type = String(remoteObject._type);
+  } else if (remoteObject.hasOwnProperty('type')) {
+    modifiedProperties.type = String(remoteObject.type);
+  }
+  if (remoteObject.hasOwnProperty('_description')) {
+    modifiedProperties.description = String(remoteObject._description);
+  } else if (remoteObject.hasOwnProperty('description')) {
+    modifiedProperties.description = String(remoteObject.description);
+  }
+  if (remoteObject.hasOwnProperty('_objectId')) {
+    modifiedProperties.objectId = String(remoteObject._objectId);
+  } else if (remoteObject.hasOwnProperty('objectId')) {
+    modifiedProperties.objectId = String(remoteObject.objectId);
+  }
+  if (remoteObject.hasOwnProperty('_value')) {
+    modifiedProperties.value = String(remoteObject._value);
+  } else if (remoteObject.hasOwnProperty('value')) {
+    modifiedProperties.value = String(remoteObject.value);
+  }
+  return {
+    ...remoteObject,
+    ...modifiedProperties,
+  };
 }
 
 module.exports = new NuclideBridge();

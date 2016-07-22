@@ -14,8 +14,8 @@ import {React} from 'react-for-atom';
 import type {EvaluationResult} from '../../nuclide-debugger-atom/lib/types';
 
 export function TextRenderer(evaluationResult: EvaluationResult): ?React.Element<any> {
-  const {_type, value} = evaluationResult;
-  if (_type === 'text') {
+  const {type, value} = evaluationResult;
+  if (type === 'text') {
     return <span>{value}</span>;
   } else {
     return null;

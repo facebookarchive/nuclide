@@ -54,7 +54,7 @@ export default class RecordView extends React.Component {
     provider: ?OutputProvider | ?Executor,
   ): React.Element<any> {
     const getProperties = provider == null ? null : provider.getProperties;
-    const type = record.data == null ? null : record.data._type;
+    const type = record.data == null ? null : record.data.type;
     const simpleValueComponent = getComponent(type);
     return (
       <LazyNestedValueComponent

@@ -28,15 +28,6 @@ import {DisposableSubscription} from '../../commons-node/stream';
 
 type Expression = string;
 
-function normalizeEvaluationResult(rawResult: Object): EvaluationResult {
-  return {
-    value: rawResult.value,
-    _type: rawResult._type || rawResult.type,
-    _objectId: rawResult._objectId || rawResult.objectId,
-    _description: rawResult._description || rawResult.description,
-  };
-}
-
 export class WatchExpressionStore {
   _bridge: Bridge;
   _disposables: CompositeDisposable;
@@ -105,19 +96,7 @@ export class WatchExpressionStore {
    * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
    */
   getProperties(objectId: string): Rx.Observable<?ExpansionResult> {
-    return Rx.Observable
-      .fromPromise(this._bridge.getProperties(objectId))
-      .map((expansionResult: ?ExpansionResult) => {
-        if (expansionResult == null) {
-          return expansionResult;
-        }
-        return expansionResult.map(property => ({
-          name: property.name,
-          // The EvaluationResults format returned from `getProperties` differs slightly from that
-          // of `evaluateOnSelectedCallFrame`, so normalize the result.
-          value: normalizeEvaluationResult(property.value),
-        }));
-      });
+    return Rx.Observable.fromPromise(this._bridge.getProperties(objectId));
   }
 
   evaluateConsoleExpression(expression: Expression): Rx.Observable<?EvaluationResult> {

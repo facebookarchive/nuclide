@@ -24,21 +24,21 @@ type SimpleValueComponentProps = {
 };
 
 function renderNullish(evaluationResult: EvaluationResult): ?React.Element<any> {
-  const {_type} = evaluationResult;
+  const {type} = evaluationResult;
   return (
-    _type === 'undefined' || _type === 'null'
-      ? <span className={ValueComponentClassNames.nullish}>{_type}</span>
+    type === 'undefined' || type === 'null'
+      ? <span className={ValueComponentClassNames.nullish}>{type}</span>
       : null
   );
 }
 
 function renderString(evaluationResult: EvaluationResult): ?React.Element<any> {
   const {
-    _type,
+    type,
     value,
   } = evaluationResult;
   return (
-    _type === 'string'
+    type === 'string'
       ? <span className={ValueComponentClassNames.string}>
           <span className={ValueComponentClassNames.stringOpeningQuote}>"</span>
           {value}
@@ -50,11 +50,11 @@ function renderString(evaluationResult: EvaluationResult): ?React.Element<any> {
 
 function renderNumber(evaluationResult: EvaluationResult): ?React.Element<any> {
   const {
-    _type,
+    type,
     value,
   } = evaluationResult;
   return (
-    _type === 'number'
+    type === 'number'
       ? <span className={ValueComponentClassNames.number}>{value}</span>
       : null
   );

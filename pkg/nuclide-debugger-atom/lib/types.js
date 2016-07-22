@@ -14,12 +14,12 @@ import type Rx from 'rxjs';
 
 /* Evaluation & values */
 export type EvaluationResult = {
-  _type: string,
+  type: string,
   // Either:
   value?: string,
   // Or:
-  _description? : string,
-  _objectId?: string,
+  description? : string,
+  objectId?: string,
 };
 
 export type ExpansionResult = Array<{
@@ -231,9 +231,9 @@ declare class WebInspector$RuntimeAgent {
     accessorPropertiesOnly: boolean,
     generatePreview: boolean,
     callback: (
-      remoteObject: ?Object,
-      wasThrown: boolean,
-      resultOrError: mixed
+      error: ?Object,
+      properties: ?ExpansionResult,
+      internalProperties: ?Object,
     ) => void,
   ): void,
 }

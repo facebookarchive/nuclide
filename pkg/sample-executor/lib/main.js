@@ -40,7 +40,7 @@ export function consumeRegisterExecutor(registerExecutor: RegisterExecutorFuncti
           level: 'log',
           data: {
             value: code,
-            _type: 'text',
+            type: 'text',
           },
         });
       },
