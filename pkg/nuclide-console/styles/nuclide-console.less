@@ -59,6 +59,34 @@
   font-size: @nuclide-console-record-font-size;
 }
 
+.nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
+  font-size: @nuclide-console-record-font-size;
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  white-space: pre-wrap;
+  word-break: normal;
+  word-wrap: break-word;
+}
+
+.nuclide-console-lazy-nested-value {
+  display: flex;
+
+  .list-item::before {
+    float: left;
+    margin-top: 5px;
+    div {
+      display: flex;
+    }
+  }
+
+  .list-tree li:not(.list-nested-item) {
+    line-height: 1.6em;
+  }
+
+  div.list-item > div {
+    display: inline-block;
+  }
+}
+
 .nuclide-console-scroll-pane {
   overflow-y: auto;
   overflow-x: hidden;

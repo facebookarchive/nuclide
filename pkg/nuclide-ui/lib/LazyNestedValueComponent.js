@@ -103,11 +103,11 @@ function renderValueLine(
   value: React.Element<any> | string,
 ): React.Element<any> {
   if (expression == null) {
-    return <div>{value}</div>;
+    return <div className="nuclide-ui-lazy-nested-value-container">{value}</div>;
   } else {
     // TODO @jxg use a text editor to apply proper syntax highlighting for expressions (t11408154)
     return (
-      <div>
+      <div className="nuclide-ui-lazy-nested-value-container">
         <span className={ValueComponentClassNames.identifier}>{expression}</span>
         : {value}
       </div>
@@ -298,7 +298,7 @@ class ValueComponent extends React.Component {
     }
     const title = renderValueLine(expression, description);
     return (
-      <TreeList showArrows={true}>
+      <TreeList showArrows={true} className="nuclide-ui-lazy-nested-value-treelist">
         <NestedTreeItem
           collapsed={!this.state.isExpanded}
           onClick={this._toggleExpand}
