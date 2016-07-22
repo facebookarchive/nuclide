@@ -33,6 +33,7 @@ type Selection = {
 };
 
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {Button} from '../../nuclide-ui/lib/Button';
 import {Tabs} from '../../nuclide-ui/lib/Tabs';
 import {CompositeDisposable, Emitter} from 'atom';
 import debounce from '../../commons-node/debounce';
@@ -632,7 +633,23 @@ export default class QuickSelectionComponent extends React.Component {
     );
   }
 
+  openAll(files: Array<Selection>): void {
+    files.map(file => {
+      this._emitter.emit('selected',
+        this.getItemAtIndex(file.selectedService,
+          file.selectedDirectory,
+          file.selectedItemIndex));
+    });
+  }
+
+  _handleKeyPress(e: SyntheticKeyboardEvent, files: Array<Selection>): void {
+    if (e.shiftKey && e.key === 'Enter') {
+      this.openAll(files);
+    }
+  }
+
   render(): React.Element<any> {
+    const filesToOpen = [];
     let numTotalResultsRendered = 0;
     const isOmniSearchActive = this.state.activeTab.name === 'OmniSearchResultProvider';
     let numQueriesOutstanding = 0;
@@ -679,6 +696,11 @@ export default class QuickSelectionComponent extends React.Component {
             dirName === this.state.selectedDirectory &&
             itemIndex === this.state.selectedItemIndex
           );
+          filesToOpen.push(
+            {selectedService: serviceName,
+             selectedDirectory: dirName,
+             selectedItemIndex: itemIndex,
+           });
           return (
             <li
               className={classnames({
@@ -735,10 +757,13 @@ export default class QuickSelectionComponent extends React.Component {
       return directoriesForService;
     });
     let noResultsMessage = null;
+    let hasSearchResult = false;
     if (isEmpty(this.state.resultsByService)) {
       noResultsMessage = this._renderEmptyMessage('Search away!');
     } else if (numTotalResultsRendered === 0) {
       noResultsMessage = this._renderEmptyMessage(<span>No results</span>);
+    } else {
+      hasSearchResult = true;
     }
     const currentProvider = this.getProvider();
     const promptText = (currentProvider && currentProvider.prompt) || '';
@@ -752,8 +777,23 @@ export default class QuickSelectionComponent extends React.Component {
       );
     }
     return (
-      <div className="select-list omnisearch-modal" ref="modal">
-        <AtomInput ref="queryInput" placeholderText={promptText} />
+      <div
+        className="select-list omnisearch-modal"
+        ref="modal"
+        onKeyPress={e => this._handleKeyPress(e, filesToOpen)}>
+        <div className="omnisearch-search-bar">
+          <AtomInput
+            className="omnisearch-pane"
+            ref="queryInput"
+            placeholderText={promptText}
+          />
+          <Button
+            className="omnisearch-open-all"
+            onClick={() => this.openAll(filesToOpen)}
+            disabled={!hasSearchResult}>
+            Open All
+          </Button>
+        </div>
         {this._renderTabs()}
         <div className="omnisearch-results" style={{maxHeight: this.props.maxScrollableAreaHeight}}>
           {noResultsMessage}
