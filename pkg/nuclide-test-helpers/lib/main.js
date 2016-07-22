@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rxjs';
+
 /**
  * Verifies that a Promise fails with an Error with specific expectations. When
  * running a test where a Promise is expected to fail, it is important to verify
@@ -158,6 +160,18 @@ function loggingObserver(message: string): Observer<any> {
   );
 }
 
+/**
+ * Warning: Callsites *must* await the resulting promise, or test failures may go unreported or
+ * misattributed.
+ */
+async function expectObservableToStartWith<T>(
+  source: Observable<T>,
+  expected: Array<T>,
+): Promise<void> {
+  const actual: Array<T> = await source.take(expected.length).toArray().toPromise();
+  expect(actual).toEqual(expected);
+}
+
 module.exports = {
   addMatchers: require('./matchers').addMatchers,
   clearRequireCache,
@@ -175,4 +189,5 @@ module.exports = {
   arePropertiesEqual,
   areSetsEqual,
   loggingObserver,
+  expectObservableToStartWith,
 };
