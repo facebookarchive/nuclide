@@ -20,11 +20,10 @@ import {Observable} from 'rxjs';
 import {PromiseQueue} from './promise-executors';
 import {quote} from 'shell-quote';
 
-export type process$asyncExecuteRet = {
+export type AsyncExecuteReturn = {
   // If the process fails to even start up, exitCode will not be set
   // and errorCode / errorMessage will contain the actual error message.
   // Otherwise, exitCode will always be defined.
-  command?: string,
   errorMessage?: string,
   errorCode?: string,
   exitCode?: number,
@@ -455,8 +454,8 @@ export function observeProcess(
 export function asyncExecute(
   command: string,
   args: Array<string>,
-  options: ?AsyncExecuteOptions = {},
-): Promise<process$asyncExecuteRet> {
+  options?: AsyncExecuteOptions = {},
+): Promise<AsyncExecuteReturn> {
   // Clone passed in options so this function doesn't modify an object it doesn't own.
   const localOptions = {...options};
 
@@ -475,7 +474,6 @@ export function asyncExecute(
       firstChild.on('error', error => {
         // Resolve early with the result when encountering an error.
         resolve({
-          command: [command].concat(args).join(' '),
           errorMessage: error.message,
           errorCode: error.code,
           stderr: firstChildStderr,
@@ -521,7 +519,6 @@ export function asyncExecute(
         lastChild.removeAllListeners();
         lastChild.kill();
         resolve({
-          command: [command].concat(args).join(' '),
           errorMessage: `Exceeded timeout of ${localOptions.timeout}ms`,
           errorCode: 'ETIMEDOUT',
           stderr,
@@ -544,7 +541,6 @@ export function asyncExecute(
     lastChild.on('error', error => {
       // Return early with the result when encountering an error.
       resolve({
-        command: [command].concat(args).join(' '),
         errorMessage: error.message,
         errorCode: error.code,
         stderr,
@@ -579,7 +575,7 @@ export function asyncExecute(
     }
   };
 
-  function makePromise(): Promise<process$asyncExecuteRet> {
+  function makePromise(): Promise<AsyncExecuteReturn> {
     if (localOptions.queueName === undefined) {
       return new Promise(executor);
     } else {
@@ -608,9 +604,9 @@ export function asyncExecute(
 export async function checkOutput(
   command: string,
   args: Array<string>,
-  options: ?AsyncExecuteOptions = {},
-): Promise<process$asyncExecuteRet> {
-  const result: process$asyncExecuteRet = await asyncExecute(command, args, options);
+  options?: AsyncExecuteOptions = {},
+): Promise<AsyncExecuteReturn> {
+  const result = await asyncExecute(command, args, options);
   if (result.exitCode !== 0) {
     const reason = result.exitCode != null ? `exitCode: ${result.exitCode}` :
       `error: ${maybeToString(result.errorMessage)}`;

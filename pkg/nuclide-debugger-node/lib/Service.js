@@ -14,6 +14,7 @@ import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DebuggerInstance, DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import {DisposableSubscription} from '../../commons-node/stream';
+import {arrayCompact} from '../../commons-node/collection';
 import {checkOutput} from '../../commons-node/process';
 import Rx from 'rxjs';
 
@@ -99,8 +100,7 @@ class NodeDebuggerProcessInfo extends DebuggerProcessInfo {
 function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
   return checkOutput('ps', ['-e', '-o', 'pid,comm'], {})
     .then(result => {
-      // $FlowIssue -- https://github.com/facebook/flow/issues/1143
-      return result.stdout.toString().split('\n').slice(1).map(line => {
+      return arrayCompact(result.stdout.split('\n').slice(1).map(line => {
         const words = line.trim().split(' ');
         const pid = Number(words[0]);
         const command = words.slice(1).join(' ');
@@ -112,8 +112,7 @@ function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
         // TODO(jonaldislarry): currently first dir only
         const targetUri = atom.project.getDirectories()[0].getPath();
         return new NodeDebuggerProcessInfo(pid, command, targetUri);
-      })
-        .filter(item => item != null);
+      }));
     },
     e => {
       return [];

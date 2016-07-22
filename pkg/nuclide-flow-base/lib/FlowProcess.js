@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {process$asyncExecuteRet} from '../../commons-node/process';
+import type {AsyncExecuteReturn} from '../../commons-node/process';
 
 import type {ServerStatusType} from '..';
 
@@ -118,7 +118,7 @@ export class FlowProcess {
     options: Object,
     waitForServer?: boolean = false,
     suppressErrors?: boolean = false,
-  ): Promise<?process$asyncExecuteRet> {
+  ): Promise<?AsyncExecuteReturn> {
     const maxRetries = waitForServer ? EXEC_FLOW_RETRIES : 0;
     if (this._serverStatus.getValue() === ServerStatus.FAILED) {
       return null;
@@ -200,7 +200,7 @@ export class FlowProcess {
   }
 
   /** Execute Flow with the given arguments */
-  async _rawExecFlow(args: Array<any>, options?: Object = {}): Promise<?process$asyncExecuteRet> {
+  async _rawExecFlow(args: Array<any>, options?: Object = {}): Promise<?AsyncExecuteReturn> {
     args = [
       ...args,
       '--retry-if-init', 'false',
@@ -226,7 +226,7 @@ export class FlowProcess {
     }
   }
 
-  _updateServerStatus(result: ?process$asyncExecuteRet): void {
+  _updateServerStatus(result: ?AsyncExecuteReturn): void {
     let status;
     if (result == null) {
       status = ServerStatus.NOT_INSTALLED;
@@ -327,7 +327,7 @@ export class FlowProcess {
     root: string | null,
     execInfoContainer: FlowExecInfoContainer,
     options?: Object = {},
-  ): Promise<?process$asyncExecuteRet> {
+  ): Promise<?AsyncExecuteReturn> {
     args = [
       ...args,
       '--from', 'nuclide',
