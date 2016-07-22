@@ -25,8 +25,7 @@ import {
   onWorkspaceDidStopChangingActivePaneItem,
 } from '../../commons-atom/debounced';
 
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {WorkingSet} from '../../nuclide-working-sets';
+import {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
 import semver from 'semver';

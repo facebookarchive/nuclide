@@ -10,7 +10,7 @@
  */
 
 import {Emitter} from 'atom';
-import {WorkingSet} from './WorkingSet';
+import {WorkingSet} from '../../nuclide-working-sets-common';
 import {arrayEqual} from '../../commons-node/collection';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';

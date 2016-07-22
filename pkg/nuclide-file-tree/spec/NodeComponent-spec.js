@@ -12,8 +12,7 @@
 import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeNode} from '../lib/FileTreeNode';
 import {FileTreeEntryComponent} from '../components/FileTreeEntryComponent';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {WorkingSet} from '../../nuclide-working-sets';
+import {WorkingSet} from '../../nuclide-working-sets-common';
 import Immutable from 'immutable';
 
 import {

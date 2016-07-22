@@ -26,10 +26,8 @@ import remoteUri from '../../nuclide-remote-uri';
 
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
-import type {
-  WorkingSet,
-  WorkingSetsStore,
-} from '../../nuclide-working-sets/lib/types';
+import type {WorkingSet} from '../../nuclide-working-sets-common';
+import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 
 

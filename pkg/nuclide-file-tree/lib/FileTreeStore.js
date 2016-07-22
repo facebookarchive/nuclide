@@ -21,9 +21,7 @@ import {Minimatch} from 'minimatch';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
 import {getLogger} from '../../nuclide-logging';
-
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {WorkingSet} from '../../nuclide-working-sets';
+import {WorkingSet} from '../../nuclide-working-sets-common';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from '../../nuclide-remote-uri';
 
