@@ -518,6 +518,7 @@ export function consumeDatatipService(service: DatatipService): IDisposable {
   service.addProvider(provider);
   const disposable = new Disposable(() => service.removeProvider(provider));
   invariant(activation);
+  activation.getModel().getThreadStore().setDatatipService(service);
   activation._disposables.add(disposable);
   return disposable;
 }

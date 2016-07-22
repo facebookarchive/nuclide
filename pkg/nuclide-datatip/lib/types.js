@@ -15,6 +15,10 @@ export type Datatip = {
   pinnable?: boolean,
 };
 
+export type PinnedDatatip = {
+  dispose(): void
+};
+
 export type DatatipProvider = {
   datatip(editor: atom$TextEditor, bufferPosition: atom$Point): Promise<?Datatip>,
   inclusionPriority: number,
@@ -27,4 +31,14 @@ export type DatatipProvider = {
 export type DatatipService = {
   addProvider(provider: DatatipProvider): void,
   removeProvider(provider: DatatipProvider): void,
+  createPinnedDataTip(component: ReactClass<any>, range: atom$Range, pinnable?: boolean,
+    editor: TextEditor, onDispose: (pinnedDatatip: PinnedDatatip) => void): PinnedDatatip,
+  createSimplePinnedDataTip(
+    message: string,
+    range: atom$Range,
+    pinnable?: boolean,
+    editor: TextEditor,
+    onDispose: (pinnedDatatip: PinnedDatatip) => void,
+  ): PinnedDatatip,
+  deletePinnedDatatip(datatip: PinnedDatatip): void,
 };

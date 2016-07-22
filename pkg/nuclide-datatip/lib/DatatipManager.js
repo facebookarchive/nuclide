@@ -382,6 +382,9 @@ export class DatatipManager {
     return datatip;
   }
 
+  deletePinnedDatatip(datatip: PinnedDatatip) {
+    this._pinnedDatatips.delete(datatip);
+  }
 
   dispose() {
     this.hideDatatip();

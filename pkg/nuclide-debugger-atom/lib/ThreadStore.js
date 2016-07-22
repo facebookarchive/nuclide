@@ -14,20 +14,31 @@ import type {
   ThreadItem,
   NuclideThreadData,
 } from './types';
+import type {
+  PinnedDatatip,
+  DatatipService,
+} from '../../nuclide-datatip/lib/types';
 import {
   Disposable,
   CompositeDisposable,
 } from 'atom';
 import {EventEmitter} from 'events';
+import nuclideUri from '../../nuclide-remote-uri';
 import Constants from './Constants';
+import passesGK from '../../commons-node/passesGK';
+
+const GK_THREAD_SWITCH_UI = 'nuclide_debugger_thread_switch_ui';
+const GK_TIMEOUT = 5000;
 
 export default class ThreadStore {
   _disposables: IDisposable;
+  _datatipService: ?DatatipService;
   _eventEmitter: EventEmitter;
   _threadMap: Map<number, ThreadItem>;
   _owningProcessId: number;
   _selectedThreadId: number;
   _stopThreadId: number;
+  _threadChangeDatatip: ?PinnedDatatip;
 
   constructor(dispatcher: Dispatcher) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
@@ -36,6 +47,7 @@ export default class ThreadStore {
         dispatcher.unregister(dispatcherToken);
       }),
     );
+    this._datatipService = null;
     this._eventEmitter = new EventEmitter();
     this._threadMap = new Map();
     this._owningProcessId = 0;
@@ -43,10 +55,21 @@ export default class ThreadStore {
     this._stopThreadId = 0;
   }
 
+  setDatatipService(service: DatatipService) {
+    this._datatipService = service;
+  }
+
   _handlePayload(payload: Object): void {
     switch (payload.actionType) {
+      case Constants.Actions.CLEAR_INTERFACE:
+        this._handleClearInterface();
+        break;
       case Constants.Actions.UPDATE_THREADS:
         this._updateThreads(payload.data.threadData);
+        break;
+      case Constants.Actions.NOTIFY_THREAD_SWITCH:
+        this._notifyThreadSwitch(payload.data.sourceURL, payload.data.lineNumber,
+          payload.data.message);
         break;
       default:
         return;
@@ -63,7 +86,50 @@ export default class ThreadStore {
     );
   }
 
+  _handleClearInterface(): void {
+    this._cleanUpDatatip();
+  }
+
+  _cleanUpDatatip(): void {
+    if (this._threadChangeDatatip) {
+      if (this._datatipService != null) {
+        this._threadChangeDatatip.dispose();
+      }
+      this._threadChangeDatatip = null;
+    }
+  }
+
+// TODO(dbonafilia): refactor this code along with the ui code in callstackStore to a ui controller.
+  async _notifyThreadSwitch(sourceURL: string, lineNumber: number, message: string): Promise<void> {
+    const notifyThreadSwitches = await passesGK(GK_THREAD_SWITCH_UI, GK_TIMEOUT);
+    if (!notifyThreadSwitches) {
+      return;
+    }
+    const path = nuclideUri.uriToNuclideUri(sourceURL);
+    // we want to put the message one line above the current line unless the selected
+    // line is the top line, in which case we will put the datatip next to the line.
+    const notificationLineNumber = (lineNumber === 0) ? 0 : (lineNumber - 1);
+    // only handle real files for now
+    const datatipService = this._datatipService;
+    if (datatipService != null && path != null && atom.workspace != null) {
+      atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
+        const buffer = editor.getBuffer();
+        const rowRange = buffer.rangeForRow(notificationLineNumber);
+        this._threadChangeDatatip = datatipService.createSimplePinnedDataTip(
+          message,
+          rowRange,
+          true, /* pinnable */
+          editor,
+          pinnedDatatip => {
+            datatipService.deletePinnedDatatip(pinnedDatatip);
+          },
+        );
+      });
+    }
+  }
+
   dispose(): void {
+    this._cleanUpDatatip();
     this._disposables.dispose();
   }
 }

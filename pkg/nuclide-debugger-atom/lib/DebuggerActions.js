@@ -421,6 +421,17 @@ class DebuggerActions {
     });
   }
 
+  notifyThreadSwitch(sourceURL: string, lineNumber: number, message: string): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.NOTIFY_THREAD_SWITCH,
+      data: {
+        sourceURL,
+        lineNumber,
+        message,
+      },
+    });
+  }
+
   _handleDebugModeStart(): void {
     // Open the console window if it's not already opened.
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');

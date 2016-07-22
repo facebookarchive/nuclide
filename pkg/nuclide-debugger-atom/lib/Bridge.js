@@ -339,6 +339,9 @@ class Bridge {
           case 'ThreadsUpdate':
             this._handleThreadsUpdate(event.args[1]);
             break;
+          case 'StopThreadSwitch':
+            this._handleStopThreadSwitch(event.args[1]);
+            break;
         }
         break;
     }
@@ -406,6 +409,17 @@ class Bridge {
     this._debuggerModel.getActions().openSourceLocation(
       options.sourceURL,
       options.lineNumber,
+    );
+  }
+
+  _handleStopThreadSwitch(options: ?{sourceURL: string, lineNumber: number, message: string}) {
+    if (options == null) {
+      return;
+    }
+    this._debuggerModel.getActions().notifyThreadSwitch(
+      options.sourceURL,
+      options.lineNumber,
+      options.message,
     );
   }
 

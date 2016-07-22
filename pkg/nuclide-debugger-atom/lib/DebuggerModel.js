@@ -120,6 +120,10 @@ class DebuggerModel {
     return this._localsStore;
   }
 
+  getThreadStore(): ThreadStore {
+    return this._threadStore;
+  }
+
   getBridge(): Bridge {
     return this._bridge;
   }
