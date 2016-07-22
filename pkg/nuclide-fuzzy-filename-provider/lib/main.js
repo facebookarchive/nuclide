@@ -18,7 +18,7 @@ import {
 } from 'atom';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import {getServiceByNuclideUri} from '../../nuclide-client';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getIgnoredNames} from './utils';
 
 let providerInstance: ?Provider;

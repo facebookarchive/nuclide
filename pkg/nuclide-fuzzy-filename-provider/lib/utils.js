@@ -11,7 +11,7 @@
 
 import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-service';
 
-import {getServiceByNuclideUri} from '../../nuclide-client';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 /**
  * @return FuzzyFileSearchService for the specified directory if it is part of a Hack project.

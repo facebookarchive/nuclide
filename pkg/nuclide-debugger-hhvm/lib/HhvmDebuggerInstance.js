@@ -28,6 +28,7 @@ import nuclideUri from '../../nuclide-remote-uri';
 import {Disposable} from 'atom';
 import WS from 'ws';
 import {stringifyError} from '../../commons-node/string';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const {log, logInfo, logError, setLogLevel} = utils;
 
@@ -58,7 +59,6 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
 
   async getWebsocketAddress(): Promise<string> {
     logInfo('Connecting to: ' + this.getTargetUri());
-    const {getServiceByNuclideUri} = require('../../nuclide-client');
     const service: ?HhvmDebuggerProxyService =
       getServiceByNuclideUri('HhvmDebuggerProxyService', this.getTargetUri());
     invariant(service);

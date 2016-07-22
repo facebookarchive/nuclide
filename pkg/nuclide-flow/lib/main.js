@@ -22,7 +22,7 @@ import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 
 import featureConfig from '../../nuclide-feature-config';
-import {getServiceByNuclideUri} from '../../nuclide-client';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {track} from '../../nuclide-analytics';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';

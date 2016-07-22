@@ -20,7 +20,7 @@ import typeof * as FlowService from '../../nuclide-flow-base';
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 
-import {getServiceByNuclideUri} from '../../nuclide-client';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const FLOW_SERVICE = 'FlowService';
 

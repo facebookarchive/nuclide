@@ -10,6 +10,10 @@
  */
 
 import type {Directory as LocalDirectoryType} from 'atom';
+import type {NuclideUri} from '../../nuclide-remote-uri';
+import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
+
+import invariant from 'assert';
 
 import {RemoteConnection} from './RemoteConnection';
 import {RemoteDirectory} from './RemoteDirectory';
@@ -46,3 +50,9 @@ export {
 };
 
 export type Directory = LocalDirectoryType | RemoteDirectory;
+
+export function getFileSystemServiceByNuclideUri(uri: NuclideUri): FileSystemService {
+  const service: ?FileSystemService = getServiceByNuclideUri('FileSystemService', uri);
+  invariant(service != null);
+  return service;
+}

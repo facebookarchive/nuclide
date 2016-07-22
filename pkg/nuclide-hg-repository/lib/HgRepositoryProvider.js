@@ -13,7 +13,8 @@ import {Directory} from 'atom';
 import invariant from 'assert';
 import {trackTiming} from '../../nuclide-analytics';
 import {
-  RemoteDirectory as RemoteDirectoryType,
+  RemoteDirectory,
+  getServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import typeof * as HgService from '../../nuclide-hg-repository-base/lib/HgService';
@@ -36,14 +37,14 @@ function getLogger() {
  *  If the directory is not part of a Mercurial repository, returns null.
  */
 function getRepositoryDescription(
-  directory: atom$Directory | RemoteDirectoryType,
+  directory: atom$Directory | RemoteDirectory,
 ): ?{
   originURL: ?string,
   repoPath: string,
-  workingDirectory: atom$Directory | RemoteDirectoryType,
+  workingDirectory: atom$Directory | RemoteDirectory,
   workingDirectoryLocalPath: string,
 } {
-  if (directory instanceof RemoteDirectoryType) {
+  if (directory instanceof RemoteDirectory) {
     const repositoryDescription = directory.getHgRepositoryDescription();
     if (repositoryDescription == null
       || repositoryDescription.repoPath == null
@@ -99,7 +100,6 @@ export class HgRepositoryProvider {
         workingDirectoryLocalPath,
       } = repositoryDescription;
 
-      const {getServiceByNuclideUri} = require('../../nuclide-client');
       const service: ?HgService = getServiceByNuclideUri('HgService', directory.getPath());
       invariant(service);
       const hgService = new service.HgService(workingDirectoryLocalPath);

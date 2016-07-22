@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {getServiceByNuclideUri} from '../../nuclide-client';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 module.exports = {
   async getAutocompleteSuggestions(

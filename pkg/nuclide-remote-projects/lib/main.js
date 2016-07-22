@@ -25,7 +25,12 @@ import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from '../../nuclide-feature-config';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
-import {RemoteConnection, ServerConnection} from '../../nuclide-remote-connection';
+import {
+  RemoteConnection,
+  RemoteDirectory,
+  ServerConnection,
+  getServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import {trackImmediate} from '../../nuclide-analytics';
 import {openConnectionDialog} from './open-connection';
 import nuclideUri from '../../nuclide-remote-uri';
@@ -175,7 +180,6 @@ function getRemoteRootDirectories(): Array<atom$Directory> {
  * remote URIs.
  */
 function deleteDummyRemoteRootDirectories() {
-  const {RemoteDirectory} = require('../../nuclide-remote-connection');
   for (const directory of atom.project.getDirectories()) {
     if (nuclideUri.isRemote(directory.getPath()) &&
         !(RemoteDirectory.isRemoteDirectory(directory))) {
@@ -455,8 +459,6 @@ export function createRemoteDirectoryProvider(): RemoteDirectoryProviderT {
 }
 
 export function createRemoteDirectorySearcher(): RemoteDirectorySearcherT {
-  const {getServiceByNuclideUri} = require('../../nuclide-client');
-  const {RemoteDirectory} = require('../../nuclide-remote-connection');
   const RemoteDirectorySearcher = require('./RemoteDirectorySearcher');
   return new RemoteDirectorySearcher((dir: RemoteDirectory) => {
     const service = getServiceByNuclideUri('FindInProjectService', dir.getPath());

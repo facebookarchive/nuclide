@@ -12,6 +12,7 @@
 import {CompositeDisposable} from 'atom';
 import {trackTiming, track} from '../../nuclide-analytics';
 import nuclideUri from '../../nuclide-remote-uri';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 let logger = null;
 
@@ -70,18 +71,16 @@ class FileWatcher {
     }
     track('file-watcher:promptReload-compareChosen');
 
-    const {getFileSystemServiceByNuclideUri} = require('../../nuclide-client');
-
     // Load the file contents locally or remotely.
+    const service = getFileSystemServiceByNuclideUri(filePath);
     const localFilePath = nuclideUri.getPath(filePath);
-    const filesystemContents = (await getFileSystemServiceByNuclideUri(filePath)
-      .readFile(localFilePath)).toString(encoding);
+    const contents = (await service.readFile(localFilePath)).toString(encoding);
 
     // Open a right split pane to compare the contents.
     // TODO: We can use the diff-view here when ready.
     const splitEditor = await atom.workspace.open('', {split: 'right'});
 
-    splitEditor.insertText(filesystemContents);
+    splitEditor.insertText(contents);
     splitEditor.setGrammar(this._editor.getGrammar());
   }
 

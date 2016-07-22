@@ -13,10 +13,10 @@ import type {Observable} from 'rxjs';
 import type {NuclideUri} from '../../nuclide-remote-uri';
 import typeof * as ArcanistBaseService from '../../nuclide-arcanist-base';
 
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import invariant from 'assert';
 
 function getService(fileName: NuclideUri): ArcanistBaseService {
-  const {getServiceByNuclideUri} = require('../../nuclide-client');
   const service = getServiceByNuclideUri('ArcanistBaseService', fileName);
   invariant(service);
   return service;

@@ -11,7 +11,7 @@
 
 import type FindReferencesModelType from '../lib/FindReferencesModel';
 
-import * as nuclideClient from '../../nuclide-client';
+import * as NuclideRemoteConnection from '../../nuclide-remote-connection';
 
 // convenience location creator
 function loc(line, column) {
@@ -25,7 +25,7 @@ describe('FindReferencesModel', () => {
   beforeEach(() => {
     spyOn(atom.grammars, 'selectGrammar').andReturn(fakeGrammar);
     // Create fake file contents.
-    spyOn(nuclideClient, 'getFileSystemServiceByNuclideUri').andReturn({
+    spyOn(NuclideRemoteConnection, 'getFileSystemServiceByNuclideUri').andReturn({
       readFile: async fileName => {
         if (fileName === 'bad') {
           throw 'bad file';

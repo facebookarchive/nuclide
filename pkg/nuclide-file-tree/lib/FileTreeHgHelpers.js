@@ -18,7 +18,7 @@ import Immutable from 'immutable';
 import nuclideUri from '../../nuclide-remote-uri';
 import FileTreeHelpers from './FileTreeHelpers';
 import {triggerAfterWait} from '../../commons-node/promise';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const MOVE_TIMEOUT = 10000;
 

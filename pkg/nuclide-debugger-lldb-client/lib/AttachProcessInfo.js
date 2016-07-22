@@ -25,6 +25,7 @@ import {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import invariant from 'assert';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
 import {getConfig} from './utils';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
   _targetInfo: AttachTargetInfo;
@@ -66,7 +67,6 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
       pythonBinaryPath: getConfig().pythonBinaryPath,
       buckConfigRootFile: getConfig().buckConfigRootFile,
     };
-    const {getServiceByNuclideUri} = require('../../nuclide-client');
     const service: ?DebuggerRpcServiceInterface =
       getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
     invariant(service);

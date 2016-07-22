@@ -24,7 +24,7 @@ import {CompositeDisposable} from 'atom';
 import {LaunchAttachActionCode} from './Constants';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
-import {getServiceByNuclideUri} from '../../nuclide-client';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000;

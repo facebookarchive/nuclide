@@ -15,7 +15,7 @@ import type {LinterMessage} from '../../nuclide-diagnostics-base';
 import {GRAMMARS} from './constants';
 import {trackOperationTiming} from '../../nuclide-analytics';
 import {Range} from 'atom';
-import {getServiceByNuclideUri} from '../../nuclide-client';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 module.exports = {
   name: 'nuclide-ocaml',

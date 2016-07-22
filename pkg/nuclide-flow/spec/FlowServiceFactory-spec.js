@@ -10,11 +10,11 @@
  */
 
 import type {ServerStatusUpdate} from '../../nuclide-flow-base';
+import typeof * as FlowServiceFactoryType from '../lib/FlowServiceFactory';
 
 import {Observable} from 'rxjs';
 
-import typeof * as FlowServiceFactoryType from '../lib/FlowServiceFactory';
-
+import * as NuclideRemoteConnection from '../../nuclide-remote-connection';
 import {uncachedRequire} from '../../nuclide-test-helpers';
 
 describe('FlowServiceFactory', () => {
@@ -29,13 +29,13 @@ describe('FlowServiceFactory', () => {
       getServerStatusUpdates() { return Observable.from(serverUpdates); },
     };
     getServiceByNuclideUriSpy =
-      spyOn(require('../../nuclide-client'), 'getServiceByNuclideUri')
+      spyOn(NuclideRemoteConnection, 'getServiceByNuclideUri')
       .andCallFake(() => fakeFlowService);
     FlowServiceFactory = (uncachedRequire(require, '../lib/FlowServiceFactory'): any);
   });
 
   afterEach(() => {
-    jasmine.unspy(require('../../nuclide-client'), 'getServiceByNuclideUri');
+    jasmine.unspy(NuclideRemoteConnection, 'getServiceByNuclideUri');
   });
 
   describe('getFlowServiceByNuclideUri', () => {

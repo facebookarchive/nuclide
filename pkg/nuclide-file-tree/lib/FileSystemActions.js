@@ -23,7 +23,7 @@ import {
 } from 'react-for-atom';
 import nuclideUri from '../../nuclide-remote-uri';
 import {File} from 'atom';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-client';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 
 

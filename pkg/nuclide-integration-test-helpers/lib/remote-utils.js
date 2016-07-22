@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import {RemoteConnection} from '../../nuclide-remote-connection';
-import {getServiceByNuclideUri} from '../../nuclide-client';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import child_process from 'child_process';
 import typeof * as FlowService from '../../nuclide-flow-base';
 

@@ -14,7 +14,7 @@ import type {MerlinType} from '../../nuclide-ocaml-base';
 
 import {Point, Range} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
-import {getServiceByNuclideUri} from '../../nuclide-client';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 // Ignore typehints that span too many lines. These tend to be super spammy.
 const MAX_LINES = 10;

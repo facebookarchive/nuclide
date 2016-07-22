@@ -15,6 +15,7 @@ import nuclideUri from '../../nuclide-remote-uri';
 import invariant from 'assert';
 import {GRAMMARS} from './constants';
 import {goToLocation} from '../../commons-atom/go-to-location';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const EXTENSIONS = new Set([
   'ml',
@@ -29,7 +30,6 @@ module.exports = {
     text: string,
     range: atom$Range,
   ): Promise<?HyperclickSuggestion> {
-    const {getServiceByNuclideUri} = require('../../nuclide-client');
 
     if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
       return null;
