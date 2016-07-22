@@ -70,9 +70,9 @@ describe('BuckProject (test-project-with-failing-targets)', () => {
       jasmine.useRealClock();
       waitsForPromise(async () => {
         try {
-          await buckProject.build(['//:good_rule'], {commandOptions: {timeout: 0}});
+          await buckProject.build(['//:good_rule'], {commandOptions: {timeout: 1}});
         } catch (e) {
-          expect(e.message).toMatch('timeout');
+          expect(e.message).toMatch('Command failed');
           return;
         }
         throw new Error('promise should have been rejected');

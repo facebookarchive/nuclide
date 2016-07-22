@@ -88,17 +88,11 @@ export class ProcessExitError extends Error {
 
 export type ProcessError = ProcessSystemError | ProcessExitError;
 
-export type AsyncExecuteOptions = child_process$spawnOpts & {
+export type AsyncExecuteOptions = child_process$execFileOpts & {
   // The queue on which to block dependent calls.
   queueName?: string,
   // The contents to write to stdin.
   stdin?: ?string,
-  // A command to pipe output through.
-  pipedCommand?: string,
-  // Arguments to the piped command.
-  pipedArgs?: Array<string>,
-  // Timeout (in milliseconds).
-  timeout?: number,
 };
 
 let platformPathPromise: ?Promise<string>;
@@ -451,118 +445,48 @@ export function observeProcess(
  *     Supports the options listed here: http://nodejs.org/api/child_process.html
  *     in addition to the custom options listed in AsyncExecuteOptions.
  */
-export function asyncExecute(
+export async function asyncExecute(
   command: string,
   args: Array<string>,
   options?: AsyncExecuteOptions = {},
 ): Promise<AsyncExecuteReturn> {
-  // Clone passed in options so this function doesn't modify an object it doesn't own.
-  const localOptions = {...options};
-
+  const env = await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS);
   const executor = (resolve, reject) => {
-    let firstChild;
-    let lastChild;
-
-    let firstChildStderr;
-    if (localOptions.pipedCommand) {
-      // If a second command is given, pipe stdout of first to stdin of second. String output
-      // returned in this function's Promise will be stderr/stdout of the second command.
-      firstChild = child_process.spawn(command, args, localOptions);
-      monitorStreamErrors(firstChild, command, args, localOptions);
-      firstChildStderr = '';
-
-      firstChild.on('error', error => {
-        // Resolve early with the result when encountering an error.
+    const process = child_process.execFile(
+      command,
+      args,
+      {
+        ...options,
+        env,
+      },
+      // Node embeds various properties like code/errno in the Error object.
+      (err: /* Error */ any, stdoutBuf, stderrBuf) => {
+        const stdout = stdoutBuf.toString('utf8');
+        const stderr = stderrBuf.toString('utf8');
+        if (err != null) {
+          if (Number.isInteger(err.code)) {
+            resolve({
+              stdout,
+              stderr,
+              exitCode: err.code,
+            });
+          } else {
+            resolve({
+              stdout,
+              stderr,
+              errorCode: err.errno || 'EUNKNOWN',
+              errorMessage: err.message,
+            });
+          }
+        }
         resolve({
-          errorMessage: error.message,
-          errorCode: error.code,
-          stderr: firstChildStderr,
-          stdout: '',
-        });
-      });
-
-      if (firstChild.stderr != null) {
-        firstChild.stderr.on('data', data => {
-          firstChildStderr += data;
-        });
-      }
-
-      lastChild = child_process.spawn(
-        localOptions.pipedCommand,
-        localOptions.pipedArgs,
-        localOptions,
-      );
-      monitorStreamErrors(lastChild, command, args, localOptions);
-      // pipe() normally pauses the writer when the reader errors (closes).
-      // This is not how UNIX pipes work: if the reader closes, the writer needs
-      // to also close (otherwise the writer process may hang.)
-      // We have to manually close the writer in this case.
-      if (lastChild.stdin != null && firstChild.stdout != null) {
-        lastChild.stdin.on('error', () => {
-          firstChild.stdout.emit('end');
-        });
-        firstChild.stdout.pipe(lastChild.stdin);
-      }
-
-    } else {
-      lastChild = child_process.spawn(command, args, localOptions);
-      monitorStreamErrors(lastChild, command, args, localOptions);
-      firstChild = lastChild;
-    }
-
-    let stderr = '';
-    let stdout = '';
-    let timeout = null;
-    if (localOptions.timeout != null) {
-      timeout = setTimeout(() => {
-        // Prevent the other handlers from firing.
-        lastChild.removeAllListeners();
-        lastChild.kill();
-        resolve({
-          errorMessage: `Exceeded timeout of ${localOptions.timeout}ms`,
-          errorCode: 'ETIMEDOUT',
-          stderr,
           stdout,
+          stderr,
+          exitCode: 0,
         });
-      }, localOptions.timeout);
-    }
-
-    lastChild.on('close', exitCode => {
-      resolve({
-        exitCode,
-        stderr,
-        stdout,
-      });
-      if (timeout != null) {
-        clearTimeout(timeout);
-      }
-    });
-
-    lastChild.on('error', error => {
-      // Return early with the result when encountering an error.
-      resolve({
-        errorMessage: error.message,
-        errorCode: error.code,
-        stderr,
-        stdout,
-      });
-      if (timeout != null) {
-        clearTimeout(timeout);
-      }
-    });
-
-    if (lastChild.stderr != null) {
-      lastChild.stderr.on('data', data => {
-        stderr += data;
-      });
-    }
-    if (lastChild.stdout != null) {
-      lastChild.stdout.on('data', data => {
-        stdout += data;
-      });
-    }
-
-    if (typeof localOptions.stdin === 'string' && firstChild.stdin != null) {
+      },
+    );
+    if (typeof options.stdin === 'string' && process.stdin != null) {
       // Note that the Node docs have this scary warning about stdin.end() on
       // http://nodejs.org/api/child_process.html#child_process_child_stdin:
       //
@@ -570,32 +494,20 @@ export function asyncExecute(
       // this stream via end() often causes the child process to terminate."
       //
       // In practice, this has not appeared to cause any issues thus far.
-      firstChild.stdin.write(localOptions.stdin);
-      firstChild.stdin.end();
+      process.stdin.write(options.stdin);
+      process.stdin.end();
     }
   };
 
-  function makePromise(): Promise<AsyncExecuteReturn> {
-    if (localOptions.queueName === undefined) {
-      return new Promise(executor);
-    } else {
-      if (!blockingQueues[localOptions.queueName]) {
-        blockingQueues[localOptions.queueName] = new PromiseQueue();
-      }
-      return blockingQueues[localOptions.queueName].submit(executor);
+  const {queueName} = options;
+  if (queueName === undefined) {
+    return new Promise(executor);
+  } else {
+    if (!blockingQueues[queueName]) {
+      blockingQueues[queueName] = new PromiseQueue();
     }
+    return blockingQueues[queueName].submit(executor);
   }
-
-  return createExecEnvironment(localOptions.env || process.env, COMMON_BINARY_PATHS).then(
-    val => {
-      localOptions.env = val;
-      return makePromise();
-    },
-    error => {
-      localOptions.env = localOptions.env || process.env;
-      return makePromise();
-    },
-  );
 }
 
 /**

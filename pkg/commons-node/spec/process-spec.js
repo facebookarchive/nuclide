@@ -103,46 +103,6 @@ describe('commons-node/process', () => {
           await checkOutput(process.execPath, ['-e', 'process.exit(1)']);
         });
       });
-      it('pipes stdout to stdin of `pipedCommand`', () => {
-        waitsForPromise(async () => {
-          const val = await checkOutput(
-              'seq',
-              ['1', '100'],
-              {env: process.env, pipedCommand: 'head', pipedArgs: ['-10']});
-          expect(val.stdout).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].join('\n') + '\n');
-        });
-      });
-      // This behaviour does not work properly on Macs :(
-      if (process.platform === 'linux') {
-        it('terminates piped processes correctly', () => {
-          waitsForPromise(async () => {
-            const val = await checkOutput(
-              'yes',
-              [],
-              {env: process.env, pipedCommand: 'head', pipedArgs: ['-1']},
-            );
-            expect(val.stdout).toEqual('y\n');
-            // Make sure the `yes` process actually terminates.
-            // It's possible to end up with dangling processes if pipe isn't implemented correctly.
-            const children = await checkOutput(
-              'ps',
-              ['--ppid', process.pid.toString()],
-            );
-            expect(children.stdout).not.toContain('yes');
-          });
-        });
-      }
-      describe('when passed a pipedCommand', () => {
-        it('captures an error message if the first command exits', () => {
-          waitsForPromise(async () => {
-            const error = await asyncExecute(
-                'exit',
-                ['5'],
-                {env: process.env, pipedCommand: 'head', pipedArgs: ['-10']});
-            expect(error.errorCode).toEqual('ENOENT');
-          });
-        });
-      });
     }
   });
 
@@ -161,21 +121,17 @@ describe('commons-node/process', () => {
           expect(exitCode).toBe(1);
         });
       });
-      it('asyncExecute works with stdio ignore', () => {
+      it('supports stdin', () => {
         waitsForPromise(async () => {
-          const {exitCode} = await asyncExecute(
-            process.execPath,
-            ['-e', 'process.exit(0)'],
-            {stdio: ['ignore', 'pipe', 'pipe']},
-          );
-          expect(exitCode).toBe(0);
+          const result = await asyncExecute('cat', [], {stdin: 'test'});
+          expect(result.stdout).toBe('test');
         });
       });
       it('supports a timeout', () => {
         waitsForPromise(async () => {
           jasmine.useRealClock();
           let result = await asyncExecute('sleep', ['5'], {timeout: 100});
-          expect(result.errorCode).toBe('ETIMEDOUT');
+          expect(result.errorCode).toBe('EUNKNOWN');
 
           result = await asyncExecute('sleep', ['0'], {timeout: 100});
           expect(result.exitCode).toBe(0);
