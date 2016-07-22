@@ -23,6 +23,7 @@ Python's integration into Nuclide provides you with productivity features such a
 - [Autocomplete](#features__autocomplete)
 - [Jump To Definition](#features__jump-to-definition)
 - [Code Formatting](#features__code-formatting)
+- [Code Diagnostics](#features__code-diagnostics)
 - [Outline View](#features__outline-view)
 
 ### Autocomplete
@@ -68,10 +69,22 @@ within your text selection, or the whole file if no text is selected.
 ![](/static/images/docs/language-python-code-format-after.png)
 
 In order for the code formatting feature to work, make sure that:
+
 - the code you want to format does not have any outstanding syntax errors.
 - `yapf` is executing from the same python version as the code being formatted. For
 example, formatting a Python 3 file while `yapf` is running on Python 2 will likely
 not work.
+
+### Code Diagnostics
+
+Nuclide provides built-in diagnostics for Python, currently displaying lint messages
+from flake8.
+
+![](/static/images/docs/language-python-code-diagnostics.png)
+
+To see lint messages, make sure you have [flake8](http://flake8.pycqa.org/en/latest/)
+installed on the machine that your project resides on. You can configure a custom
+`flake8` path at `Nuclide > Settings > Language Settings > Python > Path to Flake8`.
 
 ### Outline View
 
