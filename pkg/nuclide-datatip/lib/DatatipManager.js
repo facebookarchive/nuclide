@@ -41,6 +41,7 @@ export class DatatipManager {
   _isHoveringDatatip: boolean;
   _datatipProviders: Array<DatatipProvider>;
   _pinnedDatatips: Set<PinnedDatatip>;
+
   /**
    * This helps determine if we should show the datatip when toggling it via
    * command. The toggle command first negates this, and then if this is true
@@ -335,6 +336,52 @@ export class DatatipManager {
   removeProvider(provider: DatatipProvider): void {
     arrayRemove(this._datatipProviders, provider);
   }
+
+  createDatatip(component: ReactClass<any>, range: atom$Range, pinnable?: boolean): Datatip {
+    return {
+      component,
+      range,
+      pinnable,
+    };
+  }
+
+  createSimpleDatatip(message: string, range: atom$Range, pinnable?: boolean): Datatip {
+    const component = () => <div>{message}</div>;
+    return this.createDatatip(component, range, pinnable);
+  }
+
+  createPinnedDataTip(
+    component: ReactClass<any>,
+    range: atom$Range,
+    pinnable?: boolean,
+    editor: TextEditor,
+    onDispose: (pinnedDatatip: PinnedDatatip) => void,
+    ): PinnedDatatip {
+    const datatip = new PinnedDatatip(
+      this.createDatatip(component, range, pinnable),
+      editor,
+      onDispose,
+    );
+    this._pinnedDatatips.add(datatip);
+    return datatip;
+  }
+
+  createSimplePinnedDataTip(
+    message: string,
+    range: atom$Range,
+    pinnable?: boolean,
+    editor: TextEditor,
+    onDispose: (pinnedDatatip: PinnedDatatip) => void,
+    ): PinnedDatatip {
+    const datatip = new PinnedDatatip(
+      this.createSimpleDatatip(message, range, pinnable),
+      editor,
+      onDispose,
+    );
+    this._pinnedDatatips.add(datatip);
+    return datatip;
+  }
+
 
   dispose() {
     this.hideDatatip();
