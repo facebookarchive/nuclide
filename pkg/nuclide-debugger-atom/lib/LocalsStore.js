@@ -38,12 +38,19 @@ export default class LocalsStore {
 
   _handlePayload(payload: Object): void {
     switch (payload.actionType) {
+      case Constants.Actions.CLEAR_INTERFACE:
+        this._handleClearInterface();
+        break;
       case Constants.Actions.UPDATE_LOCALS:
         this._handleUpdateLocals(payload.data.locals);
         break;
       default:
         return;
     }
+  }
+
+  _handleClearInterface(): void {
+    this._locals.next([]);
   }
 
   _handleUpdateLocals(locals: ExpansionResult): void {

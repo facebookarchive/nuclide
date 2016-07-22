@@ -51,11 +51,17 @@ export class WatchExpressionStore {
   }
 
   _handlePayload(payload: Object) {
-    if (
-      payload.actionType === Actions.DEBUGGER_MODE_CHANGE &&
-      payload.data === DebuggerMode.PAUSED
-    ) {
-      this._triggerReevaluation();
+    switch (payload.actionType) {
+      case Actions.CLEAR_INTERFACE:
+        this._clearEvaluationValues();
+        break;
+      case Actions.DEBUGGER_MODE_CHANGE:
+        if (payload.data === DebuggerMode.PAUSED) {
+          this._triggerReevaluation();
+        }
+        break;
+      default:
+        return;
     }
   }
 
@@ -140,6 +146,14 @@ export class WatchExpressionStore {
         continue;
       }
       this._requestExpressionEvaluation(expression, subject, false /* no REPL support */);
+    }
+  }
+
+  // Resets all values to N/A, for examples when the debugger resumes or stops.
+  _clearEvaluationValues(): void {
+    // eslint-disable-next-line no-unused-vars
+    for (const [expression, subject] of this._watchExpressions) {
+      subject.next(null);
     }
   }
 }

@@ -74,6 +74,7 @@ export default class CallstackStore {
 
   _handleClearInterface(): void {
     this._setSelectedCallFrameLine(null);
+    this._updateCallstack([]);
   }
 
   _setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}) {
