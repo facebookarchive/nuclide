@@ -434,7 +434,7 @@ function registerConsoleExecutor(
   const output: Observable<{result?: EvaluationResult}> = rawOutput
     .map(result => {
       invariant(result != null);
-      return {result};
+      return {data: result};
     });
   disposables.add(registerExecutor({
     id: 'debugger',

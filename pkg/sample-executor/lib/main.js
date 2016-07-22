@@ -38,9 +38,9 @@ export function consumeRegisterExecutor(registerExecutor: RegisterExecutorFuncti
       send(code: string): void {
         messages.next({
           level: 'log',
-          result: {
+          data: {
             value: code,
-            _type: 'string',
+            _type: 'text',
           },
         });
       },

@@ -16,8 +16,8 @@ import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {LazyNestedValueComponent} from '../../../nuclide-ui/lib/LazyNestedValueComponent';
 import SimpleValueComponent from '../../../nuclide-ui/lib/SimpleValueComponent';
-import invariant from 'assert';
 import shallowEqual from 'shallowequal';
+import {TextRenderer} from '../../../nuclide-ui/lib/TextRenderer';
 
 type Props = {
   record: Record,
@@ -33,38 +33,11 @@ export default class RecordView extends React.Component {
     if (record.kind === 'request') {
       return <CodeBlock text={record.text} scopeName={record.scopeName} />;
     } else if (record.kind === 'response') {
-      const {sourceId} = record;
-      let simpleValueComponent = SimpleValueComponent;
-      let getProperties;
-      const executor = this.props.getExecutor(sourceId);
-      if (executor != null) {
-        if (executor.renderValue != null) {
-          simpleValueComponent = executor.renderValue;
-        }
-        getProperties = executor.getProperties;
-      }
-      return (
-        <LazyNestedValueComponent
-          evaluationResult={record.result}
-          fetchChildren={getProperties}
-          simpleValueComponent={simpleValueComponent}
-          shouldCacheChildren={true}
-        />
-      );
-    } else if (record.result != null) {
+      const executor = this.props.getExecutor(record.sourceId);
+      return this._renderNestedValueComponent(record, executor);
+    } else if (record.data != null) {
       const provider = this.props.getProvider(record.sourceId);
-      invariant(provider != null);
-      const {getProperties, renderValue} = provider;
-      const simpleValueComponent = renderValue || SimpleValueComponent;
-      invariant(getProperties != null);
-      return (
-        <LazyNestedValueComponent
-          evaluationResult={record.result}
-          fetchChildren={getProperties}
-          simpleValueComponent={simpleValueComponent}
-          shouldCacheChildren={true}
-        />
-      );
+      return this._renderNestedValueComponent(record, provider);
     } else {
       // If there's not text, use a space to make sure the row doesn't collapse.
       const text = record.text || ' ';
@@ -74,6 +47,23 @@ export default class RecordView extends React.Component {
 
   shouldComponentUpdate(nextProps: Props): boolean {
     return !shallowEqual(this.props, nextProps);
+  }
+
+  _renderNestedValueComponent(
+    record: Record,
+    provider: ?OutputProvider | ?Executor,
+  ): React.Element<any> {
+    const getProperties = provider == null ? null : provider.getProperties;
+    const type = record.data == null ? null : record.data._type;
+    const simpleValueComponent = getComponent(type);
+    return (
+      <LazyNestedValueComponent
+        evaluationResult={record.data}
+        fetchChildren={getProperties}
+        simpleValueComponent={simpleValueComponent}
+        shouldCacheChildren={true}
+      />
+    );
   }
 
   render(): React.Element<any> {
@@ -109,6 +99,17 @@ export default class RecordView extends React.Component {
     );
   }
 
+}
+
+function getComponent(type: ?string): ReactClass<any> {
+  switch (type) {
+    case 'text': return TextRenderer;
+    case 'boolean':
+    case 'string':
+    case 'number':
+    case 'object':
+    default: return SimpleValueComponent;
+  }
 }
 
 function getHighlightClassName(level: Level): string {

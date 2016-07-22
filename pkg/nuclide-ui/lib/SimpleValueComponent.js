@@ -16,6 +16,7 @@ import type {
 
 import {React} from 'react-for-atom';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
+import {TextRenderer} from './TextRenderer';
 
 type SimpleValueComponentProps = {
   expression: ?string,
@@ -64,6 +65,7 @@ function renderDefault(evaluationResult: EvaluationResult): ?string {
 }
 
 const valueRenderers = [
+  TextRenderer,
   renderString,
   renderNumber,
   renderNullish,

@@ -21,7 +21,7 @@ type MessageKind = 'message' | 'request' | 'response';
 export type Message = {
   text: string,
   level: Level,
-  result?: EvaluationResult,
+  data?: EvaluationResult,
 };
 
 // A normalized type used internally to represent all possible kinds of messages. Responses and
@@ -30,7 +30,7 @@ export type Record = Message & {
   kind: MessageKind,
   sourceId: string,
   scopeName: ?string,
-  result: ?EvaluationResult,
+  data: ?EvaluationResult,
 };
 
 export type AppState = {
@@ -50,7 +50,6 @@ type BasicOutputProvider = {
   // before we even have any messages.
   id: string,
   getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>,
-  renderValue?: ReactClass<any>,
 };
 
 type ControllableOutputProvider = BasicOutputProvider & {
@@ -73,7 +72,6 @@ export type RecordProvider = {
   records: Rx.Observable<Record>,
   id: string,
   getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>,
-  renderValue?: ReactClass<any>,
 };
 
 export type OutputService = {
@@ -88,7 +86,6 @@ export type Executor = {
   output: Rx.Observable<Message> | Rx.Observable<{result?: EvaluationResult}>,
   scopeName?: string,
   getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>,
-  renderValue?: ReactClass<any>,
 };
 
 export type RegisterExecutorFunction = (executor: Executor) => IDisposable;
