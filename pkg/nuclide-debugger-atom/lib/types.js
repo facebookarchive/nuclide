@@ -59,6 +59,27 @@ type CallstackItem = {
 };
 export type Callstack = Array<CallstackItem>;
 
+/* ThreadStore Types */
+export type ThreadItem = {
+  threadId: string,
+  name: string,
+  address: string,
+  location: {
+    scriptId: string,
+    lineNumber: number,
+    columnNumber: number,
+  },
+  stopReason: string,
+  description: string,
+};
+
+export type NuclideThreadData = {
+  threads: Array<ThreadItem>,
+  owningProcessId: number,
+  stopThreadId: number,
+  selectedThreadId: number,
+};
+
 /* Debugger mode */
 export type DebuggerModeType = 'starting' | 'running' | 'paused' | 'stopping' | 'stopped';
 
