@@ -48,7 +48,7 @@ export class DebuggerSteppingComponent extends React.Component {
         <ButtonGroup className="nuclide-debugger-atom-stepping-buttongroup">
           <Button
             icon={isPaused ? 'playback-play' : 'playback-pause'}
-            title={isPaused ? 'pause' : 'continue'}
+            title={isPaused ? 'continue' : 'pause'}
             onClick={
               actions.triggerDebuggerAction.bind(
                 actions,
