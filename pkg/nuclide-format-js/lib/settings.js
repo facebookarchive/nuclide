@@ -13,7 +13,7 @@ import type ModuleMap from '../../nuclide-format-js-base/lib/state/ModuleMap';
 import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
 import type {TransformKey} from '../../nuclide-format-js-base/lib/types/transforms';
 
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import formatJSBase from '../../nuclide-format-js-base';
 
 // Nuclide package settings used to calculate the module map,

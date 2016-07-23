@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '..';
+import featureConfig from '../featureConfig';
 
 describe('main', () => {
   it('returns numbers when numbers are set', () => {

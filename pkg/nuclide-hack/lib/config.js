@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 type HackConfig = {

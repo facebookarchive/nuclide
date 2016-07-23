@@ -14,7 +14,7 @@ import type {GadgetsService} from '../../nuclide-gadgets/lib/types';
 import type {HomeFragments} from './types';
 
 import {CompositeDisposable, Disposable} from 'atom';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import Immutable from 'immutable';
 import Rx from 'rxjs';
 

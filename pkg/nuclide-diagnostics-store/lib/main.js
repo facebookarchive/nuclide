@@ -18,7 +18,7 @@ import type {
 } from '../../nuclide-diagnostics-base';
 
 import {Disposable, CompositeDisposable} from 'atom';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {getLogger} from '../../nuclide-logging';

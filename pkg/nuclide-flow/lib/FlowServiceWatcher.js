@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../nuclide-remote-uri';
 
 import {Subscription} from 'rxjs';
 
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 
 import {getServerStatusUpdates} from './FlowServiceFactory';
 

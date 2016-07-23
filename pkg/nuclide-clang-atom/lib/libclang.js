@@ -17,7 +17,7 @@ import type {
 } from '../../nuclide-clang/lib/rpc-types';
 import typeof * as ClangService from '../../nuclide-clang';
 
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 

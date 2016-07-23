@@ -11,7 +11,7 @@
 
 import type {BlameForEditor} from '../../nuclide-blame/lib/types';
 
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import {hgRepositoryForEditor} from './common';
 import {trackOperationTiming} from '../../nuclide-analytics';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports

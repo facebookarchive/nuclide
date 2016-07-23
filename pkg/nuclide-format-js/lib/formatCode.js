@@ -12,7 +12,7 @@
 import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
 
 const logger = require('../../nuclide-logging').getLogger();
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import {track} from '../../nuclide-analytics';
 import {updateCursor} from '../../nuclide-update-cursor';
 

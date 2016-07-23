@@ -22,7 +22,7 @@ import typeof * as FindInProjectService from '../../nuclide-remote-search';
 import {loadBufferForUri, bufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
 import {getOpenFileEditorForRemoteProject} from './utils';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import {

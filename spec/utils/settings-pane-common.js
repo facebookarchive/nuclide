@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../pkg/nuclide-feature-config';
+import featureConfig from '../../pkg/commons-atom/featureConfig';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
   // getDefaultConfigValue,

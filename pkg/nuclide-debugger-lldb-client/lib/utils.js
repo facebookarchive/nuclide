@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-lldb-client-debugger';
 export default require('../../nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);

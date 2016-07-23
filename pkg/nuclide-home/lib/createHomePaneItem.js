@@ -17,7 +17,7 @@ import Immutable from 'immutable';
 import {React} from 'react-for-atom';
 import HomeFeatureComponent from './HomeFeatureComponent';
 import NuclideLogo from './NuclideLogo';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 
 const DEFAULT_WELCOME = (
   <div>

@@ -17,7 +17,7 @@ import type {
 import type {LinterMessage} from '../../nuclide-diagnostics-base';
 
 import {track, trackTiming} from '../../nuclide-analytics';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import {getLogger} from '../../nuclide-logging';
 import {getDiagnostics} from './libclang';
 import {Range} from 'atom';

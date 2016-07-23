@@ -11,7 +11,7 @@
 
 import {uncachedRequire} from '../../nuclide-test-helpers';
 import {Range} from 'atom';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 
 const TYPE_HINT_PROVIDER = '../lib/FlowTypeHintProvider';
 

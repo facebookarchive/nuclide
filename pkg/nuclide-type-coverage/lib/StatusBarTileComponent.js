@@ -12,7 +12,7 @@
 import {React} from 'react-for-atom';
 
 import addTooltip from '../../nuclide-ui/lib/add-tooltip';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import classnames from 'classnames';
 
 type Props = {

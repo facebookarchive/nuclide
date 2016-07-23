@@ -33,7 +33,7 @@ import {
 } from './utils';
 import {diffSets} from '../../commons-node/stream';
 import {getLogger} from '../../nuclide-logging';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';

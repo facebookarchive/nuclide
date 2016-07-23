@@ -22,7 +22,7 @@ import invariant from 'assert';
 import {DebuggerInstance} from '../../nuclide-debugger-atom';
 import {ObservableManager} from './ObservableManager';
 import {CompositeDisposable} from 'atom';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
 import nuclideUri from '../../nuclide-remote-uri';
 import {Disposable} from 'atom';

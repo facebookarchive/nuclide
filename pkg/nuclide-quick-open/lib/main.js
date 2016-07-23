@@ -19,7 +19,7 @@ import {
 } from 'react-for-atom';
 import QuickSelectionComponent from './QuickSelectionComponent';
 import {CompositeDisposable} from 'atom';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import {track} from '../../nuclide-analytics';
 import debounce from '../../commons-node/debounce';
 

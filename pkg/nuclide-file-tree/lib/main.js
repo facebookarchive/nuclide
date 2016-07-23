@@ -18,7 +18,7 @@ import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import {Disposable, CompositeDisposable} from 'atom';
 import invariant from 'assert';
 
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import {nuclideFeatures} from '../../../lib/nuclide-features';
 import debounce from '../../commons-node/debounce';
 import {

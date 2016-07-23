@@ -10,7 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import {isGkEnabled, onceGkInitialized} from '../../commons-node/passesGK';
 
 let subscriptions: CompositeDisposable = (null: any);

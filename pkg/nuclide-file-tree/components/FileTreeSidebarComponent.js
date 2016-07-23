@@ -29,7 +29,7 @@ import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScrolle
 import {DisposableSubscription, toggle} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {Section} from '../../nuclide-ui/lib/Section';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 
 type State = {
   shouldRenderToolbar: boolean,

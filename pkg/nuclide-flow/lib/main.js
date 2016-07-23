@@ -21,7 +21,7 @@ import typeof * as FlowService from '../../nuclide-flow-base';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {track} from '../../nuclide-analytics';
 import registerGrammar from '../../commons-atom/register-grammar';

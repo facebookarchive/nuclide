@@ -11,7 +11,7 @@
 
 import type {ExecutorResponse, ExecutorRequest} from './types';
 
-import featureConfig from '../../../nuclide-feature-config';
+import featureConfig from '../../../commons-atom/featureConfig';
 import {
   createProcessStream,
   forkWithExecEnvironment,

@@ -10,7 +10,7 @@
  */
 
 import {observeProcess, safeSpawn} from '../../commons-node/process';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 import os from 'os';
 import nuclideUri from '../../nuclide-remote-uri';

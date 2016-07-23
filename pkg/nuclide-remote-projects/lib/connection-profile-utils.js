@@ -18,7 +18,7 @@ import type {
   SshConnectionConfiguration,
 } from '../../nuclide-remote-connection/lib/SshHandshake';
 
-// $UPFixMe: These settings should go through nuclide-feature-config
+// $UPFixMe: These settings should go through featureConfig
 const CONNECTION_PROFILES_KEY = 'nuclide.connectionProfiles';
 const LAST_USED_CONNECTION_KEY = 'nuclide.lastConnectionDetails';
 

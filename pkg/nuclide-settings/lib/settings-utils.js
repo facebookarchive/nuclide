@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 
 function getConfigValueString(keyPath: string): string {
   const value = featureConfig.get(keyPath);

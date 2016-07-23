@@ -11,7 +11,7 @@
 
 import {observeProcess, safeSpawn} from '../../commons-node/process';
 import {compact} from '../../commons-node/stream';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import Rx from 'rxjs';
 
 export function createProcessStream(): Rx.Observable<string> {

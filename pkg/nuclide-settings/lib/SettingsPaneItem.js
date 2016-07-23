@@ -10,7 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import {React} from 'react-for-atom';
 import SettingsCategory from './SettingsCategory';
 

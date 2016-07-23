@@ -19,7 +19,7 @@ import type {
 import {CompositeDisposable, Range} from 'atom';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import {trackTiming} from '../../nuclide-analytics';
 import onWillDestroyTextBuffer from '../../commons-atom/on-will-destroy-text-buffer';
 import {RequestSerializer} from '../../commons-node/promise';

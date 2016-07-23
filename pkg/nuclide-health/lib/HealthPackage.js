@@ -24,7 +24,7 @@ import {track, HistogramTracker} from '../../nuclide-analytics';
 import {
   onWorkspaceDidStopChangingActivePaneItem,
 } from '../../commons-atom/debounced';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 
 // Imports from within this Nuclide package.
 import createHealthGadget from './createHealthGadget';

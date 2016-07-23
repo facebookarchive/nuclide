@@ -22,7 +22,7 @@ import createPackage from '../../commons-atom/createPackage';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import {CompositeDisposable, Disposable} from 'atom';
 import createConsoleGadget from './ui/createConsoleGadget';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import Reducers from './redux/Reducers';

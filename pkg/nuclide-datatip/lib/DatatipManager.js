@@ -27,7 +27,7 @@ import {track, trackOperationTiming} from '../../nuclide-analytics';
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 import {PinnedDatatip} from './PinnedDatatip';
 
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 
 export class DatatipManager {
   _subscriptions: CompositeDisposable;

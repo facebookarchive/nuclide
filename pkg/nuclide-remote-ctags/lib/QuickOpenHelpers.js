@@ -13,7 +13,7 @@ import type {FileResult} from '../../nuclide-quick-open/lib/types';
 import type {CtagsResult, CtagsService} from '../../nuclide-remote-ctags-base';
 
 import {React} from 'react-for-atom';
-import featureConfig from '../../nuclide-feature-config';
+import featureConfig from '../../commons-atom/featureConfig';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {getHackService} from '../../nuclide-hack-symbol-provider/lib/getHackService';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
