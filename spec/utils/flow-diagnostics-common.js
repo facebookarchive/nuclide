@@ -13,9 +13,7 @@ import type {TestContext} from './remotable-tests';
 
 import {Range} from 'atom';
 
-import {
-  dispatchKeyboardEvent,
-} from '../../pkg/nuclide-integration-test-helpers';
+import {dispatchKeyboardEvent} from '../../pkg/commons-atom/testHelpers';
 
 import {
   doGutterDiagnosticsExist,

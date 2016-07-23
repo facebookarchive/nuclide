@@ -13,9 +13,9 @@ import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-  setLocalProject,
 } from '../pkg/nuclide-integration-test-helpers';
 import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
+import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import nuclideUri from '../pkg/nuclide-remote-uri';
 import fs from 'fs';
 import {waitsForRepositoryReady} from './utils/diff-view-utils';

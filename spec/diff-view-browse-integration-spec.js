@@ -17,10 +17,10 @@ import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-  setLocalProject,
   startNuclideServer,
   stopNuclideServer,
 } from '../pkg/nuclide-integration-test-helpers';
+import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import fs from 'fs';
 import invariant from 'assert';
 import {ReactDOM} from 'react-for-atom';

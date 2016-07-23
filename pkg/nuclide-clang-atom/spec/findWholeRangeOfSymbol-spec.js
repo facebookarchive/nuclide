@@ -11,16 +11,12 @@
 
 import {Range} from 'atom';
 import findWholeRangeOfSymbol from '../lib/findWholeRangeOfSymbol';
-import {jasmineMatchers} from '../../nuclide-atom-test-helpers';
+import {rangeMatchers} from '../../commons-atom/testHelpers';
 
 describe('findWholeRangeOfSymbol', () => {
   let editor: atom$TextEditor = (null: any);
 
   beforeEach(function() {
-    const rangeMatchers = {
-      toEqualAtomRange: jasmineMatchers.toEqualAtomRange,
-      toEqualAtomRanges: jasmineMatchers.toEqualAtomRanges,
-    };
     this.addMatchers(rangeMatchers);
     waitsForPromise(async () => {
       editor = await atom.workspace.open('sampleObjC.m');

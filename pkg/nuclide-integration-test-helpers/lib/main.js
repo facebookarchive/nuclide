@@ -10,11 +10,8 @@
  */
 
 import invariant from 'assert';
-import {dispatchKeyboardEvent} from './event';
-import {setLocalProject} from './fixtures';
 import {activateAllPackages, deactivateAllPackages} from './package-utils';
 import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
-import {waitsForFile, waitsForFilePosition} from './waitsForFile';
 import busySignal from './busy-signal';
 import {fileTreeHasFinishedLoading, getVisibleEntryFromFileTree} from './fileTree';
 import pollFor from './pollFor';
@@ -57,13 +54,9 @@ export {
   addRemoteProject,
   busySignal,
   deactivateAllPackages,
-  dispatchKeyboardEvent,
   fileTreeHasFinishedLoading,
   getVisibleEntryFromFileTree,
   pollFor,
-  setLocalProject,
   startNuclideServer,
   stopNuclideServer,
-  waitsForFile,
-  waitsForFilePosition,
 };

@@ -12,10 +12,12 @@
 import {
   activateAllPackages,
   deactivateAllPackages,
-  dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
-  setLocalProject,
 } from '../pkg/nuclide-integration-test-helpers';
+import {
+  dispatchKeyboardEvent,
+  setLocalProject,
+} from '../pkg/commons-atom/testHelpers';
 import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import nuclideUri from '../pkg/nuclide-remote-uri';
 

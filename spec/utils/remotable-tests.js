@@ -17,10 +17,10 @@ import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-  setLocalProject,
   startNuclideServer,
   stopNuclideServer,
 } from '../../pkg/nuclide-integration-test-helpers';
+import {setLocalProject} from '../../pkg/commons-atom/testHelpers';
 import nuclideUri from '../../pkg/nuclide-remote-uri';
 import invariant from 'assert';
 

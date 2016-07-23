@@ -14,8 +14,7 @@ import invariant from 'assert';
 import {
   dispatchKeyboardEvent,
   waitsForFile,
-} from '../pkg/nuclide-integration-test-helpers';
-
+} from '../pkg/commons-atom/testHelpers';
 import {generateFixture} from '../pkg/nuclide-test-helpers';
 import nuclideUri from '../pkg/nuclide-remote-uri';
 

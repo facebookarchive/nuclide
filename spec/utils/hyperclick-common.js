@@ -14,7 +14,7 @@ import invariant from 'assert';
 import {
   dispatchKeyboardEvent,
   waitsForFilePosition,
-} from '../../pkg/nuclide-integration-test-helpers';
+} from '../../pkg/commons-atom/testHelpers';
 
 // Checks that a hyperclick event in the current editor at the given position causes a navigation to
 // the given end file and position. For use within Jasmine.

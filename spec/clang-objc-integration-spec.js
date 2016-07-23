@@ -15,9 +15,7 @@ import {
   activateAllPackages,
   busySignal,
   deactivateAllPackages,
-  dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
-  waitsForFile, waitsForFilePosition,
 } from '../pkg/nuclide-integration-test-helpers';
 import {
   getAutocompleteView,
@@ -25,7 +23,11 @@ import {
   waitsForAutocompleteSuggestions,
 } from './utils/autocomplete-common';
 import {copyFixture} from '../pkg/nuclide-test-helpers';
-
+import {
+  dispatchKeyboardEvent,
+  waitsForFile,
+  waitsForFilePosition,
+} from '../pkg/commons-atom/testHelpers';
 import nuclideUri from '../pkg/nuclide-remote-uri';
 
 /**

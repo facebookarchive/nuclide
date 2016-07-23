@@ -13,7 +13,7 @@ import type {TestContext} from './remotable-tests';
 
 import invariant from 'assert';
 
-import {dispatchKeyboardEvent} from '../../pkg/nuclide-integration-test-helpers';
+import {dispatchKeyboardEvent} from '../../pkg/commons-atom/testHelpers';
 import {copyFixture} from '../../pkg/nuclide-test-helpers';
 
 function sleep(milliSeconds: number): Promise<void> {

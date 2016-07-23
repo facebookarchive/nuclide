@@ -13,15 +13,13 @@ import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-  dispatchKeyboardEvent,
 } from '../pkg/nuclide-integration-test-helpers';
-
 import {
   isDiagnosticsPanelShowing,
   clickStatusBarItem,
   waitsForStatusBarItem,
 } from './utils/diagnostics-common';
-
+import {dispatchKeyboardEvent} from '../pkg/commons-atom/testHelpers';
 
 describe('Diagnostics panel integration test', () => {
   // This test asserts that the gutter icon for the diagnostics panel is loaded when

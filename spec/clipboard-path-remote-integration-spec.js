@@ -13,14 +13,13 @@ import {
   activateAllPackages,
   addRemoteProject,
   deactivateAllPackages,
-  dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
   startNuclideServer,
   stopNuclideServer,
 } from '../pkg/nuclide-integration-test-helpers';
 import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
+import {dispatchKeyboardEvent} from '../pkg/commons-atom/testHelpers';
 import nuclideUri from '../pkg/nuclide-remote-uri';
-
 import invariant from 'assert';
 
 describe('Remote clipboard path integration test', () => {

@@ -11,11 +11,10 @@
 
 import {
   activateAllPackages,
-  dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
 } from '../pkg/nuclide-integration-test-helpers';
-
+import {dispatchKeyboardEvent} from '../pkg/commons-atom/testHelpers';
 import featureConfig from '../pkg/nuclide-feature-config';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {getDefaultConfigValue} from '../pkg/nuclide-settings/lib/settings-utils';

@@ -16,9 +16,9 @@ import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-  setLocalProject,
 } from '../pkg/nuclide-integration-test-helpers';
 import {copyFixture} from '../pkg/nuclide-test-helpers';
+import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import invariant from 'assert';
 import nuclideUri from '../pkg/nuclide-remote-uri';
 

@@ -13,9 +13,6 @@ import invariant from 'assert';
 
 import {
   busySignal,
-  dispatchKeyboardEvent,
-  waitsForFile,
-  waitsForFilePosition,
 } from '../pkg/nuclide-integration-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 import {
@@ -25,6 +22,11 @@ import {
   waitsForAutocompleteSuggestions,
 } from './utils/autocomplete-common';
 import {copyFixture} from '../pkg/nuclide-test-helpers';
+import {
+  dispatchKeyboardEvent,
+  waitsForFile,
+  waitsForFilePosition,
+} from '../pkg/commons-atom/testHelpers';
 
 function getOutlineData(node) {
   return {

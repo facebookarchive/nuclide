@@ -12,11 +12,13 @@
 import {
   activateAllPackages,
   deactivateAllPackages,
-  dispatchKeyboardEvent,
-  waitsForFilePosition,
   jasmineIntegrationTestSetup,
-  setLocalProject,
 } from '../pkg/nuclide-integration-test-helpers';
+import {
+  dispatchKeyboardEvent,
+  setLocalProject,
+  waitsForFilePosition,
+} from '../pkg/commons-atom/testHelpers';
 import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {sleep} from '../pkg/commons-node/promise';
 import {goToLocation} from '../pkg/commons-atom/go-to-location';

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {waitsForFile} from '../pkg/nuclide-integration-test-helpers';
+import {waitsForFile} from '../pkg/commons-atom/testHelpers';
 import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {
   describeRemotableTest,
