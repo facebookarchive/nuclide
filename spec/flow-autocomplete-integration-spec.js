@@ -9,11 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {
-  busySignal,
-  copyFixture,
-} from '../pkg/nuclide-integration-test-helpers';
-
+import {busySignal} from '../pkg/nuclide-integration-test-helpers';
+import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 
 import {
@@ -30,7 +27,7 @@ describeRemotableTest('Flow Autocomplete', context => {
 
     waitsForPromise({timeout: 240000}, async () => {
       // Copy flow project to a temporary location.
-      const flowProjectPath = await copyFixture('flow_project_1');
+      const flowProjectPath = await copyFixture('flow_project_1', __dirname);
 
       // Add this directory as an atom project.
       await context.setProject(flowProjectPath);

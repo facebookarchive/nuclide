@@ -9,10 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {
-  copyFixture,
-  waitsForFile,
-} from '../pkg/nuclide-integration-test-helpers';
+import {waitsForFile} from '../pkg/nuclide-integration-test-helpers';
+import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {
   describeRemotableTest,
 } from './utils/remotable-tests';
@@ -28,7 +26,7 @@ describeRemotableTest('Python Integration Test', context => {
 
   it('supports autocompletion and hyperclick', () => {
     waitsForPromise({timeout: 60000}, async () => {
-      pyProjPath = await copyFixture('python_project_1');
+      pyProjPath = await copyFixture('python_project_1', __dirname);
       await context.setProject(pyProjPath);
       textEditor = await atom.workspace.open(context.getProjectRelativePath('Foo.py'));
     });

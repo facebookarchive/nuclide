@@ -13,13 +13,12 @@ import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-  copyMercurialFixture,
   startNuclideServer,
   addRemoteProject,
   stopNuclideServer,
   pollFor,
 } from '../pkg/nuclide-integration-test-helpers';
-
+import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import nuclideUri from '../pkg/nuclide-remote-uri';
 import fs from 'fs';
 
@@ -33,7 +32,7 @@ describe('Edit remote file Integration Test', () => {
       // Activate nuclide packages.
       await activateAllPackages();
 
-      const repoPath = await copyMercurialFixture('hg_repo_1');
+      const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
       startNuclideServer();
       const connection = await addRemoteProject(repoPath);
       invariant(connection, 'Failed to make connection to a remote server');

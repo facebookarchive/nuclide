@@ -12,14 +12,13 @@
 import {
   activateAllPackages,
   addRemoteProject,
-  copyMercurialFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
   startNuclideServer,
   stopNuclideServer,
 } from '../pkg/nuclide-integration-test-helpers';
-
+import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import nuclideUri from '../pkg/nuclide-remote-uri';
 
 import invariant from 'assert';
@@ -31,7 +30,7 @@ describe('Remote clipboard path integration test', () => {
       // Activate nuclide packages.
       await activateAllPackages();
       // Copy mercurial project to temp directory.
-      const repoPath = await copyMercurialFixture('hg_repo_1');
+      const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
       // Start the Nuclide server and add a remote project.
       startNuclideServer();
       const connection = await addRemoteProject(repoPath);

@@ -11,6 +11,9 @@
 
 import type {Observable} from 'rxjs';
 
+import {copyFixture, copyMercurialFixture, generateFixture} from './fixtures';
+import {addMatchers} from './matchers';
+
 /**
  * Verifies that a Promise fails with an Error with specific expectations. When
  * running a test where a Promise is expected to fail, it is important to verify
@@ -172,22 +175,19 @@ async function expectObservableToStartWith<T>(
   expect(actual).toEqual(expected);
 }
 
-module.exports = {
-  addMatchers: require('./matchers').addMatchers,
-  clearRequireCache,
-  expectAsyncFailure,
-  get fixtures() {
-    return require('./fixtures');
-  },
-  get tempdir() {
-    return require('./tempdir');
-  },
-  spyOnDefault,
-  spyOnGetterValue,
-  unspyOnDefault,
-  uncachedRequire,
+export {
+  addMatchers,
   arePropertiesEqual,
   areSetsEqual,
-  loggingObserver,
+  clearRequireCache,
+  copyFixture,
+  copyMercurialFixture,
+  expectAsyncFailure,
   expectObservableToStartWith,
+  generateFixture,
+  loggingObserver,
+  spyOnDefault,
+  spyOnGetterValue,
+  uncachedRequire,
+  unspyOnDefault,
 };

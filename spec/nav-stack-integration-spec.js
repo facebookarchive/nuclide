@@ -11,13 +11,13 @@
 
 import {
   activateAllPackages,
-  copyFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
   waitsForFilePosition,
   jasmineIntegrationTestSetup,
   setLocalProject,
 } from '../pkg/nuclide-integration-test-helpers';
+import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {sleep} from '../pkg/commons-node/promise';
 import {goToLocation} from '../pkg/commons-atom/go-to-location';
 import nuclideUri from '../pkg/nuclide-remote-uri';
@@ -79,7 +79,7 @@ describe('Nav Stack Integration', () => {
       await activateAllPackages();
 
       // Copy flow project to a temporary location.
-      flowProjectPath = await copyFixture('nav_project_1');
+      flowProjectPath = await copyFixture('nav_project_1', __dirname);
       mainPath = nuclideUri.join(flowProjectPath, 'main');
       fooPath = nuclideUri.join(flowProjectPath, 'Foo');
 

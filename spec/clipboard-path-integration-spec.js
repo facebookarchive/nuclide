@@ -11,13 +11,12 @@
 
 import {
   activateAllPackages,
-  copyMercurialFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
   setLocalProject,
 } from '../pkg/nuclide-integration-test-helpers';
-
+import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import nuclideUri from '../pkg/nuclide-remote-uri';
 
 describe('Clipboard path integration test', () => {
@@ -27,7 +26,7 @@ describe('Clipboard path integration test', () => {
       // Activate nuclide packages.
       await activateAllPackages();
       // Copy mercurial project to temp directory.
-      const repoPath = await copyMercurialFixture('hg_repo_1');
+      const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
       // Add this directory as an atom project.
       setLocalProject(nuclideUri.dirname(repoPath));
       // Open a file in the project.

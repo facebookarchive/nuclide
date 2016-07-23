@@ -9,15 +9,17 @@
  * the root directory of this source tree.
  */
 
-import {fixtures} from '..';
 import fs from 'fs';
-import nuclideUri from '../../nuclide-remote-uri';
 import glob from 'glob';
-
-const {copyFixture, generateFixture} = fixtures;
+import {
+  copyFixture,
+  copyMercurialFixture,
+  generateFixture,
+} from '../lib/fixtures';
+import nuclideUri from '../../nuclide-remote-uri';
+import fsPromise from '../../commons-node/fsPromise';
 
 describe('copyFixture', () => {
-
   it('should copy a directory recursively', () => {
     waitsForPromise(async () => {
       const copyOfFixture = await copyFixture('fixture-to-copy', __dirname);
@@ -37,7 +39,48 @@ describe('copyFixture', () => {
       expect(fs.readFileSync(file2txt, 'utf8')).toBe('world\n');
     });
   });
+
+  it('should find fixtures in parent directories', () => {
+    waitsForPromise(async () => {
+      const fixtureStartDir = nuclideUri.join(__dirname, 'fixtures/deep1/deep2');
+      const copyOfFixture = await copyFixture('fixture-to-find', fixtureStartDir);
+      expect(nuclideUri.isAbsolute(copyOfFixture)).toBe(true);
+
+      expect(fs.statSync(copyOfFixture).isDirectory()).toBe(true);
+
+      const file1txt = nuclideUri.join(copyOfFixture, 'file1.txt');
+      expect(fs.statSync(file1txt).isFile()).toBe(true);
+      expect(fs.readFileSync(file1txt, 'utf8')).toBe('beep boop\n');
+    });
+  });
 });
+
+describe('copyMercurialFixture', () => {
+  it('should rename .hg-rename to .hg', () => {
+    waitsForPromise(async () => {
+      const hgFixture = await copyMercurialFixture('hg-fixture', __dirname);
+      expect(nuclideUri.isAbsolute(hgFixture)).toBe(true);
+
+      expect(fs.statSync(hgFixture).isDirectory()).toBe(true);
+
+      const dotHg = nuclideUri.join(hgFixture, '.hg');
+      const dotHgDotHgTxt = nuclideUri.join(hgFixture, '.hg/dot-hg.txt');
+      const dotHgFileText = nuclideUri.join(hgFixture, 'file.txt');
+
+      expect(fs.statSync(dotHg).isDirectory()).toBe(true);
+      expect(fs.statSync(dotHgFileText).isFile()).toBe(true);
+      expect(fs.statSync(dotHgDotHgTxt).isFile()).toBe(true);
+
+      expect(fs.readFileSync(dotHgFileText, 'utf8')).toBe('boop\n');
+      expect(fs.readFileSync(dotHgDotHgTxt, 'utf8')).toBe('beep\n');
+
+      const dotHgRename = nuclideUri.join(hgFixture, '.hg-rename');
+
+      expect(await fsPromise.exists(dotHgRename)).toBe(false);
+    });
+  });
+});
+
 
 describe('generateFixture', () => {
   it('should create the directory hierarchy', () => {

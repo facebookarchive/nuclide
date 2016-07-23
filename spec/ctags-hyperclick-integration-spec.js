@@ -9,9 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {
-  copyFixture,
-} from '../pkg/nuclide-integration-test-helpers';
+import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 import {
   waitsForHyperclickResult,
@@ -23,7 +21,7 @@ describeRemotableTest('Ctags Hyperclick', context => {
     let textEditor: atom$TextEditor;
     waitsForPromise({timeout: 60000}, async () => {
       // Create a temporary directory and some test files.
-      const testDir = await copyFixture('ctags_project');
+      const testDir = await copyFixture('ctags_project', __dirname);
       await context.setProject(testDir);
       textEditor = await atom.workspace.open(context.getProjectRelativePath('a.txt'));
     });

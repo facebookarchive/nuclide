@@ -11,10 +11,7 @@
 
 import type {TestContext} from './remotable-tests';
 
-import {
-  copyMercurialFixture,
-} from '../../pkg/nuclide-integration-test-helpers';
-
+import {copyMercurialFixture} from '../../pkg/nuclide-test-helpers';
 import fs from 'fs';
 import invariant from 'assert';
 import nuclideUri from '../../pkg/nuclide-remote-uri';
@@ -49,7 +46,7 @@ export function runTest(context: TestContext) {
 
   function openDiffViewForTestFile() {
     waitsForPromise(async () => {
-      repoPath = await copyMercurialFixture('hg_repo_2');
+      repoPath = await copyMercurialFixture('hg_repo_2', __dirname);
       localFilePath = nuclideUri.join(repoPath, TEST_FILE_NAME);
       invariant(repoPath != null);
       await context.setProject(repoPath);

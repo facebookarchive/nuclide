@@ -16,7 +16,7 @@ import {
   waitsForFile,
 } from '../pkg/nuclide-integration-test-helpers';
 
-import {fixtures} from '../pkg/nuclide-test-helpers';
+import {generateFixture} from '../pkg/nuclide-test-helpers';
 import nuclideUri from '../pkg/nuclide-remote-uri';
 
 describeRemotableTest('Related Files Integration Test', context => {
@@ -28,7 +28,7 @@ describeRemotableTest('Related Files Integration Test', context => {
     waitsForPromise({timeout: 60000}, async () => {
 
       // Create a temporary directory and some test files.
-      const testDir = await fixtures.generateFixture(
+      const testDir = await generateFixture(
         'related-files',
         new Map(TEST_FILES.concat(BAD_FILES).map(f => [f])),
       );

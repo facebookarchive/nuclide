@@ -55,13 +55,13 @@ describe('Example Integration Test', () => {
       // add it as a project?  Use the fixtures library in nuclide-integration-test-helpers.
       // Just do
       //
-      // const repoPath = await copyMercurialFixture('hg_repo_1');
+      // const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
       // setLocalProject(repoPath);
       //
       // Do the same thing, but for a remote project by starting the nuclide server using
       // the remote-utils library in nuclide-integration-test-helpers.  Just do
       //
-      // const repoPath = await copyMercurialFixture('hg_repo_1');
+      // const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
       // startNuclideServer();
       // const connection = await addRemoteProject(repoPath);
       // ...

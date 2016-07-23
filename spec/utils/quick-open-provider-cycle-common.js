@@ -13,10 +13,8 @@ import type {TestContext} from './remotable-tests';
 
 import invariant from 'assert';
 
-import {
-  copyFixture,
-  dispatchKeyboardEvent,
-} from '../../pkg/nuclide-integration-test-helpers';
+import {dispatchKeyboardEvent} from '../../pkg/nuclide-integration-test-helpers';
+import {copyFixture} from '../../pkg/nuclide-test-helpers';
 
 function sleep(milliSeconds: number): Promise<void> {
   return new Promise(resolve => { setTimeout(resolve, milliSeconds); });
@@ -60,7 +58,7 @@ export function runTest(context: TestContext) {
 
     // Test setup
     waitsForPromise(async () => {
-      repoPath = await copyFixture('flow_project_1');
+      repoPath = await copyFixture('flow_project_1', __dirname);
       await context.setProject(repoPath);
     });
 

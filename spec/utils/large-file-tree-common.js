@@ -13,7 +13,7 @@ import type {TestContext} from './remotable-tests';
 
 import invariant from 'assert';
 import nuclideUri from '../../pkg/nuclide-remote-uri';
-import {fixtures} from '../../pkg/nuclide-test-helpers';
+import {generateFixture} from '../../pkg/nuclide-test-helpers';
 import {
   fileTreeHasFinishedLoading,
   getVisibleEntryFromFileTree,
@@ -33,7 +33,7 @@ export function runTest(context: TestContext): void {
         }
       });
 
-      const projectPath = await fixtures.generateFixture('large_tree', files);
+      const projectPath = await generateFixture('large_tree', files);
 
       // Add this directory as an atom project.
       await context.setProject(projectPath);

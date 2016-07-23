@@ -14,16 +14,16 @@ import type {TestContext} from './remotable-tests';
 import invariant from 'assert';
 
 import {
-  copyMercurialFixture,
   fileTreeHasFinishedLoading,
   getVisibleEntryFromFileTree,
   pollFor,
 } from '../../pkg/nuclide-integration-test-helpers';
+import {copyMercurialFixture} from '../../pkg/nuclide-test-helpers';
 
 export function runTest(context: TestContext) {
   it('changes the color of the file in the file tree after an edit', () => {
     waitsForPromise({timeout: 60000}, async () => {
-      const projectPath = await copyMercurialFixture('hg_repo_1');
+      const projectPath = await copyMercurialFixture('hg_repo_1', __dirname);
 
       // Add this directory as an atom project.
       await context.setProject(projectPath);

@@ -15,7 +15,6 @@ import type {RemoteConnection} from '../pkg/nuclide-remote-connection';
 import {
   addRemoteProject,
   activateAllPackages,
-  copyMercurialFixture,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
   setLocalProject,
@@ -29,7 +28,7 @@ import uiTreePath from '../pkg/commons-atom/ui-tree-path';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {NON_MERCURIAL_REPO_DISPLAY_NAME} from '../pkg/nuclide-diff-view/lib/constants';
 import nuclideUri from '../pkg/nuclide-remote-uri';
-import {fixtures} from '../pkg/nuclide-test-helpers';
+import {copyMercurialFixture, generateFixture} from '../pkg/nuclide-test-helpers';
 
 describe('Diff View Browse Mode Integration Test', () => {
 
@@ -45,11 +44,11 @@ describe('Diff View Browse Mode Integration Test', () => {
       // Activate atom packages.
       await activateAllPackages();
       // Copy local mercurial project to temporary directory.
-      localRepoPath = await copyMercurialFixture('hg_repo_2');
+      localRepoPath = await copyMercurialFixture('hg_repo_2', __dirname);
       fs.writeFileSync(nuclideUri.join(localRepoPath, 'test.txt'), 'dirty changes', 'utf8');
 
       // Non-Mercurial project.
-      nonRepoPath = await fixtures.generateFixture('non_repo', new Map([
+      nonRepoPath = await generateFixture('non_repo', new Map([
         ['.watchmanconfig'], // avoid resolve_projpath errors
         ['no_repo_file.txt', 'ignored_contents'],
       ]));
@@ -58,7 +57,7 @@ describe('Diff View Browse Mode Integration Test', () => {
       setLocalProject([localRepoPath, nonRepoPath]);
 
       // Start the Nuclide server and add a remote mercurial repository project.
-      remoteRepoLocalPath = await copyMercurialFixture('hg_repo_2');
+      remoteRepoLocalPath = await copyMercurialFixture('hg_repo_2', __dirname);
       fs.writeFileSync(nuclideUri.join(remoteRepoLocalPath, 'untracked.txt'), 'untracked', 'utf8');
       await startNuclideServer();
       connection = await addRemoteProject(remoteRepoLocalPath);

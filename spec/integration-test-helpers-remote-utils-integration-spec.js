@@ -19,7 +19,7 @@ import {
   startNuclideServer,
   stopNuclideServer,
 } from '../pkg/nuclide-integration-test-helpers';
-import {copyMercurialFixture} from '../pkg/nuclide-integration-test-helpers';
+import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import invariant from 'assert';
 
 describe('remote connection for testing', () => {
@@ -38,7 +38,7 @@ describe('remote connection for testing', () => {
       expect(atom.project.getDirectories().length).toBe(0);
       expect(atom.project.getRepositories().length).toBe(0);
 
-      const pathToProject = await copyMercurialFixture('hg_repo_1');
+      const pathToProject = await copyMercurialFixture('hg_repo_1', __dirname);
 
       startNuclideServer();
       const connection = await addRemoteProject(pathToProject);

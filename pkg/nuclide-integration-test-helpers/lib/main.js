@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import {dispatchKeyboardEvent} from './event';
-import {copyFixture, copyMercurialFixture, setLocalProject} from './fixtures';
+import {setLocalProject} from './fixtures';
 import {activateAllPackages, deactivateAllPackages} from './package-utils';
 import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
 import {waitsForFile, waitsForFilePosition} from './waitsForFile';
@@ -56,8 +56,6 @@ export {
   activateAllPackages,
   addRemoteProject,
   busySignal,
-  copyFixture,
-  copyMercurialFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
   fileTreeHasFinishedLoading,

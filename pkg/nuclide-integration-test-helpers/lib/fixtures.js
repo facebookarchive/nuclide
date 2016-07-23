@@ -9,39 +9,6 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {absolute, existsSync, moveSync} from 'fs-plus';
-import {fixtures} from '../../nuclide-test-helpers';
-import nuclideUri from '../../nuclide-remote-uri';
-
-function getTestDir(): string {
-  const {testPaths} = atom.getLoadSettings();
-  const specPath = testPaths[0];
-  // This happens when we run all the specs at once.
-  if (nuclideUri.basename(specPath) === 'spec') {
-    return specPath;
-  }
-  return nuclideUri.dirname(specPath);
-}
-
-/*
- * Copies a specified subdirectory of spec/fixtures to a temporary
- * location.  The fixtureName parameter must contain a directory named .hg-rename.  After the
- * directory specified by fixtureName is copied, its .hg-rename folder will be renamed to .hg, so
- * that it can act as a mercurial repository.
- *
- * @param fixtureName The name of the subdirectory of the fixtures/ directory within the
- * nuclide-test-helpers package directory that should be copied.  Must contain a .hg-rename folder.
- * @returns the path to the temporary directory that this function creates.
- */
-export async function copyMercurialFixture(fixtureName: string): Promise<string> {
-  const repo = await fixtures.copyFixture(fixtureName, getTestDir());
-  const pathToHg = nuclideUri.join(repo, '.hg-rename');
-  invariant(existsSync(pathToHg), `Directory: ${pathToHg} was not found.`);
-  moveSync(pathToHg, nuclideUri.join(repo, '.hg'));
-  return absolute(repo);
-}
-
 /**
  * Set the project.  If there are one or more projects set previously, this replaces them all with
  * the one(s) provided as the argument `projectPath`.
@@ -52,16 +19,4 @@ export function setLocalProject(projectPath: string | Array<string>): void {
   } else {
     atom.project.setPaths([projectPath]);
   }
-}
-
-/*
- * Copies a specified subdirectory of spec/fixtures to a temporary location.
- *
- * @param fixtureName The name of the subdirectory of the fixtures/ directory within the
- * nuclide-test-helpers package directory that should be copied.
- * @returns the path to the temporary directory that this function creates.
- */
-export async function copyFixture(fixtureName: string): Promise<string> {
-  const fixturePath = await fixtures.copyFixture(fixtureName, getTestDir());
-  return absolute(fixturePath);
 }

@@ -19,8 +19,7 @@ import type {TestContext} from './utils/remotable-tests';
 import fs from 'fs';
 import invariant from 'assert';
 import nuclideUri from '../pkg/nuclide-remote-uri';
-
-import {copyMercurialFixture} from '../pkg/nuclide-integration-test-helpers';
+import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 import {repositoryForPath} from '../pkg/nuclide-hg-git-bridge';
 import {waitsForRepositoryReady} from './utils/diff-view-utils';
@@ -42,7 +41,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
   beforeEach(() => {
     waitsForPromise(async () => {
       // Set up repo and handles to file tree DOM nodes
-      repoPath = await copyMercurialFixture('hg_repo_1');
+      repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
       await context.setProject(repoPath);
       repoRemotePath = context.getProjectRelativePath(repoPath);
       testFileLocalPath = nuclideUri.join(repoPath, 'test.txt');

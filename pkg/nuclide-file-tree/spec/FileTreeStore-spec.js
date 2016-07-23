@@ -15,7 +15,7 @@ import FileTreeHelpers from '../lib/FileTreeHelpers';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 
-import {fixtures} from '../../nuclide-test-helpers';
+import {copyFixture} from '../../nuclide-test-helpers';
 import fs from 'fs';
 import nuclideUri from '../../nuclide-remote-uri';
 
@@ -116,7 +116,7 @@ describe('FileTreeStore', () => {
 
   beforeEach(() => {
     waitsForPromise(async () => {
-      const tmpFixturesDir = await fixtures.copyFixture('.', __dirname);
+      const tmpFixturesDir = await copyFixture('.', __dirname);
       dir1 = nuclideUri.join(tmpFixturesDir, 'dir1/');
       fooTxt = nuclideUri.join(dir1, 'foo.txt');
       dir2 = nuclideUri.join(tmpFixturesDir, 'dir2/');

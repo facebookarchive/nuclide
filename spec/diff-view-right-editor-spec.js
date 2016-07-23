@@ -11,12 +11,11 @@
 
 import {
   activateAllPackages,
-  copyMercurialFixture,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
   setLocalProject,
 } from '../pkg/nuclide-integration-test-helpers';
-
+import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../pkg/nuclide-remote-uri';

@@ -11,7 +11,7 @@
 
 import type {TestContext} from './utils/remotable-tests';
 
-import {copyFixture} from '../pkg/nuclide-integration-test-helpers';
+import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {describeRemote} from './utils/remotable-tests';
 
 describeRemote('Remote Connection', (context: TestContext) => {
@@ -20,7 +20,7 @@ describeRemote('Remote Connection', (context: TestContext) => {
 
   it('succesfully opens a remote file that doesn\'t exist', () => {
     waitsForPromise({timeout: 10000}, async () => {
-      const repoPath = await copyFixture('flow_project_1');
+      const repoPath = await copyFixture('flow_project_1', __dirname);
       await context.setProject(repoPath);
       const editor = await atom.workspace.open(
         context.getProjectRelativePath(NEW_FILE_NAME),

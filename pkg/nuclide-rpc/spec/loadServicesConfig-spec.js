@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import loadServicesConfig from '../lib/loadServicesConfig';
 import nuclideUri from '../../nuclide-remote-uri';
-import {fixtures} from '../../nuclide-test-helpers';
+import {generateFixture} from '../../nuclide-test-helpers';
 
 describe('loadServicesConfig()', () => {
   let configPath: ?string;
@@ -37,7 +37,7 @@ describe('loadServicesConfig()', () => {
           preserveFunctionNames: true,
         },
       ];
-      configPath = await fixtures.generateFixture('services', new Map([
+      configPath = await generateFixture('services', new Map([
         ['services-3.json', JSON.stringify(services3json)],
         ['fb-services-3.json', JSON.stringify(fbservices3json)],
       ]));

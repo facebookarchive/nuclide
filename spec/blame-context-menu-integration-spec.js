@@ -11,10 +11,10 @@
 
 import {
   activateAllPackages,
-  copyMercurialFixture,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
 } from '../pkg/nuclide-integration-test-helpers';
+import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 
 describe('Blame context menu integration test', () => {
   it('has toggle blame option in the context menu', () => {

@@ -13,7 +13,6 @@ import invariant from 'assert';
 
 import {
   busySignal,
-  copyFixture,
   dispatchKeyboardEvent,
   waitsForFile,
   waitsForFilePosition,
@@ -25,6 +24,7 @@ import {
   getAutocompleteDescription,
   waitsForAutocompleteSuggestions,
 } from './utils/autocomplete-common';
+import {copyFixture} from '../pkg/nuclide-test-helpers';
 
 function getOutlineData(node) {
   return {
@@ -49,7 +49,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
     let textEditor: atom$TextEditor;
     let textEditorView: HTMLElement;
     waitsForPromise({timeout: 60000}, async () => {
-      testDir = await copyFixture('cpp_project');
+      testDir = await copyFixture('cpp_project', __dirname);
       await context.setProject(testDir);
       textEditor = await atom.workspace.open(context.getProjectRelativePath('test.cpp'));
       textEditorView = atom.views.getView(textEditor);

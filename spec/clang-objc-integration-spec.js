@@ -14,7 +14,6 @@ import invariant from 'assert';
 import {
   activateAllPackages,
   busySignal,
-  copyFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
@@ -25,6 +24,7 @@ import {
   getAutocompleteSuggestions,
   waitsForAutocompleteSuggestions,
 } from './utils/autocomplete-common';
+import {copyFixture} from '../pkg/nuclide-test-helpers';
 
 import nuclideUri from '../pkg/nuclide-remote-uri';
 
@@ -46,7 +46,7 @@ describe('Clang Integration Test (objc)', () => {
       // Activate atom packages.
       await activateAllPackages();
 
-      objcPath = await copyFixture('objc_project_1');
+      objcPath = await copyFixture('objc_project_1', __dirname);
       textEditor = await atom.workspace.open(nuclideUri.join(objcPath, 'Hello.m'));
     });
 

@@ -11,7 +11,7 @@
 
 import type {TestContext} from './utils/remotable-tests';
 
-import {copyMercurialFixture} from '../pkg/nuclide-integration-test-helpers';
+import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 
 

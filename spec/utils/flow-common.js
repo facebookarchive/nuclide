@@ -11,11 +11,8 @@
 
 import type {TestContext} from './remotable-tests';
 
-import {
-  busySignal,
-  copyFixture,
-} from '../../pkg/nuclide-integration-test-helpers';
-
+import {busySignal} from '../../pkg/nuclide-integration-test-helpers';
+import {copyFixture} from '../../pkg/nuclide-test-helpers';
 import {Deferred} from '../../pkg/commons-node/promise';
 
 const FLOW_FIXTURE = 'flow_project_1';
@@ -24,7 +21,7 @@ const FLOW_MAIN_FILE = 'main.js';
 export function setup(context: TestContext): Promise<atom$TextEditor> {
   const deferred: Deferred<atom$TextEditor> = new Deferred();
   waitsForPromise({timeout: 240000}, async () => {
-    const flowProjectPath = await copyFixture(FLOW_FIXTURE);
+    const flowProjectPath = await copyFixture(FLOW_FIXTURE, __dirname);
 
     // Add this directory as an atom project.
     await context.setProject(flowProjectPath);

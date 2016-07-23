@@ -12,10 +12,10 @@
 import type {HgRepositoryClient} from '../pkg/nuclide-hg-repository-client';
 import {
   activateAllPackages,
-  copyMercurialFixture,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
 } from '../pkg/nuclide-integration-test-helpers';
+import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import {repositoryForPath} from '../pkg/nuclide-hg-git-bridge';
 import {
   fetchFileContentAtRevision,
@@ -37,7 +37,7 @@ describe('Mercurial Repository Integration Tests', () => {
     waitsForPromise(async () => {
       spyOn(console, 'error');
       // Copy mercurial project to temporary directory.
-      const repoPath = await copyMercurialFixture('hg_repo_1');
+      const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
       // Add this directory as a new project in atom.
       atom.project.setPaths([repoPath]);
       // Open a file within this project.
@@ -57,7 +57,7 @@ describe('Mercurial Repository Integration Tests', () => {
 
   it('can commit changes', () => {
     waitsForPromise({timeout: 15000}, async () => {
-      const repoPath = await copyMercurialFixture('hg_repo_1');
+      const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
       const filePath = nuclideUri.join(repoPath, 'test.txt');
       atom.project.setPaths([repoPath]);
       const hgRepository = ((repositoryForPath(repoPath): any): HgRepositoryClient);
@@ -76,7 +76,7 @@ describe('Mercurial Repository Integration Tests', () => {
 
   it('can amend changes', () => {
     waitsForPromise({timeout: 20000}, async () => {
-      const repoPath = await copyMercurialFixture('hg_repo_1');
+      const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
       const filePath = nuclideUri.join(repoPath, 'test.txt');
       atom.project.setPaths([repoPath]);
       const hgRepository = ((repositoryForPath(repoPath): any): HgRepositoryClient);
