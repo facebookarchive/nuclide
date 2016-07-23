@@ -10,7 +10,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ServerStatusType, FlowCoverageResult} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 

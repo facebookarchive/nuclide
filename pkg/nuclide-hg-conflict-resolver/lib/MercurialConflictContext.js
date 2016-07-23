@@ -12,9 +12,9 @@
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {CheckoutSideName, MergeConflict} from '../../nuclide-hg-repository-base/lib/HgService';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
 import {Directory} from 'atom';
@@ -104,7 +104,7 @@ export class MercurialConflictContext {
   }
 
   joinPath(relativePath: string): NuclideUri {
-    return remoteUri.join(this.workingDirectory.getPath(), relativePath);
+    return nuclideUri.join(this.workingDirectory.getPath(), relativePath);
   }
 
   complete(wasRebasing: boolean): void {

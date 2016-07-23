@@ -14,7 +14,7 @@ import type {search$FileResult} from '..';
 import {checkOutput} from '../../commons-node/process';
 import {addMatchers} from '../../nuclide-test-helpers';
 import fs from 'fs';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import temp from 'temp';
 import search from '../lib/scanhandler';
 

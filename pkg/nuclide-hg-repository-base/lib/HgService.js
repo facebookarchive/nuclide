@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import fs from 'fs';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 

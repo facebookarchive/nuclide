@@ -14,7 +14,7 @@ import typeof * as DebuggerRpcServiceInterface
   from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {

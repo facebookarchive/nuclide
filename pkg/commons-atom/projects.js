@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../nuclide-remote-uri';
+import type {NuclideUri} from '../commons-node/nuclideUri';
 
 import {Emitter, Directory} from 'atom';
-import nuclideUri from '../nuclide-remote-uri';
+import nuclideUri from '../commons-node/nuclideUri';
 import singleton from '../commons-node/singleton';
 
 const REMOVE_PROJECT_EVENT = 'did-remove-project';

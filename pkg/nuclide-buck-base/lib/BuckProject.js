@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {AsyncExecuteOptions} from '../../commons-node/process';
 import type {ProcessMessage} from '../../commons-node/process-types';
 
@@ -19,7 +19,7 @@ import {
   safeSpawn,
 } from '../../commons-node/process';
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
 import createBuckWebSocket from './createBuckWebSocket';
 

@@ -12,7 +12,7 @@
 import typeof * as HackConnectionService from './HackConnectionService';
 import type {ProcessMaker} from '../../commons-node/RpcProcess';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import {maybeToString} from '../../commons-node/string';
 import RpcProcess from '../../commons-node/RpcProcess';

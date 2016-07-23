@@ -14,7 +14,7 @@ import type {TestContext} from './remotable-tests';
 import {copyMercurialFixture} from '../../pkg/nuclide-test-helpers';
 import fs from 'fs';
 import invariant from 'assert';
-import nuclideUri from '../../pkg/nuclide-remote-uri';
+import nuclideUri from '../../pkg/commons-node/nuclideUri';
 
 const FILE_ENCODING = {encoding: 'utf-8'};
 

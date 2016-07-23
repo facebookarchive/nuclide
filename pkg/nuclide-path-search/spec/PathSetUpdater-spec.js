@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import {WatchmanSubscription} from '../../nuclide-watchman-helpers';
 

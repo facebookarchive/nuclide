@@ -26,7 +26,7 @@ import type {
   UIElement,
 } from './types';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-base/lib/utils';
 
 type FileDiffState = {
@@ -62,7 +62,7 @@ import {track, trackTiming} from '../../nuclide-analytics';
 import {serializeAsyncCall} from '../../commons-node/promise';
 import {mapUnion, mapFilter} from '../../commons-node/collection';
 import {bufferUntil} from '../../commons-node/stream';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import RepositoryStack from './RepositoryStack';
 import Rx from 'rxjs';
 import {notifyInternalError} from './notifications';
@@ -347,7 +347,7 @@ class DiffViewModel {
     if (this._activeRepositoryStack != null) {
       const projectDirectory = this._activeRepositoryStack.getRepository().getProjectDirectory();
       activeRepositorySelector = (filePath: NuclideUri) =>
-        remoteUri.contains(projectDirectory, filePath);
+        nuclideUri.contains(projectDirectory, filePath);
     }
     switch (this._state.viewMode) {
       case DiffMode.COMMIT_MODE:
@@ -491,7 +491,7 @@ class DiffViewModel {
       filePaths: Array<NuclideUri>,
       parentPath: NuclideUri,
     ): ?NuclideUri {
-      return filePaths.filter(filePath => remoteUri.contains(parentPath, filePath))[0];
+      return filePaths.filter(filePath => nuclideUri.contains(parentPath, filePath))[0];
     }
     const dirtyFilePaths = Array.from(repositoryStack.getDirtyFileChanges().keys());
     // Try to match dirty file changes in the selected directory,

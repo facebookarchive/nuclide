@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 
 import typeof * as FileWatcherServiceType from '../../nuclide-filewatcher-base';
@@ -22,7 +22,7 @@ import invariant from 'assert';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {ServerConnection} from './ServerConnection';
 import {CompositeDisposable, Emitter} from 'atom';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {getConnectionConfig} from './RemoteConnectionConfigurationManager';
 
 const logger = require('../../nuclide-logging').getLogger();
@@ -121,7 +121,7 @@ export class RemoteConnection {
   }
 
   getPathOfUri(uri: string): string {
-    return remoteUri.parse(uri).path;
+    return nuclideUri.parse(uri).path;
   }
 
   createDirectory(uri: string, symlink: boolean = false): RemoteDirectory {
@@ -263,7 +263,7 @@ export class RemoteConnection {
   }
 
   static getForUri(uri: NuclideUri): ?RemoteConnection {
-    const {hostname, path} = remoteUri.parse(uri);
+    const {hostname, path} = nuclideUri.parse(uri);
     if (hostname == null) {
       return null;
     }

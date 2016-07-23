@@ -10,7 +10,7 @@
  */
 
 import {parseRevisionFileChangeOutput} from '../lib/hg-revision-state-helpers';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 describe('parseRevisionFileChangeOutput', () => {
   const testWorkingDirectory = '/Hg/Working/Directory';

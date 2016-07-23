@@ -10,7 +10,7 @@
  */
 
 import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   FileDiagnosticMessage,
   MessageUpdateCallback,

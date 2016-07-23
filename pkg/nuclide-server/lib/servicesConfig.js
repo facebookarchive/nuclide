@@ -10,6 +10,6 @@
  */
 
 import {loadServicesConfig} from '../../nuclide-rpc';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 export default loadServicesConfig(nuclideUri.join(__dirname, '..'));

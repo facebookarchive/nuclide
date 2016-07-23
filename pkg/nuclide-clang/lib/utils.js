@@ -10,7 +10,7 @@
  */
 
 import escapeStringRegExp from 'escape-string-regexp';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
 
 import {

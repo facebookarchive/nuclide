@@ -10,7 +10,7 @@
  */
 
 import * as arcanist from '..';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import fs from 'fs-plus';
 import temp from 'temp';
 import invariant from 'assert';

@@ -24,7 +24,7 @@ import {ObservableManager} from './ObservableManager';
 import {CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {Disposable} from 'atom';
 import WS from 'ws';
 import {stringifyError} from '../../commons-node/string';

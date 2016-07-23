@@ -18,7 +18,7 @@ import {
   getOutputStream,
 } from '../../../commons-node/process';
 import {getLogger} from '../../../nuclide-logging';
-import nuclideUri from '../../../nuclide-remote-uri';
+import nuclideUri from '../../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
 
 const logger = getLogger();

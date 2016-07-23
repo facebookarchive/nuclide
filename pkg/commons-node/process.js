@@ -13,7 +13,7 @@ import type {Observer} from 'rxjs';
 import type {ProcessMessage} from './process-types';
 
 import child_process from 'child_process';
-import nuclideUri from '../nuclide-remote-uri';
+import nuclideUri from './nuclideUri';
 import {CompositeSubscription, observeStream, splitStream, takeWhileInclusive} from './stream';
 import {maybeToString} from './string';
 import {Observable} from 'rxjs';

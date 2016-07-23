@@ -11,7 +11,7 @@
 
 import type {Observable} from 'rxjs';
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 // Diagnostic information, returned from findDiagnostics.
 export type Diagnostics = {

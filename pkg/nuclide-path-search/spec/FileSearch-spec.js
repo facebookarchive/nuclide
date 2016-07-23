@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import temp from 'temp';
 import url from 'url';
 import {checkOutput} from '../../commons-node/process';

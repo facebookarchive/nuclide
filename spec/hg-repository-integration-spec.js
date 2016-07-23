@@ -22,7 +22,7 @@ import {
   fetchFilesChangedAtRevision,
 } from '../pkg/nuclide-hg-repository-base/lib/hg-revision-state-helpers';
 import fsPromise from '../pkg/commons-node/fsPromise';
-import nuclideUri from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/commons-node/nuclideUri';
 import invariant from 'assert';
 
 describe('Mercurial Repository Integration Tests', () => {

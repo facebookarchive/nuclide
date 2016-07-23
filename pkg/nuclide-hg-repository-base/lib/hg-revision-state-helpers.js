@@ -10,10 +10,10 @@
  */
 
 import type {RevisionFileChanges} from './HgService';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {hgAsyncExecute} from './hg-utils';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
 
 const ALL_FILES_LABEL = 'files:';

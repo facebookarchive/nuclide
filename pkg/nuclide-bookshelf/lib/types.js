@@ -10,7 +10,7 @@
  */
 
 import type Immutable from 'immutable';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export type BookShelfState = {
   repositoryPathToState: Immutable.Map<NuclideUri, BookShelfRepositoryState>,

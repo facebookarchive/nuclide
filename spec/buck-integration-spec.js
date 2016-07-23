@@ -20,7 +20,7 @@ import {
 import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import invariant from 'assert';
-import nuclideUri from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/commons-node/nuclideUri';
 
 describe('Buck building via toolbar', () => {
 

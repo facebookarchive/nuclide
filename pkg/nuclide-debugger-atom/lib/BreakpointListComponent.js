@@ -13,7 +13,7 @@ import type DebuggerActions from './DebuggerActions';
 
 import {React} from 'react-for-atom';
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {Listview} from '../../nuclide-ui/lib/ListView';
 import type {FileLineBreakpoints} from './types';

@@ -13,7 +13,7 @@ import typeof * as JediService from './JediService';
 
 import LRUCache from 'lru-cache';
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import JediServer from './JediServer';
 import LinkTreeManager from './LinkTreeManager';
 

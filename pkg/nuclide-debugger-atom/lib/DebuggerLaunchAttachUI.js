@@ -15,7 +15,7 @@ import type DebuggerActions from './DebuggerActions';
 
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {React} from 'react-for-atom';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 type PropsType = {
   store: DebuggerProviderStore,

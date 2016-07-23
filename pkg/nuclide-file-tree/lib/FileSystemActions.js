@@ -21,7 +21,7 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {File} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';

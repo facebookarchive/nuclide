@@ -11,7 +11,7 @@
 
 import type {HandlesByType} from '../../types';
 
-import nuclideUri from '../../../../nuclide-remote-uri';
+import nuclideUri from '../../../../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
 import HandlesTableComponent from './HandlesTableComponent';
 

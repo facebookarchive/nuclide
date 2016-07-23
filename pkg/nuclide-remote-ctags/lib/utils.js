@@ -14,7 +14,7 @@ import type {CtagsResult} from '../../nuclide-remote-ctags-base';
 import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 // Taken from http://ctags.sourceforge.net/FORMAT
 export const CTAGS_KIND_NAMES = {

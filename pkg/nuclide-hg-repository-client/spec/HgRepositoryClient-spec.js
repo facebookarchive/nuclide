@@ -22,7 +22,7 @@ import {
   StatusCodeId,
   StatusCodeNumber,
 } from '../../nuclide-hg-repository-base/lib/hg-constants';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import temp from 'temp';
 
 temp.track();

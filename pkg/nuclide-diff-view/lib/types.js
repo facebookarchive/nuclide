@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
 
 import {React} from 'react-for-atom';

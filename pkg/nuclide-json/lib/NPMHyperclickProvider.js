@@ -15,7 +15,7 @@ import type {
 } from '../../hyperclick/lib/types';
 
 import semver from 'semver';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import shell from 'shell';
 
 import {parseJSON, babelLocToRange} from './parsing';

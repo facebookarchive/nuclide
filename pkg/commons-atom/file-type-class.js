@@ -10,9 +10,9 @@
  */
 
 import fs from 'fs-plus';
-import nuclideUri from '../nuclide-remote-uri';
+import nuclideUri from '../commons-node/nuclideUri';
 
-import type {NuclideUri} from '../nuclide-remote-uri';
+import type {NuclideUri} from '../commons-node/nuclideUri';
 
 export default function fileTypeClass(filename: NuclideUri): string {
   let typeClass;

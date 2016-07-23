@@ -10,7 +10,7 @@
  */
 
 import featureConfig from '../../commons-atom/featureConfig';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {sleep} from '../../commons-node/promise';
 
 const openHealthPane = () => {

@@ -12,14 +12,14 @@
 type Target = {path: NuclideUri, name: string};
 
 import type {BuckProject} from '../../nuclide-buck-base';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Point} from 'atom';
 
 import {getBuckProject} from '../../nuclide-buck-base';
 import {wordAtPosition} from '../../commons-atom/range';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {goToLocation} from '../../commons-atom/go-to-location';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import escapeStringRegExp from 'escape-string-regexp';
 
 /**

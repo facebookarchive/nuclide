@@ -10,7 +10,7 @@
  */
 
 import type {CheckoutSideName, MergeConflict} from '../../nuclide-hg-repository-base/lib/HgService';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
 import {MercurialConflictDetector} from './MercurialConflictDetector';

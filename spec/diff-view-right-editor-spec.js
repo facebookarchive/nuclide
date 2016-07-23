@@ -18,7 +18,7 @@ import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import invariant from 'assert';
 import fs from 'fs';
-import nuclideUri from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/commons-node/nuclideUri';
 import {ReactDOM} from 'react-for-atom';
 
 function getResourceTextSync(filePath: string): string {

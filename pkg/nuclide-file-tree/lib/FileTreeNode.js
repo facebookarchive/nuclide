@@ -11,10 +11,10 @@
 
 
 import {MomoizedFieldsDeriver} from './MomoizedFieldsDeriver';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import Immutable from 'immutable';
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
 

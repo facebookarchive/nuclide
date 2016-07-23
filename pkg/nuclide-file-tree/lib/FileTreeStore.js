@@ -23,14 +23,14 @@ import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constant
 import {getLogger} from '../../nuclide-logging';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {track} from '../../nuclide-analytics';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 // Used to ensure the version we serialized is the same version we are deserializing.
 const VERSION = 1;
 
 import type {Directory} from './FileTreeHelpers';
 import type {Dispatcher} from 'flux';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
 

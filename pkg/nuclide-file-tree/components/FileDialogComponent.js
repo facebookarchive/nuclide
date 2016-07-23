@@ -17,7 +17,7 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 type Options = {[key: string]: boolean};
 

@@ -18,7 +18,7 @@ import {Observable} from 'rxjs';
 
 import {safeSpawn} from '../../commons-node/process';
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import split from 'split';
 
 // This pattern is used for parsing the output of grep.

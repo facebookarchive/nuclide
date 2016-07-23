@@ -10,7 +10,7 @@
  */
 
 import type {DebuggerInstance} from '../../nuclide-debugger-atom';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   LaunchTargetInfo,
   DebuggerRpcService as DebuggerRpcServiceType,

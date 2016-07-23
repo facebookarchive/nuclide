@@ -17,10 +17,10 @@ import {
 } from '../../nuclide-ui/lib/Button';
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 type PropsType = {
   targetUri: NuclideUri,

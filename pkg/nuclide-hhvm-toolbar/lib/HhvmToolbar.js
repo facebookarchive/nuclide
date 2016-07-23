@@ -22,7 +22,7 @@ import {
 } from '../../nuclide-ui/lib/ButtonGroup';
 import ProjectStore from './ProjectStore';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 const WEB_SERVER_OPTION = {label: 'WebServer', value: 0};
 const SCRIPT_OPTION = {label: 'Script', value: 1};

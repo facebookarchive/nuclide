@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RevisionFileChanges} from '../../nuclide-hg-repository-base/lib/HgService';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {
   checkOutput,
   scriptSafeSpawnAndObserveOutput,

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteConnection} from './RemoteConnection';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
@@ -23,7 +23,7 @@ import {RemoteFile} from './RemoteFile';
 import {RemoteDirectory} from './RemoteDirectory';
 
 import {Emitter} from 'atom';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
 import {getVersion} from '../../nuclide-version';

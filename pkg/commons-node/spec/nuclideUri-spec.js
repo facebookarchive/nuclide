@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '..';
+import nuclideUri from '../nuclideUri';
 // eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
 import path from 'path';
 

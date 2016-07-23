@@ -13,7 +13,7 @@ import type {ServerConnection} from '..';
 
 import invariant from 'assert';
 import fs from 'fs';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import crypto from 'crypto';
 import temp from 'temp';
 import connectionMock from './connection_mock';

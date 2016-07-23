@@ -10,7 +10,7 @@
  */
 
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-atom';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
 
 function getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {

@@ -13,7 +13,7 @@ import type {ModuleMapOptions} from './ModuleMapOptions';
 import type {RequireOptions} from './RequireOptions';
 import type {SourceOptions} from './SourceOptions';
 
-import nuclideUri from '../../../nuclide-remote-uri';
+import nuclideUri from '../../../commons-node/nuclideUri';
 import invariant from 'assert';
 
 /**

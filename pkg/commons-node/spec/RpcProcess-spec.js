@@ -11,7 +11,7 @@
 
 import typeof * as DummyService from './fixtures/dummy-service/DummyService';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../nuclideUri';
 import invariant from 'assert';
 import {safeSpawn} from '../process';
 import RpcProcess from '../RpcProcess';

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {HighlightedLines, OffsetMap, UIElement} from './types';
 
 import {CompositeDisposable} from 'atom';

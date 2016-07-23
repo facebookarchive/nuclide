@@ -13,7 +13,7 @@ import type {
   FileMessageUpdate,
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-base';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import {

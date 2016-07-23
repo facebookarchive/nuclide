@@ -10,7 +10,7 @@
  */
 
 import type {TestRunner, Message} from './types';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Observable} from 'rxjs';
 
 import invariant from 'assert';

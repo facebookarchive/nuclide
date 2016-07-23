@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
 import {BuckProject} from '../../nuclide-buck-base';
 

@@ -17,7 +17,7 @@ import type {DefinitionService} from '../../nuclide-definition-service';
 
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {Disposable} from 'atom';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
 
 let currentService: ?DefinitionService = null;

@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {asyncExecute} from '../../commons-node/process';
 import {maybeToString} from '../../commons-node/string';
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import JediServerManager from './JediServerManager';
 import {parseFlake8Output} from './flake8';
 

@@ -14,8 +14,8 @@ import invariant from 'assert';
 import {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import {HhvmDebuggerInstance} from './HhvmDebuggerInstance';
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
-import nuclideUri from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
   constructor(targetUri: NuclideUri) {

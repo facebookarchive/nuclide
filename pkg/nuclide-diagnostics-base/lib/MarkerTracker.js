@@ -13,7 +13,7 @@ import type {
   FileDiagnosticMessage,
 } from '..';
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {CompositeDisposable} from 'atom';
 

@@ -10,7 +10,7 @@
  */
 
 import {LazyTreeNode} from '../../nuclide-ui/lib/LazyTreeNode';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {FileChangeStatusToPrefix} from './constants';
 
 import type {FileChange} from './types';

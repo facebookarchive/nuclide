@@ -13,7 +13,7 @@ import type TestSuiteModel from '../TestSuiteModel';
 import type {TestRunner} from '../types';
 
 import invariant from 'assert';
-import nuclideUri from '../../../nuclide-remote-uri';
+import nuclideUri from '../../../commons-node/nuclideUri';
 import Console from './Console';
 import {Dropdown} from '../../../nuclide-ui/lib/Dropdown';
 import {PanelComponent} from '../../../nuclide-ui/lib/PanelComponent';

@@ -19,7 +19,7 @@ import {
   setLocalProject,
 } from '../pkg/commons-atom/testHelpers';
 import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
-import nuclideUri from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/commons-node/nuclideUri';
 
 describe('Clipboard path integration test', () => {
   it('correctly copies local paths', () => {

@@ -17,7 +17,7 @@ import featureConfig from '../../commons-atom/featureConfig';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {getHackService} from '../../nuclide-hack-symbol-provider/lib/getHackService';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {CTAGS_KIND_ICONS, CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
 
 // ctags doesn't have a true limit API, so having too many results slows down Nuclide.

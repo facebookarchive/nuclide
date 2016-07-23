@@ -13,7 +13,7 @@ import type {FileResult} from './types';
 
 import {React} from 'react-for-atom';
 import fileTypeClass from '../../commons-atom/file-type-class';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 type Key = number | string;
 

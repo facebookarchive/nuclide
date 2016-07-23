@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../nuclide-remote-uri';
+import type {NuclideUri} from '../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import {TextBuffer} from 'atom';
 import {Observable} from 'rxjs';
 
-import nuclideUri from '../nuclide-remote-uri';
+import nuclideUri from '../commons-node/nuclideUri';
 import {ServerConnection, NuclideTextBuffer} from '../nuclide-remote-connection';
 import {observableFromSubscribeFunction} from '../commons-node/event';
 

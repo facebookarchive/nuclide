@@ -12,12 +12,11 @@
 import type {LazyTreeNode} from '../../nuclide-ui/lib/LazyTreeNode';
 import type {FileChange, FileChangeStatusValue} from './types';
 import type DiffViewModel from './DiffViewModel';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import fileTypeClass from '../../commons-atom/file-type-class';
 import {TreeRootComponent} from '../../nuclide-ui/lib/TreeRootComponent';
 import DiffViewTreeNode from './DiffViewTreeNode';
-import remoteUri from '../../nuclide-remote-uri';
 import Immutable from 'immutable';
 import {
   FileChangeStatus,
@@ -29,7 +28,7 @@ import {React} from 'react-for-atom';
 import {arrayCompact} from '../../commons-node/collection';
 import classnames from 'classnames';
 import uiTreePath from '../../commons-atom/ui-tree-path';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {addPath, revertPath} from '../../nuclide-hg-repository/lib/actions';
@@ -233,8 +232,8 @@ export default class DiffViewTree extends React.Component {
       const {fileChanges} = this.props;
       const filePaths = Array.from(fileChanges.keys())
         .sort((filePath1, filePath2) =>
-          remoteUri.basename(filePath1).toLowerCase().localeCompare(
-            remoteUri.basename(filePath2).toLowerCase(),
+          nuclideUri.basename(filePath1).toLowerCase().localeCompare(
+            nuclideUri.basename(filePath2).toLowerCase(),
           ),
         );
       for (const filePath of filePaths) {

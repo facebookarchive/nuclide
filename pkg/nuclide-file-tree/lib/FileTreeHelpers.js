@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteDirectory, RemoteFile} from '../../nuclide-remote-connection';
 
 import {Directory as LocalDirectory} from 'atom';
@@ -18,7 +18,7 @@ import {
   RemoteConnection,
   ServerConnection,
 } from '../../nuclide-remote-connection';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import crypto from 'crypto';
 

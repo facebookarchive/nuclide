@@ -14,7 +14,7 @@ import {getConfig} from './config';
 import {launchScriptForDummyConnection, uriToPath} from './helpers';
 import fsPromise from '../../commons-node/fsPromise';
 import {maybeToString} from '../../commons-node/string';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import type {Socket} from 'net';
 

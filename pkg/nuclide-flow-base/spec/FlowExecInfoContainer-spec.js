@@ -12,7 +12,7 @@
 import invariant from 'assert';
 
 import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 describe('FlowExecInfoContainer', () => {
   const dummyFlowPath = nuclideUri.join(__dirname, 'fixtures/dummyFlow');

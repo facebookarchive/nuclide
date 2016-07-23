@@ -31,7 +31,7 @@ module.exports = function(context) {
       ) {
         context.report({
           node,
-          message: 'path module is not to be used. Use nuclide-remote-uri instead',
+          message: 'path module is not to be used. Use commons-node/nuclideUri instead',
         });
       }
     },

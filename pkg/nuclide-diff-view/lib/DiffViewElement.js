@@ -12,7 +12,7 @@
 import type DiffViewModel from './DiffViewModel';
 
 import {Emitter, CompositeDisposable} from 'atom';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 const DID_DESTROY_EVENT_NAME = 'did-destroy';
 const CHANGE_TITLE_EVENT_NAME = 'did-change-title';

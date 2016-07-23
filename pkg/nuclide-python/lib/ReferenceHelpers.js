@@ -16,7 +16,7 @@ import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getAtomProjectRootPath} from '../../commons-atom/projects';
 import loadingNotification from '../../commons-atom/loading-notification';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 export default class ReferenceHelpers {
 

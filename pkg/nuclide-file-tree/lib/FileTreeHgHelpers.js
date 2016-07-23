@@ -11,11 +11,11 @@
 
 import type {FileTreeNode} from './FileTreeNode';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import shell from 'shell';
 import Immutable from 'immutable';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import FileTreeHelpers from './FileTreeHelpers';
 import {triggerAfterWait} from '../../commons-node/promise';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';

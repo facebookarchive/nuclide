@@ -11,7 +11,7 @@
 
 import type {NuclideRemoteConnectionParams} from './connection-types';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import userInfo from '../../commons-node/userInfo';
 import {SshHandshake} from '../../nuclide-remote-connection';
 

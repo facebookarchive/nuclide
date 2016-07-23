@@ -28,7 +28,7 @@ import {
   waitsForFile,
   waitsForFilePosition,
 } from '../pkg/commons-atom/testHelpers';
-import nuclideUri from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/commons-node/nuclideUri';
 
 /**
  * This is a full integration test for (local) Objective-C support in Nuclide.

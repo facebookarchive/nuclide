@@ -13,7 +13,7 @@
 import {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import {HhvmDebuggerInstance} from './HhvmDebuggerInstance';
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchTarget: string;

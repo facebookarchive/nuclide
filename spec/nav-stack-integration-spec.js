@@ -22,7 +22,7 @@ import {
 import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {sleep} from '../pkg/commons-node/promise';
 import {goToLocation} from '../pkg/commons-atom/go-to-location';
-import nuclideUri from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/commons-node/nuclideUri';
 
 const NAV_SLEEP_MS = 1000;
 

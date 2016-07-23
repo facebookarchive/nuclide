@@ -17,7 +17,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
 import {FileTreeStore} from './FileTreeStore';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 type MenuItemSingle = {
   label: string,

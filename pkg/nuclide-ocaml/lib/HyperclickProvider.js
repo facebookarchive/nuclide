@@ -11,7 +11,7 @@
 
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
 import {GRAMMARS} from './constants';
 import {goToLocation} from '../../commons-atom/go-to-location';

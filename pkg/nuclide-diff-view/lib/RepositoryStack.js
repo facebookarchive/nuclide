@@ -22,7 +22,7 @@ import type {
   RevisionFileChanges,
   RevisionInfo,
 } from '../../nuclide-hg-repository-base/lib/HgService';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus, DiffOption} from './constants';

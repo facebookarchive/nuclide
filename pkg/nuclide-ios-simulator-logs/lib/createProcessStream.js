@@ -13,7 +13,7 @@ import {observeProcess, safeSpawn} from '../../commons-node/process';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 import os from 'os';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import Rx from 'rxjs';
 
 export function createProcessStream(): Rx.Observable<string> {

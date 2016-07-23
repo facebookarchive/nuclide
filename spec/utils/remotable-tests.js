@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../pkg/nuclide-remote-uri';
+import type {NuclideUri} from '../../pkg/commons-node/nuclideUri';
 import type {RemoteConnection} from '../../pkg/nuclide-remote-connection';
 
 import {
@@ -21,7 +21,7 @@ import {
   stopNuclideServer,
 } from '../../pkg/nuclide-integration-test-helpers';
 import {setLocalProject} from '../../pkg/commons-atom/testHelpers';
-import nuclideUri from '../../pkg/nuclide-remote-uri';
+import nuclideUri from '../../pkg/commons-node/nuclideUri';
 import invariant from 'assert';
 
 export type TestContext = {

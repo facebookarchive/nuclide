@@ -41,7 +41,7 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import passesGK from '../../commons-node/passesGK';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';

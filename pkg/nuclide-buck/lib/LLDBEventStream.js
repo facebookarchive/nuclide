@@ -20,7 +20,7 @@ import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {LaunchProcessInfo} from '../../nuclide-debugger-lldb-client/lib/LaunchProcessInfo';
 import {getLogger} from '../../nuclide-logging';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 

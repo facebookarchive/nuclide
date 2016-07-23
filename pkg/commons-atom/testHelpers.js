@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import nuclideUri from '../nuclide-remote-uri';
+import nuclideUri from '../commons-node/nuclideUri';
 
 /**
  * Use this function to simulate keyboard shortcuts or special keys, e.g. cmd-v,

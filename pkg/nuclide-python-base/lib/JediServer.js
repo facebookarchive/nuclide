@@ -13,7 +13,7 @@ import typeof * as JediService from './JediService';
 import type {ProcessMaker} from '../../commons-node/RpcProcess';
 
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {safeSpawn} from '../../commons-node/process';
 import RpcProcess from '../../commons-node/RpcProcess';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';

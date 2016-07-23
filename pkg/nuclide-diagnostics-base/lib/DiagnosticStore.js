@@ -19,7 +19,7 @@ import type {
   FileMessageUpdate,
 } from '..';
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {applyTextEdit} from '../../nuclide-textedit';
 import {arrayRemove, MultiMap} from '../../commons-node/collection';

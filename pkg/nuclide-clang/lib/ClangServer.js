@@ -12,7 +12,7 @@
 import typeof * as ClangProcessService from './ClangProcessService';
 import type {ClangCompileResult} from './rpc-types';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {BehaviorSubject} from 'rxjs';
 
 import {asyncExecute, safeSpawn} from '../../commons-node/process';

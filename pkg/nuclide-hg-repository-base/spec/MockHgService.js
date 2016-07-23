@@ -11,7 +11,7 @@
 
 import {Observable, Subject} from 'rxjs';
 import type {DiffInfo, StatusCodeIdValue} from '../lib/HgService';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 // This class is meant to be stubbed out.
 module.exports = class MockHgService {

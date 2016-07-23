@@ -11,7 +11,7 @@
 
 import fsPromise from '../../commons-node/fsPromise';
 import {_findAvailableDevice} from '../lib/createProcessStream';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 describe('_findAvailableDevice', () => {
 

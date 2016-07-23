@@ -18,7 +18,7 @@ import type {TestContext} from './utils/remotable-tests';
 
 import fs from 'fs';
 import invariant from 'assert';
-import nuclideUri from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/commons-node/nuclideUri';
 import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 import {repositoryForPath} from '../pkg/nuclide-hg-git-bridge';

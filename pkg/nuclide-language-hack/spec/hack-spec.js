@@ -3,7 +3,7 @@
 
 /* eslint-disable nuclide-internal/license-header */
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
 import grammarTest from 'atom-grammar-test';
 

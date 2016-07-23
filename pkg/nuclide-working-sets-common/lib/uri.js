@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export function dedupeUris(uris: Array<NuclideUri>): Array<NuclideUri> {
   const deduped = uris.map(nuclideUri.ensureTrailingSeparator);

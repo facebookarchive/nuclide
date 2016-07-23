@@ -10,7 +10,7 @@
  */
 
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 /**
  * @param repoPath The full path to the repository directory (.hg).

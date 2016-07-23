@@ -19,7 +19,7 @@ import utils from './utils';
 import {DebuggerInstance} from '../../nuclide-debugger-atom';
 import {CompositeDisposable, Emitter} from 'atom';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {getConfig} from './utils';
 import WS from 'ws';
@@ -147,9 +147,9 @@ export class LldbDebuggerInstance extends DebuggerInstance {
 
   _translateMessageIfNeeded(message: string): string {
     // TODO: do we really need isRemote() checking?
-    if (remoteUri.isRemote(this.getTargetUri())) {
+    if (nuclideUri.isRemote(this.getTargetUri())) {
       message = translateMessageFromServer(
-        remoteUri.getHostname(this.getTargetUri()),
+        nuclideUri.getHostname(this.getTargetUri()),
         message);
     }
     return message;

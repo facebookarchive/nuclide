@@ -12,7 +12,7 @@
 import type {Location} from './types';
 
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 export function locationToString(location: Location): string {
   switch (location.type) {

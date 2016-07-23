@@ -14,12 +14,12 @@ import type {
   RepositoryShortHeadChange,
   SerializedBookShelfState,
 } from './types';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import Immutable from 'immutable';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {track} from '../../nuclide-analytics';
 
@@ -100,7 +100,7 @@ export function shortHeadChangedNotification(
   restorePaneItemState: (repository: atom$Repository, newShortHead: string) => mixed,
 ): Observable<void> {
   return Observable.create(observer => {
-    const workingDirectoryName = remoteUri.basename(repository.getWorkingDirectory());
+    const workingDirectoryName = nuclideUri.basename(repository.getWorkingDirectory());
 
     // TODO(most): Should we handle empty bookmark switches differently?
     const newShortHeadDisplayText = newShortHead.length > 0

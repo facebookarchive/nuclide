@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import type {WorkingSetsStore} from './WorkingSetsStore';
 

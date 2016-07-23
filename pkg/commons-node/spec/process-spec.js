@@ -12,7 +12,7 @@
 import child_process from 'child_process';
 import invariant from 'assert';
 import mockSpawn from 'mock-spawn';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../nuclideUri';
 
 import {
   asyncExecute,

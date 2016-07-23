@@ -18,7 +18,7 @@ import {arrayCompact} from '../../commons-node/collection';
 import {checkOutput} from '../../commons-node/process';
 import Rx from 'rxjs';
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 class NodeDebuggerInstance extends DebuggerInstance {
   _close$: Rx.Subject<mixed>;

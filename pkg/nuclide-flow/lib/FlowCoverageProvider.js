@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/types';
 import type {FlowCoverageResult} from '../../nuclide-flow-base';
 

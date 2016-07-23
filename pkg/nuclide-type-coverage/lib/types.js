@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export type UncoveredRegion = {
   range: atom$Range,

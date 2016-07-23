@@ -56,7 +56,7 @@ import pathModule from 'path';
 
 import url from 'url';
 
-import {maybeToString} from '../../commons-node/string';
+import {maybeToString} from './string';
 
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
 

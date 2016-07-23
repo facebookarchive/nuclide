@@ -11,7 +11,7 @@
 
 
 import url from 'url';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import logger from './utils';
 import invariant from 'assert';
 

@@ -11,7 +11,7 @@
 
 import type {Gadget} from '../../../nuclide-gadgets/lib/types';
 import {React} from 'react-for-atom';
-import nuclideUri from '../../../nuclide-remote-uri';
+import nuclideUri from '../../../commons-node/nuclideUri';
 import {Webview} from '../../../nuclide-ui/lib/Webview';
 
 class Inspector extends React.Component {

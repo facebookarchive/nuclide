@@ -10,7 +10,7 @@
  */
 
 import type {HackSearchPosition} from '../../nuclide-hack-base/lib/HackService';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {HackSymbolProvider} from '../lib/HackSymbolProvider';
 import {

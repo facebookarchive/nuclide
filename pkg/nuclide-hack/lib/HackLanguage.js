@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   HackParameterDetails,
   HackCompletion,
@@ -25,7 +25,7 @@ import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
 import type {HackCoverageResult} from './TypedRegions';
 
 import {RemoteConnection} from '../../nuclide-remote-connection';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {getHackEnvironmentDetails} from './utils';
 import {Range} from 'atom';
 import {getLogger} from '../../nuclide-logging';

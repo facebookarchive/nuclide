@@ -12,7 +12,7 @@
 import type {SshConnectionConfiguration} from '../lib/SshHandshake';
 
 import {EventEmitter} from 'events';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 import {SshHandshake} from '../lib/SshHandshake';
 

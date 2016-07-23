@@ -15,7 +15,7 @@ import generate from 'babel-core/lib/generation';
 import {generateProxy} from '../lib/proxy-generator';
 import {addMatchers} from '../../nuclide-test-helpers';
 import {parseServiceDefinition} from '../lib/service-parser';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import vm from 'vm';
 import {__test__} from '../lib/proxy-generator';
 

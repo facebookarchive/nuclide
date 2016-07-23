@@ -20,7 +20,7 @@ import {Button} from './Button';
 import {ButtonGroup} from './ButtonGroup';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 import {DiagnosticsTraceItem} from './DiagnosticsTraceItem';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 type DiagnosticsMessageProps = {
   message: FileDiagnosticMessage,

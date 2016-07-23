@@ -14,7 +14,7 @@ import type {
   AttachTargetInfo,
   LaunchTargetInfo,
 } from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type DebuggerProcessInfo from '../../nuclide-debugger-atom/lib/DebuggerProcessInfo';
 import typeof * as DebuggerRpcServiceInterface
   from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';

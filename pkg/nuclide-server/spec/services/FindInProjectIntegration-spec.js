@@ -11,7 +11,7 @@
 
 import fs from 'fs';
 import {addMatchers} from '../../../nuclide-test-helpers';
-import nuclideUri from '../../../nuclide-remote-uri';
+import nuclideUri from '../../../commons-node/nuclideUri';
 import ServiceTestHelper from './ServiceTestHelper';
 
 describe('FindInProjectService-Integration', () => {

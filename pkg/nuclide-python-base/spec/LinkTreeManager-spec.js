@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import fsPlus from 'fs-plus';
 import temp from 'temp';
 import LinkTreeManager from '../lib/LinkTreeManager';

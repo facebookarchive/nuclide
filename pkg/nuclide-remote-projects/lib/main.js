@@ -13,7 +13,7 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {
   RemoteConnectionConfiguration,
 } from '../../nuclide-remote-connection/lib/RemoteConnection';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type RemoteDirectoryProviderT from './RemoteDirectoryProvider';
 import type RemoteDirectorySearcherT from './RemoteDirectorySearcher';
 import type RemoteProjectsControllerT from './RemoteProjectsController';
@@ -33,7 +33,7 @@ import {
 } from '../../nuclide-remote-connection';
 import {trackImmediate} from '../../nuclide-analytics';
 import {openConnectionDialog} from './open-connection';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 const logger = getLogger();
 
@@ -170,7 +170,7 @@ function closeOpenFilesForRemoteProject(remoteProjectConfig: RemoteConnectionCon
 }
 
 function getRemoteRootDirectories(): Array<atom$Directory> {
-  // TODO: Use nuclide-remote-uri instead.
+  // TODO: Use nuclideUri instead.
   return atom.project.getDirectories().filter(
     directory => directory.getPath().startsWith('nuclide:'));
 }

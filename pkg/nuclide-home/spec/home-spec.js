@@ -11,7 +11,7 @@
 
 import featureConfig from '../../commons-atom/featureConfig';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 const CONFIG_KEY = 'nuclide-home.showHome';
 

@@ -10,7 +10,7 @@
  */
 
 import NuclideServer from '../lib/NuclideServer';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import servicesConfig from '../lib/servicesConfig';
 
 const pathToTestDir = nuclideUri.join(__dirname, 'testfiles');

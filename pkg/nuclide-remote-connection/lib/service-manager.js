@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Transport} from '../../nuclide-rpc';
 
 import {ServerConnection} from './ServerConnection';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
 import {

@@ -14,7 +14,7 @@ import typeof * as FileSystemService from '../../lib/services/FileSystemService'
 import ServiceTestHelper from './ServiceTestHelper';
 import invariant from 'assert';
 import fs from 'fs';
-import nuclideUri from '../../../nuclide-remote-uri';
+import nuclideUri from '../../../commons-node/nuclideUri';
 import rimraf from 'rimraf';
 import temp from 'temp';
 

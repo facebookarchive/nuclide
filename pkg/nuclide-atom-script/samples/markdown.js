@@ -15,7 +15,7 @@ import type {ExitCode} from '../lib/types';
 
 import fs from 'fs';
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import yargs from 'yargs';
 
 export default async function runCommand(args: Array<string>): Promise<ExitCode> {

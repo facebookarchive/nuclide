@@ -16,7 +16,7 @@ import {
   waitsForFile,
 } from '../pkg/commons-atom/testHelpers';
 import {generateFixture} from '../pkg/nuclide-test-helpers';
-import nuclideUri from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/commons-node/nuclideUri';
 
 describeRemotableTest('Related Files Integration Test', context => {
   // Normally these would be .cpp / .h files, but avoid spinning up C++ processes for speed.

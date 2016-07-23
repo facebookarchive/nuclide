@@ -14,7 +14,7 @@ const {log} = utils;
 
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
   log('Getting process info list');

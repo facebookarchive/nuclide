@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {isDirKey, keyToPath, keyToName} from './FileTreeHelpers';
 import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../nuclideUri';
 import fsPromise from '../fsPromise';
 import ScribeProcess, {__test__} from '../ScribeProcess';
 

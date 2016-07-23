@@ -19,7 +19,7 @@ import {CompositeDisposable, Disposable} from 'event-kit';
 import {Observable} from 'rxjs';
 import child_process from 'child_process';
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import utils from './utils';
 import WS from 'ws';
 const {log, logTrace, logError, logInfo, setLogLevel} = utils;

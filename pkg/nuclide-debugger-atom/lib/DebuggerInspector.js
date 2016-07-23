@@ -13,7 +13,7 @@ import BreakpointStore from './BreakpointStore';
 import Bridge from './Bridge';
 import DebuggerActions from './DebuggerActions';
 import {React, ReactDOM} from 'react-for-atom';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {
   Button,
   ButtonTypes,

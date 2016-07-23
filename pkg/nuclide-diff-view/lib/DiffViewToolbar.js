@@ -10,7 +10,7 @@
  */
 
 import type {DiffModeType} from './types';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {Button} from '../../nuclide-ui/lib/Button';
 import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';

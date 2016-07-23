@@ -12,7 +12,7 @@
 import type {
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-base';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {React} from 'react-for-atom';
 import classnames from 'classnames';

@@ -14,11 +14,11 @@ import {arrayEqual} from '../../commons-node/collection';
 import {dedupeUris} from './uri';
 import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 const logger = getLogger();
 
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 type InnerNode = {
   kind: 'inner',

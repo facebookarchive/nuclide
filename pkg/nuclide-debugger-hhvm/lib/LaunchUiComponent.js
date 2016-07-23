@@ -12,7 +12,7 @@
 import {React} from 'react-for-atom';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {
   Button,
@@ -21,7 +21,7 @@ import {
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 type PropsType = {
   targetUri: NuclideUri,
@@ -82,7 +82,8 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _getPathMenuItems(): Array<{label: string, value: number}> {
-    const connections = RemoteConnection.getByHostname(remoteUri.getHostname(this.props.targetUri));
+    const hostname = nuclideUri.getHostname(this.props.targetUri);
+    const connections = RemoteConnection.getByHostname(hostname);
     return connections.map((connection, index) => {
       const pathToProject = connection.getPathForInitialWorkingDirectory();
       return {
@@ -113,17 +114,17 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
     if (editor != null) {
       const fileUri = editor.getPath();
       if (fileUri != null && this._isValidScriptUri(fileUri)) {
-        return remoteUri.getPath(fileUri);
+        return nuclideUri.getPath(fileUri);
       }
     }
     return '';
   }
 
   _isValidScriptUri(uri: NuclideUri): boolean {
-    if (!remoteUri.isRemote(uri)) {
+    if (!nuclideUri.isRemote(uri)) {
       return false;
     }
-    const scriptPath = remoteUri.getPath(uri);
+    const scriptPath = nuclideUri.getPath(uri);
     return scriptPath.endsWith('.php') || scriptPath.endsWith('.hh');
   }
 

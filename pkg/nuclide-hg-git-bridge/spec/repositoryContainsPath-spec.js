@@ -17,7 +17,7 @@ import repositoryContainsPath from '../lib/repositoryContainsPath';
 import {checkOutput} from '../../commons-node/process';
 import {MockHgService} from '../../nuclide-hg-repository-base';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 const temp = require('temp').track();
 

@@ -10,9 +10,9 @@
  */
 
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-atom';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {HhvmLaunchAttachProvider} from './HhvmLaunchAttachProvider';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 function getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
   if (nuclideUri.isRemote(connection)) {

@@ -14,7 +14,7 @@ import {WorkingSet} from '../../nuclide-working-sets-common';
 import {arrayEqual} from '../../commons-node/collection';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import type {WorkingSetDefinition} from './types';
 

@@ -17,7 +17,7 @@ import type {
 } from './types';
 import type DiffViewModel from './DiffViewModel';
 import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable, TextBuffer} from 'atom';

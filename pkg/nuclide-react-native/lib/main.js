@@ -15,10 +15,10 @@ import type {
   nuclide_debugger$Service,
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Activation as ActivationType} from './Activation';
 
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {ReactNativeLaunchAttachProvider} from './debugging/ReactNativeLaunchAttachProvider';
 import invariant from 'assert';
 
@@ -45,7 +45,7 @@ export function createDebuggerProvider(): NuclideDebuggerProvider {
   return {
     name: 'react-native',
     getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
-      if (remoteUri.isLocal(connection)) {
+      if (nuclideUri.isLocal(connection)) {
         return new ReactNativeLaunchAttachProvider('React Native', connection);
       }
       return null;

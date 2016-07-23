@@ -10,7 +10,7 @@
  */
 
 import type DebuggerInstance from './DebuggerInstance';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 class DebuggerProcessInfo {
   _serviceName: string;

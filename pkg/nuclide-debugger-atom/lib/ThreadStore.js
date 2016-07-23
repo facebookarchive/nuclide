@@ -23,7 +23,7 @@ import {
   CompositeDisposable,
 } from 'atom';
 import {EventEmitter} from 'events';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import Constants from './Constants';
 import passesGK from '../../commons-node/passesGK';
 

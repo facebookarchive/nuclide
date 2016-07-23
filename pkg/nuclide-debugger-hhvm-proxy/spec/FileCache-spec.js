@@ -11,7 +11,7 @@
 
 import type {ClientCallback} from '../lib/ClientCallback';
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import FileCache from '../lib/FileCache';
 
 describe('debugger-hhvm-proxy FileCache', () => {

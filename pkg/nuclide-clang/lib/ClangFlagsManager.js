@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import fs from 'fs';
 import os from 'os';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable, Subscription} from 'rxjs';
 import {parse} from 'shell-quote';
 import {trackTiming} from '../../nuclide-analytics';

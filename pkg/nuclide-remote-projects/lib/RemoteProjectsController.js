@@ -14,7 +14,7 @@ import {ServerConnection} from '../../nuclide-remote-connection';
 import {React, ReactDOM} from 'react-for-atom';
 import {CompositeDisposable, Disposable} from 'atom';
 import StatusBarTile from './StatusBarTile';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import ConnectionState from './ConnectionState';
 import {
   onWorkspaceDidStopChangingActivePaneItem,
@@ -61,7 +61,7 @@ class RemoteProjectsController {
     if (!fileUri) {
       return;
     }
-    if (remoteUri.isLocal(fileUri)) {
+    if (nuclideUri.isLocal(fileUri)) {
       this._renderStatusBar(ConnectionState.LOCAL, fileUri);
       return;
     }

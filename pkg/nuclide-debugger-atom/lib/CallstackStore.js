@@ -17,7 +17,7 @@ import {
   CompositeDisposable,
   Emitter,
 } from 'atom';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import Constants from './Constants';
 
 export default class CallstackStore {

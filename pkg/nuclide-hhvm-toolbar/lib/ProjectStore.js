@@ -14,12 +14,12 @@ import {getHackEnvironmentDetails} from '../../nuclide-hack/lib/utils';
 import {CompositeDisposable, Emitter} from 'atom';
 import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import {trackTiming} from '../../nuclide-analytics';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {
   onWorkspaceDidStopChangingActivePaneItem,
 } from '../../commons-atom/debounced';
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 type ProjectType = 'Buck' | 'Hhvm' | 'Other';
 
@@ -72,7 +72,7 @@ class ProjectStore {
   @trackTiming('toolbar.isFileHHVMProject')
   async _isFileHHVMProject(fileUri: NuclideUri): Promise<boolean> {
     const {hackService} = await getHackEnvironmentDetails(fileUri);
-    return remoteUri.isRemote(fileUri)
+    return nuclideUri.isRemote(fileUri)
       && hackService != null
       && await hackService.isFileInHackProject(fileUri);
   }
@@ -92,7 +92,7 @@ class ProjectStore {
   }
 
   updateLastScriptCommand(command: string): void {
-    this._filePathsToScriptCommand.set(remoteUri.getPath(this._currentFilePath), command);
+    this._filePathsToScriptCommand.set(nuclideUri.getPath(this._currentFilePath), command);
   }
 
   onChange(callback: () => void): IDisposable {

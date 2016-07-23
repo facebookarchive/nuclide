@@ -34,7 +34,7 @@ type ChromeProtocolResponse = {
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import {getLogger} from '../../nuclide-logging';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {Deferred} from '../../commons-node/promise';
 import {DebuggerMode} from './DebuggerStore';
 

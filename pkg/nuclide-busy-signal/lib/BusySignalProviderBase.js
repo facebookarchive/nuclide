@@ -10,7 +10,7 @@
  */
 
 import type {BusySignalMessage} from './types';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Observable} from 'rxjs';
 
 import {Disposable, CompositeDisposable} from 'atom';

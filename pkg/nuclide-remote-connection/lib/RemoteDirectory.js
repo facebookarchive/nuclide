@@ -17,10 +17,9 @@ import type {RemoteFile} from './RemoteFile';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-base';
 
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {Disposable, Emitter} from 'atom';
 import {getLogger} from '../../nuclide-logging';
-import remoteUri from '../../nuclide-remote-uri';
 
 const logger = getLogger();
 
@@ -59,7 +58,7 @@ export class RemoteDirectory {
     this._emitter = new Emitter();
     this._subscriptionCount = 0;
     this._symlink = symlink;
-    const {path: directoryPath, protocol, host} = remoteUri.parse(uri);
+    const {path: directoryPath, protocol, host} = nuclideUri.parse(uri);
     invariant(protocol);
     invariant(host);
     /** In the example, this would be "nuclide://example.com". */
@@ -207,7 +206,7 @@ export class RemoteDirectory {
       return uri;
     }
     // Note: host of uri must match this._host.
-    const subpath = remoteUri.parse(uri).path;
+    const subpath = nuclideUri.parse(uri).path;
     return nuclideUri.relative(this._localPath, subpath);
   }
 
@@ -254,7 +253,7 @@ export class RemoteDirectory {
     // setting the new `this._localPath`.
     this._unsubscribeFromNativeChangeEvents();
 
-    const {protocol, host} = remoteUri.parse(this._uri);
+    const {protocol, host} = nuclideUri.parse(this._uri);
     this._localPath = newPath;
     invariant(protocol);
     invariant(host);

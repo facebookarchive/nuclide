@@ -25,7 +25,7 @@ type FindReferencesOptions = {
 import {arrayCompact} from '../../commons-node/collection';
 import {getLogger} from '../../nuclide-logging';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 const FRAGMENT_GRAMMARS = {
   'text.html.hack': 'source.hackfragment',

@@ -9,7 +9,7 @@
  */
 
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 // NOTE that the definitions in this file are shared between
 // the ClangService and ClangProcessService.

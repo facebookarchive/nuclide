@@ -26,7 +26,7 @@ import type {
 } from './types';
 
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {Console} from 'console';
 import {ipcRenderer} from 'electron';
 import {parse} from 'shell-quote';

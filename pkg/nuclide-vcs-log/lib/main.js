@@ -12,7 +12,7 @@
 // TODO: Make it possible to move or split a pane with a VcsLogPaneItem.
 
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {VcsLogResponse} from '../../nuclide-hg-repository-base/lib/HgService';
 
 import {CompositeDisposable, Disposable} from 'atom';

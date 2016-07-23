@@ -17,7 +17,7 @@
 import type {AsyncExecuteReturn} from '../pkg/commons-node/process';
 
 import {asyncExecute} from '../pkg/commons-node/process';
-import nuclideUri from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/commons-node/nuclideUri';
 
 describe('atom-script', () => {
   describe('echo sample', () => {

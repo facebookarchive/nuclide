@@ -13,7 +13,7 @@ import fs from 'fs';
 import invariant from 'assert';
 import once from './once';
 import os from 'os';
-import nuclideUri from '../nuclide-remote-uri';
+import nuclideUri from './nuclideUri';
 import {checkOutput} from './process';
 
 const NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../package.json');

@@ -22,13 +22,13 @@ import semver from 'semver';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {hgConstants} from '../../nuclide-hg-repository-base';
 import {getLogger} from '../../nuclide-logging';
-import remoteUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
 import type {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 
 let instance: ?Object;
@@ -496,7 +496,7 @@ class FileTreeActions {
     const repoRoot = repo.getWorkingDirectory();
     const absoluteCodePaths = {};
     for (const relativePath in relativeCodePaths) {
-      const absolutePath = remoteUri.join(repoRoot, relativePath);
+      const absolutePath = nuclideUri.join(repoRoot, relativePath);
       absoluteCodePaths[absolutePath] = relativeCodePaths[relativePath];
     }
     return absoluteCodePaths;

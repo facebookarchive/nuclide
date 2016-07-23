@@ -42,7 +42,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import SearchResultManager from './SearchResultManager';
 import classnames from 'classnames';
 import {filterEmptyResults} from './searchResultHelpers';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import QuickSelectionActions from './QuickSelectionActions';
 
 const RESULTS_CHANGED_DEBOUNCE_DELAY = 50;

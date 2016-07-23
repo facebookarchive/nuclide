@@ -16,8 +16,8 @@ import {
   copyMercurialFixture,
   generateFixture,
 } from '../lib/fixtures';
-import nuclideUri from '../../nuclide-remote-uri';
 import fsPromise from '../../commons-node/fsPromise';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 describe('copyFixture', () => {
   it('should copy a directory recursively', () => {

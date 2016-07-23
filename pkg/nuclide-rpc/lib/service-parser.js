@@ -30,7 +30,7 @@ import {namedBuiltinTypes} from './builtin-types';
 import {locationToString} from './location';
 import {validateDefinitions} from './DefinitionValidator';
 import resolveFrom from 'resolve-from';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import fs from 'fs';
 
 function isPrivateMemberName(name: string): boolean {

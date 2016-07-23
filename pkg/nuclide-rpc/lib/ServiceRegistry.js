@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {createProxyFactory} from './main';
 import {TypeRegistry} from './TypeRegistry';
 import type {
@@ -22,7 +22,7 @@ import type {ProxyFactory} from './main';
 import invariant from 'assert';
 import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {builtinLocation} from './builtin-types';
 
 const logger = require('../../nuclide-logging').getLogger();

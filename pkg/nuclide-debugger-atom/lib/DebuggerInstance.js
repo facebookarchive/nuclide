@@ -10,7 +10,7 @@
  */
 
 import type DebuggerProcessInfo from './DebuggerProcessInfo';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 class DebuggerInstance {
   _processInfo: DebuggerProcessInfo;

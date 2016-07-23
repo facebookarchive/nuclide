@@ -14,7 +14,7 @@ import type {Reference, ReferenceGroup} from '../types';
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
 import FilePreview from './FilePreview';
-import nuclideUri from '../../../nuclide-remote-uri';
+import nuclideUri from '../../../commons-node/nuclideUri';
 
 type Props = {
   uri: string,

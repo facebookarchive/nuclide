@@ -11,7 +11,7 @@
 
 import {activate} from '../lib/main';
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 describe('nuclide-move-item-to-available-pane', () => {
   it('moves items across panes and creates new ones, as appropriate', () => {

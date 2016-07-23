@@ -11,7 +11,7 @@
 
 import fs from 'fs';
 import servicesConfig from '../lib/servicesConfig';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 describe('servicesConfig()', () => {
   it('refers to files that exist', () => {

@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 
 import {Directory} from 'atom';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 /**
  * @param repository Either a GitRepository or HgRepositoryClient.

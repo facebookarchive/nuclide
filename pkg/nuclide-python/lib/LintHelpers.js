@@ -15,7 +15,7 @@ import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getDiagnosticRange} from './diagnostic-range';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {getEnableLinting} from './config';
 import {NO_LINT_EXTENSIONS} from './constants';
 

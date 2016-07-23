@@ -10,7 +10,7 @@
  */
 
 import {asyncExecute} from './process';
-import nuclideUri from '../nuclide-remote-uri';
+import nuclideUri from './nuclideUri';
 
 type VcsInfo = {
   vcs: string,

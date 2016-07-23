@@ -14,7 +14,7 @@ import type {CtagsResult, CtagsService} from '../../nuclide-remote-ctags-base';
 
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
 import invariant from 'assert';
 

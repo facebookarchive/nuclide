@@ -19,7 +19,7 @@ import {
 } from '../pkg/nuclide-integration-test-helpers';
 import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import {dispatchKeyboardEvent} from '../pkg/commons-atom/testHelpers';
-import nuclideUri from '../pkg/nuclide-remote-uri';
+import nuclideUri from '../pkg/commons-node/nuclideUri';
 import invariant from 'assert';
 
 describe('Remote clipboard path integration test', () => {

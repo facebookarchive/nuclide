@@ -12,7 +12,7 @@
 import type {AbsolutePath, Identifier, Literal, RelativePath} from '../types/common';
 
 import StringUtils from './StringUtils';
-import nuclideUri from '../../../nuclide-remote-uri';
+import nuclideUri from '../../../commons-node/nuclideUri';
 
 function getIdentifiersFromPath(filePath: AbsolutePath): Set<Identifier> {
   const ids = new Set();

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import watchman from 'fb-watchman';
 import {serializeAsyncCall, sleep} from '../../commons-node/promise';
 import {maybeToString} from '../../commons-node/string';

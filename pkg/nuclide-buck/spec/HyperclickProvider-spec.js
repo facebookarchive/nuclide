@@ -10,7 +10,7 @@
  */
 
 import {BuckProject} from '../../nuclide-buck-base';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import {findTargetLocation, parseTarget} from '../lib/HyperclickProvider';
 

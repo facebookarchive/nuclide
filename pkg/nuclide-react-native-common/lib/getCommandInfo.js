@@ -15,7 +15,7 @@ import fsPromise from '../../commons-node/fsPromise';
 import featureConfig from '../../commons-atom/featureConfig';
 import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import ini from 'ini';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 type PartialCommandInfo = {
   command: string,

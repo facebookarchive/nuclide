@@ -11,7 +11,7 @@
 
 
 import type {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';

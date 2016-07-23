@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {EditorLocation, Location} from './Location';
 
 import {
@@ -18,7 +18,7 @@ import {
 import {maybeToString} from '../../commons-node/string';
 import {NavigationStack} from './NavigationStack';
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {getPathOfLocation, getLocationOfEditor, editorOfLocation} from './Location';
 
 function log(message: string): void {

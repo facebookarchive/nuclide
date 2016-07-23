@@ -11,15 +11,14 @@
 
 import type {ServerConnection} from './ServerConnection';
 import type {RemoteDirectory} from './RemoteDirectory';
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-base';
 
 import invariant from 'assert';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import crypto from 'crypto';
 import {Disposable, Emitter} from 'atom';
-import remoteUri from '../../nuclide-remote-uri';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -110,7 +109,7 @@ export class RemoteFile {
 
   _handleNativeRenameEvent(newPath: string): void {
     this._unsubscribeFromNativeChangeEvents();
-    const {protocol, host} = remoteUri.parse(this._path);
+    const {protocol, host} = nuclideUri.parse(this._path);
     this._localPath = newPath;
     invariant(protocol);
     invariant(host);
@@ -208,7 +207,7 @@ export class RemoteFile {
   }
 
   setPath(remotePath: NuclideUri): void {
-    const {path: localPath} = remoteUri.parse(remotePath);
+    const {path: localPath} = nuclideUri.parse(remotePath);
     this._localPath = localPath;
     this._path = remotePath;
   }

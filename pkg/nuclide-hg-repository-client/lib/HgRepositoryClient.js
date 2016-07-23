@@ -33,7 +33,7 @@ import {
 } from '../../nuclide-hg-repository-base/lib/hg-constants';
 import {serializeAsyncCall} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
-import nuclideUri from '../../nuclide-remote-uri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
@@ -86,7 +86,7 @@ function filterForAllStatues() {
  * in addition to providing asynchronous methods for some getters.
  */
 
-import type {NuclideUri} from '../../nuclide-remote-uri';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
 export class HgRepositoryClient {
