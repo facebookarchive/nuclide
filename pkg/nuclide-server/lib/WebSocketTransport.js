@@ -16,19 +16,8 @@ import {Subject} from 'rxjs';
 import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
 import {Emitter} from 'event-kit';
-import {compress, decompress} from './compression';
 
 const logger = getLogger();
-// Do not synchronously compress large payloads (risks blocking the event loop)
-const MAX_SYNC_COMPRESS_LENGTH = 100000;
-
-type Options = {
-  // The built-in WebSocket compression implementation can have poor performance characteristics:
-  // in particular, decompression takes a full event tick client-side.
-  // This option enables our own custom compression format that allows us to use custom
-  // decompression client-side.
-  syncCompression?: boolean,
-};
 
 // An unreliable transport for sending JSON formatted messages
 // over a WebSocket
@@ -42,24 +31,15 @@ export class WebSocketTransport {
   _socket: ?WS;
   _emitter: Emitter;
   _messages: Subject<string>;
-  _syncCompression: boolean;
 
-  constructor(clientId: string, socket: WS, options?: Options) {
+  constructor(clientId: string, socket: WS) {
     this.id = clientId;
     this._emitter = new Emitter();
     this._socket = socket;
     this._messages = new Subject();
-    this._syncCompression = options == null || options.syncCompression !== false;
 
     logger.info('Client #%s connecting with a new socket!', this.id);
-    socket.on('message', (data, flags) => {
-      let message = data;
-      // Only compressed data will be sent as binary buffers.
-      if (flags.binary) {
-        message = decompress(data);
-      }
-      this._onSocketMessage(message);
-    });
+    socket.on('message', message => this._onSocketMessage(message));
 
     socket.on('close', () => {
       if (this._socket != null) {
@@ -118,13 +98,7 @@ export class WebSocketTransport {
     }
 
     return new Promise((resolve, reject) => {
-      let data = message;
-      let compressed = false;
-      if (this._syncCompression && message.length < MAX_SYNC_COMPRESS_LENGTH) {
-        data = compress(message);
-        compressed = true;
-      }
-      socket.send(data, {compress: !compressed}, err => {
+      socket.send(message, err => {
         if (err != null) {
           logger.warn('Failed sending socket message to client:', this.id, JSON.parse(message));
           resolve(false);
