@@ -84,10 +84,7 @@ export function runTest(context: TestContext) {
     waitsFor('editor to reload on file change', () => {
       return getDiffEditorContents() === SAMPLE_TEXT;
     });
-  });
 
-  it('clears the diff editor state when the active file is deleted', () => {
-    openDiffViewForTestFile();
     // Delete the file on the file system
     runs(() => {
       fs.unlinkSync(nuclideUri.join(repoPath, TEST_FILE_NAME));
