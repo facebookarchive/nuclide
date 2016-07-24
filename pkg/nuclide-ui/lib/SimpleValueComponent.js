@@ -98,7 +98,7 @@ export default class SimpleValueComponent extends React.Component {
       }
     }
     if (displayValue == null || displayValue === '') {
-      displayValue = evaluationResult._description || '(N/A)';
+      displayValue = evaluationResult.description || '(N/A)';
     }
     if (expression == null) {
       return <span>{displayValue}</span>;
