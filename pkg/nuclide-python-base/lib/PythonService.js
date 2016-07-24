@@ -96,6 +96,7 @@ function getFormatterPath() {
   formatterPath = 'yapf';
 
   try {
+    // $FlowFB
     const overridePath = require('./fb/find-formatter-path')();
     if (overridePath) {
       formatterPath = overridePath;
@@ -179,6 +180,7 @@ export async function getDiagnostics(
 
   let result;
   try {
+    // $FlowFB
     result = await require('./fb/run-flake8')(src, contents, configPath);
   } catch (e) {
     // Ignore.

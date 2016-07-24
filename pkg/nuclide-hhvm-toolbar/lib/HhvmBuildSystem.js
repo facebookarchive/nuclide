@@ -50,6 +50,7 @@ export default class HhvmBuildSystem {
   _getModel(): ArcToolbarModelType {
     let ArcToolbarModel;
     try {
+      // $FlowFB
       ArcToolbarModel = require('./fb/FbArcToolbarModel').FbArcToolbarModel;
     } catch (_) {
       ArcToolbarModel = require('./ArcToolbarModel').ArcToolbarModel;

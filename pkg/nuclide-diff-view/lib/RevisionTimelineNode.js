@@ -93,6 +93,7 @@ export default class RevisionTimelineNode extends React.Component {
 
     let associatedExtraElement;
     try {
+      // $FlowFB
       const diffUtils = require('../../nuclide-diff-view/lib/fb/utils.js');
       const taskIds = diffUtils.getFbCommitTaskInfoFromCommitMessage(description);
       associatedExtraElement = taskIds.map(task => {
