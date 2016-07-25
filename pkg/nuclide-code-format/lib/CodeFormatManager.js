@@ -121,8 +121,12 @@ class CodeFormatManager {
         const formatted = await provider.formatCode(editor, formatRange);
         // Throws if contents have changed since the time of triggering format code.
         this._checkContentsAreSame(contents, editor.getText());
-        // TODO(most): save cursor location.
+
+        const prevCursorPosition = editor.getCursorBufferPosition();
         editor.setTextInBufferRange(formatRange, formatted);
+        if (selectionRangeEmpty) {
+          editor.setCursorBufferPosition(prevCursorPosition);
+        }
         return true;
       } else if (provider.formatEntireFile != null) {
         const {newCursor, formatted} = await provider.formatEntireFile(editor, formatRange);
