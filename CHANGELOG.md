@@ -1,5 +1,16 @@
 # Nuclide Changelog
 
+## v0.158.0
+
+* Quick Open: “Open All” button to open all search results (or `shift+enter`)
+* Flow: Setting to use the version of Flow installed in individual projects via the `flow-bin` npm package
+* Buck: Selected Simulator is now remembered between sessions
+* Task Runner: Added toolbar toggle commands for each runner
+* Settings: Add a search field that filters for relevant settings
+* Code format: Preserve cursor location after full file format (`cmd-shift-c`)
+* Performance: Health metric now shows in toolbar to highlight when Nuclide is waiting on external processes
+* Python: Fix Find References on import statements
+
 ## v0.157.0
 
 * Hotfix service framework erroring on undefined object values (fixes remote Flow type tooltips).
