@@ -104,7 +104,7 @@ export default class RecordView extends React.Component {
 
 function getComponent(type: ?string): ReactClass<any> {
   switch (type) {
-    case 'text': return TextRenderer;
+    case 'text': return props => TextRenderer(props.evaluationResult);
     case 'boolean':
     case 'string':
     case 'number':
