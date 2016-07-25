@@ -1,0 +1,22 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Related Files",
+          "submenu": [
+            {
+              "label": "Jump to Next Related File",
+              "command": "nuclide-related-files:jump-to-next-related-file"
+            },
+            {
+              "label": "Jump to Previous Related File",
+              "command": "nuclide-related-files:jump-to-previous-related-file"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

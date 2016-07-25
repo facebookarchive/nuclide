@@ -46,8 +46,8 @@ describeRemotableTest('Related Files Integration Test', context => {
         expect(nuclideUri.basename(path)).toBe(
           TEST_FILES[(TEST_FILES.length - i) % TEST_FILES.length],
         );
-        const textEditorView = atom.views.getView(textEditor);
-        dispatchKeyboardEvent('n', textEditorView, {cmd: true, alt: true});
+        const view = atom.views.getView(atom.workspace);
+        dispatchKeyboardEvent('n', view, {cmd: true, alt: true});
       });
       waitsForFile(TEST_FILES[TEST_FILES.length - i - 1]);
     }

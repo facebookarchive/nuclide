@@ -19,28 +19,18 @@ import featureConfig from '../../commons-atom/featureConfig';
  * Clients must call `dispose()` once they're done with an instance.
  */
 export default class JumpToRelatedFile {
-  _commandSubscriptionsMap: Map<any, any>;
+  _subscription: IDisposable;
 
   constructor() {
-    this._commandSubscriptionsMap = new Map();
-  }
-
-  dispose(): void {
-    this._commandSubscriptionsMap.forEach(subscription => subscription.dispose());
-    this._commandSubscriptionsMap.clear();
-  }
-
-  enableInTextEditor(textEditor: TextEditor) {
-    if (this._commandSubscriptionsMap.has(textEditor)) {
-      return; // Already enabled.
-    }
-
-    const textEditorEl = atom.views.getView(textEditor);
-    const commandSubscription = atom.commands.add(
-      textEditorEl,
+    this._subscription = atom.commands.add(
+      'atom-workspace',
       {
         'nuclide-related-files:jump-to-next-related-file': () => {
-          const path = textEditor.getPath();
+          const editor = atom.workspace.getActiveTextEditor();
+          if (editor == null) {
+            return;
+          }
+          const path = editor.getPath();
           if (path) {
             trackOperationTiming(
               'nuclide-related-files:jump-to-next-related-file',
@@ -49,7 +39,11 @@ export default class JumpToRelatedFile {
           }
         },
         'nuclide-related-files:jump-to-previous-related-file': () => {
-          const path = textEditor.getPath();
+          const editor = atom.workspace.getActiveTextEditor();
+          if (editor == null) {
+            return;
+          }
+          const path = editor.getPath();
           if (path) {
             trackOperationTiming(
               'nuclide-related-files:jump-to-previous-related-file',
@@ -57,18 +51,12 @@ export default class JumpToRelatedFile {
             );
           }
         },
-      });
-    this._commandSubscriptionsMap.set(textEditor, commandSubscription);
-
-    textEditor.onDidDestroy(this._disableInTextEditor.bind(this, textEditor));
+      },
+    );
   }
 
-  _disableInTextEditor(textEditor: TextEditor): void {
-    const subscription = this._commandSubscriptionsMap.get(textEditor);
-    if (subscription) {
-      subscription.dispose();
-      this._commandSubscriptionsMap.delete(textEditor);
-    }
+  dispose(): void {
+    this._subscription.dispose();
   }
 
   /**
