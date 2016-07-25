@@ -100,7 +100,7 @@ class RuntimeDomainWatchTest(RealProcessMixin, unittest.TestCase):
         })
         self.assertDictContainsSubset({
             'result': {
-                'type': 'undefined',
+                'type': 'text',
             },
             'wasThrown': True,
         }, actual)

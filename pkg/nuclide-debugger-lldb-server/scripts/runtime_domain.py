@@ -47,7 +47,8 @@ class RuntimeDomain(HandlerDomain):
 
             return {
                 'result': {
-                    'value': result.GetOutput() + result.GetError()
+                    'description': result.GetOutput() + result.GetError(),
+                    'type': 'object',
                 },
                 'wasThrown': False,
             }
