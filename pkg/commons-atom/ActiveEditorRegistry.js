@@ -15,7 +15,7 @@
  */
 
 import {Disposable} from 'atom';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 
 import {
   observeActiveEditorsDebounced,
@@ -100,6 +100,7 @@ function getConcreteConfig(config: Config): ConcreteConfig {
 export default class ActiveEditorRegistry<T: Provider, V> {
   _resultFunction: ResultFunction<T, V>;
   _providerRegistry: ProviderRegistry<T>;
+  _newProviderEvents: Subject<void>;
   _resultsStream: Observable<Result<T, V>>;
   _config: ConcreteConfig;
 
@@ -111,11 +112,13 @@ export default class ActiveEditorRegistry<T: Provider, V> {
     this._config = getConcreteConfig(config);
     this._resultFunction = resultFunction;
     this._providerRegistry = new ProviderRegistry();
+    this._newProviderEvents = new Subject();
     this._resultsStream = this._createResultsStream(eventSources);
   }
 
   consumeProvider(provider: T): IDisposable {
     this._providerRegistry.addProvider(provider);
+    this._newProviderEvents.next();
     return new Disposable(() => {
       this._providerRegistry.removeProvider(provider);
     });
@@ -126,7 +129,16 @@ export default class ActiveEditorRegistry<T: Provider, V> {
   }
 
   _createResultsStream(eventSources: EventSources): Observable<Result<T, V>> {
-    const results = eventSources.activeEditors.switchMap(editorArg => {
+    const repeatedEditors = eventSources.activeEditors.switchMap(editor => {
+      if (editor == null) {
+        return Observable.of(editor);
+      }
+      return Observable.concat(
+        Observable.of(editor),
+        this._newProviderEvents.mapTo(editor),
+      );
+    });
+    const results = repeatedEditors.switchMap(editorArg => {
       // Necessary so the type refinement holds in the callback later
       const editor = editorArg;
       if (editor == null) {
