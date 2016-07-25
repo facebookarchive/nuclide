@@ -1,5 +1,5 @@
-// flow-typed signature: 4394a8b620387a7f57a12f848912bbcf
-// flow-typed version: cb94778ce4/rxjs_v5.0.x/flow_>=v0.25.0
+// flow-typed signature: 02770968100201152cae41962bc98c3c
+// flow-typed version: e0dc1a4345/rxjs_v5.0.x/flow_>=v0.29.0
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
@@ -142,6 +142,8 @@ declare module 'rxjs' {
     delay(dueTime: number): Observable<T>;
 
     distinctUntilChanged(compare?: (x: T, y: T) => boolean): Observable<T>;
+
+    elementAt(index: number, defaultValue?: T): Observable<T>;
 
     filter(predicate: (value: T) => boolean): Observable<T>;
 

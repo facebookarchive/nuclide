@@ -260,7 +260,6 @@ describe('ActiveEditorRegistry', () => {
           'provider-error',
         ]);
 
-        // $FlowFixMe https://github.com/flowtype/flow-typed/pull/213
         expect(await events.elementAt(1).toPromise()).toEqual({
           kind: 'provider-error',
           provider,
