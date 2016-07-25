@@ -47,8 +47,8 @@ class RuntimeDomain(HandlerDomain):
 
             return {
                 'result': {
-                    'description': result.GetOutput() + result.GetError(),
-                    'type': 'object',
+                    'value': result.GetOutput() + result.GetError(),
+                    'type': 'text',
                 },
                 'wasThrown': False,
             }
@@ -74,7 +74,7 @@ class RuntimeDomain(HandlerDomain):
             else:
                 return {
                     'result': {
-                        'type': 'undefined',
+                        'type': 'text',
                     },
                     'wasThrown': True,
                     'exceptionDetails': {
