@@ -27,6 +27,7 @@ import {LoadingSpinner} from '../../nuclide-ui/lib/LoadingSpinner';
 import addTooltip from '../../nuclide-ui/lib/add-tooltip';
 
 const BUCK_TARGET_INPUT_WIDTH = 400;
+const NO_ACTIVE_PROJECT_ERROR = 'No active Buck project. Check your Current Working Root.';
 
 type PropTypes = {
   activeTaskType: ?TaskType,
@@ -83,7 +84,7 @@ class BuckToolbar extends React.Component {
   async _requestOptions(inputText: string): Promise<Array<string>> {
     const buckRoot = this._buckToolbarStore.getCurrentBuckRoot();
     if (buckRoot == null) {
-      throw new Error('No active Buck project. Check your Current Working Root.');
+      throw new Error(NO_ACTIVE_PROJECT_ERROR);
     }
 
     let aliases = this._projectAliasesCache.get(buckRoot);
@@ -123,7 +124,9 @@ class BuckToolbar extends React.Component {
         <span
           className="icon icon-alert"
           ref={addTooltip({
-            title: `Rule "${buckToolbarStore.getBuildTarget()}" could not be found.`,
+            title: buckToolbarStore.getCurrentBuckRoot() == null ?
+              NO_ACTIVE_PROJECT_ERROR :
+              `Rule "${buckToolbarStore.getBuildTarget()}" could not be found.`,
             delay: 0,
           })}
         />;
