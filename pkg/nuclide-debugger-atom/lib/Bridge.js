@@ -37,6 +37,7 @@ import {getLogger} from '../../nuclide-logging';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Deferred} from '../../commons-node/promise';
 import {DebuggerMode} from './DebuggerStore';
+import {normalizeRemoteObjectValue} from './normalizeRemoteObjectValue';
 
 const INJECTED_CSS = [
   /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
@@ -243,6 +244,7 @@ class Bridge {
   }
 
   _handleExpressionEvaluationResponse(response: ExpressionResult): void {
+    response.result = normalizeRemoteObjectValue(response.result);
     this._handleResponseForPendingRequest(this._expressionsInFlight, response, response.expression);
   }
 
