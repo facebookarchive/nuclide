@@ -168,7 +168,20 @@ class NuclideBridge {
             return;
           }
           this.updateProperties(properties, internalProperties);
-          ipc.sendToHost('notification', 'LocalsUpdate', properties);
+          const neededProperties = properties.map(({name, value}) => {
+            const {type, subtype, objectId, value: innerValue, description} = value;
+            return {
+              name,
+              value: {
+                type,
+                subtype,
+                objectId,
+                value: innerValue,
+                description,
+              },
+            };
+          });
+          ipc.sendToHost('notification', 'LocalsUpdate', neededProperties);
         }
         // $FlowFixMe.
         WebInspector.RemoteObject.loadFromObject(
