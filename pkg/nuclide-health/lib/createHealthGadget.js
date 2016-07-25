@@ -17,6 +17,8 @@ import {React} from 'react-for-atom';
 
 type State = {
   stats?: HealthStats,
+  toolbarJewel?: string,
+  updateToolbarJewel?: (value: string) => void,
 };
 
 export default function createHealthGadget(state$: Rx.Observable<?State>): Class<any> {
@@ -56,7 +58,7 @@ export default function createHealthGadget(state$: Rx.Observable<?State>): Class
     }
 
     render() {
-      const {stats} = this.state;
+      const {toolbarJewel, updateToolbarJewel, stats} = this.state;
 
       if (stats == null) {
         return <div />;
@@ -65,6 +67,8 @@ export default function createHealthGadget(state$: Rx.Observable<?State>): Class
       return (
         <div className="pane-item padded nuclide-health-pane-item">
           <HealthPaneItemComponent
+            toolbarJewel={toolbarJewel}
+            updateToolbarJewel={updateToolbarJewel}
             cpuPercentage={stats.cpuPercentage}
             heapPercentage={stats.heapPercentage}
             memory={stats.rss}

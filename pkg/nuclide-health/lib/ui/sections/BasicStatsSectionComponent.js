@@ -14,6 +14,8 @@ import type {HandlesByType} from '../../types';
 import {React} from 'react-for-atom';
 
 type Props = {
+  toolbarJewel: string,
+  updateToolbarJewel: (value: string) => void,
   cpuPercentage: number,
   memory: number,
   heapPercentage: number,
@@ -23,8 +25,17 @@ type Props = {
   activeHandlesByType: HandlesByType,
 };
 
+import {
+  Button,
+  ButtonSizes,
+} from '../../../../nuclide-ui/lib/Button';
+
 export default class BasicStatsSectionComponent extends React.Component {
   props: Props;
+
+  updateToolbarJewel(value: string): void {
+    this.props.updateToolbarJewel(value);
+  }
 
   render(): React.Element<any> {
     const stats = [
@@ -52,21 +63,40 @@ export default class BasicStatsSectionComponent extends React.Component {
       },
     ];
 
+    const updateToolbarJewel = this.updateToolbarJewel;
     return (
       <table className="table">
         <thead>
           <tr>
-            <th>Metric</th>
-            <th>Value</th>
+            <th width="30%">Metric</th>
+            <th width="50%">Value</th>
+            <th width="20%" className="text-right">Toolbar</th>
           </tr>
         </thead>
         <tbody>
-          {stats.map((stat, s) =>
-            <tr key={s}>
-              <th>{stat.name}</th>
-              <td>{stat.value}</td>
-            </tr>,
-          )}
+          {stats.map((stat, s) => {
+            const props: Object = {};
+            let jewelLabel = 'Show';
+            let jewelValue = stat.name;
+            if (this.props.toolbarJewel === stat.name) {
+              props.className = 'selected';
+              jewelLabel = 'Hide';
+              jewelValue = 'None';
+            }
+            return (
+              <tr {...props} key={s}>
+                <th>{stat.name}</th>
+                <td>{stat.value}</td>
+                <td className="text-right">
+                  <Button
+                    size={ButtonSizes.EXTRA_SMALL}
+                    onClick={updateToolbarJewel.bind(this, jewelValue)}>
+                    {jewelLabel}
+                  </Button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     );

@@ -16,6 +16,8 @@ import BasicStatsSectionComponent from './sections/BasicStatsSectionComponent';
 import ActiveHandlesSectionComponent from './sections/ActiveHandlesSectionComponent';
 
 type Props = {
+  toolbarJewel: string,
+  updateToolbarJewel: (value: string) => void,
   cpuPercentage: number,
   memory: number,
   heapPercentage: number,

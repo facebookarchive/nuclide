@@ -30,6 +30,23 @@
         "description": "Polling interval for showing health stats in status views (in seconds).",
         "minimum": 1,
         "maximum": 60
+      },
+      "toolbarJewel": {
+        "title": "Toolbar Jewel",
+        "order": 2,
+        "type": "string",
+        "default": "Child processes",
+        "description": "Show a statistic by the Health icon in the toolbar",
+        "enum": [
+          "None",
+          "CPU",
+          "Heap",
+          "Memory",
+          "Key latency",
+          "Handles",
+          "Child processes",
+          "Event loop"
+        ]
       }
     },
     "packageType": "Atom",

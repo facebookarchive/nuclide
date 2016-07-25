@@ -47,6 +47,9 @@ let paneItemState$: ?Rx.BehaviorSubject<any> = null;
 
 let subscriptions: CompositeDisposable = (null: any);
 
+let healthButton: ?HTMLElement = null;
+let healthJewelValue: ?string = null;
+
 export function activate(state: ?Object) {
   paneItemState$ = new Rx.BehaviorSubject(null);
   subscriptions = new CompositeDisposable();
@@ -96,13 +99,18 @@ export function deactivate() {
 
 export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   const toolBar = getToolBar('nuclide-health');
-  toolBar.addButton({
+  healthButton = toolBar.addButton({
     icon: 'dashboard',
     callback: 'nuclide-health:toggle',
     tooltip: 'Toggle Nuclide health stats',
     priority: -400,
+  }).element;
+  healthButton.classList.add('nuclide-health-jewel');
+  healthJewelValue = null;
+  const disposable = new Disposable(() => {
+    healthButton = healthJewelValue = null;
+    toolBar.removeItems();
   });
-  const disposable = new Disposable(() => { toolBar.removeItems(); });
   subscriptions.add(disposable);
   return disposable;
 }
@@ -173,6 +181,42 @@ function timeActiveEditorKeys(): void {
   );
 }
 
+function updateToolbarJewel(stats: HealthStats) {
+  let value: string = '';
+  if (currentConfig.toolbarJewel != null) {
+    const jewel = currentConfig.toolbarJewel;
+    switch (jewel) {
+      case 'CPU':
+        value = `${stats.cpuPercentage.toFixed(0)}%`;
+        break;
+      case 'Heap':
+        value = `${stats.heapPercentage.toFixed(0)}%`;
+        break;
+      case 'Memory':
+        value = `${Math.floor(stats.rss / 1024 / 1024)}M`;
+        break;
+      case 'Key latency':
+        value = `${stats.lastKeyLatency}ms`;
+        break;
+      case 'Handles':
+        value = `${stats.activeHandles}`;
+        break;
+      case 'Child processes':
+        value = `${stats.activeHandlesByType.childprocess.length}`;
+        break;
+      case 'Event loop':
+        value = `${stats.activeRequests}`;
+        break;
+    }
+  }
+
+  if (healthButton != null) {
+    healthButton.classList.toggle('updated', healthJewelValue !== value);
+    healthButton.dataset.jewelValue = value;
+    healthJewelValue = value;
+  }
+}
+
 function updateViews(): void {
   if (!paneItemState$) {
     return;
@@ -180,7 +224,13 @@ function updateViews(): void {
 
   const stats = getHealthStats();
   analyticsBuffer.push(stats);
-  paneItemState$.next({stats, activeHandleObjects: getActiveHandles()});
+  paneItemState$.next({
+    toolbarJewel: currentConfig.toolbarJewel || '',
+    updateToolbarJewel: value => featureConfig.set('nuclide-health.toolbarJewel', value),
+    stats,
+  });
+  updateToolbarJewel(stats);
+
   if (currentConfig.viewTimeout) {
     if (viewTimeout !== null) {
       clearTimeout(viewTimeout);
