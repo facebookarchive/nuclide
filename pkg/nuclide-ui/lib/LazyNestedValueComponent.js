@@ -311,6 +311,7 @@ class ValueComponent extends React.Component {
 }
 
 type TopLevelValueComponentProps = {
+  className?: string,
   evaluationResult: ?EvaluationResult,
   fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>,
   expression: ?string,
@@ -375,8 +376,11 @@ class TopLevelLazyNestedValueComponent extends React.Component {
   }
 
   render(): React.Element<any> {
+    const className = this.props.className != null
+      ? this.props.className
+      : 'nuclide-ui-lazy-nested-value';
     return (
-      <span className="nuclide-ui-lazy-nested-value">
+      <span className={className}>
         <ValueComponent
           {...this.props}
           isRoot={true}

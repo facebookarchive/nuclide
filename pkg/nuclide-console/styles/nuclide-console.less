@@ -70,6 +70,9 @@
 .nuclide-console-lazy-nested-value {
   display: flex;
 
+  // The following selectors style the tree components inside of the LazyNestedValueComponent
+  // instance that is used by the console.
+
   .list-item::before {
     float: left;
     margin-top: 5px;
@@ -153,7 +156,7 @@
       border-top-color: @nuclide-console-record-border-color-warning;
     }
 
-    pre, .nuclide-ui-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-warning;
     }
 
@@ -172,7 +175,7 @@
       border-top-color: @nuclide-console-record-border-color-success;
     }
 
-    pre, .nuclide-ui-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-success;
     }
 
@@ -190,7 +193,7 @@
       border-top-color: @nuclide-console-record-border-color-error;
     }
 
-    pre, .nuclide-ui-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-error;
     }
 
@@ -203,49 +206,49 @@
   // Console record colors for `level-color` classes.
   &.level-red {
     background-color: @nuclide-console-record-background-color-red;
-    pre, .nuclide-ui-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-red;
     }
   }
 
   &.level-orange {
     background-color: @nuclide-console-record-background-color-orange;
-    pre, .nuclide-ui-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-orange;
     }
   }
 
   &.level-yellow {
     background-color: @nuclide-console-record-background-color-yellow;
-    pre, .nuclide-ui-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-yellow;
     }
   }
 
   &.level-green {
     background-color: @nuclide-console-record-background-color-green;
-    pre, .nuclide-ui-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-green;
     }
   }
 
   &.level-blue {
     background-color: @nuclide-console-record-background-color-blue;
-    pre, .nuclide-ui-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-blue;
     }
   }
 
   &.level-purple {
     background-color: @nuclide-console-record-background-color-purple;
-    pre, .nuclide-ui-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+    pre, .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
       color: @nuclide-console-record-text-color-purple;
     }
   }
 
   &.level-violet {
     background-color: @nuclide-console-record-background-color-violet;
-    pre, .nuclide-ui-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
+    pre, .nuclide-console-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
       color: @nuclide-console-record-text-color-violet;
     }
   }

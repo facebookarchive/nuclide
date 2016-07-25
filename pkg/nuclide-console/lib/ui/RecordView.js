@@ -58,6 +58,7 @@ export default class RecordView extends React.Component {
     const simpleValueComponent = getComponent(type);
     return (
       <LazyNestedValueComponent
+        className="nuclide-console-lazy-nested-value"
         evaluationResult={record.data}
         fetchChildren={getProperties}
         simpleValueComponent={simpleValueComponent}
