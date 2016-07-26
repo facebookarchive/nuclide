@@ -82,7 +82,7 @@ export default class ThreadStore {
     this._stopThreadId = threadData.stopThreadId;
     this._selectedThreadId = threadData.stopThreadId;
     threadData.threads.forEach(thread =>
-      this._threadMap.set(Number(thread.threadId), thread),
+      this._threadMap.set(Number(thread.id), thread),
     );
   }
 

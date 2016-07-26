@@ -61,7 +61,7 @@ export type Callstack = Array<CallstackItem>;
 
 /* ThreadStore Types */
 export type ThreadItem = {
-  threadId: string,
+  id: string,
   name: string,
   address: string,
   location: {
