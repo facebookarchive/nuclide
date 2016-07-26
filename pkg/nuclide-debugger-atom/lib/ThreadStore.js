@@ -23,6 +23,8 @@ import {
   CompositeDisposable,
   Emitter,
 } from 'atom';
+import {React} from 'react-for-atom';
+import {Icon} from '../../nuclide-ui/lib/Icon';
 import nuclideUri from '../../commons-node/nuclideUri';
 import Constants from './Constants';
 import passesGK from '../../commons-node/passesGK';
@@ -117,8 +119,8 @@ export default class ThreadStore {
       atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
         const buffer = editor.getBuffer();
         const rowRange = buffer.rangeForRow(notificationLineNumber);
-        this._threadChangeDatatip = datatipService.createSimplePinnedDataTip(
-          message,
+        this._threadChangeDatatip = datatipService.createPinnedDataTip(
+          this._createAlertComponentClass(message),
           rowRange,
           true, /* pinnable */
           editor,
@@ -140,6 +142,14 @@ export default class ThreadStore {
 
   onChange(callback: () => void): IDisposable {
     return this._emitter.on('change', callback);
+  }
+
+  _createAlertComponentClass(message: string): ReactClass<any> {
+    return () =>
+      <div className="nuclide-debugger-thread-switch-alert">
+        <Icon icon="alert" />
+        {message}
+      </div>;
   }
 
   dispose(): void {
