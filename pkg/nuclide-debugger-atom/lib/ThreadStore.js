@@ -88,6 +88,7 @@ export default class ThreadStore {
   }
 
   _handleClearInterface(): void {
+    this._threadMap.clear();
     this._cleanUpDatatip();
   }
 
