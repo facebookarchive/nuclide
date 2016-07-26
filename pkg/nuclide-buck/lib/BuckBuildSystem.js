@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {ProcessMessage} from '../../commons-node/process-types';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {
   Directory,
   TaskEvent,

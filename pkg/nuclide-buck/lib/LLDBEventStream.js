@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {ProcessMessage} from '../../commons-node/process-types';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {BuckProject} from '../../nuclide-buck-base';
 import type RemoteControlService from '../../nuclide-debugger-atom/lib/RemoteControlService';
 import type {BuckEvent} from './BuckEventStream';

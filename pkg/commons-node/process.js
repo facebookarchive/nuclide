@@ -10,7 +10,7 @@
  */
 
 import type {Observer} from 'rxjs';
-import type {ProcessMessage} from './process-types';
+import type {ProcessMessage} from './process-rpc-types';
 
 import child_process from 'child_process';
 import nuclideUri from './nuclideUri';

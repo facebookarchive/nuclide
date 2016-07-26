@@ -11,7 +11,7 @@
 
 import type {Level} from '../../nuclide-console/lib/types';
 import type {BuckWebSocketMessage} from '../../nuclide-buck-base/lib/BuckProject';
-import type {ProcessMessage} from '../../commons-node/process-types';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {BuckSubcommand} from './types';
 
 import {Observable} from 'rxjs';

@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {AsyncExecuteOptions} from '../../commons-node/process';
-import type {ProcessMessage} from '../../commons-node/process-types';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
 import {
   checkOutput,

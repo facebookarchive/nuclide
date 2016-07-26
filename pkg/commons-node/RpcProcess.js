@@ -11,7 +11,7 @@
 
 import type {Subscription} from 'rxjs';
 import type {ServiceRegistry, MessageLogger} from '../nuclide-rpc';
-import type {ProcessMessage} from './process-types';
+import type {ProcessMessage} from './process-rpc-types';
 
 import {StreamTransport, RpcConnection} from '../nuclide-rpc';
 import {getOutputStream} from './process';
