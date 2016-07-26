@@ -46,6 +46,7 @@
   flex-grow: 1;
   flex-basis: 0;
   overflow: auto;
+  padding-right: 0.5em;
 }
 
 .nuclide-debugger-webview-hidden {
@@ -79,6 +80,12 @@ Use flexbox cross-axis stretch to fill the vertical space.
     // The object element is generated with inline style height:100%.
     height: auto !important;
   }
+}
+
+/* General debugger UI */
+.nuclide-debugger-atom-section-content {
+  max-height: 20em;
+  overflow-y: auto;
 }
 
 /* Watch Expressions */

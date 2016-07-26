@@ -157,38 +157,48 @@ export class NewDebuggerView extends React.Component {
     return (
       <div className="nuclide-debugger-container-new">
         <Section collapsable={true} headline="Debugger Controls">
-          <DebuggerSteppingComponent
-            actions={actions}
-            debuggerMode={this.state.debuggerMode}
-            pauseOnException={this.state.togglePauseOnException}
-            pauseOnCaughtException={this.state.togglePauseOnCaughtException}
-          />
+          <div className="nuclide-debugger-atom-section-content">
+            <DebuggerSteppingComponent
+              actions={actions}
+              debuggerMode={this.state.debuggerMode}
+              pauseOnException={this.state.togglePauseOnException}
+              pauseOnCaughtException={this.state.togglePauseOnCaughtException}
+            />
+          </div>
         </Section>
         <Section collapsable={true} headline="Call Stack">
-          <DebuggerCallstackComponent
-            actions={actions}
-            callstack={this.state.callstack}
-          />
+          <div className="nuclide-debugger-atom-section-content">
+            <DebuggerCallstackComponent
+              actions={actions}
+              callstack={this.state.callstack}
+            />
+          </div>
         </Section>
         {threadsSection}
         <Section collapsable={true} headline="Breakpoints">
-          <BreakpointListComponent
-            actions={actions}
-            breakpoints={this.state.breakpoints}
-          />
+          <div className="nuclide-debugger-atom-section-content">
+            <BreakpointListComponent
+              actions={actions}
+              breakpoints={this.state.breakpoints}
+            />
+          </div>
         </Section>
         <Section collapsable={true} headline="Locals">
-          <LocalsComponentWrapped
-            watchExpressionStore={model.getWatchExpressionStore()}
-          />
+          <div className="nuclide-debugger-atom-section-content">
+            <LocalsComponentWrapped
+              watchExpressionStore={model.getWatchExpressionStore()}
+            />
+          </div>
         </Section>
         <Section collapsable={true} headline="Watch Expressions">
-          <WatchExpressionComponentWrapped
-            onAddWatchExpression={actions.addWatchExpression.bind(model)}
-            onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
-            onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
-            watchExpressionStore={model.getWatchExpressionStore()}
-          />
+          <div className="nuclide-debugger-atom-section-content">
+            <WatchExpressionComponentWrapped
+              onAddWatchExpression={actions.addWatchExpression.bind(model)}
+              onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
+              onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
+              watchExpressionStore={model.getWatchExpressionStore()}
+            />
+          </div>
         </Section>
       </div>
     );
