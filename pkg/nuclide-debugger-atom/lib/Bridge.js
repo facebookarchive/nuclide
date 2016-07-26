@@ -192,6 +192,16 @@ class Bridge {
     }
   }
 
+  selectThread(threadId: string): void {
+    if (this._webview) {
+      this._webview.send(
+        'command',
+        'selectThread',
+        threadId,
+      );
+    }
+  }
+
   _evaluateOnSelectedCallFrame(
     expression: string,
     objectGroup: ObjectGroup,

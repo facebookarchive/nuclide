@@ -241,6 +241,9 @@ class NuclideBridge {
       case 'setPauseOnCaughtException':
         this._setPauseOnCaughtException(args[0]);
         break;
+      case 'selectThread':
+        this.selectThread(args[0]);
+        break;
     }
   }
 

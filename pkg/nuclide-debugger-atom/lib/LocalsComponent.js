@@ -42,7 +42,11 @@ export class LocalsComponent extends React.Component {
       value: EvaluationResult,
     },
     index: number,
-  ): React.Element<any> {
+  ): ?React.Element<any> {
+    if (local == null) {
+      // `local` might be `null` while switching threads.
+      return null;
+    }
     const {
       name,
       value,

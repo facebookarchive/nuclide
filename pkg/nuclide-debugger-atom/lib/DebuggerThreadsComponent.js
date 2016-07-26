@@ -12,10 +12,12 @@
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import type {ThreadItem} from './types';
+import type Bridge from './Bridge';
 
 import {Icon} from '../../nuclide-ui/lib/Icon';
 
 type DebuggerThreadsComponentProps = {
+  bridge: Bridge,
   threadList: Array<ThreadItem>,
   selectedThreadId: number,
 };
@@ -25,6 +27,7 @@ export class DebuggerThreadsComponent extends React.Component {
 
   render(): ?React.Element<any> {
     const {
+      bridge,
       threadList,
       selectedThreadId,
     } = this.props;
@@ -46,6 +49,7 @@ export class DebuggerThreadsComponent extends React.Component {
                 'nuclide-debugger-atom-thread-list-table-row-odd': i % 2 === 1,
               },
             )}
+            onClick={() => bridge.selectThread(id)}
             key={i}>
             <td className="nuclide-debugger-atom-thread-list-item-current-indicator">
               {isSelected ? <Icon icon="arrow-right" title="Selected Thread" /> : null}

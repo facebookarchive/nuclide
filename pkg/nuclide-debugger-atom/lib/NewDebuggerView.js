@@ -157,6 +157,7 @@ export class NewDebuggerView extends React.Component {
       ? <Section collapsable={true} headline="Threads">
           <div className="nuclide-debugger-atom-section-content">
             <DebuggerThreadsComponent
+              bridge={this.props.model.getBridge()}
               threadList={this.state.threadList}
               selectedThreadId={this.state.selectedThreadId}
             />
