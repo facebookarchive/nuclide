@@ -61,12 +61,12 @@ const rl = readline.createInterface({
 let commandId = 0;
 const DBG_PROMPT_TEXT = 'xdebug> ';
 process.stdout.write(DBG_PROMPT_TEXT);
-rl.on('line', line => {
+rl.on('line', line_ => {
   process.stdout.write(DBG_PROMPT_TEXT);
   if (socket == null) {
     return;
   }
-  line = line.trim();
+  const line = line_.trim();
   if (!line) {
     return;
   }

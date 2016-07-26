@@ -27,10 +27,8 @@ function setGlobalFocusPriority(priority) {
   }
 }
 
-function fdescribe(description, specDefinitions, priority) {
-  if (priority == null) {
-    priority = 1;
-  }
+function fdescribe(description, specDefinitions, priority_) {
+  const priority = priority_ != null ? priority_ : 1;
   setGlobalFocusPriority(priority);
   const suite = describe(description, specDefinitions);
   suite.focusPriority = priority;
@@ -48,10 +46,8 @@ function fffdescribe(description, specDefinitions) {
 }
 global.fffdescribe = fffdescribe;
 
-function fit(description, definition, priority) {
-  if (priority == null) {
-    priority = 1;
-  }
+function fit(description, definition, priority_) {
+  const priority = priority_ != null ? priority_ : 1;
   setGlobalFocusPriority(priority);
   const spec = it(description, definition);
   spec.focusPriority = priority;

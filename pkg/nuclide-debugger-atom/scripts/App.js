@@ -40,12 +40,10 @@ window.XMLHttpRequest.prototype.open = (function(original) {
 // Originally defined in Runtime.js
 window.loadScriptsPromise = (function(original) {
   return function(urls, base) {
-    if (base === undefined) {
-      // Prevents the path to the current file to be prepended, so that
-      // the overwritten XHR.open can properly prepend the new path prefix.
-      base = './';
-    }
-    return original(urls, base);
+    // Prevents the path to the current file to be prepended, so that
+    // the overwritten XHR.open can properly prepend the new path prefix.
+    const newBase = base === undefined ? './' : base;
+    return original(urls, newBase);
   };
 })(window.loadScriptsPromise);
 

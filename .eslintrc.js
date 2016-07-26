@@ -118,7 +118,7 @@ module.exports = {
     'no-new-wrappers': 1,
     'no-octal': 1,
     'no-octal-escape': 1,
-    // 'no-param-reassign': 1,
+    'no-param-reassign': 1,
     'no-proto': 1,
     'no-redeclare': [1, {builtinGlobals: true}],
     'no-return-assign': 1,
