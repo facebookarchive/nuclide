@@ -10,6 +10,7 @@ import os
 import re
 import signal
 import subprocess
+import sys
 import time
 import threading
 from datetime import datetime
@@ -123,7 +124,7 @@ class JsTestRunner(object):
                 ) for test_args in parallel_tests
             ]
             for async_result in results:
-                async_result.wait()
+                async_result.wait(MAX_RUN_TIME_IN_SECONDS)
                 if not async_result.successful():
                     raise async_result.get()
             end = datetime.now()
@@ -183,6 +184,10 @@ def run_test(
             logging.info('[%s %s]: %s', test_cmd[0], name, line.rstrip().decode('utf-8'))
             stdout.append(line)
         proc.wait()
+    except KeyboardInterrupt as e:
+        # Cleanly kill all child processes before terminating.
+        kill_proc()
+        sys.exit(1)
     finally:
         timer.cancel()
 
