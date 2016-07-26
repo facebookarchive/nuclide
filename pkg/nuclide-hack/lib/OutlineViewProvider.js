@@ -20,7 +20,7 @@ import {
   method,
   whitespace,
   plain,
-} from '../../nuclide-tokenized-text';
+} from '../../commons-node/tokenizedText';
 import {getHackLanguageForUri} from './HackLanguage';
 
 import {Point} from 'atom';

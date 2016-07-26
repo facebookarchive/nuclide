@@ -11,7 +11,7 @@
 
 import type {Observable} from 'rxjs';
 import type {OutlineForUi, OutlineTreeForUi} from './main';
-import type {TextToken} from '../../nuclide-tokenized-text';
+import type {TextToken} from '../../commons-node/tokenizedText-rpc-types';
 
 import {React} from 'react-for-atom';
 import invariant from 'assert';

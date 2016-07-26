@@ -12,7 +12,7 @@
 import type {FlowOutlineTree, Point} from '..';
 import {arrayCompact} from '../../commons-node/collection';
 
-import type {TokenizedText} from '../../nuclide-tokenized-text';
+import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 import {
   keyword,
   className,
@@ -22,7 +22,7 @@ import {
   whitespace,
   plain,
   type,
-} from '../../nuclide-tokenized-text';
+} from '../../commons-node/tokenizedText';
 
 import invariant from 'assert';
 

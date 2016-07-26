@@ -12,7 +12,7 @@
 import type {
   OutlineTree,
 } from '../../nuclide-outline-view';
-import type {TextToken} from '../../nuclide-tokenized-text';
+import type {TextToken} from '../../commons-node/tokenizedText-rpc-types';
 import type {
   PythonOutlineItem,
   PythonClassItem,
@@ -27,7 +27,7 @@ import {
   param,
   whitespace,
   plain,
-} from '../../nuclide-tokenized-text';
+} from '../../commons-node/tokenizedText';
 
 type ShowVariableMode = 'none' | 'constants' | 'all';
 

@@ -25,7 +25,7 @@ import {createOutlines} from './createOutlines';
 
 import invariant from 'assert';
 
-import type {TokenizedText} from '../../nuclide-tokenized-text';
+import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {RegisterNux} from '../../nuclide-nux/lib/main';
