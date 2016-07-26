@@ -18,7 +18,8 @@ import nuclideUri from '../../pkg/commons-node/nuclideUri';
 import {RemoteConnection, getServiceByNuclideUri} from '../../pkg/nuclide-remote-connection';
 import {getMountedReactRootNames} from '../../pkg/commons-atom/testHelpers';
 
-const SERVER_DEFAULT_PORT = 9090;
+// TEST_NUCLIDE_SERVER_PORT can be set by the test runner to allow simultaneous remote tests.
+const SERVER_PORT = parseInt(process.env.TEST_NUCLIDE_SERVER_PORT, 10) || 9090;
 
 export function jasmineIntegrationTestSetup(): void {
   // To run remote tests, we have to star the nuclide server. It uses `nohup`, but apparently
@@ -116,7 +117,7 @@ export function deactivateAllPackages(): void {
 export function startNuclideServer(): void {
   child_process.spawnSync(
     require.resolve('../../pkg/nuclide-server/nuclide-start-server'),
-    ['-k', `--port=${SERVER_DEFAULT_PORT}`],
+    ['-k', `--port=${SERVER_PORT}`],
   );
 }
 
@@ -150,6 +151,6 @@ export async function addRemoteProject(
 ): Promise<?RemoteConnection> {
   return await RemoteConnection._createInsecureConnectionForTesting(
     projectPath,
-    SERVER_DEFAULT_PORT,
+    SERVER_PORT,
   );
 }
