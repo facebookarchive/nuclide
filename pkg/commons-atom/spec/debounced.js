@@ -12,6 +12,7 @@
 import {Point} from 'atom';
 import {Observable} from 'rxjs';
 import {
+  editorScrollTopDebounced,
   onWorkspaceDidStopChangingActivePaneItem,
   observeActivePaneItemDebounced,
   observeActiveEditorsDebounced,
@@ -30,6 +31,38 @@ const DEBOUNCE_INTERVAL = 10;
 const SLEEP_INTERVAL = 15;
 // Sleep interval for double the debounce interval.
 const SLEEP_INTERVAL_2 = 25;
+
+describe('editorScrollTopDebounced', () => {
+  it('debounces scroll event', () => {
+    const LINES = 1000;
+    const mockText = Array(LINES)
+                      .fill('MOCK LINE\n')
+                      .reduce((a, b) => a.concat(b));
+
+    waitsForPromise(async () => {
+      const editor = await atom.workspace.open();
+      editor.setText(mockText);
+
+      const editorScroll = editorScrollTopDebounced(editor, DEBOUNCE_INTERVAL);
+
+      const eventsPromise = editorScroll
+        .takeUntil(Observable.of(null).delay(500))
+        .toArray()
+        .toPromise();
+
+      editor.scrollToBufferPosition(new Point(LINES / 2, 0));
+      editor.scrollToBufferPosition(new Point(0, 0));
+      editor.scrollToBufferPosition(new Point(LINES - 1, 0));
+      editor.scrollToBufferPosition(new Point(LINES / 4, 0));
+
+      const events = await eventsPromise;
+
+      expect(events.length).toBe(1);
+
+      editor.destroy();
+    });
+  });
+});
 
 describe('pane item change events', () => {
   let pane: atom$Pane = (null: any);
