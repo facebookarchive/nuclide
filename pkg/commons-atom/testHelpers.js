@@ -1,5 +1,13 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.dispatchKeyboardEvent = dispatchKeyboardEvent;
+exports.setLocalProject = setLocalProject;
+exports.waitsForFile = waitsForFile;
+exports.waitsForFilePosition = waitsForFilePosition;
+exports.getMountedReactRootNames = getMountedReactRootNames;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +17,17 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import nuclideUri from '../commons-node/nuclideUri';
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
 
 /**
  * Use this function to simulate keyboard shortcuts or special keys, e.g. cmd-v,
@@ -23,18 +40,20 @@ import nuclideUri from '../commons-node/nuclideUri';
  * @param metaKeys An object denoting which meta keys are pressed for this
  * keyboard event.
  */
-export function dispatchKeyboardEvent(
-  key: string,
-  target: HTMLElement,
-  metaKeys: {alt?: boolean, cmd?: boolean, ctrl?: boolean, shift?: boolean} = {},
-): void {
-  const {alt, cmd, ctrl, shift} = metaKeys;
-  const event = atom.keymaps.constructor.buildKeydownEvent(key, {
-    target,
+
+function dispatchKeyboardEvent(key, target) {
+  var metaKeys = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+  var alt = metaKeys.alt;
+  var cmd = metaKeys.cmd;
+  var ctrl = metaKeys.ctrl;
+  var shift = metaKeys.shift;
+
+  var event = atom.keymaps.constructor.buildKeydownEvent(key, {
+    target: target,
     alt: Boolean(alt),
     cmd: Boolean(cmd),
     ctrl: Boolean(ctrl),
-    shift: Boolean(shift),
+    shift: Boolean(shift)
   });
   atom.keymaps.handleKeyboardEvent(event);
 }
@@ -43,7 +62,7 @@ export function dispatchKeyboardEvent(
  * Custom matchers for jasmine testing, as described in:
  * http://jasmine.github.io/1.3/introduction.html#section-Writing_a_custom_matcher.
  */
-export const rangeMatchers = {
+var rangeMatchers = {
   /**
    * Determines if two Ranges are equal. This function should not be called
    * directly, but rather added as a Jasmine custom matcher.
@@ -51,7 +70,7 @@ export const rangeMatchers = {
    * @this A JasmineMatcher object.
    * @returns True if the Ranges are equal.
    */
-  toEqualAtomRange(expected: ?atom$Range): boolean {
+  toEqualAtomRange: function toEqualAtomRange(expected) {
     return Boolean(this.actual && expected && this.actual.isEqual(expected));
   },
 
@@ -62,13 +81,13 @@ export const rangeMatchers = {
    * @this A JasmineMatcher object.
    * @returns True if the array of Ranges are equal.
    */
-  toEqualAtomRanges(expected: ?Array<atom$Range>): boolean {
-    let allEqual = true;
+  toEqualAtomRanges: function toEqualAtomRanges(expected) {
+    var allEqual = true;
     if (!this.actual || !expected) {
       return false;
     }
-    this.actual.some((range, index) => {
-      invariant(expected); // Tell Flow this is definitely non-null now.
+    this.actual.some(function (range, index) {
+      (0, (_assert2 || _assert()).default)(expected); // Tell Flow this is definitely non-null now.
       if (range.isEqual(expected[index])) {
         return false;
       } else {
@@ -77,14 +96,16 @@ export const rangeMatchers = {
       }
     });
     return allEqual;
-  },
+  }
 };
 
+exports.rangeMatchers = rangeMatchers;
 /**
  * Set the project. If there are one or more projects set previously, this
  * replaces them all with the one(s) provided as the argument `projectPath`.
  */
-export function setLocalProject(projectPath: string | Array<string>): void {
+
+function setLocalProject(projectPath) {
   if (Array.isArray(projectPath)) {
     atom.project.setPaths(projectPath);
   } else {
@@ -96,39 +117,37 @@ export function setLocalProject(projectPath: string | Array<string>): void {
  * Waits for the specified file to become the active text editor.
  * Can only be used in a Jasmine context.
  */
-export function waitsForFile(filename: string, timeoutMs: number = 10000): void {
-  waitsFor(`${filename} to become active`, timeoutMs, () => {
-    const editor = atom.workspace.getActiveTextEditor();
+
+function waitsForFile(filename) {
+  var timeoutMs = arguments.length <= 1 || arguments[1] === undefined ? 10000 : arguments[1];
+
+  waitsFor(filename + ' to become active', timeoutMs, function () {
+    var editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       return false;
     }
-    const editorPath = editor.getPath();
+    var editorPath = editor.getPath();
     if (editorPath == null) {
       return false;
     }
-    return nuclideUri.basename(editorPath) === filename;
+    return (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.basename(editorPath) === filename;
   });
 }
 
-export function waitsForFilePosition(
-  filename: string,
-  row: number,
-  column: number,
-  timeoutMs: number = 10000,
-): void {
-  waitsFor(`${filename} to become active at ${row}:${column}`, timeoutMs, () => {
-    const editor = atom.workspace.getActiveTextEditor();
+function waitsForFilePosition(filename, row, column) {
+  var timeoutMs = arguments.length <= 3 || arguments[3] === undefined ? 10000 : arguments[3];
+
+  waitsFor(filename + ' to become active at ' + row + ':' + column, timeoutMs, function () {
+    var editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       return false;
     }
-    const editorPath = editor.getPath();
+    var editorPath = editor.getPath();
     if (editorPath == null) {
       return false;
     }
-    const pos = editor.getCursorBufferPosition();
-    return nuclideUri.basename(editorPath) === filename
-      && pos.row === row
-      && pos.column === column;
+    var pos = editor.getCursorBufferPosition();
+    return (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.basename(editorPath) === filename && pos.row === row && pos.column === column;
   });
 }
 
@@ -152,15 +171,14 @@ export function waitsForFilePosition(
  *      console.log(ReactComponentTreeDevtool.getElement(rootID));
  *    });
  */
-export function getMountedReactRootNames(): Array<string> {
-  const ReactComponentTreeDevtoolPath =
-    Object.keys(require.cache).find(x => x.endsWith('react/lib/ReactComponentTreeDevtool.js'));
-  invariant(
-    ReactComponentTreeDevtoolPath != null,
-    'ReactComponentTreeDevtool could not be found in the module cache.',
-  );
-  const ReactComponentTreeDevtool = require.cache[ReactComponentTreeDevtoolPath].exports;
-  const reactRootNames = ReactComponentTreeDevtool.getRootIDs().map(rootID => {
+
+function getMountedReactRootNames() {
+  var ReactComponentTreeDevtoolPath = Object.keys(require.cache).find(function (x) {
+    return x.endsWith('react/lib/ReactComponentTreeDevtool.js');
+  });
+  (0, (_assert2 || _assert()).default)(ReactComponentTreeDevtoolPath != null, 'ReactComponentTreeDevtool could not be found in the module cache.');
+  var ReactComponentTreeDevtool = require.cache[ReactComponentTreeDevtoolPath].exports;
+  var reactRootNames = ReactComponentTreeDevtool.getRootIDs().map(function (rootID) {
     return ReactComponentTreeDevtool.getDisplayName(rootID);
   });
   return reactRootNames;

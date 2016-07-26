@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,170 +10,201 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerModel from './DebuggerModel';
-import type Multimap from './Multimap';
-import type {
-  WatchExpressionListStore,
-} from './WatchExpressionListStore';
-import type {
-  Callstack,
-  DebuggerModeType,
-  FileLineBreakpoints,
-} from './types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable} from 'atom';
-import {
-  React,
-} from 'react-for-atom';
-import {Section} from '../../nuclide-ui/lib/Section';
-import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
-import {WatchExpressionComponent} from './WatchExpressionComponent';
-import {LocalsComponent} from './LocalsComponent';
-import {BreakpointListComponent} from './BreakpointListComponent';
-import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
-import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type Props = {
-  model: DebuggerModel,
-  watchExpressionListStore: WatchExpressionListStore,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-function storeBreakpointsToViewBreakpoints(
-  storeBreakpoints: Multimap<string, number>,
-): FileLineBreakpoints {
-  const breakpoints: FileLineBreakpoints = [];
-  storeBreakpoints.forEach((line: number, path: string) => {
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _nuclideUiLibSection2;
+
+function _nuclideUiLibSection() {
+  return _nuclideUiLibSection2 = require('../../nuclide-ui/lib/Section');
+}
+
+var _nuclideUiLibBindObservableAsProps2;
+
+function _nuclideUiLibBindObservableAsProps() {
+  return _nuclideUiLibBindObservableAsProps2 = require('../../nuclide-ui/lib/bindObservableAsProps');
+}
+
+var _WatchExpressionComponent2;
+
+function _WatchExpressionComponent() {
+  return _WatchExpressionComponent2 = require('./WatchExpressionComponent');
+}
+
+var _LocalsComponent2;
+
+function _LocalsComponent() {
+  return _LocalsComponent2 = require('./LocalsComponent');
+}
+
+var _BreakpointListComponent2;
+
+function _BreakpointListComponent() {
+  return _BreakpointListComponent2 = require('./BreakpointListComponent');
+}
+
+var _DebuggerSteppingComponent2;
+
+function _DebuggerSteppingComponent() {
+  return _DebuggerSteppingComponent2 = require('./DebuggerSteppingComponent');
+}
+
+var _DebuggerCallstackComponent2;
+
+function _DebuggerCallstackComponent() {
+  return _DebuggerCallstackComponent2 = require('./DebuggerCallstackComponent');
+}
+
+function storeBreakpointsToViewBreakpoints(storeBreakpoints) {
+  var breakpoints = [];
+  storeBreakpoints.forEach(function (line, path) {
     breakpoints.push({
-      path,
-      line,
+      path: path,
+      line: line,
       // TODO jxg add enabled/disable functionality to store & consume it here.
       enabled: true,
       // TODO jxg sync unresolved breakpoints from Chrome Dev tools & consume them here.
-      resolved: true,
+      resolved: true
     });
   });
   return breakpoints;
 }
 
-export class NewDebuggerView extends React.Component {
-  props: Props;
-  state: {
-    togglePauseOnException: boolean,
-    togglePauseOnCaughtException: boolean,
-    debuggerMode: DebuggerModeType,
-    callstack: ?Callstack,
-    breakpoints: ?FileLineBreakpoints,
-  };
-  _watchExpressionComponentWrapped: ReactClass<any>;
-  _localsComponentWrapped: ReactClass<any>;
-  _disposables: CompositeDisposable;
+var NewDebuggerView = (function (_React$Component) {
+  _inherits(NewDebuggerView, _React$Component);
 
-  constructor(props: Props) {
-    super(props);
-    this._watchExpressionComponentWrapped = bindObservableAsProps(
-      props.model.getWatchExpressionListStore().getWatchExpressions().map(
-        watchExpressions => ({watchExpressions}),
-      ),
-      WatchExpressionComponent,
-    );
-    this._localsComponentWrapped = bindObservableAsProps(
-      props.model.getLocalsStore().getLocals().map(
-        locals => ({locals}),
-      ),
-      LocalsComponent,
-    );
-    this._disposables = new CompositeDisposable();
+  function NewDebuggerView(props) {
+    _classCallCheck(this, NewDebuggerView);
+
+    _get(Object.getPrototypeOf(NewDebuggerView.prototype), 'constructor', this).call(this, props);
+    this._watchExpressionComponentWrapped = (0, (_nuclideUiLibBindObservableAsProps2 || _nuclideUiLibBindObservableAsProps()).bindObservableAsProps)(props.model.getWatchExpressionListStore().getWatchExpressions().map(function (watchExpressions) {
+      return { watchExpressions: watchExpressions };
+    }), (_WatchExpressionComponent2 || _WatchExpressionComponent()).WatchExpressionComponent);
+    this._localsComponentWrapped = (0, (_nuclideUiLibBindObservableAsProps2 || _nuclideUiLibBindObservableAsProps()).bindObservableAsProps)(props.model.getLocalsStore().getLocals().map(function (locals) {
+      return { locals: locals };
+    }), (_LocalsComponent2 || _LocalsComponent()).LocalsComponent);
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
     this.state = {
       debuggerMode: props.model.getStore().getDebuggerMode(),
       togglePauseOnException: props.model.getStore().getTogglePauseOnException(),
       togglePauseOnCaughtException: props.model.getStore().getTogglePauseOnCaughtException(),
       callstack: props.model.getCallstackStore().getCallstack(),
-      breakpoints: storeBreakpointsToViewBreakpoints(
-        props.model.getBreakpointStore().getAllBreakpoints(),
-      ),
+      breakpoints: storeBreakpointsToViewBreakpoints(props.model.getBreakpointStore().getAllBreakpoints())
     };
   }
 
-  componentDidMount(): void {
-    const debuggerStore = this.props.model.getStore();
-    this._disposables.add(
-      debuggerStore.onChange(() => {
-        this.setState({
+  _createClass(NewDebuggerView, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this = this;
+
+      var debuggerStore = this.props.model.getStore();
+      this._disposables.add(debuggerStore.onChange(function () {
+        _this.setState({
           debuggerMode: debuggerStore.getDebuggerMode(),
           togglePauseOnException: debuggerStore.getTogglePauseOnException(),
-          togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
+          togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException()
         });
-      }),
-    );
-    const callstackStore = this.props.model.getCallstackStore();
-    this._disposables.add(
-      callstackStore.onChange(() => {
-        this.setState({
-          callstack: callstackStore.getCallstack(),
+      }));
+      var callstackStore = this.props.model.getCallstackStore();
+      this._disposables.add(callstackStore.onChange(function () {
+        _this.setState({
+          callstack: callstackStore.getCallstack()
         });
-      }),
-    );
-    const breakpointStore = this.props.model.getBreakpointStore();
-    this._disposables.add(
-      breakpointStore.onChange(() => {
-        this.setState({
-          breakpoints: storeBreakpointsToViewBreakpoints(breakpointStore.getAllBreakpoints()),
+      }));
+      var breakpointStore = this.props.model.getBreakpointStore();
+      this._disposables.add(breakpointStore.onChange(function () {
+        _this.setState({
+          breakpoints: storeBreakpointsToViewBreakpoints(breakpointStore.getAllBreakpoints())
         });
-      }),
-    );
-  }
+      }));
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this._dispose();
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var model = this.props.model;
 
-  componentWillUnmount(): void {
-    this._dispose();
-  }
+      var actions = model.getActions();
+      var WatchExpressionComponentWrapped = this._watchExpressionComponentWrapped;
+      var LocalsComponentWrapped = this._localsComponentWrapped;
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-debugger-container-new' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibSection2 || _nuclideUiLibSection()).Section,
+          { collapsable: true, headline: 'Debugger Controls' },
+          (_reactForAtom2 || _reactForAtom()).React.createElement((_DebuggerSteppingComponent2 || _DebuggerSteppingComponent()).DebuggerSteppingComponent, {
+            actions: actions,
+            debuggerMode: this.state.debuggerMode,
+            pauseOnException: this.state.togglePauseOnException,
+            pauseOnCaughtException: this.state.togglePauseOnCaughtException
+          })
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibSection2 || _nuclideUiLibSection()).Section,
+          { collapsable: true, headline: 'Call Stack' },
+          (_reactForAtom2 || _reactForAtom()).React.createElement((_DebuggerCallstackComponent2 || _DebuggerCallstackComponent()).DebuggerCallstackComponent, {
+            actions: actions,
+            callstack: this.state.callstack
+          })
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibSection2 || _nuclideUiLibSection()).Section,
+          { collapsable: true, headline: 'Breakpoints' },
+          (_reactForAtom2 || _reactForAtom()).React.createElement((_BreakpointListComponent2 || _BreakpointListComponent()).BreakpointListComponent, {
+            actions: actions,
+            breakpoints: this.state.breakpoints
+          })
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibSection2 || _nuclideUiLibSection()).Section,
+          { collapsable: true, headline: 'Locals' },
+          (_reactForAtom2 || _reactForAtom()).React.createElement(LocalsComponentWrapped, {
+            watchExpressionStore: model.getWatchExpressionStore()
+          })
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibSection2 || _nuclideUiLibSection()).Section,
+          { collapsable: true, headline: 'Watch Expressions' },
+          (_reactForAtom2 || _reactForAtom()).React.createElement(WatchExpressionComponentWrapped, {
+            onAddWatchExpression: actions.addWatchExpression.bind(model),
+            onRemoveWatchExpression: actions.removeWatchExpression.bind(model),
+            onUpdateWatchExpression: actions.updateWatchExpression.bind(model),
+            watchExpressionStore: model.getWatchExpressionStore()
+          })
+        )
+      );
+    }
+  }, {
+    key: '_dispose',
+    value: function _dispose() {
+      this._disposables.dispose();
+    }
+  }]);
 
-  render(): React.Element<any> {
-    const {
-      model,
-    } = this.props;
-    const actions = model.getActions();
-    const WatchExpressionComponentWrapped = this._watchExpressionComponentWrapped;
-    const LocalsComponentWrapped = this._localsComponentWrapped;
-    return (
-      <div className="nuclide-debugger-container-new">
-        <Section collapsable={true} headline="Debugger Controls">
-          <DebuggerSteppingComponent
-            actions={actions}
-            debuggerMode={this.state.debuggerMode}
-            pauseOnException={this.state.togglePauseOnException}
-            pauseOnCaughtException={this.state.togglePauseOnCaughtException}
-          />
-        </Section>
-        <Section collapsable={true} headline="Call Stack">
-          <DebuggerCallstackComponent
-            actions={actions}
-            callstack={this.state.callstack}
-          />
-        </Section>
-        <Section collapsable={true} headline="Breakpoints">
-          <BreakpointListComponent
-            actions={actions}
-            breakpoints={this.state.breakpoints}
-          />
-        </Section>
-        <Section collapsable={true} headline="Locals">
-          <LocalsComponentWrapped
-            watchExpressionStore={model.getWatchExpressionStore()}
-          />
-        </Section>
-        <Section collapsable={true} headline="Watch Expressions">
-          <WatchExpressionComponentWrapped
-            onAddWatchExpression={actions.addWatchExpression.bind(model)}
-            onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}
-            onUpdateWatchExpression={actions.updateWatchExpression.bind(model)}
-            watchExpressionStore={model.getWatchExpressionStore()}
-          />
-        </Section>
-      </div>
-    );
-  }
+  return NewDebuggerView;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
 
-  _dispose(): void {
-    this._disposables.dispose();
-  }
-}
+exports.NewDebuggerView = NewDebuggerView;

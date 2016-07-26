@@ -1,7 +1,0 @@
-{
-  "name": "nuclide-fake-node-package-2",
-  "version": "0.0.0",
-  "nuclide": {
-    "packageType": "Node"
-  }
-}

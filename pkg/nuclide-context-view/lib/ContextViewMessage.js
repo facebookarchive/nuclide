@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +10,24 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+var _reactForAtom2;
 
-export const NO_DEFINITION_MESSAGE = 'No definition selected.';
-export const LOADING_MESSAGE = 'Loading...';
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
 
-type Props = {
-  message: string,
-};
+var NO_DEFINITION_MESSAGE = 'No definition selected.';
+exports.NO_DEFINITION_MESSAGE = NO_DEFINITION_MESSAGE;
+var LOADING_MESSAGE = 'Loading...';
+
+exports.LOADING_MESSAGE = LOADING_MESSAGE;
 
 /** A message view to be shown in Context View. */
-export const ContextViewMessage = (props: Props) => (
-  <div className="padded">{props.message}</div>
-);
+var ContextViewMessage = function ContextViewMessage(props) {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'div',
+    { className: 'padded' },
+    props.message
+  );
+};
+exports.ContextViewMessage = ContextViewMessage;

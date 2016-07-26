@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +12,41 @@
  * the root directory of this source tree.
  */
 
-import remote from 'remote';
+var _remote2;
 
-export default {
-  getCookies(domain: string): Promise<{[key: string]: string}> {
-    return new Promise((resolve, reject) => {
-      remote.getCurrentWindow().webContents.session.cookies.get({
-        domain,
-      }, (error, cookies) => {
+function _remote() {
+  return _remote2 = _interopRequireDefault(require('remote'));
+}
+
+exports.default = {
+  getCookies: function getCookies(domain) {
+    return new Promise(function (resolve, reject) {
+      (_remote2 || _remote()).default.getCurrentWindow().webContents.session.cookies.get({
+        domain: domain
+      }, function (error, cookies) {
         if (error) {
           reject(error);
         } else {
-          const cookieMap = {};
-          cookies.forEach(cookie => {
-            cookieMap[cookie.name] = cookie.value;
-          });
-          resolve(cookieMap);
+          (function () {
+            var cookieMap = {};
+            cookies.forEach(function (cookie) {
+              cookieMap[cookie.name] = cookie.value;
+            });
+            resolve(cookieMap);
+          })();
         }
       });
     });
   },
 
-  setCookie(url: string, domain: string, name: string, value: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      remote.getCurrentWindow().webContents.session.cookies.set({
-        url,
-        domain,
-        name,
-        value,
-      }, error => {
+  setCookie: function setCookie(url, domain, name, value) {
+    return new Promise(function (resolve, reject) {
+      (_remote2 || _remote()).default.getCurrentWindow().webContents.session.cookies.set({
+        url: url,
+        domain: domain,
+        name: name,
+        value: value
+      }, function (error) {
         if (error) {
           reject(error);
         } else {
@@ -45,5 +54,6 @@ export default {
         }
       });
     });
-  },
+  }
 };
+module.exports = exports.default;

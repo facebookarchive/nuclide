@@ -1,5 +1,49 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
+
+var fetchCompletionsForEditor = _asyncToGenerator(function* (editor, prefix) {
+  var hackLanguage = yield (0, (_HackLanguage2 || _HackLanguage()).getHackLanguageForUri)(editor.getPath());
+  var filePath = editor.getPath();
+  if (!hackLanguage || !filePath) {
+    return [];
+  }
+
+  (0, (_assert2 || _assert()).default)(filePath);
+  var contents = editor.getText();
+  var cursor = editor.getLastCursor();
+  var position = cursor.getBufferPosition();
+  var offset = editor.getBuffer().characterIndexForPosition(position);
+  // The returned completions may have unrelated results, even though the offset is set on the end
+  // of the prefix.
+  var completions = yield hackLanguage.getCompletions(filePath, contents, offset, position.row + 1, position.column + 1);
+  // Filter out the completions that do not contain the prefix as a token in the match text case
+  // insentively.
+  var tokenLowerCase = prefix.toLowerCase();
+
+  var hackCompletionsComparator = compareHackCompletions(prefix);
+  return completions.filter(function (completion) {
+    (0, (_assert2 || _assert()).default)(completion.displayText != null);
+    return completion.displayText.toLowerCase().indexOf(tokenLowerCase) >= 0;
+  })
+  // Sort the auto-completions based on a scoring function considering:
+  // case sensitivity, position in the completion, private functions and alphabetical order.
+  .sort(function (completion1, completion2) {
+    return hackCompletionsComparator(completion1, completion2);
+  });
+});
+
+exports.compareHackCompletions = compareHackCompletions;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,65 +53,85 @@
  * the root directory of this source tree.
  */
 
-import {Point, Range} from 'atom';
-import {trackTiming} from '../../nuclide-analytics';
-import {getHackLanguageForUri} from './HackLanguage';
-import invariant from 'assert';
+var _atom2;
 
-const FIELD_ACCESSORS = ['->', '::'];
-const PREFIX_LOOKBACK = Math.max.apply(null, FIELD_ACCESSORS.map(prefix => prefix.length));
+function _atom() {
+  return _atom2 = require('atom');
+}
 
-export default class AutocompleteProvider {
+var _nuclideAnalytics2;
 
-  @trackTiming('hack.getAutocompleteSuggestions')
-  async getAutocompleteSuggestions(
-    request: atom$AutocompleteRequest,
-  ): Promise<?Array<atom$AutocompleteSuggestion>> {
-    const {editor, bufferPosition} = request;
-    const replacementPrefix = findHackPrefix(editor);
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
 
-    if (!replacementPrefix
-      && !hasPrefix(editor, bufferPosition, FIELD_ACCESSORS, PREFIX_LOOKBACK)) {
-      return [];
-    }
+var _HackLanguage2;
 
-    const completions = await fetchCompletionsForEditor(editor, replacementPrefix);
+function _HackLanguage() {
+  return _HackLanguage2 = require('./HackLanguage');
+}
 
-    return completions.map(completion => {
-      return {
-        ...completion,
-        replacementPrefix: (completion.replacementPrefix === '')
-          ? replacementPrefix : completion.replacementPrefix,
-      };
-    });
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var FIELD_ACCESSORS = ['->', '::'];
+var PREFIX_LOOKBACK = Math.max.apply(null, FIELD_ACCESSORS.map(function (prefix) {
+  return prefix.length;
+}));
+
+var AutocompleteProvider = (function () {
+  function AutocompleteProvider() {
+    _classCallCheck(this, AutocompleteProvider);
   }
+
+  /**
+   * Returns true if `bufferPosition` is prefixed with any of the passed `checkPrefixes`.
+   */
+
+  _createDecoratedClass(AutocompleteProvider, [{
+    key: 'getAutocompleteSuggestions',
+    decorators: [(0, (_nuclideAnalytics2 || _nuclideAnalytics()).trackTiming)('hack.getAutocompleteSuggestions')],
+    value: _asyncToGenerator(function* (request) {
+      var editor = request.editor;
+      var bufferPosition = request.bufferPosition;
+
+      var replacementPrefix = findHackPrefix(editor);
+
+      if (!replacementPrefix && !hasPrefix(editor, bufferPosition, FIELD_ACCESSORS, PREFIX_LOOKBACK)) {
+        return [];
+      }
+
+      var completions = yield fetchCompletionsForEditor(editor, replacementPrefix);
+
+      return completions.map(function (completion) {
+        return _extends({}, completion, {
+          replacementPrefix: completion.replacementPrefix === '' ? replacementPrefix : completion.replacementPrefix
+        });
+      });
+    })
+  }]);
+
+  return AutocompleteProvider;
+})();
+
+exports.default = AutocompleteProvider;
+function hasPrefix(editor, bufferPosition, checkPrefixes, prefixLookback) {
+  var priorChars = editor.getTextInBufferRange(new (_atom2 || _atom()).Range(new (_atom2 || _atom()).Point(bufferPosition.row, bufferPosition.column - prefixLookback), bufferPosition));
+  return checkPrefixes.some(function (prefix) {
+    return priorChars.endsWith(prefix);
+  });
 }
 
-/**
- * Returns true if `bufferPosition` is prefixed with any of the passed `checkPrefixes`.
- */
-function hasPrefix(
-    editor: atom$TextEditor,
-    bufferPosition: atom$Point,
-    checkPrefixes: Array<string>,
-    prefixLookback: number,
-  ): boolean {
-  const priorChars = editor.getTextInBufferRange(new Range(
-    new Point(bufferPosition.row, bufferPosition.column - prefixLookback),
-    bufferPosition,
-  ));
-  return checkPrefixes.some(prefix => priorChars.endsWith(prefix));
-}
-
-function findHackPrefix(editor: atom$TextEditor): string {
-  const cursor = editor.getLastCursor();
+function findHackPrefix(editor) {
+  var cursor = editor.getLastCursor();
   // We use custom wordRegex to adopt php variables starting with $.
-  const currentRange = cursor.getCurrentWordBufferRange({wordRegex: /(\$\w*)|\w+/});
+  var currentRange = cursor.getCurrentWordBufferRange({ wordRegex: /(\$\w*)|\w+/ });
   // Current word might go beyond the cursor, so we cut it.
-  const range = new Range(
-      currentRange.start,
-      new Point(cursor.getBufferRow(), cursor.getBufferColumn()));
-  const prefix = editor.getTextInBufferRange(range).trim();
+  var range = new (_atom2 || _atom()).Range(currentRange.start, new (_atom2 || _atom()).Point(cursor.getBufferRow(), cursor.getBufferColumn()));
+  var prefix = editor.getTextInBufferRange(range).trim();
   // Prefix could just be $ or ends with string literal.
   if (prefix === '$' || !/[\W]$/.test(prefix)) {
     return prefix;
@@ -76,67 +140,29 @@ function findHackPrefix(editor: atom$TextEditor): string {
   }
 }
 
-async function fetchCompletionsForEditor(
-  editor: atom$TextEditor,
-  prefix: string,
-): Promise<Array<atom$AutocompleteSuggestion>> {
-  const hackLanguage = await getHackLanguageForUri(editor.getPath());
-  const filePath = editor.getPath();
-  if (!hackLanguage || !filePath) {
-    return [];
-  }
+var MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
+var MATCH_PREFIX_CASE_INSENSITIVE_SCORE = 4;
+var MATCH_TOKEN_CASE_SENSITIVE_SCORE = 2;
+var MATCH_TOKEN_CASE_INSENSITIVE_SCORE = 0;
+var MATCH_PRIVATE_FUNCTION_PENALTY = -4;
+var MATCH_APLHABETICAL_SCORE = 1;
 
-  invariant(filePath);
-  const contents = editor.getText();
-  const cursor = editor.getLastCursor();
-  const position = cursor.getBufferPosition();
-  const offset = editor.getBuffer().characterIndexForPosition(position);
-  // The returned completions may have unrelated results, even though the offset is set on the end
-  // of the prefix.
-  const completions = await hackLanguage.getCompletions(
-    filePath, contents, offset, position.row + 1, position.column + 1);
-  // Filter out the completions that do not contain the prefix as a token in the match text case
-  // insentively.
-  const tokenLowerCase = prefix.toLowerCase();
+function compareHackCompletions(token) {
+  var tokenLowerCase = token.toLowerCase();
 
-  const hackCompletionsComparator = compareHackCompletions(prefix);
-  return completions
-    .filter(completion => {
-      invariant(completion.displayText != null);
-      return completion.displayText.toLowerCase().indexOf(tokenLowerCase) >= 0;
-    })
-    // Sort the auto-completions based on a scoring function considering:
-    // case sensitivity, position in the completion, private functions and alphabetical order.
-    .sort((completion1, completion2) =>
-      hackCompletionsComparator(completion1, completion2));
-}
-
-const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
-const MATCH_PREFIX_CASE_INSENSITIVE_SCORE = 4;
-const MATCH_TOKEN_CASE_SENSITIVE_SCORE = 2;
-const MATCH_TOKEN_CASE_INSENSITIVE_SCORE = 0;
-const MATCH_PRIVATE_FUNCTION_PENALTY = -4;
-const MATCH_APLHABETICAL_SCORE = 1;
-
-export function compareHackCompletions(
-  token: string,
-): (completion1: atom$AutocompleteSuggestion, completion2: atom$AutocompleteSuggestion) => number {
-  const tokenLowerCase = token.toLowerCase();
-
-  return (completion1: atom$AutocompleteSuggestion, completion2: atom$AutocompleteSuggestion) => {
+  return function (completion1, completion2) {
     // Prefer completions with larger prefixes.
-    invariant(completion1.replacementPrefix != null);
-    invariant(completion2.replacementPrefix != null);
-    const prefixComparison =
-      completion2.replacementPrefix.length - completion1.replacementPrefix.length;
+    (0, (_assert2 || _assert()).default)(completion1.replacementPrefix != null);
+    (0, (_assert2 || _assert()).default)(completion2.replacementPrefix != null);
+    var prefixComparison = completion2.replacementPrefix.length - completion1.replacementPrefix.length;
     if (prefixComparison !== 0) {
       return prefixComparison;
     }
 
-    invariant(completion1.displayText != null);
-    invariant(completion2.displayText != null);
-    const texts: Array<string> = [completion1.displayText, completion2.displayText];
-    const scores = texts.map((text, i) => {
+    (0, (_assert2 || _assert()).default)(completion1.displayText != null);
+    (0, (_assert2 || _assert()).default)(completion2.displayText != null);
+    var texts = [completion1.displayText, completion2.displayText];
+    var scores = texts.map(function (text, i) {
       if (text.startsWith(token)) {
         // Matches starting with the prefix gets the highest score.
         return MATCH_PREFIX_CASE_SENSITIVE_SCORE;
@@ -145,7 +171,7 @@ export function compareHackCompletions(
         return MATCH_PREFIX_CASE_INSENSITIVE_SCORE;
       }
 
-      let score;
+      var score = undefined;
       if (text.indexOf(token) !== -1) {
         // Small score for a match that contains the token case-sensitive.
         score = MATCH_TOKEN_CASE_SENSITIVE_SCORE;

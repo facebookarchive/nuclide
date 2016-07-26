@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,80 +16,87 @@
  * the root directory of this source tree.
  */
 
-import {Emitter} from 'atom';
+var _atom2;
 
-import type {
-  NuxTourModel,
-} from './NuxModel';
-
-const NEW_NUX_EVENT = 'newNuxModel';
-
-export const NUX_SAVED_STORE = 'nuclide-nux.saved-nux-data-store';
-
-export class NuxStore {
-  _emitter: atom$Emitter;
-  _shouldSeedNux: boolean;
-  // Maps a Nux's unique ID to the boolean representing its viewed state
-  _nuxMap: Map<string, boolean>;
-
-  constructor(): void {
-    this._nuxMap = new Map();
-    this._emitter = new Emitter();
-  }
-
-  dispose(): void {
-    this._emitter.dispose();
-  }
-
-  // Tries to load saved NUXes.
-  // If none exist, will attempt to seed a NUX iff `_seedNux` is true.
-  initialize(): void {
-    // TODO [ @rageandqq | 05-25-16 ]: Replace with `IndexedDB` since `localStorage` is blocking
-    this._nuxMap = new Map(
-      JSON.parse(window.localStorage.getItem(NUX_SAVED_STORE)),
-    );
-  }
-
-  addNewNux(nux: NuxTourModel) {
-    const nuxState = this._nuxMap.get(nux.id);
-    if (nuxState) {
-      return;
-    }
-    this._nuxMap.set(
-      nux.id,
-      false,
-    );
-    this._emitter.emit(NEW_NUX_EVENT, nux);
-  }
-
-  serialize(): void {
-    this._saveNuxState();
-  }
-
-  _saveNuxState(): void {
-    // TODO [ @rageandqq | 05-25-16 ]: Replace with `IndexedDB` since `localStorage` is blocking
-    window.localStorage.setItem(
-      NUX_SAVED_STORE,
-      // $FlowIgnore -- Flow thinks the spread operator is incompatible with Maps
-      JSON.stringify([...this._nuxMap]),
-    );
-  }
-
-  /**
-   * Register a change handler that is invoked whenever the store changes.
-   */
-  onNewNux(callback: (nux: NuxTourModel) => void): IDisposable {
-    return this._emitter.on(NEW_NUX_EVENT, callback);
-  }
-
-  onNuxCompleted(nuxModel: NuxTourModel): void {
-    if (!this._nuxMap.has(nuxModel.id)) {
-      return;
-    }
-    this._nuxMap.set(
-      nuxModel.id,
-      /* completed */ true,
-    );
-    this._saveNuxState();
-  }
+function _atom() {
+  return _atom2 = require('atom');
 }
+
+var NEW_NUX_EVENT = 'newNuxModel';
+
+var NUX_SAVED_STORE = 'nuclide-nux.saved-nux-data-store';
+
+exports.NUX_SAVED_STORE = NUX_SAVED_STORE;
+
+var NuxStore = (function () {
+  function NuxStore() {
+    _classCallCheck(this, NuxStore);
+
+    this._nuxMap = new Map();
+    this._emitter = new (_atom2 || _atom()).Emitter();
+  }
+
+  _createClass(NuxStore, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._emitter.dispose();
+    }
+
+    // Tries to load saved NUXes.
+    // If none exist, will attempt to seed a NUX iff `_seedNux` is true.
+  }, {
+    key: 'initialize',
+    value: function initialize() {
+      // TODO [ @rageandqq | 05-25-16 ]: Replace with `IndexedDB` since `localStorage` is blocking
+      this._nuxMap = new Map(JSON.parse(window.localStorage.getItem(NUX_SAVED_STORE)));
+    }
+  }, {
+    key: 'addNewNux',
+    value: function addNewNux(nux) {
+      var nuxState = this._nuxMap.get(nux.id);
+      if (nuxState) {
+        return;
+      }
+      this._nuxMap.set(nux.id, false);
+      this._emitter.emit(NEW_NUX_EVENT, nux);
+    }
+  }, {
+    key: 'serialize',
+    value: function serialize() {
+      this._saveNuxState();
+    }
+  }, {
+    key: '_saveNuxState',
+    value: function _saveNuxState() {
+      // TODO [ @rageandqq | 05-25-16 ]: Replace with `IndexedDB` since `localStorage` is blocking
+      window.localStorage.setItem(NUX_SAVED_STORE,
+      // $FlowIgnore -- Flow thinks the spread operator is incompatible with Maps
+      JSON.stringify([].concat(_toConsumableArray(this._nuxMap))));
+    }
+
+    /**
+     * Register a change handler that is invoked whenever the store changes.
+     */
+  }, {
+    key: 'onNewNux',
+    value: function onNewNux(callback) {
+      return this._emitter.on(NEW_NUX_EVENT, callback);
+    }
+  }, {
+    key: 'onNuxCompleted',
+    value: function onNuxCompleted(nuxModel) {
+      if (!this._nuxMap.has(nuxModel.id)) {
+        return;
+      }
+      this._nuxMap.set(nuxModel.id,
+      /* completed */true);
+      this._saveNuxState();
+    }
+  }]);
+
+  return NuxStore;
+})();
+
+exports.NuxStore = NuxStore;
+
+// Maps a Nux's unique ID to the boolean representing its viewed state

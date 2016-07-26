@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,80 +10,99 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState} from '../types';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import * as Actions from './Actions';
+exports.default = accumulateState;
 
-export default function accumulateState(state: AppState, action: Action): AppState {
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+var _Actions2;
+
+function _Actions() {
+  return _Actions2 = _interopRequireWildcard(require('./Actions'));
+}
+
+function accumulateState(state, action) {
   switch (action.type) {
-    case Actions.RECORD_RECEIVED: {
-      const {record} = action.payload;
-      return {
-        ...state,
-        records: state.records.concat(record).slice(-state.maxMessageCount),
-      };
-    }
-    case Actions.SET_MAX_MESSAGE_COUNT: {
-      const {maxMessageCount} = action.payload;
-      if (maxMessageCount <= 0) {
-        return state;
+    case (_Actions2 || _Actions()).RECORD_RECEIVED:
+      {
+        var record = action.payload.record;
+
+        return _extends({}, state, {
+          records: state.records.concat(record).slice(-state.maxMessageCount)
+        });
       }
-      return {
-        ...state,
-        maxMessageCount,
-        records: state.records.slice(-maxMessageCount),
-      };
-    }
-    case Actions.REGISTER_RECORD_PROVIDER: {
-      const {recordProvider} = action.payload;
-      return {
-        ...state,
-        providers: new Map(state.providers).set(recordProvider.id, recordProvider),
-      };
-    }
-    case Actions.CLEAR_RECORDS: {
-      return {
-        ...state,
-        records: [],
-      };
-    }
-    case Actions.REGISTER_EXECUTOR: {
-      const {executor} = action.payload;
-      return {
-        ...state,
-        executors: new Map(state.executors).set(executor.id, executor),
-      };
-    }
-    case Actions.SELECT_EXECUTOR: {
-      const {executorId} = action.payload;
-      return {
-        ...state,
-        currentExecutorId: executorId,
-      };
-    }
-    case Actions.REMOVE_SOURCE: {
-      const {sourceId} = action.payload;
-      const providers = new Map(state.providers);
-      const providerStatuses = new Map(state.providerStatuses);
-      const executors = new Map(state.executors);
-      providers.delete(sourceId);
-      providerStatuses.delete(sourceId);
-      executors.delete(sourceId);
-      return {
-        ...state,
-        providers,
-        providerStatuses,
-        executors,
-      };
-    }
-    case Actions.UPDATE_STATUS: {
-      const {status, providerId} = action.payload;
-      return {
-        ...state,
-        providerStatuses: new Map(state.providerStatuses).set(providerId, status),
-      };
-    }
+    case (_Actions2 || _Actions()).SET_MAX_MESSAGE_COUNT:
+      {
+        var maxMessageCount = action.payload.maxMessageCount;
+
+        if (maxMessageCount <= 0) {
+          return state;
+        }
+        return _extends({}, state, {
+          maxMessageCount: maxMessageCount,
+          records: state.records.slice(-maxMessageCount)
+        });
+      }
+    case (_Actions2 || _Actions()).REGISTER_RECORD_PROVIDER:
+      {
+        var recordProvider = action.payload.recordProvider;
+
+        return _extends({}, state, {
+          providers: new Map(state.providers).set(recordProvider.id, recordProvider)
+        });
+      }
+    case (_Actions2 || _Actions()).CLEAR_RECORDS:
+      {
+        return _extends({}, state, {
+          records: []
+        });
+      }
+    case (_Actions2 || _Actions()).REGISTER_EXECUTOR:
+      {
+        var executor = action.payload.executor;
+
+        return _extends({}, state, {
+          executors: new Map(state.executors).set(executor.id, executor)
+        });
+      }
+    case (_Actions2 || _Actions()).SELECT_EXECUTOR:
+      {
+        var executorId = action.payload.executorId;
+
+        return _extends({}, state, {
+          currentExecutorId: executorId
+        });
+      }
+    case (_Actions2 || _Actions()).REMOVE_SOURCE:
+      {
+        var sourceId = action.payload.sourceId;
+
+        var providers = new Map(state.providers);
+        var providerStatuses = new Map(state.providerStatuses);
+        var executors = new Map(state.executors);
+        providers.delete(sourceId);
+        providerStatuses.delete(sourceId);
+        executors.delete(sourceId);
+        return _extends({}, state, {
+          providers: providers,
+          providerStatuses: providerStatuses,
+          executors: executors
+        });
+      }
+    case (_Actions2 || _Actions()).UPDATE_STATUS:
+      {
+        var _action$payload = action.payload;
+        var _status = _action$payload.status;
+        var providerId = _action$payload.providerId;
+
+        return _extends({}, state, {
+          providerStatuses: new Map(state.providerStatuses).set(providerId, _status)
+        });
+      }
   }
 
   return state;
 }
+
+module.exports = exports.default;

@@ -1,6 +1,0 @@
-import Foo, * as bar from 'Foo';
-
-function test() {
-  new Foo();
-  bar.baz();
-}

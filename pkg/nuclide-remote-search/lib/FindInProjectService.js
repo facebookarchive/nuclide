@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +10,31 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+exports.findInProjectSearch = findInProjectSearch;
 
-import {Observable} from 'rxjs';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import search from './scanhandler';
+var _rxjsBundlesRxUmdMinJs2;
 
-export type search$Match = {
-  lineText: string,
-  lineTextOffset: number,
-  matchText: string,
-  range: Array<Array<number>>,
-};
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
 
-export type search$FileResult = {
-  filePath: NuclideUri,
-  matches: Array<search$Match>,
-};
+var _commonsNodeNuclideUri2;
 
-export function findInProjectSearch(directory: NuclideUri, regex: RegExp, subdirs: Array<string>):
-    Observable<search$FileResult> {
-  return search(directory, regex, subdirs).map(update => {
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _scanhandler2;
+
+function _scanhandler() {
+  return _scanhandler2 = _interopRequireDefault(require('./scanhandler'));
+}
+
+function findInProjectSearch(directory, regex, subdirs) {
+  return (0, (_scanhandler2 || _scanhandler()).default)(directory, regex, subdirs).map(function (update) {
     // Transform filePath's to absolute paths.
-    return {filePath: nuclideUri.join(directory, update.filePath), matches: update.matches};
+    return { filePath: (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(directory, update.filePath), matches: update.matches };
   });
 }

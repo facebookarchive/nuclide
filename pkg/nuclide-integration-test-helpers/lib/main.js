@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.jasmineIntegrationTestSetup = jasmineIntegrationTestSetup;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +13,50 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {activateAllPackages, deactivateAllPackages} from './package-utils';
-import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
-import busySignal from './busy-signal';
-import {fileTreeHasFinishedLoading, getVisibleEntryFromFileTree} from './fileTree';
-import pollFor from './pollFor';
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _packageUtils2;
+
+function _packageUtils() {
+  return _packageUtils2 = require('./package-utils');
+}
+
+var _remoteUtils2;
+
+function _remoteUtils() {
+  return _remoteUtils2 = require('./remote-utils');
+}
+
+var _busySignal2;
+
+function _busySignal() {
+  return _busySignal2 = _interopRequireDefault(require('./busy-signal'));
+}
+
+var _fileTree2;
+
+function _fileTree() {
+  return _fileTree2 = require('./fileTree');
+}
+
+var _pollFor2;
+
+function _pollFor() {
+  return _pollFor2 = _interopRequireDefault(require('./pollFor'));
+}
 
 // Smallish, yet realistic testing window dimensions.
-const TEST_WINDOW_HEIGHT = 600;
-const TEST_WINDOW_WIDTH = 1000;
+var TEST_WINDOW_HEIGHT = 600;
+var TEST_WINDOW_WIDTH = 1000;
 
-export function jasmineIntegrationTestSetup(): void {
+function jasmineIntegrationTestSetup() {
   // To run remote tests, we have to star the nuclide server. It uses `nohup`, but apparently
   // `nohup` doesn't work from within tmux, so starting the server fails.
-  invariant(
-    process.env.TMUX == null,
-    'ERROR: tmux interferes with remote integration tests -- please run the tests outside of tmux',
-  );
+  (0, (_assert2 || _assert()).default)(process.env.TMUX == null, 'ERROR: tmux interferes with remote integration tests -- please run the tests outside of tmux');
   // Allow jasmine to interact with the DOM.
   jasmine.attachToDOM(atom.views.getView(atom.workspace));
 
@@ -34,10 +64,7 @@ export function jasmineIntegrationTestSetup(): void {
   process.env.NO_BUCKD = '1';
 
   // Set the testing window dimensions.
-  const styleCSS = `
-    height: ${TEST_WINDOW_HEIGHT}px;
-    width: ${TEST_WINDOW_WIDTH}px;
-  `;
+  var styleCSS = '\n    height: ' + TEST_WINDOW_HEIGHT + 'px;\n    width: ' + TEST_WINDOW_WIDTH + 'px;\n  ';
   document.querySelector('#jasmine-content').setAttribute('style', styleCSS);
 
   // Unmock timer functions.
@@ -49,14 +76,12 @@ export function jasmineIntegrationTestSetup(): void {
   atom.project.setPaths([]);
 }
 
-export {
-  activateAllPackages,
-  addRemoteProject,
-  busySignal,
-  deactivateAllPackages,
-  fileTreeHasFinishedLoading,
-  getVisibleEntryFromFileTree,
-  pollFor,
-  startNuclideServer,
-  stopNuclideServer,
-};
+exports.activateAllPackages = (_packageUtils2 || _packageUtils()).activateAllPackages;
+exports.addRemoteProject = (_remoteUtils2 || _remoteUtils()).addRemoteProject;
+exports.busySignal = (_busySignal2 || _busySignal()).default;
+exports.deactivateAllPackages = (_packageUtils2 || _packageUtils()).deactivateAllPackages;
+exports.fileTreeHasFinishedLoading = (_fileTree2 || _fileTree()).fileTreeHasFinishedLoading;
+exports.getVisibleEntryFromFileTree = (_fileTree2 || _fileTree()).getVisibleEntryFromFileTree;
+exports.pollFor = (_pollFor2 || _pollFor()).default;
+exports.startNuclideServer = (_remoteUtils2 || _remoteUtils()).startNuclideServer;
+exports.stopNuclideServer = (_remoteUtils2 || _remoteUtils()).stopNuclideServer;

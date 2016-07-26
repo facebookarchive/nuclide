@@ -1,5 +1,57 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+/**
+ * Activates all nuclide and fb atom packages that do not defer their own activation until a
+ * certain command or hook is executed.
+ *
+ * @returns A promise that resolves to an array of strings, which are the names of all the packages
+ *   that this function activates.
+ */
+
+var activateAllPackages = _asyncToGenerator(function* () {
+  // These are packages we want to activate, including some which come bundled with atom,
+  // or ones widely used in conjunction with nuclide.
+  var whitelist = ['autocomplete-plus', 'hyperclick', 'status-bar', 'tool-bar'];
+
+  // Manually call `triggerDeferredActivationHooks` since Atom doesn't call it via
+  // `atom.packages.activate()` during tests. Calling this before we activate
+  // Nuclide packages sets `deferredActivationHooks` to `null`, so that deferred
+  // activation hooks are triggered as needed instead of batched.
+  // https://github.com/atom/atom/blob/v1.8.0/src/package-manager.coffee#L467-L472
+  atom.packages.triggerDeferredActivationHooks();
+
+  var packageNames = atom.packages.getAvailablePackageNames().filter(function (name) {
+    var pack = atom.packages.loadPackage(name);
+    if (pack == null) {
+      return false;
+    }
+    var isActivationDeferred = pack.hasActivationCommands() || pack.hasActivationHooks();
+    var isLanguagePackage = name.startsWith('language-');
+    var inWhitelist = whitelist.indexOf(name) >= 0;
+    return (isLanguagePackage || inWhitelist) && !isActivationDeferred;
+  });
+
+  // Include the path to the nuclide package.
+  packageNames.push((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.dirname(require.resolve('../../../package.json')));
+  // Include the path to the tool-bar package
+  packageNames.push((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(String(process.env.ATOM_HOME), 'packages/tool-bar'));
+
+  yield Promise.all(packageNames.map(function (pack) {
+    return atom.packages.activatePackage(pack);
+  }));
+  return atom.packages.getActivePackages().map(function (pack) {
+    return pack.name;
+  });
+});
+
+exports.activateAllPackages = activateAllPackages;
+exports.deactivateAllPackages = deactivateAllPackages;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,64 +61,26 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {getMountedReactRootNames} from '../../commons-atom/testHelpers';
+var _commonsNodeNuclideUri2;
 
-/**
- * Activates all nuclide and fb atom packages that do not defer their own activation until a
- * certain command or hook is executed.
- *
- * @returns A promise that resolves to an array of strings, which are the names of all the packages
- *   that this function activates.
- */
-export async function activateAllPackages(): Promise<Array<string>> {
-  // These are packages we want to activate, including some which come bundled with atom,
-  // or ones widely used in conjunction with nuclide.
-  const whitelist = [
-    'autocomplete-plus',
-    'hyperclick',
-    'status-bar',
-    'tool-bar',
-  ];
-
-  // Manually call `triggerDeferredActivationHooks` since Atom doesn't call it via
-  // `atom.packages.activate()` during tests. Calling this before we activate
-  // Nuclide packages sets `deferredActivationHooks` to `null`, so that deferred
-  // activation hooks are triggered as needed instead of batched.
-  // https://github.com/atom/atom/blob/v1.8.0/src/package-manager.coffee#L467-L472
-  atom.packages.triggerDeferredActivationHooks();
-
-  const packageNames = atom.packages.getAvailablePackageNames().filter(name => {
-    const pack = atom.packages.loadPackage(name);
-    if (pack == null) {
-      return false;
-    }
-    const isActivationDeferred = pack.hasActivationCommands() || pack.hasActivationHooks();
-    const isLanguagePackage = name.startsWith('language-');
-    const inWhitelist = whitelist.indexOf(name) >= 0;
-    return (isLanguagePackage || inWhitelist) && !isActivationDeferred;
-  });
-
-  // Include the path to the nuclide package.
-  packageNames.push(nuclideUri.dirname(require.resolve('../../../package.json')));
-  // Include the path to the tool-bar package
-  packageNames.push(nuclideUri.join(String(process.env.ATOM_HOME), 'packages/tool-bar'));
-
-  await Promise.all(packageNames.map(pack => atom.packages.activatePackage(pack)));
-  return atom.packages.getActivePackages().map(pack => pack.name);
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
 }
 
-export function deactivateAllPackages(): void {
+var _commonsAtomTestHelpers2;
+
+function _commonsAtomTestHelpers() {
+  return _commonsAtomTestHelpers2 = require('../../commons-atom/testHelpers');
+}
+
+function deactivateAllPackages() {
   atom.packages.deactivatePackages();
   atom.packages.unloadPackages();
 
-  const mountedReactRootNames = getMountedReactRootNames();
-  mountedReactRootNames.forEach(rootDisplayName => {
+  var mountedReactRootNames = (0, (_commonsAtomTestHelpers2 || _commonsAtomTestHelpers()).getMountedReactRootNames)();
+  mountedReactRootNames.forEach(function (rootDisplayName) {
     // eslint-disable-next-line no-console
-    console.error(
-      'Found a mounted React component. ' +
-      `Did you forget to call React.unmountComponentAtNode on "${rootDisplayName}"?`,
-    );
+    console.error('Found a mounted React component. ' + ('Did you forget to call React.unmountComponentAtNode on "' + rootDisplayName + '"?'));
   });
 
   expect(mountedReactRootNames.length).toBe(0);
