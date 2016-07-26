@@ -14,10 +14,6 @@ import {React} from 'react-for-atom';
 /**
  * This view is rendered when no context providers are registered.
  */
-export class NoProvidersView extends React.Component {
-  render(): React.Element<any> {
-    return (
-        <div>No providers registered!</div>
-    );
-  }
-}
+export const NoProvidersView = () => {
+  return <div>No providers registered!</div>;
+};

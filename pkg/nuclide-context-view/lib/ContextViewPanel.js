@@ -13,42 +13,38 @@ import {React} from 'react-for-atom';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 import {Button} from '../../nuclide-ui/lib/Button';
 
+type Props = {
+  initialWidth: number,
+  onHide: () => void,
+  onResize: (newWidth: number) => void,
+  children?: React.Element<any>,
+};
+
 /**
  * The Atom panel containing context provider views. This is the sidebar that
  * is rendered in the atom workspace.
  */
-export class ContextViewPanel extends React.Component {
-  static propTypes = {
-    initialWidth: React.PropTypes.number.isRequired,
-    onResize: React.PropTypes.func.isRequired, // Should be (newWidth: number) => void
-    children: React.PropTypes.oneOfType([
-      React.PropTypes.arrayOf(React.PropTypes.node),
-      React.PropTypes.node,
-    ]),
-    onHide: React.PropTypes.func,
-  };
-
-  render(): ?React.Element<any> {
-    return (
-      <PanelComponent
-      dock="right"
-      initialLength={this.props.initialWidth}
-      noScroll
-      onResize={this.props.onResize}>
-        <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-          <Header onHide={this.props.onHide} />
-          <div className="nuclide-context-view-content">
-            <p>
-              Place your cursor over a function, class, variable, or method in
-              <code>www</code> to see more information about it.
-            </p>
-            {this.props.children}
-          </div>
+export const ContextViewPanel = (props: Props) => {
+  return (
+    <PanelComponent
+    dock="right"
+    initialLength={props.initialWidth}
+    noScroll
+    onResize={props.onResize}>
+      <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
+        <Header onHide={props.onHide} />
+        <div className="nuclide-context-view-content">
+          <p>
+            Place your cursor over a function, class, variable, or method in
+            <code>www</code> to see more information about it.
+          </p>
+          {props.children}
         </div>
-      </PanelComponent>
-    );
-  }
-}
+      </div>
+    </PanelComponent>
+  );
+};
+
 
 type HeaderProps = {
   onHide: () => void,
