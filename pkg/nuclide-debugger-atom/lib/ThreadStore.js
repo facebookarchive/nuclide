@@ -21,8 +21,8 @@ import type {
 import {
   Disposable,
   CompositeDisposable,
+  Emitter,
 } from 'atom';
-import {EventEmitter} from 'events';
 import nuclideUri from '../../commons-node/nuclideUri';
 import Constants from './Constants';
 import passesGK from '../../commons-node/passesGK';
@@ -33,7 +33,7 @@ const GK_TIMEOUT = 5000;
 export default class ThreadStore {
   _disposables: IDisposable;
   _datatipService: ?DatatipService;
-  _eventEmitter: EventEmitter;
+  _emitter: Emitter;
   _threadMap: Map<number, ThreadItem>;
   _owningProcessId: number;
   _selectedThreadId: number;
@@ -48,7 +48,7 @@ export default class ThreadStore {
       }),
     );
     this._datatipService = null;
-    this._eventEmitter = new EventEmitter();
+    this._emitter = new Emitter();
     this._threadMap = new Map();
     this._owningProcessId = 0;
     this._selectedThreadId = 0;
@@ -66,6 +66,7 @@ export default class ThreadStore {
         break;
       case Constants.Actions.UPDATE_THREADS:
         this._updateThreads(payload.data.threadData);
+        this._emitter.emit('change');
         break;
       case Constants.Actions.NOTIFY_THREAD_SWITCH:
         this._notifyThreadSwitch(payload.data.sourceURL, payload.data.lineNumber,
@@ -126,6 +127,14 @@ export default class ThreadStore {
         );
       });
     }
+  }
+
+  getThreadList(): Array<ThreadItem> {
+    return Array.from(this._threadMap.values());
+  }
+
+  onChange(callback: () => void): IDisposable {
+    return this._emitter.on('change', callback);
   }
 
   dispose(): void {

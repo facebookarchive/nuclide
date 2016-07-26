@@ -18,6 +18,7 @@ import type {
   Callstack,
   DebuggerModeType,
   FileLineBreakpoints,
+  ThreadItem,
 } from './types';
 
 import {CompositeDisposable} from 'atom';
@@ -63,6 +64,7 @@ export class NewDebuggerView extends React.Component {
     callstack: ?Callstack,
     breakpoints: ?FileLineBreakpoints,
     showThreadsWindow: boolean,
+    threadList: Array<ThreadItem>,
   };
   _watchExpressionComponentWrapped: ReactClass<any>;
   _localsComponentWrapped: ReactClass<any>;
@@ -93,6 +95,7 @@ export class NewDebuggerView extends React.Component {
       breakpoints: storeBreakpointsToViewBreakpoints(
         props.model.getBreakpointStore().getAllBreakpoints(),
       ),
+      threadList: props.model.getThreadStore().getThreadList(),
     };
   }
 
@@ -121,6 +124,14 @@ export class NewDebuggerView extends React.Component {
       breakpointStore.onChange(() => {
         this.setState({
           breakpoints: storeBreakpointsToViewBreakpoints(breakpointStore.getAllBreakpoints()),
+        });
+      }),
+    );
+    const threadStore = this.props.model.getThreadStore();
+    this._disposables.add(
+      threadStore.onChange(() => {
+        this.setState({
+          threadList: threadStore.getThreadList(),
         });
       }),
     );
