@@ -95,6 +95,7 @@ export class ConnectionMultiplexer {
   _breakpointStore: BreakpointStore;
   _connectionStatusEmitter: EventEmitter;
   _status: string;
+  _previousConnection: ?Connection;
   _enabledConnection: ?Connection;
   _dummyConnection: ?Connection;
   _connections: Map<Connection, ConnectionInfo>;
@@ -103,11 +104,13 @@ export class ConnectionMultiplexer {
   _dummyRequestProcess: ?child_process$ChildProcess;
   _launchedScriptProcess: ?child_process$ChildProcess;
   _launchedScriptProcessPromise: ?Promise<void>;
+  _requestSwitchMessage: ?string;
 
   constructor(clientCallback: ClientCallback) {
     this._clientCallback = clientCallback;
     this._status = STATUS_STARTING;
     this._connectionStatusEmitter = new EventEmitter();
+    this._previousConnection = null;
     this._enabledConnection = null;
     this._dummyConnection = null;
     this._connections = new Map();
@@ -117,6 +120,7 @@ export class ConnectionMultiplexer {
     this._breakpointStore = new BreakpointStore();
     this._launchedScriptProcess = null;
     this._launchedScriptProcessPromise = null;
+    this._requestSwitchMessage = null;
   }
 
   onStatus(callback: (status: string) => mixed): IDisposable {
@@ -325,6 +329,7 @@ export class ConnectionMultiplexer {
   _enableConnection(connection: Connection): void {
     logger.log('Mux enabling connection');
     this._enabledConnection = connection;
+    this._handlePotentialRequestSwitch(connection);
     this._setStatus(STATUS_BREAK);
   }
 
@@ -333,6 +338,15 @@ export class ConnectionMultiplexer {
       this._status = status;
       this._emitStatus(status);
     }
+  }
+
+  _handlePotentialRequestSwitch(connection: Connection): void {
+    if (this._previousConnection != null && connection !== this._previousConnection) {
+      // The enabled connection is different than it was last time the debugger paused
+      // so we know that the active request has switched so we should alert the user.
+      this._requestSwitchMessage = 'Active request switched';
+    }
+    this._previousConnection = connection;
   }
 
   _handleAttachError(error: string): void {
@@ -526,6 +540,14 @@ export class ConnectionMultiplexer {
     if (!setFeatureSucceeded) {
       logger.logError('HHVM returned failure for setting feature show_hidden');
     }
+  }
+
+  getRequestSwitchMessage(): ?string {
+    return this._requestSwitchMessage;
+  }
+
+  resetRequestSwitchMessage(): void {
+    this._requestSwitchMessage = null;
   }
 
   dispose(): void {

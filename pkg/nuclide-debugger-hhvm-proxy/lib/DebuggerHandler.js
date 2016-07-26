@@ -236,13 +236,23 @@ export class DebuggerHandler extends Handler {
 
   // May only call when in paused state.
   async _sendPausedMessage(): Promise<any> {
+    const requestSwitchMessage = this._connectionMultiplexer.getRequestSwitchMessage();
+    this._connectionMultiplexer.resetRequestSwitchMessage();
+    if (requestSwitchMessage != null) {
+      this.sendUserMessage('outputWindow', {
+        level: 'info',
+        text: requestSwitchMessage,
+      });
+    }
     this.sendMethod(
       'Debugger.paused',
       {
         callFrames: await this._getStackFrames(),
         reason: 'breakpoint', // TODO: better reason?
+        threadSwitchMessage: requestSwitchMessage,
         data: {},
-      });
+      },
+    );
   }
 
   _sendFakeLoaderBreakpoint(): void {

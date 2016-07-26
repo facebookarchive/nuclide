@@ -57,6 +57,8 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
         'sendContinuationCommand',
         'sendBreakCommand',
         'getScopesForFrame',
+        'getRequestSwitchMessage',
+        'resetRequestSwitchMessage',
       ]): any
     ): ConnectionMultiplexerType);
     onStatusSubscription = jasmine.createSpyObj('onStatusSubscription', ['dispose']);
