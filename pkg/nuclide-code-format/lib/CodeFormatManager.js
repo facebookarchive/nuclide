@@ -47,7 +47,9 @@ class CodeFormatManager {
         try {
           const didFormat = await this._formatCodeInTextEditor(editor, false);
           if (didFormat) {
-            editor.save();
+            // TextEditor.save is synchronous for local files, but our custom
+            // NuclideTextBuffer.saveAs implementation is asynchronous.
+            await editor.save();
           }
         } finally {
           this._pendingFormats.delete(editor);
