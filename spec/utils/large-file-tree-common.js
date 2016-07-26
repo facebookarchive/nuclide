@@ -40,9 +40,9 @@ export function runTest(context: TestContext): void {
 
       await fileTreeHasFinishedLoading();
 
-      await testADir('dir_100_files', 'file_100_0.txt', 500); // 500ms for 100 files
-      await testADir('dir_1000_files', 'file_1000_0.txt', 1500); // 1.5 sec for 1000 files
-      await testADir('dir_10000_files', 'file_10000_0.txt', 5000); // 5 sec for 10000 files
+      await testADir('dir_100_files', 'file_100_0.txt', 1000); // 1s for 100 files
+      await testADir('dir_1000_files', 'file_1000_0.txt', 5000); // 5 sec for 1000 files
+      await testADir('dir_10000_files', 'file_10000_0.txt', 15000); // 15 sec for 10000 files
 
       const filePath = context.getProjectRelativePath(
         nuclideUri.join('dir_1000_files', 'file_1000_0.txt'),

@@ -18,7 +18,11 @@ from datetime import datetime
 import utils
 
 MAX_RUN_TIME_IN_SECONDS = 120
-MAX_WORKERS = max(1, multiprocessing.cpu_count() - 1)
+UNIT_TEST_WORKERS = max(1, multiprocessing.cpu_count() - 1)
+INTEGRATION_TEST_WORKERS = 2
+# Make sure there's enough ports for the number of workers.
+OPEN_PORTS = [9090, 9091]
+
 
 class JsTestRunner(object):
     def __init__(
@@ -48,22 +52,32 @@ class JsTestRunner(object):
             if f.endswith('-spec.js')
         ]
 
-        logging.info('Running %s integration tests...', len(spec_files))
+        if self._parallel:
+            logging.info('Running %s integration tests across %d workers...',
+                         len(spec_files), INTEGRATION_TEST_WORKERS)
+        else:
+            logging.info('Running %s integration tests...', len(spec_files))
         start = datetime.now()
 
-        # Integration tests only run serially:
+        test_arg_list = []
         for spec_file in spec_files:
-            run_test(
+            test_arg_list.append((
                 ['atom', '--dev', '--test', '--v=-3', spec_file],
                 nuclide_dir,
                 os.path.basename(spec_file),
-                retryable=True,
-                continue_on_errors=self._continue_on_errors
-            )
+                True,  # retryable
+                self._continue_on_errors,
+                True,  # is_integration_test
+            ))
+
+        if self._parallel:
+            run_parallel_tests(test_arg_list, INTEGRATION_TEST_WORKERS)
+        else:
+            for test_args in test_arg_list:
+                run_test(*test_args)
 
         end = datetime.now()
         logging.info('Finished integration tests (%s seconds)', (end - start).seconds)
-
 
     def run_unit_tests(self):
         for package_name in self._packages_to_test:
@@ -114,19 +128,9 @@ class JsTestRunner(object):
         if len(parallel_tests):
             logging.info('Running %s tests in parallel across %s workers...',
                          len(parallel_tests),
-                         MAX_WORKERS)
+                         UNIT_TEST_WORKERS)
             start = datetime.now()
-            pool = multiprocessing.Pool(processes=MAX_WORKERS)
-            results = [
-                pool.apply_async(
-                    run_test,
-                    args=test_args,
-                ) for test_args in parallel_tests
-            ]
-            for async_result in results:
-                async_result.wait(MAX_RUN_TIME_IN_SECONDS)
-                if not async_result.successful():
-                    raise async_result.get()
+            run_parallel_tests(parallel_tests, UNIT_TEST_WORKERS)
             end = datetime.now()
             logging.info('Finished parallel tests (%s seconds)', (end - start).seconds)
 
@@ -151,16 +155,42 @@ class JsTestRunner(object):
         logging.info('Finished `%s` (%s seconds)', ' '.join(install_cmd), (end - start).seconds)
 
 
+def run_parallel_tests(test_arg_list, num_workers):
+    pool = multiprocessing.Pool(processes=num_workers)
+    results = [
+        pool.apply_async(
+            run_test,
+            args=test_args,
+        ) for test_args in test_arg_list
+    ]
+    for async_result in results:
+        async_result.wait(MAX_RUN_TIME_IN_SECONDS)
+        if not async_result.successful():
+            raise async_result.get()
+
+
 def run_test(
         test_cmd,
         pkg_path,
         name,
         retryable,
         continue_on_errors,
+        is_integration_test=False,
 ):
     """Run test_cmd in the given pkg_path."""
     logging.info('Running `%s` in %s...', ' '.join(test_cmd), pkg_path)
     start = datetime.now()
+
+    env = None
+    # If we're running integration tests in parallel, assign a unique NUCLIDE_SERVER_PORT.
+    if is_integration_test:
+        process_identity = multiprocessing.current_process()._identity
+        if len(process_identity) > 0:
+            # process_id is numbered starting from 1.
+            process_id = process_identity[0] - 1
+            if process_id < len(OPEN_PORTS):
+                env = os.environ.copy()
+                env['TEST_NUCLIDE_SERVER_PORT'] = str(OPEN_PORTS[process_id])
 
     proc = subprocess.Popen(
         test_cmd,
@@ -168,13 +198,16 @@ def run_test(
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         preexec_fn=os.setsid,
-        shell=False)
+        shell=False,
+        env=env)
+    # Record the pgid now - sometimes the process exits but not its children.
+    proc_pgid = os.getpgid(proc.pid)
     stdout = []
 
     def kill_proc():
         logging.info('KILLING TEST: %s', name)
         # Kill the group so child processes are also cleaned up.
-        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        os.killpg(proc_pgid, signal.SIGKILL)
     timer = threading.Timer(MAX_RUN_TIME_IN_SECONDS, kill_proc)
 
     try:
