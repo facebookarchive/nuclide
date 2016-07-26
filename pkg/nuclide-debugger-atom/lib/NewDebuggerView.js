@@ -32,6 +32,7 @@ import {LocalsComponent} from './LocalsComponent';
 import {BreakpointListComponent} from './BreakpointListComponent';
 import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
 import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
+import {DebuggerThreadsComponent} from './DebuggerThreadsComponent';
 
 type Props = {
   model: DebuggerModel,
@@ -150,7 +151,7 @@ export class NewDebuggerView extends React.Component {
     const LocalsComponentWrapped = this._localsComponentWrapped;
     const threadsSection = this.state.showThreadsWindow
       ? <Section collapsable={true} headline="Threads">
-          TODO: show threads.
+          <DebuggerThreadsComponent threadList={this.state.threadList} />
         </Section>
       : null;
     return (
