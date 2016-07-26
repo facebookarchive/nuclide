@@ -134,6 +134,10 @@ export default class ThreadStore {
     return Array.from(this._threadMap.values());
   }
 
+  getSelectedThreadId(): number {
+    return this._selectedThreadId;
+  }
+
   onChange(callback: () => void): IDisposable {
     return this._emitter.on('change', callback);
   }

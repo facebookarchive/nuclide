@@ -66,6 +66,7 @@ export class NewDebuggerView extends React.Component {
     breakpoints: ?FileLineBreakpoints,
     showThreadsWindow: boolean,
     threadList: Array<ThreadItem>,
+    selectedThreadId: number,
   };
   _watchExpressionComponentWrapped: ReactClass<any>;
   _localsComponentWrapped: ReactClass<any>;
@@ -87,6 +88,7 @@ export class NewDebuggerView extends React.Component {
     );
     this._disposables = new CompositeDisposable();
     const debuggerStore = props.model.getStore();
+    const threadStore = props.model.getThreadStore();
     this.state = {
       debuggerMode: debuggerStore.getDebuggerMode(),
       togglePauseOnException: debuggerStore.getTogglePauseOnException(),
@@ -96,7 +98,8 @@ export class NewDebuggerView extends React.Component {
       breakpoints: storeBreakpointsToViewBreakpoints(
         props.model.getBreakpointStore().getAllBreakpoints(),
       ),
-      threadList: props.model.getThreadStore().getThreadList(),
+      threadList: threadStore.getThreadList(),
+      selectedThreadId: threadStore.getSelectedThreadId(),
     };
   }
 
@@ -133,6 +136,7 @@ export class NewDebuggerView extends React.Component {
       threadStore.onChange(() => {
         this.setState({
           threadList: threadStore.getThreadList(),
+          selectedThreadId: threadStore.getSelectedThreadId(),
         });
       }),
     );
@@ -151,7 +155,12 @@ export class NewDebuggerView extends React.Component {
     const LocalsComponentWrapped = this._localsComponentWrapped;
     const threadsSection = this.state.showThreadsWindow
       ? <Section collapsable={true} headline="Threads">
-          <DebuggerThreadsComponent threadList={this.state.threadList} />
+          <div className="nuclide-debugger-atom-section-content">
+            <DebuggerThreadsComponent
+              threadList={this.state.threadList}
+              selectedThreadId={this.state.selectedThreadId}
+            />
+          </div>
         </Section>
       : null;
     return (

@@ -166,3 +166,64 @@ Use flexbox cross-axis stretch to fill the vertical space.
 .nuclide-debugger-atom-exception-fragment {
   margin: 5px 0 0 0.5em;
 }
+
+/* Thread list */
+
+.nuclide-debugger-atom-thread-list-table {
+  border-collapse: separate;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.nuclide-debugger-atom-thread-list-table-row-odd {
+  background-color: @background-color-highlight;
+}
+
+.nuclide-debugger-atom-thread-list-table > thead {
+  font-weight: bold;
+}
+
+.nuclide-debugger-atom-thread-list-item {
+  cursor: pointer;
+}
+
+.nuclide-debugger-atom-thread-list-item:hover {
+  color: @text-color-highlight;
+}
+
+.nuclide-debugger-atom-thread-list-item-selected {
+  color: @text-color-highlight;
+  font-weight: bold;
+}
+
+.nuclide-debugger-atom-thread-list-item-current-indicator {
+  padding: 0.4em 4px;
+  width: 5%;
+}
+
+.nuclide-debugger-atom-thread-list-item-id {
+  width: 15%;
+}
+
+.nuclide-debugger-atom-thread-list-item-address {
+  width: 55%;
+  font-family: Menlo, Monaco, Consolas, monospace;
+}
+
+.nuclide-debugger-atom-thread-list-item-stop-reason {
+  width: 25%;
+}
+
+.nuclide-debugger-atom-thread-list-item-id,
+.nuclide-debugger-atom-thread-list-item-address,
+.nuclide-debugger-atom-thread-list-item-stop-reason {
+  overflow: hidden;
+  margin-left: 4px;
+  text-overflow: ellipsis;
+  padding: 0.4em 0;
+}
+
+.nuclide-debugger-atom-thread-list-header {
+  background-color: transparent;
+  font-weight: bold;
+}

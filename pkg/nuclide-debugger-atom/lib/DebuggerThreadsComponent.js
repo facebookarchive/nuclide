@@ -9,48 +9,73 @@
  * the root directory of this source tree.
  */
 
+import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import type {ThreadItem} from './types';
 
-import {Listview} from '../../nuclide-ui/lib/ListView';
+import {Icon} from '../../nuclide-ui/lib/Icon';
 
 type DebuggerThreadsComponentProps = {
   threadList: Array<ThreadItem>,
+  selectedThreadId: number,
 };
 
 export class DebuggerThreadsComponent extends React.Component {
   props: DebuggerThreadsComponentProps;
 
   render(): ?React.Element<any> {
-    const {threadList} = this.props;
+    const {
+      threadList,
+      selectedThreadId,
+    } = this.props;
     const renderedThreadList = threadList == null || threadList.length === 0
       ? '(threads unavailable)'
       : threadList.map((threadItem, i) => {
         const {
           id,
-          name,
           address,
-          location,
           stopReason,
-          description,
         } = threadItem;
-        // TODO polish this up much more nicely.
+        const isSelected = id === selectedThreadId;
         return (
-          <div key={i}>
-            <div>{id}</div>
-            <div>{name}</div>
-            <div>{address}</div>
-            <div>{JSON.stringify(location)}</div>
-            <div>{stopReason}</div>
-            <div>{description}</div>
-          </div>
+          <tr
+            className={classnames(
+              'nuclide-debugger-atom-thread-list-item',
+              {
+                'nuclide-debugger-atom-thread-list-item-selected': isSelected,
+                'nuclide-debugger-atom-thread-list-table-row-odd': i % 2 === 1,
+              },
+            )}
+            key={i}>
+            <td className="nuclide-debugger-atom-thread-list-item-current-indicator">
+              {isSelected ? <Icon icon="arrow-right" title="Selected Thread" /> : null}
+            </td>
+            <td className="nuclide-debugger-atom-thread-list-item-id" title={id}>{id}</td>
+            <td className="nuclide-debugger-atom-thread-list-item-address" title={address}>
+              {address}
+            </td>
+            <td className="nuclide-debugger-atom-thread-list-item-stop-reason" title={stopReason}>
+              {stopReason}
+            </td>
+          </tr>
         );
       });
     return (
-      <Listview
-        alternateBackground={true}>
-        {renderedThreadList}
-      </Listview>
+      <div>
+        <table className="nuclide-debugger-atom-thread-list-table">
+          <thead>
+            <tr className="nuclide-debugger-atom-thread-list-item">
+              <td className="nuclide-debugger-atom-thread-list-item-current-indicator"> </td>
+              <td className="nuclide-debugger-atom-thread-list-item-id">ID</td>
+              <td className="nuclide-debugger-atom-thread-list-item-address">Address</td>
+              <td className="nuclide-debugger-atom-thread-list-item-stop-reason">Stop Reason</td>
+            </tr>
+          </thead>
+          <tbody>
+            {renderedThreadList}
+          </tbody>
+        </table>
+      </div>
     );
   }
   }
