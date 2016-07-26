@@ -76,7 +76,6 @@ export class NuxView {
     if (selectorFunction != null) {
       this._selector = selectorFunction;
     } else if (selectorString != null) {
-      // $FlowIgnore - selectorString complains even with the explicit check above.
       this._selector = () => document.querySelector(selectorString);
     } else {
       throw new Error('Either the selector or selectorFunction must be non-null!');
