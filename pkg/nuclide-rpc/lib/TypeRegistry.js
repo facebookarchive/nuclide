@@ -305,13 +305,15 @@ export class TypeRegistry {
     // Since string, number, and boolean are JSON primitives,
     // they require no marshalling. Instead, simply create wrapped transformers
     // that assert the type of their argument.
-    const stringTransformer = arg => {
+    const stringTransformer = arg_ => {
+      let arg = arg_;
       // Unbox argument.
       arg = (arg instanceof String) ? arg.valueOf() : arg;
       assert(typeof arg === 'string', 'Expected a string argument');
       return arg;
     };
-    const numberMarshaller = arg => {
+    const numberMarshaller = arg_ => {
+      let arg = arg_;
       // Unbox argument.
       if (arg instanceof Number) {
         arg = arg.valueOf();
@@ -328,7 +330,8 @@ export class TypeRegistry {
       }
       return arg;
     };
-    const numberUnmarshaller = arg => {
+    const numberUnmarshaller = arg_ => {
+      let arg = arg_;
       if (typeof arg === 'string') {
         switch (arg) {
           case 'NEGATIVE_INFINITY':
@@ -350,7 +353,8 @@ export class TypeRegistry {
       assert(typeof arg === 'number', 'Expected a number argument');
       return arg;
     };
-    const booleanTransformer = arg => {
+    const booleanTransformer = arg_ => {
+      let arg = arg_;
       // Unbox argument
       if (arg instanceof Boolean) {
         arg = arg.valueOf();
@@ -448,7 +452,8 @@ export class TypeRegistry {
     this.registerType(dateType.name, builtinLocation, date => {
       assert(date instanceof Date, 'Expected date argument.');
       return date.toJSON();
-    }, dateStr => {
+    }, dateStr_ => {
+      let dateStr = dateStr_;
       // Unbox argument.
       dateStr = (dateStr instanceof String) ? dateStr.valueOf() : dateStr;
 
@@ -460,7 +465,8 @@ export class TypeRegistry {
     this.registerType(regExpType.name, builtinLocation, regexp => {
       assert(regexp instanceof RegExp, 'Expected a RegExp object as an argument');
       return regexp.toString();
-    }, regStr => {
+    }, regStr_ => {
+      let regStr = regStr_;
       // Unbox argument.
       regStr = (regStr instanceof String) ? regStr.valueOf() : regStr;
 
@@ -472,7 +478,8 @@ export class TypeRegistry {
     this.registerType(bufferType.name, builtinLocation, buffer => {
       assert(buffer instanceof Buffer, 'Expected a buffer argument.');
       return buffer.toString('base64');
-    }, base64string => {
+    }, base64string_ => {
+      let base64string = base64string_;
       // Unbox argument.
       base64string = (base64string instanceof String) ? base64string.valueOf() : base64string;
 

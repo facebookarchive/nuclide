@@ -200,7 +200,8 @@ export class FlowProcess {
   }
 
   /** Execute Flow with the given arguments */
-  async _rawExecFlow(args: Array<any>, options?: Object = {}): Promise<?AsyncExecuteReturn> {
+  async _rawExecFlow(args_: Array<any>, options?: Object = {}): Promise<?AsyncExecuteReturn> {
+    let args = args_;
     args = [
       ...args,
       '--retry-if-init', 'false',
@@ -323,11 +324,13 @@ export class FlowProcess {
    * execFlow.
    */
   static async execFlowClient(
-    args: Array<any>,
+    args_: Array<any>,
     root: string | null,
     execInfoContainer: FlowExecInfoContainer,
-    options?: Object = {},
+    options_?: Object = {},
   ): Promise<?AsyncExecuteReturn> {
+    let args = args_;
+    let options = options_;
     args = [
       ...args,
       '--from', 'nuclide',

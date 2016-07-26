@@ -16,7 +16,8 @@ import featureConfig from '../../commons-atom/featureConfig';
 import {track} from '../../nuclide-analytics';
 import {updateCursor} from '../../nuclide-update-cursor';
 
-async function formatCode(options: SourceOptions, editor: ?TextEditor): Promise<void> {
+async function formatCode(options: SourceOptions, editor_: ?TextEditor): Promise<void> {
+  let editor = editor_;
   editor = editor || atom.workspace.getActiveTextEditor();
   if (!editor) {
     logger.info('- format-js: No active text editor');

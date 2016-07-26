@@ -148,7 +148,8 @@ class Activation {
 
 }
 
-function deserializeAppState(rawState: ?Object): AppState {
+function deserializeAppState(rawState_: ?Object): AppState {
+  let rawState = rawState_;
   rawState = rawState || {};
   return {
     executors: new Map(),

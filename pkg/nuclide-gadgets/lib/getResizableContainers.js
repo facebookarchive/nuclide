@@ -18,8 +18,9 @@ const getParent = pane => pane.getParent && pane.getParent();
  * Walk up the tree finding all resizable descendants.
  */
 export default function *getResizableContainers(
-  container: PaneItemContainer,
+  container_: PaneItemContainer,
 ): Iterable<PaneItemContainer> {
+  let container = container_;
   while (container) {
     if (isResizable(container)) {
       yield container;

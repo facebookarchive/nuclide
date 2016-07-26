@@ -118,7 +118,8 @@ function tryRecordActivationState(): void {
   }
 }
 
-export function activate(state: ?Object): void {
+export function activate(state_: ?Object): void {
+  let state = state_;
   if (subscriptions) {
     return;
   }

@@ -130,9 +130,10 @@ function accumulateRepositoryState(
 }
 
 function accumulateRepositoryStateUpdateBookmarks(
-  repositoryState: ?BookShelfRepositoryState,
+  repositoryState_: ?BookShelfRepositoryState,
   action: UpdateRepositoryBookmarksAction,
 ): BookShelfRepositoryState {
+  let repositoryState = repositoryState_;
 
   repositoryState = repositoryState || getEmptyRepositoryState();
   const {bookmarkNames, activeShortHead} = action.payload;

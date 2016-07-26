@@ -278,10 +278,11 @@ export class Deferred<T> {
  * @return Promise that resolves to an asynchronously derived value or null.
  */
 export function asyncFind<T, U>(
-  items: Array<T>,
+  items_: Array<T>,
   test: (t: T) => ?Promise<U>,
   thisArg?: mixed,
 ): Promise<?U> {
+  let items = items_;
   return new Promise((resolve, reject) => {
     // Create a local copy of items to defend against the caller modifying the
     // array before this Promise is resolved.

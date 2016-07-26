@@ -10,15 +10,16 @@
  */
 
 export default function once<T>(fn: () => T): () => T {
-  let ret;
+  let fnMaybe: ?(() => T) = fn;
+  let ret: ?T;
   return function(): T {
     // The type gymnastics here are so `fn` can be
     // garbage collected once we've used it.
-    if (!fn) {
+    if (!fnMaybe) {
       return (ret: any);
     } else {
-      ret = fn.apply(this, arguments);
-      fn = (null: any);
+      ret = fnMaybe.apply(this, arguments);
+      fnMaybe = null;
       return ret;
     }
   };

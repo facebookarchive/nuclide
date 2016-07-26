@@ -18,7 +18,8 @@ import markers from '../constants/markers';
  * This resolves all markers. We are guaranteed to have a single remaining
  * string after this.
  */
-function resolveAll(lines: Array<any>, options: Options): Output {
+function resolveAll(lines_: Array<any>, options: Options): Output {
+  let lines = lines_;
   // Resolve everything except for indents and cursor. Note that this expects
   // indentation to already have been taken into account when breaking, just not
   // resolved yet.
@@ -82,7 +83,8 @@ function resolveAll(lines: Array<any>, options: Options): Output {
  * Consistent way to clean up the final source before returning. This removes
  * trailing whitespace and extra new lines.
  */
-function clean(source: string): string {
+function clean(source_: string): string {
+  let source = source_;
   // Trim and add an extra new line
   source = source.trim() + '\n';
 

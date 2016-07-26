@@ -19,7 +19,8 @@ import unwrapMarkers from '../../utils/unwrapMarkers';
  * Adds parenthesis and the appropriate markers to a set of lines. It also moves
  * any leading and trailing markers outside of the parenthesis.
  */
-function wrapExpression(print: Print, node: any, lines: Lines): Lines {
+function wrapExpression(print: Print, node: any, lines_: Lines): Lines {
+  let lines = lines_;
   lines = flatten(lines);
   if (node.parenthesizedExpression) {
     lines = unwrapMarkers(

@@ -53,7 +53,8 @@ const uiProviders: Array<UIProvider> = [];
 let subscriptions: ?CompositeDisposable = null;
 let cwdApi: ?CwdApi = null;
 
-function formatDiffViewUrl(diffEntityOptions?: ?DiffEntityOptions): string {
+function formatDiffViewUrl(diffEntityOptions_?: ?DiffEntityOptions): string {
+  let diffEntityOptions = diffEntityOptions_;
   if (diffEntityOptions == null) {
     diffEntityOptions = {file: ''};
   }

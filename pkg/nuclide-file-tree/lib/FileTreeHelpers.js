@@ -57,7 +57,8 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
     }
 
     // $FlowIssue https://github.com/facebook/flow/issues/582
-    directory.getEntries((error, entries) => {
+    directory.getEntries((error, entries_) => {
+      let entries = entries_;
       // Resolve to an empty array if the directory deson't exist.
       // TODO: should we reject promise?
       if (error && error.code !== 'ENOENT') {

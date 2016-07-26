@@ -37,7 +37,9 @@ export function computeDiff(oldText: string, newText: string): TextDiff {
   };
 }
 
-function _computeDiffChunks(oldText: string, newText: string): DiffChunk {
+function _computeDiffChunks(oldText_: string, newText_: string): DiffChunk {
+  let oldText = oldText_;
+  let newText = newText_;
 
   const JsDiff = require('diff');
 

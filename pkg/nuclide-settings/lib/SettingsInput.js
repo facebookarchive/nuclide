@@ -45,7 +45,8 @@ export default class SettingsInput extends React.Component {
     this._ignoreInputCallback = false;
   }
 
-  _handleChange(newValue: string) {
+  _handleChange(newValue_: string) {
+    let newValue = newValue_;
     if (this._ignoreInputCallback) {
       return;
     }

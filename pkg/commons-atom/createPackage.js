@@ -75,10 +75,11 @@ export default function createPackage(Activation: Class<any>): Object {
 }
 
 function getPrototypeChain(prototype: Class<any>): Array<Class<any>> {
+  let currentPrototype = prototype;
   const prototypes = [];
-  while (prototype != null) {
-    prototypes.push(prototype);
-    prototype = Object.getPrototypeOf(prototype);
+  while (currentPrototype != null) {
+    prototypes.push(currentPrototype);
+    currentPrototype = Object.getPrototypeOf(currentPrototype);
   }
   return prototypes;
 }

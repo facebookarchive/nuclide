@@ -179,7 +179,8 @@ export class RemoteDirectory {
     return false;
   }
 
-  _isRoot(filePath: string): boolean {
+  _isRoot(filePath_: string): boolean {
+    let filePath = filePath_;
     filePath = nuclideUri.normalize(filePath);
     const parts = nuclideUri.parsePath(filePath);
     return parts.root === filePath;

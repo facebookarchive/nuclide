@@ -76,7 +76,8 @@ function trackEvents(events: Rx.Observable<TrackingEvent>): IDisposable {
  *    `$className.$methodName` for Class method or `Object.$methodName` for Object method.
  * @returns A decorator.
  */
-function trackTiming(eventName: ?string = null): any {
+function trackTiming(eventName_: ?string = null): any {
+  let eventName = eventName_;
 
   return (target: any, name: string, descriptor: any) => {
     const originalMethod = descriptor.value;

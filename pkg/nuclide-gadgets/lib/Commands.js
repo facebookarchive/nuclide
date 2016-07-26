@@ -143,7 +143,8 @@ export default class Commands {
     ContainerVisibility.hide(containerToHide);
   }
 
-  registerGadget(gadget: Gadget): void {
+  registerGadget(gadget_: Gadget): void {
+    let gadget = gadget_;
     // Wrap the gadget so it has Atom-specific stuff.
     gadget = wrapGadget(gadget);
 

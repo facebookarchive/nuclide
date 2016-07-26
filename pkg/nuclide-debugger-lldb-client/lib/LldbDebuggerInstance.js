@@ -67,7 +67,8 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     )));
   }
 
-  _handleServerMessage(message: string): void {
+  _handleServerMessage(message_: string): void {
+    let message = message_;
     log('Recieved server message: ' + message);
     const webSocket = this._chromeWebSocket;
     if (webSocket) {
@@ -145,7 +146,8 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     return this._emitter.on(SESSION_END_EVENT, callback);
   }
 
-  _translateMessageIfNeeded(message: string): string {
+  _translateMessageIfNeeded(message_: string): string {
+    let message = message_;
     // TODO: do we really need isRemote() checking?
     if (nuclideUri.isRemote(this.getTargetUri())) {
       message = translateMessageFromServer(

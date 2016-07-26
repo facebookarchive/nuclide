@@ -275,9 +275,10 @@ function updateAnalytics(): void {
 }
 
 function aggregate(
-  values: Array<number>,
+  values_: Array<number>,
   skipZeros: boolean = false,
 ): {avg: ?number, min: ?number, max: ?number} {
+  let values = values_;
   // Some values (like memory usage) might be very high & numerous, so avoid summing them all up.
   if (skipZeros) {
     values = values.filter(value => value !== 0);

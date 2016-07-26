@@ -263,8 +263,9 @@ export function getHackEnvironmentDetails(
  */
 export async function queryHack(
   rootDirectory: NuclideUri,
-  queryString: string,
+  queryString_: string,
 ): Promise<Array<HackSearchPosition>> {
+  let queryString = queryString_;
   let searchPostfix;
   switch (queryString[0]) {
     case '@':

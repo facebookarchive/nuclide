@@ -364,7 +364,8 @@ class FileTreeContextMenu {
     this._subscriptions.dispose();
   }
 
-  _addContextMenuItemGroup(menuItems: Array<MenuItemDefinition>, priority: number): void {
+  _addContextMenuItemGroup(menuItems: Array<MenuItemDefinition>, priority_: number): void {
+    let priority = priority_;
     // Atom is smart about only displaying a separator when there are items to
     // separate, so there will never be a dangling separator at the end.
     // $FlowFixMe: The conversion between MenuItemDefinition and atom$ContextMenuItem is a mess.

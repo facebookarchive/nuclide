@@ -62,11 +62,12 @@ describe('Hyperclick', () => {
   }
 
   function dispatch(
-      eventClass: typeof KeyboardEvent | typeof MouseEvent,
-      type: string,
-      position: atom$Point,
-      properties?: {clientX?: number, clientY?: number, metaKey?: boolean},
-    ): void {
+    eventClass: typeof KeyboardEvent | typeof MouseEvent,
+    type: string,
+    position: atom$Point,
+    properties_?: {clientX?: number, clientY?: number, metaKey?: boolean},
+  ): void {
+    let properties = properties_;
     const {clientX, clientY} = clientCoordinatesForScreenPosition(position);
     if (properties != null) {
       properties.clientX = clientX;

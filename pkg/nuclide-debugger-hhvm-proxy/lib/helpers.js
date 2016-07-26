@@ -39,7 +39,8 @@ export function makeDbgpMessage(message: string): string {
   return String(message.length) + '\x00' + message + '\x00';
 }
 
-export function makeMessage(obj: Object, body: ?string): string {
+export function makeMessage(obj: Object, body_: ?string): string {
+  let body = body_;
   body = body || '';
   let result = '<?xml version="1.0" encoding="iso-8859-1"?>' +
     '<response xmlns="urn:debugger_protocol_v1" xmlns:xdebug="http://xdebug.org/dbgp/xdebug"';

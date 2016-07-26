@@ -63,7 +63,8 @@ function expressionForRevisionsBefore(
   }
 }
 
-export function expressionForRevisionsBeforeHead(numberOfRevsBefore: number): string {
+export function expressionForRevisionsBeforeHead(numberOfRevsBefore_: number): string {
+  let numberOfRevsBefore = numberOfRevsBefore_;
   if (numberOfRevsBefore < 0) {
     numberOfRevsBefore = 0;
   }

@@ -32,7 +32,8 @@ export type OpenFileEditorInstance = {
  * the broken uri, in the sense that it's nuclide:/server/path/to/dir instead of
  * nuclide://server/path/to/dir because Atom called path.normalize() on the directory uri.
  */
-export function sanitizeNuclideUri(uri: string): string {
+export function sanitizeNuclideUri(uri_: string): string {
+  let uri = uri_;
   // Remove the leading absolute path prepended to the file paths
   // between atom reloads.
   const protocolIndex = uri.indexOf(NUCLIDE_PROTOCOL_PREFIX);

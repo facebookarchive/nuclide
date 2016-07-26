@@ -34,7 +34,8 @@ function getHgRepositoryForNode(node: FileTreeNode): ?HgRepositoryClient {
  * Determines whether renaming the given node to the specified destPath is an
  * acceptable rename.
  */
-function isValidRename(node: FileTreeNode, destPath: NuclideUri): boolean {
+function isValidRename(node: FileTreeNode, destPath_: NuclideUri): boolean {
+  let destPath = destPath_;
   const path = FileTreeHelpers.keyToPath(node.uri);
   const rootPath = FileTreeHelpers.keyToPath(node.rootUri);
 

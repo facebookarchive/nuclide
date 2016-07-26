@@ -21,7 +21,9 @@ function capitalize(word: string): string {
  * directly in case we every choose another sorting algorithm. Such as some
  * sort of natural compare algorithm.
  */
-function compareStrings(one: ?string, two: ?string): number {
+function compareStrings(one_: ?string, two_: ?string): number {
+  let one = one_;
+  let two = two_;
   one = (one || '').toLowerCase();
   two = (two || '').toLowerCase();
   return one.localeCompare(two);

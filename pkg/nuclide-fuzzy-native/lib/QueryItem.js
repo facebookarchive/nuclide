@@ -19,7 +19,8 @@ const NON_UPPERCASE_CHARS_REGEXP = /[^a-z0-9]/g;
  * no common subsequence.
  * A lower number means `needle` is more relevant to `haystack`.
  */
-function scoreCommonSubsequence(needle: string, haystack: string): number {
+function scoreCommonSubsequence(needle: string, haystack_: string): number {
+  let haystack = haystack_;
   haystack = haystack.toLowerCase();
   haystack = haystack.replace(NON_UPPERCASE_CHARS_REGEXP, '');
   if (needle.length === haystack.length) {

@@ -20,7 +20,8 @@ export function normalizeIdentifier(id: string): string {
   return id.replace(/[^A-Za-z0-9_-]/g, '_');
 }
 
-export function isDefaultConfigValue(keyPath: string, value: ?any): boolean {
+export function isDefaultConfigValue(keyPath: string, value_: ?any): boolean {
+  let value = value_;
   const defaultValue = getDefaultConfigValueString(keyPath);
   if (value) {
     value = valueToString(value);

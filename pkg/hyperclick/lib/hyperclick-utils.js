@@ -30,8 +30,9 @@ type WordTextAndRange = {text: string, range: Range};
 export function getWordTextAndRange(
   textEditor: TextEditor,
   position: atom$Point,
-  wordRegExp?: ?RegExp,
+  wordRegExp_?: ?RegExp,
 ): WordTextAndRange {
+  let wordRegExp = wordRegExp_;
   let textAndRange: ?WordTextAndRange = null;
 
   wordRegExp = wordRegExp || defaultWordRegExpForEditor(textEditor);

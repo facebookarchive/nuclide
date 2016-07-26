@@ -18,7 +18,8 @@ import {getLogger} from '../../nuclide-logging';
  *   - NO_HGPLAIN set if the $HGPLAIN environment variable should not be used.
  *   - TTY_OUTPUT set if the command should be run as if it were attached to a tty.
  */
-export async function hgAsyncExecute(args: Array<string>, options: any): Promise<any> {
+export async function hgAsyncExecute(args_: Array<string>, options: any): Promise<any> {
+  let args = args_;
   if (!options.NO_HGPLAIN) {
     // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
     if (options.env) {

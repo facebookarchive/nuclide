@@ -46,7 +46,8 @@ export class TestRunnerController {
   _testRunnerPanel: ?TestRunnerPanel;
   _testSuiteModel: ?TestSuiteModel;
 
-  constructor(state: ?TestRunnerControllerState, testRunners: Set<TestRunner>) {
+  constructor(state_: ?TestRunnerControllerState, testRunners: Set<TestRunner>) {
+    let state = state_;
     if (state == null) {
       state = {};
     }

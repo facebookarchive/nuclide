@@ -34,7 +34,8 @@ function getFilesFromCommand(
     proc.on('error', reject);
 
     const filePaths = [];
-    proc.stdout.pipe(split()).on('data', filePath => {
+    proc.stdout.pipe(split()).on('data', filePath_ => {
+      let filePath = filePath_;
       if (transform) {
         filePath = transform(filePath);
       }

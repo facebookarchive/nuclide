@@ -14,8 +14,9 @@ import {Range} from 'atom';
 export function wordAtPosition(
   editor: atom$TextEditor,
   position: atom$Point,
-  wordRegex: ?RegExp,
+  wordRegex_: ?RegExp,
 ): ?{wordMatch: Array<string>, range: atom$Range} {
+  let wordRegex = wordRegex_;
   if (!wordRegex) {
     wordRegex = editor.getLastCursor().wordRegExp();
   }

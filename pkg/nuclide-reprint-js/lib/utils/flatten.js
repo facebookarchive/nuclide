@@ -14,7 +14,9 @@ type NestedArray<T> = Array<T | NestedArray<T>>;
 /**
  * Completely flattens an array of arrays.
  */
-function flatten<T>(arr: NestedArray<T>): Array<T> {
+function flatten<T>(arr_: NestedArray<T>): Array<T> {
+  // For some reason, Flow hits a recursion limit when trying to typecheck this. Get out with `any`.
+  let arr: any = arr_;
   while (arr.some(el => Array.isArray(el))) {
     arr = Array.prototype.concat.apply([], arr);
   }

@@ -109,7 +109,8 @@ function humanizeKey(key: string, platform: ?string): string | Array<string> {
  * @param platform An optional String platform to humanize for (default: `process.platform`).
  * @return a humanized representation of the keystroke.
  */
-export default function humanizeKeystroke(keystroke: string, platform: ?string): string {
+export default function humanizeKeystroke(keystroke: string, platform_: ?string): string {
+  let platform = platform_;
   if (!keystroke) {
     return keystroke;
   }

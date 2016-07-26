@@ -29,7 +29,8 @@ class Activation {
   commands: Commands;
   _gadgetsService: ?GadgetsService;
 
-  constructor(initialState: ?Object) {
+  constructor(initialState_: ?Object) {
+    let initialState = initialState_;
     initialState = getInitialState();
     const action$: Rx.Subject<Action> = new Rx.Subject();
     const state$ = createStateStream(action$, initialState);

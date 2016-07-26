@@ -20,7 +20,8 @@ import translateScopeMarker from '../utils/translateScopeMarker';
 
 const MIN_RELEVANT_SCOPE_VALUE = 10;
 
-function resolveScopes(lines: Array<any>, options: Options): Array<any> {
+function resolveScopes(lines_: Array<any>, options: Options): Array<any> {
+  let lines = lines_;
   for (let i = 0; i < 5; i++) {
     lines = resolveScopesOnce(lines, options);
   }
@@ -31,7 +32,8 @@ function resolveScopes(lines: Array<any>, options: Options): Array<any> {
  * This breaks all scopes as necessary. There should be no remaining scopes
  * after this method.
  */
-function resolveScopesOnce(lines: Array<any>, options: Options): Array<any> {
+function resolveScopesOnce(lines_: Array<any>, options: Options): Array<any> {
+  let lines = lines_;
   let indent = 0;
   // Screw you if you pick something less than 40...
   const getSpace = () => Math.max(

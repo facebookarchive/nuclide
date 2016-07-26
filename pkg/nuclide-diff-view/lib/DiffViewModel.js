@@ -332,9 +332,11 @@ class DiffViewModel {
   }
 
   _updateViewChangedFilesStatus(
-    dirtyFileChanges?: ?Map<NuclideUri, FileChangeStatusValue>,
-    selectedFileChanges?: ?Map<NuclideUri, FileChangeStatusValue>,
+    dirtyFileChanges_?: ?Map<NuclideUri, FileChangeStatusValue>,
+    selectedFileChanges_?: ?Map<NuclideUri, FileChangeStatusValue>,
   ): void {
+    let dirtyFileChanges = dirtyFileChanges_;
+    let selectedFileChanges = selectedFileChanges_;
     if (dirtyFileChanges == null) {
       dirtyFileChanges = this._state.dirtyFileChanges;
     }
@@ -946,7 +948,8 @@ class DiffViewModel {
     return phabricatorRevision;
   }
 
-  async _processArcanistOutput(stream: Rx.Observable<any>): Promise<void> {
+  async _processArcanistOutput(stream_: Rx.Observable<any>): Promise<void> {
+    let stream = stream_;
     let fatalError = false;
     stream = stream
       // Split stream into single lines.

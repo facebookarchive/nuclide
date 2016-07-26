@@ -51,9 +51,11 @@ const formats = [
 ];
 
 export function relativeDate(
-  input: number | Date,
-  reference?: number | Date,
+  input_: number | Date,
+  reference_?: number | Date,
 ): string {
+  let input = input_;
+  let reference = reference_;
   if (input instanceof Date) {
     input = input.getTime();
   }

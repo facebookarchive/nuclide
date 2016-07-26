@@ -225,10 +225,12 @@ export class FlowRoot {
   async flowGetType(
     file: NuclideUri,
     currentContents: string,
-    line: number,
-    column: number,
+    line_: number,
+    column_: number,
     includeRawType: boolean,
   ): Promise<?{type: string, rawType: ?string}> {
+    let line = line_;
+    let column = column_;
     const options = {};
 
     options.stdin = currentContents;

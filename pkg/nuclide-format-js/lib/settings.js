@@ -132,7 +132,8 @@ function calculateBlacklist(settings: Settings): Set<TransformKey> {
  * Nuclide can't handle nested arrays well in settings, so we save it in a
  * flat array and fix up each pair or entries before using it in the transform
  */
-function fixAliases(aliases: ?Array<string>): Array<[string, string]> {
+function fixAliases(aliases_: ?Array<string>): Array<[string, string]> {
+  let aliases = aliases_;
   aliases = aliases || [];
   const pairs = [];
   for (let i = 0; i < aliases.length - 1; i += 2) {

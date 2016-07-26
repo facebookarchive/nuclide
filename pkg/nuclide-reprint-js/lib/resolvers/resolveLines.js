@@ -23,7 +23,8 @@ import resolveScopes from './resolveScopes';
  * After printing the AST parts and all appropriate markers this will join the
  * parts based on options and the markers that are available.
  */
-function resolveLines(lines: Array<any>, options: Options): Output {
+function resolveLines(lines_: Array<any>, options: Options): Output {
+  let lines = lines_;
   lines = resolveNoBreaks(lines);
   lines = resolveForcedScopeBreaks(lines);
   lines = resolveDuplicates(lines);
