@@ -17,17 +17,14 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
-import {CompositeDisposable, Directory, Disposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 import url from 'url';
-import {nuclideFeatures} from '../../../lib/nuclide-features';
 import uiTreePath from '../../commons-atom/ui-tree-path';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {getLogger} from '../../nuclide-logging';
 import {DiffMode, CommitMode} from './constants';
 import DiffViewElement from './DiffViewElement';
-import nuclideUri from '../../commons-node/nuclideUri';
 
 type SerializedDiffViewState = {
   visible: false,
@@ -135,20 +132,6 @@ function activateDiffPath(diffEntityOptions: DiffEntityOptions): void {
     }
   }
   diffViewModel.diffEntity(diffEntityOptions);
-}
-
-function projectsContainPath(checkPath: string): boolean {
-  return atom.project.getDirectories().some(directory => {
-    const directoryPath = directory.getPath();
-    if (!checkPath.startsWith(directoryPath)) {
-      return false;
-    }
-    // If the remote directory hasn't yet loaded.
-    if (nuclideUri.isRemote(checkPath) && directory instanceof Directory) {
-      return false;
-    }
-    return true;
-  });
 }
 
 function diffActivePath(diffOptions?: Object): void {
@@ -329,40 +312,40 @@ module.exports = {
     }
 
     const {activeFilePath, viewMode, commitMode} = state;
-    // Wait for all source control providers to register.
-    subscriptions.add(nuclideFeatures.onDidActivateInitialFeatures(() => {
-      function restoreActiveDiffView() {
+
+    // Wait for the source control providers to be ready:
+    const restorationSubscriptions = new CompositeDisposable(
+      // If it's a local directory, or if "nuclide-hg-repository" was activated
+      // after "nuclide-diff-view":
+      atom.packages.serviceHub.consume('atom.repository-provider', '^0.1.0', () => {
+        tryRestoreActiveDiffView();
+      }),
+      // If it's a remote directory, it should come on a path change event:
+      atom.project.onDidChangePaths(() => {
+        tryRestoreActiveDiffView();
+      }),
+    );
+    subscriptions.add(restorationSubscriptions);
+
+    function tryRestoreActiveDiffView() {
+      // If there is no repository ready, it may be because it's a remote file,
+      // or because "nuclide-hg-repository" hasn't loaded yet.
+      const canRestoreActiveDiffView = activeFilePath ?
+        isPathDiffable(activeFilePath) :
+        atom.project.getDirectories().some(directory => {
+          return isPathDiffable(directory.getPath());
+        });
+      if (canRestoreActiveDiffView) {
+        restorationSubscriptions.dispose();
+        invariant(subscriptions);
+        subscriptions.remove(restorationSubscriptions);
         atom.workspace.open(formatDiffViewUrl({
           file: activeFilePath,
           viewMode,
           commitMode,
         }));
       }
-
-      // If it's a local directory, it must be loaded with packages activation.
-      if (!activeFilePath || projectsContainPath(activeFilePath)) {
-        restoreActiveDiffView();
-        return;
-      }
-      // If it's a remote directory, it should come on a path change event.
-      // The change handler is delayed to break the race with the `DiffViewModel` subscription.
-      const changePathsSubscription = atom.project.onDidChangePaths(() => setTimeout(() => {
-        // try/catch here because in case of any error, Atom stops dispatching events to the
-        // rest of the listeners, which can stop the remote editing from being functional.
-        try {
-          if (projectsContainPath(activeFilePath)) {
-            restoreActiveDiffView();
-            changePathsSubscription.dispose();
-            invariant(subscriptions);
-            subscriptions.remove(changePathsSubscription);
-          }
-        } catch (e) {
-          getLogger().error('DiffView restore error', e);
-        }
-      }, 10));
-      invariant(subscriptions);
-      subscriptions.add(changePathsSubscription);
-    }));
+    }
   },
 
   consumeToolBar(getToolBar: GetToolBar): IDisposable {
