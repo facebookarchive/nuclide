@@ -62,6 +62,7 @@ export class NewDebuggerView extends React.Component {
     debuggerMode: DebuggerModeType,
     callstack: ?Callstack,
     breakpoints: ?FileLineBreakpoints,
+    showThreadsWindow: boolean,
   };
   _watchExpressionComponentWrapped: ReactClass<any>;
   _localsComponentWrapped: ReactClass<any>;
@@ -82,10 +83,12 @@ export class NewDebuggerView extends React.Component {
       LocalsComponent,
     );
     this._disposables = new CompositeDisposable();
+    const debuggerStore = props.model.getStore();
     this.state = {
-      debuggerMode: props.model.getStore().getDebuggerMode(),
-      togglePauseOnException: props.model.getStore().getTogglePauseOnException(),
-      togglePauseOnCaughtException: props.model.getStore().getTogglePauseOnCaughtException(),
+      debuggerMode: debuggerStore.getDebuggerMode(),
+      togglePauseOnException: debuggerStore.getTogglePauseOnException(),
+      togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
+      showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
       callstack: props.model.getCallstackStore().getCallstack(),
       breakpoints: storeBreakpointsToViewBreakpoints(
         props.model.getBreakpointStore().getAllBreakpoints(),
@@ -101,6 +104,7 @@ export class NewDebuggerView extends React.Component {
           debuggerMode: debuggerStore.getDebuggerMode(),
           togglePauseOnException: debuggerStore.getTogglePauseOnException(),
           togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
+          showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
         });
       }),
     );
@@ -133,6 +137,11 @@ export class NewDebuggerView extends React.Component {
     const actions = model.getActions();
     const WatchExpressionComponentWrapped = this._watchExpressionComponentWrapped;
     const LocalsComponentWrapped = this._localsComponentWrapped;
+    const threadsSection = this.state.showThreadsWindow
+      ? <Section collapsable={true} headline="Threads">
+          TODO: show threads.
+        </Section>
+      : null;
     return (
       <div className="nuclide-debugger-container-new">
         <Section collapsable={true} headline="Debugger Controls">
@@ -149,6 +158,7 @@ export class NewDebuggerView extends React.Component {
             callstack={this.state.callstack}
           />
         </Section>
+        {threadsSection}
         <Section collapsable={true} headline="Breakpoints">
           <BreakpointListComponent
             actions={actions}
