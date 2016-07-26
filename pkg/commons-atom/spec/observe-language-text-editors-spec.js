@@ -9,29 +9,29 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
+import nullthrows from '../../commons-node/nullthrows';
 import observeGrammarForTextEditors from '../observe-grammar-for-text-editors';
 import observeLanguageTextEditors from '../observe-language-text-editors';
 
 describe('observeLanguageTextEditors', () => {
-  let objcGrammar;
-  let javaGrammar;
-  let jsGrammar;
-  let nullGrammar;
-  let grammarScopes;
+  let objcGrammar: atom$Grammar = (null: any);
+  let javaGrammar: atom$Grammar = (null: any);
+  let jsGrammar: atom$Grammar = (null: any);
+  let nullGrammar: atom$Grammar = (null: any);
+  let grammarScopes: [string, string] = (null: any);
 
   beforeEach(() => {
     observeGrammarForTextEditors.__reset__();
     atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/objective-c.cson'));
-    objcGrammar = atom.grammars.grammarForScopeName('source.objc');
-    invariant(objcGrammar);
+    objcGrammar = nullthrows(atom.grammars.grammarForScopeName('source.objc'));
+
     atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/java.cson'));
-    javaGrammar = atom.grammars.grammarForScopeName('source.java');
-    invariant(javaGrammar);
+    javaGrammar = nullthrows(atom.grammars.grammarForScopeName('source.java'));
+
     atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/javascript.cson'));
-    jsGrammar = atom.grammars.grammarForScopeName('source.js');
-    nullGrammar = atom.grammars.grammarForScopeName('text.plain.null-grammar');
+    jsGrammar = nullthrows(atom.grammars.grammarForScopeName('source.js'));
+    nullGrammar = nullthrows(atom.grammars.grammarForScopeName('text.plain.null-grammar'));
 
     grammarScopes = [
       objcGrammar.scopeName,
@@ -51,6 +51,7 @@ describe('observeLanguageTextEditors', () => {
         expect(fn.callCount).toBe(1);
 
         subscription.dispose();
+        textEditor.destroy();
       });
     });
 
@@ -65,6 +66,7 @@ describe('observeLanguageTextEditors', () => {
         expect(fn.callCount).toBe(1);
 
         subscription.dispose();
+        textEditor.destroy();
       });
     });
 
@@ -73,7 +75,6 @@ describe('observeLanguageTextEditors', () => {
         const fn: any = jasmine.createSpy('fn');
         const subscription = observeLanguageTextEditors(grammarScopes, fn);
 
-        // $FlowIssue
         const textEditor = await atom.workspace.open();
         textEditor.setGrammar(objcGrammar);
 
@@ -81,6 +82,7 @@ describe('observeLanguageTextEditors', () => {
         expect(fn.callCount).toBe(1);
 
         subscription.dispose();
+        textEditor.destroy();
       });
     });
 
@@ -89,13 +91,13 @@ describe('observeLanguageTextEditors', () => {
         const fn: any = jasmine.createSpy('fn');
         const subscription = observeLanguageTextEditors(grammarScopes, fn);
 
-        // $FlowIssue
         const textEditor = await atom.workspace.open();
         textEditor.setGrammar(jsGrammar);
 
         expect(fn.callCount).toBe(0);
 
         subscription.dispose();
+        textEditor.destroy();
       });
     });
 
@@ -104,7 +106,6 @@ describe('observeLanguageTextEditors', () => {
         const fn: any = jasmine.createSpy('fn');
         const subscription = observeLanguageTextEditors(grammarScopes, fn);
 
-        // $FlowIssue
         const textEditor = await atom.workspace.open('file.m');
         textEditor.setGrammar(javaGrammar);
 
@@ -112,6 +113,7 @@ describe('observeLanguageTextEditors', () => {
         expect(fn.callCount).toBe(1);
 
         subscription.dispose();
+        textEditor.destroy();
       });
     });
 
@@ -131,7 +133,7 @@ describe('observeLanguageTextEditors', () => {
   describe('with cleanup function', () => {
     it('does not call for existing text editors that do not match the grammars', () => {
       waitsForPromise(async () => {
-        await atom.workspace.open();
+        const textEditor = await atom.workspace.open();
 
         const fn: any = jasmine.createSpy('fn');
         const cleanupFn: any = jasmine.createSpy('cleanupFn');
@@ -140,6 +142,7 @@ describe('observeLanguageTextEditors', () => {
         expect(cleanupFn.callCount).toBe(0);
 
         subscription.dispose();
+        textEditor.destroy();
       });
     });
 
@@ -149,13 +152,13 @@ describe('observeLanguageTextEditors', () => {
         const cleanupFn: any = jasmine.createSpy('cleanupFn');
         const subscription = observeLanguageTextEditors(grammarScopes, fn, cleanupFn);
 
-        // $FlowIssue
         const textEditor = await atom.workspace.open('file.js');
         textEditor.setGrammar(nullGrammar);
 
         expect(cleanupFn.callCount).toBe(0);
 
         subscription.dispose();
+        textEditor.destroy();
       });
     });
 
@@ -165,7 +168,6 @@ describe('observeLanguageTextEditors', () => {
         const cleanupFn: any = jasmine.createSpy('cleanupFn');
         const subscription = observeLanguageTextEditors(grammarScopes, fn, cleanupFn);
 
-        // $FlowIssue
         const textEditor = await atom.workspace.open('file.m');
         textEditor.setGrammar(nullGrammar);
 
@@ -173,6 +175,7 @@ describe('observeLanguageTextEditors', () => {
         expect(cleanupFn.callCount).toBe(1);
 
         subscription.dispose();
+        textEditor.destroy();
       });
     });
 

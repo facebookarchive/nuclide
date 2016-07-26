@@ -10,20 +10,21 @@
  */
 
 import nuclideUri from '../../commons-node/nuclideUri';
+import nullthrows from '../../commons-node/nullthrows';
 import observeGrammarForTextEditors from '../observe-grammar-for-text-editors';
 
 describe('observeGrammarForTextEditors', () => {
-  let objcGrammar;
-  let jsGrammar;
+  let objcGrammar: atom$Grammar = (null: any);
+  let jsGrammar: atom$Grammar = (null: any);
 
   beforeEach(() => {
     observeGrammarForTextEditors.__reset__();
     // The grammar registry is cleared automatically after Atom 1.3.0+
     atom.grammars.clear();
     atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/objective-c.cson'));
-    objcGrammar = atom.grammars.grammarForScopeName('source.objc');
+    objcGrammar = nullthrows(atom.grammars.grammarForScopeName('source.objc'));
     atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/javascript.cson'));
-    jsGrammar = atom.grammars.grammarForScopeName('source.js');
+    jsGrammar = nullthrows(atom.grammars.grammarForScopeName('source.js'));
   });
 
   it('calls for existing text editors', () => {
@@ -58,7 +59,6 @@ describe('observeGrammarForTextEditors', () => {
     waitsForPromise(async () => {
       const fn: any = jasmine.createSpy('fn');
       const subscription = observeGrammarForTextEditors(fn);
-      // $FlowIssue
       const textEditor = await atom.workspace.open('file.m');
       textEditor.setGrammar(jsGrammar);
 
@@ -75,7 +75,6 @@ describe('observeGrammarForTextEditors', () => {
     waitsForPromise(async () => {
       const fn: any = jasmine.createSpy('fn');
       const subscription = observeGrammarForTextEditors(fn);
-      // $FlowIssue
       const textEditor = await atom.workspace.open('file.m');
 
       subscription.dispose();
@@ -95,7 +94,6 @@ describe('observeGrammarForTextEditors', () => {
       const subscription = observeGrammarForTextEditors(fn);
       const fn2: any = jasmine.createSpy('fn2');
       const subscription2 = observeGrammarForTextEditors(fn2);
-      // $FlowIssue
       const textEditor = await atom.workspace.open('file.m');
 
       subscription.dispose();
