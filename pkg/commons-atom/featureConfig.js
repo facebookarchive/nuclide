@@ -124,4 +124,12 @@ module.exports = {
   ): void {
     return atom.config.unset(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
   },
+
+  /**
+   * Returns `true` if the feature with the given name is disabled either directly or because the
+   *   'nuclide' package itself is disabled.
+   */
+  isFeatureDisabled(name: string): boolean {
+    return atom.packages.isPackageDisabled('nuclide') || !atom.config.get(`nuclide.use.${name}`);
+  },
 };

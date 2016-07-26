@@ -19,7 +19,6 @@ import {Disposable, CompositeDisposable} from 'atom';
 import invariant from 'assert';
 
 import featureConfig from '../../commons-atom/featureConfig';
-import {nuclideFeatures} from '../../../lib/nuclide-features';
 import debounce from '../../commons-node/debounce';
 import {
   onWorkspaceDidStopChangingActivePaneItem,
@@ -270,7 +269,7 @@ export function activate(state: ?FileTreeControllerState): void {
 export function deactivate() {
   // Re-enable Atom's bundled 'tree-view' when this package is disabled to leave the user's
   // environment the way this package found it.
-  if (nuclideFeatures.isFeatureDisabled('nuclide-file-tree')
+  if (featureConfig.isFeatureDisabled('nuclide-file-tree')
     && atom.packages.isPackageDisabled('tree-view')) {
     atom.packages.enablePackage('tree-view');
   }
