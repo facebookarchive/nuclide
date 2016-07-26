@@ -11,9 +11,7 @@
 
 import invariant from 'assert';
 
-import {
-  busySignal,
-} from '../pkg/nuclide-integration-test-helpers';
+import busySignal from './utils/busy-signal-common';
 import {describeRemotableTest} from './utils/remotable-tests';
 import {
   getAutocompleteView,

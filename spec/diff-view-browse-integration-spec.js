@@ -19,7 +19,7 @@ import {
   deactivateAllPackages,
   startNuclideServer,
   stopNuclideServer,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import fs from 'fs';
 import invariant from 'assert';

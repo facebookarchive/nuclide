@@ -13,7 +13,7 @@ import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
 import {
   isDiagnosticsPanelShowing,
   clickStatusBarItem,

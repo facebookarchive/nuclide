@@ -17,8 +17,8 @@ import {generateFixture} from '../../pkg/nuclide-test-helpers';
 import {
   fileTreeHasFinishedLoading,
   getVisibleEntryFromFileTree,
-  pollFor,
-} from '../../pkg/nuclide-integration-test-helpers';
+} from './file-tree-common';
+import pollFor from './pollFor';
 
 export function runTest(context: TestContext): void {
   it('opens large directories in the file tree', () => {

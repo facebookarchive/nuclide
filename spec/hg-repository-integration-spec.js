@@ -14,7 +14,7 @@ import {
   activateAllPackages,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
 import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import {repositoryForPath} from '../pkg/nuclide-hg-git-bridge';
 import {

@@ -14,7 +14,7 @@ import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
 import WS from 'ws';
 
 describe('React Native Inspector', () => {

@@ -13,7 +13,7 @@ import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
 import {dispatchKeyboardEvent} from '../pkg/commons-atom/testHelpers';
 import featureConfig from '../pkg/commons-atom/featureConfig';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports

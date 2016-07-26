@@ -13,7 +13,7 @@ import {
   activateAllPackages,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
 import invariant from 'assert';
 import {spyOnDefault, unspyOnDefault} from '../pkg/nuclide-test-helpers';
 

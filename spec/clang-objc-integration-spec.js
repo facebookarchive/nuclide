@@ -13,10 +13,9 @@ import invariant from 'assert';
 
 import {
   activateAllPackages,
-  busySignal,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
 import {
   getAutocompleteView,
   getAutocompleteSuggestions,
@@ -28,6 +27,7 @@ import {
   waitsForFile,
   waitsForFilePosition,
 } from '../pkg/commons-atom/testHelpers';
+import busySignal from './utils/busy-signal-common';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 
 /**

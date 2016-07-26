@@ -13,7 +13,7 @@ import {
   activateAllPackages,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
 import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 
 describe('Blame context menu integration test', () => {

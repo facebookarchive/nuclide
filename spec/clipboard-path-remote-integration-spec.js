@@ -16,7 +16,7 @@ import {
   jasmineIntegrationTestSetup,
   startNuclideServer,
   stopNuclideServer,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
 import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import {dispatchKeyboardEvent} from '../pkg/commons-atom/testHelpers';
 import nuclideUri from '../pkg/commons-node/nuclideUri';

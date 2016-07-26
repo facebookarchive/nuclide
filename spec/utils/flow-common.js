@@ -11,7 +11,7 @@
 
 import type {TestContext} from './remotable-tests';
 
-import {busySignal} from '../../pkg/nuclide-integration-test-helpers';
+import busySignal from './busy-signal-common';
 import {copyFixture} from '../../pkg/nuclide-test-helpers';
 import {Deferred} from '../../pkg/commons-node/promise';
 

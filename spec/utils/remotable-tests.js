@@ -19,7 +19,7 @@ import {
   deactivateAllPackages,
   startNuclideServer,
   stopNuclideServer,
-} from '../../pkg/nuclide-integration-test-helpers';
+} from './integration-test-helpers';
 import {setLocalProject} from '../../pkg/commons-atom/testHelpers';
 import nuclideUri from '../../pkg/commons-node/nuclideUri';
 import invariant from 'assert';

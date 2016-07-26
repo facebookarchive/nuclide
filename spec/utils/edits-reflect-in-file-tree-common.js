@@ -16,8 +16,8 @@ import invariant from 'assert';
 import {
   fileTreeHasFinishedLoading,
   getVisibleEntryFromFileTree,
-  pollFor,
-} from '../../pkg/nuclide-integration-test-helpers';
+} from './file-tree-common';
+import pollFor from './pollFor';
 import {copyMercurialFixture} from '../../pkg/nuclide-test-helpers';
 
 export function runTest(context: TestContext) {

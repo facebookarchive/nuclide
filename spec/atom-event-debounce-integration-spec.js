@@ -19,7 +19,7 @@ import {
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
 
 // Shorter than the default so the tests don't run long.
 const DEBOUNCE_INTERVAL = 10;

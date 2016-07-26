@@ -16,8 +16,8 @@ import {
   startNuclideServer,
   addRemoteProject,
   stopNuclideServer,
-  pollFor,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
+import pollFor from './utils/pollFor';
 import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import fs from 'fs';

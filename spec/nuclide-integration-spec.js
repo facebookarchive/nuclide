@@ -13,7 +13,7 @@ import {
   activateAllPackages,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
-} from '../pkg/nuclide-integration-test-helpers';
+} from './utils/integration-test-helpers';
 import {sleep} from '../pkg/commons-node/promise';
 
 describe('nuclide', () => {
