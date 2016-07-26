@@ -12,12 +12,7 @@
 import {Disposable} from 'atom';
 import {sleep} from '../../commons-node/promise';
 
-import {
-  TextEventDispatcher,
-  __TEST__,
-} from '../lib/TextEventDispatcher';
-
-const {TextCallbackContainer} = __TEST__;
+import TextEventDispatcher, {__TEST__} from '../lib/TextEventDispatcher';
 
 const grammar = 'testgrammar';
 
@@ -26,7 +21,7 @@ describe('TextCallbackContainer', () => {
   let callback: any;
 
   beforeEach(() => {
-    textCallbackContainer = new TextCallbackContainer();
+    textCallbackContainer = new __TEST__.TextCallbackContainer();
     callback = jasmine.createSpy();
   });
 

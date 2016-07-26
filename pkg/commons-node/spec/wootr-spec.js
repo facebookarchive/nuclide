@@ -7,9 +7,9 @@
  * the root directory of this source tree.
  */
 
-import assert from 'assert';
-const invariant = assert;
-import {WString} from '../lib/main.js';
+import invariant from 'assert';
+
+import {WString} from '../wootr';
 
 describe('wootr', () => {
   describe('insert', () => {

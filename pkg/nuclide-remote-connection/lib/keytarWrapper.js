@@ -29,38 +29,37 @@ function runScriptInApmNode(script: string): string {
   return output.stdout.toString();
 }
 
-function getPassword(service: string, account: string): ?string {
-  const script = `
-    var keytar = require('keytar');
-    var service = ${JSON.stringify(service)};
-    var account = ${JSON.stringify(account)};
-    var password = keytar.getPassword(service, account);
-    console.log(JSON.stringify(password));
-  `;
-  return JSON.parse(runScriptInApmNode(script));
-}
+export default {
+  getPassword(service: string, account: string): ?string {
+    const script = `
+      var keytar = require('keytar');
+      var service = ${JSON.stringify(service)};
+      var account = ${JSON.stringify(account)};
+      var password = keytar.getPassword(service, account);
+      console.log(JSON.stringify(password));
+    `;
+    return JSON.parse(runScriptInApmNode(script));
+  },
 
-function replacePassword(
+  replacePassword(
     service: string,
     account: string,
-    password: string): ?boolean {
-  const script = `
-    var keytar = require('keytar');
-    var service = ${JSON.stringify(service)};
-    var account = ${JSON.stringify(account)};
-    var password = ${JSON.stringify(password)};
-    var result = keytar.replacePassword(service, account, password);
-    console.log(JSON.stringify(result));
-  `;
-  return JSON.parse(runScriptInApmNode(script));
-}
-
-module.exports = {
-  getPassword,
-  replacePassword,
-  __test__: {
-    runScriptInApmNode,
-    getApmNodePath,
-    getApmNodeModulesPath,
+    password: string,
+  ): ?boolean {
+    const script = `
+      var keytar = require('keytar');
+      var service = ${JSON.stringify(service)};
+      var account = ${JSON.stringify(account)};
+      var password = ${JSON.stringify(password)};
+      var result = keytar.replacePassword(service, account, password);
+      console.log(JSON.stringify(result));
+    `;
+    return JSON.parse(runScriptInApmNode(script));
   },
+};
+
+export const __TEST__ = {
+  getApmNodeModulesPath,
+  getApmNodePath,
+  runScriptInApmNode,
 };

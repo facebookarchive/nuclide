@@ -9,10 +9,12 @@
  * the root directory of this source tree.
  */
 
+import type {ServerConnectionConfiguration} from './ServerConnection';
+
 import crypto from 'crypto';
 import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
-import type {ServerConnectionConfiguration} from './ServerConnection';
+import keytarWrapper from './keytarWrapper';
 
 const logger = getLogger();
 
@@ -77,8 +79,6 @@ function getAtomConfigKey(host: string): string {
 function encryptConfig(
   remoteProjectConfig: ServerConnectionConfiguration,
 ): SerializableServerConnectionConfiguration {
-  const {replacePassword} = require('../../nuclide-keytar-wrapper');
-
   const sha1 = crypto.createHash('sha1');
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
   const sha1sum = sha1.digest('hex');
@@ -87,7 +87,7 @@ function encryptConfig(
   invariant(clientKey);
   const realClientKey = clientKey.toString(); // Convert from Buffer to string.
   const {salt, password, encryptedString} = encryptString(realClientKey);
-  replacePassword('nuclide.remoteProjectConfig', sha1sum, password);
+  keytarWrapper.replacePassword('nuclide.remoteProjectConfig', sha1sum, password);
 
   const clientKeyWithSalt = encryptedString + '.' + salt;
 
@@ -111,13 +111,11 @@ function encryptConfig(
 function decryptConfig(
   remoteProjectConfig: SerializableServerConnectionConfiguration,
 ): ServerConnectionConfiguration {
-  const {getPassword} = require('../../nuclide-keytar-wrapper');
-
   const sha1 = crypto.createHash('sha1');
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
   const sha1sum = sha1.digest('hex');
 
-  const password = getPassword('nuclide.remoteProjectConfig', sha1sum);
+  const password = keytarWrapper.getPassword('nuclide.remoteProjectConfig', sha1sum);
 
   if (!password) {
     throw new Error('Cannot find password for encrypted client key');

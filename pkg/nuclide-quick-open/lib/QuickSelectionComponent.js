@@ -37,6 +37,7 @@ import {Button} from '../../nuclide-ui/lib/Button';
 import {Tabs} from '../../nuclide-ui/lib/Tabs';
 import {CompositeDisposable, Emitter} from 'atom';
 import debounce from '../../commons-node/debounce';
+import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
 import {isEmpty} from '../../commons-node/collection';
 import {React, ReactDOM} from 'react-for-atom';
 import SearchResultManager from './SearchResultManager';
@@ -54,7 +55,6 @@ const searchResultManager = SearchResultManager.getInstance();
  * For example, this will return different keybindings on windows vs linux.
  */
 function _findKeybindingForAction(action: string, target: HTMLElement): string {
-  const {humanizeKeystroke} = require('../../nuclide-keystroke-label');
   const matchingKeyBindings = atom.keymaps.findKeyBindings({
     command: action,
     target,

@@ -21,7 +21,7 @@ import type {
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {applyTextEdit} from '../../nuclide-textedit';
+import applyTextEdit from './applyTextEdit';
 import {arrayRemove, MultiMap} from '../../commons-node/collection';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {MarkerTracker} from './MarkerTracker';

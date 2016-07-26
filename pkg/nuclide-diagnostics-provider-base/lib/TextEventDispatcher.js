@@ -158,7 +158,7 @@ class TextCallbackContainer<CallbackArg> {
  * from Atom's text events.
  *
  */
-class TextEventDispatcher {
+export default class TextEventDispatcher {
   _callbackContainer: TextCallbackContainer<TextEditor>;
 
   _editorListenerDisposable: ?CompositeDisposable;
@@ -281,9 +281,6 @@ class TextEventDispatcher {
   }
 }
 
-module.exports = {
-  TextEventDispatcher,
-  __TEST__: {
-    TextCallbackContainer,
-  },
+export const __TEST__ = {
+  TextCallbackContainer,
 };

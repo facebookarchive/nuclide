@@ -11,28 +11,19 @@
 
 import crypto from 'crypto';
 
-import {
-  replacePassword,
-  getPassword,
-  __test__,
-} from '..';
-
-const {
-  runScriptInApmNode,
-  getApmNodePath,
-  getApmNodeModulesPath,
-} = __test__;
+import keytarWrapper, {__TEST__} from '../lib/keytarWrapper';
 
 // This test is excluded from CI because depending on the machine that runs on
 // it hangs. It might have something to do with how the `keytar` binary tries
 // to access the keychain.
 
-describe('Keytar Wrapper', () => {
-
+// eslint-disable-next-line jasmine/no-disabled-tests
+xdescribe('Keytar Wrapper', () => {
   describe('getApmNodePath', () => {
     it('returns path to apm copy of node', () => {
       if (process.platform === 'darwin') {
-        expect(getApmNodePath()).toMatch(/.*Contents\/Resources\/app\/apm\/bin\/node$/);
+        expect(__TEST__.getApmNodePath())
+          .toMatch(/.*Contents\/Resources\/app\/apm\/bin\/node$/);
       }
     });
   });
@@ -40,14 +31,15 @@ describe('Keytar Wrapper', () => {
   describe('getApmNodeModulesPath', () => {
     it('returns path to apm copy of node_modules', () => {
       if (process.platform === 'darwin') {
-        expect(getApmNodeModulesPath()).toMatch(/.*Contents\/Resources\/app\/apm\/node_modules$/);
+        expect(__TEST__.getApmNodeModulesPath())
+          .toMatch(/.*Contents\/Resources\/app\/apm\/node_modules$/);
       }
     });
   });
 
   describe('runScriptInApmNode', () => {
     it('runs a string as a script in apm node', () => {
-      const result = runScriptInApmNode('require("keytar");console.log("true")');
+      const result = __TEST__.runScriptInApmNode('require("keytar");console.log("true")');
       expect(result).toEqual('true\n');
     });
   });
@@ -55,9 +47,9 @@ describe('Keytar Wrapper', () => {
   describe('*Password', () => {
     it('sets password in keychain', () => {
       const randomString = crypto.pseudoRandomBytes(32).toString('hex');
-      replacePassword('nuclide-keytar-wrapper', 'fake user', randomString);
-      expect(getPassword('nuclide-keytar-wrapper', 'fake user')).toEqual(randomString);
+      keytarWrapper.replacePassword('nuclide-keytar-wrapper', 'fake user', randomString);
+      const actual = keytarWrapper.getPassword('nuclide-keytar-wrapper', 'fake user');
+      expect(actual).toEqual(randomString);
     });
   });
-
 });

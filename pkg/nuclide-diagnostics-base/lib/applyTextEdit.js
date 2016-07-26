@@ -31,7 +31,7 @@ import {existingEditorForUri} from '../../commons-atom/text-editor';
  * Returns true if the application was successful, otherwise false (e.g. if the oldText did not
  * match).
  */
-export function applyTextEdit(path: NuclideUri, edit: TextEdit): boolean {
+export default function applyTextEdit(path: NuclideUri, edit: TextEdit): boolean {
   const editor = existingEditorForUri(path);
   invariant(editor != null);
   const buffer = editor.getBuffer();

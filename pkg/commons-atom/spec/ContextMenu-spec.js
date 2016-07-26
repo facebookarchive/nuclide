@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 
-import ContextMenu from '../lib/ContextMenu';
+import ContextMenu from '../ContextMenu';
 
 describe('ContextMenu', () => {
 
