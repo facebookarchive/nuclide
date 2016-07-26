@@ -1,0 +1,39 @@
+{
+  "name": "nuclide-swift",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Swift package manager integration for Nuclide.",
+  "atomTestRunner": "../../lib/test-runner.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm",
+    "configMetadata": {
+      "pathComponents": [
+        "Language",
+        "Swift"
+      ]
+    },
+    "config": {
+      "swiftToolchainPath": {
+        "title": "Swift Toolchain Path",
+        "type": "string",
+        "default": "",
+        "description": "Path to a Swift toolchain on your local system. If left blank, Nuclide will search for one at '/Library/Developer/Toolchains/swift-latest.xctoolchain' on OS X, or find one based on a 'swiftc' executable in your PATH on Linux."
+      }
+    }
+  },
+  "consumedServices": {
+    "nuclide.build-system-registry": {
+      "versions": {
+        "0.0.0": "consumeTaskRunnerServiceApi"
+      }
+    },
+    "nuclide-output": {
+      "versions": {
+        "0.0.0": "consumeOutputService"
+      }
+    }
+  },
+  "activationCommands": {}
+}
