@@ -57,6 +57,14 @@ export async function activateAllPackages(): Promise<Array<string>> {
 }
 
 export function deactivateAllPackages(): void {
+  atom.packages.getActivePackages().map(pack => {
+    // TODO: Atom does not unregister its activation hooks on package deactivation!
+    // Do it manually until https://github.com/atom/atom/pull/12237 is merged.
+    if (pack.activationHookSubscriptions != null) {
+      pack.activationHookSubscriptions.dispose();
+    }
+  });
+
   atom.packages.deactivatePackages();
   atom.packages.unloadPackages();
 
