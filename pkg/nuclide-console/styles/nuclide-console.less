@@ -34,6 +34,7 @@
 @nuclide-console-record-text-color-purple: darken(@ui-site-color-4, 40%);
 @nuclide-console-record-background-color-violet: lighten(@ui-site-color-4, 35%);
 @nuclide-console-record-text-color-violet: darken(@ui-site-color-4, 30%);
+@nuclide-console-record-text-color-rainbow: #000;
 
 // Console text should be smaller than normal text. Gotta fit more!
 @nuclide-console-record-font-size: @font-size * 0.9;
@@ -250,6 +251,28 @@
     background-color: @nuclide-console-record-background-color-violet;
     pre, .nuclide-console-lazy-nested-value div, .nuclide-ui-lazy-nested-value span {
       color: @nuclide-console-record-text-color-violet;
+    }
+  }
+
+  &.level-rainbow {
+    background: #fff;
+    background-image: linear-gradient(
+      to right,
+      rgba(255, 0, 0, .4) 0%,
+      rgba(255, 165, 0, .4) 20%,
+      rgba(255, 255, 0, .4) 40%,
+      rgba(173, 255, 47, .4) 60%,
+      rgba(0, 191, 255, .4) 80%,
+      rgba(138, 43, 226, .4) 100%
+    );
+    pre,
+    .nuclide-console-lazy-nested-value div,
+    .nuclide-ui-lazy-nested-value span,
+    .list-group li:not(.list-nested-item),
+    .list-tree li:not(.list-nested-item),
+    .list-group li.list-nested-item > .list-item,
+    .list-tree li.list-nested-item > .list-item {
+      color: @nuclide-console-record-text-color-rainbow;
     }
   }
 
