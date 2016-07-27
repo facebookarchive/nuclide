@@ -20,7 +20,7 @@ import WS from 'ws';
 describe('React Native Inspector', () => {
 
   beforeEach(() => {
-    waitsForPromise({timeout: 5000}, async () => {
+    waitsForPromise(async () => {
       // Configure some jasmine specific things for integration testing.
       jasmineIntegrationTestSetup();
       // Activate nuclide packages.

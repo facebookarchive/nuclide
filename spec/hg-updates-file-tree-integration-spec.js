@@ -89,7 +89,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       await waitsForRepositoryReady(repoRemotePath);
     });
 
-    waitsFor('file tree to update VCS colors', 5000, () => {
+    waitsFor('file tree to update VCS colors', () => {
       // Select DOM nodes with .status-modified class
       const fileTreeList: HTMLElement = rootNode.querySelector('.list-tree');
       const projectFolder: HTMLElement =
@@ -107,7 +107,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       await waitsForRepositoryReady(repoRemotePath);
     });
 
-    waitsFor('file tree to remove VCS colors', 5000, () => {
+    waitsFor('file tree to remove VCS colors', () => {
       // Select any DOM node with .status-modified class
       const fileTreeList: HTMLElement = rootNode.querySelector('.list-tree');
       const modifiedNodes: NodeList<HTMLElement> =
@@ -125,7 +125,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       await waitsForRepositoryReady(repoRemotePath);
     });
 
-    waitsFor('file tree to add and color the new file', 5000, () => {
+    waitsFor('file tree to add and color the new file', () => {
       // Get file tree node and check that one of the <li>'s have .status-added
       const fileNodes: NodeList<HTMLElement> = rootNode.querySelectorAll('.status-added');
       // Is it there yet?
@@ -142,7 +142,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       await waitsForRepositoryReady(repoRemotePath);
     });
 
-    waitsFor('file tree to remove colors after amend', 5000, () => {
+    waitsFor('file tree to remove colors after amend', () => {
       const addedFiles: NodeList<HTMLElement> = rootNode.querySelectorAll('.status-added');
       const modifiedFiles: NodeList<HTMLElement> = rootNode.querySelectorAll('.status-modified');
       return (addedFiles.length === 0 && modifiedFiles.length === 0);

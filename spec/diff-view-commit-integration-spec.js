@@ -72,7 +72,7 @@ describe('Diff View Commit Mode Integration Test', () => {
 
     let revisionLabels = [];
 
-    waitsFor('revisions to load', 5000, () => {
+    waitsFor('revisions to load', () => {
       revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-title');
       return revisionLabels.length > 0;
     });
@@ -119,7 +119,7 @@ describe('Diff View Commit Mode Integration Test', () => {
       fs.appendFileSync(filePath, '\nnew_line_1\nnew_line_2');
     });
 
-    waitsFor('repo diff status to update', 5000, () => {
+    waitsFor('repo diff status to update', () => {
       diffFiles = treeElement.querySelectorAll('.file-change');
       return diffFiles.length > 0;
     });
@@ -209,7 +209,7 @@ describe('Diff View Commit Mode Integration Test', () => {
       return revisionsTimelineElement != null;
     });
 
-    waitsFor('new commit to load in the revisions timeline', 5000, () => {
+    waitsFor('new commit to load in the revisions timeline', () => {
       revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-title');
       return revisionLabels.length === 5;
     });
@@ -261,7 +261,7 @@ describe('Diff View Commit Mode Integration Test', () => {
       return revisionsTimelineElement != null;
     });
 
-    waitsFor('amended commit to show in the revisions timeline', 5000, () => {
+    waitsFor('amended commit to show in the revisions timeline', () => {
       revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-title');
       return revisionLabels.length === 5 &&
         revisionLabels[1].textContent === commitMessage.split('\n')[0];

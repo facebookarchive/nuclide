@@ -117,7 +117,7 @@ describe('Diff View Browse Mode Integration Test', () => {
 
     let revisionLabels = [];
 
-    waitsFor('remote: revisions to load', 5000, () => {
+    waitsFor('remote: revisions to load', () => {
       revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-label');
       return revisionLabels.length > 0;
     });
@@ -130,7 +130,7 @@ describe('Diff View Browse Mode Integration Test', () => {
     });
 
     let diffFiles = [];
-    waitsFor('remote: file changes to load', 5000, () => {
+    waitsFor('remote: file changes to load', () => {
       diffFiles = treeElement.querySelectorAll('.file-change');
       return diffFiles.length > 2;
     });

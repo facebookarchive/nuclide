@@ -50,7 +50,7 @@ function testSettingsComponent(
   runs(() => {
     setValue(element, tmpValue);
   });
-  waitsFor(`${keyPath} config to update`, 5000, () => {
+  waitsFor(`${keyPath} config to update`, () => {
     return valueToString(featureConfig.get(keyPath)) === valueToString(tmpValue);
   });
   runs(() => {
@@ -61,7 +61,7 @@ function testSettingsComponent(
   runs(() => {
     featureConfig.set(keyPath, value);
   });
-  waitsFor(`${keyPath} element to update`, 5000, () => {
+  waitsFor(`${keyPath} element to update`, () => {
     return valueToString(getValue(element)) === valueToString(value);
   });
   runs(() => {
