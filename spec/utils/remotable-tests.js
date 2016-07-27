@@ -36,7 +36,7 @@ class LocalTestContext {
     this._projectPath = null;
 
     beforeEach(() => {
-      waitsForPromise(async () => {
+      waitsForPromise({label: 'local test setup'}, async () => {
         jasmineIntegrationTestSetup();
         await activateAllPackages();
       });
@@ -75,14 +75,14 @@ class RemoteTestContext {
       // Proxy parsing, generation, and loading is slow. This timeout covers
       // the average case. Blocks that need more time can specify it themselves.
       jasmine.getEnv().defaultTimeoutInterval = 10000;
-      waitsForPromise(async () => {
+      waitsForPromise({label: 'remote test setup'}, async () => {
         jasmineIntegrationTestSetup();
         await activateAllPackages();
       });
     });
 
     afterEach(() => {
-      waitsForPromise(async () => {
+      waitsForPromise({label: 'remote test cleanup'}, async () => {
         if (this._connection != null) {
           await stopNuclideServer(this._connection);
           this._connection = null;
