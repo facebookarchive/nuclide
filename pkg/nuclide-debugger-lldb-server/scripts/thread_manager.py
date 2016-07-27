@@ -45,8 +45,8 @@ class ThreadManager(object):
             })
         stopThreadId = process.GetSelectedThread().GetThreadID()
         if self._previousStopThreadId != stopThreadId:
-            self._threadSwitchMessage = "Switching from thread {0} to thread {1}".format(
-                self._previousStopThreadId, stopThreadId)
+            self._threadSwitchMessage = "Active thread switched from thread {0} to thread {1}" \
+                .format(self._previousStopThreadId, stopThreadId)
         else:
             self._threadSwitchMessage = None
         self._previousStopThreadId = stopThreadId
