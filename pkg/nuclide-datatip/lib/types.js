@@ -33,12 +33,5 @@ export type DatatipService = {
   removeProvider(provider: DatatipProvider): void,
   createPinnedDataTip(component: ReactClass<any>, range: atom$Range, pinnable?: boolean,
     editor: TextEditor, onDispose: (pinnedDatatip: PinnedDatatip) => void): PinnedDatatip,
-  createSimplePinnedDataTip(
-    message: string,
-    range: atom$Range,
-    pinnable?: boolean,
-    editor: TextEditor,
-    onDispose: (pinnedDatatip: PinnedDatatip) => void,
-  ): PinnedDatatip,
   deletePinnedDatatip(datatip: PinnedDatatip): void,
 };
