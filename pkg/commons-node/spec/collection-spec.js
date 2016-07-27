@@ -20,6 +20,7 @@ import {
   collect,
   MultiMap,
   objectEntries,
+  objectFromMap,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -277,6 +278,14 @@ describe('objectEntries', () => {
     const b = {b: 2};
     Object.setPrototypeOf(b, a);
     expect(objectEntries(b)).toEqual([['b', 2]]);
+  });
+
+});
+
+describe('objectFromMap', () => {
+
+  it('converts a map to an object', () => {
+    expect(objectFromMap(new Map([['a', 1], ['b', 2]]))).toEqual({a: 1, b: 2});
   });
 
 });

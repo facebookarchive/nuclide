@@ -224,3 +224,9 @@ export function objectEntries<T>(obj: {[key: string]: T}): Array<[string, T]> {
   }
   return entries;
 }
+
+export function objectFromMap<T>(map: Map<string, T>): {[key: string]: T} {
+  const obj = {};
+  map.forEach((v, k) => { obj[k] = v; });
+  return obj;
+}
