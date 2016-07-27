@@ -45,7 +45,7 @@ export function runTest(context: TestContext) {
   }
 
   function openDiffViewForTestFile() {
-    waitsForPromise(async () => {
+    waitsForPromise({timeout: 20000}, async () => {
       repoPath = await copyMercurialFixture('hg_repo_2', __dirname);
       localFilePath = nuclideUri.join(repoPath, TEST_FILE_NAME);
       invariant(repoPath != null);
