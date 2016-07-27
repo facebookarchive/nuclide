@@ -20,5 +20,5 @@ type Props = {
 
 /** A message view to be shown in Context View. */
 export const ContextViewMessage = (props: Props) => (
-  <div className="padded">{props.message}</div>
+  <div>{props.message}</div>
 );

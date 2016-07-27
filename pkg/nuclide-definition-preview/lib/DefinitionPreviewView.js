@@ -61,7 +61,7 @@ export class DefinitionPreviewView extends React.Component {
     // Show either the definition in an editor or a message
     if (this.props.definition != null) {
       return (
-        <div className="pane-item padded nuclide-definition-preview">
+        <div className="pane-item nuclide-definition-preview">
           {this._previewDefinition(this.props.definition)}
         </div>
       );

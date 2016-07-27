@@ -46,7 +46,9 @@ export class ProviderContainer extends React.Component {
           collapsable={true}
           onChange={this._setCollapsed}
           collapsed={this.state.collapsed}>
-          {this.props.children}
+          <div className="padded">
+            {this.props.children}
+          </div>
         </Section>
       </div>
     );
