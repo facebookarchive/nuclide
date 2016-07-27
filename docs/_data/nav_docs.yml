@@ -25,6 +25,7 @@
   - id: language-objective-c
   - id: language-cpp
   - id: language-python
+  - id: language-swift
   - id: language-other
 - title: Platforms
   items:
