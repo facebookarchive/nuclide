@@ -213,3 +213,14 @@ export class MultiMap<K, V> {
     return this._map.has(key);
   }
 }
+
+export function objectEntries<T>(obj: {[key: string]: T}): Array<[string, T]> {
+  if (obj == null) { throw new TypeError(); }
+  const entries = [];
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key) && Object.prototype.propertyIsEnumerable.call(obj, key)) {
+      entries.push([key, obj[key]]);
+    }
+  }
+  return entries;
+}

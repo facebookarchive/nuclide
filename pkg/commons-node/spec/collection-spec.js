@@ -19,6 +19,7 @@ import {
   setIntersect,
   collect,
   MultiMap,
+  objectEntries,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -255,4 +256,27 @@ describe('MultiMap', () => {
     expect(multimap.hasAny(1)).toBe(true);
     expect(multimap.hasAny(2)).toBe(false);
   });
+});
+
+describe('objectEntries', () => {
+
+  it('gets the entries of an object', () => {
+    expect(objectEntries({a: 1, b: 2})).toEqual([['a', 1], ['b', 2]]);
+  });
+
+  it('errors for null', () => {
+    expect(() => objectEntries((null: any))).toThrow();
+  });
+
+  it('errors for undefined', () => {
+    expect(() => objectEntries((null: any))).toThrow();
+  });
+
+  it('only includes own properties', () => {
+    const a = {a: 1};
+    const b = {b: 2};
+    Object.setPrototypeOf(b, a);
+    expect(objectEntries(b)).toEqual([['b', 2]]);
+  });
+
 });
