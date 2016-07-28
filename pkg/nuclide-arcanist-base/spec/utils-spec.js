@@ -13,7 +13,7 @@ import invariant from 'assert';
 
 import {getPhabricatorRevisionFromCommitMessage} from '../lib/utils';
 
-describe('nuclide-arcanist-client', () => {
+describe('utils', () => {
   const testCases = [
     [
       'Differential Revision: https://phabricator.intern.facebook.com/D169775',

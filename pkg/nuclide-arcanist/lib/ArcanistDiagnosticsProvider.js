@@ -24,6 +24,7 @@ import {trackTiming} from '../../nuclide-analytics';
 import onWillDestroyTextBuffer from '../../commons-atom/on-will-destroy-text-buffer';
 import {RequestSerializer} from '../../commons-node/promise';
 import invariant from 'assert';
+import aggregateFindDiagnostics from './aggregateFindDiagnostics';
 
 export class ArcanistDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
@@ -78,7 +79,7 @@ export class ArcanistDiagnosticsProvider {
       const blacklistedLinters: Array<string> =
         (featureConfig.get('nuclide-arcanist.blacklistedLinters'): any);
       const result = await this._requestSerializer.run(
-        require('../../nuclide-arcanist-client').findDiagnostics([filePath], blacklistedLinters),
+        aggregateFindDiagnostics([filePath], blacklistedLinters),
       );
       if (result.status === 'outdated') {
         return;

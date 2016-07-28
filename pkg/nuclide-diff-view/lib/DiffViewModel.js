@@ -43,7 +43,6 @@ export type DiffEntityOptions = {
 };
 
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-base/lib/utils';
-import arcanist from '../../nuclide-arcanist-client';
 import {CompositeDisposable, Emitter} from 'atom';
 import shell from 'shell';
 import {
@@ -68,6 +67,7 @@ import Rx from 'rxjs';
 import {notifyInternalError} from './notifications';
 import {bufferForUri, loadBufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
+import {getArcanistBaseServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
@@ -913,7 +913,10 @@ class DiffViewModel {
     }
 
     this._publishUpdates.next({level: 'log', text: 'Creating new revision...\n'});
-    const stream = arcanist.createPhabricatorRevision(filePath);
+    const stream = getArcanistBaseServiceByNuclideUri(filePath)
+      .createPhabricatorRevision(filePath)
+      .share();
+
     await this._processArcanistOutput(stream);
     const asyncHgRepo = activeRepositoryStack.getRepository().async;
     const headCommitMessagePromise = asyncHgRepo.getHeadCommitMessage();
@@ -943,7 +946,9 @@ class DiffViewModel {
       level: 'log',
       text: `Updating revision \`${phabricatorRevision.name}\`...\n`,
     });
-    const stream = arcanist.updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked);
+    const stream = getArcanistBaseServiceByNuclideUri(filePath)
+      .updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked)
+      .share();
     await this._processArcanistOutput(stream);
     return phabricatorRevision;
   }

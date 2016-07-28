@@ -10,9 +10,10 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import typeof * as ArcanistBaseService from '../../nuclide-arcanist-base';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 
-import invariant from 'assert';
+import nullthrows from '../../commons-node/nullthrows';
 
 import {RemoteConnection} from './RemoteConnection';
 import {RemoteDirectory} from './RemoteDirectory';
@@ -43,7 +44,9 @@ export {
 };
 
 export function getFileSystemServiceByNuclideUri(uri: NuclideUri): FileSystemService {
-  const service: ?FileSystemService = getServiceByNuclideUri('FileSystemService', uri);
-  invariant(service != null);
-  return service;
+  return nullthrows(getServiceByNuclideUri('FileSystemService', uri));
+}
+
+export function getArcanistBaseServiceByNuclideUri(uri: NuclideUri): ArcanistBaseService {
+  return nullthrows(getServiceByNuclideUri('ArcanistBaseService', uri));
 }
