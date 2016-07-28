@@ -17,7 +17,7 @@
         "title": "Maximum Message Count",
         "description": "The number of messages to save",
         "type": "number",
-        "default": 9999,
+        "default": 1000,
         "minimum": 1
       }
     },
