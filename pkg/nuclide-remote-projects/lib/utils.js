@@ -18,6 +18,7 @@ import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
+const NUCLIDE_PROTOCOL_PREFIX_WIN = 'nuclide:\\';
 const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
 
 export type OpenFileEditorInstance = {
@@ -46,6 +47,13 @@ export function sanitizeNuclideUri(uri_: string): string {
 
     uri = uri.substring(0, NUCLIDE_PROTOCOL_PREFIX_LENGTH) +
         '/' + uri.substring(NUCLIDE_PROTOCOL_PREFIX_LENGTH);
+  }
+
+  // On Windows path normalization converts all of the '/' chars to '\'
+  // we need to revert that
+  if (uri.startsWith(NUCLIDE_PROTOCOL_PREFIX_WIN)) {
+    uri = NUCLIDE_PROTOCOL_PREFIX + '/' +
+      uri.substring(NUCLIDE_PROTOCOL_PREFIX_LENGTH).replace(/\\/g, '/');
   }
   return uri;
 }
