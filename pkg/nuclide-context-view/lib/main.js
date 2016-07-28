@@ -11,6 +11,7 @@
 
 import type {ContextViewConfig, ContextProvider} from './ContextViewManager';
 import type {DefinitionService} from '../../nuclide-definition-service';
+import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import {ContextViewManager} from './ContextViewManager';
@@ -160,6 +161,26 @@ export async function consumeToolBar(getToolBar: GetToolBar): Promise<IDisposabl
     return disposable;
   }
   return new Disposable();
+}
+
+export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+  return {
+    name: 'nuclide-context-view',
+    isVisible(): boolean {
+      // IMPORTANT: The `manager != null && manager._isVisible check is an antipattern.
+      // Since distraction free mode requires a *synchronous* isVisible, this
+      // checks manager != null rather than using the GK-safe but async getContextViewManager().
+      // If you're modifying nuclide-context-view, use async getContextViewManager() unless
+      // you have a really good reason to directly reference `manager`.
+      return manager != null && manager._isVisible;
+    },
+    toggle(): void {
+      atom.commands.dispatch(
+        atom.views.getView(atom.workspace),
+        'nuclide-context-view:toggle',
+      );
+    },
+  };
 }
 
 export type NuclideContextView = typeof Service;

@@ -26,6 +26,11 @@
       "versions": {
         "0.0.0": "provideNuclideContextView"
       }
+    },
+    "nuclide-distraction-free-mode": {
+      "versions": {
+        "0.0.0": "getDistractionFreeModeProvider"
+      }
     }
   }
 }
