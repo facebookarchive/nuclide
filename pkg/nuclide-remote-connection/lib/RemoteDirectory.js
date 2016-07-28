@@ -109,7 +109,12 @@ export class RemoteDirectory {
           return this._handleNativeDeleteEvent();
       }
     }, error => {
-      logger.error('Failed to subscribe RemoteDirectory:', this._uri, error);
+      // TODO: Atom's Git repository API is still synchronous, so it creates RemoteDirectories for
+      // non-existent potential .git directories and checks their existence. This causes log spam,
+      // which is especially painful for testing.
+      if (nuclideUri.basename(this._uri) !== '.git') {
+        logger.error('Failed to subscribe RemoteDirectory:', this._uri, error);
+      }
       this._watchSubscription = null;
     }, () => {
       // Nothing needs to be done if the root directory watch has ended.
