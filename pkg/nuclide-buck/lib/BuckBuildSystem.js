@@ -31,7 +31,7 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {observableToTaskInfo} from '../../commons-node/observableToTaskInfo';
 import {createBuckProject} from '../../nuclide-buck-base';
 import {getLogger} from '../../nuclide-logging';
-import {startPackager} from '../../nuclide-react-native-common';
+import {startPackager} from '../../nuclide-react-native-base';
 import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
