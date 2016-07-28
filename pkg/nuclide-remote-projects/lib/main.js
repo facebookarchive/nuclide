@@ -93,6 +93,11 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
   atom.project.addPath(workingDirectoryUri);
 
   const subscription = atom.project.onDidChangePaths(() => {
+    // When removing a project in an integration test, skip the cleanup.
+    if (atom.inSpecMode()) {
+      return;
+    }
+
     // Delay closing the underlying socket connection until registered subscriptions have closed.
     // We should never depend on the order of registration of the `onDidChangePaths` event,
     // which also dispose consumed service's resources.

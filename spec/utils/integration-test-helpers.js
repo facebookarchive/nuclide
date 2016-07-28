@@ -129,6 +129,9 @@ export async function stopNuclideServer(
   connection: RemoteConnection,
 ): Promise<void> {
   const path = connection.getUriForInitialWorkingDirectory();
+  // Clean up the underlying Hg repository (if it exists) by removing the project.
+  // Otherwise, we'll have dangling subscriptions that error when the server exits.
+  atom.project.removePath(path);
   const service: ?FlowService = getServiceByNuclideUri('FlowService', path);
   invariant(service);
   service.dispose();
