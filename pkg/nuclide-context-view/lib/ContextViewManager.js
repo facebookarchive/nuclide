@@ -21,6 +21,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import {observeTextEditorsPositions} from '../../commons-atom/debounced';
 import {Observable} from 'rxjs';
 import {trackOperationTiming} from '../../nuclide-analytics';
+import analytics from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 import {ContextViewPanel} from './ContextViewPanel';
 import {ProviderContainer} from './ProviderContainer';
@@ -87,6 +88,7 @@ export class ContextViewManager {
   }
 
   hide(): void {
+    analytics.track('nuclide-context-view:hide');
     if (this._isVisible) {
       this._isVisible = false;
       this._render();
@@ -157,11 +159,15 @@ export class ContextViewManager {
             : Observable.empty();
         })
         .map((queryResult: ?DefinitionQueryResult) => {
-          return (queryResult != null)
-            ? queryResult.definitions[0]
-            // We do want to return null sometimes so providers can show
-            // "No definition selected"
-            : null;
+          if (queryResult != null) {
+            analytics.track('nuclide-context-view:filterQueryResults', {
+              definitionsReturned: queryResult.definitions.length,
+            });
+            // TODO (@reesjones) Handle case where multiple definitions are shown
+            return queryResult.definitions[0];
+          }
+          // We do want to return null sometimes so providers can show "No definition selected"
+          return null;
         })
         .subscribe((def: ?Definition) => this.updateCurrentDefinition(def));
       return;
@@ -174,6 +180,7 @@ export class ContextViewManager {
   }
 
   show(): void {
+    analytics.track('nuclide-context-view:show');
     if (!this._isVisible) {
       this._isVisible = true;
       this._render();
