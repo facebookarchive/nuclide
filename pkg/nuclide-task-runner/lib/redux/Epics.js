@@ -12,8 +12,8 @@
 import type {Action, AppState, Store, TaskId, TaskMetadata, TaskRunner} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
+import {observableFromTask} from '../../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
-import once from '../../../commons-node/once';
 import {bindObservableAsProps} from '../../../nuclide-ui/lib/bindObservableAsProps';
 import {Toolbar} from '../ui/Toolbar';
 import {getActiveTaskRunner} from '../getActiveTaskRunner';
@@ -214,7 +214,6 @@ export function stopTaskEpic(
       const {taskStatus} = store.getState();
       const task = taskStatus == null ? null : taskStatus.task;
       if (task == null) { return Observable.empty(); }
-      task.cancel();
       return Observable.of({
         type: Actions.TASK_STOPPED,
         payload: {task},
@@ -273,55 +272,28 @@ function createTaskObservable(
   taskMeta: TaskMetadata,
   getState: () => AppState,
 ): Observable<Action> {
-  let finished;
-  // $FlowFixMe(matthewwithanm): Type this.
-  return Observable.using(
-    () => {
-      let task = taskRunner.runTask(taskMeta.type);
-      // We may call cancel multiple times so let's make sure it's idempotent.
-      task = {...task, cancel: once(task.cancel)};
-      finished = false;
-      return {
-        task,
-        unsubscribe() {
-          if (!finished) {
-            task.cancel();
-          }
-        },
-      };
-    },
-    ({task}) => Observable.of(task),
-  )
-    .switchMap(task => {
-      const progressStream = task.observeProgress == null
-        ? Observable.empty()
-        : observableFromSubscribeFunction(
-            task.observeProgress.bind(task),
-          );
+  return Observable.defer(() => {
+    const task = taskRunner.runTask(taskMeta.type);
+    const events = observableFromTask(task);
 
-      return Observable
-        .of({
-          type: Actions.TASK_STARTED,
-          payload: {task},
-        })
-        .concat(
-          progressStream.map(progress => ({
+    return Observable
+      .of({
+        type: Actions.TASK_STARTED,
+        payload: {task},
+      })
+      .concat(
+        events
+          .filter(event => event.type === 'progress')
+          .map(event => ({
             type: Actions.TASK_PROGRESS,
-            payload: {progress},
+            payload: {progress: event.progress},
           })),
-        )
-        .merge(
-          observableFromSubscribeFunction(task.onDidError.bind(task))
-            .map(err => { throw err; }),
-        )
-        .takeUntil(
-          observableFromSubscribeFunction(task.onDidComplete.bind(task)),
-        )
-        .concat(Observable.of({
-          type: Actions.TASK_COMPLETED,
-          payload: {task},
-        }));
-    })
+      )
+      .concat(Observable.of({
+        type: Actions.TASK_COMPLETED,
+        payload: {task},
+      }));
+  })
     .catch(error => {
       atom.notifications.addError(
         `The task "${taskMeta.label}" failed`,
@@ -338,9 +310,6 @@ function createTaskObservable(
           task: taskStatus == null ? null : taskStatus.task,
         },
       });
-    })
-    .finally(() => {
-      finished = true;
     })
     .share();
 }

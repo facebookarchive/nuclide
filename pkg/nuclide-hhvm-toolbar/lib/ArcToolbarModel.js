@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {TaskEvent, TaskMetadata} from '../../nuclide-task-runner/lib/types';
+import type {TaskEvent} from '../../commons-node/tasks';
+import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {Observable, Subject} from 'rxjs';

@@ -9,18 +9,19 @@
  * the root directory of this source tree.
  */
 
-import type {Task, TaskEvent, TaskMetadata} from '../../nuclide-task-runner/lib/types';
+import type {Task, TaskEvent} from '../../commons-node/tasks';
+import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Message} from '../../nuclide-console/lib/types';
 
 import {CompositeDisposable} from 'atom';
 import {DisposableSubscription} from '../../commons-node/stream';
+import {taskFromObservable} from '../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import HhvmIcon from './ui/HhvmIcon';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
 import {Observable, Subject} from 'rxjs';
-import {observableToTaskInfo} from '../../commons-node/observableToTaskInfo';
 
 export default class HhvmBuildSystem {
   _model: ArcToolbarModelType;
@@ -92,7 +93,7 @@ export default class HhvmBuildSystem {
     }
 
     const taskFunction = getTaskRunFunction(this._model, taskType);
-    return observableToTaskInfo(taskFunction());
+    return taskFromObservable(taskFunction());
   }
 
   dispose(): void {

@@ -9,50 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {Task} from '../../commons-node/tasks';
 import type {TaskMetadata} from '../lib/types';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {BehaviorSubject} from 'rxjs';
-import {Disposable} from 'atom';
-
-const noop = () => {};
-const noopErrCallback = err_ => {};
-
-export class Task {
-  // In the real version, you'd be able to add multiple callbacks for each event.
-  _complete: () => mixed;
-  _error: (error: Error) => mixed;
-  _progress: BehaviorSubject<?number>;
-
-  constructor() {
-    this._progress = new BehaviorSubject(null);
-    this._complete = noop;
-    this._error = noopErrCallback;
-  }
-
-  observeProgress(callback: (progress: ?number) => mixed): IDisposable {
-    return new DisposableSubscription(
-      this._progress.subscribe(progress => { callback(progress); }),
-    );
-  }
-
-  onDidComplete(callback: () => mixed): IDisposable {
-    this._complete = callback;
-    return new Disposable(() => {
-      this._complete = noop;
-    });
-  }
-
-  onDidError(callback: (error: Error) => mixed): IDisposable {
-    this._error = callback;
-    return new Disposable(() => {
-      this._error = noopErrCallback;
-    });
-  }
-
-  cancel(): void {
-  }
-}
 
 export class TaskRunner {
   _taskLists: BehaviorSubject<Array<TaskMetadata>>;

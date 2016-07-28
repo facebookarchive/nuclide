@@ -8,11 +8,12 @@
  * @flow
  */
 
+import type {Task} from '../../commons-node/tasks';
 import type {Octicon} from '../../nuclide-ui/lib/Octicons';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
-import {Directory as LocalDirectory} from 'atom';
+import type {Directory as LocalDirectoryType} from 'atom';
 
-export type Directory = LocalDirectory | RemoteDirectory;
+export type Directory = LocalDirectoryType | RemoteDirectory;
 
 export type AppState = {
   activeTaskId: ?TaskId,
@@ -27,16 +28,6 @@ export type AppState = {
   },
   visible: boolean,
 };
-
-type TaskProgressEvent = {
-  kind: 'progress',
-  progress: ?number,
-};
-
-/**
- * Currently, there's only one type of task event, but we may add more (e.g. status).
- */
-export type TaskEvent = TaskProgressEvent;
 
 export type SerializedAppState = {
   previousSessionActiveTaskId: ?TaskId,
@@ -76,14 +67,6 @@ export type TaskRunnerInfo = {
   id: string,
   name: string,
 };
-
-export interface Task {
-  observeProgress?: (callback: (progress: ?number) => mixed) => IDisposable,
-  onDidComplete(callback: () => mixed): IDisposable,
-  onDidError(callback: (error: Error) => mixed): IDisposable,
-  cancel(): void,
-  getTrackingData?: () => Object,
-}
 
 export type Store = {
   getState(): AppState,

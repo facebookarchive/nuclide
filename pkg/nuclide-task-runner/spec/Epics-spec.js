@@ -12,11 +12,11 @@
 import type {Action, AppState, Store} from '../lib/types';
 
 import {ActionsObservable, combineEpics} from '../../commons-node/redux-observable';
+import {taskFromObservable} from '../../commons-node/tasks';
 import * as Actions from '../lib/redux/Actions';
 import * as Epics from '../lib/redux/Epics';
 import {createEmptyAppState} from '../lib/createEmptyAppState';
 import * as dummy from './dummy';
-import invariant from 'assert';
 import {ReplaySubject, Subject} from 'rxjs';
 
 function getRootEpic() {
@@ -28,21 +28,35 @@ function getRootEpic() {
 
 describe('Epics', () => {
 
-  describe('STOP_TASK', () => {
+  describe('TASK_STOPPED', () => {
 
     it('cancels the current task', () => {
       waitsForPromise(async () => {
-        const task = new dummy.Task();
+        const task = taskFromObservable(new Subject());
+        const taskRunner = new dummy.TaskRunner();
+        spyOn(taskRunner, 'runTask').andReturn(task);
         spyOn(task, 'cancel');
         const state = {
           ...createEmptyAppState(),
-          taskStatus: {
-            task,
-            progress: 0,
-          },
+          activeTaskId: {type: 'test-task', taskRunnerId: 'test'},
+          taskRunners: new Map([['test', taskRunner]]),
+          taskLists: new Map([['test', [
+            {
+              type: 'test-task',
+              taskRunnerId: 'test',
+              taskRunnerName: 'Build System',
+              label: 'Test Task',
+              description: 'A great task to test',
+              enabled: true,
+              icon: 'squirrel',
+            },
+          ]]]),
         };
-        const result = await runActions([{type: Actions.STOP_TASK}], state).toArray().toPromise();
-        expect(result.map(action => action.type)).toEqual([Actions.TASK_STOPPED]);
+        const actions = [
+          Actions.runTask({type: 'test-task', taskRunnerId: 'test'}),
+          {type: Actions.TASK_STOPPED, payload: {task}},
+        ];
+        await runActions(actions, state).toArray().toPromise();
         expect(task.cancel).toHaveBeenCalled();
       });
     });
@@ -53,20 +67,12 @@ describe('Epics', () => {
 
     it('runs a task to completion', () => {
       waitsForPromise(async () => {
-        const cancelSpy = jasmine.createSpy('task.cancel');
-        let completeTask;
-
         const taskRunner = new dummy.TaskRunner();
-        spyOn(taskRunner, 'runTask').andReturn({
-          onDidComplete(cb) {
-            completeTask = cb;
-            return {dispose: () => {}};
-          },
-          onDidError() {
-            return {dispose: () => {}};
-          },
-          cancel: cancelSpy,
-        });
+        const taskEvents = new Subject();
+        const task = taskFromObservable(taskEvents);
+        spyOn(task, 'cancel');
+        spyOn(task, 'onDidComplete').andCallThrough();
+        spyOn(taskRunner, 'runTask').andReturn(task);
 
         const state = {
           ...createEmptyAppState(),
@@ -101,15 +107,15 @@ describe('Epics', () => {
           state,
         );
 
-        invariant(completeTask != null, 'completeTask should be set');
-        completeTask();
+        expect(task.onDidComplete).toHaveBeenCalled();
+        taskEvents.complete();
 
         const result = await output.toArray().toPromise();
         expect(result.map(action => action.type)).toEqual([
           Actions.TASK_STARTED,
           Actions.TASK_COMPLETED,
         ]);
-        expect(cancelSpy).not.toHaveBeenCalled();
+        expect(task.cancel).not.toHaveBeenCalled();
       });
     });
 

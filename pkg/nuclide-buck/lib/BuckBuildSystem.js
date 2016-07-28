@@ -10,10 +10,9 @@
  */
 
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {Task, TaskEvent} from '../../commons-node/tasks';
 import type {
   Directory,
-  TaskEvent,
-  Task,
   TaskMetadata,
 } from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
@@ -28,7 +27,7 @@ import {quote} from 'shell-quote';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {observableToTaskInfo} from '../../commons-node/observableToTaskInfo';
+import {taskFromObservable} from '../../commons-node/tasks';
 import {createBuckProject} from '../../nuclide-buck-base';
 import {getLogger} from '../../nuclide-logging';
 import {startPackager} from '../../nuclide-react-native-base';
@@ -167,16 +166,12 @@ export class BuckBuildSystem {
     );
 
     const resultStream = this._runTaskType(taskType);
-    const taskInfo = observableToTaskInfo(resultStream);
-    invariant(taskInfo.observeProgress != null);
+    const task = taskFromObservable(resultStream);
     return {
-      // Flow can't check ...taskInfo due to the optional args.
-      observeProgress: taskInfo.observeProgress,
-      onDidComplete: taskInfo.onDidComplete,
-      onDidError: taskInfo.onDidError,
+      ...task,
       cancel: () => {
         this._logOutput('Build cancelled.', 'warning');
-        taskInfo.cancel();
+        task.cancel();
       },
       getTrackingData: () => {
         const {store} = this._getFlux();
@@ -273,10 +268,7 @@ export class BuckBuildSystem {
         )
           .switchMap(event => {
             if (event.type === 'progress') {
-              return Observable.of({
-                kind: 'progress',
-                progress: event.progress,
-              });
+              return Observable.of(event);
             } else if (event.type === 'log') {
               this._logOutput(event.message, event.level);
             }

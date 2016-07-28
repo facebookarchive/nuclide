@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {Directory, Task, TaskMetadata} from '../../../nuclide-task-runner/lib/types';
+import type {Task} from '../../../commons-node/tasks';
+import type {Directory, TaskMetadata} from '../../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../../nuclide-console/lib/types';
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 
-import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {Dispatcher} from 'flux';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -21,7 +21,7 @@ import {React} from 'react-for-atom';
 import {DisposableSubscription} from '../../../commons-node/stream';
 import fsPromise from '../../../commons-node/fsPromise';
 import {observeProcess, safeSpawn} from '../../../commons-node/process';
-import {observableToTaskInfo} from '../../../commons-node/observableToTaskInfo';
+import {taskFromObservable} from '../../../commons-node/tasks';
 import SwiftPMTaskRunnerStore from './SwiftPMTaskRunnerStore';
 import SwiftPMTaskRunnerActions from './SwiftPMTaskRunnerActions';
 import {buildCommand, testCommand} from './SwiftPMTaskRunnerCommands';
@@ -162,12 +162,9 @@ export class SwiftPMTaskRunner {
       }
     }).ignoreElements();
 
-    const task = observableToTaskInfo(observable);
-    invariant(task.observeProgress != null);
+    const task = taskFromObservable(observable);
     return {
-      observeProgress: task.observeProgress,
-      onDidComplete: task.onDidComplete,
-      onDidError: task.onDidError,
+      ...task,
       cancel: () => {
         this._logOutput('Task cancelled.', 'warning');
         task.cancel();
