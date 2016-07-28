@@ -30,5 +30,13 @@
     },
     "packageType": "Atom",
     "testRunner": "apm"
+  },
+  "providedServices": {
+    "nuclide-notifications.provideRaiseNativeNotification": {
+      "versions": {
+        "description": "A function for raising native notifications.",
+        "0.0.0": "provideRaiseNativeNotification"
+      }
+    }
   }
 }

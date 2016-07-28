@@ -72,6 +72,10 @@ function raiseNativeNotification(title: string, body: string): void {
   );
 }
 
+export function provideRaiseNativeNotification(): typeof raiseNativeNotification {
+  return raiseNativeNotification;
+}
+
 export function deactivate(): void {
   subscriptions.dispose();
   subscriptions = (null: any);
