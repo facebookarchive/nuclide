@@ -11,7 +11,7 @@
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
-import {BuckProject} from '../../nuclide-buck-base';
+import {BuckProject} from '../../nuclide-buck-rpc';
 
 const BUCK_GEN_PATH = 'buck-out/gen';
 const LINK_TREE_SUFFIXES = {

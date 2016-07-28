@@ -9,14 +9,12 @@
  * the root directory of this source tree.
  */
 
-import typeof * as BuckService from './BuckProject';
-import type {BuckProject} from './BuckProject';
+import typeof * as BuckService from '../../nuclide-buck-rpc';
+import type {BuckProject} from '../../nuclide-buck-rpc';
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-
-export {BuckProject} from './BuckProject';
 
 const buckProjectDirectoryByPath: Map<string, string> = new Map();
 const buckProjectForBuckProjectDirectory: Map<string, BuckProject> = new Map();

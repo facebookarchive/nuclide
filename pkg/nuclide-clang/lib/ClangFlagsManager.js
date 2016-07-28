@@ -18,7 +18,7 @@ import {parse} from 'shell-quote';
 import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
-import {BuckProject} from '../../nuclide-buck-base';
+import {BuckProject} from '../../nuclide-buck-rpc';
 import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';
 
 const logger = getLogger();

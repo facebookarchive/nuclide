@@ -4,12 +4,9 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides API to work with Buck",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Node",
-    "testsCannotBeRunInParallel": true,
-    "testRunner": "npm"
-  },
-  "scripts": {
-    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+    "testRunner": "apm"
   }
 }

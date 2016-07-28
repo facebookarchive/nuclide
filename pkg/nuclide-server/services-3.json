@@ -4,7 +4,7 @@
     "name": "ArcanistBaseService"
   },
   {
-    "implementation": "../nuclide-buck-base/lib/BuckProject.js",
+    "implementation": "../nuclide-buck-rpc/lib/BuckProject.js",
     "name": "BuckProject"
   },
   {

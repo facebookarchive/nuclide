@@ -17,7 +17,7 @@ import type {
   TaskMetadata,
 } from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
-import type {BuckProject} from '../../nuclide-buck-base';
+import type {BuckProject} from '../../nuclide-buck-rpc';
 import type {BuckSubcommand, SerializedState, TaskType} from './types';
 
 import invariant from 'assert';

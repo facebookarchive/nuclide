@@ -11,7 +11,7 @@
 
 type Target = {path: NuclideUri, name: string};
 
-import type {BuckProject} from '../../nuclide-buck-base';
+import type {BuckProject} from '../../nuclide-buck-rpc';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Point} from 'atom';
 

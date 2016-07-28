@@ -10,7 +10,7 @@
  */
 
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
-import type {BuckProject} from '../../nuclide-buck-base';
+import type {BuckProject} from '../../nuclide-buck-rpc';
 import type RemoteControlService from '../../nuclide-debugger-atom/lib/RemoteControlService';
 import type {BuckEvent} from './BuckEventStream';
 

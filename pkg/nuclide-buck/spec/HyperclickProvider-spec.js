@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {BuckProject} from '../../nuclide-buck-base';
+import {BuckProject} from '../../nuclide-buck-rpc';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import {findTargetLocation, parseTarget} from '../lib/HyperclickProvider';
