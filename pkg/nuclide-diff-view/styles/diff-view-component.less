@@ -277,6 +277,33 @@ atom-text-editor, atom-text-editor::shadow {
     margin-left: 5px;
     margin-right: 5px;
     overflow-y: auto;
+
+    /*
+     * overriding styles for atom-text-editor to make mini and multiline
+     * editor have the similar color schemes based on the themes.
+     */
+    atom-text-editor,
+    atom-text-editor[mini] {
+      background-color: @input-background-color;
+      line-height: @component-line-height;
+      border-radius: @component-border-radius;
+      padding-left: @component-padding/2;
+
+      &.is-focused {
+	      border-color: @input-selection-color-focus;
+	      box-shadow: 0 0 0 1px @input-selection-color-focus;
+      }
+    }
+
+    /*
+     * This is to prevent the cursor line to have a different background
+     * compared to the mini atom inputs.
+     *
+     * Ref: https://atom.io/packages/block-cursor
+     */
+     atom-text-editor::shadow .lines .line.cursor-line {
+       background-color: transparent;
+     }
   }
 }
 
