@@ -19,6 +19,7 @@ import {ContextViewMessage, NO_DEFINITION_MESSAGE}
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
+import analytics from '../../nuclide-analytics';
 
 export type Location = {
   path: string,
@@ -43,7 +44,7 @@ export class DefinitionPreviewView extends React.Component {
   constructor(props: Props) {
     super(props);
     this._loadAndScroll = null;
-    (this: any)._openFile = this._openFile.bind(this);
+    (this: any)._openInMainEditor = this._openInMainEditor.bind(this);
   }
 
   componentWillReceiveProps(newProps: Props): void {
@@ -114,7 +115,7 @@ export class DefinitionPreviewView extends React.Component {
           syncTextContents={false}
         />
         <div className="nuclide-definition-preview-button-container">
-          <Button onClick={this._openFile} size={ButtonSizes.SMALL}>
+          <Button onClick={this._openInMainEditor} size={ButtonSizes.SMALL}>
             Open in main editor
           </Button>
         </div>
@@ -122,7 +123,8 @@ export class DefinitionPreviewView extends React.Component {
     );
   }
 
-  _openFile(): void {
+  _openInMainEditor(): void {
+    analytics.track('nuclide-definition-preview:openInMainEditor');
     const def = this.props.definition;
     if (def != null) {
       goToLocation(def.path, def.position.row, def.position.column, true);
