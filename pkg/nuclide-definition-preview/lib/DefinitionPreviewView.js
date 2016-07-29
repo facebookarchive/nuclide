@@ -17,7 +17,7 @@ import {React} from 'react-for-atom';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
-import analytics from '../../nuclide-analytics';
+import {track} from '../../nuclide-analytics';
 
 export type Location = {
   path: string,
@@ -118,7 +118,7 @@ export class DefinitionPreviewView extends React.Component {
   }
 
   _openInMainEditor(): void {
-    analytics.track('nuclide-definition-preview:openInMainEditor');
+    track('nuclide-definition-preview:openInMainEditor');
     const def = this.props.definition;
     if (def != null) {
       goToLocation(def.path, def.position.row, def.position.column, true);

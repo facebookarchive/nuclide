@@ -9,11 +9,9 @@
  * the root directory of this source tree.
  */
 
-import main from '..';
+import {trackTiming} from '..';
 import * as track from '../lib/track';
 import invariant from 'assert';
-
-const trackTiming = main.trackTiming;
 
 class TestClass {
   _methodBodyToBeTracked: any;

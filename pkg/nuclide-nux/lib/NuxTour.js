@@ -14,7 +14,7 @@ import type {
   NuxTriggerType,
 } from './NuxModel';
 
-import analytics from '../../nuclide-analytics';
+import {track} from '../../nuclide-analytics';
 import {maybeToString} from '../../commons-node/string';
 import {NuxView} from './NuxView';
 
@@ -108,7 +108,7 @@ export class NuxTour {
     completed: boolean = false,
     error: ?string,
   ): void {
-    analytics.track(
+    track(
       'nux-tour-action',
       {
         tourId: this._id,

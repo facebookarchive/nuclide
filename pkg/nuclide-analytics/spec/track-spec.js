@@ -9,11 +9,9 @@
  * the root directory of this source tree.
  */
 
-import main from '..';
+import {startTracking, trackImmediate} from '..';
 import * as track from '../lib/track';
 import invariant from 'assert';
-
-const startTracking = main.startTracking;
 
 describe('startTracking', () => {
   let trackKey;
@@ -89,7 +87,7 @@ describe('trackImmediate', () => {
 
   it('should call track with immediate = true', () => {
     waitsForPromise(async () => {
-      const result = await main.trackImmediate('test', {});
+      const result = await trackImmediate('test', {});
       expect(result).toBe(1);
       expect(spy).toHaveBeenCalledWith('test', {}, true);
     });

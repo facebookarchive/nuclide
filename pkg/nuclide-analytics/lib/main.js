@@ -16,14 +16,15 @@ import {DisposableSubscription} from '../../commons-node/stream';
 import {isPromise} from '../../commons-node/promise';
 import {maybeToString} from '../../commons-node/string';
 import {track as rawTrack} from './track';
-import {HistogramTracker} from './HistogramTracker';
+
+export {HistogramTracker} from './HistogramTracker';
 
 export type TrackingEvent = {
   type: string,
   data?: Object,
 };
 
-function track(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {
+export function track(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {
   invariant(rawTrack);
   return rawTrack(eventName, values || {});
 }
@@ -32,7 +33,7 @@ function track(eventName: string, values?: {[key: string]: mixed}): Promise<mixe
  * Track an analytics event and send it off immediately.
  * The returned promise will resolve when the request completes (or reject on failure).
  */
-function trackImmediate(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {
+export function trackImmediate(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {
   invariant(rawTrack);
   return rawTrack(eventName, values || {}, true);
 }
@@ -41,14 +42,14 @@ function trackImmediate(eventName: string, values?: {[key: string]: mixed}): Pro
  * An alternative interface for `track` that accepts a single event object. This is particularly
  * useful when dealing with streams (Observables).
  */
-function trackEvent(event: TrackingEvent): Promise<mixed> {
+export function trackEvent(event: TrackingEvent): Promise<mixed> {
   return track(event.type, event.data);
 }
 
 /**
  * Track each event in a stream of TrackingEvents.
  */
-function trackEvents(events: Rx.Observable<TrackingEvent>): IDisposable {
+export function trackEvents(events: Rx.Observable<TrackingEvent>): IDisposable {
   return new DisposableSubscription(events.subscribe(trackEvent));
 }
 
@@ -76,7 +77,7 @@ function trackEvents(events: Rx.Observable<TrackingEvent>): IDisposable {
  *    `$className.$methodName` for Class method or `Object.$methodName` for Object method.
  * @returns A decorator.
  */
-function trackTiming(eventName_: ?string = null): any {
+export function trackTiming(eventName_: ?string = null): any {
   let eventName = eventName_;
 
   return (target: any, name: string, descriptor: any) => {
@@ -119,7 +120,7 @@ const getTimestamp = (): number => {
 
 const PERFORMANCE_EVENT = 'performance';
 
-class TimingTracker {
+export class TimingTracker {
   _eventName: string;
   _startTime: number;
 
@@ -146,7 +147,7 @@ class TimingTracker {
   }
 }
 
-function startTracking(eventName: string): TimingTracker {
+export function startTracking(eventName: string): TimingTracker {
   return new TimingTracker(eventName);
 }
 
@@ -159,7 +160,7 @@ function startTracking(eventName: string): TimingTracker {
  *
  * Returns (or throws) the result of the operation.
  */
-function trackOperationTiming<T>(eventName: string, operation: () => T): T {
+export function trackOperationTiming<T>(eventName: string, operation: () => T): T {
   const tracker = startTracking(eventName);
 
   try {
@@ -186,15 +187,3 @@ function trackOperationTiming<T>(eventName: string, operation: () => T): T {
     throw error;
   }
 }
-
-module.exports = {
-  track,
-  trackImmediate,
-  trackEvent,
-  trackEvents,
-  trackOperationTiming,
-  startTracking,
-  TimingTracker,
-  trackTiming,
-  HistogramTracker,
-};

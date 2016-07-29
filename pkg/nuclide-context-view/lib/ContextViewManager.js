@@ -21,8 +21,7 @@ import invariant from 'assert';
 import {React, ReactDOM} from 'react-for-atom';
 import {observeTextEditorsPositions} from '../../commons-atom/debounced';
 import {Observable} from 'rxjs';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import analytics from '../../nuclide-analytics';
+import {track, trackOperationTiming} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 import ContextViewMessage from './ContextViewMessage';
 import {ContextViewPanel} from './ContextViewPanel';
@@ -76,7 +75,7 @@ export class ContextViewManager {
   }
 
   hide(): void {
-    analytics.track('nuclide-context-view:hide');
+    track('nuclide-context-view:hide');
     if (this._isVisible) {
       this._isVisible = false;
       this._render();
@@ -148,7 +147,7 @@ export class ContextViewManager {
         })
         .map((queryResult: ?DefinitionQueryResult) => {
           if (queryResult != null) {
-            analytics.track('nuclide-context-view:filterQueryResults', {
+            track('nuclide-context-view:filterQueryResults', {
               definitionsReturned: queryResult.definitions.length,
             });
             // TODO (@reesjones) Handle case where multiple definitions are shown
@@ -168,7 +167,7 @@ export class ContextViewManager {
   }
 
   show(): void {
-    analytics.track('nuclide-context-view:show');
+    track('nuclide-context-view:show');
     if (!this._isVisible) {
       this._isVisible = true;
       this._render();

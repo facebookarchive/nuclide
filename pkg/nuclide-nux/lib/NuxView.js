@@ -12,7 +12,7 @@
 import {CompositeDisposable, Disposable} from 'atom';
 import debounce from '../../commons-node/debounce';
 import {maybeToString} from '../../commons-node/string';
-import analytics from '../../nuclide-analytics';
+import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 
 const VALID_NUX_POSITIONS = new Set(['top', 'bottom', 'left', 'right', 'auto']);
@@ -258,7 +258,7 @@ export class NuxView {
     message: string,
     error: ?string,
   ): void {
-    analytics.track(
+    track(
       'nux-view-action',
       {
         tourId: this._tourId,

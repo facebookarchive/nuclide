@@ -23,7 +23,7 @@ import {
 import {maybeToString} from '../../commons-node/string';
 
 import {getLogger} from '../../nuclide-logging';
-import analytics from '../../nuclide-analytics';
+import {track} from '../../nuclide-analytics';
 
 import {NuxStore} from './NuxStore';
 import {NuxTour} from './NuxTour';
@@ -296,7 +296,7 @@ export class NuxManager {
     message: string,
     error: ?string = null,
   ): void {
-    analytics.track(
+    track(
       'nux-manager-action',
       {
         tourId: id,

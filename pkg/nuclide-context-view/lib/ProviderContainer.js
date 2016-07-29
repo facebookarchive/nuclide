@@ -11,7 +11,7 @@
 
 import {React} from 'react-for-atom';
 import {Section} from '../../nuclide-ui/lib/Section';
-import analytics from '../../nuclide-analytics';
+import {track} from '../../nuclide-analytics';
 
 type Props = {
   title: string,
@@ -56,7 +56,7 @@ export class ProviderContainer extends React.Component {
 
   _setCollapsed(collapsed: boolean): void {
     this.setState({collapsed});
-    analytics.track('nuclide-context-view-toggle-provider', {
+    track('nuclide-context-view-toggle-provider', {
       title: this.props.title,
       collapsed: String(collapsed),
     });
