@@ -870,7 +870,7 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
      * @param {?DebuggerAgent.BreakpointId} breakpointId
      * @param {!Array.<!WebInspector.DebuggerModel.Location>} locations
      */
-    _didSetBreakpointInDebugger: function(callback, breakpointId, locations)
+    _didSetBreakpointInDebugger: function(callback, breakpointId, resolved, locations)
     {
         if (this._cancelCallback) {
             this._cancelCallback = false;
@@ -886,9 +886,12 @@ WebInspector.BreakpointManager.TargetBreakpoint.prototype = {
 
         this._debuggerId = breakpointId;
         this.target().debuggerModel.addBreakpointListener(this._debuggerId, this._breakpointResolved, this);
-        for (var i = 0; i < locations.length; ++i) {
-            if (!this._addResolvedLocation(locations[i]))
-                break;
+        if (resolved !== false) // true or undefined.
+        {
+            for (var i = 0; i < locations.length; ++i) {
+                if (!this._addResolvedLocation(locations[i]))
+                    break;
+            }
         }
         callback();
     },

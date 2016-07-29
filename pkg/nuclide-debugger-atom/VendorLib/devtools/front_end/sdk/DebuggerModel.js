@@ -274,13 +274,14 @@ WebInspector.DebuggerModel.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.BreakpointId} breakpointId
+         * @param {!Boolean} resolved
          * @param {!Array.<!DebuggerAgent.Location>} locations
          */
-        function didSetBreakpoint(error, breakpointId, locations)
+        function didSetBreakpoint(error, breakpointId, resolved, locations)
         {
             if (callback) {
                 var rawLocations = locations ? locations.map(WebInspector.DebuggerModel.Location.fromPayload.bind(WebInspector.DebuggerModel.Location, target)) : [];
-                callback(error ? null : breakpointId, rawLocations);
+                callback(error ? null : breakpointId, resolved, rawLocations);
             }
         }
         this._agent.setBreakpointByUrl(lineNumber, url, undefined, columnNumber, condition, didSetBreakpoint);
