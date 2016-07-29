@@ -20,6 +20,7 @@ import type {
 } from '..';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {TextEdit} from './applyTextEdits';
 
 import applyTextEdits from './applyTextEdits';
 import {arrayRemove, MultiMap} from '../../commons-node/collection';
@@ -323,48 +324,55 @@ class DiagnosticStore {
    */
 
   applyFix(message: FileDiagnosticMessage): void {
-    const succeeded = this._applySingleFix(message);
-    if (!succeeded) {
+    this._applyFixes(message.filePath, message);
+  }
+
+  applyFixesForFile(file: NuclideUri): void {
+    this._applyFixes(file, ...this._getFileMessages(file));
+  }
+
+  // Precondition: all messages have the given filePath
+  _applyFixes(filePath: NuclideUri, ...messages: Array<FileDiagnosticMessage>): void {
+    const messagesWithFixes = messages.filter(msg => msg.fix != null);
+    const fixes: Array<TextEdit> = [];
+    for (const message of messagesWithFixes) {
+      const fix = this._getUpdatedFix(message);
+      if (fix == null) {
+        notifyFixFailed();
+        return;
+      }
+      fixes.push(fix);
+    }
+    const succeeded = applyTextEdits(filePath, ...fixes);
+    if (succeeded) {
+      for (const message of messagesWithFixes) {
+        this._invalidateSingleMessage(message);
+      }
+    } else {
       notifyFixFailed();
     }
   }
 
-  applyFixesForFile(file: NuclideUri): void {
-    for (const message of this._getFileMessages(file)) {
-      if (message.fix != null) {
-        const succeeded = this._applySingleFix(message);
-        if (!succeeded) {
-          notifyFixFailed();
-          return;
-        }
-      }
-    }
-  }
-
   /**
-   * Returns true iff the fix succeeds.
+   * Return the fix for the given message with the updated range based on the stored markers. If the
+   * range cannot be found (in particular, if edits have rendered it invalid), return null.
+   *
+   * Precondition: message.fix != null
    */
-  _applySingleFix(message: FileDiagnosticMessage): boolean {
+  _getUpdatedFix(message: FileDiagnosticMessage): ?TextEdit {
     const fix = message.fix;
     invariant(fix != null);
 
     const actualRange = this._markerTracker.getCurrentRange(message);
 
     if (actualRange == null) {
-      return false;
+      return null;
     }
 
-    const fixWithActualRange = {
+    return {
       ...fix,
       oldRange: actualRange,
     };
-    const succeeded = applyTextEdits(message.filePath, fixWithActualRange);
-    if (succeeded) {
-      this._invalidateSingleMessage(message);
-      return true;
-    } else {
-      return false;
-    }
   }
 
   /**
