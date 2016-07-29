@@ -17,8 +17,10 @@ import type {
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {DebuggerStore} from './DebuggerStore';
-import type DebuggerProcessInfoType from './DebuggerProcessInfo';
-import type DebuggerInstance from './DebuggerInstance';
+import type {
+  DebuggerProcessInfo,
+  DebuggerInstance,
+} from '../../nuclide-debugger-base';
 import type {
   Callstack,
   DebuggerModeType,
@@ -61,7 +63,7 @@ class DebuggerActions {
     this._store = store;
   }
 
-  async startDebugging(processInfo: DebuggerProcessInfoType): Promise<void> {
+  async startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
     track(AnalyticsEvents.DEBUGGER_START, {
       serviceName: processInfo.getServiceName(),
     });

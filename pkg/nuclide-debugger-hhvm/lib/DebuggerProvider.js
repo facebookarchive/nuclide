@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-atom';
+import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {HhvmLaunchAttachProvider} from './HhvmLaunchAttachProvider';
 import nuclideUri from '../../commons-node/nuclideUri';

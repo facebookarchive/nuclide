@@ -10,7 +10,7 @@
  */
 
 import type {OutputService} from '../../nuclide-console/lib/types';
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-atom';
+import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type {
   nuclide_debugger$Service,
   NuclideDebuggerProvider,

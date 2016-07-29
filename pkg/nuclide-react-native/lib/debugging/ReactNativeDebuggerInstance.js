@@ -11,8 +11,7 @@
 
 import {CompositeSubscription} from '../../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DebuggerInstance, DebuggerProcessInfo} from '../../../nuclide-debugger-atom';
+import {DebuggerInstance, DebuggerProcessInfo} from '../../../nuclide-debugger-base';
 import {DebuggerProxyClient} from './DebuggerProxyClient';
 import Rx from 'rxjs';
 import WS from 'ws';

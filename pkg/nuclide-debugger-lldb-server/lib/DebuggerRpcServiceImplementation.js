@@ -23,7 +23,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import utils from './utils';
 import WS from 'ws';
 const {log, logTrace, logError, logInfo, setLogLevel} = utils;
-import {ClientCallback} from '../../nuclide-debugger-common/lib/ClientCallback';
+import {ClientCallback} from '../../nuclide-debugger-common';
 import {
   observeStream,
   splitStream,

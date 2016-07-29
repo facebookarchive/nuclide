@@ -11,7 +11,7 @@
 
 import {Observable, Subject} from 'rxjs';
 
-export class ClientCallback {
+export default class ClientCallback {
   _serverMessageObservable: Subject<any>;  // For server messages.
   _userOutputObservable: Subject<any>;     // For user visible output messages.
 

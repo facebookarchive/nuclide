@@ -15,7 +15,7 @@ import type {
   LaunchTargetInfo,
 } from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type DebuggerProcessInfo from '../../nuclide-debugger-atom/lib/DebuggerProcessInfo';
+import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import typeof * as DebuggerRpcServiceInterface
   from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 

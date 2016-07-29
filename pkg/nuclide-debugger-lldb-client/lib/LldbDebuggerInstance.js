@@ -12,11 +12,10 @@
 import type {
   DebuggerConnection as DebuggerConnectionType,
 } from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
+import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
 import utils from './utils';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DebuggerInstance} from '../../nuclide-debugger-atom';
+import {DebuggerInstance} from '../../nuclide-debugger-base';
 import {CompositeDisposable, Emitter} from 'atom';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
 import nuclideUri from '../../commons-node/nuclideUri';

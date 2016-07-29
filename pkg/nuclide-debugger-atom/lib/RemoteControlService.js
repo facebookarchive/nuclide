@@ -10,7 +10,7 @@
  */
 
 import type DebuggerModel from './DebuggerModel';
-import type DebuggerProcessInfo from './DebuggerProcessInfo';
+import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
 class RemoteControlService {
   _getModel: () => ?DebuggerModel;

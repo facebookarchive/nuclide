@@ -10,7 +10,7 @@
  */
 
 import type {HhvmDebuggerSessionConfig} from '../../nuclide-debugger-hhvm-proxy';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
+import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import type {
   HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,
 } from '../../nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
@@ -18,8 +18,7 @@ import typeof * as HhvmDebuggerProxyService
   from '../../nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
 import utils from './utils';
 import invariant from 'assert';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DebuggerInstance} from '../../nuclide-debugger-atom';
+import {DebuggerInstance} from '../../nuclide-debugger-base';
 import {ObservableManager} from './ObservableManager';
 import {CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';

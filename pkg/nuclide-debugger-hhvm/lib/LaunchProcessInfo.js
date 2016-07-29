@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
+import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {HhvmDebuggerInstance} from './HhvmDebuggerInstance';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';

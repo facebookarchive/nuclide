@@ -12,7 +12,7 @@
 import type DebuggerInstance from './DebuggerInstance';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-class DebuggerProcessInfo {
+export default class DebuggerProcessInfo {
   _serviceName: string;
   _targetUri: NuclideUri;
 
@@ -56,5 +56,3 @@ class DebuggerProcessInfo {
   pid: number;
   basepath: ?string;
 }
-
-module.exports = DebuggerProcessInfo;

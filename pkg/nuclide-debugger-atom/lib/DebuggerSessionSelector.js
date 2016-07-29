@@ -10,7 +10,7 @@
  */
 
 import DebuggerActions from './DebuggerActions';
-import DebuggerProcessInfo from './DebuggerProcessInfo';
+import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {DebuggerStore} from './DebuggerStore';
 import {React} from 'react-for-atom';
 import {

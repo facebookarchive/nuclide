@@ -10,7 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import {getOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
+import {getOutputService} from '../../nuclide-debugger-base';
 import utils from './utils';
 const {log, logError} = utils;
 import {Observable} from 'rxjs';

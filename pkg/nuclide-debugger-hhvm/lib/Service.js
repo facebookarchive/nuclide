@@ -12,7 +12,7 @@
 import utils from './utils';
 const {log} = utils;
 
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
+import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 

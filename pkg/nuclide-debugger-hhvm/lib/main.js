@@ -16,7 +16,7 @@ import type {
 } from '../../nuclide-debugger-interfaces/service';
 import type {OutputService} from '../../nuclide-console/lib/types';
 import DebuggerProvider from './DebuggerProvider';
-import {setOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
+import {setOutputService} from '../../nuclide-debugger-base';
 
 export function consumeOutputService(api: OutputService): void {
   setOutputService(api);

@@ -46,16 +46,7 @@ import {ServerConnection} from '../../nuclide-remote-connection';
 import passesGK from '../../commons-node/passesGK';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 
-import DebuggerProcessInfo from './DebuggerProcessInfo';
-import DebuggerInstance from './DebuggerInstance';
-import DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
 import {NewDebuggerView} from './NewDebuggerView';
-
-export {
-  DebuggerProcessInfo,
-  DebuggerInstance,
-  DebuggerLaunchAttachProvider,
-};
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>,

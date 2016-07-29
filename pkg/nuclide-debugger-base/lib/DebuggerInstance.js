@@ -12,7 +12,7 @@
 import type DebuggerProcessInfo from './DebuggerProcessInfo';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-class DebuggerInstance {
+export default class DebuggerInstance {
   _processInfo: DebuggerProcessInfo;
   onSessionEnd: ?(callback: () => void) => IDisposable;
 
@@ -39,7 +39,4 @@ class DebuggerInstance {
   getWebsocketAddress(): Promise<string> {
     throw new Error('abstract method');
   }
-
 }
-
-module.exports = DebuggerInstance;

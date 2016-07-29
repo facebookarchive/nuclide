@@ -14,9 +14,11 @@ import type {
   nuclide_debugger$Service,
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
-import type DebuggerInstance from './DebuggerInstance';
+import type {
+  DebuggerInstance,
+  DebuggerProcessInfo,
+} from '../../nuclide-debugger-base';
 import type DebuggerModel from './DebuggerModel';
-import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
 import type {DebuggerModeType} from './types';
 
@@ -108,7 +110,7 @@ class DebuggerStore {
    *
    * @param optional service name (e.g. lldb) to filter resulting attachables.
    */
-  getProcessInfoList(serviceName?: string): Promise<Array<DebuggerProcessInfoType>> {
+  getProcessInfoList(serviceName?: string): Promise<Array<DebuggerProcessInfo>> {
     return Promise.all(
         Array.from(this._services)
           .map(service => {

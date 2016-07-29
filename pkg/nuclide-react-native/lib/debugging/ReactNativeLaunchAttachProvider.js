@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DebuggerLaunchAttachProvider} from '../../../nuclide-debugger-atom';
+import {DebuggerLaunchAttachProvider} from '../../../nuclide-debugger-base';
 import {DebugUiComponent} from './DebugUiComponent';
 import invariant from 'assert';
 import {React} from 'react-for-atom';

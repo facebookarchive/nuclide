@@ -12,7 +12,7 @@
 import type {
   DebuggerProcessInfo,
   DebuggerLaunchAttachProvider,
-} from '../nuclide-debugger-atom';
+} from '../nuclide-debugger-base';
 import type {NuclideUri} from '../commons-node/nuclideUri';
 
 export type nuclide_debugger$Service = {

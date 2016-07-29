@@ -10,7 +10,7 @@
  */
 
 import type {DebuggerProviderStore} from './DebuggerProviderStore';
-import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
+import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type DebuggerActions from './DebuggerActions';
 
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
+import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import typeof * as DebuggerRpcServiceInterface
   from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 

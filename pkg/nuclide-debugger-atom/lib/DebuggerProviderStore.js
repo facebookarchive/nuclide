@@ -10,7 +10,7 @@
  */
 
 import type {Dispatcher} from 'flux';
-import type DebuggerLaunchAttachProvider from './DebuggerLaunchAttachProvider';
+import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type {
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';

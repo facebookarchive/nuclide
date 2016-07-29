@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerProcessInfo from '../../../nuclide-debugger-atom/lib/DebuggerProcessInfo';
+import type {DebuggerProcessInfo} from '../../../nuclide-debugger-base';
 import type {nuclide_debugger$Service} from '../../../nuclide-debugger-interfaces/service';
 
 import consumeFirstProvider from '../../../commons-atom/consumeFirstProvider';

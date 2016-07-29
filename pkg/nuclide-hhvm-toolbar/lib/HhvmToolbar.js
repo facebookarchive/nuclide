@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerProcessInfo from '../../nuclide-debugger-atom/lib/DebuggerProcessInfo';
+import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {React} from 'react-for-atom';

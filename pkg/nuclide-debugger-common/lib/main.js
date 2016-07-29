@@ -9,11 +9,4 @@
  * the root directory of this source tree.
  */
 
-describe('main', () => {
-  it('should throw when required', () => {
-    expect(() => {
-      // $FlowIgnore: We expect this to be an error.
-      require('..');
-    }).toThrow();
-  });
-});
+export {default as ClientCallback} from './ClientCallback';

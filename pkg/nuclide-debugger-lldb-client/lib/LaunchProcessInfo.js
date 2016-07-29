@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DebuggerInstance} from '../../nuclide-debugger-atom';
+import type {DebuggerInstance} from '../../nuclide-debugger-base';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   LaunchTargetInfo,
@@ -19,10 +19,11 @@ import typeof * as DebuggerRpcServiceInterface
   from '../../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface';
 
 import invariant from 'assert';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DebuggerProcessInfo} from '../../nuclide-debugger-atom';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
-import {registerOutputWindowLogging} from '../../nuclide-debugger-common/lib/OutputServiceManager';
+import {
+  DebuggerProcessInfo,
+  registerOutputWindowLogging,
+} from '../../nuclide-debugger-base';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getConfig} from './utils';
 

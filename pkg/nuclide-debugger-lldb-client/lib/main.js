@@ -17,7 +17,7 @@ import type {OutputService} from '../../nuclide-console/lib/types';
 
 import logger from './utils';
 import {getConfig} from './utils';
-import {setOutputService} from '../../nuclide-debugger-common/lib/OutputServiceManager';
+import {setOutputService} from '../../nuclide-debugger-base';
 
 
 export function activate(state: mixed): void {

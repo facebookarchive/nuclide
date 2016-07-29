@@ -9,9 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type React from 'react-for-atom';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-
-import {React} from 'react-for-atom';
 
 let uniqueKeySeed = 0;
 
@@ -19,7 +18,7 @@ let uniqueKeySeed = 0;
  * Base class of all launch/attach providers.
  * It allows each concrete provider to provide customized debugging types, actions and UI.
  */
-class DebuggerLaunchAttachProvider {
+export default class DebuggerLaunchAttachProvider {
   _debuggingTypeName: string;
   _targetUri: NuclideUri;
   _uniqueKey: number;
@@ -72,5 +71,3 @@ class DebuggerLaunchAttachProvider {
     throw new Error('abstract method');
   }
 }
-
-module.exports = DebuggerLaunchAttachProvider;

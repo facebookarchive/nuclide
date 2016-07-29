@@ -11,8 +11,7 @@
 
 import WS from 'ws';
 import invariant from 'assert';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DebuggerInstance, DebuggerProcessInfo} from '../../nuclide-debugger-atom';
+import {DebuggerInstance, DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {arrayCompact} from '../../commons-node/collection';
 import {checkOutput} from '../../commons-node/process';
