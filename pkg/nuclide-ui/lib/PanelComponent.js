@@ -24,7 +24,7 @@ type DefaultProps = {
 
 type Props = {
   children?: mixed,
-  dock: 'left' | 'bottom' | 'right',
+  dock: 'top' | 'right' | 'bottom' | 'left',
   hidden: boolean,
   initialLength: number,
   /*
@@ -125,7 +125,7 @@ export class PanelComponent extends React.Component {
         width: this.state.length,
         minWidth: MINIMUM_LENGTH,
       };
-    } else if (this.props.dock === 'bottom') {
+    } else if (this.props.dock === 'top' || this.props.dock === 'bottom') {
       containerStyle = {
         height: this.state.length,
         minHeight: MINIMUM_LENGTH,
@@ -208,12 +208,19 @@ export class PanelComponent extends React.Component {
   _handleMouseMove(event: SyntheticMouseEvent): void {
     const containerEl = ReactDOM.findDOMNode(this.refs.container);
     let length = 0;
-    if (this.props.dock === 'left') {
-      length = event.pageX - containerEl.getBoundingClientRect().left;
-    } else if (this.props.dock === 'bottom') {
-      length = containerEl.getBoundingClientRect().bottom - event.pageY;
-    } else if (this.props.dock === 'right') {
-      length = containerEl.getBoundingClientRect().right - event.pageX;
+    switch (this.props.dock) {
+      case 'left':
+        length = event.pageX - containerEl.getBoundingClientRect().left;
+        break;
+      case 'top':
+        length = event.pageY - containerEl.getBoundingClientRect().top;
+        break;
+      case 'bottom':
+        length = containerEl.getBoundingClientRect().bottom - event.pageY;
+        break;
+      case 'right':
+        length = containerEl.getBoundingClientRect().right - event.pageX;
+        break;
     }
     this._updateSize(length);
   }
@@ -238,7 +245,7 @@ export class PanelComponent extends React.Component {
       const handle = ReactDOM.findDOMNode(this.refs.handle);
       if (this.props.dock === 'left' || this.props.dock === 'right') {
         length = childNode.offsetWidth + handle.offsetWidth;
-      } else if (this.props.dock === 'bottom') {
+      } else if (this.props.dock === 'top' || this.props.dock === 'bottom') {
         length = childNode.offsetHeight + handle.offsetHeight;
       } else {
         throw new Error('unhandled dock');

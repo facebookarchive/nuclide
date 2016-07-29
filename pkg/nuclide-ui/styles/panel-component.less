@@ -18,6 +18,11 @@
     width: 100%;
   }
 
+  &.top {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+
   &.right {
     flex-direction: row;
     height: inherit;
@@ -37,19 +42,16 @@
   height: auto;
   flex: 0 0 auto;
 
-  &.left {
+  &.left,
+  &.right {
     width: 4px;
     cursor: col-resize;
   }
 
+  &.top,
   &.bottom {
     height: 4px;
     cursor: row-resize;
-  }
-
-  &.right{
-    width: 4px;
-    cursor: col-resize;
   }
 }
 
@@ -61,15 +63,14 @@
   right: 0;
   z-index: 4;
 
-  &.left {
+  &.left,
+  &.right {
     cursor: col-resize;
   }
 
+  &.top,
   &.bottom {
     cursor: row-resize;
   }
 
-  &.right {
-    cursor: col-resize;
-  }
 }
