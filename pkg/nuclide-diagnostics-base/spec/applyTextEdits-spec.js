@@ -11,11 +11,11 @@
 
 import {Range} from 'atom';
 
-import applyTextEdit from '../lib/applyTextEdit';
+import applyTextEdits from '../lib/applyTextEdits';
 
 const fakeFile = '/tmp/file.txt';
 
-describe('applyTextEdit', () => {
+describe('applyTextEdits', () => {
   let editor: atom$TextEditor = (null: any);
 
   beforeEach(() => {
@@ -31,7 +31,7 @@ describe('applyTextEdit', () => {
       newText: 'BAR',
     };
 
-    expect(applyTextEdit(fakeFile, textedit)).toBeTruthy();
+    expect(applyTextEdits(fakeFile, textedit)).toBeTruthy();
     expect(editor.getText()).toEqual('foo\nBARr\nbaz\n');
   });
 
@@ -42,7 +42,7 @@ describe('applyTextEdit', () => {
       oldText: 'ba',
     };
 
-    expect(applyTextEdit(fakeFile, textedit)).toBeTruthy();
+    expect(applyTextEdits(fakeFile, textedit)).toBeTruthy();
     expect(editor.getText()).toEqual('foo\nBARr\nbaz\n');
   });
 
@@ -53,7 +53,7 @@ describe('applyTextEdit', () => {
       oldText: 'b',
     };
 
-    expect(applyTextEdit(fakeFile, textedit)).toBeFalsy();
+    expect(applyTextEdits(fakeFile, textedit)).toBeFalsy();
     expect(editor.getText()).toEqual('foo\nbar\nbaz\n');
   });
 
@@ -64,7 +64,7 @@ describe('applyTextEdit', () => {
       oldText: '',
     };
 
-    expect(applyTextEdit(fakeFile, textedit)).toBeFalsy();
+    expect(applyTextEdits(fakeFile, textedit)).toBeFalsy();
   });
 
   it('should accept a patch that appends to a line', () => {
@@ -74,7 +74,7 @@ describe('applyTextEdit', () => {
       oldText: '',
     };
 
-    expect(applyTextEdit(fakeFile, textedit)).toBeTruthy();
+    expect(applyTextEdits(fakeFile, textedit)).toBeTruthy();
     expect(editor.getText()).toEqual('foo\nbar;\nbaz\n');
   });
 });

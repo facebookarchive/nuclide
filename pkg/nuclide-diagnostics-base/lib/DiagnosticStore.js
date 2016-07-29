@@ -21,7 +21,7 @@ import type {
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import applyTextEdit from './applyTextEdit';
+import applyTextEdits from './applyTextEdits';
 import {arrayRemove, MultiMap} from '../../commons-node/collection';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {MarkerTracker} from './MarkerTracker';
@@ -358,7 +358,7 @@ class DiagnosticStore {
       ...fix,
       oldRange: actualRange,
     };
-    const succeeded = applyTextEdit(message.filePath, fixWithActualRange);
+    const succeeded = applyTextEdits(message.filePath, fixWithActualRange);
     if (succeeded) {
       this._invalidateSingleMessage(message);
       return true;
