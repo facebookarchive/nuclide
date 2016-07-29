@@ -15,6 +15,7 @@ import type {
   DefinitionQueryResult,
 } from '../../nuclide-definition-service';
 import type {EditorPosition} from '../../commons-atom/debounced';
+import type {ContextProvider} from './types';
 
 import invariant from 'assert';
 import {React, ReactDOM} from 'react-for-atom';
@@ -23,6 +24,7 @@ import {Observable} from 'rxjs';
 import {trackOperationTiming} from '../../nuclide-analytics';
 import analytics from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
+import ContextViewMessage from './ContextViewMessage';
 import {ContextViewPanel} from './ContextViewPanel';
 import {ProviderContainer} from './ProviderContainer';
 import {NoProvidersView} from './NoProvidersView';
@@ -33,20 +35,6 @@ const POSITION_DEBOUNCE_INTERVAL = 500;
 export type ContextViewConfig = {
   width?: number,
   visible?: boolean,
-};
-
-export type ContextProvider = {
-  /**
-   * Context View uses element factories to render providers' React
-   * components. This gives Context View the ability to set the props (which
-   * contains the currentDefinition) of each provider.
-   */
-  getElementFactory: () => ((props: {definition: ?Definition}) => React.Element<any>),
-  id: string, // Unique ID of the provider (suggested: use the package name of the provider)
-  title: string, // Display name
-  isEditorBased: boolean, // Whether the context provider displays an AtomTextEditor. This flag
-  // allows context view to display editor-based providers more nicely.
-  priority: number, // Defines display order in side panel. Lower number = closer to the top.
 };
 
 const logger = getLogger();
@@ -245,7 +233,10 @@ export class ContextViewManager {
         const createElementFn = prov.getElementFactory();
         return (
           <ProviderContainer title={prov.title} key={index} isEditorBased={prov.isEditorBased}>
-            {createElementFn({definition: this.currentDefinition})}
+            {createElementFn({
+              ContextViewMessage,
+              definition: this.currentDefinition,
+            })}
           </ProviderContainer>
         );
       },

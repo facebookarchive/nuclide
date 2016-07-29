@@ -9,16 +9,21 @@
  * the root directory of this source tree.
  */
 
+/**
+ * A message view to be shown in Context View.
+ */
+
 import {React} from 'react-for-atom';
 
-export const NO_DEFINITION_MESSAGE = 'No definition selected.';
-export const LOADING_MESSAGE = 'Loading...';
+export default class ContextViewMessage extends React.Component {
+  static NO_DEFINITION = 'No definition selected.';
+  static LOADING = 'Loading...';
 
-type Props = {
-  message: string,
-};
+  props: {
+    message: string,
+  };
 
-/** A message view to be shown in Context View. */
-export const ContextViewMessage = (props: Props) => (
-  <div>{props.message}</div>
-);
+  render(): React.Element<any> {
+    return <div>{this.props.message}</div>;
+  }
+}

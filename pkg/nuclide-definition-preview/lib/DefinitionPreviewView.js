@@ -9,13 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {ContextElementProps} from '../../nuclide-context-view/lib/types';
 import type {Definition} from '../../nuclide-definition-service';
 
 import {Button, ButtonSizes} from '../../nuclide-ui/lib/Button';
 import {React} from 'react-for-atom';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {ContextViewMessage, NO_DEFINITION_MESSAGE}
-  from '../../nuclide-context-view/lib/ContextViewMessage';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
@@ -31,23 +29,18 @@ export type PreviewContent = {
   grammar: atom$Grammar,
 };
 
-type Props = {
-  definition: ?Definition,
-};
-
 export class DefinitionPreviewView extends React.Component {
-
   _loadAndScroll: ?() => Promise<void>;
 
-  props: Props;
+  props: ContextElementProps;
 
-  constructor(props: Props) {
+  constructor(props: ContextElementProps) {
     super(props);
     this._loadAndScroll = null;
     (this: any)._openInMainEditor = this._openInMainEditor.bind(this);
   }
 
-  componentWillReceiveProps(newProps: Props): void {
+  componentWillReceiveProps(newProps: ContextElementProps): void {
     this._loadAndScroll = null;
   }
 
@@ -59,15 +52,16 @@ export class DefinitionPreviewView extends React.Component {
   }
 
   render(): React.Element<any> {
+    const {ContextViewMessage, definition} = this.props;
     // Show either the definition in an editor or a message
-    if (this.props.definition != null) {
+    if (definition != null) {
       return (
         <div className="pane-item nuclide-definition-preview">
-          {this._previewDefinition(this.props.definition)}
+          {this._previewDefinition(definition)}
         </div>
       );
     } else {
-      return <ContextViewMessage message={NO_DEFINITION_MESSAGE} />;
+      return <ContextViewMessage message={ContextViewMessage.NO_DEFINITION} />;
     }
   }
 

@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {ContextProvider} from '../lib/ContextViewManager';
-import type {Definition, DefinitionService} from '../../nuclide-definition-service';
+import type {ContextElementProps, ContextProvider} from '../lib/types';
+import type {DefinitionService} from '../../nuclide-definition-service';
 
 import {CompositeDisposable} from 'atom';
 import {ContextViewManager} from '../lib/ContextViewManager';
@@ -32,7 +32,7 @@ describe('ContextViewManager', () => {
   let defService: DefinitionService;
 
   function elementFactory() {
-    return (props: {definition: ?Definition}) => {
+    return (props: ContextElementProps) => {
       return (<div>Some context provider view</div>);
     };
   }

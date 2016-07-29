@@ -9,12 +9,14 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideContextView} from '../../nuclide-context-view';
-import type {ContextProvider} from '../../nuclide-context-view/lib/ContextViewManager';
+import type {
+  ContextProvider,
+  NuclideContextView,
+} from '../../nuclide-context-view/lib/types';
+
 import {DefinitionPreviewView} from './DefinitionPreviewView';
 import {React} from 'react-for-atom';
 import invariant from 'assert';
-import {Disposable} from 'atom';
 
 // Unique ID of this context provider
 const PROVIDER_ID: string = 'nuclide-definition-preview';
@@ -23,7 +25,7 @@ const PROVIDER_TITLE: string = 'Definition Preview';
 class Activation {
 
   provider: ContextProvider;
-  contextViewRegistration: ?Disposable;
+  contextViewRegistration: ?IDisposable;
 
   constructor() {
 
@@ -40,7 +42,7 @@ class Activation {
     return this.provider;
   }
 
-  setContextViewRegistration(registration: Disposable): void {
+  setContextViewRegistration(registration: IDisposable): void {
     this.contextViewRegistration = registration;
   }
 

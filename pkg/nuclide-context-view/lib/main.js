@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {ContextViewConfig, ContextProvider} from './ContextViewManager';
+import type {
+  ContextProvider,
+  NuclideContextView,
+} from './types';
+import type {ContextViewConfig} from './ContextViewManager';
 import type {DefinitionService} from '../../nuclide-definition-service';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
@@ -114,7 +118,7 @@ export async function hideContextView(): Promise<void> {
  * want to provide context for a definition. A context provider must consume the
  * nuclide-context-view service and register themselves as a provider.
  */
-const Service = {
+const Service: NuclideContextView = {
   async registerProvider(provider: ContextProvider): Promise<Disposable> {
     invariant(provider != null, 'Cannot register null context provider');
     const contextViewManager = await getContextViewManager();
@@ -182,8 +186,6 @@ export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
     },
   };
 }
-
-export type NuclideContextView = typeof Service;
 
 export function provideNuclideContextView(): NuclideContextView {
   return Service;
