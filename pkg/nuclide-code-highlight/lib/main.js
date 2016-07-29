@@ -10,44 +10,23 @@
  */
 
 import type {CodeHighlightProvider} from './types';
-import type CodeHighlightManager from './CodeHighlightManager';
 
-class Activation {
-  _codeHighlightManager: CodeHighlightManager;
+import invariant from 'assert';
+import HighlightManager from './CodeHighlightManager';
 
-  activate() {
-    const HighlightManager = require('./CodeHighlightManager');
-    // $FlowIssue -- https://github.com/facebook/flow/issues/996
-    this._codeHighlightManager = new HighlightManager();
-  }
-
-  consumeProvider(provider: CodeHighlightProvider) {
-    this._codeHighlightManager.addProvider(provider);
-  }
-
-  dispose() {
-    this._codeHighlightManager.dispose();
-  }
-}
-
-let activation: ?Activation = null;
+let codeHighlightManager: ?HighlightManager = null;
 
 export function activate(state: ?Object) {
-  if (!activation) {
-    activation = new Activation(state);
-    activation.activate();
-  }
+  codeHighlightManager = new HighlightManager();
 }
 
 export function consumeProvider(provider: CodeHighlightProvider) {
-  if (activation != null) {
-    activation.consumeProvider(provider);
-  }
+  invariant(codeHighlightManager != null);
+  codeHighlightManager.addProvider(provider);
 }
 
 export function deactivate() {
-  if (activation != null) {
-    activation.dispose();
-    activation = null;
-  }
+  invariant(codeHighlightManager != null);
+  codeHighlightManager.dispose();
+  codeHighlightManager = null;
 }
