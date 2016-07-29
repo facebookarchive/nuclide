@@ -1189,6 +1189,11 @@ type TextBufferScanIterator = (arg: {
   replace(replacement: string): void,
 }) => void;
 
+// This happens to be a number but it would be better if the type could be entirely opaque. All you
+// need to know is that if something needs a checkpoint you should only pass it values received from
+// TextBuffer::createCheckpoint
+type atom$TextBufferCheckpoint = number;
+
 declare class atom$TextBuffer {
   file: ?atom$File,
 
@@ -1252,6 +1257,18 @@ declare class atom$TextBuffer {
   }): atom$Range,
   delete(range: atom$Range): atom$Range,
   deleteRows(startRow: number, endRow: number): atom$Range,
+
+  // History
+  undo(): void,
+  redo(): void,
+  transact(fn: () => mixed, _: void): void,
+  transact(groupingInterval: number, fn: () => mixed): void,
+  clearUndoStack(): void,
+  createCheckpoint(): atom$TextBufferCheckpoint,
+  revertToCheckpoint(checkpoint: atom$TextBufferCheckpoint): boolean,
+  groupChangesSinceCheckpoint(checkpoint: atom$TextBufferCheckpoint): boolean,
+  // TODO describe the return type more precisely.
+  getChangesSinceCheckpoint(checkpoint: atom$TextBufferCheckpoint): Array<mixed>,
 
   // Search And Replace
   scanInRange(regex: RegExp, range: atom$Range, iterator: TextBufferScanIterator): void,
