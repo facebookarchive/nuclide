@@ -11,7 +11,7 @@
 
 import {React} from 'react-for-atom';
 import {Block} from './Block';
-import {Tabs} from './Tabs';
+import Tabs from './Tabs';
 
 const tabs = [
   {

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Tabs} from '../lib/Tabs';
+import Tabs from '../lib/Tabs';
 import {React, ReactDOM, TestUtils} from 'react-for-atom';
 
 const {
@@ -25,7 +25,7 @@ describe('Checkbox', () => {
     const onChange = jasmine.createSpy('onChange');
 
     const props = {
-      tabs: [{name: 'first', tabContent: 123}, {name: 'second', tabContent: 456}],
+      tabs: [{name: 'first', tabContent: <i>123</i>}, {name: 'second', tabContent: <i>456</i>}],
       activeTabName: 'first',
       onActiveTabChange: onChange,
     };
@@ -46,7 +46,7 @@ describe('Checkbox', () => {
     const onChange = jasmine.createSpy('onChange');
 
     const props = {
-      tabs: [{name: 'first', tabContent: 123}, {name: 'second', tabContent: 456}],
+      tabs: [{name: 'first', tabContent: <i>123</i>}, {name: 'second', tabContent: <i>456</i>}],
       activeTabName: 'first',
       triggeringEvent: 'onMouseEnter',
       onActiveTabChange: onChange,

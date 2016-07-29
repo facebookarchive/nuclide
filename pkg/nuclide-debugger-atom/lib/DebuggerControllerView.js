@@ -18,6 +18,15 @@ import {DebuggerStore} from './DebuggerStore';
 import Bridge from './Bridge';
 import {Button} from '../../nuclide-ui/lib/Button';
 
+type Props = {
+  actions: DebuggerActions,
+  breakpointStore: BreakpointStore,
+  store: DebuggerStore,
+  bridge: Bridge,
+  toggleOldView: () => void,
+  showOldView: boolean,
+};
+
 type State = {
   processSocket: ?string,
   debuggerStoreChangeListener?: IDisposable,
@@ -29,35 +38,33 @@ function getStateFromStore(store: DebuggerStore): State {
   };
 }
 
-const DebuggerControllerView = React.createClass({
-  propTypes: {
-    actions: React.PropTypes.instanceOf(DebuggerActions).isRequired,
-    breakpointStore: React.PropTypes.instanceOf(BreakpointStore).isRequired,
-    store: React.PropTypes.instanceOf(DebuggerStore).isRequired,
-    bridge: React.PropTypes.instanceOf(Bridge).isRequired,
-    toggleOldView: React.PropTypes.func.isRequired,
-    showOldView: React.PropTypes.bool.isRequired,
-  },
+export default class DebuggerControllerView extends React.Component {
+  props: Props;
+  state: State;
 
-  getInitialState(): State {
-    return getStateFromStore(this.props.store);
-  },
+  constructor(props: Props) {
+    super(props);
+    this.state = getStateFromStore(props.store);
+
+    (this: any)._handleClickClose = this._handleClickClose.bind(this);
+    (this: any)._updateStateFromStore = this._updateStateFromStore.bind(this);
+  }
 
   componentWillMount() {
     this.setState({
       debuggerStoreChangeListener: this.props.store.onChange(this._updateStateFromStore),
     });
     this._updateStateFromStore();
-  },
+  }
 
   componentWillUnmount() {
     const listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
     }
-  },
+  }
 
-  componentWillReceiveProps(nextProps: {store: DebuggerStore}) {
+  componentWillReceiveProps(nextProps: Props) {
     const listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
@@ -66,7 +73,7 @@ const DebuggerControllerView = React.createClass({
       debuggerStoreChangeListener: nextProps.store.onChange(this._updateStateFromStore),
     });
     this._updateStateFromStore(nextProps.store);
-  },
+  }
 
   render(): ?React.Element<any> {
     if (this.state.processSocket) {
@@ -104,11 +111,11 @@ const DebuggerControllerView = React.createClass({
         <DebuggerSessionSelector store={this.props.store} actions={this.props.actions} />
       </div>
     );
-  },
+  }
 
   _handleClickClose() {
     this.props.actions.stopDebugging();
-  },
+  }
 
   _updateStateFromStore(store?: DebuggerStore) {
     if (store != null) {
@@ -116,7 +123,5 @@ const DebuggerControllerView = React.createClass({
     } else {
       this.setState(getStateFromStore(this.props.store));
     }
-  },
-});
-
-module.exports = DebuggerControllerView;
+  }
+}

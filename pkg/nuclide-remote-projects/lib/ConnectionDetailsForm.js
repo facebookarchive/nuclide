@@ -16,7 +16,7 @@ import type {
 
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {CompositeDisposable} from 'atom';
-import {RadioGroup} from '../../nuclide-ui/lib/RadioGroup';
+import RadioGroup from '../../nuclide-ui/lib/RadioGroup';
 import {React, ReactDOM} from 'react-for-atom';
 import {SshHandshake} from '../../nuclide-remote-connection';
 

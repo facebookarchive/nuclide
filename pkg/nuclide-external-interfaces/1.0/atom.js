@@ -1453,6 +1453,7 @@ declare class WebviewElement extends HTMLElement {
   getUrl(): string,
   insertCSS(code: string): void,
   send(): void,
+  openDevTools(): void,
 }
 
 type RepositoryDidChangeStatusCallback = (event: {path: string, pathStatus: number}) => mixed;

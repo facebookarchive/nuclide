@@ -17,11 +17,18 @@ import {
 } from './notification';
 import {React} from 'react-for-atom';
 
-const StatusBarTile = React.createClass({
-  propTypes: {
-    connectionState: React.PropTypes.number.isRequired,
-    fileUri: React.PropTypes.string,
-  },
+type Props = {
+  connectionState: number,
+  fileUri?: string,
+};
+
+export default class StatusBarTile extends React.Component {
+  props: Props;
+
+  constructor(props: Props) {
+    super(props);
+    (this: any)._onStatusBarTileClicked = this._onStatusBarTileClicked.bind(this);
+  }
 
   render(): ?React.Element<any> {
     let iconName = null;
@@ -46,12 +53,12 @@ const StatusBarTile = React.createClass({
     return (
       <span
         className={`icon icon-${iconName} nuclide-remote-projects-status-icon`}
-        onClick={this.onStatusBarTileClicked}
+        onClick={this._onStatusBarTileClicked}
       />
     );
-  },
+  }
 
-  onStatusBarTileClicked(): void {
+  _onStatusBarTileClicked(): void {
     if (!this.props.fileUri) {
       return;
     }
@@ -66,7 +73,5 @@ const StatusBarTile = React.createClass({
         notifyDisconnectedRemoteFile(this.props.fileUri);
         break;
     }
-  },
-});
-
-module.exports = StatusBarTile;
+  }
+}

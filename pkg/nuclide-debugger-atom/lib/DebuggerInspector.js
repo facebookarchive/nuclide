@@ -19,24 +19,33 @@ import {
   ButtonTypes,
 } from '../../nuclide-ui/lib/Button';
 
+type Props = {
+  actions: DebuggerActions,
+  breakpointStore: BreakpointStore,
+  socket: string,
+  bridge: Bridge,
+  toggleOldView: () => void,
+  showOldView: boolean,
+};
+
 /**
  * Wrapper for Chrome Devtools frontend view.
  */
-const DebuggerInspector = React.createClass({
-  _webviewNode: (null: ?Object),
+export default class DebuggerInspector extends React.Component {
+  props: Props;
 
-  displayName: 'DebuggerInspector',
+  _webviewNode: ?WebviewElement;
 
-  propTypes: {
-    actions: React.PropTypes.instanceOf(DebuggerActions).isRequired,
-    breakpointStore: React.PropTypes.instanceOf(BreakpointStore).isRequired,
-    socket: React.PropTypes.string.isRequired,
-    bridge: React.PropTypes.instanceOf(Bridge).isRequired,
-    toggleOldView: React.PropTypes.func.isRequired,
-    showOldView: React.PropTypes.bool.isRequired,
-  },
+  constructor(props: Props) {
+    super(props);
+    this._webviewNode = null;
+    (this: any)._getUrl = this._getUrl.bind(this);
+    (this: any)._handleClickClose = this._handleClickClose.bind(this);
+    (this: any)._handleClickDevTools = this._handleClickDevTools.bind(this);
+    (this: any)._handleClickUISwitch = this._handleClickUISwitch.bind(this);
+  }
 
-  shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
+  shouldComponentUpdate(nextProps: Props): boolean {
     return (
       nextProps.actions !== this.props.actions ||
       nextProps.breakpointStore !== this.props.breakpointStore ||
@@ -45,9 +54,9 @@ const DebuggerInspector = React.createClass({
       nextProps.showOldView !== this.props.showOldView ||
       nextProps.toggleOldView !== this.props.toggleOldView
     );
-  },
+  }
 
-  render(): ?React.Element<any> {
+  render(): React.Element<any> {
     return (
       <div className="inspector">
         <div className="control-bar" ref="controlBar">
@@ -70,7 +79,7 @@ const DebuggerInspector = React.createClass({
         </div>
       </div>
     );
-  },
+  }
 
   componentDidMount() {
     // Cast from HTMLElement down to WebviewElement without instanceof
@@ -88,9 +97,9 @@ const DebuggerInspector = React.createClass({
     const controlBarNode = ReactDOM.findDOMNode(this.refs.controlBar);
     controlBarNode.parentNode.insertBefore(webviewNode, controlBarNode.nextSibling);
     this.props.bridge.setWebviewElement(webviewNode);
-  },
+  }
 
-  componentDidUpdate(prevProps: Object, prevState: Object): void {
+  componentDidUpdate(prevProps: Props): void {
     const webviewNode = this._webviewNode;
     if (webviewNode == null) {
       return;
@@ -102,33 +111,31 @@ const DebuggerInspector = React.createClass({
     if (showOldView !== prevProps.showOldView) {
       webviewNode.classList.toggle('nuclide-debugger-webview-hidden', !showOldView);
     }
-  },
+  }
 
   componentWillUnmount() {
     if (this.props.bridge) {
       this.props.bridge.cleanup();
     }
     this._webviewNode = null;
-  },
+  }
 
   _getUrl(): string {
     return `${nuclideUri.join(__dirname, '../scripts/inspector.html')}?${this.props.socket}`;
-  },
+  }
 
   _handleClickClose() {
     this.props.actions.stopDebugging();
-  },
+  }
 
   _handleClickDevTools() {
     const webviewNode = this._webviewNode;
     if (webviewNode) {
       webviewNode.openDevTools();
     }
-  },
+  }
 
   _handleClickUISwitch(): void {
     this.props.toggleOldView();
-  },
-});
-
-module.exports = DebuggerInspector;
+  }
+}

@@ -14,32 +14,38 @@ import {React} from 'react-for-atom';
 // Globally unique ID used as the "name" attribute to group radio inputs.
 let uid = 0;
 
+type Props = {
+  optionLabels: Array<React.Element<any>>,
+  selectedIndex: number,
+  onSelectedChange(selectedIndex: number): void,
+};
+
+type State = {
+  uid: number,
+};
+
 /**
  * A managed radio group component. Accepts arbitrary React elements as labels.
  */
-export const RadioGroup = React.createClass({
+export default class RadioGroup extends React.Component {
+  props: Props;
+  state: State;
 
-  propTypes: {
-    optionLabels: React.PropTypes.arrayOf(React.PropTypes.node).isRequired,
-    selectedIndex: React.PropTypes.number.isRequired,
-    onSelectedChange: React.PropTypes.func.isRequired,
-  },
+  static defaultProps = {
+    optionLabels: [],
+    onSelectedChange: (selectedIndex: number) => {},
+    selectedIndex: 0,
+  };
 
-  getDefaultProps(): any {
-    return {
-      optionLabels: [],
-      onSelectedChange: () => {},
-      selectedIndex: 0,
-    };
-  },
-
-  getInitialState(): any {
-    return {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
       uid: uid++,
     };
-  },
+  }
 
   render(): React.Element<any> {
+    const {onSelectedChange} = this.props;
     const checkboxes = this.props.optionLabels.map((labelContent, i) => {
       const id = 'nuclide-radiogroup-' + uid + '-' + i;
       return (
@@ -49,7 +55,7 @@ export const RadioGroup = React.createClass({
             checked={i === this.props.selectedIndex}
             name={'radiogroup-' + this.state.uid}
             id={id}
-            onChange={this.props.onSelectedChange.bind(null, i)}
+            onChange={() => { onSelectedChange(i); }}
           />
           <label
             className="nuclide-ui-radiogroup-label"
@@ -64,5 +70,5 @@ export const RadioGroup = React.createClass({
         {checkboxes}
       </div>
     );
-  },
-});
+  }
+}

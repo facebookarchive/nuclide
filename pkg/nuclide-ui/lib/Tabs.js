@@ -12,23 +12,31 @@
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
 
-export const Tabs = React.createClass({
+export type Tab = {
+  name: string,
+  tabContent: React.Element<any>,
+};
 
-  propTypes: {
-    tabs: React.PropTypes.arrayOf(React.PropTypes.shape({
-      name: React.PropTypes.string.isRequired,
-      tabContent: React.PropTypes.node.isRequired,
-    })).isRequired,
-    activeTabName: React.PropTypes.string.isRequired,
-    onActiveTabChange: React.PropTypes.func.isRequired,
-    triggeringEvent: React.PropTypes.string.isRequired,
-  },
+type Props = {
+  tabs: Array<Tab>,
+  activeTabName: string,
+  onActiveTabChange: (tab: Tab) => void,
+  triggeringEvent: string,
+};
 
-  getDefaultProps(): any {
-    return {
-      triggeringEvent: 'onClick',
-    };
-  },
+export default class Tabs extends React.Component {
+  props: Props;
+
+  static defaultProps = {
+    triggeringEvent: 'onClick',
+  };
+
+  constructor(props: Props) {
+    super(props);
+
+    (this: any)._handleTabChange = this._handleTabChange.bind(this);
+    (this: any)._renderTabMenu = this._renderTabMenu.bind(this);
+  }
 
   _handleTabChange(selectedTabName: string) {
     if (typeof this.props.onActiveTabChange === 'function') {
@@ -36,7 +44,7 @@ export const Tabs = React.createClass({
         this.props.tabs.find(tab => tab.name === selectedTabName),
       );
     }
-  },
+  }
 
   _renderTabMenu(): React.Element<any> {
     const tabs = this.props.tabs.map(tab => {
@@ -61,7 +69,7 @@ export const Tabs = React.createClass({
         {tabs}
       </ul>
     );
-  },
+  }
 
   render(): React.Element<any> {
     return (
@@ -69,5 +77,5 @@ export const Tabs = React.createClass({
         {this._renderTabMenu()}
       </div>
     );
-  },
-});
+  }
+}

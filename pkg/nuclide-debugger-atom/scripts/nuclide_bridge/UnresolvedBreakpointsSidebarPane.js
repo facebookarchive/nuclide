@@ -17,16 +17,36 @@ import url from 'url';
 import invariant from 'assert';
 import WebInspector from '../../lib/WebInspector';
 
-const UnresolvedBreakpointsComponent = React.createClass({
-  _changeHandler: ({dispose: () => {}}: IDisposable),
+type Props = {};
+
+type State = {
+  breakpoints: Array<{url: string, line: number}>,
+};
+
+class UnresolvedBreakpointsComponent extends React.Component {
+  props: Props;
+  state: State;
+
+  _changeHandler: ?IDisposable;
+
+  constructor(props: Props) {
+    super(props);
+
+    this._changeHandler = null;
+    this.state = this._getState();
+
+    (this: any)._updateState = this._updateState.bind(this);
+    (this: any)._getState = this._getState.bind(this);
+  }
 
   componentWillMount() {
     this._changeHandler = NuclideBridge.onUnresolvedBreakpointsChanged(this._updateState);
-  },
+  }
 
   componentWillUnmount() {
+    invariant(this._changeHandler != null);
     this._changeHandler.dispose();
-  },
+  }
 
   render() {
     const children = this.state.breakpoints.map(breakpoint => {
@@ -51,28 +71,24 @@ const UnresolvedBreakpointsComponent = React.createClass({
           : <div className="info">None</div>}
       </ol>
     );
-  },
+  }
 
   _onBreakpointClick(breakpoint: {url: string, line: number}) {
     NuclideBridge.sendOpenSourceLocation(breakpoint.url, breakpoint.line);
-  },
-
-  getInitialState() {
-    return this._getState();
-  },
+  }
 
   _updateState() {
     this.setState(this._getState());
-  },
+  }
 
   _getState() {
     return {
       breakpoints: NuclideBridge.getUnresolvedBreakpointsList(),
     };
-  },
-});
+  }
+}
 
-class UnresolvedBreakpointsSidebarPane extends WebInspector.SidebarPane {
+export default class UnresolvedBreakpointsSidebarPane extends WebInspector.SidebarPane {
   constructor() {
     // WebInspector classes are not es6 classes, but babel forces a super call.
     super();
@@ -95,5 +111,3 @@ class UnresolvedBreakpointsSidebarPane extends WebInspector.SidebarPane {
   reset() {
   }
 }
-
-module.exports = UnresolvedBreakpointsSidebarPane;

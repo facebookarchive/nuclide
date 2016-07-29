@@ -16,6 +16,8 @@ import type {
   ServiceName,
 } from './types';
 
+import type {Tab} from '../../nuclide-ui/lib/Tabs';
+
 type ResultContext = {
   nonEmptyResults: GroupedResult,
   serviceNames: Array<ServiceName>,
@@ -34,7 +36,7 @@ type Selection = {
 
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {Button} from '../../nuclide-ui/lib/Button';
-import {Tabs} from '../../nuclide-ui/lib/Tabs';
+import Tabs from '../../nuclide-ui/lib/Tabs';
 import {CompositeDisposable, Emitter} from 'atom';
 import debounce from '../../commons-node/debounce';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
@@ -84,7 +86,6 @@ export default class QuickSelectionComponent extends React.Component {
   _modalNode: HTMLElement;
   _debouncedQueryHandler: () => void;
   _boundSelect: () => void;
-  _boundHandleTabChange: (tab: ProviderSpec) => void;
   _isMounted: boolean;
   state: {
     activeProviderName?: string,
@@ -102,7 +103,6 @@ export default class QuickSelectionComponent extends React.Component {
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._boundSelect = () => this.select();
-    this._boundHandleTabChange = (tab: ProviderSpec) => this._handleTabChange(tab);
     this._isMounted = false;
     this.state = {
       activeTab: searchResultManager.getProviderByName(searchResultManager.getActiveProviderName()),
@@ -114,6 +114,7 @@ export default class QuickSelectionComponent extends React.Component {
       selectedItemIndex: -1,
       hasUserSelection: false,
     };
+    (this: any)._handleTabChange = this._handleTabChange.bind(this);
     (this: any).handleProvidersChange = this.handleProvidersChange.bind(this);
     (this: any).handleResultsChange = this.handleResultsChange.bind(this);
   }
@@ -589,7 +590,7 @@ export default class QuickSelectionComponent extends React.Component {
    * @param newTab is actually a ProviderSpec plus the `name` and `tabContent` properties added by
    *     _renderTabs(), which created the tab object in the first place.
    */
-  _handleTabChange(newTab: ProviderSpec): void {
+  _handleTabChange(newTab: Tab): void {
     const providerName = newTab.name;
     if (providerName !== this.props.activeProvider.name) {
       QuickSelectionActions.changeActiveProvider(providerName);
@@ -609,7 +610,6 @@ export default class QuickSelectionComponent extends React.Component {
         );
       }
       return {
-        ...tab,
         name: tab.name,
         tabContent: <span>{tab.title}{keyBinding}</span>,
       };
@@ -619,7 +619,7 @@ export default class QuickSelectionComponent extends React.Component {
         <Tabs
           tabs={tabs}
           activeTabName={this.state.activeTab.name}
-          onActiveTabChange={this._boundHandleTabChange}
+          onActiveTabChange={this._handleTabChange}
         />
       </div>
     );

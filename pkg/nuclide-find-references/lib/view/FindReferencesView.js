@@ -24,25 +24,38 @@ function pluralize(noun: string, count: number) {
   return count === 1 ? noun : noun + 's';
 }
 
-const FindReferencesView = React.createClass({
+type Props = {
+  model: FindReferencesModel,
+};
 
-  propTypes: {
-    model: React.PropTypes.instanceOf(FindReferencesModel).isRequired,
-  },
+type State = {
+  loading: boolean,
+  fetched: number,
+  selected: number,
+  references: Array<FileReferences>,
+};
 
-  getInitialState() {
-    const references: Array<FileReferences> = [];
-    return {
+export default class FindReferencesView extends React.Component {
+  props: Props;
+  state: State;
+
+  constructor(props: Props) {
+    super(props);
+    this.state = {
       loading: true,
       fetched: 0,
       selected: -1,
-      references,
+      references: [],
     };
-  },
+
+    (this: any)._fetchMore = this._fetchMore.bind(this);
+    (this: any)._onScroll = this._onScroll.bind(this);
+    (this: any)._childClick = this._childClick.bind(this);
+  }
 
   componentDidMount() {
     this._fetchMore(PAGE_SIZE);
-  },
+  }
 
   async _fetchMore(count: number): Promise<void> {
     const next = await this.props.model.getFileReferences(
@@ -54,7 +67,7 @@ const FindReferencesView = React.createClass({
       fetched: this.state.fetched + PAGE_SIZE,
       references: this.state.references.concat(next),
     });
-  },
+  }
 
   _onScroll(evt: Event) {
     const root = ReactDOM.findDOMNode(this.refs.root);
@@ -66,11 +79,11 @@ const FindReferencesView = React.createClass({
       this.setState({loading: true});
       this._fetchMore(PAGE_SIZE);
     }
-  },
+  }
 
   _childClick(i: number) {
     this.setState({selected: (this.state.selected === i) ? -1 : i});
-  },
+  }
 
   render(): React.Element<any> {
     const children = this.state.references.map((fileRefs, i) =>
@@ -109,8 +122,5 @@ const FindReferencesView = React.createClass({
         </ul>
       </div>
     );
-  },
-
-});
-
-module.exports = FindReferencesView;
+  }
+}

@@ -47,6 +47,7 @@ import passesGK from '../../commons-node/passesGK';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 
 import {NewDebuggerView} from './NewDebuggerView';
+import DebuggerControllerView from './DebuggerControllerView';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>,
@@ -86,7 +87,6 @@ class DebuggerView extends React.Component {
       model,
     } = this.props;
     const {showOldView} = this.state;
-    const DebuggerControllerView = require('./DebuggerControllerView');
     return (
       <PanelComponent initialLength={500} dock="right">
         <div className="nuclide-debugger-root">
