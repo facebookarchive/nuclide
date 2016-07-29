@@ -32,9 +32,9 @@ let manager: ?ContextViewManager = null;
 let disposables: CompositeDisposable;
 const initialViewState = {};
 
-export function activate(activationState: ContextViewConfig = {}): void {
-  initialViewState.width = activationState.width || INITIAL_PANEL_WIDTH;
-  initialViewState.visible = activationState.visible || INITIAL_PANEL_VISIBILITY;
+export function activate(state?: Object = {}): void {
+  initialViewState.width = state.width || INITIAL_PANEL_WIDTH;
+  initialViewState.visible = state.visible || INITIAL_PANEL_VISIBILITY;
   disposables = new CompositeDisposable();
   // Toggle
   disposables.add(
