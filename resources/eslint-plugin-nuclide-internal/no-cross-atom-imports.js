@@ -28,6 +28,11 @@ module.exports = function(context) {
     throw new Error(`"${filename}" does not have a package.json`);
   }
 
+  // Packages come in 3 flavors:
+  // packageType: Atom & testRunner: apm
+  // packageType: Node & testRunner: apm
+  // packageType: Node & testRunner: npm
+
   function getCrossImportPackage(id) {
     const resolved = resolveFrom(dirname, id);
     // Exclude modules that are not found or not ours.
@@ -35,19 +40,44 @@ module.exports = function(context) {
       return null;
     }
     const resolvedPackage = getPackage(resolved);
-    // Requiring anything in our package is ok.
+    // Requiring anything within our own package is ok.
     if (resolvedPackage.__dirname === ownPackage.__dirname) {
       return null;
     }
-    // Requiring non-Atom packages is ok.
-    if (!(resolvedPackage.nuclide && resolvedPackage.nuclide.packageType === 'Atom')) {
+    // An apm package requiring a whitelisted package is ok.
+    if (ownPackage.nuclide &&
+        ownPackage.nuclide.testRunner === 'apm' &&
+        whitelist.has(resolvedPackage.name)) {
       return null;
     }
-    if (whitelist.has(resolvedPackage.name)) {
-      return null;
+    // Nothing can require into an Atom package
+    if (resolvedPackage.nuclide &&
+        resolvedPackage.nuclide.packageType === 'Atom') {
+      return {type: 'NO_ATOM', pkg: resolvedPackage};
+    }
+    // npm packages can only require other npm packages.
+    if (ownPackage.nuclide &&
+        ownPackage.nuclide.testRunner === 'npm' &&
+        resolvedPackage.nuclide &&
+        resolvedPackage.nuclide.testRunner === 'apm') {
+      return {type: 'NO_NPM_TO_APM', pkg: resolvedPackage};
     }
 
-    return resolvedPackage;
+    return null;
+  }
+
+  function reportError(node, action, result) {
+    const message =
+      result.type === 'NO_ATOM'
+        ? 'Atom package "{{name}}" is not {{action}} from other packages.' :
+      result.type === 'NO_NPM_TO_APM'
+        ? 'apm package "{{name}}" is not {{action}} from an npm package.' :
+      null;
+    context.report({
+      node,
+      data: {name: result.pkg.name, action},
+      message,
+    });
   }
 
   return {
@@ -57,12 +87,9 @@ module.exports = function(context) {
       }
       // require("…")
       const id = node.arguments[0].value;
-      const pkg = getCrossImportPackage(id);
-      if (pkg) {
-        context.report({
-          node,
-          message: `Atom package "${pkg.name}" is not requireable from other packages.`,
-        });
+      const result = getCrossImportPackage(id);
+      if (result) {
+        reportError(node, 'requireable', result);
       }
     },
     ExportNamedDeclaration(node) {
@@ -71,23 +98,17 @@ module.exports = function(context) {
       }
       // export foo from "…"
       const id = node.source.value;
-      const pkg = getCrossImportPackage(id);
-      if (pkg) {
-        context.report({
-          node,
-          message: `Atom package "${pkg.name}" is not exportable from other packages.`,
-        });
+      const result = getCrossImportPackage(id);
+      if (result) {
+        reportError(node, 'exportable', result);
       }
     },
     ExportAllDeclaration(node) {
       // export * from "…"
       const id = node.source.value;
-      const pkg = getCrossImportPackage(id);
-      if (pkg) {
-        context.report({
-          node,
-          message: `Atom package "${pkg.name}" is not exportable from other packages.`,
-        });
+      const result = getCrossImportPackage(id);
+      if (result) {
+        reportError(node, 'exportable', result);
       }
     },
     ImportDeclaration(node) {
@@ -96,12 +117,9 @@ module.exports = function(context) {
       }
       // import foo from "…"
       const id = node.source.value;
-      const pkg = getCrossImportPackage(id);
-      if (pkg) {
-        context.report({
-          node,
-          message: `Atom package "${pkg.name}" is not importable from other packages.`,
-        });
+      const result = getCrossImportPackage(id);
+      if (result) {
+        reportError(node, 'importable', result);
       }
     },
   };
