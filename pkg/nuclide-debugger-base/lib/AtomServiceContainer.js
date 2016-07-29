@@ -12,14 +12,25 @@
 import type {Observable} from 'rxjs';
 import type {OutputService} from '../../nuclide-console/lib/types';
 
-let outputServiceApi: ?OutputService = null;
+type raiseNativeNotificationFunc = ?(title: string, body: string) => void;
+
+let _outputServiceApi: ?OutputService = null;
+let _raiseNativeNotification: ?raiseNativeNotificationFunc = null;
 
 export function setOutputService(api: OutputService): void {
-  outputServiceApi = api;
+  _outputServiceApi = api;
 }
 
 export function getOutputService(): ?OutputService {
-  return outputServiceApi;
+  return _outputServiceApi;
+}
+
+export function setNotificationService(raiseNativeNotification: raiseNativeNotificationFunc): void {
+  _raiseNativeNotification = raiseNativeNotification;
+}
+
+export function getNotificationService(): ?raiseNativeNotificationFunc {
+  return _raiseNativeNotification;
 }
 
 // TODO: refactor this function to work with other providers(like hhvm).

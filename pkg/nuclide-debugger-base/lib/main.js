@@ -16,5 +16,7 @@ export {default as DebuggerLaunchAttachProvider} from './DebuggerLaunchAttachPro
 export {
   setOutputService,
   getOutputService,
+  setNotificationService,
+  getNotificationService,
   registerOutputWindowLogging,
-} from './OutputServiceManager';
+} from './AtomServiceContainer';

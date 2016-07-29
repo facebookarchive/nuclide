@@ -45,7 +45,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import passesGK from '../../commons-node/passesGK';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
-
+import {setNotificationService} from '../../nuclide-debugger-base';
 import {NewDebuggerView} from './NewDebuggerView';
 import DebuggerControllerView from './DebuggerControllerView';
 
@@ -498,6 +498,12 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   invariant(activation);
   activation._disposables.add(disposable);
   return disposable;
+}
+
+export function consumeNotifications(
+  raiseNativeNotification: (title: string, body: string) => void,
+): void {
+  setNotificationService(raiseNativeNotification);
 }
 
 export function provideRemoteControlService(): RemoteControlService {

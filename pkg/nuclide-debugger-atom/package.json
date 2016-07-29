@@ -58,6 +58,11 @@
         "^0 || ^1": "consumeToolBar"
       }
     },
+    "nuclide-notifications.provideRaiseNativeNotification": {
+      "versions": {
+        "0.0.0": "consumeNotifications"
+      }
+    },
     "nuclide-debugger.provider": {
       "versions": {
         "0.0.0": "consumeDebuggerProvider"
