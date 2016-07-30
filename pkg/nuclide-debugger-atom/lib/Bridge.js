@@ -202,24 +202,42 @@ class Bridge {
     }
   }
 
-  _evaluateOnSelectedCallFrame(
+  async _evaluateOnSelectedCallFrame(
     expression: string,
     objectGroup: ObjectGroup,
   ): Promise<?EvaluationResult> {
-    return this._cachedSendCommand(
+    const result = await this._cachedSendCommand(
       this._expressionsInFlight,
       'evaluateOnSelectedCallFrame',
       expression,
       objectGroup,
     );
+    if (result == null) {
+      // TODO: It would be nice to expose a better error from the backend here.
+      return {
+        type: 'text',
+        value: `Failed to evaluate: ${expression}`,
+      };
+    } else {
+      return result;
+    }
   }
 
-  _runtimeEvaluate(expression: string): Promise<?EvaluationResult> {
-    return this._cachedSendCommand(
+  async _runtimeEvaluate(expression: string): Promise<?EvaluationResult> {
+    const result = await this._cachedSendCommand(
       this._expressionsInFlight,
       'runtimeEvaluate',
       expression,
     );
+    if (result == null) {
+      // TODO: It would be nice to expose a better error from the backend here.
+      return {
+        type: 'text',
+        value: `Failed to evaluate: ${expression}`,
+      };
+    } else {
+      return result;
+    }
   }
 
   async _cachedSendCommand<T>(

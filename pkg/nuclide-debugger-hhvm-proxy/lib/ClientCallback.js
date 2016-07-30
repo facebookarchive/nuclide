@@ -92,8 +92,10 @@ export class ClientCallback {
 
   replyToCommand(id: number, result: Object, error: ?string): void {
     const value: Object = {id, result};
-    if (error) {
+    if (error != null) {
       value.error = error;
+    } else if (result.error != null) {
+      value.error = result.error;
     }
     this._sendJsonObject(this._serverMessageObservable, value);
   }

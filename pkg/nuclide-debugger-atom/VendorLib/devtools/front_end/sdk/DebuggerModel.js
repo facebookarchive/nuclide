@@ -685,7 +685,7 @@ WebInspector.DebuggerModel.prototype = {
         function didEvaluate(result, wasThrown, exceptionDetails)
         {
             if (!result)
-                callback(null, false);
+                callback(null, wasThrown, exceptionDetails);
             else if (returnByValue)
                 callback(null, !!wasThrown, wasThrown ? null : result, exceptionDetails);
             else
@@ -1161,7 +1161,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
         {
             if (error) {
                 console.error(error);
-                callback(null, false);
+                callback(result, wasThrown, error);
                 return;
             }
             callback(result, wasThrown, exceptionDetails);
