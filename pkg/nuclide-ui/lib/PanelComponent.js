@@ -47,8 +47,8 @@ type State = {
  */
 export class PanelComponent extends React.Component {
 
-  _isMounted: boolean;
-  _resizeSubscriptions: CompositeDisposable;
+  _animationFrameRequestId: ?number;
+  _resizeSubscriptions: ?CompositeDisposable;
 
   props: Props;
   state: State;
@@ -61,7 +61,6 @@ export class PanelComponent extends React.Component {
 
   constructor(props: Object) {
     super(props);
-    this._isMounted = false;
     this.state = {
       isResizing: false,
       length: this.props.initialLength,
@@ -75,15 +74,19 @@ export class PanelComponent extends React.Component {
   }
 
   componentDidMount() {
-    this._isMounted = true;
     // Note: This method is called via `requestAnimationFrame` rather than `process.nextTick` like
     // Atom's tree-view does because this does not have a guarantee a paint will have already
     // happened when `componentDidMount` gets called the first time.
-    window.requestAnimationFrame(this._repaint.bind(this));
+    this._animationFrameRequestId = window.requestAnimationFrame(this._repaint.bind(this));
   }
 
   componentWillUnmount() {
-    this._isMounted = false;
+    if (this._resizeSubscriptions != null) {
+      this._resizeSubscriptions.dispose();
+    }
+    if (this._animationFrameRequestId != null) {
+      window.cancelAnimationFrame(this._animationFrameRequestId);
+    }
   }
 
   /**
@@ -93,12 +96,6 @@ export class PanelComponent extends React.Component {
    * [1] https://github.com/atom/tree-view/blob/v0.201.5/lib/tree-view.coffee#L722
    */
   _repaint() {
-    // Normally an ugly pattern, but calls to `requestAnimationFrame` cannot be canceled. Must guard
-    // against an unmounted component here.
-    if (!this._isMounted) {
-      return;
-    }
-
     const element = ReactDOM.findDOMNode(this);
     const isVisible = window.getComputedStyle(element, null).getPropertyValue('visibility');
 
@@ -158,7 +155,6 @@ export class PanelComponent extends React.Component {
       <div
         className={`nuclide-ui-panel-component tree-view-resizer ${this.props.dock}`}
         hidden={this.props.hidden}
-        ref="container"
         style={containerStyle}>
         <div className={`nuclide-ui-panel-component-resize-handle ${this.props.dock}`}
           ref="handle"
@@ -190,23 +186,22 @@ export class PanelComponent extends React.Component {
   }
 
   _handleMouseDown(event: SyntheticMouseEvent): void {
-    this._resizeSubscriptions = new CompositeDisposable();
+    if (this._resizeSubscriptions != null) {
+      this._resizeSubscriptions.dispose();
+    }
 
     window.addEventListener('mousemove', this._handleMouseMove);
-    this._resizeSubscriptions.add({
-      dispose: () => window.removeEventListener('mousemove', this._handleMouseMove),
-    });
-
     window.addEventListener('mouseup', this._handleMouseUp);
-    this._resizeSubscriptions.add({
-      dispose: () => window.removeEventListener('mouseup', this._handleMouseUp),
-    });
+    this._resizeSubscriptions = new CompositeDisposable(
+      {dispose: () => { window.removeEventListener('mousemove', this._handleMouseMove); }},
+      {dispose: () => { window.removeEventListener('mouseup', this._handleMouseUp); }},
+    );
 
     this.setState({isResizing: true});
   }
 
   _handleMouseMove(event: SyntheticMouseEvent): void {
-    const containerEl = ReactDOM.findDOMNode(this.refs.container);
+    const containerEl = ReactDOM.findDOMNode(this);
     let length = 0;
     switch (this.props.dock) {
       case 'left':
