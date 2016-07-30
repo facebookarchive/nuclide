@@ -87,7 +87,11 @@ export function provideCodeFormat(): CodeFormatProvider {
     selector: 'source.python',
     inclusionPriority: 1,
     formatEntireFile(editor, range) {
-      return CodeFormatHelpers.formatEntireFile(editor, range);
+      invariant(busySignalProvider);
+      return busySignalProvider.reportBusy(
+        `Python: formatting \`${editor.getTitle()}\``,
+        () => CodeFormatHelpers.formatEntireFile(editor, range),
+      );
     },
   };
 }
