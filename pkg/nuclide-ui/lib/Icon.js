@@ -9,14 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {Octicon} from './Octicons';
-
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Props = {
   /** Valid octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon: Octicon,
+  icon: atom$Octicon,
   className?: string,
   /** Optional text content to render next to the icon. */
   children?: string,

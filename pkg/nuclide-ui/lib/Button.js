@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Octicon} from './Octicons';
-
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {maybeToString} from '../../commons-node/string';
@@ -21,7 +19,7 @@ type ButtonNodeName = 'button' | 'a';
 
 type Props = {
   /** Octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon?: Octicon,
+  icon?: atom$Octicon,
   /** Optional specifier for special buttons, e.g. primary, info, success or error buttons. */
   buttonType?: ButtonType,
   selected?: boolean,

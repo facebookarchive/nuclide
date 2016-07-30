@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Octicon} from './Octicons';
-
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
@@ -23,7 +21,7 @@ type Props = {
   className?: string,
   color?: BadgeColor,
   /** Octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon?: Octicon,
+  icon?: atom$Octicon,
   size?: BadgeSize,
   /** The value displayed inside the badge. */
   value: number,

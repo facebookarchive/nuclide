@@ -10,14 +10,13 @@
  */
 
 import type {ButtonSize} from '../../../nuclide-ui/lib/Button';
-import type {Octicon} from '../../../nuclide-ui/lib/Octicons';
 
 import {Button} from '../../../nuclide-ui/lib/Button';
 import {Icon} from '../../../nuclide-ui/lib/Icon';
 import {React} from 'react-for-atom';
 
 type Props = {
-  icon?: Octicon,
+  icon?: atom$Octicon,
   selected?: boolean,
   size?: ButtonSize,
   children?: mixed,

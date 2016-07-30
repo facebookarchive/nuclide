@@ -9,7 +9,6 @@
  */
 
 import type {Task} from '../../commons-node/tasks';
-import type {Octicon} from '../../nuclide-ui/lib/Octicons';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 import type {Directory as LocalDirectoryType} from 'atom';
 
@@ -45,7 +44,7 @@ export type TaskMetadata = {
   description: string,
   enabled: boolean, // Can the action be run now?
   cancelable?: boolean, // By default, this is true (all tasks are cancelable).
-  icon: Octicon,
+  icon: atom$Octicon,
 };
 
 export type AnnotatedTaskMetadata = TaskMetadata & {

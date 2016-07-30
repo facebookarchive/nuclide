@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Octicon} from './Octicons';
-
 import remote from 'remote';
 import {React} from 'react-for-atom';
 import {Button, ButtonSizes} from './Button';
@@ -29,7 +27,7 @@ export type Option<T> = Separator | {
   value: T,
   label: string,
   selectedLabel?: string,
-  icon?: Octicon,
+  icon?: atom$Octicon,
   disabled?: boolean,
 };
 
