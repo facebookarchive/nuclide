@@ -80,6 +80,7 @@
     "split": "1.0.0",
     "ssh2": "0.4.13",
     "strip-ansi": "3.0.1",
+    "symbol-observable": "0.2.4",
     "temp": "0.8.3",
     "url-join": "1.1.0",
     "urlregexp": "1.0.2",

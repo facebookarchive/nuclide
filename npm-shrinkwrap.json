@@ -2269,7 +2269,7 @@
     },
     "symbol-observable": {
       "version": "0.2.4",
-      "from": "symbol-observable@>=0.2.3 <0.3.0",
+      "from": "symbol-observable@0.2.4",
       "resolved": "https://registry.npmjs.org/symbol-observable/-/symbol-observable-0.2.4.tgz"
     },
     "table": {
