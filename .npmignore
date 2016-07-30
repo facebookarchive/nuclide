@@ -1,5 +1,6 @@
 /.eslintignore
 /.eslintrc.js
+/.flake8
 /.flowconfig
 /CONTRIBUTING.md
 /ISSUE_TEMPLATE.md
