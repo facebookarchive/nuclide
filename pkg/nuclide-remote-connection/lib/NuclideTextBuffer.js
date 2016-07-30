@@ -16,9 +16,10 @@ import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
 import {CompositeDisposable, TextBuffer} from 'atom';
 import {track} from '../../nuclide-analytics';
+import {countOccurrences} from '../../commons-node/string';
 
-// Do not attempt to diff files larger than this limit.
-const DIFF_FILE_SIZE_LIMIT = 10000;
+// Diffing is O(lines^2), so don't bother for files with too many lines.
+const DIFF_LINE_LIMIT = 10000;
 
 export default class NuclideTextBuffer extends TextBuffer {
   _connection: ServerConnection;
@@ -146,7 +147,8 @@ export default class NuclideTextBuffer extends TextBuffer {
   // easily cause the editor to lock.
   // TODO(hansonw): Remove after https://github.com/atom/text-buffer/issues/153 is resolved.
   setTextViaDiff(newText: string): void {
-    if (this.getText().length > DIFF_FILE_SIZE_LIMIT || newText.length > DIFF_FILE_SIZE_LIMIT) {
+    if (this.getLineCount() > DIFF_LINE_LIMIT ||
+        countOccurrences(newText, '\n') > DIFF_LINE_LIMIT) {
       this.setText(newText);
     } else {
       super.setTextViaDiff(newText);

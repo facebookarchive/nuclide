@@ -1272,6 +1272,7 @@ declare class atom$TextBuffer {
   isEmpty(): boolean,
   getText(): string,
   getTextInRange(range: atom$Range): string,
+  getLineCount(): number,
   getLines(): Array<string>,
   getLastLine(): string,
   lineForRow(row: number): string,
