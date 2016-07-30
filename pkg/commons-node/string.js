@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 export function stringifyError(error: Error): string {
   return `name: ${error.name}, message: ${error.message}, stack: ${error.stack}.`;
 }
@@ -79,4 +81,21 @@ export function relativeDate(
   }
 
   throw new Error('This should never be reached.');
+}
+
+/**
+ * Count the number of occurrences of `char` in `str`.
+ * `char` must be a string of length 1.
+ */
+export function countOccurrences(haystack: string, char: string) {
+  invariant(char.length === 1, 'char must be a string of length 1');
+
+  let count = 0;
+  const code = char.charCodeAt(0);
+  for (let i = 0; i < haystack.length; i++) {
+    if (haystack.charCodeAt(i) === code) {
+      count++;
+    }
+  }
+  return count;
 }

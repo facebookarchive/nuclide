@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {maybeToString, relativeDate} from '../string';
+import {maybeToString, relativeDate, countOccurrences} from '../string';
 
 describe('relativeDate', () => {
   it('works', () => {
@@ -60,5 +60,17 @@ describe('maybeToString', () => {
 
   it('returns an ordinary string', () => {
     expect(maybeToString('foo')).toEqual('foo');
+  });
+});
+
+describe('countOccurrences', () => {
+  it('counts the number of characters', () => {
+    expect(countOccurrences('abcaaa', 'a')).toBe(4);
+  });
+
+  it('throws for non-length-1 searches', () => {
+    expect(() => {
+      countOccurrences('abc', 'abc');
+    }).toThrow();
   });
 });
