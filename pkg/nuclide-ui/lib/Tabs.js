@@ -9,11 +9,13 @@
  * the root directory of this source tree.
  */
 
+import {Icon} from './Icon';
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
 
 export type Tab = {
   name: string,
+  icon?: atom$Octicon,
   tabContent: React.Element<any>,
 };
 
@@ -54,6 +56,9 @@ export default class Tabs extends React.Component {
       ? <div className="close-icon" onClick={this.props.onClose} />
       : null;
     const tabs = this.props.tabs.map(tab => {
+      const icon = tab.icon == null
+        ? null
+        : <Icon icon={tab.icon} />;
       const handler = {};
       handler[this.props.triggeringEvent] = this._handleTabChange.bind(this, tab.name);
       return (
@@ -65,6 +70,7 @@ export default class Tabs extends React.Component {
           key={tab.name}
           {...handler}>
           <div className="title">
+            {icon}
             {tab.tabContent}
           </div>
           {closeButton}
