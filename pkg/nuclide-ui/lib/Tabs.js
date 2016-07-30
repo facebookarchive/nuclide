@@ -20,7 +20,9 @@ export type Tab = {
 type Props = {
   tabs: Array<Tab>,
   activeTabName: string,
+  closeable: boolean,
   onActiveTabChange: (tab: Tab) => void,
+  onClose?: () => void,
   triggeringEvent: string,
 };
 
@@ -28,6 +30,7 @@ export default class Tabs extends React.Component {
   props: Props;
 
   static defaultProps = {
+    closeable: false,
     triggeringEvent: 'onClick',
   };
 
@@ -47,6 +50,9 @@ export default class Tabs extends React.Component {
   }
 
   _renderTabMenu(): React.Element<any> {
+    const closeButton = this.props.closeable
+      ? <div className="close-icon" onClick={this.props.onClose} />
+      : null;
     const tabs = this.props.tabs.map(tab => {
       const handler = {};
       handler[this.props.triggeringEvent] = this._handleTabChange.bind(this, tab.name);
@@ -61,6 +67,7 @@ export default class Tabs extends React.Component {
           <div className="title">
             {tab.tabContent}
           </div>
+          {closeButton}
         </li>
       );
     });
