@@ -20,6 +20,12 @@
         "type": "string",
         "default": "",
         "description": "Path to a Swift toolchain on your local system. If left blank, Nuclide will search for one at '/Library/Developer/Toolchains/swift-latest.xctoolchain' on OS X, or find one based on a 'swiftc' executable in your PATH on Linux."
+      },
+      "sourceKittenPath": {
+        "title": "Path to SourceKitten Executable",
+        "type": "string",
+        "default": "/usr/local/bin/sourcekitten",
+        "description": "Path to a SourceKitten executable on your local system."
       }
     }
   },
