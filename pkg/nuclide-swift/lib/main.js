@@ -58,6 +58,19 @@ export function serialize(): ?SwiftPMTaskRunnerStoreState {
   }
 }
 
+export function createAutocompleteProvider(): atom$AutocompleteProvider {
+  return {
+    selector: '.source.swift',
+    inclusionPriority: 1,
+    disableForSelector: '.source.swift .comment',
+    getSuggestions(
+      request: atom$AutocompleteRequest,
+    ): Promise<?Array<atom$AutocompleteSuggestion>> {
+      return _getTaskRunner().getAutocompletionProvider().getAutocompleteSuggestions(request);
+    },
+  };
+}
+
 function _getTaskRunner(): SwiftPMTaskRunner {
   if (_taskRunner == null) {
     invariant(_disposables != null);

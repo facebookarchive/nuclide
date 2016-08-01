@@ -31,6 +31,7 @@ import {
   SwiftPMTaskRunnerTaskMetadata,
 } from './SwiftPMTaskRunnerTaskMetadata';
 import SwiftPMTaskRunnerToolbar from './toolbar/SwiftPMTaskRunnerToolbar';
+import SwiftPMAutocompletionProvider from './providers/SwiftPMAutocompletionProvider';
 import {SwiftIcon} from '../ui/SwiftIcon';
 
 /**
@@ -61,6 +62,7 @@ export class SwiftPMTaskRunner {
   _initialState: ?SwiftPMTaskRunnerStoreState;
   _flux: ?SwiftPMTaskRunnerFlux;
   _taskList: Observable<Array<TaskMetadata>>;
+  _autocompletionProvider: ?SwiftPMAutocompletionProvider;
   _outputMessages: Subject<Message>;
 
   constructor(initialState: ?SwiftPMTaskRunnerStoreState) {
@@ -175,6 +177,13 @@ export class SwiftPMTaskRunner {
         task.cancel();
       },
     };
+  }
+
+  getAutocompletionProvider(): SwiftPMAutocompletionProvider {
+    if (!this._autocompletionProvider) {
+      this._autocompletionProvider = new SwiftPMAutocompletionProvider(this._getFlux().store);
+    }
+    return this._autocompletionProvider;
   }
 
   getOutputMessages(): Observable<Message> {
