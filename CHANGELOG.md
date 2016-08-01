@@ -1,5 +1,39 @@
 # Nuclide Changelog
 
+## v0.159.0
+
+* Nuclide version is now reported in the 'Nuclide' menu in the menu bar.
+
+### [New Feature] Swift
+
+* Select "Swift" from the task runner toolbar to build and test Swift packages.
+* After you've built a Swift package, Nuclide provides autocompletion suggestions for Swift source files in the package.
+* More info https://nuclide.io/docs/languages/swift/
+* Thank you @modocache!
+
+### Remote Connection
+
+* Connecting with an empty remote command will now use the default remote command.
+* Significantly faster reloading of remote projects with many files open.
+
+### C++:
+
+* The user will now receive an in-editor notification telling them when they have switched threads while debugging.
+
+### HACK:
+
+* The user will now receive an in-editor notification telling them when they have switched requests while debugging.
+
+### Python:
+
+* Display a busy signal while waiting for code formatting results.
+
+### Fixes
+
+* Duplicate error messages from the PHP debugger in the console now report correctly.
+* Remote files are restored correctly after restart on Windows.
+* Restore cursor state correctly when code formatting large files.
+
 ## v0.158.0
 
 * Quick Open: “Open All” button to open all search results (or `shift+enter`)
