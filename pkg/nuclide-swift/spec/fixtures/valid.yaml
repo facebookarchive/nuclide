@@ -1,0 +1,51 @@
+client:
+  name: swift-build
+tools: {}
+targets:
+  "test": ["<MyPackageTestSuite.module>","<MyPackageTests.test>"]
+  "main": ["<MyPackage.module>"]
+default: "main"
+commands:
+  "<MyPackage.module>":
+    tool: swift-compiler
+    executable: "/Library/Developer/Toolchains/swift-LOCAL-2016-05-10-a.xctoolchain/usr/bin/swiftc"
+    module-name: "MyPackage"
+    module-output-path: "/path/to/MyPackage/.build/debug/MyPackage.swiftmodule"
+    inputs: []
+    outputs: ["<MyPackage.module>","/path/to/MyPackage/.build/debug/MyPackage.build/AnotherSource.swift.o","/path/to/MyPackage/.build/debug/MyPackage.build/MyPackage.swift.o"]
+    import-paths: ["/path/to/MyPackage/.build/debug"]
+    temps-path: "/path/to/MyPackage/.build/debug/MyPackage.build"
+    objects: ["/path/to/MyPackage/.build/debug/MyPackage.build/AnotherSource.swift.o","/path/to/MyPackage/.build/debug/MyPackage.build/MyPackage.swift.o"]
+    other-args: ["-D","SWIFT_PACKAGE","-g"]
+    sources: ["/path/to/MyPackage/Sources/AnotherSource.swift","/path/to/MyPackage/Sources/MyPackage.swift"]
+    is-library: true
+    enable-whole-module-optimization: false
+    num-threads: "8"
+
+  "<MyPackageTestSuite.module>":
+    tool: swift-compiler
+    executable: "/Library/Developer/Toolchains/swift-LOCAL-2016-05-10-a.xctoolchain/usr/bin/swiftc"
+    module-name: "MyPackageTestSuite"
+    module-output-path: "/path/to/MyPackage/.build/debug/MyPackageTestSuite.swiftmodule"
+    inputs: ["<MyPackage.module>"]
+    outputs: ["<MyPackageTestSuite.module>","/path/to/MyPackage/.build/debug/MyPackageTestSuite.build/MyPackageTests.swift.o"]
+    import-paths: ["/path/to/MyPackage/.build/debug"]
+    temps-path: "/path/to/MyPackage/.build/debug/MyPackageTestSuite.build"
+    objects: ["/path/to/MyPackage/.build/debug/MyPackageTestSuite.build/MyPackageTests.swift.o"]
+    other-args: ["-D","SWIFT_PACKAGE","-g"]
+    sources: ["/path/to/MyPackage/Tests/MyPackage/MyPackageTests.swift"]
+    is-library: true
+    enable-whole-module-optimization: false
+    num-threads: "8"
+
+  # Normally SwiftPM doesn't output modules with "sources" but no "other-args",
+  # but this is here to test what happens if it does.
+  "<MyPackageTestSuiteWithNoOtherArgs.module>":
+    sources: ["/path/to/YetAnotherFile.swift"]
+
+  "<MyPackageTests.test>":
+    tool: shell
+    description: "Linking Users/bgesiak/GitHub/tmp/MyPackage/.build/debug/MyPackageTests.xctest/Contents/MacOS/MyPackageTests"
+    inputs: ["/path/to/MyPackage/.build/debug/MyPackageTestSuite.build/MyPackageTests.swift.o","/path/to/MyPackage/.build/debug/MyPackage.build/AnotherSource.swift.o","/path/to/MyPackage/.build/debug/MyPackage.build/MyPackage.swift.o"]
+    outputs: ["<MyPackageTests.test>","/path/to/MyPackage/.build/debug/MyPackageTests.xctest/Contents/MacOS/MyPackageTests"]
+    args: ["/Library/Developer/Toolchains/swift-LOCAL-2016-05-10-a.xctoolchain/usr/bin/swiftc","-target","x86_64-apple-macosx10.10","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk","-g","-L/path/to/MyPackage/.build/debug","-o","/path/to/MyPackage/.build/debug/MyPackageTests.xctest/Contents/MacOS/MyPackageTests","-module-name","MyPackageTests","-Xlinker","-bundle","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","/path/to/MyPackage/.build/debug/MyPackageTestSuite.build/MyPackageTests.swift.o","/path/to/MyPackage/.build/debug/MyPackage.build/AnotherSource.swift.o","/path/to/MyPackage/.build/debug/MyPackage.build/MyPackage.swift.o"]

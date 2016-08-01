@@ -1,0 +1,7 @@
+client:
+  name: swift-build
+tools: {}
+targets:
+  "test": ["<MyPackageTestSuite.module>","<MyPackageTests.test>"]
+  "main": ["<MyPackage.module>"]
+default: "main"
