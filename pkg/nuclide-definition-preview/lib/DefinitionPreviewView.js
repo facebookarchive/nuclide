@@ -18,16 +18,7 @@ import {goToLocation} from '../../commons-atom/go-to-location';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import {track} from '../../nuclide-analytics';
-
-export type Location = {
-  path: string,
-  position: atom$Point,
-};
-
-export type PreviewContent = {
-  location: Location,
-  grammar: atom$Grammar,
-};
+import invariant from 'assert';
 
 export class DefinitionPreviewView extends React.Component {
   _loadAndScroll: ?() => Promise<void>;
@@ -89,6 +80,16 @@ export class DefinitionPreviewView extends React.Component {
       setTimeout(() => {
         if (this._loadAndScroll !== loadAndScroll) {
           return;
+        }
+        if (this.props.definition != null) {
+          const editor = this.getEditor();
+          editor.getDecorations().forEach(decoration => decoration.destroy());
+          invariant(this.props.definition != null);
+          const marker = editor.markBufferPosition(this.props.definition.position);
+          editor.decorateMarker(marker, {
+            type: 'line',
+            class: 'nuclide-current-line-highlight',
+          });
         }
         this._scrollToRow(definition.position.row);
         this._loadAndScroll = null;
