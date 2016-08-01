@@ -31,6 +31,7 @@ type PropsType = {
 type StateType = {
   targetListChangeDisposable: IDisposable,
   attachTargetInfos: Array<AttachTargetInfo>,
+  filteredAttachTargetInfos: Array<AttachTargetInfo>,
   selectedAttachTarget: ?AttachTargetInfo,
   filterText: string,
 };
@@ -50,6 +51,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     this.state = {
       targetListChangeDisposable: this.props.store.onAttachTargetListChanged(this._updateList),
       attachTargetInfos: [],
+      filteredAttachTargetInfos: [],
       selectedAttachTarget: null,
       filterText: '',
     };
@@ -62,21 +64,30 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _updateList(): void {
-    const newSelectedTarget = this.state.selectedAttachTarget == null ? null :
-      this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
-    this.setState({
-      attachTargetInfos: this.props.store.getAttachTargetInfos(),
-      selectedAttachTarget: newSelectedTarget,
-    });
+    this._updateFilteredList(this.props.store.getAttachTargetInfos(), this.state.filterText);
   }
 
-  _getAttachTargetOfPid(pid: number): ?AttachTargetInfo {
-    for (const target of this.props.store.getAttachTargetInfos()) {
-      if (target.pid === pid) {
-        return target;
-      }
+  _updateFilteredList(rawTargets: Array<AttachTargetInfo>, newFilterText: string): void {
+    let filteredTargets = rawTargets;
+    if (newFilterText.length !== 0) {
+      const filterRegex = new RegExp(newFilterText, 'i');
+      filteredTargets = rawTargets.filter(item => filterRegex.test(item.name)
+                                           || filterRegex.test(item.pid.toString())
+                                           || filterRegex.test(item.commandName));
     }
-    return null;
+
+    let newSelectedTarget = this.state.selectedAttachTarget;
+    // Auto-select if only one target is available
+    if (filteredTargets.length === 1) {
+      newSelectedTarget = filteredTargets[0];
+    }
+
+    this.setState({
+      attachTargetInfos: rawTargets,
+      selectedAttachTarget: newSelectedTarget,
+      filterText: newFilterText,
+      filteredAttachTargetInfos: filteredTargets,
+    });
   }
 
   render(): React.Element<any> {
@@ -85,16 +96,15 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
       overflow: 'auto',
     };
     let hasSelectedItem = false;
-    const filterRegex = new RegExp(this.state.filterText, 'i');
-    const children = this.state.attachTargetInfos
-      .filter(item => filterRegex.test(item.name) || filterRegex.test(item.pid.toString()) ||
-        filterRegex.test(item.commandName))
-      .map((item, index) => {
-        const isSelected = (this.state.selectedAttachTarget === item);
-        if (isSelected) {
-          hasSelectedItem = true;
-        }
-        return <tr
+    const selectedTarget = this.state.selectedAttachTarget;
+    const children = this.state.filteredAttachTargetInfos.map((item, index) => {
+      // Be sure to compare PIDs rather than objects, since multiple distinct objects can be
+      // returned from different calls to getAttachTargetInfos() that represent the same process
+      const isSelected = (selectedTarget != null && selectedTarget.pid === item.pid);
+      if (isSelected) {
+        hasSelectedItem = true;
+      }
+      return <tr
             key={index + 1}
             className={classnames({'attach-selected-row': isSelected})}
             onClick={this._handleClickTableRow.bind(this, item)}
@@ -103,7 +113,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
           <td>{item.pid}</td>
           <td>{item.commandName}</td>
         </tr>;
-      });
+    });
     // TODO: wrap into separate React components.
     return (
       <div className="block">
@@ -143,9 +153,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _handleFilterTextChange(text: string): void {
-    this.setState({
-      filterText: text,
-    });
+    this._updateFilteredList(this.state.attachTargetInfos, text);
   }
 
   _handleClickTableRow(item: AttachTargetInfo): void {
