@@ -50,6 +50,8 @@ export class ContextViewManager {
   _defServiceSubscription: ?rx$ISubscription;
   _definitionService: ?DefinitionService;
   _isVisible: boolean;
+  // Whether Context View should keep displaying the current content even after the cursor moves
+  _locked: boolean;
   _panelDOMElement: ?HTMLElement;
   _width: number;
   currentDefinition: ?Definition;
@@ -60,12 +62,14 @@ export class ContextViewManager {
     this._defServiceSubscription = null;
     this._definitionService = null;
     this._isVisible = isVisible;
+    this._locked = false; // Should be unlocked by default
     this._panelDOMElement = null;
     this._width = width;
     this.currentDefinition = null;
 
     (this: any).hide = this.hide.bind(this);
     (this: any)._onResize = this._onResize.bind(this);
+    (this: any)._setLocked = this._setLocked.bind(this);
 
     this._render();
   }
@@ -124,9 +128,12 @@ export class ContextViewManager {
     this._render();
   }
 
+  /**
+   * Subscribes or unsubscribes to definition service based on the current state.
+   */
   updateSubscription(): void {
-    // Only subscribe if panel showing and there's something to subscribe to
-    if (this._isVisible && this._definitionService != null) {
+    // Only subscribe if panel showing && there's something to subscribe to && not locked
+    if (this._isVisible && this._definitionService != null && !this._locked) {
       this._defServiceSubscription = observeTextEditorsPositions(
         EDITOR_DEBOUNCE_INTERVAL, POSITION_DEBOUNCE_INTERVAL)
         .filter((editorPos: ?EditorPosition) => editorPos != null)
@@ -205,6 +212,14 @@ export class ContextViewManager {
     this._render();
   }
 
+  _setLocked(locked: boolean): void {
+    if (locked !== this._locked) {
+      this._locked = locked;
+      this.updateSubscription();
+      this._render();
+    }
+  }
+
   _disposeView(): void {
     if (this._panelDOMElement != null) {
       ReactDOM.unmountComponentAtNode(this._panelDOMElement);
@@ -235,6 +250,7 @@ export class ContextViewManager {
             {createElementFn({
               ContextViewMessage,
               definition: this.currentDefinition,
+              setLocked: this._setLocked,
             })}
           </ProviderContainer>
         );
@@ -257,6 +273,7 @@ export class ContextViewManager {
         initialWidth={this._width}
         onResize={this._onResize}
         definition={this.currentDefinition}
+        locked={this._locked}
         onHide={this.hide}>
         {providerElements}
       </ContextViewPanel>,

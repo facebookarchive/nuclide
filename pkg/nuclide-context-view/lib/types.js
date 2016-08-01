@@ -15,6 +15,9 @@ import typeof ContextViewMessage from './ContextViewMessage';
 export type ContextElementProps = {
   ContextViewMessage: ContextViewMessage,
   definition: ?Definition,
+  // Context providers can use this function to prevent Context View from updating
+  // the current definition.
+  setLocked: (locked: boolean) => void,
 };
 
 export type ContextProvider = {

@@ -12,11 +12,13 @@
 import {React} from 'react-for-atom';
 import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 import {Button} from '../../nuclide-ui/lib/Button';
+import {Icon} from '../../nuclide-ui/lib/Icon';
 
 type Props = {
   initialWidth: number,
   onHide: () => void,
   onResize: (newWidth: number) => void,
+  locked: boolean,
   children?: React.Element<any>,
 };
 
@@ -32,7 +34,7 @@ export const ContextViewPanel = (props: Props) => {
     noScroll
     onResize={props.onResize}>
       <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-        <Header onHide={props.onHide} />
+        <Header onHide={props.onHide} locked={props.locked} />
         <div className="nuclide-context-view-content">
           <p>
             Place your cursor over a function, class, variable, or method in
@@ -48,6 +50,7 @@ export const ContextViewPanel = (props: Props) => {
 
 type HeaderProps = {
   onHide: () => void,
+  locked: boolean,
 };
 
 const Header = (props: HeaderProps) => {
@@ -55,9 +58,10 @@ const Header = (props: HeaderProps) => {
     <div className="panel-heading" style={{flexShrink: 0}}>
       <h4>
         <span>Context View</span>
-        <Button icon="x" className="pull-right"
-          onClick={props.onHide} title="Hide context view"
-        />
+        <div className="pull-right">
+          {props.locked ? <Icon icon="lock" /> : null}
+          <Button icon="x" onClick={props.onHide} title="Hide context view" />
+        </div>
       </h4>
     </div>
   );
