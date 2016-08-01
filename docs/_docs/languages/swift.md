@@ -27,12 +27,30 @@ in the Nuclide settings:
 
 ![](/static/images/docs/language-swift-toolchain-path.png)
 
+Nuclide uses [SourceKitten](https://github.com/jpsim/SourceKitten) in order to
+provide features such as [autocompletion]((#features__autocompletion)).
+
+- On macOS, Nuclide expects to find a SourceKitten executable at
+  `/usr/local/bin/sourcekitten`. Installing SourceKitten via Homebrew, by
+  running `brew install sourcekitten` at the command line, places it in this
+  location.
+
+> Unfortunately, SourceKitten is not yet available on Linux. As a result,
+  features such as autocompletion are only available on macOS.
+
+You may configure Nuclide to use a SourceKitten executable at a different
+location by setting the "Path to SourceKitten Executable" in the Nuclide
+settings:
+
+![](/static/images/docs/language-swift-sourcekitten-path.png)
+
 ## Features
 
 Swift integration in Nuclide provides you with productivity features such as:
 
 - [Building a Swift package](#features__building-a-swift-package)
 - [Running a Swift package's tests](#features__running-a-swift-packages-tests)
+- [Autocompletion](#features__autocompletion)
 
 ### Building a Swift package
 
@@ -69,3 +87,11 @@ to a Swift package root.) Test output is displayed in the console.
 
 As with the Swift build toolbar, clicking the gear icon displays additional
 settings for running your Swift package's tests.
+
+### Autocompletion
+
+Once you have [built your Swift package via the Nuclide toolbar](#features__building-a-swift-package),
+Nuclide will be able to provide autocompletion suggestions for Swift source
+code.
+
+![](/static/images/docs/language-swift-autocompletion.png)
