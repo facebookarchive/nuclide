@@ -80,25 +80,35 @@ function sortServiceNames(names: Array<string>): Array<string> {
   });
 }
 
+type Props = {
+  activeProvider: ProviderSpec,
+  maxScrollableAreaHeight?: number,
+  onBlur: () => void,
+};
+
+type State = {
+  activeProviderName?: string,
+  activeTab: ProviderSpec,
+  hasUserSelection: boolean,
+  resultsByService: GroupedResult,
+  renderableProviders: Array<ProviderSpec>,
+  selectedService: string,
+  selectedDirectory: string,
+  selectedItemIndex: number,
+};
+
 export default class QuickSelectionComponent extends React.Component {
+  props: Props;
+  state: State;
+
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
   _modalNode: HTMLElement;
   _debouncedQueryHandler: () => void;
   _boundSelect: () => void;
   _isMounted: boolean;
-  state: {
-    activeProviderName?: string,
-    activeTab: ProviderSpec,
-    hasUserSelection: boolean,
-    resultsByService: GroupedResult,
-    renderableProviders: Array<ProviderSpec>,
-    selectedService: string,
-    selectedDirectory: string,
-    selectedItemIndex: number,
-  };
 
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
@@ -808,15 +818,3 @@ export default class QuickSelectionComponent extends React.Component {
     );
   }
 }
-
-QuickSelectionComponent.propTypes = {
-  activeProvider: React.PropTypes.shape({
-    action: React.PropTypes.string.isRequired,
-    debounceDelay: React.PropTypes.number.isRequired,
-    name: React.PropTypes.string.isRequired,
-    prompt: React.PropTypes.string.isRequired,
-    title: React.PropTypes.string.isRequired,
-  }).isRequired,
-  maxScrollableAreaHeight: React.PropTypes.number,
-  onBlur: React.PropTypes.func.isRequired,
-};

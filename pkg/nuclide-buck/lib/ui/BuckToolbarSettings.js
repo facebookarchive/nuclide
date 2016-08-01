@@ -19,7 +19,7 @@ import {Button, ButtonTypes} from '../../../nuclide-ui/lib/Button';
 import {ButtonGroup} from '../../../nuclide-ui/lib/ButtonGroup';
 import {Modal} from '../../../nuclide-ui/lib/Modal';
 
-type PropTypes = {
+type Props = {
   currentBuckRoot: ?string,
   settings: TaskSettings,
   buildType: string,
@@ -27,13 +27,15 @@ type PropTypes = {
   onSave: (settings: TaskSettings) => void,
 };
 
-export default class BuckToolbarSettings extends React.Component {
-  props: PropTypes;
-  state: {
-    arguments: string,
-  };
+type State = {
+  arguments: string,
+};
 
-  constructor(props: PropTypes) {
+export default class BuckToolbarSettings extends React.Component {
+  props: Props;
+  state: State;
+
+  constructor(props: Props) {
     super(props);
     const {arguments: args} = props.settings;
     this.state = {

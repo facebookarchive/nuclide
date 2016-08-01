@@ -73,10 +73,10 @@ class TestClassTree extends React.Component {
     );
   }
 
-  rowClassNameForNode(node: LazyTreeNode): ?string {
+  rowClassNameForNode(node: LazyTreeNode): string {
     const {testSuiteModel} = this.props;
     if (!testSuiteModel) {
-      return;
+      return '';
     }
 
     const item = node.getItem();
@@ -95,6 +95,8 @@ class TestClassTree extends React.Component {
     } else if (!this.props.isRunning) {
       return 'status-ignored';
     }
+
+    return '';
   }
 }
 

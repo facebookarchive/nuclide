@@ -10,6 +10,7 @@
  */
 
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
+import type ProjectStore from './ProjectStore';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {React} from 'react-for-atom';
@@ -20,7 +21,6 @@ import {
   ButtonGroup,
   ButtonGroupSizes,
 } from '../../nuclide-ui/lib/ButtonGroup';
-import ProjectStore from './ProjectStore';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import nuclideUri from '../../commons-node/nuclideUri';
 
@@ -44,17 +44,20 @@ async function callDebugService(processInfo: DebuggerProcessInfo): Promise<any> 
   debuggerService.startDebugging(processInfo);
 }
 
+type Props = {
+  targetFilePath: string,
+  projectStore: ProjectStore,
+};
+
+type State = {
+  selectedIndex: number,
+};
+
 class HhvmToolbar extends React.Component {
-  static propTypes = {
-    targetFilePath: React.PropTypes.string.isRequired,
-    projectStore: React.PropTypes.instanceOf(ProjectStore).isRequired,
-  };
+  props: Props;
+  state: State;
 
-  state: {
-    selectedIndex: number,
-  };
-
-  constructor(props: mixed) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       selectedIndex: DEFAULT_OPTION_INDEX,

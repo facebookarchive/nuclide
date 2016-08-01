@@ -23,8 +23,6 @@ import {
 
 import {DisposableSubscription} from '../../commons-node/stream';
 
-const {PropTypes} = React;
-
 type DiagnosticCount = {
   errorCount: number,
   warningCount: number,
@@ -137,17 +135,17 @@ class StatusBarTile {
   }
 }
 
+type Props = {
+  errorCount: number,
+  warningCount: number,
+};
+
 class StatusBarTileComponent extends React.Component {
-  _onClick: Function;
+  props: Props;
 
-  static propTypes = {
-    errorCount: PropTypes.number.isRequired,
-    warningCount: PropTypes.number.isRequired,
-  };
-
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
-    this._onClick = this._onClick.bind(this);
+    (this: any)._onClick = this._onClick.bind(this);
   }
 
   render() {

@@ -15,16 +15,15 @@ import {
   ButtonSizes,
 } from '../../nuclide-ui/lib/Button';
 
+type Props = {
+  title: string,
+  icon: string,
+  description: string | React.Element<any>,
+  command: string,
+};
+
 class HomeFeatureComponent extends React.Component {
-  static propTypes = {
-    title: React.PropTypes.string.isRequired,
-    icon: React.PropTypes.string.isRequired,
-    description: React.PropTypes.oneOfType([
-      React.PropTypes.string,
-      React.PropTypes.element,
-    ]).isRequired,
-    command: React.PropTypes.string,
-  };
+  props: Props;
 
   render(): React.Element<any> {
     const {title, command} = this.props;

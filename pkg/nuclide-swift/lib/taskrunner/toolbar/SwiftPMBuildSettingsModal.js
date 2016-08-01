@@ -16,7 +16,7 @@ import {ButtonGroup} from '../../../../nuclide-ui/lib/ButtonGroup';
 import {Dropdown} from '../../../../nuclide-ui/lib/Dropdown';
 import {Modal} from '../../../../nuclide-ui/lib/Modal';
 
-type PropTypes = {
+type Props = {
   configuration: string,
   Xcc: string,
   Xlinker: string,
@@ -32,17 +32,19 @@ type PropTypes = {
   ) => void,
 };
 
-export default class SwiftPMBuildSettingsModal extends React.Component {
-  props: PropTypes;
-  state: {
-    configuration: string,
-    Xcc: string,
-    Xlinker: string,
-    Xswiftc: string,
-    buildPath: string,
-  };
+type State = {
+  configuration: string,
+  Xcc: string,
+  Xlinker: string,
+  Xswiftc: string,
+  buildPath: string,
+};
 
-  constructor(props: PropTypes) {
+export default class SwiftPMBuildSettingsModal extends React.Component {
+  props: Props;
+  state: State;
+
+  constructor(props: Props) {
     super(props);
     this.state = {
       configuration: props.configuration,

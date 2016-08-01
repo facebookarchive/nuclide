@@ -37,6 +37,7 @@ describe('TreeNodeComponent', () => {
       onDoubleClick: () => {},
       onMouseDown: () => {},
       path: '',
+      rowClassName: '',
     };
 
     spyOn(props, 'onClick');

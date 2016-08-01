@@ -28,6 +28,17 @@ type DefaultProps = {
   width: number,
 };
 
+type Props = DefaultProps & {
+  formatRequestOptionsErrorMessage: (error: Error) => string,
+  initialTextInput: string,
+  loadingMessage?: string,
+  placeholderText?: string,
+  onRequestOptionsError?: (error: Error) => void,
+  onBlur?: (text: string) => void,
+  requestOptions: (inputText: string) => Promise<Array<string>>,
+  size: 'xs' | 'sm' | 'lg',
+};
+
 type State = {
   error: ?Error,
   filteredOptions: Array<Object>,
@@ -47,29 +58,11 @@ type State = {
  * TODO move combobox to separate package.
  */
 export class Combobox extends React.Component {
+  props: Props;
   state: State;
+
   _updateSubscription: ?rx$ISubscription;
   _subscriptions: ?CompositeDisposable;
-
-  static propTypes = {
-    className: React.PropTypes.string.isRequired,
-    formatRequestOptionsErrorMessage: React.PropTypes.func,
-    initialTextInput: React.PropTypes.string,
-    loadingMessage: React.PropTypes.string,
-    placeholderText: React.PropTypes.string,
-    maxOptionCount: React.PropTypes.number.isRequired,
-    onChange: React.PropTypes.func.isRequired,
-    onRequestOptionsError: React.PropTypes.func,
-    onSelect: React.PropTypes.func.isRequired,
-    onBlur: React.PropTypes.func,
-    /**
-     * promise-returning function; Gets called with
-     * the current value of the input field as its only argument
-     */
-    requestOptions: React.PropTypes.func.isRequired,
-    size: React.PropTypes.oneOf(['xs', 'sm', 'lg']),
-    width: React.PropTypes.number,
-  };
 
   static defaultProps: DefaultProps = {
     className: '',
@@ -79,7 +72,7 @@ export class Combobox extends React.Component {
     width: 200,
   };
 
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       error: null,
@@ -233,8 +226,9 @@ export class Combobox extends React.Component {
     // case the blur was caused by a click inside the combobox. 150ms is empirically long enough to
     // let the stack clear from this blur event and for the click event to trigger.
     setTimeout(this._handleCancel, 150);
-    if (this.props.onBlur) {
-      this.props.onBlur(this.getText());
+    const {onBlur} = this.props;
+    if (onBlur != null) {
+      onBlur(this.getText());
     }
   }
 

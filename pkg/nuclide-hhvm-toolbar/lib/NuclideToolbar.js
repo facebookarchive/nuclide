@@ -9,23 +9,26 @@
  * the root directory of this source tree.
  */
 
+import type ProjectStore from './ProjectStore';
+
 import {React} from 'react-for-atom';
-import {Disposable} from 'atom';
-import ProjectStore from './ProjectStore';
+
+type Props = {
+  projectStore: ProjectStore,
+};
+
+type State = {
+  currentFilePath: string,
+  projectType: string,
+};
 
 class NuclideToolbar extends React.Component {
-  _disposable: ?Disposable;
+  props: Props;
+  state: State;
 
-  state: {
-    currentFilePath: string,
-    projectType: string,
-  };
+  _disposable: ?IDisposable;
 
-  static propTypes = {
-    projectStore: React.PropTypes.instanceOf(ProjectStore).isRequired,
-  };
-
-  constructor(props: mixed) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       currentFilePath: '',

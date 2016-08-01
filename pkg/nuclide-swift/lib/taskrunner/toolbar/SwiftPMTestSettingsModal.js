@@ -15,7 +15,7 @@ import {Button, ButtonTypes} from '../../../../nuclide-ui/lib/Button';
 import {ButtonGroup} from '../../../../nuclide-ui/lib/ButtonGroup';
 import {Modal} from '../../../../nuclide-ui/lib/Modal';
 
-type PropTypes = {
+type Props = {
   buildPath: string,
   onDismiss: () => void,
   onSave: (
@@ -23,13 +23,16 @@ type PropTypes = {
   ) => void,
 };
 
-export default class SwiftPMTestSettingsModal extends React.Component {
-  props: PropTypes;
-  state: {
-    buildPath: string,
-  };
+type State = {
+  buildPath: string,
+};
 
-  constructor(props: PropTypes) {
+
+export default class SwiftPMTestSettingsModal extends React.Component {
+  props: Props;
+  state: State;
+
+  constructor(props: Props) {
     super(props);
     this.state = {
       buildPath: props.buildPath,

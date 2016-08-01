@@ -65,62 +65,85 @@ function toggleSetHas(
 
 const FIRST_SELECTED_DESCENDANT_REF: string = 'firstSelectedDescendant';
 
+type DefaultProps = {
+  // Render will return this component if there are no root nodes.
+  elementToRenderWhenEmpty?: ?(null | React.Element<any>),
+  // A node can be confirmed if it is a selected non-container node and the user is clicks on it
+  // or presses <enter>.
+  onConfirmSelection: (node: LazyTreeNode) => void,
+  rowClassNameForNode: (node: LazyTreeNode) => string,
+};
+
+type Props = DefaultProps & {
+  initialRoots: Array<LazyTreeNode>,
+  eventHandlerSelector: string,
+  // A node can be "kept" (opened permanently) by double clicking it. This only has an effect
+  // when the `usePreviewTabs` setting is enabled in the "tabs" package.
+  onKeepSelection: () => void,
+  labelClassNameForNode: (node: LazyTreeNode) => string,
+  initialExpandedNodeKeys?: Array<string>,
+  initialSelectedNodeKeys?: Array<string>,
+};
+
+type State = {
+  roots: Array<LazyTreeNode>,
+  expandedKeys: Set<string>,
+  selectedKeys: Set<string>,
+};
+
+
 /**
  * Generic tree component that operates on LazyTreeNodes.
  */
-export const TreeRootComponent = React.createClass({
-  _allKeys: (null: ?Array<string>),
-  _emitter: (null: ?Emitter),
-  _keyToNode: (null: ?{[key: string]: LazyTreeNode}),
-  _rejectDidUpdateListenerPromise: (null: ?() => void),
-  _subscriptions: (null: ?CompositeDisposable),
+export class TreeRootComponent extends React.Component {
+  props: Props;
+  state: State;
 
-  propTypes: {
-    initialRoots: React.PropTypes.arrayOf(React.PropTypes.instanceOf(LazyTreeNode)).isRequired,
-    eventHandlerSelector: React.PropTypes.string.isRequired,
-    // A node can be confirmed if it is a selected non-container node and the user is clicks on it
-    // or presses <enter>.
-    onConfirmSelection: React.PropTypes.func.isRequired,
-    // A node can be "kept" (opened permanently) by double clicking it. This only has an effect
-    // when the `usePreviewTabs` setting is enabled in the "tabs" package.
-    onKeepSelection: React.PropTypes.func.isRequired,
-    labelClassNameForNode: React.PropTypes.func.isRequired,
-    rowClassNameForNode: React.PropTypes.func.isRequired,
-    // Render will return this component if there are no root nodes.
-    elementToRenderWhenEmpty: React.PropTypes.element,
-    initialExpandedNodeKeys: React.PropTypes.arrayOf(React.PropTypes.string),
-    initialSelectedNodeKeys: React.PropTypes.arrayOf(React.PropTypes.string),
-  },
+  _allKeys: ?Array<string>;
+  _emitter: ?Emitter;
+  _isMounted: boolean;
+  _keyToNode: ?{[key: string]: LazyTreeNode};
+  _rejectDidUpdateListenerPromise: ?() => void;
+  _subscriptions: ?CompositeDisposable;
 
-  getDefaultProps(): any {
-    return {
-      elementToRenderWhenEmpty: null,
-      onConfirmSelection(node: LazyTreeNode) {},
-      rowClassNameForNode(node: LazyTreeNode) { return ''; },
-    };
-  },
+  static defaultProps: DefaultProps = {
+    elementToRenderWhenEmpty: null,
+    onConfirmSelection(node: LazyTreeNode) {},
+    rowClassNameForNode(node: LazyTreeNode) { return ''; },
+  };;
 
-  getInitialState(): any {
+  constructor(props: Props) {
+    super(props);
+    this._allKeys = null;
+    this._emitter = null;
+    this._isMounted = false;
+    this._keyToNode = null;
+    this._rejectDidUpdateListenerPromise = null;
+    this._subscriptions = null;
+
     const rootKeys = this.props.initialRoots.map(root => root.getKey());
-
-    let selectedKeys;
-    if (this.props.initialSelectedNodeKeys) {
-      selectedKeys = new Set(this.props.initialSelectedNodeKeys);
-    } else {
-      selectedKeys = new Set(rootKeys.length === 0 ? [] : [rootKeys[0]]);
-    }
-
-    return {
+    this.state = {
       roots: this.props.initialRoots,
       // This is maintained as a set of strings for two reasons:
       // (1) It is straightforward to serialize.
       // (2) If the LazyFileTreeNode for a path is re-created, this will still work.
       expandedKeys: new Set(this.props.initialExpandedNodeKeys || rootKeys),
-      selectedKeys,
+      selectedKeys: this.props.initialSelectedNodeKeys
+        ? new Set(this.props.initialSelectedNodeKeys)
+        : new Set(rootKeys.length === 0 ? [] : [rootKeys[0]]),
     };
-  },
 
-  componentDidUpdate(prevProps: Object, prevState: ?Object): void {
+    (this: any)._onClickNodeArrow = this._onClickNodeArrow.bind(this);
+    (this: any)._onClickNode = this._onClickNode.bind(this);
+    (this: any)._onDoubleClickNode = this._onDoubleClickNode.bind(this);
+    (this: any)._onMouseDown = this._onMouseDown.bind(this);
+  }
+
+  componentDidMount(): void {
+    this._isMounted = true;
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: ?State): void {
     // If the Set of selected items is new, like when navigating the tree with
     // the arrow keys, scroll the first item into view. This addresses the
     // following scenario:
@@ -137,7 +160,7 @@ export const TreeRootComponent = React.createClass({
 
     invariant(this._emitter);
     this._emitter.emit('did-update');
-  },
+  }
 
   _deselectDescendants(root: LazyTreeNode): void {
     const selectedKeys = this.state.selectedKeys;
@@ -153,15 +176,15 @@ export const TreeRootComponent = React.createClass({
     });
 
     this.setState({selectedKeys});
-  },
+  }
 
   _isNodeExpanded(node: LazyTreeNode): boolean {
     return this.state.expandedKeys.has(node.getKey());
-  },
+  }
 
   _isNodeSelected(node: LazyTreeNode): boolean {
     return this.state.selectedKeys.has(node.getKey());
-  },
+  }
 
   _toggleNodeExpanded(node: LazyTreeNode, forceExpanded?: ?boolean): void {
     const expandedKeys = this.state.expandedKeys;
@@ -174,13 +197,13 @@ export const TreeRootComponent = React.createClass({
     }
 
     this.setState({expandedKeys});
-  },
+  }
 
   _toggleNodeSelected(node: LazyTreeNode, forceSelected?: ?boolean): void {
     const selectedKeys = this.state.selectedKeys;
     toggleSetHas(selectedKeys, node.getKey(), forceSelected);
     this.setState({selectedKeys});
-  },
+  }
 
   _onClickNode(event: SyntheticMouseEvent, node: LazyTreeNode): void {
     if (event.metaKey) {
@@ -199,18 +222,18 @@ export const TreeRootComponent = React.createClass({
     }
 
     this._confirmNode(node);
-  },
+  }
 
   _onClickNodeArrow(event: SyntheticEvent, node: LazyTreeNode): void {
     this._toggleNodeExpanded(node);
-  },
+  }
 
   _onDoubleClickNode(event: SyntheticMouseEvent, node: LazyTreeNode): void {
     // Double clicking a non-directory will keep the created tab open.
     if (!node.isContainer()) {
       this.props.onKeepSelection();
     }
-  },
+  }
 
   _onMouseDown(event: SyntheticMouseEvent, node: LazyTreeNode): void {
     // Select the node on right-click.
@@ -219,7 +242,7 @@ export const TreeRootComponent = React.createClass({
         this.setState({selectedKeys: new Set([node.getKey()])});
       }
     }
-  },
+  }
 
   addContextMenuItemGroup(menuItemDefinitions: Array<TreeMenuItemDefinition>): void {
     let items = menuItemDefinitions.slice();
@@ -245,7 +268,7 @@ export const TreeRootComponent = React.createClass({
     const contextMenuObj = {};
     contextMenuObj[this.props.eventHandlerSelector] = items;
     atom.contextMenu.add(contextMenuObj);
-  },
+  }
 
   render(): ?React.Element<any> {
     if (this.state.roots.length === 0) {
@@ -327,7 +350,7 @@ export const TreeRootComponent = React.createClass({
     if (promises.length) {
       Promise.all(promises).then(() => {
         // The component could have been unmounted by the time the promises are resolved.
-        if (this.isMounted()) {
+        if (this._isMounted) {
           this.forceUpdate();
         }
       });
@@ -340,7 +363,7 @@ export const TreeRootComponent = React.createClass({
         {children}
       </div>
     );
-  },
+  }
 
   componentWillMount(): void {
     const allKeys = [];
@@ -372,7 +395,7 @@ export const TreeRootComponent = React.createClass({
     this._emitter = new Emitter();
     this._keyToNode = keyToNode;
     this._subscriptions = subscriptions;
-  },
+  }
 
   componentWillUnmount(): void {
     if (this._subscriptions) {
@@ -381,14 +404,15 @@ export const TreeRootComponent = React.createClass({
     if (this._emitter) {
       this._emitter.dispose();
     }
-  },
+    this._isMounted = false;
+  }
 
   serialize(): TreeComponentState {
     return {
       expandedNodeKeys: Array.from(this.state.expandedKeys),
       selectedNodeKeys: Array.from(this.state.selectedKeys),
     };
-  },
+  }
 
   invalidateCachedNodes(): void {
     this.state.roots.forEach(root => {
@@ -396,7 +420,7 @@ export const TreeRootComponent = React.createClass({
         node.invalidateCache();
       });
     });
-  },
+  }
 
   /**
    * Returns a Promise that's resolved when the roots are rendered.
@@ -423,7 +447,7 @@ export const TreeRootComponent = React.createClass({
     });
 
     return promise;
-  },
+  }
 
   _createDidUpdateListener(shouldResolve: () => boolean): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -448,7 +472,7 @@ export const TreeRootComponent = React.createClass({
         didUpdateDisposable.dispose();
       };
     });
-  },
+  }
 
   removeStateForSubtree(root: LazyTreeNode): void {
     const expandedKeys = this.state.expandedKeys;
@@ -464,11 +488,11 @@ export const TreeRootComponent = React.createClass({
       expandedKeys,
       selectedKeys,
     });
-  },
+  }
 
   getRootNodes(): Array<LazyTreeNode> {
     return this.state.roots;
-  },
+  }
 
   getExpandedNodes(): Array<LazyTreeNode> {
     const expandedNodes = [];
@@ -479,7 +503,7 @@ export const TreeRootComponent = React.createClass({
       }
     });
     return expandedNodes;
-  },
+  }
 
   getSelectedNodes(): Array<LazyTreeNode> {
     const selectedNodes = [];
@@ -490,7 +514,7 @@ export const TreeRootComponent = React.createClass({
       }
     });
     return selectedNodes;
-  },
+  }
 
   // Return the key for the first node that is selected, or null if there are none.
   _getFirstSelectedKey(): ?string {
@@ -510,14 +534,14 @@ export const TreeRootComponent = React.createClass({
     }
 
     return selectedKey;
-  },
+  }
 
   _expandSelection(): void {
     const key = this._getFirstSelectedKey();
     if (key) {
       this.expandNodeKey(key);
     }
-  },
+  }
 
   /**
    * Selects a node by key if it's in the file tree; otherwise, do nothing.
@@ -533,13 +557,13 @@ export const TreeRootComponent = React.createClass({
       this._createDidUpdateListener(/* shouldResolve */ () => this.state.selectedKeys.has(nodeKey));
     this.setState({selectedKeys: new Set([nodeKey])});
     return promise;
-  },
+  }
 
   getNodeForKey(nodeKey: string): ?LazyTreeNode {
     if (this._keyToNode != null) {
       return this._keyToNode[nodeKey];
     }
-  },
+  }
 
   /**
    * If this function is called multiple times in parallel, the later calls will
@@ -558,14 +582,14 @@ export const TreeRootComponent = React.createClass({
         const isExpanded = this.state.expandedKeys.has(nodeKey);
         const nodeNow = this.getNodeForKey(nodeKey);
         const isDoneFetching = (nodeNow && nodeNow.isContainer() && nodeNow.isCacheValid());
-        return isExpanded && isDoneFetching;
+        return Boolean(isExpanded && isDoneFetching);
       });
       this._toggleNodeExpanded(node, true /* forceExpanded */);
       return promise;
     }
 
     return Promise.resolve();
-  },
+  }
 
   collapseNodeKey(nodeKey: string): Promise<void> {
     const node = this.getNodeForKey(nodeKey);
@@ -579,11 +603,11 @@ export const TreeRootComponent = React.createClass({
     }
 
     return Promise.resolve();
-  },
+  }
 
   isNodeKeyExpanded(nodeKey: string): boolean {
     return this.state.expandedKeys.has(nodeKey);
-  },
+  }
 
   _collapseSelection(): void {
     const key = this._getFirstSelectedKey();
@@ -602,7 +626,7 @@ export const TreeRootComponent = React.createClass({
     }
 
     this.collapseNodeKey(key);
-  },
+  }
 
   _moveSelectionUp(): void {
     const allKeys = this._allKeys;
@@ -620,7 +644,7 @@ export const TreeRootComponent = React.createClass({
     }
 
     this.setState({selectedKeys: new Set([allKeys[keyIndexToSelect]])});
-  },
+  }
 
   _moveSelectionDown(): void {
     const allKeys = this._allKeys;
@@ -638,7 +662,7 @@ export const TreeRootComponent = React.createClass({
     }
 
     this.setState({selectedKeys: new Set([allKeys[keyIndexToSelect]])});
-  },
+  }
 
   _confirmSelection(): void {
     const key = this._getFirstSelectedKey();
@@ -648,7 +672,7 @@ export const TreeRootComponent = React.createClass({
         this._confirmNode(node);
       }
     }
-  },
+  }
 
   _confirmNode(node: LazyTreeNode): void {
     if (node.isContainer()) {
@@ -656,5 +680,5 @@ export const TreeRootComponent = React.createClass({
     } else {
       this.props.onConfirmSelection(node);
     }
-  },
-});
+  }
+}

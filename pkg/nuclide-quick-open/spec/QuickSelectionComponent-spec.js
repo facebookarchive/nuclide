@@ -46,6 +46,7 @@ xdescribe('QuickSelectionComponent', () => {
 
     const testProvider = new TestQuickSelectionProvider({});
     const untypedComponent = ReactDOM.render(
+      // $FlowFixMe(jxg): This disabled test has bitrotted.
       <QuickSelectionComponent
         provider={testProvider}
       />,
@@ -71,6 +72,7 @@ xdescribe('QuickSelectionComponent', () => {
         resolve(component);
       });
       const untypedComponent = ReactDOM.render(
+        // $FlowFixMe(jxg): This disabled test has bitrotted.
         <QuickSelectionComponent
           provider={new TestQuickSelectionProvider(items)}
         />,

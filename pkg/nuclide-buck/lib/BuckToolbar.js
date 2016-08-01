@@ -29,15 +29,19 @@ import addTooltip from '../../nuclide-ui/lib/add-tooltip';
 const BUCK_TARGET_INPUT_WIDTH = 400;
 const NO_ACTIVE_PROJECT_ERROR = 'No active Buck project. Check your Current Working Root.';
 
-type PropTypes = {
+type Props = {
   activeTaskType: ?TaskType,
   store: BuckToolbarStore,
   actions: BuckToolbarActions,
 };
 
+type State = {
+  settingsVisible: boolean,
+};
+
 class BuckToolbar extends React.Component {
-  props: PropTypes;
-  state: {settingsVisible: boolean};
+  props: Props;
+  state: State;
 
   _disposables: CompositeDisposable;
   _buckToolbarStore: BuckToolbarStore;
@@ -48,7 +52,7 @@ class BuckToolbar extends React.Component {
   // Putting the cache here allows the user to refresh it by toggling the UI.
   _projectAliasesCache: Map<string, Promise<Array<string>>>;
 
-  constructor(props: PropTypes) {
+  constructor(props: Props) {
     super(props);
     (this: any)._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
     (this: any)._handleSimulatorChange = this._handleSimulatorChange.bind(this);

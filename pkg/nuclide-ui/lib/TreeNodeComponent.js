@@ -9,12 +9,10 @@
  * the root directory of this source tree.
  */
 
-import {LazyTreeNode} from './LazyTreeNode';
+import type {LazyTreeNode} from './LazyTreeNode';
 
 import {PureRenderMixin, React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
-
-const {PropTypes} = React;
 
 const INDENT_IN_PX = 10;
 const INDENT_PER_LEVEL_IN_PX = 15;
@@ -22,38 +20,39 @@ const DOWN_ARROW = '\uF0A3';
 const RIGHT_ARROW = '\uF078';
 const SPINNER = '\uF087';
 
+type Props = {
+  depth: number,
+  isContainer: bool,
+  isExpanded: bool,
+  isLoading: bool,
+  isSelected: bool,
+  label: string,
+  labelElement?: ?React.Element<any>,
+  labelClassName: string,
+  node: LazyTreeNode,
+  onClickArrow: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
+  onClick: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
+  onDoubleClick: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
+  onMouseDown: (event: SyntheticMouseEvent, node: LazyTreeNode) => void,
+  path: string,
+  rowClassName: string,
+};
+
 /**
  * Represents one entry in a TreeComponent.
  */
 export class TreeNodeComponent extends React.Component {
+  props: Props;
   state: void;
 
-  static propTypes = {
-    depth: PropTypes.number.isRequired,
-    isContainer: PropTypes.bool.isRequired,
-    isExpanded: PropTypes.bool.isRequired,
-    isLoading: PropTypes.bool.isRequired,
-    isSelected: PropTypes.bool.isRequired,
-    label: PropTypes.string.isRequired,
-    labelElement: PropTypes.element,
-    labelClassName: PropTypes.string.isRequired,
-    node: PropTypes.instanceOf(LazyTreeNode).isRequired,
-    onClickArrow: PropTypes.func.isRequired,
-    onClick: PropTypes.func.isRequired,
-    onDoubleClick: PropTypes.func.isRequired,
-    onMouseDown: PropTypes.func.isRequired,
-    path: PropTypes.string.isRequired,
-    rowClassName: PropTypes.string,
-  };
-
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
     (this: any)._onClick = this._onClick.bind(this);
     (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
     (this: any)._onMouseDown = this._onMouseDown.bind(this);
   }
 
-  shouldComponentUpdate(nextProps: Object, nextState: void): boolean {
+  shouldComponentUpdate(nextProps: Props, nextState: void): boolean {
     return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
