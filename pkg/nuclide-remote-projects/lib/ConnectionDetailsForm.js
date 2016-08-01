@@ -14,6 +14,8 @@ import type {
   NuclideRemoteConnectionParamsWithPassword,
 } from './connection-types';
 
+import {getOfficialRemoteServerCommand} from './connection-profile-utils';
+
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {CompositeDisposable} from 'atom';
 import RadioGroup from '../../nuclide-ui/lib/RadioGroup';
@@ -267,7 +269,8 @@ export default class ConnectionDetailsForm extends React.Component {
       username: this._getText('username'),
       server: this._getText('server'),
       cwd: this._getText('cwd'),
-      remoteServerCommand: this._getText('remoteServerCommand'),
+      remoteServerCommand: this._getText('remoteServerCommand')
+        || getOfficialRemoteServerCommand(),
       sshPort: this._getText('sshPort'),
       pathToPrivateKey: this._getText('pathToPrivateKey'),
       authMethod: this._getAuthMethod(),
