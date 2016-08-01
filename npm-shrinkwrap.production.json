@@ -1090,6 +1090,11 @@
       "from": "normalize-path@>=2.0.1 <3.0.0",
       "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-2.0.1.tgz"
     },
+    "nullthrows": {
+      "version": "1.0.0",
+      "from": "nullthrows@1.0.0",
+      "resolved": "https://registry.npmjs.org/nullthrows/-/nullthrows-1.0.0.tgz"
+    },
     "number-is-nan": {
       "version": "1.0.0",
       "from": "number-is-nan@>=1.0.0 <2.0.0",

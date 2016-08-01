@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
+import nullthrows from 'nullthrows';
 import nuclideUri from '../../commons-node/nuclideUri';
-import nullthrows from '../../commons-node/nullthrows';
 import observeGrammarForTextEditors from '../observe-grammar-for-text-editors';
 import observeLanguageTextEditors from '../observe-language-text-editors';
 

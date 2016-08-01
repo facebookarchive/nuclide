@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as ArcanistBaseService from '../../nuclide-arcanist-base';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 
-import nullthrows from '../../commons-node/nullthrows';
+import nullthrows from 'nullthrows';
 
 import {RemoteConnection} from './RemoteConnection';
 import {RemoteDirectory} from './RemoteDirectory';
