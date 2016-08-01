@@ -150,6 +150,11 @@ export class SwiftPMTaskRunner {
               `${command.command} exited successfully.`,
               'success',
             );
+            this._getFlux().actions.updateCompileCommands(
+              chdir,
+              configuration,
+              buildPath,
+            );
           } else {
             this._logOutput(
               `${command.command} failed with exit code ${message.exitCode}`,

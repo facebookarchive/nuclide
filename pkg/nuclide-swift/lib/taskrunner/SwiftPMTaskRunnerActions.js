@@ -11,6 +11,7 @@
 
 import {keyMirror} from '../../../commons-node/collection';
 import {Dispatcher} from 'flux';
+import {llbuildYamlPath, readCompileCommands} from './LlbuildYamlParser';
 
 export default class SwiftPMTaskRunnerActions {
   _dispatcher: Dispatcher;
@@ -54,6 +55,33 @@ export default class SwiftPMTaskRunnerActions {
     this._dispatcher.dispatch({
       actionType: SwiftPMTaskRunnerActions.ActionType.UPDATE_TEST_SETTINGS,
       buildPath,
+    });
+  }
+
+  updateCompileCommands(
+    chdir: string,
+    configuration: string,
+    buildPath: string,
+  ): void {
+    const yamlPath = llbuildYamlPath(chdir, configuration, buildPath);
+    let compileCommandsPromise;
+    try {
+      compileCommandsPromise = readCompileCommands(yamlPath);
+    } catch (e) {
+      atom.notifications.addError(
+        'The YAML produced by the Swift package manager is malformed', {
+          description:
+            `Nuclide could not parse the YAML file at \`${yamlPath}\`. ` +
+            'Please file a bug, and include the contents of the file in ' +
+            'your report.',
+        });
+      return;
+    }
+    compileCommandsPromise.then(compileCommands => {
+      this._dispatcher.dispatch({
+        actionType: SwiftPMTaskRunnerActions.ActionType.UPDATE_COMPILE_COMMANDS,
+        compileCommands,
+      });
     });
   }
 }

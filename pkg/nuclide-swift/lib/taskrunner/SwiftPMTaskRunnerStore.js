@@ -11,6 +11,7 @@
 
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 
+import {objectEntries, objectFromMap} from '../../../commons-node/collection';
 import {Emitter} from 'atom';
 import {Dispatcher} from 'flux';
 import SwiftPMTaskRunnerActions from './SwiftPMTaskRunnerActions';
@@ -26,7 +27,7 @@ export default class SwiftPMTaskRunnerStore {
   _Xlinker: string;
   _Xswiftc: string;
   _testBuildPath: string;
-  _compileCommands: Promise<Map<string, string>>;
+  _compileCommands: Map<string, string>;
 
   constructor(dispatcher: Dispatcher, initialState: ?SwiftPMTaskRunnerStoreState) {
     this._dispatcher = dispatcher;
@@ -40,6 +41,8 @@ export default class SwiftPMTaskRunnerStore {
       this._Xlinker = initialState.Xlinker ? initialState.Xlinker : '';
       this._Xswiftc = initialState.Xswiftc ? initialState.Xswiftc : '';
       this._testBuildPath = initialState.testBuildPath ? initialState.testBuildPath : '';
+      this._compileCommands = initialState.compileCommands ?
+        new Map(objectEntries(initialState.compileCommands)) : new Map();
     } else {
       this._chdir = '';
       this._configuration = 'debug';
@@ -48,6 +51,7 @@ export default class SwiftPMTaskRunnerStore {
       this._Xlinker = '';
       this._Xswiftc = '';
       this._testBuildPath = '';
+      this._compileCommands = new Map();
     }
 
     this._dispatcher.register(action => {
@@ -65,6 +69,9 @@ export default class SwiftPMTaskRunnerStore {
         case SwiftPMTaskRunnerActions.ActionType.UPDATE_TEST_SETTINGS:
           this._testBuildPath = action.buildPath;
           break;
+        case SwiftPMTaskRunnerActions.ActionType.UPDATE_COMPILE_COMMANDS:
+          this._compileCommands = action.compileCommands;
+          break;
       }
     });
   }
@@ -81,6 +88,7 @@ export default class SwiftPMTaskRunnerStore {
       Xcc: this.getXcc(),
       Xlinker: this.getXlinker(),
       Xswiftc: this.getXswiftc(),
+      compileCommands: objectFromMap(this.getCompileCommands()),
       testBuildPath: this.getTestBuildPath(),
     };
   }
@@ -123,5 +131,9 @@ export default class SwiftPMTaskRunnerStore {
 
   getTestBuildPath(): string {
     return this._testBuildPath;
+  }
+
+  getCompileCommands(): Map<string, string> {
+    return this._compileCommands;
   }
 }
