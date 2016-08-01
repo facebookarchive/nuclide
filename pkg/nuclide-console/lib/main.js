@@ -148,13 +148,12 @@ class Activation {
 
 }
 
-function deserializeAppState(rawState_: ?Object): AppState {
-  let rawState = rawState_;
-  rawState = rawState || {};
+function deserializeAppState(rawState: ?Object): AppState {
   return {
     executors: new Map(),
     currentExecutorId: null,
-    records: rawState.records || [],
+    // For performance reasons, we won't restore records until we've figured out windowing.
+    records: [],
     providers: new Map(),
     providerStatuses: new Map(),
 
