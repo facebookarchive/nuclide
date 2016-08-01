@@ -35,6 +35,9 @@ const DebuggerMode: {[key: string]: DebuggerModeType} = Object.freeze({
   STOPPED: 'stopped',
 });
 
+const DEBUGGER_CHANGE_EVENT = 'change';
+const DEBUGGER_MODE_CHANGE_EVENT = 'debugger mode change';
+
 /**
  * Flux style Store holding all data used by the debugger plugin.
  */
@@ -148,7 +151,11 @@ class DebuggerStore {
   }
 
   onChange(callback: () => void): IDisposable {
-    return this._emitter.on('change', callback);
+    return this._emitter.on(DEBUGGER_CHANGE_EVENT, callback);
+  }
+
+  onDebuggerModeChange(callback: () => void): IDisposable {
+    return this._emitter.on(DEBUGGER_MODE_CHANGE_EVENT, callback);
   }
 
   _handlePayload(payload: Object) {
@@ -191,6 +198,7 @@ class DebuggerStore {
             this._onLoaderBreakpointResume = resolve;
           });
         }
+        this._emitter.emit(DEBUGGER_MODE_CHANGE_EVENT);
         break;
       case Constants.Actions.ADD_EVALUATION_EXPRESSION_PROVIDER:
         if (this._evaluationExpressionProviders.has(payload.data)) {
@@ -226,7 +234,7 @@ class DebuggerStore {
       default:
         return;
     }
-    this._emitter.emit('change');
+    this._emitter.emit(DEBUGGER_CHANGE_EVENT);
   }
 }
 

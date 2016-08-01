@@ -348,11 +348,8 @@ class Bridge {
           case 'BreakpointRemoved':
             this._removeBreakpoint(event.args[1]);
             break;
-          case 'LoaderBreakpointHit':
-            this._handleLoaderBreakpointHit(event.args[1]);
-            break;
           case 'NonLoaderDebuggerPaused':
-            this._handleNonLoaderDebuggerPaused(event.args[1]);
+            this._handleDebuggerPaused();
             break;
           case 'ExpressionEvaluationResponse':
             this._handleExpressionEvaluationResponse(event.args[1]);
@@ -394,24 +391,7 @@ class Bridge {
     this.setPauseOnCaughtException(store.getTogglePauseOnCaughtException());
   }
 
-  _handleLoaderBreakpointHit(additionalData: {sourceUrl?: string}): void {
-    this._handleDebuggerPaused(additionalData);
-  }
-
-  _handleNonLoaderDebuggerPaused(additionalData: {sourceUrl?: string}): void {
-    this._handleDebuggerPaused(additionalData);
-    setTimeout(() => {
-      if (!atom.getCurrentWindow().isFocused()) {
-        // It is likely that we need to bring the user back into focus if they are not already.
-        atom.notifications.addInfo('Nuclide Debugger', {
-          detail: 'Paused at a breakpoint',
-          nativeFriendly: true,
-        });
-      }
-    }, 3000);
-  }
-
-  _handleDebuggerPaused(additionalData: {sourceUrl?: string}): void {
+  _handleDebuggerPaused(): void {
     this._expressionsInFlight.clear();
     this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.PAUSED);
   }

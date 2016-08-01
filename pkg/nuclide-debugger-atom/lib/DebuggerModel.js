@@ -23,6 +23,7 @@ import DebuggerActionsStore from './DebuggerActionsStore';
 import Bridge from './Bridge';
 import {CompositeDisposable} from 'atom';
 import {Dispatcher} from 'flux';
+import {DebuggerPauseController} from './DebuggerPauseController';
 
 import type {SerializedState} from '..';
 
@@ -44,6 +45,7 @@ class DebuggerModel {
   _localsStore: LocalsStore;
   _threadStore: ThreadStore;
   _bridge: Bridge;
+  _debuggerPauseController: DebuggerPauseController;
 
   constructor(state: ?SerializedState) {
     this._dispatcher = new Dispatcher();
@@ -68,6 +70,7 @@ class DebuggerModel {
     this._callstackStore = new CallstackStore(this._dispatcher);
     this._localsStore = new LocalsStore(this._dispatcher);
     this._threadStore = new ThreadStore(this._dispatcher);
+    this._debuggerPauseController = new DebuggerPauseController(this._store);
 
     this._disposables = new CompositeDisposable(
       this._store,
@@ -81,6 +84,7 @@ class DebuggerModel {
       this._callstackStore,
       this._localsStore,
       this._threadStore,
+      this._debuggerPauseController,
     );
   }
 
