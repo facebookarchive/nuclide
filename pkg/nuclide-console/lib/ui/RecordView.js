@@ -11,7 +11,6 @@
 
 import type {Level, Record, Executor, OutputProvider} from '../types';
 
-import CodeBlock from './CodeBlock';
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {LazyNestedValueComponent} from '../../../nuclide-ui/lib/LazyNestedValueComponent';
@@ -31,7 +30,10 @@ export default class RecordView extends React.Component {
 
   _renderContent(record: Record): React.Element<any> {
     if (record.kind === 'request') {
-      return <CodeBlock text={record.text} scopeName={record.scopeName} />;
+      // TODO: We really want to use a text editor to render this so that we can get syntax
+      // highlighting, but they're just too expensive. Figure out a less-expensive way to get syntax
+      // highlighting.
+      return <pre>{record.text || ' '}</pre>;
     } else if (record.kind === 'response') {
       const executor = this.props.getExecutor(record.sourceId);
       return this._renderNestedValueComponent(record, executor);
