@@ -127,7 +127,7 @@ const Service: NuclideContextView = {
     }
     contextViewManager.registerProvider(provider);
     return new Disposable(() => {
-      contextViewManager.deregisterProvider(provider.id);
+      contextViewManager.unregisterProvider(provider.id);
     });
   },
 };

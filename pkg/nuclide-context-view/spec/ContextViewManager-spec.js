@@ -92,22 +92,22 @@ describe('ContextViewManager', () => {
     expect(registeredAgain).toBe(false); // Shouldn't re-register provider with same ID
     expect(managerShowing._contextProviders.length).toBe(1);
   });
-  it('deregisters a provider and rerenders', () => {
+  it('unregisters a provider and rerenders', () => {
     spyOn(managerShowing, '_render');
     managerShowing.registerProvider(provider1);
-    const deregistered = managerShowing.deregisterProvider(PROVIDER1_ID);
-    expect(deregistered).toBe(true);
+    const unregistered = managerShowing.unregisterProvider(PROVIDER1_ID);
+    expect(unregistered).toBe(true);
     expect(managerShowing._contextProviders.length).toBe(0);
     expect(managerShowing._render).toHaveBeenCalled();
   });
-  it('does not deregister a provider that has not been registered', () => {
+  it('does not unregister a provider that has not been registered', () => {
     spyOn(managerShowing, '_render');
-    const deregistered1 = managerShowing.deregisterProvider(PROVIDER1_ID);
-    expect(deregistered1).toBe(false);
+    const unregistered1 = managerShowing.unregisterProvider(PROVIDER1_ID);
+    expect(unregistered1).toBe(false);
     expect(managerShowing._contextProviders.length).toBe(0);
     managerShowing.registerProvider(provider1);
-    const deregistered2 = managerShowing.deregisterProvider(PROVIDER2_ID);
-    expect(deregistered2).toBe(false);
+    const unregistered2 = managerShowing.unregisterProvider(PROVIDER2_ID);
+    expect(unregistered2).toBe(false);
     expect(managerShowing._contextProviders.length).toBe(1);
   });
   it('orders providers based on priority', () => {
@@ -147,7 +147,7 @@ describe('ContextViewManager', () => {
     expect(managerShowing._defServiceSubscription).toBeTruthy();
     expect(managerShowing._render).toHaveBeenCalled();
     expect(managerShowing._renderProviders).toHaveBeenCalled();
-    // Deregister def service
+    // Unregister def service
     invariant(managerShowing._defServiceSubscription != null,
       'Subscription must be non-null if in visible state and consuming def. service');
     const subscription = managerShowing._defServiceSubscription;
@@ -170,7 +170,7 @@ describe('ContextViewManager', () => {
     expect(managerHidden._render).toHaveBeenCalled();
     expect(managerHidden._disposeView).toHaveBeenCalled();
     expect(managerHidden._renderProviders).not.toHaveBeenCalled();
-    // Deregister def service
+    // Unregister def service
     managerHidden.consumeDefinitionService(null);
     expect(managerHidden._definitionService).toBeNull();
     expect(managerHidden._defServiceSubscription).toBeNull();

@@ -39,7 +39,7 @@ export type ContextViewConfig = {
 const logger = getLogger();
 
 /**
- * Manages registering/deregistering of definition service and context providers,
+ * Manages registering/unregistering of definition service and context providers,
  * and manages re-rendering when a new definition is emitted from the definition
  * service.
  */
@@ -190,7 +190,7 @@ export class ContextViewManager {
     }
   }
 
-  deregisterProvider(idToRemove: string): boolean {
+  unregisterProvider(idToRemove: string): boolean {
     let wasRemoved: boolean = false;
     for (let i = 0; i < this._contextProviders.length; i++) {
       if (this._contextProviders[i].id === idToRemove) {
