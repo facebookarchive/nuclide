@@ -16,6 +16,7 @@ import {Button, ButtonSizes, ButtonTypes} from './Button';
 import {ButtonGroup} from './ButtonGroup';
 import {Modal} from './Modal';
 import {MultiSelectList} from './MultiSelectList';
+import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 type Option = {
@@ -75,9 +76,12 @@ export class ModalMultiSelect extends React.Component {
     const LabelComponent = this.props.labelComponent || DefaultLabelComponent;
     const selectedOptions = this.props.options
       .filter(option => this.props.value.indexOf(option.value) !== -1);
+    const className = classnames(this.props.className, {
+      'btn-warning': this.props.value.length === 0,
+    });
     return (
       <Button
-        className={this.props.className}
+        className={className}
         disabled={this.props.disabled}
         size={this.props.size}
         onClick={this._showModal}>

@@ -44,7 +44,6 @@ export default class ConsoleHeader extends React.Component {
     super(props);
     (this: any)._handleClearButtonClick = this._handleClearButtonClick.bind(this);
     (this: any)._handleReToggleButtonClick = this._handleReToggleButtonClick.bind(this);
-    (this: any)._handleSelectedSourcesChange = this._handleSelectedSourcesChange.bind(this);
     (this: any)._renderOption = this._renderOption.bind(this);
   }
 
@@ -54,16 +53,6 @@ export default class ConsoleHeader extends React.Component {
 
   _handleReToggleButtonClick(): void {
     this.props.toggleRegExpFilter();
-  }
-
-  _handleSelectedSourcesChange(sourceIds: Array<any>): void {
-    this.props.onSelectedSourcesChange(
-      sourceIds.length === 0
-        // We don't actually allow no sources to be selected. What would be the point? If nothing is
-        // selected, treat it as though everything is.
-        ? this.props.sources.map(source => source.id)
-        : sourceIds,
-    );
   }
 
   _renderProcessControlButton(source: Source): ?React.Element<any> {
@@ -140,7 +129,7 @@ export default class ConsoleHeader extends React.Component {
             size={ButtonSizes.SMALL}
             options={options}
             value={this.props.selectedSourceIds}
-            onChange={this._handleSelectedSourcesChange}
+            onChange={this.props.onSelectedSourcesChange}
             className="inline-block"
           />
           <ButtonGroup className="inline-block">
