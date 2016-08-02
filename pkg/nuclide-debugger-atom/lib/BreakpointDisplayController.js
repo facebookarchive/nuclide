@@ -17,6 +17,9 @@ import {
   editorChangesDebounced,
   editorScrollTopDebounced,
 } from '../../commons-atom/debounced';
+import {
+  DisposableSubscription,
+} from '../../commons-node/stream';
 
 /**
  * A single delegate which handles events from the object.
@@ -99,11 +102,16 @@ class BreakpointDisplayController {
     this._disposables.add(this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)));
 
     // Update shadow breakpoints on debounced editor change and debounced view scroll
-    // $FlowFixMe: type mismatch in subscribe
-    editorScrollTopDebounced(this._editor, 300, false)
-      .subscribe(this._update.bind(this));
-    editorChangesDebounced(this._editor, 300, false)
-      .subscribe(this._update.bind(this, true));
+    this._disposables.add(
+      new DisposableSubscription(
+        editorScrollTopDebounced(this._editor, 300)
+          .subscribe(this._update.bind(this, false)),
+      ),
+      new DisposableSubscription(
+        editorChangesDebounced(this._editor, 300)
+          .subscribe(this._update.bind(this, false)),
+      ),
+    );
 
     const disposableCallback =
       atom.workspace.onDidChangeActivePaneItem(this._handleEditorChanged.bind(this));
