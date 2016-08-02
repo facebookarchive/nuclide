@@ -15,13 +15,14 @@ import {maybeToString} from '../../commons-node/string';
 
 type Props = {
   children?: mixed,
+  className?: string,
   location?: 'top' | 'bottom',
 };
 
 export const Toolbar = (props: Props) => {
   const className = classnames('nuclide-ui-toolbar', {
     [`nuclide-ui-toolbar--${maybeToString(props.location)}`]: props.location != null,
-  });
+  }, props.className);
 
   return (
     <div className={className}>
