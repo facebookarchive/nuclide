@@ -18,25 +18,25 @@ import {attachEvent} from '../../commons-node/event';
 import type {Socket} from 'net';
 
 // Responses to the DBGP 'status' command
-const STATUS_STARTING = 'starting';
-const STATUS_STOPPING = 'stopping';
-const STATUS_STOPPED = 'stopped';
-const STATUS_RUNNING = 'running';
-const STATUS_BREAK = 'break';
+export const STATUS_STARTING = 'starting';
+export const STATUS_STOPPING = 'stopping';
+export const STATUS_STOPPED = 'stopped';
+export const STATUS_RUNNING = 'running';
+export const STATUS_BREAK = 'break';
 // Error and End are not dbgp status codes, they relate to socket states.
-const STATUS_ERROR = 'error';
-const STATUS_END = 'end';
+export const STATUS_ERROR = 'error';
+export const STATUS_END = 'end';
 // stdout and stderr are emitted when DBGP sends the corresponding message packets.
-const STATUS_STDOUT = 'stdout';
-const STATUS_STDERR = 'stderr';
+export const STATUS_STDOUT = 'stdout';
+export const STATUS_STDERR = 'stderr';
 
 // Valid continuation commands
-const COMMAND_RUN = 'run';
-const COMMAND_STEP_INTO = 'step_into';
-const COMMAND_STEP_OVER = 'step_over';
-const COMMAND_STEP_OUT = 'step_out';
-const COMMAND_STOP = 'stop';
-const COMMAND_DETACH = 'detach';
+export const COMMAND_RUN = 'run';
+export const COMMAND_STEP_INTO = 'step_into';
+export const COMMAND_STEP_OVER = 'step_over';
+export const COMMAND_STEP_OUT = 'step_out';
+export const COMMAND_STOP = 'stop';
+export const COMMAND_DETACH = 'detach';
 
 const DBGP_SOCKET_STATUS_EVENT = 'dbgp-socket-status';
 
@@ -88,7 +88,7 @@ const DEFAULT_DBGP_PROPERTY: DbgpProperty = {
  * Handles sending and recieving dbgp messages over a net Socket.
  * Dbgp documentation can be found at http://xdebug.org/docs-dbgp.php
  */
-class DbgpSocket {
+export class DbgpSocket {
   _socket: ?Socket;
   _transactionId: number;
   // Maps from transactionId -> call
@@ -408,22 +408,3 @@ class DbgpSocket {
     }
   }
 }
-
-module.exports = {
-  DbgpSocket,
-  STATUS_STARTING,
-  STATUS_STOPPING,
-  STATUS_STOPPED,
-  STATUS_RUNNING,
-  STATUS_BREAK,
-  STATUS_ERROR,
-  STATUS_END,
-  STATUS_STDOUT,
-  STATUS_STDERR,
-  COMMAND_RUN,
-  COMMAND_STEP_INTO,
-  COMMAND_STEP_OVER,
-  COMMAND_STEP_OUT,
-  COMMAND_STOP,
-  COMMAND_DETACH,
-};
