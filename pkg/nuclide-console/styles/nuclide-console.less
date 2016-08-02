@@ -45,10 +45,6 @@
   width: 100%;
   background-color: @pane-item-background-color;
 
-  .icon {
-    vertical-align: middle;
-  }
-
   .nuclide-ui-toolbar {
     background-color: @nuclide-console-toolbar-background-color;
   }
@@ -75,8 +71,6 @@
   // instance that is used by the console.
 
   .list-item::before {
-    float: left;
-    margin-top: 5px;
     div {
       display: flex;
     }
@@ -103,7 +97,6 @@
 
 .nuclide-console-record {
   display: flex;
-  align-items: center;
   padding: @nuclide-console-record-vertical-padding @nuclide-console-record-horizontal-padding;
   background-color: @nuclide-console-record-background-color-normal;
   border-radius: 0;
@@ -125,12 +118,12 @@
 
   .icon,
   .icon::before {
-    font-size: @nuclide-console-icon-size;
+    font-size: @nuclide-console-record-font-size;
   }
 
   .icon::before {
-    width: @nuclide-console-icon-size;
-    height: @nuclide-console-icon-size;
+    width: @nuclide-console-record-font-size;
+    margin-right: 0.5em;
   }
 
   &:first-child {
@@ -300,7 +293,18 @@
 
   // Give the source label a little breathing room. We don't apply this directly
   // to the label because that would affect text wrapping around it.
+  padding-top: 1px;
   padding-bottom: 1px;
+
+  .nuclide-ui-lazy-nested-value-treelist {
+
+    // Inherit the line-height so that it's the same as other records. If we
+    // don't do this, the expandable items will be taller.
+    li.list-nested-item > .list-item,
+    .list-item {
+      line-height: inherit;
+    }
+  }
 }
 
 .nuclide-console-record-source-label {
@@ -308,6 +312,12 @@
   margin: 2px 0 0 4px;
   white-space: nowrap;
   font-size: 0.8em; // This makes the label < 1 line tall in most themes.
+
+  // Ramp up the specificity and override Atom's default label padding.
+  span& {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
 }
 
 .nuclide-console-input-wrapper {
