@@ -46,14 +46,12 @@ describe('ContextViewManager', () => {
       getElementFactory: elementFactory,
       id: PROVIDER1_ID,
       title: PROVIDER1_TITLE,
-      isEditorBased: false,
       priority: 1,
     };
     provider2 = {
       getElementFactory: elementFactory,
       id: PROVIDER2_ID,
       title: PROVIDER2_TITLE,
-      isEditorBased: false,
       priority: 2,
     };
     defService = {
@@ -114,11 +112,11 @@ describe('ContextViewManager', () => {
   });
   it('orders providers based on priority', () => {
     const provider3 = {getElementFactory: elementFactory, id: '3',
-      title: '3', isEditorBased: false, priority: 3};
+      title: '3', priority: 3};
     const provider4 = {getElementFactory: elementFactory, id: '4',
-      title: '4', isEditorBased: false, priority: 4};
+      title: '4', priority: 4};
     const provider5 = {getElementFactory: elementFactory, id: '5',
-      title: '5', isEditorBased: false, priority: 5};
+      title: '5', priority: 5};
     managerHidden.registerProvider(provider2);
     managerHidden.registerProvider(provider1);
     expect(managerHidden._contextProviders[0].id).toBe(PROVIDER1_ID);

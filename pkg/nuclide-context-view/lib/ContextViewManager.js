@@ -246,7 +246,7 @@ export class ContextViewManager {
       this._contextProviders.map((prov, index) => {
         const createElementFn = prov.getElementFactory();
         return (
-          <ProviderContainer title={prov.title} key={index} isEditorBased={prov.isEditorBased}>
+          <ProviderContainer title={prov.title} key={index}>
             {createElementFn({
               ContextViewMessage,
               definition: this.currentDefinition,

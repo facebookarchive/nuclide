@@ -15,7 +15,6 @@ import {track} from '../../nuclide-analytics';
 
 type Props = {
   title: string,
-  isEditorBased: boolean,
   children?: React.Element<any>,
 };
 
