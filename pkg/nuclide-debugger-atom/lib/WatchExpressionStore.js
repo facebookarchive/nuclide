@@ -94,7 +94,12 @@ export class WatchExpressionStore {
           : this._bridge.evaluateWatchExpression(expression)
       ),
     );
-    this._previousEvaluationSubscriptions.add(evaluationDisposable);
+    // Non-REPL environments will want to record these requests so they can be canceled on
+    // re-evaluation, e.g. in the case of stepping.  REPL environments should let them complete so
+    // we can have e.g. a history of evaluations in the console.
+    if (!supportRepl) {
+      this._previousEvaluationSubscriptions.add(evaluationDisposable);
+    }
   }
 
   /**
@@ -123,14 +128,16 @@ export class WatchExpressionStore {
     expression: Expression,
     supportRepl: boolean,
   ): Rx.Observable<?EvaluationResult> {
-    if (this._watchExpressions.has(expression)) {
+    if (!supportRepl && this._watchExpressions.has(expression)) {
       const cachedResult = this._watchExpressions.get(expression);
       invariant(cachedResult);
       return cachedResult;
     }
     const subject = new Rx.BehaviorSubject();
     this._requestExpressionEvaluation(expression, subject, supportRepl);
-    this._watchExpressions.set(expression, subject);
+    if (!supportRepl) {
+      this._watchExpressions.set(expression, subject);
+    }
     // Expose an observable rather than the raw subject.
     return subject.asObservable();
   }
