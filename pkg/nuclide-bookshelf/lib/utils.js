@@ -14,11 +14,18 @@ import type {
   RepositoryShortHeadChange,
   SerializedBookShelfState,
 } from './types';
+
+import {
+  ActiveShortHeadChangeBehavior,
+  ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG,
+} from './constants';
+
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import Immutable from 'immutable';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
+import featureConfig from '../../commons-atom/featureConfig';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {track} from '../../nuclide-analytics';
@@ -110,7 +117,7 @@ export function shortHeadChangedNotification(
     const shortHeadChangeNotification = atom.notifications.addInfo(
       `\`${workingDirectoryName}\`'s active bookmark have changed ${newShortHeadDisplayText}`, {
         detail: 'Would you like to open the files you had active then?\n \n' +
-          'ProTip: Change the default behavior from \'Nuclide Settings\'',
+          'ProTip: Change the default behavior from \'Nuclide Settings>IDE Settings>Book Shelf\'',
         dismissable: true,
         buttons: [{
           onDidClick: () => {
@@ -118,6 +125,15 @@ export function shortHeadChangedNotification(
             observer.complete();
           },
           text: 'Open files',
+        }, {
+          onDidClick: () => {
+            featureConfig.set(
+              ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG,
+              ActiveShortHeadChangeBehavior.ALWAYS_IGNORE,
+            );
+            observer.complete();
+          },
+          text: 'Always ignore',
         }],
       },
     );
