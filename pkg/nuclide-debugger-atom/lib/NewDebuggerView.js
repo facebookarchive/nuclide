@@ -10,7 +10,6 @@
  */
 
 import type DebuggerModel from './DebuggerModel';
-import type Multimap from './Multimap';
 import type {
   WatchExpressionListStore,
 } from './WatchExpressionListStore';
@@ -38,23 +37,6 @@ type Props = {
   model: DebuggerModel,
   watchExpressionListStore: WatchExpressionListStore,
 };
-
-function storeBreakpointsToViewBreakpoints(
-  storeBreakpoints: Multimap<string, number>,
-): FileLineBreakpoints {
-  const breakpoints: FileLineBreakpoints = [];
-  storeBreakpoints.forEach((line: number, path: string) => {
-    breakpoints.push({
-      path,
-      line,
-      // TODO jxg add enabled/disable functionality to store & consume it here.
-      enabled: true,
-      // TODO jxg sync unresolved breakpoints from Chrome Dev tools & consume them here.
-      resolved: true,
-    });
-  });
-  return breakpoints;
-}
 
 export class NewDebuggerView extends React.Component {
   props: Props;
@@ -95,9 +77,7 @@ export class NewDebuggerView extends React.Component {
       togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
       showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
       callstack: props.model.getCallstackStore().getCallstack(),
-      breakpoints: storeBreakpointsToViewBreakpoints(
-        props.model.getBreakpointStore().getAllBreakpoints(),
-      ),
+      breakpoints: props.model.getBreakpointStore().getAllBreakpoints(),
       threadList: threadStore.getThreadList(),
       selectedThreadId: threadStore.getSelectedThreadId(),
     };
@@ -127,7 +107,7 @@ export class NewDebuggerView extends React.Component {
     this._disposables.add(
       breakpointStore.onChange(() => {
         this.setState({
-          breakpoints: storeBreakpointsToViewBreakpoints(breakpointStore.getAllBreakpoints()),
+          breakpoints: breakpointStore.getAllBreakpoints(),
         });
       }),
     );

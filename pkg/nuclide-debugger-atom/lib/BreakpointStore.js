@@ -10,15 +10,21 @@
  */
 
 import type {Dispatcher} from 'flux';
-import type {SerializedBreakpoint} from './types';
+import type {
+  SerializedBreakpoint,
+  FileLineBreakpoint,
+  FileLineBreakpoints,
+} from './types';
 
+import invariant from 'assert';
 import {
   Disposable,
   CompositeDisposable,
 } from 'atom';
 import {Emitter} from 'atom';
 import Constants from './Constants';
-import Multimap from './Multimap';
+
+export type LineToBreakpointMap = Map<number, FileLineBreakpoint>;
 
 /**
  * Stores the currently set breakpoints as (path, line) pairs.
@@ -28,7 +34,7 @@ import Multimap from './Multimap';
  */
 class BreakpointStore {
   _disposables: IDisposable;
-  _breakpoints: Multimap<string, number>;
+  _breakpoints: Map<string, LineToBreakpointMap>;
   _emitter: atom$Emitter;
 
   constructor(
@@ -41,7 +47,7 @@ class BreakpointStore {
         dispatcher.unregister(dispatcherToken);
       }),
     );
-    this._breakpoints = new Multimap();
+    this._breakpoints = new Map();
     this._emitter = new Emitter();
     if (initialBreakpoints) {
       this._deserializeBreakpoints(initialBreakpoints);
@@ -66,18 +72,36 @@ class BreakpointStore {
   }
 
   _addBreakpoint(path: string, line: number): void {
-    this._breakpoints.set(path, line);
+    const breakpoint = {
+      path,
+      line,
+      enabled: true,
+      resolved: false,
+    };
+    if (!this._breakpoints.has(path)) {
+      this._breakpoints.set(path, new Map());
+    }
+    const lineMap = this._breakpoints.get(path);
+    invariant(lineMap != null);
+    lineMap.set(line, breakpoint);
     this._emitter.emit('change', path);
   }
 
   _deleteBreakpoint(path: string, line: number): void {
-    if (this._breakpoints.delete(path, line)) {
+    const lineMap = this._breakpoints.get(path);
+    invariant(lineMap != null);
+    if (lineMap.delete(line)) {
       this._emitter.emit('change', path);
     }
   }
 
   _toggleBreakpoint(path: string, line: number): void {
-    if (this._breakpoints.hasEntry(path, line)) {
+    if (!this._breakpoints.has(path)) {
+      this._breakpoints.set(path, new Map());
+    }
+    const lineMap = this._breakpoints.get(path);
+    invariant(lineMap != null);
+    if (lineMap.has(line)) {
       this._deleteBreakpoint(path, line);
     } else {
       this._addBreakpoint(path, line);
@@ -85,18 +109,30 @@ class BreakpointStore {
   }
 
   getBreakpointsForPath(path: string): Set<number> {
-    return this._breakpoints.get(path);
+    const lineMap = this._breakpoints.get(path);
+    return lineMap != null ? new Set(lineMap.keys()) : new Set();
   }
 
-  getAllBreakpoints(): Multimap<string, number> {
-    return this._breakpoints;
+  getAllBreakpoints(): FileLineBreakpoints {
+    const breakpoints: FileLineBreakpoints = [];
+    for (const [, lineMap] of this._breakpoints) {
+      for (const breakpoint of lineMap.values()) {
+        breakpoints.push(breakpoint);
+      }
+    }
+    return breakpoints;
   }
 
   getSerializedBreakpoints(): Array<SerializedBreakpoint> {
     const breakpoints = [];
-    this._breakpoints.forEach((line, sourceURL) => {
-      breakpoints.push({line, sourceURL});
-    });
+    for (const [path, lineMap] of this._breakpoints) {
+      for (const line of lineMap.keys()) {
+        breakpoints.push({
+          line,
+          sourceURL: path,
+        });
+      }
+    }
     return breakpoints;
   }
 

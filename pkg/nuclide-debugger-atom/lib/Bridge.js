@@ -472,10 +472,10 @@ class Bridge {
     const webview = this._webview;
     if (webview && !this._suppressBreakpointSync) {
       const results = [];
-      this._debuggerModel.getBreakpointStore().getAllBreakpoints().forEach((line, key) => {
+      this._debuggerModel.getBreakpointStore().getAllBreakpoints().forEach(breakpoint => {
         results.push({
-          sourceURL: nuclideUri.nuclideUriToUri(key),
-          lineNumber: line,
+          sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
+          lineNumber: breakpoint.line,
         });
       });
       webview.send('command', 'SyncBreakpoints', results);
