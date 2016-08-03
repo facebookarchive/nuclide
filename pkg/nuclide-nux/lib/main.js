@@ -13,6 +13,8 @@ import {
   CompositeDisposable,
   Disposable,
 } from 'atom';
+import invariant from 'assert';
+
 import {NuxManager} from './NuxManager';
 import {NuxStore} from './NuxStore';
 
@@ -20,11 +22,13 @@ import type {NuxTourModel} from './NuxModel';
 
 export type RegisterNux = (nux: NuxTourModel) => Disposable;
 export type TriggerNux = (id: number) => void;
+export type SyncCompletedNux = (id: number) => void;
 
 class Activation {
   _disposables: CompositeDisposable;
   _nuxStore: NuxStore;
   _nuxManager: NuxManager;
+  _syncCompletedNuxService: SyncCompletedNux;
 
   constructor(): void {
     this._disposables = new CompositeDisposable();
@@ -50,6 +54,10 @@ class Activation {
 
   tryTriggerNux(id: number): void {
     this._nuxManager.tryTriggerNux(id);
+  }
+
+  setSyncCompletedNuxService(syncCompletedNuxService: SyncCompletedNux): void {
+    this._syncCompletedNuxService = syncCompletedNuxService;
   }
 }
 
@@ -87,4 +95,9 @@ export function provideTriggerNuxService(): TriggerNux {
     }
     activation.tryTriggerNux(id);
   });
+}
+
+export function consumeSyncCompletedNuxService(syncCompletedNuxService: SyncCompletedNux): void {
+  invariant(activation != null);
+  activation.setSyncCompletedNuxService(syncCompletedNuxService);
 }
