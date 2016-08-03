@@ -22,7 +22,7 @@ describe('debugger-hhvm-proxy MessageTranslator', () => {
   beforeEach(() => {
     connectionMultiplexer = jasmine.createSpyObj(
       'connectionMultiplexer',
-      ['dispose', 'onStatus', 'onConnectionError'],
+      ['dispose', 'onStatus', 'onNotification', 'onConnectionError'],
     );
     ConnectionMultiplexer = spyOn(require('../lib/ConnectionMultiplexer'), 'ConnectionMultiplexer')
       .andReturn(connectionMultiplexer);

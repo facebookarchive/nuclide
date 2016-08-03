@@ -31,20 +31,24 @@ import {
   STATUS_END,
   STATUS_STDOUT,
   STATUS_STDERR,
+  BREAKPOINT_RESOLVED_NOTIFICATION,
   COMMAND_RUN,
 } from './DbgpSocket';
 import {EventEmitter} from 'events';
+import {CompositeDisposable} from 'event-kit';
 import invariant from 'assert';
 import {ClientCallback} from './ClientCallback';
 import {attachEvent} from '../../commons-node/event';
 
 import type {Socket} from 'net';
+import type {DbgpBreakpoint} from './DbgpSocket';
 
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
+const CONNECTION_MUX_NOTIFICATION_EVENT = 'connection-mux-notification';
 
 type ConnectionInfo = {
   connection: Connection,
-  onStatusDisposable: IDisposable,
+  disposables: CompositeDisposable,
   status: string,
 };
 
@@ -125,6 +129,11 @@ export class ConnectionMultiplexer {
   onStatus(callback: (status: string) => mixed): IDisposable {
     return attachEvent(this._connectionStatusEmitter,
       CONNECTION_MUX_STATUS_EVENT, callback);
+  }
+
+  onNotification(callback: (status: string, params: ?Object) => mixed): IDisposable {
+    return attachEvent(this._connectionStatusEmitter,
+      CONNECTION_MUX_NOTIFICATION_EVENT, callback);
   }
 
   listen(): void {
@@ -215,27 +224,62 @@ export class ConnectionMultiplexer {
     if (isDummyConnection(message)) {
       await this._handleDummyConnection(socket);
     } else {
-      const connection = new Connection(socket);
-      this._breakpointStore.addConnection(connection);
-      await this._handleSetupForConnection(connection);
+      await this._handleNewConnection(socket, message);
+    }
+  }
 
-      const info = {
-        connection,
-        onStatusDisposable: connection.onStatus((status, ...args) => {
-          this._connectionOnStatus(connection, status, ...args);
-        }),
-        status: STATUS_STARTING,
-      };
-      this._connections.set(connection, info);
+  async _handleNewConnection(socket: Socket, message: Object): Promise<void> {
+    const connection = new Connection(socket);
+    await this._handleSetupForConnection(connection);
+    await this._breakpointStore.addConnection(connection);
 
-      let status;
-      try {
-        status = await connection.getStatus();
-      } catch (e) {
-        logger.logError('Error getting initial connection status: ' + e.message);
-        status = STATUS_ERROR;
-      }
-      this._connectionOnStatus(connection, status);
+    const disposables = new CompositeDisposable(
+      connection.onStatus((status, ...args) => {
+        this._connectionOnStatus(connection, status, ...args);
+      }),
+      connection.onNotification(this._handleNotification.bind(this, connection)),
+    );
+    const info = {
+      connection,
+      disposables,
+      status: STATUS_STARTING,
+    };
+    this._connections.set(connection, info);
+
+    let status;
+    try {
+      status = await connection.getStatus();
+    } catch (e) {
+      logger.logError('Error getting initial connection status: ' + e.message);
+      status = STATUS_ERROR;
+    }
+    this._connectionOnStatus(connection, status);
+  }
+
+  _handleNotification(
+    connection: Connection,
+    notifyName: string,
+    notify: Object,
+  ): void {
+    switch (notifyName) {
+      case BREAKPOINT_RESOLVED_NOTIFICATION:
+        const xdebugBreakpoint: DbgpBreakpoint = notify;
+        const breakpointId = this._breakpointStore.getBreakpointIdFromConnection(
+          connection,
+          xdebugBreakpoint,
+        );
+        if (breakpointId == null) {
+          throw Error(
+            `Cannot find xdebug breakpoint ${JSON.stringify(xdebugBreakpoint)} in connection.`,
+          );
+        }
+        this._breakpointStore.updateBreakpoint(breakpointId, xdebugBreakpoint);
+        const breakpoint = this._breakpointStore.getBreakpoint(breakpointId);
+        this._emitNotification(BREAKPOINT_RESOLVED_NOTIFICATION, breakpoint);
+        break;
+      default:
+        logger.logError(`Unknown notify: ${notifyName}`);
+        break;
     }
   }
 
@@ -359,6 +403,10 @@ export class ConnectionMultiplexer {
     this._connectionStatusEmitter.emit(CONNECTION_MUX_STATUS_EVENT, status);
   }
 
+  _emitNotification(status: string, params: ?Object): void {
+    this._connectionStatusEmitter.emit(CONNECTION_MUX_NOTIFICATION_EVENT, status, params);
+  }
+
   async runtimeEvaluate(expression: string): Promise<Object> {
     logger.log(`runtimeEvaluate() on dummy connection for: ${expression}`);
     if (this._dummyConnection != null) {
@@ -452,7 +500,7 @@ export class ConnectionMultiplexer {
   _removeConnection(connection: Connection): void {
     const info = this._connections.get(connection);
     invariant(info != null);
-    info.onStatusDisposable.dispose();
+    info.disposables.dispose();
     connection.dispose();
     this._connections.delete(connection);
 
@@ -511,7 +559,11 @@ export class ConnectionMultiplexer {
   }
 
   async _handleSetupForConnection(connection: Connection): Promise<void> {
-    // Stdout/err commands.
+    await this._setupStdStreams(connection);
+    await this._setupFeatures(connection);
+  }
+
+  async _setupStdStreams(connection: Connection): Promise<void> {
     const stdoutRequestSucceeded = await connection.sendStdoutRequest();
     if (!stdoutRequestSucceeded) {
       logger.logError('HHVM returned failure for a stdout request');
@@ -522,8 +574,9 @@ export class ConnectionMultiplexer {
     }
     // TODO: Stderr redirection is not implemented in HHVM so we won't check this return value.
     await connection.sendStderrRequest();
+  }
 
-    // Set features.
+  async _setupFeatures(connection: Connection): Promise<void> {
     // max_depth sets the depth that the debugger engine respects when
     // returning hierarchical data.
     let setFeatureSucceeded = await connection.setFeature('max_depth', '5');
@@ -534,6 +587,11 @@ export class ConnectionMultiplexer {
     setFeatureSucceeded = await connection.setFeature('show_hidden', '1');
     if (!setFeatureSucceeded) {
       logger.logError('HHVM returned failure for setting feature show_hidden');
+    }
+    // Turn on notifications.
+    setFeatureSucceeded = await connection.setFeature('notify_ok', '1');
+    if (!setFeatureSucceeded) {
+      logger.logError('HHVM returned failure for setting feature notify_ok');
     }
   }
 

@@ -26,11 +26,14 @@ import {
   COMMAND_STEP_INTO,
   COMMAND_STEP_OVER,
   COMMAND_STEP_OUT,
+  BREAKPOINT_RESOLVED_NOTIFICATION,
 } from './DbgpSocket';
 
 import FileCache from './FileCache';
 import {EventEmitter} from 'events';
+import {CompositeDisposable} from 'event-kit';
 
+import type {Breakpoint} from './BreakpointStore';
 import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import type {ClientCallback} from './ClientCallback';
 
@@ -41,7 +44,7 @@ export class DebuggerHandler extends Handler {
   _connectionMultiplexer: ConnectionMultiplexer;
   _files: FileCache;
   _emitter: EventEmitter;
-  _statusSubscription: ?IDisposable;
+  _subscriptions: CompositeDisposable;
   _hadFirstContinuationCommand: boolean;
 
   constructor(
@@ -54,8 +57,13 @@ export class DebuggerHandler extends Handler {
     this._connectionMultiplexer = connectionMultiplexer;
     this._files = new FileCache(clientCallback);
     this._emitter = new EventEmitter();
-    this._statusSubscription = this._connectionMultiplexer.onStatus(
-      this._onStatusChanged.bind(this),
+    this._subscriptions = new CompositeDisposable(
+      this._connectionMultiplexer.onStatus(
+        this._onStatusChanged.bind(this),
+      ),
+      this._connectionMultiplexer.onNotification(
+        this._onNotification.bind(this),
+      ),
     );
   }
 
@@ -154,6 +162,7 @@ export class DebuggerHandler extends Handler {
     invariant(breakpoint != null);
     this.replyToCommand(id, {
       breakpointId,
+      resolved: breakpoint.resolved,
       locations: [
         getBreakpointLocation(breakpoint),
       ],
@@ -213,7 +222,7 @@ export class DebuggerHandler extends Handler {
     }
   }
 
-  async _onStatusChanged(status: string): Promise<any> {
+  async _onStatusChanged(status: string, params: ?Object): Promise<void> {
     logger.log('Sending status: ' + status);
     switch (status) {
       case STATUS_BREAK:
@@ -233,6 +242,21 @@ export class DebuggerHandler extends Handler {
         break;
       default:
         logger.logErrorAndThrow('Unexpected status: ' + status);
+    }
+  }
+
+  async _onNotification(notifyName: string, params: ?Object): Promise<void> {
+    switch (notifyName) {
+      case BREAKPOINT_RESOLVED_NOTIFICATION:
+        invariant(params);
+        const breakpoint: Breakpoint = params;
+        this.sendMethod('Debugger.breakpointResolved', {
+          breakpointId: breakpoint.chromeId,
+          location: getBreakpointLocation(breakpoint),
+        });
+        break;
+      default:
+        logger.logErrorAndThrow(`Unexpected notification: ${notifyName}`);
     }
   }
 
@@ -269,10 +293,7 @@ export class DebuggerHandler extends Handler {
 
   _endSession(): void {
     logger.log('DebuggerHandler: Ending session');
-    if (this._statusSubscription) {
-      this._statusSubscription.dispose();
-      this._statusSubscription = null;
-    }
+    this._subscriptions.dispose();
     this._emitter.emit(SESSION_END_EVENT);
   }
 }

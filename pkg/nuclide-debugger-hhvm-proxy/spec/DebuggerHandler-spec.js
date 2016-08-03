@@ -51,6 +51,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
     connectionMultiplexer = ((
       jasmine.createSpyObj('connectionMultiplexer', [
         'onStatus',
+        'onNotification',
         'listen',
         'getStatus',
         'getStackFrames',
@@ -62,6 +63,10 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       ]): any
     ): ConnectionMultiplexerType);
     onStatusSubscription = jasmine.createSpyObj('onStatusSubscription', ['dispose']);
+    const onNotificationSubscription = jasmine.createSpyObj(
+      'onNotificationSubscription',
+      ['dispose'],
+    );
     // $FlowFixMe override instance methods.
     connectionMultiplexer.onStatus = jasmine
       .createSpy('onStatus')
@@ -69,6 +74,9 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
         onStatus = callback;
         return onStatusSubscription;
       });
+    // $FlowFixMe
+    connectionMultiplexer.onNotification = jasmine
+      .createSpy('onNotification').andReturn(onNotificationSubscription);
     handler = new DebuggerHandler(clientCallback, connectionMultiplexer);
   });
 

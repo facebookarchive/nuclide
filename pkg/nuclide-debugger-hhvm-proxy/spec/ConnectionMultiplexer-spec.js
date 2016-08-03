@@ -41,6 +41,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   let connector: any;
   let Connection: any;
   let onStatus: any;
+  let onNotification: any;
   let haveStatusThrow;
   let connectionMultiplexer: any;
   let isCorrectConnectionResult;
@@ -64,6 +65,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     haveStatusThrow = false;
     connectionCount = 0;
     onStatus = jasmine.createSpy('onStatus');
+    onNotification = jasmine.createSpy('onNotification');
 
     spyOn(require('../lib/config'), 'getConfig').andReturn(config);
 
@@ -101,6 +103,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       const connection = ((
         jasmine.createSpyObj('connection' + connectionCount, [
           'onStatus',
+          'onNotification',
           'runtimeEvaluate',
           'evaluateOnCallFrame',
           'getProperties',
@@ -142,10 +145,17 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       connection.sendStderrRequest = jasmine.createSpy('sendStderrRequest').andReturn(true);
 
       const statusDispose = jasmine.createSpy('connection.onStatus.dispose' + connectionCount);
+      const notificationDispose = jasmine
+        .createSpy('connection.notificationDispose.dispose' + connectionCount);
       // $FlowFixMe override instance method.
       connection.onStatus = jasmine.createSpy('onStatus').andCallFake(callback => {
         result.onStatus = callback;
         return {dispose: statusDispose};
+      });
+      // $FlowFixMe
+      connection.onNotification = jasmine.createSpy('onNotification').andCallFake(callback => {
+        result.onNotification = callback;
+        return {dispose: notificationDispose};
       });
 
       result.connection = connection;
@@ -203,6 +213,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     ): {ConnectionMultiplexer: () => ConnectionMultiplexerType});
     connectionMultiplexer = new ConnectionMultiplexer(clientCallback);
     connectionMultiplexer.onStatus(onStatus);
+    connectionMultiplexer.onNotification(onNotification);
   });
 
   afterEach(() => {
