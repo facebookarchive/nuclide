@@ -33,12 +33,31 @@ export class NuxStore {
     this._emitter.dispose();
   }
 
-  // Load the saved NUX statuses.
+  // Load the saved NUX statuses. Reads serialized values from backend and local caches
+  // and generates a map of NUX states by ID by merging the two values.
   initialize(): void {
-    // TODO [ @rageandqq | 05-25-16 ]: Replace with `IndexedDB` since `localStorage` is blocking
-    this._nuxMap = new Map(
+    // Get the NUX backend cached information; stub for OSS friendliness
+    let NuxBackendCache;
+    try {
+      // This inline import won't affect performance since we only call it once per NuxStore.
+      NuxBackendCache = require('./fb-NuxCache').NuxCache;
+    } catch (e) {
+      NuxBackendCache = class {
+        getNuxStatus(): Map<number, boolean> {
+          return new Map();
+        }
+      };
+    }
+
+    const nuclideNuxState = new Map(
       JSON.parse(window.localStorage.getItem(NUX_SAVED_STORE)),
     );
+    const fbNuxState = new NuxBackendCache().getNuxStatus();
+
+    // Merge the two maps. If a key exists in both input maps, the value from
+    // the latter (backend cache) will be used in the resulting map.
+    // $FlowIgnore - Flow thinks the spread operator is incompatible with Map
+    this._nuxMap = new Map([...nuclideNuxState, ...fbNuxState]);
   }
 
   addNewNux(nux: NuxTourModel) {
