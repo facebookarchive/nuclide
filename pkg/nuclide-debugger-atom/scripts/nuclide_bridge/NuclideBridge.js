@@ -28,14 +28,6 @@ import WebInspector from '../../lib/WebInspector';
 const NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
 const DebuggerSettingsChangedEvent = 'debugger-settings-updated';
 
-/**
-  * Generates a string from a breakpoint that can be used in hashed
-  * containers.
-  */
-function formatBreakpointKey(url: string, line: number): string {
-  return url + ':' + line;
-}
-
 type BreakpointNotificationType = 'BreakpointAdded' | 'BreakpointRemoved';
 
 class NuclideBridge {
@@ -210,6 +202,12 @@ class NuclideBridge {
       case 'SyncBreakpoints':
         this._allBreakpoints = args[0];
         this._syncBreakpoints();
+        break;
+      case 'AddBreakpoint':
+        this._addBreakpoint(args[0]);
+        break;
+      case 'DeleteBreakpoint':
+        this._deleteBreakpoint(args[0]);
         break;
       case 'Continue':
         this._continue();
@@ -514,52 +512,52 @@ class NuclideBridge {
   _syncBreakpoints() {
     try {
       this._suppressBreakpointNotification = true;
-      this._unresolvedBreakpoints = new Multimap();
-
-      const newBreakpointSet = new Set(this._allBreakpoints.map(breakpoint =>
-        formatBreakpointKey(breakpoint.sourceURL, breakpoint.lineNumber)));
-
-      // Removing unlisted breakpoints and mark the ones that already exist.
-      const unchangedBreakpointSet = new Set();
-      const existingBreakpoints = WebInspector.breakpointManager.allBreakpoints();
-      existingBreakpoints.forEach(existingBreakpoint => {
-        const source = existingBreakpoint.uiSourceCode();
-        if (source) {
-          const key = formatBreakpointKey(source.uri(), existingBreakpoint.lineNumber());
-          if (newBreakpointSet.has(key)) {
-            unchangedBreakpointSet.add(key);
-            return;
-          }
-        }
-        existingBreakpoint.remove(false);
-      });
-
       this._parseBreakpointSources();
 
       // Add the ones that don't.
+      this._unresolvedBreakpoints = new Multimap();
       this._allBreakpoints.forEach(breakpoint => {
-        const key = formatBreakpointKey(breakpoint.sourceURL, breakpoint.lineNumber);
-        if (!unchangedBreakpointSet.has(key)) {
-          const source = WebInspector.workspace.uiSourceCodeForOriginURL(breakpoint.sourceURL);
-          if (source) {
-            WebInspector.breakpointManager.setBreakpoint(
-              source,
-              breakpoint.lineNumber,
-              0,
-              '',
-              true);
-          } else {
-            // No API exists for adding breakpoints to source files that are not
-            // yet known, store it locally and try to add them later.
-            this._unresolvedBreakpoints.set(breakpoint.sourceURL, breakpoint.lineNumber);
-          }
+        if (!this._addBreakpoint(breakpoint)) {
+          // No API exists for adding breakpoints to source files that are not
+          // yet known, store it locally and try to add them later.
+          this._unresolvedBreakpoints.set(breakpoint.sourceURL, breakpoint.lineNumber);
         }
       });
-
       this._emitter.emit('unresolved-breakpoints-changed', null);
     } finally {
       this._suppressBreakpointNotification = false;
     }
+  }
+
+  _addBreakpoint(breakpoint: Object): boolean {
+    const source = WebInspector.workspace.uiSourceCodeForOriginURL(breakpoint.sourceURL);
+    if (source == null) {
+      return false;
+    }
+    WebInspector.breakpointManager.setBreakpoint(
+      source,
+      breakpoint.lineNumber,
+      0,    // columnNumber
+      '',   // Condition
+      true, // enabled
+    );
+    return true;
+  }
+
+  _deleteBreakpoint(breakpoint: Object): boolean {
+    const source = WebInspector.workspace.uiSourceCodeForOriginURL(breakpoint.sourceURL);
+    if (source == null) {
+      return false;
+    }
+    const chromeBreakpoint = WebInspector.breakpointManager.findBreakpointOnLine(
+      source,
+      breakpoint.lineNumber,
+    );
+    if (chromeBreakpoint == null) {
+      return false;
+    }
+    chromeBreakpoint.remove(false);
+    return true;
   }
 
   _continue(): void {
