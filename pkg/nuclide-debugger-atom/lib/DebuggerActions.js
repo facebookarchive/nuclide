@@ -386,6 +386,26 @@ class DebuggerActions {
     });
   }
 
+  deleteBreakpointIPC(path: string, line: number): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.DELETE_BREAKPOINT_IPC,
+      data: {
+        path,
+        line,
+      },
+    });
+  }
+
+  bindBreakpointIPC(path: string, line: number): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.BIND_BREAKPOINT_IPC,
+      data: {
+        path,
+        line,
+      },
+    });
+  }
+
   togglePauseOnException(pauseOnException: boolean): void {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.TOGGLE_PAUSE_ON_EXCEPTION,
