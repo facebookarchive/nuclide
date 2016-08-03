@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {DbgpBreakpoint} from './DbgpSocket';
+import type {
+  DbgpBreakpoint,
+  FileLineBreakpointInfo,
+} from './DbgpSocket';
 
 import invariant from 'assert';
 import logger from './utils';
@@ -27,8 +30,7 @@ type XDebugBreakpointId = string;
 export type BreakpointId = string;
 export type Breakpoint = {
   chromeId: BreakpointId,
-  filename: string,
-  lineNumber: number,
+  breakpointInfo: FileLineBreakpointInfo,
   resolved: boolean,
 };
 
@@ -63,17 +65,22 @@ export class BreakpointStore {
     this._pauseAllExceptionBreakpointId = null;
   }
 
-  async setBreakpoint(
+  async setFileLineBreakpoint(
     chromeId: BreakpointId,
     filename: string,
     lineNumber: number,
+    conditionExpression: ?string,
   ): Promise<BreakpointId> {
-    this._breakpoints.set(chromeId, {chromeId, filename, lineNumber, resolved: false});
+    const breakpointInfo = {filename, lineNumber, conditionExpression};
+    this._breakpoints.set(chromeId, {
+      chromeId,
+      breakpointInfo,
+      resolved: false,
+    });
     const breakpointPromises = Array.from(this._connections.entries())
       .map(async entry => {
         const [connection, map] = entry;
-        // TODO: make Connection.setBreakpoint() to handle non-paused situation.
-        const xdebugBreakpointId = await connection.setBreakpoint(filename, lineNumber);
+        const xdebugBreakpointId = await connection.setFileLineBreakpoint(breakpointInfo);
         map.set(chromeId, xdebugBreakpointId);
       });
     await Promise.all(breakpointPromises);
@@ -116,8 +123,9 @@ export class BreakpointStore {
   updateBreakpoint(chromeId: BreakpointId, xdebugBreakpoint: DbgpBreakpoint): void {
     const breakpoint = this._breakpoints.get(chromeId);
     invariant(breakpoint != null);
-    breakpoint.lineNumber = xdebugBreakpoint.lineno || breakpoint.lineNumber;
-    breakpoint.filename = xdebugBreakpoint.filename || breakpoint.filename;
+    const {breakpointInfo} = breakpoint;
+    breakpointInfo.lineNumber = xdebugBreakpoint.lineno || breakpointInfo.lineNumber;
+    breakpointInfo.filename = xdebugBreakpoint.filename || breakpointInfo.filename;
     if (xdebugBreakpoint.resolved != null) {
       breakpoint.resolved = (xdebugBreakpoint.resolved === 'resolved');
     } else {
@@ -184,9 +192,9 @@ export class BreakpointStore {
     const map: Map<BreakpointId, XDebugBreakpointId> = new Map();
     const breakpointPromises = Array.from(this._breakpoints.values())
       .map(async breakpoint => {
-        const {chromeId, filename, lineNumber} = breakpoint;
+        const {chromeId, breakpointInfo} = breakpoint;
         const xdebugBreakpointId =
-          await connection.setBreakpoint(filename, lineNumber);
+          await connection.setFileLineBreakpoint(breakpointInfo);
         map.set(chromeId, xdebugBreakpointId);
       });
     await Promise.all(breakpointPromises);

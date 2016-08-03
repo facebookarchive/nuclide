@@ -213,7 +213,11 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
 
   it('setBreakpoint', () => {
     waitsForPromise(async () => {
-      const call = dbgpSocket.setBreakpoint('/test.php', 42);
+      const call = dbgpSocket.setFileLineBreakpoint({
+        filename: '/test.php',
+        lineNumber: 42,
+        conditionExpression: null,
+      });
       testCallResult(
           'breakpoint_set -i 1 -t line -f /test.php -n 42',
         {
@@ -228,7 +232,11 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
   });
 
   it('setBreakpoint - error', () => {
-    const call = dbgpSocket.setBreakpoint('/test.php', 42);
+    const call = dbgpSocket.setFileLineBreakpoint({
+      filename: '/test.php',
+      lineNumber: 42,
+      conditionExpression: null,
+    });
     testCallResult(
         'breakpoint_set -i 1 -t line -f /test.php -n 42',
       {

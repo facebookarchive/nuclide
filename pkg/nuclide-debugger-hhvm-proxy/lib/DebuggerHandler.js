@@ -153,7 +153,7 @@ export class DebuggerHandler extends Handler {
 
   async _setBreakpointByUrl(id: number, params: Object): Promise<void> {
     const {lineNumber, url, columnNumber, condition} = params;
-    if (!url || condition !== '' || columnNumber !== 0) {
+    if (!url || columnNumber !== 0) {
       this.replyWithError(id, 'Invalid arguments to Debugger.setBreakpointByUrl: '
         + JSON.stringify(params));
       return;
@@ -163,7 +163,12 @@ export class DebuggerHandler extends Handler {
     const path = uriToPath(url);
     const breakpointStore = this._connectionMultiplexer.getBreakpointStore();
     // Chrome lineNumber is 0-based while xdebug lineno is 1-based.
-    const breakpointId = await breakpointStore.setBreakpoint(String(id), path, lineNumber + 1);
+    const breakpointId = await breakpointStore.setFileLineBreakpoint(
+      String(id),
+      path,
+      lineNumber + 1,
+      condition,
+    );
     const breakpoint = await breakpointStore.getBreakpoint(breakpointId);
     invariant(breakpoint != null);
     this.replyToCommand(id, {

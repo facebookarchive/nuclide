@@ -13,7 +13,10 @@ import {DbgpSocket} from './DbgpSocket';
 import {DataCache} from './DataCache';
 
 import type {Socket} from 'net';
-import type {DbgpBreakpoint} from './DbgpSocket';
+import type {
+  DbgpBreakpoint,
+  FileLineBreakpointInfo,
+} from './DbgpSocket';
 
 let connectionCount = 1;
 
@@ -53,8 +56,8 @@ export class Connection {
     return this._socket.setExceptionBreakpoint(exceptionName);
   }
 
-  setBreakpoint(filename: string, lineNumber: number): Promise<string> {
-    return this._socket.setBreakpoint(filename, lineNumber);
+  setFileLineBreakpoint(breakpointInfo: FileLineBreakpointInfo): Promise<string> {
+    return this._socket.setFileLineBreakpoint(breakpointInfo);
   }
 
   getBreakpoint(breakpointId: string): Promise<DbgpBreakpoint> {

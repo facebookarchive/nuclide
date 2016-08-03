@@ -76,6 +76,12 @@ export type DbgpProperty = {
   property?: Array<DbgpProperty>,
 };
 
+export type FileLineBreakpointInfo = {
+  filename: string,
+  lineNumber: number,
+  conditionExpression: ?string,
+};
+
 export type DbgpBreakpoint = {
   id: string,
   type: string,
@@ -377,12 +383,20 @@ export class DbgpSocket {
   }
 
   /**
-   * Returns a breakpoint id
+   * Set breakpoint on a source file line.
+   * Returns a xdebug breakpoint id.
    */
-  async setBreakpoint(filename: string, lineNumber: number): Promise<string> {
+  async setFileLineBreakpoint(
+    breakpointInfo: FileLineBreakpointInfo,
+  ): Promise<string> {
+    const {filename, lineNumber, conditionExpression} = breakpointInfo;
+    let params = `-t line -f ${filename} -n ${lineNumber}`;
+    if (conditionExpression != null) {
+      params += ` -- ${base64Encode(conditionExpression)}`;
+    }
     const response = await this._callDebugger(
       'breakpoint_set',
-      `-t line -f ${filename} -n ${lineNumber}`,
+      params,
     );
     if (response.error) {
       throw new Error('Error setting breakpoint: ' + JSON.stringify(response));

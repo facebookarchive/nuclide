@@ -68,7 +68,7 @@ export function uriToPath(uri: string): string {
 }
 
 export function getBreakpointLocation(breakpoint: Breakpoint): Object {
-  const {filename, lineNumber} = breakpoint;
+  const {filename, lineNumber} = breakpoint.breakpointInfo;
   return {
     // chrome lineNumber is 0-based while xdebug is 1-based.
     lineNumber: lineNumber - 1,
