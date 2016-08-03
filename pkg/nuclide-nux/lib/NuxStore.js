@@ -21,7 +21,6 @@ export const NUX_SAVED_STORE = 'nuclide-nux.saved-nux-data-store';
 
 export class NuxStore {
   _emitter: atom$Emitter;
-  _shouldSeedNux: boolean;
   // Maps a Nux's unique ID to the boolean representing its viewed state
   _nuxMap: Map<number, boolean>;
 
@@ -34,8 +33,7 @@ export class NuxStore {
     this._emitter.dispose();
   }
 
-  // Tries to load saved NUXes.
-  // If none exist, will attempt to seed a NUX iff `_seedNux` is true.
+  // Load the saved NUX statuses.
   initialize(): void {
     // TODO [ @rageandqq | 05-25-16 ]: Replace with `IndexedDB` since `localStorage` is blocking
     this._nuxMap = new Map(
