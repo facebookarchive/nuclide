@@ -50,12 +50,6 @@
   }
 }
 
-.nuclide-console-record .icon:before,
-.nuclide-console-record pre,
-.nuclide-console atom-text-editor {
-  font-size: @nuclide-console-record-font-size;
-}
-
 .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {
   font-size: @nuclide-console-record-font-size;
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
@@ -112,10 +106,13 @@
   }
 
   .icon {
-    color: @nuclide-console-record-text-color-normal;
+    color: fadeout(@nuclide-console-record-text-color-normal, 70%);
     text-align: center;
   }
 
+  &,
+  pre,
+  atom-text-editor,
   .icon,
   .icon::before {
     font-size: @nuclide-console-record-font-size;
@@ -136,7 +133,7 @@
 
   &.level-info {
     .icon {
-      color: fadeout(@syntax-text-color, 30%);
+      color: @text-color-info;
     }
   }
 
@@ -280,11 +277,6 @@
     background-color: @syntax-background-color;
   }
 
-  &.request,
-  &.response {
-    opacity: 0.7;
-  }
-
 }
 
 .nuclide-console-record-content-wrapper {
@@ -325,6 +317,11 @@
   background-color: @syntax-background-color;
   padding: @nuclide-console-record-vertical-padding 0;
   flex-grow: 1;
+
+  // Make the text in the input field the same size as the records'.
+  atom-text-editor {
+    font-size: @nuclide-console-record-font-size;
+  }
 }
 
 .nuclide-console-prompt {
