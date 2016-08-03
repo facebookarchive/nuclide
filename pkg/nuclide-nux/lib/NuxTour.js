@@ -22,12 +22,14 @@ export class NuxTour {
   _nuxList : Array<NuxView>;
   _callback: ?(() => void);
   _currentStep: number;
-  _id: string;
+  _id: number;
+  _name: string;
   _trigger: ?NuxTriggerModel;
   _gatekeeperID: ?string;
 
   constructor(
-    id: string,
+    id: number,
+    name: string,
     nuxList : ?(Array<NuxView>),
     trigger: ?NuxTriggerModel,
     gatekeeperID: ?string,
@@ -37,6 +39,7 @@ export class NuxTour {
     }
     this._currentStep = 0;
     this._id = id;
+    this._name = name;
     this._nuxList = nuxList;
     this._trigger = trigger;
     this._gatekeeperID = gatekeeperID;
@@ -112,6 +115,7 @@ export class NuxTour {
       'nux-tour-action',
       {
         tourId: this._id,
+        tourName: this._name,
         step: `${this._currentStep + 1}/${this._nuxList.length + 1}`,
         completed: `${completed.toString()}`,
         error: maybeToString(error),
@@ -131,7 +135,7 @@ export class NuxTour {
     return this._trigger != null ? this._trigger.triggerType : null;
   }
 
-  getID(): string {
+  getID(): number {
     return this._id;
   }
 }

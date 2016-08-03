@@ -31,6 +31,7 @@ import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {RegisterNux} from '../../nuclide-nux/lib/main';
 
 const NUX_OUTLINE_VIEW_TOUR = 'nuclide_outline_view_nux';
+const NUX_OUTLINE_VIEW_ID = 4342;
 const GK_NUX_OUTLINE_VIEW = 'mp_nuclide_outline_view_nux';
 
 export type OutlineTree = {
@@ -164,7 +165,8 @@ class Activation {
 
     const sampleOutlineNuxTour = {
       completed: false,
-      id: NUX_OUTLINE_VIEW_TOUR,
+      id: NUX_OUTLINE_VIEW_ID,
+      name: NUX_OUTLINE_VIEW_TOUR,
       nuxList: [nuxTriggerOutline, nuxOutlineView],
       trigger: nuxTriggerModel,
       gatekeeperID: GK_NUX_OUTLINE_VIEW,

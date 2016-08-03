@@ -45,7 +45,7 @@ export class NuxManager {
   _activeNuxTour: ?NuxTour;
   // Maps a NUX's unique ID to its corresponding NuxTour
   // Registered NUXes that are waiting to be triggered
-  _pendingNuxes: Map<string, NuxTour>;
+  _pendingNuxes: Map<number, NuxTour>;
   // Triggered NUXes that are waiting to be displayed
   _readyToDisplayNuxes: Array<NuxTour>;
   _numNuxesDisplayed: number;
@@ -85,7 +85,7 @@ export class NuxManager {
     });
   }
 
-  _removeNux(id: string): void {
+  _removeNux(id: number): void {
     if (this._activeNuxTour != null && this._activeNuxTour.getID() === id) {
       this._activeNuxTour.forceEnd();
       return;
@@ -96,7 +96,7 @@ export class NuxManager {
 
   _removeNuxFromList(
     list: Array<NuxTour>,
-    id: string,
+    id: number,
   ): void {
     for (let i = 0; i < list.length; i++) {
       if (list[i].getID() === id) {
@@ -138,6 +138,7 @@ export class NuxManager {
 
     const nuxTour = new NuxTour(
       nuxTourModel.id,
+      nuxTourModel.name,
       nuxViews,
       nuxTourModel.trigger,
       nuxTourModel.gatekeeperID,
@@ -233,7 +234,7 @@ export class NuxManager {
   /*
    * A function exposed externally via a service that tries to trigger a NUX.
    */
-  async tryTriggerNux(id: string): Promise<void> {
+  async tryTriggerNux(id: number): Promise<void> {
     const nuxToTrigger = this._pendingNuxes.get(id);
     // Silently fail if the NUX is not found or has already been completed.
     // This isn't really an "error" to log, since the NUX may be triggered quite
@@ -292,7 +293,7 @@ export class NuxManager {
   }
 
   _track(
-    id: string,
+    id: number,
     message: string,
     error: ?string = null,
   ): void {

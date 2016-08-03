@@ -20,7 +20,8 @@ export type NuxViewModel = {
 
 export type NuxTourModel = {
   completed: boolean,
-  id: string,
+  id: number,
+  name: string,
   nuxList: Array<NuxViewModel>,
   trigger: ?NuxTriggerModel,
   /**
@@ -41,6 +42,7 @@ export type NuxTriggerType = 'editor' | null;
 
 // Represents the 'viewed' state of a NUX
 export type NuxStateModel = {
-  id: string,
+  id: number,
+  name: string,
   completed: boolean,
 };

@@ -39,13 +39,13 @@ export class NuxView {
   _tooltipDisposable: IDisposable;
   _completePredicate: (() => boolean);
   _tooltipDiv: HTMLElement;
-  _tourId: string;
+  _tourId: number;
   _index: number;
 
   /**
    * Constructor for the NuxView.
    *
-   * @param {string} tourId - The ID of the associated NuxTour
+   * @param {number} tourId - The ID of the associated NuxTour
    * @param {?string} selectorString - The query selector to use to find an element
     on the DOM to attach to. If null, will use `selectorFunction` instead.
    * @param {?Function} selectorFunction - The function to execute to query an item
@@ -63,7 +63,7 @@ export class NuxView {
    * @throws Errors if both `selectorString` and `selectorFunction` are null.
    */
   constructor(
-    tourId: string,
+    tourId: number,
     selectorString: ?string,
     selectorFunction : ?Function,
     position: 'top' | 'bottom' | 'left' | 'right' | 'auto',
@@ -94,7 +94,7 @@ export class NuxView {
       this._onNuxComplete(false);
       // An error is logged and tracked instead of simply throwing an error since this function
       // will execute outside of the parent scope's execution and cannot be caught.
-      const error = `NuxView #${this._index} for "${this._tourId}" `
+      const error = `NuxView #${this._index} for NUX#"${this._tourId}" `
                       + 'failed to succesfully attach to the DOM.';
       logger.error(`ERROR: ${error}`);
       this._track(

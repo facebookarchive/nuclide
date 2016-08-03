@@ -19,11 +19,13 @@ import {
 
 import type {NuxTourModel} from '../lib/NuxModel';
 
-const NUX_TOUR_SPEC_EXAMPLE_NUX = 'nuclide-nux-spec.nux-tour-sample';
+const NUX_TOUR_SPEC_EXAMPLE_NUX_ID = -1;
+const NUX_TOUR_SPEC_EXAMPLE_NUX_NAME = 'nuclide-nux-spec.nux-tour-sample';
 
 describe('NuxTour', () => {
   function generateTestNuxTour(
-    id: string,
+    id: number,
+    name: string,
     numViews: number = 1,
   ): NuxTourModel {
     const nuxViewModel = {
@@ -37,6 +39,7 @@ describe('NuxTour', () => {
     return {
       completed: false,
       id,
+      name,
       nuxList: Array(numViews).fill(nuxViewModel),
       trigger: null,
       gatekeeperID: null,
@@ -67,8 +70,8 @@ describe('NuxTour', () => {
   });
 
   it('stores a NuxTour\'s state in the NuxStore', () => {
-    nuxStore.addNewNux(generateTestNuxTour('a'));
-    nuxStore.addNewNux(generateTestNuxTour('b'));
+    nuxStore.addNewNux(generateTestNuxTour(-1, 'a'));
+    nuxStore.addNewNux(generateTestNuxTour(-2, 'b'));
 
     expect(nuxStore._nuxMap.size).toBe(2);
   });
@@ -77,7 +80,12 @@ describe('NuxTour', () => {
     const nuxManager = new NuxManager(nuxStore);
     disposables.add(nuxManager);
 
-    nuxStore.addNewNux(generateTestNuxTour(NUX_TOUR_SPEC_EXAMPLE_NUX));
+    nuxStore.addNewNux(
+      generateTestNuxTour(
+        NUX_TOUR_SPEC_EXAMPLE_NUX_ID,
+        NUX_TOUR_SPEC_EXAMPLE_NUX_NAME,
+      ),
+    );
 
     expect(nuxStore._nuxMap.size).toBe(1);
   });
@@ -86,7 +94,11 @@ describe('NuxTour', () => {
     const nuxManager = new NuxManager(nuxStore);
     disposables.add(nuxManager);
 
-    const nuxTour = generateTestNuxTour(NUX_TOUR_SPEC_EXAMPLE_NUX);
+    const nuxTour =
+      generateTestNuxTour(
+        NUX_TOUR_SPEC_EXAMPLE_NUX_ID,
+        NUX_TOUR_SPEC_EXAMPLE_NUX_NAME,
+      );
     nuxTour.trigger = {
       triggerType: 'editor',
       triggerCallback: (() => false),

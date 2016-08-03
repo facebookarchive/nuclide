@@ -23,7 +23,7 @@ export class NuxStore {
   _emitter: atom$Emitter;
   _shouldSeedNux: boolean;
   // Maps a Nux's unique ID to the boolean representing its viewed state
-  _nuxMap: Map<string, boolean>;
+  _nuxMap: Map<number, boolean>;
 
   constructor(): void {
     this._nuxMap = new Map();

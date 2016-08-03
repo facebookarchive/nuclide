@@ -19,7 +19,7 @@ import {NuxStore} from './NuxStore';
 import type {NuxTourModel} from './NuxModel';
 
 export type RegisterNux = (nux: NuxTourModel) => Disposable;
-export type TriggerNux = (id: string) => void;
+export type TriggerNux = (id: number) => void;
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -48,7 +48,7 @@ class Activation {
     return this._nuxManager.addNewNux(nux);
   }
 
-  tryTriggerNux(id: string): void {
+  tryTriggerNux(id: number): void {
     this._nuxManager.tryTriggerNux(id);
   }
 }
@@ -81,7 +81,7 @@ export function provideRegisterNuxService(): RegisterNux {
 }
 
 export function provideTriggerNuxService(): TriggerNux {
-  return ((id: string): void => {
+  return ((id: number): void => {
     if (activation == null) {
       throw new Error('An error occurred when instantiating the NUX package.');
     }

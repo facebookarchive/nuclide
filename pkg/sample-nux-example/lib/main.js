@@ -22,7 +22,8 @@ import type {
   TriggerNux,
 } from '../../nuclide-nux/lib/main';
 
-const SAMPLE_NUX_ID = 'sample-nux-example.sample-nux-id';
+const SAMPLE_NUX_ID = 0;
+const SAMPLE_NUX_NAME = 'sample-nux-example.sample-nux-id';
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -74,7 +75,8 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
 }
 
 function generateTestNuxTour(
-  id: string,
+  id: number,
+  name: string,
   numViews: number = 1,
 ): NuxTourModel {
   const getNuxViewModel = viewNumber => (
@@ -93,6 +95,7 @@ function generateTestNuxTour(
   return {
     completed: false,
     id,
+    name,
     nuxList,
     trigger: null,
     /* Add your own gatekeeper to control who the NUX is displayed to.
@@ -105,7 +108,7 @@ function generateTestNuxTour(
 
 export function consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
   invariant(activation != null);
-  const disposable = addNewNux(generateTestNuxTour(SAMPLE_NUX_ID, 2));
+  const disposable = addNewNux(generateTestNuxTour(SAMPLE_NUX_ID, SAMPLE_NUX_NAME, 2));
   activation.addDisposable(disposable);
   return disposable;
 }
