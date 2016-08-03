@@ -30,8 +30,8 @@ import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {RegisterNux} from '../../nuclide-nux/lib/main';
 
-const NUX_OUTLINE_VIEW_TOUR = 'nuclide-nux.outline-view-tour';
-const GK_NUX_OUTLINE_VIEW = 'nuclide_outline_view_nux';
+const NUX_OUTLINE_VIEW_TOUR = 'nuclide_outline_view_nux';
+const GK_NUX_OUTLINE_VIEW = 'mp_nuclide_outline_view_nux';
 
 export type OutlineTree = {
   // Must be one or the other. If both are present, tokenizedText is preferred.
