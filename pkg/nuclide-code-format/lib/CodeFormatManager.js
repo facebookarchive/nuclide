@@ -124,10 +124,10 @@ class CodeFormatManager {
         // Throws if contents have changed since the time of triggering format code.
         this._checkContentsAreSame(contents, editor.getText());
 
-        const prevCursorPosition = editor.getCursorBufferPosition();
-        editor.setTextInBufferRange(formatRange, formatted);
         if (selectionRangeEmpty) {
-          editor.setCursorBufferPosition(prevCursorPosition);
+          buffer.setTextViaDiff(formatted);
+        } else {
+          editor.setTextInBufferRange(formatRange, formatted);
         }
         return true;
       } else if (provider.formatEntireFile != null) {
