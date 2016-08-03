@@ -16,14 +16,16 @@ import type {
   WebInspector$UILocation,
 } from '../../lib/types';
 
+import electron from 'electron';
 import Emitter from './Emitter';
 import Multimap from '../../lib/Multimap';
-import ipc from 'ipc';
 import {
   beginTimerTracking,
   endTimerTracking,
 } from '../../lib/AnalyticsHelper';
 import WebInspector from '../../lib/WebInspector';
+
+const {ipcRenderer} = electron;
 
 const NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
 const DebuggerSettingsChangedEvent = 'debugger-settings-updated';
@@ -46,7 +48,7 @@ class NuclideBridge {
     this._suppressBreakpointNotification = false;
     this._settings = {};
 
-    ipc.on('command', this._handleIpcCommand.bind(this));
+    ipcRenderer.on('command', this._handleIpcCommand.bind(this));
 
     WebInspector.targetManager.addModelListener(
       WebInspector.DebuggerModel,
@@ -172,7 +174,7 @@ class NuclideBridge {
               },
             };
           });
-          ipc.sendToHost('notification', 'LocalsUpdate', neededProperties);
+          ipcRenderer.sendToHost('notification', 'LocalsUpdate', neededProperties);
         }
         // $FlowFixMe.
         WebInspector.RemoteObject.loadFromObject(
@@ -191,10 +193,10 @@ class NuclideBridge {
   }
 
   _handleWindowLoad() {
-    ipc.sendToHost('notification', 'ready');
+    ipcRenderer.sendToHost('notification', 'ready');
   }
 
-  _handleIpcCommand(command: string, ...args: any[]) {
+  _handleIpcCommand(event: Object, command: string, ...args: any[]) {
     switch (command) {
       case 'UpdateSettings':
         this._handleSettingsUpdated(args[0]);
@@ -266,7 +268,7 @@ class NuclideBridge {
     const frame: WebInspector$CallFrame = event.data;
     const uiLocation =
       WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
-    ipc.sendToHost('notification', 'CallFrameSelected', {
+    ipcRenderer.sendToHost('notification', 'CallFrameSelected', {
       sourceURL: uiLocation.uiSourceCode.uri(),
       lineNumber: uiLocation.lineNumber,
     });
@@ -282,7 +284,7 @@ class NuclideBridge {
   }
 
   sendOpenSourceLocation(sourceURL: string, line: number) {
-    ipc.sendToHost('notification', 'OpenSourceLocation', {
+    ipcRenderer.sendToHost('notification', 'OpenSourceLocation', {
       sourceURL,
       lineNumber: line,
     });
@@ -314,7 +316,7 @@ class NuclideBridge {
         },
       };
     });
-    ipc.sendToHost('notification', 'CallstackUpdate', callstack);
+    ipcRenderer.sendToHost('notification', 'CallstackUpdate', callstack);
   }
 
   _getProperties(objectId: string): void {
@@ -332,7 +334,7 @@ class NuclideBridge {
       false, // accessorPropertiesOnly
       false, // generatePreview
       (error, properties, internalProperties) => {
-        ipc.sendToHost('notification', 'GetPropertiesResponse', {
+        ipcRenderer.sendToHost('notification', 'GetPropertiesResponse', {
           result: properties,
           error,
           objectId,
@@ -354,7 +356,7 @@ class NuclideBridge {
       false,  /* returnByValue */
       false, /* generatePreview */
       (remoteObject, wasThrown, error) => {
-        ipc.sendToHost('notification', 'ExpressionEvaluationResponse', {
+        ipcRenderer.sendToHost('notification', 'ExpressionEvaluationResponse', {
           result: wasThrown ? null : remoteObject,
           error: wasThrown ? error : null,
           expression,
@@ -381,7 +383,7 @@ class NuclideBridge {
       false,  /* returnByValue */
       false, /* generatePreview */
       (remoteObject, wasThrown, error) => {
-        ipc.sendToHost('notification', 'ExpressionEvaluationResponse', {
+        ipcRenderer.sendToHost('notification', 'ExpressionEvaluationResponse', {
           result: wasThrown ? null : remoteObject,
           error: wasThrown ? error : null,
           expression,
@@ -419,10 +421,10 @@ class NuclideBridge {
     endTimerTracking();
     ++this._debuggerPausedCount;
     if (this._debuggerPausedCount === 1) {
-      ipc.sendToHost('notification', 'LoaderBreakpointHit', {});
+      ipcRenderer.sendToHost('notification', 'LoaderBreakpointHit', {});
       this._handleLoaderBreakpoint();
     } else {
-      ipc.sendToHost('notification', 'NonLoaderDebuggerPaused', {});
+      ipcRenderer.sendToHost('notification', 'NonLoaderDebuggerPaused', {});
     }
     this._sendCallstack();
   }
@@ -448,15 +450,15 @@ class NuclideBridge {
       }
     });
 
-    ipc.sendToHost('notification', 'LoaderBreakpointResumed', {});
+    ipcRenderer.sendToHost('notification', 'LoaderBreakpointResumed', {});
   }
 
   _handleDebuggerResumed(event: WebInspector$Event) {
-    ipc.sendToHost('notification', 'DebuggerResumed', {});
+    ipcRenderer.sendToHost('notification', 'DebuggerResumed', {});
   }
 
   _handleClearInterface(event: WebInspector$Event) {
-    ipc.sendToHost('notification', 'ClearInterface', {});
+    ipcRenderer.sendToHost('notification', 'ClearInterface', {});
   }
 
   _handleBreakpointAdded(event: WebInspector$Event) {
@@ -471,7 +473,7 @@ class NuclideBridge {
 
   _sendBreakpointNotification(location: WebInspector$UILocation, type: BreakpointNotificationType) {
     if (!this._suppressBreakpointNotification) {
-      ipc.sendToHost('notification', type, {
+      ipcRenderer.sendToHost('notification', type, {
         sourceURL: location.uiSourceCode.uri(),
         lineNumber: location.lineNumber,
       });
@@ -624,7 +626,7 @@ class NuclideBridge {
   }
 
   _handleThreadsUpdated(event: WebInspector.Event): void {
-    ipc.sendToHost('notification', 'ThreadsUpdate', event.data);
+    ipcRenderer.sendToHost('notification', 'ThreadsUpdate', event.data);
   }
 
   _handleStopThreadSwitched(event: WebInspector.Event): void {
@@ -633,7 +635,7 @@ class NuclideBridge {
     }
     const uiLocation =
       WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(event.data.location);
-    ipc.sendToHost('notification', 'StopThreadSwitch', {
+    ipcRenderer.sendToHost('notification', 'StopThreadSwitch', {
       sourceURL: uiLocation.uiSourceCode.uri(),
       lineNumber: uiLocation.lineNumber,
       message: event.data.message,
