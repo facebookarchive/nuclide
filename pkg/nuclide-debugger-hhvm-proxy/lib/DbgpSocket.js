@@ -30,6 +30,9 @@ export const STATUS_END = 'end';
 export const STATUS_STDOUT = 'stdout';
 export const STATUS_STDERR = 'stderr';
 
+// Notifications.
+export const BREAKPOINT_RESOLVED_NOTIFICATION = 'breakpoint_resolved';
+
 // Valid continuation commands
 export const COMMAND_RUN = 'run';
 export const COMMAND_STEP_INTO = 'step_into';
@@ -39,6 +42,7 @@ export const COMMAND_STOP = 'stop';
 export const COMMAND_DETACH = 'detach';
 
 const DBGP_SOCKET_STATUS_EVENT = 'dbgp-socket-status';
+const DBGP_SOCKET_NOTIFICATION_EVENT = 'dbgp-socket-notification';
 
 export type DbgpContext = {
   name: string,
@@ -114,6 +118,10 @@ export class DbgpSocket {
     return attachEvent(this._emitter, DBGP_SOCKET_STATUS_EVENT, callback);
   }
 
+  onNotification(callback: (notifyName: string, notify: Object) => mixed): IDisposable {
+    return attachEvent(this._emitter, DBGP_SOCKET_NOTIFICATION_EVENT, callback);
+  }
+
   _onError(error: {code: string}): void {
     // Not sure if hhvm is alive or not
     // do not set _isClosed flag so that detach will be sent before dispose().
@@ -140,41 +148,66 @@ export class DbgpSocket {
       return;
     }
     responses.forEach(r => {
-      const response = r.response;
-      const stream = r.stream;
+      const {response, stream, notify} = r;
       if (response) {
-        const responseAttributes = response.$;
-        const {command, transaction_id} = responseAttributes;
-        const transactionId = Number(transaction_id);
-        const call = this._calls.get(transactionId);
-        if (!call) {
-          logger.logError('Missing call for response: ' + message);
-          return;
-        }
-        this._calls.delete(transactionId);
-
-        if (call.command !== command) {
-          logger.logError('Bad command in response. Found ' +
-            command + '. expected ' + call.command);
-          return;
-        }
-        try {
-          logger.log('Completing call: ' + message);
-          call.complete(response);
-        } catch (e) {
-          logger.logError('Exception: ' + e.toString() + ' handling call: ' + message);
-        }
+        this._handleResponse(response, message);
       } else if (stream != null) {
-        const outputType = stream.$.type;
-        // The body of the `stream` XML can be omitted, e.g. `echo null`, so we defend against this.
-        const outputText = stream._ != null ? base64Decode(stream._) : '';
-        logger.log(`${outputType} message received: ${outputText}`);
-        const status = outputType === 'stdout' ? STATUS_STDOUT : STATUS_STDERR;
-        this._emitStatus(status, outputText);
+        this._handleStream(stream);
+      } else if (notify != null) {
+        this._handleNotification(notify);
       } else {
         logger.logError('Unexpected socket message: ' + message);
       }
     });
+  }
+
+  _handleResponse(response: Object, message: string): void {
+    const responseAttributes = response.$;
+    const {command, transaction_id} = responseAttributes;
+    const transactionId = Number(transaction_id);
+    const call = this._calls.get(transactionId);
+    if (!call) {
+      logger.logError('Missing call for response: ' + message);
+      return;
+    }
+    this._calls.delete(transactionId);
+
+    if (call.command !== command) {
+      logger.logError('Bad command in response. Found ' +
+        command + '. expected ' + call.command);
+      return;
+    }
+    try {
+      logger.log('Completing call: ' + message);
+      call.complete(response);
+    } catch (e) {
+      logger.logError('Exception: ' + e.toString() + ' handling call: ' + message);
+    }
+  }
+
+  _handleStream(stream: Object): void {
+    const outputType = stream.$.type;
+    // The body of the `stream` XML can be omitted, e.g. `echo null`, so we defend against this.
+    const outputText = stream._ != null ? base64Decode(stream._) : '';
+    logger.log(`${outputType} message received: ${outputText}`);
+    const status = outputType === 'stdout' ? STATUS_STDOUT : STATUS_STDERR;
+    this._emitStatus(status, outputText);
+  }
+
+  _handleNotification(notify: Object): void {
+    const notifyName = notify.$.name;
+    if (notifyName === 'breakpoint_resolved') {
+      const breakpoint = notify.breakpoint[0].$;
+      if (breakpoint == null) {
+        logger.logError(
+          `Fail to get breakpoint from 'breakpoint_resolved' notify: ${JSON.stringify(notify)}`,
+        );
+        return;
+      }
+      this._emitNotification(BREAKPOINT_RESOLVED_NOTIFICATION, breakpoint);
+    } else {
+      logger.logError(`Unknown notify: ${JSON.stringify(notify)}`);
+    }
   }
 
   getStackFrames(): Promise<Object> {
@@ -389,6 +422,11 @@ export class DbgpSocket {
   _emitStatus(status: string, ...args: Array<string>): void {
     logger.log('Emitting status: ' + status);
     this._emitter.emit(DBGP_SOCKET_STATUS_EVENT, status, ...args);
+  }
+
+  _emitNotification(notifyName: string, notify: Object): void {
+    logger.log(`Emitting notification: ${notifyName}`);
+    this._emitter.emit(DBGP_SOCKET_NOTIFICATION_EVENT, notifyName, notify);
   }
 
   dispose(): void {
