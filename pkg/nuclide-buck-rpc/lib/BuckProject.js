@@ -22,8 +22,10 @@ import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
 import createBuckWebSocket from './createBuckWebSocket';
+import {getLogger} from '../../nuclide-logging';
+import ini from 'ini';
 
-const logger = require('../../nuclide-logging').getLogger();
+const logger = getLogger();
 
 export type dontRunOptions = {
   run: false,
@@ -252,7 +254,6 @@ export class BuckProject {
    * and ~/.buckconfig.d/ directory.
    */
   async _loadBuckConfig(): Promise<BuckConfig> {
-    const ini = require('ini');
     const header = 'scope = global\n';
     const buckConfigContent = await fsPromise.readFile(
       nuclideUri.join(this._rootPath, '.buckconfig'),

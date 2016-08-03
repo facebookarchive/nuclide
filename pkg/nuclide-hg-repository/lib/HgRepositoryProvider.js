@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import typeof * as HgService from '../../nuclide-hg-repository-base/lib/HgService';
+
 import {Directory} from 'atom';
 import invariant from 'assert';
 import {trackTiming} from '../../nuclide-analytics';
@@ -17,12 +19,10 @@ import {
   getServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import typeof * as HgService from '../../nuclide-hg-repository-base/lib/HgService';
+import {getLogger} from '../../nuclide-logging';
+import {findHgRepository} from '../../nuclide-source-control-helpers';
 
-let logger = null;
-function getLogger() {
-  return logger || (logger = require('../../nuclide-logging').getLogger());
-}
+const logger = getLogger();
 
 /**
  * @param directory Either a RemoteDirectory or Directory we are interested in.
@@ -65,7 +65,6 @@ function getRepositoryDescription(
       workingDirectoryLocalPath,
     };
   } else {
-    const {findHgRepository} = require('../../nuclide-source-control-helpers');
     const repositoryDescription = findHgRepository(directory.getPath());
     if (repositoryDescription == null) {
       return null;
@@ -80,7 +79,7 @@ function getRepositoryDescription(
   }
 }
 
-export class HgRepositoryProvider {
+export default class HgRepositoryProvider {
   repositoryForDirectory(directory: Directory): Promise<?HgRepositoryClient> {
     return Promise.resolve(this.repositoryForDirectorySync(directory));
   }
@@ -109,7 +108,7 @@ export class HgRepositoryProvider {
         originURL,
       });
     } catch (err) {
-      getLogger().error(
+      logger.error(
         'Failed to create an HgRepositoryClient for ', directory.getPath(), ', error: ', err,
       );
       return null;

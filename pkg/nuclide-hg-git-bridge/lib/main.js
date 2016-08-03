@@ -9,12 +9,5 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get repositoryContainsPath() {
-    return require('./repositoryContainsPath');
-  },
-
-  get repositoryForPath() {
-    return require('./repositoryForPath');
-  },
-};
+export {default as repositoryContainsPath} from './repositoryContainsPath';
+export {default as repositoryForPath} from './repositoryForPath';

@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type ObjectiveCColonIndenter from './ObjectiveCColonIndenter';
-import type ObjectiveCBracketBalancer from './ObjectiveCBracketBalancer';
-
 import featureConfig from '../../commons-atom/featureConfig';
+import ObjectiveCColonIndenter from './ObjectiveCColonIndenter';
+import ObjectiveCBracketBalancer from './ObjectiveCBracketBalancer';
 
 class Activation {
   _indentFeature: ObjectiveCColonIndenter;
@@ -20,12 +19,10 @@ class Activation {
   _configSubscription: IDisposable;
 
   constructor() {
-    const ObjectiveCColonIndenterCtr = require('./ObjectiveCColonIndenter');
-    this._indentFeature = new ObjectiveCColonIndenterCtr();
+    this._indentFeature = new ObjectiveCColonIndenter();
     this._indentFeature.enable();
 
-    const ObjectiveCBracketBalancerCtr = require('./ObjectiveCBracketBalancer');
-    this._bracketFeature = new ObjectiveCBracketBalancerCtr();
+    this._bracketFeature = new ObjectiveCBracketBalancer();
     this._configSubscription = featureConfig.observe(
         'nuclide-objc.enableAutomaticSquareBracketInsertion',
         enabled => (enabled ? this._bracketFeature.enable() : this._bracketFeature.disable()));

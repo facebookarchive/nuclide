@@ -16,6 +16,10 @@ import {CompositeDisposable} from 'atom';
 import {arrayCompact} from '../../commons-node/collection';
 import {track} from '../../nuclide-analytics';
 import FindReferencesElement from './FindReferencesElement';
+import {getLogger} from '../../nuclide-logging';
+import FindReferencesModel from './FindReferencesModel';
+
+const logger = getLogger();
 
 export type FindReferencesData = {
   type: 'data',
@@ -93,7 +97,6 @@ async function tryCreateView(): Promise<?HTMLElement> {
         referencedSymbolName,
         resultCount: references.length.toString(),
       });
-      const FindReferencesModel = require('./FindReferencesModel');
       const model = new FindReferencesModel(
         baseUri,
         referencedSymbolName,
@@ -104,8 +107,7 @@ async function tryCreateView(): Promise<?HTMLElement> {
     }
   } catch (e) {
     // TODO(peterhal): Remove this when unhandled rejections have a default handler.
-    const {getLogger} = require('../../nuclide-logging');
-    getLogger().error('Exception in nuclide-find-references', e);
+    logger.error('Exception in nuclide-find-references', e);
     showError(e);
   }
 }

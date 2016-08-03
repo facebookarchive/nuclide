@@ -5,7 +5,7 @@ Provides a standard API that packages can use to send analytics, in a consistent
 Common usage:
 
 ```js
-const {track} = require('nuclide-analytics');
+import {track} from 'nuclide-analytics';
 
 const booleanState = false;
 const numericState = 42;

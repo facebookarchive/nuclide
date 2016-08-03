@@ -15,7 +15,8 @@ import {DebuggerInstance, DebuggerProcessInfo} from '../../../nuclide-debugger-b
 import {DebuggerProxyClient} from './DebuggerProxyClient';
 import Rx from 'rxjs';
 import WS from 'ws';
-import type {Session as SessionType} from '../../../nuclide-debugger-node/lib/Session';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {Session} from '../../../nuclide-debugger-node/lib/Session';
 
 const PORT = 38913;
 
@@ -124,7 +125,7 @@ const uiConnection$ = Rx.Observable.using(
 )
 .publish();
 
-function createSessionStream(ws: WS, debugPort: number): Rx.Observable<SessionType> {
+function createSessionStream(ws: WS, debugPort: number): Rx.Observable<Session> {
   const config = {
     debugPort,
     // This makes the node inspector not load all the source files on startup:
@@ -133,8 +134,6 @@ function createSessionStream(ws: WS, debugPort: number): Rx.Observable<SessionTy
 
   return Rx.Observable.create(observer => {
     // Creating a new Session is actually side-effecty.
-    // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-    const {Session} = require('../../../nuclide-debugger-node/lib/Session');
     const session = new Session(config, debugPort, ws);
     observer.next(session);
     return () => { session.close(); };

@@ -11,6 +11,7 @@
 
 import type {Observable} from 'rxjs';
 
+import Rx from 'rxjs';
 import {copyFixture, copyMercurialFixture, generateFixture} from './fixtures';
 import {addMatchers} from './matchers';
 
@@ -146,7 +147,6 @@ import type {Observer} from 'rxjs';
  *     observable = observable.do(loggingObserver('My Prefix'));
  */
 function loggingObserver(message: string): Observer<any> {
-  const Rx = require('rxjs');
   return Rx.Observer.create(
     value => {
       // eslint-disable-next-line no-console

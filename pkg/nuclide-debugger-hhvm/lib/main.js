@@ -17,13 +17,14 @@ import type {
 import type {OutputService} from '../../nuclide-console/lib/types';
 import DebuggerProvider from './DebuggerProvider';
 import {setOutputService} from '../../nuclide-debugger-base';
+import Service from './Service';
 
 export function consumeOutputService(api: OutputService): void {
   setOutputService(api);
 }
 
 export function provideNuclideDebuggerHhvm(): nuclide_debugger$Service {
-  return require('./Service');
+  return Service;
 }
 
 export function createDebuggerProvider(): NuclideDebuggerProvider {

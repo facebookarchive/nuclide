@@ -13,22 +13,18 @@ import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContex
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {TestRunner} from './types';
-import type {TestRunnerController as TestRunnerControllerType} from './TestRunnerController';
 import type {TestRunnerControllerState} from './TestRunnerController';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
+import TestRunnerController from './TestRunnerController';
+import {getLogger} from '../../nuclide-logging';
+
+const logger = getLogger();
 
 const FILE_TREE_CONTEXT_MENU_PRIORITY = 200;
 
-let logger;
-function getLogger() {
-  if (!logger) {
-    logger = require('../../nuclide-logging').getLogger();
-  }
-  return logger;
-}
 
 /**
  * Returns a string of length `length` + 1 by replacing extra characters in the middle of `str` with
@@ -46,7 +42,7 @@ function limitString(str: string, length?: number = 20): string {
 
 class Activation {
 
-  _controller: ?TestRunnerControllerType;
+  _controller: ?TestRunnerController;
   _disposables: CompositeDisposable;
   _initialState: ?TestRunnerControllerState;
   _testRunners: Set<TestRunner>;
@@ -127,7 +123,7 @@ class Activation {
 
   addTestRunner(testRunner: TestRunner): ?Disposable {
     if (this._testRunners.has(testRunner)) {
-      getLogger().info(`Attempted to add test runner "${testRunner.label}" that was already added`);
+      logger.info(`Attempted to add test runner "${testRunner.label}" that was already added`);
       return;
     }
 
@@ -246,7 +242,6 @@ class Activation {
   _getController() {
     let controller = this._controller;
     if (controller == null) {
-      const {TestRunnerController} = require('./TestRunnerController');
       controller = new TestRunnerController(this._initialState, this._testRunners);
       this._controller = controller;
     }

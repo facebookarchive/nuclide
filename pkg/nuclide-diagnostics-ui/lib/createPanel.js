@@ -35,7 +35,7 @@ type PanelProps = {
   disableLinter: () => void,
 };
 
-function createDiagnosticsPanel(
+export default function createDiagnosticsPanel(
   diagnosticUpdater: ObservableDiagnosticUpdater,
   initialHeight: number,
   initialfilterByActiveTextEditor: boolean,
@@ -175,7 +175,3 @@ function createDiagnosticsPanel(
     setWarnAboutLinter,
   };
 }
-
-module.exports = {
-  createDiagnosticsPanel,
-};

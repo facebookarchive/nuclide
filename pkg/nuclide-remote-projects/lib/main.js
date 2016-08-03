@@ -14,9 +14,6 @@ import type {
   RemoteConnectionConfiguration,
 } from '../../nuclide-remote-connection/lib/RemoteConnection';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type RemoteDirectoryProviderT from './RemoteDirectoryProvider';
-import type RemoteDirectorySearcherT from './RemoteDirectorySearcher';
-import type RemoteProjectsControllerT from './RemoteProjectsController';
 import typeof * as FindInProjectService from '../../nuclide-remote-search';
 
 import {loadBufferForUri, bufferForUri} from '../../commons-atom/text-editor';
@@ -34,6 +31,9 @@ import {
 import {trackImmediate} from '../../nuclide-analytics';
 import {openConnectionDialog} from './open-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
+import RemoteDirectorySearcher from './RemoteDirectorySearcher';
+import RemoteDirectoryProvider from './RemoteDirectoryProvider';
+import RemoteProjectsController from './RemoteProjectsController';
 
 const logger = getLogger();
 
@@ -47,7 +47,7 @@ type SerializableRemoteConnectionConfiguration = {
 };
 
 let packageSubscriptions: ?CompositeDisposable = null;
-let controller: ?RemoteProjectsControllerT = null;
+let controller: ?RemoteProjectsController = null;
 
 const CLOSE_PROJECT_DELAY_MS = 100;
 const pendingFiles = {};
@@ -333,7 +333,6 @@ export function activate(
 ): void {
   const subscriptions = new CompositeDisposable();
 
-  const RemoteProjectsController = require('./RemoteProjectsController');
   controller = new RemoteProjectsController();
 
   subscriptions.add(RemoteConnection.onDidAddRemoteConnection(connection => {
@@ -472,13 +471,11 @@ export function deactivate(): void {
   }
 }
 
-export function createRemoteDirectoryProvider(): RemoteDirectoryProviderT {
-  const RemoteDirectoryProvider = require('./RemoteDirectoryProvider');
+export function createRemoteDirectoryProvider(): RemoteDirectoryProvider {
   return new RemoteDirectoryProvider();
 }
 
-export function createRemoteDirectorySearcher(): RemoteDirectorySearcherT {
-  const RemoteDirectorySearcher = require('./RemoteDirectorySearcher');
+export function createRemoteDirectorySearcher(): RemoteDirectorySearcher {
   return new RemoteDirectorySearcher((dir: RemoteDirectory) => {
     const service = getServiceByNuclideUri('FindInProjectService', dir.getPath());
     invariant(service);

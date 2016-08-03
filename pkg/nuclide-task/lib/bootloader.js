@@ -15,8 +15,8 @@ import {EventEmitter} from 'events';
 
 export type InvokeRemoteMethodParams = {
   file: string,
-  method: ?string,
-  args: ?Array<any>,
+  method?: string,
+  args?: Array<any>,
 };
 
 /**
@@ -25,7 +25,7 @@ export type InvokeRemoteMethodParams = {
  * under the Babel transpiler, so long as they have the `'use babel'` pragma
  * used in Atom.
  */
-class _Task {
+export default class Task {
   _id: number;
   _emitter: EventEmitter;
   _child: child_process$ChildProcess;
@@ -129,10 +129,4 @@ class _Task {
     }
     this._emitter.removeAllListeners();
   }
-}
-
-export type Task = _Task;
-
-export function createTask(): Task {
-  return new _Task();
 }

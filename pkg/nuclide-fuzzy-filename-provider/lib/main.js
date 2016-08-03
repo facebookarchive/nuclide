@@ -20,15 +20,7 @@ import {
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getIgnoredNames} from './utils';
-
-let providerInstance: ?Provider;
-function getProviderInstance(): Provider {
-  if (providerInstance == null) {
-    const FuzzyFileNameProvider = require('./FuzzyFileNameProvider');
-    providerInstance = {...FuzzyFileNameProvider};
-  }
-  return providerInstance;
-}
+import FuzzyFileNameProvider from './FuzzyFileNameProvider';
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -102,7 +94,7 @@ function initSearch(projectPaths: Array<string>): void {
 }
 
 export function registerProvider(): Provider {
-  return getProviderInstance();
+  return FuzzyFileNameProvider;
 }
 
 export function provideBusySignal(): BusySignalProviderBase {

@@ -21,6 +21,7 @@ import {
   CompositeDisposable,
   Disposable,
 } from 'atom';
+import TypeHintManager from './TypeHintManager';
 
 const PACKAGE_NAME = 'nuclide-type-hint';
 
@@ -32,7 +33,6 @@ class Activation {
   constructor(state: ?any) {
     this._disposables = new CompositeDisposable();
     if (this.typeHintManager == null) {
-      const TypeHintManager = require('./TypeHintManager');
       this.typeHintManager = new TypeHintManager();
     }
   }

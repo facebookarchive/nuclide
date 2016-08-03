@@ -13,12 +13,9 @@ import {CompositeDisposable} from 'atom';
 import {trackTiming, track} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getLogger} from '../../nuclide-logging';
 
-let logger = null;
-
-function getLogger() {
-  return logger || (logger = require('../../nuclide-logging').getLogger());
-}
+const logger = getLogger();
 
 class FileWatcher {
 
@@ -28,13 +25,13 @@ class FileWatcher {
   constructor(editor: TextEditor) {
     this._editor = editor;
     if (this._editor == null) {
-      getLogger().warn('No editor instance on this._editor');
+      logger.warn('No editor instance on this._editor');
       return;
     }
     const _subscriptions = new CompositeDisposable();
     _subscriptions.add(this._editor.onDidConflict(() => {
       if (this._shouldPromptToReload()) {
-        getLogger().info(`Conflict at file: ${this._editor.getPath() || 'File not found'}`);
+        logger.info(`Conflict at file: ${this._editor.getPath() || 'File not found'}`);
         this._promptReload();
       }
     }));

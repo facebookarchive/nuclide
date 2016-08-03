@@ -34,6 +34,7 @@ import {triggerAfterWait} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
 import QuickSelectionDispatcher from './QuickSelectionDispatcher';
 import QuickSelectionActions from './QuickSelectionActions';
+import FileResultComponent from './FileResultComponent';
 
 const {performance} = global;
 
@@ -172,7 +173,7 @@ class SearchResultManager {
   getRendererForProvider(providerName: string): ResultRenderer {
     const provider = this._getProviderByName(providerName);
     if (!provider || !provider.getComponentForItem) {
-      return require('./FileResultComponent').getComponentForItem;
+      return FileResultComponent.getComponentForItem;
     }
     return provider.getComponentForItem;
   }

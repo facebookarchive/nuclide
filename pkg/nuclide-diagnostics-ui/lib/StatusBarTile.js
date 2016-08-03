@@ -22,6 +22,7 @@ import {
 } from 'react-for-atom';
 
 import {DisposableSubscription} from '../../commons-node/stream';
+import {track} from '../../nuclide-analytics';
 
 type DiagnosticCount = {
   errorCount: number,
@@ -176,8 +177,6 @@ class StatusBarTileComponent extends React.Component {
   _onClick(): void {
     const target = atom.views.getView(atom.workspace);
     atom.commands.dispatch(target, 'nuclide-diagnostics-ui:toggle-table');
-
-    const {track} = require('../../nuclide-analytics');
     track('diagnostics-show-table-from-status-bar');
   }
 }

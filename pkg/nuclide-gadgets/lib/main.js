@@ -12,12 +12,12 @@
 import type {GadgetsService} from './types';
 
 import invariant from 'assert';
+import Activation from './Activation';
 
-let activation: ?Object = null;
+let activation: ?Activation = null;
 
 export function activate(state: ?Object): void {
   invariant(activation == null);
-  const Activation = require('./Activation');
   activation = new Activation(state);
 }
 

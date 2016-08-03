@@ -24,6 +24,11 @@ import {
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import nuclideUri from '../../commons-node/nuclideUri';
 
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {LaunchProcessInfo} from '../../nuclide-debugger-hhvm/lib/LaunchProcessInfo';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {AttachProcessInfo} from '../../nuclide-debugger-hhvm/lib/AttachProcessInfo';
+
 const WEB_SERVER_OPTION = {label: 'WebServer', value: 0};
 const SCRIPT_OPTION = {label: 'Script', value: 1};
 const DEFAULT_OPTION_INDEX = WEB_SERVER_OPTION.value;
@@ -163,12 +168,8 @@ class HhvmToolbar extends React.Component {
     let processInfo = null;
     if (this._isDebugScript(this.state.selectedIndex)) {
       const scriptTarget = this.refs.debugTarget.getText();
-      // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-      const {LaunchProcessInfo} = require('../../nuclide-debugger-hhvm/lib/LaunchProcessInfo');
       processInfo = new LaunchProcessInfo(this.props.targetFilePath, scriptTarget);
     } else {
-      // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-      const {AttachProcessInfo} = require('../../nuclide-debugger-hhvm/lib/AttachProcessInfo');
       processInfo = new AttachProcessInfo(this.props.targetFilePath);
     }
     callDebugService(processInfo);

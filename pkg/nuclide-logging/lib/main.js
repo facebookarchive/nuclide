@@ -19,9 +19,13 @@
 import addPrepareStackTraceHook from './stacktrace';
 import invariant from 'assert';
 import singleton from '../../commons-node/singleton';
+import {getDefaultConfig, getPathToLogFileForToday} from './config';
+import log4js from 'log4js';
 
 import type {LogLevel} from './rpc-types';
 import type {Logger} from './types';
+
+export {getDefaultConfig, getPathToLogFileForToday};
 
 /* Listed in order of severity. */
 type Level = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
@@ -34,12 +38,10 @@ function getCategory(category: ?string): string {
 }
 
 export function flushLogsAndExit(exitCode: number): void {
-  const log4js = require('log4js');
   log4js.shutdown(() => process.exit(exitCode));
 }
 
 export function flushLogsAndAbort(): void {
-  const log4js = require('log4js');
   log4js.shutdown(() => process.abort());
 }
 
@@ -49,13 +51,11 @@ export function flushLogsAndAbort(): void {
  * see https://github.com/nomiddlename/log4js-node/blob/master/lib/log4js.js#L120 for details.
  */
 function getLog4jsLogger(category: string): Object {
-  const log4js = require('log4js');
   return log4js.getLogger(category);
 }
 
 export function updateConfig(config: any, options: any): void {
   // update config takes affect global to all existing and future loggers.
-  const log4js = require('log4js');
   log4js.configure(config, options);
 }
 
@@ -103,7 +103,7 @@ export function initialUpdateConfig(): Promise<void> {
   return singleton.get(
     INITIAL_UPDATE_CONFIG_KEY,
     async () => {
-      const defaultConfig = await require('./config').getDefaultConfig();
+      const defaultConfig = await getDefaultConfig();
       updateConfig(defaultConfig);
     });
 }
@@ -176,8 +176,4 @@ export function getCategoryLogger(category: string): CategoryLogger {
     logErrorAndThrow,
     setLogLevel,
   };
-}
-
-export function getPathToLogFileForToday(): string {
-  return require('./config').getPathToLogFileForToday();
 }

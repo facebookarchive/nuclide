@@ -14,7 +14,7 @@ import type {DiffInfo, StatusCodeIdValue} from '../lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 // This class is meant to be stubbed out.
-module.exports = class MockHgService {
+export default class MockHgService {
 
   waitForWatchmanSubscriptions(): Promise<void> {
     return Promise.resolve();
@@ -74,4 +74,4 @@ module.exports = class MockHgService {
   dispose(): Promise<void> {
     return Promise.resolve();
   }
-};
+}

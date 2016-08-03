@@ -16,14 +16,9 @@ import {hgRepositoryForEditor} from './common';
 import {trackOperationTiming} from '../../nuclide-analytics';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {shortNameForAuthor} from '../../nuclide-vcs-log';
+import {getLogger} from '../../nuclide-logging';
 
-let logger;
-function getLogger() {
-  if (!logger) {
-    logger = require('../../nuclide-logging').getLogger();
-  }
-  return logger;
-}
+const logger = getLogger();
 
 function canProvideBlameForEditor(editor: atom$TextEditor): boolean {
   if (editor.isModified()) {
@@ -31,7 +26,7 @@ function canProvideBlameForEditor(editor: atom$TextEditor): boolean {
       'There is Hg blame information for this file, but only for saved changes. ' +
       'Save, then try again.',
     );
-    getLogger().info(
+    logger.info(
       'nuclide-blame: Could not open Hg blame due to unsaved changes in file: ' +
       String(editor.getPath()),
     );
@@ -57,7 +52,7 @@ async function doGetBlameForEditor(editor: atom$TextEditor): Promise<BlameForEdi
   const repo = hgRepositoryForEditor(editor);
   if (!repo) {
     const message = `HgBlameProvider could not fetch blame for ${path}: no Hg repo found.`;
-    getLogger().error(message);
+    logger.error(message);
     throw new Error(message);
   }
 

@@ -7,7 +7,8 @@ after initialized.
 ## Usage
 
 ```js
-var logger = require('nuclide/pkg/nuclide-logging').getLogger();
+import {getLogger} from '../../nuclide-logging';
+var logger = getLogger();
 
 logger.debug(...);
 logger.error(...);
@@ -17,8 +18,9 @@ logger.error(...);
 
 The logger will use the default configuration in `./lib/config.js` to initialize nested log4js logger. However, one could update its configuration by calling
 ```js
-var logger1 = require('nuclide/pkg/nuclide-logging').getLogger();
-require('nuclide-logging').updateConfig(config, option);
+import {getLogger, updateConfig} from '../../nuclide-logging';
+var logger1 = getLogger();
+updateConfig(config, option);
 // logger1's configuration is updated as well.
 ```
 Note this will also update the configuration of logger who has already been created.

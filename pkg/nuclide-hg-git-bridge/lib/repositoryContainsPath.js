@@ -21,7 +21,10 @@ import nuclideUri from '../../commons-node/nuclideUri';
  * @return boolean Whether the file path exists within the working directory
  *   (aka root directory) of the repository, or is the working directory.
  */
-function repositoryContainsPath(repository: atom$Repository, filePath: NuclideUri): boolean {
+export default function repositoryContainsPath(
+  repository: atom$Repository,
+  filePath: NuclideUri,
+): boolean {
   const workingDirectoryPath = repository.getWorkingDirectory();
   if (pathsAreEqual(workingDirectoryPath, filePath)) {
     return true;
@@ -48,6 +51,3 @@ function pathsAreEqual(filePath1: string, filePath2: string): boolean {
   const realPath2 = nuclideUri.resolve(filePath2);
   return realPath1 === realPath2;
 }
-
-
-module.exports = repositoryContainsPath;

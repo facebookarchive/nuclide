@@ -13,8 +13,9 @@ import type {RevisionInfo} from './HgService';
 
 import {hgAsyncExecute} from './hg-utils';
 import invariant from 'assert';
+import {getLogger} from '../../nuclide-logging';
 
-const logger = require('../../nuclide-logging').getLogger();
+const logger = getLogger();
 
 /**
  * This file contains utilities for getting an expression to specify a certain

@@ -12,6 +12,7 @@
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
 
 import {CompositeDisposable, Disposable} from 'atom';
+import SampleSideBarClientComponent from './SampleSideBarClientComponent';
 
 const VIEW_ID = 'sample-side-bar-client';
 
@@ -23,7 +24,7 @@ export function activate() {
 
 export function consumeNuclideSideBar(sidebar: NuclideSideBarService): void {
   sidebar.registerView({
-    getComponent() { return require('./SampleSideBarClientComponent'); },
+    getComponent() { return SampleSideBarClientComponent; },
     onDidShow() {},
     title: 'Sample Side Bar Client',
     toggleCommand: 'nuclide-sample-side-bar-client:toggle',

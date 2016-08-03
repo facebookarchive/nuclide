@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {Task} from '../../nuclide-task';
 import type {FileSearchResult as FileSearchResultType} from './FileSearch';
 
 import {getLogger} from '../../nuclide-logging';
 import {arrayEqual} from '../../commons-node/collection';
 import fsPromise from '../../commons-node/fsPromise';
+import Task from '../../nuclide-task';
 
 export type FileSearchResult = FileSearchResultType;
 
@@ -86,8 +86,7 @@ async function newFileSearch(
     throw new Error('Provided path is not a directory : ' + directoryUri);
   }
 
-  const {createTask} = require('../../nuclide-task');
-  const task = createTask();
+  const task = new Task();
   await task.invokeRemoteMethod({
     file: require.resolve('./FileSearch'),
     method: 'initFileSearchForDirectory',

@@ -24,8 +24,9 @@ import {ServerConnection} from './ServerConnection';
 import {CompositeDisposable, Emitter} from 'atom';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getConnectionConfig} from './RemoteConnectionConfigurationManager';
+import {getLogger} from '../../nuclide-logging';
 
-const logger = require('../../nuclide-logging').getLogger();
+const logger = getLogger();
 
 const FILE_WATCHER_SERVICE = 'FileWatcherService';
 const FILE_SYSTEM_SERVICE = 'FileSystemService';

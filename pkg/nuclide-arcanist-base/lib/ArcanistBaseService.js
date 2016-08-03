@@ -29,9 +29,9 @@ import {
 import {
   findHgRepository,
 } from '../../nuclide-source-control-helpers';
+import {getLogger} from '../../nuclide-logging';
 
-
-const logger = require('../../nuclide-logging').getLogger();
+const logger = getLogger();
 
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
 

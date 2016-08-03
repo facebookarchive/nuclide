@@ -22,10 +22,12 @@ import {CompositeDisposable, Disposable} from 'atom';
 import {track} from '../../nuclide-analytics';
 
 import type DiagnosticsPanel from './DiagnosticsPanel';
-import type StatusBarTile from './StatusBarTile';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 
 import {DisposableSubscription} from '../../commons-node/stream';
+import createDiagnosticsPanel from './createPanel';
+import StatusBarTile from './StatusBarTile';
+import {applyUpdateToEditor} from './gutter';
 
 const DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 const DEFAULT_TABLE_HEIGHT = 200;
@@ -56,7 +58,7 @@ function createPanel(
     atomPanel: panel,
     getDiagnosticsPanel: getDiagnosticsPanelFn,
     setWarnAboutLinter,
-  } = require('./createPanel').createDiagnosticsPanel(
+  } = createDiagnosticsPanel(
     diagnosticUpdater,
     activationState.diagnosticsPanelHeight,
     activationState.filterByActiveTextEditor,
@@ -100,7 +102,7 @@ function watchForLinter(
 
 function getStatusBarTile(): StatusBarTile {
   if (!statusBarTile) {
-    statusBarTile = new (require('./StatusBarTile'))();
+    statusBarTile = new StatusBarTile();
   }
   return statusBarTile;
 }
@@ -158,8 +160,6 @@ export function consumeDiagnosticUpdates(
 }
 
 function gutterConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
-  const {applyUpdateToEditor} = require('./gutter');
-
   const fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
 
   invariant(subscriptions != null);

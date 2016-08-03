@@ -10,6 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
+import shallowequal from 'shallowequal';
 
 /**
  * Wraps DecoratedComponent in a special `span` with a configurable classname whenever the
@@ -20,8 +21,10 @@ export function highlightOnUpdate<T : ReactClass<any>>(
   /**
    * The result of this function determines whether to apply the highlight or not.
    */
-  arePropsEqual?: (p1: {[key: string]: mixed}, p2: {[key: string]: mixed}) => boolean
-    = require('shallowequal'),
+  arePropsEqual?: (
+    p1: {[key: string]: mixed},
+    p2: {[key: string]: mixed}
+  ) => boolean = shallowequal,
   /**
    * className used in the wrapper. You can style both `className` and `<className>-highlight`.
    */

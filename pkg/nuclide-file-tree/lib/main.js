@@ -11,7 +11,6 @@
 
 import type {FileTreeControllerState} from './FileTreeController';
 import type FileTreeContextMenu from './FileTreeContextMenu';
-import type FileTreeControllerType from './FileTreeController';
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
@@ -24,6 +23,8 @@ import {
   onWorkspaceDidStopChangingActivePaneItem,
 } from '../../commons-atom/debounced';
 
+import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
+import FileTreeController from './FileTreeController';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
@@ -40,7 +41,7 @@ const REVEAL_FILE_ON_SWITCH_SETTING = 'nuclide-file-tree.revealFileOnSwitch';
 
 class Activation {
   _cwdApiSubscription: ?IDisposable;
-  _fileTreeController: FileTreeControllerType;
+  _fileTreeController: FileTreeController;
   _packageState: ?FileTreeControllerState;
   _subscriptions: CompositeDisposable;
   _paneItemSubscription: ?IDisposable;
@@ -49,7 +50,6 @@ class Activation {
     this._packageState = state;
     this._subscriptions = new CompositeDisposable();
 
-    const FileTreeController = require('./FileTreeController');
     this._fileTreeController = new FileTreeController(this._packageState);
 
     const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
@@ -303,7 +303,7 @@ export function consumeNuclideSideBar(sidebar: NuclideSideBarService): IDisposab
   invariant(activation);
 
   sidebar.registerView({
-    getComponent() { return require('../components/FileTreeSidebarComponent'); },
+    getComponent() { return FileTreeSidebarComponent; },
     onDidShow() {
       // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
       // user expects when the side bar shows the file tree.

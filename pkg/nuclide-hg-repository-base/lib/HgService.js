@@ -37,6 +37,7 @@ import {hgAsyncExecute} from './hg-utils';
 import fsPromise from '../../commons-node/fsPromise';
 import debounce from '../../commons-node/debounce';
 
+import {fetchActiveBookmark} from './hg-bookmark-helpers';
 import {readArcConfig} from '../../nuclide-arcanist-base';
 import {getLogger} from '../../nuclide-logging';
 
@@ -543,7 +544,6 @@ export class HgService {
    * @return The name of the current bookmark.
    */
   fetchActiveBookmark(): Promise<string> {
-    const {fetchActiveBookmark} = require('./hg-bookmark-helpers');
     return fetchActiveBookmark(nuclideUri.join(this._workingDirectory, '.hg'));
   }
 

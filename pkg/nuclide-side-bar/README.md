@@ -22,8 +22,8 @@ In your package's module, call methods on the instance of the Nuclide Side Bar s
 your exported `consumeSideBar` function:
 
 ```javascript
-const {Disposable} = require('atom');
-const {React} = require('react-for-atom');
+import {Disposable} from 'atom';
+import {React} from 'react-for-atom';
 
 class SideBarView extends React.Component {
   render() {

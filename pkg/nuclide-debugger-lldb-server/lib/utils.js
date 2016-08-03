@@ -9,5 +9,8 @@
  * the root directory of this source tree.
  */
 
+import {getCategoryLogger} from '../../nuclide-logging';
+
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-debugger-lldb-server';
-export default require('../../nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+
+export default getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);

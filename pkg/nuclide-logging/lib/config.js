@@ -17,6 +17,7 @@ import userInfo from '../../commons-node/userInfo';
 
 import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {asString as log4jsFormatter} from 'log4js/lib/date_format';
 
 const LOG_DIRECTORY = nuclideUri.join(os.tmpdir(), `/nuclide-${userInfo().username}-logs`);
 const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
@@ -53,7 +54,6 @@ async function getServerLogAppenderConfig(): Promise<?Object> {
  * @return The absolute path to the log file for the specified date.
  */
 function getPathToLogFileForDate(targetDate: Date): string {
-  const log4jsFormatter = require('log4js/lib/date_format').asString;
   return LOG_FILE_PATH + log4jsFormatter(LOG4JS_DATE_FORMAT, targetDate);
 }
 

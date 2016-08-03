@@ -15,28 +15,25 @@ import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {OutputService} from '../../nuclide-console/lib/types';
 
-import type ProjectStoreType from './ProjectStore';
-
 import {CompositeDisposable, Disposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 import HhvmIcon from './ui/HhvmIcon';
 import HhvmBuildSystem from './HhvmBuildSystem';
 import NuclideToolbar from './NuclideToolbar';
+import ProjectStore from './ProjectStore';
 
 class Activation {
 
   _disposables: atom$CompositeDisposable;
   _item: ?HTMLElement;
   _panel: Object;
-  _projectStore: ProjectStoreType;
+  _projectStore: ProjectStore;
   _state: Object;
   _buildSystem: ?HhvmBuildSystem;
   _cwdApi: ?CwdApi;
 
   constructor(state: ?Object) {
-    const ProjectStore = require('./ProjectStore');
-
     this._state = {
       panelVisible: state != null && state.panelVisible != null ? state.panelVisible : true,
     };

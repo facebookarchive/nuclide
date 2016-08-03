@@ -11,10 +11,8 @@
 
 import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
 
-export function activate(state: mixed): void {
-}
+import Service from './Service';
 
 export function provideNuclideDebuggerNode(): nuclide_debugger$Service {
-  const Service = require('./Service');
   return Service;
 }

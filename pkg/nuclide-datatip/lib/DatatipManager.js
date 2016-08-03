@@ -23,11 +23,14 @@ import {
 import debounce from '../../commons-node/debounce';
 import {arrayRemove} from '../../commons-node/collection';
 import {track, trackOperationTiming} from '../../nuclide-analytics';
+import {getLogger} from '../../nuclide-logging';
 
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 import {PinnedDatatip} from './PinnedDatatip';
 
 import featureConfig from '../../commons-atom/featureConfig';
+
+const logger = getLogger();
 
 export class DatatipManager {
   _subscriptions: CompositeDisposable;
@@ -206,7 +209,6 @@ export class DatatipManager {
           name = provider.providerName;
         } else {
           name = 'unknown';
-          const logger = require('../../nuclide-logging').getLogger();
           logger.error('Datatip provider has no name', provider);
         }
         const datatip = await trackOperationTiming(

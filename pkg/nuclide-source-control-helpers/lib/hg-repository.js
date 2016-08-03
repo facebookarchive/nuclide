@@ -11,6 +11,7 @@
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import ini from 'ini';
+import fsPlus from 'fs-plus';
 
 import type {HgRepositoryDescription} from '..';
 
@@ -19,18 +20,17 @@ import type {HgRepositoryDescription} from '..';
  * originURL iff it finds that the given directory is within an Hg repository.
  */
 function findHgRepository(directoryPath: string): ?HgRepositoryDescription {
-  const fs = require('fs-plus');
   let workingDirectoryPath = directoryPath;
   let repoPath = nuclideUri.join(workingDirectoryPath, '.hg');
   let originURL = null;
   for (;;) {
     const dirToTest = nuclideUri.join(workingDirectoryPath, '.hg');
-    if (fs.isDirectorySync(dirToTest)) {
+    if (fsPlus.isDirectorySync(dirToTest)) {
       repoPath = dirToTest;
       const hgrc = nuclideUri.join(dirToTest, 'hgrc');
       // Note that .hg/hgrc will not exist in a local repo created via `hg init`, for example.
-      if (fs.isFileSync(hgrc)) {
-        const config = ini.parse(fs.readFileSync(hgrc, 'utf8'));
+      if (fsPlus.isFileSync(hgrc)) {
+        const config = ini.parse(fsPlus.readFileSync(hgrc, 'utf8'));
         if (typeof config.paths === 'object' && typeof config.paths.default === 'string') {
           originURL = config.paths.default;
         }

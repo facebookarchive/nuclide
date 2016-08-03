@@ -10,25 +10,22 @@
  */
 
 import invariant from 'assert';
-
 import {CompositeDisposable, Disposable} from 'atom';
-
-import type RecentFilesServiceType from './RecentFilesService';
+import RecentFilesService from './RecentFilesService';
 
 class Activation {
   _subscriptions: CompositeDisposable;
-  _service: RecentFilesServiceType;
+  _service: RecentFilesService;
 
   constructor(state: ?Object) {
     this._subscriptions = new CompositeDisposable();
-    const RecentFilesService = require('./RecentFilesService');
     this._service = new RecentFilesService(state);
     this._subscriptions.add(new Disposable(() => {
       this._service.dispose();
     }));
   }
 
-  getService(): RecentFilesServiceType {
+  getService(): RecentFilesService {
     return this._service;
   }
 
@@ -45,7 +42,7 @@ export function activate(state: ?Object): void {
   }
 }
 
-export function provideRecentFilesService(): RecentFilesServiceType {
+export function provideRecentFilesService(): RecentFilesService {
   invariant(activation);
   return activation.getService();
 }

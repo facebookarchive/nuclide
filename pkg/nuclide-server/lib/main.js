@@ -14,6 +14,7 @@ import {getLogger, flushLogsAndAbort, initialUpdateConfig} from '../../nuclide-l
 import {startTracking} from '../../nuclide-analytics';
 import NuclideServer from './NuclideServer';
 import servicesConfig from './servicesConfig';
+import yargs from 'yargs';
 
 const DEFAULT_PORT = 9090;
 
@@ -82,7 +83,7 @@ process.on('unhandledRejection', (error, promise) => {
   logger.error(`Unhandled promise rejection ${promise}. Error:`, error);
 });
 
-const argv = require('yargs')
+const argv = yargs
     .default('port', DEFAULT_PORT)
     .argv;
 

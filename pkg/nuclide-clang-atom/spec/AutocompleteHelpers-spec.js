@@ -9,10 +9,12 @@
  * the root directory of this source tree.
  */
 
+import {__test__} from '../lib/AutocompleteHelpers';
+
 const {
   getCompletionBodyInline,
   getCompletionBodyMultiLine,
-} = require('../lib/AutocompleteHelpers').__test__;
+} = __test__;
 
 describe('AutocompleteHelpers', () => {
 

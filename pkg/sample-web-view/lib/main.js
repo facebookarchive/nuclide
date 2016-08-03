@@ -10,6 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
+import WebViewPane from './WebViewPane';
 
 const URI_PREFIX = 'sample-web-view:';
 
@@ -30,8 +31,6 @@ class Activation {
         if (!uriToOpen.startsWith(URI_PREFIX)) {
           return;
         }
-
-        const WebViewPane = require('./WebViewPane');
         const element = new WebViewPane();
         element.src = uriToOpen.substring(URI_PREFIX.length);
         return element;

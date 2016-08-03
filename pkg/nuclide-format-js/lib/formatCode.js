@@ -11,10 +11,12 @@
 
 import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
 
-const logger = require('../../nuclide-logging').getLogger();
 import featureConfig from '../../commons-atom/featureConfig';
 import {track} from '../../nuclide-analytics';
 import {updateCursor} from '../../nuclide-update-cursor';
+import {getLogger} from '../../nuclide-logging';
+
+const logger = getLogger();
 
 async function formatCode(options: SourceOptions, editor_: ?TextEditor): Promise<void> {
   let editor = editor_;

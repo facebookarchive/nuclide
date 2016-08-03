@@ -14,7 +14,7 @@ import type {CodeFormatProvider} from './types';
 import {CompositeDisposable, Range} from 'atom';
 import {getFormatOnSave} from './config';
 
-class CodeFormatManager {
+export default class CodeFormatManager {
 
   _subscriptions: ?CompositeDisposable;
   _codeFormatProviders: Array<CodeFormatProvider>;
@@ -180,5 +180,3 @@ class CodeFormatManager {
     this._pendingFormats.clear();
   }
 }
-
-module.exports = CodeFormatManager;

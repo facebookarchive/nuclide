@@ -12,6 +12,7 @@
 import type ProjectStore from './ProjectStore';
 
 import {React} from 'react-for-atom';
+import HhvmToolbar from './HhvmToolbar';
 
 type Props = {
   projectStore: ProjectStore,
@@ -58,7 +59,6 @@ class NuclideToolbar extends React.Component {
 
   render(): ?React.Element<any> {
     if (this.state.projectType === 'Hhvm') {
-      const HhvmToolbar = require('./HhvmToolbar');
       return (
         <HhvmToolbar
           ref="hhvmToolbar"

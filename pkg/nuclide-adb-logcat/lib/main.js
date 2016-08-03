@@ -12,17 +12,16 @@
 import type {OutputService} from '../../nuclide-console/lib/types';
 
 import invariant from 'assert';
+import Activation from './Activation';
 
-let activation: ?Object = null;
+let activation: ?Activation = null;
 
 export function activate(state: ?Object) {
-  invariant(activation == null);
-  const Activation = require('./Activation');
   activation = new Activation(state);
 }
 
 export function deactivate() {
-  invariant(activation);
+  invariant(activation != null);
   activation.dispose();
   activation = null;
 }

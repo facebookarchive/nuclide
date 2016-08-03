@@ -22,8 +22,9 @@ import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 import invariant from 'assert';
 import {attachEvent} from '../../commons-node/event';
 import {maybeToString} from '../../commons-node/string';
+import {getLogger} from '../../nuclide-logging';
 
-const logger = require('../../nuclide-logging').getLogger();
+const logger = getLogger();
 
 const PING_SEND_INTERVAL = 5000;
 const PING_WAIT_INTERVAL = 5000;

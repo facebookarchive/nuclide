@@ -9,8 +9,11 @@
  * the root directory of this source tree.
  */
 
+import {getCategoryLogger} from '../../nuclide-logging';
+
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-hhvm-debugger';
-export default require('../../nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+
+export default getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
 
 export function makeExpressionHphpdCompatible(params: {expression: string}): Object {
   // Hphpd requires that '=' is prefixed to expressions, but xdebug doesn't require this, so

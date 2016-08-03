@@ -11,8 +11,10 @@
 
 import fsPromise from '../../commons-node/fsPromise';
 import {asyncExecute} from '../../commons-node/process';
+import {getCategoryLogger} from '../../nuclide-logging';
+
 const HACK_LOGGER_CATEGORY = 'nuclide-hack';
-export const logger = require('../../nuclide-logging').getCategoryLogger(HACK_LOGGER_CATEGORY);
+export const logger = getCategoryLogger(HACK_LOGGER_CATEGORY);
 
 const HACK_CONFIG_FILE_NAME = '.hhconfig';
 const PATH_TO_HH_CLIENT = 'hh_client';

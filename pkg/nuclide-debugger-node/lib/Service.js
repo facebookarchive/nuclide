@@ -16,6 +16,7 @@ import {DisposableSubscription} from '../../commons-node/stream';
 import {arrayCompact} from '../../commons-node/collection';
 import {checkOutput} from '../../commons-node/process';
 import Rx from 'rxjs';
+import {Session} from './Session';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
@@ -49,7 +50,6 @@ class NodeDebuggerInstance extends DebuggerInstance {
           debugPort: this._debugPort,
           preload: false, // This makes the node inspector not load all the source files on startup.
         };
-        const {Session} = require('./Session');
         const session = new Session(config, this._debugPort, websocket);
         Rx.Observable.fromEvent(session, 'close').subscribe(this._close$);
       });

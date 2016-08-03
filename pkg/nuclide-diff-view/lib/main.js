@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {CommitModeType, DiffModeType, UIProvider} from './types';
-import type DiffViewModelType, {DiffEntityOptions} from './DiffViewModel';
+import type {DiffEntityOptions} from './DiffViewModel';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
@@ -25,6 +25,9 @@ import uiTreePath from '../../commons-atom/ui-tree-path';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {DiffMode, CommitMode} from './constants';
 import DiffViewElement from './DiffViewElement';
+import DiffViewComponent from './DiffViewComponent';
+import DiffViewModel from './DiffViewModel';
+import {track} from '../../nuclide-analytics';
 
 type SerializedDiffViewState = {
   visible: false,
@@ -35,7 +38,7 @@ type SerializedDiffViewState = {
   commitMode: CommitModeType,
 };
 
-let diffViewModel: ?DiffViewModelType = null;
+let diffViewModel: ?DiffViewModel = null;
 let activeDiffView: ?{
   component: React.Component<any, any, any>,
   element: HTMLElement,
@@ -75,7 +78,6 @@ function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
     activateDiffPath(diffEntityOptions);
     return activeDiffView.element;
   }
-  const DiffViewComponent = require('./DiffViewComponent');
 
   const diffModel = getDiffViewModel();
   diffModel.activate();
@@ -105,15 +107,14 @@ function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
     destroySubscription,
   );
 
-  const {track} = require('../../nuclide-analytics');
+
   track('diff-view-open');
 
   return hostElement;
 }
 
-function getDiffViewModel(): DiffViewModelType {
+function getDiffViewModel(): DiffViewModel {
   if (diffViewModel == null) {
-    const DiffViewModel = require('./DiffViewModel');
     diffViewModel = new DiffViewModel();
     diffViewModel.setUiProviders(uiProviders);
     invariant(subscriptions);

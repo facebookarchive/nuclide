@@ -15,6 +15,9 @@ import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 import registerGrammar from '../../commons-atom/register-grammar';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
+import {ArcanistDiagnosticsProvider} from './ArcanistDiagnosticsProvider';
 
 let subscriptions: ?CompositeDisposable = null;
 
@@ -22,8 +25,6 @@ let busySignalProvider: ?BusySignalProviderBase = null;
 
 function getBusySignalProvider(): BusySignalProviderBase {
   if (busySignalProvider == null) {
-    // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-    const {DedupedBusySignalProviderBase} = require('../../nuclide-busy-signal');
     busySignalProvider = new DedupedBusySignalProviderBase();
   }
   return busySignalProvider;
@@ -52,7 +53,6 @@ export function provideBusySignal(): BusySignalProvider {
 }
 
 export function provideDiagnostics() {
-  const {ArcanistDiagnosticsProvider} = require('./ArcanistDiagnosticsProvider');
   const provider = new ArcanistDiagnosticsProvider(getBusySignalProvider());
   invariant(subscriptions != null);
   subscriptions.add(provider);

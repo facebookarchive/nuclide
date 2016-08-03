@@ -34,11 +34,10 @@ import {beginTimerTracking, failTimerTracking, endTimerTracking} from './Analyti
 import invariant from 'assert';
 import {DebuggerMode} from './DebuggerStore';
 import passesGK from '../../commons-node/passesGK';
+import {track} from '../../nuclide-analytics';
+import {getLogger} from '../../nuclide-logging';
 
-function track(...args: any) {
-  const trackFunc = require('../../nuclide-analytics').track;
-  trackFunc.apply(null, args);
-}
+const logger = getLogger();
 
 const AnalyticsEvents = Object.freeze({
   DEBUGGER_START: 'debugger-start',
@@ -230,7 +229,7 @@ class DebuggerActions {
 
   setError(error: ?string) {
     if (error != null) {
-      require('../../nuclide-logging').getLogger().error(error);
+      logger.error(error);
     }
     this._dispatcher.dispatch({
       actionType: Constants.Actions.SET_ERROR,

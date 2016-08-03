@@ -11,17 +11,10 @@
 
 import type {Provider} from '../../nuclide-quick-open/lib/types';
 
-let providerInstance: ?Provider;
-function getProviderInstance(): Provider {
-  if (providerInstance == null) {
-    const ExampleProvider = require('./ExampleProvider');
-    providerInstance = {...ExampleProvider};
-  }
-  return providerInstance;
-}
+import ExampleProvider from './ExampleProvider';
 
 export function registerProvider(): Provider {
-  return getProviderInstance();
+  return ExampleProvider;
 }
 
 export function activate(state: ?Object) {

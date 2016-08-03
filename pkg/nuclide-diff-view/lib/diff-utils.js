@@ -11,6 +11,8 @@
 
 import type {TextDiff, OffsetMap} from './types';
 
+import {diffLines} from 'diff';
+
 type ChunkPiece = {
   added: number,
   removed: number,
@@ -41,8 +43,6 @@ function _computeDiffChunks(oldText_: string, newText_: string): DiffChunk {
   let oldText = oldText_;
   let newText = newText_;
 
-  const JsDiff = require('diff');
-
   // If the last line has changes, JsDiff doesn't return that.
   // Generally, content with new line ending are easier to calculate offsets for.
   if (oldText[oldText.length - 1] !== '\n' || newText[newText.length - 1] !== '\n') {
@@ -50,7 +50,7 @@ function _computeDiffChunks(oldText_: string, newText_: string): DiffChunk {
     newText += '\n';
   }
 
-  const lineDiff = JsDiff.diffLines(oldText, newText);
+  const lineDiff = diffLines(oldText, newText);
   const chunks = [];
 
   let addedCount = 0;

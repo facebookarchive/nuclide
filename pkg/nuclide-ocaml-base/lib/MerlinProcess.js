@@ -18,8 +18,9 @@ import readline from 'readline';
 import fsPromise from '../../commons-node/fsPromise';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
+import {getLogger} from '../../nuclide-logging';
 
-const logger = require('../../nuclide-logging').getLogger();
+const logger = getLogger();
 
 const ERROR_RESPONSES = new Set([
   'failure',

@@ -12,21 +12,22 @@
 import type {LinterProvider} from '../../nuclide-diagnostics-base';
 import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint/lib/types';
 
+import {trackOperationTiming} from '../../nuclide-analytics';
+import HyperclickProvider from './HyperclickProvider';
+import AutoComplete from './AutoComplete';
 import {GRAMMARS} from './constants';
-
-export function activate(): void {
-}
+import MerlinLinterProvider from './LinterProvider';
+import TypeHintProvider from './TypeHintProvider';
 
 export function getHyperclickProvider() {
-  return require('./HyperclickProvider');
+  return HyperclickProvider;
 }
 
 export function createAutocompleteProvider(): mixed {
-  const {trackOperationTiming} = require('../../nuclide-analytics');
   const getSuggestions = request => {
     return trackOperationTiming(
       'nuclide-ocaml:getAutocompleteSuggestions',
-      () => require('./AutoComplete').getAutocompleteSuggestions(request));
+      () => AutoComplete.getAutocompleteSuggestions(request));
   };
   return {
     selector: '.source.ocaml',
@@ -37,12 +38,10 @@ export function createAutocompleteProvider(): mixed {
 }
 
 export function provideLinter(): LinterProvider {
-  const MerlinLinterProvider = require('./LinterProvider');
   return MerlinLinterProvider;
 }
 
 export function createTypeHintProvider(): TypeHintProviderType {
-  const {TypeHintProvider} = require('./TypeHintProvider');
   const typeHintProvider = new TypeHintProvider();
   const typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
 

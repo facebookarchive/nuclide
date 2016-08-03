@@ -9,26 +9,25 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-
 import type CodeFormatManagerType from './CodeFormatManager';
 import type {CodeFormatProvider} from './types';
+
+import invariant from 'assert';
+import CodeFormatManager from './CodeFormatManager';
 
 let codeFormatManager: ?CodeFormatManagerType = null;
 
 export function activate(state: ?any): void {
-  const CodeFormatManager = require('./CodeFormatManager');
   codeFormatManager = new CodeFormatManager();
 }
 
 export function consumeProvider(provider: CodeFormatProvider) {
-  invariant(codeFormatManager);
+  invariant(codeFormatManager != null);
   codeFormatManager.addProvider(provider);
 }
 
 export function deactivate() {
-  if (codeFormatManager) {
-    codeFormatManager.dispose();
-    codeFormatManager = null;
-  }
+  invariant(codeFormatManager != null);
+  codeFormatManager.dispose();
+  codeFormatManager = null;
 }

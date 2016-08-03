@@ -23,7 +23,7 @@ const MAX_LINES = 10;
 // TODO(hansonw): we could parse these into hint trees
 const MAX_LENGTH = 100;
 
-export class TypeHintProvider {
+export default class TypeHintProvider {
 
   @trackTiming('nuclide-ocaml.typeHint')
   async typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {

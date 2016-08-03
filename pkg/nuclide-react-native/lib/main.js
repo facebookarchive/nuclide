@@ -16,17 +16,16 @@ import type {
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {Activation as ActivationType} from './Activation';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {ReactNativeLaunchAttachProvider} from './debugging/ReactNativeLaunchAttachProvider';
 import invariant from 'assert';
+import Activation from './Activation';
 
-let activation: ?ActivationType = null;
+let activation: ?Activation = null;
 
 export function activate(state: ?Object): void {
   invariant(activation == null);
-  const {Activation} = require('./Activation');
   activation = new Activation(state);
 }
 

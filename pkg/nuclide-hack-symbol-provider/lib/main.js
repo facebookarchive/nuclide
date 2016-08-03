@@ -11,18 +11,8 @@
 
 import type {Provider} from '../../nuclide-quick-open/lib/types';
 
-let providerInstance: ?Provider;
-function getProviderInstance(): Provider {
-  if (providerInstance == null) {
-    const {HackSymbolProvider} = require('./HackSymbolProvider');
-    providerInstance = {...HackSymbolProvider};
-  }
-  return providerInstance;
-}
+import {HackSymbolProvider} from './HackSymbolProvider';
 
 export function registerProvider(): Provider {
-  return getProviderInstance();
-}
-
-export function activate(state: ?Object) {
+  return HackSymbolProvider;
 }

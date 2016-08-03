@@ -11,6 +11,9 @@
 
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {getLogger} from '../../nuclide-logging';
+
+const logger = getLogger();
 
 /**
  * @param repoPath The full path to the repository directory (.hg).
@@ -26,7 +29,6 @@ async function fetchActiveBookmark(repoPath: string): Promise<string> {
     if (!(e.code === 'ENOENT')) {
       // We expect an error if the bookmark file doesn't exist. Otherwise, the
       // error is unexpected, so log it.
-      const logger = require('../../nuclide-logging').getLogger();
       logger.error(e);
     }
     result = '';

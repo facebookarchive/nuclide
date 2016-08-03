@@ -9,18 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {Task} from '../lib/bootstrap';
-
 import invariant from 'assert';
-import {createTask} from '..';
 import {expectAsyncFailure} from '../../nuclide-test-helpers';
+import Task from '..';
 
 describe('Task', () => {
   describe('.invokeRemoteMethod()', () => {
     let task: ?Task = null;
 
     beforeEach(() => {
-      task = createTask();
+      task = new Task();
     });
 
     afterEach(() => {
@@ -138,14 +136,12 @@ describe('Task', () => {
 
   it('calls onError upon error', () => {
     const spy = jasmine.createSpy('exit');
-    const task = createTask();
+    const task = new Task();
     task.onError(spy);
     task._child.disconnect();
     spyOn(console, 'log');
     task.invokeRemoteMethod({
       file: 'test',
-      method: null,
-      args: null,
     });
     waitsFor(() => {
       return spy.callCount > 0;

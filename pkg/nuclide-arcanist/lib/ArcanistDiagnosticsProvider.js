@@ -25,6 +25,9 @@ import onWillDestroyTextBuffer from '../../commons-atom/on-will-destroy-text-buf
 import {RequestSerializer} from '../../commons-node/promise';
 import invariant from 'assert';
 import aggregateFindDiagnostics from './aggregateFindDiagnostics';
+import {getLogger} from '../../nuclide-logging';
+
+const logger = getLogger();
 
 export class ArcanistDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
@@ -130,7 +133,6 @@ export class ArcanistDiagnosticsProvider {
         this._providerBase.publishMessageUpdate(diagnosticsUpdate);
       }
     } catch (error) {
-      const logger = require('../../nuclide-logging').getLogger();
       logger.error(error);
       return;
     }

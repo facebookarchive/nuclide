@@ -26,6 +26,16 @@ import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {track} from '../../nuclide-analytics';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
+import {FlowServiceWatcher} from './FlowServiceWatcher';
+import AutocompleteProvider from './FlowAutocompleteProvider';
+import FlowHyperclickProvider from './FlowHyperclickProvider';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
+import FlowDiagnosticsProvider from './FlowDiagnosticsProvider';
+import {FlowOutlineProvider} from './FlowOutlineProvider';
+import {FlowTypeHintProvider} from './FlowTypeHintProvider';
+import {FlowEvaluationExpressionProvider} from './FlowEvaluationExpressionProvider';
+import {getCurrentServiceInstances} from './FlowServiceFactory';
 
 import {getCoverage} from './FlowCoverageProvider';
 
@@ -45,7 +55,6 @@ export function activate() {
   if (!disposables) {
     disposables = new CompositeDisposable();
 
-    const {FlowServiceWatcher} = require('./FlowServiceWatcher');
     const watcher = new FlowServiceWatcher();
     disposables.add(watcher);
 
@@ -61,7 +70,6 @@ export function activate() {
 
 /** Provider for autocomplete service. */
 export function createAutocompleteProvider(): atom$AutocompleteProvider {
-  const AutocompleteProvider = require('./FlowAutocompleteProvider');
   const autocompleteProvider = new AutocompleteProvider();
   const getSuggestions = autocompleteProvider.getSuggestions.bind(autocompleteProvider);
 
@@ -82,7 +90,6 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
 }
 
 export function getHyperclickProvider(): HyperclickProvider {
-  const FlowHyperclickProvider = require('./FlowHyperclickProvider');
   const flowHyperclickProvider = new FlowHyperclickProvider();
   const getSuggestionForWord =
       flowHyperclickProvider.getSuggestionForWord.bind(flowHyperclickProvider);
@@ -96,8 +103,6 @@ export function getHyperclickProvider(): HyperclickProvider {
 
 export function provideBusySignal(): BusySignalProviderBaseType {
   if (!busySignalProvider) {
-    // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-    const {DedupedBusySignalProviderBase} = require('../../nuclide-busy-signal');
     busySignalProvider = new DedupedBusySignalProviderBase();
   }
   return busySignalProvider;
@@ -106,7 +111,6 @@ export function provideBusySignal(): BusySignalProviderBaseType {
 export function provideDiagnostics() {
   if (!flowDiagnosticsProvider) {
     const busyProvider = this.provideBusySignal();
-    const FlowDiagnosticsProvider = require('./FlowDiagnosticsProvider');
     const runOnTheFly = ((featureConfig.get(diagnosticsOnFlySetting): any): boolean);
     flowDiagnosticsProvider = new FlowDiagnosticsProvider(runOnTheFly, busyProvider);
     invariant(disposables);
@@ -119,7 +123,6 @@ export function provideDiagnostics() {
 }
 
 export function provideOutlines(): OutlineProvider {
-  const {FlowOutlineProvider} = require('./FlowOutlineProvider');
   const provider = new FlowOutlineProvider();
   return {
     grammarScopes: JS_GRAMMARS,
@@ -130,7 +133,6 @@ export function provideOutlines(): OutlineProvider {
 }
 
 export function createTypeHintProvider(): Object {
-  const {FlowTypeHintProvider} = require('./FlowTypeHintProvider');
   const flowTypeHintProvider = new FlowTypeHintProvider();
   const typeHint = flowTypeHintProvider.typeHint.bind(flowTypeHintProvider);
   return {
@@ -153,7 +155,6 @@ export function createCoverageProvider(): CoverageProvider {
 }
 
 export function createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
-  const {FlowEvaluationExpressionProvider} = require('./FlowEvaluationExpressionProvider');
   const evaluationExpressionProvider = new FlowEvaluationExpressionProvider();
   const getEvaluationExpression =
     evaluationExpressionProvider.getEvaluationExpression.bind(evaluationExpressionProvider);
@@ -182,7 +183,6 @@ export function deactivate() {
 }
 
 function allowFlowServerRestart(): void {
-  const {getCurrentServiceInstances} = require('./FlowServiceFactory');
   for (const service of getCurrentServiceInstances()) {
     service.allowServerRestart();
   }

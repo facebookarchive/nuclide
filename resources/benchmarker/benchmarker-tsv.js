@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const fs = require('fs');
+import fs from 'fs';
 
 // For the purposes of the benchmarker, a TSV file always has a column heading row at the top.
 

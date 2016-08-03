@@ -20,8 +20,9 @@ import {RemoteConnection} from './RemoteConnection';
 import fsPromise from '../../commons-node/fsPromise';
 import {sleep} from '../../commons-node/promise';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
+import {getLogger} from '../../nuclide-logging';
 
-const logger = require('../../nuclide-logging').getLogger();
+const logger = getLogger();
 
 // Sync word and regex pattern for parsing command stdout.
 const READY_TIMEOUT_MS = 120 * 1000;

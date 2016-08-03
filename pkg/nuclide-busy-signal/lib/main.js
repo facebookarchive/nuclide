@@ -18,6 +18,7 @@ import {MessageStore} from './MessageStore';
 
 import {BusySignalProviderBase} from './BusySignalProviderBase';
 import {DedupedBusySignalProviderBase} from './DedupedBusySignalProviderBase';
+import {StatusBarTile} from './StatusBarTile';
 
 export {
   BusySignalProviderBase,
@@ -39,7 +40,6 @@ class Activation {
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
-    const {StatusBarTile} = require('./StatusBarTile');
     const statusBarTile = this._statusBarTile = new StatusBarTile();
     statusBarTile.consumeMessageStream(this._messageStore.getMessageStream());
     const disposable = new Disposable(() => {

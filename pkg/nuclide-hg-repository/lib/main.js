@@ -16,6 +16,7 @@ import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {revertPath, addPath} from './actions';
+import HgRepositoryProvider from './HgRepositoryProvider';
 
 const HG_ADD_TREE_CONTEXT_MENU_PRIORITY = 400;
 const HG_REVERT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1050;
@@ -184,6 +185,5 @@ export function deactivate(state: any): void {
 }
 
 export function createHgRepositoryProvider() {
-  const {HgRepositoryProvider} = require('./HgRepositoryProvider');
   return new HgRepositoryProvider();
 }

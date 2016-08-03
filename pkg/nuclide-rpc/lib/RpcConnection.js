@@ -45,8 +45,10 @@ import {
 } from './messages';
 import {builtinLocation, voidType} from './builtin-types';
 import {startTracking} from '../../nuclide-analytics';
+import {getLogger} from '../../nuclide-logging';
 
-const logger = require('../../nuclide-logging').getLogger();
+const logger = getLogger();
+
 const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
 
 type RpcConnectionKind = 'server' | 'client';

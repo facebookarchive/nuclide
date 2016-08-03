@@ -24,8 +24,9 @@ import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {builtinLocation} from './builtin-types';
+import {getLogger} from '../../nuclide-logging';
 
-const logger = require('../../nuclide-logging').getLogger();
+const logger = getLogger();
 
 export type FunctionImplementation = {localImplementation: Function, type: FunctionType};
 export type ClassDefinition = {localImplementation: any, definition: InterfaceDefinition};

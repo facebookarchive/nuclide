@@ -10,11 +10,12 @@
  */
 
 import {React} from 'react-for-atom';
+import GadgetPlaceholder from './GadgetPlaceholder';
 
 module.exports = function deserializeGadgetPlaceholder(
   state: Object,
 ): React.Component<any, any, any> {
   // Pane items are deserialized before the gadget providers have had a chance to register their
   // gadgets. Therefore, we need to create a placeholder item that we later replace.
-  return require('./GadgetPlaceholder').deserialize(state);
+  return GadgetPlaceholder.deserialize(state);
 };

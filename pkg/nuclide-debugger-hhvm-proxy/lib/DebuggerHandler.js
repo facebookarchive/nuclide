@@ -15,6 +15,12 @@ import logger from './utils';
 import {uriToPath, getBreakpointLocation} from './helpers';
 import Handler from './Handler';
 import {
+  idOfFrame,
+  functionOfFrame,
+  fileUrlOfFrame,
+  locationOfFrame,
+} from './frame';
+import {
   STATUS_STARTING,
   STATUS_STOPPING,
   STATUS_STOPPED,
@@ -188,13 +194,6 @@ export class DebuggerHandler extends Handler {
 
   async _convertFrame(frame: Object, frameIndex: number): Promise<Object> {
     logger.log('Converting frame: ' + JSON.stringify(frame));
-    const {
-      idOfFrame,
-      functionOfFrame,
-      fileUrlOfFrame,
-      locationOfFrame,
-    } = require('./frame');
-
     this._files.registerFile(fileUrlOfFrame(frame));
     return {
       callFrameId: idOfFrame(frame),

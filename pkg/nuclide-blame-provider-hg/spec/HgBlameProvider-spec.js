@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {formatBlameInfo} = require('../lib/HgBlameProvider').__test__;
+import {__test__} from '../lib/HgBlameProvider';
 
 describe('HgBlameProvider', () => {
   describe('formatBlameInfo', () => {
@@ -30,7 +30,7 @@ describe('HgBlameProvider', () => {
         [5, {author: 'No Email Here', changeset: 'faceb00c'}],
         [6, {author: 'baz', changeset: 'faceb00k'}],
       ]);
-      const formattedBlameInfo = formatBlameInfo(originalBlame, /* useShortName */ true);
+      const formattedBlameInfo = __test__.formatBlameInfo(originalBlame, /* useShortName */ true);
       let numEntries = 0;
       for (const [index, blame] of formattedBlameInfo) {
         ++numEntries;

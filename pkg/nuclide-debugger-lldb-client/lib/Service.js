@@ -16,9 +16,9 @@ import typeof * as DebuggerRpcServiceInterface
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {AttachProcessInfo} from './AttachProcessInfo';
 
 async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
-  const {AttachProcessInfo} = require('./AttachProcessInfo');
   // TODO: Currently first local dir only.
   const localDirectory = atom.project.getDirectories()
     .filter(directory => nuclideUri.isLocal(directory.getPath()))[0];

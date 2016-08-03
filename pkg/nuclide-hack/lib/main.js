@@ -17,7 +17,6 @@ import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
-import type {FindReferencesProvider} from '../../nuclide-find-references';
 
 import CodeHighlightProvider from './CodeHighlightProvider';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -29,6 +28,15 @@ import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import AutocompleteProvider from './AutocompleteProvider';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {clearHackLanguageCache} from './HackLanguage';
+import FindReferencesProvider from './FindReferencesProvider';
+import TypeHintProvider from './TypeHintProvider';
+import {HackEvaluationExpressionProvider} from './HackEvaluationExpressionProvider';
+import HackDiagnosticsProvider from './HackDiagnosticsProvider';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {BusySignalProviderBase} from '../../nuclide-busy-signal';
+import {getCachedHackLanguageForUri} from './HackLanguage';
+import CodeFormatProvider from './CodeFormatProvider';
+
 
 const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
 const PACKAGE_NAME = 'nuclide-hack';
@@ -40,7 +48,6 @@ let coverageProvider = null;
 let definitionProvider: ?DefinitionProvider = null;
 
 export function activate() {
-  const {getCachedHackLanguageForUri} = require('./HackLanguage');
   subscriptions = new CompositeDisposable();
   subscriptions.add(onDidRemoveProjectPath(projectPath => {
     const hackLanguage = getCachedHackLanguageForUri(projectPath);
@@ -76,7 +83,6 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
 
 /** Provider for code format service. */
 export function createCodeFormatProvider(): any {
-  const CodeFormatProvider = require('./CodeFormatProvider');
   const codeFormatProvider = new CodeFormatProvider();
 
   return {
@@ -89,12 +95,11 @@ export function createCodeFormatProvider(): any {
   };
 }
 
-export function createFindReferencesProvider(): FindReferencesProvider {
-  return require('./FindReferencesProvider');
+export function createFindReferencesProvider(): any {
+  return FindReferencesProvider;
 }
 
 export function createTypeHintProvider(): any {
-  const TypeHintProvider = require('./TypeHintProvider');
   const typeHintProvider = new TypeHintProvider();
 
   return {
@@ -121,7 +126,6 @@ export function createCodeHighlightProvider(): any {
 }
 
 export function createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
-  const {HackEvaluationExpressionProvider} = require('./HackEvaluationExpressionProvider');
   const evaluationExpressionProvider = new HackEvaluationExpressionProvider();
   const getEvaluationExpression =
     evaluationExpressionProvider.getEvaluationExpression.bind(evaluationExpressionProvider);
@@ -134,7 +138,6 @@ export function createEvaluationExpressionProvider(): NuclideEvaluationExpressio
 
 export function provideDiagnostics() {
   if (!hackDiagnosticsProvider) {
-    const HackDiagnosticsProvider = require('./HackDiagnosticsProvider');
     const busyProvider = provideBusySignal();
     hackDiagnosticsProvider = new HackDiagnosticsProvider(false, busyProvider);
   }
@@ -164,8 +167,6 @@ export function provideOutlines(): OutlineProvider {
 
 function provideBusySignal(): BusySignalProviderBaseType {
   if (busySignalProvider == null) {
-    // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-    const {BusySignalProviderBase} = require('../../nuclide-busy-signal');
     busySignalProvider = new BusySignalProviderBase();
   }
   return busySignalProvider;

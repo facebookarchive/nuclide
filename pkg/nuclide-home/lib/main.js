@@ -17,6 +17,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
 import Immutable from 'immutable';
 import Rx from 'rxjs';
+import createHomePaneItem from './createHomePaneItem';
 
 let subscriptions: CompositeDisposable = (null: any);
 let gadgetsApi: ?GadgetsService = null;
@@ -55,7 +56,6 @@ export function deactivate(): void {
 }
 
 export function consumeGadgetsService(api: GadgetsService): void {
-  const createHomePaneItem = require('./createHomePaneItem');
   gadgetsApi = api;
   const gadget = createHomePaneItem(allHomeFragmentsStream);
   subscriptions.add(api.registerGadget(gadget));

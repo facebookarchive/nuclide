@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import {timedAsync, timedSync, makeSizedFixture} from '../benchmarker-utils';
+
 const SAMPLE_FILE = '/tmp/nuclide-benchmarker-open-edit-save.js';
 const FILE_SIZE = 10000;
 const TIMEOUT = 30 * 1000;
@@ -21,8 +23,6 @@ const PACKAGES = [
   'language-javascript,nuclide-flow,hyperclick',
 ];
 const REPETITIONS = 3;
-
-const {timedAsync, timedSync, makeSizedFixture} = require('../benchmarker-utils');
 
 module.exports = {
   description: 'times how long a 10k file takes to open, edit, save, close with different packages',

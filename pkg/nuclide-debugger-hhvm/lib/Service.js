@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-import utils from './utils';
-const {log} = utils;
-
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
+import utils from './utils';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {AttachProcessInfo} from './AttachProcessInfo';
 
 async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
+  const {log} = utils;
   log('Getting process info list');
 
   // TODO: Currently first remote dir only.
@@ -25,8 +25,7 @@ async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
     .filter(directoryPath => nuclideUri.isRemote(directoryPath))[0];
 
   if (remoteDirectoryPath) {
-    const {AttachProcessInfo} = require('./AttachProcessInfo');
-    return [(new AttachProcessInfo(remoteDirectoryPath): DebuggerProcessInfo)];
+    return [new AttachProcessInfo(remoteDirectoryPath)];
   } else {
     log('No remote dirs getting process info list');
     return [];

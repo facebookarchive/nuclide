@@ -23,14 +23,15 @@ import TestSuiteModel from './TestSuiteModel';
 import os from 'os';
 import {track} from '../../nuclide-analytics';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+import {getLogger} from '../../nuclide-logging';
 
-const logger = require('../../nuclide-logging').getLogger();
+const logger = getLogger();
 
 export type TestRunnerControllerState = {
   panelVisible?: boolean,
 };
 
-export class TestRunnerController {
+export default class TestRunnerController {
 
   _activeTestRunner: ?Object;
   _attachDebuggerBeforeRunning: boolean;

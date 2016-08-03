@@ -11,27 +11,13 @@
 
 import type {Provider} from '../../nuclide-quick-open/lib/types';
 
-import invariant from 'assert';
+import {RecentFilesProvider} from './RecentFilesProvider';
 
-let providerInstance: ?Provider;
-function getProviderInstance(): Provider {
-  if (providerInstance == null) {
-    const {RecentFilesProvider} = require('./RecentFilesProvider');
-    providerInstance = {...RecentFilesProvider};
-  }
-  return providerInstance;
+export function registerProvider(): Provider {
+  return RecentFilesProvider;
 }
 
-export default {
-
-  registerProvider(): Provider {
-    return getProviderInstance();
-  },
-
-  consumeRecentFilesService(service: mixed) {
-    const instance = getProviderInstance();
-    invariant(instance.setRecentFilesService != null);
-    instance.setRecentFilesService(service);
-  },
-
-};
+export function consumeRecentFilesService(service: mixed) {
+  // $FlowFixMe
+  RecentFilesProvider.setRecentFilesService(service);
+}

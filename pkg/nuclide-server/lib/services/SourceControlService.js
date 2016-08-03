@@ -9,11 +9,12 @@
  * the root directory of this source tree.
  */
 
+import {findHgRepository} from '../../../nuclide-source-control-helpers';
+
 /**
  * This is a workaround that should be removed when Atom 2.0 comes out.
  * See t6913624.
  */
-
 export type HgRepositoryDescription = {
   repoPath: string,
   originURL: ?string,
@@ -21,6 +22,5 @@ export type HgRepositoryDescription = {
 };
 
 export function getHgRepository(directoryPath: string): Promise<?HgRepositoryDescription> {
-  const {findHgRepository} = require('../../../nuclide-source-control-helpers');
   return Promise.resolve(findHgRepository(directoryPath));
 }

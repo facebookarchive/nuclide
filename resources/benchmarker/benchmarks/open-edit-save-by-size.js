@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
+import {timedAsync, timedSync, makeSizedFixture} from '../benchmarker-utils';
+
 const SAMPLE_FILE = '/tmp/nuclide-benchmarker-open-edit-save.js';
 const TIMEOUT = 30 * 1000;
 
 const ITERATIONS = 32; // From 0 bytes to 10^6 bytes exponentially, as per sizeForIteration.
 const REPETITIONS = 3;
-
-const {timedAsync, timedSync, makeSizedFixture} = require('../benchmarker-utils');
 
 function sizeForIteration(iteration: number): number {
   if (iteration > 0) {

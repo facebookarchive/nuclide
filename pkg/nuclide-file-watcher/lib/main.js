@@ -10,6 +10,8 @@
  */
 
 import {CompositeDisposable} from 'atom';
+import FileWatcher from './FileWatcher';
+
 let subscriptions: ?CompositeDisposable = null;
 let watchers: ?Map<any, any> = null;
 
@@ -22,7 +24,6 @@ export function activate(state: ?Object): void {
       return;
     }
 
-    const FileWatcher = require('./FileWatcher');
     const fileWatcher = new FileWatcher(editor);
     _watchers.set(editor, fileWatcher);
 

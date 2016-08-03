@@ -10,9 +10,11 @@
  */
 
 import featureConfig from '../../commons-atom/featureConfig';
+import {getCategoryLogger} from '../../nuclide-logging';
 
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-lldb-client-debugger';
-export default require('../../nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+
+export default getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
 
 export function getConfig(): any {
   return (featureConfig.get('nuclide-debugger-lldb-client'): any);

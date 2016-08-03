@@ -33,8 +33,9 @@ import {
   decorateSshConnectionDelegateWithTracking,
 } from '../../nuclide-remote-connection';
 import {validateFormInputs} from './form-validation-utils';
+import {getLogger} from '../../nuclide-logging';
 
-const logger = require('../../nuclide-logging').getLogger();
+const logger = getLogger();
 
 type DefaultProps = {
   indexOfInitiallySelectedConnectionProfile: number,

@@ -17,6 +17,9 @@ import featureConfig from '../../commons-atom/featureConfig';
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 import {Range} from 'atom';
 import {JAVASCRIPT_WORD_REGEX} from './constants';
+import {getLogger} from '../../nuclide-logging';
+
+const logger = getLogger();
 
 export class FlowTypeHintProvider {
   async typeHint(editor: TextEditor, position: atom$Point): Promise<?TypeHint> {
@@ -86,7 +89,6 @@ export function getTypeHintTree(typeHint: ?string): ?HintTree {
     const json = JSON.parse(typeHint);
     return jsonToTree(json);
   } catch (e) {
-    const logger = require('../../nuclide-logging').getLogger();
     logger.error(`Problem parsing type hint: ${e.message}`);
     // If there is any problem parsing just fall back on the original string
     return null;

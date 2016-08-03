@@ -12,7 +12,7 @@
 import type {TestRunner} from '../lib/types';
 import {Observable} from 'rxjs';
 
-import {TestRunnerController} from '../lib/TestRunnerController';
+import TestRunnerController from '../lib/TestRunnerController';
 
 describe('TestRunnerController', () => {
 

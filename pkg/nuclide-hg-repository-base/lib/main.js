@@ -9,21 +9,8 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get hgConstants() {
-    return require('./hg-constants');
-  },
+export {default as hgConstants} from './hg-constants';
+export {HgService} from './HgService';
 
-  get HgService() {
-    return require('./HgService');
-  },
-
-  // Exposed for testing
-  get MockHgService() {
-    return require('../spec/MockHgService');
-  },
-
-  get revisions() {
-    return require('./hg-revision-expression-helpers');
-  },
-};
+// Exposed for testing
+export {default as MockHgService} from '../spec/MockHgService';

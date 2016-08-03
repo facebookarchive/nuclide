@@ -22,9 +22,12 @@ import {CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
 import {track} from '../../nuclide-analytics';
 import debounce from '../../commons-node/debounce';
+import SearchResultManager from './SearchResultManager';
+import QuickSelectionActions from './QuickSelectionActions';
+import QuickSelectionDispatcher from './QuickSelectionDispatcher';
 
 function getSearchResultManager() {
-  return require('./SearchResultManager').default.getInstance();
+  return SearchResultManager.getInstance();
 }
 
 const DEFAULT_PROVIDER = 'OmniSearchResultProvider';
@@ -76,7 +79,6 @@ class Activation {
     this._maxScrollableAreaHeight = 10000;
     this._subscriptions = new CompositeDisposable();
     this._currentProvider = getSearchResultManager().getProviderByName(DEFAULT_PROVIDER);
-    const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
     QuickSelectionDispatcher.getInstance().register(action => {
       if (action.actionType === QuickSelectionDispatcher.ActionType.ACTIVE_PROVIDER_CHANGED) {
         this._handleActiveProviderChange(action.providerName);
@@ -188,7 +190,7 @@ class Activation {
   }
 
   toggleOmniSearchProvider(): void {
-    require('./QuickSelectionActions').changeActiveProvider('OmniSearchResultProvider');
+    QuickSelectionActions.changeActiveProvider('OmniSearchResultProvider');
   }
 
   toggleProvider(providerName: string) {

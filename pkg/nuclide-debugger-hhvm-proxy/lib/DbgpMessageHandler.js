@@ -12,6 +12,7 @@
 import logger from './utils';
 import invariant from 'assert';
 import singleton from '../../commons-node/singleton';
+import xml2js from 'xml2js';
 
 const GLOBAL_HHVM_DEBUGGER_KEY = '_global_hhvm_debugger_key';
 
@@ -164,7 +165,7 @@ export class DbgpMessageHandler {
     const xml = message.content;
     let errorValue;
     let resultValue;
-    require('xml2js').parseString(xml, (error, result) => {
+    xml2js.parseString(xml, (error, result) => {
       errorValue = error;
       resultValue = result;
     });

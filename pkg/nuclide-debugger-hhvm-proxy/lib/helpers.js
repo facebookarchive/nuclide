@@ -17,6 +17,7 @@ import logger from './utils';
 import {getConfig} from './config';
 import {parse} from 'shell-quote';
 import {checkOutput} from '../../commons-node/process';
+import fsPlus from 'fs-plus';
 
 export const DUMMY_FRAME_ID = 'Frame.0';
 
@@ -103,10 +104,9 @@ export function launchPhpScriptWithXDebugEnabled(
   sendToOutputWindowAndResolve?: (text: string) => void,
 ): child_process$ChildProcess {
   const args = parse(scriptPath);
-  const {existsSync} = require('fs-plus');
   let modifiedArgs = args;
   // TODO: will remove when t10747769 is resolved.
-  if (existsSync('fb/cli.hdf')) {
+  if (fsPlus.existsSync('fb/cli.hdf')) {
     modifiedArgs = ['-c', 'fb/cli.hdf', ...args];
   }
   const proc = child_process.spawn(getConfig().phpRuntimePath, modifiedArgs);

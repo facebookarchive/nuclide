@@ -17,7 +17,7 @@ import {PackagerActivation} from './packager/PackagerActivation';
 import {ShellActivation} from './shell/ShellActivation';
 import {CompositeDisposable} from 'atom';
 
-export class Activation {
+export default class Activation {
   _debuggingActivation: DebuggingActivation;
   _packagerActivation: PackagerActivation;
   _disposables: IDisposable;

@@ -11,23 +11,8 @@
 
 import type {Provider} from '../../nuclide-quick-open/lib/types';
 
-let providerInstance: ?Provider;
-function getProviderInstance(): Provider {
-  if (providerInstance == null) {
-    const OpenFileNameProvider = require('./OpenFileNameProvider');
-    providerInstance = {...OpenFileNameProvider};
-  }
-  return providerInstance;
-}
+import OpenFileNameProvider from './OpenFileNameProvider';
 
 export function registerProvider(): Provider {
-  return getProviderInstance();
-}
-
-export function activate(state: ?Object) {
-
-}
-
-export function deactivate() {
-
+  return OpenFileNameProvider;
 }

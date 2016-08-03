@@ -11,14 +11,8 @@
 
 import type {BlameProvider} from '../../nuclide-blame/lib/types';
 
-let blameProvider;
-
-export function activate(state: ?Object): void {
-}
+import HgBlameProvider from './HgBlameProvider';
 
 export function provideHgBlameProvider(): BlameProvider {
-  if (!blameProvider) {
-    blameProvider = require('./HgBlameProvider');
-  }
-  return blameProvider;
+  return HgBlameProvider;
 }
