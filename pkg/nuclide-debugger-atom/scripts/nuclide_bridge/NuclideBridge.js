@@ -16,7 +16,9 @@ import type {
   WebInspector$UILocation,
 } from '../../lib/types';
 
+import invariant from 'assert';
 import electron from 'electron';
+
 import Emitter from './Emitter';
 import Multimap from '../../lib/Multimap';
 import {
@@ -26,6 +28,7 @@ import {
 import WebInspector from '../../lib/WebInspector';
 
 const {ipcRenderer} = electron;
+invariant(ipcRenderer != null);
 
 const NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
 const DebuggerSettingsChangedEvent = 'debugger-settings-updated';

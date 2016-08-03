@@ -28,8 +28,11 @@ import type {
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Console} from 'console';
-import {ipcRenderer} from 'electron';
+import electron from 'electron';
 import {parse} from 'shell-quote';
+
+const {ipcRenderer} = electron;
+invariant(ipcRenderer != null);
 
 const STDOUT_FILTERS = [
   // Always shows:

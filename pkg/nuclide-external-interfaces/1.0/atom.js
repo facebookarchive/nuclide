@@ -1487,28 +1487,6 @@ type AtomGlobal = {
 
 declare var atom: AtomGlobal;
 
-/**
- * ipc is used by webviews to communicate with the parent view.
- */
-declare module 'ipc' {
-  declare function on(channel: string, callback: (event: any) => void): IDisposable;
-  declare function send(channel: string, ...args: any[]): void;
-  declare function sendToHost(channel: string, ...args: any[]): void;
-}
-
-declare class WebviewElement extends HTMLElement {
-  src: string,
-  nodeintegration: boolean,
-  disablewebsecurity: boolean,
-
-  executeJavaScript(code: string, userGesture: ?boolean): void,
-  getTitle(): string,
-  getUrl(): string,
-  insertCSS(code: string): void,
-  send(): void,
-  openDevTools(): void,
-}
-
 type RepositoryDidChangeStatusCallback = (event: {path: string, pathStatus: number}) => mixed;
 type RepositoryLineDiff = {
   oldStart: number,
@@ -1629,13 +1607,4 @@ declare class atom$Token {
 
 declare class atom$Selection {
   getText(): string,
-}
-
-// Electron
-declare module 'electron' {
-  declare var app: any;
-  declare var BrowserWindow: any;
-  declare function ipcRenderer(channel: string, ...args: any[]): void;
-  declare var remote: {};
-  declare var screen: any;
 }
