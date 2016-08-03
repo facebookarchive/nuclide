@@ -219,7 +219,21 @@ async function createEditorForNuclide(
       buffer = bufferForUri(uri);
       buffer.finishLoading();
     }
-    return atom.workspace.buildTextEditor({buffer});
+    const editor = atom.workspace.buildTextEditor({buffer});
+    if (atom.workspace.handleGrammarUsed != null) { // Atom >=1.9.0
+      // https://github.com/atom/atom/issues/10979
+      // https://github.com/atom/atom/blob/v1.9.0/src/workspace.coffee#L551-L558
+      const disposable = atom.textEditors.add(editor);
+      const grammarSubscription = editor.observeGrammar(grammar => {
+        invariant(atom.workspace.handleGrammarUsed != null);
+        atom.workspace.handleGrammarUsed(grammar);
+      });
+      editor.onDidDestroy(() => {
+        grammarSubscription.dispose();
+        disposable.dispose();
+      });
+    }
+    return editor;
   } catch (err) {
     logger.warn('buffer load issue:', err);
     atom.notifications.addError(`Failed to open ${uri}: ${err.message}`);

@@ -474,6 +474,13 @@ declare class atom$StatusBar {
   getRightTiles(): Array<atom$StatusBarTile>,
 }
 
+// https://github.com/atom/atom/blob/v1.9.0/src/text-editor-registry.coffee
+declare class atom$TextEditorRegistry {
+  add(editor: atom$TextEditor): IDisposable,
+  remove(editor: atom$TextEditor): boolean,
+  observe(callback: (editor: atom$TextEditor) => void): IDisposable,
+}
+
 declare class atom$ThemeManager {
   // Event Subscription
   /**
@@ -937,6 +944,8 @@ declare class atom$Workspace {
   isTextEditor(item: ?mixed): boolean,
   /* Optional method because this was added post-1.0. */
   buildTextEditor: ((params: atom$TextEditorParams) => atom$TextEditor),
+  /* Optional method because this was added in 1.9.0 */
+  handleGrammarUsed?: (grammar: atom$Grammar) => void,
   reopenItem(): Promise<?atom$TextEditor>,
   addOpener(callback: (uri: string) => any): IDisposable,
 
@@ -1438,6 +1447,7 @@ type AtomGlobal = {
   packages: atom$PackageManager,
   styles: atom$StyleManager,
   themes: atom$ThemeManager,
+  textEditors: atom$TextEditorRegistry,
   tooltips: atom$TooltipManager,
   views: atom$ViewRegistry,
   workspace: atom$Workspace,
