@@ -43,6 +43,11 @@ export type FileLineBreakpoint = {
 };
 export type FileLineBreakpoints = Array<FileLineBreakpoint>;
 
+export type BreakpointUserChangeArgType = {
+  action: string,
+  breakpoint: FileLineBreakpoint,
+};
+
 export type SerializedBreakpoint = {
   line: number,
   sourceURL: string,
@@ -212,10 +217,15 @@ declare class WebInspector$BreakpointManager {
     condition: string,
     enabled: boolean
   ): WebInspector$BreakpointManager$Breakpoint,
+  findBreakpointOnLine(
+    source: WebInspector$UISourceCode,
+    lineNumber: number,
+  ): ?WebInspector$BreakpointManager$Breakpoint,
   addEventListener(
     eventType: string,
     listener: (event: WebInspector$Event) => void,
-    thisObject: Object): void,
+    thisObject: Object
+  ): void,
 }
 
 declare class WebInspector$BreakpointManager$Breakpoint {
