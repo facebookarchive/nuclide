@@ -76,6 +76,17 @@ export type DbgpProperty = {
   property?: Array<DbgpProperty>,
 };
 
+export type DbgpBreakpoint = {
+  id: string,
+  type: string,
+  state: string,
+  resolved?: string,
+  hit_condition?: string,
+  hit_count?: number,
+  filename?: string,
+  lineno?: number,
+};
+
 type EvaluationResult = {
   error?: Object,
   result?: ?DbgpProperty,
@@ -378,6 +389,24 @@ export class DbgpSocket {
     }
     // TODO: Validate that response.$.state === 'enabled'
     return response.$.id;
+  }
+
+  /**
+   * Returns requested breakpoint object.
+   */
+  async getBreakpoint(breakpointId: string): Promise<DbgpBreakpoint> {
+    const response = await this._callDebugger(
+      'breakpoint_get',
+      `-d ${breakpointId}`,
+    );
+    if (response.error != null ||
+      response.breakpoint == null ||
+      response.breakpoint[0] == null ||
+      response.breakpoint[0].$ == null
+    ) {
+      throw new Error('Error getting breakpoint: ' + JSON.stringify(response));
+    }
+    return response.breakpoint[0].$;
   }
 
   async removeBreakpoint(breakpointId: string): Promise<any> {
