@@ -14,7 +14,7 @@ import {React} from 'react-for-atom';
 export function FunnelIcon(): React.Element<any> {
   /* eslint-disable max-len */
   return (
-    <svg viewBox="0 0 188.53 176.98">
+    <svg className="nuclide-console-header-funnel-icon" viewBox="0 0 188.53 176.98">
       <rect
         className="nuclide-console-header-icon-fill"
         x="69.04"
