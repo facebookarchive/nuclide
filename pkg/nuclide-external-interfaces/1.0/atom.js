@@ -1627,4 +1627,5 @@ declare module 'electron' {
   declare var BrowserWindow: any;
   declare function ipcRenderer(channel: string, ...args: any[]): void;
   declare var remote: {};
+  declare var screen: any;
 }
