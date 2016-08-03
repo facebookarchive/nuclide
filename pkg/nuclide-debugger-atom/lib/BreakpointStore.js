@@ -14,6 +14,7 @@ import type {
   SerializedBreakpoint,
   FileLineBreakpoint,
   FileLineBreakpoints,
+  BreakpointUserChangeArgType,
 } from './types';
 
 import invariant from 'assert';
@@ -25,6 +26,12 @@ import {Emitter} from 'atom';
 import Constants from './Constants';
 
 export type LineToBreakpointMap = Map<number, FileLineBreakpoint>;
+
+const BREAKPOINT_NEED_UI_UPDATE = 'BREAKPOINT_NEED_UI_UPDATE';
+const BREAKPOINT_USER_CHANGED = 'breakpoint_user_changed';
+
+const ADDBREAKPOINT_ACTION = 'AddBreakpoint';
+const DELETEBREAKPOINT_ACTION = 'DeleteBreakpoint';
 
 /**
  * Stores the currently set breakpoints as (path, line) pairs.
@@ -66,17 +73,28 @@ class BreakpointStore {
       case Constants.Actions.TOGGLE_BREAKPOINT:
         this._toggleBreakpoint(data.path, data.line);
         break;
+      case Constants.Actions.DELETE_BREAKPOINT_IPC:
+        this._deleteBreakpoint(data.path, data.line, false);
+        break;
+      case Constants.Actions.BIND_BREAKPOINT_IPC:
+        this._bindBreakpoint(data.path, data.line);
+        break;
       default:
         return;
     }
   }
 
-  _addBreakpoint(path: string, line: number): void {
+  _addBreakpoint(
+    path: string,
+    line: number,
+    resolved: boolean = false,
+    userAction: boolean = true,
+  ): void {
     const breakpoint = {
       path,
       line,
       enabled: true,
-      resolved: false,
+      resolved,
     };
     if (!this._breakpoints.has(path)) {
       this._breakpoints.set(path, new Map());
@@ -84,14 +102,32 @@ class BreakpointStore {
     const lineMap = this._breakpoints.get(path);
     invariant(lineMap != null);
     lineMap.set(line, breakpoint);
-    this._emitter.emit('change', path);
+    this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
+    if (userAction) {
+      this._emitter.emit(BREAKPOINT_USER_CHANGED, {
+        action: ADDBREAKPOINT_ACTION,
+        breakpoint,
+      });
+    }
   }
 
-  _deleteBreakpoint(path: string, line: number): void {
+  _deleteBreakpoint(
+    path: string,
+    line: number,
+    userAction: boolean = true,
+  ): void {
     const lineMap = this._breakpoints.get(path);
     invariant(lineMap != null);
+    const breakpoint = lineMap.get(line);
     if (lineMap.delete(line)) {
-      this._emitter.emit('change', path);
+      this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
+      if (userAction) {
+        invariant(breakpoint);
+        this._emitter.emit(BREAKPOINT_USER_CHANGED, {
+          action: DELETEBREAKPOINT_ACTION,
+          breakpoint,
+        });
+      }
     }
   }
 
@@ -108,7 +144,25 @@ class BreakpointStore {
     }
   }
 
-  getBreakpointsForPath(path: string): Set<number> {
+  _bindBreakpoint(path: string, line: number): void {
+    this._addBreakpoint(
+      path,
+      line,
+      true,   // resolved
+      false,  // userAction
+    );
+  }
+
+  getBreakpointsForPath(path: string): LineToBreakpointMap {
+    if (!this._breakpoints.has(path)) {
+      this._breakpoints.set(path, new Map());
+    }
+    const ret = this._breakpoints.get(path);
+    invariant(ret);
+    return ret;
+  }
+
+  getBreakpointLinesForPath(path: string): Set<number> {
     const lineMap = this._breakpoints.get(path);
     return lineMap != null ? new Set(lineMap.keys()) : new Set();
   }
@@ -144,10 +198,19 @@ class BreakpointStore {
   }
 
   /**
-   * Register a change handler that is invoked whenever the store changes.
+   * Register a change handler that is invoked when the breakpoints UI
+   * needs to be updated for a file.
    */
-  onChange(callback: (path: string) => void): IDisposable {
-    return this._emitter.on('change', callback);
+  onNeedUIUpdate(callback: (path: string) => void): IDisposable {
+    return this._emitter.on(BREAKPOINT_NEED_UI_UPDATE, callback);
+  }
+
+  /**
+   * Register a change handler that is invoked when a breakpoint is changed
+   * by user action, like user explicitly added, deleted a breakpoint.
+   */
+  onUserChange(callback: (params: BreakpointUserChangeArgType) => void): IDisposable {
+    return this._emitter.on(BREAKPOINT_USER_CHANGED, callback);
   }
 
   dispose(): void {

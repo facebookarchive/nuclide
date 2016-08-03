@@ -97,7 +97,7 @@ class BreakpointDisplayController {
     }
 
     this._disposables.add(
-      this._breakpointStore.onChange(this._handleBreakpointsChanged.bind(this)),
+      this._breakpointStore.onNeedUIUpdate(this._handleBreakpointsChanged.bind(this)),
     );
     this._disposables.add(this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)));
 
@@ -176,9 +176,12 @@ class BreakpointDisplayController {
     }
 
     const path = this._editor.getPath();
-    const breakpoints = path ? this._breakpointStore.getBreakpointsForPath(path) : new Set();
-
-    const unhandledLines = new Set(breakpoints);
+    if (path == null) {
+      return;
+    }
+    const breakpoints = this._breakpointStore.getBreakpointsForPath(path);
+    // A mutable unhandled lines map.
+    const unhandledLines = this._breakpointStore.getBreakpointLinesForPath(path);
     const markersToKeep = [];
 
     // Use sets for faster lookup
@@ -188,7 +191,7 @@ class BreakpointDisplayController {
     // Destroy markers that no longer correspond to breakpoints.
     this._markers.forEach(marker => {
       const line = marker.getStartBufferPosition().row;
-      if (breakpoints.has(line)) {
+      if (unhandledLines.has(line)) {
         markersToKeep.push(marker);
         unhandledLines.delete(line);
         // Don't create a shadow marker on a line with a real marker
@@ -201,9 +204,10 @@ class BreakpointDisplayController {
     });
 
     // Add new markers for breakpoints without corresponding markers.
-    unhandledLines.forEach(line => {
-      if (!gutter) { // flow seems a bit confused here.
-        return;
+    for (const [line] of breakpoints) {
+      if (!unhandledLines.has(line)) {
+        // This line has been handled.
+        continue;
       }
       const marker = this._editor.markBufferPosition([line, 0], {
         persistent: false,
@@ -221,7 +225,7 @@ class BreakpointDisplayController {
       // mark any existing shadow markers on these rows for deletion
       shadowMarkerRowsToFill.delete(line);
       shadowMarkerRowsToDelete.add(line);
-    });
+    }
 
     if (resetAllShadowMarkers) {
       // Destroy all markers

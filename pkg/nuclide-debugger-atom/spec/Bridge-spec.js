@@ -108,6 +108,7 @@ describe('Bridge', () => {
       bridge = debuggerModel.getBridge();
       breakpointStore = debuggerModel.getBreakpointStore();
       spyOn(breakpointStore, '_addBreakpoint').andCallThrough();
+      spyOn(breakpointStore, '_bindBreakpoint').andCallThrough();
       spyOn(breakpointStore, '_deleteBreakpoint').andCallThrough();
       bridge.setWebviewElement(((mockWebview: any): WebviewElement));
     });
@@ -171,10 +172,10 @@ describe('Bridge', () => {
 
   it('should send breakpoints over ipc when breakpoints change', () => {
     breakpointStore._addBreakpoint('/tmp/foobarbaz.js', 4);
-    expect(mockWebview.send).toHaveBeenCalledWith('command', 'SyncBreakpoints', [{
+    expect(mockWebview.send).toHaveBeenCalledWith('command', 'AddBreakpoint', {
       sourceURL: 'file:///tmp/foobarbaz.js',
       lineNumber: 4,
-    }]);
+    });
   });
 
   it('should send execution control commands over ipc', () => {
@@ -213,12 +214,12 @@ describe('Bridge', () => {
       sourceURL: 'file://' + path,
       lineNumber: line,
     });
-    expect(breakpointStore._addBreakpoint).toHaveBeenCalledWith(path, line);
+    expect(breakpointStore._bindBreakpoint).toHaveBeenCalledWith(path, line);
 
     sendIpcNotification('BreakpointRemoved', {
       sourceURL: 'file://' + path,
       lineNumber: line,
     });
-    expect(breakpointStore._deleteBreakpoint).toHaveBeenCalledWith(path, line);
+    expect(breakpointStore._deleteBreakpoint).toHaveBeenCalledWith(path, line, false);
   });
 });

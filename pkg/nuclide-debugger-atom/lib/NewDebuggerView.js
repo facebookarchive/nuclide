@@ -105,7 +105,7 @@ export class NewDebuggerView extends React.Component {
     );
     const breakpointStore = this.props.model.getBreakpointStore();
     this._disposables.add(
-      breakpointStore.onChange(() => {
+      breakpointStore.onNeedUIUpdate(() => {
         this.setState({
           breakpoints: breakpointStore.getAllBreakpoints(),
         });

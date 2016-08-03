@@ -80,7 +80,7 @@ describe('BreakpointDisplayController', () => {
     simulateClickAtBufferPosition(decoration.getProperties().item, 1);
 
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(false);
-    expect(store.getBreakpointsForPath(testFilePath)).toEqual(new Set());
+    expect(store.getBreakpointLinesForPath(testFilePath)).toEqual(new Set());
   });
 
   it('should toggle breakpoint when breakpoint gutter is clicked', () => {
@@ -127,7 +127,7 @@ describe('BreakpointDisplayController', () => {
     editor.insertText('newfirstline\n');
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(false);
     expect(utils.hasBreakpointDecorationInRow(editor, 2)).toBe(true);
-    expect(store.getBreakpointsForPath(testFilePath)).toEqual(new Set([2]));
+    expect(store.getBreakpointLinesForPath(testFilePath)).toEqual(new Set([2]));
   });
 
   it('should remove markers for removed breakpoints', () => {

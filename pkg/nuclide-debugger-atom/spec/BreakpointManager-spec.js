@@ -59,7 +59,7 @@ describe('BreakpointManager', () => {
       expect(breakpointManager.getDisplayControllers().size).toBe(0);
 
       // But the store should still remember the breakpoint
-      expect(breakpointStore.getBreakpointsForPath(path)).toEqual(new Set([1]));
+      expect(breakpointStore.getBreakpointLinesForPath(path)).toEqual(new Set([1]));
     });
   });
 });

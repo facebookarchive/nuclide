@@ -16,6 +16,7 @@ import type {
   ExpansionResult,
   ObjectGroup,
   NuclideThreadData,
+  BreakpointUserChangeArgType,
 } from './types';
 
 type ExpressionResult = ChromeProtocolResponse & {
@@ -91,7 +92,7 @@ class Bridge {
     this._webview = null;
     this._suppressBreakpointSync = false;
     this._disposables = new CompositeDisposable(
-      debuggerModel.getBreakpointStore().onChange(this._handleBreakpointStoreChange.bind(this)),
+      debuggerModel.getBreakpointStore().onUserChange(this._handleUserBreakpointChange.bind(this)),
     );
     this._expressionsInFlight = new Map();
     this._getPropertiesRequestsInFlight = new Map();
@@ -343,7 +344,9 @@ class Bridge {
             this._handleLoaderBreakpointResumed();
             break;
           case 'BreakpointAdded':
-            this._addBreakpoint(event.args[1]);
+            // BreakpointAdded from chrome side is actually
+            // binding the breakpoint.
+            this._bindBreakpoint(event.args[1]);
             break;
           case 'BreakpointRemoved':
             this._removeBreakpoint(event.args[1]);
@@ -433,13 +436,13 @@ class Bridge {
     );
   }
 
-  _addBreakpoint(location: {sourceURL: string, lineNumber: number}) {
+  _bindBreakpoint(location: {sourceURL: string, lineNumber: number}) {
     const path = nuclideUri.uriToNuclideUri(location.sourceURL);
     // only handle real files for now.
     if (path) {
       try {
         this._suppressBreakpointSync = true;
-        this._debuggerModel.getActions().addBreakpoint(path, location.lineNumber);
+        this._debuggerModel.getActions().bindBreakpointIPC(path, location.lineNumber);
       } finally {
         this._suppressBreakpointSync = false;
       }
@@ -452,15 +455,22 @@ class Bridge {
     if (path) {
       try {
         this._suppressBreakpointSync = true;
-        this._debuggerModel.getActions().deleteBreakpoint(path, location.lineNumber);
+        this._debuggerModel.getActions().deleteBreakpointIPC(path, location.lineNumber);
       } finally {
         this._suppressBreakpointSync = false;
       }
     }
   }
 
-  _handleBreakpointStoreChange(path: string) {
-    this._sendAllBreakpoints();
+  _handleUserBreakpointChange(params: BreakpointUserChangeArgType) {
+    const webview = this._webview;
+    if (webview != null) {
+      const {action, breakpoint} = params;
+      webview.send('command', action, {
+        sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
+        lineNumber: breakpoint.line,
+      });
+    }
   }
 
   _handleThreadsUpdate(threadData: NuclideThreadData): void {
