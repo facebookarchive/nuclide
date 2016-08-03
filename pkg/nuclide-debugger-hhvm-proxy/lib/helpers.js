@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Breakpoint} from './BreakpointStore';
+
 import child_process from 'child_process';
 import url from 'url';
 import logger from './utils';
@@ -62,6 +64,15 @@ export function uriToPath(uri: string): string {
     logger.logErrorAndThrow(`unexpected file protocol. Got: ${components.protocol}`);
   }
   return components.pathname || '';
+}
+
+export function getBreakpointLocation(breakpoint: Breakpoint): Object {
+  const {filename, lineNumber} = breakpoint;
+  return {
+    // chrome lineNumber is 0-based while xdebug is 1-based.
+    lineNumber: lineNumber - 1,
+    scriptId: uriToPath(filename),
+  };
 }
 
 /**

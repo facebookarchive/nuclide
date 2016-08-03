@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-
+import invariant from 'assert';
 import {makeExpressionHphpdCompatible} from './utils';
 import logger from './utils';
-import {uriToPath} from './helpers';
+import {uriToPath, getBreakpointLocation} from './helpers';
 import Handler from './Handler';
 import {
   STATUS_STARTING,
@@ -133,11 +133,11 @@ export class DebuggerHandler extends Handler {
 
   async _setPauseOnExceptions(id: number, params: Object): Promise<any> {
     const {state} = params;
-    await this._connectionMultiplexer.setPauseOnExceptions(state);
+    await this._connectionMultiplexer.getBreakpointStore().setPauseOnExceptions(String(id), state);
     this.replyToCommand(id, {});
   }
 
-  _setBreakpointByUrl(id: number, params: Object): void {
+  async _setBreakpointByUrl(id: number, params: Object): Promise<void> {
     const {lineNumber, url, columnNumber, condition} = params;
     if (!url || condition !== '' || columnNumber !== 0) {
       this.replyWithError(id, 'Invalid arguments to Debugger.setBreakpointByUrl: '
@@ -147,15 +147,17 @@ export class DebuggerHandler extends Handler {
     this._files.registerFile(url);
 
     const path = uriToPath(url);
-    const breakpointId = this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
+    const breakpointStore = this._connectionMultiplexer.getBreakpointStore();
+    // Chrome lineNumber is 0-based while xdebug lineno is 1-based.
+    const breakpointId = await breakpointStore.setBreakpoint(String(id), path, lineNumber + 1);
+    const breakpoint = await breakpointStore.getBreakpoint(breakpointId);
+    invariant(breakpoint != null);
     this.replyToCommand(id, {
       breakpointId,
       locations: [
-        {
-          lineNumber,
-          scriptId: path,
-        },
-      ]});
+        getBreakpointLocation(breakpoint),
+      ],
+    });
   }
 
   async _removeBreakpoint(id: number, params: Object): Promise<any> {

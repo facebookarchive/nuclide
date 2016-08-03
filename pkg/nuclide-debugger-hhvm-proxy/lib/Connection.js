@@ -13,6 +13,7 @@ import {DbgpSocket} from './DbgpSocket';
 import {DataCache} from './DataCache';
 
 import type {Socket} from 'net';
+import type {DbgpBreakpoint} from './DbgpSocket';
 
 let connectionCount = 1;
 
@@ -36,6 +37,10 @@ export class Connection {
     return this._socket.onStatus(callback);
   }
 
+  onNotification(callback: (notifyName: string, notify: Object) => mixed): IDisposable {
+    return this._socket.onNotification(callback);
+  }
+
   evaluateOnCallFrame(frameIndex: number, expression: string): Promise<Object> {
     return this._dataCache.evaluateOnCallFrame(frameIndex, expression);
   }
@@ -50,6 +55,10 @@ export class Connection {
 
   setBreakpoint(filename: string, lineNumber: number): Promise<string> {
     return this._socket.setBreakpoint(filename, lineNumber);
+  }
+
+  getBreakpoint(breakpointId: string): Promise<DbgpBreakpoint> {
+    return this._socket.getBreakpoint(breakpointId);
   }
 
   removeBreakpoint(breakpointId: string): Promise<any> {

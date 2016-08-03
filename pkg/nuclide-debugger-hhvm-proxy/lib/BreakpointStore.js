@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {DbgpBreakpoint} from './DbgpSocket';
+
 import invariant from 'assert';
 import logger from './utils';
 import {
@@ -20,11 +22,14 @@ import {
 
 import type {Connection} from './Connection';
 
-type BreakpointId = string;
-type Breakpoint = {
-  storeId: BreakpointId,
+type XDebugBreakpointId = string;
+
+export type BreakpointId = string;
+export type Breakpoint = {
+  chromeId: BreakpointId,
   filename: string,
   lineNumber: number,
+  resolved: boolean,
 };
 
 export type ExceptionState = 'none' | 'uncaught' | 'all';
@@ -43,9 +48,11 @@ const EXCEPTION_PAUSE_STATE_ALL = 'all';
 // before returning.
 export class BreakpointStore {
   _breakpointCount: number;
-  // For each connection a map from the Store's Breakpoint Id to the
-  // Promise of the Connection's Breakpoint Id.
-  _connections: Map<Connection, Map<BreakpointId, Promise<BreakpointId>>>;
+  // For each connection a map from the chrome's breakpoint id to
+  // the Connection's xdebug breakpoint id.
+  _connections: Map<Connection, Map<BreakpointId, XDebugBreakpointId>>;
+  // Client visible breakpoint map from
+  // chrome breakpoint id to Breakpoint object.
   _breakpoints: Map<BreakpointId, Breakpoint>;
   _pauseAllExceptionBreakpointId: ?BreakpointId;
 
@@ -56,18 +63,55 @@ export class BreakpointStore {
     this._pauseAllExceptionBreakpointId = null;
   }
 
-  setBreakpoint(filename: string, lineNumber: number): BreakpointId {
-    this._breakpointCount++;
-    const storeId = String(this._breakpointCount);
-    this._breakpoints.set(storeId, {storeId, filename, lineNumber});
-    for (const entry of this._connections.entries()) {
-      const [connection, map] = entry;
-      map.set(storeId, connection.setBreakpoint(filename, lineNumber));
-    }
-    return storeId;
+  async setBreakpoint(
+    chromeId: BreakpointId,
+    filename: string,
+    lineNumber: number,
+  ): Promise<BreakpointId> {
+    this._breakpoints.set(chromeId, {chromeId, filename, lineNumber, resolved: false});
+    const breakpointPromises = Array.from(this._connections.entries())
+      .map(async entry => {
+        const [connection, map] = entry;
+        // TODO: make Connection.setBreakpoint() to handle non-paused situation.
+        const xdebugBreakpointId = await connection.setBreakpoint(filename, lineNumber);
+        map.set(chromeId, xdebugBreakpointId);
+      });
+    await Promise.all(breakpointPromises);
+    await this._updateBreakpointInfo(chromeId);
+    return chromeId;
   }
 
-  async removeBreakpoint(breakpointId: string): Promise<any> {
+  async _updateBreakpointInfo(chromeId: BreakpointId): Promise<void> {
+    for (const entry of this._connections) {
+      const [connection, map] = entry;
+      const xdebugBreakpointId = map.get(chromeId);
+      invariant(xdebugBreakpointId != null);
+      const promise = connection.getBreakpoint(xdebugBreakpointId);
+      const xdebugBreakpoint = await promise; // eslint-disable-line babel/no-await-in-loop
+      this.updateBreakpoint(chromeId, xdebugBreakpoint);
+      // Breakpoint status should be the same for all connections
+      // so only need to fetch from the first connection.
+      break;
+    }
+  }
+
+  async getBreakpoint(breakpointId: BreakpointId): Promise<?Breakpoint> {
+    return this._breakpoints.get(breakpointId);
+  }
+
+  updateBreakpoint(chromeId: BreakpointId, xdebugBreakpoint: DbgpBreakpoint): void {
+    const breakpoint = this._breakpoints.get(chromeId);
+    invariant(breakpoint != null);
+    breakpoint.lineNumber = xdebugBreakpoint.lineno || breakpoint.lineNumber;
+    breakpoint.filename = xdebugBreakpoint.filename || breakpoint.filename;
+    if (xdebugBreakpoint.resolved != null) {
+      breakpoint.resolved = (xdebugBreakpoint.resolved === 'RESOLVED');
+    } else {
+      breakpoint.resolved = true;
+    }
+  }
+
+  async removeBreakpoint(breakpointId: BreakpointId): Promise<any> {
     this._breakpoints.delete(breakpointId);
     return await this._removeBreakpointFromConnections(breakpointId);
   }
@@ -77,26 +121,24 @@ export class BreakpointStore {
    * Dbgp protocol does not seem to support uncaught exception handling
    * so we only support 'all' and treat all other states as 'none'.
    */
-  async setPauseOnExceptions(state: ExceptionState): Promise<any> {
-    if (state === EXCEPTION_PAUSE_STATE_ALL) {
-      this._breakpointCount++;
-      const breakpiontId = String(this._breakpointCount);
-      this._pauseAllExceptionBreakpointId = breakpiontId;
-
-      for (const entry of this._connections.entries()) {
-        const [connection, map] = entry;
-        map.set(
-          breakpiontId,
-          connection.setExceptionBreakpoint(PAUSE_ALL_EXCEPTION_NAME),
-        );
-      }
-    } else {
+  async setPauseOnExceptions(chromeId: BreakpointId, state: ExceptionState): Promise<void> {
+    if (state !== EXCEPTION_PAUSE_STATE_ALL) {
       // Try to remove any existing exception breakpoint.
-      await this._removePauseAllExceptionBreakpointIfNeeded();
+      return await this._removePauseAllExceptionBreakpointIfNeeded();
     }
+    this._pauseAllExceptionBreakpointId = chromeId;
+
+    const breakpointPromises = Array.from(this._connections.entries())
+      .map(async entry => {
+        const [connection, map] = entry;
+        const xdebugBreakpointId =
+          await connection.setExceptionBreakpoint(PAUSE_ALL_EXCEPTION_NAME);
+        map.set(chromeId, xdebugBreakpointId);
+      });
+    await Promise.all(breakpointPromises);
   }
 
-  async _removePauseAllExceptionBreakpointIfNeeded(): Promise<any> {
+  async _removePauseAllExceptionBreakpointIfNeeded(): Promise<void> {
     const breakpointId = this._pauseAllExceptionBreakpointId;
     if (breakpointId) {
       this._pauseAllExceptionBreakpointId = null;
@@ -108,7 +150,7 @@ export class BreakpointStore {
     }
   }
 
-  async _removeBreakpointFromConnections(breakpointId: string): Promise<any> {
+  async _removeBreakpointFromConnections(breakpointId: BreakpointId): Promise<any> {
     return Promise.all(Array.from(this._connections.entries())
       .map(entry => {
         const [connection, map] = entry;
@@ -124,21 +166,24 @@ export class BreakpointStore {
       }));
   }
 
-  addConnection(connection: Connection): void {
-    const map = new Map();
-    this._breakpoints.forEach(breakpoint => {
-      map.set(
-        breakpoint.storeId,
-        connection.setBreakpoint(breakpoint.filename, breakpoint.lineNumber),
-      );
-    });
+  async addConnection(connection: Connection): Promise<void> {
+    const map: Map<BreakpointId, XDebugBreakpointId> = new Map();
+    const breakpointPromises = Array.from(this._breakpoints.values())
+      .map(async breakpoint => {
+        const {chromeId, filename, lineNumber} = breakpoint;
+        const xdebugBreakpointId =
+          await connection.setBreakpoint(filename, lineNumber);
+        map.set(chromeId, xdebugBreakpointId);
+      });
+    await Promise.all(breakpointPromises);
     if (this._pauseAllExceptionBreakpointId) {
+      const breakpoitnId = await connection.setExceptionBreakpoint(PAUSE_ALL_EXCEPTION_NAME);
+      invariant(this._pauseAllExceptionBreakpointId != null);
       map.set(
         this._pauseAllExceptionBreakpointId,
-        connection.setExceptionBreakpoint(PAUSE_ALL_EXCEPTION_NAME),
+        breakpoitnId,
       );
     }
-
     this._connections.set(connection, map);
     connection.onStatus(status => {
       switch (status) {

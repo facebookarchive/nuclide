@@ -752,21 +752,6 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     expect(connector.dispose).toHaveBeenCalledWith();
   });
 
-  it('setPauseOnExceptions', () => {
-    connectionMultiplexer.setPauseOnExceptions('all');
-    expect(breakpointStore.setPauseOnExceptions).toHaveBeenCalledWith('all');
-  });
-
-  it('setBreakpoint', () => {
-    connectionMultiplexer.setBreakpoint('filename', 42);
-    expect(breakpointStore.setBreakpoint).toHaveBeenCalledWith('filename', 42);
-  });
-
-  it('removeBreakpoint', () => {
-    connectionMultiplexer.removeBreakpoint('breakpointId');
-    expect(breakpointStore.removeBreakpoint).toHaveBeenCalledWith('breakpointId');
-  });
-
   it('endDebugWhenNoRequests - true', () => {
     waitsForPromise(async () => {
       config.endDebugWhenNoRequests = true;

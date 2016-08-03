@@ -39,7 +39,6 @@ import {ClientCallback} from './ClientCallback';
 import {attachEvent} from '../../commons-node/event';
 
 import type {Socket} from 'net';
-import type {ExceptionState} from './BreakpointStore';
 
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 
@@ -395,12 +394,8 @@ export class ConnectionMultiplexer {
     }
   }
 
-  setPauseOnExceptions(state: ExceptionState): Promise<any> {
-    return this._breakpointStore.setPauseOnExceptions(state);
-  }
-
-  setBreakpoint(filename: string, lineNumber: number): string {
-    return this._breakpointStore.setBreakpoint(filename, lineNumber);
+  getBreakpointStore(): BreakpointStore {
+    return this._breakpointStore;
   }
 
   removeBreakpoint(breakpointId: string): Promise<any> {

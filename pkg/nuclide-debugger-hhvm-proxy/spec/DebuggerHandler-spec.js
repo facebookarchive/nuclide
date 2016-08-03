@@ -291,34 +291,6 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
     });
   });
 
-  it('setBreakpointByUrl', () => {
-    waitsForPromise(async () => {
-      connectionMultiplexer.setBreakpoint = jasmine.createSpy('setBreakpoint')
-        .andReturn(12);
-
-      await handler.handleMethod(1, 'setBreakpointByUrl', {
-        lineNumber: 42,
-        url: 'file:///test.php',
-        columnNumber: 0,
-        condition: '',
-      });
-
-      expect(connectionMultiplexer.setBreakpoint).toHaveBeenCalledWith('/test.php', 43);
-      expect(clientCallback.replyToCommand).toHaveBeenCalledWith(
-        1,
-        {
-          breakpointId: 12,
-          locations: [
-            {
-              lineNumber: 42,
-              scriptId: '/test.php',
-            },
-          ],
-        },
-        undefined);
-    });
-  });
-
   it('removeBreakpoint', () => {
     waitsForPromise(async () => {
       connectionMultiplexer.removeBreakpoint = jasmine.createSpy('removeBreakpoint')
@@ -335,20 +307,6 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
           id: 42,
         },
         undefined);
-    });
-  });
-
-  it('setPauseOnExceptions', () => {
-    waitsForPromise(async () => {
-      connectionMultiplexer.setPauseOnExceptions =
-        jasmine.createSpy('setPauseOnExceptions').andCallFake(async () => {});
-
-      await handler.handleMethod(1, 'setPauseOnExceptions', {
-        state: 'all',
-      });
-
-      expect(connectionMultiplexer.setPauseOnExceptions).toHaveBeenCalledWith('all');
-      expect(clientCallback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
     });
   });
 
