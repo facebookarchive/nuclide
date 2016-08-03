@@ -77,7 +77,7 @@ describe('NuxTour', () => {
   });
 
   it('creates a NuxTour from a NuxTourModel', () => {
-    const nuxManager = new NuxManager(nuxStore);
+    const nuxManager = new NuxManager(nuxStore, () => {});
     disposables.add(nuxManager);
 
     nuxStore.addNewNux(
@@ -91,7 +91,7 @@ describe('NuxTour', () => {
   });
 
   it('creates a NuxTour that waits for a trigger', () => {
-    const nuxManager = new NuxManager(nuxStore);
+    const nuxManager = new NuxManager(nuxStore, () => {});
     disposables.add(nuxManager);
 
     const nuxTour =

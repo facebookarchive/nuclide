@@ -30,6 +30,7 @@ import {NuxTour} from './NuxTour';
 import {NuxView} from './NuxView';
 
 import type {NuxTourModel} from './NuxModel';
+import type {SyncCompletedNux} from './main';
 
 // Limits the number of NUXes displayed every session
 const NUX_PER_SESSION_LIMIT = 3;
@@ -49,11 +50,14 @@ export class NuxManager {
   // Triggered NUXes that are waiting to be displayed
   _readyToDisplayNuxes: Array<NuxTour>;
   _numNuxesDisplayed: number;
+  _syncCompletedNux: SyncCompletedNux;
 
   constructor(
     nuxStore: NuxStore,
+    syncCompletedNux: SyncCompletedNux,
   ): void {
     this._nuxStore = nuxStore;
+    this._syncCompletedNux = syncCompletedNux;
 
     this._emitter = new Emitter();
     this._disposables = new CompositeDisposable();
@@ -157,6 +161,7 @@ export class NuxManager {
   _handleNuxCompleted(nuxTourModel: NuxTourModel): void {
     this._activeNuxTour = null;
     this._nuxStore.onNuxCompleted(nuxTourModel);
+    this._syncCompletedNux(nuxTourModel.id);
     if (this._readyToDisplayNuxes.length === 0) {
       return;
     }

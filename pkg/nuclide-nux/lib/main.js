@@ -33,7 +33,10 @@ class Activation {
   constructor(): void {
     this._disposables = new CompositeDisposable();
     this._nuxStore = new NuxStore();
-    this._nuxManager = new NuxManager(this._nuxStore);
+    this._nuxManager = new NuxManager(
+      this._nuxStore,
+      this._syncCompletedNux.bind(this),
+    );
 
     this._disposables.add(this._nuxStore);
     this._disposables.add(this._nuxManager);
@@ -58,6 +61,13 @@ class Activation {
 
   setSyncCompletedNuxService(syncCompletedNuxService: SyncCompletedNux): void {
     this._syncCompletedNuxService = syncCompletedNuxService;
+  }
+
+  _syncCompletedNux(id: number): void {
+    if (this._syncCompletedNuxService == null) {
+      return;
+    }
+    this._syncCompletedNuxService(id);
   }
 }
 
