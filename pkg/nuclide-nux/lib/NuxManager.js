@@ -129,6 +129,7 @@ export class NuxManager {
         logger.error(`ERROR: ${error}`);
         this._track(
           nuxTourModel.id,
+          nuxTourModel.name,
           `NuxView #${index + 1} failed to instantiate.`,
           err.toString(),
         );
@@ -185,6 +186,7 @@ export class NuxManager {
       nuxTour.begin();
       this._track(
         nuxTour.getID(),
+        nuxTour.getName(),
         'Triggered new nux',
       );
     } else {
@@ -293,14 +295,16 @@ export class NuxManager {
   }
 
   _track(
-    id: number,
+    tourId: number,
+    tourName: string,
     message: string,
     error: ?string = null,
   ): void {
     track(
       'nux-manager-action',
       {
-        tourId: id,
+        tourId,
+        tourName,
         message: `${message}`,
         error: maybeToString(error),
       },

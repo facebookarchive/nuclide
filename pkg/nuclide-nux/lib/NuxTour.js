@@ -138,4 +138,8 @@ export class NuxTour {
   getID(): number {
     return this._id;
   }
+
+  getName(): string {
+    return this._name;
+  }
 }
