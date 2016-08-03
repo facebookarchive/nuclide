@@ -21,7 +21,8 @@ import {
 import pollFor from './pollFor';
 
 export function runTest(context: TestContext): void {
-  it('opens large directories in the file tree', () => {
+  // eslint-disable-next-line jasmine/no-disabled-tests
+  xit('opens large directories in the file tree', () => {
     waitsForPromise({timeout: 60000}, async () => {
       const files = new Map();
       // Add an empty `.watchmanconfig` so we don't get "resolve_projpath" errors.
