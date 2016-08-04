@@ -21,7 +21,7 @@ import type {
   StatusCodeIdValue,
   StatusCodeNumberValue,
   VcsLogResponse,
-} from '../../nuclide-hg-repository-base/lib/HgService';
+} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import HgRepositoryClientAsync from './HgRepositoryClientAsync';
@@ -30,7 +30,7 @@ import {
   StatusCodeIdToNumber,
   StatusCodeNumber,
   HgStatusOption,
-} from '../../nuclide-hg-repository-base/lib/hg-constants';
+} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {serializeAsyncCall} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
 import nuclideUri from '../../commons-node/nuclideUri';

@@ -14,14 +14,14 @@ import type {
   HackParameterDetails,
   HackCompletion,
   HackRange,
-} from '../../nuclide-hack-base/lib/rpc-types';
+} from '../../nuclide-hack-rpc/lib/rpc-types';
 import type {
   HackDiagnostic,
   HackReference,
   HackIdeOutline,
   HackDefinition,
-} from '../../nuclide-hack-base/lib/HackService';
-import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
+} from '../../nuclide-hack-rpc/lib/HackService';
+import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackCoverageResult} from './TypedRegions';
 
 import {RemoteConnection} from '../../nuclide-remote-connection';

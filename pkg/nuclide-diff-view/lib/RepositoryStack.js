@@ -21,7 +21,7 @@ import type {
 import type {
   RevisionFileChanges,
   RevisionInfo,
-} from '../../nuclide-hg-repository-base/lib/HgService';
+} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {CompositeDisposable, Emitter} from 'atom';

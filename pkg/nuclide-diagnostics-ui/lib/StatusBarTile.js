@@ -12,7 +12,7 @@
 import type {
   ObservableDiagnosticUpdater,
   DiagnosticMessage,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import classnames from 'classnames';
 import {CompositeDisposable} from 'atom';

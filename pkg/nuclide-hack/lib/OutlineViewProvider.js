@@ -13,7 +13,7 @@ import type {Outline, OutlineTree} from '../../nuclide-outline-view';
 import type {
   HackIdeOutline,
   HackIdeOutlineItem,
-} from '../../nuclide-hack-base/lib/HackService';
+} from '../../nuclide-hack-rpc/lib/HackService';
 import {
   className,
   keyword,

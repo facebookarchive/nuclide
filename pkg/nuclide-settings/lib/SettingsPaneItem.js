@@ -57,7 +57,7 @@ export default class NuclideSettingsPaneItem extends React.Component {
     // ```
     // configData = {
     //   "Debugger": {
-    //     "nuclide-debugger-hhvm": {
+    //     "nuclide-debugger-php": {
     //       "title": "HHVM",
     //       "settings": {
     //         "idekeyRegex": {

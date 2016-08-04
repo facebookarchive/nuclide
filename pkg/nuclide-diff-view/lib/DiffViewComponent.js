@@ -16,7 +16,7 @@ import type {
   UIElement,
 } from './types';
 import type DiffViewModel from './DiffViewModel';
-import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';

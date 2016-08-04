@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import typeof * as PythonService from '../../nuclide-python-base';
+import typeof * as PythonService from '../../nuclide-python-rpc';
 import type {Outline} from '../../nuclide-outline-view';
 
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';

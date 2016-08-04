@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import typeof * as FindInProjectService from '../../nuclide-remote-search';
-import type {search$FileResult} from '../../nuclide-remote-search';
+import typeof * as GrepService from '../../nuclide-grep-rpc';
+import type {search$FileResult} from '../../nuclide-grep-rpc';
 
 import {Observable, ReplaySubject} from 'rxjs';
 import {RemoteDirectory} from '../../nuclide-remote-connection';
@@ -21,11 +21,11 @@ type RemoteDirectorySearch = {
 };
 
 class RemoteDirectorySearcher {
-  _serviceProvider: (dir: RemoteDirectory) => FindInProjectService;
+  _serviceProvider: (dir: RemoteDirectory) => GrepService;
 
   // When constructed, RemoteDirectorySearcher must be passed a function that
-  // it can use to get a 'FindInProjectService' for a given remote path.
-  constructor(serviceProvider: (dir: RemoteDirectory) => FindInProjectService) {
+  // it can use to get a 'GrepService' for a given remote path.
+  constructor(serviceProvider: (dir: RemoteDirectory) => GrepService) {
     this._serviceProvider = serviceProvider;
   }
 
@@ -45,7 +45,7 @@ class RemoteDirectorySearcher {
     const services = directories.map(dir => this._serviceProvider(dir));
 
     const searchStreams: Array<Observable<search$FileResult>> = directories.map((dir, index) =>
-      services[index].findInProjectSearch(dir.getPath(), regex, options.inclusions));
+      services[index].grepSearch(dir.getPath(), regex, options.inclusions));
 
     // Start the search in each directory, and merge the resulting streams.
     const searchStream = Observable.merge(...searchStreams);

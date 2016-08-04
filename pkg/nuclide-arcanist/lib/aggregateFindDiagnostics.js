@@ -10,17 +10,17 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import typeof * as ArcanistBaseService from '../../nuclide-arcanist-base';
+import typeof * as ArcanistService from '../../nuclide-arcanist-rpc';
 
-import {getArcanistBaseServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export default async function aggregateFindDiagnostics(
   fileNames: Iterable<NuclideUri>,
   skip: Array<string>,
 ): Promise<Array<Object>> {
-  const serviceToFileNames: Map<ArcanistBaseService, Array<NuclideUri>> = new Map();
+  const serviceToFileNames: Map<ArcanistService, Array<NuclideUri>> = new Map();
   for (const file of fileNames) {
-    const service = getArcanistBaseServiceByNuclideUri(file);
+    const service = getArcanistServiceByNuclideUri(file);
     let files = serviceToFileNames.get(service);
     if (files == null) {
       files = [];

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
+import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {getHackEnvironmentDetails} from '../../nuclide-hack/lib/utils';

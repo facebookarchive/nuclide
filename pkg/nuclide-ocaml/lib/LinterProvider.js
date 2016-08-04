@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {MerlinError} from '../../nuclide-ocaml-base';
-import type {LinterMessage} from '../../nuclide-diagnostics-base';
+import type {MerlinError} from '../../nuclide-ocaml-rpc';
+import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
 import {GRAMMARS} from './constants';
 import {trackOperationTiming} from '../../nuclide-analytics';

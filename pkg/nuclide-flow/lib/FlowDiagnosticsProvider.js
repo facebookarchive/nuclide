@@ -17,12 +17,12 @@ import type {
   MessageInvalidationCallback,
   DiagnosticProviderUpdate,
   Trace,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 import type {
   Diagnostics,
   Diagnostic,
   MessageComponent,
-} from '../../nuclide-flow-base';
+} from '../../nuclide-flow-rpc';
 
 import {trackTiming} from '../../nuclide-analytics';
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';

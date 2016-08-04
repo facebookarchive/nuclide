@@ -14,7 +14,7 @@ import type {
   InvalidationMessage,
   MessageInvalidationCallback,
   MessageUpdateCallback,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import TextEventDispatcher from './TextEventDispatcher';

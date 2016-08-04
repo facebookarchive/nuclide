@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
+import type {SourceOptions} from '../../nuclide-format-js-common/lib/options/SourceOptions';
 import type {Settings} from './settings';
 
 import {CompositeDisposable} from 'atom';

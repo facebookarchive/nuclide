@@ -20,7 +20,7 @@ import {repositoryForPath} from '../pkg/nuclide-hg-git-bridge';
 import {
   fetchFileContentAtRevision,
   fetchFilesChangedAtRevision,
-} from '../pkg/nuclide-hg-repository-base/lib/hg-revision-state-helpers';
+} from '../pkg/nuclide-hg-rpc/lib/hg-revision-state-helpers';
 import fsPromise from '../pkg/commons-node/fsPromise';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import invariant from 'assert';

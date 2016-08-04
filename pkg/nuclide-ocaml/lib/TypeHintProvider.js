@@ -10,7 +10,7 @@
  */
 
 import type {TypeHint} from '../../nuclide-type-hint/lib/types';
-import type {MerlinType} from '../../nuclide-ocaml-base';
+import type {MerlinType} from '../../nuclide-ocaml-rpc';
 
 import {Point, Range} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';

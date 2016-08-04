@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import typeof * as HgService from '../../nuclide-hg-repository-base/lib/HgService';
+import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 
 import {Directory} from 'atom';
 import invariant from 'assert';

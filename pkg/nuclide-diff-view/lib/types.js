@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {React} from 'react-for-atom';
 

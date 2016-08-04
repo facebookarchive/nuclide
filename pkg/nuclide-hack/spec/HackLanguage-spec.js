@@ -19,7 +19,7 @@ import type {
   HackHighlightRefsResult,
   HackFormatSourceResult,
   HackReferencesResult,
-} from '../../nuclide-hack-base/lib/HackService';
+} from '../../nuclide-hack-rpc/lib/HackService';
 
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
 

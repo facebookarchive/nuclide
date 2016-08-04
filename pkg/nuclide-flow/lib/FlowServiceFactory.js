@@ -14,8 +14,8 @@ import type {Observable} from 'rxjs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   ServerStatusUpdate,
-} from '../../nuclide-flow-base';
-import typeof * as FlowService from '../../nuclide-flow-base';
+} from '../../nuclide-flow-rpc';
+import typeof * as FlowService from '../../nuclide-flow-rpc';
 
 import invariant from 'assert';
 import {Subject} from 'rxjs';

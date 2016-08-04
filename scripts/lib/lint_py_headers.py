@@ -18,7 +18,7 @@ from package_manager import NUCLIDE_PATH
 
 IGNORES = [
     # Empty files are ignored by default.
-    '*/nuclide-debugger-lldb-server/scripts/ws4py/*.py',
+    '*/nuclide-debugger-native-rpc/scripts/ws4py/*.py',
 ]
 
 EXCLUDE_DIRS = ['node_modules', 'VendorLib']

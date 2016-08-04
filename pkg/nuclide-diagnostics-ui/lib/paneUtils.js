@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticMessage, MessageType} from '../../nuclide-diagnostics-base';
+import type {DiagnosticMessage, MessageType} from '../../nuclide-diagnostics-common';
 
 function fileOfDiagnosticMessage(diagnostic: DiagnosticMessage): string {
   if (diagnostic.filePath != null) {

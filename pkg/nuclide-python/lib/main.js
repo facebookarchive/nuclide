@@ -13,7 +13,7 @@ import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {FindReferencesProvider} from '../../nuclide-find-references';
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
-import type {LinterProvider} from '../../nuclide-diagnostics-base';
+import type {LinterProvider} from '../../nuclide-diagnostics-common';
 
 import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports

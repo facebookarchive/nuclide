@@ -15,13 +15,13 @@ import type {HackLanguage} from './HackLanguage';
 import type {
   HackDiagnostic,
   SingleHackMessage,
-} from '../../nuclide-hack-base/lib/HackService';
+} from '../../nuclide-hack-rpc/lib/HackService';
 import type {
   FileDiagnosticMessage,
   MessageUpdateCallback,
   MessageInvalidationCallback,
   DiagnosticProviderUpdate,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import {trackTiming} from '../../nuclide-analytics';
 import {getHackLanguageForUri, getCachedHackLanguageForUri} from './HackLanguage';

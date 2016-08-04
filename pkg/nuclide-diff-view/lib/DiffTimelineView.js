@@ -11,7 +11,7 @@
 
 import type DiffViewModel from './DiffViewModel';
 import type {RevisionsState, DiffStatusDisplay} from './types';
-import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';

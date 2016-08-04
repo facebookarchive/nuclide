@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
+import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 
 import {getConfig} from './config';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';

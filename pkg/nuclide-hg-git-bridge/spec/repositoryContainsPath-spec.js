@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {HgService as HgServiceType} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {HgService as HgServiceType} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {Directory, GitRepository} from 'atom';
 import fs from 'fs';
 import repositoryContainsPath from '../lib/repositoryContainsPath';
 import {checkOutput} from '../../commons-node/process';
-import {MockHgService} from '../../nuclide-hg-repository-base';
+import {MockHgService} from '../../nuclide-hg-rpc';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import nuclideUri from '../../commons-node/nuclideUri';
 

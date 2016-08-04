@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {LinterMessage} from '../../nuclide-diagnostics-base';
+import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
 import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';

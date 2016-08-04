@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {ServerStatusUpdate} from '../../nuclide-flow-base';
+import type {ServerStatusUpdate} from '../../nuclide-flow-rpc';
 import typeof * as FlowServiceFactoryType from '../lib/FlowServiceFactory';
 
 import {Observable} from 'rxjs';

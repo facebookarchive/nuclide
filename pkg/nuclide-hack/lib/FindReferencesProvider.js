@@ -11,7 +11,7 @@
 
 import type {
   HackReference,
-} from '../../nuclide-hack-base/lib/HackService';
+} from '../../nuclide-hack-rpc/lib/HackService';
 import type {FindReferencesReturn} from '../../nuclide-find-references';
 
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';

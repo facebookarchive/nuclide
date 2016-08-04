@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {DiffStatusDisplay} from './types';
 
 import classnames from 'classnames';
-import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-base/lib/utils';
-import {getCommitAuthorFromAuthorEmail} from '../../nuclide-arcanist-base/lib/utils';
+import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
+import {getCommitAuthorFromAuthorEmail} from '../../nuclide-arcanist-rpc/lib/utils';
 import {React} from 'react-for-atom';
 import {track} from '../../nuclide-analytics';
 

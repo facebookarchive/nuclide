@@ -25,9 +25,9 @@ import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {LaunchProcessInfo} from '../../nuclide-debugger-hhvm/lib/LaunchProcessInfo';
+import {LaunchProcessInfo} from '../../nuclide-debugger-php/lib/LaunchProcessInfo';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {AttachProcessInfo} from '../../nuclide-debugger-hhvm/lib/AttachProcessInfo';
+import {AttachProcessInfo} from '../../nuclide-debugger-php/lib/AttachProcessInfo';
 
 const WEB_SERVER_OPTION = {label: 'WebServer', value: 0};
 const SCRIPT_OPTION = {label: 'Script', value: 1};

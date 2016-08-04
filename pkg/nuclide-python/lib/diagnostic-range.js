@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {PythonDiagnostic} from '../../nuclide-python-base';
+import type {PythonDiagnostic} from '../../nuclide-python-rpc';
 
 import invariant from 'assert';
 import {Point, Range} from 'atom';

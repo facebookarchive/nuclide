@@ -12,7 +12,7 @@
 import type {
   DiagnosticMessage,
   ObservableDiagnosticUpdater,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import invariant from 'assert';
 import debounce from '../../commons-node/debounce';

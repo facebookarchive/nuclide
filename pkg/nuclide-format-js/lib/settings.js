@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type ModuleMap from '../../nuclide-format-js-base/lib/state/ModuleMap';
-import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
-import type {TransformKey} from '../../nuclide-format-js-base/lib/types/transforms';
+import type ModuleMap from '../../nuclide-format-js-common/lib/state/ModuleMap';
+import type {SourceOptions} from '../../nuclide-format-js-common/lib/options/SourceOptions';
+import type {TransformKey} from '../../nuclide-format-js-common/lib/types/transforms';
 
 import featureConfig from '../../commons-atom/featureConfig';
-import formatJSBase from '../../nuclide-format-js-base';
+import formatJSBase from '../../nuclide-format-js-common';
 
 // Nuclide package settings used to calculate the module map,
 // the blacklist, and control the plugin behavior.

@@ -14,7 +14,7 @@ import type {
   Provider,
   ProviderType,
 } from '../../nuclide-quick-open/lib/types';
-import type {HackSearchPosition} from '../../nuclide-hack-base/lib/HackService';
+import type {HackSearchPosition} from '../../nuclide-hack-rpc/lib/HackService';
 
 import {getHackService} from './getHackService';
 import nuclideUri from '../../commons-node/nuclideUri';

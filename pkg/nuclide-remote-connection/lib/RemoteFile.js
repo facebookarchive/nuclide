@@ -13,7 +13,7 @@ import type {ServerConnection} from './ServerConnection';
 import type {RemoteDirectory} from './RemoteDirectory';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
-import typeof * as FileWatcherService from '../../nuclide-filewatcher-base';
+import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';

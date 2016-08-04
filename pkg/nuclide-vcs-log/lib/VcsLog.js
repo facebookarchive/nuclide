@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {VcsLogEntry} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {React} from 'react-for-atom';
 import {getAtomProjectRelativePath} from '../../commons-atom/projects';

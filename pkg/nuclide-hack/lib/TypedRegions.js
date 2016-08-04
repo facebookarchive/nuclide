@@ -11,7 +11,7 @@
 
 import type {
   HackTypedRegion,
-} from '../../nuclide-hack-base/lib/HackService';
+} from '../../nuclide-hack-rpc/lib/HackService';
 
 import invariant from 'assert';
 

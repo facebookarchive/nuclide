@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {CheckoutSideName, MergeConflict} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {CheckoutSideName, MergeConflict} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 

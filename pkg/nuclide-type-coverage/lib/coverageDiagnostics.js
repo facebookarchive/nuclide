@@ -15,7 +15,7 @@ import type {
   ObservableDiagnosticProvider,
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import type {CoverageResult, CoverageProvider, UncoveredRegion} from './types';
 

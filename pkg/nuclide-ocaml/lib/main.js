@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {LinterProvider} from '../../nuclide-diagnostics-base';
+import type {LinterProvider} from '../../nuclide-diagnostics-common';
 import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint/lib/types';
 
 import {trackOperationTiming} from '../../nuclide-analytics';

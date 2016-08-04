@@ -14,7 +14,7 @@ import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import type {
   MessageUpdateCallback,
   MessageInvalidationCallback,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import {CompositeDisposable, Range} from 'atom';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';

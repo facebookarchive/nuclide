@@ -12,7 +12,7 @@
 import type {
   FileMessageUpdate,
   ObservableDiagnosticUpdater,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 

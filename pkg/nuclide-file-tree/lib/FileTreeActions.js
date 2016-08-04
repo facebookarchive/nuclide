@@ -20,12 +20,12 @@ import {FileTreeStore} from './FileTreeStore';
 import Immutable from 'immutable';
 import semver from 'semver';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {hgConstants} from '../../nuclide-hg-repository-base';
+import {hgConstants} from '../../nuclide-hg-rpc';
 import {getLogger} from '../../nuclide-logging';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 import type {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';

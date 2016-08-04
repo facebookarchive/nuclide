@@ -12,7 +12,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 
-import typeof * as FileWatcherServiceType from '../../nuclide-filewatcher-base';
+import typeof * as FileWatcherServiceType from '../../nuclide-filewatcher-rpc';
 import typeof * as SourceControlService from
   '../../nuclide-server/lib/services/SourceControlService';
 import type {RemoteFile} from './RemoteFile';

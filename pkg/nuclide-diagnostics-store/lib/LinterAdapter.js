@@ -20,7 +20,7 @@ import type {
   ProjectDiagnosticMessage,
   MessageUpdateCallback,
   MessageInvalidationCallback,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import {Range} from 'atom';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';

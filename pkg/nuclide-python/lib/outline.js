@@ -18,7 +18,7 @@ import type {
   PythonClassItem,
   PythonFunctionItem,
   PythonStatementItem,
-} from '../../nuclide-python-base';
+} from '../../nuclide-python-rpc';
 
 import {Point} from 'atom';
 import {

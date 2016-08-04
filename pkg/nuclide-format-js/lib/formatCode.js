@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {SourceOptions} from '../../nuclide-format-js-base/lib/options/SourceOptions';
+import type {SourceOptions} from '../../nuclide-format-js-common/lib/options/SourceOptions';
 
 import featureConfig from '../../commons-atom/featureConfig';
 import {track} from '../../nuclide-analytics';
@@ -47,7 +47,7 @@ async function formatCode(options: SourceOptions, editor_: ?TextEditor): Promise
 
   // Auto-require transform.
   // TODO: Add a limit so the transform is not run on files over a certain size.
-  const {transform} = require('../../nuclide-format-js-base');
+  const {transform} = require('../../nuclide-format-js-common');
   source = transform(source, options);
 
   // Update the source and position after all transforms are done. Do nothing

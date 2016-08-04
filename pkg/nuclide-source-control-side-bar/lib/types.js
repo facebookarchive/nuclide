@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
 type DeleteBookmark = {
   payload: {

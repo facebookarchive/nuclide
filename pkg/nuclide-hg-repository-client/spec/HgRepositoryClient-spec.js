@@ -9,19 +9,19 @@
  * the root directory of this source tree.
  */
 
-import type {HgService as HgServiceType} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {HgService as HgServiceType} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {Directory} from 'atom';
 import {
   HgRepositoryClient,
   MAX_INDIVIDUAL_CHANGED_PATHS,
 } from '../lib/HgRepositoryClient';
-import MockHgService from '../../nuclide-hg-repository-base/spec/MockHgService';
+import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
 import {
   HgStatusOption,
   StatusCodeId,
   StatusCodeNumber,
-} from '../../nuclide-hg-repository-base/lib/hg-constants';
+} from '../../nuclide-hg-rpc/lib/hg-constants';
 import nuclideUri from '../../commons-node/nuclideUri';
 import temp from 'temp';
 

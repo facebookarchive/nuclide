@@ -14,7 +14,7 @@ import type {ServerConnection} from './ServerConnection';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
 import type {RemoteFile} from './RemoteFile';
 
-import typeof * as FileWatcherService from '../../nuclide-filewatcher-base';
+import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';

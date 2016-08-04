@@ -18,7 +18,7 @@ import type {
   DiagnosticUpdater,
   FileMessageUpdate,
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import {
   CompositeDisposable,

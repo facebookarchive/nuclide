@@ -23,7 +23,7 @@ comparison, the `linter` API exclusively polls for changes in response to change
 ### API Overview
 
 The Flow types that describe a provider are available in
-[`types.js`](https://github.com/facebook/nuclide/blob/master/pkg/nuclide-diagnostics-base/lib/types.js).
+[`types.js`](https://github.com/facebook/nuclide/blob/master/pkg/nuclide-diagnostics-common/lib/types.js).
 A `DiagnosticProvider`, in particular, is simply an object that allows a consumer to register for
 two events:
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-service';
+import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-rpc';
 
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 

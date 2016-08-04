@@ -11,7 +11,7 @@
 
 import type {Provider} from '../../nuclide-quick-open/lib/types';
 
-import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-service';
+import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-rpc';
 
 import {
   CompositeDisposable,

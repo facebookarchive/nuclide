@@ -253,4 +253,4 @@ There are other Hack and PHP debug settings that can be set as they pertain to H
 - HHVM logging level. The default is `INFO`.
 - Debugging Port. The default is `9000`. If you override this is in an `.ini` file, ensure that your setting matches this setting.
 
-Go to `Settings | Packages | Nuclide | Settings` and look for the `nuclide-debugger-hhvm` settings.
+Go to `Settings | Packages | Nuclide | Settings` and look for the `nuclide-debugger-php` settings.

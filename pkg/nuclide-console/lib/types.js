@@ -10,7 +10,7 @@
  */
 
 import type Rx from 'rxjs';
-import type {EvaluationResult, ExpansionResult} from '../../nuclide-debugger-atom/lib/types';
+import type {EvaluationResult, ExpansionResult} from '../../nuclide-debugger/lib/types';
 
 export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | 'success' | Color;
 type Color = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'violet' | 'rainbow';

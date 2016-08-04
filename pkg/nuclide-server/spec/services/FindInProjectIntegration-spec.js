@@ -14,7 +14,7 @@ import {addMatchers} from '../../../nuclide-test-helpers';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import ServiceTestHelper from './ServiceTestHelper';
 
-describe('FindInProjectService-Integration', () => {
+describe('GrepSearch', () => {
   beforeEach(function() {
     addMatchers(this);
   });
@@ -34,23 +34,23 @@ describe('FindInProjectService-Integration', () => {
 
     waitsForPromise(async () => {
       const FIND_IN_PROJECT_SERVICE_PATH =
-        require.resolve('../../../nuclide-remote-search');
+        require.resolve('../../../nuclide-grep-rpc');
 
       // Start the integration test helper.
       await testHelper.start([{
-        name: 'FindInProjectService',
+        name: 'GrepService',
         definition: FIND_IN_PROJECT_SERVICE_PATH,
         implementation: FIND_IN_PROJECT_SERVICE_PATH,
       }]);
 
-      const remoteService = testHelper.getRemoteService('FindInProjectService');
+      const remoteService = testHelper.getRemoteService('GrepService');
 
       // Search in the fixtures/basic directory.
       const input_dir = nuclideUri.join(__dirname, 'fixtures', 'basic');
       const uri = testHelper.getUriOfRemotePath(input_dir);
 
       // Do search.
-      const updates = await remoteService.findInProjectSearch(uri,
+      const updates = await remoteService.grepSearch(uri,
         /hello world/i, []).toArray().toPromise();
 
       const expected = JSON.parse(

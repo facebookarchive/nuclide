@@ -11,7 +11,7 @@
 
 import type {
   Trace,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import {React} from 'react-for-atom';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';

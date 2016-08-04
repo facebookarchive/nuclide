@@ -13,7 +13,7 @@ import {CompositeDisposable} from 'atom';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getAtomProjectRelativePath} from '../../commons-atom/projects';
 import {trackOperationTiming} from '../../nuclide-analytics';
-import {getArcanistBaseServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
@@ -88,7 +88,7 @@ function getRepositoryRelativePath(path: NuclideUri): ?string {
 }
 
 function getArcanistRelativePath(path: NuclideUri): Promise<?string> {
-  const arcService = getArcanistBaseServiceByNuclideUri(path);
+  const arcService = getArcanistServiceByNuclideUri(path);
   return arcService.getProjectRelativePath(path);
 }
 

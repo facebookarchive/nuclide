@@ -14,7 +14,7 @@ import type {
   RemoteConnectionConfiguration,
 } from '../../nuclide-remote-connection/lib/RemoteConnection';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import typeof * as FindInProjectService from '../../nuclide-remote-search';
+import typeof * as GrepService from '../../nuclide-grep-rpc';
 
 import {loadBufferForUri, bufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
@@ -477,9 +477,9 @@ export function createRemoteDirectoryProvider(): RemoteDirectoryProvider {
 
 export function createRemoteDirectorySearcher(): RemoteDirectorySearcher {
   return new RemoteDirectorySearcher((dir: RemoteDirectory) => {
-    const service = getServiceByNuclideUri('FindInProjectService', dir.getPath());
+    const service = getServiceByNuclideUri('GrepService', dir.getPath());
     invariant(service);
-    return (service: FindInProjectService);
+    return (service: GrepService);
   });
 }
 

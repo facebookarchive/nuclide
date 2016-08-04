@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HackSearchPosition} from '../../nuclide-hack-base/lib/HackService';
+import type {HackSearchPosition} from '../../nuclide-hack-rpc/lib/HackService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {HackSymbolProvider} from '../lib/HackSymbolProvider';

@@ -12,7 +12,7 @@
 import type {
   FileDiagnosticMessage,
   Trace,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import invariant from 'assert';
 import {React} from 'react-for-atom';

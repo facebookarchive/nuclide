@@ -25,9 +25,9 @@ import type {
   UIProvider,
   UIElement,
 } from './types';
-import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-base/lib/utils';
+import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-rpc/lib/utils';
 
 type FileDiffState = {
   revisionInfo: RevisionInfo,
@@ -42,7 +42,7 @@ export type DiffEntityOptions = {
   commitMode?: CommitModeType,
 };
 
-import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-base/lib/utils';
+import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
 import {CompositeDisposable, Emitter} from 'atom';
 import shell from 'shell';
 import {
@@ -67,7 +67,7 @@ import Rx from 'rxjs';
 import {notifyInternalError} from './notifications';
 import {bufferForUri, loadBufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
-import {getArcanistBaseServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
@@ -913,7 +913,7 @@ class DiffViewModel {
     }
 
     this._publishUpdates.next({level: 'log', text: 'Creating new revision...\n'});
-    const stream = getArcanistBaseServiceByNuclideUri(filePath)
+    const stream = getArcanistServiceByNuclideUri(filePath)
       .createPhabricatorRevision(filePath)
       .share();
 
@@ -946,7 +946,7 @@ class DiffViewModel {
       level: 'log',
       text: `Updating revision \`${phabricatorRevision.name}\`...\n`,
     });
-    const stream = getArcanistBaseServiceByNuclideUri(filePath)
+    const stream = getArcanistServiceByNuclideUri(filePath)
       .updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked)
       .share();
     await this._processArcanistOutput(stream);

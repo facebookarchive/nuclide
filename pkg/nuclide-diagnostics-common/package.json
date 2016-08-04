@@ -1,0 +1,12 @@
+{
+  "name": "nuclide-diagnostics-common",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Core data structures for nuclide-diagnostics",
+  "atomTestRunner": "../../lib/test-runner.js",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  }
+}

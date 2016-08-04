@@ -65,7 +65,7 @@ describe('Settings View Integration Test', () => {
       testSettingsInput(timeoutKeyPath, timeoutValue, tmpTimeoutValue);
 
       // Input (array)
-      const clangFlagsKeyPath = 'nuclide-clang-atom.defaultFlags';
+      const clangFlagsKeyPath = 'nuclide-clang.defaultFlags';
       let clangFlagsValue = featureConfig.get(clangFlagsKeyPath);
       if (!clangFlagsValue || !clangFlagsValue.length) {
         clangFlagsValue = getDefaultConfigValue(clangFlagsKeyPath);

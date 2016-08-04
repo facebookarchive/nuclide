@@ -11,7 +11,7 @@
 
 import type {
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {React} from 'react-for-atom';

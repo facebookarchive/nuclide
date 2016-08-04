@@ -11,7 +11,7 @@
 
 import type {
   StatusCodeNumberValue,
-} from '../../nuclide-hg-repository-base/lib/HgService';
+} from '../../nuclide-hg-rpc/lib/HgService';
 
 import type {
   CommitModeType,
@@ -25,7 +25,7 @@ import type {
 
 import {
   hgConstants,
-} from '../../nuclide-hg-repository-base';
+} from '../../nuclide-hg-rpc';
 
 const {StatusCodeNumber: HgStatusCodeNumber} = hgConstants;
 

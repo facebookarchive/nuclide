@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticMessage} from '../../nuclide-diagnostics-base';
+import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 
 import {fileColumnCellDataGetter} from './paneUtils';
 import {goToLocation} from '../../commons-atom/go-to-location';

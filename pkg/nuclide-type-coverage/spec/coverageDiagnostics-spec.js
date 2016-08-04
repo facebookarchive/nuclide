@@ -14,7 +14,7 @@ import type {
   DiagnosticProviderUpdate,
   InvalidationMessage,
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 
 import type {CoverageResult, CoverageProvider} from '../lib/types';

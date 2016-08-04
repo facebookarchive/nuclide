@@ -1,0 +1,15 @@
+{
+  "name": "nuclide-python-rpc",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/PythonService.js",
+  "version": "0.0.0",
+  "description": "Provides base support for Python language features.",
+  "nuclide": {
+    "packageType": "Node",
+    "testsCannotBeRunInParallel": true,
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  }
+}

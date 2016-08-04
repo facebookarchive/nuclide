@@ -11,7 +11,7 @@
 
 import type {Action} from './types';
 import type {AppState} from '..';
-import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
 import * as ActionType from './ActionType';
 import {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';

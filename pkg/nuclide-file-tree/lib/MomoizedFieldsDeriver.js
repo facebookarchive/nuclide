@@ -11,11 +11,11 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {isDirKey, keyToPath, keyToName} from './FileTreeHelpers';
-import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
+import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 
 /**
  * This is a support class for FileTreeNode.

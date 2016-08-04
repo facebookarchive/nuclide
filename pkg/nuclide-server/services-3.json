@@ -1,7 +1,7 @@
 [
   {
-    "implementation": "../nuclide-arcanist-base/lib/ArcanistBaseService.js",
-    "name": "ArcanistBaseService"
+    "implementation": "../nuclide-arcanist-rpc/lib/ArcanistService.js",
+    "name": "ArcanistService"
   },
   {
     "implementation": "../nuclide-buck-rpc/lib/BuckProject.js",
@@ -12,23 +12,23 @@
     "name": "FileSystemService"
   },
   {
-    "implementation": "../nuclide-clang/lib/ClangService.js",
+    "implementation": "../nuclide-clang-rpc/lib/ClangService.js",
     "name": "ClangService"
   },
   {
-    "implementation": "../nuclide-python-base/lib/PythonService.js",
+    "implementation": "../nuclide-python-rpc/lib/PythonService.js",
     "name": "PythonService"
   },
   {
-    "implementation": "../nuclide-flow-base/lib/FlowService.js",
+    "implementation": "../nuclide-flow-rpc/lib/FlowService.js",
     "name": "FlowService"
   },
   {
-    "implementation": "../nuclide-fuzzy-file-search-service/lib/FuzzyFileSearchService.js",
+    "implementation": "../nuclide-fuzzy-file-search-rpc/lib/FuzzyFileSearchService.js",
     "name": "FuzzyFileSearchService"
   },
   {
-    "implementation": "../nuclide-ocaml-base/lib/LocalMerlinService.js",
+    "implementation": "../nuclide-ocaml-rpc/lib/MerlinService.js",
     "name": "MerlinService"
   },
   {
@@ -36,15 +36,15 @@
     "implementation": "./lib/services/InfoService.js"
   },
   {
-    "implementation": "../nuclide-remote-search/lib/FindInProjectService.js",
-    "name": "FindInProjectService"
+    "implementation": "../nuclide-grep-rpc/lib/GrepService.js",
+    "name": "GrepService"
   },
   {
-    "implementation": "../nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService.js",
-    "name": "HhvmDebuggerProxyService"
+    "implementation": "../nuclide-debugger-php-rpc/lib/PhpDebuggerService.js",
+    "name": "PhpDebuggerService"
   },
   {
-    "implementation": "../nuclide-filewatcher-base/lib/FileWatcherService.js",
+    "implementation": "../nuclide-filewatcher-rpc/lib/FileWatcherService.js",
     "name": "FileWatcherService"
   },
   {
@@ -52,20 +52,20 @@
     "name": "SourceControlService"
   },
   {
-    "implementation": "../nuclide-hack-base/lib/HackService.js",
+    "implementation": "../nuclide-hack-rpc/lib/HackService.js",
     "name": "HackService"
   },
   {
-    "implementation": "../nuclide-hg-repository-base/lib/HgService.js",
+    "implementation": "../nuclide-hg-rpc/lib/HgService.js",
     "name": "HgService"
   },
   {
-    "implementation": "../nuclide-remote-ctags-base/lib/CtagsService.js",
+    "implementation": "../nuclide-ctags-rpc/lib/CtagsService.js",
     "name": "CtagsService"
   },
   {
-    "definition": "../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceInterface.js",
-    "implementation": "../nuclide-debugger-lldb-server/lib/DebuggerRpcServiceImplementation.js",
-    "name": "LLDBDebuggerRpcService"
+    "definition": "../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface.js",
+    "implementation": "../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceImplementation.js",
+    "name": "NativeDebuggerService"
   }
 ]

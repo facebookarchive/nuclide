@@ -10,7 +10,7 @@
  */
 
 import type {CoverageResult, CoverageProvider} from './types';
-import type {ObservableDiagnosticProvider} from '../../nuclide-diagnostics-base';
+import type {ObservableDiagnosticProvider} from '../../nuclide-diagnostics-common';
 
 import {React, ReactDOM} from 'react-for-atom';
 

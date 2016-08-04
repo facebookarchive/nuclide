@@ -10,7 +10,7 @@
  */
 
 import type {CustomPaneItemOptions} from '../../nuclide-ui/lib/types';
-import type {VcsLogEntry} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {React} from 'react-for-atom';
 import {CustomPaneItem} from '../../nuclide-ui/lib/CustomPaneItem';

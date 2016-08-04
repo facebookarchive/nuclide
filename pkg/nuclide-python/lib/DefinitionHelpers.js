@@ -10,7 +10,7 @@
  */
 
 import type {DefinitionQueryResult} from '../../nuclide-definition-service';
-import typeof * as PythonService from '../../nuclide-python-base';
+import typeof * as PythonService from '../../nuclide-python-rpc';
 
 import invariant from 'assert';
 import {Point} from 'atom';

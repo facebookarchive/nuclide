@@ -16,7 +16,7 @@ import type {
 import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
-import typeof * as FlowService from '../../nuclide-flow-base';
+import typeof * as FlowService from '../../nuclide-flow-rpc';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';

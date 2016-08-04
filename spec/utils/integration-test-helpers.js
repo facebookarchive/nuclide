@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import typeof * as FlowService from '../../pkg/nuclide-flow-base';
+import typeof * as FlowService from '../../pkg/nuclide-flow-rpc';
 
 import invariant from 'assert';
 import child_process from 'child_process';

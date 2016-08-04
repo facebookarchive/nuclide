@@ -1,0 +1,14 @@
+{
+  "name": "nuclide-grep-rpc",
+  "repository": "https://github.com/facebook/nuclide",
+  "version": "0.0.0",
+  "main": "./lib/GrepService.js",
+  "description": "Execute project search on a remote directory.",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  }
+}

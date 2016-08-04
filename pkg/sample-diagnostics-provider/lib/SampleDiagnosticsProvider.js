@@ -13,7 +13,7 @@ import type {
   DiagnosticProviderUpdate,
   MessageUpdateCallback,
   MessageInvalidationCallback,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 

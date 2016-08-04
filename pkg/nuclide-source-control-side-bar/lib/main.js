@@ -14,7 +14,7 @@ import type {
   SetBookmarkIsLoading,
   UnsetBookmarkIsLoading,
 } from './types';
-import type {BookmarkInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
 
 import * as ActionType from './ActionType';

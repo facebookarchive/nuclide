@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import typeof * as PythonService from '../../nuclide-python-base';
-import type {PythonCompletion} from '../../nuclide-python-base/lib/PythonService';
+import typeof * as PythonService from '../../nuclide-python-rpc';
+import type {PythonCompletion} from '../../nuclide-python-rpc/lib/PythonService';
 
 import invariant from 'assert';
 import {trackTiming} from '../../nuclide-analytics';

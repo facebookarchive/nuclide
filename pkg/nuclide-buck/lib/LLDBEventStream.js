@@ -11,14 +11,14 @@
 
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {BuckProject} from '../../nuclide-buck-rpc';
-import type RemoteControlService from '../../nuclide-debugger-atom/lib/RemoteControlService';
+import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import type {BuckEvent} from './BuckEventStream';
 
 import {Observable} from 'rxjs';
 import {compact} from '../../commons-node/stream';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {LaunchProcessInfo} from '../../nuclide-debugger-lldb-client/lib/LaunchProcessInfo';
+import {LaunchProcessInfo} from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
 import {getLogger} from '../../nuclide-logging';
 import nuclideUri from '../../commons-node/nuclideUri';
 
@@ -55,10 +55,10 @@ async function debugBuckTarget(
 
   const info = new LaunchProcessInfo(buckRoot, {
     executablePath: remoteOutputPath,
-    // TODO(hansonw): Fix this when nuclide-debugger-lldb-server supports proper array args.
+    // TODO(hansonw): Fix this when nuclide-debugger-native-rpc supports proper array args.
     // This will break for quoted arguments and the like.
     arguments: args == null ? '' : args.join(' '),
-    // TODO(hansonw): Add this when nuclide-debugger-lldb supports environment vars.
+    // TODO(hansonw): Add this when nuclide-debugger-native supports environment vars.
     environmentVariables: null,
     workingDirectory: '', // use the default
     basepath: remoteBuckRoot,

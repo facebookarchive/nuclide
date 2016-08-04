@@ -19,7 +19,7 @@ import {Emitter} from 'atom';
 import {matchesFilter} from './FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import {StatusCodeNumber} from '../../nuclide-hg-repository-base/lib/hg-constants';
+import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {getLogger} from '../../nuclide-logging';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {track} from '../../nuclide-analytics';
@@ -32,7 +32,7 @@ import type {Directory} from './FileTreeHelpers';
 import type {Dispatcher} from 'flux';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 
 
 type ActionPayload = Object;

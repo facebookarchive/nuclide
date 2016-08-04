@@ -15,14 +15,14 @@ import type {
   LinterProvider,
   ObservableDiagnosticProvider,
   ObservableDiagnosticUpdater,
-} from '../../nuclide-diagnostics-base';
+} from '../../nuclide-diagnostics-common';
 
 import {Disposable, CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {getLogger} from '../../nuclide-logging';
-import {DiagnosticStore} from '../../nuclide-diagnostics-base';
+import {DiagnosticStore} from '../../nuclide-diagnostics-common';
 
 import {createAdapters} from './LinterAdapterFactory';
 

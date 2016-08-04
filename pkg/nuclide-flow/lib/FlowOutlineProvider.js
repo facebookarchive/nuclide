@@ -13,7 +13,7 @@ import type {
   OutlineTree,
   Outline,
 } from '../../nuclide-outline-view';
-import type {FlowOutlineTree} from '../../nuclide-flow-base';
+import type {FlowOutlineTree} from '../../nuclide-flow-rpc';
 
 import {Point} from 'atom';
 

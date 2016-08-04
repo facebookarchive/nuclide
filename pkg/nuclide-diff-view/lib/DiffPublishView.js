@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {RevisionInfo} from '../../nuclide-hg-repository-base/lib/HgService';
+import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type DiffViewModel from './DiffViewModel';
 import type {PublishModeType, PublishModeStateType} from './types';
 
-import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-base/lib/utils';
+import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import classnames from 'classnames';
 import {DiffMode, PublishMode, PublishModeState} from './constants';

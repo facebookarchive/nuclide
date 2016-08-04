@@ -1,14 +1,92 @@
 {
   "name": "nuclide-clang",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/ClangService.js",
+  "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Provides support for the cxx family of languages via the clang compiler",
+  "description": "Exposes features from nuclide-clang in Atom",
+  "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
-    "packageType": "Node",
-    "testRunner": "npm"
+    "packageType": "Atom",
+    "testRunner": "apm",
+    "configMetadata": {
+      "pathComponents": [
+        "Language",
+        "Clang"
+      ]
+    },
+    "config": {
+      "libclangPath": {
+        "title": "libclang Library Path",
+        "type": "string",
+        "default": "",
+        "description": "Path to libclang.{so, dylib, dll} on your system. (Local projects only)"
+      },
+      "enableDefaultFlags": {
+        "title": "Enable Default Compilation Flags",
+        "type": "boolean",
+        "default": "true",
+        "description": "Attempt to use Clang with *Default Compilation Flags* if they cannot be determined via Buck or `compile_commands.json`."
+      },
+      "defaultFlags": {
+        "title": "Default Compilation Flags",
+        "type": "array",
+        "default": [
+          "-std=c++14",
+          "-x",
+          "c++"
+        ],
+        "description": "List of default flags to use with Clang, if enabled.",
+        "items": {
+          "type": "string"
+        }
+      },
+      "defaultDiagnostics": {
+        "title": "Enable Diagnostics With Default Flags",
+        "type": "boolean",
+        "default": "false",
+        "description": "Enable diagnostics even while using default flags. May lead to inaccurate results."
+      }
+    }
   },
-  "scripts": {
-    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  "activationHooks": [
+    "language-c:grammar-used",
+    "language-objective-c:grammar-used"
+  ],
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "createAutocompleteProvider"
+      }
+    },
+    "hyperclick.provider": {
+      "versions": {
+        "0.0.0": "getHyperclickProvider"
+      }
+    },
+    "nuclide-code-format.provider": {
+      "versions": {
+        "0.0.0": "provideCodeFormat"
+      }
+    },
+    "linter": {
+      "versions": {
+        "1.0.0": "provideLinter"
+      }
+    },
+    "nuclide-type-hint.provider": {
+      "versions": {
+        "0.0.0": "createTypeHintProvider"
+      }
+    },
+    "nuclide-busy-signal": {
+      "versions": {
+        "0.1.0": "provideBusySignal"
+      }
+    },
+    "nuclide-outline-view": {
+      "versions": {
+        "0.0.0": "provideOutlineView"
+      }
+    }
   }
 }

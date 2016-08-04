@@ -14,13 +14,13 @@ import type {
   BookmarkInfo,
   LineDiff,
   StatusCodeNumberValue,
-} from '../../nuclide-hg-repository-base/lib/HgService';
+} from '../../nuclide-hg-rpc/lib/HgService';
 import type {HgRepositoryClient} from './HgRepositoryClient';
 
 import {
   StatusCodeNumber,
   HgStatusOption,
-} from '../../nuclide-hg-repository-base/lib/hg-constants';
+} from '../../nuclide-hg-rpc/lib/hg-constants';
 
 /*
  * Delegate to the passed in HgRepositoryClient.
