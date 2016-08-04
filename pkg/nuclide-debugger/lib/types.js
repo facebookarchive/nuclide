@@ -336,6 +336,7 @@ declare class WebInspector$Settings {
   breakpoints: WebInspector$Setting<Array<mixed>>,
   pauseOnExceptionEnabled: WebInspector$Setting<boolean>,
   pauseOnCaughtException: WebInspector$Setting<boolean>,
+  singleThreadStepping: WebInspector$Setting<boolean>,
 }
 
 declare class WebInspector$Setting<T> {

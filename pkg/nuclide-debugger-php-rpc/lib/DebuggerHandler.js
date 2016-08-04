@@ -10,6 +10,7 @@
  */
 
 import invariant from 'assert';
+import {updateSettings} from './settings';
 import {makeExpressionHphpdCompatible} from './utils';
 import logger from './utils';
 import {uriToPath, getBreakpointLocation} from './helpers';
@@ -137,6 +138,10 @@ export class DebuggerHandler extends Handler {
           compatParams.expression,
         );
         this.replyToCommand(id, result);
+        break;
+
+      case 'setDebuggerSettings':
+        updateSettings(params);
         break;
 
       default:

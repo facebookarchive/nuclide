@@ -58,6 +58,7 @@ WebInspector.DebuggerModel = function(target)
     WebInspector.settings.enableAsyncStackTraces.addChangeListener(this.asyncStackTracesStateChanged, this);
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._applySkipStackFrameSettings, this);
     WebInspector.settings.skipContentScripts.addChangeListener(this._applySkipStackFrameSettings, this);
+    WebInspector.settings.singleThreadStepping.addChangeListener(this._singleThreadSteppingStateChanged, this);
 
     this.enableDebugger();
 
@@ -135,6 +136,7 @@ WebInspector.DebuggerModel.prototype = {
             this._globalObjectCleared();
             this._hasStaleState = false;
         }
+        this._singleThreadSteppingStateChanged();
         this._pauseOnExceptionStateChanged();
         this.asyncStackTracesStateChanged();
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerWasEnabled);
@@ -716,6 +718,11 @@ WebInspector.DebuggerModel.prototype = {
     _applySkipStackFrameSettings: function()
     {
         this._agent.skipStackFrames(WebInspector.settings.skipStackFramesPattern.get(), WebInspector.settings.skipContentScripts.get());
+    },
+
+    _singleThreadSteppingStateChanged: function()
+    {
+        this._agent.setDebuggerSettings(WebInspector.settings.singleThreadStepping.get());
     },
 
     /**

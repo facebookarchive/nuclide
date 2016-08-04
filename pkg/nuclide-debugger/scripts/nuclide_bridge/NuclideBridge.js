@@ -244,6 +244,9 @@ class NuclideBridge {
       case 'setPauseOnCaughtException':
         this._setPauseOnCaughtException(args[0]);
         break;
+      case 'setSingleThreadStepping':
+        this._setSingleThreadStepping(args[0]);
+        break;
       case 'selectThread':
         this.selectThread(args[0]);
         break;
@@ -403,6 +406,10 @@ class NuclideBridge {
     WebInspector.settings.pauseOnCaughtException.set(pauseOnCaughtExceptionEnabled);
   }
 
+  _setSingleThreadStepping(singleThreadStepping: boolean): void {
+    WebInspector.settings.singleThreadStepping.set(singleThreadStepping);
+  }
+
   _triggerDebuggerAction(actionId: string): void {
     switch (actionId) {
       case 'debugger.toggle-pause':
@@ -483,7 +490,7 @@ class NuclideBridge {
     }
   }
 
-  // TODO[jeffreytan]: this is a hack to enable php/lldb debugger
+  // TODO[jeffreytan]: this is a hack to enable hhvm/lldb debugger
   // setting breakpoints in non-parsed files.
   // Open issues:
   // Any breakpoints in this list will shown as bound/resolved;

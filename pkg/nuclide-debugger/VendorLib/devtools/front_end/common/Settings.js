@@ -87,6 +87,7 @@ WebInspector.Settings = function()
     this.skipContentScripts = this.createSetting("skipContentScripts", false);
     this.pauseOnExceptionEnabled = this.createSetting("pauseOnExceptionEnabled", false);
     this.pauseOnCaughtException = this.createSetting("pauseOnCaughtException", false);
+    this.singleThreadStepping = this.createSetting("singleThreadStepping", false);
     this.enableAsyncStackTraces = this.createSetting("enableAsyncStackTraces", false);
     this.showMediaQueryInspector = this.createSetting("showMediaQueryInspector", false);
     this.disableOverridesWarning = this.createSetting("disableOverridesWarning", false);
