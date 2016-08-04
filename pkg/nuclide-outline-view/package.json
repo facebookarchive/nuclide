@@ -22,7 +22,7 @@
     },
     "nux-register": {
       "versions": {
-        ">=0.0.0": "consumeRegisterNuxService"
+        "0.0.0": "consumeRegisterNuxService"
       }
     }
   },
