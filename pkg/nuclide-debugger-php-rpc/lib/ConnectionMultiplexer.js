@@ -13,6 +13,8 @@ import logger from './utils';
 import {launchPhpScriptWithXDebugEnabled} from './helpers';
 import {Connection} from './Connection';
 import {getConfig} from './config';
+import {getSettings} from './settings';
+
 import {
   isDummyConnection,
   sendDummyRequest,
@@ -108,6 +110,7 @@ export class ConnectionMultiplexer {
   _launchedScriptProcess: ?child_process$ChildProcess;
   _launchedScriptProcessPromise: ?Promise<void>;
   _requestSwitchMessage: ?string;
+  _lastEnabledConnection: ?Connection;
 
   constructor(clientCallback: ClientCallback) {
     this._clientCallback = clientCallback;
@@ -124,6 +127,7 @@ export class ConnectionMultiplexer {
     this._launchedScriptProcess = null;
     this._launchedScriptProcessPromise = null;
     this._requestSwitchMessage = null;
+    this._lastEnabledConnection = null;
   }
 
   onStatus(callback: (status: string) => mixed): IDisposable {
@@ -363,8 +367,11 @@ export class ConnectionMultiplexer {
     // now check if we can move from running to break...
     for (const connectionInfo of this._connections.values()) {
       if (connectionInfo.status === STATUS_BREAK) {
-        this._enableConnection(connectionInfo.connection);
-        break;
+        if (!(getSettings().singleThreadStepping) || this._lastEnabledConnection === null ||
+          (connectionInfo.connection === this._lastEnabledConnection)) {
+          this._enableConnection(connectionInfo.connection);
+          break;
+        }
       }
     }
   }
@@ -373,6 +380,7 @@ export class ConnectionMultiplexer {
     logger.log('Mux enabling connection');
     this._enabledConnection = connection;
     this._handlePotentialRequestSwitch(connection);
+    this._lastEnabledConnection = connection;
     this._setStatus(STATUS_BREAK);
   }
 
@@ -472,6 +480,10 @@ export class ConnectionMultiplexer {
   }
 
   sendContinuationCommand(command: string): void {
+    if (command === COMMAND_RUN) {
+      // For now we will have only single thread stepping, not single thread running.
+      this._lastEnabledConnection = null;
+    }
     if (this._enabledConnection) {
       this._enabledConnection.sendContinuationCommand(command);
     } else {
@@ -506,6 +518,7 @@ export class ConnectionMultiplexer {
 
     if (connection === this._enabledConnection) {
       this._disableConnection();
+      this._lastEnabledConnection = null;
     }
     this._checkForEnd();
   }

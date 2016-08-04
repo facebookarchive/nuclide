@@ -18,6 +18,7 @@ import type {
   ConnectionMultiplexer as ConnectionMultiplexerType,
 } from '../lib/ConnectionMultiplexer';
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
+import {updateSettings} from '../lib/settings';
 
 import {
   STATUS_STARTING,
@@ -27,7 +28,7 @@ import {
   COMMAND_RUN,
 } from '../lib/DbgpSocket';
 
-describe('debugger-php-rpc ConnectionMultiplexer', () => {
+describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   let socket: any;
   let connectionCount = 0;
   let connections: any;
@@ -62,6 +63,7 @@ describe('debugger-php-rpc ConnectionMultiplexer', () => {
   }
 
   beforeEach(() => {
+    updateSettings({singleThreadStepping: false});
     haveStatusThrow = false;
     connectionCount = 0;
     onStatus = jasmine.createSpy('onStatus');
