@@ -84,7 +84,8 @@ class DebuggerActions {
       const singleThreadStepping = processInfo.supportSingleThreadStepping();
       if (singleThreadStepping && await passesGK(GK_DEBUGGER_SINGLE_THREAD_STEPPING)) {
         this._store.getSettings().set('SingleThreadStepping', singleThreadStepping);
-        this.toggleSingleThreadStepping(true);
+        const singleThreadSteppingEnabled = processInfo.singleThreadSteppingEnabled();
+        this.toggleSingleThreadStepping(singleThreadSteppingEnabled);
       }
       await this._waitForChromeConnection(debuggerInstance);
     } catch (err) {

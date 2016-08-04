@@ -30,4 +30,8 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     return true;
   }
 
+  singleThreadSteppingEnabled(): boolean {
+    return true;
+  }
+
 }

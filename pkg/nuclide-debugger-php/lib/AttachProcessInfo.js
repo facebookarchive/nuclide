@@ -43,6 +43,11 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   supportSingleThreadStepping(): boolean {
     return true;
   }
+
+  singleThreadSteppingEnabled(): boolean {
+    return true;
+  }
+
 }
 
 function compareString(value1: string, value2: string): number {

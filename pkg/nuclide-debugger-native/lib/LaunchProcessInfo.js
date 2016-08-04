@@ -61,6 +61,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     return debugSession;
   }
 
+  supportSingleThreadStepping(): boolean {
+    return true;
+  }
+
   _getRpcService(): NativeDebuggerServiceType {
     const debuggerConfig = {
       logLevel: getConfig().serverLogLevel,

@@ -156,6 +156,10 @@ class DebuggerStore {
     return this._evaluationExpressionProviders;
   }
 
+  initializeSingleThreadStepping(mode: boolean) {
+    this._enableSingleThreadStepping = mode;
+  }
+
   onChange(callback: () => void): IDisposable {
     return this._emitter.on(DEBUGGER_CHANGE_EVENT, callback);
   }

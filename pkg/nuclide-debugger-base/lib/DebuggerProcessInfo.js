@@ -52,6 +52,10 @@ export default class DebuggerProcessInfo {
     return false;
   }
 
+  singleThreadSteppingEnabled(): boolean {
+    return false;
+  }
+
   async debug(): Promise<DebuggerInstance> {
     throw new Error('abstract method');
   }

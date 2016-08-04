@@ -85,6 +85,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
       : (this.displayString() < other.displayString()) ? -1 : 1;
   }
 
+  supportSingleThreadStepping(): boolean {
+    return true;
+  }
+
   displayString(): string {
     return this._targetInfo.name + '(' + this._targetInfo.pid + ')';
   }
