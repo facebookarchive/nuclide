@@ -17,6 +17,7 @@ export class DebuggerSettings {
   constructor() {
     this._settings = {
       SupportThreadsWindow: false,
+      SingleThreadStepping: false,
     };
   }
 

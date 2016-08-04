@@ -25,4 +25,9 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
   async debug(): Promise<PhpDebuggerInstance> {
     return new PhpDebuggerInstance(this, this._launchTarget);
   }
+
+  supportSingleThreadStepping(): boolean {
+    return true;
+  }
+
 }

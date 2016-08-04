@@ -39,6 +39,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   displayString(): string {
     return nuclideUri.getHostname(this._targetUri);
   }
+
+  supportSingleThreadStepping(): boolean {
+    return true;
+  }
 }
 
 function compareString(value1: string, value2: string): number {

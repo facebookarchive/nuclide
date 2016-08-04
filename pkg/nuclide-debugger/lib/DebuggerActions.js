@@ -81,6 +81,8 @@ class DebuggerActions {
       const supportThreadsWindow = processInfo.supportThreads()
         && await passesGK(GK_DEBUGGER_THREADS_WINDOW);
       this._store.getSettings().set('SupportThreadsWindow', supportThreadsWindow);
+      const singleThreadStepping = processInfo.supportSingleThreadStepping();
+      this._store.getSettings().set('SingleThreadStepping', singleThreadStepping);
       await this._waitForChromeConnection(debuggerInstance);
     } catch (err) {
       failTimerTracking(err);
