@@ -29,7 +29,6 @@ export type ContextProvider = {
   getElementFactory: () => ((props: ContextElementProps) => React.Element<any>),
   id: string, // Unique ID of the provider (suggested: use the package name of the provider)
   title: string, // Display name
-  priority: number, // Defines display order in side panel. Lower number = closer to the top.
 };
 
 export type NuclideContextView = {
