@@ -34,6 +34,7 @@ class DebuggerStore:
         self._location_serializer = serialize.LocationSerializer(
             self._file_manager, basepath)
         self._thread_manager = ThreadManager(self)
+        self._debugger_settings = self._setDefaultDebuggerSettings()
 
     def _resolve_basepath_heuristic(self, basepath):
         '''Buck emits relative path in the symbol file so we need a way to
@@ -66,6 +67,16 @@ class DebuggerStore:
         '''
         if basepath != '.' and os.path.exists(basepath):
             os.chdir(basepath)
+
+    def _setDefaultDebuggerSettings(self):
+        return {'singleThreadStepping': False}
+
+    def setDebuggerSettings(self, params):
+        for setting, value in params.items():
+            self._debugger_settings[setting] = value
+
+    def getDebuggerSettings(self):
+        return self._debugger_settings
 
     @property
     def chrome_channel(self):

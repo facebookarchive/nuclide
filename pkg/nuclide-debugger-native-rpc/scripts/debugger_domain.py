@@ -132,7 +132,9 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def stepInto(self, params):
-        self.debugger_store.debugger.GetSelectedTarget().GetProcess().GetSelectedThread().StepInto()
+        thread = self.debugger_store.debugger.GetSelectedTarget().GetProcess().GetSelectedThread()
+        flag = self._getSteppingFlag()
+        thread.StepInto(flag)
         return {}
 
     @handler()
@@ -142,7 +144,14 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def stepOver(self, params):
-        self.debugger_store.debugger.GetSelectedTarget().GetProcess().GetSelectedThread().StepOver()
+        thread = self.debugger_store.debugger.GetSelectedTarget().GetProcess().GetSelectedThread()
+        flag = self._getSteppingFlag()
+        thread.StepOver(flag)
+        return {}
+
+    @handler()
+    def setDebuggerSettings(self, params):
+        self.debugger_store.setDebuggerSettings(params)
         return {}
 
     def _set_breakpoint_by_filespec(self, filespec, line):
@@ -152,6 +161,11 @@ class DebuggerDomain(HandlerDomain):
             'locations':
                 self.debugger_store.location_serializer.get_breakpoint_locations(breakpoint),
         }
+
+    def _getSteppingFlag(self):
+        if self.debugger_store.getDebuggerSettings()['singleThreadStepping']:
+            return lldb.eOnlyThisThread
+        return lldb.eOnlyDuringStepping
 
     def _set_breakpoint_by_source_path(self, source_path, line):
         breakpoint = self.debugger_store.debugger.GetSelectedTarget().BreakpointCreateByLocation(
