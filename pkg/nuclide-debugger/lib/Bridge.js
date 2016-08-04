@@ -193,6 +193,16 @@ class Bridge {
     }
   }
 
+  setSingleThreadStepping(singleThreadStepping: boolean): void {
+    if (this._webview) {
+      this._webview.send(
+        'command',
+        'setSingleThreadStepping',
+        singleThreadStepping,
+      );
+    }
+  }
+
   selectThread(threadId: string): void {
     if (this._webview) {
       this._webview.send(
@@ -326,7 +336,7 @@ class Bridge {
             this._updateDebuggerSettings();
             this._sendAllBreakpoints();
             this._injectCSS();
-            this._syncPauseOnExceptionState();
+            this._syncDebuggerState();
             break;
           case 'CallFrameSelected':
             this._setSelectedCallFrameLine(event.args[1]);
@@ -388,10 +398,11 @@ class Bridge {
     }
   }
 
-  _syncPauseOnExceptionState(): void {
+  _syncDebuggerState(): void {
     const store = this._debuggerModel.getStore();
     this.setPauseOnException(store.getTogglePauseOnException());
     this.setPauseOnCaughtException(store.getTogglePauseOnCaughtException());
+    this.setSingleThreadStepping(store.getEnableSingleThreadStepping());
   }
 
   _handleDebuggerPaused(): void {

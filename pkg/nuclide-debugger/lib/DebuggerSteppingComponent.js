@@ -26,6 +26,8 @@ type DebuggerSteppingComponentProps = {
   debuggerMode: DebuggerModeType,
   pauseOnException: boolean,
   pauseOnCaughtException: boolean,
+  allowSingleThreadStepping: boolean,
+  singleThreadStepping: boolean,
 };
 
 export class DebuggerSteppingComponent extends React.Component {
@@ -41,11 +43,13 @@ export class DebuggerSteppingComponent extends React.Component {
       debuggerMode,
       pauseOnException,
       pauseOnCaughtException,
+      allowSingleThreadStepping,
+      singleThreadStepping,
     } = this.props;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     return (
-      <div className="nuclide-debugger-stepping-component">
-        <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
+      <div className="nuclide-debugger-atom-stepping-component">
+        <ButtonGroup className="nuclide-debugger-atom-stepping-buttongroup">
           <Button
             icon={isPaused ? 'playback-play' : 'playback-pause'}
             title={isPaused ? 'continue' : 'pause'}
@@ -79,7 +83,7 @@ export class DebuggerSteppingComponent extends React.Component {
           />
         </ButtonGroup>
         <Checkbox
-          className="nuclide-debugger-exception-checkbox"
+          className="nuclide-debugger-atom-exception-checkbox"
           onChange={() => actions.togglePauseOnException(!pauseOnException)}
           checked={pauseOnException}
           label={pauseOnException ? 'Pause on' : 'Pause on exception'}
@@ -103,10 +107,19 @@ export class DebuggerSteppingComponent extends React.Component {
             </ButtonGroup>,
             <span
               key="second"
-              className="nuclide-debugger-exception-fragment">
+              className="nuclide-debugger-atom-exception-fragment">
               {' exception'}
             </span>,
           ]
+          : null
+        }
+        {allowSingleThreadStepping ?
+          <Checkbox
+            className="nuclide-debugger-atom-exception-checkbox"
+            onChange={() => actions.toggleSingleThreadStepping(!singleThreadStepping)}
+            checked={singleThreadStepping}
+            label={'Enable Single Thread Stepping'}
+          />
           : null
         }
       </div>

@@ -41,8 +41,10 @@ type Props = {
 export class NewDebuggerView extends React.Component {
   props: Props;
   state: {
+    allowSingleThreadStepping: boolean,
     togglePauseOnException: boolean,
     togglePauseOnCaughtException: boolean,
+    enableSingleThreadStepping: boolean,
     debuggerMode: DebuggerModeType,
     callstack: ?Callstack,
     breakpoints: ?FileLineBreakpoints,
@@ -72,9 +74,11 @@ export class NewDebuggerView extends React.Component {
     const debuggerStore = props.model.getStore();
     const threadStore = props.model.getThreadStore();
     this.state = {
+      allowSingleThreadStepping: Boolean(debuggerStore.getSettings().get('SingleThreadStepping')),
       debuggerMode: debuggerStore.getDebuggerMode(),
       togglePauseOnException: debuggerStore.getTogglePauseOnException(),
       togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
+      enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
       showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
       callstack: props.model.getCallstackStore().getCallstack(),
       breakpoints: props.model.getBreakpointStore().getAllBreakpoints(),
@@ -88,10 +92,16 @@ export class NewDebuggerView extends React.Component {
     this._disposables.add(
       debuggerStore.onChange(() => {
         this.setState({
+          // We need to refetch some values that we already got in the constructor
+          // since these values weren't necessarily properly intialized until now.
+          allowSingleThreadStepping: Boolean(debuggerStore.getSettings()
+            .get('SingleThreadStepping')),
           debuggerMode: debuggerStore.getDebuggerMode(),
           togglePauseOnException: debuggerStore.getTogglePauseOnException(),
           togglePauseOnCaughtException: debuggerStore.getTogglePauseOnCaughtException(),
-          showThreadsWindow: Boolean(debuggerStore.getSettings().get('SupportThreadsWindow')),
+          enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
+          showThreadsWindow: Boolean(debuggerStore.getSettings()
+            .get('SupportThreadsWindow')),
         });
       }),
     );
@@ -135,7 +145,7 @@ export class NewDebuggerView extends React.Component {
     const LocalsComponentWrapped = this._localsComponentWrapped;
     const threadsSection = this.state.showThreadsWindow
       ? <Section collapsable={true} headline="Threads">
-          <div className="nuclide-debugger-section-content">
+          <div className="nuclide-debugger-atom-section-content">
             <DebuggerThreadsComponent
               bridge={this.props.model.getBridge()}
               threadList={this.state.threadList}
@@ -147,17 +157,19 @@ export class NewDebuggerView extends React.Component {
     return (
       <div className="nuclide-debugger-container-new">
         <Section collapsable={true} headline="Debugger Controls">
-          <div className="nuclide-debugger-section-content">
+          <div className="nuclide-debugger-atom-section-content">
             <DebuggerSteppingComponent
               actions={actions}
               debuggerMode={this.state.debuggerMode}
               pauseOnException={this.state.togglePauseOnException}
               pauseOnCaughtException={this.state.togglePauseOnCaughtException}
+              allowSingleThreadStepping={this.state.allowSingleThreadStepping}
+              singleThreadStepping={this.state.enableSingleThreadStepping}
             />
           </div>
         </Section>
         <Section collapsable={true} headline="Call Stack">
-          <div className="nuclide-debugger-section-content">
+          <div className="nuclide-debugger-atom-section-content">
             <DebuggerCallstackComponent
               actions={actions}
               callstack={this.state.callstack}
@@ -166,7 +178,7 @@ export class NewDebuggerView extends React.Component {
         </Section>
         {threadsSection}
         <Section collapsable={true} headline="Breakpoints">
-          <div className="nuclide-debugger-section-content">
+          <div className="nuclide-debugger-atom-section-content">
             <BreakpointListComponent
               actions={actions}
               breakpoints={this.state.breakpoints}
@@ -174,14 +186,14 @@ export class NewDebuggerView extends React.Component {
           </div>
         </Section>
         <Section collapsable={true} headline="Locals">
-          <div className="nuclide-debugger-section-content">
+          <div className="nuclide-debugger-atom-section-content">
             <LocalsComponentWrapped
               watchExpressionStore={model.getWatchExpressionStore()}
             />
           </div>
         </Section>
         <Section collapsable={true} headline="Watch Expressions">
-          <div className="nuclide-debugger-section-content">
+          <div className="nuclide-debugger-atom-section-content">
             <WatchExpressionComponentWrapped
               onAddWatchExpression={actions.addWatchExpression.bind(model)}
               onRemoveWatchExpression={actions.removeWatchExpression.bind(model)}

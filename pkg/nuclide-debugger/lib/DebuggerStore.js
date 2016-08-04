@@ -57,6 +57,7 @@ class DebuggerStore {
   _debuggerMode: DebuggerModeType;
   _togglePauseOnException: boolean;
   _togglePauseOnCaughtException: boolean;
+  _enableSingleThreadStepping: boolean;
   _onLoaderBreakpointResume: () => void;
   _registerExecutor: ?() => IDisposable;
   _consoleDisposable: ?IDisposable;
@@ -77,6 +78,7 @@ class DebuggerStore {
     this._debuggerMode = DebuggerMode.STOPPED;
     this._togglePauseOnException = false;
     this._togglePauseOnCaughtException = false;
+    this._enableSingleThreadStepping = false;
     this._registerExecutor = null;
     this._consoleDisposable = null;
     this.loaderBreakpointResumePromise = new Promise(resolve => {
@@ -142,6 +144,10 @@ class DebuggerStore {
     return this._togglePauseOnCaughtException;
   }
 
+  getEnableSingleThreadStepping(): boolean {
+    return this._enableSingleThreadStepping;
+  }
+
   getSettings(): DebuggerSettings {
     return this._debuggerSettings;
   }
@@ -190,6 +196,11 @@ class DebuggerStore {
         const pauseOnCaughtException = payload.data;
         this._togglePauseOnCaughtException = pauseOnCaughtException;
         this._model.getBridge().setPauseOnCaughtException(pauseOnCaughtException);
+        break;
+      case Constants.Actions.TOGGLE_SINGLE_THREAD_STEPPING:
+        const singleThreadStepping = payload.data;
+        this._enableSingleThreadStepping = singleThreadStepping;
+        this._model.getBridge().setSingleThreadStepping(singleThreadStepping);
         break;
       case Constants.Actions.DEBUGGER_MODE_CHANGE:
         this._debuggerMode = payload.data;

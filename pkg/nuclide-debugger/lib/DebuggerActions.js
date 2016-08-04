@@ -47,7 +47,7 @@ const AnalyticsEvents = Object.freeze({
 
 const GK_DEBUGGER_THREADS_WINDOW = 'nuclide_debugger_threads_window';
 const GK_DEBUGGER_CONSOLE_WINDOW = 'nuclide_debugger_console_window';
-
+const GK_DEBUGGER_SINGLE_THREAD_STEPPING = 'nuclide_debugger_single_thread_stepping';
 /**
  * Flux style action creator for actions that affect the debugger.
  */
@@ -82,7 +82,10 @@ class DebuggerActions {
         && await passesGK(GK_DEBUGGER_THREADS_WINDOW);
       this._store.getSettings().set('SupportThreadsWindow', supportThreadsWindow);
       const singleThreadStepping = processInfo.supportSingleThreadStepping();
-      this._store.getSettings().set('SingleThreadStepping', singleThreadStepping);
+      if (singleThreadStepping && await passesGK(GK_DEBUGGER_SINGLE_THREAD_STEPPING)) {
+        this._store.getSettings().set('SingleThreadStepping', singleThreadStepping);
+        this.toggleSingleThreadStepping(true);
+      }
       await this._waitForChromeConnection(debuggerInstance);
     } catch (err) {
       failTimerTracking(err);
@@ -418,6 +421,13 @@ class DebuggerActions {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION,
       data: pauseOnCaughtException,
+    });
+  }
+
+  toggleSingleThreadStepping(singleThreadStepping: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.TOGGLE_SINGLE_THREAD_STEPPING,
+      data: singleThreadStepping,
     });
   }
 
