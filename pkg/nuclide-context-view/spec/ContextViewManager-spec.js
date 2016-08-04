@@ -15,6 +15,7 @@ import type {DefinitionService} from '../../nuclide-definition-service';
 import {CompositeDisposable} from 'atom';
 import {ContextViewManager} from '../lib/ContextViewManager';
 import {React} from 'react-for-atom';
+import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 
 const PROVIDER1_ID = 'context-provider-1';
@@ -29,6 +30,11 @@ describe('ContextViewManager', () => {
   let disposables: CompositeDisposable;
   let provider1: ContextProvider;
   let provider2: ContextProvider;
+  const provider1Priority = 1;
+  const provider2Priority = 2;
+  const provider3Priority = 3;
+  const provider4Priority = 4;
+  const provider5Priority = 5;
   let defService: DefinitionService;
 
   function elementFactory() {
@@ -54,6 +60,8 @@ describe('ContextViewManager', () => {
       title: PROVIDER2_TITLE,
       priority: 2,
     };
+    featureConfig.set(provider1.id.concat('.priority'), provider1Priority);
+    featureConfig.set(provider2.id.concat('.priority'), provider2Priority);
     defService = {
       getDefinition: (editor: TextEditor, position: atom$Point) => {
         return Promise.resolve(null);
@@ -71,30 +79,30 @@ describe('ContextViewManager', () => {
 
   it('correctly registers a single context provider and rerenders', () => {
     spyOn(managerShowing, '_render');
-    const registered = managerShowing.registerProvider(provider1);
+    const registered = managerShowing.registerProvider(provider1, provider1Priority);
     expect(registered).toBe(true);
     expect(managerShowing._contextProviders.length).toBe(1);
     expect(managerShowing._render).toHaveBeenCalled();
   });
   it('correctly registers multiple context provdiers and rerenders', () => {
     spyOn(managerShowing, '_render');
-    const registered1 = managerShowing.registerProvider(provider1);
-    const registered2 = managerShowing.registerProvider(provider2);
+    const registered1 = managerShowing.registerProvider(provider1, provider1Priority);
+    const registered2 = managerShowing.registerProvider(provider2, provider2Priority);
     expect(registered1).toBe(true);
     expect(registered2).toBe(true);
     expect(managerShowing._contextProviders.length).toBe(2);
     expect(managerShowing._render).toHaveBeenCalled();
   });
   it('does not register a provider with an already existing ID', () => {
-    const registered1 = managerShowing.registerProvider(provider1);
-    const registeredAgain = managerShowing.registerProvider(provider1);
+    const registered1 = managerShowing.registerProvider(provider1, provider1Priority);
+    const registeredAgain = managerShowing.registerProvider(provider1, provider1Priority);
     expect(registered1).toBe(true);
     expect(registeredAgain).toBe(false); // Shouldn't re-register provider with same ID
     expect(managerShowing._contextProviders.length).toBe(1);
   });
   it('unregisters a provider and rerenders', () => {
     spyOn(managerShowing, '_render');
-    managerShowing.registerProvider(provider1);
+    managerShowing.registerProvider(provider1, provider1Priority);
     const unregistered = managerShowing.unregisterProvider(PROVIDER1_ID);
     expect(unregistered).toBe(true);
     expect(managerShowing._contextProviders.length).toBe(0);
@@ -105,7 +113,7 @@ describe('ContextViewManager', () => {
     const unregistered1 = managerShowing.unregisterProvider(PROVIDER1_ID);
     expect(unregistered1).toBe(false);
     expect(managerShowing._contextProviders.length).toBe(0);
-    managerShowing.registerProvider(provider1);
+    managerShowing.registerProvider(provider1, provider1Priority);
     const unregistered2 = managerShowing.unregisterProvider(PROVIDER2_ID);
     expect(unregistered2).toBe(false);
     expect(managerShowing._contextProviders.length).toBe(1);
@@ -117,17 +125,20 @@ describe('ContextViewManager', () => {
       title: '4', priority: 4};
     const provider5 = {getElementFactory: elementFactory, id: '5',
       title: '5', priority: 5};
-    managerHidden.registerProvider(provider2);
-    managerHidden.registerProvider(provider1);
+    featureConfig.set(provider3.id.concat('.priority'), provider3Priority);
+    featureConfig.set(provider4.id.concat('.priority'), provider4Priority);
+    featureConfig.set(provider5.id.concat('.priority'), provider5Priority);
+    managerHidden.registerProvider(provider2, provider2Priority);
+    managerHidden.registerProvider(provider1, provider1Priority);
     expect(managerHidden._contextProviders[0].id).toBe(PROVIDER1_ID);
     expect(managerHidden._contextProviders[1].id).toBe(PROVIDER2_ID);
     // Insert order: 4, 5, 1, 3, 2
     // Provider list should end up as [1, 2, 3, 4, 5]
-    managerShowing.registerProvider(provider4);
-    managerShowing.registerProvider(provider5);
-    managerShowing.registerProvider(provider1);
-    managerShowing.registerProvider(provider3);
-    managerShowing.registerProvider(provider2);
+    managerShowing.registerProvider(provider4, provider4Priority);
+    managerShowing.registerProvider(provider5, provider5Priority);
+    managerShowing.registerProvider(provider1, provider1Priority);
+    managerShowing.registerProvider(provider3, provider3Priority);
+    managerShowing.registerProvider(provider2, provider2Priority);
     expect(managerShowing._contextProviders[0].id).toBe(PROVIDER1_ID);
     expect(managerShowing._contextProviders[1].id).toBe(PROVIDER2_ID);
     expect(managerShowing._contextProviders[2].id).toBe('3');

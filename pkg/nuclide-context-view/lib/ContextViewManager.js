@@ -18,6 +18,7 @@ import type {EditorPosition} from '../../commons-atom/debounced';
 import type {ContextProvider} from './types';
 
 import invariant from 'assert';
+import featureConfig from '../../commons-atom/featureConfig';
 import {React, ReactDOM} from 'react-for-atom';
 import {observeTextEditorsPositions} from '../../commons-atom/debounced';
 import {Observable} from 'rxjs';
@@ -48,6 +49,10 @@ export class ContextViewManager {
   _atomPanel: ?atom$Panel;
   _contextProviders: Array<ContextProvider>;
   _defServiceSubscription: ?rx$ISubscription;
+  // Subscriptions to all changes in registered context providers' `priority` setting.
+  //    Key: ID of the context provider
+  //    Value: Disposable for the change event subscription on its priority setting
+  _settingDisposables: Map<string, IDisposable>;
   _definitionService: ?DefinitionService;
   _isVisible: boolean;
   // Whether Context View should keep displaying the current content even after the cursor moves
@@ -60,6 +65,7 @@ export class ContextViewManager {
     this._atomPanel = null;
     this._contextProviders = [];
     this._defServiceSubscription = null;
+    this._settingDisposables = new Map();
     this._definitionService = null;
     this._isVisible = isVisible;
     this._locked = false; // Should be unlocked by default
@@ -76,6 +82,9 @@ export class ContextViewManager {
 
   dispose(): void {
     this._disposeView();
+    this._settingDisposables.forEach(disposable => {
+      disposable.dispose();
+    });
   }
 
   hide(): void {
@@ -92,12 +101,16 @@ export class ContextViewManager {
     // and find index to insert at based on priority
     let insertIndex = -1;
     let foundIndex = false;
+    const keyPath = newProvider.id + '.priority';
+    const newPriority: number = (featureConfig.get(keyPath): any);
     const providers = this._contextProviders;
     for (let i = 0; i < providers.length; i++) {
       if (newProvider.id === providers[i].id) {
         return false;
       }
-      if (!foundIndex && newProvider.priority <= providers[i].priority) {
+      const existingPriority: number =
+        (featureConfig.get(providers[i].id + '.priority'): any);
+      if (!foundIndex && newPriority <= existingPriority) {
         insertIndex = i;
         foundIndex = true;
       }
@@ -106,8 +119,22 @@ export class ContextViewManager {
       insertIndex = providers.length;
     }
     this._contextProviders.splice(insertIndex, 0, newProvider);
+    const disposable = featureConfig.observe(keyPath, newValue => {
+      this._sortProvidersBasedOnPriority();
+    });
+    this._settingDisposables.set(newProvider.id, disposable);
     this._render();
     return true;
+  }
+
+
+  _sortProvidersBasedOnPriority(): void {
+    this._contextProviders.sort((provider1, provider2) => {
+      const priority1: number = (featureConfig.get(provider1.id + '.priority'): any);
+      const priority2: number = (featureConfig.get(provider2.id + '.priority'): any);
+      return priority1 - priority2;
+    });
+    this._render();
   }
 
   serialize(): ContextViewConfig {
@@ -196,6 +223,12 @@ export class ContextViewManager {
       if (this._contextProviders[i].id === idToRemove) {
         // Remove from array
         this._contextProviders.splice(i, 1);
+        // Unsubscribe from change events on the removed provider's `priority` setting
+        const settingChangeListener = this._settingDisposables.get(idToRemove);
+        if (settingChangeListener != null) {
+          settingChangeListener.dispose();
+        }
+        this._settingDisposables.delete(idToRemove);
         wasRemoved = true;
       }
     }
