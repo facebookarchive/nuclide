@@ -1,4 +1,0 @@
-import Rx from 'rxjs';
-import {Observable} from 'rxjs';
-
-assert(Rx.Observable === Observable);

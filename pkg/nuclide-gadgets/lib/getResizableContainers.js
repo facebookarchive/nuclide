@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +10,21 @@
  * the root directory of this source tree.
  */
 
-import type {PaneItemContainer} from '../types/PaneItemContainer';
+exports.default = getResizableContainers;
 
-const isResizable = pane => typeof pane.setFlexScale === 'function';
-const getParent = pane => pane.getParent && pane.getParent();
+var isResizable = function isResizable(pane) {
+  return typeof pane.setFlexScale === 'function';
+};
+var getParent = function getParent(pane) {
+  return pane.getParent && pane.getParent();
+};
 
 /**
  * Walk up the tree finding all resizable descendants.
  */
-export default function *getResizableContainers(
-  container_: PaneItemContainer,
-): Iterable<PaneItemContainer> {
-  let container = container_;
+
+function* getResizableContainers(container_) {
+  var container = container_;
   while (container) {
     if (isResizable(container)) {
       yield container;
@@ -28,3 +32,5 @@ export default function *getResizableContainers(
     container = getParent(container);
   }
 }
+
+module.exports = exports.default;

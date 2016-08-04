@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +10,11 @@
  * the root directory of this source tree.
  */
 
-import type {AnnotatedTaskMetadata, TaskId} from './types';
+exports.getTaskMetadata = getTaskMetadata;
 
-export function getTaskMetadata(
-  taskId: TaskId,
-  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
-): ?AnnotatedTaskMetadata {
-  const taskListsForRunner = taskLists.get(taskId.taskRunnerId);
-  return taskListsForRunner == null
-    ? null
-    : taskListsForRunner.find(taskMeta => taskMeta.type === taskId.type);
+function getTaskMetadata(taskId, taskLists) {
+  var taskListsForRunner = taskLists.get(taskId.taskRunnerId);
+  return taskListsForRunner == null ? null : taskListsForRunner.find(function (taskMeta) {
+    return taskMeta.type === taskId.type;
+  });
 }

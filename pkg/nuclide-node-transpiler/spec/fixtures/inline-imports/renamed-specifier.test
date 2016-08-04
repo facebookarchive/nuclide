@@ -1,5 +1,0 @@
-import {foo as bar} from 'Foo';
-
-function test() {
-  bar();
-}

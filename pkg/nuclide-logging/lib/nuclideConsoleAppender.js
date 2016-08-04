@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getNuclideConsoleMessages = getNuclideConsoleMessages;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +13,31 @@
  * the root directory of this source tree.
  */
 
-import Rx from 'rxjs';
+var _rxjsBundlesRxUmdMinJs2;
 
-type NuclideConsoleMessage = {
-  data: string,
-  level: string,
-  startTime: string,
-  categoryName: string,
-};
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = _interopRequireDefault(require('rxjs/bundles/Rx.umd.min.js'));
+}
 
-let sub = null;
-function getSubject(): Rx.Subject<NuclideConsoleMessage> {
+var sub = null;
+function getSubject() {
   if (sub == null) {
-    sub = new Rx.Subject();
+    sub = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).default.Subject();
   }
   return sub;
 }
 
-export function getNuclideConsoleMessages(): Rx.Observable<NuclideConsoleMessage> {
+function getNuclideConsoleMessages() {
   return getSubject().asObservable();
 }
 
-function consoleAppender(): (loggingEvent: any) => void {
-  return loggingEvent => {
+function consoleAppender() {
+  return function (loggingEvent) {
     getSubject().next(loggingEvent);
   };
 }
 
-export const appender = consoleAppender;
-export const configure = consoleAppender;
+var appender = consoleAppender;
+exports.appender = appender;
+var configure = consoleAppender;
+exports.configure = configure;

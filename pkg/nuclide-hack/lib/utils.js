@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,66 +10,79 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import typeof * as HackService from '../../nuclide-hack-base/lib/HackService';
+exports.getIdentifierAndRange = getIdentifierAndRange;
+exports.getIdentifierAtPosition = getIdentifierAtPosition;
 
-import {getConfig} from './config';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import invariant from 'assert';
-import {wordAtPosition} from '../../commons-atom/range';
+var getHackEnvironmentDetails = _asyncToGenerator(function* (fileUri) {
+  var hackService = getHackService(fileUri);
+  var config = (0, (_config2 || _config()).getConfig)();
+  var useIdeConnection = config.useIdeConnection;
+  // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
+  var hackEnvironment = yield hackService.getHackEnvironmentDetails(fileUri, config.hhClientPath, useIdeConnection, config.logLevel);
+  var isAvailable = hackEnvironment != null;
 
-const HACK_SERVICE_NAME = 'HackService';
+  var _ref = hackEnvironment || {};
 
-const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+  var hackRoot = _ref.hackRoot;
+  var hackCommand = _ref.hackCommand;
 
-export function getIdentifierAndRange(
-  editor: atom$TextEditor,
-  position: atom$Point,
-): ?{id: string, range: atom$Range} {
-  const matchData = wordAtPosition(editor, position, HACK_WORD_REGEX);
-  return (matchData == null || matchData.wordMatch.length === 0) ? null
-      : {id: matchData.wordMatch[0], range: matchData.range};
+  return {
+    hackService: hackService,
+    hackRoot: hackRoot,
+    hackCommand: hackCommand,
+    isAvailable: isAvailable,
+    useIdeConnection: useIdeConnection
+  };
+});
+
+exports.getHackEnvironmentDetails = getHackEnvironmentDetails;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _config2;
+
+function _config() {
+  return _config2 = require('./config');
 }
 
-export function getIdentifierAtPosition(editor: atom$TextEditor, position: atom$Point): ?string {
-  const result = getIdentifierAndRange(editor, position);
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../../nuclide-remote-connection');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsAtomRange2;
+
+function _commonsAtomRange() {
+  return _commonsAtomRange2 = require('../../commons-atom/range');
+}
+
+var HACK_SERVICE_NAME = 'HackService';
+
+var HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+
+function getIdentifierAndRange(editor, position) {
+  var matchData = (0, (_commonsAtomRange2 || _commonsAtomRange()).wordAtPosition)(editor, position, HACK_WORD_REGEX);
+  return matchData == null || matchData.wordMatch.length === 0 ? null : { id: matchData.wordMatch[0], range: matchData.range };
+}
+
+function getIdentifierAtPosition(editor, position) {
+  var result = getIdentifierAndRange(editor, position);
   return result == null ? null : result.id;
 }
 
 // Don't call this directly from outside this package.
 // Call getHackEnvironmentDetails instead.
-function getHackService(filePath: NuclideUri): HackService {
-  const hackRegisteredService = getServiceByNuclideUri(HACK_SERVICE_NAME, filePath);
-  invariant(hackRegisteredService);
+function getHackService(filePath) {
+  var hackRegisteredService = (0, (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).getServiceByNuclideUri)(HACK_SERVICE_NAME, filePath);
+  (0, (_assert2 || _assert()).default)(hackRegisteredService);
   return hackRegisteredService;
-}
-
-export type HackEnvironment = {
-  hackService: HackService,
-  hackRoot: ?NuclideUri,
-  hackCommand: ?string,
-  isAvailable: boolean,
-  useIdeConnection: boolean,
-};
-
-export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<HackEnvironment> {
-  const hackService = getHackService(fileUri);
-  const config = getConfig();
-  const useIdeConnection = config.useIdeConnection;
-  // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
-  const hackEnvironment = await hackService.getHackEnvironmentDetails(
-    fileUri,
-    config.hhClientPath,
-    useIdeConnection,
-    config.logLevel);
-  const isAvailable = hackEnvironment != null;
-  const {hackRoot, hackCommand} = hackEnvironment || {};
-
-  return {
-    hackService,
-    hackRoot,
-    hackCommand,
-    isAvailable,
-    useIdeConnection,
-  };
 }

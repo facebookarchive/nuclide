@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,50 +10,28 @@
  * the root directory of this source tree.
  */
 
-import type {CheckoutSideName, MergeConflict} from '../../nuclide-hg-repository-base/lib/HgService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {RemoteDirectory} from '../../nuclide-remote-connection';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeMergeConflictsApi = consumeMergeConflictsApi;
 
-import {MercurialConflictDetector} from './MercurialConflictDetector';
+var _MercurialConflictDetector2;
 
-let conflictDetector: ?MercurialConflictDetector;
-
-export type RepositoryContext = {
-  workingDirectory: atom$Directory | RemoteDirectory,
-  priority: number,
-  resolveText: string,
-
-  readConflicts(): Promise<Array<MergeConflict>>,
-  isResolvedFile(filePath: NuclideUri): Promise<boolean>,
-  checkoutSide(sideName: CheckoutSideName, filePath: NuclideUri): Promise<void>,
-  resolveFile(filePath: NuclideUri): Promise<void>,
-  isRebasing(): boolean,
-  complete(wasRebasing: boolean): void,
-  quit(wasRebasing: boolean): void,
-  joinPath(relativePath: string): NuclideUri,
-};
-
-export type ConflictsContextApi = {
-  getContext(): Promise<?RepositoryContext>,
-};
-
-export type ConflictsApi = {
-  registerContextApi(contextApi: ConflictsContextApi): void,
-  showForContext(repositoryContext: RepositoryContext): void,
-  hideForContext(repositoryContext: RepositoryContext): void,
-};
-
-export function activate() {
+function _MercurialConflictDetector() {
+  return _MercurialConflictDetector2 = require('./MercurialConflictDetector');
 }
 
-export function deactivate() {
+var conflictDetector = undefined;
+
+function activate() {}
+
+function deactivate() {
   if (conflictDetector != null) {
     conflictDetector.dispose();
     conflictDetector = null;
   }
 }
 
-export function consumeMergeConflictsApi(api: ConflictsApi) {
-  conflictDetector = new MercurialConflictDetector();
+function consumeMergeConflictsApi(api) {
+  conflictDetector = new (_MercurialConflictDetector2 || _MercurialConflictDetector()).MercurialConflictDetector();
   conflictDetector.setConflictsApi(api);
 }

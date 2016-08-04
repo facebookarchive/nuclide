@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,33 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
-import type {SerializedBreakpoint} from './types';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import {
-  Disposable,
-  CompositeDisposable,
-} from 'atom';
-import {Emitter} from 'atom';
-import Constants from './Constants';
-import Multimap from './Multimap';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _atom4;
+
+function _atom3() {
+  return _atom4 = require('atom');
+}
+
+var _Constants2;
+
+function _Constants() {
+  return _Constants2 = _interopRequireDefault(require('./Constants'));
+}
+
+var _Multimap2;
+
+function _Multimap() {
+  return _Multimap2 = _interopRequireDefault(require('./Multimap'));
+}
 
 /**
  * Stores the currently set breakpoints as (path, line) pairs.
@@ -26,98 +42,110 @@ import Multimap from './Multimap';
  * Mutations to this object fires off high level events to listeners such as UI
  * controllers, giving them a chance to update.
  */
-class BreakpointStore {
-  _disposables: IDisposable;
-  _breakpoints: Multimap<string, number>;
-  _emitter: atom$Emitter;
 
-  constructor(
-    dispatcher: Dispatcher,
-    initialBreakpoints: ?Array<SerializedBreakpoint>,
-  ) {
-    const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => {
-        dispatcher.unregister(dispatcherToken);
-      }),
-    );
-    this._breakpoints = new Multimap();
-    this._emitter = new Emitter();
+var BreakpointStore = (function () {
+  function BreakpointStore(dispatcher, initialBreakpoints) {
+    _classCallCheck(this, BreakpointStore);
+
+    var dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable(new (_atom2 || _atom()).Disposable(function () {
+      dispatcher.unregister(dispatcherToken);
+    }));
+    this._breakpoints = new (_Multimap2 || _Multimap()).default();
+    this._emitter = new (_atom4 || _atom3()).Emitter();
     if (initialBreakpoints) {
       this._deserializeBreakpoints(initialBreakpoints);
     }
   }
 
-  _handlePayload(payload: Object): void {
-    const {data} = payload;
-    switch (payload.actionType) {
-      case Constants.Actions.ADD_BREAKPOINT:
-        this._addBreakpoint(data.path, data.line);
-        break;
-      case Constants.Actions.DELETE_BREAKPOINT:
-        this._deleteBreakpoint(data.path, data.line);
-        break;
-      case Constants.Actions.TOGGLE_BREAKPOINT:
-        this._toggleBreakpoint(data.path, data.line);
-        break;
-      default:
-        return;
+  _createClass(BreakpointStore, [{
+    key: '_handlePayload',
+    value: function _handlePayload(payload) {
+      var data = payload.data;
+
+      switch (payload.actionType) {
+        case (_Constants2 || _Constants()).default.Actions.ADD_BREAKPOINT:
+          this._addBreakpoint(data.path, data.line);
+          break;
+        case (_Constants2 || _Constants()).default.Actions.DELETE_BREAKPOINT:
+          this._deleteBreakpoint(data.path, data.line);
+          break;
+        case (_Constants2 || _Constants()).default.Actions.TOGGLE_BREAKPOINT:
+          this._toggleBreakpoint(data.path, data.line);
+          break;
+        default:
+          return;
+      }
     }
-  }
-
-  _addBreakpoint(path: string, line: number): void {
-    this._breakpoints.set(path, line);
-    this._emitter.emit('change', path);
-  }
-
-  _deleteBreakpoint(path: string, line: number): void {
-    if (this._breakpoints.delete(path, line)) {
+  }, {
+    key: '_addBreakpoint',
+    value: function _addBreakpoint(path, line) {
+      this._breakpoints.set(path, line);
       this._emitter.emit('change', path);
     }
-  }
-
-  _toggleBreakpoint(path: string, line: number): void {
-    if (this._breakpoints.hasEntry(path, line)) {
-      this._deleteBreakpoint(path, line);
-    } else {
-      this._addBreakpoint(path, line);
+  }, {
+    key: '_deleteBreakpoint',
+    value: function _deleteBreakpoint(path, line) {
+      if (this._breakpoints.delete(path, line)) {
+        this._emitter.emit('change', path);
+      }
     }
-  }
-
-  getBreakpointsForPath(path: string): Set<number> {
-    return this._breakpoints.get(path);
-  }
-
-  getAllBreakpoints(): Multimap<string, number> {
-    return this._breakpoints;
-  }
-
-  getSerializedBreakpoints(): Array<SerializedBreakpoint> {
-    const breakpoints = [];
-    this._breakpoints.forEach((line, sourceURL) => {
-      breakpoints.push({line, sourceURL});
-    });
-    return breakpoints;
-  }
-
-  _deserializeBreakpoints(breakpoints: Array<SerializedBreakpoint>): void {
-    for (const breakpoint of breakpoints) {
-      const {line, sourceURL} = breakpoint;
-      this._addBreakpoint(sourceURL, line);
+  }, {
+    key: '_toggleBreakpoint',
+    value: function _toggleBreakpoint(path, line) {
+      if (this._breakpoints.hasEntry(path, line)) {
+        this._deleteBreakpoint(path, line);
+      } else {
+        this._addBreakpoint(path, line);
+      }
     }
-  }
+  }, {
+    key: 'getBreakpointsForPath',
+    value: function getBreakpointsForPath(path) {
+      return this._breakpoints.get(path);
+    }
+  }, {
+    key: 'getAllBreakpoints',
+    value: function getAllBreakpoints() {
+      return this._breakpoints;
+    }
+  }, {
+    key: 'getSerializedBreakpoints',
+    value: function getSerializedBreakpoints() {
+      var breakpoints = [];
+      this._breakpoints.forEach(function (line, sourceURL) {
+        breakpoints.push({ line: line, sourceURL: sourceURL });
+      });
+      return breakpoints;
+    }
+  }, {
+    key: '_deserializeBreakpoints',
+    value: function _deserializeBreakpoints(breakpoints) {
+      for (var breakpoint of breakpoints) {
+        var line = breakpoint.line;
+        var sourceURL = breakpoint.sourceURL;
 
-  /**
-   * Register a change handler that is invoked whenever the store changes.
-   */
-  onChange(callback: (path: string) => void): IDisposable {
-    return this._emitter.on('change', callback);
-  }
+        this._addBreakpoint(sourceURL, line);
+      }
+    }
 
-  dispose(): void {
-    this._emitter.dispose();
-    this._disposables.dispose();
-  }
-}
+    /**
+     * Register a change handler that is invoked whenever the store changes.
+     */
+  }, {
+    key: 'onChange',
+    value: function onChange(callback) {
+      return this._emitter.on('change', callback);
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._emitter.dispose();
+      this._disposables.dispose();
+    }
+  }]);
+
+  return BreakpointStore;
+})();
 
 module.exports = BreakpointStore;

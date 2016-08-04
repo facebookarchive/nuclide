@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +8,7 @@
  * the root directory of this source tree.
  */
 
-import type {JSXIdentifier} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
-
-function printJSXIdentifier(print: Print, node: JSXIdentifier): Lines {
+function printJSXIdentifier(print, node) {
   return [node.name];
 }
 
