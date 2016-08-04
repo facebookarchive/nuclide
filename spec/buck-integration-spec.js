@@ -120,7 +120,7 @@ describe('Buck building via toolbar', () => {
       await sleep(1000);
 
       // Run the project
-      atom.commands.dispatch(workspaceView, 'nuclide-task-runner:build');
+      atom.commands.dispatch(workspaceView, 'nuclide-task-runner:run-selected-task');
 
       // The Build task should be selected.
       const button = buildToolbar.querySelector(

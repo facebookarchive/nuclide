@@ -27,6 +27,7 @@ import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-m
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import createPackage from '../../commons-atom/createPackage';
+import {arrayRemove} from '../../commons-node/collection';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {trackEvent} from '../../nuclide-analytics';
@@ -94,22 +95,35 @@ class Activation {
           .distinctUntilChanged()
           .map(taskLists => {
             const allTasks = Array.prototype.concat(...Array.from(taskLists.values()));
-            const taskMetaByType = new Map();
-            allTasks.forEach(taskMeta => {
-              if (taskMeta.type && taskMeta.enabled && !taskMetaByType.has(taskMeta.type)) {
-                taskMetaByType.set(taskMeta.type, taskMeta);
-              }
-            });
-            return new Set(taskMetaByType.values());
+            const types = allTasks
+              .filter(taskMeta => taskMeta.enabled)
+              .map(taskMeta => taskMeta.type);
+            return new Set(types);
           }),
-        taskMeta => ({
+        taskType => ({
           'atom-workspace': {
-            [`nuclide-task-runner:${taskMeta.type}`]: () => {
-              this._actionCreators.runTask(taskMeta);
+            [`nuclide-task-runner:${taskType}`]: () => {
+              const state = this._store.getState();
+              const {activeTaskId, taskRunners} = state;
+              const taskRunnerIds = Array.from(taskRunners.keys());
+              // Give precedence to the task runner of the selected task.
+              if (activeTaskId != null) {
+                arrayRemove(taskRunnerIds, activeTaskId.taskRunnerId);
+                taskRunnerIds.unshift(activeTaskId.taskRunnerId);
+              }
+              for (const taskRunnerId of taskRunnerIds) {
+                const taskList = state.taskLists.get(taskRunnerId);
+                if (taskList == null) { continue; }
+                for (const taskMeta of taskList) {
+                  if (taskMeta.enabled && taskMeta.type === taskType) {
+                    this._actionCreators.runTask(taskMeta);
+                    return;
+                  }
+                }
+              }
             },
           },
         }),
-        taskMeta => `${taskMeta.taskRunnerId}:${taskMeta.type}`,
       ),
 
       // Add a toggle command for each task runner.
