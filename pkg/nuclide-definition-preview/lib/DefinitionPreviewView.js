@@ -17,114 +17,125 @@ import {React} from 'react-for-atom';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
+import {existingEditorForUri} from '../../commons-atom/text-editor';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
+import {TextBuffer} from 'atom';
+
+type State = {
+  buffer: atom$TextBuffer,
+  oldBuffer: ?atom$TextBuffer,
+};
 
 export class DefinitionPreviewView extends React.Component {
-  _loadAndScroll: ?() => Promise<void>;
-
   props: ContextElementProps;
+  state: State;
 
   constructor(props: ContextElementProps) {
     super(props);
-    this._loadAndScroll = null;
-    (this: any)._openInMainEditor = this._openInMainEditor.bind(this);
+    const buffer = props.definition != null
+      ? bufferForUri(props.definition.path)
+      : new TextBuffer();
+    this.state = {
+      buffer,
+      oldBuffer: null,
+    };
+    (this: any)._openCurrentDefinitionInMainEditor =
+      this._openCurrentDefinitionInMainEditor.bind(this);
   }
 
   componentWillReceiveProps(newProps: ContextElementProps): void {
-    this._loadAndScroll = null;
+    if (newProps.definition != null) {
+      const definition = newProps.definition;
+      // The buffer always needs to point to the right file path, so create a new one with
+      // the correct path if the new definition prop has a different path than the
+      // currently loaded buffer.
+      if (definition.path !== this.state.buffer.getPath()) {
+        this.setState({buffer: bufferForUri(definition.path), oldBuffer: this.state.buffer});
+      }
+    } else {
+      // A null definition has no associated file path, so make a new TextBuffer()
+      // that doesn't have an associated file path.
+      const oldBuffer = this.state.buffer;
+      this.setState({buffer: new TextBuffer(), oldBuffer});
+    }
   }
 
-  componentDidUpdate(): void {
-    // Kick this off after we have the editor rendered.
-    if (this._loadAndScroll != null) {
-      this._loadAndScroll();
+  // Loads the current buffer in state if it's not already loaded.
+  async _loadBuffer(): Promise<void> {
+    if (!this.state.buffer.loaded) {
+      await this.state.buffer.load();
+    }
+  }
+
+  componentDidUpdate(prevProps: ContextElementProps, prevState: State): void {
+    if (this.props.definition != null) {
+      this._finishRendering(this.props.definition);
+    }
+  }
+
+  componentWillUnmount(): void {
+    this.state.buffer.destroy();
+    if (this.state.oldBuffer != null) {
+      this.state.oldBuffer.destroy();
+    }
+  }
+
+  async _finishRendering(definition: Definition): Promise<void> {
+    await this._loadBuffer();
+    this._scrollToRow(definition.position.row);
+
+    const editor = this.getEditor();
+    editor.getDecorations().forEach(decoration => decoration.destroy());
+    invariant(this.props.definition != null);
+    const marker = editor.markBufferPosition(definition.position);
+    editor.decorateMarker(marker, {
+      type: 'line',
+      class: 'nuclide-current-line-highlight',
+    });
+    if (this.state.oldBuffer != null) {
+      // Only destroy oldBuffer if it's not already open in a tab - otherwise it'll
+      // close the tab using oldBuffer
+      if (existingEditorForUri(this.state.oldBuffer.getPath()) == null) {
+        invariant(this.state.oldBuffer != null);
+        this.state.oldBuffer.destroy();
+      }
     }
   }
 
   render(): React.Element<any> {
     const {ContextViewMessage, definition} = this.props;
-    // Show either the definition in an editor or a message
-    if (definition != null) {
-      return (
-        <div className="pane-item nuclide-definition-preview">
-          {this._previewDefinition(definition)}
-        </div>
-      );
-    } else {
-      return <ContextViewMessage message={ContextViewMessage.NO_DEFINITION} />;
-    }
+    // Show either a "No definition" message or the definition in an editors
+    return definition == null
+      ? <ContextViewMessage message={ContextViewMessage.NO_DEFINITION} />
+      : <div className="pane-item nuclide-definition-preview">
+          <div className="nuclide-definition-preview-editor">
+            <AtomTextEditor
+              ref="editor"
+              gutterHidden={true}
+              lineNumberGutterVisible={false}
+              path={definition.path}
+              readOnly={true}
+              textBuffer={this.state.buffer}
+              syncTextContents={false}
+            />
+            <div className="nuclide-definition-preview-button-container">
+              <Button onClick={this._openCurrentDefinitionInMainEditor} size={ButtonSizes.SMALL}>
+                Open in main editor
+              </Button>
+            </div>
+          </div>
+        </div>;
   }
 
-  _previewDefinition(definition: Definition): React.Element<any> {
-    this._loadAndScroll = null;
-
-    const path = definition.path;
-    const textBuffer = bufferForUri(path);
-    const loadAndScroll = async () => {
-      if (this._loadAndScroll !== loadAndScroll) {
-        return;
-      }
-
-      if (!textBuffer.loaded) {
-        // TODO: figure out what to do if loading fails
-        // TODO(peterhal): Can we use TextBuffer.onDidReload here?
-        await textBuffer.load();
-        if (this._loadAndScroll !== loadAndScroll) {
-          return;
-        }
-      }
-
-      // Scroll after loading is complete.
-      // TODO(peterhal): Add an initial scroll position property to AtomTextEditor
-      setTimeout(() => {
-        if (this._loadAndScroll !== loadAndScroll) {
-          return;
-        }
-        if (this.props.definition != null) {
-          const editor = this.getEditor();
-          editor.getDecorations().forEach(decoration => decoration.destroy());
-          invariant(this.props.definition != null);
-          const marker = editor.markBufferPosition(this.props.definition.position);
-          editor.decorateMarker(marker, {
-            type: 'line',
-            class: 'nuclide-current-line-highlight',
-          });
-        }
-        this._scrollToRow(definition.position.row);
-        this._loadAndScroll = null;
-      }, 50);
-    };
-    // Defer loading and scrolling until after rendering.
-    this._loadAndScroll = loadAndScroll;
-
-    return (
-      <div className="nuclide-definition-preview-editor">
-        <AtomTextEditor
-          ref="editor"
-          gutterHidden={true}
-          lineNumberGutterVisible={false}
-          path={path}
-          readOnly={true}
-          textBuffer={textBuffer}
-          syncTextContents={false}
-        />
-        <div className="nuclide-definition-preview-button-container">
-          <Button onClick={this._openInMainEditor} size={ButtonSizes.SMALL}>
-            Open in main editor
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  _openInMainEditor(): void {
+  _openCurrentDefinitionInMainEditor(): void {
     track('nuclide-definition-preview:openInMainEditor');
     const def = this.props.definition;
     if (def != null) {
       goToLocation(def.path, def.position.row, def.position.column, true);
     }
   }
+
   getEditor(): atom$TextEditor {
     return this.refs.editor.getModel();
   }
