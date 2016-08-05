@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {GadgetsService, Gadget} from '../../nuclide-gadgets/lib/types';
 import type {
   AppState,
@@ -90,10 +91,26 @@ class Activation {
     this._disposables.dispose();
   }
 
+  consumeToolBar(getToolBar: GetToolBar): void {
+    const toolBar = getToolBar('nuclide-console');
+    toolBar.addButton({
+      icon: 'terminal',
+      callback: 'nuclide-console:toggle',
+      tooltip: 'Toggle Console',
+      // Chosen to appear beneath the task runner button, given the priorities that are currently
+      // used. /:
+      priority: 499.75,
+    });
+    this._disposables.add(
+      new Disposable(() => { toolBar.removeItems(); }),
+    );
+  }
+
   consumeGadgetsService(gadgetsApi: GadgetsService): void {
     const OutputGadget = createConsoleGadget(this._getStore());
     this._disposables.add(gadgetsApi.registerGadget(((OutputGadget: any): Gadget)));
   }
+
 
   provideOutputService(): OutputService {
     if (this._outputService == null) {
