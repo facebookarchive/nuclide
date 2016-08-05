@@ -204,11 +204,16 @@ export class DebuggerHandler extends Handler {
 
   async _convertFrame(frame: Object, frameIndex: number): Promise<Object> {
     logger.log('Converting frame: ' + JSON.stringify(frame));
-    this._files.registerFile(fileUrlOfFrame(frame));
+    const file = this._files.registerFile(fileUrlOfFrame(frame));
+    const location = locationOfFrame(frame);
+    const hasSource = await file.hasSource();
+    if (!hasSource) {
+      location.scriptId = '';
+    }
     return {
       callFrameId: idOfFrame(frame),
       functionName: functionOfFrame(frame),
-      location: locationOfFrame(frame),
+      location,
       scopeChain: await this._connectionMultiplexer.getScopesForFrame(frameIndex),
     };
   }

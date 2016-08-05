@@ -149,7 +149,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
               functionName: 'foo',
               location: {
                 lineNumber: 4,
-                scriptId: '/usr/test.php',
+                scriptId: '',
               },
               scopeChain: undefined,
             },
@@ -158,7 +158,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
               functionName: 'main',
               location: {
                 lineNumber: 14,
-                scriptId: '/usr/test.php',
+                scriptId: '',
               },
               scopeChain: undefined,
             },

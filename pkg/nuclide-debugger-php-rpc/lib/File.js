@@ -24,12 +24,21 @@ class File {
   }
 
   async getSource(): Promise<string> {
+    const hasSource = await this.hasSource();
+    if (!hasSource) {
+      return '';
+    }
     let source = this._source;
     if (source === null) {
       source = (await fsPromise.readFile(this._path, 'utf8')).toString();
       this._source = source;
     }
     return source;
+  }
+
+  async hasSource(): Promise<boolean> {
+    // t12549106 -- this is a workaround for some HHVM goofiness.
+    return await fsPromise.exists(this._path) && (await fsPromise.lstat(this._path)).isFile();
   }
 }
 
