@@ -13,35 +13,58 @@ import type {ContextElementProps} from '../../nuclide-context-view/lib/types';
 import type {Definition} from '../../nuclide-definition-service';
 
 import {Button, ButtonSizes} from '../../nuclide-ui/lib/Button';
+import {Block} from '../../nuclide-ui/lib/Block';
 import {React} from 'react-for-atom';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import {existingEditorForUri} from '../../commons-atom/text-editor';
 import {track} from '../../nuclide-analytics';
+import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 import {TextBuffer} from 'atom';
+
+const MINIMUM_EDITOR_HEIGHT = 10;
+const EDITOR_HEIGHT_DELTA = 10;
 
 type State = {
   buffer: atom$TextBuffer,
   oldBuffer: ?atom$TextBuffer,
+  editorHeight: number, // Height in ems to render the AtomTextEditor.
 };
 
 export class DefinitionPreviewView extends React.Component {
   props: ContextElementProps;
   state: State;
+  _settingsChangeDisposable: IDisposable;
 
   constructor(props: ContextElementProps) {
     super(props);
     const buffer = props.definition != null
       ? bufferForUri(props.definition.path)
       : new TextBuffer();
+    const heightSetting = ((featureConfig.get('nuclide-definition-preview.editorHeight')): any);
+    let height: number = 50;
+    if (heightSetting != null) {
+      height = heightSetting;
+    }
+    if (height < MINIMUM_EDITOR_HEIGHT) {
+      height = MINIMUM_EDITOR_HEIGHT;
+    }
     this.state = {
       buffer,
       oldBuffer: null,
+      editorHeight: height,
     };
+    this._settingsChangeDisposable = featureConfig.observe(
+      'nuclide-definition-preview.editorHeight',
+      (newHeight: number) => this._setEditorHeight(newHeight),
+    );
+
     (this: any)._openCurrentDefinitionInMainEditor =
       this._openCurrentDefinitionInMainEditor.bind(this);
+    (this: any)._increaseEditorHeight = this._increaseEditorHeight.bind(this);
+    (this: any)._decreaseEditorHeight = this._decreaseEditorHeight.bind(this);
   }
 
   componentWillReceiveProps(newProps: ContextElementProps): void {
@@ -79,6 +102,7 @@ export class DefinitionPreviewView extends React.Component {
     if (this.state.oldBuffer != null) {
       this.state.oldBuffer.destroy();
     }
+    this._settingsChangeDisposable.dispose();
   }
 
   async _finishRendering(definition: Definition): Promise<void> {
@@ -105,11 +129,13 @@ export class DefinitionPreviewView extends React.Component {
 
   render(): React.Element<any> {
     const {ContextViewMessage, definition} = this.props;
+    const atMinHeight = (this.state.editorHeight - EDITOR_HEIGHT_DELTA) < MINIMUM_EDITOR_HEIGHT;
     // Show either a "No definition" message or the definition in an editors
     return definition == null
       ? <ContextViewMessage message={ContextViewMessage.NO_DEFINITION} />
       : <div className="pane-item nuclide-definition-preview">
-          <div className="nuclide-definition-preview-editor">
+          <div className="nuclide-definition-preview-editor"
+            style={{height: `${this.state.editorHeight}em`}}>
             <AtomTextEditor
               ref="editor"
               gutterHidden={true}
@@ -119,11 +145,12 @@ export class DefinitionPreviewView extends React.Component {
               textBuffer={this.state.buffer}
               syncTextContents={false}
             />
-            <div className="nuclide-definition-preview-button-container">
-              <Button onClick={this._openCurrentDefinitionInMainEditor} size={ButtonSizes.SMALL}>
-                Open in main editor
-              </Button>
-            </div>
+            <ButtonContainer
+              _openCurrentDefinitionInMainEditor={this._openCurrentDefinitionInMainEditor}
+              _increaseEditorHeight={this._increaseEditorHeight}
+              _decreaseEditorHeight={this._decreaseEditorHeight}
+              atMinHeight={atMinHeight}
+            />
           </div>
         </div>;
   }
@@ -136,12 +163,55 @@ export class DefinitionPreviewView extends React.Component {
     }
   }
 
+  // Sets the height of the definition preview editor only if it satisfies the minimum height
+  _setEditorHeight(height: number): void {
+    if (height !== this.state.editorHeight && height >= MINIMUM_EDITOR_HEIGHT) {
+      featureConfig.set('nuclide-definition-preview.editorHeight', height);
+      this.setState({editorHeight: height});
+    }
+  }
+
+  _increaseEditorHeight(): void {
+    this._setEditorHeight(this.state.editorHeight + EDITOR_HEIGHT_DELTA);
+  }
+
+  _decreaseEditorHeight(): void {
+    this._setEditorHeight(this.state.editorHeight - EDITOR_HEIGHT_DELTA);
+  }
+
   getEditor(): atom$TextEditor {
     return this.refs.editor.getModel();
   }
 
   _scrollToRow(row: number): void {
-    // TODO: Don't scroll to a center - scroll to top of buffer.
     this.getEditor().scrollToBufferPosition([row, 0], {center: true});
   }
 }
+
+type ButtonContainerProps = {
+  _openCurrentDefinitionInMainEditor: () => void,
+  _increaseEditorHeight: () => void,
+  _decreaseEditorHeight: () => void,
+  atMinHeight: boolean,
+};
+
+const ButtonContainer = (props: ButtonContainerProps) => {
+  return (
+    <Block>
+      <div className="nuclide-definition-preview-buttons">
+        <div className="nuclide-definition-preview-buttons-left">
+          <span style={{paddingRight: '1em'}}>Height:</span>
+          <Button onClick={props._decreaseEditorHeight}
+            size={ButtonSizes.SMALL}
+            disabled={props.atMinHeight}>-</Button>
+          <Button onClick={props._increaseEditorHeight} size={ButtonSizes.SMALL}>+</Button>
+        </div>
+        <div className="nuclide-definition-preview-buttons-right">
+          <Button onClick={props._openCurrentDefinitionInMainEditor} size={ButtonSizes.SMALL}>
+            Open in main editor
+          </Button>
+        </div>
+      </div>
+    </Block>
+  );
+};

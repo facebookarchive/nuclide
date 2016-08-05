@@ -18,6 +18,12 @@
         "type": "number",
         "default": 20,
         "description": "The lower the number, the higher Definition Preview is rendered in Context View."
+      },
+      "editorHeight": {
+        "title": "Editor height",
+        "type": "number",
+        "default": 50,
+        "description": "Height in ems of the Definition Preview editor."
       }
     },
     "packageType": "Atom",

@@ -3,7 +3,6 @@
 }
 
 .nuclide-definition-preview-editor {
-  height: 50em;
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -12,8 +11,20 @@
   }
 }
 
-.nuclide-definition-preview-button-container {
-  text-align: right;
-  padding-top: .5em;
-  padding-right: .5em;
+.nuclide-definition-preview-buttons {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5em 0 0 0;
+}
+
+.nuclide-definition-preview-buttons-left,
+.nuclide-definition-preview-buttons-right {
+  align-items: center;
+  display: flex;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.nuclide-definition-preview-buttons-right {
+  justify-content: flex-end;
 }
