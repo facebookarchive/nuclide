@@ -9,15 +9,16 @@
  * the root directory of this source tree.
  */
 
-import remote from 'remote';
+import invariant from 'assert';
 import {React} from 'react-for-atom';
 import {Button, ButtonSizes} from './Button';
 import {ButtonGroup} from './ButtonGroup';
+import electron from 'electron';
+
+const {remote} = electron;
+invariant(remote != null);
 
 type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
-
-const Menu = remote.require('menu');
-const MenuItem = remote.require('menu-item');
 
 type Separator = {
   type: 'separator',
@@ -79,13 +80,15 @@ export class SplitButtonDropdown<T> extends React.Component {
 
   _handleDropdownClick(event: SyntheticMouseEvent): void {
     const currentWindow = remote.getCurrentWindow();
-    const menu = new Menu();
+    const menu = new remote.Menu();
     this.props.options.forEach(option => {
       if (option.type === 'separator') {
-        menu.append(new MenuItem({type: 'separator'}));
+        // $FlowFixMe: Add types for electron$Menu
+        menu.append(new remote.MenuItem({type: 'separator'}));
         return;
       }
-      menu.append(new MenuItem({
+      // $FlowFixMe: Add types for electron$Menu
+      menu.append(new remote.MenuItem({
         type: 'checkbox',
         checked: this.props.value === option.value,
         label: option.label,
@@ -97,6 +100,7 @@ export class SplitButtonDropdown<T> extends React.Component {
         },
       }));
     });
+    // $FlowFixMe: Add types for electron$Menu
     menu.popup(currentWindow, event.clientX, event.clientY);
   }
 

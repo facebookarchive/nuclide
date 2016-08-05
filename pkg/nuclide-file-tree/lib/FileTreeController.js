@@ -23,7 +23,7 @@ import Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
 
 import os from 'os';
-import shell from 'shell';
+import {shell} from 'electron';
 
 import invariant from 'assert';
 

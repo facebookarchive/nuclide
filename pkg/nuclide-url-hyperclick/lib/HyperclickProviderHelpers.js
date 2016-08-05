@@ -12,7 +12,7 @@
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 
 import {Range} from 'atom';
-import shell from 'shell';
+import {shell} from 'electron';
 import urlregexp from 'urlregexp';
 
 export default class HyperclickProviderHelpers {

@@ -12,16 +12,18 @@
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {Directory} from 'atom';
 
+import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
+import electron from 'electron';
 import CreateBookmarkModalComponent from './CreateBookmarkModalComponent';
 import DeleteBookmarkModalComponent from './DeleteBookmarkModalComponent';
 import {React, ReactDOM} from 'react-for-atom';
 import RenameBookmarkModalComponent from './RenameBookmarkModalComponent';
 import RepositorySectionComponent from './RepositorySectionComponent';
-import remote from 'remote';
 import url from 'url';
 
-const Menu = remote.require('menu');
+const {remote} = electron;
+invariant(remote != null);
 
 type Props = {
   createBookmark: (name: string, repo: atom$Repository) => mixed,
@@ -161,7 +163,8 @@ export default class SideBarComponent extends React.Component {
     repository: atom$Repository,
     event: SyntheticMouseEvent,
   ): void {
-    const menu = Menu.buildFromTemplate([
+    // $FlowFixMe: Add types for electron$Menu
+    const menu = remote.Menu.buildFromTemplate([
       {
         click: () => {
           this.props.updateToBookmark(bookmark, repository);

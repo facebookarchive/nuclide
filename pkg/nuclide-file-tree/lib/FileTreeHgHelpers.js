@@ -13,7 +13,7 @@ import type {FileTreeNode} from './FileTreeNode';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import shell from 'shell';
+import {shell} from 'electron';
 import Immutable from 'immutable';
 import nuclideUri from '../../commons-node/nuclideUri';
 import FileTreeHelpers from './FileTreeHelpers';

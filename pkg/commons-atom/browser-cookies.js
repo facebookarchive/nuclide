@@ -9,11 +9,16 @@
  * the root directory of this source tree.
  */
 
-import remote from 'remote';
+import invariant from 'assert';
+import electron from 'electron';
+
+const {remote} = electron;
+invariant(remote != null);
 
 export default {
   getCookies(domain: string): Promise<{[key: string]: string}> {
     return new Promise((resolve, reject) => {
+      // $FlowFixMe: Add types for electron$BrowserWindow
       remote.getCurrentWindow().webContents.session.cookies.get({
         domain,
       }, (error, cookies) => {
@@ -32,6 +37,7 @@ export default {
 
   setCookie(url: string, domain: string, name: string, value: string): Promise<void> {
     return new Promise((resolve, reject) => {
+      // $FlowFixMe: Add types for electron$BrowserWindow
       remote.getCurrentWindow().webContents.session.cookies.set({
         url,
         domain,

@@ -18,7 +18,7 @@ import type {
 import {track, trackTiming} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
-import shell from 'shell';
+import {shell} from 'electron';
 
 const MS_TO_WAIT_BEFORE_SPINNER = 2000;
 const CHANGESET_CSS_CLASS = 'nuclide-blame-hash';

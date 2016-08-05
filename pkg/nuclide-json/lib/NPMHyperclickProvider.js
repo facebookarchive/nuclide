@@ -16,7 +16,7 @@ import type {
 
 import semver from 'semver';
 import nuclideUri from '../../commons-node/nuclideUri';
-import shell from 'shell';
+import {shell} from 'electron';
 
 import {parseJSON, babelLocToRange} from './parsing';
 

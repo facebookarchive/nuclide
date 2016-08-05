@@ -44,7 +44,7 @@ export type DiffEntityOptions = {
 
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
 import {CompositeDisposable, Emitter} from 'atom';
-import shell from 'shell';
+import {shell} from 'electron';
 import {
   DiffMode,
   DiffOption,

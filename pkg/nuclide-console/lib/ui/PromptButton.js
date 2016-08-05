@@ -9,8 +9,12 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 import {React} from 'react-for-atom';
-import remote from 'remote';
+import electron from 'electron';
+
+const {remote} = electron;
+invariant(remote != null);
 
 type PromptOption = {
   id: string,
@@ -45,19 +49,19 @@ export default class PromptButton extends React.Component {
   }
 
   _handleClick(event: SyntheticMouseEvent): void {
-    const Menu = remote.require('menu');
-    const MenuItem = remote.require('menu-item');
     const currentWindow = remote.getCurrentWindow();
-    const menu = new Menu();
+    const menu = new remote.Menu();
     // TODO: Sort alphabetically by label
     this.props.options.forEach(option => {
-      menu.append(new MenuItem({
+      // $FlowFixMe: Add types for electron$Menu
+      menu.append(new remote.MenuItem({
         type: 'checkbox',
         checked: this.props.value === option.id,
         label: option.label,
         click: () => this.props.onChange(option.id),
       }));
     });
+    // $FlowFixMe: Add types for electron$Menu
     menu.popup(currentWindow, event.clientX, event.clientY);
   }
 

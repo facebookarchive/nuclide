@@ -44,10 +44,6 @@ declare module 'electron' {
   declare var shell: electron$shell;
 }
 
-declare module 'remote' {
-  declare var exports: electron$remote;
-}
-
 //------------------------------------------------------------------------------
 // Custom DOM Elements
 //------------------------------------------------------------------------------
@@ -179,7 +175,12 @@ declare class electron$Tray {}
  * https://github.com/electron/electron/blob/master/docs/api/web-contents.md
  */
 
-type electron$webContents = {};
+declare class electron$WebContents {}
+
+type electron$webContents = {
+  getAllWebContents(): Array<electron$WebContents>,
+  getFocusedWebContents: ?electron$WebContents,
+};
 
 //------------------------------------------------------------------------------
 // Modules for the Renderer Process (Web Page)
@@ -210,6 +211,7 @@ declare class electron$IpcRenderer {
  */
 
 type electron$remote = {
+  // main process built-in modules:
   app: electron$app,
   autoUpdater: electron$autoUpdater,
   BrowserWindow: typeof electron$BrowserWindow,
@@ -225,6 +227,12 @@ type electron$remote = {
   session: electron$session,
   electron$Tray: typeof electron$Tray,
   webContents: electron$webContents,
+  // methods:
+  require(module: string): any,
+  getCurrentWindow(): electron$BrowserWindow,
+  getCurrentWebContents(): electron$WebContents,
+  getGlobal(name: string): ?mixed,
+  process: typeof process,
 };
 
 /**
@@ -308,4 +316,26 @@ declare class electron$Screen {
  * https://github.com/electron/electron/blob/master/docs/api/shell.md
  */
 
-type electron$shell = {};
+type electron$shell = {
+  showItemInFolder(fullPath: string): void,
+  openItem(fullPath: string): void,
+  openExternal(url: string, options?: {activate: boolean}): void,
+  moveItemToTrash(fullPath: string): boolean,
+  beep(): void,
+  // Windows-only
+  writeShortcutLink(
+    shortcutPath: string,
+    operation?: 'create' | 'update' | 'replace',
+    options?: {
+      target: string,
+      cwd?: string,
+      args?: string,
+      description?: string,
+      icon?: string,
+      iconIndex?: number,
+      appUserModelId?: string,
+    }
+  ): void,
+  // Windows-only
+  readShortcutLink(shortcutPath: string): void,
+};
