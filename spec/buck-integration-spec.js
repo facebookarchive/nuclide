@@ -129,14 +129,10 @@ describe('Buck building via toolbar', () => {
       expect(button.textContent).toBe('Build');
     });
 
-    let paneItem;
     waitsFor(
       'the console to appear',
       30000,
-      () => {
-        paneItem = atom.workspace.getActivePaneItem();
-        return paneItem != null && paneItem.getTitle() === 'Console';
-      },
+      () => workspaceView.querySelectorAll('.nuclide-console').length > 0,
     );
 
     waitsFor(

@@ -135,7 +135,11 @@ export class SwiftPMTaskRunner {
         throw new Error(`Unknown task name: ${taskName}`);
     }
 
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-console:toggle',
+      {visible: true},
+    );
     this._logOutput(`${command.command} ${command.args.join(' ')}`, 'log');
 
     const observable = observeProcess(

@@ -106,7 +106,11 @@ export class LogTailer {
   }
 
   _start(trackCall: boolean, options?: StartOptions): void {
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-console:toggle',
+      {visible: true},
+    );
 
     const shouldRun = this._statuses.getValue() === 'stopped';
 

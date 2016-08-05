@@ -10,7 +10,7 @@
  */
 
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {GadgetsService, Gadget} from '../../nuclide-gadgets/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {
   AppState,
   OutputProvider,
@@ -20,14 +20,16 @@ import type {
 } from './types';
 
 import createPackage from '../../commons-atom/createPackage';
+import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import {CompositeDisposable, Disposable} from 'atom';
-import createConsoleGadget from './ui/createConsoleGadget';
 import featureConfig from '../../commons-atom/featureConfig';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import Reducers from './redux/Reducers';
+import {ConsoleContainer} from './ui/ConsoleContainer';
 import invariant from 'assert';
+import {React} from 'react-for-atom';
 import {applyMiddleware, createStore} from 'redux';
 
 class Activation {
@@ -106,11 +108,19 @@ class Activation {
     );
   }
 
-  consumeGadgetsService(gadgetsApi: GadgetsService): void {
-    const OutputGadget = createConsoleGadget(this._getStore());
-    this._disposables.add(gadgetsApi.registerGadget(((OutputGadget: any): Gadget)));
+  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+    this._disposables.add(
+      api.registerFactory({
+        id: 'nuclide-console',
+        name: 'Console',
+        iconName: 'terminal',
+        toggleCommand: 'nuclide-console:toggle',
+        defaultLocation: 'bottom-panel',
+        create: () => viewableFromReactElement(<ConsoleContainer store={this._getStore()} />),
+        isInstance: item => item instanceof ConsoleContainer,
+      }),
+    );
   }
-
 
   provideOutputService(): OutputService {
     if (this._outputService == null) {

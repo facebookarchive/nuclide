@@ -211,7 +211,11 @@ export class BuckBuildSystem {
       return Observable.empty();
     }
 
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-console:toggle',
+      {visible: true},
+    );
     const settings = store.getTaskSettings()[taskType] || {};
 
     const subcommand = getSubcommand(taskType, store);
