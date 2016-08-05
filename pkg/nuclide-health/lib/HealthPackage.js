@@ -10,24 +10,26 @@
  */
 
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {GadgetsService, Gadget} from '../../nuclide-gadgets/lib/types';
-import type {HealthStats} from './types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {HealthStats, PaneItemState} from './types';
 
 // Imports from non-Nuclide modules.
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import os from 'os';
+import {React} from 'react-for-atom';
 import Rx from 'rxjs';
 
 // Imports from other Nuclide packages.
 import {track, HistogramTracker} from '../../nuclide-analytics';
+import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {
   onWorkspaceDidStopChangingActivePaneItem,
 } from '../../commons-atom/debounced';
 import featureConfig from '../../commons-atom/featureConfig';
 
 // Imports from within this Nuclide package.
-import createHealthGadget from './createHealthGadget';
+import HealthPaneItem from './HealthPaneItem';
 
 // We may as well declare these outside of Activation because most of them really are nullable.
 let currentConfig = {};
@@ -43,7 +45,7 @@ let keyLatency = 0;
 let lastKeyLatency = 0;
 let keyLatencyHistogram: ?HistogramTracker = null;
 
-let paneItemState$: ?Rx.BehaviorSubject<any> = null;
+let paneItemState$: ?Rx.BehaviorSubject<?PaneItemState> = null;
 
 let subscriptions: CompositeDisposable = (null: any);
 
@@ -115,10 +117,22 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   return disposable;
 }
 
-export function consumeGadgetsService(gadgetsApi: GadgetsService): void {
+export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   invariant(paneItemState$);
-  const gadget: Gadget = (createHealthGadget(paneItemState$): any);
-  subscriptions.add(gadgetsApi.registerGadget(gadget));
+  subscriptions.add(
+    api.registerFactory({
+      id: 'nuclide-health',
+      name: 'Health',
+      iconName: 'dashboard',
+      toggleCommand: 'nuclide-health:toggle',
+      defaultLocation: 'pane',
+      create: () => {
+        invariant(paneItemState$ != null);
+        return viewableFromReactElement(<HealthPaneItem stateStream={paneItemState$} />);
+      },
+      isInstance: item => item instanceof HealthPaneItem,
+    }),
+  );
 }
 
 function disposeActiveEditorDisposables(): void {
@@ -226,7 +240,7 @@ function updateViews(): void {
   analyticsBuffer.push(stats);
   paneItemState$.next({
     toolbarJewel: currentConfig.toolbarJewel || '',
-    updateToolbarJewel: value => featureConfig.set('nuclide-health.toolbarJewel', value),
+    updateToolbarJewel: value => { featureConfig.set('nuclide-health.toolbarJewel', value); },
     stats,
   });
   updateToolbarJewel(stats);

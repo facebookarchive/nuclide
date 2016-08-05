@@ -22,3 +22,9 @@ export type HealthStats = {
   activeRequests: number,
   activeHandlesByType: HandlesByType,
 };
+
+export type PaneItemState = {
+  stats?: HealthStats,
+  toolbarJewel?: string,
+  updateToolbarJewel?: (value: string) => void,
+};
