@@ -9,9 +9,14 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+import electron from 'electron';
 import {DebuggerStore, DebuggerMode} from './DebuggerStore';
 import {getNotificationService} from '../../nuclide-debugger-base';
 import {CompositeDisposable, Disposable} from 'atom';
+
+const {remote} = electron;
+invariant(remote != null);
 
 export class DebuggerPauseController {
   _store: DebuggerStore;
@@ -32,7 +37,7 @@ export class DebuggerPauseController {
   }
 
   _scheduleNativeNotification(): void {
-    const currentWindow = atom.getCurrentWindow();
+    const currentWindow = remote.getCurrentWindow();
     if (currentWindow.isFocused()) {
       return;
     }

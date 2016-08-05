@@ -9,9 +9,14 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+import electron from 'electron';
 import {CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
 import {isGkEnabled, onceGkInitialized} from '../../commons-node/passesGK';
+
+const {remote} = electron;
+invariant(remote != null);
 
 let subscriptions: CompositeDisposable = (null: any);
 let currentConfig = ((featureConfig.get('nuclide-notifications'): any): {[type: string]: bool});
@@ -59,7 +64,7 @@ function raiseNativeNotification(title: string, body: string): void {
     return;
   }
 
-  if (atom.getCurrentWindow().isFocused() && !currentConfig.whenFocused) {
+  if (remote.getCurrentWindow().isFocused() && !currentConfig.whenFocused) {
     return;
   }
 

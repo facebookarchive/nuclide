@@ -44,6 +44,14 @@ declare module 'electron' {
   declare var shell: electron$shell;
 }
 
+// very common struct
+type electron$rect = {
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+};
+
 //------------------------------------------------------------------------------
 // Custom DOM Elements
 //------------------------------------------------------------------------------
@@ -97,7 +105,232 @@ type electron$autoUpdater = {};
  * https://github.com/electron/electron/blob/master/docs/api/browser-window.md
  */
 
-declare class electron$BrowserWindow {}
+type electron$BrowserWindowOptions = {
+  width?: number,
+  height?: number,
+  x?: number,
+  y?: number,
+  useContentSize?: boolean,
+  center?: boolean,
+  minWidth?: number,
+  minHeight?: number,
+  maxWidth?: number,
+  maxHeight?: number,
+  resizable?: boolean,
+  movable?: boolean,
+  minimizable?: boolean,
+  maximizable?: boolean,
+  closable?: boolean,
+  focusable?: boolean,
+  alwaysOnTop?: boolean,
+  fullscreen?: boolean,
+  fullscreenable?: boolean,
+  skipTaskbar?: boolean,
+  kiosk?: boolean,
+  title?: string,
+  icon?: electron$NativeImage,
+  show?: boolean,
+  frame?: boolean,
+  parent?: electron$BrowserWindow,
+  modal?: boolean,
+  acceptFirstMouse?: boolean,
+  disableAutoHideCursor?: boolean,
+  autoHideMenuBar?: boolean,
+  enableLargerThanScreen?: boolean,
+  backgroundColor?: string,
+  hasShadow?: boolean,
+  darkTheme?: boolean,
+  transparent?: boolean,
+  type?: /* Linux */ 'desktop' | 'dock' | 'toolbar' | 'splash' | 'notification' |
+         /* macOS */ 'desktop' | 'textured' |
+         /* Windows */ 'toolbar',
+  titleBarStyle?: 'default' | 'hidden' | 'hidden-inset',
+  thickFrame?: boolean,
+  webPreferences?: electron$BrowserWindowWebPreferences,
+};
+
+type electron$BrowserWindowWebPreferences = {
+  nodeIntegration?: boolean,
+  preload?: string,
+  session?: electron$session,
+  partition?: string,
+  zoomFactor?: number,
+  javascript?: boolean,
+  webSecurity?: boolean,
+  allowDisplayingInsecureContent?: boolean,
+  allowRunningInsecureContent?: boolean,
+  images?: boolean,
+  textAreasAreResizable?: boolean,
+  webgl?: boolean,
+  webaudio?: boolean,
+  plugins?: boolean,
+  experimentalFeatures?: boolean,
+  experimentalCanvasFeatures?: boolean,
+  scrollBounce?: boolean,
+  blinkFeatures?: string,
+  disableBlinkFeatures?: string,
+  defaultFontFamily?: {
+    standard?: string,
+    serif?: string,
+    sansSerif?: string,
+    monospace?: string,
+  },
+  defaultFontSize?: number,
+  defaultMonospaceFontSize?: number,
+  minimumFontSize?: number,
+  defaultEncoding?: string,
+  backgroundThrottling?: boolean,
+  offscreen?: boolean,
+};
+
+type electron$BrowserWindowEvents =
+  | 'page-title-updated'
+  | 'close'
+  | 'closed'
+  | 'unresponsive'
+  | 'responsive'
+  | 'blur'
+  | 'focus'
+  | 'show'
+  | 'hide'
+  | 'ready-to-show'
+  | 'maximize'
+  | 'unmaximize'
+  | 'minimize'
+  | 'restore'
+  | 'resize'
+  | 'move'
+  | 'moved'
+  | 'enter-full-screen'
+  | 'leave-full-screen'
+  | 'enter-html-full-screen'
+  | 'leave-html-full-screen'
+  | 'app-command'         // Windows
+  | 'scroll-touch-begin'  // macOS
+  | 'scroll-touch-end'    // macOS
+  | 'swipe';              // macOS
+
+type electron$BrowserWindowListener = (
+  event: electron$BrowserWindowEvents,
+  callback: (event: Object, ...args: Array<any>) => void,
+) => electron$BrowserWindow;
+
+declare class electron$BrowserWindow {
+  constructor(options: electron$BrowserWindowOptions): void,
+  on: electron$BrowserWindowListener,
+  once: electron$BrowserWindowListener,
+  removeAllListeners(event?: electron$BrowserWindowEvents): electron$BrowserWindow,
+  removeListener(event?: electron$BrowserWindowEvents, callback: Function): electron$BrowserWindow,
+
+  static getAllWindows(): Array<electron$BrowserWindow>,
+  static getFocusedWindow(): ?electron$BrowserWindow,
+  static fromWebContents(webContents: electron$WebContents): ?electron$BrowserWindow,
+  static fromId(id: number): ?electron$BrowserWindow,
+  static addDevToolsExtension(path: string): void,
+  static removeDevToolsExtension(name: string): void,
+  static getDevToolsExtensions(): {[name: string]: {[name: string]: string}},
+
+  webContents: electron$WebContents,
+  id: string,
+  destroy(): void,
+  close(): void,
+  focus(): void,
+  blur(): void,
+  isFocused(): boolean,
+  show(): void,
+  showInactive(): void,
+  hide(): void,
+  isVisible(): boolean,
+  isModal(): boolean,
+  maximize(): void,
+  unmaximize(): void,
+  isMaximized(): boolean,
+  minimize(): void,
+  restore(): void,
+  isMinimized(): boolean,
+  setFullScreen(flag: boolean): void,
+  isFullScreen(): boolean,
+  setAspectRatio(aspectRatio: number, extraSize?: {width: number, height: number}): void, // macOS
+  setBounds(options: electron$rect,  /* macOS */ animate?: boolean): void,
+  getBounds(): electron$rect,
+  setSize(width: number, height: number, /* macOS */ animate?: boolean): void,
+  getSize(): [number, number],
+  setContentSize(width: number, height: number, /* macOS */ animate?: boolean): void,
+  getContentSize(): [number, number],
+  setMinimumSize(width: number, height: number): void,
+  getMinimumSize(): [number, number],
+  setMaximumSize(width: number, height: number): void,
+  getMaximumSize(): [number, number],
+  setResizable(resizable: boolean): void,
+  isResizable(): boolean,
+  setMovable(movable: boolean): void, // macOS Windows
+  isMovable(): boolean, // macOS Windows
+  setMinimizable(minimizable: boolean): void, // macOS Windows
+  isMinimizable(): boolean, // macOS Windows
+  setMaximizable(maximizable: boolean): void, // macOS Windows
+  isMaximizable(): boolean, // macOS Windows
+  setFullScreenable(fullscreenable: boolean): void,
+  isFullScreenable(): boolean,
+  setClosable(closable: boolean): void, // macOS Windows
+  isClosable(): boolean, // macOS Windows
+  setAlwaysOnTop(flag: boolean): void,
+  isAlwaysOnTop(): boolean,
+  center(): void,
+  setPosition(x: number, y: number, /* macOS */ animate?: boolean): void,
+  getPosition(): [number, number],
+  setTitle(title: string): void,
+  getTitle(): string,
+  setSheetOffset(offsetY: number, offsetX?: number): void, // macOS
+  flashFrame(flag: boolean): void,
+  setSkipTaskbar(skip: boolean): void,
+  setKiosk(flag: boolean): void,
+  isKiosk(): boolean,
+  getNativeWindowHandle(): Buffer,
+  hookWindowMessage(message: number, callback: Function): void, // Windows
+  isWindowMessageHooked(message: number): boolean, // Windows
+  unhookWindowMessage(message: number): void, // Windows
+  unhookAllWindowMessages(): void, // Windows
+  setRepresentedFilename(filename: string): void, // macOS
+  getRepresentedFilename(): string, // macOS
+  setDocumentEdited(edited: boolean): void, // macOS
+  isDocumentEdited(): boolean, // macOS
+  focusOnWebView(): void,
+  blurWebView(): void,
+  capturePage(rect: electron$rect, callback: (image: electron$NativeImage) => void): void,
+  capturePage(callback: (image: electron$NativeImage) => void): void,
+  loadURL(
+    url: string,
+    options?: {httpReferrer?: string, userAgent?: string, extraHeaders?: string},
+  ): void,
+  reload(): void,
+  setMenu(menu: electron$Menu): void, // Linux Windows
+  setProgressBar(progress: number): void,
+  setOverlayIcon(overlay: electron$NativeImage, description: string): void, // Windows
+  setHasShadow(hasShadow: boolean): void, // macOS
+  hasShadow(): boolean, // macOS
+  setThumbarButtons(buttons: Array<{
+    icon: electron$NativeImage,
+    click: Function,
+    tooltip?: string,
+    flags?: Array<'enabled' | 'disabled' | 'dismissonclick' | 'nobackground' |
+                  'hidden' | 'noninteractive'>,
+  }>): void, // Windows
+  setThumbnailClip(region: electron$rect): void, // Windows
+  showDefinitionForSelection(): void, // macOS
+  setIcon(icon: electron$NativeImage): void, // Windows Linux
+  setAutoHideMenuBar(hide: boolean): void,
+  isMenuBarAutoHide(): boolean,
+  setMenuBarVisibility(visible: boolean): void,
+  isMenuBarVisible(): boolean,
+  setVisibleOnAllWorkspaces(visible: boolean): void,
+  isVisibleOnAllWorkspaces(): boolean,
+  setIgnoreMouseEvents(ignore: boolean): void,
+  setContentProtection(enable: boolean): void, // macOS Windows
+  setFocusable(focusable: boolean): void, // Windows
+  setParentWindow(parent: electron$BrowserWindow): void, // Linux macOS
+  getParentWindow(): ?electron$BrowserWindow,
+  getChildWindows(): Array<electron$BrowserWindow>,
+}
 
 /**
  * https://github.com/electron/electron/blob/master/docs/api/content-tracing.md
@@ -163,7 +396,7 @@ type electron$MenuItemOptions = {
   label?: string,
   sublabel?: string,
   accelerator?: string,
-  icon?: electron$nativeImage,
+  icon?: electron$NativeImage,
   enabled?: boolean,
   visible?: boolean,
   checked?: boolean,
@@ -306,7 +539,28 @@ type electron$crashReporter = {};
  * https://github.com/electron/electron/blob/master/docs/api/native-image.md
  */
 
-type electron$nativeImage = {};
+type electron$nativeImage = {
+  createEmpty(): electron$NativeImage,
+  createFromPath(path: string): electron$NativeImage,
+  createFromBuffer(buffer: Buffer, scaleFactor?: number): electron$NativeImage,
+  createFromDataURL(dataURL: string): electron$NativeImage,
+};
+
+declare class electron$NativeImage {
+  toPNG(): Uint8Array,
+  toJPEG(quality: number): Uint8Array,
+  toBitmap(): Uint8Array,
+  toDataURL(): string,
+  getNativeHandle(): Uint8Array,
+  isEmpty(): boolean,
+  getSize(): {width: number, height: number},
+  setTemplateImage(option: boolean): void,
+  isTemplateImage(): boolean,
+  // Deprecated, but Atom is behind - so keep them around.
+  toPng(): Uint8Array,
+  toJpeg(quality: number): Uint8Array,
+  toDataUrl(): string,
+}
 
 /**
  * https://github.com/electron/electron/blob/master/docs/api/screen.md
@@ -317,17 +571,10 @@ type electron$Display = {
   rotation: 0 | 90 | 180 | 270,
   scaleFactor: number,
   touchSupport: 'available' | 'unavailable' | 'unknown',
-  bounds: electron$Rect,
+  bounds: electron$rect,
   size: {height: number, width: number},
-  workArea: electron$Rect,
+  workArea: electron$rect,
   workAreaSize: {height: number, width: number},
-};
-
-type electron$Rect = {
-  x: number,
-  y: number,
-  width: number,
-  height: number,
 };
 
 type electron$DisplayEvents =
@@ -353,7 +600,7 @@ declare class electron$Screen {
   getPrimaryDisplay(): electron$Display,
   getAllDisplays(): Array<electron$Display>,
   getDisplayNearestPoint(point: {x: number, y: number}): electron$Display,
-  getDisplayMatching(rect: electron$Rect): electron$Display,
+  getDisplayMatching(rect: electron$rect): electron$Display,
 }
 
 /**

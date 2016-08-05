@@ -1467,7 +1467,8 @@ type AtomGlobal = {
   getWindowLoadTime(): number,
 
   // This is an undocumented way to reach the Electron BrowserWindow.
-  getCurrentWindow(): any,
+  // Use `electron.remote.getCurrentWindow` instead.
+  getCurrentWindow: void,
 
   // Messaging the User
   confirm(options: {
