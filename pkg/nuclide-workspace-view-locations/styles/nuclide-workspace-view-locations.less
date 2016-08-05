@@ -1,0 +1,16 @@
+@import 'ui-variables';
+
+// Custom tabs --------------
+
+atom-panel .tab-bar .tab.active {
+  .theme-one-light-ui &,
+  .theme-one-dark-ui & {
+    background-color: @tool-panel-background-color;
+    &::after {
+      border-bottom-color: @tool-panel-background-color;
+    }
+    .title {
+      background-color: @tool-panel-background-color;
+    }
+  }
+}
