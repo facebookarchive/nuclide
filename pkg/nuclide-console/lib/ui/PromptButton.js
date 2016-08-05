@@ -53,7 +53,6 @@ export default class PromptButton extends React.Component {
     const menu = new remote.Menu();
     // TODO: Sort alphabetically by label
     this.props.options.forEach(option => {
-      // $FlowFixMe: Add types for electron$Menu
       menu.append(new remote.MenuItem({
         type: 'checkbox',
         checked: this.props.value === option.id,
@@ -61,7 +60,6 @@ export default class PromptButton extends React.Component {
         click: () => this.props.onChange(option.id),
       }));
     });
-    // $FlowFixMe: Add types for electron$Menu
     menu.popup(currentWindow, event.clientX, event.clientY);
   }
 

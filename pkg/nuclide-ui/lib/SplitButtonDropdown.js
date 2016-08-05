@@ -83,11 +83,9 @@ export class SplitButtonDropdown<T> extends React.Component {
     const menu = new remote.Menu();
     this.props.options.forEach(option => {
       if (option.type === 'separator') {
-        // $FlowFixMe: Add types for electron$Menu
         menu.append(new remote.MenuItem({type: 'separator'}));
         return;
       }
-      // $FlowFixMe: Add types for electron$Menu
       menu.append(new remote.MenuItem({
         type: 'checkbox',
         checked: this.props.value === option.value,
@@ -100,7 +98,6 @@ export class SplitButtonDropdown<T> extends React.Component {
         },
       }));
     });
-    // $FlowFixMe: Add types for electron$Menu
     menu.popup(currentWindow, event.clientX, event.clientY);
   }
 

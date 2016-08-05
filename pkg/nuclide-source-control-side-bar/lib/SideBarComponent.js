@@ -163,7 +163,6 @@ export default class SideBarComponent extends React.Component {
     repository: atom$Repository,
     event: SyntheticMouseEvent,
   ): void {
-    // $FlowFixMe: Add types for electron$Menu
     const menu = remote.Menu.buildFromTemplate([
       {
         click: () => {

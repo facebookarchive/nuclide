@@ -127,13 +127,57 @@ declare class electron$IpcMain {}
  * https://github.com/electron/electron/blob/master/docs/api/menu.md
  */
 
-declare class electron$Menu {}
+declare class electron$Menu {
+  static setApplicationMenu(menu: electron$Menu): void,
+  static getApplicationMenu(): ?electron$Menu,
+  static sendActionToFirstResponder(action: string): void,
+  static buildFromTemplate(templates: Array<electron$MenuItemOptions>): electron$Menu,
+  popup(
+    browserWindow: electron$BrowserWindow,
+    x?: number,
+    y?: number,
+    positioningItem?: number,
+  ): void,
+  popup(x?: number, y?: number, positioningItem?: number): void,
+  append(menuItem: electron$MenuItem): void,
+  insert(pos: number, menuItem: electron$MenuItem): void,
+  items: Array<electron$MenuItem>,
+}
 
 /**
  * https://github.com/electron/electron/blob/master/docs/api/menu-item.md
  */
 
-declare class electron$MenuItem {}
+type electron$MenuItemOptions = {
+  click?: (
+    menuItem: electron$MenuItem,
+    browserWindow: electron$BrowserWindow,
+    event: Object
+  ) => void,
+  role?: 'undo' | 'redo' | 'cut' | 'copy' | 'paste' | 'pasteandmatchstyle' |
+        'selectall' | 'delete' | 'minimize' | 'close' | 'quit' | 'togglefullscreen' |
+         // macOS-only
+        'about' | 'hide' | 'hideothers' | 'unhide' | 'front' | 'zoom' | 'window' |
+        'help' | 'services',
+  type?: 'normal' | 'separator' | 'submenu' | 'checkbox' | 'radio',
+  label?: string,
+  sublabel?: string,
+  accelerator?: string,
+  icon?: electron$nativeImage,
+  enabled?: boolean,
+  visible?: boolean,
+  checked?: boolean,
+  submenu?: electron$MenuItem | electron$MenuItemOptions,
+  id?: string,
+  position?: string,
+};
+
+declare class electron$MenuItem {
+  constructor(options: electron$MenuItemOptions): void,
+  enabled: boolean,
+  visible: boolean,
+  checked: boolean,
+}
 
 /**
  * https://github.com/electron/electron/blob/master/docs/api/power-monitor.md
