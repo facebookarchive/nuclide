@@ -9,16 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget} from '../../../nuclide-gadgets/lib/types';
 import {React} from 'react-for-atom';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import {Webview} from '../../../nuclide-ui/lib/Webview';
 
-class Inspector extends React.Component {
-  static gadgetId = 'nuclide-react-native-inspector';
-
-  constructor(props: mixed) {
-    super(props);
+export default class Inspector extends React.Component {
+  constructor() {
+    super();
     (this: any)._handleDidFinishLoad = this._handleDidFinishLoad.bind(this);
   }
 
@@ -38,7 +35,7 @@ class Inspector extends React.Component {
     );
   }
 
-  _handleDidFinishLoad(event) {
+  _handleDidFinishLoad(event: Event) {
     const element = ((event.target: any): WebviewElement);
     const requirePaths = require.cache[__filename].paths;
     const inspectorDevTools =
@@ -51,5 +48,3 @@ class Inspector extends React.Component {
     );
   }
 }
-
-module.exports = ((Inspector: any): Gadget);

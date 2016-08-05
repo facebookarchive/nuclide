@@ -9,10 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService} from '../../nuclide-gadgets/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
+import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
+import Inspector from './ui/Inspector';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
+import {React} from 'react-for-atom';
 
 let disposables: ?CompositeDisposable = null;
 
@@ -26,8 +29,16 @@ export function deactivate(): void {
   disposables = null;
 }
 
-export function consumeGadgetsService(api: GadgetsService): void {
-  const Inspector = require('./ui/Inspector');
+export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   invariant(disposables != null);
-  disposables.add(api.registerGadget(Inspector));
+  disposables.add(
+    api.registerFactory({
+      id: 'nuclide-react-native-inspector',
+      name: 'React Native Inspector',
+      toggleCommand: 'nuclide-react-native-inspector:toggle',
+      defaultLocation: 'pane',
+      create: () => viewableFromReactElement(<Inspector />),
+      isInstance: item => item instanceof Inspector,
+    }),
+  );
 }
