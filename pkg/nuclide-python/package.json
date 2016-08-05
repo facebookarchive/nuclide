@@ -59,9 +59,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationHooks": [
-    "language-python:grammar-used"
-  ],
   "providedServices": {
     "autocomplete.provider": {
       "versions": {
