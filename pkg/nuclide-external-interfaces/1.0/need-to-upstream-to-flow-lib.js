@@ -18,13 +18,6 @@ interface IDisposable {
   dispose(): mixed,
 }
 
-declare class Worker {
-  addEventListener(type: 'message', listener: (message: {data: mixed}) => mixed): void,
-  addEventListener(type: 'error', listener: (error: Error) => mixed): void,
-  terminate(): void,
-  postMessage(message: mixed): void,
-}
-
 /*
  * These Notification & NotificationOptions definitions are not exhaustive while standardization,
  * browser, and Electron support remain incomplete.
@@ -39,27 +32,6 @@ declare class Notification {
     message: string,
     options?: NotificationOptions,
   ): void,
-}
-
-type IDBDatabase = {
-  close: () => void,
-  transaction: (key: string) => any,
-};
-
-type CreateInterfaceOptions = {
-  input: stream$Readable,
-  output?: stream$Writable,
-  completer?: (line: string) => [Array<string>, string],
-  terminal?: boolean,
-  historySize?: number,
-};
-
-declare module 'readline' {
-  declare class Interface {
-    on: (event: string, listener: Function) => void,
-    close: () => void,
-  }
-  declare function createInterface(options: CreateInterfaceOptions): Interface;
 }
 
 // T9254051 - Fix flow http/https definitions.
