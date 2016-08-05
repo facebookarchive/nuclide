@@ -9,11 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget, GadgetsService} from '../../nuclide-gadgets/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
+import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {Playground} from './Playground';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
+import {React} from 'react-for-atom';
 
 let disposables: ?CompositeDisposable = null;
 
@@ -27,8 +29,18 @@ export function deactivate(): void {
   disposables = null;
 }
 
-export function consumeGadgetsService(api: GadgetsService): void {
+export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   invariant(disposables != null);
-  disposables.add(api.registerGadget(((Playground: any): Gadget)));
+  disposables.add(
+    api.registerFactory({
+      id: 'sample-ui-playground',
+      name: 'UI Playground',
+      iconName: 'puzzle',
+      toggleCommand: 'sample-ui-playground:toggle',
+      defaultLocation: 'pane',
+      create: () => viewableFromReactElement(<Playground />),
+      isInstance: item => item instanceof Playground,
+    }),
+  );
   // Optionally return a disposable to clean up this package's state when gadgets goes away
 }

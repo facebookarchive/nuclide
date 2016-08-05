@@ -57,8 +57,6 @@ type State = {
 
 export class Playground extends React.Component {
   state: State;
-  static gadgetId = 'sample-ui-playground-gadget';
-  static defaultLocation = 'right';
 
   constructor(props: any) {
     super(props);
