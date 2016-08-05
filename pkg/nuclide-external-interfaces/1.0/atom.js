@@ -331,6 +331,19 @@ type atom$PaneSplitParams = {
 type atom$PaneSplitOrientation = 'horizontal' | 'vertical';
 type atom$PaneSplitSide = 'before' | 'after';
 
+type atom$PaneParams = {
+  activeItem?: Object,
+  focused?: boolean,
+  container: Object,
+  config: atom$Config,
+  applicationDelegate: Object,
+  notificationManager: atom$NotificationManager,
+  deserializerManager: atom$DeserializerManager,
+  items?: Array<Object>,
+  itemStackIndices?: Array<number>,
+  flexScale?: number,
+};
+
 declare class atom$Pane {
   // Items
   addItem(item: Object, options?: {index?: number, pending?: boolean}): Object,
@@ -343,6 +356,9 @@ declare class atom$Pane {
   moveItemToPane(item: Object, pane: atom$Pane, index: number): void,
   destroyItem(item: Object): boolean,
   itemForURI(uri: string): Object,
+
+  // Event subscriptions.
+  onDidDestroy(cb: () => void): IDisposable,
 
   // Lifecycle
   isActive(): boolean,
@@ -361,6 +377,7 @@ declare class atom$Pane {
   ): atom$Pane,
 
   // Undocumented Methods
+  constructor(params: atom$PaneParams): atom$Pane,
   clearPendingItem(): void,
   getFlexScale(): number,
   getParent(): Object,
@@ -384,6 +401,20 @@ declare class atom$PaneAxis {
   getFlexScale(): number,
   setFlexScale(flexScale: number): number,
   getItems(): Array<Object>,
+}
+
+// Undocumented class
+declare class atom$PaneContainer {
+  destroy(): void,
+  getActivePane(): atom$Pane,
+  getActivePaneItem(): ?Object,
+  getPanes(): Array<atom$Pane>,
+  getPaneItems(): Array<atom$PaneItem>,
+  observePanes(cb: (pane: atom$Pane) => void): IDisposable,
+  onDidAddPaneItem(cb: (item: atom$PaneItem) => void): IDisposable,
+  onDidDestroyPaneItem(cb: (item: atom$Pane) => void): IDisposable,
+  paneForItem(item: Object): ?atom$Pane,
+  serialize(): Object,
 }
 
 declare class atom$Panel {
@@ -981,7 +1012,7 @@ declare class atom$Workspace {
   destroyActivePaneItem(): void,
 
   // Undocumented properties
-  paneContainer: Object,
+  paneContainer: atom$PaneContainer,
 }
 
 /**
