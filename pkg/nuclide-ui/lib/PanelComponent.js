@@ -161,7 +161,9 @@ export class PanelComponent extends React.Component {
           onMouseDown={this._handleMouseDown}
           onDoubleClick={this._handleDoubleClick}
         />
-        {wrappedContent}
+        <div className="nuclide-ui-panel-component-content">
+          {wrappedContent}
+        </div>
         {resizeCursorOverlay}
       </div>
     );
