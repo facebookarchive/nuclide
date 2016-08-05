@@ -10,6 +10,7 @@
  */
 
 import type {OutputService} from '../../nuclide-console/lib/types';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
 
 import {DebuggingActivation} from './debugging/DebuggingActivation';
@@ -40,6 +41,10 @@ export default class Activation {
 
   consumeOutputService(api: OutputService): void {
     return this._packagerActivation.consumeOutputService(api);
+  }
+
+  consumeCwdApi(api: CwdApi): void {
+    return this._packagerActivation.consumeCwdApi(api);
   }
 
 }

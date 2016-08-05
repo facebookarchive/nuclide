@@ -28,26 +28,13 @@ type PartialCommandInfo = {
  *       (i.e. where we should look for commands like this) and use that here. The current behavior
  *       of everything having its own algorithm is bad.
  */
-export async function getCommandInfo(): Promise<?CommandInfo> {
-  const localDirectories = atom.project.getDirectories()
-    .map(dir => dir.getPath())
-    .filter(uri => !nuclideUri.isRemote(uri));
+export async function getCommandInfo(projectRootPath: ?string): Promise<?CommandInfo> {
+  if (projectRootPath == null || nuclideUri.isRemote(projectRootPath)) { return null; }
 
-  for (const dir of localDirectories) {
-    // eslint-disable-next-line babel/no-await-in-loop
-    const commandInfo = await getCommandFromNodePackage(dir);
-    if (commandInfo != null) {
-      return commandInfo;
-    }
-  }
-
-  for (const dir of localDirectories) {
-    // eslint-disable-next-line babel/no-await-in-loop
-    const commandInfo = await getCommandFromBuck(dir);
-    if (commandInfo != null) {
-      return commandInfo;
-    }
-  }
+  return (
+    await getCommandFromNodePackage(projectRootPath)
+    || await getCommandFromBuck(projectRootPath)
+  );
 }
 
 async function getCommandFromNodePackage(dir: string): Promise<?CommandInfo> {

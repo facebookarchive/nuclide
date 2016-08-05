@@ -10,6 +10,7 @@
  */
 
 import type {OutputService} from '../../../nuclide-console/lib/types';
+import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
 import type {PackagerEvent} from './types';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
@@ -27,10 +28,14 @@ import {Observable} from 'rxjs';
  */
 export class PackagerActivation {
   _logTailer: LogTailer;
+  _projectRootPath: ?string;
   _disposables: CompositeDisposable;
 
   constructor() {
-    const packagerEvents = Observable.defer(getPackagerObservable).share();
+    const packagerEvents = Observable.defer(
+      () => getPackagerObservable(this._projectRootPath),
+    )
+      .share();
     const messages = packagerEvents
       .filter(event => event.kind === 'message')
       .map(event => {
@@ -67,6 +72,14 @@ export class PackagerActivation {
     this._disposables.dispose();
   }
 
+  consumeCwdApi(api: CwdApi): void {
+    this._disposables.add(
+      api.observeCwd(dir => {
+        this._projectRootPath = dir == null ? null : dir.getPath();
+      }),
+    );
+  }
+
   consumeOutputService(api: OutputService): void {
     this._disposables.add(
       api.registerOutputProvider({
@@ -91,8 +104,8 @@ class NoReactNativeProjectError extends Error {
 /**
  * Create an observable that runs the packager and and collects its output.
  */
-function getPackagerObservable(): Observable<PackagerEvent> {
-  const stdout = Observable.fromPromise(getCommandInfo())
+function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEvent> {
+  const stdout = Observable.fromPromise(getCommandInfo(projectRootPath))
     .switchMap(commandInfo => (
       commandInfo == null
         ? Observable.throw(new NoReactNativeProjectError())
@@ -127,9 +140,9 @@ function getPackagerObservable(): Observable<PackagerEvent> {
         atom.notifications.addError("Couldn't find a React Native project", {
           dismissable: true,
           description:
-            'Make sure that one of the folders in your Atom project (or its ancestor)' +
-            ' contains a "node_modules" directory with react-native installed, or a' +
-            ' .buckconfig file with a "[react-native]" section that has a "server" key.',
+            'Make sure that your current working root (or its ancestor) contains a "node_modules"' +
+            ' directory with react-native installed, or a .buckconfig file with a' +
+            ' "[react-native]" section that has a "server" key.',
         });
         return Observable.empty();
       }
