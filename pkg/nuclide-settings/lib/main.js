@@ -9,10 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget, GadgetsService} from '../../nuclide-gadgets/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
+import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {CompositeDisposable, Disposable} from 'atom';
+import {React} from 'react-for-atom';
 import SettingsPaneItem from './SettingsPaneItem';
 
 let subscriptions: CompositeDisposable = (null: any);
@@ -26,9 +28,17 @@ export function deactivate(): void {
   subscriptions = (null: any);
 }
 
-export function consumeGadgetsService(api: GadgetsService): IDisposable {
-  const disposable = api.registerGadget(((SettingsPaneItem: any): Gadget));
-  return disposable;
+export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+  subscriptions.add(
+    api.registerFactory({
+      id: 'nuclide-settings',
+      name: 'Nuclide Settings',
+      toggleCommand: 'nuclide-settings:toggle',
+      defaultLocation: 'pane',
+      create: () => viewableFromReactElement(<SettingsPaneItem />),
+      isInstance: item => item instanceof SettingsPaneItem,
+    }),
+  );
 }
 
 export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
@@ -38,7 +48,7 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   });
   toolBar.addButton({
     icon: 'gear',
-    callback: 'nuclide-settings:show',
+    callback: 'nuclide-settings:toggle',
     tooltip: 'Open Nuclide Settings',
     priority: -500,
   });

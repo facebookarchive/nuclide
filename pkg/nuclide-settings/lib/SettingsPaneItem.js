@@ -20,9 +20,6 @@ import {Section} from '../../nuclide-ui/lib/Section';
 import {matchesFilter} from './settings-utils';
 
 export default class NuclideSettingsPaneItem extends React.Component {
-  static gadgetId = 'nuclide-settings';
-  static defaultLocation = 'active-pane';
-
   _disposables: CompositeDisposable;
   state: Object;
 

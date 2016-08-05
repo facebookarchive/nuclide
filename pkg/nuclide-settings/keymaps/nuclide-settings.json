@@ -1,8 +1,8 @@
 {
   ".platform-darwin atom-workspace": {
-    "alt-cmd-,": "nuclide-settings:show"
+    "alt-cmd-,": "nuclide-settings:toggle"
   },
   ".platform-win32 atom-workspace, .platform-linux atom-workspace": {
-    "alt-ctrl-,": "nuclide-settings:show"
+    "alt-ctrl-,": "nuclide-settings:toggle"
   }
 }
