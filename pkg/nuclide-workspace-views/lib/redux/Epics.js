@@ -12,6 +12,7 @@
 import type {Action, AppState, Location, Store, Viewable, ViewableFactory} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
+import {trackEvent} from '../../../nuclide-analytics';
 import * as Actions from './Actions';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -48,7 +49,7 @@ export function createViewableEpic(
   store: Store,
 ): Observable<Action> {
   return actions.ofType(Actions.CREATE_VIEWABLE)
-    .do(action => {
+    .switchMap(action => {
       invariant(action.type === Actions.CREATE_VIEWABLE);
       const {itemType} = action.payload;
       const state = store.getState();
@@ -67,11 +68,51 @@ export function createViewableEpic(
         location = entry == null ? null : entry[1];
       }
 
-      if (location == null) { return; }
+      if (location == null) {
+        return Observable.empty();
+      }
 
       const item = factory.create();
       location.showItem(item);
+      return Observable.of(Actions.itemCreated(item, itemType));
+    });
+}
+
+/**
+ * Convert actions into tracking events. We perform the side-effect of actually calling track in
+ * another epic and keep this one pure.
+ */
+export function trackActionsEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.ITEM_CREATED)
+    // Map to a tracking event.
+    .map(action => {
+      invariant(action.type === Actions.ITEM_CREATED);
+      const {itemType} = action.payload;
+      // TODO: Appeal to `item` for custom tracking event here. Let's wait until we need that
+      //   though.
+      return Actions.track({
+        type: 'workspace-view-created',
+        data: {itemType},
+      });
+    });
+}
+
+/**
+ * Make tracking requests.
+ */
+export function trackEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.TRACK)
+    .map(action => {
+      invariant(action.type === Actions.TRACK);
+      return action.payload.event;
     })
+    .do(trackEvent)
     .ignoreElements();
 }
 

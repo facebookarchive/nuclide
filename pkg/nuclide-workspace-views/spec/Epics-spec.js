@@ -23,10 +23,12 @@ import {
   createViewableEpic,
   registerLocationFactoryEpic,
   setItemVisibilityEpic,
+  trackActionsEpic,
   unregisterLocationEpic,
   unregisterViewableFactoryEpic,
 } from '../lib/redux/Epics';
 import {ActionsObservable} from '../../commons-node/redux-observable';
+import invariant from 'assert';
 import {Observable, ReplaySubject, Subject} from 'rxjs';
 
 describe('Epics', () => {
@@ -147,6 +149,26 @@ describe('Epics', () => {
         ((store: any): Store),
       );
       expect(location.destroy).toHaveBeenCalledWith();
+    });
+
+  });
+
+  describe('trackActionsEpic', () => {
+
+    it('tracks when views are created', () => {
+      waitsForPromise(async () => {
+        const trackAction = await runActions(
+          [Actions.itemCreated({}, 'test-view')],
+          trackActionsEpic,
+          ((null: any): Store),
+        ).first().toPromise();
+        invariant(trackAction.type === 'TRACK');
+        expect(trackAction.type).toBe('TRACK');
+        const {event} = trackAction.payload;
+        expect(event.type).toBe('workspace-view-created');
+        invariant(event.data != null);
+        expect(event.data.itemType).toBe('test-view');
+      });
     });
 
   });

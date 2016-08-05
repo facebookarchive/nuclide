@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {TrackingEvent} from '../../nuclide-analytics';
+
 export type ViewableFactory = {
   id: string,
   name: string,
@@ -91,6 +93,14 @@ type CreateViewableAction = {
   },
 };
 
+type ItemCreatedAction = {
+  type: 'ITEM_CREATED',
+  payload: {
+    item: Object,
+    itemType: string,
+  },
+};
+
 type RegisterViewableFactoryAction = {
   type: 'REGISTER_VIEWABLE_FACTORY',
   payload: {
@@ -158,9 +168,18 @@ type ToggleItemVisibilityAction = {
   },
 };
 
+type TrackAction = {
+  type: 'TRACK',
+  payload: {
+    event: TrackingEvent,
+  },
+};
+
 export type Action =
   CreateViewableAction
+  | ItemCreatedAction
   | RegisterViewableFactoryAction
+  | TrackAction
   | UnregisterViewableFactoryAction
   | ViewableFactoryUnregisteredAction
   | RegisterLocationAction

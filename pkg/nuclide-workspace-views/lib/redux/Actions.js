@@ -9,11 +9,14 @@
  * the root directory of this source tree.
  */
 
+import type {TrackingEvent} from '../../../nuclide-analytics';
 import type {Action, Location, LocationFactory, Viewable, ViewableFactory} from '../types';
 
 export const CREATE_VIEWABLE = 'CREATE_VIEWABLE';
+export const ITEM_CREATED = 'ITEM_CREATED';
 export const SET_ITEM_VISIBILITY = 'SET_ITEM_VISIBILITY';
 export const TOGGLE_ITEM_VISIBILITY = 'TOGGLE_ITEM_VISIBILITY';
+export const TRACK = 'TRACK';
 export const REGISTER_VIEWABLE_FACTORY = 'REGISTER_VIEWABLE_FACTORY';
 export const UNREGISTER_VIEWABLE_FACTORY = 'UNREGISTER_VIEWABLE_FACTORY';
 export const REGISTER_LOCATION = 'REGISTER_LOCATION';
@@ -29,10 +32,24 @@ export function createViewable(itemType: string): Action {
   };
 }
 
+export function itemCreated(item: Object, itemType: string) {
+  return {
+    type: ITEM_CREATED,
+    payload: {item, itemType},
+  };
+}
+
 export function registerViewableFactory(viewableFactory: ViewableFactory): Action {
   return {
     type: REGISTER_VIEWABLE_FACTORY,
     payload: {viewableFactory},
+  };
+}
+
+export function track(event: TrackingEvent) {
+  return {
+    type: TRACK,
+    payload: {event},
   };
 }
 
