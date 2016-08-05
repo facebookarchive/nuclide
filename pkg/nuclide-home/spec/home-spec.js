@@ -16,7 +16,11 @@ import nuclideUri from '../../commons-node/nuclideUri';
 const CONFIG_KEY = 'nuclide-home.showHome';
 
 const openHomePane = () => {
-  atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-home:show');
+  atom.commands.dispatch(
+    atom.views.getView(atom.workspace),
+    'nuclide-home:toggle',
+    {visible: true},
+  );
 };
 
 function findHomePaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
@@ -41,11 +45,13 @@ describe('Home', () => {
       Object.keys(config).forEach(k =>
         featureConfig.setSchema(`nuclide-home.${k}`, config[k]),
       );
-      const GADGETS_DIR =
-        nuclideUri.dirname(require.resolve('../../nuclide-gadgets/package.json'));
+      const WORKSPACE_VIEW_DIRS = [
+        nuclideUri.dirname(require.resolve('../../nuclide-workspace-views/package.json')),
+        nuclideUri.dirname(require.resolve('../../nuclide-workspace-view-locations/package.json')),
+      ];
       await Promise.all([
+        ...WORKSPACE_VIEW_DIRS.map(dir => atom.packages.activatePackage(dir)),
         atom.packages.activatePackage(nuclideUri.join(__dirname, '..')),
-        atom.packages.activatePackage(GADGETS_DIR),
       ]);
     });
   });

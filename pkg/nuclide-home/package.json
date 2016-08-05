@@ -29,9 +29,9 @@
         "0.0.0": "setHomeFragments"
       }
     },
-    "nuclide-gadgets": {
+    "nuclide.workspace-views": {
       "versions": {
-        "0.0.0": "consumeGadgetsService"
+        "0.0.0": "consumeWorkspaceViewsService"
       }
     }
   }
