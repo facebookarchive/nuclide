@@ -138,7 +138,7 @@ export class NavigationStack {
   }
 
   // When closing editors, convert all locations for that editor to URI locations.
-  editorClosed(editor:atom$TextEditor): void {
+  editorClosed(editor: atom$TextEditor): void {
     const uri = editor.getPath();
     if (uri === '' || uri == null) {
       this.filter(location => location.type !== 'editor' || editor !== location.editor);

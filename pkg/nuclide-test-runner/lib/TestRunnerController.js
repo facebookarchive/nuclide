@@ -263,8 +263,11 @@ export default class TestRunnerController {
     this.runTests();
   }
 
-  _runTestRunnerServiceForPath(testRun: Observable<Message>, path: NuclideUri, label: string):
-      void {
+  _runTestRunnerServiceForPath(
+    testRun: Observable<Message>,
+    path: NuclideUri,
+    label: string,
+  ): void {
     const subscription = testRun
       .do((message: Message) => {
         switch (message.kind) {

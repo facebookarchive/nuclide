@@ -20,8 +20,11 @@ import {JS_GRAMMARS} from './constants';
 const JS_GRAMMARS_SET = new Set(JS_GRAMMARS);
 
 class FlowHyperclickProvider {
-  async getSuggestionForWord(textEditor: TextEditor, text: string, range: atom$Range):
-      Promise<?HyperclickSuggestion> {
+  async getSuggestionForWord(
+    textEditor: TextEditor,
+    text: string,
+    range: atom$Range,
+  ): Promise<?HyperclickSuggestion> {
     if (!JS_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
       return null;
     }

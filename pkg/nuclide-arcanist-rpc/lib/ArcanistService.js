@@ -85,8 +85,10 @@ export async function getProjectRelativePath(fileName: NuclideUri): Promise<?str
   return arcPath && fileName ? nuclideUri.relative(arcPath, fileName) : null;
 }
 
-export async function findDiagnostics(pathToFiles: Array<NuclideUri>, skip: Array<string>):
-    Promise<Array<ArcDiagnostic>> {
+export async function findDiagnostics(
+  pathToFiles: Array<NuclideUri>,
+  skip: Array<string>,
+): Promise<Array<ArcDiagnostic>> {
   const arcConfigDirToFiles: Map<string, Array<string>> = new Map();
   await Promise.all(
     pathToFiles.map(async file => {
@@ -180,8 +182,11 @@ export function updatePhabricatorRevision(
   return _callArcDiff(filePath, args);
 }
 
-async function execArcLint(cwd: string, filePaths: Array<NuclideUri>, skip: Array<string>):
-    Promise<Array<ArcDiagnostic>> {
+async function execArcLint(
+  cwd: string,
+  filePaths: Array<NuclideUri>,
+  skip: Array<string>,
+): Promise<Array<ArcDiagnostic>> {
   const args: Array<string> = ['lint', '--output', 'json', ...filePaths];
   if (skip.length > 0) {
     args.push('--skip', skip.join(','));

@@ -56,8 +56,7 @@ export class RemoteConnection {
 
   static _emitter = new Emitter();
 
-  static async findOrCreate(config: RemoteConnectionConfiguration):
-      Promise<RemoteConnection> {
+  static async findOrCreate(config: RemoteConnectionConfiguration): Promise<RemoteConnection> {
     const serverConnection = await ServerConnection.getOrCreate(config);
     const connection = new RemoteConnection(serverConnection, config.cwd, config.displayTitle);
     return await connection._initialize();

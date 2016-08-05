@@ -28,8 +28,11 @@ export type search$FileResult = {
   matches: Array<search$Match>,
 };
 
-export function grepSearch(directory: NuclideUri, regex: RegExp, subdirs: Array<string>):
-    Observable<search$FileResult> {
+export function grepSearch(
+  directory: NuclideUri,
+  regex: RegExp,
+  subdirs: Array<string>,
+): Observable<search$FileResult> {
   return search(directory, regex, subdirs).map(update => {
     // Transform filePath's to absolute paths.
     return {filePath: nuclideUri.join(directory, update.filePath), matches: update.matches};

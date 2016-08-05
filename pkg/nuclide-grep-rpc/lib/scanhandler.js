@@ -32,8 +32,11 @@ const GREP_PARSE_PATTERN = /(.*?):(\d*):(.*)/;
  *   empty array, then simply search in directory.
  * @returns An observable that emits match events.
  */
-export default function search(directory: string, regex: RegExp, subdirs: Array<string>):
-    Observable<search$FileResult> {
+export default function search(
+  directory: string,
+  regex: RegExp,
+  subdirs: Array<string>,
+): Observable<search$FileResult> {
   // Matches are stored in a Map of filename => Array<Match>.
   const matchesByFile: Map<string, Array<search$Match>> = new Map();
 
@@ -132,8 +135,11 @@ function searchInSubdir(
 
 // Helper function that runs a command in a given directory, invoking a callback
 // as each line is written to stdout.
-function getLinesFromCommand(command: string, args: Array<string>, localDirectoryPath: string):
-    Observable<string> {
+function getLinesFromCommand(
+  command: string,
+  args: Array<string>,
+  localDirectoryPath: string,
+): Observable<string> {
   return Observable.create(observer => {
     let proc: ?child_process$ChildProcess = null;
     let exited = false;

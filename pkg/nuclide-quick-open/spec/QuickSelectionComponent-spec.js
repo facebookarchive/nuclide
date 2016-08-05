@@ -27,8 +27,9 @@ class TestQuickSelectionProvider {
     return 'test';
   }
 
-  executeQuery(query: string):
-    Promise<{[key: string]: {[key: string]: Promise<{results: Array<any>}>}}> {
+  executeQuery(
+    query: string,
+  ): Promise<{[key: string]: {[key: string]: Promise<{results: Array<any>}>}}> {
     return Promise.resolve(this._items);
   }
 }

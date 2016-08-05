@@ -359,8 +359,7 @@ const hostFormatters = [];
 export type HostnameFormatter = (uri: NuclideUri) => ?string;
 
 // Registers a host formatter for nuclideUriToDisplayString
-function registerHostnameFormatter(formatter: HostnameFormatter):
-    {dispose: () => void} {
+function registerHostnameFormatter(formatter: HostnameFormatter): IDisposable {
   hostFormatters.push(formatter);
   return {
     dispose: () => {

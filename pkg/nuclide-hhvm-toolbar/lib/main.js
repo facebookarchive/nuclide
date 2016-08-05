@@ -163,7 +163,7 @@ class Activation {
     this._disposables.dispose();
   }
 
-  togglePanel():void {
+  togglePanel(): void {
     this._state.panelVisible = !this._state.panelVisible;
     this._updatePanelVisibility();
   }

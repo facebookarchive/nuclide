@@ -482,8 +482,9 @@ export default class QuickSelectionComponent extends React.Component {
     this.setSelectedIndex(top.serviceName, top.directoryName, 0);
   }
 
-  _getOuterResults(arrayOperation: Function):
-    ?{serviceName: string, directoryName: string, results: Array<mixed>} {
+  _getOuterResults(
+    arrayOperation: Function,
+  ): ?{serviceName: string, directoryName: string, results: Array<mixed>} {
     const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
     const serviceName = arrayOperation.call(sortServiceNames(Object.keys(nonEmptyResults)));
     if (!serviceName) {

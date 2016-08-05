@@ -293,8 +293,9 @@ export async function queryHack(
   }
 }
 
-export async function getTypedRegions(filePath: NuclideUri):
-    Promise<?Array<HackTypedRegion>> {
+export async function getTypedRegions(
+  filePath: NuclideUri,
+): Promise<?Array<HackTypedRegion>> {
   const result = await callHHClient(
     /* args */ ['--colour', filePath],
     /* errorStream */ false,

@@ -464,7 +464,7 @@ export async function asyncExecute(
         env,
       },
       // Node embeds various properties like code/errno in the Error object.
-      (err: /* Error */ any, stdoutBuf, stderrBuf) => {
+      (err: any /* Error */, stdoutBuf, stderrBuf) => {
         const stdout = stdoutBuf.toString('utf8');
         const stderr = stderrBuf.toString('utf8');
         if (err != null) {

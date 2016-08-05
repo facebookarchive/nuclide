@@ -289,9 +289,14 @@ module.exports = {
     'babel/func-params-comma-dangle': [1, 'always-multiline'],
     'babel/no-await-in-loop': 1,
 
-    // flow-vars (https://github.com/zertosh/eslint-plugin-flow-vars)
-    'flow-vars/define-flow-type': 1,
-    'flow-vars/use-flow-type': 1,
+    // flowtype (https://github.com/gajus/eslint-plugin-flowtype)
+    'flowtype/define-flow-type': 1,
+    'flowtype/require-parameter-type': 0,
+    'flowtype/require-return-type': 0,
+    'flowtype/space-after-type-colon': [1, 'always'],
+    'flowtype/space-before-type-colon': 0,
+    'flowtype/type-id-match': 0,
+    'flowtype/use-flow-type': 1,
 
     // Jasmine (https://github.com/tlvince/eslint-plugin-jasmine)
     'jasmine/missing-expect': 0,
@@ -369,7 +374,7 @@ module.exports = {
 
   plugins: [
     'babel',
-    'flow-vars',
+    'flowtype',
     'jasmine',
     'nuclide-internal',
     'prefer-object-spread',

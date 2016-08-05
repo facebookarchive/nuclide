@@ -241,8 +241,10 @@ export function unlink(path: string): Promise<void> {
  *
  *   Callers who want a string should call buffer.toString('utf8').
  */
-export async function readFile(path: string, options?: {flag?: string}):
-    Promise<Buffer> {
+export async function readFile(
+  path: string,
+  options?: {flag?: string},
+): Promise<Buffer> {
   const stats = await fsPromise.stat(path);
   if (stats.size > READFILE_SIZE_LIMIT) {
     throw new Error(`File is too large (${stats.size} bytes)`);

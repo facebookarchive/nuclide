@@ -73,8 +73,11 @@ function asyncRequest(options: RequestOptions): Promise<ResponseBody> {
 /**
  * Write a text or convert to text response with an optional status code.
  */
-function sendTextResponse(response: http$fixed$ServerResponse, text: any, statusCode: ?number):
-    void {
+function sendTextResponse(
+  response: http$fixed$ServerResponse,
+  text: any,
+  statusCode: ?number,
+): void {
   if (typeof statusCode === 'number') {
     response.statusCode = statusCode;
   }
@@ -85,8 +88,11 @@ function sendTextResponse(response: http$fixed$ServerResponse, text: any, status
 /**
  * Write a json response text with an optional status code.
  */
-function sendJsonResponse(response: http$fixed$ServerResponse, json: any, statusCode: ?number):
-    void {
+function sendJsonResponse(
+  response: http$fixed$ServerResponse,
+  json: any,
+  statusCode: ?number,
+): void {
   response.setHeader('Content-Type', 'application/json');
   sendTextResponse(response, JSON.stringify(json), statusCode);
 }
@@ -94,8 +100,10 @@ function sendJsonResponse(response: http$fixed$ServerResponse, json: any, status
 /**
   * Parses the request body in an anyc/promise way
   */
-function parseRequestBody(httpRequest: http$fixed$IncomingMessage, isJson: ?boolean):
-    Promise<string> {
+function parseRequestBody(
+  httpRequest: http$fixed$IncomingMessage,
+  isJson: ?boolean,
+): Promise<string> {
   return new Promise((resolve, reject) => {
     let body = '';
     httpRequest.on('data', data => {

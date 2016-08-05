@@ -97,7 +97,7 @@
     "co": "4.6.0",
     "eslint": "3.1.1",
     "eslint-plugin-babel": "3.3.0",
-    "eslint-plugin-flow-vars": "0.4.0",
+    "eslint-plugin-flowtype": "2.4.0",
     "eslint-plugin-jasmine": "1.8.1",
     "eslint-plugin-nuclide-internal": "file:resources/eslint-plugin-nuclide-internal",
     "eslint-plugin-prefer-object-spread": "1.1.0",
