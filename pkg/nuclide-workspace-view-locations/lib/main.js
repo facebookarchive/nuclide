@@ -36,7 +36,11 @@ class Activation {
       api.registerLocation({id: 'pane', create: () => new PaneLocation()}),
       ...PanelLocationIds.map(id => api.registerLocation({
         id,
-        create: serializedState => new PanelLocation(id, serializedState || undefined),
+        create: serializedState => {
+          const location = new PanelLocation(id, serializedState || undefined);
+          location.initialize();
+          return location;
+        },
       })),
     );
   }

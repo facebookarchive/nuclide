@@ -12,17 +12,9 @@
 export type SerializedPanelLocation = {
   deserializer: 'PanelLocation',
   data: {
-    activeItemIndex: number,
-    items: Array<Object>,
+    paneContainer: ?Object,
+    size: ?number,
     visible: boolean,
-  },
-};
-
-export type SerializedPanelLocationItem = {
-  deserializer: 'PanelLocationItem',
-  data: {
-    activeItemIndex: number,
-    items: Array<Object>,
   },
 };
 

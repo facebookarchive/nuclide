@@ -11,21 +11,21 @@
 
 import type {PanelLocationId, SerializedPanelLocation} from './types';
 import type {Viewable} from '../../nuclide-workspace-views/lib/types';
-import type {Subscription} from 'rxjs';
 
+import createPaneContainer from '../../commons-atom/create-pane-container';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {DisposableSubscription} from '../../commons-node/stream';
 import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import * as PanelLocationIds from './PanelLocationIds';
 import {Panel} from './ui/Panel';
 import invariant from 'assert';
+import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 import {Observable} from 'rxjs';
 
 type State = {
-  activeItemIndex: number,
   visible: boolean,
-  items: Array<Viewable>,
-  size: ?number,
 };
 
 /**
@@ -33,31 +33,72 @@ type State = {
  */
 export class PanelLocation extends SimpleModel<State> {
   _addPanel: any;
-  _panel: ?atom$Panel;
+  _disposables: IDisposable;
   _locationId: PanelLocationId;
-  _visibleSubscription: Subscription;
+  _panel: ?atom$Panel;
+  _paneContainer: atom$PaneContainer;
+  _size: ?number;
 
-  // We pass serialized items so that the location can lazily deserialize them when it needs to.
   constructor(locationId: PanelLocationId, serializedState: Object = {}) {
     super();
-    (this: any)._createPanel = this._createPanel.bind(this);
     (this: any)._handlePanelResize = this._handlePanelResize.bind(this);
     this._locationId = locationId;
     const serializedData = serializedState.data || {};
+    this._paneContainer = deserializePaneContainer(serializedData.paneContainer);
+    this._size = serializedData.size || null;
     this.state = {
-      activeItemIndex: serializedData.activeItemIndex || 0,
-      visible: serializedData.visible !== false,
-      items: (serializedData.items || []).map(x => atom.deserializers.deserialize(x)),
-      size: serializedData.size || null,
+      visible: serializedData.visible === true,
     };
+  }
 
-    // Lazily create the panel when we want to display an item.
-    // $FlowIssue: We need to teach flow about Symbol.observable.
-    this._visibleSubscription = Observable.from(this)
-      .map(this._getItemToDisplay)
-      .filter(item => item != null)
-      .first()
-      .subscribe(this._createPanel);
+  /**
+   * Set up the subscriptions and make this thing "live."
+   */
+  initialize(): void {
+    const paneContainer = this._paneContainer;
+
+    this._disposables = new CompositeDisposable(
+
+      // Add a tab bar to any panes created in the container.
+      paneContainer.observePanes(pane => {
+        const tabBarView = document.createElement('ul', 'atom-tabs');
+
+        // This should always be true. Unless they don't have atom-tabs installed or something. Do
+        // we need to wait for activation of atom-tabs?
+        if (typeof tabBarView.initialize !== 'function') { return; }
+
+        tabBarView.initialize(pane);
+        const paneElement = atom.views.getView(pane);
+        paneElement.insertBefore(tabBarView, paneElement.firstChild);
+      }),
+
+      // Render whenever the state changes. Note that state is shared between this instance and the
+      // pane container, so we have to watch it as well.
+      new DisposableSubscription(
+        Observable.merge(
+          observableFromSubscribeFunction(paneContainer.onDidAddPaneItem.bind(paneContainer)),
+          observableFromSubscribeFunction(paneContainer.onDidDestroyPaneItem.bind(paneContainer)),
+          // $FlowIssue: We need to teach flow about Symbol.observable.
+          Observable.from(this).map(state => state.visible).distinctUntilChanged(),
+        )
+          .subscribe(() => { this._render(); }),
+      ),
+
+    );
+  }
+
+  _render() {
+    // Only show the panel if it's supposed to be visible *and* there are items to show in it
+    // (even if `core.destroyEmptyPanes` is `false`).
+    const shouldBeVisible = this.state.visible && this._paneContainer.getPaneItems().length > 0;
+    if (shouldBeVisible) {
+      // Lazily create the panel the first time we want to show it.
+      this._createPanel();
+      invariant(this._panel != null);
+      this._panel.show();
+    } else if (this._panel != null) {
+      this._panel.hide();
+    }
   }
 
   _createPanel(): void {
@@ -68,8 +109,8 @@ export class PanelLocation extends SimpleModel<State> {
     // for this panel.
     // $FlowIssue: We need to teach flow about Symbol.observable.
     const props = Observable.from(this).map(state => ({
-      initialSize: this.state.size,
-      item: this._getItemToDisplay(state),
+      initialSize: this._size,
+      item: this._paneContainer,
       position: locationsToPosition.get(this._locationId),
       onResize: this._handlePanelResize,
     }));
@@ -83,29 +124,26 @@ export class PanelLocation extends SimpleModel<State> {
     this._panel = addPanel({item, visible: true});
   }
 
-  itemIsVisible(item: Viewable): boolean {
-    return item === this._getItemToDisplay(this.state);
-  }
-
-  _getItemToDisplay(state: State): ?Viewable {
-    return state.visible ? state.items[state.activeItemIndex] : null;
-  }
-
   _handlePanelResize(size: number): void {
     // If the user resizes the pane, store it so that we can serialize it for the next session.
-    this.setState({size});
+    this._size = size;
+  }
+
+  itemIsVisible(item: Viewable): boolean {
+    if (!this.state.visible) {
+      return false;
+    }
+    for (const pane of this._paneContainer.getPanes()) {
+      if (item === pane.getActiveItem()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   destroy(): void {
-    this._visibleSubscription.unsubscribe();
-
-    // Destroy every item.
-    this.state.items.forEach(item => {
-      if (typeof item.destroy === 'function') {
-        item.destroy();
-      }
-    });
-    this.setState({items: []});
+    this._disposables.dispose();
+    this._paneContainer.destroy();
 
     if (this._panel != null) {
       this._panel.destroy();
@@ -113,41 +151,32 @@ export class PanelLocation extends SimpleModel<State> {
   }
 
   destroyItem(item: Object): void {
-    // Make sure the item is actually in the panel.
-    const index = this.state.items.findIndex(it => it === item);
-    if (index === -1) { return; }
-
-    const nextItems = this.state.items.slice();
-    nextItems.splice(index, 1);
-    const prevActiveItemIndex = this.state.activeItemIndex;
-    this.setState({
-      items: nextItems,
-      // Make sure we update the index to account for the removed element.
-      activeItemIndex: index <= prevActiveItemIndex
-        ? Math.max(0, prevActiveItemIndex - 1)
-        : prevActiveItemIndex,
-    });
+    for (const pane of this._paneContainer.getPanes()) {
+      for (const it of pane.getItems()) {
+        if (it === item) {
+          pane.destroyItem(it);
+        }
+      }
+    }
   }
 
   getItems(): Array<Viewable> {
-    return this.state.items.slice();
+    const items = [];
+    for (const pane of this._paneContainer.getPanes()) {
+      items.push(...pane.getItems());
+    }
+    return items;
   }
 
   showItem(item: Viewable): void {
-    const index = this.state.items.findIndex(it => it === item);
-    if (index === -1) {
-      // Add and activate the item.
-      this.setState({
-        activeItemIndex: this.state.items.length,
-        items: this.state.items.concat([item]),
-        visible: true,
-      });
-      return;
+    let pane = this._paneContainer.paneForItem(item);
+    if (pane == null) {
+      pane = this._paneContainer.getActivePane();
+      pane.addItem(item);
     }
-    this.setState({
-      activeItemIndex: index,
-      visible: true,
-    });
+    pane.activate();
+    pane.activateItem(item);
+    this.setState({visible: true});
   }
 
   /**
@@ -156,7 +185,7 @@ export class PanelLocation extends SimpleModel<State> {
    * have tabs or configurable behavior and this will change.
    */
   hideItem(item: Viewable): void {
-    const activeItem = this.state.items[this.state.activeItemIndex];
+    const activeItem = this._paneContainer.getActivePaneItem();
 
     // Since we're only showing the active item, if a different item is active, we know that this
     // item's already hidden and we don't have to do anything.
@@ -167,29 +196,23 @@ export class PanelLocation extends SimpleModel<State> {
   }
 
   serialize(): ?SerializedPanelLocation {
-    // Serialize all the items, taking care to update the active item index if one of them isn't
-    // serializable.
-    let activeItemIndex = this.state.activeItemIndex;
-    const serializedItems = [];
-    this.state.items.forEach((item, index) => {
-      const serialized = typeof item.serialize === 'function' ? item.serialize() : null;
-      if (serialized != null) {
-        serializedItems.push(serialized);
-      } else if (index < activeItemIndex) {
-        activeItemIndex -= 1;
-      }
-    });
-
     return {
       deserializer: 'PanelLocation',
       data: {
-        activeItemIndex,
-        items: serializedItems,
-        size: this.state.size,
+        paneContainer: this._paneContainer == null ? null : this._paneContainer.serialize(),
+        size: this._size,
         visible: this.state.visible,
       },
     };
   }
+}
+
+function deserializePaneContainer(serialized: ?Object): atom$PaneContainer {
+  const paneContainer = createPaneContainer();
+  if (serialized != null) {
+    paneContainer.deserialize(serialized, atom.deserializers);
+  }
+  return paneContainer;
 }
 
 const locationsToAddPanelFunctions = new Map([
