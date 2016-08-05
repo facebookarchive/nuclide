@@ -2,7 +2,6 @@
 @import "syntax-variables";
 
 @nuclide-console-border-size: 1px;
-@nuclide-console-toolbar-background-color: @tab-background-color-active;
 @nuclide-console-record-background-color-normal: @syntax-background-color;
 @nuclide-console-record-text-color-normal: @syntax-text-color;
 @nuclide-console-record-border-color-normal: @base-border-color;
@@ -43,11 +42,24 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+}
+
+// If the console is displayed in a pane, change the color of the header to
+// match.
+.nuclide-ui-toolbar {
   background-color: @pane-item-background-color;
 
-  .nuclide-ui-toolbar {
-    background-color: @nuclide-console-toolbar-background-color;
+  atom-panel & {
+    background-color: @tool-panel-background-color;
   }
+}
+
+.nuclide-console-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background-color: @syntax-background-color;
+  min-height: 0;
 }
 
 .nuclide-console-lazy-nested-value div, .nuclide-console-lazy-nested-value span {

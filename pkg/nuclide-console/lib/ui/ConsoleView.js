@@ -138,24 +138,26 @@ export default class ConsoleView extends React.Component {
           We need an extra wrapper element here in order to have the new messages notification stick
           to the bottom of the scrollable area (and not scroll with it).
         */}
-        <div className="nuclide-console-scroll-pane-wrapper">
-          <div
-            ref={this._handleScrollPane}
-            className="nuclide-console-scroll-pane"
-            onScroll={this._handleScroll}>
-            <OutputTable
-              records={this.props.records}
-              showSourceLabels={this.props.selectedSourceIds.length > 1}
-              getExecutor={this._getExecutor}
-              getProvider={this._getProvider}
+        <div className="nuclide-console-body">
+          <div className="nuclide-console-scroll-pane-wrapper">
+            <div
+              ref={this._handleScrollPane}
+              className="nuclide-console-scroll-pane"
+              onScroll={this._handleScroll}>
+              <OutputTable
+                records={this.props.records}
+                showSourceLabels={this.props.selectedSourceIds.length > 1}
+                getExecutor={this._getExecutor}
+                getProvider={this._getProvider}
+              />
+            </div>
+            <UnseenMessagesNotification
+              visible={this.state.unseenMessages}
+              onClick={this._scrollToBottom}
             />
           </div>
-          <UnseenMessagesNotification
-            visible={this.state.unseenMessages}
-            onClick={this._scrollToBottom}
-          />
+          {this._renderPrompt()}
         </div>
-        {this._renderPrompt()}
       </div>
     );
   }
