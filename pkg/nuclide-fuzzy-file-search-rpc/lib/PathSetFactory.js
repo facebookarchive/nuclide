@@ -12,14 +12,6 @@
 import child_process from 'child_process';
 import split from 'split';
 
-import {WatchmanClient} from '../../nuclide-watchman-helpers';
-import {sleep} from '../../commons-node/promise';
-import {getLogger} from '../../nuclide-logging';
-
-// Occasionally, the watchman client may hang while waiting for a query.
-// Fall back to other methods after the timeout expires.
-const WATCHMAN_TIMEOUT_MS = 90000;
-
 function getFilesFromCommand(
   command: string,
   args: Array<string>,
@@ -146,28 +138,12 @@ function getAllFiles(localDirectory: string): Promise<Array<string>> {
       filePath => filePath.substring(2));
 }
 
-async function getFilesFromWatchman(localDirectory: string): Promise<Array<string>> {
-  const watchmanClient = new WatchmanClient();
-  try {
-    return await Promise.race([
-      watchmanClient.listFiles(localDirectory),
-      sleep(WATCHMAN_TIMEOUT_MS).then(() => Promise.reject()),
-    ]);
-  } catch (e) {
-    getLogger().info('getFilesFromWatchman failed, falling back to hg/git/find', e);
-    throw e;
-  } finally {
-    watchmanClient.dispose();
-  }
-}
-
 export function getPaths(localDirectory: string): Promise<Array<string>> {
   // Attempts to get a list of files relative to `localDirectory`, hopefully from
   // a fast source control index.
   // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server,
   // use those instead to determine VCS.
-  return getFilesFromWatchman(localDirectory)
-      .catch(() => getFilesFromHg(localDirectory))
+  return getFilesFromHg(localDirectory)
       .catch(() => getFilesFromGit(localDirectory))
       .catch(() => getAllFiles(localDirectory))
       .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });
