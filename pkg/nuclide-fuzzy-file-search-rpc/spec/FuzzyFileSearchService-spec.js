@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import * as pathSearch from '../../nuclide-path-search';
+import * as pathSearch from '../lib/FileSearchProcess';
 import {
   queryFuzzyFile,
   isFuzzySearchAvailableFor,

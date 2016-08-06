@@ -19,10 +19,6 @@ import Task from '../../nuclide-task';
 export type FileSearchResult = FileSearchResultType;
 
 type DirectoryUri = string;
-export type FileSearch = {
-  query: (query: string) => Promise<Array<FileSearchResult>>,
-  dispose: () => void,
-};
 
 const logger = getLogger();
 
@@ -30,7 +26,7 @@ const logger = getLogger();
  * This is an object that lives in the main process that delegates calls to the
  * FileSearch in the forked process.
  */
-class MainProcessFileSearch {
+class FileSearchProcess {
   _task: ?Task;
   _directoryUri: DirectoryUri;
   _ignoredNames: Array<string>;
@@ -70,12 +66,12 @@ class MainProcessFileSearch {
   }
 }
 
-const fileSearchForDirectoryUri: {[key: DirectoryUri]: Promise<MainProcessFileSearch>} = {};
+const fileSearchForDirectoryUri: {[key: DirectoryUri]: Promise<FileSearchProcess>} = {};
 
 async function newFileSearch(
   directoryUri: string,
   ignoredNames: Array<string>,
-): Promise<MainProcessFileSearch> {
+): Promise<FileSearchProcess> {
   const exists = await fsPromise.exists(directoryUri);
   if (!exists) {
     throw new Error('Could not find directory to search : ' + directoryUri);
@@ -92,13 +88,13 @@ async function newFileSearch(
     method: 'initFileSearchForDirectory',
     args: [directoryUri, ignoredNames],
   });
-  return new MainProcessFileSearch(task, directoryUri, ignoredNames);
+  return new FileSearchProcess(task, directoryUri, ignoredNames);
 }
 
 export async function fileSearchForDirectory(
   directoryUri: string,
   ignoredNames: Array<string>,
-): Promise<FileSearch> {
+): Promise<FileSearchProcess> {
   const cached = fileSearchForDirectoryUri[directoryUri];
   if (cached != null) {
     const fileSearch = await cached;

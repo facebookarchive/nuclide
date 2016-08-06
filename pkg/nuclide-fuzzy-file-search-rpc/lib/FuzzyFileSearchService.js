@@ -20,7 +20,7 @@ export type FileSearchResult = {
 import {
   fileSearchForDirectory,
   disposeSearchForDirectory,
-} from '../../nuclide-path-search';
+} from './FileSearchProcess';
 import fsPromise from '../../commons-node/fsPromise';
 
 /**
