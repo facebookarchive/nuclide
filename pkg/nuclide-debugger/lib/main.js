@@ -32,7 +32,10 @@ import {Subject} from 'rxjs';
 import invariant from 'assert';
 import classnames from 'classnames';
 import {CompositeDisposable, Disposable} from 'atom';
-import {trackTiming} from '../../nuclide-analytics';
+import {
+  track,
+  trackTiming,
+} from '../../nuclide-analytics';
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel from './DebuggerModel';
 import {debuggerDatatip} from './DebuggerDatatip';
@@ -62,11 +65,12 @@ type Props = {
   model: DebuggerModel,
   useRevampedUi: boolean,
 };
+type State = {
+  showOldView: boolean,
+};
 class DebuggerView extends React.Component {
   props: Props;
-  state: {
-    showOldView: boolean,
-  };
+  state: State;
 
   constructor(props: Props) {
     super(props);
@@ -74,6 +78,24 @@ class DebuggerView extends React.Component {
       showOldView: !props.useRevampedUi,
     };
     (this: any)._toggleOldView = this._toggleOldView.bind(this);
+  }
+
+  _getUiTypeForAnalytics(): string {
+    return this.state.showOldView ? 'chrome-devtools' : 'nuclide';
+  }
+
+  componentDidMount(): void {
+    track('debugger-ui-mounted', {
+      frontend: this._getUiTypeForAnalytics(),
+    });
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State): void {
+    if (prevState.showOldView !== this.state.showOldView) {
+      track('debugger-ui-toggled', {
+        frontend: this._getUiTypeForAnalytics(),
+      });
+    }
   }
 
   _toggleOldView(): void {
