@@ -112,10 +112,6 @@ export class NuxManager {
 
   // Handles new NUXes emitted from the store
   _handleNewNux(nuxTourModel: NuxTourModel): void {
-    if (nuxTourModel.completed) {
-      return;
-    }
-
     const nuxViews = arrayCompact(nuxTourModel.nuxList.map((model, index) => {
       try {
         return new NuxView(
@@ -243,11 +239,9 @@ export class NuxManager {
    */
   async tryTriggerNux(id: number): Promise<void> {
     const nuxToTrigger = this._pendingNuxes.get(id);
-    // Silently fail if the NUX is not found or has already been completed.
-    // This isn't really an "error" to log, since the NUX may be triggered quite
-    // often even after it has been seen as it is tied to a package that is
-    // instantiated every single time a window is opened.
-    if (nuxToTrigger == null || nuxToTrigger.completed) {
+    // Silently fail if the NUX is not found. This isn't an "error" to log, since the NUX
+    // may be triggered again even after it has been seen, but should only be shown once.
+    if (nuxToTrigger == null) {
       return;
     }
 

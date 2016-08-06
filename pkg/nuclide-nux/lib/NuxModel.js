@@ -19,7 +19,6 @@ export type NuxViewModel = {
 };
 
 export type NuxTourModel = {
-  completed: boolean,
   id: number,
   name: string,
   nuxList: Array<NuxViewModel>,

@@ -93,7 +93,6 @@ function generateTestNuxTour(
                     .fill() // Fill holes so map doesn't skip them
                     .map((_, index) => getNuxViewModel(index + 1));
   return {
-    completed: false,
     id,
     name,
     nuxList,

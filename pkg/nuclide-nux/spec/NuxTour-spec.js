@@ -37,7 +37,6 @@ describe('NuxTour', () => {
       completionPredicate: null,
     };
     return {
-      completed: false,
       id,
       name,
       nuxList: Array(numViews).fill(nuxViewModel),

@@ -164,7 +164,6 @@ class Activation {
     };
 
     const sampleOutlineNuxTour = {
-      completed: false,
       id: NUX_OUTLINE_VIEW_ID,
       name: NUX_OUTLINE_VIEW_TOUR,
       nuxList: [nuxTriggerOutline, nuxOutlineView],
