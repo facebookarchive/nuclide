@@ -97,6 +97,13 @@ describe('Diagnostic range', () => {
     );
   });
 
+  it('Underlines the word for possibly undefined references', () => {
+    checkRange(
+      makeDiagnostic('F405', '', 40, 4),
+      new Range([40, 4], [40, 14]),
+    );
+  });
+
   it('Underlines the symbol name for undefined references', () => {
     checkRange(
       makeDiagnostic('F821', '', 40, 4),

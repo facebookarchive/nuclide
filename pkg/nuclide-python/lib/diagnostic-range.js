@@ -11,7 +11,6 @@
 
 import type {PythonDiagnostic} from '../../nuclide-python-rpc';
 
-import invariant from 'assert';
 import {Point, Range} from 'atom';
 import {wordAtPosition, trimRange} from '../../commons-atom/range';
 import {getLogger} from '../../nuclide-logging';
@@ -31,10 +30,14 @@ function tokenizedLineForRow(
 // Finds the range of the module name from a pyflakes F4XX message.
 // Assumes that the module name exists.
 // Ported from https://github.com/AtomLinter/linter-flake8
-function getModuleNameRange(message: string, line: number, editor: atom$TextEditor): Range {
+function getModuleNameRange(message: string, line: number, editor: atom$TextEditor): ?Range {
   // Split on space or dot to get the basename or alias, i.e. retrieve <a> in
   // "from .. import <a>" or "from .. import .. as <a>".
-  const symbol = /'([^']+)'/.exec(message)[1].split(/\s|\./).pop();
+  const match = /'([^']+)'/.exec(message);
+  if (match == null) {
+    return null;
+  }
+  const symbol = match[1].split(/\s|\./).pop();
 
   let foundImport = false;
   let lineNumber = line;
@@ -57,7 +60,7 @@ function getModuleNameRange(message: string, line: number, editor: atom$TextEdit
     }
     lineNumber += 1;
   }
-  invariant(false, `getModuleNameRange, module not found: ${symbol}`);
+  logger.warn(`getModuleNameRange failed for message: ${message}`);
 }
 
 // Computes an appropriate underline range using the diagnostic type information.
@@ -125,7 +128,20 @@ export function getDiagnosticRange(diagnostic: PythonDiagnostic, editor: atom$Te
         break;
       // pyflakes - import related messages
       case 'F4':
-        return getModuleNameRange(message, line, editor);
+        if (code === 'F401') {
+          // 'XXX' is imported but not used
+          const range = getModuleNameRange(message, line, editor);
+          if (range != null) {
+            return range;
+          }
+        } else if (code === 'F405') {
+          // <XXX> may be undefined, or defined from import *
+          const word = wordAtPosition(editor, new Point(line, column));
+          if (word) {
+            return word.range;
+          }
+        }
+        break;
       // pyflakes - variable/name related messages
       case 'F8':
         // Highlight word for reference errors, default to highlighting line for
@@ -143,9 +159,7 @@ export function getDiagnosticRange(diagnostic: PythonDiagnostic, editor: atom$Te
     }
   } catch (e) {
     const diagnosticAsString = `${diagnostic.file}:${unsafeLine}:${column} - ${code}: ${message}`;
-    logger.error(
-      `Failed to find flake8 diagnostic range: ${diagnosticAsString}, Error: ${e.message}`,
-    );
+    logger.error(`Failed to find flake8 diagnostic range: ${diagnosticAsString}`, e);
   }
 
   return new Range([line, trimmedStartCol], [line, trimmedEndCol]);
