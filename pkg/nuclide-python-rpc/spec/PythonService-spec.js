@@ -12,6 +12,7 @@
 import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {addMatchers} from '../../nuclide-test-helpers';
 import {
   getCompletions,
   getDefinitions,
@@ -29,6 +30,10 @@ process.env.NO_BUCKD = '1';
 // Line/column actual offsets are 0-indexed in this test, similar to what atom
 // provides as input.
 describe('PythonService', () => {
+
+  beforeEach(function() {
+    addMatchers(this);
+  });
 
   describe('Completions', () => {
     it('gives a rejected promise when an invalid request is given', () => {
@@ -305,7 +310,7 @@ describe('PythonService', () => {
         const jsonContents = fs.readFileSync(jsonPath).toString('utf8');
 
         const response = await getOutline(srcPath, srcContents);
-        expect(response).toEqual(JSON.parse(jsonContents));
+        expect(response).diffJson(JSON.parse(jsonContents));
       });
     }
 

@@ -17,3 +17,7 @@ class Test3:
     @property
     def hey(self):
         return 'hi'
+
+    @staticmethod
+    def meth():
+        pass

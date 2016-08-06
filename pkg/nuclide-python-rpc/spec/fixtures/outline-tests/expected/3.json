@@ -3,7 +3,7 @@
     "kind": "class",
     "end": {
       "column": 0,
-      "line": 20
+      "line": 24
     },
     "name": "Test3",
     "start": {
@@ -48,8 +48,8 @@
       {
         "kind": "function",
         "end": {
-          "column": 0,
-          "line": 20
+          "column": 4,
+          "line": 21
         },
         "name": "hey",
         "start": {
@@ -58,6 +58,21 @@
         },
         "params": [
           "self"
+        ],
+        "children": []
+      },
+      {
+        "kind": "function",
+        "end": {
+          "column": 0,
+          "line": 24
+        },
+        "name": "meth",
+        "start": {
+          "column": 4,
+          "line": 22
+        },
+        "params": [
         ],
         "children": []
       }

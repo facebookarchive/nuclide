@@ -18,7 +18,9 @@ def serialize_name(name):
         result['name'] = name.name
         result['params'] = [(p._name.get_definition().stars * '*' + p.name)
                             for p in name.params]
-        result['children'] = serialize_names(name.defined_names())
+        result['children'] = (
+            serialize_names(name.defined_names())
+            if name.type == 'class' else [])
     elif name.type == 'statement':
         # Don't include underscore assignments in outline.
         if name.name == '_':
