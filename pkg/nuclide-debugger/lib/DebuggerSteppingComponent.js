@@ -48,8 +48,8 @@ export class DebuggerSteppingComponent extends React.Component {
     } = this.props;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     return (
-      <div className="nuclide-debugger-atom-stepping-component">
-        <ButtonGroup className="nuclide-debugger-atom-stepping-buttongroup">
+      <div className="nuclide-debugger-stepping-component">
+        <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
           <Button
             icon={isPaused ? 'playback-play' : 'playback-pause'}
             title={isPaused ? 'continue' : 'pause'}
@@ -83,7 +83,7 @@ export class DebuggerSteppingComponent extends React.Component {
           />
         </ButtonGroup>
         <Checkbox
-          className="nuclide-debugger-atom-exception-checkbox"
+          className="nuclide-debugger-exception-checkbox"
           onChange={() => actions.togglePauseOnException(!pauseOnException)}
           checked={pauseOnException}
           label={pauseOnException ? 'Pause on' : 'Pause on exception'}
@@ -107,7 +107,7 @@ export class DebuggerSteppingComponent extends React.Component {
             </ButtonGroup>,
             <span
               key="second"
-              className="nuclide-debugger-atom-exception-fragment">
+              className="nuclide-debugger-exception-fragment">
               {' exception'}
             </span>,
           ]
@@ -115,7 +115,7 @@ export class DebuggerSteppingComponent extends React.Component {
         }
         {allowSingleThreadStepping ?
           <Checkbox
-            className="nuclide-debugger-atom-exception-checkbox"
+            className="nuclide-debugger-exception-checkbox"
             onChange={() => actions.toggleSingleThreadStepping(!singleThreadStepping)}
             checked={singleThreadStepping}
             label={'Enable Single Thread Stepping'}
