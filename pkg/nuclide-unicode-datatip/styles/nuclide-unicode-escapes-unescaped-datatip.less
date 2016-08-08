@@ -1,0 +1,29 @@
+@import "ui-variables";
+@import "syntax-variables";
+
+.nuclide-unicode-escapes-unescaped-datatip {
+  margin-bottom: 4px;
+}
+.nuclide-unicode-escapes-unescaped-datatip td {
+  padding: 0 0.5em;
+  vertical-align: baseline;
+}
+
+.nuclide-unicode-escapes-string {
+  color: @text-color-highlight;
+  display: flex;
+  font-family: @font-family;
+  font-size: round(@font-size * 1.5);
+}
+
+.nuclide-unicode-escapes-unescaped-char {
+  flex: 1;
+  padding-right: 0.2em;
+  text-align: center;
+}
+
+.nuclide-unicode-escapes-unescaped-char-code-point {
+  color: @text-color-subtle;
+  font-size: round(@font-size / 1.2);
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
