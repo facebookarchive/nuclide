@@ -282,19 +282,13 @@ export class DatatipManager {
       <div>{renderedProviders}</div>,
       this._ephemeralDatatipElement,
     );
-    // This relative positioning is to work around the issue that `position: 'head'`
-    // doesn't work for overlay decorators are rendered on the bottom right of the given range.
-    // Atom issue: https://github.com/atom/atom/issues/6695
-    const expressionLength = combinedRange.end.column - combinedRange.start.column;
-    this._ephemeralDatatipElement.style.left =
-      -(expressionLength * editor.getDefaultCharWidth()) + 'px';
     this._ephemeralDatatipElement.style.display = 'block';
 
     editor.decorateMarker(
       marker,
       {
         type: 'overlay',
-        position: 'head',
+        position: 'tail',
         item: this._ephemeralDatatipElement,
       },
     );
