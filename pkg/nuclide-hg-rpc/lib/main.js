@@ -11,6 +11,3 @@
 
 export {default as hgConstants} from './hg-constants';
 export {HgService} from './HgService';
-
-// Exposed for testing
-export {default as MockHgService} from '../spec/MockHgService';

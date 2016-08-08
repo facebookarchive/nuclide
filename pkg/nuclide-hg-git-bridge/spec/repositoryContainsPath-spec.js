@@ -15,7 +15,7 @@ import {Directory, GitRepository} from 'atom';
 import fs from 'fs';
 import repositoryContainsPath from '../lib/repositoryContainsPath';
 import {checkOutput} from '../../commons-node/process';
-import {MockHgService} from '../../nuclide-hg-rpc';
+import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import nuclideUri from '../../commons-node/nuclideUri';
 
