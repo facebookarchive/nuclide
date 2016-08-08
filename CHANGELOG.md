@@ -1,5 +1,37 @@
 # Nuclide Changelog
 
+## v0.160.0
+
+### General
+
+* New User Experiences (NUXes) are now released and ready for use! These can be used by developers to introduce and guide users around Nuclide features
+* `arc build` is now enabled in the task runner (build toolbar) for any repo that supports it
+* Added “Always Ignore” option to popup that appears when active bookmark changes
+* Fuzzy filename search now respects hg/gitignore
+
+### PHP
+
+* New PHP/HHVM debugger breakpoint calibration/resolution experience
+
+### Python
+
+* Fixed outline view breaking for functions without parameters
+
+### Console
+
+* New button for toggling console added to the toolbar
+* Improved consistency of message styling
+* Console now appears in panel (instead of the normal workspace)
+* Size is restored after panel has been closed
+
+### Task Runner
+
+* Palette commands now give precedence to task runner of the selected task
+
+### React Native
+
+* Packager is now run from current working root
+
 ## v0.159.0
 
 * Nuclide version is now reported in the 'Nuclide' menu in the menu bar.
