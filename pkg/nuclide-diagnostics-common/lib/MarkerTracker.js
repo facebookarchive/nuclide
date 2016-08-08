@@ -136,8 +136,6 @@ export class MarkerTracker {
       // aggressively because an incorrect fix application is far worse than a failed
       // application.
       invalidate: 'touch',
-      // Don't serialize the marker when the buffer is serialized.
-      persistent: false,
     });
     this._messageToMarker.set(message, marker);
 
