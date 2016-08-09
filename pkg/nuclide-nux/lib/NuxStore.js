@@ -40,6 +40,7 @@ export class NuxStore {
     let NuxBackendCache;
     try {
       // This inline import won't affect performance since we only call it once per NuxStore.
+      // $FlowFB
       NuxBackendCache = require('./fb-NuxCache').NuxCache;
     } catch (e) {
       NuxBackendCache = class {

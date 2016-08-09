@@ -279,6 +279,7 @@ class DiffViewComponent extends React.Component {
     if (passes) {
       // Try requiring private module
       try {
+        // $FlowFB
         const {DiffViewCommitForm} = require('./fb/DiffViewCommitForm');
         DiffComponent = DiffViewCommitForm;
       } catch (ex) {
