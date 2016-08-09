@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +10,30 @@
  * the root directory of this source tree.
  */
 
-import type {
-  ClangCompileResult,
-  ClangCompletion,
-  ClangDeclaration,
-  ClangCursor,
-  ClangOutlineTree,
-} from './rpc-types';
+exports.compile = compile;
+exports.get_completions = get_completions;
+exports.get_declaration = get_declaration;
+exports.get_declaration_info = get_declaration_info;
+exports.get_outline = get_outline;
 
 // This file contains RPC definitions for clang_server.py.
 
-
-export function compile(contents: string): Promise<ClangCompileResult> {
+function compile(contents) {
   throw new Error('Rpc Stub');
 }
 
-export function get_completions(
-  contents: string,
-  line: number,
-  column: number,
-  tokenStartColumn: number,
-  prefix: string,
-): Promise<?Array<ClangCompletion>> {
+function get_completions(contents, line, column, tokenStartColumn, prefix) {
   throw new Error('Rpc Stub');
 }
 
-export function get_declaration(
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?ClangDeclaration> {
+function get_declaration(contents, line, column) {
   throw new Error('Rpc Stub');
 }
 
-export function get_declaration_info(
-  contents: string,
-  line: number,
-  column: number,
-): Promise<?Array<ClangCursor>> {
+function get_declaration_info(contents, line, column) {
   throw new Error('Rpc Stub');
 }
 
-export function get_outline(contents: string)
-    : Promise<?Array<ClangOutlineTree>> {
+function get_outline(contents) {
   throw new Error('Rpc Stub');
 }

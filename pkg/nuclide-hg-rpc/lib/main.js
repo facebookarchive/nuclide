@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,5 +12,15 @@
  * the root directory of this source tree.
  */
 
-export {default as hgConstants} from './hg-constants';
-export {HgService} from './HgService';
+var _hgConstants = require('./hg-constants');
+
+exports.hgConstants = _interopRequire(_hgConstants);
+
+var _HgService = require('./HgService');
+
+Object.defineProperty(exports, 'HgService', {
+  enumerable: true,
+  get: function get() {
+    return _HgService.HgService;
+  }
+});

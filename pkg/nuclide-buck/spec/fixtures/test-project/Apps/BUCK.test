@@ -1,5 +1,0 @@
-ios_resource(
-name='test_target123',
-  dirs = [],
-  files = [],
-)

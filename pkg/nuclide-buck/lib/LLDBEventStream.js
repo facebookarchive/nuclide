@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,51 +10,33 @@
  * the root directory of this source tree.
  */
 
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
-import type {BuckProject} from '../../nuclide-buck-rpc';
-import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
-import type {BuckEvent} from './BuckEventStream';
-
-import {Observable} from 'rxjs';
-import {compact} from '../../commons-node/stream';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {LaunchProcessInfo} from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
-import {getLogger} from '../../nuclide-logging';
-import nuclideUri from '../../commons-node/nuclideUri';
-
-const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
-
-async function getDebuggerService(): Promise<RemoteControlService> {
+var getDebuggerService = _asyncToGenerator(function* () {
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-  return await consumeFirstProvider('nuclide-debugger.remote');
-}
+  return yield (0, (_commonsAtomConsumeFirstProvider2 || _commonsAtomConsumeFirstProvider()).default)('nuclide-debugger.remote');
+});
 
-async function debugBuckTarget(
-  buckProject: BuckProject,
-  buildTarget: string,
-): Promise<string> {
-  const output = await buckProject.showOutput(buildTarget);
+var debugBuckTarget = _asyncToGenerator(function* (buckProject, buildTarget) {
+  var output = yield buckProject.showOutput(buildTarget);
   if (output.length === 0) {
-    throw new Error(`Could not find build output path for target ${buildTarget}`);
+    throw new Error('Could not find build output path for target ' + buildTarget);
   }
   if (output.length > 1) {
-    throw new Error(`Target ${buildTarget} is ambiguous. Please specify a single test.`);
+    throw new Error('Target ' + buildTarget + ' is ambiguous. Please specify a single test.');
   }
 
-  const targetOutput = output[0];
-  const relativeOutputPath = targetOutput['buck.outputPath'];
+  var targetOutput = output[0];
+  var relativeOutputPath = targetOutput['buck.outputPath'];
   if (relativeOutputPath == null) {
-    throw new Error(`Target ${buildTarget} does not have executable build output.`);
+    throw new Error('Target ' + buildTarget + ' does not have executable build output.');
   }
-  const args = targetOutput.args;
+  var args = targetOutput.args;
 
-  const buckRoot = await buckProject.getPath();
+  var buckRoot = yield buckProject.getPath();
   // LaunchProcessInfo's arguments should be local to the remote directory.
-  const remoteBuckRoot = nuclideUri.getPath(buckRoot);
-  const remoteOutputPath = nuclideUri.getPath(nuclideUri.join(buckRoot, relativeOutputPath));
+  var remoteBuckRoot = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.getPath(buckRoot);
+  var remoteOutputPath = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.getPath((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(buckRoot, relativeOutputPath));
 
-  const info = new LaunchProcessInfo(buckRoot, {
+  var info = new (_nuclideDebuggerNativeLibLaunchProcessInfo2 || _nuclideDebuggerNativeLibLaunchProcessInfo()).LaunchProcessInfo(buckRoot, {
     executablePath: remoteOutputPath,
     // TODO(hansonw): Fix this when nuclide-debugger-native-rpc supports proper array args.
     // This will break for quoted arguments and the like.
@@ -61,78 +44,113 @@ async function debugBuckTarget(
     // TODO(hansonw): Add this when nuclide-debugger-native supports environment vars.
     environmentVariables: null,
     workingDirectory: '', // use the default
-    basepath: remoteBuckRoot,
+    basepath: remoteBuckRoot
   });
 
-  const debuggerService = await getDebuggerService();
-  await debuggerService.startDebugging(info);
+  var debuggerService = yield getDebuggerService();
+  yield debuggerService.startDebugging(info);
   return remoteOutputPath;
-}
+});
 
-async function debugPidWithLLDB(pid: number, buckProject: BuckProject) {
-  const debuggerService = await getDebuggerService();
-  const buckProjectPath = await buckProject.getPath();
+var debugPidWithLLDB = _asyncToGenerator(function* (pid, buckProject) {
+  var debuggerService = yield getDebuggerService();
+  var buckProjectPath = yield buckProject.getPath();
   debuggerService.debugLLDB(pid, buckProjectPath);
+});
+
+exports.getLLDBBuildEvents = getLLDBBuildEvents;
+exports.getLLDBInstallEvents = getLLDBInstallEvents;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
 }
 
-export function getLLDBBuildEvents(
-  processStream: Observable<ProcessMessage>,
-  buckProject: BuckProject,
-  buildTarget: string,
-): Observable<BuckEvent> {
-  return processStream
-    .filter(message => message.kind === 'exit' && message.exitCode === 0)
-    .switchMap(() => {
-      return Observable.fromPromise(debugBuckTarget(buckProject, buildTarget))
-        .map(path => ({
-          type: 'log',
-          message: `Launched LLDB debugger with ${path}`,
-          level: 'info',
-        }))
-        .catch(err => {
-          getLogger().error(`Failed to launch LLDB debugger for ${buildTarget}`, err);
-          return Observable.of({
-            type: 'log',
-            message: `Failed to launch LLDB debugger: ${err.message}`,
-            level: 'error',
-          });
-        })
-        .startWith({
-          type: 'log',
-          message: `Launching LLDB debugger for ${buildTarget}...`,
-          level: 'log',
-        }, {
-          type: 'progress',
-          progress: null,
-        });
+var _commonsNodeStream2;
+
+function _commonsNodeStream() {
+  return _commonsNodeStream2 = require('../../commons-node/stream');
+}
+
+var _commonsAtomConsumeFirstProvider2;
+
+function _commonsAtomConsumeFirstProvider() {
+  return _commonsAtomConsumeFirstProvider2 = _interopRequireDefault(require('../../commons-atom/consumeFirstProvider'));
+}
+
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+
+var _nuclideDebuggerNativeLibLaunchProcessInfo2;
+
+function _nuclideDebuggerNativeLibLaunchProcessInfo() {
+  return _nuclideDebuggerNativeLibLaunchProcessInfo2 = require('../../nuclide-debugger-native/lib/LaunchProcessInfo');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
+
+function getLLDBBuildEvents(processStream, buckProject, buildTarget) {
+  return processStream.filter(function (message) {
+    return message.kind === 'exit' && message.exitCode === 0;
+  }).switchMap(function () {
+    return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromPromise(debugBuckTarget(buckProject, buildTarget)).map(function (path) {
+      return {
+        type: 'log',
+        message: 'Launched LLDB debugger with ' + path,
+        level: 'info'
+      };
+    }).catch(function (err) {
+      (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)().error('Failed to launch LLDB debugger for ' + buildTarget, err);
+      return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of({
+        type: 'log',
+        message: 'Failed to launch LLDB debugger: ' + err.message,
+        level: 'error'
+      });
+    }).startWith({
+      type: 'log',
+      message: 'Launching LLDB debugger for ' + buildTarget + '...',
+      level: 'log'
+    }, {
+      type: 'progress',
+      progress: null
     });
+  });
 }
 
-export function getLLDBInstallEvents(
-  processStream: Observable<ProcessMessage>,
-  buckProject: BuckProject,
-): Observable<BuckEvent> {
-  return compact(
-    processStream.map(message => {
-      if (message.kind === 'stdout' || message.kind === 'stderr') {
-        const pidMatch = message.data.match(LLDB_PROCESS_ID_REGEX);
-        if (pidMatch != null) {
-          return parseInt(pidMatch[1], 10);
-        }
+function getLLDBInstallEvents(processStream, buckProject) {
+  return (0, (_commonsNodeStream2 || _commonsNodeStream()).compact)(processStream.map(function (message) {
+    if (message.kind === 'stdout' || message.kind === 'stderr') {
+      var pidMatch = message.data.match(LLDB_PROCESS_ID_REGEX);
+      if (pidMatch != null) {
+        return parseInt(pidMatch[1], 10);
       }
-    }),
-  )
-    .take(1)
-    .switchMap(lldbPid => {
-      return processStream
-        .filter(message => message.kind === 'exit' && message.exitCode === 0)
-        .map(() => {
-          debugPidWithLLDB(lldbPid, buckProject);
-          return {
-            type: 'log',
-            message: `Attaching LLDB debugger to pid ${lldbPid}...`,
-            level: 'info',
-          };
-        });
+    }
+  })).take(1).switchMap(function (lldbPid) {
+    return processStream.filter(function (message) {
+      return message.kind === 'exit' && message.exitCode === 0;
+    }).map(function () {
+      debugPidWithLLDB(lldbPid, buckProject);
+      return {
+        type: 'log',
+        message: 'Attaching LLDB debugger to pid ' + lldbPid + '...',
+        level: 'info'
+      };
     });
+  });
 }

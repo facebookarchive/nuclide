@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +14,34 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-import FileWatcher from './FileWatcher';
+var _atom2;
 
-let subscriptions: ?CompositeDisposable = null;
-let watchers: ?Map<any, any> = null;
+function _atom() {
+  return _atom2 = require('atom');
+}
 
-export function activate(state: ?Object): void {
-  const _subscriptions = new CompositeDisposable();
-  const _watchers = new Map();
+var _FileWatcher2;
 
-  _subscriptions.add(atom.workspace.observeTextEditors(editor => {
+function _FileWatcher() {
+  return _FileWatcher2 = _interopRequireDefault(require('./FileWatcher'));
+}
+
+var subscriptions = null;
+var watchers = null;
+
+function activate(state) {
+  var _subscriptions = new (_atom2 || _atom()).CompositeDisposable();
+  var _watchers = new Map();
+
+  _subscriptions.add(atom.workspace.observeTextEditors(function (editor) {
     if (_watchers.has(editor)) {
       return;
     }
 
-    const fileWatcher = new FileWatcher(editor);
+    var fileWatcher = new (_FileWatcher2 || _FileWatcher()).default(editor);
     _watchers.set(editor, fileWatcher);
 
-    _subscriptions.add(editor.onDidDestroy(() => {
+    _subscriptions.add(editor.onDidDestroy(function () {
       fileWatcher.destroy();
       _watchers.delete(editor);
     }));
@@ -40,11 +54,11 @@ export function activate(state: ?Object): void {
   atom.config.set('file-watcher.promptWhenFileHasChangedOnDisk', false);
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (subscriptions == null || watchers == null) {
     return;
   }
-  for (const fileWatcher of watchers.values()) {
+  for (var fileWatcher of watchers.values()) {
     fileWatcher.destroy();
   }
   subscriptions.dispose();

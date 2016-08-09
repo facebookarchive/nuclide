@@ -1,5 +1,17 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.decodeError = decodeError;
+exports.createCallMessage = createCallMessage;
+exports.createCallObjectMessage = createCallObjectMessage;
+exports.createNewObjectMessage = createNewObjectMessage;
+exports.createPromiseMessage = createPromiseMessage;
+exports.createNextMessage = createNextMessage;
+exports.createCompleteMessage = createCompleteMessage;
+exports.createObserveErrorMessage = createObserveErrorMessage;
+exports.createDisposeMessage = createDisposeMessage;
+exports.createUnsubscribeMessage = createUnsubscribeMessage;
+exports.createErrorResponseMessage = createErrorResponseMessage;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,95 +21,22 @@
  * the root directory of this source tree.
  */
 
-import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
+var _config2;
+
+function _config() {
+  return _config2 = require('./config');
+}
 
 // Encodes the structure of messages that can be sent from the client to the server.
-export type RequestMessage = CallMessage | NewObjectMessage |
-  CallObjectMessage | DisposeMessage | UnsubscribeMessage;
-
-export type CallMessage = {
-  protocol: 'service_framework3_rpc',
-  type: 'call',
-  method: string,
-  id: number,
-  args: Object,
-};
-
-export type NewObjectMessage = {
-  protocol: 'service_framework3_rpc',
-  type: 'new',
-  interface: string,
-  id: number,
-  args: Object,
-};
-
-export type CallObjectMessage = {
-  protocol: 'service_framework3_rpc',
-  type: 'call-object',
-  method: string,
-  id: number,
-  objectId: number,
-  args: Object,
-};
-
-export type DisposeMessage = {
-  protocol: 'service_framework3_rpc',
-  type: 'dispose',
-  id: number,
-  objectId: number,
-};
-
-export type UnsubscribeMessage = {
-  protocol: 'service_framework3_rpc',
-  type: 'unsubscribe',
-  id: number,
-};
 
 // Encodes the structure of messages that can be sent from the server to the client.
-export type ResponseMessage = PromiseResponseMessage | ErrorResponseMessage
-  | NextMessage | CompleteMessage | ErrorMessage;
-
-export type ErrorResponseMessage = {
-  protocol: 'service_framework3_rpc',
-  type: 'error-response',
-  id: number,
-  error: any,
-};
-
-export type PromiseResponseMessage = {
-  protocol: 'service_framework3_rpc',
-  type: 'response',
-  id: number,
-  result: any,
-};
-
-export type NextMessage = {
-  protocol: 'service_framework3_rpc',
-  type: 'next',
-  id: number,
-  value: any,
-};
-
-export type CompleteMessage = {
-  protocol: 'service_framework3_rpc',
-  type: 'complete',
-  id: number,
-};
-
-export type ErrorMessage = {
-  protocol: 'service_framework3_rpc',
-  type: 'error',
-  id: number,
-  error: any,
-};
 
 // TODO: This should be a custom marshaller registered in the TypeRegistry
-export function decodeError(message: Object, encodedError: ?(Object | string)): ?(Error | string) {
+
+function decodeError(message, encodedError) {
   if (encodedError != null && typeof encodedError === 'object') {
-    const resultError = new Error();
-    resultError.message =
-      `Remote Error: ${encodedError.message} processing message ${JSON.stringify(message)}\n`
-      + JSON.stringify(encodedError.stack);
+    var resultError = new Error();
+    resultError.message = 'Remote Error: ' + encodedError.message + ' processing message ' + JSON.stringify(message) + '\n' + JSON.stringify(encodedError.stack);
     // $FlowIssue - some Errors (notably file operations) have a code.
     resultError.code = encodedError.code;
     resultError.stack = encodedError.stack;
@@ -107,111 +46,95 @@ export function decodeError(message: Object, encodedError: ?(Object | string)): 
   }
 }
 
-export function createCallMessage(
-  functionName: string,
-  id: number,
-  args: Object,
-): CallMessage {
+function createCallMessage(functionName, id, args) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'call',
     method: functionName,
-    id,
-    args,
+    id: id,
+    args: args
   };
 }
 
-export function createCallObjectMessage(
-  methodName: string,
-  objectId: number,
-  id: number,
-  args: Object,
-): CallObjectMessage {
+function createCallObjectMessage(methodName, objectId, id, args) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'call-object',
     method: methodName,
-    objectId,
-    id,
-    args,
+    objectId: objectId,
+    id: id,
+    args: args
   };
 }
 
-export function createNewObjectMessage(
-  interfaceName: string,
-  id: number,
-  args: Object,
-): NewObjectMessage {
+function createNewObjectMessage(interfaceName, id, args) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'new',
-    interface: interfaceName,
-    id,
-    args,
+    'interface': interfaceName,
+    id: id,
+    args: args
   };
 }
 
-export function createPromiseMessage(id: number, result: any): PromiseResponseMessage {
+function createPromiseMessage(id, result) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'response',
-    id,
-    result,
+    id: id,
+    result: result
   };
 }
 
-export function createNextMessage(id: number, value: any): NextMessage {
+function createNextMessage(id, value) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'next',
-    id,
-    value,
+    id: id,
+    value: value
   };
 }
 
-export function createCompleteMessage(id: number): CompleteMessage {
+function createCompleteMessage(id) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'complete',
-    id,
+    id: id
   };
 }
 
-export function createObserveErrorMessage(
-  id: number,
-  error: any,
-): ErrorMessage {
+function createObserveErrorMessage(id, error) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'error',
-    id,
-    error: formatError(error),
+    id: id,
+    error: formatError(error)
   };
 }
 
-export function createDisposeMessage(id: number, objectId: number): DisposeMessage {
+function createDisposeMessage(id, objectId) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'dispose',
-    id,
-    objectId,
+    id: id,
+    objectId: objectId
   };
 }
 
-export function createUnsubscribeMessage(id: number): UnsubscribeMessage {
+function createUnsubscribeMessage(id) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'unsubscribe',
-    id,
+    id: id
   };
 }
 
-export function createErrorResponseMessage(id: number, error: any): ErrorResponseMessage {
+function createErrorResponseMessage(id, error) {
   return {
-    protocol: SERVICE_FRAMEWORK3_PROTOCOL,
+    protocol: (_config2 || _config()).SERVICE_FRAMEWORK3_PROTOCOL,
     type: 'error-response',
-    id,
-    error: formatError(error),
+    id: id,
+    error: formatError(error)
   };
 }
 
@@ -219,12 +142,12 @@ export function createErrorResponseMessage(id: number, error: any): ErrorRespons
  * Format the error before sending over the web socket.
  * TODO: This should be a custom marshaller registered in the TypeRegistry
  */
-function formatError(error: any): ?(Object | string) {
+function formatError(error) {
   if (error instanceof Error) {
     return {
       message: error.message,
       code: error.code,
-      stack: error.stack,
+      stack: error.stack
     };
   } else if (typeof error === 'string') {
     return error.toString();
@@ -232,9 +155,9 @@ function formatError(error: any): ?(Object | string) {
     return undefined;
   } else {
     try {
-      return `Unknown Error: ${JSON.stringify(error, null, 2)}`;
+      return 'Unknown Error: ' + JSON.stringify(error, null, 2);
     } catch (jsonError) {
-      return `Unknown Error: ${error.toString()}`;
+      return 'Unknown Error: ' + error.toString();
     }
   }
 }

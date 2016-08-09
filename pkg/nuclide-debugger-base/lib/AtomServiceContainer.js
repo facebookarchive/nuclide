@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +10,42 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
-import type {OutputService} from '../../nuclide-console/lib/types';
+exports.setOutputService = setOutputService;
+exports.getOutputService = getOutputService;
+exports.setNotificationService = setNotificationService;
+exports.getNotificationService = getNotificationService;
+exports.registerOutputWindowLogging = registerOutputWindowLogging;
 
-type raiseNativeNotificationFunc = ?(title: string, body: string) => void;
+var _outputServiceApi = null;
+var _raiseNativeNotification = null;
 
-let _outputServiceApi: ?OutputService = null;
-let _raiseNativeNotification: ?raiseNativeNotificationFunc = null;
-
-export function setOutputService(api: OutputService): void {
+function setOutputService(api) {
   _outputServiceApi = api;
 }
 
-export function getOutputService(): ?OutputService {
+function getOutputService() {
   return _outputServiceApi;
 }
 
-export function setNotificationService(raiseNativeNotification: raiseNativeNotificationFunc): void {
+function setNotificationService(raiseNativeNotification) {
   _raiseNativeNotification = raiseNativeNotification;
 }
 
-export function getNotificationService(): ?raiseNativeNotificationFunc {
+function getNotificationService() {
   return _raiseNativeNotification;
 }
 
 // TODO: refactor this function to work with other providers(like hhvm).
-export function registerOutputWindowLogging(userOutputStream: Observable<string>): ?IDisposable {
-  const api = getOutputService();
-  let outputDisposable = null;
+
+function registerOutputWindowLogging(userOutputStream) {
+  var api = getOutputService();
+  var outputDisposable = null;
   if (api != null) {
     outputDisposable = api.registerOutputProvider({
       id: 'lldb debugger',
-      messages: userOutputStream.map(message => JSON.parse(message)),
+      messages: userOutputStream.map(function (message) {
+        return JSON.parse(message);
+      })
     });
   }
   return outputDisposable;

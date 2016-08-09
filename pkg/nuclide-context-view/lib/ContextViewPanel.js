@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,60 +10,86 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
-import {Button} from '../../nuclide-ui/lib/Button';
-import {Icon} from '../../nuclide-ui/lib/Icon';
+var _reactForAtom2;
 
-type Props = {
-  initialWidth: number,
-  onHide: () => void,
-  onResize: (newWidth: number) => void,
-  locked: boolean,
-  children?: React.Element<any>,
-};
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _nuclideUiLibPanelComponent2;
+
+function _nuclideUiLibPanelComponent() {
+  return _nuclideUiLibPanelComponent2 = require('../../nuclide-ui/lib/PanelComponent');
+}
+
+var _nuclideUiLibButton2;
+
+function _nuclideUiLibButton() {
+  return _nuclideUiLibButton2 = require('../../nuclide-ui/lib/Button');
+}
+
+var _nuclideUiLibIcon2;
+
+function _nuclideUiLibIcon() {
+  return _nuclideUiLibIcon2 = require('../../nuclide-ui/lib/Icon');
+}
 
 /**
  * The Atom panel containing context provider views. This is the sidebar that
  * is rendered in the atom workspace.
  */
-export const ContextViewPanel = (props: Props) => {
-  return (
-    <PanelComponent
-    dock="right"
-    initialLength={props.initialWidth}
-    noScroll
-    onResize={props.onResize}>
-      <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-        <Header onHide={props.onHide} locked={props.locked} />
-        <div className="nuclide-context-view-content">
-          <p>
-            Place your cursor over a function, class, variable, or method in
-            <code>www</code> to see more information about it.
-          </p>
-          {props.children}
-        </div>
-      </div>
-    </PanelComponent>
+var ContextViewPanel = function ContextViewPanel(props) {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    (_nuclideUiLibPanelComponent2 || _nuclideUiLibPanelComponent()).PanelComponent,
+    {
+      dock: 'right',
+      initialLength: props.initialWidth,
+      noScroll: true,
+      onResize: props.onResize },
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      'div',
+      { style: { display: 'flex', flexDirection: 'column', width: '100%' } },
+      (_reactForAtom2 || _reactForAtom()).React.createElement(Header, { onHide: props.onHide, locked: props.locked }),
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-context-view-content' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'p',
+          null,
+          'Place your cursor over a function, class, variable, or method in',
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'code',
+            null,
+            'www'
+          ),
+          ' to see more information about it.'
+        ),
+        props.children
+      )
+    )
   );
 };
 
+exports.ContextViewPanel = ContextViewPanel;
 
-type HeaderProps = {
-  onHide: () => void,
-  locked: boolean,
-};
-
-const Header = (props: HeaderProps) => {
-  return (
-    <div className="panel-heading" style={{flexShrink: 0}}>
-      <h4>
-        <span>Context View</span>
-        <div className="pull-right">
-          {props.locked ? <Icon icon="lock" /> : null}
-          <Button icon="x" onClick={props.onHide} title="Hide context view" />
-        </div>
-      </h4>
-    </div>
+var Header = function Header(props) {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'div',
+    { className: 'panel-heading', style: { flexShrink: 0 } },
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      'h4',
+      null,
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'span',
+        null,
+        'Context View'
+      ),
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'pull-right' },
+        props.locked ? (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibIcon2 || _nuclideUiLibIcon()).Icon, { icon: 'lock' }) : null,
+        (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibButton2 || _nuclideUiLibButton()).Button, { icon: 'x', onClick: props.onHide, title: 'Hide context view' })
+      )
+    )
   );
 };

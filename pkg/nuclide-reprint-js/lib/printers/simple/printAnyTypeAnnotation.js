@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +8,7 @@
  * the root directory of this source tree.
  */
 
-import type {AnyTypeAnnotation} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
-
-function printAnyTypeAnnotation(print: Print, node: AnyTypeAnnotation): Lines {
+function printAnyTypeAnnotation(print, node) {
   return ['any'];
 }
 
