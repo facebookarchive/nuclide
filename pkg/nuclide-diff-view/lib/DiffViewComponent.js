@@ -37,6 +37,7 @@ import {computeDiff, getOffsetLineNumber} from './diff-utils';
 import createPaneContainer from '../../commons-atom/create-pane-container';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {DiffMode} from './constants';
+import passesGK from '../../commons-node/passesGK';
 
 type Props = {
   diffModel: DiffViewModel,
@@ -93,7 +94,6 @@ class DiffViewComponent extends React.Component {
   _treeComponent: React.Component<any, any, any>;
   _navigationPane: atom$Pane;
   _navigationComponent: DiffNavigationBar;
-  _commitComponent: ?DiffCommitView;
   _publishComponent: ?DiffPublishView;
   _readonlyBuffer: atom$TextBuffer;
 
@@ -242,7 +242,6 @@ class DiffViewComponent extends React.Component {
     switch (viewMode) {
       case DiffMode.BROWSE_MODE:
         this._renderTimelineView();
-        this._commitComponent = null;
         this._publishComponent = null;
         break;
       case DiffMode.COMMIT_MODE:
@@ -252,7 +251,6 @@ class DiffViewComponent extends React.Component {
         break;
       case DiffMode.PUBLISH_MODE:
         this._renderPublishView();
-        this._commitComponent = null;
         this._timelineComponent = null;
         break;
       default:
@@ -268,14 +266,30 @@ class DiffViewComponent extends React.Component {
     }
   }
 
-  _renderCommitView(): void {
+  async _renderCommitView(): Promise<void> {
     const {
       commitMessage,
       commitMode,
       commitModeState,
     } = this.props.diffModel.getState();
-    const component = ReactDOM.render(
-      <DiffCommitView
+
+    const passes = await passesGK('nuclide_diff_commit_form');
+    let DiffComponent;
+
+    if (passes) {
+      // Try requiring private module
+      try {
+        const {DiffViewCommitForm} = require('./fb/DiffViewCommitForm');
+        DiffComponent = DiffViewCommitForm;
+      } catch (ex) {
+        DiffComponent = DiffCommitView;
+      }
+    } else {
+      DiffComponent = DiffCommitView;
+    }
+
+    ReactDOM.render(
+      <DiffComponent
         commitMessage={commitMessage}
         commitMode={commitMode}
         commitModeState={commitModeState}
@@ -285,8 +299,6 @@ class DiffViewComponent extends React.Component {
       />,
       this._getPaneElement(this._bottomRightPane),
     );
-    invariant(component instanceof DiffCommitView);
-    this._commitComponent = component;
   }
 
   _renderPublishView(): void {
