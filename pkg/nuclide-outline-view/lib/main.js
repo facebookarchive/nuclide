@@ -130,7 +130,6 @@ class Activation {
   _createOutlineViewNuxTourModel(): NuxTourModel {
     const nuxTriggerOutline = {
       content: 'Check out the new Outline View!',
-      isCustomContent: false,
       selector: '.nuclide-outline-view-toolbar-button',
       selectorFunction: null,
       position: 'auto',
@@ -139,7 +138,6 @@ class Activation {
 
     const nuxOutlineView = {
       content: 'Click on a symbol to jump to its definition.',
-      isCustomContent: false,
       selector: 'div.pane-item.nuclide-outline-view',
       selectorFunction: null,
       position: 'left',

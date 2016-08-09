@@ -82,7 +82,6 @@ function generateTestNuxTour(
   const getNuxViewModel = viewNumber => (
     {
       content: `Content NUX #${viewNumber}`,
-      isCustomContent: false,
       selector: '.sample-nux-toolbar-button',
       selectorFunction: null,
       position: 'auto',

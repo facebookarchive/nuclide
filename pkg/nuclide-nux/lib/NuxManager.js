@@ -120,7 +120,6 @@ export class NuxManager {
           model.selectorFunction,
           model.position,
           model.content,
-          model.isCustomContent,
           model.completionPredicate,
           index,
         );

@@ -30,7 +30,6 @@ describe('NuxTour', () => {
   ): NuxTourModel {
     const nuxViewModel = {
       content: 'Content',
-      isCustomContent: false,
       selector: '.something',
       selectorFunction: null,
       position: 'auto',

@@ -11,7 +11,6 @@
 
 export type NuxViewModel = {
   content: string,
-  isCustomContent: boolean,
   selector: ?string,
   selectorFunction: ?(() => HTMLElement),
   position: 'top' | 'bottom' | 'left' | 'right' | 'auto',

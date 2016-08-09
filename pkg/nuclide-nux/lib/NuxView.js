@@ -33,7 +33,6 @@ export class NuxView {
   _selector : (() => ?HTMLElement);
   _position: 'top' | 'bottom' | 'left' | 'right' | 'auto';
   _content: string;
-  _customContent: boolean;
   _disposables : CompositeDisposable;
   _callback: ?((success: boolean) => void);
   _tooltipDisposable: IDisposable;
@@ -54,7 +53,6 @@ export class NuxView {
    * @param {string} position - The position relative to the DOM element that the
     NUX should show.
    * @param {string} content - The content to show in the NUX.
-   * @param {boolean} customContent - True iff `content` is a valid HTML String.
    * @param {?(() => boolean)} completePredicate - Will be used when determining whether
    * the NUX has been completed/viewed. The NUX will only be completed if this returns true.
    * If null, the predicate used will always return true.
@@ -68,7 +66,6 @@ export class NuxView {
     selectorFunction : ?Function,
     position: 'top' | 'bottom' | 'left' | 'right' | 'auto',
     content: string,
-    customContent: boolean = false,
     completePredicate: ?(() => boolean) = null,
     indexInTour: number,
   ) : void {
@@ -82,7 +79,6 @@ export class NuxView {
     }
     this._content = content;
     this._position = validatePlacement(position) ? position : 'auto';
-    this._customContent = customContent;
     this._completePredicate = completePredicate || (() => true);
     this._index = indexInTour;
 
@@ -180,23 +176,19 @@ export class NuxView {
   }
 
   _createDisposableTooltip() : void {
-    if (!this._customContent) {
-      // Can turn it into custom content (add DISMISS button).
-      this._content = `<div class="nuclide-nux-text-content">
-                        <a class="nuclide-nux-dismiss-link">
-                          <span class="icon-x pull-right"></span>
-                        </a>
-                        <span>${this._content}</span>
-                      </div>`;
-      this._customContent = true;
-    }
+    const content = `<div class="nuclide-nux-text-content">
+                      <a class="nuclide-nux-dismiss-link">
+                        <span class="icon-x pull-right"></span>
+                      </a>
+                      <span>${this._content}</span>
+                    </div>`;
     this._tooltipDisposable = atom.tooltips.add(
       this._tooltipDiv,
       {
-        title: this._content,
+        title: content,
         trigger: 'manual',
         placement: this._position,
-        html: this._customContent,
+        html: true,
         template: `<div class="tooltip nuclide-nux-tooltip">
                     <div class="tooltip-arrow"></div>
                     <div class="tooltip-inner"></div>
