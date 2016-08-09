@@ -10,6 +10,7 @@
  */
 
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
+import type {OutlineProvider} from '../../nuclide-outline-view/lib/main';
 import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint/lib/types';
 
 import {trackOperationTiming} from '../../nuclide-analytics';
@@ -17,6 +18,7 @@ import HyperclickProvider from './HyperclickProvider';
 import AutoComplete from './AutoComplete';
 import {GRAMMARS} from './constants';
 import MerlinLinterProvider from './LinterProvider';
+import {getOutline} from './OutlineProvider';
 import TypeHintProvider from './TypeHintProvider';
 
 export function getHyperclickProvider() {
@@ -39,6 +41,15 @@ export function createAutocompleteProvider(): mixed {
 
 export function provideLinter(): LinterProvider {
   return MerlinLinterProvider;
+}
+
+export function provideOutlines(): OutlineProvider {
+  return {
+    grammarScopes: Array.from(GRAMMARS),
+    priority: 1,
+    name: 'OCaml',
+    getOutline,
+  };
 }
 
 export function createTypeHintProvider(): TypeHintProviderType {
