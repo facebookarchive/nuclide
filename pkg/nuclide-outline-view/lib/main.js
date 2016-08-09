@@ -131,7 +131,6 @@ class Activation {
     const nuxTriggerOutline = {
       content: 'Check out the new Outline View!',
       selector: '.nuclide-outline-view-toolbar-button',
-      selectorFunction: null,
       position: 'auto',
       completionPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
     };
@@ -139,9 +138,7 @@ class Activation {
     const nuxOutlineView = {
       content: 'Click on a symbol to jump to its definition.',
       selector: 'div.pane-item.nuclide-outline-view',
-      selectorFunction: null,
       position: 'left',
-      completionPredicate: null,
     };
 
     const isJavaScriptFile = editor => {

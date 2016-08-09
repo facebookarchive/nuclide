@@ -83,9 +83,7 @@ function generateTestNuxTour(
     {
       content: `Content NUX #${viewNumber}`,
       selector: '.sample-nux-toolbar-button',
-      selectorFunction: null,
       position: 'auto',
-      completionPredicate: null,
     }
   );
   const nuxList = Array(numViews)
@@ -95,7 +93,6 @@ function generateTestNuxTour(
     id,
     name,
     nuxList,
-    trigger: null,
     /**
      * Add your own gatekeeper to control who the NUX is displayed to.
      * Use the global `nuclide_all_nuxes` if you want the NUX to always appear.

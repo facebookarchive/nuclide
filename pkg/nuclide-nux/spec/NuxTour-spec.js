@@ -31,7 +31,6 @@ describe('NuxTour', () => {
     const nuxViewModel = {
       content: 'Content',
       selector: '.something',
-      selectorFunction: null,
       position: 'auto',
       completionPredicate: null,
     };
@@ -39,8 +38,6 @@ describe('NuxTour', () => {
       id,
       name,
       nuxList: Array(numViews).fill(nuxViewModel),
-      trigger: null,
-      gatekeeperID: null,
     };
   }
 
