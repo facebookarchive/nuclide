@@ -14,7 +14,6 @@ import invariant from 'assert';
 import once from './once';
 import os from 'os';
 import nuclideUri from './nuclideUri';
-import {checkOutput} from './process';
 
 const NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../package.json');
 const NUCLIDE_BASEDIR = nuclideUri.dirname(NUCLIDE_PACKAGE_JSON_PATH);
@@ -95,18 +94,6 @@ export function isRunningInWindows(): boolean {
 
 export function getOsVersion(): string {
   return os.release();
-}
-
-export async function getFlowVersion(): Promise<string> {
-  // $UPFixMe: This should use nuclide-features-config
-  const flowPath = global.atom && global.atom.config.get('nuclide-flow.pathToFlow') || 'flow';
-  const {stdout} = await checkOutput(flowPath, ['--version']);
-  return stdout.trim();
-}
-
-export async function getClangVersion(): Promise<string> {
-  const {stdout} = await checkOutput('clang', ['--version']);
-  return stdout.trim();
 }
 
 export function getRuntimePath(): string {
