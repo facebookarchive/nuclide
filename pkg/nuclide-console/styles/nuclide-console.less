@@ -101,6 +101,11 @@
   transform: translate3d(0, 0, 0);
 }
 
+.nuclide-console-table-wrapper {
+  // Make sure that record text is selectable.
+  -webkit-user-select: text;
+}
+
 .nuclide-console-record {
   display: flex;
   padding: @nuclide-console-record-vertical-padding @nuclide-console-record-horizontal-padding;
