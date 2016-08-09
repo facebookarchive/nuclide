@@ -84,6 +84,17 @@ function generateTestNuxTour(
       content: `Content NUX #${viewNumber}`,
       selector: '.sample-nux-toolbar-button',
       position: 'auto',
+      /**
+       * OPTIONAL: Use a custom selector function to return a DOM element if the
+       * element to bind the NUX to cannot be returned by a query selector class.
+       */
+      // selectorFunction: () => document.querySelector('.sample-nux-toolbar-button'),
+      /**
+       * OPTIONAL: If set, the completion predicate will be evaluated after every
+       * NUX interaction. The NuxView will not progress to the next one in the
+       * NuxTour until the predicate evaluates to true.
+       */
+      // completionPredicate: () => true,
     }
   );
   const nuxList = Array(numViews)
@@ -94,14 +105,20 @@ function generateTestNuxTour(
     name,
     nuxList,
     /**
-     * Add your own gatekeeper to control who the NUX is displayed to.
-     * Use the global `nuclide_all_nuxes` if you want the NUX to always appear.
-     * See `nuclide-nux/lib/NuxModel.js` for more details.
+     * OPTIONAL (but recommended): Add your own gatekeeper to control who the
+     * NUX is displayed to. Use the global `nuclide_all_nuxes` if you want the
+     * NUX to always appear. See `nuclide-nux/lib/NuxModel.js` for more details.
      */
     gatekeeperID: 'nuclide_all_nuxes',
     /**
-     * Uncomment the next line to always show the NUX
-     * in every session. Useful for development purposes.
+     * OPTIONAL: Include a custom trigger handled by the NUX framework if you
+     * choose to not use the `nux-trigger` service.
+     */
+    // trigger: null,
+    /**
+     * DEV-ONLY: Setting this will always show the NUX when triggered every
+     * session.  Only to be used for development purposes - the flow typing ensures
+     * that this cannot be set to true when shipping the NUX.
      */
     // developmentMode: true,
   };
