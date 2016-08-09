@@ -1,8 +1,10 @@
 # Nuclide Changelog
 
-## v0.161.0
+## v0.161.0 (hotfix)
 
-* Hotfix React Native packager (wasn't getting working root)
+* Fix React Native packager (wasn't getting working root)
+* Use new command for showing console in Debugger
+* Fix file tree resizing in Atom 1.9
 
 ## v0.160.0
 
