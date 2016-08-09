@@ -38,6 +38,7 @@ export class WatchExpressionStore {
     this._bridge = bridge;
     this._disposables = new CompositeDisposable();
     this._watchExpressions = new Map();
+    this._disposables.add(new Disposable(() => this._watchExpressions.clear()));
     // `this._previousEvaluationSubscriptions` can change at any time and are a distinct subset of
     // `this._disposables`.
     this._previousEvaluationSubscriptions = new CompositeDisposable();
@@ -58,15 +59,14 @@ export class WatchExpressionStore {
       case Actions.DEBUGGER_MODE_CHANGE:
         if (payload.data === DebuggerMode.PAUSED) {
           this._triggerReevaluation();
+        } else if (payload.data === DebuggerMode.STOPPED) {
+          this._cancelRequestsToBridge();
+          this._watchExpressions.clear();
         }
         break;
       default:
         return;
     }
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
   }
 
   _requestActionFromBridge<T>(
@@ -143,9 +143,7 @@ export class WatchExpressionStore {
   }
 
   _triggerReevaluation(): void {
-    // Cancel any outstanding evaluation requests to the Bridge
-    this._previousEvaluationSubscriptions.dispose();
-    this._previousEvaluationSubscriptions = new CompositeDisposable();
+    this._cancelRequestsToBridge();
     for (const [expression, subject] of this._watchExpressions) {
       if (subject.observers == null || subject.observers.length === 0) {
         // Nobody is watching this expression anymore.
@@ -156,11 +154,20 @@ export class WatchExpressionStore {
     }
   }
 
+  _cancelRequestsToBridge(): void {
+    this._previousEvaluationSubscriptions.dispose();
+    this._previousEvaluationSubscriptions = new CompositeDisposable();
+  }
+
   // Resets all values to N/A, for examples when the debugger resumes or stops.
   _clearEvaluationValues(): void {
     // eslint-disable-next-line no-unused-vars
     for (const [expression, subject] of this._watchExpressions) {
       subject.next(null);
     }
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 }
