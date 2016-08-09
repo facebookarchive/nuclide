@@ -468,7 +468,11 @@ class DebuggerActions {
 
   _handleDebugModeStart(): void {
     // Open the console window if it's not already opened.
-    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-console:show');
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-console:toggle',
+      {visible: true},
+    );
   }
 }
 
