@@ -96,11 +96,17 @@ function generateTestNuxTour(
     name,
     nuxList,
     trigger: null,
-    /* Add your own gatekeeper to control who the NUX is displayed to.
+    /**
+     * Add your own gatekeeper to control who the NUX is displayed to.
      * Use the global `nuclide_all_nuxes` if you want the NUX to always appear.
      * See `nuclide-nux/lib/NuxModel.js` for more details.
      */
     gatekeeperID: 'nuclide_all_nuxes',
+    /**
+     * Uncomment the next line to always show the NUX
+     * in every session. Useful for development purposes.
+     */
+    // developmentMode: true,
   };
 }
 

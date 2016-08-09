@@ -61,9 +61,14 @@ export class NuxStore {
     this._nuxMap = new Map([...nuclideNuxState, ...fbNuxState]);
   }
 
-  addNewNux(nux: NuxTourModel) {
+  /*
+   * Try to add the NUX to the list of registered NUXes.
+   */
+  addNewNux(nux: NuxTourModel): void {
     const nuxState = this._nuxMap.get(nux.id);
-    if (nuxState) {
+    // if `developmentMode` is set, the NUX will be shown during EVERY session.
+    // This is used to make debugging easier.
+    if (nuxState && !nux.developmentMode) {
       return;
     }
     this._nuxMap.set(
@@ -78,7 +83,6 @@ export class NuxStore {
   }
 
   _saveNuxState(): void {
-    // TODO [ @rageandqq | 05-25-16 ]: Replace with `IndexedDB` since `localStorage` is blocking
     window.localStorage.setItem(
       NUX_SAVED_STORE,
       // $FlowIgnore -- Flow thinks the spread operator is incompatible with Maps
