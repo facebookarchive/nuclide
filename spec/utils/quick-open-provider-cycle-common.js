@@ -92,10 +92,20 @@ export function runTest(context: TestContext) {
       return omniSearchTreeNodes.length > 0;
     });
 
-    // Expect an item to exist
+    waitsFor('first result item is selected', () => {
+      firstActiveElement =
+        document.querySelector('.quick-open-result-item.list-item.selected:first-child');
+      return firstActiveElement != null;
+    });
+
+    // Expect that 'down arrow' selects the next item
     runs(() => {
-      firstActiveElement = document.querySelector('.quick-open-result-item.list-item.selected');
-      expect(firstActiveElement).not.toBeNull();
+      dispatchKeyboardEvent('down', document.activeElement);
+      const nextActiveElement =
+        document.querySelector('.quick-open-result-item.list-item.selected');
+      expect(nextActiveElement).not.toBeNull();
+      invariant(firstActiveElement != null);
+      expect(nextActiveElement).toBe(firstActiveElement.nextElementSibling);
     });
 
     waitsFor('active quick-open item to scroll back to first element', () => {

@@ -67,61 +67,21 @@ const trackProviderChange = debounce(providerName => {
 class Activation {
   _currentProvider: Object;
   _previousFocus: ?HTMLElement;
-  _reactDiv: HTMLElement;
-  _searchComponent: QuickSelectionComponent;
-  _searchPanel: atom$Panel;
+  _reactDiv: ?HTMLElement;
+  _searchComponent: ?QuickSelectionComponent;
+  _searchPanel: ?atom$Panel;
   _subscriptions: atom$CompositeDisposable;
-  _debouncedUpdateModalPosition: () => void;
-  _maxScrollableAreaHeight: number;
+  _scrollableAreaHeightGap: number;
 
   constructor() {
     this._previousFocus = null;
-    this._maxScrollableAreaHeight = 10000;
+    this._scrollableAreaHeightGap = MODAL_MARGIN + TOPBAR_APPROX_HEIGHT;
     this._subscriptions = new CompositeDisposable();
     this._currentProvider = getSearchResultManager().getProviderByName(DEFAULT_PROVIDER);
     QuickSelectionDispatcher.getInstance().register(action => {
       if (action.actionType === QuickSelectionDispatcher.ActionType.ACTIVE_PROVIDER_CHANGED) {
         this._handleActiveProviderChange(action.providerName);
       }
-    });
-    this._reactDiv = document.createElement('div');
-    this._searchPanel = atom.workspace.addModalPanel({item: this._reactDiv, visible: false});
-    this._debouncedUpdateModalPosition = debounce(this._updateScrollableHeight.bind(this), 200);
-    window.addEventListener('resize', this._debouncedUpdateModalPosition);
-    this._customizeModalElement();
-    this._updateScrollableHeight();
-
-    this._searchComponent = this._render();
-
-    this._searchComponent.onSelection(selection => {
-      const options = {};
-      if (selection.line) {
-        options.initialLine = selection.line;
-      }
-      if (selection.column) {
-        options.initialColumn = selection.column;
-      }
-
-      atom.workspace.open(selection.path, options).then(textEditor => {
-        atom.commands.dispatch(atom.views.getView(textEditor), 'tabs:keep-preview-tab');
-      });
-
-      const query = this._searchComponent.getInputTextEditor().textContent;
-      const providerName = this._currentProvider.name;
-      // default to empty string because `track` enforces string-only values
-      const sourceProvider = selection.sourceProvider || '';
-      track(
-        AnalyticsEvents.SELECT_FILE,
-        {
-          'quickopen-filepath': selection.path,
-          'quickopen-query': query,
-          'quickopen-provider': providerName, // The currently open "tab".
-          'quickopen-session': analyticsSessionId || '',
-          // Because the `provider` is usually OmniSearch, also track the original provider.
-          'quickopen-provider-source': sourceProvider,
-        },
-      );
-      this.closeSearchPanel();
     });
 
     this._subscriptions.add(
@@ -132,53 +92,83 @@ class Activation {
       }),
     );
 
-    this._searchComponent.onCancellation(() => this.closeSearchPanel());
-    this._searchComponent.onSelectionChanged(debounce((selection: any) => {
-      // Only track user-initiated selection-change events.
-      if (analyticsSessionId != null) {
-        track(
-          AnalyticsEvents.CHANGE_SELECTION,
-          {
-            'quickopen-selected-index': selection.selectedItemIndex.toString(),
-            'quickopen-selected-service': selection.selectedService,
-            'quickopen-selected-directory': selection.selectedDirectory,
-            'quickopen-session': analyticsSessionId,
-          },
-        );
-      }
-    }, AnalyticsDebounceDelays.CHANGE_SELECTION));
+    (this: any).closeSearchPanel = this.closeSearchPanel.bind(this);
   }
 
-  // Customize the element containing the modal.
-  _customizeModalElement() {
-    const modalElement = ((this._searchPanel.getItem().parentNode: any): HTMLElement);
-    modalElement.style.setProperty('margin-left', '0');
-    modalElement.style.setProperty('max-width', 'none');
-    modalElement.style.setProperty('position', 'absolute');
-    modalElement.style.setProperty('width', 'auto');
-    modalElement.style.setProperty('left', MODAL_MARGIN + 'px');
-    modalElement.style.setProperty('right', MODAL_MARGIN + 'px');
-  }
+  _render(): void {
+    if (this._reactDiv == null) {
+      const _reactDiv = document.createElement('div');
+      this._searchPanel = atom.workspace.addModalPanel({
+        item: _reactDiv,
+        visible: false,
+      });
+      invariant(_reactDiv.parentNode instanceof HTMLElement);
+      _reactDiv.parentNode.style.maxWidth = `calc(100% - ${MODAL_MARGIN * 2}px)`;
+      this._reactDiv = _reactDiv;
+    }
 
-  _updateScrollableHeight() {
-    const {height} = document.documentElement.getBoundingClientRect();
-    this._maxScrollableAreaHeight = height - MODAL_MARGIN - TOPBAR_APPROX_HEIGHT;
-    // Force a re-render to update _maxScrollableAreaHeight.
-    this._searchComponent = this._render();
-  }
-
-  _render(): QuickSelectionComponent {
-    const component = ReactDOM.render(
+    const _searchComponent = ReactDOM.render(
       <QuickSelectionComponent
         activeProvider={this._currentProvider}
-        maxScrollableAreaHeight={this._maxScrollableAreaHeight}
-        onBlur={this.closeSearchPanel.bind(this)}
+        scrollableAreaHeightGap={this._scrollableAreaHeightGap}
+        onBlur={this.closeSearchPanel}
       />,
       this._reactDiv,
     );
-    invariant(component instanceof QuickSelectionComponent);
-    return component;
+    invariant(_searchComponent instanceof QuickSelectionComponent);
+
+    if (this._searchComponent == null) {
+      _searchComponent.onSelection(selection => {
+        const options = {};
+        if (selection.line) {
+          options.initialLine = selection.line;
+        }
+        if (selection.column) {
+          options.initialColumn = selection.column;
+        }
+
+        atom.workspace.open(selection.path, options).then(textEditor => {
+          atom.commands.dispatch(atom.views.getView(textEditor), 'tabs:keep-preview-tab');
+        });
+
+        const query = _searchComponent.getInputTextEditor().textContent;
+        const providerName = this._currentProvider.name;
+        // default to empty string because `track` enforces string-only values
+        const sourceProvider = selection.sourceProvider || '';
+        track(
+          AnalyticsEvents.SELECT_FILE,
+          {
+            'quickopen-filepath': selection.path,
+            'quickopen-query': query,
+            'quickopen-provider': providerName, // The currently open "tab".
+            'quickopen-session': analyticsSessionId || '',
+            // Because the `provider` is usually OmniSearch, also track the original provider.
+            'quickopen-provider-source': sourceProvider,
+          },
+        );
+        this.closeSearchPanel();
+      });
+
+      _searchComponent.onCancellation(() => this.closeSearchPanel());
+      _searchComponent.onSelectionChanged(debounce((selection: any) => {
+        // Only track user-initiated selection-change events.
+        if (analyticsSessionId != null) {
+          track(
+            AnalyticsEvents.CHANGE_SELECTION,
+            {
+              'quickopen-selected-index': selection.selectedItemIndex.toString(),
+              'quickopen-selected-service': selection.selectedService,
+              'quickopen-selected-directory': selection.selectedDirectory,
+              'quickopen-session': analyticsSessionId,
+            },
+          );
+        }
+      }, AnalyticsDebounceDelays.CHANGE_SELECTION));
+    }
+
+    this._searchComponent = _searchComponent;
   }
+
 
   _handleActiveProviderChange(newProviderName: string): void {
     trackProviderChange(newProviderName);
@@ -186,7 +176,7 @@ class Activation {
     // the search panel stay open.
     this.toggleProvider(newProviderName);
     this._currentProvider = getSearchResultManager().getProviderByName(newProviderName);
-    this._searchComponent = this._render();
+    this._render();
   }
 
   toggleOmniSearchProvider(): void {
@@ -205,7 +195,7 @@ class Activation {
     const provider = getSearchResultManager().getProviderByName(providerName);
     // "toggle" behavior
     if (
-      this._searchPanel !== null &&
+      this._searchPanel != null &&
       this._searchPanel.isVisible() &&
       providerName === this._currentProvider.name
     ) {
@@ -214,15 +204,14 @@ class Activation {
     }
 
     this._currentProvider = provider;
-    if (this._searchComponent) {
-      this._searchComponent = this._render();
-    }
+    this._render();
     this.showSearchPanel();
   }
 
   showSearchPanel() {
     this._previousFocus = document.activeElement;
-    if (this._searchComponent && this._searchPanel) {
+    const {_searchComponent, _searchPanel} = this;
+    if (_searchComponent != null && _searchPanel != null) {
       // Start a new search "session" for analytics purposes.
       track(
         AnalyticsEvents.OPEN_PANEL,
@@ -231,29 +220,30 @@ class Activation {
         },
       );
       // showSearchPanel gets called when changing providers even if it's already shown.
-      const isAlreadyVisible = this._searchPanel.isVisible();
-      this._searchPanel.show();
-      this._searchComponent.focus();
+      const isAlreadyVisible = _searchPanel.isVisible();
+      _searchPanel.show();
+      _searchComponent.focus();
       if (featureConfig.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
         const selectedText = this._getFirstSelectionText();
         if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
-          this._searchComponent.setInputValue(selectedText.split('\n')[0]);
+          _searchComponent.setInputValue(selectedText.split('\n')[0]);
         }
       }
-      this._searchComponent.selectInput();
+      _searchComponent.selectInput();
     }
   }
 
   closeSearchPanel() {
-    if (this._searchComponent && this._searchPanel) {
+    const {_searchComponent, _searchPanel} = this;
+    if (_searchComponent != null && _searchPanel != null) {
       track(
         AnalyticsEvents.CLOSE_PANEL,
         {
           'quickopen-session': analyticsSessionId || '',
         },
       );
-      this._searchPanel.hide();
-      this._searchComponent.blur();
+      _searchPanel.hide();
+      _searchComponent.blur();
       analyticsSessionId = null;
     }
 
@@ -272,7 +262,14 @@ class Activation {
 
   dispose(): void {
     this._subscriptions.dispose();
-    ReactDOM.unmountComponentAtNode(this._reactDiv);
+    if (this._reactDiv != null) {
+      ReactDOM.unmountComponentAtNode(this._reactDiv);
+      this._reactDiv = null;
+    }
+    if (this._searchPanel != null) {
+      this._searchPanel.destroy();
+      this._searchPanel = null;
+    }
   }
 }
 

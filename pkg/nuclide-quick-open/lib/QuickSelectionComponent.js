@@ -82,7 +82,7 @@ function sortServiceNames(names: Array<string>): Array<string> {
 
 type Props = {
   activeProvider: ProviderSpec,
-  maxScrollableAreaHeight?: number,
+  scrollableAreaHeightGap?: number,
   onBlur: () => void,
 };
 
@@ -806,7 +806,12 @@ export default class QuickSelectionComponent extends React.Component {
           </Button>
         </div>
         {this._renderTabs()}
-        <div className="omnisearch-results" style={{maxHeight: this.props.maxScrollableAreaHeight}}>
+        <div
+          className="omnisearch-results"
+          style={{
+            maxHeight: this.props.scrollableAreaHeightGap ?
+              `calc(100vh - ${this.props.scrollableAreaHeightGap}px)` : '100vh',
+          }}>
           {noResultsMessage}
           <div className="omnisearch-pane">
             <ul className="list-tree" ref="selectionList">
