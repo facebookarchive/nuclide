@@ -42,7 +42,6 @@ export class ArcanistDiagnosticsProvider {
       enableForAllGrammars: true,
       shouldRunOnTheFly: false,
       onTextEditorEvent: this._runLintWithBusyMessage.bind(this),
-      onNewUpdateSubscriber: this._receivedNewUpdateSubscriber.bind(this),
     };
     this._providerBase = new DiagnosticsProviderBase(baseOptions);
     this._subscriptions.add(this._providerBase);
@@ -155,13 +154,6 @@ export class ArcanistDiagnosticsProvider {
     }
 
     return new Range([startRow, startCol], [endRow, endCol]);
-  }
-
-  _receivedNewUpdateSubscriber(): void {
-    const activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (activeTextEditor) {
-      this._runLintWithBusyMessage(activeTextEditor);
-    }
   }
 
   onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
