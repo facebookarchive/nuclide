@@ -15,6 +15,7 @@ import type {
   FileLineBreakpoint,
   FileLineBreakpoints,
   BreakpointUserChangeArgType,
+  DebuggerModeType,
 } from './types';
 
 import invariant from 'assert';
@@ -24,6 +25,7 @@ import {
 } from 'atom';
 import {Emitter} from 'atom';
 import Constants from './Constants';
+import {DebuggerMode} from './DebuggerStore';
 
 export type LineToBreakpointMap = Map<number, FileLineBreakpoint>;
 
@@ -78,6 +80,9 @@ class BreakpointStore {
         break;
       case Constants.Actions.BIND_BREAKPOINT_IPC:
         this._bindBreakpoint(data.path, data.line);
+        break;
+      case Constants.Actions.DEBUGGER_MODE_CHANGE:
+        this._handleDebuggerModeChange(data);
         break;
       default:
         return;
@@ -151,6 +156,19 @@ class BreakpointStore {
       true,   // resolved
       false,  // userAction
     );
+  }
+
+  _handleDebuggerModeChange(newMode: DebuggerModeType): void {
+    if (newMode === DebuggerMode.STOPPED) {
+      // All breakpoints should be unresolved after stop debugging.
+      this._resetBreakpointUnresolved();
+    }
+  }
+
+  _resetBreakpointUnresolved(): void {
+    for (const breakpoint of this.getAllBreakpoints()) {
+      breakpoint.resolved = false;
+    }
   }
 
   getBreakpointsForPath(path: string): LineToBreakpointMap {
