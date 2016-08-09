@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {OutputService} from '../../nuclide-console/lib/types';
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type {
@@ -55,4 +56,9 @@ export function createDebuggerProvider(): NuclideDebuggerProvider {
 export function consumeOutputService(api: OutputService): void {
   invariant(activation != null);
   return activation.consumeOutputService(api);
+}
+
+export function consumeCwdApi(api: CwdApi): void {
+  invariant(activation != null);
+  return activation.consumeCwdApi(api);
 }
