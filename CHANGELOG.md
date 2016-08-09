@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.161.0
+
+* Hotfix React Native packager (wasn't getting working root)
+
 ## v0.160.0
 
 ### General
