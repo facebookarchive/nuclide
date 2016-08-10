@@ -776,7 +776,7 @@ declare class atom$TextEditor extends atom$Model {
     priority?: number,
     visible?: boolean,
   }): atom$Gutter,
-
+  observeGutters(callback: (gutter: atom$Gutter) => void): IDisposable,
   gutterWithName(name: string): ?atom$Gutter,
 
   // Scrolling the TextEditor

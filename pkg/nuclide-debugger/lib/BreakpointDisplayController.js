@@ -13,13 +13,6 @@ import type BreakpointStore from './BreakpointStore';
 import type DebuggerActions from './DebuggerActions';
 
 import {CompositeDisposable, Disposable} from 'atom';
-import {
-  editorChangesDebounced,
-  editorScrollTopDebounced,
-} from '../../commons-atom/debounced';
-import {
-  DisposableSubscription,
-} from '../../commons-node/stream';
 
 /**
  * A single delegate which handles events from the object.
@@ -44,8 +37,7 @@ class BreakpointDisplayController {
   _editor: atom$TextEditor;
   _gutter: ?atom$Gutter;
   _markers: Array<atom$Marker>;
-  _shadowMarkerRows: Set<number>;
-  _shadowMarkers: Array<atom$Marker>;
+  _lastShadowBreakpointMarker: ?atom$Marker;
 
   constructor(
       delegate: BreakpointDisplayControllerDelegate,
@@ -59,8 +51,7 @@ class BreakpointDisplayController {
     this._debuggerActions = debuggerActions;
     this._editor = editor;
     this._markers = [];
-    this._shadowMarkerRows = new Set([]);
-    this._shadowMarkers = [];
+    this._lastShadowBreakpointMarker = null;
 
     // Configure the gutter.
     const gutter = editor.addGutter({
@@ -70,68 +61,37 @@ class BreakpointDisplayController {
     this._disposables.add(gutter.onDidDestroy(this._handleGutterDestroyed.bind(this)));
     this._gutter = gutter;
 
-    const boundClickHandler = this._handleGutterClick.bind(this);
-
-    const gutterView = atom.views.getView(gutter);
-    gutterView.addEventListener('click', boundClickHandler);
-
-    this._disposables.add(
-      new Disposable(() => gutterView.removeEventListener('click', boundClickHandler)),
-    );
-
-    // Add click listeners into line number gutter for setting breakpoints.
-    const lineNumberGutter = editor.gutterWithName('line-number');
-    if (lineNumberGutter) {
-      const lineNumberGutterView = atom.views.getView(lineNumberGutter);
-      const boundLineNumberClickHandler = this._handleLineNumberGutterClick.bind(this);
-      const boundLineNumberMouseOverOrOutHandler =
-        this._handleLineNumberGutterMouseOverOrOut.bind(this);
-      lineNumberGutterView.addEventListener('click', boundLineNumberClickHandler);
-      lineNumberGutterView.addEventListener('mouseover', boundLineNumberMouseOverOrOutHandler);
-      lineNumberGutterView.addEventListener('mouseout', boundLineNumberMouseOverOrOutHandler);
-      this._disposables.add(new Disposable(() => {
-        lineNumberGutterView.removeEventListener('click', boundLineNumberClickHandler);
-        lineNumberGutterView.removeEventListener('mouseover', boundLineNumberMouseOverOrOutHandler);
-        lineNumberGutterView.removeEventListener('mouseout', boundLineNumberMouseOverOrOutHandler);
-      }));
-    }
+    this._disposables.add(editor.observeGutters(this._registerGutterMouseHandlers.bind(this)));
 
     this._disposables.add(
       this._breakpointStore.onNeedUIUpdate(this._handleBreakpointsChanged.bind(this)),
     );
     this._disposables.add(this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)));
 
-    // Update shadow breakpoints on debounced editor change and debounced view scroll
-    this._disposables.add(
-      new DisposableSubscription(
-        editorScrollTopDebounced(this._editor, 300)
-          .subscribe(this._update.bind(this, false)),
-      ),
-      new DisposableSubscription(
-        editorChangesDebounced(this._editor, 300)
-          .subscribe(this._update.bind(this, false)),
-      ),
-    );
-
-    const disposableCallback =
-      atom.workspace.onDidChangeActivePaneItem(this._handleEditorChanged.bind(this));
-    this._disposables.add(disposableCallback);
-
     this._update();
   }
 
-  _handleEditorChanged(editor: mixed): void {
-    if (this._editor !== editor) {
-      this._removeAllShadowMarkers();
-    } else {
-      this._update();
-    }
+  _registerGutterMouseHandlers(gutter: atom$Gutter): void {
+    const gutterView = atom.views.getView(gutter);
+    const boundClickHandler = this._handleGutterClick.bind(this);
+    const boundMouseMoveHandler =
+      this._handleGutterMouseMove.bind(this);
+    const boundMouseOutHandler =
+      this._handleGutterMouseOut.bind(this);
+    // Add mouse listeners gutter for setting breakpoints.
+    gutterView.addEventListener('click', boundClickHandler);
+    gutterView.addEventListener('mousemove', boundMouseMoveHandler);
+    gutterView.addEventListener('mouseout', boundMouseOutHandler);
+    this._disposables.add(new Disposable(() => {
+      gutterView.removeEventListener('click', boundClickHandler);
+      gutterView.removeEventListener('mousemove', boundMouseMoveHandler);
+      gutterView.removeEventListener('mouseout', boundMouseOutHandler);
+    }));
   }
 
   dispose() {
     this._disposables.dispose();
     this._markers.forEach(marker => marker.destroy());
-    this._shadowMarkers.forEach(marker => marker.destroy());
     if (this._gutter) {
       this._gutter.destroy();
     }
@@ -154,22 +114,10 @@ class BreakpointDisplayController {
     this._gutter = null;
   }
 
-  _removeAllShadowMarkers(): void {
-    if (this._shadowMarkerRows.size !== 0) {
-      this._shadowMarkers.forEach(marker => marker.destroy());
-      this._shadowMarkerRows.clear();
-      if (this._gutter != null) {
-        this._gutter.show();
-      }
-    }
-  }
-
   /**
    * Update the display with the current set of breakpoints for this editor.
    */
-  _update(
-    resetAllShadowMarkers : boolean = false,
-  ) : void {
+  _update() : void {
     const gutter = this._gutter;
     if (!gutter) {
       return;
@@ -184,20 +132,12 @@ class BreakpointDisplayController {
     const unhandledLines = this._breakpointStore.getBreakpointLinesForPath(path);
     const markersToKeep = [];
 
-    // Use sets for faster lookup
-    const shadowMarkerRowsToFill = new Set(this._rowsOnScreen());
-    const shadowMarkerRowsToDelete = new Set();
-
     // Destroy markers that no longer correspond to breakpoints.
     this._markers.forEach(marker => {
       const line = marker.getStartBufferPosition().row;
       if (unhandledLines.has(line)) {
         markersToKeep.push(marker);
         unhandledLines.delete(line);
-        // Don't create a shadow marker on a line with a real marker
-        // mark any existing shadow markers on these rows for deletion
-        shadowMarkerRowsToFill.delete(line);
-        shadowMarkerRowsToDelete.add(line);
       } else {
         marker.destroy();
       }
@@ -221,51 +161,7 @@ class BreakpointDisplayController {
       elem.className = 'nuclide-breakpoint-icon';
       gutter.decorateMarker(marker, {item: elem});
       markersToKeep.push(marker);
-      // Don't create a shadow marker on a line with a real marker and
-      // mark any existing shadow markers on these rows for deletion
-      shadowMarkerRowsToFill.delete(line);
-      shadowMarkerRowsToDelete.add(line);
     }
-
-    if (resetAllShadowMarkers) {
-      // Destroy all markers
-      this._shadowMarkers.forEach(marker => marker.destroy());
-      this._shadowMarkerRows.clear();
-    } else {
-      // Destroy off-screen shadow markers (and the DOM elements they're decorated with)
-      // or those that occupy lines with breakpoints.
-      // Use iterative loop since array is mutated during iteration
-      for (let i = 0; i < this._shadowMarkers.length; i++) {
-        const marker = this._shadowMarkers[i];
-        const line = marker.getStartBufferPosition().row;
-        if (!shadowMarkerRowsToFill.has(line) || shadowMarkerRowsToDelete.has(line)) {
-          marker.destroy();
-          this._shadowMarkerRows.delete(line);
-          this._shadowMarkers.splice(i--, 1);
-        }
-      }
-    }
-
-    // Create a marker element and add it to the DOM for each unmarked row on the screen
-    shadowMarkerRowsToFill
-      .forEach(line => {
-        // Only add markers to rows that don't already have markers
-        if (this._shadowMarkerRows.has(line)) {
-          return;
-        }
-        const shadowMarker = this._editor.markBufferPosition([line, 0], {
-          persistent: true,
-          invalidate: 'never',
-        });
-        const elem: HTMLAnchorElement = document.createElement('a');
-        elem.classList.add(
-          'nuclide-debugger-shadow-breakpoint',
-          `nuclide-debugger-shadow-${line}`,
-        );
-        gutter.decorateMarker(shadowMarker, {item: elem});
-        this._shadowMarkerRows.add(line);
-        this._shadowMarkers.push(shadowMarker);
-      });
 
     gutter.show();
     this._markers = markersToKeep;
@@ -294,71 +190,62 @@ class BreakpointDisplayController {
   }
 
   _handleGutterClick(event: Event): void {
+    // Filter out clicks to the folding chevron.
+    const FOLDING_CHEVRON_CLASS_NAME = 'icon-right';
+    const target: Object = event.target; // classList isn't in the defs of HTMLElement...
+    if (target.classList.contains(FOLDING_CHEVRON_CLASS_NAME)) {
+      return;
+    }
+
     const path = this._editor.getPath();
     if (!path) {
       return;
     }
+    this._debuggerActions.toggleBreakpoint(path, this._getCurrentMouseEventLine(event));
+  }
+
+  _getCurrentMouseEventLine(event: Event): number {
     // Beware, screenPositionForMouseEvent is not a public api and may change in future versions.
     // $FlowIssue
     const screenPos = atom.views.getView(this._editor).component.screenPositionForMouseEvent(event);
     const bufferPos = this._editor.bufferPositionForScreenPosition(screenPos);
-    this._debuggerActions.toggleBreakpoint(path, bufferPos.row);
+    return bufferPos.row;
   }
 
-  _handleLineNumberGutterMouseOverOrOut(event: Event): void {
-    const target: Element = event.srcElement;
-    if (!target.classList.contains('line-number')) {
-      return;
-    }
-    const row = target.getAttribute('data-buffer-row');
-    if (!row) {
-      return;
-    }
+  _handleGutterMouseMove(event: Event): void {
+    const curLine = this._getCurrentMouseEventLine(event);
+    this._removeLastShadownBreakpoint();
+    this._createShadowBreakpointAtLine(this._editor, curLine);
+  }
 
-    const gutter: ?atom$Gutter = this._editor.gutterWithName('nuclide-breakpoint');
+  _handleGutterMouseOut(event: Event): void {
+    this._removeLastShadownBreakpoint();
+  }
+
+  _removeLastShadownBreakpoint(): void {
+    if (this._lastShadowBreakpointMarker != null) {
+      this._lastShadowBreakpointMarker.destroy();
+      this._lastShadowBreakpointMarker = null;
+    }
+  }
+
+  _createShadowBreakpointAtLine(editor: TextEditor, line: number): void {
+    const gutter: ?atom$Gutter = editor.gutterWithName('nuclide-breakpoint');
     if (gutter == null) {
       return;
     }
-    const gutterView = atom.views.getView(gutter);
-    if (!gutterView) {
-      return;
-    }
-    const shadowMarkerElement =
-      gutterView.getElementsByClassName(`nuclide-debugger-shadow-${row}`)[0];
-    if (!shadowMarkerElement) {
-      return;
-    }
-    if (event.type === 'mouseover') {
-      shadowMarkerElement.classList.add('nuclide-debugger-shadow-breakpoint-icon');
-    } else {
-      shadowMarkerElement.classList.remove('nuclide-debugger-shadow-breakpoint-icon');
-    }
-  }
-
-  _handleLineNumberGutterClick(event: Event): void {
-    // Filter out clicks to other line number gutter elements, e.g. the folding chevron.
-    const target: Object = event.target; // classList isn't in the defs of HTMLElement...
-    if (!target.classList.contains('line-number')) {
-      return;
-    }
-    this._handleGutterClick(event);
-  }
-
-  _rowsOnScreen() : Array<number> {
-    // `rowsPerPage` is 2 rows less than the number of rows on the screen ¯\_(ツ)_/¯
-    const numRows: number = this._editor.rowsPerPage + 2;
-    let currentRow: number = this._editor.firstVisibleScreenRow;
-    const rows: Array<number> = [];
-    let firstRow: boolean = true;
-    while (rows.length < numRows && currentRow <= this._editor.getLastBufferRow()) {
-      // Include first row of folded code
-      if (!this._editor.isFoldedAtBufferRow(currentRow) || firstRow) {
-        rows.push(currentRow);
-        firstRow = !this._editor.isFoldedAtBufferRow(currentRow);
-      }
-      ++currentRow;
-    }
-    return rows;
+    const shadowMarker = editor.markBufferPosition([line, 0], {
+      persistent: true,
+      invalidate: 'never',
+    });
+    const elem: HTMLAnchorElement = document.createElement('a');
+    elem.classList.add(
+      'nuclide-debugger-atom-shadow-breakpoint',
+      `nuclide-debugger-atom-shadow-${line}`,
+      'nuclide-debugger-atom-shadow-breakpoint-icon',
+    );
+    gutter.decorateMarker(shadowMarker, {item: elem});
+    this._lastShadowBreakpointMarker = shadowMarker;
   }
 }
 
