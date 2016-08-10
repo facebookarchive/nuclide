@@ -196,21 +196,25 @@ class ServerConnection {
     const client = this.getClient();
     const clientVersion = getVersion();
 
+    function throwVersionMismatch(version) {
+      const err = new Error(
+        `Version mismatch. Client at ${clientVersion} while server at ${version}.`);
+      err.name = 'VersionMismatchError';
+      throw err;
+    }
+
     // Test connection first. First time we get here we're checking to reestablish
     // connection using cached credentials. This will fail fast (faster than infoService)
     // when we don't have cached credentials yet.
     const heartbeatVersion = await client.getTransport().testConnection();
     if (clientVersion !== heartbeatVersion) {
-      throw new Error(
-        `Version mismatch. Client at ${clientVersion} while server at ${heartbeatVersion}.`);
+      throwVersionMismatch(heartbeatVersion);
     }
 
     // Do another version check over the RPC framework.
     const serverVersion = await this._getInfoService().getServerVersion();
-
     if (clientVersion !== serverVersion) {
-      throw new Error(
-        `Version mismatch. Client at ${clientVersion} while server at ${serverVersion}.`);
+      throwVersionMismatch(serverVersion);
     }
 
     this._monitorConnectionHeartbeat();

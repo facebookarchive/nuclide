@@ -102,7 +102,8 @@ export class RemoteConnection {
       const config = {...connectionConfig, cwd, displayTitle};
       return await RemoteConnection.findOrCreate(config);
     } catch (e) {
-      logger.warn(`Failed to reuse connectionConfiguration for ${host}`, e);
+      const log = e.name === 'VersionMismatchError' ? logger.warn : logger.error;
+      log(`Failed to reuse connectionConfiguration for ${host}`, e);
       return null;
     }
   }
