@@ -16,6 +16,8 @@ import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
 import keytarWrapper from './keytarWrapper';
 
+const CONFIG_DIR = 'nuclide-connections';
+
 const logger = getLogger();
 
 /**
@@ -36,17 +38,17 @@ function isInsecure(config: ServerConnectionConfiguration): boolean {
       && config.certificateAuthorityCertificate == null;
 }
 
-const CONFIG_KEY_PREFIX = 'nuclide.nuclide-connection.config';
+function getStorageKey(host: string): string {
+  return `${CONFIG_DIR}:${host}`;
+}
 
 export function getConnectionConfig(host: string): ?ServerConnectionConfiguration {
-  // $FlowIssue
-  const storedConfig = atom.config.get(getAtomConfigKey(host));
-  // $UPFixMe: These settings should go through featureConfig
-  if (!storedConfig) {
+  const storedConfig = window.localStorage.getItem(getStorageKey(host));
+  if (storedConfig == null) {
     return null;
   }
   try {
-    return decryptConfig(storedConfig);
+    return decryptConfig(JSON.parse(storedConfig));
   } catch (e) {
     logger.error(`The configuration file for ${host} is corrupted.`, e);
     return null;
@@ -61,14 +63,13 @@ export function setConnectionConfig(config: ServerConnectionConfiguration): void
   }
 
   try {
-    atom.config.set(getAtomConfigKey(config.host), encryptConfig(config));
+    window.localStorage.setItem(
+      getStorageKey(config.host),
+      JSON.stringify(encryptConfig(config)),
+    );
   } catch (e) {
     logger.error(`Failed to store configuration file for ${config.host}.`, e);
   }
-}
-
-function getAtomConfigKey(host: string): string {
-  return `${CONFIG_KEY_PREFIX}.${host}`;
 }
 
 /**
