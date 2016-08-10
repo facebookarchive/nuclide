@@ -12,6 +12,7 @@
 import type BreakpointStore from './BreakpointStore';
 import type DebuggerActions from './DebuggerActions';
 
+import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 
 /**
@@ -58,16 +59,13 @@ class BreakpointDisplayController {
       name: 'nuclide-breakpoint',
       visible: false,
     });
-    this._disposables.add(gutter.onDidDestroy(this._handleGutterDestroyed.bind(this)));
     this._gutter = gutter;
-
-    this._disposables.add(editor.observeGutters(this._registerGutterMouseHandlers.bind(this)));
-
     this._disposables.add(
+      gutter.onDidDestroy(this._handleGutterDestroyed.bind(this)),
+      editor.observeGutters(this._registerGutterMouseHandlers.bind(this)),
       this._breakpointStore.onNeedUIUpdate(this._handleBreakpointsChanged.bind(this)),
+      this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)),
     );
-    this._disposables.add(this._editor.onDidDestroy(this._handleTextEditorDestroyed.bind(this)));
-
     this._update();
   }
 
@@ -119,7 +117,7 @@ class BreakpointDisplayController {
    */
   _update() : void {
     const gutter = this._gutter;
-    if (!gutter) {
+    if (gutter == null) {
       return;
     }
 
@@ -149,17 +147,11 @@ class BreakpointDisplayController {
         // This line has been handled.
         continue;
       }
-      const marker = this._editor.markBufferPosition([line, 0], {
-        persistent: false,
-        invalidate: 'touch',
-      });
+      const marker = this._createBreakpointMarkerAtLine(
+        line,
+        false, // isShadow
+      );
       marker.onDidChange(this._handleMarkerChange.bind(this));
-      const elem = document.createElement('a');
-      if (!(elem instanceof window.HTMLAnchorElement)) {
-        throw 'should have created anchor element';
-      }
-      elem.className = 'nuclide-breakpoint-icon';
-      gutter.decorateMarker(marker, {item: elem});
       markersToKeep.push(marker);
     }
 
@@ -214,15 +206,26 @@ class BreakpointDisplayController {
 
   _handleGutterMouseMove(event: Event): void {
     const curLine = this._getCurrentMouseEventLine(event);
-    this._removeLastShadownBreakpoint();
+    if (this._isLineOverLastShadowBreakpoint(curLine)) {
+      return;
+    }
+    // User moves to a new line we need to delete the old shadow breakpoint
+    // and create a new one.
+    this._removeLastShadowBreakpoint();
     this._createShadowBreakpointAtLine(this._editor, curLine);
   }
 
   _handleGutterMouseOut(event: Event): void {
-    this._removeLastShadownBreakpoint();
+    this._removeLastShadowBreakpoint();
   }
 
-  _removeLastShadownBreakpoint(): void {
+  _isLineOverLastShadowBreakpoint(curLine: number): boolean {
+    const shadowBreakpointMarker = this._lastShadowBreakpointMarker;
+    return shadowBreakpointMarker != null &&
+      shadowBreakpointMarker.getStartBufferPosition().row === curLine;
+  }
+
+  _removeLastShadowBreakpoint(): void {
     if (this._lastShadowBreakpointMarker != null) {
       this._lastShadowBreakpointMarker.destroy();
       this._lastShadowBreakpointMarker = null;
@@ -230,22 +233,25 @@ class BreakpointDisplayController {
   }
 
   _createShadowBreakpointAtLine(editor: TextEditor, line: number): void {
-    const gutter: ?atom$Gutter = editor.gutterWithName('nuclide-breakpoint');
-    if (gutter == null) {
-      return;
-    }
-    const shadowMarker = editor.markBufferPosition([line, 0], {
-      persistent: true,
+    this._lastShadowBreakpointMarker = this._createBreakpointMarkerAtLine(
+      line,
+      true, // isShadow
+    );
+  }
+
+  _createBreakpointMarkerAtLine(
+    line: number,
+    isShadow: boolean,
+  ): atom$Marker {
+    const marker = this._editor.markBufferPosition([line, 0], {
       invalidate: 'never',
     });
     const elem: HTMLAnchorElement = document.createElement('a');
-    elem.classList.add(
-      'nuclide-debugger-atom-shadow-breakpoint',
-      `nuclide-debugger-atom-shadow-${line}`,
-      'nuclide-debugger-atom-shadow-breakpoint-icon',
-    );
-    gutter.decorateMarker(shadowMarker, {item: elem});
-    this._lastShadowBreakpointMarker = shadowMarker;
+    elem.className = isShadow ? 'nuclide-debugger-shadow-breakpoint-icon' :
+      'nuclide-debugger-breakpoint-icon';
+    invariant(this._gutter != null);
+    this._gutter.decorateMarker(marker, {item: elem});
+    return marker;
   }
 }
 

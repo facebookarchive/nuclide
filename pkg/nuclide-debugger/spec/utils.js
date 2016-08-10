@@ -31,7 +31,9 @@ function getBreakpointDecorationInRow(editor: atom$TextEditor, row: number): ?at
     const decorations = decorationArrays[key];
     for (let i = 0; i < decorations.length; i++) {
       const {gutterName, item} = decorations[i].getProperties();
-      if (gutterName === 'nuclide-breakpoint' && item.className === 'nuclide-breakpoint-icon') {
+      if (gutterName === 'nuclide-breakpoint' &&
+        item.className === 'nuclide-debugger-breakpoint-icon'
+      ) {
         return decorations[i];
       }
     }

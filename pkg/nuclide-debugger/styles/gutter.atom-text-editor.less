@@ -2,7 +2,7 @@
 @import "octicon-mixins.less";
 @import "octicon-utf-codes.less";
 
-.nuclide-breakpoint-icon {
+.nuclide-debugger-breakpoint-icon {
   .octicon(primitive-dot, @size: 130%);
   text-align: center;
   display: block;
@@ -10,16 +10,12 @@
   color: @text-color-info;
 }
 
-.nuclide-debugger-shadow-breakpoint {
+.nuclide-debugger-shadow-breakpoint-icon {
+  .octicon(primitive-dot, @size: 130%);
   text-align: center;
   display: block;
   width: 0.8em;
   color: fade(@text-color-info, 40%);
-}
-
-.nuclide-debugger-shadow-breakpoint:hover,
-.nuclide-debugger-shadow-breakpoint-icon {
-  .octicon(primitive-dot, @size: 130%);
 }
 
 // Actual borders or outlines on line decorations are subject to
