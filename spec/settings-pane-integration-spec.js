@@ -20,7 +20,7 @@ import featureConfig from '../pkg/commons-atom/featureConfig';
 import {getDefaultConfigValue} from '../pkg/nuclide-settings/lib/settings-utils';
 import {
   testSettingsCheckbox,
-  testSettingsSelect,
+  // testSettingsSelect,
   testSettingsInput,
 } from './utils/settings-pane-common';
 
@@ -52,10 +52,10 @@ describe('Settings View Integration Test', () => {
       testSettingsCheckbox(showHomeKeyPath, showHomeValue);
 
       // Select
-      const ratingKeyPath = 'fb-rating.rating';
-      const ratingValue = featureConfig.get(ratingKeyPath);
-      const tmpRatingValue = String(ratingValue + 1);
-      testSettingsSelect(ratingKeyPath, ratingValue, tmpRatingValue);
+      // const ratingKeyPath = 'fb-rating.rating';
+      // const ratingValue = featureConfig.get(ratingKeyPath);
+      // const tmpRatingValue = String(ratingValue + 1);
+      // testSettingsSelect(ratingKeyPath, ratingValue, tmpRatingValue);
 
       // Input (string)
       const timeoutKeyPath = 'nuclide-health.analyticsTimeout';
