@@ -18,12 +18,11 @@ import type {Observable} from 'rxjs';
 import {CompositeDisposable, Disposable} from 'atom';
 
 import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
+import createPackage from '../../commons-atom/createPackage';
 import {track} from '../../nuclide-analytics';
 
 import {OutlineViewPanelState} from './OutlineViewPanel';
 import {createOutlines} from './createOutlines';
-
-import invariant from 'assert';
 
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 
@@ -255,67 +254,23 @@ class Activation {
   }
 
   consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
-    invariant(activation != null);
     const disposable = addNewNux(this._createOutlineViewNuxTourModel());
     this._disposables.add(disposable);
     return disposable;
   }
-}
 
-let activation: ?Activation = null;
-
-export function activate(state: Object | void) {
-  if (activation == null) {
-    activation = new Activation(state);
+  getHomeFragments(): HomeFragments {
+    return {
+      feature: {
+        title: 'Outline View',
+        icon: 'list-unordered',
+        description: 'Displays major components of the current file (classes, methods, etc.)',
+        command: 'nuclide-outline-view:show',
+      },
+      priority: 2.5, // Between diff view and test runner
+    };
   }
+
 }
 
-export function deactivate() {
-  if (activation != null) {
-    activation.dispose();
-    activation = null;
-  }
-}
-
-export function serialize(): ?OutlineViewState {
-  if (activation != null) {
-    return activation.serialize();
-  }
-}
-
-export function consumeOutlineProvider(provider: OutlineProvider): IDisposable {
-  invariant(activation != null);
-  return activation.consumeOutlineProvider(provider);
-}
-
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
-  invariant(activation != null);
-  return activation.consumeToolBar(getToolBar);
-}
-
-export function getHomeFragments(): HomeFragments {
-  return {
-    feature: {
-      title: 'Outline View',
-      icon: 'list-unordered',
-      description: 'Displays major components of the current file (classes, methods, etc.)',
-      command: 'nuclide-outline-view:show',
-    },
-    priority: 2.5, // Between diff view and test runner
-  };
-}
-
-export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
-  invariant(activation != null);
-  return activation.getDistractionFreeModeProvider();
-}
-
-export function getOutlineViewResultsStream(): ResultsStreamProvider {
-  invariant(activation != null);
-  return activation.getOutlineViewResultsStream();
-}
-
-export function consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
-  invariant(activation != null);
-  return activation.consumeRegisterNuxService(addNewNux);
-}
+export default createPackage(Activation);
