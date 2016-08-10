@@ -84,11 +84,21 @@ function spyOnGetterValue(object: Object, f: string): JasmineSpy {
 /**
  * Allows spying on a function that is the default export of a module. Works
  * with ES modules and CommonJS.
+ *
+ * `id` should be the result of `require.resolve('module-name')`. That way relative modules are
+ * resolved in the context of the caller.
  */
 function spyOnDefault(id: string): JasmineSpy {
-  // Load the module in case it hasn't been loaded already.
-  // $FlowIgnore
-  require(id);
+  try {
+    // Load the module in case it hasn't been loaded already.
+    // $FlowIgnore
+    require(id);
+  } catch (e) {
+    if (e.message === `Cannot find module '${id}'`) {
+      throw new Error(e.message + '. Did you forget to call `require.resolve`?');
+    }
+    throw e;
+  }
   const _module = require.cache[id];
   if (_module.exports.__esModule) {
     return spyOn(_module.exports, 'default');
