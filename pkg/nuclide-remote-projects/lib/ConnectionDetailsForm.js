@@ -80,7 +80,7 @@ export default class ConnectionDetailsForm extends React.Component {
     (this: any)._handlePasswordInputClick = this._handlePasswordInputClick.bind(this);
   }
 
-  _onKeyUp(e: SyntheticKeyboardEvent): void {
+  _onKeyPress(e: SyntheticKeyboardEvent): void {
     if (e.key === 'Enter') {
       this.props.onConfirm();
     }
@@ -131,19 +131,20 @@ export default class ConnectionDetailsForm extends React.Component {
   render(): React.Element<any> {
     const activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
     // We need native-key-bindings so that delete works and we need
-    // _onKeyUp so that escape and enter work
+    // _onKeyPress so that escape and enter work
     const passwordLabel = (
       <div className="nuclide-auth-method">
         <div className="nuclide-auth-method-label">
           Password:
         </div>
-        <div className="nuclide-auth-method-input nuclide-auth-method-password">
+        <div
+          className="nuclide-auth-method-input nuclide-auth-method-password"
+          onClick={this._handlePasswordInputClick}>
           <input type="password"
             className="nuclide-password native-key-bindings"
             disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
             onChange={this._handleInputDidChange}
-            onClick={this._handlePasswordInputClick}
-            onKeyUp={this._onKeyUp.bind(this)}
+            onKeyPress={this._onKeyPress.bind(this)}
             ref="password"
           />
         </div>
