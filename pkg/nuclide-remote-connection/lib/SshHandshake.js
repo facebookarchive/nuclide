@@ -28,6 +28,9 @@ const logger = getLogger();
 const READY_TIMEOUT_MS = 120 * 1000;
 const SFTP_TIMEOUT_MS = 20 * 1000;
 
+// Automatically retry with a password prompt if existing authentication methods fail.
+const PASSWORD_RETRIES = 3;
+
 export type SshConnectionConfiguration = {
   host: string, // host nuclide server is running on
   sshPort: number, // ssh port of host nuclide server is running on
@@ -120,6 +123,7 @@ export class SshHandshake {
   _certificateAuthorityCertificate: Buffer;
   _clientCertificate: Buffer;
   _clientKey: Buffer;
+  _passwordRetryCount: number;
 
   constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
     this._delegate = delegate;
@@ -144,12 +148,36 @@ export class SshHandshake {
 
   _onSshConnectionError(error: Error): void {
     const errorLevel = ((error: Object).level: SshConnectionErrorLevel);
+    // Upon authentication failure, fall back to using a password.
+    if (errorLevel === 'client-authentication' && this._passwordRetryCount < PASSWORD_RETRIES) {
+      const config = this._config;
+      const retryText = this._passwordRetryCount ? ' again' : '';
+      this._delegate.onKeyboardInteractive(
+        '', '', '', // ignored
+        [{
+          prompt: `Authentication failed. Try entering your password${retryText}:`,
+          echo: true,
+        }],
+        ([password]) => {
+          this._connection.connect({
+            host: config.host,
+            port: config.sshPort,
+            username: config.username,
+            password,
+            tryKeyboard: true,
+          });
+        },
+      );
+      this._passwordRetryCount++;
+      return;
+    }
     const errorType = SshConnectionErrorLevelMap.get(errorLevel) || SshHandshake.ErrorType.UNKNOWN;
     this._error('Ssh connection failed.', errorType, error);
   }
 
   async connect(config: SshConnectionConfiguration): Promise<void> {
     this._config = config;
+    this._passwordRetryCount = 0;
     this._willConnect();
 
     const existingConnection = RemoteConnection
@@ -198,9 +226,11 @@ export class SshHandshake {
         readyTimeout: READY_TIMEOUT_MS,
       });
     } else if (config.authMethod === SupportedMethods.PASSWORD) {
-        // When the user chooses password-based authentication, we specify
-        // the config as follows so that it tries simple password auth and
-        // failing that it falls through to the keyboard interactive path
+      // The user has already entered the password once.
+      this._passwordRetryCount++;
+      // When the user chooses password-based authentication, we specify
+      // the config as follows so that it tries simple password auth and
+      // failing that it falls through to the keyboard interactive path
       this._connection.connect({
         host: address,
         port: config.sshPort,

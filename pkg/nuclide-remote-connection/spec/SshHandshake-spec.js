@@ -92,6 +92,38 @@ describe('SshHandshake', () => {
         expect(handshakeDelegate.onError.callCount).toBe(1);
       });
     });
+
+    it('retries with a password when authentication fails', () => {
+      const mockError = new Error();
+      (mockError: any).level = 'client-authentication';
+      const sshConnection = new MockSshConnection();
+      const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
+      const config: SshConnectionConfiguration = ({
+        password: 'test',
+        authMethod: 'PASSWORD',
+      }: any);
+
+      sshHandshake.connect(config);
+      sshConnection.emit('error', mockError);
+
+      expect(handshakeDelegate.onWillConnect.callCount).toBe(1);
+      expect(handshakeDelegate.onKeyboardInteractive.callCount).toBe(1);
+      let args = handshakeDelegate.onKeyboardInteractive.calls[0].args;
+      expect(args[3][0].prompt).toContain('password');
+
+      // Trigger the input callback.
+      spyOn(sshConnection, 'connect');
+      args[4](['test2']);
+
+      expect(sshConnection.connect.callCount).toBe(1);
+      expect(sshConnection.connect.calls[0].args[0].password).toBe('test2');
+
+      sshConnection.emit('error', mockError);
+      expect(handshakeDelegate.onKeyboardInteractive.callCount).toBe(2);
+      args = handshakeDelegate.onKeyboardInteractive.calls[1].args;
+
+      sshHandshake.cancel();
+    });
   });
 
   describe('cancel()', () => {
