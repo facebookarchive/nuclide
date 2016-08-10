@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,6 +10,7 @@
  * the root directory of this source tree.
  */
 
-export const LaunchAttachActionCode = Object.freeze({
-  UPDATE_ATTACH_TARGET_LIST: 'UPDATE_ATTACH_TARGET_LIST',
+var LaunchAttachActionCode = Object.freeze({
+  UPDATE_ATTACH_TARGET_LIST: 'UPDATE_ATTACH_TARGET_LIST'
 });
+exports.LaunchAttachActionCode = LaunchAttachActionCode;

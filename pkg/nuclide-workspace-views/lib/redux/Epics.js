@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,242 +10,265 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState, Location, Store, Viewable, ViewableFactory} from '../types';
-import type {ActionsObservable} from '../../../commons-node/redux-observable';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import {trackEvent} from '../../../nuclide-analytics';
-import * as Actions from './Actions';
-import invariant from 'assert';
-import {Observable} from 'rxjs';
+exports.registerLocationFactoryEpic = registerLocationFactoryEpic;
+exports.createViewableEpic = createViewableEpic;
+exports.trackActionsEpic = trackActionsEpic;
+exports.trackEpic = trackEpic;
+exports.toggleItemVisibilityEpic = toggleItemVisibilityEpic;
+exports.setItemVisibilityEpic = setItemVisibilityEpic;
+exports.unregisterViewableFactoryEpic = unregisterViewableFactoryEpic;
+exports.unregisterLocationEpic = unregisterLocationEpic;
 
-type ItemAndLocation = {
-  item: Viewable,
-  location: Location,
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../../nuclide-analytics');
+}
+
+var _Actions2;
+
+function _Actions() {
+  return _Actions2 = _interopRequireWildcard(require('./Actions'));
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
 
 /**
  * Register a record provider for every executor.
  */
-export function registerLocationFactoryEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.REGISTER_LOCATION_FACTORY).map(action => {
-    invariant(action.type === Actions.REGISTER_LOCATION_FACTORY);
-    const {locationFactory: factory} = action.payload;
+
+function registerLocationFactoryEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).REGISTER_LOCATION_FACTORY).map(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).REGISTER_LOCATION_FACTORY);
+    var factory = action.payload.locationFactory;
 
     // Create the location using the state we have serialized for it.
-    const {serializedLocationStates} = store.getState();
-    const serializedLocationState = serializedLocationStates.get(factory.id);
-    const location = factory.create(serializedLocationState);
-    return Actions.registerLocation(factory.id, location);
+
+    var _store$getState = store.getState();
+
+    var serializedLocationStates = _store$getState.serializedLocationStates;
+
+    var serializedLocationState = serializedLocationStates.get(factory.id);
+    var location = factory.create(serializedLocationState);
+    return (_Actions2 || _Actions()).registerLocation(factory.id, location);
   });
 }
 
 /**
  * Create and show an item of the specified type.
  */
-export function createViewableEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.CREATE_VIEWABLE)
-    .switchMap(action => {
-      invariant(action.type === Actions.CREATE_VIEWABLE);
-      const {itemType} = action.payload;
-      const state = store.getState();
-      const factory = state.viewableFactories.get(itemType);
-      invariant(factory != null);
 
-      // Find a location for this viewable.
-      let location;
-      if (factory.defaultLocation != null) {
-        location = state.locations.get(factory.defaultLocation);
-      }
-      if (location == null) {
-        const entry = Array.from(state.locations.entries()).find(
-          ([id, loc]) => locationIsAllowed(id, factory),
-        );
-        location = entry == null ? null : entry[1];
-      }
+function createViewableEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).CREATE_VIEWABLE).switchMap(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).CREATE_VIEWABLE);
+    var itemType = action.payload.itemType;
 
-      if (location == null) {
-        return Observable.empty();
-      }
+    var state = store.getState();
+    var factory = state.viewableFactories.get(itemType);
+    (0, (_assert2 || _assert()).default)(factory != null);
 
-      const item = factory.create();
-      location.showItem(item);
-      return Observable.of(Actions.itemCreated(item, itemType));
-    });
+    // Find a location for this viewable.
+    var location = undefined;
+    if (factory.defaultLocation != null) {
+      location = state.locations.get(factory.defaultLocation);
+    }
+    if (location == null) {
+      var entry = Array.from(state.locations.entries()).find(function (_ref) {
+        var _ref2 = _slicedToArray(_ref, 2);
+
+        var id = _ref2[0];
+        var loc = _ref2[1];
+        return locationIsAllowed(id, factory);
+      });
+      location = entry == null ? null : entry[1];
+    }
+
+    if (location == null) {
+      return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.empty();
+    }
+
+    var item = factory.create();
+    location.showItem(item);
+    return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of((_Actions2 || _Actions()).itemCreated(item, itemType));
+  });
 }
 
 /**
  * Convert actions into tracking events. We perform the side-effect of actually calling track in
  * another epic and keep this one pure.
  */
-export function trackActionsEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.ITEM_CREATED)
-    // Map to a tracking event.
-    .map(action => {
-      invariant(action.type === Actions.ITEM_CREATED);
-      const {itemType} = action.payload;
-      // TODO: Appeal to `item` for custom tracking event here. Let's wait until we need that
-      //   though.
-      return Actions.track({
-        type: 'workspace-view-created',
-        data: {itemType},
-      });
+
+function trackActionsEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).ITEM_CREATED)
+  // Map to a tracking event.
+  .map(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).ITEM_CREATED);
+    var itemType = action.payload.itemType;
+
+    // TODO: Appeal to `item` for custom tracking event here. Let's wait until we need that
+    //   though.
+    return (_Actions2 || _Actions()).track({
+      type: 'workspace-view-created',
+      data: { itemType: itemType }
     });
+  });
 }
 
 /**
  * Make tracking requests.
  */
-export function trackEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.TRACK)
-    .map(action => {
-      invariant(action.type === Actions.TRACK);
-      return action.payload.event;
-    })
-    .do(trackEvent)
-    .ignoreElements();
+
+function trackEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).TRACK).map(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).TRACK);
+    return action.payload.event;
+  }).do((_nuclideAnalytics2 || _nuclideAnalytics()).trackEvent).ignoreElements();
 }
 
-export function toggleItemVisibilityEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.TOGGLE_ITEM_VISIBILITY)
-    .switchMap(action => {
-      invariant(action.type === Actions.TOGGLE_ITEM_VISIBILITY);
-      const {itemType, visible} = action.payload;
-      const state = store.getState();
+function toggleItemVisibilityEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).TOGGLE_ITEM_VISIBILITY).switchMap(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).TOGGLE_ITEM_VISIBILITY);
+    var _action$payload = action.payload;
+    var itemType = _action$payload.itemType;
+    var visible = _action$payload.visible;
 
-      // Does an item of this type already exist?
-      const viewableFactory = state.viewableFactories.get(itemType);
-      invariant(viewableFactory != null);
-      const itemsAndLocations = findAllItems(
-        state.locations.values(), it => viewableFactory.isInstance(it),
-      );
+    var state = store.getState();
 
-      if (itemsAndLocations.length === 0) {
-        if (visible === false) {
-          return Observable.empty();
+    // Does an item of this type already exist?
+    var viewableFactory = state.viewableFactories.get(itemType);
+    (0, (_assert2 || _assert()).default)(viewableFactory != null);
+    var itemsAndLocations = findAllItems(state.locations.values(), function (it) {
+      return viewableFactory.isInstance(it);
+    });
+
+    if (itemsAndLocations.length === 0) {
+      if (visible === false) {
+        return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.empty();
+      }
+      // We need to create and add the item.
+      return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of((_Actions2 || _Actions()).createViewable(itemType));
+    }
+
+    // Change the visibility of all matching items. If some are visible and some aren't, this
+    // won't be a true toggle, but it makes more sense.
+    var makeVisible = visible != null ? visible : !itemsAndLocations.some(function (_ref3) {
+      var item = _ref3.item;
+      var location = _ref3.location;
+      return location.itemIsVisible(item);
+    });
+    return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.from(itemsAndLocations.map(function (_ref4) {
+      var item = _ref4.item;
+      var location = _ref4.location;
+      return (_Actions2 || _Actions()).setItemVisibility({
+        item: item,
+        locationId: getLocationId(location, state),
+        visible: makeVisible
+      });
+    }));
+  });
+}
+
+function setItemVisibilityEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).SET_ITEM_VISIBILITY).do(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).SET_ITEM_VISIBILITY);
+    var _action$payload2 = action.payload;
+    var item = _action$payload2.item;
+    var locationId = _action$payload2.locationId;
+    var visible = _action$payload2.visible;
+
+    var location = store.getState().locations.get(locationId);
+    (0, (_assert2 || _assert()).default)(location != null);
+    if (visible) {
+      location.showItem(item);
+    } else {
+      location.hideItem(item);
+    }
+  }).ignoreElements();
+}
+
+function unregisterViewableFactoryEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).UNREGISTER_VIEWABLE_FACTORY).do(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).UNREGISTER_VIEWABLE_FACTORY);
+
+    var state = store.getState();
+    var factory = state.viewableFactories.get(action.payload.id);
+
+    if (factory == null) {
+      return;
+    }
+
+    // When a viewable is unregistered, we need to remove all instances of it.
+
+    var _loop = function (_location) {
+      _location.getItems().forEach(function (item) {
+        if (factory.isInstance(item)) {
+          _location.destroyItem(item);
         }
-        // We need to create and add the item.
-        return Observable.of(Actions.createViewable(itemType));
-      }
+      });
+    };
 
-      // Change the visibility of all matching items. If some are visible and some aren't, this
-      // won't be a true toggle, but it makes more sense.
-      const makeVisible = visible != null
-        ? visible
-        : !itemsAndLocations.some(({item, location}) => location.itemIsVisible(item));
-      return Observable.from(
-        itemsAndLocations.map(({item, location}) => (
-          Actions.setItemVisibility({
-            item,
-            locationId: getLocationId(location, state),
-            visible: makeVisible,
-          })
-        )),
-      );
-
-    });
+    for (var _location of state.locations.values()) {
+      _loop(_location);
+    }
+  }).map(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).UNREGISTER_VIEWABLE_FACTORY);
+    return (_Actions2 || _Actions()).viewableFactoryUnregistered(action.payload.id);
+  });
 }
 
-export function setItemVisibilityEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.SET_ITEM_VISIBILITY)
-    .do(action => {
-      invariant(action.type === Actions.SET_ITEM_VISIBILITY);
-      const {item, locationId, visible} = action.payload;
-      const location = store.getState().locations.get(locationId);
-      invariant(location != null);
-      if (visible) {
-        location.showItem(item);
-      } else {
-        location.hideItem(item);
-      }
-    })
-    .ignoreElements();
+function unregisterLocationEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).UNREGISTER_LOCATION).do(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).UNREGISTER_LOCATION);
+    var id = action.payload.id;
+
+    // Destroy the location.
+    var location = store.getState().locations.get(id);
+
+    (0, (_assert2 || _assert()).default)(location != null);
+    if (typeof location.destroy === 'function') {
+      location.destroy();
+    }
+  }).map(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).UNREGISTER_LOCATION);
+    return (_Actions2 || _Actions()).locationUnregistered(action.payload.id);
+  });
 }
 
-export function unregisterViewableFactoryEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.UNREGISTER_VIEWABLE_FACTORY)
-    .do(action => {
-      invariant(action.type === Actions.UNREGISTER_VIEWABLE_FACTORY);
-
-      const state = store.getState();
-      const factory = state.viewableFactories.get(action.payload.id);
-
-      if (factory == null) { return; }
-
-      // When a viewable is unregistered, we need to remove all instances of it.
-      for (const location of state.locations.values()) {
-        location.getItems().forEach(item => {
-          if (factory.isInstance(item)) {
-            location.destroyItem(item);
-          }
-        });
-      }
-    })
-    .map(action => {
-      invariant(action.type === Actions.UNREGISTER_VIEWABLE_FACTORY);
-      return Actions.viewableFactoryUnregistered(action.payload.id);
-    });
-}
-
-export function unregisterLocationEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.UNREGISTER_LOCATION)
-    .do(action => {
-      invariant(action.type === Actions.UNREGISTER_LOCATION);
-      const {id} = action.payload;
-      // Destroy the location.
-      const location = store.getState().locations.get(id);
-
-      invariant(location != null);
-      if (typeof location.destroy === 'function') {
-        location.destroy();
-      }
-    })
-    .map(action => {
-      invariant(action.type === Actions.UNREGISTER_LOCATION);
-      return Actions.locationUnregistered(action.payload.id);
-    });
-}
-
-function findAllItems(
-  locations: Iterable<Location>,
-  predicate: (item: Viewable) => boolean,
-): Array<ItemAndLocation> {
-  const itemsAndLocations = [];
-  for (const location of locations) {
-    for (const item of location.getItems()) {
-      if (predicate(item)) {
-        itemsAndLocations.push({item, location});
+function findAllItems(locations, predicate) {
+  var itemsAndLocations = [];
+  for (var _location2 of locations) {
+    for (var _item of _location2.getItems()) {
+      if (predicate(_item)) {
+        itemsAndLocations.push({ item: _item, location: _location2 });
       }
     }
   }
   return itemsAndLocations;
 }
 
-function getLocationId(location: Location, state: AppState): string {
-  for (const [id, loc] of state.locations.entries()) {
+function getLocationId(location, state) {
+  for (var _ref53 of state.locations.entries()) {
+    var _ref52 = _slicedToArray(_ref53, 2);
+
+    var id = _ref52[0];
+    var loc = _ref52[1];
+
     if (location === loc) {
       return id;
     }
@@ -253,8 +277,11 @@ function getLocationId(location: Location, state: AppState): string {
   throw new Error();
 }
 
-function locationIsAllowed(locationId: string, viewableFactory: ViewableFactory): boolean {
-  const {defaultLocation, allowedLocations, disallowedLocations} = viewableFactory;
+function locationIsAllowed(locationId, viewableFactory) {
+  var defaultLocation = viewableFactory.defaultLocation;
+  var allowedLocations = viewableFactory.allowedLocations;
+  var disallowedLocations = viewableFactory.disallowedLocations;
+
   if (locationId === defaultLocation) {
     return true;
   }

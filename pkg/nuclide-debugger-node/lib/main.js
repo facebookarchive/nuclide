@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,16 @@
  * the root directory of this source tree.
  */
 
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
+exports.provideNuclideDebuggerNode = provideNuclideDebuggerNode;
 
-import Service from './Service';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function provideNuclideDebuggerNode(): nuclide_debugger$Service {
-  return Service;
+var _Service2;
+
+function _Service() {
+  return _Service2 = _interopRequireDefault(require('./Service'));
+}
+
+function provideNuclideDebuggerNode() {
+  return (_Service2 || _Service()).default;
 }

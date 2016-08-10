@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +8,14 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../commons-node/nuclideUri';
+var _commonsNodeNuclideUri2;
 
-const ADD_ACTION = 'add';
-const REMOVE_ACTION = 'remove';
-type DirectoriesCacheOperation = 'add' | 'remove';
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var ADD_ACTION = 'add';
+var REMOVE_ACTION = 'remove';
 
 /**
  * This function takes in a file path, and computes all directories that would
@@ -29,53 +31,28 @@ type DirectoriesCacheOperation = 'add' | 'remove';
  *   That is, if modifiedPath is /A/B/C/D and pathPrefixToSkip is /A/B/ (or /A/B),
  *   `directories` will be populated with '/A/B/C/', but not '/A/' or '/A/B/'.
  */
-function addAllParentDirectoriesToCache(
-    directories: Map<string, number>,
-    modifiedPath: string,
-    pathPrefixToSkip: ?string,
-  ) {
-  computeAllParentDirectories(
-    directories,
-    modifiedPath,
-    pathPrefixToSkip,
-    ADD_ACTION,
-  );
+function addAllParentDirectoriesToCache(directories, modifiedPath, pathPrefixToSkip) {
+  computeAllParentDirectories(directories, modifiedPath, pathPrefixToSkip, ADD_ACTION);
 }
 
 /**
  * Like `addAllParentDirectoriesToCache`, except it removes all parent directories.
  */
-function removeAllParentDirectoriesFromCache(
-    directories: Map<string, number>,
-    modifiedPath: string,
-    pathPrefixToSkip: ?string,
-  ) {
-  computeAllParentDirectories(
-    directories,
-    modifiedPath,
-    pathPrefixToSkip,
-    REMOVE_ACTION,
-  );
+function removeAllParentDirectoriesFromCache(directories, modifiedPath, pathPrefixToSkip) {
+  computeAllParentDirectories(directories, modifiedPath, pathPrefixToSkip, REMOVE_ACTION);
 }
-
 
 /**
  * Helper function to `addAllParentDirectoriesToCache` and
  * `removeAllParentDirectoriesFromCach`. Either adds or removes the computed
  * parent directories depending on the operation passed in.
  */
-function computeAllParentDirectories(
-    directories: Map<string, number>,
-    modifiedPath: string,
-    pathPrefixToSkip: ?string,
-    operation: DirectoriesCacheOperation,
-) {
-  const shouldAdd = (operation === ADD_ACTION);
-  let current = modifiedPath;
-  const stopPrefix =
-    pathPrefixToSkip == null ? '' : nuclideUri.ensureTrailingSeparator(pathPrefixToSkip);
+function computeAllParentDirectories(directories, modifiedPath, pathPrefixToSkip, operation) {
+  var shouldAdd = operation === ADD_ACTION;
+  var current = modifiedPath;
+  var stopPrefix = pathPrefixToSkip == null ? '' : (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.ensureTrailingSeparator(pathPrefixToSkip);
   do {
-    current = nuclideUri.ensureTrailingSeparator(nuclideUri.dirname(current));
+    current = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.ensureTrailingSeparator((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.dirname(current));
     if (stopPrefix.startsWith(current)) {
       return;
     }
@@ -85,11 +62,11 @@ function computeAllParentDirectories(
     } else {
       removeItemFromCache(current, directories);
     }
-  } while (!nuclideUri.isRoot(current));
+  } while (!(_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.isRoot(current));
 }
 
-function addItemToCache(item: string, cache: Map<string, number>) {
-  const existingValue = cache.get(item);
+function addItemToCache(item, cache) {
+  var existingValue = cache.get(item);
   if (existingValue) {
     cache.set(item, existingValue + 1);
   } else {
@@ -97,10 +74,10 @@ function addItemToCache(item: string, cache: Map<string, number>) {
   }
 }
 
-function removeItemFromCache(item: string, cache: Map<string, number>) {
-  const existingValue = cache.get(item);
+function removeItemFromCache(item, cache) {
+  var existingValue = cache.get(item);
   if (existingValue) {
-    const newValue = existingValue - 1;
+    var newValue = existingValue - 1;
     if (newValue > 0) {
       cache.set(item, newValue);
     } else {
@@ -109,8 +86,7 @@ function removeItemFromCache(item: string, cache: Map<string, number>) {
   }
 }
 
-
 module.exports = {
-  addAllParentDirectoriesToCache,
-  removeAllParentDirectoriesFromCache,
+  addAllParentDirectoriesToCache: addAllParentDirectoriesToCache,
+  removeAllParentDirectoriesFromCache: removeAllParentDirectoriesFromCache
 };

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,48 +10,138 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from '../../nuclide-type-hint/lib/types';
-import type {
-  BusySignalProviderBase as BusySignalProviderBaseType,
-} from '../../nuclide-busy-signal';
-import type {OutlineProvider} from '../../nuclide-outline-view';
-import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
-import type {DefinitionProvider} from '../../nuclide-definition-service';
-import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
+exports.activate = activate;
+exports.createAutocompleteProvider = createAutocompleteProvider;
+exports.createCodeFormatProvider = createCodeFormatProvider;
+exports.createFindReferencesProvider = createFindReferencesProvider;
+exports.createTypeHintProvider = createTypeHintProvider;
+exports.createCodeHighlightProvider = createCodeHighlightProvider;
+exports.createEvaluationExpressionProvider = createEvaluationExpressionProvider;
+exports.provideDiagnostics = provideDiagnostics;
+exports.deactivate = deactivate;
+exports.provideOutlines = provideOutlines;
+exports.provideCoverage = provideCoverage;
+exports.provideDefinitions = provideDefinitions;
 
-import CodeHighlightProvider from './CodeHighlightProvider';
-import {CompositeDisposable, Disposable} from 'atom';
-import {HACK_GRAMMARS} from '../../nuclide-hack-common';
-import {TypeCoverageProvider} from './TypeCoverageProvider';
-import {OutlineViewProvider} from './OutlineViewProvider';
-import {HackDefinitionProvider} from './HackDefinitionProvider';
-import {onDidRemoveProjectPath} from '../../commons-atom/projects';
-import AutocompleteProvider from './AutocompleteProvider';
-import {ServerConnection} from '../../nuclide-remote-connection';
-import {clearHackLanguageCache} from './HackLanguage';
-import FindReferencesProvider from './FindReferencesProvider';
-import TypeHintProvider from './TypeHintProvider';
-import {HackEvaluationExpressionProvider} from './HackEvaluationExpressionProvider';
-import HackDiagnosticsProvider from './HackDiagnosticsProvider';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _CodeHighlightProvider2;
+
+function _CodeHighlightProvider() {
+  return _CodeHighlightProvider2 = _interopRequireDefault(require('./CodeHighlightProvider'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _nuclideHackCommon2;
+
+function _nuclideHackCommon() {
+  return _nuclideHackCommon2 = require('../../nuclide-hack-common');
+}
+
+var _TypeCoverageProvider2;
+
+function _TypeCoverageProvider() {
+  return _TypeCoverageProvider2 = require('./TypeCoverageProvider');
+}
+
+var _OutlineViewProvider2;
+
+function _OutlineViewProvider() {
+  return _OutlineViewProvider2 = require('./OutlineViewProvider');
+}
+
+var _HackDefinitionProvider2;
+
+function _HackDefinitionProvider() {
+  return _HackDefinitionProvider2 = require('./HackDefinitionProvider');
+}
+
+var _commonsAtomProjects2;
+
+function _commonsAtomProjects() {
+  return _commonsAtomProjects2 = require('../../commons-atom/projects');
+}
+
+var _AutocompleteProvider2;
+
+function _AutocompleteProvider() {
+  return _AutocompleteProvider2 = _interopRequireDefault(require('./AutocompleteProvider'));
+}
+
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../../nuclide-remote-connection');
+}
+
+var _HackLanguage2;
+
+function _HackLanguage() {
+  return _HackLanguage2 = require('./HackLanguage');
+}
+
+var _FindReferencesProvider2;
+
+function _FindReferencesProvider() {
+  return _FindReferencesProvider2 = _interopRequireDefault(require('./FindReferencesProvider'));
+}
+
+var _TypeHintProvider2;
+
+function _TypeHintProvider() {
+  return _TypeHintProvider2 = _interopRequireDefault(require('./TypeHintProvider'));
+}
+
+var _HackEvaluationExpressionProvider2;
+
+function _HackEvaluationExpressionProvider() {
+  return _HackEvaluationExpressionProvider2 = require('./HackEvaluationExpressionProvider');
+}
+
+var _HackDiagnosticsProvider2;
+
+function _HackDiagnosticsProvider() {
+  return _HackDiagnosticsProvider2 = _interopRequireDefault(require('./HackDiagnosticsProvider'));
+}
+
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import {getCachedHackLanguageForUri} from './HackLanguage';
-import CodeFormatProvider from './CodeFormatProvider';
 
+var _nuclideBusySignal2;
 
-const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
-const PACKAGE_NAME = 'nuclide-hack';
+function _nuclideBusySignal() {
+  return _nuclideBusySignal2 = require('../../nuclide-busy-signal');
+}
 
-let subscriptions: ?CompositeDisposable = null;
-let hackDiagnosticsProvider;
-let busySignalProvider;
-let coverageProvider = null;
-let definitionProvider: ?DefinitionProvider = null;
+var _HackLanguage4;
 
-export function activate() {
-  subscriptions = new CompositeDisposable();
-  subscriptions.add(onDidRemoveProjectPath(projectPath => {
-    const hackLanguage = getCachedHackLanguageForUri(projectPath);
+function _HackLanguage3() {
+  return _HackLanguage4 = require('./HackLanguage');
+}
+
+var _CodeFormatProvider2;
+
+function _CodeFormatProvider() {
+  return _CodeFormatProvider2 = _interopRequireDefault(require('./CodeFormatProvider'));
+}
+
+var HACK_GRAMMARS_STRING = (_nuclideHackCommon2 || _nuclideHackCommon()).HACK_GRAMMARS.join(', ');
+var PACKAGE_NAME = 'nuclide-hack';
+
+var subscriptions = null;
+var hackDiagnosticsProvider = undefined;
+var busySignalProvider = undefined;
+var coverageProvider = null;
+var definitionProvider = null;
+
+function activate() {
+  subscriptions = new (_atom2 || _atom()).CompositeDisposable();
+  subscriptions.add((0, (_commonsAtomProjects2 || _commonsAtomProjects()).onDidRemoveProjectPath)(function (projectPath) {
+    var hackLanguage = (0, (_HackLanguage4 || _HackLanguage3()).getCachedHackLanguageForUri)(projectPath);
     if (hackLanguage) {
       hackLanguage.dispose();
     }
@@ -58,93 +149,94 @@ export function activate() {
       hackDiagnosticsProvider.invalidateProjectPath(projectPath);
     }
   }));
-  subscriptions.add(ServerConnection.onDidCloseServerConnection(clearHackLanguageCache));
-  subscriptions.add(new Disposable(clearHackLanguageCache));
+  subscriptions.add((_nuclideRemoteConnection2 || _nuclideRemoteConnection()).ServerConnection.onDidCloseServerConnection((_HackLanguage2 || _HackLanguage()).clearHackLanguageCache));
+  subscriptions.add(new (_atom2 || _atom()).Disposable((_HackLanguage2 || _HackLanguage()).clearHackLanguageCache));
 }
 
 /** Provider for autocomplete service. */
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
-  const autocompleteProvider = new AutocompleteProvider();
+
+function createAutocompleteProvider() {
+  var autocompleteProvider = new (_AutocompleteProvider2 || _AutocompleteProvider()).default();
 
   return {
-    selector: HACK_GRAMMARS.map(grammar => '.' + grammar).join(', '),
+    selector: (_nuclideHackCommon2 || _nuclideHackCommon()).HACK_GRAMMARS.map(function (grammar) {
+      return '.' + grammar;
+    }).join(', '),
     inclusionPriority: 1,
     // The context-sensitive hack autocompletions are more relevant than snippets.
     suggestionPriority: 3,
     excludeLowerPriority: false,
 
-    getSuggestions(
-      request: atom$AutocompleteRequest,
-    ): Promise<?Array<atom$AutocompleteSuggestion>> {
+    getSuggestions: function getSuggestions(request) {
       return autocompleteProvider.getAutocompleteSuggestions(request);
-    },
+    }
   };
 }
 
 /** Provider for code format service. */
-export function createCodeFormatProvider(): any {
-  const codeFormatProvider = new CodeFormatProvider();
+
+function createCodeFormatProvider() {
+  var codeFormatProvider = new (_CodeFormatProvider2 || _CodeFormatProvider()).default();
 
   return {
     selector: HACK_GRAMMARS_STRING,
     inclusionPriority: 1,
 
-    formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
+    formatCode: function formatCode(editor, range) {
       return codeFormatProvider.formatCode(editor, range);
-    },
+    }
   };
 }
 
-export function createFindReferencesProvider(): any {
-  return FindReferencesProvider;
+function createFindReferencesProvider() {
+  return (_FindReferencesProvider2 || _FindReferencesProvider()).default;
 }
 
-export function createTypeHintProvider(): any {
-  const typeHintProvider = new TypeHintProvider();
+function createTypeHintProvider() {
+  var typeHintProvider = new (_TypeHintProvider2 || _TypeHintProvider()).default();
 
   return {
     selector: HACK_GRAMMARS_STRING,
     inclusionPriority: 1,
     providerName: PACKAGE_NAME,
 
-    typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
+    typeHint: function typeHint(editor, position) {
       return typeHintProvider.typeHint(editor, position);
-    },
+    }
   };
 }
 
-export function createCodeHighlightProvider(): any {
-  const codeHighlightProvider = new CodeHighlightProvider();
+function createCodeHighlightProvider() {
+  var codeHighlightProvider = new (_CodeHighlightProvider2 || _CodeHighlightProvider()).default();
 
   return {
     selector: HACK_GRAMMARS_STRING,
     inclusionPriority: 1,
-    highlight(editor: atom$TextEditor, position: atom$Point): Promise<Array<atom$Range>> {
+    highlight: function highlight(editor, position) {
       return codeHighlightProvider.highlight(editor, position);
-    },
+    }
   };
 }
 
-export function createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
-  const evaluationExpressionProvider = new HackEvaluationExpressionProvider();
-  const getEvaluationExpression =
-    evaluationExpressionProvider.getEvaluationExpression.bind(evaluationExpressionProvider);
+function createEvaluationExpressionProvider() {
+  var evaluationExpressionProvider = new (_HackEvaluationExpressionProvider2 || _HackEvaluationExpressionProvider()).HackEvaluationExpressionProvider();
+  var getEvaluationExpression = evaluationExpressionProvider.getEvaluationExpression.bind(evaluationExpressionProvider);
   return {
     selector: HACK_GRAMMARS_STRING,
     name: PACKAGE_NAME,
-    getEvaluationExpression,
+    getEvaluationExpression: getEvaluationExpression
   };
 }
 
-export function provideDiagnostics() {
+function provideDiagnostics() {
   if (!hackDiagnosticsProvider) {
-    const busyProvider = provideBusySignal();
-    hackDiagnosticsProvider = new HackDiagnosticsProvider(false, busyProvider);
+    var busyProvider = provideBusySignal();
+    hackDiagnosticsProvider = new (_HackDiagnosticsProvider2 || _HackDiagnosticsProvider()).default(false, busyProvider);
   }
   return hackDiagnosticsProvider;
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (subscriptions) {
     subscriptions.dispose();
     subscriptions = null;
@@ -155,44 +247,44 @@ export function deactivate(): void {
   }
 }
 
-export function provideOutlines(): OutlineProvider {
-  const provider = new OutlineViewProvider();
+function provideOutlines() {
+  var provider = new (_OutlineViewProvider2 || _OutlineViewProvider()).OutlineViewProvider();
   return {
-    grammarScopes: HACK_GRAMMARS,
+    grammarScopes: (_nuclideHackCommon2 || _nuclideHackCommon()).HACK_GRAMMARS,
     priority: 1,
     name: 'Hack',
-    getOutline: provider.getOutline.bind(provider),
+    getOutline: provider.getOutline.bind(provider)
   };
 }
 
-function provideBusySignal(): BusySignalProviderBaseType {
+function provideBusySignal() {
   if (busySignalProvider == null) {
-    busySignalProvider = new BusySignalProviderBase();
+    busySignalProvider = new (_nuclideBusySignal2 || _nuclideBusySignal()).BusySignalProviderBase();
   }
   return busySignalProvider;
 }
 
-export function provideCoverage(): CoverageProvider {
+function provideCoverage() {
   return {
     displayName: 'Hack',
     priority: 10,
-    grammarScopes: HACK_GRAMMARS,
-    getCoverage(path) {
+    grammarScopes: (_nuclideHackCommon2 || _nuclideHackCommon()).HACK_GRAMMARS,
+    getCoverage: function getCoverage(path) {
       return getTypeCoverageProvider().getTypeCoverage(path);
-    },
+    }
   };
 }
 
-function getTypeCoverageProvider(): TypeCoverageProvider {
+function getTypeCoverageProvider() {
   if (coverageProvider == null) {
-    coverageProvider = new TypeCoverageProvider(provideBusySignal());
+    coverageProvider = new (_TypeCoverageProvider2 || _TypeCoverageProvider()).TypeCoverageProvider(provideBusySignal());
   }
   return coverageProvider;
 }
 
-export function provideDefinitions(): DefinitionProvider {
+function provideDefinitions() {
   if (definitionProvider == null) {
-    definitionProvider = new HackDefinitionProvider();
+    definitionProvider = new (_HackDefinitionProvider2 || _HackDefinitionProvider()).HackDefinitionProvider();
   }
   return definitionProvider;
 }

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +10,46 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerProcessInfo from './DebuggerProcessInfo';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-export default class DebuggerInstance {
-  _processInfo: DebuggerProcessInfo;
-  onSessionEnd: ?(callback: () => void) => IDisposable;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor(processInfo: DebuggerProcessInfo) {
+var DebuggerInstance = (function () {
+  function DebuggerInstance(processInfo) {
+    _classCallCheck(this, DebuggerInstance);
+
     this._processInfo = processInfo;
   }
 
-  getDebuggerProcessInfo(): DebuggerProcessInfo {
-    return this._processInfo;
-  }
+  _createClass(DebuggerInstance, [{
+    key: 'getDebuggerProcessInfo',
+    value: function getDebuggerProcessInfo() {
+      return this._processInfo;
+    }
+  }, {
+    key: 'getProviderName',
+    value: function getProviderName() {
+      return this._processInfo.getServiceName();
+    }
+  }, {
+    key: 'getTargetUri',
+    value: function getTargetUri() {
+      return this._processInfo.getTargetUri();
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      throw new Error('abstract method');
+    }
+  }, {
+    key: 'getWebsocketAddress',
+    value: function getWebsocketAddress() {
+      throw new Error('abstract method');
+    }
+  }]);
 
-  getProviderName(): string {
-    return this._processInfo.getServiceName();
-  }
+  return DebuggerInstance;
+})();
 
-  getTargetUri(): NuclideUri {
-    return this._processInfo.getTargetUri();
-  }
-
-  dispose(): void {
-    throw new Error('abstract method');
-  }
-
-  getWebsocketAddress(): Promise<string> {
-    throw new Error('abstract method');
-  }
-}
+exports.default = DebuggerInstance;
+module.exports = exports.default;

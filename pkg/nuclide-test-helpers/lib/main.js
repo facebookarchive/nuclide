@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,12 +9,6 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-import type {Observable} from 'rxjs';
-
-import Rx from 'rxjs';
-import {copyFixture, copyMercurialFixture, generateFixture} from './fixtures';
-import {addMatchers} from './matchers';
 
 /**
  * Verifies that a Promise fails with an Error with specific expectations. When
@@ -28,11 +23,10 @@ import {addMatchers} from './matchers';
  *     rejection of `promise`. If these expectations are not met, then
  *     `verify()` must throw an exception.
  */
-async function expectAsyncFailure(
-    promise: Promise<any>,
-    verify: (error: Error) => void): Promise<any> {
+
+var expectAsyncFailure = _asyncToGenerator(function* (promise, verify) {
   try {
-    await promise;
+    yield promise;
     return Promise.reject('Promise should have failed, but did not.');
   } catch (e) {
     verify(e);
@@ -48,11 +42,52 @@ async function expectAsyncFailure(
   * The require parameter is needed because require is bound differently in each
   * file, and we need to execute this in the caller's context.
   */
-function clearRequireCache(require: Object, module: string): void {
+);
+
+/**
+ * Warning: Callsites *must* await the resulting promise, or test failures may go unreported or
+ * misattributed.
+ */
+
+var expectObservableToStartWith = _asyncToGenerator(function* (source, expected) {
+  var actual = yield source.take(expected.length).toArray().toPromise();
+  expect(actual).toEqual(expected);
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+/**
+ * Logs an observable to the console.
+ * Useful for debugging observable code.
+ * Usage:
+ *     observable = observable.do(loggingObserver('My Prefix'));
+ */
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = _interopRequireDefault(require('rxjs/bundles/Rx.umd.min.js'));
+}
+
+var _fixtures2;
+
+function _fixtures() {
+  return _fixtures2 = require('./fixtures');
+}
+
+var _matchers2;
+
+function _matchers() {
+  return _matchers2 = require('./matchers');
+}
+
+function clearRequireCache(require, module) {
   delete require.cache[require.resolve(module)];
 }
 
-function uncachedRequire(require: Object, module: string): mixed {
+function uncachedRequire(require, module) {
   clearRequireCache(require, module);
   // $FlowIgnore
   return require(module);
@@ -69,8 +104,8 @@ function uncachedRequire(require: Object, module: string): mixed {
  * - The getter returns a function (otherwise, it doesn't make sense to spy on
  *   it)
  */
-function spyOnGetterValue(object: Object, f: string): JasmineSpy {
-  const value = object[f];
+function spyOnGetterValue(object, f) {
+  var value = object[f];
   delete object[f];
   object[f] = value;
   return spyOn(object, f);
@@ -80,11 +115,11 @@ function spyOnGetterValue(object: Object, f: string): JasmineSpy {
  * Allows spying on a function that is the default export of a module. Works
  * with ES modules and CommonJS.
  */
-function spyOnDefault(id: string): JasmineSpy {
+function spyOnDefault(id) {
   // Load the module in case it hasn't been loaded already.
   // $FlowIgnore
   require(id);
-  const _module = require.cache[id];
+  var _module = require.cache[id];
   if (_module.exports.__esModule) {
     return spyOn(_module.exports, 'default');
   } else {
@@ -92,8 +127,8 @@ function spyOnDefault(id: string): JasmineSpy {
   }
 }
 
-function unspyOnDefault(id: string): void {
-  const _module = require.cache[id];
+function unspyOnDefault(id) {
+  var _module = require.cache[id];
   if (_module.exports.__esModule) {
     return jasmine.unspy(_module.exports, 'default');
   } else {
@@ -105,15 +140,15 @@ function unspyOnDefault(id: string): void {
  * Checks if the two objects have equal properties. This considers a property
  * set to undefined to be equivalent to a property that was not set at all.
  */
-function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
-  const allProps = new Set();
+function arePropertiesEqual(obj1, obj2) {
+  var allProps = new Set();
   function addAllProps(obj) {
-    for (const prop of Object.keys(obj)) {
+    for (var prop of Object.keys(obj)) {
       allProps.add(prop);
     }
   }
   [obj1, obj2].forEach(addAllProps);
-  for (const prop of allProps) {
+  for (var prop of allProps) {
     if (obj1[prop] !== obj2[prop]) {
       return false;
     }
@@ -124,13 +159,13 @@ function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
 /**
  * Checks if the contents of two sets are identical
  */
-function areSetsEqual(set1: Set<any>, set2: Set<any>): boolean {
-  for (const v1 of set1) {
+function areSetsEqual(set1, set2) {
+  for (var v1 of set1) {
     if (!set2.has(v1)) {
       return false;
     }
   }
-  for (const v2 of set2) {
+  for (var v2 of set2) {
     if (!set1.has(v2)) {
       return false;
     }
@@ -138,56 +173,28 @@ function areSetsEqual(set1: Set<any>, set2: Set<any>): boolean {
   return true;
 }
 
-import type {Observer} from 'rxjs';
-
-/**
- * Logs an observable to the console.
- * Useful for debugging observable code.
- * Usage:
- *     observable = observable.do(loggingObserver('My Prefix'));
- */
-function loggingObserver(message: string): Observer<any> {
-  return Rx.Observer.create(
-    value => {
-      // eslint-disable-next-line no-console
-      console.log(`${message}: ${JSON.stringify(value)}`);
-    },
-    error => {
-      // eslint-disable-next-line no-console
-      console.log(`Error ${message}: ${error.toString()}`);
-    },
-    () => {
-      // eslint-disable-next-line no-console
-      console.log('Completed: ' + message);
-    },
-  );
-}
-
-/**
- * Warning: Callsites *must* await the resulting promise, or test failures may go unreported or
- * misattributed.
- */
-async function expectObservableToStartWith<T>(
-  source: Observable<T>,
-  expected: Array<T>,
-): Promise<void> {
-  const actual: Array<T> = await source.take(expected.length).toArray().toPromise();
-  expect(actual).toEqual(expected);
-}
-
-export {
-  addMatchers,
-  arePropertiesEqual,
-  areSetsEqual,
-  clearRequireCache,
-  copyFixture,
-  copyMercurialFixture,
-  expectAsyncFailure,
-  expectObservableToStartWith,
-  generateFixture,
-  loggingObserver,
-  spyOnDefault,
-  spyOnGetterValue,
-  uncachedRequire,
-  unspyOnDefault,
-};
+function loggingObserver(message) {
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).default.Observer.create(function (value) {
+    // eslint-disable-next-line no-console
+    console.log(message + ': ' + JSON.stringify(value));
+  }, function (error) {
+    // eslint-disable-next-line no-console
+    console.log('Error ' + message + ': ' + error.toString());
+  }, function () {
+    // eslint-disable-next-line no-console
+    console.log('Completed: ' + message);
+  });
+}exports.addMatchers = (_matchers2 || _matchers()).addMatchers;
+exports.arePropertiesEqual = arePropertiesEqual;
+exports.areSetsEqual = areSetsEqual;
+exports.clearRequireCache = clearRequireCache;
+exports.copyFixture = (_fixtures2 || _fixtures()).copyFixture;
+exports.copyMercurialFixture = (_fixtures2 || _fixtures()).copyMercurialFixture;
+exports.expectAsyncFailure = expectAsyncFailure;
+exports.expectObservableToStartWith = expectObservableToStartWith;
+exports.generateFixture = (_fixtures2 || _fixtures()).generateFixture;
+exports.loggingObserver = loggingObserver;
+exports.spyOnDefault = spyOnDefault;
+exports.spyOnGetterValue = spyOnGetterValue;
+exports.uncachedRequire = uncachedRequire;
+exports.unspyOnDefault = unspyOnDefault;

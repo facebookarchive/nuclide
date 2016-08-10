@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,117 +10,147 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
-import type {Callstack} from './types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {
-  Disposable,
-  CompositeDisposable,
-  Emitter,
-} from 'atom';
-import nuclideUri from '../../commons-node/nuclideUri';
-import Constants from './Constants';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export default class CallstackStore {
-  _disposables: IDisposable;
-  _emitter: Emitter;
-  _callstack: ?Callstack;
-  _selectedCallFrameMarker: ?atom$Marker;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor(dispatcher: Dispatcher) {
-    const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => {
-        dispatcher.unregister(dispatcherToken);
-      }),
-    );
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _Constants2;
+
+function _Constants() {
+  return _Constants2 = _interopRequireDefault(require('./Constants'));
+}
+
+var CallstackStore = (function () {
+  function CallstackStore(dispatcher) {
+    _classCallCheck(this, CallstackStore);
+
+    var dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable(new (_atom2 || _atom()).Disposable(function () {
+      dispatcher.unregister(dispatcherToken);
+    }));
     this._callstack = null;
     this._selectedCallFrameMarker = null;
-    this._emitter = new Emitter();
+    this._emitter = new (_atom2 || _atom()).Emitter();
   }
 
-  _handlePayload(payload: Object) {
-    switch (payload.actionType) {
-      case Constants.Actions.CLEAR_INTERFACE:
-        this._handleClearInterface();
-        break;
-      case Constants.Actions.SET_SELECTED_CALLFRAME_LINE:
-        this._setSelectedCallFrameLine(payload.data.options);
-        break;
-      case Constants.Actions.OPEN_SOURCE_LOCATION:
-        this._openSourceLocation(payload.data.sourceURL, payload.data.lineNumber);
-        break;
-      case Constants.Actions.UPDATE_CALLSTACK:
-        this._updateCallstack(payload.data.callstack);
-        break;
-      default:
-        return;
+  _createClass(CallstackStore, [{
+    key: '_handlePayload',
+    value: function _handlePayload(payload) {
+      switch (payload.actionType) {
+        case (_Constants2 || _Constants()).default.Actions.CLEAR_INTERFACE:
+          this._handleClearInterface();
+          break;
+        case (_Constants2 || _Constants()).default.Actions.SET_SELECTED_CALLFRAME_LINE:
+          this._setSelectedCallFrameLine(payload.data.options);
+          break;
+        case (_Constants2 || _Constants()).default.Actions.OPEN_SOURCE_LOCATION:
+          this._openSourceLocation(payload.data.sourceURL, payload.data.lineNumber);
+          break;
+        case (_Constants2 || _Constants()).default.Actions.UPDATE_CALLSTACK:
+          this._updateCallstack(payload.data.callstack);
+          break;
+        default:
+          return;
+      }
     }
-  }
-
-  _updateCallstack(callstack: Callstack): void {
-    this._callstack = callstack;
-    this._emitter.emit('change');
-  }
-
-  _openSourceLocation(sourceURL: string, lineNumber: number): void {
-    const path = nuclideUri.uriToNuclideUri(sourceURL);
-    if (path != null && atom.workspace != null) { // only handle real files for now.
-      atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
-        editor.scrollToBufferPosition([lineNumber, 0]);
-        editor.setCursorBufferPosition([lineNumber, 0]);
-      });
+  }, {
+    key: '_updateCallstack',
+    value: function _updateCallstack(callstack) {
+      this._callstack = callstack;
+      this._emitter.emit('change');
     }
-  }
-
-  _handleClearInterface(): void {
-    this._setSelectedCallFrameLine(null);
-    this._updateCallstack([]);
-  }
-
-  _setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}) {
-    if (options) {
-      const path = nuclideUri.uriToNuclideUri(options.sourceURL);
-      const {lineNumber} = options;
-      if (path != null && atom.workspace != null) { // only handle real files for now
-        atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
-          this._clearSelectedCallFrameMarker();
-          this._highlightCallFrameLine(editor, lineNumber);
+  }, {
+    key: '_openSourceLocation',
+    value: function _openSourceLocation(sourceURL, lineNumber) {
+      var path = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.uriToNuclideUri(sourceURL);
+      if (path != null && atom.workspace != null) {
+        // only handle real files for now.
+        atom.workspace.open(path, { searchAllPanes: true }).then(function (editor) {
+          editor.scrollToBufferPosition([lineNumber, 0]);
+          editor.setCursorBufferPosition([lineNumber, 0]);
         });
       }
-    } else {
+    }
+  }, {
+    key: '_handleClearInterface',
+    value: function _handleClearInterface() {
+      this._setSelectedCallFrameLine(null);
+      this._updateCallstack([]);
+    }
+  }, {
+    key: '_setSelectedCallFrameLine',
+    value: function _setSelectedCallFrameLine(options) {
+      var _this = this;
+
+      if (options) {
+        (function () {
+          var path = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.uriToNuclideUri(options.sourceURL);
+          var lineNumber = options.lineNumber;
+
+          if (path != null && atom.workspace != null) {
+            // only handle real files for now
+            atom.workspace.open(path, { searchAllPanes: true }).then(function (editor) {
+              _this._clearSelectedCallFrameMarker();
+              _this._highlightCallFrameLine(editor, lineNumber);
+            });
+          }
+        })();
+      } else {
+        this._clearSelectedCallFrameMarker();
+      }
+    }
+  }, {
+    key: '_highlightCallFrameLine',
+    value: function _highlightCallFrameLine(editor, line) {
+      var marker = editor.markBufferRange([[line, 0], [line, Infinity]], { persistent: false, invalidate: 'never' });
+      editor.decorateMarker(marker, {
+        type: 'line',
+        'class': 'nuclide-current-line-highlight'
+      });
+      this._selectedCallFrameMarker = marker;
+    }
+  }, {
+    key: '_clearSelectedCallFrameMarker',
+    value: function _clearSelectedCallFrameMarker() {
+      if (this._selectedCallFrameMarker) {
+        this._selectedCallFrameMarker.destroy();
+        this._selectedCallFrameMarker = null;
+      }
+    }
+  }, {
+    key: 'onChange',
+    value: function onChange(callback) {
+      return this._emitter.on('change', callback);
+    }
+  }, {
+    key: 'getCallstack',
+    value: function getCallstack() {
+      return this._callstack;
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
       this._clearSelectedCallFrameMarker();
+      this._disposables.dispose();
     }
-  }
+  }]);
 
-  _highlightCallFrameLine(editor: atom$TextEditor, line: number) {
-    const marker = editor.markBufferRange(
-      [[line, 0], [line, Infinity]],
-      {persistent: false, invalidate: 'never'});
-    editor.decorateMarker(marker, {
-      type: 'line',
-      class: 'nuclide-current-line-highlight',
-    });
-    this._selectedCallFrameMarker = marker;
-  }
+  return CallstackStore;
+})();
 
-  _clearSelectedCallFrameMarker() {
-    if (this._selectedCallFrameMarker) {
-      this._selectedCallFrameMarker.destroy();
-      this._selectedCallFrameMarker = null;
-    }
-  }
-
-  onChange(callback: () => void): IDisposable {
-    return this._emitter.on('change', callback);
-  }
-
-  getCallstack(): ?Callstack {
-    return this._callstack;
-  }
-
-  dispose(): void {
-    this._clearSelectedCallFrameMarker();
-    this._disposables.dispose();
-  }
-}
+exports.default = CallstackStore;
+module.exports = exports.default;

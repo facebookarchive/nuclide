@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,149 +18,200 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {AtomInput} from '../../../../nuclide-ui/lib/AtomInput';
-import {Button, ButtonTypes} from '../../../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../../../nuclide-ui/lib/ButtonGroup';
-import {Dropdown} from '../../../../nuclide-ui/lib/Dropdown';
-import {Modal} from '../../../../nuclide-ui/lib/Modal';
+var _reactForAtom2;
 
-type Props = {
-  configuration: string,
-  Xcc: string,
-  Xlinker: string,
-  Xswiftc: string,
-  buildPath: string,
-  onDismiss: () => void,
-  onSave: (
-    configuration: string,
-    Xcc: string,
-    Xlinker: string,
-    Xswiftc: string,
-    buildPath: string,
-  ) => void,
-};
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
 
-type State = {
-  configuration: string,
-  Xcc: string,
-  Xlinker: string,
-  Xswiftc: string,
-  buildPath: string,
-};
+var _nuclideUiLibAtomInput2;
 
-export default class SwiftPMBuildSettingsModal extends React.Component {
-  props: Props;
-  state: State;
+function _nuclideUiLibAtomInput() {
+  return _nuclideUiLibAtomInput2 = require('../../../../nuclide-ui/lib/AtomInput');
+}
 
-  constructor(props: Props) {
-    super(props);
+var _nuclideUiLibButton2;
+
+function _nuclideUiLibButton() {
+  return _nuclideUiLibButton2 = require('../../../../nuclide-ui/lib/Button');
+}
+
+var _nuclideUiLibButtonGroup2;
+
+function _nuclideUiLibButtonGroup() {
+  return _nuclideUiLibButtonGroup2 = require('../../../../nuclide-ui/lib/ButtonGroup');
+}
+
+var _nuclideUiLibDropdown2;
+
+function _nuclideUiLibDropdown() {
+  return _nuclideUiLibDropdown2 = require('../../../../nuclide-ui/lib/Dropdown');
+}
+
+var _nuclideUiLibModal2;
+
+function _nuclideUiLibModal() {
+  return _nuclideUiLibModal2 = require('../../../../nuclide-ui/lib/Modal');
+}
+
+var SwiftPMBuildSettingsModal = (function (_React$Component) {
+  _inherits(SwiftPMBuildSettingsModal, _React$Component);
+
+  function SwiftPMBuildSettingsModal(props) {
+    _classCallCheck(this, SwiftPMBuildSettingsModal);
+
+    _get(Object.getPrototypeOf(SwiftPMBuildSettingsModal.prototype), 'constructor', this).call(this, props);
     this.state = {
       configuration: props.configuration,
       Xcc: props.Xcc,
       Xlinker: props.Xlinker,
       Xswiftc: props.Xswiftc,
-      buildPath: props.buildPath,
+      buildPath: props.buildPath
     };
   }
 
-  render(): React.Element<any> {
-    return (
-      <Modal onDismiss={this.props.onDismiss}>
-        <div className="block">
-          <label>Build configuration:</label>
-          <div className="block">
-            <Dropdown
-              className="inline-block"
-              value={this.state.configuration}
-              options={[
-                {label: 'Debug', value: 'debug'},
-                {label: 'Release', value: 'release'},
-              ]}
-              onChange={this._onConfigurationChange.bind(this)}
-              title="Choose build configuration"
-            />
-          </div>
-          <label>C compiler flags:</label>
-          <div className="block">
-            <AtomInput
-              initialValue={this.state.Xcc}
-              placeholderText="Flags that are passed through to all C compiler invocations"
-              onDidChange={this._onXccChange.bind(this)}
-              onConfirm={this._onSave.bind(this)}
-            />
-          </div>
-          <label>Linker flags:</label>
-          <div className="block">
-            <AtomInput
-              initialValue={this.state.Xlinker}
-              placeholderText="Flags that are passed through to all linker invocations"
-              onDidChange={this._onXlinkerChange.bind(this)}
-              onConfirm={this._onSave.bind(this)}
-            />
-          </div>
-          <label>Swift compiler flags:</label>
-          <div className="block">
-            <AtomInput
-              initialValue={this.state.Xswiftc}
-              placeholderText="Flags that are passed through to all Swift compiler invocations"
-              onDidChange={this._onXswiftcChange.bind(this)}
-              onConfirm={this._onSave.bind(this)}
-            />
-          </div>
-          <label>Build path:</label>
-          <div className="block">
-            <AtomInput
-              initialValue={this.state.buildPath}
-              placeholderText="Build directory path"
-              onDidChange={this._onBuildPathChange.bind(this)}
-              onConfirm={this._onSave.bind(this)}
-            />
-          </div>
-          <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-            <ButtonGroup>
-              <Button onClick={this.props.onDismiss}>
-                Cancel
-              </Button>
-              <Button
-                buttonType={ButtonTypes.PRIMARY}
-                onClick={this._onSave.bind(this)}>
-                Save
-              </Button>
-            </ButtonGroup>
-          </div>
-        </div>
-      </Modal>
-    );
-  }
+  _createClass(SwiftPMBuildSettingsModal, [{
+    key: 'render',
+    value: function render() {
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_nuclideUiLibModal2 || _nuclideUiLibModal()).Modal,
+        { onDismiss: this.props.onDismiss },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          { className: 'block' },
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'label',
+            null,
+            'Build configuration:'
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'div',
+            { className: 'block' },
+            (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibDropdown2 || _nuclideUiLibDropdown()).Dropdown, {
+              className: 'inline-block',
+              value: this.state.configuration,
+              options: [{ label: 'Debug', value: 'debug' }, { label: 'Release', value: 'release' }],
+              onChange: this._onConfigurationChange.bind(this),
+              title: 'Choose build configuration'
+            })
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'label',
+            null,
+            'C compiler flags:'
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'div',
+            { className: 'block' },
+            (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibAtomInput2 || _nuclideUiLibAtomInput()).AtomInput, {
+              initialValue: this.state.Xcc,
+              placeholderText: 'Flags that are passed through to all C compiler invocations',
+              onDidChange: this._onXccChange.bind(this),
+              onConfirm: this._onSave.bind(this)
+            })
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'label',
+            null,
+            'Linker flags:'
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'div',
+            { className: 'block' },
+            (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibAtomInput2 || _nuclideUiLibAtomInput()).AtomInput, {
+              initialValue: this.state.Xlinker,
+              placeholderText: 'Flags that are passed through to all linker invocations',
+              onDidChange: this._onXlinkerChange.bind(this),
+              onConfirm: this._onSave.bind(this)
+            })
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'label',
+            null,
+            'Swift compiler flags:'
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'div',
+            { className: 'block' },
+            (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibAtomInput2 || _nuclideUiLibAtomInput()).AtomInput, {
+              initialValue: this.state.Xswiftc,
+              placeholderText: 'Flags that are passed through to all Swift compiler invocations',
+              onDidChange: this._onXswiftcChange.bind(this),
+              onConfirm: this._onSave.bind(this)
+            })
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'label',
+            null,
+            'Build path:'
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'div',
+            { className: 'block' },
+            (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibAtomInput2 || _nuclideUiLibAtomInput()).AtomInput, {
+              initialValue: this.state.buildPath,
+              placeholderText: 'Build directory path',
+              onDidChange: this._onBuildPathChange.bind(this),
+              onConfirm: this._onSave.bind(this)
+            })
+          ),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'div',
+            { style: { display: 'flex', justifyContent: 'flex-end' } },
+            (_reactForAtom2 || _reactForAtom()).React.createElement(
+              (_nuclideUiLibButtonGroup2 || _nuclideUiLibButtonGroup()).ButtonGroup,
+              null,
+              (_reactForAtom2 || _reactForAtom()).React.createElement(
+                (_nuclideUiLibButton2 || _nuclideUiLibButton()).Button,
+                { onClick: this.props.onDismiss },
+                'Cancel'
+              ),
+              (_reactForAtom2 || _reactForAtom()).React.createElement(
+                (_nuclideUiLibButton2 || _nuclideUiLibButton()).Button,
+                {
+                  buttonType: (_nuclideUiLibButton2 || _nuclideUiLibButton()).ButtonTypes.PRIMARY,
+                  onClick: this._onSave.bind(this) },
+                'Save'
+              )
+            )
+          )
+        )
+      );
+    }
+  }, {
+    key: '_onConfigurationChange',
+    value: function _onConfigurationChange(configuration) {
+      this.setState({ configuration: configuration });
+    }
+  }, {
+    key: '_onXccChange',
+    value: function _onXccChange(Xcc) {
+      this.setState({ Xcc: Xcc });
+    }
+  }, {
+    key: '_onXlinkerChange',
+    value: function _onXlinkerChange(Xlinker) {
+      this.setState({ Xlinker: Xlinker });
+    }
+  }, {
+    key: '_onXswiftcChange',
+    value: function _onXswiftcChange(Xswiftc) {
+      this.setState({ Xswiftc: Xswiftc });
+    }
+  }, {
+    key: '_onBuildPathChange',
+    value: function _onBuildPathChange(buildPath) {
+      this.setState({ buildPath: buildPath });
+    }
+  }, {
+    key: '_onSave',
+    value: function _onSave() {
+      this.props.onSave(this.state.configuration, this.state.Xcc, this.state.Xlinker, this.state.Xswiftc, this.state.buildPath);
+    }
+  }]);
 
-  _onConfigurationChange(configuration: string) {
-    this.setState({configuration});
-  }
+  return SwiftPMBuildSettingsModal;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
 
-  _onXccChange(Xcc: string) {
-    this.setState({Xcc});
-  }
-
-  _onXlinkerChange(Xlinker: string) {
-    this.setState({Xlinker});
-  }
-
-  _onXswiftcChange(Xswiftc: string) {
-    this.setState({Xswiftc});
-  }
-
-  _onBuildPathChange(buildPath: string) {
-    this.setState({buildPath});
-  }
-
-  _onSave() {
-    this.props.onSave(
-      this.state.configuration,
-      this.state.Xcc,
-      this.state.Xlinker,
-      this.state.Xswiftc,
-      this.state.buildPath,
-    );
-  }
-}
+exports.default = SwiftPMBuildSettingsModal;
+module.exports = exports.default;
