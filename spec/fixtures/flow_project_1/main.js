@@ -9,9 +9,6 @@
  */
 
 /* eslint-disable */
-
 const num = 3;
-
 import {Foo} from './Foo';
-
 new Foo().bar();

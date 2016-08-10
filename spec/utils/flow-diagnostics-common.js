@@ -41,7 +41,7 @@ export function runTest(context: TestContext) {
     waitsForPromise(async () => {
       textEditor = await textEditorPromise;
       // Change `bar` to `baz`
-      textEditor.setTextInBufferRange(new Range([16, 12], [16, 13]), 'z');
+      textEditor.setTextInBufferRange(new Range([13, 12], [13, 13]), 'z');
 
       expect(doGutterDiagnosticsExist()).toBeFalsy();
 
@@ -68,7 +68,7 @@ export function runTest(context: TestContext) {
     });
 
     waitsFor(() => {
-      return textEditor.getCursorBufferPosition().isEqual([16, 0]);
+      return textEditor.getCursorBufferPosition().isEqual([13, 0]);
     });
   });
 }
