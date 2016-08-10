@@ -17,7 +17,7 @@ import typeof * as InfoService from '../../nuclide-server/lib/services/InfoServi
 import invariant from 'assert';
 import {RpcConnection} from '../../nuclide-rpc';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
-import {setConnectionConfig} from './RemoteConnectionConfigurationManager';
+import {setConnectionConfig, clearConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';
 import {RemoteDirectory} from './RemoteDirectory';
@@ -78,7 +78,7 @@ class ServerConnection {
   static async forceShutdownAllServers(): Promise<void> {
     await Promise.all(
       Array.from(ServerConnection._connections).map(([_, connection]) => {
-        return connection._getInfoService().closeConnection(true);
+        return connection._closeServerConnection(true);
       }),
     );
   }
@@ -309,7 +309,7 @@ class ServerConnection {
     if (this._connections.length === 0) {
       // The await here is subtle, it ensures that the shutdown call is sent
       // on the socket before the socket is closed on the next line.
-      await this._getInfoService().closeConnection(shutdownIfLast);
+      await this._closeServerConnection(shutdownIfLast);
       this.close();
     }
   }
@@ -355,6 +355,14 @@ class ServerConnection {
 
   _getInfoService(): InfoService {
     return this.getService('InfoService');
+  }
+
+  async _closeServerConnection(shutdown: boolean): Promise<void> {
+    await this._getInfoService().closeConnection(shutdown);
+    if (shutdown) {
+      // Clear the saved connection config so we don't try it again at startup.
+      clearConnectionConfig(this._config.host);
+    }
   }
 }
 

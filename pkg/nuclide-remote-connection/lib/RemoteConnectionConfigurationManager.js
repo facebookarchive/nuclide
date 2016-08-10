@@ -72,6 +72,14 @@ export function setConnectionConfig(config: ServerConnectionConfiguration): void
   }
 }
 
+export async function clearConnectionConfig(host: string): Promise<void> {
+  try {
+    window.localStorage.removeItem(getStorageKey(host));
+  } catch (e) {
+    logger.error(`Failed to clear configuration for ${host}.`, e);
+  }
+}
+
 /**
  * Encrypts the clientKey of a ConnectionConfig.
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
