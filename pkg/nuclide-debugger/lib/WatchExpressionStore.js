@@ -61,7 +61,7 @@ export class WatchExpressionStore {
           this._triggerReevaluation();
         } else if (payload.data === DebuggerMode.STOPPED) {
           this._cancelRequestsToBridge();
-          this._watchExpressions.clear();
+          this._clearEvaluationValues();
         }
         break;
       default:
@@ -161,8 +161,7 @@ export class WatchExpressionStore {
 
   // Resets all values to N/A, for examples when the debugger resumes or stops.
   _clearEvaluationValues(): void {
-    // eslint-disable-next-line no-unused-vars
-    for (const [expression, subject] of this._watchExpressions) {
+    for (const subject of this._watchExpressions.values()) {
       subject.next(null);
     }
   }

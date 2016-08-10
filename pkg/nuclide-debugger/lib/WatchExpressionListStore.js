@@ -10,8 +10,8 @@
  */
 
 import type {
-  EvaluationResult,
   Expression,
+  EvaluatedExpression,
   EvaluatedExpressionList,
 } from './types';
 import type {WatchExpressionStore} from './WatchExpressionStore';
@@ -23,6 +23,7 @@ import {
 } from 'atom';
 import Rx from 'rxjs';
 import Constants from './Constants';
+import {DebuggerMode} from './DebuggerStore';
 
 export class WatchExpressionListStore {
   _watchExpressionStore: WatchExpressionStore;
@@ -54,15 +55,17 @@ export class WatchExpressionListStore {
       case Constants.Actions.UPDATE_WATCH_EXPRESSION:
         this._updateWatchExpression(payload.data.index, payload.data.newExpression);
         break;
+      case Constants.Actions.DEBUGGER_MODE_CHANGE:
+        if (payload.data === DebuggerMode.STARTING) {
+          this._refetchWatchSubscriptions();
+        }
+        break;
       default:
         return;
     }
   }
 
-  _getExpressionEvaluationFor(expression: Expression): {
-    expression: Expression,
-    value: Rx.Observable<?EvaluationResult>,
-  } {
+  _getExpressionEvaluationFor(expression: Expression): EvaluatedExpression {
     return {
       expression,
       value: this._watchExpressionStore.evaluateWatchExpression(expression),
@@ -90,6 +93,14 @@ export class WatchExpressionListStore {
     const watchExpressions = this._watchExpressions.getValue().slice();
     watchExpressions[index] = this._getExpressionEvaluationFor(newExpression);
     this._watchExpressions.next(watchExpressions);
+  }
+
+  _refetchWatchSubscriptions(): void {
+    const watchExpressions = this._watchExpressions.getValue().slice();
+    const refetchedWatchExpressions = watchExpressions.map(({expression}) => {
+      return this._getExpressionEvaluationFor(expression);
+    });
+    this._watchExpressions.next(refetchedWatchExpressions);
   }
 
   dispose(): void {
