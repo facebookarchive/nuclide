@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import {parse} from 'shell-quote';
+
 import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 
@@ -61,23 +63,30 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
           placeholderText="Arguments to the executable"
           onConfirm={this._handleLaunchClick}
         />
+        <label>Environment Variables: </label>
+        <AtomInput
+          ref="launchEnvironmentVariables"
+          tabIndex="13"
+          placeholderText="Environment variables (e.g., SHELL=/bin/bash PATH=/bin)"
+          onConfirm={this._handleLaunchClick}
+        />
         <label>Working directory: </label>
         <AtomInput
           ref="launchWorkingDirectory"
-          tabIndex="13"
+          tabIndex="14"
           placeholderText="Working directory for the launched executable"
           onConfirm={this._handleLaunchClick}
         />
         <div style={{display: 'flex', flexDirection: 'row-reverse'}}>
           <ButtonGroup>
             <Button
-              tabIndex="15"
+              tabIndex="16"
               onClick={this._cancelClick}>
               Cancel
             </Button>
             <Button
               buttonType={ButtonTypes.PRIMARY}
-              tabIndex="14"
+              tabIndex="15"
               onClick={this._handleLaunchClick}>
               Launch
             </Button>
@@ -98,12 +107,14 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
     // TODO: perform some validation for the input.
     const launchExecutable = this.refs.launchExecutable.getText().trim();
     const launchArguments = this.refs.launchArguments.getText().trim();
+    const launchEnvironmentVariables = parse(
+      this.refs.launchEnvironmentVariables.getText());
     const launchWorkingDirectory = this.refs.launchWorkingDirectory.getText().trim();
     // TODO: fill other fields from UI.
     const launchTarget = {
       executablePath: launchExecutable,
       arguments: launchArguments,
-      environmentVariables: [],
+      environmentVariables: launchEnvironmentVariables,
       workingDirectory: launchWorkingDirectory,
     };
     // Fire and forget.

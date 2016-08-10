@@ -59,7 +59,7 @@ async function debugBuckTarget(
     // This will break for quoted arguments and the like.
     arguments: args == null ? '' : args.join(' '),
     // TODO(hansonw): Add this when nuclide-debugger-native supports environment vars.
-    environmentVariables: null,
+    environmentVariables: [],
     workingDirectory: '', // use the default
     basepath: remoteBuckRoot,
   });

@@ -22,7 +22,7 @@ export type AttachTargetInfo = {
 export type LaunchTargetInfo = {
   executablePath: string,
   arguments: string,
-  environmentVariables: ?Array<string>,
+  environmentVariables: Array<string>,
   workingDirectory: string,
   basepath?: string
 };

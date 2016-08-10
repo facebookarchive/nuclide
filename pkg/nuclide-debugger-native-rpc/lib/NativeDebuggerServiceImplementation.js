@@ -39,6 +39,7 @@ type AttachInfoArgsType = {
 type LaunchInfoArgsType = {
   executable_path: string,
   launch_arguments: string,
+  launch_environment_variables: Array<string>,
   working_directory: string,
   basepath: string,
 };
@@ -175,6 +176,7 @@ export class NativeDebuggerService {
     const inferiorArguments = {
       executable_path: launchInfo.executablePath,
       launch_arguments: launchInfo.arguments,
+      launch_environment_variables: launchInfo.environmentVariables,
       working_directory: launchInfo.workingDirectory,
       basepath: launchInfo.basepath ? launchInfo.basepath : this._config.buckConfigRootFile,
     };

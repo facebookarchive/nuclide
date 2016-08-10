@@ -16,6 +16,7 @@ from find_lldb import lldb
 from shlex import split
 from chromedebugger import ChromeDevToolsDebuggerApp
 import argparse
+import six
 import sys
 import signal
 import os
@@ -59,6 +60,9 @@ def parse_args():
                               help='The executable path to launch.')
     launch_group.add_argument('--launch_arguments', '-args', type=str,
                               help='Launch arguments.')
+    launch_group.add_argument('--launch_environment_variables', '-env',
+                              type=str,
+                              help='Comma-separated environment variables')
     launch_group.add_argument('--working_directory', '-cwd', type=str,
                               help='Working directory for the executable.')
     arguments = parser.parse_args()
@@ -115,6 +119,9 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
     if getattr(arguments, 'executable_path', None):
         argument_list = split(str(arguments.launch_arguments)) \
             if arguments.launch_arguments else None
+        environment_variables = [six.binary_type(arg) for arg in
+                                 arguments.launch_environment_variables] \
+            if arguments.launch_environment_variables else None
         # TODO: should we resolve symbol link?
         executable_path = os.path.expanduser(str(arguments.executable_path)) \
             if arguments.executable_path else None
@@ -129,17 +136,17 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
         if error.Fail():
             sys.exit(error.description)
 
-        # TODO: pass environment variables.
-        target.Launch (listener,
-                        argument_list,
-                        None,      # envp
-                        None,      # stdin_path
-                        None,      # stdout_path
-                        None,      # stderr_path
-                        working_directory,
-                        0,         # launch flags
-                        True,      # Stop at entry
-                        error)     # error
+        target.Launch(
+            listener,
+            argument_list,
+            environment_variables,
+            None,      # stdin_path
+            None,      # stdout_path
+            None,      # stderr_path
+            working_directory,
+            0,         # launch flags
+            True,      # Stop at entry
+            error)     # error
     elif getattr(arguments, 'pname', None):
         target = debugger.CreateTarget(None)
         target.AttachToProcessWithName(
