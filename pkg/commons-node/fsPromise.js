@@ -10,6 +10,7 @@
  */
 
 import fs from 'fs-plus';
+import globLib from 'glob';
 import mkdirpLib from 'mkdirp';
 import nuclideUri from '../commons-node/nuclideUri';
 import rimraf from 'rimraf';
@@ -182,6 +183,18 @@ async function isNfs(entityPath: string): Promise<boolean> {
   }
 }
 
+async function glob(pattern: string, options?: Object): Promise<Array<string>> {
+  return await new Promise((resolve, reject) => {
+    globLib(pattern, options, (err: ?Error, files: Array<string>) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(files);
+      }
+    });
+  });
+}
+
 /**
  * Takes a method from Node's fs module and returns a "denodeified" equivalent, i.e., an adapter
  * with the same functionality, but returns a Promise rather than taking a callback. This isn't
@@ -208,6 +221,7 @@ export default {
   mkdirp,
   rmdir,
   isNfs,
+  glob,
 
   copy: _denodeifyFsMethod('copy'),
   chmod: _denodeifyFsMethod('chmod'),
