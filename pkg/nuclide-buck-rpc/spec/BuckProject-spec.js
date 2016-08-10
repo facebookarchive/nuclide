@@ -10,18 +10,8 @@
  */
 
 import {BuckProject} from '../lib/BuckProject';
-import fs from 'fs-plus';
+import {copyBuildFixture} from '../../nuclide-test-helpers';
 import nuclideUri from '../../commons-node/nuclideUri';
-import temp from 'temp';
-
-temp.track();
-
-function copyProject(projectInFixturesDirectory: string) {
-  const tempDir = temp.mkdirSync('BuckProject-spec');
-  fs.copySync(nuclideUri.join(__dirname, 'fixtures', projectInFixturesDirectory),
-      tempDir);
-  return tempDir;
-}
 
 // Disable buckd so it doesn't linger around after the test.
 process.env.NO_BUCKD = '1';
@@ -33,8 +23,19 @@ beforeEach(() => {
 });
 
 describe('BuckProject (test-project-with-failing-targets)', () => {
-  const projectDir = copyProject('test-project-with-failing-targets');
-  const buckProject = new BuckProject({rootPath: projectDir});
+  let buckProject: BuckProject = (null: any);
+
+  beforeEach(() => {
+    waitsForPromise(async () => {
+      if (buckProject == null) {
+        const projectDir = await copyBuildFixture(
+          'test-project-with-failing-targets',
+          __dirname,
+        );
+        buckProject = new BuckProject({rootPath: projectDir});
+      }
+    });
+  });
 
   describe('.build(targets)', () => {
     it('generates report even if there are failing targets', () => {
@@ -154,8 +155,17 @@ describe('BuckProject (test-project-with-failing-targets)', () => {
 });
 
 describe('BuckProject (buck-query-project)', () => {
-  const projectDir = copyProject('buck-query-project');
-  const buckProject = new BuckProject({rootPath: projectDir});
+  let buckProject: BuckProject = (null: any);
+  let projectDir: string = (null: any);
+
+  beforeEach(() => {
+    waitsForPromise(async () => {
+      if (buckProject == null) {
+        projectDir = await copyBuildFixture('buck-query-project', __dirname);
+        buckProject = new BuckProject({rootPath: projectDir});
+      }
+    });
+  });
 
   describe('getBuildFile()', () => {
     it('gets the build file', () => {
@@ -179,8 +189,16 @@ describe('BuckProject (buck-query-project)', () => {
 });
 
 describe('BuckProject (buckconfig-project)', () => {
-  const projectDir = copyProject('buckconfig-project');
-  const buckProject = new BuckProject({rootPath: projectDir});
+  let buckProject: BuckProject = (null: any);
+
+  beforeEach(() => {
+    waitsForPromise(async () => {
+      if (buckProject == null) {
+        const projectDir = await copyBuildFixture('buckconfig-project', __dirname);
+        buckProject = new BuckProject({rootPath: projectDir});
+      }
+    });
+  });
 
   describe('getBuckConfig()', () => {
     it('returns the correct value if present', () => {

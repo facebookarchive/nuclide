@@ -1,0 +1,4 @@
+apple_binary(
+  name = 'lldb_debugger_threading_test',
+  srcs = ['threading.cpp'],
+)

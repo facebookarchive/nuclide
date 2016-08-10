@@ -21,7 +21,7 @@ import {
   getAutocompleteSuggestions,
   waitsForAutocompleteSuggestions,
 } from './utils/autocomplete-common';
-import {copyFixture} from '../pkg/nuclide-test-helpers';
+import {copyBuildFixture} from '../pkg/nuclide-test-helpers';
 import {
   dispatchKeyboardEvent,
   waitsForFile,
@@ -48,7 +48,7 @@ describe('Clang Integration Test (objc)', () => {
       // Activate atom packages.
       await activateAllPackages();
 
-      objcPath = await copyFixture('objc_project_1', __dirname);
+      objcPath = await copyBuildFixture('objc_project_1', __dirname);
       textEditor = await atom.workspace.open(nuclideUri.join(objcPath, 'Hello.m'));
     });
 

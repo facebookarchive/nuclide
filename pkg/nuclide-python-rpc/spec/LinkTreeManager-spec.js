@@ -10,26 +10,16 @@
  */
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import fsPlus from 'fs-plus';
-import temp from 'temp';
 import LinkTreeManager from '../lib/LinkTreeManager';
-
-temp.track();
-
-function copyProject(projectInFixturesDirectory: string) {
-  const tempDir = temp.mkdirSync('LinkTreeManager-spec');
-  fsPlus.copySync(nuclideUri.join(__dirname, 'fixtures', projectInFixturesDirectory),
-      tempDir);
-  return tempDir;
-}
+import {copyBuildFixture} from '../../nuclide-test-helpers';
 
 // Disable buckd so it doesn't linger around after the test.
 process.env.NO_BUCKD = '1';
 
 describe('LinkTreeManager', () => {
+  let linkTreeManager: LinkTreeManager = (null: any);
+  let projectDir: string = (null: any);
 
-  let linkTreeManager;
-  const projectDir = copyProject('test-buck-project');
   const mockBuckProject = {
     getOwner(src) {
       return ['//test', '//test2'];
@@ -43,7 +33,12 @@ describe('LinkTreeManager', () => {
   };
 
   beforeEach(() => {
-    linkTreeManager = new LinkTreeManager();
+    waitsForPromise(async () => {
+      if (projectDir == null) {
+        projectDir = await copyBuildFixture('test-buck-project', __dirname);
+      }
+      linkTreeManager = new LinkTreeManager();
+    });
   });
 
   it('correctly builds a link tree path given a source file path (mocked project)', () => {

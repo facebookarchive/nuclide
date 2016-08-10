@@ -98,6 +98,29 @@ export async function copyMercurialFixture(
 }
 
 /**
+ * Like `copyMercurialFixture` but looks in the entire fixture directory for
+ * `BUCK-rename` and `TARGETS-rename`.
+ *
+ * @param fixtureName The name of the subdirectory of the `fixtures/` directory.
+ * @returns the path to the temporary directory that this function creates.
+ */
+export async function copyBuildFixture(
+  fixtureName: string,
+  source: string,
+): Promise<string> {
+  const projectDir = await copyFixture(fixtureName, source);
+  const renames = await fsPromise.glob('**/{BUCK,TARGETS}-rename', {cwd: projectDir});
+  await Promise.all(
+    renames.map(name => {
+      const prevName = nuclideUri.join(projectDir, name);
+      const newName = prevName.replace(/-rename$/, '');
+      return fsPromise.rename(prevName, newName);
+    }),
+  );
+  return projectDir;
+}
+
+/**
  * Takes of Map of file/file-content pairs, and creates a temp dir that matches
  * the file structure of the Map. Example:
  *

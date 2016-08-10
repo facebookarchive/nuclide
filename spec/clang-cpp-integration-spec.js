@@ -19,7 +19,7 @@ import {
   getAutocompleteDescription,
   waitsForAutocompleteSuggestions,
 } from './utils/autocomplete-common';
-import {copyFixture} from '../pkg/nuclide-test-helpers';
+import {copyBuildFixture} from '../pkg/nuclide-test-helpers';
 import {
   dispatchKeyboardEvent,
   waitsForFile,
@@ -49,7 +49,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
     let textEditor: atom$TextEditor;
     let textEditorView: HTMLElement;
     waitsForPromise({timeout: 60000}, async () => {
-      testDir = await copyFixture('cpp_project', __dirname);
+      testDir = await copyBuildFixture('cpp_project', __dirname);
       await context.setProject(testDir);
       textEditor = await atom.workspace.open(context.getProjectRelativePath('test.cpp'));
       textEditorView = atom.views.getView(textEditor);

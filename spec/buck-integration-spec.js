@@ -17,7 +17,7 @@ import {
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
 } from './utils/integration-test-helpers';
-import {copyFixture} from '../pkg/nuclide-test-helpers';
+import {copyBuildFixture} from '../pkg/nuclide-test-helpers';
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import invariant from 'assert';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
@@ -44,7 +44,7 @@ describe('Buck building via toolbar', () => {
     const workspaceView = atom.views.getView(atom.workspace);
 
     waitsForPromise(async () => {
-      const projectPath = await copyFixture('objc_project_1', __dirname);
+      const projectPath = await copyBuildFixture('objc_project_1', __dirname);
       setLocalProject(projectPath);
       await atom.workspace.open(nuclideUri.join(projectPath, '.buckconfig'));
     });

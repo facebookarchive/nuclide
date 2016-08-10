@@ -23,7 +23,7 @@ describe('HyperclickProvider', () => {
   });
 
   describe('parseTarget', () => {
-    it('searches //Apps/TestApp/BUCK.test', () => {
+    it('searches //Apps/TestApp/BUCK-rename', () => {
       const buckProject: BuckProject = Object.create(BuckProject.prototype);
       spyOn(buckProject, 'getPath').andReturn(Promise.resolve(projectPath));
       spyOn(buckProject, 'getBuckConfig').andReturn(Promise.resolve(null));
@@ -57,17 +57,17 @@ describe('HyperclickProvider', () => {
 
   describe('findTargetLocation', () => {
     const targetsByFile = {
-      'Apps/TestApp/BUCK.test': {
+      'Apps/TestApp/BUCK-rename': {
         'Target1': 1,
         'w3ird_target-name': 7,
         'Target2': 13,
         'TestsTarget': 27,
         'non-existing-target': -1,
       },
-      'Apps/BUCK.test': {
+      'Apps/BUCK-rename': {
         test_target123: 1,
       },
-      'Libraries/TestLib1/BUCK.test': {
+      'Libraries/TestLib1/BUCK-rename': {
         'target_with_no_trailling_comma': 1,
         'target_with_no_trailling_commas': -1,
         'lib_target1': 5,
@@ -77,7 +77,7 @@ describe('HyperclickProvider', () => {
         'PUBLIC': -1,
         '[]': -1,
       },
-      'Libraries/TestLib1/test-ios-sdk/sdk-v.1.2.3/BUCK.test': {
+      'Libraries/TestLib1/test-ios-sdk/sdk-v.1.2.3/BUCK-rename': {
         'target-v.1': 1,
         'target': 7,
         'targett': -1,

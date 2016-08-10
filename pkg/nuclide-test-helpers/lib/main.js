@@ -12,7 +12,12 @@
 import type {Observable} from 'rxjs';
 
 import Rx from 'rxjs';
-import {copyFixture, copyMercurialFixture, generateFixture} from './fixtures';
+import {
+  copyFixture,
+  copyMercurialFixture,
+  copyBuildFixture,
+  generateFixture,
+} from './fixtures';
 import {addMatchers} from './matchers';
 
 /**
@@ -182,6 +187,7 @@ export {
   clearRequireCache,
   copyFixture,
   copyMercurialFixture,
+  copyBuildFixture,
   expectAsyncFailure,
   expectObservableToStartWith,
   generateFixture,

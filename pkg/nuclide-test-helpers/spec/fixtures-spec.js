@@ -14,6 +14,7 @@ import glob from 'glob';
 import {
   copyFixture,
   copyMercurialFixture,
+  copyBuildFixture,
   generateFixture,
 } from '../lib/fixtures';
 import fsPromise from '../../commons-node/fsPromise';
@@ -81,6 +82,23 @@ describe('copyMercurialFixture', () => {
   });
 });
 
+describe('copyBuildFixture', () => {
+  it('should rename {BUCK,TARGETS}-rename to {BUCK,TARGETS}', () => {
+    waitsForPromise(async () => {
+      const buildFixture = await copyBuildFixture('build-fixture', __dirname);
+      expect(nuclideUri.isAbsolute(buildFixture)).toBe(true);
+      expect(fs.statSync(buildFixture).isDirectory()).toBe(true);
+      const renames = await fsPromise.glob('**/*', {cwd: buildFixture, nodir: true});
+      expect(renames).toEqual([
+        'BUCK',
+        'otherdir/BUCK',
+        'otherdir/otherfile',
+        'somedir/somefile',
+        'somedir/TARGETS',
+      ]);
+    });
+  });
+});
 
 describe('generateFixture', () => {
   it('should create the directory hierarchy', () => {
