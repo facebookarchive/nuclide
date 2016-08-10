@@ -28,7 +28,7 @@ export default class SideBarPanelComponent extends React.Component {
 
   render() {
     return (
-      <div style={{display: 'flex', flex: 1, flexDirection: 'column'}} tabIndex={0}>
+      <div style={{display: 'flex', flex: 1, flexDirection: 'column', minWidth: 0}} tabIndex={0}>
         <Toolbar location="top">
           <ToolbarLeft>
             <Dropdown
