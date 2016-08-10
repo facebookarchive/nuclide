@@ -15,7 +15,7 @@ import LRU from 'lru-cache';
 import {CompositeDisposable} from 'event-kit';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import {checkOutput} from '../../commons-node/process';
+import which from '../../commons-node/which';
 import fsPromise from '../../commons-node/fsPromise';
 
 // All the information needed to execute Flow in a given root. The path to the Flow binary we want
@@ -144,13 +144,7 @@ export class FlowExecInfoContainer {
 }
 
 async function canFindFlow(flowPath: string): Promise<boolean> {
-  try {
-    // https://github.com/facebook/nuclide/issues/561
-    await checkOutput(process.platform === 'win32' ? 'where' : 'which', [flowPath]);
-    return true;
-  } catch (e) {
-    return false;
-  }
+  return await which(flowPath) != null;
 }
 
 // `string | null` forces the presence of an explicit argument (`?string` allows undefined which
