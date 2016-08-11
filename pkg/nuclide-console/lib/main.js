@@ -121,18 +121,18 @@ class Activation {
   }
 
   provideOutputService(): OutputService {
-    // Create a local, nullable reference so that the service consumers don't keep the store
+    // Create a local, nullable reference so that the service consumers don't keep the Activation
     // instance in memory.
-    let store = this._getStore();
-    this._disposables.add(new Disposable(() => { store = null; }));
+    let activation = this;
+    this._disposables.add(new Disposable(() => { activation = null; }));
 
     return {
       registerOutputProvider(outputProvider: OutputProvider): IDisposable {
-        invariant(store != null, 'Output service used after deactivation');
-        store.dispatch(Actions.registerOutputProvider(outputProvider));
+        invariant(activation != null, 'Output service used after deactivation');
+        activation._getStore().dispatch(Actions.registerOutputProvider(outputProvider));
         return new Disposable(() => {
-          if (store != null) {
-            store.dispatch(Actions.unregisterOutputProvider(outputProvider));
+          if (activation != null) {
+            activation._getStore().dispatch(Actions.unregisterOutputProvider(outputProvider));
           }
         });
       },
@@ -140,17 +140,17 @@ class Activation {
   }
 
   provideRegisterExecutor(): RegisterExecutorFunction {
-    // Create a local, nullable reference so that the service consumers don't keep the store
+    // Create a local, nullable reference so that the service consumers don't keep the Activation
     // instance in memory.
-    let store = this._getStore();
-    this._disposables.add(new Disposable(() => { store = null; }));
+    let activation = this;
+    this._disposables.add(new Disposable(() => { activation = null; }));
 
     return executor => {
-      invariant(store != null, 'Executor registration attempted after deactivation');
-      store.dispatch(Actions.registerExecutor(executor));
+      invariant(activation != null, 'Executor registration attempted after deactivation');
+      activation._getStore().dispatch(Actions.registerExecutor(executor));
       return new Disposable(() => {
-        if (store != null) {
-          store.dispatch(Actions.unregisterExecutor(executor));
+        if (activation != null) {
+          activation._getStore().dispatch(Actions.unregisterExecutor(executor));
         }
       });
     };
