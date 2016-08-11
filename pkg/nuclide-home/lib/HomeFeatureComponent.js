@@ -19,11 +19,31 @@ type Props = {
   title: string,
   icon: string,
   description: string | React.Element<any>,
-  command: string,
+  command: ?(string | () => void),
 };
 
 class HomeFeatureComponent extends React.Component {
   props: Props;
+
+  constructor(props: Props) {
+    super(props);
+    (this: any)._tryIt = this._tryIt.bind(this);
+  }
+
+  _tryIt(): void {
+    const {command} = this.props;
+    if (command == null) { return; }
+    switch (typeof command) {
+      case 'string':
+        atom.commands.dispatch(atom.views.getView(atom.workspace), command);
+        return;
+      case 'function':
+        command();
+        return;
+      default:
+        throw new Error('Invalid command value');
+    }
+  }
 
   render(): React.Element<any> {
     const {title, command} = this.props;
@@ -34,7 +54,7 @@ class HomeFeatureComponent extends React.Component {
           {command ? <Button
             className="pull-right nuclide-home-tryit"
             size={ButtonSizes.SMALL}
-            onClick={() => atom.commands.dispatch(atom.views.getView(atom.workspace), command)}>
+            onClick={this._tryIt}>
             Try it
           </Button> : null}
         </summary>

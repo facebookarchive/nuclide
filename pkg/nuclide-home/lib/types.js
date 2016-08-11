@@ -19,7 +19,7 @@ export type HomeFragments = {
     title: string,
     icon: string,
     description: React.Element<any> | string,
-    command?: string,
+    command?: string | () => void,
   },
   priority?: number,
 };
