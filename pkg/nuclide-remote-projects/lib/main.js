@@ -219,7 +219,12 @@ async function createEditorForNuclide(
       buffer = bufferForUri(uri);
       buffer.finishLoading();
     }
-    const editor = atom.workspace.buildTextEditor({buffer});
+    // When in "large file mode", syntax highlighting and line wrapping are
+    // disabled (among other things). This makes large files more usable.
+    // Atom does this for local files.
+    // https://github.com/atom/atom/blob/v1.9.8/src/workspace.coffee#L547
+    const largeFileMode = buffer.getText().length > 2 * 1024 * 1024; // 2MB
+    const editor = atom.workspace.buildTextEditor({buffer, largeFileMode});
     if (!atom.textEditors.editors.has(editor)) {
       // https://github.com/atom/atom/blob/v1.9.8/src/workspace.coffee#L559-L562
       const disposable = atom.textEditors.add(editor);
