@@ -107,7 +107,7 @@ export class HgRepositoryClient {
   _hgDiffCacheFilesToClear: Set<NuclideUri>;
 
   _activeBookmark: ?string;
-  _serializedRefreshStatusesCache: () => Promise<void>;
+  _serializedRefreshStatusesCache: () => ?Promise<void>;
   _isInConflict: boolean;
   async: HgRepositoryClientAsync;
 

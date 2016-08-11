@@ -11,17 +11,21 @@
 
 import invariant from 'assert';
 
-export default function debounce<T: Function>(
-  func: T,
+export default function debounce<
+  A, B, C, D, E, F, G,
+  TReturn,
+  TFunc:(a: A, b: B, c: C, d: D, e: E, f: F, g: G) => TReturn,
+>(
+  func: TFunc,
   wait: number,
   immediate?: boolean = false,
-): T {
+): (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => (TReturn | void) {
   // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
-  let timeout;
-  let args: ?Array<any>;
-  let context;
+  let timeout: ?number;
+  let args: ?[A, B, C, D, E, F, G];
+  let context: any;
   let timestamp = 0;
-  let result;
+  let result: (TReturn | void);
 
   const later = function() {
     const last = Date.now() - timestamp;
@@ -31,7 +35,7 @@ export default function debounce<T: Function>(
     } else {
       timeout = null;
       if (!immediate) {
-        invariant(args);
+        invariant(args != null);
         result = func.apply(context, args);
         if (!timeout) {
           context = args = null;
@@ -40,10 +44,9 @@ export default function debounce<T: Function>(
     }
   };
 
-  // $FlowIssue -- Flow's type system isn't expressive enough to type debounce.
-  return function() {
+  return function(): (TReturn | void) {
     context = this;
-    args = arguments;
+    args = (arguments: [A, B, C, D, E, F, G]);
     timestamp = Date.now();
     const callNow = immediate && !timeout;
     if (!timeout) {
