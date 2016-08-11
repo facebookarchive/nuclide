@@ -510,6 +510,8 @@ declare class atom$TextEditorRegistry {
   add(editor: atom$TextEditor): IDisposable,
   remove(editor: atom$TextEditor): boolean,
   observe(callback: (editor: atom$TextEditor) => void): IDisposable,
+  // Private
+  editors: Set<atom$TextEditor>,
 }
 
 declare class atom$ThemeManager {
