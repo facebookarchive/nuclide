@@ -21,7 +21,6 @@ import {CompositeDisposable, Disposable} from 'atom';
 
 import {track} from '../../nuclide-analytics';
 
-import type DiagnosticsPanel from './DiagnosticsPanel';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 
 import {DisposableSubscription} from '../../commons-node/stream';
@@ -36,7 +35,6 @@ const LINTER_PACKAGE = 'linter';
 
 let subscriptions: ?CompositeDisposable = null;
 let bottomPanel: ?atom$Panel = null;
-let getDiagnosticsPanel: ?(() => ?DiagnosticsPanel);
 let statusBarTile: ?StatusBarTile;
 
 type ActivationState = {
@@ -56,18 +54,20 @@ function createPanel(
   invariant(activationState);
   const {
     atomPanel: panel,
-    getDiagnosticsPanel: getDiagnosticsPanelFn,
     setWarnAboutLinter,
   } = createDiagnosticsPanel(
-    diagnosticUpdater,
+    diagnosticUpdater.allMessageUpdates,
     activationState.diagnosticsPanelHeight,
     activationState.filterByActiveTextEditor,
-    disableLinter);
+    disableLinter,
+    filterByActiveTextEditor => {
+      if (activationState != null) {
+        activationState.filterByActiveTextEditor = filterByActiveTextEditor;
+      }
+    },
+  );
   logPanelIsDisplayed();
   bottomPanel = panel;
-  getDiagnosticsPanel = getDiagnosticsPanelFn;
-
-  activationState.hideDiagnosticsPanel = false;
 
   const onDidChangeVisibleSubscription = panel.onDidChangeVisible((visible: boolean) => {
     invariant(activationState);
@@ -111,12 +111,6 @@ function tryRecordActivationState(): void {
   invariant(activationState);
   if (bottomPanel && bottomPanel.isVisible()) {
     activationState.diagnosticsPanelHeight = bottomPanel.getItem().clientHeight;
-
-    invariant(getDiagnosticsPanel);
-    const diagnosticsPanel = getDiagnosticsPanel();
-    if (diagnosticsPanel) {
-      activationState.filterByActiveTextEditor = diagnosticsPanel.props.filterByActiveTextEditor;
-    }
   }
 }
 
