@@ -125,6 +125,7 @@ export class DbgpConnector {
         socket,
         'Non XML connection string: ' + data.toString() + '. Discarding connection.',
         'PHP sent a malformed request, please file a bug to the Nuclide developers.<br />' +
+        'Restarting the Nuclide Server may fix the issue.<br />' +
         'Error: Non XML connection string.',
       );
       return;
