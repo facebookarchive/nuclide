@@ -127,14 +127,14 @@ class Activation {
   _panel: OutlineViewPanelState;
 
   _createOutlineViewNuxTourModel(): NuxTourModel {
-    const nuxTriggerOutline = {
+    const outlineViewToolbarIconNux = {
       content: 'Check out the new Outline View!',
       selector: '.nuclide-outline-view-toolbar-button',
       position: 'auto',
       completionPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
     };
 
-    const nuxOutlineView = {
+    const outlineViewPanelNux = {
       content: 'Click on a symbol to jump to its definition.',
       selector: 'div.pane-item.nuclide-outline-view',
       position: 'left',
@@ -157,15 +157,15 @@ class Activation {
       triggerCallback,
     };
 
-    const sampleOutlineNuxTour = {
+    const outlineViewNuxTour = {
       id: NUX_OUTLINE_VIEW_ID,
       name: NUX_OUTLINE_VIEW_TOUR,
-      nuxList: [nuxTriggerOutline, nuxOutlineView],
+      nuxList: [outlineViewToolbarIconNux, outlineViewPanelNux],
       trigger: nuxTriggerModel,
       gatekeeperID: GK_NUX_OUTLINE_VIEW,
     };
 
-    return sampleOutlineNuxTour;
+    return outlineViewNuxTour;
   }
 
   constructor(state?: OutlineViewState = makeDefaultState()) {
