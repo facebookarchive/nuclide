@@ -28,7 +28,6 @@ import {Observable} from 'rxjs';
 class Activation {
   _disposables: CompositeDisposable;
   _store: Store;
-  _service: ?WorkspaceViewsService;
   _rawState: ?Object;
 
   constructor(rawState: ?Object) {
@@ -55,50 +54,47 @@ class Activation {
   }
 
   provideWorkspaceViewsService(): WorkspaceViewsService {
-    if (this._service == null) {
-      let pkg = this; // eslint-disable-line consistent-this
-      this._disposables.add(new Disposable(() => { pkg = null; }));
+    let pkg = this; // eslint-disable-line consistent-this
+    this._disposables.add(new Disposable(() => { pkg = null; }));
 
-      this._service = {
-        registerFactory: viewableFactory => {
-          invariant(pkg != null, 'Viewables API used after deactivation');
-          pkg._getStore().dispatch(Actions.registerViewableFactory(viewableFactory));
-          return new Disposable(() => {
-            if (pkg != null) {
-              pkg._getStore().dispatch(Actions.unregisterViewableFactory(viewableFactory.id));
-            }
-          });
-        },
-        registerLocation: locationFactory => {
-          invariant(pkg != null, 'Viewables API used after deactivation');
-          pkg._getStore().dispatch(Actions.registerLocationFactory(locationFactory));
-          return new Disposable(() => {
-            if (pkg != null) {
-              pkg._getStore().dispatch(Actions.unregisterLocation(locationFactory.id));
-            }
-          });
-        },
-        getViewableFactories(location: string): Array<ViewableFactory> {
-          invariant(pkg != null, 'Viewables API used after deactivation');
-          return Array.from(pkg._getStore().getState().viewableFactories.values());
-        },
-        observeViewableFactories(
-          location: string,
-          cb: (factories: Set<ViewableFactory>) => void,
-        ): IDisposable {
-          invariant(pkg != null, 'Viewables API used after deactivation');
-          return new DisposableSubscription(
-            // $FlowFixMe: Teach flow about Symbol.observable
-            Observable.from(pkg._getStore())
-              .map(state => state.viewableFactories)
-              .distinctUntilChanged()
-              .map(viewableFactories => new Set(viewableFactories.values()))
-              .subscribe(cb),
-          );
-        },
-      };
-    }
-    return this._service;
+    return {
+      registerFactory: viewableFactory => {
+        invariant(pkg != null, 'Viewables API used after deactivation');
+        pkg._getStore().dispatch(Actions.registerViewableFactory(viewableFactory));
+        return new Disposable(() => {
+          if (pkg != null) {
+            pkg._getStore().dispatch(Actions.unregisterViewableFactory(viewableFactory.id));
+          }
+        });
+      },
+      registerLocation: locationFactory => {
+        invariant(pkg != null, 'Viewables API used after deactivation');
+        pkg._getStore().dispatch(Actions.registerLocationFactory(locationFactory));
+        return new Disposable(() => {
+          if (pkg != null) {
+            pkg._getStore().dispatch(Actions.unregisterLocation(locationFactory.id));
+          }
+        });
+      },
+      getViewableFactories(location: string): Array<ViewableFactory> {
+        invariant(pkg != null, 'Viewables API used after deactivation');
+        return Array.from(pkg._getStore().getState().viewableFactories.values());
+      },
+      observeViewableFactories(
+        location: string,
+        cb: (factories: Set<ViewableFactory>) => void,
+      ): IDisposable {
+        invariant(pkg != null, 'Viewables API used after deactivation');
+        return new DisposableSubscription(
+          // $FlowFixMe: Teach flow about Symbol.observable
+          Observable.from(pkg._getStore())
+            .map(state => state.viewableFactories)
+            .distinctUntilChanged()
+            .map(viewableFactories => new Set(viewableFactories.values()))
+            .subscribe(cb),
+        );
+      },
+    };
   }
 
 }

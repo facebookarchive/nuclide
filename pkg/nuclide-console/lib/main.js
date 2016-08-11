@@ -34,9 +34,7 @@ import {applyMiddleware, createStore} from 'redux';
 
 class Activation {
   _disposables: CompositeDisposable;
-  _outputService: ?OutputService;
   _rawState: ?Object;
-  _registerExecutorFunction: ?RegisterExecutorFunction;
   _store: Store;
 
   constructor(rawState: ?Object) {
@@ -123,45 +121,39 @@ class Activation {
   }
 
   provideOutputService(): OutputService {
-    if (this._outputService == null) {
-      // Create a local, nullable reference so that the service consumers don't keep the store
-      // instance in memory.
-      let store = this._getStore();
-      this._disposables.add(new Disposable(() => { store = null; }));
+    // Create a local, nullable reference so that the service consumers don't keep the store
+    // instance in memory.
+    let store = this._getStore();
+    this._disposables.add(new Disposable(() => { store = null; }));
 
-      this._outputService = {
-        registerOutputProvider(outputProvider: OutputProvider): IDisposable {
-          invariant(store != null, 'Output service used after deactivation');
-          store.dispatch(Actions.registerOutputProvider(outputProvider));
-          return new Disposable(() => {
-            if (store != null) {
-              store.dispatch(Actions.unregisterOutputProvider(outputProvider));
-            }
-          });
-        },
-      };
-    }
-    return this._outputService;
+    return {
+      registerOutputProvider(outputProvider: OutputProvider): IDisposable {
+        invariant(store != null, 'Output service used after deactivation');
+        store.dispatch(Actions.registerOutputProvider(outputProvider));
+        return new Disposable(() => {
+          if (store != null) {
+            store.dispatch(Actions.unregisterOutputProvider(outputProvider));
+          }
+        });
+      },
+    };
   }
 
   provideRegisterExecutor(): RegisterExecutorFunction {
-    if (this._registerExecutorFunction == null) {
-      // Create a local, nullable reference so that the service consumers don't keep the store
-      // instance in memory.
-      let store = this._getStore();
-      this._disposables.add(new Disposable(() => { store = null; }));
+    // Create a local, nullable reference so that the service consumers don't keep the store
+    // instance in memory.
+    let store = this._getStore();
+    this._disposables.add(new Disposable(() => { store = null; }));
 
-      this._registerExecutorFunction = executor => {
-        invariant(store != null, 'Executor registration attempted after deactivation');
-        store.dispatch(Actions.registerExecutor(executor));
-        return new Disposable(() => {
-          if (store != null) {
-            store.dispatch(Actions.unregisterExecutor(executor));
-          }
-        });
-      };
-    }
-    return this._registerExecutorFunction;
+    return executor => {
+      invariant(store != null, 'Executor registration attempted after deactivation');
+      store.dispatch(Actions.registerExecutor(executor));
+      return new Disposable(() => {
+        if (store != null) {
+          store.dispatch(Actions.unregisterExecutor(executor));
+        }
+      });
+    };
   }
 
   serialize(): Object {
