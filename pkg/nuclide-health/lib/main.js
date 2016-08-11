@@ -17,61 +17,82 @@ import type {HealthStats, PaneItemState} from './types';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import {React} from 'react-for-atom';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 // Imports from other Nuclide packages.
 import {track} from '../../nuclide-analytics';
 import createPackage from '../../commons-atom/createPackage';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import featureConfig from '../../commons-atom/featureConfig';
+import {DisposableSubscription} from '../../commons-node/stream';
 
 // Imports from within this Nuclide package.
 import HealthPaneItem from './HealthPaneItem';
 import {Profiler} from './Profiler';
 
 class Activation {
-  _currentConfig: Object;
-  _viewTimeout: ?number;
-  _analyticsTimeout: ?number;
-  _analyticsBuffer: Array<HealthStats>;
   _profiler: Profiler;
 
-  _paneItemStates: Rx.BehaviorSubject<?PaneItemState>;
+  _paneItemStates: Observable<PaneItemState>;
   _subscriptions: CompositeDisposable;
 
   _healthButton: ?HTMLElement;
-  _healthJewelValue: ?string;
 
   constructor(state: ?Object): void {
-    this._analyticsBuffer = [];
-    this._paneItemStates = new Rx.BehaviorSubject(null);
     this._profiler = new Profiler();
 
     (this: any)._updateAnalytics = this._updateAnalytics.bind(this);
-    (this: any)._updateViews = this._updateViews.bind(this);
+    (this: any)._updateToolbarJewel = this._updateToolbarJewel.bind(this);
+
+    // Observe all of the settings.
+    const configs = featureConfig.observeAsStream('nuclide-health');
+    const viewTimeouts = configs.map(config => config.viewTimeout * 1000).distinctUntilChanged();
+    const analyticsTimeouts = configs
+      .map(config => config.analyticsTimeout * 60 * 1000)
+      .distinctUntilChanged();
+    const toolbarJewels = configs.map(config => config.toolbarJewel || '').distinctUntilChanged();
+
+    // Update the stats immediately, and then periodically based on the config.
+    const statsStream = Observable.of(null)
+      .concat(viewTimeouts.switchMap(Observable.interval))
+      .map(() => this._profiler.getStats())
+      .share();
+
+    const packageStates = statsStream
+      .withLatestFrom(toolbarJewels)
+      .map(([stats, toolbarJewel]) => ({stats, toolbarJewel}))
+      .share()
+      .cache(1);
+
+    const updateToolbarJewel = value => {
+      featureConfig.set('nuclide-health.toolbarJewel', value);
+    };
+    this._paneItemStates = packageStates.map(packageState => ({
+      ...packageState,
+      updateToolbarJewel,
+    }));
 
     this._subscriptions = new CompositeDisposable(
       this._profiler,
-      featureConfig.onDidChange('nuclide-health', event => {
-        this._currentConfig = event.newValue;
-        // If user changes any config, update the health - and reset the polling cycles.
-        this._updateViews();
-        this._updateAnalytics();
-      }),
+
+      // Keep the toolbar jewel up-to-date.
+      new DisposableSubscription(
+        packageStates
+          .map(formatToolbarJewelLabel)
+          .subscribe(this._updateToolbarJewel),
+      ),
+
+      // Buffer the stats and send analytics periodically.
+      new DisposableSubscription(
+        statsStream
+          .buffer(analyticsTimeouts.switchMap(Observable.interval))
+          .subscribe(this._updateAnalytics),
+      ),
     );
-    this._currentConfig = ((featureConfig.get('nuclide-health'): any): Object);
-    this._updateViews();
-    this._updateAnalytics();
   }
 
   dispose(): void {
     this._subscriptions.dispose();
-    if (this._viewTimeout != null) {
-      clearTimeout(this._viewTimeout);
-    }
-    if (this._analyticsTimeout != null) {
-      clearTimeout(this._analyticsTimeout);
-    }
   }
 
   consumeToolBar(getToolBar: GetToolBar): IDisposable {
@@ -83,9 +104,8 @@ class Activation {
       priority: -400,
     }).element;
     this._healthButton.classList.add('nuclide-health-jewel');
-    this._healthJewelValue = null;
     const disposable = new Disposable(() => {
-      this._healthButton = this._healthJewelValue = null;
+      this._healthButton = null;
       toolBar.removeItems();
     });
     this._subscriptions.add(disposable);
@@ -110,105 +130,43 @@ class Activation {
     );
   }
 
-  _updateToolbarJewel(stats: HealthStats) {
-    let value: string = '';
-    if (this._currentConfig.toolbarJewel != null) {
-      const jewel = this._currentConfig.toolbarJewel;
-      switch (jewel) {
-        case 'CPU':
-          value = `${stats.cpuPercentage.toFixed(0)}%`;
-          break;
-        case 'Heap':
-          value = `${stats.heapPercentage.toFixed(0)}%`;
-          break;
-        case 'Memory':
-          value = `${Math.floor(stats.rss / 1024 / 1024)}M`;
-          break;
-        case 'Key latency':
-          value = `${stats.lastKeyLatency}ms`;
-          break;
-        case 'Handles':
-          value = `${stats.activeHandles}`;
-          break;
-        case 'Child processes':
-          value = `${stats.activeHandlesByType.childprocess.length}`;
-          break;
-        case 'Event loop':
-          value = `${stats.activeRequests}`;
-          break;
-      }
-    }
-
+  _updateToolbarJewel(label: string): void {
     const healthButton = this._healthButton;
     if (healthButton != null) {
-      healthButton.classList.toggle('updated', this._healthJewelValue !== value);
-      healthButton.dataset.jewelValue = value;
-      this._healthJewelValue = value;
+      healthButton.classList.toggle('updated', healthButton.dataset.jewelValue !== label);
+      healthButton.dataset.jewelValue = label;
     }
   }
 
-  _updateViews(): void {
-    if (!this._paneItemStates) {
-      return;
-    }
+  _updateAnalytics(analyticsBuffer: Array<HealthStats>): void {
+    if (analyticsBuffer.length === 0) { return; }
 
-    const stats = this._profiler.getStats();
-    this._analyticsBuffer.push(stats);
-    this._paneItemStates.next({
-      toolbarJewel: this._currentConfig.toolbarJewel || '',
-      updateToolbarJewel: value => { featureConfig.set('nuclide-health.toolbarJewel', value); },
-      stats,
-    });
-    this._updateToolbarJewel(stats);
+    // Aggregates the buffered stats up by suffixing avg, min, max to their names.
+    const aggregateStats = {};
 
-    if (this._currentConfig.viewTimeout) {
-      if (this._viewTimeout !== null) {
-        clearTimeout(this._viewTimeout);
+    // All analyticsBuffer entries have the same keys; we use the first entry to know what they
+    // are.
+    Object.keys(analyticsBuffer[0]).forEach(statsKey => {
+      // These values are not to be aggregated or sent.
+      if (statsKey === 'lastKeyLatency' || statsKey === 'activeHandlesByType') {
+        return;
       }
-      this._viewTimeout = setTimeout(this._updateViews, this._currentConfig.viewTimeout * 1000);
-    }
-  }
 
-  _updateAnalytics(): void {
-    if (this._analyticsBuffer.length > 0) {
-      // Aggregates the buffered stats up by suffixing avg, min, max to their names.
-      const aggregateStats = {};
-
-      // All analyticsBuffer entries have the same keys; we use the first entry to know what they
-      // are.
-      Object.keys(this._analyticsBuffer[0]).forEach(statsKey => {
-        // These values are not to be aggregated or sent.
-        if (statsKey === 'lastKeyLatency' || statsKey === 'activeHandlesByType') {
-          return;
-        }
-
-        const aggregates = aggregate(
-          this._analyticsBuffer.map(
-            stats => (typeof stats[statsKey] === 'number' ? stats[statsKey] : 0),
-          ),
-          // skipZeros: Don't use empty key latency values in aggregates.
-          (statsKey === 'keyLatency'),
-        );
-        Object.keys(aggregates).forEach(aggregatesKey => {
-          const value = aggregates[aggregatesKey];
-          if (value !== null && value !== undefined) {
-            aggregateStats[`${statsKey}_${aggregatesKey}`] = value.toFixed(2);
-          }
-        });
-      });
-      track('nuclide-health', aggregateStats);
-      this._analyticsBuffer = [];
-    }
-
-    if (this._currentConfig.analyticsTimeout) {
-      if (this._analyticsTimeout !== null) {
-        clearTimeout(this._analyticsTimeout);
-      }
-      this._analyticsTimeout = setTimeout(
-        this._updateAnalytics,
-        this._currentConfig.analyticsTimeout * 60 * 1000,
+      const aggregates = aggregate(
+        analyticsBuffer.map(
+          stats => (typeof stats[statsKey] === 'number' ? stats[statsKey] : 0),
+        ),
+        // skipZeros: Don't use empty key latency values in aggregates.
+        (statsKey === 'keyLatency'),
       );
-    }
+      Object.keys(aggregates).forEach(aggregatesKey => {
+        const value = aggregates[aggregatesKey];
+        if (value !== null && value !== undefined) {
+          aggregateStats[`${statsKey}_${aggregatesKey}`] = value.toFixed(2);
+        }
+      });
+    });
+    track('nuclide-health', aggregateStats);
   }
 
 }
@@ -231,6 +189,28 @@ function aggregate(
   const min = Math.min(...values);
   const max = Math.max(...values);
   return {avg, min, max};
+}
+
+function formatToolbarJewelLabel(opts: {stats: HealthStats, toolbarJewel: string}): string {
+  const {stats, toolbarJewel} = opts;
+  switch (toolbarJewel) {
+    case 'CPU':
+      return `${stats.cpuPercentage.toFixed(0)}%`;
+    case 'Heap':
+      return `${stats.heapPercentage.toFixed(0)}%`;
+    case 'Memory':
+      return `${Math.floor(stats.rss / 1024 / 1024)}M`;
+    case 'Key latency':
+      return `${stats.lastKeyLatency}ms`;
+    case 'Handles':
+      return `${stats.activeHandles}`;
+    case 'Child processes':
+      return `${stats.activeHandlesByType.childprocess.length}`;
+    case 'Event loop':
+      return `${stats.activeRequests}`;
+    default:
+      return '';
+  }
 }
 
 export default createPackage(Activation);
