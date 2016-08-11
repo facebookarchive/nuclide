@@ -22,6 +22,7 @@ import Rx from 'rxjs';
 
 // Imports from other Nuclide packages.
 import {track, HistogramTracker} from '../../nuclide-analytics';
+import createPackage from '../../commons-atom/createPackage';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {
   onWorkspaceDidStopChangingActivePaneItem,
@@ -31,261 +32,301 @@ import featureConfig from '../../commons-atom/featureConfig';
 // Imports from within this Nuclide package.
 import HealthPaneItem from './HealthPaneItem';
 
-// We may as well declare these outside of Activation because most of them really are nullable.
-let currentConfig = {};
-let viewTimeout: ?number = null;
-let analyticsTimeout: ?number = null;
-let analyticsBuffer: Array<HealthStats> = [];
+class Activation {
+  _currentConfig: Object;
+  _viewTimeout: ?number;
+  _analyticsTimeout: ?number;
+  _analyticsBuffer: Array<HealthStats>;
 
-// Variables for tracking where and when a key was pressed, and the time before it had an effect.
-let activeEditorSubscriptions: ?CompositeDisposable = null;
-let keyEditorId = 0;
-let keyDownTime = 0;
-let keyLatency = 0;
-let lastKeyLatency = 0;
-let keyLatencyHistogram: ?HistogramTracker = null;
+  // Variables for tracking where and when a key was pressed, and the time before it had an effect.
+  _activeEditorSubscriptions: ?CompositeDisposable;
+  _keyEditorId: number;
+  _keyDownTime: number;
+  _keyLatency: number;
+  _lastKeyLatency: number;
+  _keyLatencyHistogram: ?HistogramTracker;
 
-let paneItemState$: ?Rx.BehaviorSubject<?PaneItemState> = null;
+  _paneItemStates: Rx.BehaviorSubject<?PaneItemState>;
+  _subscriptions: CompositeDisposable;
 
-let subscriptions: CompositeDisposable = (null: any);
+  _healthButton: ?HTMLElement;
+  _healthJewelValue: ?string;
 
-let healthButton: ?HTMLElement = null;
-let healthJewelValue: ?string = null;
+  constructor(state: ?Object): void {
+    this._analyticsBuffer = [];
+    this._keyEditorId = 0;
+    this._keyDownTime = 0;
+    this._keyLatency = 0;
+    this._lastKeyLatency = 0;
+    this._paneItemStates = new Rx.BehaviorSubject(null);
 
-export function activate(state: ?Object) {
-  paneItemState$ = new Rx.BehaviorSubject(null);
-  subscriptions = new CompositeDisposable();
-  subscriptions.add(
-    featureConfig.onDidChange('nuclide-health', event => {
-      currentConfig = event.newValue;
-      // If user changes any config, update the health - and reset the polling cycles.
-      updateViews();
-      updateAnalytics();
-    }),
-    atom.workspace.onDidChangeActivePaneItem(disposeActiveEditorDisposables),
-    onWorkspaceDidStopChangingActivePaneItem(timeActiveEditorKeys),
-  );
-  currentConfig = featureConfig.get('nuclide-health');
-  timeActiveEditorKeys();
-  updateViews();
-  updateAnalytics();
+    (this: any)._disposeActiveEditorDisposables = this._disposeActiveEditorDisposables.bind(this);
+    (this: any)._timeActiveEditorKeys = this._timeActiveEditorKeys.bind(this);
+    (this: any)._updateAnalytics = this._updateAnalytics.bind(this);
+    (this: any)._updateViews = this._updateViews.bind(this);
 
-  keyLatencyHistogram = new HistogramTracker(
-    'keypress-latency',
-    /* maxValue */ 500,
-    /* buckets */ 25,
-    /* intervalSeconds */ 60,
-  );
-}
+    this._subscriptions = new CompositeDisposable(
+      featureConfig.onDidChange('nuclide-health', event => {
+        this._currentConfig = event.newValue;
+        // If user changes any config, update the health - and reset the polling cycles.
+        this._updateViews();
+        this._updateAnalytics();
+      }),
+      atom.workspace.onDidChangeActivePaneItem(this._disposeActiveEditorDisposables),
+      onWorkspaceDidStopChangingActivePaneItem(this._timeActiveEditorKeys),
+    );
+    this._currentConfig = ((featureConfig.get('nuclide-health'): any): Object);
+    this._timeActiveEditorKeys();
+    this._updateViews();
+    this._updateAnalytics();
 
-export function deactivate() {
-  subscriptions.dispose();
-  paneItemState$ = null;
-  if (viewTimeout !== null) {
-    clearTimeout(viewTimeout);
-    viewTimeout = null;
-  }
-  if (analyticsTimeout !== null) {
-    clearTimeout(analyticsTimeout);
-    analyticsTimeout = null;
-  }
-  if (activeEditorSubscriptions) {
-    activeEditorSubscriptions.dispose();
-    activeEditorSubscriptions = null;
-  }
-  if (keyLatencyHistogram != null) {
-    keyLatencyHistogram.dispose();
-    keyLatencyHistogram = null;
-  }
-}
-
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
-  const toolBar = getToolBar('nuclide-health');
-  healthButton = toolBar.addButton({
-    icon: 'dashboard',
-    callback: 'nuclide-health:toggle',
-    tooltip: 'Toggle Nuclide health stats',
-    priority: -400,
-  }).element;
-  healthButton.classList.add('nuclide-health-jewel');
-  healthJewelValue = null;
-  const disposable = new Disposable(() => {
-    healthButton = healthJewelValue = null;
-    toolBar.removeItems();
-  });
-  subscriptions.add(disposable);
-  return disposable;
-}
-
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  invariant(paneItemState$);
-  subscriptions.add(
-    api.registerFactory({
-      id: 'nuclide-health',
-      name: 'Health',
-      iconName: 'dashboard',
-      toggleCommand: 'nuclide-health:toggle',
-      defaultLocation: 'pane',
-      create: () => {
-        invariant(paneItemState$ != null);
-        return viewableFromReactElement(<HealthPaneItem stateStream={paneItemState$} />);
-      },
-      isInstance: item => item instanceof HealthPaneItem,
-    }),
-  );
-}
-
-function disposeActiveEditorDisposables(): void {
-  // Clear out any events & timing data from previous text editor.
-  if (activeEditorSubscriptions != null) {
-    activeEditorSubscriptions.dispose();
-    activeEditorSubscriptions = null;
-  }
-}
-
-function timeActiveEditorKeys(): void {
-  disposeActiveEditorDisposables();
-  activeEditorSubscriptions = new CompositeDisposable();
-
-  // If option is enabled, start timing latency of keys on the new text editor.
-  if (!paneItemState$) {
-    return;
+    this._keyLatencyHistogram = new HistogramTracker(
+      'keypress-latency',
+      /* maxValue */ 500,
+      /* buckets */ 25,
+      /* intervalSeconds */ 60,
+    );
   }
 
-  // Ensure the editor is valid and there is a view to attach the keypress timing to.
-  const editor: ?TextEditor = atom.workspace.getActiveTextEditor();
-  if (!editor) {
-    return;
-  }
-  const view = atom.views.getView(editor);
-  if (!view) {
-    return;
-  }
-
-  // Start the clock when a key is pressed. Function is named so it can be disposed well.
-  const startKeyClock = () => {
-    if (editor) {
-      keyEditorId = editor.id;
-      keyDownTime = Date.now();
+  dispose(): void {
+    this._subscriptions.dispose();
+    if (this._viewTimeout != null) {
+      clearTimeout(this._viewTimeout);
     }
-  };
-
-  // Stop the clock when the (same) editor has changed content.
-  const stopKeyClock = () => {
-    if (editor && editor.id && keyEditorId === editor.id && keyDownTime) {
-      keyLatency = Date.now() - keyDownTime;
-      if (keyLatencyHistogram != null) {
-        keyLatencyHistogram.track(keyLatency);
-      }
-      // Reset so that subsequent non-key-initiated buffer updates don't produce silly big numbers.
-      keyDownTime = 0;
+    if (this._analyticsTimeout != null) {
+      clearTimeout(this._analyticsTimeout);
     }
-  };
-
-  // Add the listener to keydown.
-  view.addEventListener('keydown', startKeyClock);
-
-  activeEditorSubscriptions.add(
-    // Remove the listener in a home-made disposable for when this editor is no-longer active.
-    new Disposable(() => view.removeEventListener('keydown', startKeyClock)),
-
-    // stopKeyClock is fast so attaching it to onDidChange here is OK.
-    // onDidStopChanging would be another option - any cost is deferred, but with far less fidelity.
-    editor.onDidChange(stopKeyClock),
-  );
-}
-
-function updateToolbarJewel(stats: HealthStats) {
-  let value: string = '';
-  if (currentConfig.toolbarJewel != null) {
-    const jewel = currentConfig.toolbarJewel;
-    switch (jewel) {
-      case 'CPU':
-        value = `${stats.cpuPercentage.toFixed(0)}%`;
-        break;
-      case 'Heap':
-        value = `${stats.heapPercentage.toFixed(0)}%`;
-        break;
-      case 'Memory':
-        value = `${Math.floor(stats.rss / 1024 / 1024)}M`;
-        break;
-      case 'Key latency':
-        value = `${stats.lastKeyLatency}ms`;
-        break;
-      case 'Handles':
-        value = `${stats.activeHandles}`;
-        break;
-      case 'Child processes':
-        value = `${stats.activeHandlesByType.childprocess.length}`;
-        break;
-      case 'Event loop':
-        value = `${stats.activeRequests}`;
-        break;
+    if (this._activeEditorSubscriptions) {
+      this._activeEditorSubscriptions.dispose();
+    }
+    if (this._keyLatencyHistogram != null) {
+      this._keyLatencyHistogram.dispose();
     }
   }
 
-  if (healthButton != null) {
-    healthButton.classList.toggle('updated', healthJewelValue !== value);
-    healthButton.dataset.jewelValue = value;
-    healthJewelValue = value;
-  }
-}
-
-function updateViews(): void {
-  if (!paneItemState$) {
-    return;
-  }
-
-  const stats = getHealthStats();
-  analyticsBuffer.push(stats);
-  paneItemState$.next({
-    toolbarJewel: currentConfig.toolbarJewel || '',
-    updateToolbarJewel: value => { featureConfig.set('nuclide-health.toolbarJewel', value); },
-    stats,
-  });
-  updateToolbarJewel(stats);
-
-  if (currentConfig.viewTimeout) {
-    if (viewTimeout !== null) {
-      clearTimeout(viewTimeout);
-    }
-    viewTimeout = setTimeout(updateViews, currentConfig.viewTimeout * 1000);
-  }
-}
-
-function updateAnalytics(): void {
-  if (analyticsBuffer.length > 0) {
-    // Aggregates the buffered stats up by suffixing avg, min, max to their names.
-    const aggregateStats = {};
-
-    // All analyticsBuffer entries have the same keys; we use the first entry to know what they are.
-    Object.keys(analyticsBuffer[0]).forEach(statsKey => {
-      // These values are not to be aggregated or sent.
-      if (statsKey === 'lastKeyLatency' || statsKey === 'activeHandlesByType') {
-        return;
-      }
-
-      const aggregates = aggregate(
-        analyticsBuffer.map(stats => (typeof stats[statsKey] === 'number' ? stats[statsKey] : 0)),
-        (statsKey === 'keyLatency'), // skipZeros: Don't use empty key latency values in aggregates.
-      );
-      Object.keys(aggregates).forEach(aggregatesKey => {
-        const value = aggregates[aggregatesKey];
-        if (value !== null && value !== undefined) {
-          aggregateStats[`${statsKey}_${aggregatesKey}`] = value.toFixed(2);
-        }
-      });
+  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+    const toolBar = getToolBar('nuclide-health');
+    this._healthButton = toolBar.addButton({
+      icon: 'dashboard',
+      callback: 'nuclide-health:toggle',
+      tooltip: 'Toggle Nuclide health stats',
+      priority: -400,
+    }).element;
+    this._healthButton.classList.add('nuclide-health-jewel');
+    this._healthJewelValue = null;
+    const disposable = new Disposable(() => {
+      this._healthButton = this._healthJewelValue = null;
+      toolBar.removeItems();
     });
-    track('nuclide-health', aggregateStats);
-    analyticsBuffer = [];
+    this._subscriptions.add(disposable);
+    return disposable;
   }
 
-  if (currentConfig.analyticsTimeout) {
-    if (analyticsTimeout !== null) {
-      clearTimeout(analyticsTimeout);
-    }
-    analyticsTimeout = setTimeout(updateAnalytics, currentConfig.analyticsTimeout * 60 * 1000);
+  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+    invariant(this._paneItemStates);
+    this._subscriptions.add(
+      api.registerFactory({
+        id: 'nuclide-health',
+        name: 'Health',
+        iconName: 'dashboard',
+        toggleCommand: 'nuclide-health:toggle',
+        defaultLocation: 'pane',
+        create: () => {
+          invariant(this._paneItemStates != null);
+          return viewableFromReactElement(<HealthPaneItem stateStream={this._paneItemStates} />);
+        },
+        isInstance: item => item instanceof HealthPaneItem,
+      }),
+    );
   }
+
+  _disposeActiveEditorDisposables(): void {
+    // Clear out any events & timing data from previous text editor.
+    if (this._activeEditorSubscriptions != null) {
+      this._activeEditorSubscriptions.dispose();
+      this._activeEditorSubscriptions = null;
+    }
+  }
+
+  _timeActiveEditorKeys(): void {
+    this._disposeActiveEditorDisposables();
+
+    // If option is enabled, start timing latency of keys on the new text editor.
+    if (!this._paneItemStates) {
+      return;
+    }
+
+    // Ensure the editor is valid and there is a view to attach the keypress timing to.
+    const editor: ?TextEditor = atom.workspace.getActiveTextEditor();
+    if (!editor) {
+      return;
+    }
+    const view = atom.views.getView(editor);
+    if (!view) {
+      return;
+    }
+
+    // Start the clock when a key is pressed. Function is named so it can be disposed well.
+    const startKeyClock = () => {
+      if (editor) {
+        this._keyEditorId = editor.id;
+        this._keyDownTime = Date.now();
+      }
+    };
+
+    // Stop the clock when the (same) editor has changed content.
+    const stopKeyClock = () => {
+      if (editor && editor.id && this._keyEditorId === editor.id && this._keyDownTime) {
+        this._keyLatency = Date.now() - this._keyDownTime;
+        if (this._keyLatencyHistogram != null) {
+          this._keyLatencyHistogram.track(this._keyLatency);
+        }
+        // Reset so that subsequent non-key-initiated buffer updates don't produce silly big
+        // numbers.
+        this._keyDownTime = 0;
+      }
+    };
+
+    // Add the listener to keydown.
+    view.addEventListener('keydown', startKeyClock);
+
+    this._activeEditorSubscriptions = new CompositeDisposable(
+      // Remove the listener in a home-made disposable for when this editor is no-longer active.
+      new Disposable(() => view.removeEventListener('keydown', startKeyClock)),
+
+      // stopKeyClock is fast so attaching it to onDidChange here is OK. onDidStopChanging would be
+      // another option - any cost is deferred, but with far less fidelity.
+      editor.onDidChange(stopKeyClock),
+    );
+  }
+
+  _updateToolbarJewel(stats: HealthStats) {
+    let value: string = '';
+    if (this._currentConfig.toolbarJewel != null) {
+      const jewel = this._currentConfig.toolbarJewel;
+      switch (jewel) {
+        case 'CPU':
+          value = `${stats.cpuPercentage.toFixed(0)}%`;
+          break;
+        case 'Heap':
+          value = `${stats.heapPercentage.toFixed(0)}%`;
+          break;
+        case 'Memory':
+          value = `${Math.floor(stats.rss / 1024 / 1024)}M`;
+          break;
+        case 'Key latency':
+          value = `${stats.lastKeyLatency}ms`;
+          break;
+        case 'Handles':
+          value = `${stats.activeHandles}`;
+          break;
+        case 'Child processes':
+          value = `${stats.activeHandlesByType.childprocess.length}`;
+          break;
+        case 'Event loop':
+          value = `${stats.activeRequests}`;
+          break;
+      }
+    }
+
+    const healthButton = this._healthButton;
+    if (healthButton != null) {
+      healthButton.classList.toggle('updated', this._healthJewelValue !== value);
+      healthButton.dataset.jewelValue = value;
+      this._healthJewelValue = value;
+    }
+  }
+
+  _updateViews(): void {
+    if (!this._paneItemStates) {
+      return;
+    }
+
+    const stats = this._getHealthStats();
+    this._analyticsBuffer.push(stats);
+    this._paneItemStates.next({
+      toolbarJewel: this._currentConfig.toolbarJewel || '',
+      updateToolbarJewel: value => { featureConfig.set('nuclide-health.toolbarJewel', value); },
+      stats,
+    });
+    this._updateToolbarJewel(stats);
+
+    if (this._currentConfig.viewTimeout) {
+      if (this._viewTimeout !== null) {
+        clearTimeout(this._viewTimeout);
+      }
+      this._viewTimeout = setTimeout(this._updateViews, this._currentConfig.viewTimeout * 1000);
+    }
+  }
+
+  _updateAnalytics(): void {
+    if (this._analyticsBuffer.length > 0) {
+      // Aggregates the buffered stats up by suffixing avg, min, max to their names.
+      const aggregateStats = {};
+
+      // All analyticsBuffer entries have the same keys; we use the first entry to know what they
+      // are.
+      Object.keys(this._analyticsBuffer[0]).forEach(statsKey => {
+        // These values are not to be aggregated or sent.
+        if (statsKey === 'lastKeyLatency' || statsKey === 'activeHandlesByType') {
+          return;
+        }
+
+        const aggregates = aggregate(
+          this._analyticsBuffer.map(
+            stats => (typeof stats[statsKey] === 'number' ? stats[statsKey] : 0),
+          ),
+          // skipZeros: Don't use empty key latency values in aggregates.
+          (statsKey === 'keyLatency'),
+        );
+        Object.keys(aggregates).forEach(aggregatesKey => {
+          const value = aggregates[aggregatesKey];
+          if (value !== null && value !== undefined) {
+            aggregateStats[`${statsKey}_${aggregatesKey}`] = value.toFixed(2);
+          }
+        });
+      });
+      track('nuclide-health', aggregateStats);
+      this._analyticsBuffer = [];
+    }
+
+    if (this._currentConfig.analyticsTimeout) {
+      if (this._analyticsTimeout !== null) {
+        clearTimeout(this._analyticsTimeout);
+      }
+      this._analyticsTimeout = setTimeout(
+        this._updateAnalytics,
+        this._currentConfig.analyticsTimeout * 60 * 1000,
+      );
+    }
+  }
+
+  _getHealthStats(): HealthStats {
+    const stats = process.memoryUsage();                          // RSS, heap and usage.
+
+    if (this._keyLatency) {
+      this._lastKeyLatency = this._keyLatency;
+    }
+
+    const activeHandles = getActiveHandles();
+    const activeHandlesByType = getActiveHandlesByType(Array.from(activeHandles));
+
+    const result = {
+      ...stats,
+      heapPercentage: (100 * stats.heapUsed / stats.heapTotal),   // Just for convenience.
+      cpuPercentage: os.loadavg()[0],                             // 1 minute CPU average.
+      lastKeyLatency: this._lastKeyLatency,
+      keyLatency: this._lastKeyLatency,
+      activeHandles: activeHandles.length,
+      activeRequests: getActiveRequests().length,
+      activeHandlesByType,
+    };
+
+    // We only want to ever record a key latency time once, and so we reset it.
+    this._keyLatency = 0;
+    return result;
+  }
+
 }
 
 function aggregate(
@@ -306,31 +347,6 @@ function aggregate(
   const min = Math.min(...values);
   const max = Math.max(...values);
   return {avg, min, max};
-}
-
-function getHealthStats(): HealthStats {
-  const stats = process.memoryUsage();                          // RSS, heap and usage.
-
-  if (keyLatency) {
-    lastKeyLatency = keyLatency;
-  }
-
-  const activeHandles = getActiveHandles();
-  const activeHandlesByType = getActiveHandlesByType(Array.from(activeHandles));
-
-  const result = {
-    ...stats,
-    heapPercentage: (100 * stats.heapUsed / stats.heapTotal),   // Just for convenience.
-    cpuPercentage: os.loadavg()[0],                             // 1 minute CPU average.
-    lastKeyLatency,
-    keyLatency,
-    activeHandles: activeHandles.length,
-    activeRequests: getActiveRequests().length,
-    activeHandlesByType,
-  };
-
-  keyLatency = 0; // We only want to ever record a key latency time once, and so we reset it.
-  return result;
 }
 
 // These two functions are to defend against undocumented Node functions.
@@ -385,3 +401,5 @@ function getTopLevelHandles(handles: Array<Object>): Array<Object> {
   });
   return topLevelHandles;
 }
+
+export default createPackage(Activation);
