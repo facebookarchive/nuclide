@@ -47,10 +47,7 @@ let activationState: ?ActivationState = null;
 
 let consumeUpdatesCalled = false;
 
-function createPanel(
-  diagnosticUpdater: ObservableDiagnosticUpdater,
-  disposables: CompositeDisposable,
-) {
+function createPanel(diagnosticUpdater: ObservableDiagnosticUpdater): IDisposable {
   invariant(activationState);
   const {
     atomPanel: panel,
@@ -69,35 +66,35 @@ function createPanel(
   logPanelIsDisplayed();
   bottomPanel = panel;
 
-  const onDidChangeVisibleSubscription = panel.onDidChangeVisible((visible: boolean) => {
-    invariant(activationState);
-    activationState.hideDiagnosticsPanel = !visible;
-  });
-  disposables.add(onDidChangeVisibleSubscription);
-
-  watchForLinter(setWarnAboutLinter, disposables);
+  return new CompositeDisposable(
+    panel.onDidChangeVisible((visible: boolean) => {
+      invariant(activationState);
+      activationState.hideDiagnosticsPanel = !visible;
+    }),
+    watchForLinter(setWarnAboutLinter),
+  );
 }
 
 function disableLinter() {
   atom.packages.disablePackage(LINTER_PACKAGE);
 }
 
-function watchForLinter(
-    setWarnAboutLinter: (warn: boolean) => void,
-    disposables: CompositeDisposable): void {
+function watchForLinter(setWarnAboutLinter: (warn: boolean) => void): IDisposable {
   if (atom.packages.isPackageActive(LINTER_PACKAGE)) {
     setWarnAboutLinter(true);
   }
-  disposables.add(atom.packages.onDidActivatePackage(pkg => {
-    if (pkg.name === LINTER_PACKAGE) {
-      setWarnAboutLinter(true);
-    }
-  }));
-  disposables.add(atom.packages.onDidDeactivatePackage(pkg => {
-    if (pkg.name === LINTER_PACKAGE) {
-      setWarnAboutLinter(false);
-    }
-  }));
+  return new CompositeDisposable(
+    atom.packages.onDidActivatePackage(pkg => {
+      if (pkg.name === LINTER_PACKAGE) {
+        setWarnAboutLinter(true);
+      }
+    }),
+    atom.packages.onDidDeactivatePackage(pkg => {
+      if (pkg.name === LINTER_PACKAGE) {
+        setWarnAboutLinter(false);
+      }
+    }),
+  );
 }
 
 function getStatusBarTile(): StatusBarTile {
@@ -177,12 +174,12 @@ function gutterConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticU
 
 function tableConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
   invariant(subscriptions != null);
-  const lazilyCreateTable = createPanel.bind(null, diagnosticUpdater, subscriptions);
 
   const toggleTable = () => {
     const bottomPanelRef = bottomPanel;
     if (bottomPanelRef == null) {
-      lazilyCreateTable();
+      invariant(subscriptions != null);
+      subscriptions.add(createPanel(diagnosticUpdater));
     } else if (bottomPanelRef.isVisible()) {
       tryRecordActivationState();
       bottomPanelRef.hide();
@@ -212,7 +209,8 @@ function tableConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUp
 
   invariant(activationState);
   if (!activationState.hideDiagnosticsPanel) {
-    lazilyCreateTable();
+    invariant(subscriptions != null);
+    subscriptions.add(createPanel(diagnosticUpdater));
   }
 }
 
