@@ -95,7 +95,7 @@ export default class CallstackStore {
   _highlightCallFrameLine(editor: atom$TextEditor, line: number) {
     const marker = editor.markBufferRange(
       [[line, 0], [line, Infinity]],
-      {persistent: false, invalidate: 'never'});
+      {invalidate: 'never'});
     editor.decorateMarker(marker, {
       type: 'line',
       class: 'nuclide-current-line-highlight',
