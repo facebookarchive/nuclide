@@ -885,6 +885,11 @@ export class HgRepositoryClient {
     return this._service.getBlameAtHead(filePath);
   }
 
+  getTemplateCommitMessage(): Promise<?string> {
+    // TODO(t12228275) This is a stopgap hack, fix it.
+    return this._service.getTemplateCommitMessage();
+  }
+
   getConfigValueAsync(key: string, path: ?string): Promise<?string> {
     return this._service.getConfigValueAsync(key);
   }

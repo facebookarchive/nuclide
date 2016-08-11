@@ -859,6 +859,46 @@ export class HgService {
     return this._runSimpleInWorkingDirectory('add', filePaths);
   }
 
+  // TODO(t12228275) This is a stopgap hack, fix it. This takes the default
+  // commit message from the hg commit message and since there is no change to
+  // the commit message the commands errors out with error code : 255 and piggy
+  // backs the stdout and stderr into an error message.
+  async getTemplateCommitMessage(): Promise<?string> {
+    let editor;
+
+    // Windows will need 'type' in place of 'cat'
+    if (process.platform === 'win32') {
+      editor = 'type';
+    } else {
+      editor = 'cat';
+    }
+    const args = ['commit', '--config', `ui.editor=${editor}`];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    try {
+      const {stdout: output} = await this._hgAsyncExecute(args, execOptions);
+      // It is most certianly not going to come here ever, the hg commit
+      // is always going to error since no change is made to the commit message.
+      const stdout = output.stdout.trim();
+      return stdout || null;
+    } catch (e) {
+      // Since no change was made stderr is returned and the service thinks the
+      // command execution failed. This is to get the stdout part of the message.
+      // If there is no match return null. This will need to go away soon.
+      // The message format : stderr:<error> stdout:<stdout>
+      const re = /stdout:(.[\n\r]*[\s\S]*)/;
+      const stdout = re.exec(e.message);
+
+      if (stdout === null) {
+        return this.getConfigValueAsync('committemplate.emptymsg');
+      }
+
+      // Match exists, return the commit message
+      return stdout[1].trim();
+    }
+  }
+
   async getHeadCommitMessage(): Promise<?string> {
     const args = [
       'log', '-T', '{desc}\n',

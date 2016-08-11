@@ -474,7 +474,8 @@ export default class RepositoryStack {
   }
 
   getTemplateCommitMessage(): Promise<?string> {
-    return this._repository.getConfigValueAsync('committemplate.emptymsg');
+    // TODO(t12228275) This is a stopgap hack, fix it.
+    return this._repository.getTemplateCommitMessage();
   }
 
   async setRevision(revision: RevisionInfo): Promise<void> {
