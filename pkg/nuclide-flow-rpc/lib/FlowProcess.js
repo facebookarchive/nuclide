@@ -26,8 +26,9 @@ import {track} from '../../nuclide-analytics';
 
 import {
   asyncExecute,
-  safeSpawn,
 } from '../../commons-node/process';
+
+import nice from '../../commons-node/nice';
 
 import {
   getStopFlowOnExit,
@@ -167,7 +168,7 @@ export class FlowProcess {
     // case is never. We need to use spawn directly to get access to the
     // ChildProcess object.
     // eslint-disable-next-line babel/no-await-in-loop
-    const serverProcess = await safeSpawn(
+    const serverProcess = await nice(
       flowExecInfo.pathToFlow,
       [
         'server',

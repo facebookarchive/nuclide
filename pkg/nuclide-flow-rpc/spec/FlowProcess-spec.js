@@ -19,7 +19,7 @@ import os from 'os';
 import {FLOW_RETURN_CODES} from '../lib/FlowProcess';
 import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
 
-import {uncachedRequire} from '../../nuclide-test-helpers';
+import {uncachedRequire, spyOnDefault} from '../../nuclide-test-helpers';
 
 const flowProcessPath = '../lib/FlowProcess';
 
@@ -32,6 +32,8 @@ describe('FlowProcess', () => {
 
   let FlowProcess: Class<FlowProcessType> = (null: any);
   let flowProcess: FlowProcessType = (null: any);
+
+  let niceSpy: JasmineSpy = (null: any);
 
   const root = '/path/to/flow/root';
 
@@ -54,7 +56,7 @@ describe('FlowProcess', () => {
       kill() {},
     };
 
-    spyOn(require('../../commons-node/process'), 'safeSpawn').andCallFake(() => {
+    niceSpy = spyOnDefault(require.resolve('../../commons-node/nice')).andCallFake(() => {
       return childSpy;
     });
     // we have to create another flow service here since we've mocked modules
@@ -62,6 +64,10 @@ describe('FlowProcess', () => {
     FlowProcess =
       ((uncachedRequire(require, flowProcessPath): any).FlowProcess: Class<FlowProcessType>);
     flowProcess = new FlowProcess(root, new FlowExecInfoContainer());
+  });
+
+  afterEach(() => {
+    jasmine.unspy(require('../../commons-node/process'), 'asyncExecute');
   });
 
   describe('Server startup and teardown', () => {
@@ -88,16 +94,10 @@ describe('FlowProcess', () => {
       waitsForPromise(async () => { await execFlow(); });
     });
 
-    afterEach(() => {
-      jasmine.unspy(require('../../commons-node/process'), 'asyncExecute');
-      jasmine.unspy(require('../../commons-node/process'), 'safeSpawn');
-    });
-
     describe('execFlow', () => {
       it('should spawn a new Flow server', () => {
         const expectedWorkers = os.cpus().length - 2;
-        // $FlowIgnore it's a spy.
-        const args = require('../../commons-node/process').safeSpawn.mostRecentCall.args;
+        const args: Array<any> = niceSpy.mostRecentCall.args;
         expect(args[0]).toEqual('flow');
         expect(args[1]).toEqual(
           [
