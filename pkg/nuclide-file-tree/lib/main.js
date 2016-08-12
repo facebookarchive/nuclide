@@ -19,9 +19,6 @@ import invariant from 'assert';
 
 import featureConfig from '../../commons-atom/featureConfig';
 import debounce from '../../commons-node/debounce';
-import {
-  onWorkspaceDidStopChangingActivePaneItem,
-} from '../../commons-atom/debounced';
 
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
 import FileTreeController from './FileTreeController';
@@ -34,7 +31,6 @@ import semver from 'semver';
  * Minimum interval (in ms) between onChangeActivePaneItem events before revealing the active pane
  * item in the file tree.
  */
-const ACTIVE_PANE_DEBOUNCE_INTERVAL_MS = 150;
 const OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS = 150;
 
 const REVEAL_FILE_ON_SWITCH_SETTING = 'nuclide-file-tree.revealFileOnSwitch';
@@ -172,16 +168,13 @@ class Activation {
 
   _setRevealOnFileSwitch(shouldReveal: boolean) {
     if (shouldReveal) {
-      const reveal = () => {
-        this._fileTreeController.revealActiveFile(/* showIfHidden */ false);
-      };
       // Guard against this getting called multiple times
       if (!this._paneItemSubscription) {
-        // Debounce tab change events to limit unneeded scrolling when changing or closing tabs
-        // in quick succession.
-        this._paneItemSubscription = onWorkspaceDidStopChangingActivePaneItem(
-          reveal,
-          ACTIVE_PANE_DEBOUNCE_INTERVAL_MS,
+        this._paneItemSubscription = atom.workspace.onDidStopChangingActivePaneItem(
+          this._fileTreeController.revealActiveFile.bind(
+            this._fileTreeController,
+            /* showIfHidden */ false,
+          ),
         );
         this._subscriptions.add(this._paneItemSubscription);
       }

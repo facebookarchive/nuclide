@@ -21,27 +21,12 @@
 import {Observable} from 'rxjs';
 
 import {observableFromSubscribeFunction} from '../commons-node/event';
-import debounce from '../commons-node/debounce';
 import {getCursorPositions} from './text-editor';
 import invariant from 'assert';
 
 const DEFAULT_PANE_DEBOUNCE_INTERVAL_MS = 100;
 const DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS = 300;
 const DEFAULT_POSITION_DEBOUNCE_INTERVAL_MS = 300;
-
-/**
- * Similar to Atom's Workspace::onDidChangeActivePaneItem
- * (https://atom.io/docs/api/latest/Workspace#instance-onDidChangeActivePaneItem),
- * with the addition of a debounce interval.
- * @param debounceInterval The number of milliseconds to debounce.
- */
-export function onWorkspaceDidStopChangingActivePaneItem(
-  callback: (item: mixed) => any,
-  debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
-): IDisposable {
-  const debouncedFunction = debounce(callback, debounceInterval, /* immediate */ false);
-  return atom.workspace.onDidChangeActivePaneItem(debouncedFunction);
-}
 
 export function observeActivePaneItemDebounced(
   debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,

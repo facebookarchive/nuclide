@@ -15,9 +15,6 @@ export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
 
 import {CompositeDisposable} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
-import {
-  onWorkspaceDidStopChangingActivePaneItem,
-} from '../../commons-atom/debounced';
 
 class RecentFilesService {
   // Map uses `Map`'s insertion ordering to keep files in order.
@@ -34,7 +31,7 @@ class RecentFilesService {
     }
     this._subscriptions = new CompositeDisposable();
     this._subscriptions.add(
-      onWorkspaceDidStopChangingActivePaneItem((item: ?mixed) => {
+      atom.workspace.onDidStopChangingActivePaneItem((item: ?mixed) => {
         // Not all `item`s are instances of TextEditor (e.g. the diff view).
         if (!item || typeof item.getPath !== 'function') {
           return;

@@ -20,26 +20,9 @@ const FILE_PATH_3 = 'foo/bar/baz.js';
 
 describe('RecentFilesService', () => {
   let recentFilesService: any;
-  let origDateNow: any;
 
   beforeEach(() => {
-    origDateNow = Date.now;
-    /*
-     * `RecentFileService` listens for `onWorkspaceDidStopChangingActivePaneItem`, which debounces
-     * calls to `onDidChangeActivePaneItem`. `debounce` calls `Date.now` to determine whether to
-     * call callbacks.
-     *
-     * Mock `Date.now` to use the fake Jasmine clock so `advanceClock` can be called synchronously
-     * and call appropriate callbacks deterministically.
-     */
-    // $FlowFixMe
-    Date.now = () => window.now;
     recentFilesService = new RecentFilesService();
-  });
-
-  afterEach(() => {
-    // $FlowFixMe
-    Date.now = origDateNow;
   });
 
   describe('getRecentFiles', () => {

@@ -15,9 +15,6 @@ import {CompositeDisposable, Emitter} from 'atom';
 import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import {trackTiming} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {
-  onWorkspaceDidStopChangingActivePaneItem,
-} from '../../commons-atom/debounced';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
@@ -43,7 +40,7 @@ class ProjectStore {
     // For the current active editor, and any update to the active editor,
     // decide whether the toolbar should be displayed.
     const callback = this._onDidChangeActivePaneItem.bind(this);
-    this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(callback));
+    this._disposables.add(atom.workspace.onDidStopChangingActivePaneItem(callback));
     callback();
   }
 

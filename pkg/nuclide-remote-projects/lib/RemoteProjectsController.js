@@ -16,9 +16,6 @@ import {CompositeDisposable, Disposable} from 'atom';
 import StatusBarTile from './StatusBarTile';
 import nuclideUri from '../../commons-node/nuclideUri';
 import ConnectionState from './ConnectionState';
-import {
-  onWorkspaceDidStopChangingActivePaneItem,
-} from '../../commons-atom/debounced';
 
 class RemoteProjectsController {
   _disposables: CompositeDisposable;
@@ -33,7 +30,7 @@ class RemoteProjectsController {
     this._statusSubscription = null;
     this._disposables.add(
       atom.workspace.onDidChangeActivePaneItem(this._disposeSubscription.bind(this)),
-      onWorkspaceDidStopChangingActivePaneItem(
+      atom.workspace.onDidStopChangingActivePaneItem(
         this._updateConnectionStatus.bind(this),
       ),
     );

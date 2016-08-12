@@ -13,7 +13,6 @@ import {Point} from 'atom';
 import {Observable} from 'rxjs';
 import {
   editorScrollTopDebounced,
-  onWorkspaceDidStopChangingActivePaneItem,
   observeActivePaneItemDebounced,
   observeActiveEditorsDebounced,
   editorChangesDebounced,
@@ -22,7 +21,6 @@ import {
 import {goToLocationInEditor} from '../go-to-location';
 
 import {sleep} from '../../commons-node/promise';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
 
 // Shorter than the default so the tests don't run long.
 const DEBOUNCE_INTERVAL = 10;
@@ -91,44 +89,6 @@ describe('pane item change events', () => {
       };
       pane.addItem(nonEditor);
       pane.activateItem(editor1);
-    });
-  });
-
-  describe('onWorkspaceDidStopChangingActivePaneItem', () => {
-    beforeEach(() => {
-      // Convert to an Observable for ease of manipulation
-      activePaneItems = observableFromSubscribeFunction(callback => {
-        return onWorkspaceDidStopChangingActivePaneItem(callback, DEBOUNCE_INTERVAL);
-      });
-    });
-
-    it('should not issue an initial item', () => {
-      waitsForPromise(async () => {
-        expect(
-          await activePaneItems
-            .first()
-            // Split out an empty observable after waiting 20 ms.
-            .race(Observable.empty().delay(20))
-            .toArray()
-            .toPromise(),
-        ).toEqual([]);
-      });
-    });
-
-    it('should debounce', () => {
-      waitsForPromise(async () => {
-        const itemsPromise = activePaneItems
-          .take(1)
-          .toArray()
-          .toPromise();
-
-        await sleep(SLEEP_INTERVAL);
-
-        pane.activateItem(editor2);
-        pane.activateItem(editor3);
-
-        expect(await itemsPromise).toEqual([editor3]);
-      });
     });
   });
 

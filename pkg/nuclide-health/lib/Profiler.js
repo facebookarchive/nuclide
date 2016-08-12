@@ -11,13 +11,9 @@
 
 import type {HealthStats} from './types';
 
-import {onWorkspaceDidStopChangingActivePaneItem} from '../../commons-atom/debounced';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {DisposableSubscription} from '../../commons-node/stream';
 import {HistogramTracker} from '../../nuclide-analytics';
 import {CompositeDisposable, Disposable} from 'atom';
 import os from 'os';
-import {Observable} from 'rxjs';
 
 export class Profiler {
   _activeEditorSubscriptions: ?CompositeDisposable;
@@ -47,11 +43,7 @@ export class Profiler {
     (this: any)._disposeActiveEditorDisposables = this._disposeActiveEditorDisposables.bind(this);
 
     this._subscriptions = new CompositeDisposable(
-      new DisposableSubscription(
-        Observable.of(null)
-          .concat(observableFromSubscribeFunction(onWorkspaceDidStopChangingActivePaneItem))
-          .subscribe(this._timeActiveEditorKeys),
-      ),
+      atom.workspace.onDidStopChangingActivePaneItem(this._timeActiveEditorKeys),
       atom.workspace.onDidChangeActivePaneItem(this._disposeActiveEditorDisposables),
     );
   }
