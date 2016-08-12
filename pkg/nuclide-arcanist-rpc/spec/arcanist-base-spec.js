@@ -11,12 +11,9 @@
 
 import * as arcanist from '..';
 import nuclideUri from '../../commons-node/nuclideUri';
-import fs from 'fs-plus';
-import temp from 'temp';
+import fsPromise from '../../commons-node/fsPromise';
 import invariant from 'assert';
-import {uncachedRequire} from '../../nuclide-test-helpers';
-
-temp.track();
+import {copyFixture, uncachedRequire} from '../../nuclide-test-helpers';
 
 const rootConfig = {
   project_id: 'project1',
@@ -26,40 +23,33 @@ const nestedConfig = {
 };
 
 describe('nuclide-arcanist-rpc', () => {
-  let rootPath: any;
-  let dirPath: any;
-  let file1Path: any;
-  let file2Path: any;
-  let nestedPath: any;
-  let tempPath: any;
+  let rootPath: string = (null: any);
+  let rootParentPath: string = (null: any);
+  let dirPath: string = (null: any);
+  let file1Path: string = (null: any);
+  let file2Path: string = (null: any);
+  let nestedPath: string = (null: any);
 
   beforeEach(() => {
     waitsForPromise(async () => {
-      // Copy the contents of 'fixtures' into a temp directory
-      // ... and rename any .arcconfig.test -> .arcconfig
-      tempPath = fs.absolute(temp.mkdirSync());
-      const fixturesPath = nuclideUri.join(__dirname, 'fixtures');
-      fs.copySync(fixturesPath, tempPath);
-
-      function adjustArcConfig(dir: string) {
-        fs.renameSync(
-          nuclideUri.join(dir, '.arcconfig.test'),
-          nuclideUri.join(dir, '.arcconfig'));
-      }
-
-      adjustArcConfig(nuclideUri.join(tempPath, 'arc'));
-      adjustArcConfig(nuclideUri.join(tempPath, 'arc', 'nested-project'));
-
-      rootPath = nuclideUri.join(tempPath, 'arc');
+      rootPath = await copyFixture('arc', __dirname);
+      rootParentPath = nuclideUri.dirname(rootPath);
       dirPath = nuclideUri.join(rootPath, 'dir1');
       file1Path = nuclideUri.join(dirPath, 'file1');
       file2Path = nuclideUri.join(rootPath, 'file2');
       nestedPath = nuclideUri.join(rootPath, 'nested-project');
-    });
-  });
 
-  afterEach(() => {
-    temp.cleanupSync();
+      await Promise.all([
+        fsPromise.rename(
+          nuclideUri.join(rootPath, '.arcconfig.test'),
+          nuclideUri.join(rootPath, '.arcconfig'),
+        ),
+        fsPromise.rename(
+          nuclideUri.join(nestedPath, '.arcconfig.test'),
+          nuclideUri.join(nestedPath, '.arcconfig'),
+        ),
+      ]);
+    });
   });
 
   it('findArcConfigDirectory', () => {
@@ -69,7 +59,7 @@ describe('nuclide-arcanist-rpc', () => {
       expect(await arcanist.findArcConfigDirectory(file1Path)).toBe(rootPath);
       expect(await arcanist.findArcConfigDirectory(file2Path)).toBe(rootPath);
       expect(await arcanist.findArcConfigDirectory(nestedPath)).toBe(nestedPath);
-      expect(await arcanist.findArcConfigDirectory(tempPath)).toBe(null);
+      expect(await arcanist.findArcConfigDirectory(rootParentPath)).toBe(null);
     });
   });
 
@@ -80,7 +70,7 @@ describe('nuclide-arcanist-rpc', () => {
       expect(await arcanist.readArcConfig(file1Path)).toEqual(rootConfig);
       expect(await arcanist.readArcConfig(file2Path)).toEqual(rootConfig);
       expect(await arcanist.readArcConfig(nestedPath)).toEqual(nestedConfig);
-      expect(await arcanist.readArcConfig(tempPath)).toEqual(null);
+      expect(await arcanist.readArcConfig(rootParentPath)).toEqual(null);
     });
   });
 
@@ -91,7 +81,7 @@ describe('nuclide-arcanist-rpc', () => {
       expect(await arcanist.findArcProjectIdOfPath(file1Path)).toBe('project1');
       expect(await arcanist.findArcProjectIdOfPath(file2Path)).toBe('project1');
       expect(await arcanist.findArcProjectIdOfPath(nestedPath)).toBe('project-nested');
-      expect(await arcanist.findArcProjectIdOfPath(tempPath)).toBe(null);
+      expect(await arcanist.findArcProjectIdOfPath(rootParentPath)).toBe(null);
     });
   });
 
@@ -102,7 +92,7 @@ describe('nuclide-arcanist-rpc', () => {
       expect(await arcanist.getProjectRelativePath(file1Path)).toBe('dir1/file1');
       expect(await arcanist.getProjectRelativePath(file2Path)).toBe('file2');
       expect(await arcanist.getProjectRelativePath(nestedPath)).toBe('');
-      expect(await arcanist.getProjectRelativePath(tempPath)).toBe(null);
+      expect(await arcanist.getProjectRelativePath(rootParentPath)).toBe(null);
     });
   });
 
