@@ -16,7 +16,7 @@
       "openInNextPane": {
         "title": "Open related files in next open pane",
         "type": "boolean",
-        "default": false,
+        "default": true,
         "description": "Open related files (i.e. switch to header/source) in the next open pane."
       }
     },
