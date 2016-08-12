@@ -122,6 +122,7 @@
     "language-babel",
     "language-ini",
     "language-ocaml",
+    "language-swift",
     "language-thrift",
     "merge-conflicts",
     "sort-lines"
