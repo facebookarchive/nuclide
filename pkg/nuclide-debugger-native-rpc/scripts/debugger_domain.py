@@ -111,7 +111,8 @@ class DebuggerDomain(HandlerDomain):
         parsed_url = urlparse.urlparse(params['url'])
         return self._set_breakpoint_by_source_path(
             str(os.path.basename(parsed_url.path)),
-            int(params['lineNumber']) + 1)
+            int(params['lineNumber']) + 1,
+            str(params['condition']))
 
     @handler()
     def setBreakpointsActive(self, params):
@@ -167,10 +168,12 @@ class DebuggerDomain(HandlerDomain):
             return lldb.eOnlyThisThread
         return lldb.eOnlyDuringStepping
 
-    def _set_breakpoint_by_source_path(self, source_path, line):
+    def _set_breakpoint_by_source_path(self, source_path, line, condition):
         breakpoint = self.debugger_store.debugger.GetSelectedTarget().BreakpointCreateByLocation(
             source_path,
             line)
+        if condition:  # empty string is falsy.
+            breakpoint.SetCondition(condition)
         return {
             'breakpointId': str(breakpoint.id),
             'locations': self.debugger_store.location_serializer.get_breakpoint_locations(breakpoint),
