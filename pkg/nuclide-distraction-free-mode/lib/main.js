@@ -57,8 +57,13 @@ class Activation {
     return this._tunnelVision.serialize();
   }
 
-  consumeDistractionFreeModeProvider(provider: DistractionFreeModeProvider): IDisposable {
-    return this._tunnelVision.consumeDistractionFreeModeProvider(provider);
+  consumeDistractionFreeModeProvider(
+    providerOrList: DistractionFreeModeProvider | Array<DistractionFreeModeProvider>,
+  ): IDisposable {
+    const providers = Array.isArray(providerOrList) ? providerOrList : [providerOrList];
+    return new CompositeDisposable(
+      ...providers.map(provider => this._tunnelVision.consumeDistractionFreeModeProvider(provider)),
+    );
   }
 
   consumeToolBar(getToolBar: GetToolBar): IDisposable {
@@ -99,7 +104,7 @@ export function serialize(): DistractionFreeModeState {
 }
 
 export function consumeDistractionFreeModeProvider(
-  provider: DistractionFreeModeProvider,
+  provider: DistractionFreeModeProvider | Array<DistractionFreeModeProvider>,
 ): IDisposable {
   invariant(activation != null);
   return activation.consumeDistractionFreeModeProvider(provider);
