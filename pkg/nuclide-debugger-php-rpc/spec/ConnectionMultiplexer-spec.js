@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {CompositeDisposable} from 'event-kit';
 import type {Socket} from 'net';
 import type {ClientCallback as ClientCallbackType} from '../lib/ClientCallback';
 import type {DbgpConnector as DbgpConnectorType} from '../lib/DbgpConnector';
@@ -43,7 +44,6 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   let Connection: any;
   let onStatus: any;
   let onNotification: any;
-  let haveStatusThrow;
   let connectionMultiplexer: any;
   let isCorrectConnectionResult;
   let isDummyConnectionResult;
@@ -64,7 +64,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
 
   beforeEach(() => {
     updateSettings({singleThreadStepping: false});
-    haveStatusThrow = false;
+
     connectionCount = 0;
     onStatus = jasmine.createSpy('onStatus');
     onNotification = jasmine.createSpy('onNotification');
@@ -100,82 +100,6 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
 
     connectionSpys = [];
     connections = [];
-    function createConnectionSpy() {
-      const result = {};
-      const connection = ((
-        jasmine.createSpyObj('connection' + connectionCount, [
-          'onStatus',
-          'onNotification',
-          'runtimeEvaluate',
-          'evaluateOnCallFrame',
-          'getProperties',
-          'getScopesForFrame',
-          'setBreakpoint',
-          'removeBreakpoint',
-          'getStackFrames',
-          'getStatus',
-          'sendContinuationCommand',
-          'sendBreakCommand',
-          'sendStdoutRequest',
-          'sendStderrRequest',
-          'setFeature',
-          'dispose',
-        ]): any
-      ): ConnectionType);
-      const id = connectionCount;
-      // $FlowFixMe override instance method.
-      connection.getId = () => id;
-
-      if (haveStatusThrow) {
-        // $FlowFixMe override instance method.
-        connection.getStatus = jasmine.createSpy('getStatus').andCallFake(() => {
-          throw new Error('Failed to get status.');
-        });
-      } else {
-        // $FlowFixMe override instance method.
-        connection.getStatus = jasmine.createSpy('getStatus').andReturn(STATUS_STARTING);
-      }
-      // $FlowFixMe override instance method.
-      connection.evaluateOnCallFrame = jasmine.createSpy('evaluateOnCallFrame').andReturn({});
-      // $FlowFixMe override instance method.
-      connection.runtimeEvaluate = jasmine.createSpy('runtimeEvaluate').andReturn({});
-      // $FlowFixMe override instance method.
-      connection.setFeature = jasmine.createSpy('setFeature').andReturn(true);
-      // $FlowFixMe override instance method.
-      connection.sendStdoutRequest = jasmine.createSpy('sendStdoutRequest').andReturn(true);
-      // $FlowFixMe override instance method.
-      connection.sendStderrRequest = jasmine.createSpy('sendStderrRequest').andReturn(true);
-
-      const statusDispose = jasmine.createSpy('connection.onStatus.dispose' + connectionCount);
-      const notificationDispose = jasmine
-        .createSpy('connection.notificationDispose.dispose' + connectionCount);
-      // $FlowFixMe override instance method.
-      connection.onStatus = jasmine.createSpy('onStatus').andCallFake(callback => {
-        result.onStatus = callback;
-        return {dispose: statusDispose};
-      });
-      // $FlowFixMe
-      connection.onNotification = jasmine.createSpy('onNotification').andCallFake(callback => {
-        result.onNotification = callback;
-        return {dispose: notificationDispose};
-      });
-
-      result.connection = connection;
-      result.statusDispose = statusDispose;
-
-      connectionSpys[connectionCount] = result;
-      connections[connectionCount] = connection;
-
-      connectionCount++;
-
-      return connection;
-    }
-
-    Connection = ((
-      spyOn(require('../lib/Connection'), 'Connection').andCallFake(() => {
-        return createConnectionSpy();
-      }): any
-    ): () => ConnectionType);
 
     breakpointStore = jasmine.createSpyObj('breakpointStore', [
       'addConnection',
@@ -216,6 +140,89 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     connectionMultiplexer = new ConnectionMultiplexer(clientCallback);
     connectionMultiplexer.onStatus(onStatus);
     connectionMultiplexer.onNotification(onNotification);
+    function createConnectionSpy() {
+      const result = {};
+      const connection = ((
+        jasmine.createSpyObj('connection' + connectionCount, [
+          'onStatus',
+          'onNotification',
+          'runtimeEvaluate',
+          'evaluateOnCallFrame',
+          'getProperties',
+          'getScopesForFrame',
+          'setBreakpoint',
+          'removeBreakpoint',
+          'getStackFrames',
+          'sendContinuationCommand',
+          'sendBreakCommand',
+          'sendStdoutRequest',
+          'sendStderrRequest',
+          'setFeature',
+          'dispose',
+        ]): any
+      ): ConnectionType);
+      const id = connectionCount;
+      // $FlowFixMe override instance method.
+      connection.getId = () => id;
+
+      connection.status = STATUS_STARTING;
+
+      // $FlowFixMe override instance method.
+      connection.evaluateOnCallFrame = jasmine.createSpy('evaluateOnCallFrame').andReturn({});
+      // $FlowFixMe override instance method.
+      connection.runtimeEvaluate = jasmine.createSpy('runtimeEvaluate').andReturn({});
+      // $FlowFixMe override instance method.
+      connection.setFeature = jasmine.createSpy('setFeature').andReturn(true);
+      // $FlowFixMe override instance method.
+      connection.sendStdoutRequest = jasmine.createSpy('sendStdoutRequest').andReturn(true);
+      // $FlowFixMe override instance method.
+      connection.sendStderrRequest = jasmine.createSpy('sendStderrRequest').andReturn(true);
+      // $FlowFixMe override instance method.
+      connection.getStatus = jasmine.createSpy('getStatus').andCallFake(() => {
+        return connection.status;
+      });
+      // $FlowFixMe override instance method.
+      connection.dispose = jasmine.createSpy('connection.dispose' + connectionCount);
+
+      const statusDispose = jasmine.createSpy('connection.onStatus.dispose' + connectionCount);
+      const notificationDispose = jasmine
+        .createSpy('connection.notificationDispose.dispose' + connectionCount);
+      // $FlowFixMe override instance method.
+      connection.onStatus = jasmine.createSpy('onStatus').andCallFake(callback => {
+        result.onStatus = callback;
+        return {dispose: statusDispose};
+      });
+      // $FlowFixMe
+      connection.onNotification = jasmine.createSpy('onNotification').andCallFake(callback => {
+        result.onNotification = callback;
+        return {dispose: notificationDispose};
+      });
+      connection._disposables = new CompositeDisposable(
+        connection.onStatus((status, ...args) => {
+          connectionMultiplexer._connectionOnStatus(connection, status, ...args);
+        }),
+        connection.onNotification(connectionMultiplexer._handleNotification.bind(
+          connectionMultiplexer, connection)),
+      );
+      result.connection = connection;
+      result.statusDispose = statusDispose;
+      result.dispose = connection.dispose;
+
+      connectionSpys[connectionCount] = result;
+      connections[connectionCount] = connection;
+
+      connectionCount++;
+
+      return connection;
+    }
+
+    Connection = ((
+      spyOn(require('../lib/Connection'), 'Connection').andCallFake(() => {
+        return createConnectionSpy();
+      }): any
+    ): () => ConnectionType);
+
+
   });
 
   afterEach(() => {
@@ -240,7 +247,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   }
 
   function expectDetached(connectionIndex): void {
-    expect(connectionSpys[connectionIndex].statusDispose).toHaveBeenCalledWith();
+    expect(connectionSpys[connectionIndex].dispose).toHaveBeenCalledWith();
   }
 
   it('constructor', () => {
@@ -268,7 +275,6 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     expect(Connection.calls[0].args[0]).toEqual(socket);
     expect(breakpointStore.addConnection).toHaveBeenCalledWith(connections[0]);
     expect(connections[0].onStatus).toHaveBeenCalledWith(connectionSpys[0].onStatus);
-    expect(connections[0].getStatus).toHaveBeenCalledWith();
     expect(connections[0].sendContinuationCommand).toHaveBeenCalledWith(COMMAND_RUN);
     expect(connectionMultiplexer.getStatus()).toBe(STATUS_RUNNING);
   }
@@ -305,29 +311,6 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       sendConnectionStatus(0, STATUS_RUNNING);
 
       expect(onStatus).toHaveBeenCalledWith(STATUS_RUNNING);
-      expect(connectionMultiplexer.getStatus()).toBe(STATUS_RUNNING);
-    });
-  });
-
-  it('attach - fail to get status', () => {
-    waitsForPromise(async () => {
-      connectionMultiplexer.listen();
-      expectListen();
-
-      haveStatusThrow = true;
-      expect(connectionCount).toBe(0);
-      await onDbgpConnectorAttach({
-        socket,
-        message: 'normal connection',
-      });
-      expect(connectionCount).toBe(1);
-
-      expect(connector.dispose).not.toHaveBeenCalledWith();
-      expect(Connection.calls[0].args[0]).toEqual(socket);
-      expect(breakpointStore.addConnection).toHaveBeenCalledWith(connections[0]);
-      expect(connections[0].onStatus).toHaveBeenCalledWith(connectionSpys[0].onStatus);
-      expect(connections[0].getStatus).toHaveBeenCalledWith();
-      expect(connections[0].sendContinuationCommand).not.toHaveBeenCalledWith(COMMAND_RUN);
       expect(connectionMultiplexer.getStatus()).toBe(STATUS_RUNNING);
     });
   });

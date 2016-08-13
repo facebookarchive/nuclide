@@ -37,7 +37,6 @@ import {
   COMMAND_RUN,
 } from './DbgpSocket';
 import {EventEmitter} from 'events';
-import {CompositeDisposable} from 'event-kit';
 import invariant from 'assert';
 import {ClientCallback} from './ClientCallback';
 import {attachEvent} from '../../commons-node/event';
@@ -47,12 +46,6 @@ import type {DbgpBreakpoint} from './DbgpSocket';
 
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 const CONNECTION_MUX_NOTIFICATION_EVENT = 'connection-mux-notification';
-
-type ConnectionInfo = {
-  connection: Connection,
-  disposables: CompositeDisposable,
-  status: string,
-};
 
 type DbgpError = {
   $: {
@@ -103,7 +96,7 @@ export class ConnectionMultiplexer {
   _previousConnection: ?Connection;
   _enabledConnection: ?Connection;
   _dummyConnection: ?Connection;
-  _connections: Map<Connection, ConnectionInfo>;
+  _connections: Set<Connection>;
   _attachConnector: ?DbgpConnector;
   _launchConnector: ?DbgpConnector;
   _dummyRequestProcess: ?child_process$ChildProcess;
@@ -119,7 +112,7 @@ export class ConnectionMultiplexer {
     this._previousConnection = null;
     this._enabledConnection = null;
     this._dummyConnection = null;
-    this._connections = new Map();
+    this._connections = new Set();
     this._attachConnector = null;
     this._launchConnector = null;
     this._dummyRequestProcess = null;
@@ -191,22 +184,24 @@ export class ConnectionMultiplexer {
 
   async _handleDummyConnection(socket: Socket): Promise<void> {
     logger.log('ConnectionMultiplexer successfully got dummy connection.');
-    const dummyConnection = new Connection(socket);
+    const dummyConnection = new Connection(
+      socket,
+      (status, message) => {
+        switch (status) {
+          case STATUS_STDOUT:
+            this._sendOutput(message, 'log');
+            break;
+          case STATUS_STDERR:
+            this._sendOutput(message, 'info');
+            break;
+        }
+      },
+    );
     await this._handleSetupForConnection(dummyConnection);
 
     // Continue from loader breakpoint to hit xdebug_break()
     // which will load whole www repo for evaluation if possible.
     await dummyConnection.sendContinuationCommand(COMMAND_RUN);
-    dummyConnection.onStatus((status, message) => {
-      switch (status) {
-        case STATUS_STDOUT:
-          this._sendOutput(message, 'log');
-          break;
-        case STATUS_STDERR:
-          this._sendOutput(message, 'info');
-          break;
-      }
-    });
     this._dummyConnection = dummyConnection;
 
     const text = 'Pre-loading is done! You can use console window now.';
@@ -233,31 +228,15 @@ export class ConnectionMultiplexer {
   }
 
   async _handleNewConnection(socket: Socket, message: Object): Promise<void> {
-    const connection = new Connection(socket);
+    const connection = new Connection(
+      socket,
+      this._connectionOnStatus.bind(this),
+      this._handleNotification.bind(this),
+    );
+    this._connections.add(connection);
     await this._handleSetupForConnection(connection);
     await this._breakpointStore.addConnection(connection);
-
-    const disposables = new CompositeDisposable(
-      connection.onStatus((status, ...args) => {
-        this._connectionOnStatus(connection, status, ...args);
-      }),
-      connection.onNotification(this._handleNotification.bind(this, connection)),
-    );
-    const info = {
-      connection,
-      disposables,
-      status: STATUS_STARTING,
-    };
-    this._connections.set(connection, info);
-
-    let status;
-    try {
-      status = await connection.getStatus();
-    } catch (e) {
-      logger.logError('Error getting initial connection status: ' + e.message);
-      status = STATUS_ERROR;
-    }
-    this._connectionOnStatus(connection, status);
+    this._connectionOnStatus(connection, connection.getStatus());
   }
 
   _handleNotification(
@@ -289,30 +268,28 @@ export class ConnectionMultiplexer {
 
   _connectionOnStatus(connection: Connection, status: string, ...args: Array<string>): void {
     logger.log(`Mux got status: ${status} on connection ${connection.getId()}`);
-    const connectionInfo = this._connections.get(connection);
-    invariant(connectionInfo != null);
 
     switch (status) {
       case STATUS_STARTING:
         // Starting status has no stack.
         // step before reporting initial status to get to the first instruction.
         // TODO: Use loader breakpoint configuration to choose between step/run.
-        connectionInfo.status = status;
+        connection.status = status;
         connection.sendContinuationCommand(COMMAND_RUN);
         return;
       case STATUS_STOPPING:
         // TODO: May want to enable post-mortem features?
-        connectionInfo.status = status;
+        connection.status = status;
         connection.sendContinuationCommand(COMMAND_RUN);
         return;
       case STATUS_RUNNING:
-        connectionInfo.status = status;
+        connection.status = status;
         if (connection === this._enabledConnection) {
           this._disableConnection();
         }
         break;
       case STATUS_BREAK:
-        connectionInfo.status = status;
+        connection.status = status;
         if (connection === this._enabledConnection) {
           // This can happen when we step.
           logger.log('Mux break on enabled connection');
@@ -333,7 +310,7 @@ export class ConnectionMultiplexer {
         break;
       case STATUS_STOPPED:
       case STATUS_END:
-        connectionInfo.status = status;
+        connection.status = status;
         this._removeConnection(connection);
         break;
       case STATUS_STDOUT:
@@ -365,11 +342,11 @@ export class ConnectionMultiplexer {
     }
 
     // now check if we can move from running to break...
-    for (const connectionInfo of this._connections.values()) {
-      if (connectionInfo.status === STATUS_BREAK) {
+    for (const connection of this._connections) {
+      if (connection.getStatus() === STATUS_BREAK) {
         if (!(getSettings().singleThreadStepping) || this._lastEnabledConnection === null ||
-          (connectionInfo.connection === this._lastEnabledConnection)) {
-          this._enableConnection(connectionInfo.connection);
+          (connection === this._lastEnabledConnection)) {
+          this._enableConnection(connection);
           break;
         }
       }
@@ -510,9 +487,6 @@ export class ConnectionMultiplexer {
   }
 
   _removeConnection(connection: Connection): void {
-    const info = this._connections.get(connection);
-    invariant(info != null);
-    info.disposables.dispose();
     connection.dispose();
     this._connections.delete(connection);
 

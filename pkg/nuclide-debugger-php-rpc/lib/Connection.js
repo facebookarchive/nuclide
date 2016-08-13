@@ -11,6 +11,10 @@
 
 import {DbgpSocket} from './DbgpSocket';
 import {DataCache} from './DataCache';
+import {
+  STATUS_STARTING,
+} from './DbgpSocket';
+import {CompositeDisposable} from 'event-kit';
 
 import type {Socket} from 'net';
 import type {
@@ -20,16 +24,45 @@ import type {
 
 let connectionCount = 1;
 
+type StatusCallback = (
+  connection: Connection,
+  status: string,
+  ...args: Array<string>
+) => void;
+
+type NotificationCallback = (
+  connection: Connection,
+  notifyName: string,
+  notify: Object
+) => void;
+
+
 export class Connection {
   _socket: DbgpSocket;
   _dataCache: DataCache;
   _id: number;
+  _disposables: CompositeDisposable;
+  status: string;
 
-  constructor(socket: Socket) {
+  constructor(
+    socket: Socket,
+    onStatusCallback?: StatusCallback,
+    onNotificationCallback?: NotificationCallback,
+  ) {
     const dbgpSocket = new DbgpSocket(socket);
     this._socket = dbgpSocket;
     this._dataCache = new DataCache(dbgpSocket);
     this._id = connectionCount++;
+    this.status = STATUS_STARTING;
+    this._disposables = new CompositeDisposable();
+    if (onStatusCallback != null) {
+      this._disposables.add(this.onStatus((status, ...args) =>
+        onStatusCallback(this, status, ...args)));
+    }
+    if (onNotificationCallback != null) {
+      this._disposables.add(this.onNotification((notifyName, notify) =>
+        onNotificationCallback(this, notifyName, notify)));
+    }
   }
 
   getId(): number {
@@ -76,8 +109,8 @@ export class Connection {
     return this._dataCache.getScopesForFrame(frameIndex);
   }
 
-  getStatus(): Promise<string> {
-    return this._socket.getStatus();
+  getStatus(): string {
+    return this.status;
   }
 
   sendContinuationCommand(command: string): Promise<string> {
@@ -105,6 +138,7 @@ export class Connection {
   }
 
   dispose(): void {
+    this._disposables.dispose();
     this._socket.dispose();
   }
 }
