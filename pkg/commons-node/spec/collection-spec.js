@@ -13,6 +13,7 @@ import {
   arrayRemove,
   arrayEqual,
   arrayCompact,
+  arrayFindLastIndex,
   mapUnion,
   isEmpty,
   keyMirror,
@@ -90,6 +91,16 @@ describe('arrayEqual', () => {
 describe('arrayCompact', () => {
   it('filters out null and undefined elements', () => {
     expect(arrayCompact([0, false, '', [], null, undefined])).toEqual([0, false, '', []]);
+  });
+});
+
+describe('arrayFindLastIndex', () => {
+  it('returns the last matching index', () => {
+    expect(arrayFindLastIndex([1, 1, 2], x => x === 1)).toBe(1);
+  });
+
+  it('returns -1 if no match is found', () => {
+    expect(arrayFindLastIndex([1, 1, 2], x => x === 0)).toBe(-1);
   });
 });
 

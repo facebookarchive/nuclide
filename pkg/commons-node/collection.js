@@ -43,6 +43,23 @@ export function arrayCompact<T>(array: Array<?T>): Array<T> {
 }
 
 /**
+ * Returns the last index in the input array that matches the predicate.
+ * Returns -1 if no match is found.
+ */
+export function arrayFindLastIndex<T>(
+  array: Array<T>,
+  predicate: (elem: T, index: number, array: Array<T>) => boolean,
+  thisArg?: any,
+): number {
+  for (let i = array.length - 1; i >= 0; i--) {
+    if (predicate.call(thisArg, array[i], i, array)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
  * Merges a given arguments of maps into one Map, with the latest maps
  * overriding the values of the prior maps.
  */
