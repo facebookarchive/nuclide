@@ -45,6 +45,10 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "activationHooks": [
+    "language-php:grammar-used",
+    "nuclide-language-hack:grammar-used"
+  ],
   "providedServices": {
     "autocomplete.provider": {
       "versions": {

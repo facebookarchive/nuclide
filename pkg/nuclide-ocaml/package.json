@@ -23,6 +23,9 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "activationHooks": [
+    "language-ocaml:grammar-used"
+  ],
   "providedServices": {
     "autocomplete.provider": {
       "versions": {

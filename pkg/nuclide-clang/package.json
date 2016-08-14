@@ -48,6 +48,10 @@
       }
     }
   },
+  "activationHooks": [
+    "language-c:grammar-used",
+    "language-objective-c:grammar-used"
+  ],
   "providedServices": {
     "autocomplete.provider": {
       "versions": {

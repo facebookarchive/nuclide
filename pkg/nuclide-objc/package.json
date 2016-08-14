@@ -21,5 +21,8 @@
     },
     "packageType": "Atom",
     "testRunner": "apm"
-  }
+  },
+  "activationHooks": [
+    "language-objective-c:grammar-used"
+  ]
 }

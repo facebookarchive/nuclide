@@ -9,6 +9,9 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "activationHooks": [
+    "language-json:grammar-used"
+  ],
   "providedServices": {
     "nuclide-outline-view": {
       "versions": {
