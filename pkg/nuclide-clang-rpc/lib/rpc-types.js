@@ -68,7 +68,8 @@ export type ClangCompileResult = {
 export type ClangCompletion = {
   chunks: Array<{
     spelling: string,
-    isPlaceHolder: boolean,
+    isPlaceHolder?: boolean,
+    isOptional?: boolean,
     kind?: string,
   }>,
   result_type: string,

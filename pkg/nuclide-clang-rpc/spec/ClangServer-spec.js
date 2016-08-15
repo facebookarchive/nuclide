@@ -24,7 +24,7 @@ const EXPECTED_FILE_OUTLINE = [
       end: {line: 1, column: 1},
     },
     cursor_kind: 'FUNCTION_DECL',
-    params: [],
+    params: ['x'],
     tparams: [],
   },
   {
@@ -57,7 +57,7 @@ describe('ClangServer', () => {
               {
                 file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
                 start: {column: 2, line: 5},
-                end: {column: 3, line: 5},
+                end: {column: 6, line: 5},
               },
             ],
             fixits: [],
@@ -66,12 +66,12 @@ describe('ClangServer', () => {
               line: 5,
               file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
             },
-            spelling: 'no matching function for call to \'f\'',
+            spelling: 'no matching function for call to \'main\'',
             children: [
               {
                 location: {
-                  column: 5,
-                  line: 0,
+                  column: 4,
+                  line: 3,
                   file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
                 },
                 ranges: [],
@@ -115,7 +115,7 @@ describe('ClangServer', () => {
       );
       invariant(response);
       expect(response.map(x => x.spelling).sort()).toEqual([
-        'f()',
+        'f(int x)',
         'false',
         'float',
       ]);
@@ -142,7 +142,7 @@ describe('ClangServer', () => {
         '',
       );
       invariant(response);
-      expect(response[0].spelling).toBe('f()');
+      expect(response[0].spelling).toBe('f(int x)');
       expect(response[0].cursor_kind).toBe('OVERLOAD_CANDIDATE');
 
       response = await service.get_declaration(
@@ -155,7 +155,7 @@ describe('ClangServer', () => {
       expect(line).toBe(0);
       expect(column).toBe(5);
       expect(spelling).toBe('f');
-      expect(type).toBe('void ()');
+      expect(type).toBe('void (int)');
 
       response = await service.get_declaration_info(
         FILE_CONTENTS,
@@ -164,7 +164,7 @@ describe('ClangServer', () => {
       );
       invariant(response);
       expect(response.length).toBe(1);
-      expect(response[0].name).toBe('f()');
+      expect(response[0].name).toBe('f(int)');
       expect(response[0].type).toBe('FUNCTION_DECL');
       // May not be consistent between clang versions.
       expect(response[0].cursor_usr).not.toBe(null);

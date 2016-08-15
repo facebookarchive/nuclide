@@ -88,13 +88,14 @@ class CompletionResult:
                 return 'OVERLOAD_CANDIDATE'
             return 'UNKNOWN'
 
-    def to_dict(self):
-        chunks = []
-        spelling = ''
-        result_type = ''
+    @classmethod
+    def _get_chunks(cls, completion_string, chunks, is_optional=False):
+        """
+        Concatenate all chunks contained in completion_string.
+        Dives recursively into optional parameters as necessary, marking them with a flag.
+        """
 
-        # We want to know which chunks are placeholders.
-        completion_string = self._result.string
+        result_type = ''
         for chunk in completion_string:
             # A piece of text that describes something about the result but
             # should not be inserted into the buffer. (e.g. const modifier)
@@ -102,22 +103,43 @@ class CompletionResult:
                 continue
 
             # There should be at most one ResultType chunk and it should tell us
-            # type of suggested expression. For example, if a method call is
+            # the type of the suggested expression. For example, if a method call is
             # suggested, this chunk will be equal to the method return type.
             # Obviously, we don't want that chunk in spelling.
             if chunk.isKindResultType():
                 result_type = chunk.spelling
                 continue
 
-            spelling += chunk.spelling
-            chunks.append({
-                'spelling': chunk.spelling,
-                'isPlaceHolder':
-                    chunk.isKindPlaceHolder() or chunk.kind.name == 'CurrentParameter',
-                'kind': str(chunk.kind),
-            })
+            if chunk.isKindOptional():
+                child_string = chunk.string
+                if child_string:
+                    cls._get_chunks(child_string, chunks, True)
+                continue
 
+            chunk_data = {
+                'spelling': chunk.spelling,
+                'kind': str(chunk.kind),
+            }
+            # Don't set these unless necessary for efficiency.
+            if chunk.isKindPlaceHolder() or chunk.kind.name == 'CurrentParameter':
+                chunk_data['isPlaceHolder'] = True
+            if is_optional:
+                chunk_data['isOptional'] = True
+            chunks.append(chunk_data)
+
+        return result_type
+
+    def to_dict(self):
+        completion_string = self._result.string
         briefComment = completion_string.briefComment
+
+        chunks = []
+        result_type = CompletionResult._get_chunks(completion_string, chunks)
+
+        spelling = ''
+        for chunk in chunks:
+            spelling += chunk['spelling']
+
         return {
             'spelling': spelling,
             'chunks': chunks,
