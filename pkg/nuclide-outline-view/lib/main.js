@@ -140,7 +140,7 @@ class Activation {
       position: 'left',
     };
 
-    const isJavaScriptFile = editor => {
+    const isValidFileTypeForNux = editor => {
       if (editor == null) {
         return false;
       }
@@ -148,10 +148,13 @@ class Activation {
       if (path == null) {
         return false;
       }
-      return path.endsWith('.js');
+      return path.endsWith('.js') || path.endsWith('.php');
     };
+
     const isOutlineViewClosed = () => document.querySelector('.nuclide-outline-view') == null;
-    const triggerCallback = editor => isOutlineViewClosed() && isJavaScriptFile(editor);
+    const triggerCallback
+      = editor => isOutlineViewClosed() && isValidFileTypeForNux(editor);
+
     const nuxTriggerModel = {
       triggerType: 'editor',
       triggerCallback,
