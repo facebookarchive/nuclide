@@ -17,6 +17,7 @@ import {safeSpawn} from './process';
 import which from './which';
 
 const NICE_COMMAND = 'nice';
+const IONICE_COMMAND = 'ionice';
 
 export default async function nice(
   command: string,
@@ -24,9 +25,21 @@ export default async function nice(
   execOptions?: Object,
 ): Promise<child_process$ChildProcess> {
   const fullArgs = [command, ...args];
-  // TODO use ionice too if available
   if (await hasNiceCommand()) {
     fullArgs.unshift(NICE_COMMAND);
+  }
+  if (await hasIoniceCommand()) {
+    // Leave the process in the Best Effort class (default), but set it to the lowest priority for
+    // that class. Priorities range from 0-7 with 4 as the default and lower numbers representing
+    // higher priorities.
+    //
+    // See `man ionice` or http://linux.die.net/man/1/ionice
+    //
+    // It's not specified by POSIX like `nice` is but since it is included in util-linux which is
+    // relatively core
+    // (https://git.kernel.org/cgit/utils/util-linux/util-linux.git/tree/schedutils/ionice.c), I
+    // think we can assume that it uses this interface if it exists.
+    fullArgs.unshift(IONICE_COMMAND, '-n', '7');
   }
   return safeSpawn(fullArgs[0], fullArgs.slice(1), execOptions);
 }
@@ -41,6 +54,10 @@ const commandAvailabilityCache: LRUCache<string, boolean> = LRU({
 
 function hasNiceCommand(): Promise<boolean> {
   return hasCommand(NICE_COMMAND);
+}
+
+function hasIoniceCommand(): Promise<boolean> {
+  return hasCommand(IONICE_COMMAND);
 }
 
 async function hasCommand(command: string): Promise<boolean> {
