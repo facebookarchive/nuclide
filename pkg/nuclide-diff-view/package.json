@@ -29,6 +29,16 @@
       "versions": {
         "0.1.0": "addItemsToFileTreeContextMenu"
       }
+    },
+    "nux-register": {
+      "versions": {
+        "0.0.0": "consumeRegisterNuxService"
+      }
+    },
+    "nux-trigger": {
+      "versions": {
+        "0.0.0": "consumeTriggerNuxService"
+      }
     }
   },
   "providedServices": {

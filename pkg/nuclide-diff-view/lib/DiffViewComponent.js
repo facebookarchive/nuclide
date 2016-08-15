@@ -41,6 +41,8 @@ import passesGK from '../../commons-node/passesGK';
 
 type Props = {
   diffModel: DiffViewModel,
+  // A bound function that when invoked will try to trigger the Diff View NUX
+  tryTriggerNux: () => void,
 };
 
 type EditorState = {
@@ -119,7 +121,7 @@ class DiffViewComponent extends React.Component {
   }
 
   componentDidMount(): void {
-    const {diffModel} = this.props;
+    const {diffModel, tryTriggerNux} = this.props;
     this._subscriptions.add(diffModel.onActiveFileUpdates(activeFileState => {
       this._updateLineDiffState(activeFileState);
       // The diff tree needs to update the active diffed file.
@@ -166,6 +168,8 @@ class DiffViewComponent extends React.Component {
     );
 
     this._updateLineDiffState(diffModel.getActiveFileState());
+
+    tryTriggerNux();
   }
 
   _onModelStateChange(): void {

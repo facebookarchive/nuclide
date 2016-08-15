@@ -45,6 +45,7 @@ class DiffViewToolbar extends React.Component {
         <ToolbarRight>
           <ButtonGroup size="SMALL">
             <Button
+              className="nuclide-diff-view-goto-editor-button"
               disabled={!hasActiveFile}
               onClick={this.props.onSwitchToEditor}>
               Goto Editor

@@ -16,6 +16,8 @@ import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContex
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
+import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
+import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
@@ -44,12 +46,19 @@ let activeDiffView: ?{
   element: HTMLElement,
 } = null;
 
+let tryTriggerNux: ?TriggerNux;
+
 // This url style is the one Atom uses for the welcome and settings pages.
 const NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
 const DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY = 1000;
 const COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1100;
 const AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY = 1200;
 const PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY = 1300;
+
+// Diff View NUX constants.
+const NUX_DIFF_VIEW_ID = 4368;
+const NUX_DIFF_VIEW_NAME = 'nuclide_diff_view_nux';
+const NUX_DIFF_VIEW_GK = 'mp_nuclide_diff_view_nux';
 
 const uiProviders: Array<UIProvider> = [];
 
@@ -72,8 +81,12 @@ function formatDiffViewUrl(diffEntityOptions_?: ?DiffEntityOptions): string {
 
 
 // To add a View as an Atom workspace pane, we return `DiffViewElement` which extends `HTMLElement`.
-// This pattetn is also followed with atom's TextEditor.
-function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
+// This pattern is also followed with atom's TextEditor.
+function createView(
+  diffEntityOptions: DiffEntityOptions,
+  // A bound instance of the triggerNuxService that will try to trigger the Diff View NUX
+  triggerNuxService: () => void,
+): HTMLElement {
   if (activeDiffView) {
     activateDiffPath(diffEntityOptions);
     return activeDiffView.element;
@@ -83,7 +96,10 @@ function createView(diffEntityOptions: DiffEntityOptions): HTMLElement {
   diffModel.activate();
   const hostElement = new DiffViewElement().initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
   const component = ReactDOM.render(
-    <DiffViewComponent diffModel={diffModel} />,
+    <DiffViewComponent
+      diffModel={diffModel}
+      tryTriggerNux={triggerNuxService}
+    />,
     hostElement,
   );
   activeDiffView = {
@@ -305,7 +321,10 @@ module.exports = {
           );
         }
         const {query: diffEntityOptions} = url.parse(uri, true);
-        return createView((diffEntityOptions: any));
+        return createView(
+          (diffEntityOptions: any),
+          this.triggerNux.bind(this, NUX_DIFF_VIEW_ID),
+        );
       }
     }));
 
@@ -507,4 +526,67 @@ module.exports = {
   get __testDiffView() {
     return activeDiffView;
   },
+
+  triggerNux(nuxID: number): void {
+    if (tryTriggerNux != null) {
+      tryTriggerNux(nuxID);
+    }
+  },
+
+  consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
+    const disposable = addNewNux(_createDiffViewNux());
+    invariant(subscriptions != null);
+    subscriptions.add(disposable);
+    return disposable;
+  },
+
+  consumeTriggerNuxService(tryTriggerNuxService: TriggerNux): void {
+    tryTriggerNux = tryTriggerNuxService;
+    module.exports.tryTriggerNux = tryTriggerNux;
+  },
+
+  NUX_DIFF_VIEW_ID,
+
+  tryTriggerNux,
 };
+
+function _createDiffViewNux(): NuxTourModel {
+
+  const diffViewFilesNux = {
+    content: 'View the list of newly added and modified files.',
+    selector: '.nuclide-diff-view-tree',
+    position: 'top',
+  };
+
+  const diffViewTimelineNux = {
+    content: 'Compare, commit and amend revisions!',
+    selector: '.nuclide-diff-timeline',
+    position: 'top',
+  };
+
+  const diffViewEditButtonNux = {
+    content: 'Want to make changes? Click here to open the file in an editor.',
+    selector: '.nuclide-diff-view-goto-editor-button',
+    position: 'left',
+  };
+
+  const diffViewPhabricatorNux = {
+    content: 'Publish your changes to Phabricator without leaving Nuclide!',
+    selector: '.nuclide-diff-timeline .revision-timeline-wrap .btn',
+    position: 'bottom',
+  };
+
+  const diffViewNuxTour = {
+    id: NUX_DIFF_VIEW_ID,
+    name: NUX_DIFF_VIEW_NAME,
+    gatekeeperID: NUX_DIFF_VIEW_GK,
+    nuxList: [
+      diffViewFilesNux,
+      diffViewTimelineNux,
+      diffViewEditButtonNux,
+      diffViewPhabricatorNux,
+    ],
+  };
+
+  return diffViewNuxTour;
+}
