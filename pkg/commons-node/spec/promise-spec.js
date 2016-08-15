@@ -606,9 +606,9 @@ describe('timeoutPromise', () => {
     waitsForPromise(async () => {
       const inputPromise = new Promise(resolve => setTimeout(resolve, 2000));
       const outputPromise = timeoutPromise(inputPromise, 1000)
-        .catch(value => `rejected with ${value}`);
+        .catch(value => value);
       advanceClock(1500);
-      expect(await outputPromise).toBe('rejected with Promise timed out after 1000 ms');
+      expect(await outputPromise).toEqual(new Error('Promise timed out after 1000 ms'));
     });
   });
 });

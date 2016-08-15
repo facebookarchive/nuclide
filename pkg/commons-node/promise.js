@@ -150,7 +150,7 @@ export async function timeoutPromise<T>(
     let timeout = setTimeout(
       () => {
         timeout = null;
-        reject(`Promise timed out after ${String(milliseconds)} ms`);
+        reject(new Error(`Promise timed out after ${String(milliseconds)} ms`));
       },
       milliseconds,
     );
