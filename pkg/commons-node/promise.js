@@ -139,6 +139,36 @@ export async function triggerAfterWait<T>(
 }
 
 /**
+ * Returns a Promise that resolves to the same value as the given promise, or rejects if it takes
+ * longer than `milliseconds` milliseconds
+ */
+export async function timeoutPromise<T>(
+  promise: Promise<T>,
+  milliseconds: number,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let timeout = setTimeout(
+      () => {
+        timeout = null;
+        reject(`Promise timed out after ${String(milliseconds)} ms`);
+      },
+      milliseconds,
+    );
+    promise.then(value => {
+      if (timeout != null) {
+        clearTimeout(timeout);
+      }
+      resolve(value);
+    }).catch(value => {
+      if (timeout != null) {
+        clearTimeout(timeout);
+      }
+      reject(value);
+    });
+  });
+}
+
+/**
  * Call an async function repeatedly with a maximum number of trials limit,
  * until a valid result that's defined by a validation function.
  * A failed call can result from an async thrown exception, or invalid result.

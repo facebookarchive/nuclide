@@ -20,6 +20,7 @@ import {
   lastly,
   retryLimit,
   RequestSerializer,
+  timeoutPromise,
 } from '../promise';
 import {expectAsyncFailure} from '../../nuclide-test-helpers';
 import invariant from 'assert';
@@ -579,6 +580,35 @@ describe('promises::RequestSerializer()', () => {
       requestSerializer.run(waitPromise(10, 'NEW'));
       const latestResult = await requestSerializer.waitForLatestResult();
       expect(latestResult).toBe('NEW');
+    });
+  });
+});
+
+describe('timeoutPromise', () => {
+  it('should resolve normally if within the timeout', () => {
+    waitsForPromise(async () => {
+      const inputPromise = new Promise(resolve => resolve('foo'));
+      const outputPromise = timeoutPromise(inputPromise, 1000);
+      expect(await outputPromise).toBe('foo');
+    });
+  });
+
+  it('should reject if the given promise rejects', () => {
+    waitsForPromise(async () => {
+      const inputPromise = new Promise((resolve, reject) => reject('foo'));
+      const outputPromise = timeoutPromise(inputPromise, 1000)
+        .catch(value => `rejected with ${value}`);
+      expect(await outputPromise).toBe('rejected with foo');
+    });
+  });
+
+  it('should reject if the given promise takes too long', () => {
+    waitsForPromise(async () => {
+      const inputPromise = new Promise(resolve => setTimeout(resolve, 2000));
+      const outputPromise = timeoutPromise(inputPromise, 1000)
+        .catch(value => `rejected with ${value}`);
+      advanceClock(1500);
+      expect(await outputPromise).toBe('rejected with Promise timed out after 1000 ms');
     });
   });
 });
