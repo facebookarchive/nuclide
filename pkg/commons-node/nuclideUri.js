@@ -420,7 +420,8 @@ function isAbsolute(uri: NuclideUri): boolean {
   if (isRemote(uri)) {
     return true;
   } else {
-    return _pathModuleFor(uri).isAbsolute(uri);
+    const uriPathModule = _pathModuleFor(uri);
+    return uriPathModule.isAbsolute(uri);
   }
 }
 
@@ -458,7 +459,7 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
     return uri;
   }
 
-  return pathModule.posix.resolve(HOME, uri.replace('~', '.'));
+  return posixPath.resolve(HOME, uri.replace('~', '.'));
 }
 
 /**
@@ -469,9 +470,9 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
  */
 function splitPathList(paths: string): Array<NuclideUri> {
   invariant(paths.indexOf(REMOTE_PATH_URI_PREFIX) < 0, 'Splitting remote URIs is not supported');
-  const pathsModule = _pathModuleFor(paths);
+  const uriPathModule = _pathModuleFor(paths);
 
-  return paths.split(pathsModule.delimiter);
+  return paths.split(uriPathModule.delimiter);
 }
 
 /**
@@ -518,7 +519,7 @@ function parsePath(uri: NuclideUri): ParsedPath {
   return uriPathModule.parse(getPath(uri));
 }
 
-export function split(uri: string): Array<string> {
+function split(uri: string): Array<string> {
   const parts = [];
   let current = uri;
   let parent = dirname(current);
@@ -537,10 +538,38 @@ export function split(uri: string): Array<string> {
   return parts;
 }
 
-function _pathModuleFor(uri: NuclideUri): any {
-  const posixPath = pathModule.posix;
-  const win32Path = pathModule.win32;
+/**
+ * win32.isAbsolute is buggy in Node 5.10.0, but not in Node 5.1.1 or 6.0.0+.
+ * As long as we support Node 5, we'll use the fixed version of win32.isAbsolute.
+ * https://github.com/nodejs/node/commit/3072546feb9d7f78f12d75bec28ef00e5958f7be
+ */
 
+function _win32PathIsAbsolute(path: string): boolean {
+  if (typeof path !== 'string') {
+    throw new TypeError('Path must be a string. Received ' + String(path));
+  }
+  const len = path.length;
+  if (len === 0) {
+    return false;
+  }
+  let code = path.charCodeAt(0);
+  if (code === 47 || code === 92) {
+    return true;
+  } else if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) {
+    if (len > 2 && path.charCodeAt(1) === 58) {
+      code = path.charCodeAt(2);
+      if (code === 47 || code === 92) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+const posixPath: typeof pathModule = {...pathModule.posix};
+const win32Path: typeof pathModule = {...pathModule.win32, isAbsolute: _win32PathIsAbsolute};
+
+function _pathModuleFor(uri: NuclideUri): typeof pathModule {
   if (uri.startsWith(posixPath.sep)) {
     return posixPath;
   }
@@ -603,5 +632,9 @@ export default {
   isRoot,
   parsePath,
   split,
-  _pathModuleFor,  // Exported for tests only
+};
+
+export const __TEST__ = {
+  _pathModuleFor,
+  _win32PathIsAbsolute,
 };
