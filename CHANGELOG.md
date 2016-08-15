@@ -1,5 +1,27 @@
 # Nuclide Changelog
 
+## v0.162.0
+
+### Highlights
+
+* Hovering over Unicode escape sequences shows a data tip with the phrase rendered
+* Performance improvements:
+    * Flow uses a lower CPU priority
+    * Large remote files (over 2MB) no longer make the editor unusable
+
+### General
+
+* Added developmentMode for easier NUX debugging
+* Created a NUX for Diff view
+* Fix for horizontal scrolling in file tree in Atom 1.9
+* Failed SSH authentication will automatically retry using a password prompt
+* Server certificates/keys are no longer stored in `$ATOM_HOME/config.cson`
+
+### C++
+
+* You can specify environment variables in C++ debugger launch UI for target process
+* Optional arguments (i.e. with a default) now show up in autocomplete results
+
 ## v0.161.0 (hotfix)
 
 * Fix React Native packager (wasn't getting working root)
