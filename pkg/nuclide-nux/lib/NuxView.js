@@ -176,12 +176,12 @@ export class NuxView {
   }
 
   _createDisposableTooltip() : void {
-    const content = `<div class="nuclide-nux-text-content">
-                      <a class="nuclide-nux-dismiss-link">
-                        <span class="icon-x pull-right"></span>
-                      </a>
-                      <span>${this._content}</span>
-                    </div>`;
+    const content = `<span class="nuclide-nux-content-container">
+                        <span class="nuclide-nux-content">${this._content}</span>
+                        <a class="nuclide-nux-dismiss-link">
+                          <span class="icon-x"></span>
+                        </a>
+                    </span>`;
     this._tooltipDisposable = atom.tooltips.add(
       this._tooltipDiv,
       {
@@ -197,11 +197,12 @@ export class NuxView {
     );
     this._disposables.add(this._tooltipDisposable);
 
-    const dismissElemClickListener = this._onNuxComplete.bind(this, false);
+    const dismissElementClickListener = this._onNuxComplete.bind(this, false);
     const dismissElement = document.querySelector('.nuclide-nux-dismiss-link');
-    dismissElement.addEventListener('click', dismissElemClickListener);
+    dismissElement.addEventListener('click', dismissElementClickListener);
+
     this._disposables.add(new Disposable(() =>
-      dismissElement.removeEventListener('click', dismissElemClickListener),
+      dismissElement.removeEventListener('click', dismissElementClickListener),
     ));
   }
 
