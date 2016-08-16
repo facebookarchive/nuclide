@@ -2079,9 +2079,9 @@
       "resolved": "https://registry.npmjs.org/rx-lite/-/rx-lite-3.1.2.tgz"
     },
     "rxjs": {
-      "version": "5.0.0-beta.8",
-      "from": "rxjs@5.0.0-beta.8",
-      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-beta.8.tgz"
+      "version": "5.0.0-beta.11",
+      "from": "rxjs@5.0.0-beta.11",
+      "resolved": "https://registry.npmjs.org/rxjs/-/rxjs-5.0.0-beta.11.tgz"
     },
     "sabor": {
       "version": "0.7.0",
@@ -2280,9 +2280,9 @@
       "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-2.0.0.tgz"
     },
     "symbol-observable": {
-      "version": "0.2.4",
-      "from": "symbol-observable@0.2.4",
-      "resolved": "https://registry.npmjs.org/symbol-observable/-/symbol-observable-0.2.4.tgz"
+      "version": "1.0.2",
+      "from": "symbol-observable@1.0.2",
+      "resolved": "https://registry.npmjs.org/symbol-observable/-/symbol-observable-1.0.2.tgz"
     },
     "table": {
       "version": "3.7.8",
