@@ -10,6 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
+import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 
 export class ExampleGadgetA {
 
@@ -21,8 +22,8 @@ export class ExampleGadgetA {
     return 'squirrel';
   }
 
-  getReactElement(): React.Element<any> {
-    return <View />;
+  getElement(): HTMLElement {
+    return renderReactRoot(<View />);
   }
 
   serialize(): Object {

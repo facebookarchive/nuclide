@@ -13,6 +13,7 @@ import type {PanelLocationId, SerializedPanelLocation} from './types';
 import type {Viewable} from '../../nuclide-workspace-views/lib/types';
 
 import createPaneContainer from '../../commons-atom/create-pane-container';
+import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {SimpleModel} from '../../commons-node/SimpleModel';
@@ -105,8 +106,8 @@ export class PanelLocation extends SimpleModel<State> {
     if (this._panel != null) { return; }
 
     // Create an item to display in the panel. Atom will associate this item with a view via the
-    // view registry (and its `getReactElement` method). That view will be used to display views
-    // for this panel.
+    // view registry (and its `getElement` method). That view will be used to display views for this
+    // panel.
     // $FlowIssue: We need to teach flow about Symbol.observable.
     const props = Observable.from(this).map(state => ({
       initialSize: this._size,
@@ -116,7 +117,7 @@ export class PanelLocation extends SimpleModel<State> {
     }));
     const Component = bindObservableAsProps(props, Panel);
     // $FlowFixMe: Flow doesn't understand bindObservableAsProps
-    const item = {getReactElement: () => <Component />};
+    const item = {getElement: () => renderReactRoot(<Component />)};
 
     // Create the panel and add the item to it.
     const addPanel = locationsToAddPanelFunctions.get(this._locationId);

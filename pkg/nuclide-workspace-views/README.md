@@ -87,16 +87,16 @@ nuclide-workspace-views builds on Atom's abstractions—especially its
 [ViewRegistry]. However, Nuclide defines its views using React elements and the
 view registry only handles HTMLElements; how do we bridge the gap?
 
-### Option 1: `getReactElement()`
+### Option 1: `renderReactRoot()`
 
-Nuclide registers a custom view provider with Atom's view registry. If your
-object implements a `getReactElement()` method (which returns a React
-element), the view provider will call it and mount the returned element.
+The Atom [ViewRegistry] will look for a `getElement()` method on your object.
+The `renderReactRoot()` utility will allow you to implement it easily, and make
+sure cleanup is done correctly:
 
 ```js
 class ExampleGadgetModel {
-  getReactElement() {
-    return <ExampleGadgetView />;
+  getElement() {
+    return renderReactRoot(<ExampleGadgetView />);
   }
 }
 
@@ -112,7 +112,7 @@ Observables to store your state, this can be done with the
 
 ```js
 class ExampleGadgetModel {
-  getReactElement() {
+  getElement() {
     // 1. Get a stream of states from somewhere. For this example, we'll just
     // create one.
     const states = Observable.of({firstName: 'Jean', lastName: 'Grey'});
@@ -123,7 +123,7 @@ class ExampleGadgetModel {
     // 3. Create a bound version of the component.
     const BoundView = bindObservableAsProps(props, ExampleGadgetView);
     // 4. Return the stateful view.
-    return <BoundView />;
+    return renderReactRoot(<BoundView />);
   }
 }
 
@@ -144,7 +144,7 @@ class ExampleGadgetModel extends SimpleModel {
   onSomeEvent() {
     this.setState({count: this.state.count + 1});
   }
-  getReactElement() {
+  getElement() {
     // 1. Use `Observable.from` to convert a simple model to a stream of states.
     const states = Observable.from(this);
 
@@ -158,8 +158,8 @@ manually in your view:
 
 ```js
 class ExampleGadgetModel {
-  getReactElement() {
-    return <ExampleGadgetView model={this} />;
+  getElement() {
+    return renderReactRoot(<ExampleGadgetView model={this} />);
   }
   onChange(callback) {
     // ...
@@ -228,11 +228,8 @@ your component that Atom normally looks for in pane items, like `getTitle()`,
 
 The first two options make it easier to use React components, but they're by no
 means necessary. Remember, these objects are associated with views via Atom's
-view registry, so you can use any technique that Atom recognizes:
-
-* Add a `getElement()` method that returns an HTMLElement
-* Create and register a custom view provider
-* Anything [else][createView] Atom supports
+view registry, so you can use any technique that Atom recognizes like
+registering a custom view provider or anything [else][createView] Atom supports.
 
 ## Serialization
 
