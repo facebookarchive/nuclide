@@ -94,6 +94,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     const containerStyle = {
       maxHeight: '30em',
       overflow: 'auto',
+      position: 'relative',
     };
     let hasSelectedItem = false;
     const selectedTarget = this.state.selectedAttachTarget;
