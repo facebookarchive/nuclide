@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +8,22 @@
  * the root directory of this source tree.
  */
 
-import type {ArrayPattern} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import flatten from '../../utils/flatten';
-import printCommaSeparatedNodes from '../common/printCommaSeparatedNodes';
+var _utilsFlatten2;
 
-function printArrayPattern(print: Print, node: ArrayPattern): Lines {
-  return flatten([
-    '[',
-    printCommaSeparatedNodes(print, node.elements),
-    ']',
-  ]);
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+var _commonPrintCommaSeparatedNodes2;
+
+function _commonPrintCommaSeparatedNodes() {
+  return _commonPrintCommaSeparatedNodes2 = _interopRequireDefault(require('../common/printCommaSeparatedNodes'));
+}
+
+function printArrayPattern(print, node) {
+  return (0, (_utilsFlatten2 || _utilsFlatten()).default)(['[', (0, (_commonPrintCommaSeparatedNodes2 || _commonPrintCommaSeparatedNodes()).default)(print, node.elements), ']']);
 }
 
 module.exports = printArrayPattern;

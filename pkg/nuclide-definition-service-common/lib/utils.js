@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +10,7 @@
  * the root directory of this source tree.
  */
 
-import type {Definition} from '../../nuclide-definition-service';
+exports.definitionsAreEqual = definitionsAreEqual;
 
 /**
  * Returns true if the 2 definitions are considered equal. They are considered equal if:
@@ -22,7 +23,8 @@ import type {Definition} from '../../nuclide-definition-service';
  *      - language
  *      - project root
  */
-export function definitionsAreEqual(x: ?Definition, y: ?Definition): boolean {
+
+function definitionsAreEqual(x, y) {
   if (x == null || y == null) {
     return x === y;
   }

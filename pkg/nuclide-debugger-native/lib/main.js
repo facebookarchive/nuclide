@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +10,55 @@
  * the root directory of this source tree.
  */
 
-import type {
-  nuclide_debugger$Service,
-  NuclideDebuggerProvider,
-} from '../../nuclide-debugger-interfaces/service';
-import type {OutputService} from '../../nuclide-console/lib/types';
+exports.activate = activate;
+exports.consumeOutputService = consumeOutputService;
+exports.provideNuclideDebuggerLLDB = provideNuclideDebuggerLLDB;
+exports.createDebuggerProvider = createDebuggerProvider;
 
-import logger from './utils';
-import {getConfig} from './utils';
-import {setOutputService} from '../../nuclide-debugger-base';
-import Service from './Service';
-import DebuggerProvider from './DebuggerProvider';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function activate(state: mixed): void {
-  logger.setLogLevel(getConfig().clientLogLevel);
+var _utils2;
+
+function _utils() {
+  return _utils2 = _interopRequireDefault(require('./utils'));
 }
 
-export function consumeOutputService(api: OutputService): void {
-  setOutputService(api);
+var _utils4;
+
+function _utils3() {
+  return _utils4 = require('./utils');
 }
 
-export function provideNuclideDebuggerLLDB(): nuclide_debugger$Service {
-  return Service;
+var _nuclideDebuggerBase2;
+
+function _nuclideDebuggerBase() {
+  return _nuclideDebuggerBase2 = require('../../nuclide-debugger-base');
 }
 
-export function createDebuggerProvider(): NuclideDebuggerProvider {
-  return DebuggerProvider;
+var _Service2;
+
+function _Service() {
+  return _Service2 = _interopRequireDefault(require('./Service'));
+}
+
+var _DebuggerProvider2;
+
+function _DebuggerProvider() {
+  return _DebuggerProvider2 = _interopRequireDefault(require('./DebuggerProvider'));
+}
+
+function activate(state) {
+  (_utils2 || _utils()).default.setLogLevel((0, (_utils4 || _utils3()).getConfig)().clientLogLevel);
+}
+
+function consumeOutputService(api) {
+  (0, (_nuclideDebuggerBase2 || _nuclideDebuggerBase()).setOutputService)(api);
+}
+
+function provideNuclideDebuggerLLDB() {
+  return (_Service2 || _Service()).default;
+}
+
+function createDebuggerProvider() {
+  return (_DebuggerProvider2 || _DebuggerProvider()).default;
 }

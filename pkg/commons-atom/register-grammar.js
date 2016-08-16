@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = registerGrammar;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +13,11 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
 /**
  * Utility to make it easier to register a file extension with a grammar,
@@ -26,16 +34,14 @@ import invariant from 'assert';
  *   the grammar is available.
  * @return whether the extension was registered or not.
  */
-export default function registerGrammar(
-  scopeName: string,
-  extension: string,
-): boolean {
-  let customFileTypes = atom.config.get('core.customFileTypes');
+
+function registerGrammar(scopeName, extension) {
+  var customFileTypes = atom.config.get('core.customFileTypes');
   if (!customFileTypes || typeof customFileTypes !== 'object') {
     customFileTypes = {};
   }
-  invariant(customFileTypes);
-  let customFileType = customFileTypes[scopeName];
+  (0, (_assert2 || _assert()).default)(customFileTypes);
+  var customFileType = customFileTypes[scopeName];
   if (!Array.isArray(customFileType)) {
     customFileType = [];
   }
@@ -46,3 +52,5 @@ export default function registerGrammar(
   }
   return false;
 }
+
+module.exports = exports.default;
