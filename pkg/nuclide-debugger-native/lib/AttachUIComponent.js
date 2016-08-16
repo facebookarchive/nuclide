@@ -22,6 +22,7 @@ import {
   Button,
   ButtonTypes,
 } from '../../nuclide-ui/lib/Button';
+import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
 
 type PropsType = {
   store: LaunchAttachStore,
@@ -138,16 +139,18 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
             </tbody>
           </table>
         </div>
-        <div className="padded text-right">
-          <Button onClick={this._handleCancelButtonClick}>
-            Cancel
-          </Button>
-          <Button
-              buttonType={ButtonTypes.PRIMARY}
-              onClick={this._handleAttachClick}
-              disabled={!hasSelectedItem}>
-            Attach
-          </Button>
+        <div className="nuclide-debugger-native-launch-attach-actions">
+          <ButtonGroup>
+            <Button onClick={this._handleCancelButtonClick}>
+              Cancel
+            </Button>
+            <Button
+                buttonType={ButtonTypes.PRIMARY}
+                onClick={this._handleAttachClick}
+                disabled={!hasSelectedItem}>
+              Attach
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
     );
