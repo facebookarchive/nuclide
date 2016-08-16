@@ -196,6 +196,14 @@ export class PanelLocation extends SimpleModel<State> {
     this.setState({visible: false});
   }
 
+  isVisible(): boolean {
+    return this.state.visible;
+  }
+
+  toggle(): void {
+    this.setState({visible: !this.state.visible});
+  }
+
   serialize(): ?SerializedPanelLocation {
     return {
       deserializer: 'PanelLocation',
