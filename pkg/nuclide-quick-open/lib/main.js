@@ -102,8 +102,16 @@ class Activation {
         item: _reactDiv,
         visible: false,
       });
-      invariant(_reactDiv.parentNode instanceof HTMLElement);
-      _reactDiv.parentNode.style.maxWidth = `calc(100% - ${MODAL_MARGIN * 2}px)`;
+      const modalView = atom.views.getView(this._searchPanel);
+      // These styles are for Atom Dark, which sets a fixed width for modals.
+      Object.assign(modalView.style, {
+        marginLeft: '0',
+        maxWidth: 'none',
+        position: 'absolute',
+        width: 'auto',
+        left: `${MODAL_MARGIN}px`,
+        right: `${MODAL_MARGIN}px`,
+      });
       this._reactDiv = _reactDiv;
     }
 
