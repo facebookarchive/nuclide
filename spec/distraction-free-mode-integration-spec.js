@@ -41,5 +41,12 @@ describe('nuclide-distraction-free-mode', () => {
 });
 
 function isOutlineViewVisible(): boolean {
-  return document.querySelector('.nuclide-outline-view') != null;
+  let el = document.querySelector('.nuclide-outline-view');
+  if (el == null) { return false; }
+  while (el != null) {
+    const style = window.getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden') { return false; }
+    el = el.parentElement;
+  }
+  return true;
 }
