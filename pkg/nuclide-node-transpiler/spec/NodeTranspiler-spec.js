@@ -184,8 +184,10 @@ console.log('NodeTranspiler.shouldCompile on Buffers and strings');
 
   // Works with buffers and strings...
 
-  const cacheFilename1 = nodeTranspiler._getCacheFilename(bufferSrc);
-  const cacheFilename2 = nodeTranspiler._getCacheFilename(bufferSrc.toString());
+  const cacheFilename1 =
+    nodeTranspiler._getCacheFilename(bufferSrc, filename);
+  const cacheFilename2 =
+    nodeTranspiler._getCacheFilename(bufferSrc.toString(), filename);
 
   assert.equal(cacheFilename1, cacheFilename2);
 })();

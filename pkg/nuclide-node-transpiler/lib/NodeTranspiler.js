@@ -42,6 +42,7 @@ const PREFIX_LENGTH = Math.max(...PREFIXES.map(x => x.length));
 
 const BABEL_OPTIONS = {
   breakConfig: true,
+  // TODO(asuarez): Remove path information if source maps are enabled for builds.
   // sourceMap: 'inline',
   blacklist: [
     'es3.memberExpressionLiterals',
@@ -120,13 +121,33 @@ class NodeTranspiler {
     return this._configDigest;
   }
 
+  getFileDigest(src, filename) {
+    assert(typeof filename === 'string');
+    const hash = crypto
+      .createHash('sha1')
+      // Buffers are fast, but strings work too.
+      .update(src, Buffer.isBuffer(src) ? undefined : 'utf8');
+    if (BABEL_OPTIONS.sourceMap) {
+      // Sourcemaps encode the filename.
+      hash
+        .update('\0', 'utf8')
+        .update(filename, 'utf8');
+    }
+    const fileDigest = hash.digest('hex');
+    return fileDigest;
+  }
+
   transform(src, filename) {
+    assert(typeof filename === 'string');
     if (!this._babel) {
       this._babel = this._getBabel();
     }
     try {
       const input = Buffer.isBuffer(src) ? src.toString() : src;
-      const output = this._babel.transform(input, BABEL_OPTIONS).code;
+      const opts = BABEL_OPTIONS.sourceMap
+        ? Object.assign({filename}, BABEL_OPTIONS)
+        : BABEL_OPTIONS;
+      const output = this._babel.transform(input, opts).code;
       return output;
     } catch (err) {
       console.error(`Error transpiling "${filename}"`);
@@ -135,7 +156,8 @@ class NodeTranspiler {
   }
 
   transformWithCache(src, filename) {
-    const cacheFilename = this._getCacheFilename(src);
+    assert(typeof filename === 'string');
+    const cacheFilename = this._getCacheFilename(src, filename);
 
     if (fs.existsSync(cacheFilename)) {
       const cached = fs.readFileSync(cacheFilename, 'utf8');
@@ -148,13 +170,7 @@ class NodeTranspiler {
     return output;
   }
 
-  _getCacheFilename(src) {
-    const fileDigest = crypto
-      .createHash('sha1')
-      // Buffers are fast, but strings work too.
-      .update(src, Buffer.isBuffer(src) ? undefined : 'utf8')
-      .digest('hex');
-
+  _getCacheFilename(src, filename) {
     if (!this._cacheDir) {
       this._cacheDir = path.join(
         os.tmpdir(),
@@ -162,7 +178,7 @@ class NodeTranspiler {
         this.getConfigDigest()
       );
     }
-
+    const fileDigest = this.getFileDigest(src, filename);
     const cacheFilename = path.join(this._cacheDir, fileDigest + '.js');
     return cacheFilename;
   }
