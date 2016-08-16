@@ -41,7 +41,7 @@ type Props = {
   onBlur: () => mixed,
   size?: 'xs' | 'sm' | 'lg',
   unstyled: boolean,
-  width?: number,
+  width?: ?number,
 };
 
 type State = {

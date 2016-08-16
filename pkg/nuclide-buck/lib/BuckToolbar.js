@@ -26,7 +26,6 @@ import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {LoadingSpinner} from '../../nuclide-ui/lib/LoadingSpinner';
 import addTooltip from '../../nuclide-ui/lib/add-tooltip';
 
-const BUCK_TARGET_INPUT_WIDTH = 400;
 const NO_ACTIVE_PROJECT_ERROR = 'No active Buck project. Check your Current Working Root.';
 
 type Props = {
@@ -167,6 +166,7 @@ class BuckToolbar extends React.Component {
         widgets.push(
           <div key="react-native-checkbox" className="inline-block">
             <Checkbox
+              className="nuclide-buck-react-native-packager-checkbox"
               checked={buckToolbarStore.isReactNativeServerMode()}
               onChange={this._handleReactNativeServerModeChanged}
               label={'React Native Server Mode'}
@@ -178,7 +178,7 @@ class BuckToolbar extends React.Component {
 
     const {activeTaskType} = this.props;
     return (
-      <div>
+      <div className="nuclide-buck-toolbar">
         <Combobox
           className="inline-block nuclide-buck-target-combobox"
           ref="buildTarget"
@@ -190,7 +190,7 @@ class BuckToolbar extends React.Component {
           onSelect={this._handleBuildTargetChange}
           onBlur={this._handleBuildTargetChange}
           placeholderText="Buck build target"
-          width={BUCK_TARGET_INPUT_WIDTH}
+          width={null}
         />
         <Button
           className="nuclide-buck-settings icon icon-gear"

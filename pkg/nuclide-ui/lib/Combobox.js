@@ -25,7 +25,7 @@ type DefaultProps = {
   maxOptionCount: number,
   onChange: (newValue: string) => mixed,
   onSelect: (newValue: string) => mixed,
-  width: number,
+  width: ?number,
 };
 
 type Props = DefaultProps & {
@@ -355,9 +355,12 @@ export class Combobox extends React.Component {
       size,
       width,
     } = this.props;
+    const wrapperStyle = {
+      width: width == null ? undefined : `${width}px`,
+    };
     return (
       <div className={'select-list popover-list popover-list-subtle ' + this.props.className}
-           style={{width: `${width}px`}}>
+           style={wrapperStyle}>
         <AtomInput
           initialValue={initialTextInput}
           onBlur={this._handleInputBlur}
