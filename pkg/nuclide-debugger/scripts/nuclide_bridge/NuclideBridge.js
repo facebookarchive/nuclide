@@ -490,34 +490,41 @@ class NuclideBridge {
     }
   }
 
-  // TODO[jeffreytan]: this is a hack to enable hhvm/lldb debugger
+  // TODO[jeffreytan]: this is a hack to enable debugger
   // setting breakpoints in non-parsed files.
   // Open issues:
   // Any breakpoints in this list will shown as bound/resolved;
   // needs to revisit the unresolved breakpoints detection logic.
-  _parseBreakpointSources() {
+  _parseBreakpointSources(): void {
     this._allBreakpoints.forEach(breakpoint => {
-      const sourceUrl = breakpoint.sourceURL;
-      if (sourceUrl.endsWith('.php') ||
-          sourceUrl.endsWith('.hh') ||
-          sourceUrl.endsWith('.c') ||
-          sourceUrl.endsWith('.cpp') ||
-          sourceUrl.endsWith('.h') ||
-          sourceUrl.endsWith('.hpp') ||
-          sourceUrl.endsWith('.m') ||
-          sourceUrl.endsWith('.mm')) {
-        const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceUrl);
-        if (!source) {
-          const target = WebInspector.targetManager.mainTarget();
-          if (target) {
-            target.debuggerModel._parsedScriptSource(
-              sourceUrl,
-              sourceUrl,
-            );
-          }
-        }
-      }
+      this._parseBreakpointSourceIfNeeded(breakpoint);
     });
+  }
+
+  _parseBreakpointSourceIfNeeded(breakpoint: Object): void {
+    const sourceUrl = breakpoint.sourceURL;
+    if (sourceUrl.endsWith('.php') ||
+        sourceUrl.endsWith('.hh') ||
+        sourceUrl.endsWith('.c') ||
+        sourceUrl.endsWith('.cpp') ||
+        sourceUrl.endsWith('.h') ||
+        sourceUrl.endsWith('.hpp') ||
+        sourceUrl.endsWith('.js') ||
+        sourceUrl.endsWith('.m') ||
+        sourceUrl.endsWith('.mm')) {
+      const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceUrl);
+      if (source != null) {
+        return;
+      }
+      const target = WebInspector.targetManager.mainTarget();
+      if (target == null) {
+        return;
+      }
+      target.debuggerModel._parsedScriptSource(
+        sourceUrl,
+        sourceUrl,
+      );
+    }
   }
 
   // Synchronizes nuclide BreakpointStore and BreakpointManager
@@ -542,6 +549,7 @@ class NuclideBridge {
   }
 
   _addBreakpoint(breakpoint: Object): boolean {
+    this._parseBreakpointSourceIfNeeded(breakpoint);
     const source = WebInspector.workspace.uiSourceCodeForOriginURL(breakpoint.sourceURL);
     if (source == null) {
       return false;
