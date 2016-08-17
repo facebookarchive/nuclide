@@ -1,5 +1,13 @@
 # Nuclide Changelog
 
+## v0.163.0
+
+### Hotfixes
+
+* Reverted changes to the diagnostics panel that caused refresh issues
+* Put back quick-open modal styles for Atom Dark theme
+* Fix a regression that you can't set breakpoint in a non-parsed source file after starting debugging
+
 ## v0.162.0
 
 ### Highlights
