@@ -12,6 +12,8 @@
 /* NON-TRANSPILED FILE */
 /* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
 
+const child_process = require('child_process');
+
 let isBootstrapped = false;
 let messagesToProcess = [];
 
@@ -97,4 +99,13 @@ process.on('uncaughtException', err => {
 // Properly terminate if the parent server crashes.
 process.on('disconnect', () => {
   process.exit();
+});
+process.on('exit', () => {
+  // Hack: kill all child processes.
+  process._getActiveHandles()
+    .forEach(handle => {
+      if (handle instanceof child_process.ChildProcess) {
+        handle.kill();
+      }
+    });
 });
