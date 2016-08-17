@@ -349,7 +349,15 @@ class BaseDefinition(object):
                 params = sub.params[1:]  # ignore self
             except KeyError:
                 return []
-        return [_Param(self._evaluator, p.name) for p in params]
+
+        ret = []
+        for p in params:
+            pname = p.name
+            # Python 3 typehinted params have multiple Name nodes.
+            if isinstance(pname, tree.Node):
+                pname = p.name.children[0]
+            ret.append(_Param(self._evaluator, pname))
+        return ret
 
     def parent(self):
         scope = self._definition.get_parent_scope()

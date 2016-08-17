@@ -329,6 +329,10 @@ describe('PythonService', () => {
     it('properly includes multiple assignments in the outline', () => {
       checkOutlineTree('4');
     });
+
+    it('works with Python 3 features', () => {
+      checkOutlineTree('5');
+    });
   });
 
   describe('Module Resolution', () => {
