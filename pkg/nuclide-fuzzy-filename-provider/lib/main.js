@@ -18,6 +18,7 @@ import {
 } from 'atom';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
+import {getLogger} from '../../nuclide-logging';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getIgnoredNames} from './utils';
 import FuzzyFileNameProvider from './FuzzyFileNameProvider';
@@ -69,7 +70,10 @@ function initSearch(projectPaths: Array<string>): void {
       // kicked off by 'fileSearchForDirectory'.
       service.isFuzzySearchAvailableFor(projectPath).then(isAvailable => {
         if (isAvailable) {
-          const queryPromise = service.queryFuzzyFile(projectPath, 'a', getIgnoredNames());
+          const queryPromise = service.queryFuzzyFile(projectPath, 'a', getIgnoredNames())
+            .catch(error => {
+              getLogger().error(`Error starting fuzzy filename search for ${projectPath}`, error);
+            });
           if (busySignalProvider != null) {
             busySignalProvider.reportBusy(
               `File search: indexing files for project ${projectPath}`,

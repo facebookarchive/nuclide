@@ -105,7 +105,12 @@ export async function fileSearchForDirectory(
     fileSearch.dispose();
   }
 
-  const promise = newFileSearch(directoryUri, ignoredNames);
+  const promise = newFileSearch(directoryUri, ignoredNames)
+    .catch(error => {
+      // Remove errored processes from the cache so we can try again.
+      delete fileSearchForDirectoryUri[directoryUri];
+      throw error;
+    });
   fileSearchForDirectoryUri[directoryUri] = promise;
   return promise;
 }
