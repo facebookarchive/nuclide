@@ -81,7 +81,8 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
   // |  second commit
   // ~
 
-  it('can update the file tree UI when Mercurial commit, amend, and bookmark ops are made', () => {
+  // eslint-disable-next-line jasmine/no-disabled-tests
+  xit('can update the file tree UI when Mercurial commit, amend, and bookmark ops are made', () => {
     waitsForPromise(async () => {
       // Make a change
       fs.writeFileSync(testFileLocalPath, 'editing test.txt', 'utf8');
