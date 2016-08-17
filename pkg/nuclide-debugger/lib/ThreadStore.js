@@ -65,6 +65,7 @@ export default class ThreadStore {
     switch (payload.actionType) {
       case Constants.Actions.CLEAR_INTERFACE:
         this._handleClearInterface();
+        this._emitter.emit('change');
         break;
       case Constants.Actions.UPDATE_THREADS:
         this._updateThreads(payload.data.threadData);
