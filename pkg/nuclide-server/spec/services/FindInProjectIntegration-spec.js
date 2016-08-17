@@ -51,7 +51,7 @@ describe('GrepSearch', () => {
 
       // Do search.
       const updates = await remoteService.grepSearch(uri,
-        /hello world/i, []).toArray().toPromise();
+        /hello world/i, []).refCount().toArray().toPromise();
 
       const expected = JSON.parse(
         fs.readFileSync(input_dir + '.json', {encoding: 'utf8'}),

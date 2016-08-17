@@ -120,7 +120,7 @@ module.exports = _client => {
           },
           kind: "number"
         });
-      });
+      }).publish();
     }
     dispose() {
       return _client.disposeRemoteObject(this);
@@ -149,8 +149,8 @@ module.exports = _client => {
         return _client.marshalArguments(Array.from(arguments), [{
           name: {
             type: "Identifier",
-            start: 642,
-            end: 643,
+            start: 653,
+            end: 654,
             loc: {
               start: {
                 line: 31,
@@ -232,7 +232,7 @@ module.exports = _client => {
           },
           kind: "string"
         });
-      });
+      }).publish();
     }
     dispose() {
       return _client.disposeRemoteObject(this);
@@ -487,8 +487,8 @@ Object.defineProperty(module.exports, "defs", {
       argumentTypes: [{
         name: {
           type: "Identifier",
-          start: 642,
-          end: 643,
+          start: 653,
+          end: 654,
           loc: {
             start: {
               line: 31,

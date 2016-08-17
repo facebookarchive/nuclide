@@ -16,7 +16,7 @@ import type {
 } from './NativeDebuggerServiceInterface';
 
 import {CompositeDisposable, Disposable} from 'event-kit';
-import {Observable} from 'rxjs';
+import type {ConnectableObservable} from 'rxjs';
 import child_process from 'child_process';
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -115,8 +115,8 @@ export class DebuggerConnection {
     lldbProcess.on('exit', this._handleLLDBExit.bind(this));
   }
 
-  getServerMessageObservable(): Observable<string> {
-    return this._clientCallback.getServerMessageObservable();
+  getServerMessageObservable(): ConnectableObservable<string> {
+    return this._clientCallback.getServerMessageObservable().publish();
   }
 
   _handleLLDBMessage(message: string): void {
@@ -158,8 +158,8 @@ export class NativeDebuggerService {
     this._subscriptions = new CompositeDisposable(this._clientCallback);
   }
 
-  getOutputWindowObservable(): Observable<string> {
-    return this._clientCallback.getOutputWindowObservable();
+  getOutputWindowObservable(): ConnectableObservable<string> {
+    return this._clientCallback.getOutputWindowObservable().publish();
   }
 
   async attach(attachInfo: AttachTargetInfo): Promise<DebuggerConnection> {

@@ -60,7 +60,7 @@ module.exports = _client => {
         },
         kind: "number"
       });
-    });
+    }).publish();
   };
 
   remoteModule.TestFunctionC = function () {

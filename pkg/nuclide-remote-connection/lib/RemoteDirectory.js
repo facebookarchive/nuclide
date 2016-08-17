@@ -99,7 +99,7 @@ export class RemoteDirectory {
       return;
     }
     const {watchDirectory} = (this._getService('FileWatcherService'): FileWatcherService);
-    const watchStream = watchDirectory(this._uri);
+    const watchStream = watchDirectory(this._uri).refCount();
     this._watchSubscription = watchStream.subscribe(watchUpdate => {
       logger.debug('watchDirectory update:', watchUpdate);
       switch (watchUpdate.type) {

@@ -81,7 +81,7 @@ export class RemoteFile {
       return;
     }
     const {watchFile} = (this._getService('FileWatcherService'): FileWatcherService);
-    const watchStream = watchFile(this._path);
+    const watchStream = watchFile(this._path).refCount();
     this._watchSubscription = watchStream.subscribe(watchUpdate => {
       logger.debug('watchFile update:', watchUpdate);
       switch (watchUpdate.type) {

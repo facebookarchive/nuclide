@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from 'rxjs';
+import type {ConnectableObservable} from 'rxjs';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 export type AttachTargetInfo = {
@@ -38,7 +38,7 @@ export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>
 }
 
 export class DebuggerConnection {
-  getServerMessageObservable(): Observable<string> {
+  getServerMessageObservable(): ConnectableObservable<string> {
     throw new Error('Not implemented');
   }
   async sendCommand(message: string): Promise<void> {
@@ -53,7 +53,7 @@ export class NativeDebuggerService {
   constructor(config: DebuggerConfig) {
     throw new Error('Not implemented');
   }
-  getOutputWindowObservable(): Observable<string> {
+  getOutputWindowObservable(): ConnectableObservable<string> {
     throw new Error('Not implemented');
   }
   async attach(attachInfo: AttachTargetInfo): Promise<DebuggerConnection> {

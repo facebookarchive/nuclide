@@ -60,6 +60,7 @@ module.exports = {
 
     return service
         .compile(src, contents, defaultFlags)
+        .refCount()
         .toPromise();
   },
 

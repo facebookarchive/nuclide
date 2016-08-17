@@ -192,14 +192,14 @@ export class HgRepositoryClient {
       atom.notifications.addWarning('Mercurial: failed to subscribe to watchman!');
     });
     // Get updates that tell the HgRepositoryClient when to clear its caches.
-    this._service.observeFilesDidChange().subscribe(onFilesChanges);
-    this._service.observeHgRepoStateDidChange()
+    this._service.observeFilesDidChange().refCount().subscribe(onFilesChanges);
+    this._service.observeHgRepoStateDidChange().refCount()
       .subscribe(this._serializedRefreshStatusesCache);
-    this._service.observeActiveBookmarkDidChange()
+    this._service.observeActiveBookmarkDidChange().refCount()
       .subscribe(this.fetchActiveBookmark.bind(this));
-    this._service.observeBookmarksDidChange()
+    this._service.observeBookmarksDidChange().refCount()
       .subscribe(() => { this._emitter.emit('did-change-bookmarks'); });
-    this._service.observeHgConflictStateDidChange()
+    this._service.observeHgConflictStateDidChange().refCount()
       .subscribe(this._conflictStateChanged.bind(this));
   }
 

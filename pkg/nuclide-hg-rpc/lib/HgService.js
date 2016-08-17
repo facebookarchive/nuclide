@@ -20,7 +20,8 @@ import {
   MergeConflictStatus,
   StatusCodeId,
 } from './hg-constants';
-import {Observable, Subject} from 'rxjs';
+import type {ConnectableObservable} from 'rxjs';
+import {Subject} from 'rxjs';
 import {parseHgBlameOutput} from './hg-blame-output-parser';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
 import {
@@ -462,24 +463,24 @@ export class HgService {
    * .hgignore files. (See ::onHgIgnoreFileDidChange.)
    * @return A Observable which emits the changed file paths.
    */
-  observeFilesDidChange(): Observable<Array<NuclideUri>> {
-    return this._filesDidChangeObserver;
+  observeFilesDidChange(): ConnectableObservable<Array<NuclideUri>> {
+    return this._filesDidChangeObserver.publish();
   }
 
   /**
    * Observes that a Mercurial event has occurred (e.g. histedit) that would
    * potentially invalidate any data cached from responses from this service.
    */
-  observeHgRepoStateDidChange(): Observable<void> {
-    return this._hgRepoStateDidChangeObserver;
+  observeHgRepoStateDidChange(): ConnectableObservable<void> {
+    return this._hgRepoStateDidChangeObserver.publish();
   }
 
   /**
    * Observes when a Mercurial repository enters and exits a rebase state.
    */
-  observeHgConflictStateDidChange(): Observable<boolean> {
+  observeHgConflictStateDidChange(): ConnectableObservable<boolean> {
     this._checkConflictChange();
-    return this._hgConflictStateDidChangeObserver;
+    return this._hgConflictStateDidChangeObserver.publish();
   }
 
   /**
@@ -570,15 +571,15 @@ export class HgService {
   /**
    * Observes that the active Mercurial bookmark has changed.
    */
-  observeActiveBookmarkDidChange(): Observable<void> {
-    return this._hgActiveBookmarkDidChangeObserver;
+  observeActiveBookmarkDidChange(): ConnectableObservable<void> {
+    return this._hgActiveBookmarkDidChangeObserver.publish();
   }
 
   /**
    * Observes that Mercurial bookmarks have changed.
    */
-  observeBookmarksDidChange(): Observable<void> {
-    return this._hgBookmarksDidChangeObserver;
+  observeBookmarksDidChange(): ConnectableObservable<void> {
+    return this._hgBookmarksDidChangeObserver.publish();
   }
 
   /**

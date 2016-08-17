@@ -26,7 +26,7 @@ describe('FlowServiceFactory', () => {
   beforeEach(() => {
     serverUpdates = [];
     fakeFlowService = {
-      getServerStatusUpdates() { return Observable.from(serverUpdates); },
+      getServerStatusUpdates() { return Observable.from(serverUpdates).publish(); },
     };
     getServiceByNuclideUriSpy =
       spyOn(NuclideRemoteConnection, 'getServiceByNuclideUri')

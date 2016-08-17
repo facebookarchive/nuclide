@@ -185,7 +185,7 @@ export class RemoteConnection {
     const {watchDirectoryRecursive} = FileWatcherService;
     // Start watching the project for changes and initialize the root watcher
     // for next calls to `watchFile` and `watchDirectory`.
-    const watchStream = watchDirectoryRecursive(rootDirectoryUri);
+    const watchStream = watchDirectoryRecursive(rootDirectoryUri).refCount();
     const subscription = watchStream.subscribe(watchUpdate => {
       // Nothing needs to be done if the root directory was watched correctly.
       // Let's just console log it anyway.

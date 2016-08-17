@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable, Subject} from 'rxjs';
+import {ConnectableObservable, Subject} from 'rxjs';
 import type {DiffInfo, StatusCodeIdValue} from '../lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
@@ -27,16 +27,16 @@ export default class MockHgService {
     return Promise.resolve(new Map());
   }
 
-  observeFilesDidChange(): Observable<Array<NuclideUri>> {
-    return new Subject();
+  observeFilesDidChange(): ConnectableObservable<Array<NuclideUri>> {
+    return new Subject().publish();
   }
 
-  observeHgIgnoreFileDidChange(): Observable<void> {
-    return new Subject();
+  observeHgIgnoreFileDidChange(): ConnectableObservable<void> {
+    return new Subject().publish();
   }
 
-  observeHgRepoStateDidChange(): Observable<void> {
-    return new Subject();
+  observeHgRepoStateDidChange(): ConnectableObservable<void> {
+    return new Subject().publish();
   }
 
   deleteBookmark(name: string): Promise<void> {
@@ -47,8 +47,8 @@ export default class MockHgService {
     return Promise.resolve();
   }
 
-  observeHgConflictStateDidChange(): Observable<void> {
-    return new Subject();
+  observeHgConflictStateDidChange(): ConnectableObservable<void> {
+    return new Subject().publish();
   }
 
   fetchDiffInfo(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
@@ -63,12 +63,12 @@ export default class MockHgService {
     return Promise.resolve([]);
   }
 
-  observeActiveBookmarkDidChange(): Observable<void> {
-    return new Subject();
+  observeActiveBookmarkDidChange(): ConnectableObservable<void> {
+    return new Subject().publish();
   }
 
-  observeBookmarksDidChange(): Observable<void> {
-    return new Subject();
+  observeBookmarksDidChange(): ConnectableObservable<void> {
+    return new Subject().publish();
   }
 
   dispose(): Promise<void> {

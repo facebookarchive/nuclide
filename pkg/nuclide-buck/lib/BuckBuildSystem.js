@@ -234,7 +234,7 @@ export class BuckBuildSystem {
       .switchMap(httpPort => {
         let socketEvents = null;
         if (httpPort > 0) {
-          socketEvents = getEventsFromSocket(buckProject.getWebSocketStream(httpPort))
+          socketEvents = getEventsFromSocket(buckProject.getWebSocketStream(httpPort).refCount())
             .share();
         } else {
           this._logOutput('Enable httpserver in your .buckconfig for better output.', 'warning');
@@ -327,12 +327,12 @@ export class BuckBuildSystem {
             run: true,
             debug,
           },
-        ),
+        ).refCount(),
       );
     } else if (subcommand === 'build') {
-      return buckProject.buildWithOutput([buildTarget], args);
+      return buckProject.buildWithOutput([buildTarget], args).refCount();
     } else if (subcommand === 'test') {
-      return buckProject.testWithOutput([buildTarget], args);
+      return buckProject.testWithOutput([buildTarget], args).refCount();
     } else {
       throw Error(`Unknown subcommand: ${subcommand}`);
     }

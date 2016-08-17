@@ -59,7 +59,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     this._debuggerConnection = connection;
     this._disposables.add(connection);
     this._disposables.add(new DisposableSubscription(
-      connection.getServerMessageObservable().subscribe(
+      connection.getServerMessageObservable().refCount().subscribe(
         this._handleServerMessage.bind(this),
         this._handleServerError.bind(this),
         this._handleSessionEnd.bind(this),

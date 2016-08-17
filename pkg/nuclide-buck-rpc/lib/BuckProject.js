@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {AsyncExecuteOptions} from '../../commons-node/process';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {ConnectableObservable} from 'rxjs';
 
 import {
   checkOutput,
@@ -342,8 +343,8 @@ export class BuckProject {
   buildWithOutput(
     buildTargets: Array<string>,
     extraArguments: Array<string>,
-  ): Observable<ProcessMessage> {
-    return this._buildWithOutput(buildTargets, {extraArguments});
+  ): ConnectableObservable<ProcessMessage> {
+    return this._buildWithOutput(buildTargets, {extraArguments}).publish();
   }
 
   /**
@@ -360,8 +361,8 @@ export class BuckProject {
   testWithOutput(
     buildTargets: Array<string>,
     extraArguments: Array<string>,
-  ): Observable<ProcessMessage> {
-    return this._buildWithOutput(buildTargets, {test: true, extraArguments});
+  ): ConnectableObservable<ProcessMessage> {
+    return this._buildWithOutput(buildTargets, {test: true, extraArguments}).publish();
   }
 
   /**
@@ -380,13 +381,13 @@ export class BuckProject {
     extraArguments: Array<string>,
     simulator: ?string,
     runOptions: ?BuckRunOptions,
-  ): Observable<ProcessMessage> {
+  ): ConnectableObservable<ProcessMessage> {
     return this._buildWithOutput(buildTargets, {
       install: true,
       simulator,
       runOptions,
       extraArguments,
-    });
+    }).publish();
   }
 
   /**
@@ -552,7 +553,7 @@ export class BuckProject {
 
   // TODO: Nuclide's RPC framework won't allow BuckWebSocketMessage here unless we cover
   // all possible message types. For now, we'll manually typecast at the callsite.
-  getWebSocketStream(httpPort: number): Observable<Object> {
-    return createBuckWebSocket(this, httpPort);
+  getWebSocketStream(httpPort: number): ConnectableObservable<Object> {
+    return createBuckWebSocket(this, httpPort).publish();
   }
 }

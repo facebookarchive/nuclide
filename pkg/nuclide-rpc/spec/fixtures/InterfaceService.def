@@ -3,7 +3,7 @@ export class Vector2 {
   static distance(a: Vector2, b: Vector2): Promise<number> {}
   len(): Promise<number> {}
 
-  watchChanges(): Observable<number> {}
+  watchChanges(): ConnectableObservable<number> {}
 
   // Private members do NOT require marshallable signatures.
   _privateMember(): number {}
@@ -30,7 +30,7 @@ function f() {}
 export interface Iface {
   p(a: number): Promise<number>;
   f(): void;
-  o(): Observable<string>;
+  o(): ConnectableObservable<string>;
 
   dispose(): void;
 }

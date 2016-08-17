@@ -915,7 +915,7 @@ class DiffViewModel {
     this._publishUpdates.next({level: 'log', text: 'Creating new revision...\n'});
     const stream = getArcanistServiceByNuclideUri(filePath)
       .createPhabricatorRevision(filePath)
-      .share();
+      .refCount();
 
     await this._processArcanistOutput(stream);
     const asyncHgRepo = activeRepositoryStack.getRepository().async;
@@ -948,7 +948,7 @@ class DiffViewModel {
     });
     const stream = getArcanistServiceByNuclideUri(filePath)
       .updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked)
-      .share();
+      .refCount();
     await this._processArcanistOutput(stream);
     return phabricatorRevision;
   }

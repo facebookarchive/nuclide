@@ -18,6 +18,7 @@ import type {
   ClangCursor,
   ClangOutlineTree,
 } from './rpc-types';
+import type {ConnectableObservable} from 'rxjs';
 
 import {keyMirror} from '../../commons-node/collection';
 import {Observable} from 'rxjs';
@@ -107,7 +108,7 @@ export function compile(
   src: NuclideUri,
   contents: string,
   defaultFlags?: ?Array<string>,
-): Observable<?ClangCompileResult> {
+): ConnectableObservable<?ClangCompileResult> {
   const doCompile = async () => {
     // Note: restarts the server if the flags changed.
     const server = await serverManager.getClangServer(src, contents, defaultFlags, true);
@@ -119,7 +120,7 @@ export function compile(
         }));
     }
   };
-  return Observable.fromPromise(doCompile());
+  return Observable.fromPromise(doCompile()).publish();
 }
 
 export async function getCompletions(

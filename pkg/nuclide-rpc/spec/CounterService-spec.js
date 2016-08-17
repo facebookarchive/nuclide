@@ -34,7 +34,7 @@ describe('CounterService', () => {
       invariant(service);
 
       let watchedCounters = 0;
-      service.Counter.watchNewCounters().subscribe(async counter => {
+      service.Counter.watchNewCounters().refCount().subscribe(async counter => {
         await counter.getCount();
         ++watchedCounters;
       });
@@ -45,7 +45,7 @@ describe('CounterService', () => {
 
       // Subscribe to events from counter1.
       let completed1 = false;
-      counter1.watchChanges().subscribe(event => {
+      counter1.watchChanges().refCount().subscribe(event => {
         expect(event.type).toBe('add');
         expect(event.oldValue).toBe(3);
         expect(event.newValue).toBe(4);
@@ -92,7 +92,7 @@ describe('CounterService', () => {
     waitsForPromise(async () => {
       invariant(service);
 
-      const obs = service.Counter.watchNewCounters();
+      const obs = service.Counter.watchNewCounters().refCount();
 
       let watchedCounters1 = 0;
       const sub1 = obs.subscribe(counter => {

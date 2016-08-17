@@ -19,10 +19,10 @@ export class Counter {
   static listCounters(): Promise<Array<Counter>> {}
 
   // Subscribe to changes in the counter.
-  watchChanges(): Observable<CounterChangeEvent> {}
+  watchChanges(): ConnectableObservable<CounterChangeEvent> {}
 
   // Watch added counters.
-  static watchNewCounters(): Observable<Counter> {}
+  static watchNewCounters(): ConnectableObservable<Counter> {}
 
   // A static method that takes a Counter object as an argument.
   static indexOf(counter: Counter): Promise<number> {}

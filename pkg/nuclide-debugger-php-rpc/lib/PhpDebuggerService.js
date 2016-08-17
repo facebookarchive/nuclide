@@ -16,7 +16,7 @@ import {setRootDirectoryUri} from './ConnectionUtils';
 import {MessageTranslator} from './MessageTranslator';
 import {CompositeDisposable} from 'event-kit';
 
-import type {Observable} from 'rxjs';
+import type {ConnectableObservable} from 'rxjs';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 export type PhpDebuggerSessionConfig = {
@@ -81,16 +81,16 @@ export class PhpDebuggerService {
     this._disposables.add(this._clientCallback);
   }
 
-  getNotificationObservable(): Observable<NotificationMessage> {
-    return this._clientCallback.getNotificationObservable();
+  getNotificationObservable(): ConnectableObservable<NotificationMessage> {
+    return this._clientCallback.getNotificationObservable().publish();
   }
 
-  getServerMessageObservable(): Observable<string> {
-    return this._clientCallback.getServerMessageObservable();
+  getServerMessageObservable(): ConnectableObservable<string> {
+    return this._clientCallback.getServerMessageObservable().publish();
   }
 
-  getOutputWindowObservable(): Observable<string> {
-    return this._clientCallback.getOutputWindowObservable();
+  getOutputWindowObservable(): ConnectableObservable<string> {
+    return this._clientCallback.getOutputWindowObservable().publish();
   }
 
   async debug(config: PhpDebuggerSessionConfig): Promise<string> {

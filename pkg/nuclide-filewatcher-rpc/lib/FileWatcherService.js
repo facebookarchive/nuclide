@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type WatchmanSubscription from '../../nuclide-watchman-helpers/lib/WatchmanSubscription';
 import type {FileChange} from '../../nuclide-watchman-helpers/lib/WatchmanClient';
+import type {ConnectableObservable} from 'rxjs';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
@@ -42,12 +43,12 @@ function getWatchmanClient(): WatchmanClient {
   return watchmanClient;
 }
 
-export function watchFile(filePath: NuclideUri): Observable<WatchResult> {
-  return watchEntity(filePath, true);
+export function watchFile(filePath: NuclideUri): ConnectableObservable<WatchResult> {
+  return watchEntity(filePath, true).publish();
 }
 
-export function watchDirectory(directoryPath: NuclideUri): Observable<WatchResult> {
-  return watchEntity(directoryPath, false);
+export function watchDirectory(directoryPath: NuclideUri): ConnectableObservable<WatchResult> {
+  return watchEntity(directoryPath, false).publish();
 }
 
 function watchEntity(
@@ -92,10 +93,10 @@ async function getRealPath(entityPath: string, isFile: boolean): Promise<string>
 
 export function watchDirectoryRecursive(
   directoryPath: NuclideUri,
-): Observable<string> {
+): ConnectableObservable<string> {
   const client = getWatchmanClient();
   if (client.hasSubscription(directoryPath)) {
-    return Observable.of('EXISTING');
+    return Observable.of('EXISTING').publish();
   }
   return Observable.fromPromise(
     client.watchDirectoryRecursive(directoryPath),
@@ -111,7 +112,7 @@ export function watchDirectoryRecursive(
 
       return () => unwatchDirectoryRecursive(directoryPath);
     });
-  });
+  }).publish();
 }
 
 function onWatcherChange(subscription: WatchmanSubscription, entries: Array<FileChange>): void {

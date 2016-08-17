@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {Observable} from 'rxjs';
+import {ConnectableObservable} from 'rxjs';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import search from './scanhandler';
@@ -32,9 +32,9 @@ export function grepSearch(
   directory: NuclideUri,
   regex: RegExp,
   subdirs: Array<string>,
-): Observable<search$FileResult> {
+): ConnectableObservable<search$FileResult> {
   return search(directory, regex, subdirs).map(update => {
     // Transform filePath's to absolute paths.
     return {filePath: nuclideUri.join(directory, update.filePath), matches: update.matches};
-  });
+  }).publish();
 }

@@ -47,7 +47,8 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     }
 
     let debugSession = null;
-    let outputDisposable = registerOutputWindowLogging(rpcService.getOutputWindowObservable());
+    let outputDisposable
+      = registerOutputWindowLogging(rpcService.getOutputWindowObservable().refCount());
     try {
       const connection = await rpcService.attach(this._targetInfo);
       rpcService.dispose();

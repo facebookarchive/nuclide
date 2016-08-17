@@ -27,7 +27,7 @@ import type {TimingTracker} from '../../nuclide-analytics';
 import type {Observer} from 'rxjs';
 
 import invariant from 'assert';
-import {Observable} from 'rxjs';
+import {Observable, ConnectableObservable} from 'rxjs';
 import {ServiceRegistry} from './ServiceRegistry';
 import {ObjectRegistry} from './ObjectRegistry';
 import {
@@ -153,7 +153,7 @@ export class RpcConnection<TransportType: Transport> {
   _transport: TransportType;
   _serviceRegistry: ServiceRegistry;
   _objectRegistry: ObjectRegistry;
-  _subscriptions: Map<number, Set<Subscription>>;
+  _subscriptions: Map<number, Subscription>;
   _calls: Map<number, Call>;
 
   // Do not call this directly, use factory methods below.
@@ -349,35 +349,49 @@ export class RpcConnection<TransportType: Transport> {
             },
           ));
         });
-      case 'observable':
-        let subscriptions = this._subscriptions.get(message.id);
-        if (subscriptions == null) {
-          subscriptions = new Set();
-          this._subscriptions.set(message.id, subscriptions);
-        }
-        const observable = Observable.create(observer => {
-          const subscription = new Subscription(message, observer);
-          invariant(subscriptions != null);
-          subscriptions.add(subscription);
+      case 'observable': {
+        const id = message.id;
+        invariant(!this._subscriptions.has(id));
+
+        const sendSubscribe = () => {
           this._transport.send(JSON.stringify(message));
+        };
+        const sendUnsubscribe = () => {
+          this._transport.send(JSON.stringify(createUnsubscribeMessage(id)));
+        };
+        let hadSubscription = false;
+        const observable = Observable.create(observer => {
+          // Only allow a single subscription. This will be the common case,
+          // and adding this restriction allows disposing of the observable
+          // on the remote side after the initial subscription is complete.
+          if (hadSubscription) {
+            throw new Error('Attempt to re-connect with a remote Observable.');
+          }
+          hadSubscription = true;
+
+          const subscription = new Subscription(message, observer);
+          this._subscriptions.set(id, subscription);
+          sendSubscribe();
 
           // Observable dispose function, which is called on subscription dispose, on stream
           // completion, and on stream error.
           return {
             unsubscribe: () => {
-              invariant(subscriptions != null);
-              subscriptions.delete(subscription);
-
-              if (subscriptions.size === 0) {
-                // Send a message to server to call the dispose function of
-                // the remote Observable subscription.
-                this._transport.send(JSON.stringify(createUnsubscribeMessage(message.id)));
+              if (!this._subscriptions.has(id)) {
+                // guard against multiple unsubscribe calls
+                return;
               }
+              this._subscriptions.delete(id);
+
+              sendUnsubscribe();
             },
           };
         });
 
+        // Conversion to ConnectableObservable happens in the generated
+        // proxies.
         return observable;
+      }
       default:
         throw new Error(`Unkown return type: ${returnType}.`);
     }
@@ -412,21 +426,21 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   _returnObservable(id: number, returnVal: any, elementType: Type): void {
-    let result: Observable<any>;
+    let result: ConnectableObservable<any>;
     // Ensure that the return value is an observable.
-    if (!isObservable(returnVal)) {
+    if (!isConnectableObservable(returnVal)) {
       result = Observable.throw(new Error(
-        'Expected an Observable, but the function returned something else.'));
+        'Expected an Observable, but the function returned something else.')).publish();
     } else {
       result = returnVal;
     }
 
     // Marshal the result, to send over the network.
-    result = result.concatMap(value => this._getTypeRegistry().marshal(
-      this._objectRegistry, value, elementType));
+    result.concatMap(value => this._getTypeRegistry().marshal(
+      this._objectRegistry, value, elementType))
 
     // Send the next, error, and completion events of the observable across the socket.
-    const subscription = result.subscribe(data => {
+    .subscribe(data => {
       this._transport.send(JSON.stringify(createNextMessage(id, data)));
     }, error => {
       this._transport.send(JSON.stringify(createObserveErrorMessage(id, error)));
@@ -435,7 +449,8 @@ export class RpcConnection<TransportType: Transport> {
       this._transport.send(JSON.stringify(createCompleteMessage(id)));
       this._objectRegistry.removeSubscription(id);
     });
-    this._objectRegistry.addSubscription(id, subscription);
+
+    this._objectRegistry.addSubscription(id, result.connect());
   }
 
   // Returns true if a promise was returned.
@@ -593,25 +608,28 @@ export class RpcConnection<TransportType: Transport> {
         break;
       }
       case 'next': {
-        const subscriptions = this._subscriptions.get(id);
-        invariant(subscriptions != null);
-        const {value} = message;
-        subscriptions.forEach(subscription => subscription.next(value));
+        const subscription = this._subscriptions.get(id);
+        if (subscription != null) {
+          const {value} = message;
+          subscription.next(value);
+        }
         break;
       }
       case 'complete': {
-        const subscriptions = this._subscriptions.get(id);
-        invariant(subscriptions != null);
-        subscriptions.forEach(subscription => subscription.complete());
-        subscriptions.clear();
+        const subscription = this._subscriptions.get(id);
+        if (subscription != null) {
+          subscription.complete();
+          this._subscriptions.delete(id);
+        }
         break;
       }
       case 'error': {
-        const subscriptions = this._subscriptions.get(id);
-        invariant(subscriptions != null);
-        const {error} = message;
-        subscriptions.forEach(subscription => subscription.error(error));
-        subscriptions.clear();
+        const subscription = this._subscriptions.get(id);
+        if (subscription != null) {
+          const {error} = message;
+          subscription.error(error);
+          this._subscriptions.delete(id);
+        }
         break;
       }
       default:
@@ -686,11 +704,10 @@ export class RpcConnection<TransportType: Transport> {
     this._calls.forEach(call => {
       call.reject(new Error('Connection Closed'));
     });
-    this._subscriptions.forEach(subscriptions => {
-      subscriptions.forEach(subscription => {
-        subscription.error(new Error('Connection Closed'));
-      });
+    this._subscriptions.forEach(subscription => {
+      subscription.error(new Error('Connection Closed'));
     });
+    this._subscriptions.clear();
   }
 }
 
@@ -737,6 +754,6 @@ function isThenable(object: any): boolean {
 /**
  * A helper function that checks if an object is an Observable.
  */
-function isObservable(object: any): boolean {
-  return Boolean(object && object.concatMap && object.subscribe);
+function isConnectableObservable(object: any): boolean {
+  return Boolean(object && object.concatMap && object.subscribe && object.connect);
 }

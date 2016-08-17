@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from 'rxjs';
+import {Observable, ConnectableObservable} from 'rxjs';
 
 // Contains services that let us test marshalling of Errors.
 
@@ -29,26 +29,26 @@ export function promiseErrorCode(code: number): Promise<void> {
   throw createErrorCode(code);
 }
 
-export function observableError(message: string): Observable<number> {
+export function observableError(message: string): ConnectableObservable<number> {
   return createErrorObservable(new Error(message));
 }
 
-export function observableErrorString(message: string): Observable<number> {
+export function observableErrorString(message: string): ConnectableObservable<number> {
   return createErrorObservable(message);
 }
 
-export function observableErrorUndefined(): Observable<number> {
+export function observableErrorUndefined(): ConnectableObservable<number> {
   return createErrorObservable(undefined);
 }
 
-export function observableErrorCode(code: number): Observable<number> {
+export function observableErrorCode(code: number): ConnectableObservable<number> {
   return createErrorObservable(createErrorCode(code));
 }
 
-function createErrorObservable(error: any): Observable<number> {
+function createErrorObservable(error: any): ConnectableObservable<number> {
   return Observable.create(observer => {
     observer.error(error);
-  });
+  }).publish();
 }
 
 function createErrorCode(code: number) {

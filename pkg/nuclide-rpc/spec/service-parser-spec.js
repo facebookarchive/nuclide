@@ -103,7 +103,7 @@ describe('Nuclide service parser test suite.', () => {
   it('More missing type definitions throw', () => {
     const code = `
       export class f {
-        static m(): Observable<Map<string, {f: [string, ?Set<Array<MissingType>>]}>> {}
+        static m(): ConnectableObservable<Map<string, {f: [string, ?Set<Array<MissingType>>]}>> {}
         dispose(): void {}
       }`;
     expect(() => {
@@ -159,7 +159,7 @@ describe('Nuclide service parser test suite.', () => {
   it('Observable may only be a return type', () => {
     const code = `
       export class C {
-        m(p: Array<Observable<number>>): void {}
+        m(p: Array<ConnectableObservable<number>>): void {}
         dispose(): void {}
       }`;
     expect(() => {

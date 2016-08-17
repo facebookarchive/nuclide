@@ -65,9 +65,9 @@ export class PhpDebuggerInstance extends DebuggerInstance {
     this._disposables.add(proxy);
     this._proxy = proxy;
     this._observableManager = new ObservableManager(
-      proxy.getNotificationObservable(),
-      proxy.getServerMessageObservable(),
-      proxy.getOutputWindowObservable().map(message => {
+      proxy.getNotificationObservable().refCount(),
+      proxy.getServerMessageObservable().refCount(),
+      proxy.getOutputWindowObservable().refCount().map(message => {
         const serverMessage = translateMessageFromServer(
           nuclideUri.getHostname(this.getTargetUri()),
           message,

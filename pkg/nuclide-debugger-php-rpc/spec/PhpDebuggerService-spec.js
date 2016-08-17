@@ -61,7 +61,7 @@ describe('debugger-php-rpc proxy', () => {
       const onServerMessageNotify = jasmine.createSpy('onServerMessageNotify');
       const onServerMessageError = jasmine.createSpy('onServerMessageError');
       const onSessionEnd = jasmine.createSpy('onSessionEnd');
-      proxy.getServerMessageObservable().subscribe(
+      proxy.getServerMessageObservable().refCount().subscribe(
         onServerMessageNotify,
         onServerMessageError,
         onSessionEnd,
@@ -70,7 +70,7 @@ describe('debugger-php-rpc proxy', () => {
       const onNotificationMessage = jasmine.createSpy('onNotificationMessage');
       const onNotificationError = jasmine.createSpy('onNotificationError');
       const onNotificationEnd = jasmine.createSpy('onNotificationEnd');
-      proxy.getNotificationObservable().subscribe(
+      proxy.getNotificationObservable().refCount().subscribe(
         onNotificationMessage,
         onNotificationError,
         onNotificationEnd,

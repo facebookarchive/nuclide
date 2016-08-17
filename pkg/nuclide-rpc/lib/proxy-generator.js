@@ -366,14 +366,18 @@ function generateUnmarshalResult(returnType: Type, rpcCallExpression) {
         t.memberExpression(callObservable, t.identifier('concatMap')),
         [t.arrowFunctionExpression([idIdentifier], idIdentifier)]);
 
-      // Finally, we map the events through the appropriate marshaller. We use concatMap instead of
+      // Map the events through the appropriate marshaller. We use concatMap instead of
       // flatMap to ensure that the order doesn't change, in case one event takes especially long
       // to marshal.
       //
       // ... .concatMap(value => _client.unmarshal(value, returnType))
       const observableTransformer = generateValueTransformer(returnType.type);
-      return t.callExpression(
+      const unmarshalledObservable = t.callExpression(
         t.memberExpression(unmarshalledValues, t.identifier('concatMap')), [observableTransformer]);
+
+      // And finally, convert to a ConnectableObservable with publish.
+      return t.callExpression(
+        t.memberExpression(unmarshalledObservable, t.identifier('publish')), []);
     default:
       throw new Error(`Unkown return type ${returnType.kind}.`);
   }

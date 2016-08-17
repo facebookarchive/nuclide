@@ -605,7 +605,7 @@ class FileParser {
           kind: 'promise',
           type: this._parseGenericTypeParameterOfKnownType(id, typeAnnotation),
         };
-      case 'Observable':
+      case 'ConnectableObservable':
         return {
           location,
           kind: 'observable',
@@ -624,6 +624,9 @@ class FileParser {
           valueType: this._parseTypeAnnotation(typeAnnotation.typeParameters.params[1]),
         };
       default:
+        this._assert(typeAnnotation, id !== 'Observable',
+          'Use of Observable in RPC interface. Use ConnectableObservable instead.');
+
         // Named types are represented as Generic types with no type parameters.
         this._assert(typeAnnotation, typeAnnotation.typeParameters == null,
             `Unknown generic type ${id}.`);

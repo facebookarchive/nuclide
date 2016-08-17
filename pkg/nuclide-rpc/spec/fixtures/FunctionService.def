@@ -1,6 +1,6 @@
 export function TestFunctionA(arg1: string, arg2: boolean): Promise<Array<string>> {}
 
-export function TestFunctionB(): Observable<number> {}
+export function TestFunctionB(): ConnectableObservable<number> {}
 
 export function TestFunctionC(): void {}
 

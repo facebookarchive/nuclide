@@ -245,8 +245,8 @@
                     {
                         "name": {
                             "type": "Identifier",
-                            "start": 642,
-                            "end": 643,
+                            "start": 653,
+                            "end": 654,
                             "loc": {
                                 "start": {
                                     "line": 31,

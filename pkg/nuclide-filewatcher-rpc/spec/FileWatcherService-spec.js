@@ -48,7 +48,7 @@ describe('FileWatcherService', () => {
   it('watches changes to files', () => {
     const watchReady = jasmine.createSpy('ready');
     runs(() => {
-      watchDirectoryRecursive(TEST_DIR)
+      watchDirectoryRecursive(TEST_DIR).refCount()
         .subscribe({next: watchReady});
     });
 
@@ -59,9 +59,9 @@ describe('FileWatcherService', () => {
     const completeMock = jasmine.createSpy('complete');
     runs(() => {
       expect(watchReady).toHaveBeenCalledWith('SUCCESS');
-      watchFile(TEST_FILE)
+      watchFile(TEST_FILE).refCount()
         .subscribe({next: nextMock, complete: completeMock});
-      watchDirectory(TEST_DIR)
+      watchDirectory(TEST_DIR).refCount()
         .subscribe({next: parentNextMock});
     });
 
@@ -139,7 +139,7 @@ describe('FileWatcherService', () => {
     // Test that rewatching produces a new observer.
     const completeMock2 = jasmine.createSpy('completeMock2');
     runs(() => {
-      watchFile(TEST_FILE)
+      watchFile(TEST_FILE).refCount()
         .subscribe({complete: completeMock2});
     });
 
@@ -168,7 +168,7 @@ describe('FileWatcherService', () => {
 
     const errorMock = jasmine.createSpy('errorMock');
     runs(() => {
-      watchFile(TEST_FILE).subscribe({error: errorMock});
+      watchFile(TEST_FILE).refCount().subscribe({error: errorMock});
     });
 
     waitsFor(() => errorMock.wasCalled);
@@ -178,10 +178,10 @@ describe('FileWatcherService', () => {
     const warnSpy = jasmine.createSpy('warn');
     spyOn(logging, 'getLogger').andReturn({warn: warnSpy});
 
-    watchFile(TEST_DIR);
+    watchFile(TEST_DIR).refCount();
     waitsFor(() => warnSpy.wasCalled);
 
-    watchDirectory(TEST_FILE);
+    watchDirectory(TEST_FILE).refCount();
     waitsFor(() => warnSpy.callCount === 2);
   });
 });

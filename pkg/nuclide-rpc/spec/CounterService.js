@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Observable, Subject} from 'rxjs';
+import {ConnectableObservable, Subject} from 'rxjs';
 
 export type CounterChangeEvent = {
   type: string,
@@ -52,8 +52,8 @@ export class Counter {
   }
 
   // Subscribe to changes in this counter.
-  watchChanges(): Observable<CounterChangeEvent> {
-    return this._changes;
+  watchChanges(): ConnectableObservable<CounterChangeEvent> {
+    return this._changes.publish();
   }
 
   // Dispose function that removes this counter from the global list.
@@ -72,8 +72,8 @@ export class Counter {
   }
 
   // Returns a stream of counters as they are created.
-  static watchNewCounters(): Observable<Counter> {
-    return Counter._newCounters;
+  static watchNewCounters(): ConnectableObservable<Counter> {
+    return Counter._newCounters.publish();
   }
 
   // A static method that takes a Counter object as an argument.

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 
@@ -102,8 +102,8 @@ export function dispose(): void {
   }
 }
 
-export function getServerStatusUpdates(): Observable<ServerStatusUpdate> {
-  return getState().getRootContainer().getServerStatusUpdates();
+export function getServerStatusUpdates(): ConnectableObservable<ServerStatusUpdate> {
+  return getState().getRootContainer().getServerStatusUpdates().publish();
 }
 
 export function flowFindDefinition(

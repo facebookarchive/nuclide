@@ -42,7 +42,8 @@ function getFlowServiceByNullableUri(file: ?NuclideUri): FlowService {
   invariant(flowService != null);
   if (!serviceInstances.has(flowService)) {
     serviceInstances.add(flowService);
-    const statusUpdates: Observable<ServerStatusUpdate> = flowService.getServerStatusUpdates();
+    const statusUpdates: Observable<ServerStatusUpdate>
+      = flowService.getServerStatusUpdates().refCount();
     // TODO Unsubscribe at some point. To do that, we need a hook into the service framework so we
     // can learn when a given service instance is gone. I would expect the service framework to send
     // onCompleted when it disconnects, but that seemingly doesn't happen. So, we should do this

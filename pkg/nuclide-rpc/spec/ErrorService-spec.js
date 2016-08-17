@@ -88,7 +88,7 @@ describe('ErrorServer', () => {
 
   it('ErrorService - observable error.message', () => {
     invariant(service);
-    const o = service.observableError('msg');
+    const o = service.observableError('msg').refCount();
     let completed = false;
 
     o.subscribe(
@@ -107,7 +107,7 @@ describe('ErrorServer', () => {
 
   it('ErrorService - observable message', () => {
     invariant(service);
-    const o = service.observableErrorString('msg');
+    const o = service.observableErrorString('msg').refCount();
     let completed = false;
 
     o.subscribe(
@@ -123,7 +123,7 @@ describe('ErrorServer', () => {
 
   it('ErrorService - observable undefined', () => {
     invariant(service);
-    const o = service.observableErrorUndefined();
+    const o = service.observableErrorUndefined().refCount();
     let completed = false;
 
     o.subscribe(
@@ -139,7 +139,7 @@ describe('ErrorServer', () => {
 
   it('ErrorService - observable code', () => {
     invariant(service);
-    const o = service.observableErrorCode(42);
+    const o = service.observableErrorCode(42).refCount();
     let completed = false;
 
     o.subscribe(

@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RevisionFileChanges} from '../../nuclide-hg-rpc/lib/HgService';
+import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -166,20 +167,20 @@ function _callArcDiff(
 
 export function createPhabricatorRevision(
   filePath: NuclideUri,
-): Observable<{stderr?: string, stdout?: string}> {
-  return _callArcDiff(filePath, ['--verbatim']);
+): ConnectableObservable<{stderr?: string, stdout?: string}> {
+  return _callArcDiff(filePath, ['--verbatim']).publish();
 }
 
 export function updatePhabricatorRevision(
   filePath: NuclideUri,
   message: string,
   allowUntracked: boolean,
-): Observable<{stderr?: string, stdout?: string}> {
+): ConnectableObservable<{stderr?: string, stdout?: string}> {
   const args = ['-m', message];
   if (allowUntracked) {
     args.push('--allow-untracked');
   }
-  return _callArcDiff(filePath, args);
+  return _callArcDiff(filePath, args).publish();
 }
 
 async function execArcLint(
