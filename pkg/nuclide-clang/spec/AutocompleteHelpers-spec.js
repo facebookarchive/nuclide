@@ -303,5 +303,70 @@ describe('AutocompleteHelpers', () => {
       const body = getCompletionBodyInline(completion);
       expect(body).toBe('self');
     });
+
+    it('decorates optional parameters', () => {
+      const completion = {
+        chunks: [
+          {
+            spelling: 'f(',
+          },
+          {
+            spelling: 'int x',
+            isPlaceHolder: true,
+          },
+          {
+            spelling: ', ',
+            isPlaceHolder: false,
+            isOptional: false,
+          },
+          {
+            spelling: 'int y',
+            isPlaceHolder: true,
+            isOptional: true,
+          },
+          {
+            spelling: ', ',
+            isPlaceHolder: false,
+            isOptional: false,
+          },
+          {
+            spelling: 'int z',
+            isPlaceHolder: true,
+            isOptional: true,
+          },
+          {
+            spelling: ')',
+          },
+        ],
+        result_type: '',
+        spelling: '',
+        cursor_kind: '',
+        brief_comment: null,
+      };
+
+      let body = getCompletionBodyInline(completion);
+      expect(body).toBe('f(${1:int x}${2:[, int y, int z]})');
+
+      body = getCompletionBodyInline({
+        chunks: [
+          {
+            spelling: 'f(',
+          },
+          {
+            spelling: 'int x',
+            isPlaceHolder: true,
+            isOptional: true,
+          },
+          {
+            spelling: ')',
+          },
+        ],
+        result_type: '',
+        spelling: '',
+        cursor_kind: '',
+        brief_comment: null,
+      });
+      expect(body).toBe('f(${1:[int x]})');
+    });
   });
 });

@@ -12,6 +12,7 @@
 import type {ClangCompletion} from '../../nuclide-clang-rpc/lib/rpc-types';
 
 import {Point} from 'atom';
+import {arrayFindLastIndex} from '../../commons-node/collection';
 import {trackTiming} from '../../nuclide-analytics';
 import {ClangCursorToDeclarationTypes} from '../../nuclide-clang-rpc';
 import {getCompletions} from './libclang';
@@ -152,12 +153,39 @@ function _convertArgsToMultiLineSnippet(
 }
 
 function getCompletionBodyInline(completion: ClangCompletion): string {
+  // Make a copy to avoid mutating the original.
+  const chunks = [...completion.chunks];
+
+  // Merge everything between the last non-optional placeholder
+  // and the last optional placeholder into one big optional.
+  const lastOptional =
+    arrayFindLastIndex(chunks, chunk => Boolean(chunk.isOptional && chunk.isPlaceHolder));
+  if (lastOptional !== -1) {
+    const lastNonOptional =
+      arrayFindLastIndex(chunks, chunk => Boolean(!chunk.isOptional && chunk.isPlaceHolder));
+    if (lastNonOptional !== -1 && lastNonOptional < lastOptional) {
+      let mergedSpelling = '';
+      for (let i = lastNonOptional + 1; i <= lastOptional; i++) {
+        mergedSpelling += chunks[i].spelling;
+      }
+      chunks.splice(lastNonOptional + 1, lastOptional - lastNonOptional, {
+        spelling: mergedSpelling,
+        isPlaceHolder: true,
+        isOptional: true,
+      });
+    }
+  }
+
   let body = '';
   let placeHolderCnt = 0;
-  completion.chunks.forEach(chunk => {
+  chunks.forEach(chunk => {
     if (chunk.isPlaceHolder) {
       placeHolderCnt++;
-      body += '${' + placeHolderCnt + ':' + chunk.spelling + '}';
+      let spelling = chunk.spelling;
+      if (chunk.isOptional) {
+        spelling = `[${spelling}]`;
+      }
+      body += '${' + placeHolderCnt + ':' + spelling + '}';
     } else {
       body += chunk.spelling;
     }
