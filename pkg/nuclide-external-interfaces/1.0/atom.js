@@ -433,8 +433,14 @@ declare class atom$Panel {
   show(): void,
 }
 
+type atom$PointObject = {row: number, column: number};
+
+type atom$PointLike = atom$Point
+| [number, number]
+| atom$PointObject;
+
 declare class atom$Point {
-  static fromObject(object: atom$Point | [number, number], copy:? boolean): atom$Point,
+  static fromObject(object: atom$PointLike, copy:? boolean): atom$Point,
   constructor(row: number, column: number): void,
   row: number,
   column: number,
@@ -459,17 +465,25 @@ declare class atom$Point {
   toArray(): Array<number>,
 }
 
-type RangeConstructorArg =
-  atom$Point |
-  number |
-  [number, number];
+type atom$RangeObject = {
+  start: atom$PointObject,
+  end: atom$PointObject,
+};
+
+type atom$RangeLike = atom$Range
+  | atom$RangeObject // TODO: Flow doesn't really handle the real signature below...
+  | [atom$PointLike, atom$PointLike]
+  | {
+    start: atom$PointLike,
+    end: atom$PointLike,
+  };
 
 declare class atom$Range {
   static fromObject(
-    object: atom$Range | [atom$Point | [number, number], atom$Point | [number, number]],
+    object: atom$RangeLike,
     copy?: boolean,
   ): atom$Range,
-  constructor(pointA: RangeConstructorArg, pointB: RangeConstructorArg): void,
+  constructor(pointA: atom$PointLike, pointB: atom$PointLike): void,
   start: atom$Point,
   end: atom$Point,
   isEmpty(): boolean,
@@ -1244,6 +1258,7 @@ declare class atom$MenuManager {
 declare class atom$Project {
   // Event Subscription
   onDidChangePaths(callback: (projectPaths: Array<string>) => mixed): IDisposable,
+  onDidAddBuffer(callback: (buffer: atom$TextBuffer) => mixed): IDisposable,
 
   // Accessing the git repository
   getRepositories(): Array<?atom$Repository>,
@@ -1278,6 +1293,14 @@ type TextBufferScanIterator = (arg: {
 // TextBuffer::createCheckpoint
 type atom$TextBufferCheckpoint = number;
 
+// TextBuffer did-change/will-change
+type atom$TextEditEvent = {
+  oldRange: atom$Range,
+  newRange: atom$Range,
+  oldText: string,
+  newText: string,
+};
+
 declare class atom$TextBuffer {
   file: ?atom$File,
 
@@ -1285,8 +1308,8 @@ declare class atom$TextBuffer {
   static deserialize: (state: Object, params: Object) => mixed,
 
   // Events
-  onWillChange(callback: () => mixed): IDisposable,
-  onDidChange(callback: () => mixed): IDisposable,
+  onWillChange(callback: (event: atom$TextEditEvent) => mixed): IDisposable,
+  onDidChange(callback: (event: atom$TextEditEvent) => mixed): IDisposable,
   onDidStopChanging(callback: () => mixed): IDisposable,
   onDidConflict(callback: () => mixed): IDisposable,
   onDidChangeModified(callback: () => mixed): IDisposable,
@@ -1313,7 +1336,7 @@ declare class atom$TextBuffer {
   // Reading Text
   isEmpty(): boolean,
   getText(): string,
-  getTextInRange(range: atom$Range): string,
+  getTextInRange(range: atom$RangeLike): string,
   getLineCount(): number,
   getLines(): Array<string>,
   getLastLine(): string,
@@ -1326,7 +1349,7 @@ declare class atom$TextBuffer {
 
   // Mutating Text
   setText(text: string): atom$Range,
-  setTextInRange(range: atom$Range, text: string, options?: Object): atom$Range,
+  setTextInRange(range: atom$RangeLike, text: string, options?: Object): atom$Range,
   setTextViaDiff(text: string): void,
   insert(
     position: atom$Point,
@@ -1381,6 +1404,7 @@ declare class atom$TextBuffer {
   emitter: atom$Emitter,
   refcount: number,
   loaded: boolean,
+  changeCount: number,
   wasModifiedBeforeRemove: boolean,
   finishLoading(): atom$TextBuffer,
   updateCachedDiskContents(flushCache?: boolean, callback?: () => mixed): Promise<void>,
