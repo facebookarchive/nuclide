@@ -67,7 +67,6 @@ export default class HealthPaneItem extends React.Component {
           cpuPercentage={stats.cpuPercentage}
           heapPercentage={stats.heapPercentage}
           memory={stats.rss}
-          lastKeyLatency={stats.lastKeyLatency}
           activeHandles={stats.activeHandles}
           activeRequests={stats.activeRequests}
           activeHandlesByType={stats.activeHandlesByType}

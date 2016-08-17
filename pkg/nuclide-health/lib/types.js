@@ -17,7 +17,6 @@ export type HealthStats = {
   heapTotal: number,
   heapPercentage: number,
   cpuPercentage: number,
-  lastKeyLatency: number,
   activeHandles: number,
   activeRequests: number,
   activeHandlesByType: HandlesByType,

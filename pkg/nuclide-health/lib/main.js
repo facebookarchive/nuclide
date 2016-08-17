@@ -28,19 +28,15 @@ import {DisposableSubscription} from '../../commons-node/stream';
 
 // Imports from within this Nuclide package.
 import HealthPaneItem from './HealthPaneItem';
-import {Profiler} from './Profiler';
+import getStats from './getStats';
 
 class Activation {
-  _profiler: Profiler;
-
   _paneItemStates: Observable<PaneItemState>;
   _subscriptions: CompositeDisposable;
 
   _healthButton: ?HTMLElement;
 
   constructor(state: ?Object): void {
-    this._profiler = new Profiler();
-
     (this: any)._updateAnalytics = this._updateAnalytics.bind(this);
     (this: any)._updateToolbarJewel = this._updateToolbarJewel.bind(this);
 
@@ -55,7 +51,7 @@ class Activation {
     // Update the stats immediately, and then periodically based on the config.
     const statsStream = Observable.of(null)
       .concat(viewTimeouts.switchMap(Observable.interval))
-      .map(() => this._profiler.getStats())
+      .map(getStats)
       .share();
 
     const packageStates = statsStream
@@ -73,8 +69,6 @@ class Activation {
     }));
 
     this._subscriptions = new CompositeDisposable(
-      this._profiler,
-
       // Keep the toolbar jewel up-to-date.
       new DisposableSubscription(
         packageStates
@@ -148,7 +142,7 @@ class Activation {
     // are.
     Object.keys(analyticsBuffer[0]).forEach(statsKey => {
       // These values are not to be aggregated or sent.
-      if (statsKey === 'lastKeyLatency' || statsKey === 'activeHandlesByType') {
+      if (statsKey === 'activeHandlesByType') {
         return;
       }
 
@@ -156,8 +150,6 @@ class Activation {
         analyticsBuffer.map(
           stats => (typeof stats[statsKey] === 'number' ? stats[statsKey] : 0),
         ),
-        // skipZeros: Don't use empty key latency values in aggregates.
-        (statsKey === 'keyLatency'),
       );
       Object.keys(aggregates).forEach(aggregatesKey => {
         const value = aggregates[aggregatesKey];
@@ -172,17 +164,8 @@ class Activation {
 }
 
 function aggregate(
-  values_: Array<number>,
-  skipZeros: boolean = false,
+  values: Array<number>,
 ): {avg: ?number, min: ?number, max: ?number} {
-  let values = values_;
-  // Some values (like memory usage) might be very high & numerous, so avoid summing them all up.
-  if (skipZeros) {
-    values = values.filter(value => value !== 0);
-    if (values.length === 0) {
-      return {avg: null, min: null, max: null};
-    }
-  }
   const avg = values.reduce((prevValue, currValue, index) => {
     return prevValue + (currValue - prevValue) / (index + 1);
   }, 0);
@@ -200,8 +183,6 @@ function formatToolbarJewelLabel(opts: {stats: HealthStats, toolbarJewel: string
       return `${stats.heapPercentage.toFixed(0)}%`;
     case 'Memory':
       return `${Math.floor(stats.rss / 1024 / 1024)}M`;
-    case 'Key latency':
-      return `${stats.lastKeyLatency}ms`;
     case 'Handles':
       return `${stats.activeHandles}`;
     case 'Child processes':

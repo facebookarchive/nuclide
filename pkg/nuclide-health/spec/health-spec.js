@@ -73,7 +73,6 @@ describe('Health', () => {
           expect(element.innerHTML).toContain('CPU');
           expect(element.innerHTML).toContain('Heap');
           expect(element.innerHTML).toContain('Memory');
-          expect(element.innerHTML).toContain('Key latency');
           expect(element.innerHTML).toContain('Handles');
           expect(element.innerHTML).toContain('Event loop');
         }

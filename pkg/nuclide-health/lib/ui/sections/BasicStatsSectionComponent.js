@@ -19,7 +19,6 @@ type Props = {
   cpuPercentage: number,
   memory: number,
   heapPercentage: number,
-  lastKeyLatency: number,
   activeHandles: number,
   activeRequests: number,
   activeHandlesByType: HandlesByType,
@@ -48,9 +47,6 @@ export default class BasicStatsSectionComponent extends React.Component {
       }, {
         name: 'Memory',
         value: `${Math.floor(this.props.memory / 1024 / 1024)}MB`,
-      }, {
-        name: 'Key latency',
-        value: `${this.props.lastKeyLatency}ms`,
       }, {
         name: 'Handles',
         value: `${this.props.activeHandles}`,

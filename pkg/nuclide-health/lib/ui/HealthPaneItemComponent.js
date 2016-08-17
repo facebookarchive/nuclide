@@ -21,7 +21,6 @@ type Props = {
   cpuPercentage: number,
   memory: number,
   heapPercentage: number,
-  lastKeyLatency: number,
   activeHandles: number,
   activeRequests: number,
   activeHandlesByType: HandlesByType,
