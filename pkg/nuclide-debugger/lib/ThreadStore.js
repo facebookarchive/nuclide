@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,151 +10,186 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
-import type {
-  ThreadItem,
-  NuclideThreadData,
-} from './types';
-import type {
-  PinnedDatatip,
-  DatatipService,
-} from '../../nuclide-datatip/lib/types';
-import {
-  Disposable,
-  CompositeDisposable,
-  Emitter,
-} from 'atom';
-import {React} from 'react-for-atom';
-import {Icon} from '../../nuclide-ui/lib/Icon';
-import nuclideUri from '../../commons-node/nuclideUri';
-import Constants from './Constants';
-import passesGK from '../../commons-node/passesGK';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-const GK_THREAD_SWITCH_UI = 'nuclide_debugger_thread_switch_ui';
-const GK_TIMEOUT = 5000;
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-export default class ThreadStore {
-  _disposables: IDisposable;
-  _datatipService: ?DatatipService;
-  _emitter: Emitter;
-  _threadMap: Map<number, ThreadItem>;
-  _owningProcessId: number;
-  _selectedThreadId: number;
-  _stopThreadId: number;
-  _threadChangeDatatip: ?PinnedDatatip;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor(dispatcher: Dispatcher) {
-    const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => {
-        dispatcher.unregister(dispatcherToken);
-      }),
-    );
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _nuclideUiLibIcon2;
+
+function _nuclideUiLibIcon() {
+  return _nuclideUiLibIcon2 = require('../../nuclide-ui/lib/Icon');
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _Constants2;
+
+function _Constants() {
+  return _Constants2 = _interopRequireDefault(require('./Constants'));
+}
+
+var _commonsNodePassesGK2;
+
+function _commonsNodePassesGK() {
+  return _commonsNodePassesGK2 = _interopRequireDefault(require('../../commons-node/passesGK'));
+}
+
+var GK_THREAD_SWITCH_UI = 'nuclide_debugger_thread_switch_ui';
+var GK_TIMEOUT = 5000;
+
+var ThreadStore = (function () {
+  function ThreadStore(dispatcher) {
+    _classCallCheck(this, ThreadStore);
+
+    var dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable(new (_atom2 || _atom()).Disposable(function () {
+      dispatcher.unregister(dispatcherToken);
+    }));
     this._datatipService = null;
-    this._emitter = new Emitter();
+    this._emitter = new (_atom2 || _atom()).Emitter();
     this._threadMap = new Map();
     this._owningProcessId = 0;
     this._selectedThreadId = 0;
     this._stopThreadId = 0;
   }
 
-  setDatatipService(service: DatatipService) {
-    this._datatipService = service;
-  }
-
-  _handlePayload(payload: Object): void {
-    switch (payload.actionType) {
-      case Constants.Actions.CLEAR_INTERFACE:
-        this._handleClearInterface();
-        break;
-      case Constants.Actions.UPDATE_THREADS:
-        this._updateThreads(payload.data.threadData);
-        this._emitter.emit('change');
-        break;
-      case Constants.Actions.NOTIFY_THREAD_SWITCH:
-        this._notifyThreadSwitch(payload.data.sourceURL, payload.data.lineNumber,
-          payload.data.message);
-        break;
-      default:
-        return;
+  _createClass(ThreadStore, [{
+    key: 'setDatatipService',
+    value: function setDatatipService(service) {
+      this._datatipService = service;
     }
-  }
-
-  _updateThreads(threadData: NuclideThreadData): void {
-    this._threadMap.clear();
-    this._owningProcessId = threadData.owningProcessId;
-    this._stopThreadId = threadData.stopThreadId;
-    this._selectedThreadId = threadData.stopThreadId;
-    threadData.threads.forEach(thread =>
-      this._threadMap.set(Number(thread.id), thread),
-    );
-  }
-
-  _handleClearInterface(): void {
-    this._threadMap.clear();
-    this._cleanUpDatatip();
-  }
-
-  _cleanUpDatatip(): void {
-    if (this._threadChangeDatatip) {
-      if (this._datatipService != null) {
-        this._threadChangeDatatip.dispose();
+  }, {
+    key: '_handlePayload',
+    value: function _handlePayload(payload) {
+      switch (payload.actionType) {
+        case (_Constants2 || _Constants()).default.Actions.CLEAR_INTERFACE:
+          this._handleClearInterface();
+          break;
+        case (_Constants2 || _Constants()).default.Actions.UPDATE_THREADS:
+          this._updateThreads(payload.data.threadData);
+          this._emitter.emit('change');
+          break;
+        case (_Constants2 || _Constants()).default.Actions.NOTIFY_THREAD_SWITCH:
+          this._notifyThreadSwitch(payload.data.sourceURL, payload.data.lineNumber, payload.data.message);
+          break;
+        default:
+          return;
       }
-      this._threadChangeDatatip = null;
     }
-  }
+  }, {
+    key: '_updateThreads',
+    value: function _updateThreads(threadData) {
+      var _this = this;
 
-// TODO(dbonafilia): refactor this code along with the ui code in callstackStore to a ui controller.
-  async _notifyThreadSwitch(sourceURL: string, lineNumber: number, message: string): Promise<void> {
-    const notifyThreadSwitches = await passesGK(GK_THREAD_SWITCH_UI, GK_TIMEOUT);
-    if (!notifyThreadSwitches) {
-      return;
-    }
-    const path = nuclideUri.uriToNuclideUri(sourceURL);
-    // we want to put the message one line above the current line unless the selected
-    // line is the top line, in which case we will put the datatip next to the line.
-    const notificationLineNumber = (lineNumber === 0) ? 0 : (lineNumber - 1);
-    // only handle real files for now
-    const datatipService = this._datatipService;
-    if (datatipService != null && path != null && atom.workspace != null) {
-      atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
-        const buffer = editor.getBuffer();
-        const rowRange = buffer.rangeForRow(notificationLineNumber);
-        this._threadChangeDatatip = datatipService.createPinnedDataTip(
-          this._createAlertComponentClass(message),
-          rowRange,
-          true, /* pinnable */
-          editor,
-          pinnedDatatip => {
-            datatipService.deletePinnedDatatip(pinnedDatatip);
-          },
-        );
+      this._threadMap.clear();
+      this._owningProcessId = threadData.owningProcessId;
+      this._stopThreadId = threadData.stopThreadId;
+      this._selectedThreadId = threadData.stopThreadId;
+      threadData.threads.forEach(function (thread) {
+        return _this._threadMap.set(Number(thread.id), thread);
       });
     }
-  }
+  }, {
+    key: '_handleClearInterface',
+    value: function _handleClearInterface() {
+      this._threadMap.clear();
+      this._cleanUpDatatip();
+    }
+  }, {
+    key: '_cleanUpDatatip',
+    value: function _cleanUpDatatip() {
+      if (this._threadChangeDatatip) {
+        if (this._datatipService != null) {
+          this._threadChangeDatatip.dispose();
+        }
+        this._threadChangeDatatip = null;
+      }
+    }
 
-  getThreadList(): Array<ThreadItem> {
-    return Array.from(this._threadMap.values());
-  }
+    // TODO(dbonafilia): refactor this code along with the ui code in callstackStore to a ui controller.
+  }, {
+    key: '_notifyThreadSwitch',
+    value: _asyncToGenerator(function* (sourceURL, lineNumber, message) {
+      var _this2 = this;
 
-  getSelectedThreadId(): number {
-    return this._selectedThreadId;
-  }
+      var notifyThreadSwitches = yield (0, (_commonsNodePassesGK2 || _commonsNodePassesGK()).default)(GK_THREAD_SWITCH_UI, GK_TIMEOUT);
+      if (!notifyThreadSwitches) {
+        return;
+      }
+      var path = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.uriToNuclideUri(sourceURL);
+      // we want to put the message one line above the current line unless the selected
+      // line is the top line, in which case we will put the datatip next to the line.
+      var notificationLineNumber = lineNumber === 0 ? 0 : lineNumber - 1;
+      // only handle real files for now
+      var datatipService = this._datatipService;
+      if (datatipService != null && path != null && atom.workspace != null) {
+        atom.workspace.open(path, { searchAllPanes: true }).then(function (editor) {
+          var buffer = editor.getBuffer();
+          var rowRange = buffer.rangeForRow(notificationLineNumber);
+          _this2._threadChangeDatatip = datatipService.createPinnedDataTip(_this2._createAlertComponentClass(message), rowRange, true, /* pinnable */
+          editor, function (pinnedDatatip) {
+            datatipService.deletePinnedDatatip(pinnedDatatip);
+          });
+        });
+      }
+    })
+  }, {
+    key: 'getThreadList',
+    value: function getThreadList() {
+      return Array.from(this._threadMap.values());
+    }
+  }, {
+    key: 'getSelectedThreadId',
+    value: function getSelectedThreadId() {
+      return this._selectedThreadId;
+    }
+  }, {
+    key: 'onChange',
+    value: function onChange(callback) {
+      return this._emitter.on('change', callback);
+    }
+  }, {
+    key: '_createAlertComponentClass',
+    value: function _createAlertComponentClass(message) {
+      return function () {
+        return (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          { className: 'nuclide-debugger-thread-switch-alert' },
+          (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibIcon2 || _nuclideUiLibIcon()).Icon, { icon: 'alert' }),
+          message
+        );
+      };
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._cleanUpDatatip();
+      this._disposables.dispose();
+    }
+  }]);
 
-  onChange(callback: () => void): IDisposable {
-    return this._emitter.on('change', callback);
-  }
+  return ThreadStore;
+})();
 
-  _createAlertComponentClass(message: string): ReactClass<any> {
-    return () =>
-      <div className="nuclide-debugger-thread-switch-alert">
-        <Icon icon="alert" />
-        {message}
-      </div>;
-  }
-
-  dispose(): void {
-    this._cleanUpDatatip();
-    this._disposables.dispose();
-  }
-}
+exports.default = ThreadStore;
+module.exports = exports.default;

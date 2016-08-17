@@ -1,9 +1,0 @@
-const a = require('a');
-const c = require('c');
-
-if (true) {
-  const b = require('b');
-}
-
-a();
-c();

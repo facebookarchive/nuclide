@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +10,44 @@
  * the root directory of this source tree.
  */
 
-import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {objectEntries, objectFromMap} from '../../../commons-node/collection';
-import {Emitter} from 'atom';
-import {Dispatcher} from 'flux';
-import SwiftPMTaskRunnerActions from './SwiftPMTaskRunnerActions';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export default class SwiftPMTaskRunnerStore {
-  _dispatcher: Dispatcher;
-  _emitter: Emitter;
-  _chdir: string;
-  _configuration: string;
-  _buildPath: string;
-  _flag: string;
-  _Xcc: string;
-  _Xlinker: string;
-  _Xswiftc: string;
-  _testBuildPath: string;
-  _compileCommands: Map<string, string>;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor(dispatcher: Dispatcher, initialState: ?SwiftPMTaskRunnerStoreState) {
+var _commonsNodeCollection2;
+
+function _commonsNodeCollection() {
+  return _commonsNodeCollection2 = require('../../../commons-node/collection');
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _flux2;
+
+function _flux() {
+  return _flux2 = require('flux');
+}
+
+var _SwiftPMTaskRunnerActions2;
+
+function _SwiftPMTaskRunnerActions() {
+  return _SwiftPMTaskRunnerActions2 = _interopRequireDefault(require('./SwiftPMTaskRunnerActions'));
+}
+
+var SwiftPMTaskRunnerStore = (function () {
+  function SwiftPMTaskRunnerStore(dispatcher, initialState) {
+    var _this = this;
+
+    _classCallCheck(this, SwiftPMTaskRunnerStore);
+
     this._dispatcher = dispatcher;
-    this._emitter = new Emitter();
+    this._emitter = new (_atom2 || _atom()).Emitter();
 
     if (initialState) {
       this._chdir = initialState.chdir ? initialState.chdir : '';
@@ -41,8 +57,7 @@ export default class SwiftPMTaskRunnerStore {
       this._Xlinker = initialState.Xlinker ? initialState.Xlinker : '';
       this._Xswiftc = initialState.Xswiftc ? initialState.Xswiftc : '';
       this._testBuildPath = initialState.testBuildPath ? initialState.testBuildPath : '';
-      this._compileCommands = initialState.compileCommands ?
-        new Map(objectEntries(initialState.compileCommands)) : new Map();
+      this._compileCommands = initialState.compileCommands ? new Map((0, (_commonsNodeCollection2 || _commonsNodeCollection()).objectEntries)(initialState.compileCommands)) : new Map();
     } else {
       this._chdir = '';
       this._configuration = 'debug';
@@ -54,86 +69,106 @@ export default class SwiftPMTaskRunnerStore {
       this._compileCommands = new Map();
     }
 
-    this._dispatcher.register(action => {
+    this._dispatcher.register(function (action) {
       switch (action.actionType) {
-        case SwiftPMTaskRunnerActions.ActionType.UPDATE_CHDIR:
-          this._chdir = action.chdir;
+        case (_SwiftPMTaskRunnerActions2 || _SwiftPMTaskRunnerActions()).default.ActionType.UPDATE_CHDIR:
+          _this._chdir = action.chdir;
           break;
-        case SwiftPMTaskRunnerActions.ActionType.UPDATE_BUILD_SETTINGS:
-          this._configuration = action.configuration;
-          this._Xcc = action.Xcc;
-          this._Xlinker = action.Xlinker;
-          this._Xswiftc = action.Xswiftc;
-          this._buildPath = action.buildPath;
+        case (_SwiftPMTaskRunnerActions2 || _SwiftPMTaskRunnerActions()).default.ActionType.UPDATE_BUILD_SETTINGS:
+          _this._configuration = action.configuration;
+          _this._Xcc = action.Xcc;
+          _this._Xlinker = action.Xlinker;
+          _this._Xswiftc = action.Xswiftc;
+          _this._buildPath = action.buildPath;
           break;
-        case SwiftPMTaskRunnerActions.ActionType.UPDATE_TEST_SETTINGS:
-          this._testBuildPath = action.buildPath;
+        case (_SwiftPMTaskRunnerActions2 || _SwiftPMTaskRunnerActions()).default.ActionType.UPDATE_TEST_SETTINGS:
+          _this._testBuildPath = action.buildPath;
           break;
-        case SwiftPMTaskRunnerActions.ActionType.UPDATE_COMPILE_COMMANDS:
-          this._compileCommands = action.compileCommands;
+        case (_SwiftPMTaskRunnerActions2 || _SwiftPMTaskRunnerActions()).default.ActionType.UPDATE_COMPILE_COMMANDS:
+          _this._compileCommands = action.compileCommands;
           break;
       }
     });
   }
 
-  dispose() {
-    this._emitter.dispose();
-  }
+  _createClass(SwiftPMTaskRunnerStore, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._emitter.dispose();
+    }
+  }, {
+    key: 'serialize',
+    value: function serialize() {
+      return {
+        chdir: this.getChdir(),
+        configuration: this.getConfiguration(),
+        buildPath: this.getBuildPath(),
+        Xcc: this.getXcc(),
+        Xlinker: this.getXlinker(),
+        Xswiftc: this.getXswiftc(),
+        compileCommands: (0, (_commonsNodeCollection2 || _commonsNodeCollection()).objectFromMap)(this.getCompileCommands()),
+        testBuildPath: this.getTestBuildPath()
+      };
+    }
+  }, {
+    key: 'subscribe',
+    value: function subscribe(callback) {
+      return this._emitter.on('change', callback);
+    }
+  }, {
+    key: 'emitChange',
+    value: function emitChange() {
+      this._emitter.emit('change');
+    }
+  }, {
+    key: 'getChdir',
+    value: function getChdir() {
+      return this._chdir;
+    }
+  }, {
+    key: 'getConfiguration',
+    value: function getConfiguration() {
+      return this._configuration;
+    }
+  }, {
+    key: 'getBuildPath',
+    value: function getBuildPath() {
+      return this._buildPath;
+    }
+  }, {
+    key: 'getFlag',
+    value: function getFlag() {
+      return this._flag;
+    }
+  }, {
+    key: 'getXcc',
+    value: function getXcc() {
+      return this._Xcc;
+    }
+  }, {
+    key: 'getXlinker',
+    value: function getXlinker() {
+      return this._Xlinker;
+    }
+  }, {
+    key: 'getXswiftc',
+    value: function getXswiftc() {
+      return this._Xswiftc;
+    }
+  }, {
+    key: 'getTestBuildPath',
+    value: function getTestBuildPath() {
+      return this._testBuildPath;
+    }
+  }, {
+    key: 'getCompileCommands',
+    value: function getCompileCommands() {
+      return this._compileCommands;
+    }
+  }]);
 
-  serialize(): SwiftPMTaskRunnerStoreState {
-    return {
-      chdir: this.getChdir(),
-      configuration: this.getConfiguration(),
-      buildPath: this.getBuildPath(),
-      Xcc: this.getXcc(),
-      Xlinker: this.getXlinker(),
-      Xswiftc: this.getXswiftc(),
-      compileCommands: objectFromMap(this.getCompileCommands()),
-      testBuildPath: this.getTestBuildPath(),
-    };
-  }
+  return SwiftPMTaskRunnerStore;
+})();
 
-  subscribe(callback: () => void): IDisposable {
-    return this._emitter.on('change', callback);
-  }
-
-  emitChange(): void {
-    this._emitter.emit('change');
-  }
-
-  getChdir(): string {
-    return this._chdir;
-  }
-
-  getConfiguration(): string {
-    return this._configuration;
-  }
-
-  getBuildPath(): string {
-    return this._buildPath;
-  }
-
-  getFlag(): string {
-    return this._flag;
-  }
-
-  getXcc(): string {
-    return this._Xcc;
-  }
-
-  getXlinker(): string {
-    return this._Xlinker;
-  }
-
-  getXswiftc(): string {
-    return this._Xswiftc;
-  }
-
-  getTestBuildPath(): string {
-    return this._testBuildPath;
-  }
-
-  getCompileCommands(): Map<string, string> {
-    return this._compileCommands;
-  }
-}
+exports.default = SwiftPMTaskRunnerStore;
+module.exports = exports.default;

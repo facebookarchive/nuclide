@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +10,67 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProvider} from '../../nuclide-busy-signal/lib/types';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideBusySignal = provideBusySignal;
+exports.provideDiagnostics = provideDiagnostics;
 
-import {CompositeDisposable} from 'atom';
-import invariant from 'assert';
-import registerGrammar from '../../commons-atom/register-grammar';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsAtomRegisterGrammar2;
+
+function _commonsAtomRegisterGrammar() {
+  return _commonsAtomRegisterGrammar2 = _interopRequireDefault(require('../../commons-atom/register-grammar'));
+}
+
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
-import {ArcanistDiagnosticsProvider} from './ArcanistDiagnosticsProvider';
 
-let subscriptions: ?CompositeDisposable = null;
+var _nuclideBusySignal2;
 
-let busySignalProvider: ?BusySignalProviderBase = null;
+function _nuclideBusySignal() {
+  return _nuclideBusySignal2 = require('../../nuclide-busy-signal');
+}
 
-function getBusySignalProvider(): BusySignalProviderBase {
+var _ArcanistDiagnosticsProvider2;
+
+function _ArcanistDiagnosticsProvider() {
+  return _ArcanistDiagnosticsProvider2 = require('./ArcanistDiagnosticsProvider');
+}
+
+var subscriptions = null;
+
+var busySignalProvider = null;
+
+function getBusySignalProvider() {
   if (busySignalProvider == null) {
-    busySignalProvider = new DedupedBusySignalProviderBase();
+    busySignalProvider = new (_nuclideBusySignal2 || _nuclideBusySignal()).DedupedBusySignalProviderBase();
   }
   return busySignalProvider;
 }
 
-export function activate(): void {
+function activate() {
   if (subscriptions) {
     return;
   }
 
-  subscriptions = new CompositeDisposable();
+  subscriptions = new (_atom2 || _atom()).CompositeDisposable();
 
-  registerGrammar('source.json', '.arcconfig');
+  (0, (_commonsAtomRegisterGrammar2 || _commonsAtomRegisterGrammar()).default)('source.json', '.arcconfig');
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (subscriptions) {
     subscriptions.dispose();
     subscriptions = null;
@@ -48,13 +78,13 @@ export function deactivate(): void {
   busySignalProvider = null;
 }
 
-export function provideBusySignal(): BusySignalProvider {
+function provideBusySignal() {
   return getBusySignalProvider();
 }
 
-export function provideDiagnostics() {
-  const provider = new ArcanistDiagnosticsProvider(getBusySignalProvider());
-  invariant(subscriptions != null);
+function provideDiagnostics() {
+  var provider = new (_ArcanistDiagnosticsProvider2 || _ArcanistDiagnosticsProvider()).ArcanistDiagnosticsProvider(getBusySignalProvider());
+  (0, (_assert2 || _assert()).default)(subscriptions != null);
   subscriptions.add(provider);
   return provider;
 }

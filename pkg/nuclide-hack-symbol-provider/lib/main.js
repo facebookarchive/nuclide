@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,14 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from '../../nuclide-quick-open/lib/types';
+exports.registerProvider = registerProvider;
 
-import {HackSymbolProvider} from './HackSymbolProvider';
+var _HackSymbolProvider2;
 
-export function registerProvider(): Provider {
-  return HackSymbolProvider;
+function _HackSymbolProvider() {
+  return _HackSymbolProvider2 = require('./HackSymbolProvider');
+}
+
+function registerProvider() {
+  return (_HackSymbolProvider2 || _HackSymbolProvider()).HackSymbolProvider;
 }

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,208 +10,280 @@
  * the root directory of this source tree.
  */
 
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-import type {HealthStats, PaneItemState} from './types';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 // Imports from non-Nuclide modules.
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
-import {React} from 'react-for-atom';
-import {Observable} from 'rxjs';
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
 
 // Imports from other Nuclide packages.
-import {track} from '../../nuclide-analytics';
-import createPackage from '../../commons-atom/createPackage';
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import featureConfig from '../../commons-atom/featureConfig';
-import {DisposableSubscription} from '../../commons-node/stream';
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _commonsAtomCreatePackage2;
+
+function _commonsAtomCreatePackage() {
+  return _commonsAtomCreatePackage2 = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _commonsAtomViewableFromReactElement2;
+
+function _commonsAtomViewableFromReactElement() {
+  return _commonsAtomViewableFromReactElement2 = require('../../commons-atom/viewableFromReactElement');
+}
+
+var _commonsAtomFeatureConfig2;
+
+function _commonsAtomFeatureConfig() {
+  return _commonsAtomFeatureConfig2 = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _commonsNodeStream2;
+
+function _commonsNodeStream() {
+  return _commonsNodeStream2 = require('../../commons-node/stream');
+}
 
 // Imports from within this Nuclide package.
-import HealthPaneItem from './HealthPaneItem';
-import {Profiler} from './Profiler';
 
-class Activation {
-  _profiler: Profiler;
+var _HealthPaneItem2;
 
-  _paneItemStates: Observable<PaneItemState>;
-  _subscriptions: CompositeDisposable;
+function _HealthPaneItem() {
+  return _HealthPaneItem2 = _interopRequireDefault(require('./HealthPaneItem'));
+}
 
-  _healthButton: ?HTMLElement;
+var _Profiler2;
 
-  constructor(state: ?Object): void {
-    this._profiler = new Profiler();
+function _Profiler() {
+  return _Profiler2 = require('./Profiler');
+}
 
-    (this: any)._updateAnalytics = this._updateAnalytics.bind(this);
-    (this: any)._updateToolbarJewel = this._updateToolbarJewel.bind(this);
+var Activation = (function () {
+  function Activation(state) {
+    var _this = this;
+
+    _classCallCheck(this, Activation);
+
+    this._profiler = new (_Profiler2 || _Profiler()).Profiler();
+
+    this._updateAnalytics = this._updateAnalytics.bind(this);
+    this._updateToolbarJewel = this._updateToolbarJewel.bind(this);
 
     // Observe all of the settings.
-    const configs = featureConfig.observeAsStream('nuclide-health');
-    const viewTimeouts = configs.map(config => config.viewTimeout * 1000).distinctUntilChanged();
-    const analyticsTimeouts = configs
-      .map(config => config.analyticsTimeout * 60 * 1000)
-      .distinctUntilChanged();
-    const toolbarJewels = configs.map(config => config.toolbarJewel || '').distinctUntilChanged();
+    var configs = (_commonsAtomFeatureConfig2 || _commonsAtomFeatureConfig()).default.observeAsStream('nuclide-health');
+    var viewTimeouts = configs.map(function (config) {
+      return config.viewTimeout * 1000;
+    }).distinctUntilChanged();
+    var analyticsTimeouts = configs.map(function (config) {
+      return config.analyticsTimeout * 60 * 1000;
+    }).distinctUntilChanged();
+    var toolbarJewels = configs.map(function (config) {
+      return config.toolbarJewel || '';
+    }).distinctUntilChanged();
 
     // Update the stats immediately, and then periodically based on the config.
-    const statsStream = Observable.of(null)
-      .concat(viewTimeouts.switchMap(Observable.interval))
-      .map(() => this._profiler.getStats())
-      .share();
+    var statsStream = (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of(null).concat(viewTimeouts.switchMap((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.interval)).map(function () {
+      return _this._profiler.getStats();
+    }).share();
 
-    const packageStates = statsStream
-      .withLatestFrom(toolbarJewels)
-      .map(([stats, toolbarJewel]) => ({stats, toolbarJewel}))
-      .share()
-      .cache(1);
+    var packageStates = statsStream.withLatestFrom(toolbarJewels).map(function (_ref) {
+      var _ref2 = _slicedToArray(_ref, 2);
 
-    const updateToolbarJewel = value => {
-      featureConfig.set('nuclide-health.toolbarJewel', value);
+      var stats = _ref2[0];
+      var toolbarJewel = _ref2[1];
+      return { stats: stats, toolbarJewel: toolbarJewel };
+    }).share().cache(1);
+
+    var updateToolbarJewel = function updateToolbarJewel(value) {
+      (_commonsAtomFeatureConfig2 || _commonsAtomFeatureConfig()).default.set('nuclide-health.toolbarJewel', value);
     };
-    this._paneItemStates = packageStates.map(packageState => ({
-      ...packageState,
-      updateToolbarJewel,
-    }));
-
-    this._subscriptions = new CompositeDisposable(
-      this._profiler,
-
-      // Keep the toolbar jewel up-to-date.
-      new DisposableSubscription(
-        packageStates
-          .map(formatToolbarJewelLabel)
-          .subscribe(this._updateToolbarJewel),
-      ),
-
-      // Buffer the stats and send analytics periodically.
-      new DisposableSubscription(
-        statsStream
-          .buffer(analyticsTimeouts.switchMap(Observable.interval))
-          .subscribe(this._updateAnalytics),
-      ),
-    );
-  }
-
-  dispose(): void {
-    this._subscriptions.dispose();
-  }
-
-  consumeToolBar(getToolBar: GetToolBar): IDisposable {
-    const toolBar = getToolBar('nuclide-health');
-    this._healthButton = toolBar.addButton({
-      icon: 'dashboard',
-      callback: 'nuclide-health:toggle',
-      tooltip: 'Toggle Nuclide health stats',
-      priority: -400,
-    }).element;
-    this._healthButton.classList.add('nuclide-health-jewel');
-    const disposable = new Disposable(() => {
-      this._healthButton = null;
-      toolBar.removeItems();
+    this._paneItemStates = packageStates.map(function (packageState) {
+      return _extends({}, packageState, {
+        updateToolbarJewel: updateToolbarJewel
+      });
     });
-    this._subscriptions.add(disposable);
-    return disposable;
+
+    this._subscriptions = new (_atom2 || _atom()).CompositeDisposable(this._profiler,
+
+    // Keep the toolbar jewel up-to-date.
+    new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription(packageStates.map(formatToolbarJewelLabel).subscribe(this._updateToolbarJewel)),
+
+    // Buffer the stats and send analytics periodically.
+    new (_commonsNodeStream2 || _commonsNodeStream()).DisposableSubscription(statsStream.buffer(analyticsTimeouts.switchMap((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.interval)).subscribe(this._updateAnalytics)));
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-    invariant(this._paneItemStates);
-    this._subscriptions.add(
-      api.registerFactory({
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._subscriptions.dispose();
+    }
+  }, {
+    key: 'consumeToolBar',
+    value: function consumeToolBar(getToolBar) {
+      var _this2 = this;
+
+      var toolBar = getToolBar('nuclide-health');
+      this._healthButton = toolBar.addButton({
+        icon: 'dashboard',
+        callback: 'nuclide-health:toggle',
+        tooltip: 'Toggle Nuclide health stats',
+        priority: -400
+      }).element;
+      this._healthButton.classList.add('nuclide-health-jewel');
+      var disposable = new (_atom2 || _atom()).Disposable(function () {
+        _this2._healthButton = null;
+        toolBar.removeItems();
+      });
+      this._subscriptions.add(disposable);
+      return disposable;
+    }
+  }, {
+    key: 'consumeWorkspaceViewsService',
+    value: function consumeWorkspaceViewsService(api) {
+      var _this3 = this;
+
+      (0, (_assert2 || _assert()).default)(this._paneItemStates);
+      this._subscriptions.add(api.registerFactory({
         id: 'nuclide-health',
         name: 'Health',
         iconName: 'dashboard',
         toggleCommand: 'nuclide-health:toggle',
         defaultLocation: 'pane',
-        create: () => {
-          invariant(this._paneItemStates != null);
-          return viewableFromReactElement(<HealthPaneItem stateStream={this._paneItemStates} />);
+        create: function create() {
+          (0, (_assert2 || _assert()).default)(_this3._paneItemStates != null);
+          return (0, (_commonsAtomViewableFromReactElement2 || _commonsAtomViewableFromReactElement()).viewableFromReactElement)((_reactForAtom2 || _reactForAtom()).React.createElement((_HealthPaneItem2 || _HealthPaneItem()).default, { stateStream: _this3._paneItemStates }));
         },
-        isInstance: item => item instanceof HealthPaneItem,
-      }),
-    );
-  }
-
-  _updateToolbarJewel(label: string): void {
-    const healthButton = this._healthButton;
-    if (healthButton != null) {
-      healthButton.classList.toggle('updated', healthButton.dataset.jewelValue !== label);
-      healthButton.dataset.jewelValue = label;
+        isInstance: function isInstance(item) {
+          return item instanceof (_HealthPaneItem2 || _HealthPaneItem()).default;
+        }
+      }));
     }
-  }
-
-  _updateAnalytics(analyticsBuffer: Array<HealthStats>): void {
-    if (analyticsBuffer.length === 0) { return; }
-
-    // Aggregates the buffered stats up by suffixing avg, min, max to their names.
-    const aggregateStats = {};
-
-    // All analyticsBuffer entries have the same keys; we use the first entry to know what they
-    // are.
-    Object.keys(analyticsBuffer[0]).forEach(statsKey => {
-      // These values are not to be aggregated or sent.
-      if (statsKey === 'lastKeyLatency' || statsKey === 'activeHandlesByType') {
+  }, {
+    key: '_updateToolbarJewel',
+    value: function _updateToolbarJewel(label) {
+      var healthButton = this._healthButton;
+      if (healthButton != null) {
+        healthButton.classList.toggle('updated', healthButton.dataset.jewelValue !== label);
+        healthButton.dataset.jewelValue = label;
+      }
+    }
+  }, {
+    key: '_updateAnalytics',
+    value: function _updateAnalytics(analyticsBuffer) {
+      if (analyticsBuffer.length === 0) {
         return;
       }
 
-      const aggregates = aggregate(
-        analyticsBuffer.map(
-          stats => (typeof stats[statsKey] === 'number' ? stats[statsKey] : 0),
-        ),
-        // skipZeros: Don't use empty key latency values in aggregates.
-        (statsKey === 'keyLatency'),
-      );
-      Object.keys(aggregates).forEach(aggregatesKey => {
-        const value = aggregates[aggregatesKey];
-        if (value !== null && value !== undefined) {
-          aggregateStats[`${statsKey}_${aggregatesKey}`] = value.toFixed(2);
+      // Aggregates the buffered stats up by suffixing avg, min, max to their names.
+      var aggregateStats = {};
+
+      // All analyticsBuffer entries have the same keys; we use the first entry to know what they
+      // are.
+      Object.keys(analyticsBuffer[0]).forEach(function (statsKey) {
+        // These values are not to be aggregated or sent.
+        if (statsKey === 'lastKeyLatency' || statsKey === 'activeHandlesByType') {
+          return;
         }
+
+        var aggregates = aggregate(analyticsBuffer.map(function (stats) {
+          return typeof stats[statsKey] === 'number' ? stats[statsKey] : 0;
+        }),
+        // skipZeros: Don't use empty key latency values in aggregates.
+        statsKey === 'keyLatency');
+        Object.keys(aggregates).forEach(function (aggregatesKey) {
+          var value = aggregates[aggregatesKey];
+          if (value !== null && value !== undefined) {
+            aggregateStats[statsKey + '_' + aggregatesKey] = value.toFixed(2);
+          }
+        });
       });
-    });
-    track('nuclide-health', aggregateStats);
-  }
+      (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('nuclide-health', aggregateStats);
+    }
+  }]);
 
-}
+  return Activation;
+})();
 
-function aggregate(
-  values_: Array<number>,
-  skipZeros: boolean = false,
-): {avg: ?number, min: ?number, max: ?number} {
-  let values = values_;
+function aggregate(values_) {
+  var skipZeros = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+  var values = values_;
   // Some values (like memory usage) might be very high & numerous, so avoid summing them all up.
   if (skipZeros) {
-    values = values.filter(value => value !== 0);
+    values = values.filter(function (value) {
+      return value !== 0;
+    });
     if (values.length === 0) {
-      return {avg: null, min: null, max: null};
+      return { avg: null, min: null, max: null };
     }
   }
-  const avg = values.reduce((prevValue, currValue, index) => {
+  var avg = values.reduce(function (prevValue, currValue, index) {
     return prevValue + (currValue - prevValue) / (index + 1);
   }, 0);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  return {avg, min, max};
+  var min = Math.min.apply(Math, _toConsumableArray(values));
+  var max = Math.max.apply(Math, _toConsumableArray(values));
+  return { avg: avg, min: min, max: max };
 }
 
-function formatToolbarJewelLabel(opts: {stats: HealthStats, toolbarJewel: string}): string {
-  const {stats, toolbarJewel} = opts;
+function formatToolbarJewelLabel(opts) {
+  var stats = opts.stats;
+  var toolbarJewel = opts.toolbarJewel;
+
   switch (toolbarJewel) {
     case 'CPU':
-      return `${stats.cpuPercentage.toFixed(0)}%`;
+      return stats.cpuPercentage.toFixed(0) + '%';
     case 'Heap':
-      return `${stats.heapPercentage.toFixed(0)}%`;
+      return stats.heapPercentage.toFixed(0) + '%';
     case 'Memory':
-      return `${Math.floor(stats.rss / 1024 / 1024)}M`;
+      return Math.floor(stats.rss / 1024 / 1024) + 'M';
     case 'Key latency':
-      return `${stats.lastKeyLatency}ms`;
+      return stats.lastKeyLatency + 'ms';
     case 'Handles':
-      return `${stats.activeHandles}`;
+      return '' + stats.activeHandles;
     case 'Child processes':
-      return `${stats.activeHandlesByType.childprocess.length}`;
+      return '' + stats.activeHandlesByType.childprocess.length;
     case 'Event loop':
-      return `${stats.activeRequests}`;
+      return '' + stats.activeRequests;
     default:
       return '';
   }
 }
 
-export default createPackage(Activation);
+exports.default = (0, (_commonsAtomCreatePackage2 || _commonsAtomCreatePackage()).default)(Activation);
+module.exports = exports.default;

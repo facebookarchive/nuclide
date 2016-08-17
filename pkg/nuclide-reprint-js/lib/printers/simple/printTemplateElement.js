@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +8,7 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {TemplateElement} from 'ast-types-flow';
-
-function printTemplateElement(print: Print, node: TemplateElement): Lines {
+function printTemplateElement(print, node) {
   return [node.value.raw];
 }
 
