@@ -10,7 +10,6 @@
  */
 
 import child_process from 'child_process';
-import nuclideUri from '../../commons-node/nuclideUri';
 import {EventEmitter} from 'events';
 
 export type InvokeRemoteMethodParams = {
@@ -18,6 +17,11 @@ export type InvokeRemoteMethodParams = {
   method?: string,
   args?: Array<any>,
 };
+
+export type RemoteMessage = {id: string} & InvokeRemoteMethodParams;
+
+const BOOTSTRAP_PATH = require.resolve('./bootstrap');
+const TRANSPILER_PATH = require.resolve('../../nuclide-node-transpiler');
 
 /**
  * Task creates and manages communication with another Node process. In addition
@@ -33,15 +37,14 @@ export default class Task {
   constructor() {
     this._id = 0;
     this._emitter = new EventEmitter();
-    const options = {silent: true}; // Needed so stdout/stderr are available.
-    const child = this._child = child_process
-        .fork(nuclideUri.join(__dirname, '/bootstrap.js'), options);
+    const child = this._child = child_process.fork(
+      '--require', [TRANSPILER_PATH, BOOTSTRAP_PATH],
+      {silent: true}, // Needed so stdout/stderr are available.
+    );
     // eslint-disable-next-line no-console
-    const log = buffer => console.log(`TASK(${child.pid}): ${buffer}`);
+    const log = buffer => { console.log(`TASK(${child.pid}): ${buffer}`); };
     child.stdout.on('data', log);
     child.stderr.on('data', log);
-    // The Flow error on the following line is due to a bug in Flow:
-    // https://github.com/facebook/flow/issues/428.
     child.on('message', response => {
       const id = response.id;
       this._emitter.emit(id, response);
@@ -51,12 +54,8 @@ export default class Task {
       child.kill();
       this._emitter.emit('error', buffer.toString());
     });
-    child.send({
-      action: 'bootstrap',
-      transpiler: require.resolve('../../nuclide-node-transpiler'),
-    });
 
-    const onExitCallback = () => child.kill();
+    const onExitCallback = () => { child.kill(); };
     process.on('exit', onExitCallback);
     child.on('exit', () => {
       process.removeListener('exit', onExitCallback);
@@ -90,19 +89,15 @@ export default class Task {
     const requestId = (++this._id).toString(16);
     const request = {
       id: requestId,
-      action: 'request',
       file: params.file,
       method: params.method,
       args: params.args,
     };
 
     return new Promise((resolve, reject) => {
-      const errListener = error => {
-        reject(error);
-      };
       // Ensure the response listener is set up before the request is sent.
       this._emitter.once(requestId, response => {
-        this._emitter.removeListener('error', errListener);
+        this._emitter.removeListener('error', reject);
         const err = response.error;
         if (!err) {
           resolve(response.result);
@@ -114,7 +109,7 @@ export default class Task {
           reject(error);
         }
       });
-      this._emitter.once('error', errListener);
+      this._emitter.once('error', reject);
       this._child.send(request);
     });
   }

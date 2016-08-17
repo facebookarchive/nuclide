@@ -1,5 +1,5 @@
-'use strict';
-/* @noflow */
+'use babel';
+/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,88 +9,55 @@
  * the root directory of this source tree.
  */
 
-/* NON-TRANSPILED FILE */
-/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+import type {RemoteMessage} from './bootloader';
 
-const child_process = require('child_process');
+import invariant from 'assert';
+import child_process from 'child_process';
 
-let isBootstrapped = false;
-let messagesToProcess = [];
+process.on('message', (message: RemoteMessage) => {
+  const {id, file, method, args} = message;
 
-function processMessage(message) {
-  const action = message.action;
-  if (action === 'bootstrap') {
-    if (!isBootstrapped) {
-      const transpiler = message.transpiler;
-      require(transpiler);
-      messagesToProcess.forEach(processMessage);
-      messagesToProcess = null;
-      isBootstrapped = true;
-    }
-    return;
+  // $FlowIgnore
+  const exports = require(file);
+  const service = method != null ? exports[method] : exports;
+
+  const sendSuccessResponse = result => {
+    invariant(process.send != null);
+    process.send({
+      id,
+      result,
+    });
+  };
+
+  const sendErrorResponse = err => {
+    invariant(process.send != null && err != null);
+    process.send({
+      id,
+      error: {
+        message: err.message || err,
+        stack: err.stack || null,
+      },
+    });
+  };
+
+  // Invoke the service.
+  let output;
+  let error;
+  try {
+    output = service.apply(null, args || []);
+  } catch (e) {
+    error = e;
   }
 
-  if (!isBootstrapped) {
-    messagesToProcess.push(message);
-    return;
+  if (error) {
+    sendErrorResponse(error);
+  } else if (output != null && typeof output.then === 'function') {
+    output.then(sendSuccessResponse, sendErrorResponse);
+  } else {
+    sendSuccessResponse(output);
   }
+});
 
-  if (action === 'request') {
-    // Look up the service function.
-    const file = message.file;
-    const exports = require(file);
-    const method = message.method;
-    const service = method ? exports[method] : exports;
-
-    // Invoke the service.
-    const args = message.args || [];
-    let output;
-    let error;
-    try {
-      output = service.apply(null, args);
-    } catch (e) {
-      error = e;
-    }
-
-    // Send back the result.
-    const id = message.id;
-
-    const sendSuccessResponse = result => {
-      process.send({
-        id,
-        result,
-      });
-    };
-
-    const sendErrorResponse = err => {
-      process.send({
-        id,
-        error: {
-          message: err.message,
-          stack: err.stack,
-        },
-      });
-    };
-
-    if (error) {
-      sendErrorResponse(error);
-    } else if (isPromise(output)) {
-      output.then(sendSuccessResponse, sendErrorResponse);
-    } else {
-      sendSuccessResponse(output);
-    }
-  }
-}
-
-function isPromise(arg) {
-  // Unfortunately, there is no Promise.isPromise() akin to Array.isArray(),
-  // so we use the heuristic that the argument is an object with a then()
-  // method. This test for a "thenable" appears to be consistent with the ES6
-  // spec.
-  return typeof arg === 'object' && typeof arg.then === 'function';
-}
-
-process.on('message', processMessage);
 process.on('uncaughtException', err => {
   // eslint-disable-next-line no-console
   console.error('uncaughtException:', err);
@@ -102,6 +69,7 @@ process.on('disconnect', () => {
 });
 process.on('exit', () => {
   // Hack: kill all child processes.
+  // $FlowIgnore: Private method.
   process._getActiveHandles()
     .forEach(handle => {
       if (handle instanceof child_process.ChildProcess) {
