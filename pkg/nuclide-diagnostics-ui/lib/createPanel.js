@@ -9,21 +9,24 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
+import type {
+  DiagnosticMessage,
+  ObservableDiagnosticUpdater,
+} from '../../nuclide-diagnostics-common';
 
+import invariant from 'assert';
+import debounce from '../../commons-node/debounce';
 import {compareMessagesByFile} from './paneUtils';
 import {React, ReactDOM} from 'react-for-atom';
 import DiagnosticsPanel from './DiagnosticsPanel';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {toggle} from '../../commons-node/stream';
-import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
-import {BehaviorSubject, Observable} from 'rxjs';
 
 const DEFAULT_TABLE_WIDTH = 600;
 
 type PanelProps = {
   diagnostics: Array<DiagnosticMessage>,
   width: number,
+  height: number,
+  onResize: () => void,
   onDismiss: () => void,
   pathToActiveTextEditor: ?string,
   filterByActiveTextEditor: boolean,
@@ -33,16 +36,86 @@ type PanelProps = {
 };
 
 export default function createDiagnosticsPanel(
-  diagnostics: Observable<Array<DiagnosticMessage>>,
+  diagnosticUpdater: ObservableDiagnosticUpdater,
   initialHeight: number,
   initialfilterByActiveTextEditor: boolean,
   disableLinter: () => void,
-  onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
 ): {
   atomPanel: atom$Panel,
+  getDiagnosticsPanel: () => ?DiagnosticsPanel,
   setWarnAboutLinter: (warn: boolean) => void,
  } {
+  let diagnosticsPanel: ?DiagnosticsPanel = null;
+  let bottomPanel: ?atom$Panel = null;
+  let diagnosticsNeedSorting = false;
+  const activeEditor: ?atom$TextEditor = atom.workspace.getActiveTextEditor();
+  const pathToActiveTextEditor = activeEditor ? activeEditor.getPath() : null;
+  const props: PanelProps = {
+    diagnostics: [],
+    width: DEFAULT_TABLE_WIDTH,
+    height: initialHeight,
+    onResize: debounce(
+      () => {
+        invariant(diagnosticsPanel);
+        props.height = diagnosticsPanel.getHeight();
+        render();
+      },
+      /* debounceIntervalMs */ 50,
+      /* immediate */ false),
+    onDismiss() {
+      invariant(bottomPanel);
+      bottomPanel.hide();
+    },
+    pathToActiveTextEditor,
+    filterByActiveTextEditor: initialfilterByActiveTextEditor,
+    onFilterByActiveTextEditorChange(isChecked: boolean) {
+      props.filterByActiveTextEditor = isChecked;
+      render();
+    },
+    warnAboutLinter: false,
+    disableLinter,
+  };
+
   const item = document.createElement('div');
+  function render() {
+    if (bottomPanel && !bottomPanel.isVisible()) {
+      return;
+    }
+
+    // Do not bother to sort the diagnostics until a render is happening. This avoids doing
+    // potentially large sorts while the diagnostics pane is hidden.
+    if (diagnosticsNeedSorting) {
+      props.diagnostics = props.diagnostics.slice().sort(compareMessagesByFile);
+      diagnosticsNeedSorting = false;
+    }
+
+    const component = ReactDOM.render(<DiagnosticsPanel {...props} />, item);
+    invariant(component instanceof DiagnosticsPanel);
+    diagnosticsPanel = component;
+  }
+
+  const activePaneItemSubscription = atom.workspace.onDidChangeActivePaneItem(paneItem => {
+    if (atom.workspace.isTextEditor(paneItem)) {
+      const textEditor: atom$TextEditor = (paneItem: any);
+      props.pathToActiveTextEditor = textEditor ? textEditor.getPath() : null;
+      if (props.filterByActiveTextEditor) {
+        render();
+      }
+    }
+  });
+
+  const messagesDidUpdateSubscription = diagnosticUpdater.allMessageUpdates.subscribe(
+    (messages: Array<DiagnosticMessage>) => {
+      props.diagnostics = messages;
+      diagnosticsNeedSorting = true;
+      render();
+    },
+  );
+
+  function setWarnAboutLinter(warn: boolean) {
+    props.warnAboutLinter = warn;
+    render();
+  }
 
   // A FixedDataTable must specify its own width. We always want it to match that of the bottom
   // panel. Unfortunately, there is no way to register for resize events on a DOM element: it is
@@ -65,106 +138,40 @@ export default function createDiagnosticsPanel(
   rootElement.className = 'nuclide-diagnostics-ui';
   rootElement.appendChild(iframe);
   rootElement.appendChild(item);
+  bottomPanel = atom.workspace.addBottomPanel({item: rootElement});
 
-  const bottomPanel = atom.workspace.addBottomPanel({item: rootElement});
+  // Now that the iframe is in the DOM, subscribe to its resize events.
+  const win = iframe.contentWindow;
+  const resizeListener = debounce(
+    () => {
+      props.width = win.innerWidth;
+      render();
+    },
+    /* debounceIntervalMs */ 50,
+    /* immediate */ false);
+  win.addEventListener('resize', resizeListener);
 
-  const warnAboutLinterStream = new BehaviorSubject(false);
-  const setWarnAboutLinter = warn => { warnAboutLinterStream.next(warn); };
-
-  const panelVisibilityStream = Observable.concat(
-    Observable.of(true),
-    observableFromSubscribeFunction(bottomPanel.onDidChangeVisible.bind(bottomPanel)),
-  )
-    .distinctUntilChanged()
-    .cache(1);
-
-  // When the panel becomes visible for the first time, render the component.
-  const subscription = panelVisibilityStream.filter(Boolean).take(1).subscribe(() => {
-    const propsStream = getPropsStream(
-      diagnostics,
-      warnAboutLinterStream,
-      initialHeight,
-      initialfilterByActiveTextEditor,
-      disableLinter,
-      iframe.contentWindow,
-      onFilterByActiveTextEditorChange,
-      () => { bottomPanel.hide(); },
-    );
-    const Component = bindObservableAsProps(
-      // A stream that contains the props, but is "muted" when the panel's not visible.
-      toggle(propsStream, panelVisibilityStream).cache(1),
-      DiagnosticsPanel,
-    );
-    // $FlowFixMe: `bindObservableAsProps` needs to be typed better.
-    ReactDOM.render(<Component />, item);
+  const didChangeVisibleSubscription = bottomPanel.onDidChangeVisible(visible => {
+    if (visible) {
+      render();
+    }
   });
 
   // Currently, destroy() does not appear to be idempotent:
   // https://github.com/atom/atom/commit/734a79b7ec9f449669e1871871fd0289397f9b60#commitcomment-12631908
   bottomPanel.onDidDestroy(() => {
-    subscription.unsubscribe();
+    didChangeVisibleSubscription.dispose();
+    activePaneItemSubscription.dispose();
+    messagesDidUpdateSubscription.unsubscribe();
+    win.removeEventListener('resize', resizeListener);
     ReactDOM.unmountComponentAtNode(item);
   });
 
   return {
     atomPanel: bottomPanel,
+    getDiagnosticsPanel(): ?DiagnosticsPanel {
+      return diagnosticsPanel;
+    },
     setWarnAboutLinter,
   };
-}
-
-function getPropsStream(
-  diagnosticsStream: Observable<Array<DiagnosticMessage>>,
-  warnAboutLinterStream: Observable<boolean>,
-  initialHeight: number,
-  initialfilterByActiveTextEditor: boolean,
-  disableLinter: () => void,
-  win: HTMLElement,
-  onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
-  onDismiss: () => void,
-): Observable<PanelProps> {
-  const activeTextEditorPaths = observableFromSubscribeFunction(
-    atom.workspace.observeActivePaneItem.bind(atom.workspace),
-  )
-    .map(paneItem => {
-      if (atom.workspace.isTextEditor(paneItem)) {
-        const textEditor: atom$TextEditor = (paneItem: any);
-        return textEditor ? textEditor.getPath() : null;
-      }
-    })
-    .distinctUntilChanged();
-
-  const sortedDiagnostics = Observable.concat(
-    Observable.of([]),
-    diagnosticsStream.map(diagnostics => diagnostics.slice().sort(compareMessagesByFile)),
-  );
-
-  const filterByActiveTextEditorStream = new BehaviorSubject(initialfilterByActiveTextEditor);
-  const handleFilterByActiveTextEditorChange = (filterByActiveTextEditor: boolean) => {
-    filterByActiveTextEditorStream.next(filterByActiveTextEditor);
-    onFilterByActiveTextEditorChange(filterByActiveTextEditor);
-  };
-
-  const widthStream = Observable.of(DEFAULT_TABLE_WIDTH)
-    .concat(Observable.fromEvent(win, 'resize').map(() => (win: any).innerWidth));
-
-  // $FlowFixMe: We haven't typed this function with this many args.
-  return Observable.combineLatest(
-    activeTextEditorPaths,
-    sortedDiagnostics,
-    warnAboutLinterStream,
-    filterByActiveTextEditorStream,
-    widthStream.first().concat(widthStream.skip(1).debounceTime(50)),
-  )
-    .map(([pathToActiveTextEditor, diagnostics, warnAboutLinter, filter, width]) => ({
-      pathToActiveTextEditor,
-      diagnostics,
-      warnAboutLinter,
-      disableLinter,
-      filterByActiveTextEditor: filter,
-      onFilterByActiveTextEditorChange: handleFilterByActiveTextEditorChange,
-      width,
-      initialHeight,
-      onDismiss,
-    }))
-    .cache(1);
 }

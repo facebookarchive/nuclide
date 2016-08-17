@@ -31,6 +31,7 @@ type Props = {
   height: number,
   width: number,
   onDismiss: () => mixed,
+  onResize: () => mixed,
   pathToActiveTextEditor: ?NuclideUri,
   filterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
@@ -48,6 +49,10 @@ class DiagnosticsPanel extends React.Component {
     super(props);
     (this: any)._onFilterByActiveTextEditorChange =
       this._onFilterByActiveTextEditorChange.bind(this);
+  }
+
+  getHeight(): number {
+    return this.refs.panel.getLength();
   }
 
   render(): React.Element<any> {
@@ -95,6 +100,7 @@ class DiagnosticsPanel extends React.Component {
         dock="bottom"
         initialLength={this.props.height}
         noScroll={true}
+        onResize={this.props.onResize}
         overflowX="hidden">
         <div style={{display: 'flex', flex: 1, flexDirection: 'column'}}>
           {linterWarning}
