@@ -31,6 +31,7 @@ describe('WatchmanClient test suite', () => {
     client = new WatchmanClient();
     dirPath = temp.mkdirSync();
     filePath = nuclideUri.join(dirPath, 'test.txt');
+    fs.writeFileSync(nuclideUri.join(dirPath, '.watchmanconfig'), '{}');
     fs.writeFileSync(nuclideUri.join(dirPath, 'non-used-file.txt'), 'def');
     fs.writeFileSync(filePath, 'abc');
     // Many people use restrict_root_files so watchman only will watch folders

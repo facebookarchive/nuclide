@@ -12,6 +12,8 @@
 import type {TestContext} from './remotable-tests';
 
 import invariant from 'assert';
+import fs from 'fs';
+import nuclideUri from '../../pkg/commons-node/nuclideUri';
 
 import {
   fileTreeHasFinishedLoading,
@@ -24,6 +26,8 @@ export function runTest(context: TestContext) {
   it('changes the color of the file in the file tree after an edit', () => {
     waitsForPromise({timeout: 60000}, async () => {
       const projectPath = await copyMercurialFixture('hg_repo_1', __dirname);
+
+      fs.writeFileSync(nuclideUri.join(projectPath, '.watchmanconfig'), '{}');
 
       // Add this directory as an atom project.
       await context.setProject(projectPath);
