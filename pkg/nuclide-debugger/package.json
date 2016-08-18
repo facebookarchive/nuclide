@@ -33,26 +33,6 @@
         "0.0.0": "consumeEvaluationExpressionProvider"
       }
     },
-    "nuclide-debugger-native-service": {
-      "versions": {
-        "0.0.0": "consumeNuclideDebugger"
-      }
-    },
-    "nuclide-debugger-php-service": {
-      "versions": {
-        "0.0.0": "consumeNuclideDebugger"
-      }
-    },
-    "nuclide-debugger-node-service": {
-      "versions": {
-        "0.0.0": "consumeNuclideDebugger"
-      }
-    },
-    "nuclide-debugger-react-native-service": {
-      "versions": {
-        "0.0.0": "consumeNuclideDebugger"
-      }
-    },
     "tool-bar": {
       "versions": {
         "^0 || ^1": "consumeToolBar"

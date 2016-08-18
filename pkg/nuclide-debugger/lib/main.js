@@ -10,7 +10,6 @@
  */
 
 import type {
-   nuclide_debugger$Service,
    NuclideDebuggerProvider,
    NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
@@ -471,17 +470,6 @@ export function consumeRegisterExecutor(registerExecutor: RegisterExecutorFuncti
   } else {
     return new Disposable();
   }
-}
-
-export function consumeNuclideDebugger(service: nuclide_debugger$Service): Disposable {
-  if (activation) {
-    activation.getModel().getActions().addService(service);
-  }
-  return new Disposable(() => {
-    if (activation) {
-      activation.getModel().getActions().removeService(service);
-    }
-  });
 }
 
 export function consumeDebuggerProvider(provider: NuclideDebuggerProvider): IDisposable {

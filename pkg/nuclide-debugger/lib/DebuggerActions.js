@@ -12,7 +12,6 @@
 import nuclideUri from '../../commons-node/nuclideUri';
 import type {Dispatcher} from 'flux';
 import type {
-  nuclide_debugger$Service,
   NuclideDebuggerProvider,
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
@@ -190,20 +189,6 @@ class DebuggerActions {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.REMOVE_REGISTER_EXECUTOR,
       data: registerExecutor,
-    });
-  }
-
-  addService(service: nuclide_debugger$Service) {
-    this._dispatcher.dispatch({
-      actionType: Constants.Actions.ADD_SERVICE,
-      data: service,
-    });
-  }
-
-  removeService(service: nuclide_debugger$Service) {
-    this._dispatcher.dispatch({
-      actionType: Constants.Actions.REMOVE_SERVICE,
-      data: service,
     });
   }
 

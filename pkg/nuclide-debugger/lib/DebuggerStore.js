@@ -11,12 +11,10 @@
 
 import type {Dispatcher} from 'flux';
 import type {
-  nuclide_debugger$Service,
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {
   DebuggerInstance,
-  DebuggerProcessInfo,
 } from '../../nuclide-debugger-base';
 import type DebuggerModel from './DebuggerModel';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
@@ -51,7 +49,6 @@ class DebuggerStore {
   _debuggerSettings: DebuggerSettings;
   _debuggerInstance: ?DebuggerInstance;
   _error: ?string;
-  _services: Set<nuclide_debugger$Service>;
   _evaluationExpressionProviders: Set<NuclideEvaluationExpressionProvider>;
   _processSocket: ?string;
   _debuggerMode: DebuggerModeType;
@@ -72,7 +69,6 @@ class DebuggerStore {
     this._debuggerSettings = new DebuggerSettings();
     this._debuggerInstance = null;
     this._error = null;
-    this._services = new Set();
     this._evaluationExpressionProviders = new Set();
     this._processSocket = null;
     this._debuggerMode = DebuggerMode.STOPPED;
@@ -108,24 +104,6 @@ class DebuggerStore {
 
   getError(): ?string {
     return this._error;
-  }
-
-  /**
-   * Return attachables.
-   *
-   * @param optional service name (e.g. lldb) to filter resulting attachables.
-   */
-  getProcessInfoList(serviceName?: string): Promise<Array<DebuggerProcessInfo>> {
-    return Promise.all(
-        Array.from(this._services)
-          .map(service => {
-            if (!serviceName || service.name === serviceName) {
-              return service.getProcessInfoList();
-            } else {
-              return Promise.resolve([]);
-            }
-          }))
-        .then(values => [].concat.apply([], values));
   }
 
   getProcessSocket(): ?string {
@@ -172,18 +150,6 @@ class DebuggerStore {
     switch (payload.actionType) {
       case Constants.Actions.SET_PROCESS_SOCKET:
         this._processSocket = payload.data;
-        break;
-      case Constants.Actions.ADD_SERVICE:
-        if (this._services.has(payload.data)) {
-          return;
-        }
-        this._services.add(payload.data);
-        break;
-      case Constants.Actions.REMOVE_SERVICE:
-        if (!this._services.has(payload.data)) {
-          return;
-        }
-        this._services.delete(payload.data);
         break;
       case Constants.Actions.SET_ERROR:
         this._error = payload.data;
