@@ -70,5 +70,23 @@ export function runTest(context: TestContext) {
     waitsFor(() => {
       return textEditor.getCursorBufferPosition().isEqual([13, 0]);
     });
+
+    runs(() => {
+      // We've had an issue where the diagnostics panel stops getting updated after it's been
+      // toggled off and on again. Guard against that.
+      clickStatusBarItem();
+      expect(isDiagnosticsPanelShowing()).toBeFalsy();
+
+      clickStatusBarItem();
+      expect(isDiagnosticsPanelShowing()).toBeTruthy();
+
+      // Change `baz` back to `bar`
+      textEditor.setTextInBufferRange(new Range([13, 12], [13, 13]), 'r');
+      dispatchKeyboardEvent('s', document.activeElement, {cmd: true});
+    });
+
+    waitsFor(() => {
+      return getPanelDiagnosticElements().length === 0;
+    });
   });
 }
