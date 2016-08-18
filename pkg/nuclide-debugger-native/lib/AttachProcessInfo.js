@@ -75,22 +75,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return new service.NativeDebuggerService(debuggerConfig);
   }
 
-  get pid(): number {
-    return this._targetInfo.pid;
-  }
-
-  compareDetails(other: DebuggerProcessInfo): number {
-    invariant(other instanceof AttachProcessInfo);
-    return this.displayString() === other.displayString()
-      ? (this.pid - other.pid)
-      : (this.displayString() < other.displayString()) ? -1 : 1;
-  }
-
   supportSingleThreadStepping(): boolean {
     return true;
-  }
-
-  displayString(): string {
-    return this._targetInfo.name + '(' + this._targetInfo.pid + ')';
   }
 }

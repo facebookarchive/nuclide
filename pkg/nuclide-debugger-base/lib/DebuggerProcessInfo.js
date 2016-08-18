@@ -21,13 +21,6 @@ export default class DebuggerProcessInfo {
     this._targetUri = targetUri;
   }
 
-  toString(): string {
-    return this._serviceName + ' : ' + this.displayString();
-  }
-
-  displayString(): string {
-    throw new Error('abstract method');
-  }
 
   getServiceName(): string {
     return this._serviceName;
@@ -35,10 +28,6 @@ export default class DebuggerProcessInfo {
 
   getTargetUri(): NuclideUri {
     return this._targetUri;
-  }
-
-  compareDetails(other: DebuggerProcessInfo): number {
-    throw new Error('abstract method');
   }
 
   // Whether or not this ProcessInfo supports threading or not.

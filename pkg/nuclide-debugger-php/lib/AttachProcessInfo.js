@@ -9,12 +9,10 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import nuclideUri from '../../commons-node/nuclideUri';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
   constructor(targetUri: NuclideUri) {
@@ -31,15 +29,6 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return new PhpDebuggerInstance(this);
   }
 
-  compareDetails(other: DebuggerProcessInfo): number {
-    invariant(other instanceof AttachProcessInfo);
-    return compareString(this._targetUri, other._targetUri);
-  }
-
-  displayString(): string {
-    return nuclideUri.getHostname(this._targetUri);
-  }
-
   supportSingleThreadStepping(): boolean {
     return true;
   }
@@ -47,9 +36,4 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   singleThreadSteppingEnabled(): boolean {
     return true;
   }
-
-}
-
-function compareString(value1: string, value2: string): number {
-  return value1 === value2 ? 0 : (value1 < value2 ? -1 : 1);
 }

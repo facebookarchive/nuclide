@@ -25,13 +25,4 @@ export class ReactNativeProcessInfo extends DebuggerProcessInfo {
     // TODO(matthewwithanm): Provide a way to override this in the UI.
     return Promise.resolve(new ReactNativeDebuggerInstance(this, 5858));
   }
-
-  compareDetails(other: DebuggerProcessInfo): number {
-    return 1;
-  }
-
-  displayString(): string {
-    return this.getTargetUri();
-  }
-
 }
