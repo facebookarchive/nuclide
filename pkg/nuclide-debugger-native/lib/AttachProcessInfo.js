@@ -42,10 +42,6 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
 
   async debug(): Promise<DebuggerInstance> {
     const rpcService = this._getRpcService();
-    if (this.basepath) {
-      this._targetInfo.basepath = this.basepath;
-    }
-
     let debugSession = null;
     let outputDisposable
       = registerOutputWindowLogging(rpcService.getOutputWindowObservable().refCount());

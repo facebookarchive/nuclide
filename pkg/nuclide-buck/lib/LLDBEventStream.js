@@ -13,14 +13,20 @@ import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {BuckProject} from '../../nuclide-buck-rpc';
 import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import type {BuckEvent} from './BuckEventStream';
+import typeof * as NativeDebuggerServiceInterface
+  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
+import invariant from 'assert';
 import {Observable} from 'rxjs';
 import {compact} from '../../commons-node/stream';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {AttachProcessInfo} from '../../nuclide-debugger-native/lib/AttachProcessInfo';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {LaunchProcessInfo} from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
 import {getLogger} from '../../nuclide-logging';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 
@@ -70,9 +76,30 @@ async function debugBuckTarget(
 }
 
 async function debugPidWithLLDB(pid: number, buckProject: BuckProject) {
-  const debuggerService = await getDebuggerService();
   const buckProjectPath = await buckProject.getPath();
-  debuggerService.debugLLDB(pid, buckProjectPath);
+  const attachInfo = await _getAttachProcessInfoFromPid(pid, buckProjectPath);
+  invariant(attachInfo);
+  const debuggerService = await getDebuggerService();
+  debuggerService.startDebugging(attachInfo);
+}
+
+async function _getAttachProcessInfoFromPid(
+  pid: number,
+  buckProjectPath: string,
+): Promise<?AttachProcessInfo> {
+  const rpcService: ?NativeDebuggerServiceInterface
+    = getServiceByNuclideUri('NativeDebuggerService', buckProjectPath);
+  invariant(rpcService);
+  const attachTargetList = await rpcService.getAttachTargetInfoList(pid);
+  if (attachTargetList.length === 0) {
+    return null;
+  }
+  const attachTargetInfo = attachTargetList[0];
+  attachTargetInfo.basepath = nuclideUri.getPath(buckProjectPath);
+  return new AttachProcessInfo(
+    buckProjectPath,
+    attachTargetInfo,
+  );
 }
 
 export function getLLDBBuildEvents(

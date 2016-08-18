@@ -33,7 +33,9 @@ export type DebuggerConfig = {
   buckConfigRootFile: string,
 };
 
-export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {
+export async function getAttachTargetInfoList(
+  targetPid: ?number,
+): Promise<Array<AttachTargetInfo>> {
   throw new Error('Not implemented');
 }
 

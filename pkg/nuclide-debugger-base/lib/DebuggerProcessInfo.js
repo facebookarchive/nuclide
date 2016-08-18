@@ -48,8 +48,4 @@ export default class DebuggerProcessInfo {
   async debug(): Promise<DebuggerInstance> {
     throw new Error('abstract method');
   }
-
-  // For debugLLDB().
-  pid: number;
-  basepath: ?string;
 }

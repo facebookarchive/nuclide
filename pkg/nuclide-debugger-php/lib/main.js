@@ -11,20 +11,14 @@
 
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {
-  nuclide_debugger$Service,
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {OutputService} from '../../nuclide-console/lib/types';
 import DebuggerProvider from './DebuggerProvider';
 import {setOutputService} from '../../nuclide-debugger-base';
-import Service from './Service';
 
 export function consumeOutputService(api: OutputService): void {
   setOutputService(api);
-}
-
-export function provideNuclideDebuggerPhp(): nuclide_debugger$Service {
-  return Service;
 }
 
 export function createDebuggerProvider(): NuclideDebuggerProvider {

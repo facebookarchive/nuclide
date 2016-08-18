@@ -64,12 +64,6 @@
     "testRunner": "apm"
   },
   "providedServices": {
-    "nuclide-debugger-php-service": {
-      "description": "Debugger backend for remote php processes.",
-      "versions": {
-        "0.0.0": "provideNuclideDebuggerPhp"
-      }
-    },
     "nuclide-debugger.provider": {
       "description": "PHP debugger provider.",
       "versions": {

@@ -46,7 +46,9 @@ type LaunchInfoArgsType = {
 
 type LaunchAttachArgsType = AttachInfoArgsType | LaunchInfoArgsType;
 
-export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>> {
+export async function getAttachTargetInfoList(
+  targetPid: ?number,
+): Promise<Array<AttachTargetInfo>> {
   // Get processes list from ps utility.
   // -e: include all processes, does not require -ww argument since truncation of process names is
   //     done by the OS, not the ps utility
@@ -75,24 +77,35 @@ export async function getAttachTargetInfoList(): Promise<Array<AttachTargetInfo>
   });
   // Filter out processes that have died in between ps calls and zombiue processes.
   // Place pid, process, and command info into AttachTargetInfo objects and return in an array.
-  return Array.from(pidToName.entries()).filter((arr => {
-    const [pid, name] = arr;
-    return (
-      pidToCommand.has(pid) &&
-      !(name.startsWith('(') && name.endsWith(')')) &&
-      (name.length < 9 || name.slice(-9) !== '<defunct>')
-    );
-  }))
-  .map(arr => {
-    const [pid, name] = arr;
-    const commandName = pidToCommand.get(pid);
-    invariant(commandName != null);
-    return {
-      pid,
-      name,
-      commandName,
-    };
-  });
+  return Array.from(pidToName.entries())
+    .filter(entry => {
+      if (targetPid == null) {
+        return true;
+      }
+      const [pid] = entry;
+      return pid === targetPid;
+    })
+    .filter((arr => {
+      const [pid, name] = arr;
+      if (targetPid != null) {
+        return pid === targetPid;
+      }
+      return (
+        pidToCommand.has(pid) &&
+        !(name.startsWith('(') && name.endsWith(')')) &&
+        (name.length < 9 || name.slice(-9) !== '<defunct>')
+      );
+    }))
+    .map(arr => {
+      const [pid, name] = arr;
+      const commandName = pidToCommand.get(pid);
+      invariant(commandName != null);
+      return {
+        pid,
+        name,
+        commandName,
+      };
+    });
 }
 
 export class DebuggerConnection {

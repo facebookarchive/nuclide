@@ -13,7 +13,6 @@ import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {OutputService} from '../../nuclide-console/lib/types';
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type {
-  nuclide_debugger$Service,
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -34,11 +33,6 @@ export function deactivate(): void {
   invariant(activation != null);
   activation.dispose();
   activation = null;
-}
-
-export function provideNuclideDebugger(): nuclide_debugger$Service {
-  invariant(activation != null);
-  return activation.provideNuclideDebugger();
 }
 
 export function createDebuggerProvider(): NuclideDebuggerProvider {

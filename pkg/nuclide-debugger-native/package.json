@@ -68,12 +68,6 @@
     "testRunner": "apm"
   },
   "providedServices": {
-    "nuclide-debugger-native-service": {
-      "description": "LLDB debugging service.",
-      "versions": {
-        "0.0.0": "provideNuclideDebuggerLLDB"
-      }
-    },
     "nuclide-debugger.provider": {
       "description": "LLDB debugger provider.",
       "versions": {

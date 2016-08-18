@@ -11,7 +11,6 @@
 
 import type {OutputService} from '../../nuclide-console/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {nuclide_debugger$Service} from '../../nuclide-debugger-interfaces/service';
 
 import {DebuggingActivation} from './debugging/DebuggingActivation';
 import {PackagerActivation} from './packager/PackagerActivation';
@@ -33,10 +32,6 @@ export default class Activation {
 
   dispose(): void {
     this._disposables.dispose();
-  }
-
-  provideNuclideDebugger(): nuclide_debugger$Service {
-    return this._debuggingActivation.provideNuclideDebugger();
   }
 
   consumeOutputService(api: OutputService): void {

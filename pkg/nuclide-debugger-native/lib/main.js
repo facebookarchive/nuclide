@@ -10,7 +10,6 @@
  */
 
 import type {
-  nuclide_debugger$Service,
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {OutputService} from '../../nuclide-console/lib/types';
@@ -18,7 +17,6 @@ import type {OutputService} from '../../nuclide-console/lib/types';
 import logger from './utils';
 import {getConfig} from './utils';
 import {setOutputService} from '../../nuclide-debugger-base';
-import Service from './Service';
 import DebuggerProvider from './DebuggerProvider';
 
 export function activate(state: mixed): void {
@@ -27,10 +25,6 @@ export function activate(state: mixed): void {
 
 export function consumeOutputService(api: OutputService): void {
   setOutputService(api);
-}
-
-export function provideNuclideDebuggerLLDB(): nuclide_debugger$Service {
-  return Service;
 }
 
 export function createDebuggerProvider(): NuclideDebuggerProvider {

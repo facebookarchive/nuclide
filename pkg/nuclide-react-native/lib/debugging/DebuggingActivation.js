@@ -10,7 +10,6 @@
  */
 
 import type {DebuggerProcessInfo} from '../../../nuclide-debugger-base';
-import type {nuclide_debugger$Service} from '../../../nuclide-debugger-interfaces/service';
 
 import consumeFirstProvider from '../../../commons-atom/consumeFirstProvider';
 import {ReactNativeProcessInfo} from './ReactNativeProcessInfo';
@@ -63,14 +62,6 @@ export class DebuggingActivation {
         }
       });
   }
-
-  provideNuclideDebugger(): nuclide_debugger$Service {
-    return {
-      name: 'React Native',
-      getProcessInfoList,
-    };
-  }
-
 }
 
 function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {

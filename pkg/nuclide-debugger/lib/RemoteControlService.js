@@ -27,43 +27,6 @@ class RemoteControlService {
     this._getModel = getModel;
   }
 
-  debugLLDB(pid: number, basepath: string): Promise<void> {
-    // Nullable values are captured as nullable in lambdas, as they may change
-    // between lambda capture and lambda evaluation. Assigning to a
-    // non-nullable value after checking placates flow in this regard.
-    const modelNullable = this._getModel();
-    if (!modelNullable) {
-      return Promise.reject(new Error('Package is not activated.'));
-    }
-    const model = modelNullable;
-    return model.getStore().getProcessInfoList('lldb')
-      .then(processes => {
-        const process = processes.find(p => p.pid === pid);
-        if (process) {
-          process.basepath = basepath;
-          model.getActions().startDebugging(process);
-        } else {
-          throw new Error(`Requested process not found: ${pid}.`);
-        }
-      });
-  }
-
-  debugNode(pid: number): Promise<void> {
-    const model = this._getModel();
-    if (!model) {
-      return Promise.reject(new Error('Package is not activated.'));
-    }
-    return model.getStore().getProcessInfoList('node')
-      .then(processes => {
-        const proc = processes.find(p => p.pid === pid);
-        if (proc) {
-          model.getActions().startDebugging(proc);
-        } else {
-          Promise.reject('No node process to debug.');
-        }
-      });
-  }
-
   async startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
     const model = this._getModel();
     if (model == null) {
