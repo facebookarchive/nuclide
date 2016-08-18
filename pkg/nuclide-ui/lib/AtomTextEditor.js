@@ -74,6 +74,7 @@ function setupTextEditor(props: Props): atom$TextEditor {
 }
 
 type DefaultProps = {
+  _alwaysUpdate: boolean,
   autoGrow: boolean,
   gutterHidden: boolean,
   lineNumberGutterVisible: boolean,
@@ -84,6 +85,9 @@ type DefaultProps = {
 };
 
 type Props = {
+  // `_alwaysUpdate` forces calls to `setupEditor` to always run when props change.
+  // TODO jxg remove once the diff view no longer relies on it.
+  _alwaysUpdate: boolean,
   autoGrow: boolean,
   className?: string,
   gutterHidden: boolean,
@@ -99,6 +103,7 @@ type Props = {
 
 export class AtomTextEditor extends React.Component {
   static defaultProps: DefaultProps = {
+    _alwaysUpdate: false,
     gutterHidden: false,
     lineNumberGutterVisible: true,
     readOnly: false,
@@ -141,12 +146,17 @@ export class AtomTextEditor extends React.Component {
         nextProps.readOnly !== this.props.readOnly
       ) {
       const previousTextContents = this.getTextBuffer().getText();
-      const textEditor = setupTextEditor(nextProps);
-      if (nextProps.syncTextContents) {
-        textEditor.setText(previousTextContents);
+      const nextTextContents = nextProps.textBuffer == null
+        ? nextProps.textBuffer
+        : nextProps.textBuffer.getText();
+      if (nextProps._alwaysUpdate || nextTextContents !== previousTextContents) {
+        const textEditor = setupTextEditor(nextProps);
+        if (nextProps.syncTextContents) {
+          textEditor.setText(previousTextContents);
+        }
+        this._updateTextEditor(textEditor);
+        this._onDidUpdateTextEditorElement(nextProps);
       }
-      this._updateTextEditor(textEditor);
-      this._onDidUpdateTextEditorElement(nextProps);
     }
     if (nextProps.path !== this.props.path) {
       this.getTextBuffer().setPath(nextProps.path);

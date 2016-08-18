@@ -111,6 +111,7 @@ export default class DiffViewEditorPane extends React.Component {
       <div className="nuclide-diff-editor-container">
         <div className="nuclide-diff-editor-wrapper">
           <AtomTextEditor
+            _alwaysUpdate={true}
             ref="editor"
             readOnly={this.props.readOnly}
             textBuffer={this.props.textBuffer}
