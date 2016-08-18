@@ -10,15 +10,9 @@
  */
 
 import type {
-  DebuggerProcessInfo,
   DebuggerLaunchAttachProvider,
 } from '../nuclide-debugger-base';
 import type {NuclideUri} from '../commons-node/nuclideUri';
-
-export type nuclide_debugger$Service = {
-  name: string,
-  getProcessInfoList(): Promise<Array<DebuggerProcessInfo>>,
-};
 
 export type NuclideDebuggerProvider = {
   name: string,
