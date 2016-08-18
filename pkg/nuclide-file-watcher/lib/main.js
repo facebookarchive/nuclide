@@ -35,9 +35,6 @@ export function activate(state: ?Object): void {
 
   watchers = _watchers;
   subscriptions = _subscriptions;
-
-  // Disable the file-watcher package from showing the promot, if installed.
-  atom.config.set('file-watcher.promptWhenFileHasChangedOnDisk', false);
 }
 
 export function deactivate(): void {
