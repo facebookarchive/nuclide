@@ -19,24 +19,13 @@ const {remote} = electron;
 invariant(remote != null);
 
 let subscriptions: CompositeDisposable = (null: any);
-let currentConfig = ((featureConfig.get('nuclide-notifications'): any): {[type: string]: bool});
 let gkEnabled = false;
 
 export function activate(state: ?Object): void {
   subscriptions = new CompositeDisposable(
-
-    // Listen for changes to the native notification settings:
-    featureConfig.onDidChange('nuclide-notifications', event => {
-      currentConfig = event.newValue;
-    }),
-
     // Listen for Atom notifications:
     atom.notifications.onDidAddNotification(proxyToNativeNotification),
-
-  );
-
-  // Listen for the gatekeeper to tell us if we can generate native notifications.
-  subscriptions.add(
+    // Listen for the gatekeeper to tell us if we can generate native notifications.
     onceGkInitialized(() => {
       gkEnabled = isGkEnabled('nuclide_native_notifications');
     }),
@@ -47,7 +36,8 @@ function proxyToNativeNotification(notification: atom$Notification): void {
   const options = notification.getOptions();
 
   // Don't proceed if user only wants 'nativeFriendly' proxied notifications and this isn't one.
-  if (currentConfig.onlyNativeFriendly && !options.nativeFriendly) {
+  if (!options.nativeFriendly &&
+      featureConfig.get('nuclide-notifications.onlyNativeFriendly')) {
     return;
   }
 
@@ -64,7 +54,8 @@ function raiseNativeNotification(title: string, body: string): void {
     return;
   }
 
-  if (remote.getCurrentWindow().isFocused() && !currentConfig.whenFocused) {
+  if (!featureConfig.get('nuclide-notifications.whenFocused') &&
+      remote.getCurrentWindow().isFocused()) {
     return;
   }
 
