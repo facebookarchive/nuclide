@@ -122,7 +122,7 @@ export class Playground extends React.Component {
       'nuclide-ui-playground-section-headline-collapsed': isCollapsed,
     });
     return (
-      <section className="nuclide-ui-playground-section bordered">
+       <section className="nuclide-ui-playground-section bordered" key={index}>
         <h1 className={h1ClassName} onClick={this._toggleSection.bind(this, sectionName)}>
           {sectionName}
         </h1>
