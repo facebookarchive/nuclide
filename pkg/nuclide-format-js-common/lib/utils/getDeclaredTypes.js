@@ -15,7 +15,7 @@ import type {SourceOptions} from '../options/SourceOptions';
 import jscs from 'jscodeshift';
 
 type ConfigEntry = {
-  searchTerms: [any, Object],
+  searchTerms: [any, ?Object],
   filters: Array<(path: NodePath) => boolean>,
   getNodes: (path: NodePath) => Array<Node>,
 };

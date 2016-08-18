@@ -38,7 +38,7 @@ export function getVersion(): string {
     // Don't use require() because it may be reading from the module cache.
     // Do use require.resolve so the paths can be codemoded in the future.
     const pkgFilename = require.resolve('../../../package.json');
-    const pkgJson = JSON.parse(fs.readFileSync(pkgFilename));
+    const pkgJson = JSON.parse(fs.readFileSync(pkgFilename, 'utf8'));
     const match = SEMVERISH_RE.exec(pkgJson.version);
     invariant(match);
     // const majorVersion = match[1];

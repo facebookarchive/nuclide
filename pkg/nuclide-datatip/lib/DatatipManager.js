@@ -21,7 +21,7 @@ import {
 } from 'react-for-atom';
 
 import debounce from '../../commons-node/debounce';
-import {arrayRemove} from '../../commons-node/collection';
+import {arrayCompact, arrayRemove} from '../../commons-node/collection';
 import {track, trackOperationTiming} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 
@@ -202,8 +202,8 @@ export class DatatipManager {
     if (providers.length === 0) {
       return;
     }
-    const datatips = await Promise.all(
-      providers.map(async (provider: DatatipProvider): Promise<Object> => {
+    const datatips = arrayCompact(await Promise.all(
+      providers.map(async (provider: DatatipProvider): Promise<?Object> => {
         let name;
         if (provider.providerName != null) {
           name = provider.providerName;
@@ -246,12 +246,11 @@ export class DatatipManager {
           actionTitle,
         };
       }),
-    );
-    const nonEmptyDatatips = datatips.filter(datatip => datatip != null);
-    if (nonEmptyDatatips.length === 0) {
+    ));
+    if (datatips.length === 0) {
       return;
     }
-    const renderedProviders = nonEmptyDatatips.map(datatip => {
+    const renderedProviders = datatips.map(datatip => {
       const {
         component: ProvidedComponent,
         name,
@@ -269,9 +268,9 @@ export class DatatipManager {
       );
     });
 
-    let combinedRange = nonEmptyDatatips[0].range;
-    for (let i = 1; i < nonEmptyDatatips.length; i++) {
-      combinedRange = combinedRange.union(nonEmptyDatatips[i].range);
+    let combinedRange = datatips[0].range;
+    for (let i = 1; i < datatips.length; i++) {
+      combinedRange = combinedRange.union(datatips[i].range);
     }
 
     // Transform the matched element range to the hint range.

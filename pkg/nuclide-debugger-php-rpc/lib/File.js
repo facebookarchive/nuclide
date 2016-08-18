@@ -29,8 +29,8 @@ class File {
       return '';
     }
     let source = this._source;
-    if (source === null) {
-      source = (await fsPromise.readFile(this._path, 'utf8')).toString();
+    if (source == null) {
+      source = await fsPromise.readFile(this._path, 'utf8');
       this._source = source;
     }
     return source;

@@ -21,7 +21,7 @@ import jscs from 'jscodeshift';
 import reprintRequire from '../utils/reprintRequire';
 
 type ConfigEntry = {
-  searchTerms: [any, Object],
+  searchTerms: [any, ?Object],
   filters: Array<(path: NodePath) => boolean>,
   comparator: (node1: Node, node2: Node) => number,
   mapper: (node: Node) => Node,

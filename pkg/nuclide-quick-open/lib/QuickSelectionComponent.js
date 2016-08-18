@@ -37,7 +37,7 @@ type Selection = {
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {Button} from '../../nuclide-ui/lib/Button';
 import Tabs from '../../nuclide-ui/lib/Tabs';
-import {CompositeDisposable, Emitter} from 'atom';
+import {CompositeDisposable, Disposable, Emitter} from 'atom';
 import debounce from '../../commons-node/debounce';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
 import {isEmpty} from '../../commons-node/collection';
@@ -127,6 +127,7 @@ export default class QuickSelectionComponent extends React.Component {
     (this: any)._handleTabChange = this._handleTabChange.bind(this);
     (this: any).handleProvidersChange = this.handleProvidersChange.bind(this);
     (this: any).handleResultsChange = this.handleResultsChange.bind(this);
+    (this: any).handleDocumentMouseDown = this.handleDocumentMouseDown.bind(this);
   }
 
   componentWillReceiveProps(nextProps: any) {
@@ -179,13 +180,12 @@ export default class QuickSelectionComponent extends React.Component {
     );
 
     // Close quick open if user clicks outside the frame.
-    const documentMouseDownHandler = e => this.handleDocumentMouseDown(e);
-    document.addEventListener('mousedown', documentMouseDownHandler);
-    this._subscriptions.add({
-      dispose() {
-        document.removeEventListener('mousedown', documentMouseDownHandler);
-      },
-    });
+    document.addEventListener('mousedown', this.handleDocumentMouseDown);
+    this._subscriptions.add(
+      new Disposable(() => {
+        document.removeEventListener('mousedown', this.handleDocumentMouseDown);
+      }),
+    );
 
     const inputTextEditor = this.getInputTextEditor();
     this._subscriptions.add(

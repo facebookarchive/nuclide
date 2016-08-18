@@ -351,19 +351,22 @@ async function createHackLanguageIfNotExisting(
   key: string,
   fileUri: NuclideUri,
 ): Promise<HackLanguage> {
-  if (!uriToHackLanguage.has(key)) {
+  let hackLanguage = uriToHackLanguage.get(key);
+  if (hackLanguage == null) {
     const hackEnvironment = await getHackEnvironmentDetails(fileUri);
 
     // If multiple calls were done asynchronously, then return the single-created HackLanguage.
-    if (!uriToHackLanguage.has(key)) {
-      uriToHackLanguage.set(key,
-        createHackLanguage(
-          hackEnvironment.hackService,
-          hackEnvironment.isAvailable,
-          hackEnvironment.hackRoot));
+    hackLanguage = uriToHackLanguage.get(key);
+    if (hackLanguage == null) {
+      hackLanguage = createHackLanguage(
+        hackEnvironment.hackService,
+        hackEnvironment.isAvailable,
+        hackEnvironment.hackRoot,
+      );
+      uriToHackLanguage.set(key, hackLanguage);
     }
   }
-  return uriToHackLanguage.get(key);
+  return hackLanguage;
 }
 
 // Must clear the cache when servers go away.

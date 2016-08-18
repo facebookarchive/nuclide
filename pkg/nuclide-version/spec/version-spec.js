@@ -25,7 +25,7 @@ describe('getVersion', () => {
     // read in python) this test enforces that it is truly semver valid.
     const version = getVersion();
     const pkgFilename = require.resolve('../../../package.json');
-    const pkgJson = JSON.parse(fs.readFileSync(pkgFilename));
+    const pkgJson = JSON.parse(fs.readFileSync(pkgFilename, 'utf8'));
     expect(semver.valid(pkgJson.version)).not.toBe(null);
     expect(String(semver.minor(pkgJson.version))).toBe(version);
   });

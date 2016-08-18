@@ -15,7 +15,7 @@ import getNamesFromID from './getNamesFromID';
 import jscs from 'jscodeshift';
 
 type ConfigEntry = {
-  searchTerms: [any, Object],
+  searchTerms: [any, ?Object],
   getNodes: (path: NodePath) => Array<Node>,
 };
 

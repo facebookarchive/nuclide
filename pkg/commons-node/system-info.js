@@ -18,7 +18,7 @@ import nuclideUri from './nuclideUri';
 const NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../package.json');
 const NUCLIDE_BASEDIR = nuclideUri.dirname(NUCLIDE_PACKAGE_JSON_PATH);
 
-const pkgJson = JSON.parse(fs.readFileSync(NUCLIDE_PACKAGE_JSON_PATH));
+const pkgJson = JSON.parse(fs.readFileSync(NUCLIDE_PACKAGE_JSON_PATH, 'utf8'));
 
 export const OS_TYPE = {
   WIN32: 'win32',

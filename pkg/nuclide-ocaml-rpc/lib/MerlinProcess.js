@@ -413,7 +413,6 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
 }
 
 async function getVersion(proc: child_process$ChildProcess): Promise<string> {
-  let version;
   try {
     // TODO: Support version 3
     const result = await runSingleCommand(proc, [
@@ -425,9 +424,8 @@ async function getVersion(proc: child_process$ChildProcess): Promise<string> {
     return match != null && match[1] != null ? match[1] : '2.3.1';
   } catch (e) {
     // version 2.3.1 doesn't have a 'protocol' command and will throw
-    version = '2.3.1';
+    return '2.3.1';
   }
-  return version;
 }
 
 /**

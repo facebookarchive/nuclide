@@ -44,7 +44,7 @@ export default class ClangLinter {
   static async lint(textEditor: atom$TextEditor): Promise<Array<LinterMessage>> {
     const filePath = textEditor.getPath();
     if (!filePath) {
-      return;
+      return [];
     }
 
     try {
