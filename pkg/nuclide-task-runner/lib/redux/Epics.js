@@ -298,7 +298,7 @@ function createTaskObservable(
       atom.notifications.addError(
         `The task "${taskMeta.label}" failed`,
         {
-          description: error.message,
+          detail: error.stack,
           dismissable: true,
         },
       );
