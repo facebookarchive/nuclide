@@ -75,8 +75,7 @@ export default function createDiagnosticsPanel(
     Observable.of(true),
     observableFromSubscribeFunction(bottomPanel.onDidChangeVisible.bind(bottomPanel)),
   )
-    .distinctUntilChanged()
-    .cache(1);
+    .distinctUntilChanged();
 
   // When the panel becomes visible for the first time, render the component.
   const subscription = panelVisibilityStream.filter(Boolean).take(1).subscribe(() => {
@@ -89,10 +88,13 @@ export default function createDiagnosticsPanel(
       iframe.contentWindow,
       onFilterByActiveTextEditorChange,
       () => { bottomPanel.hide(); },
-    );
+    )
+      .publishReplay(1)
+      .refCount();
+
     const Component = bindObservableAsProps(
       // A stream that contains the props, but is "muted" when the panel's not visible.
-      toggle(propsStream, panelVisibilityStream).cache(1),
+      toggle(propsStream, panelVisibilityStream),
       DiagnosticsPanel,
     );
     // $FlowFixMe: `bindObservableAsProps` needs to be typed better.
@@ -165,6 +167,5 @@ function getPropsStream(
       width,
       initialHeight,
       onDismiss,
-    }))
-    .cache(1);
+    }));
 }
