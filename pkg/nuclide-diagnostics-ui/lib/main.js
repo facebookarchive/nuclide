@@ -21,7 +21,6 @@ import {CompositeDisposable, Disposable} from 'atom';
 
 import {track} from '../../nuclide-analytics';
 
-import type DiagnosticsPanel from './DiagnosticsPanel';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 
 import {DisposableSubscription} from '../../commons-node/stream';
@@ -36,7 +35,6 @@ const LINTER_PACKAGE = 'linter';
 
 let subscriptions: ?CompositeDisposable = null;
 let bottomPanel: ?atom$Panel = null;
-let getDiagnosticsPanel: ?(() => ?DiagnosticsPanel);
 let statusBarTile: ?StatusBarTile;
 
 type ActivationState = {
@@ -49,55 +47,54 @@ let activationState: ?ActivationState = null;
 
 let consumeUpdatesCalled = false;
 
-function createPanel(
-  diagnosticUpdater: ObservableDiagnosticUpdater,
-  disposables: CompositeDisposable,
-) {
+function createPanel(diagnosticUpdater: ObservableDiagnosticUpdater): IDisposable {
   invariant(activationState);
   const {
     atomPanel: panel,
-    getDiagnosticsPanel: getDiagnosticsPanelFn,
     setWarnAboutLinter,
   } = createDiagnosticsPanel(
-    diagnosticUpdater,
+    diagnosticUpdater.allMessageUpdates,
     activationState.diagnosticsPanelHeight,
     activationState.filterByActiveTextEditor,
-    disableLinter);
+    disableLinter,
+    filterByActiveTextEditor => {
+      if (activationState != null) {
+        activationState.filterByActiveTextEditor = filterByActiveTextEditor;
+      }
+    },
+  );
   logPanelIsDisplayed();
   bottomPanel = panel;
-  getDiagnosticsPanel = getDiagnosticsPanelFn;
 
-  activationState.hideDiagnosticsPanel = false;
-
-  const onDidChangeVisibleSubscription = panel.onDidChangeVisible((visible: boolean) => {
-    invariant(activationState);
-    activationState.hideDiagnosticsPanel = !visible;
-  });
-  disposables.add(onDidChangeVisibleSubscription);
-
-  watchForLinter(setWarnAboutLinter, disposables);
+  return new CompositeDisposable(
+    panel.onDidChangeVisible((visible: boolean) => {
+      invariant(activationState);
+      activationState.hideDiagnosticsPanel = !visible;
+    }),
+    watchForLinter(setWarnAboutLinter),
+  );
 }
 
 function disableLinter() {
   atom.packages.disablePackage(LINTER_PACKAGE);
 }
 
-function watchForLinter(
-    setWarnAboutLinter: (warn: boolean) => void,
-    disposables: CompositeDisposable): void {
+function watchForLinter(setWarnAboutLinter: (warn: boolean) => void): IDisposable {
   if (atom.packages.isPackageActive(LINTER_PACKAGE)) {
     setWarnAboutLinter(true);
   }
-  disposables.add(atom.packages.onDidActivatePackage(pkg => {
-    if (pkg.name === LINTER_PACKAGE) {
-      setWarnAboutLinter(true);
-    }
-  }));
-  disposables.add(atom.packages.onDidDeactivatePackage(pkg => {
-    if (pkg.name === LINTER_PACKAGE) {
-      setWarnAboutLinter(false);
-    }
-  }));
+  return new CompositeDisposable(
+    atom.packages.onDidActivatePackage(pkg => {
+      if (pkg.name === LINTER_PACKAGE) {
+        setWarnAboutLinter(true);
+      }
+    }),
+    atom.packages.onDidDeactivatePackage(pkg => {
+      if (pkg.name === LINTER_PACKAGE) {
+        setWarnAboutLinter(false);
+      }
+    }),
+  );
 }
 
 function getStatusBarTile(): StatusBarTile {
@@ -111,12 +108,6 @@ function tryRecordActivationState(): void {
   invariant(activationState);
   if (bottomPanel && bottomPanel.isVisible()) {
     activationState.diagnosticsPanelHeight = bottomPanel.getItem().clientHeight;
-
-    invariant(getDiagnosticsPanel);
-    const diagnosticsPanel = getDiagnosticsPanel();
-    if (diagnosticsPanel) {
-      activationState.filterByActiveTextEditor = diagnosticsPanel.props.filterByActiveTextEditor;
-    }
   }
 }
 
@@ -183,12 +174,12 @@ function gutterConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticU
 
 function tableConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
   invariant(subscriptions != null);
-  const lazilyCreateTable = createPanel.bind(null, diagnosticUpdater, subscriptions);
 
   const toggleTable = () => {
     const bottomPanelRef = bottomPanel;
     if (bottomPanelRef == null) {
-      lazilyCreateTable();
+      invariant(subscriptions != null);
+      subscriptions.add(createPanel(diagnosticUpdater));
     } else if (bottomPanelRef.isVisible()) {
       tryRecordActivationState();
       bottomPanelRef.hide();
@@ -218,7 +209,8 @@ function tableConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUp
 
   invariant(activationState);
   if (!activationState.hideDiagnosticsPanel) {
-    lazilyCreateTable();
+    invariant(subscriptions != null);
+    subscriptions.add(createPanel(diagnosticUpdater));
   }
 }
 
