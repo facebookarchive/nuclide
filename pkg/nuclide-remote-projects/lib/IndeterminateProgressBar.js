@@ -18,7 +18,7 @@ export default class IndeterminateProgressBar extends React.Component {
   render(): React.Element<any> {
     return (
       <div className="text-center padded">
-        <span className="loading loading-spinner-medium inline-block"></span>
+        <span className="loading loading-spinner-medium inline-block" />
       </div>
     );
   }

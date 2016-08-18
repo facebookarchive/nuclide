@@ -143,9 +143,7 @@ export default class RepositorySectionComponent extends React.Component {
             let loadingSpinner;
             if (isLoading) {
               loadingSpinner = (
-                <span
-                  className="loading loading-spinner-tiny inline-block inline-block-tight">
-                </span>
+                <span className="loading loading-spinner-tiny inline-block inline-block-tight" />
               );
             }
 

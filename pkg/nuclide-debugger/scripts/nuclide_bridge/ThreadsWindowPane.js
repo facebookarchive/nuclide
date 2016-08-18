@@ -182,7 +182,7 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
           <table width="100%">
             <thead>
               <tr key={0}>
-                <td> </td>
+                <td />
                 <td>ID</td>
                 <td>Address</td>
                 <td>Stop Reason</td>

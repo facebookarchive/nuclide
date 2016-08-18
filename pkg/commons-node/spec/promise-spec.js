@@ -111,13 +111,12 @@ describe('promises::denodeify()', () => {
    * rather than at the end. The type signature of this function cannot be
    * expressed in Flow.
    */
-  function asyncProduct(): void {
-    const factors = Array.prototype.slice.call(arguments, 0, arguments.length - 1);
+  function asyncProduct(...factors): void {
+    const callback = factors.pop();
     const product = factors.reduce((previousValue, currentValue) => {
       return previousValue * currentValue;
     }, 1);
 
-    const callback = arguments[arguments.length - 1];
     if (isNaN(product)) {
       callback(new Error('product was NaN'));
     } else {

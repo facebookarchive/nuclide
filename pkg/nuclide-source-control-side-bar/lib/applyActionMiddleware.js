@@ -122,7 +122,7 @@ export function applyActionMiddleware(
           const {repository} = action.payload;
           const repositoryAsync = repository.async;
 
-          if (!repositoryAsync instanceof HgRepositoryClientAsync) {
+          if (!(repositoryAsync instanceof HgRepositoryClientAsync)) {
             atom.notifications.addWarning('Failed Renaming Bookmark', {
               detail: `Expected repository type 'hg' but found ${repository.getType()}`,
               dismissable: true,
@@ -179,7 +179,7 @@ export function applyActionMiddleware(
           const {repository} = action.payload;
           const repositoryAsync = repository.async;
 
-          if (!repositoryAsync instanceof HgRepositoryClientAsync) {
+          if (!(repositoryAsync instanceof HgRepositoryClientAsync)) {
             atom.notifications.addWarning('Failed Deleting Bookmark', {
               detail: `Expected repository type 'hg' but found ${repository.getType()}`,
               dismissable: true,

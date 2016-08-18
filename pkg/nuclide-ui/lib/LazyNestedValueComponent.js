@@ -148,7 +148,6 @@ class ValueComponent extends React.Component {
       isExpanded: false,
       children: null,
     };
-    this.state.children = null;
     (this: any)._toggleExpand = this._toggleExpand.bind(this);
   }
 

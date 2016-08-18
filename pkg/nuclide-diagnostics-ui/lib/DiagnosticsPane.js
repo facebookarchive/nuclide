@@ -98,7 +98,7 @@ function messageColumnCellRenderer(message: textAndType): React.Element<any> {
   if (message.isPlainText) {
     return plainTextColumnCellRenderer(message.text);
   } else {
-    return <span dangerouslySetInnerHTML={{__html: message.text}}></span>;
+    return <span dangerouslySetInnerHTML={{__html: message.text}} />;
   }
 }
 

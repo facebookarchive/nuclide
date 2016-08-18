@@ -240,7 +240,7 @@ class TestRunnerPanel extends React.Component {
               />
             </ToolbarRight>
           </Toolbar>
-          <div className="nuclide-test-runner-console" ref="paneContainer"></div>
+          <div className="nuclide-test-runner-console" ref="paneContainer" />
         </div>
       </PanelComponent>
     );

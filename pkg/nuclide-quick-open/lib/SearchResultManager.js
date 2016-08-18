@@ -238,8 +238,8 @@ class SearchResultManager {
     this._emitter.emit(PROVIDERS_CHANGED);
   }
 
-  on(): IDisposable {
-    return this._emitter.on(...arguments);
+  on(name: string, value: any): IDisposable {
+    return this._emitter.on(name, value);
   }
 
   registerProvider(service: Provider): IDisposable {

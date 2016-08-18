@@ -48,7 +48,7 @@ export class ConnectionHealthNotifier {
       errorCode: string,
       message: string,
       dismissable: boolean,
-      askToReload: boolean
+      askToReload: boolean,
     ) => {
       const {code, notification: existingNotification} = this._lastHeartbeatNotification || {};
       if (code && code === errorCode && dismissable) {

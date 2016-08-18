@@ -22,7 +22,7 @@ class FocusDelegateView extends React.Component {
   render() {
     return (
       <div className="focus-delegate-view" tabIndex={0}>
-        <div className="focus-delegate-view-delegate" tabIndex={0}></div>
+        <div className="focus-delegate-view-delegate" tabIndex={0} />
       </div>
     );
   }

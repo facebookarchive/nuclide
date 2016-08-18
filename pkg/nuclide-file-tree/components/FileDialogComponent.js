@@ -60,19 +60,20 @@ class FileDialogComponent extends React.Component {
     options: Options
   };
 
-  constructor() {
-    super(...arguments);
+  constructor(props: Props) {
+    super(props);
     this._isClosed = false;
     this._subscriptions = new CompositeDisposable();
     (this: any)._close = this._close.bind(this);
     (this: any)._confirm = this._confirm.bind(this);
     (this: any)._handleDocumentMouseDown = this._handleDocumentMouseDown.bind(this);
-    this.state = {
-      options: {},
-    };
+    const options = {};
     for (const name in this.props.additionalOptions) {
-      this.state.options[name] = true;
+      options[name] = true;
     }
+    this.state = {
+      options,
+    };
   }
 
   componentDidMount(): void {

@@ -69,7 +69,7 @@ export class DebuggerThreadsComponent extends React.Component {
         <table className="nuclide-debugger-thread-list-table">
           <thead>
             <tr className="nuclide-debugger-thread-list-item">
-              <td className="nuclide-debugger-thread-list-item-current-indicator"> </td>
+              <td className="nuclide-debugger-thread-list-item-current-indicator" />
               <td className="nuclide-debugger-thread-list-item-id">ID</td>
               <td className="nuclide-debugger-thread-list-item-address">Address</td>
               <td className="nuclide-debugger-thread-list-item-stop-reason">Stop Reason</td>

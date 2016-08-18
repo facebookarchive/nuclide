@@ -43,7 +43,7 @@ export default class PromptButton extends React.Component {
         <span className="nuclide-console-prompt-label">
           {this.props.children}
         </span>
-        <span className="icon icon-chevron-right"></span>
+        <span className="icon icon-chevron-right" />
       </span>
     );
   }

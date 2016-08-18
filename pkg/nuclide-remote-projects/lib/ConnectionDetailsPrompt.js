@@ -182,7 +182,8 @@ export default class ConnectionDetailsPrompt extends React.Component {
                   title:
                     'The settings most recently used to connect. To save settings permanently, '
                     + 'create a profile.',
-                })}></span>
+                })}
+              />
               Most Recent
             </li>
           </ol>

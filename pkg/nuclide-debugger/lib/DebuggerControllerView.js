@@ -97,7 +97,7 @@ export default class DebuggerControllerView extends React.Component {
             onClick={this._handleClickClose}
           />
           <p>Starting Debugger</p>
-          <progress className="starting"></progress>
+          <progress className="starting" />
         </div>
       );
     }
