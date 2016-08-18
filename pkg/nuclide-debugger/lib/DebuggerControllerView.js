@@ -13,7 +13,6 @@ import {React} from 'react-for-atom';
 import BreakpointStore from './BreakpointStore.js';
 import DebuggerActions from './DebuggerActions';
 import DebuggerInspector from './DebuggerInspector';
-import DebuggerSessionSelector from './DebuggerSessionSelector';
 import {DebuggerStore} from './DebuggerStore';
 import Bridge from './Bridge';
 import {Button} from '../../nuclide-ui/lib/Button';
@@ -88,29 +87,21 @@ export default class DebuggerControllerView extends React.Component {
         />
       );
     }
-    const closeButton = (
-      <Button
-        title="Close"
-        icon="x"
-        className="nuclide-debugger-root-close-button"
-        onClick={this._handleClickClose}
-      />
-    );
     if (this.props.store.getDebuggerMode() === 'starting') {
       return (
         <div className="padded">
-          {closeButton}
+          <Button
+            title="Close"
+            icon="x"
+            className="nuclide-debugger-root-close-button"
+            onClick={this._handleClickClose}
+          />
           <p>Starting Debugger</p>
           <progress className="starting"></progress>
         </div>
       );
     }
-    return (
-      <div>
-        {closeButton}
-        <DebuggerSessionSelector store={this.props.store} actions={this.props.actions} />
-      </div>
-    );
+    return null;
   }
 
   _handleClickClose() {
