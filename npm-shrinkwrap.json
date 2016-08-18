@@ -1969,6 +1969,11 @@
           "version": "4.15.0",
           "from": "lodash@>=4.2.1 <5.0.0",
           "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.15.0.tgz"
+        },
+        "symbol-observable": {
+          "version": "0.2.4",
+          "from": "symbol-observable@>=0.2.3 <0.3.0",
+          "resolved": "https://registry.npmjs.org/symbol-observable/-/symbol-observable-0.2.4.tgz"
         }
       }
     },
