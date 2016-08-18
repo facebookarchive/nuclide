@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
+import {DisposableSubscription} from '../../commons-node/stream';
+import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
+import {Observable} from 'rxjs';
 
 type Props = {
   children?: any,
@@ -28,8 +31,8 @@ export class Modal extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleBlur = this._handleBlur.bind(this);
     (this: any)._handleContainerInnerElement = this._handleContainerInnerElement.bind(this);
+    (this: any)._handleWindowClick = this._handleWindowClick.bind(this);
   }
 
   componentWillMount(): void {
@@ -53,10 +56,9 @@ export class Modal extends React.Component {
     }
   }
 
-  _handleBlur(event: SyntheticFocusEvent): void {
-    // If the next active element (`event.relatedTarget`) is not a descendant of this modal, close
-    // the modal.
-    if (this._innerElement && !this._innerElement.contains(((event.relatedTarget: any): Node))) {
+  _handleWindowClick(event: SyntheticMouseEvent): void {
+    // If the user clicks outside of the modal, close it.
+    if (this._innerElement && !this._innerElement.contains(((event.target: any): Node))) {
       this.props.onDismiss();
     }
   }
@@ -71,8 +73,16 @@ export class Modal extends React.Component {
     if (el == null) { return; }
 
     el.focus();
-    this._cancelDisposable =
-      atom.commands.add(el, 'core:cancel', () => { this.props.onDismiss(); });
+    this._cancelDisposable = new CompositeDisposable(
+      atom.commands.add(window, 'core:cancel', () => { this.props.onDismiss(); }),
+      new DisposableSubscription(
+        Observable.fromEvent(window, 'click')
+          // Ignore clicks in the current tick. We don't want to capture the click that showed this
+          // modal.
+          .skipUntil(Observable.interval(0).first())
+          .subscribe(this._handleWindowClick),
+      ),
+    );
   }
 
   _render(): void {
@@ -81,8 +91,7 @@ export class Modal extends React.Component {
     const wrappedChildren = (
       <div
         tabIndex="0"
-        ref={this._handleContainerInnerElement}
-        onBlur={this._handleBlur}>
+        ref={this._handleContainerInnerElement}>
         {this.props.children}
       </div>
     );
