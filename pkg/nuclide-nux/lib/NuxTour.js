@@ -131,7 +131,7 @@ export class NuxTour {
     return this._trigger != null ? this._trigger.triggerCallback(editor) : true;
   }
 
-  getTriggerType(): NuxTriggerType {
+  getTriggerType(): ?NuxTriggerType {
     return this._trigger != null ? this._trigger.triggerType : null;
   }
 

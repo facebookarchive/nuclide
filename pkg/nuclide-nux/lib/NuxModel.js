@@ -41,8 +41,8 @@ export type NuxTriggerModel = {
   triggerCallback: ((editor: atom$TextEditor) => boolean),
 };
 
-// TODO: [ @rageandqq | 05-23-16 ]: Add more trigger types as use cases are developed
-export type NuxTriggerType = 'editor' | null;
+// Add more trigger types here as use cases are developed
+export type NuxTriggerType = 'editor';
 
 // Represents the 'viewed' state of a NUX
 export type NuxStateModel = {
