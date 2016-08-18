@@ -16,6 +16,7 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
+import semver from 'semver';
 import {TextBuffer} from 'atom';
 
 const doNothing = () => {};
@@ -114,7 +115,7 @@ export class AtomTextEditor extends React.Component {
   };
 
   props: Props;
-
+  _onDidAttachDisposable: ?IDisposable;
   _textEditorElement: ?atom$TextEditorElement;
 
   componentDidMount(): void {
@@ -138,6 +139,24 @@ export class AtomTextEditor extends React.Component {
     // Attach to DOM.
     container.innerHTML = '';
     container.appendChild(textEditorElement);
+
+    // The following is a hack to work around the broken atom-text-editor auto-sizing in Atom 1.9.x
+    // See https://github.com/atom/atom/issues/12441 to follow the proper fix.
+    // TODO @jxg remove once atom-text-editor is fixed.
+    if (semver.lt(atom.getVersion(), '1.9.0')) {
+      return;
+    }
+    this._ensureDidAttachDisposableDisposed();
+    this._onDidAttachDisposable = textEditorElement.onDidAttach(() => {
+      const correctlySizedElement = textEditorElement.querySelector(
+        '* /deep/ .lines > :first-child > :first-child',
+      );
+      if (correctlySizedElement == null) {
+        return;
+      }
+      const {width} = correctlySizedElement.style;
+      container.style.width = width;
+    });
   }
 
   componentWillReceiveProps(nextProps: Object): void {
@@ -216,6 +235,16 @@ export class AtomTextEditor extends React.Component {
   // should always pass because this subtree won't change.
   shouldComponentUpdate(nextProps: Object, nextState: void): boolean {
     return false;
+  }
+
+  componentWillUnmount(): void {
+    this._ensureDidAttachDisposableDisposed();
+  }
+
+  _ensureDidAttachDisposableDisposed(): void {
+    if (this._onDidAttachDisposable != null) {
+      this._onDidAttachDisposable.dispose();
+    }
   }
 
 }
