@@ -387,9 +387,15 @@ class Server:
         return [(self.src, unsaved_contents.encode('utf-8'))]
 
     def _get_args_for_flags(self):
-        # Enable typo-detection (and the corresponding fixits)
-        # For some reason this is not enabled by default in libclang.
-        args = ['-fspell-checking']
+        args = [
+            # Enable typo-detection (and the corresponding fixits)
+            # For some reason this is not enabled by default in libclang.
+            '-fspell-checking',
+            # This flag disables some fancy template metaprogramming inside gtest
+            # that somehow breaks Clang's autocompletion.
+            # Requires PARSE_INCOMPLETE above (or else this will cause type mismatch errors).
+            '-DGTEST_ELLIPSIS_NEEDS_POD_',
+        ]
         for arg in self.flags:
             if arg == self.src:
                 # Including the input file as an argument causes index.parse() to fail.
