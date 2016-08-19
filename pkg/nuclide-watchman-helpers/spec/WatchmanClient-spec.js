@@ -12,34 +12,33 @@
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
-import temp from 'temp';
 import watchman from 'fb-watchman';
 import WatchmanClient from '../lib/WatchmanClient';
-
-temp.track();
+import {generateFixture} from '../../nuclide-test-helpers';
 
 const FILE_MODE = 33188;
 
 describe('WatchmanClient test suite', () => {
 
   let dirPath: string = '';
-  let client: any;
-  let filePath: string = '';
+  let client: WatchmanClient = (null: any);
 
   beforeEach(() => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
     client = new WatchmanClient();
-    dirPath = temp.mkdirSync();
-    filePath = nuclideUri.join(dirPath, 'test.txt');
-    fs.writeFileSync(nuclideUri.join(dirPath, '.watchmanconfig'), '{}');
-    fs.writeFileSync(nuclideUri.join(dirPath, 'non-used-file.txt'), 'def');
-    fs.writeFileSync(filePath, 'abc');
-    // Many people use restrict_root_files so watchman only will watch folders
-    // that have those listed files in them.  This list of root files almost
-    // always has .git in it.
-    const watchmanRootPath = nuclideUri.join(dirPath, '.git');
-    fs.mkdirSync(watchmanRootPath);
-    waits(1010);
+
+    waitsForPromise(async () => {
+      dirPath = await generateFixture('watchman_helpers_test', new Map([
+        // Many people use restrict_root_files so watchman only will watch folders
+        // that have those listed files in them. watchmanconfig is always a root
+        // file.
+        ['.watchmanconfig', '{}'],
+        ['test.txt', 'abc'],
+        ['non-used-file.txt', 'def'],
+        ['nested/nested-test.txt', 'ghi'],
+      ]));
+      waits(1010);
+    });
   });
 
   afterEach(() => {
@@ -50,6 +49,7 @@ describe('WatchmanClient test suite', () => {
 
     function testRestoreSubscriptions(onRestoreChange: (watchmanClient: watchman.Client) => void) {
       waitsForPromise(async () => {
+        const filePath = nuclideUri.join(dirPath, 'test.txt');
         const watcher = await client.watchDirectoryRecursive(dirPath);
         const changeHandler = jasmine.createSpy();
         watcher.on('change', changeHandler);
@@ -133,6 +133,7 @@ describe('WatchmanClient test suite', () => {
         await client.watchDirectoryRecursive(dirPath);
         const watchList = await client._watchList();
         expect(watchList.indexOf(dirRealPath)).not.toBe(-1);
+        // $FlowIssue
         client.dispose = () => {};
         await client.unwatch(dirPath);
         const afterCleanupWatchList = await client._watchList();
@@ -154,11 +155,7 @@ describe('WatchmanClient test suite', () => {
     it('should be able to watch nested project folders, but cleanup watchRoot', () => {
       waitsForPromise(async () => {
         const dirRealPath = fs.realpathSync(dirPath);
-        // The .watchmanconfig file, amonst others that could also be configured
-        // define the project root directory.
-        fs.writeFileSync(nuclideUri.join(dirPath, '.watchmanconfig'), '');
         const nestedDirPath = nuclideUri.join(dirPath, 'nested');
-        fs.mkdirSync(nestedDirPath);
         const {
           watch: watchRoot,
           relative_path: relativePath,

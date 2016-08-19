@@ -15,11 +15,8 @@ import {checkOutput} from '../../commons-node/process';
 import {addMatchers} from '../../nuclide-test-helpers';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
-import temp from 'temp';
 import search from '../lib/scanhandler';
-
-temp.track();
-
+import {generateFixture} from '../../nuclide-test-helpers';
 
 describe('Scan Handler Tests', () => {
   beforeEach(function() {
@@ -30,16 +27,15 @@ describe('Scan Handler Tests', () => {
   it('Should recursively scan all files in a directory', () => {
     waitsForPromise(async () => {
       // Setup the test folder.
-      const folder = temp.mkdirSync();
-      fs.writeFileSync(nuclideUri.join(folder, 'file1.js'), `var a = 4;
+      const folder = await generateFixture('grep-rpc', new Map([
+        ['file1.js', `var a = 4;
         console.log("Hello World!");
         console.log(a);
-        console.error("Hello World!");`);
-
-      fs.mkdirSync(nuclideUri.join(folder, 'directory'));
-      fs.writeFileSync(nuclideUri.join(folder, 'directory', 'file2.js'), `var a = 4;
+        console.error("Hello World!");`],
+        ['directory/file2.js', `var a = 4;
         console.log("Hello World!");
-        console.log(a);`);
+        console.log(a);`],
+      ]));
 
       const results = await search(folder, /hello world/i, []).toArray().toPromise();
       const expected = JSON.parse(
@@ -55,11 +51,13 @@ describe('Scan Handler Tests', () => {
   it('Can execute a case sensitive search', () => {
     waitsForPromise(async () => {
       // Setup the test folder.
-      const folder = temp.mkdirSync();
-      fs.writeFileSync(nuclideUri.join(folder, 'file1.js'), `var a = 4;
+      const folder = await generateFixture('grep-rpc', new Map([
+        // $FlowIssue t12774012
+        ['file1.js', `var a = 4;
         console.log("Hello World!");
         console.log(a);
-        console.error("hello world!");`);
+        console.error("hello world!");`],
+      ]));
 
       const results = await search(folder, /hello world/, []).toArray().toPromise();
       const expected = JSON.parse(
@@ -75,14 +73,11 @@ describe('Scan Handler Tests', () => {
   it('Can execute a search of subdirectories.', () => {
     waitsForPromise(async () => {
       // Setup the test folder.
-      const folder = temp.mkdirSync();
-      const testCode = 'console.log("Hello World!");';
-      fs.mkdirSync(nuclideUri.join(folder, 'dir1'));
-      fs.writeFileSync(nuclideUri.join(folder, 'dir1', 'file.txt'), testCode);
-      fs.mkdirSync(nuclideUri.join(folder, 'dir2'));
-      fs.writeFileSync(nuclideUri.join(folder, 'dir2', 'file.txt'), testCode);
-      fs.mkdirSync(nuclideUri.join(folder, 'dir3'));
-      fs.writeFileSync(nuclideUri.join(folder, 'dir3', 'file.txt'), testCode);
+      const folder = await generateFixture('grep-rpc', new Map([
+        ['dir1/file.txt', 'console.log("Hello World!");'],
+        ['dir2/file.txt', 'console.log("Hello World!");'],
+        ['dir3/file.txt', 'console.log("Hello World!");'],
+      ]));
       const results = await search(
         folder, /hello world/i, ['dir2', 'dir3', 'nonexistantdir'],
       ).toArray().toPromise();
@@ -99,11 +94,10 @@ describe('Scan Handler Tests', () => {
   it('Should include results from files matching wildcard path name', () => {
     waitsForPromise(async () => {
       // Create test folders and files
-      const folder = temp.mkdirSync();
-      const fileContents = 'console.log("a wildcard appears!");';
-      // Create foo.js, foo.py
-      fs.writeFileSync(nuclideUri.join(folder, 'foo.js'), fileContents);
-      fs.writeFileSync(nuclideUri.join(folder, 'foo.py'), fileContents);
+      const folder = await generateFixture('grep-rpc', new Map([
+        ['foo.js', 'console.log("a wildcard appears!");'],
+        ['foo.py', 'console.log("a wildcard appears!");'],
+      ]));
       const results = await search(
         folder, /a wildcard appears/i, ['*.js'],
       ).toArray().toPromise();
@@ -120,7 +114,7 @@ describe('Scan Handler Tests', () => {
   it('Git repo: should ignore untracked files or files listed in .gitignore', () => {
     waitsForPromise(async () => {
       // Create a git repo in a temporary folder.
-      const folder = temp.mkdirSync();
+      const folder = await generateFixture('grep-rpc');
       await checkOutput('git', ['init'], {cwd: folder});
 
       // Create a file that is ignored.
@@ -152,7 +146,7 @@ describe('Scan Handler Tests', () => {
   xit('Hg repo: should ignore untracked files or files listed in .hgignore', () => {
     waitsForPromise(async () => {
       // Create a git repo in a temporary folder.
-      const folder = temp.mkdirSync();
+      const folder = await generateFixture('grep-rpc');
       await checkOutput('hg', ['init'], {cwd: folder});
 
       // Create a file that is ignored.

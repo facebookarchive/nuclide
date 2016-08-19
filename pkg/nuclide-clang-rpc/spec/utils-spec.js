@@ -9,27 +9,19 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
-import temp from 'temp';
+import {generateFixture} from '../../nuclide-test-helpers';
 
 import {findIncludingSourceFile} from '../lib/utils';
 
 describe('findIncludingSourceFile', () => {
-  let tmpdir;
-  beforeEach(() => {
-    tmpdir = temp.mkdirSync();
-  });
-
-  afterEach(() => {
-    temp.cleanupSync();
-  });
-
   it('is able to find an absolute include', () => {
-    fs.mkdirSync(nuclideUri.join(tmpdir, 'a'));
-    const sourceFile = nuclideUri.join(tmpdir, 'a/b.cpp');
-    fs.writeFileSync(sourceFile, '#include <a/b.h>');
     waitsForPromise(async () => {
+      const tmpdir = await generateFixture('clang_rpc', new Map([
+        // $FlowIssue t12774012
+        ['a/b.cpp', '#include <a/b.h>'],
+      ]));
+      const sourceFile = nuclideUri.join(tmpdir, 'a/b.cpp');
       const file = await findIncludingSourceFile(nuclideUri.join(tmpdir, 'a/b.h'), tmpdir)
       .toPromise();
       expect(file).toBe(sourceFile);
@@ -37,10 +29,12 @@ describe('findIncludingSourceFile', () => {
   });
 
   it('is able to find a relative include', () => {
-    fs.mkdirSync(nuclideUri.join(tmpdir, 'a'));
-    const sourceFile = nuclideUri.join(tmpdir, 'a/x.cpp');
-    fs.writeFileSync(sourceFile, '#include <../x.h>');
     waitsForPromise(async () => {
+      const tmpdir = await generateFixture('clang_rpc', new Map([
+        // $FlowIssue t12774012
+        ['a/x.cpp', '#include <../x.h>'],
+      ]));
+      const sourceFile = nuclideUri.join(tmpdir, 'a/x.cpp');
       const file = await findIncludingSourceFile(nuclideUri.join(tmpdir, 'x.h'), tmpdir)
       .toPromise();
       expect(file).toBe(sourceFile);
@@ -48,9 +42,11 @@ describe('findIncludingSourceFile', () => {
   });
 
   it('rejects non-matching relative includes', () => {
-    fs.mkdirSync(nuclideUri.join(tmpdir, 'a'));
-    fs.writeFileSync(nuclideUri.join(tmpdir, 'a/x.cpp'), '#include <../../x.h>');
     waitsForPromise(async () => {
+      const tmpdir = await generateFixture('clang_rpc', new Map([
+        // $FlowIssue t12774012
+        ['a/b.cpp', '#include <../../x.h>'],
+      ]));
       const file = await findIncludingSourceFile(nuclideUri.join(tmpdir, 'x.h'), tmpdir)
       .toPromise();
       expect(file).toBeNull();

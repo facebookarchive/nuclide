@@ -12,14 +12,12 @@
 import type {HgService as HgServiceType} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {Directory, GitRepository} from 'atom';
-import fs from 'fs';
 import repositoryContainsPath from '../lib/repositoryContainsPath';
 import {checkOutput} from '../../commons-node/process';
 import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import nuclideUri from '../../commons-node/nuclideUri';
-
-const temp = require('temp').track();
+import {generateFixture} from '../../nuclide-test-helpers';
 
 describe('repositoryContainsPath', () => {
   let tempFolder: string = (null: any);
@@ -27,9 +25,13 @@ describe('repositoryContainsPath', () => {
 
   beforeEach(() => {
     // Create a temporary Hg repository.
-    tempFolder = temp.mkdirSync();
-    repoRoot = nuclideUri.join(tempFolder, 'repoRoot');
-    fs.mkdirSync(repoRoot);
+    waitsForPromise(async () => {
+      tempFolder = await generateFixture('hg-git-bridge', new Map([
+        // $FlowIssue t12774012
+        ['repoRoot/file.txt', 'hello world'],
+      ]));
+      repoRoot = nuclideUri.join(tempFolder, 'repoRoot');
+    });
   });
 
   it('is accurate for GitRepository.', () => {

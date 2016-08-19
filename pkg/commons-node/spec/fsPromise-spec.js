@@ -9,76 +9,71 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs';
 import nuclideUri from '../nuclideUri';
-import temp from 'temp';
 import fsPromise from '../fsPromise';
-
-temp.track();
+import {generateFixture} from '../../nuclide-test-helpers';
 
 describe('fsPromise test suite', () => {
-
   describe('findNearestFile()', () => {
-    let dirPath: any;
-    let nestedDirPath: any;
-    let fileName: any;
-    let filePath;
+    let dirPath: string = (null: any);
 
     beforeEach(() => {
-      dirPath = temp.mkdirSync('nearest_test');
-      nestedDirPath = nuclideUri.join(dirPath, 'nested_dir');
-      fs.mkdirSync(nestedDirPath);
-      fileName = '.some_file';
-      filePath = nuclideUri.join(dirPath, fileName);
-      fs.writeFileSync(filePath, 'just a file');
+      waitsForPromise(async () => {
+        dirPath = await generateFixture('nearest_test', new Map([
+          ['.some_file', 'just some file'],
+          ['nested_dir/.another_file', 'just another file'],
+        ]));
+      });
     });
 
     it('find the file if given the exact directory', () => {
       waitsForPromise(async () => {
-        const foundPath = await fsPromise.findNearestFile(fileName, dirPath);
+        const foundPath = await fsPromise.findNearestFile('.some_file', dirPath);
         expect(foundPath).toBe(dirPath);
       });
     });
 
     it('find the file if given a nested directory', () => {
       waitsForPromise(async () => {
-        const foundPath = await fsPromise.findNearestFile(fileName, nestedDirPath);
+        const foundPath = await fsPromise.findNearestFile(
+          '.some_file',
+          nuclideUri.join(dirPath, 'nested_dir'),
+        );
         expect(foundPath).toBe(dirPath);
       });
     });
 
     it('does not find the file if not existing', () => {
       waitsForPromise(async () => {
-        const foundPath = await fsPromise.findNearestFile('non-existent.txt', nestedDirPath);
+        const foundPath = await fsPromise.findNearestFile(
+          'non-existent.txt',
+          nuclideUri.join(dirPath, 'nested_dir'),
+        );
         expect(foundPath).toBe(null);
       });
     });
   });
 
   describe('findFurthestFile()', () => {
-    let dirPath;
-    let fileName;
+    let dirPath: string = (null: any);
 
     beforeEach(() => {
-      dirPath = temp.mkdirSync('furthest_test');
-      fileName = '.some_file';
-
-      let currPath = dirPath;
-      for (let i = 0; i < 5; i++) {
-        currPath = nuclideUri.join(currPath, `${i}`);
-        fs.mkdirSync(currPath);
-        // Skip one file to test consecutive vs non-consecutive.
-        if (i !== 2) {
-          const filePath = nuclideUri.join(currPath, fileName);
-          fs.writeFileSync(filePath, 'just a file');
-        }
-      }
+      waitsForPromise(async () => {
+        dirPath = await generateFixture('furthest_test', new Map([
+          ['0/.some_file', 'just a file'],
+          ['0/1/.some_file', 'just b file'],
+          // Skip one file to test consecutive vs non-consecutive.
+          // ['0/1/2', 'just c file'],
+          ['0/1/2/3/.some_file', 'just d file'],
+          ['0/1/2/3/4/.some_file', 'just f file'],
+        ]));
+      });
     });
 
     it('find the file if given the exact directory', () => {
       waitsForPromise(async () => {
         const expectedPath = nuclideUri.join(dirPath, '0');
-        const foundPath = await fsPromise.findFurthestFile(fileName, expectedPath);
+        const foundPath = await fsPromise.findFurthestFile('.some_file', expectedPath);
         expect(foundPath).toBe(expectedPath);
       });
     });
@@ -87,7 +82,7 @@ describe('fsPromise test suite', () => {
       waitsForPromise(async () => {
         const expectedPath = nuclideUri.join(dirPath, '0');
         const startPath = nuclideUri.join(dirPath, '0/1/2/3/4');
-        const foundPath = await fsPromise.findFurthestFile(fileName, startPath);
+        const foundPath = await fsPromise.findFurthestFile('.some_file', startPath);
         expect(foundPath).toBe(expectedPath);
       });
     });
@@ -97,7 +92,7 @@ describe('fsPromise test suite', () => {
         const expectedPath = nuclideUri.join(dirPath, '0/1/2/3');
         const startPath = nuclideUri.join(dirPath, '0/1/2/3/4');
         const foundPath = await fsPromise.findFurthestFile(
-          fileName,
+          '.some_file',
           startPath,
           true /* stopOnMissing */,
         );
@@ -112,7 +107,6 @@ describe('fsPromise test suite', () => {
         expect(foundPath).toBe(null);
       });
     });
-
   });
 
   describe('getCommonAncestorDirectory', () => {
@@ -127,5 +121,4 @@ describe('fsPromise test suite', () => {
       ])).toBe('/foo/bar');
     });
   });
-
 });

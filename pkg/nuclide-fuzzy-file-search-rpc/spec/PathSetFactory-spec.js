@@ -12,10 +12,8 @@
 import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {track} from 'temp';
-const temp = track();
-
 import {checkOutput} from '../../commons-node/process';
+import {generateFixture} from '../../nuclide-test-helpers';
 
 import {__test__} from '../lib/PathSetFactory';
 const {getFilesFromGit, getFilesFromHg} = __test__;
@@ -29,12 +27,15 @@ describe('PathSetFactory', () => {
   let trackedFile: string;
   let untrackedFile: string;
   let ignoredFile: string;
+
   beforeEach(() => {
-    testDir = temp.mkdirSync();
-    testDir = fs.realpathSync(testDir);
-    trackedFile = nuclideUri.join(testDir, TRACKED_FILE_BASE);
-    untrackedFile = nuclideUri.join(testDir, UNTRACKED_FILE_BASE);
-    ignoredFile = nuclideUri.join(testDir, IGNORED_FILE_BASE);
+    waitsForPromise(async () => {
+      const tempDir = await generateFixture('fuzzy-file-search-rpc');
+      testDir = fs.realpathSync(tempDir);
+      trackedFile = nuclideUri.join(testDir, TRACKED_FILE_BASE);
+      untrackedFile = nuclideUri.join(testDir, UNTRACKED_FILE_BASE);
+      ignoredFile = nuclideUri.join(testDir, IGNORED_FILE_BASE);
+    });
   });
 
   describe('getFilesFromGit()', () => {

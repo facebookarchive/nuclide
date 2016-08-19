@@ -12,21 +12,23 @@
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import {ArcanistDiagnosticsProvider} from '../lib/ArcanistDiagnosticsProvider';
-import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {track} from 'temp';
-const temp = track();
+import {generateFixture} from '../../nuclide-test-helpers';
 import {Range} from 'atom';
 
 describe('ArcanistDiagnosticsProvider', () => {
   let provider: ArcanistDiagnosticsProvider = (null: any);
-  let tempFile : string;
+  let tempFile: string = (null: any);
 
   beforeEach(() => {
-    const folder = temp.mkdirSync();
-    tempFile = nuclideUri.join(folder, 'test');
-    fs.writeFileSync(tempFile, /* data */ '');
-    provider = new ArcanistDiagnosticsProvider(new BusySignalProviderBase());
+    waitsForPromise(async () => {
+      const folder = await generateFixture('arcanist_diagnostic_provider', new Map([
+        // $FlowIssue t12774012
+        ['test', 'abc'],
+      ]));
+      tempFile = nuclideUri.join(folder, 'test');
+      provider = new ArcanistDiagnosticsProvider(new BusySignalProviderBase());
+    });
   });
 
   it('should invalidate the messages when a file is closed', () => {

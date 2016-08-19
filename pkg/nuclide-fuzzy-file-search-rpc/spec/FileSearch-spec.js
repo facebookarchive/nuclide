@@ -12,13 +12,11 @@
 import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
-import temp from 'temp';
 import url from 'url';
 import {checkOutput} from '../../commons-node/process';
+import {generateFixture} from '../../nuclide-test-helpers';
 import {fileSearchForDirectory} from '../lib/FileSearch';
 import * as watchmanHelpers from '../../nuclide-watchman-helpers';
-
-temp.track();
 
 function aFileSearchShould(typename, dirPathFn) {
   describe(`A ${typename} folder`, () => {
@@ -37,12 +35,6 @@ function aFileSearchShould(typename, dirPathFn) {
       waitsForPromise(async () => {
         dirPath = await dirPathFn();
       });
-    });
-
-    // Jasmine won't trigger temp's cleanup handler. Do it manually.
-    // This is especially important since we create Watchman watches on the temp directories.
-    afterEach(() => {
-      temp.cleanupSync();
     });
 
     // Score values are difficult to test.
@@ -195,19 +187,15 @@ function aFileSearchShould(typename, dirPathFn) {
   });
 }
 
-function createTestFolder(): string {
-  const folder = temp.mkdirSync();
-
-  fs.writeFileSync(nuclideUri.join(folder, 'test'), '');
-
-  fs.mkdirSync(nuclideUri.join(folder, 'deeper'));
-  fs.writeFileSync(nuclideUri.join(folder, 'deeper', 'deeper'), '');
-
-  return folder;
+function createTestFolder(): Promise<string> {
+  return generateFixture('fuzzy-file-search-rpc', new Map([
+    ['test', ''],
+    ['deeper/deeper', ''],
+  ]));
 }
 
 async function hgTestFolder(): Promise<string> {
-  const folder = createTestFolder();
+  const folder = await createTestFolder();
 
   await checkOutput('hg', ['init'], {cwd: folder});
   await checkOutput('hg', ['addremove'], {cwd: folder});
@@ -222,7 +210,7 @@ async function hgTestFolder(): Promise<string> {
 }
 
 async function gitTestFolder(): Promise<string> {
-  const folder = createTestFolder();
+  const folder = await createTestFolder();
 
   await checkOutput('git', ['init'], {cwd: folder});
   await checkOutput('git', ['add', '*'], {cwd: folder});
