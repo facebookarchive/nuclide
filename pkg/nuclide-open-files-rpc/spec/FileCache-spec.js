@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {Subject} from 'rxjs';
 import {FileCache} from '../lib/FileCache';
 
 function bufferToObject(buffer: atom$TextBuffer): Object {
@@ -28,127 +29,36 @@ function cacheToObject(cache: FileCache): Object {
 
 describe('FileCache', () => {
   let cache: FileCache = (null: any);
-  beforeEach(() => {
-    cache = new FileCache();
-  });
+  // Initialize with a placeholder
+  let finishEvents: () => Promise<Array<Object>> = async () => [];
 
   async function getFileContentsByVersion(filePath, changeCount): Promise<string> {
     return (await cache.getBufferAtVersion({filePath, version: changeCount})).getText();
   }
 
-  it('open', () => {
-    cache.onEvent({
-      kind: 'open',
-      fileVersion: {
-        filePath: 'f1',
-        version: 3,
-      },
-      contents: 'contents1',
-    });
-    expect(cacheToObject(cache)).toEqual({
-      f1: {
-        text: 'contents1',
-        changeCount: 3,
-      },
-    });
-  });
-  it('open/close', () => {
-    cache.onEvent({
-      kind: 'open',
-      fileVersion: {
-        filePath: 'f1',
-        version: 3,
-      },
-      contents: 'contents1',
-    });
-    cache.onEvent({
-      kind: 'close',
-      fileVersion: {
-        filePath: 'f1',
-        version: 3,
-      },
-    });
-    expect(cacheToObject(cache)).toEqual({});
-  });
-  it('edit', () => {
-    cache.onEvent({
-      kind: 'open',
-      fileVersion: {
-        filePath: 'f1',
-        version: 3,
-      },
-      contents: 'contents1',
-    });
-    cache.onEvent({
-      kind: 'edit',
-      fileVersion: {
-        filePath: 'f1',
-        version: 4,
-      },
-      oldRange: {
-        start: {row: 0, column: 3},
-        end: {row: 0, column: 6},
-      },
-      oldText: 'ten',
-      newRange: {
-        start: {row: 0, column: 3},
-        end: {row: 0, column: 9},
-      },
-      newText: 'eleven',
-    });
-  });
-  it('sync closed file', () => {
-    cache.onEvent({
-      kind: 'sync',
-      fileVersion: {
-        filePath: 'f2',
-        version: 4,
-      },
-      contents: 'contents12',
-    });
-    expect(cacheToObject(cache)).toEqual({
-      f2: {
-        text: 'contents12',
-        changeCount: 4,
-      },
-    });
-  });
-  it('sync opened file', () => {
-    cache.onEvent({
-      kind: 'open',
-      fileVersion: {
-        filePath: 'f2',
-        version: 42,
-      },
-      contents: 'blip',
-    });
-    cache.onEvent({
-      kind: 'sync',
-      fileVersion: {
-        filePath: 'f2',
-        version: 4,
-      },
-      contents: 'contents12',
-    });
-    expect(cacheToObject(cache)).toEqual({
-      f2: {
-        text: 'contents12',
-        changeCount: 4,
-      },
-    });
+  beforeEach(() => {
+    cache = new FileCache();
+
+    const done = new Subject();
+    const events = cache.observeFileEvents().takeUntil(done)
+      .map(event => {
+        const result = {
+          ...event,
+          filePath: event.fileVersion.filePath,
+          changeCount: event.fileVersion.version,
+        };
+        delete result.fileVersion;
+        return result;
+      }).toArray().toPromise();
+    finishEvents = () => {
+      done.next();
+      done.complete();
+      return events;
+    };
   });
 
-  // Unexpected Operations Should Throw
-  it('open existing file', () => {
-    cache.onEvent({
-      kind: 'open',
-      fileVersion: {
-        filePath: 'f1',
-        version: 3,
-      },
-      contents: 'contents1',
-    });
-    expect(() => {
+  it('open', () => {
+    waitsForPromise(async () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
@@ -157,10 +67,30 @@ describe('FileCache', () => {
         },
         contents: 'contents1',
       });
-    }).toThrow();
+      expect(cacheToObject(cache)).toEqual({
+        f1: {
+          text: 'contents1',
+          changeCount: 3,
+        },
+      });
+      expect(await finishEvents()).toEqual([{
+        kind: 'open',
+        filePath: 'f1',
+        changeCount: 3,
+        contents: 'contents1',
+      }]);
+    });
   });
-  it('close non-existing file', () => {
-    expect(() => {
+  it('open/close', () => {
+    waitsForPromise(async () => {
+      cache.onEvent({
+        kind: 'open',
+        fileVersion: {
+          filePath: 'f1',
+          version: 3,
+        },
+        contents: 'contents1',
+      });
       cache.onEvent({
         kind: 'close',
         fileVersion: {
@@ -168,86 +98,287 @@ describe('FileCache', () => {
           version: 3,
         },
       });
-    }).toThrow();
+      expect(cacheToObject(cache)).toEqual({});
+      expect(await finishEvents()).toEqual([{
+        kind: 'open',
+        filePath: 'f1',
+        changeCount: 3,
+        contents: 'contents1',
+      },
+      {
+        kind: 'close',
+        filePath: 'f1',
+        changeCount: 3,
+      }]);
+    });
+  });
+  it('edit', () => {
+    waitsForPromise(async () => {
+      cache.onEvent({
+        kind: 'open',
+        fileVersion: {
+          filePath: 'f1',
+          version: 3,
+        },
+        contents: 'contents1',
+      });
+      cache.onEvent({
+        kind: 'edit',
+        fileVersion: {
+          filePath: 'f1',
+          version: 4,
+        },
+        oldRange: {
+          start: {row: 0, column: 3},
+          end: {row: 0, column: 6},
+        },
+        oldText: 'ten',
+        newRange: {
+          start: {row: 0, column: 3},
+          end: {row: 0, column: 9},
+        },
+        newText: 'eleven',
+      });
+      expect(await finishEvents()).toEqual([{
+        kind: 'open',
+        filePath: 'f1',
+        changeCount: 3,
+        contents: 'contents1',
+      },
+      {
+        kind: 'edit',
+        filePath: 'f1',
+        changeCount: 4,
+        oldRange: {
+          start: {row: 0, column: 3},
+          end: {row: 0, column: 6},
+        },
+        oldText: 'ten',
+        newRange: {
+          start: {row: 0, column: 3},
+          end: {row: 0, column: 9},
+        },
+        newText: 'eleven',
+      }]);
+    });
+  });
+  it('sync closed file', () => {
+    waitsForPromise(async () => {
+      cache.onEvent({
+        kind: 'sync',
+        fileVersion: {
+          filePath: 'f2',
+          version: 4,
+        },
+        contents: 'contents12',
+      });
+      expect(cacheToObject(cache)).toEqual({
+        f2: {
+          text: 'contents12',
+          changeCount: 4,
+        },
+      });
+      expect(await finishEvents()).toEqual([{
+        kind: 'open',
+        filePath: 'f2',
+        changeCount: 4,
+        contents: 'contents12',
+      }]);
+    });
+  });
+  it('sync opened file', () => {
+    waitsForPromise(async () => {
+      cache.onEvent({
+        kind: 'open',
+        fileVersion: {
+          filePath: 'f2',
+          version: 42,
+        },
+        contents: 'blip',
+      });
+      cache.onEvent({
+        kind: 'sync',
+        fileVersion: {
+          filePath: 'f2',
+          version: 4,
+        },
+        contents: 'contents12',
+      });
+      expect(cacheToObject(cache)).toEqual({
+        f2: {
+          text: 'contents12',
+          changeCount: 4,
+        },
+      });
+      expect(JSON.stringify(await finishEvents())).toEqual(
+        JSON.stringify([{
+          kind: 'open',
+          contents: 'blip',
+          filePath: 'f2',
+          changeCount: 42,
+        },
+        {
+          kind: 'edit',
+          oldRange: {
+            start: {row: 0, column: 0},
+            end: {row: 0, column: 4},
+          },
+          oldText: 'blip',
+          newRange: {
+            start: {row: 0, column: 0},
+            end: {row: 0, column: 10},
+          },
+          newText: 'contents12',
+          filePath: 'f2',
+          changeCount: 4,
+        }]));
+    });
+  });
+
+  // Unexpected Operations Should Throw
+  it('open existing file', () => {
+    waitsForPromise(async () => {
+      cache.onEvent({
+        kind: 'open',
+        fileVersion: {
+          filePath: 'f1',
+          version: 3,
+        },
+        contents: 'contents1',
+      });
+      expect(() => {
+        cache.onEvent({
+          kind: 'open',
+          fileVersion: {
+            filePath: 'f1',
+            version: 3,
+          },
+          contents: 'contents1',
+        });
+      }).toThrow();
+      expect(await finishEvents()).toEqual([{
+        kind: 'open',
+        filePath: 'f1',
+        changeCount: 3,
+        contents: 'contents1',
+      }]);
+    });
+  });
+  it('close non-existing file', () => {
+    waitsForPromise(async () => {
+      expect(() => {
+        cache.onEvent({
+          kind: 'close',
+          fileVersion: {
+            filePath: 'f1',
+            version: 3,
+          },
+        });
+      }).toThrow();
+      expect(await finishEvents()).toEqual([]);
+    });
   });
   it('edit closed file', () => {
-    expect(() => {
-      cache.onEvent({
-        kind: 'edit',
-        fileVersion: {
-          filePath: 'f1',
-          version: 4,
-        },
-        oldRange: {
-          start: {row: 0, column: 3},
-          end: {row: 0, column: 6},
-        },
-        oldText: 'ten',
-        newRange: {
-          start: {row: 0, column: 3},
-          end: {row: 0, column: 9},
-        },
-        newText: 'eleven',
-      });
-    }).toThrow();
+    waitsForPromise(async () => {
+      expect(() => {
+        cache.onEvent({
+          kind: 'edit',
+          fileVersion: {
+            filePath: 'f1',
+            version: 4,
+          },
+          oldRange: {
+            start: {row: 0, column: 3},
+            end: {row: 0, column: 6},
+          },
+          oldText: 'ten',
+          newRange: {
+            start: {row: 0, column: 3},
+            end: {row: 0, column: 9},
+          },
+          newText: 'eleven',
+        });
+      }).toThrow();
+      expect(await finishEvents()).toEqual([]);
+    });
   });
   it('edit with non-sequential version', () => {
-    cache.onEvent({
-      kind: 'open',
-      fileVersion: {
-        filePath: 'f1',
-        version: 3,
-      },
-      contents: 'contents1',
-    });
-    expect(() => {
+    waitsForPromise(async () => {
       cache.onEvent({
-        kind: 'edit',
+        kind: 'open',
         fileVersion: {
           filePath: 'f1',
-          version: 5,
+          version: 3,
         },
         oldRange: {
           start: {row: 0, column: 3},
           end: {row: 0, column: 6},
         },
-        oldText: 'ten',
-        newRange: {
-          start: {row: 0, column: 3},
-          end: {row: 0, column: 9},
-        },
-        newText: 'eleven',
+        contents: 'contents1',
       });
-    }).toThrow();
+      expect(() => {
+        cache.onEvent({
+          kind: 'edit',
+          fileVersion: {
+            filePath: 'f1',
+            version: 5,
+          },
+          oldRange: {
+            start: {row: 0, column: 3},
+            end: {row: 0, column: 6},
+          },
+          oldText: 'ten',
+          newRange: {
+            start: {row: 0, column: 3},
+            end: {row: 0, column: 9},
+          },
+          newText: 'eleven',
+        });
+      }).toThrow();
+      expect(await finishEvents()).toEqual([{
+        kind: 'open',
+        filePath: 'f1',
+        changeCount: 3,
+        contents: 'contents1',
+      }]);
+    });
   });
   it('edit with incorrect oldText', () => {
-    cache.onEvent({
-      kind: 'open',
-      fileVersion: {
-        filePath: 'f1',
-        version: 3,
-      },
-      contents: 'contents1',
-    });
-    expect(() => {
+    waitsForPromise(async () => {
       cache.onEvent({
-        kind: 'edit',
+        kind: 'open',
         fileVersion: {
           filePath: 'f1',
-          version: 4,
+          version: 3,
         },
-        oldRange: {
-          start: {row: 0, column: 3},
-          end: {row: 0, column: 6},
-        },
-        oldText: 'one',
-        newRange: {
-          start: {row: 0, column: 3},
-          end: {row: 0, column: 9},
-        },
-        newText: 'eleven',
+        contents: 'contents1',
       });
-    }).toThrow();
+      expect(() => {
+        cache.onEvent({
+          kind: 'edit',
+          fileVersion: {
+            filePath: 'f1',
+            version: 4,
+          },
+          oldRange: {
+            start: {row: 0, column: 3},
+            end: {row: 0, column: 6},
+          },
+          oldText: 'one',
+          newRange: {
+            start: {row: 0, column: 3},
+            end: {row: 0, column: 9},
+          },
+          newText: 'eleven',
+        });
+      }).toThrow();
+      expect(await finishEvents()).toEqual([{
+        kind: 'open',
+        filePath: 'f1',
+        changeCount: 3,
+        contents: 'contents1',
+      }]);
+    });
   });
 
   // getBufferAtVersion

@@ -10,6 +10,8 @@
  */
 
 import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+import type {Observable} from 'rxjs';
+import type {LocalFileEvent} from './FileCache';
 
 import {fileCache} from './OpenFilesService';
 
@@ -17,4 +19,8 @@ export const OPEN_FILES_SERVICE = 'OpenFilesService';
 
 export function getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
   return fileCache.getBufferAtVersion(fileVersion);
+}
+
+export function observeFileEvents(): Observable<LocalFileEvent> {
+  return fileCache.observeFileEvents();
 }
