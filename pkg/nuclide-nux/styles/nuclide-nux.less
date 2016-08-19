@@ -17,6 +17,14 @@
  }
 .define-tooltip-colors-if-not-defined();
 
+// According to the styling in `atom/notifications`, the z-index of notifications is set to 1000.
+// https://github.com/atom/notifications/blob/master/styles/notifications.less#L15
+// The NUX should live on a layer above all UI elements, but below the notification layer.
+// So we set it to the largest possible value that does not interfere with notifications. (~˘▾˘)~
+.nuclide-nux-tooltip {
+  z-index: 999;
+}
+
 .nuclide-nux-tooltip-helper-parent {
   position: relative;
 }
