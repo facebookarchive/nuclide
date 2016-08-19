@@ -12,30 +12,59 @@
 import type {
   ClangCompileResult,
   ClangSourceRange,
-  ClangLocation,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
 import {track, trackTiming} from '../../nuclide-analytics';
 import featureConfig from '../../commons-atom/featureConfig';
+import {wordAtPosition} from '../../commons-atom/range';
 import {getLogger} from '../../nuclide-logging';
 import {getDiagnostics} from './libclang';
-import {Range} from 'atom';
+import {Point, Range} from 'atom';
 
+const IDENTIFIER_REGEX = /[a-z0-9_]+/gi;
 const DEFAULT_FLAGS_WARNING =
   'Diagnostics are disabled due to lack of compilation flags. ' +
   'Build this file with Buck, or create a compile_commands.json file manually.';
 
-function atomRangeFromSourceRange(clangRange: ClangSourceRange): atom$Range {
+function atomRangeFromSourceRange(
+  editor: atom$TextEditor,
+  clangRange: ClangSourceRange,
+): atom$Range {
+  // Some ranges are unbounded/invalid (end with -1) or empty.
+  // Treat these as point diagnostics.
+  if (
+    clangRange.end.line === -1 || (
+      clangRange.start.line === clangRange.end.line &&
+        clangRange.start.column === clangRange.end.column
+    )
+  ) {
+    return atomRangeFromLocation(editor, clangRange.start);
+  }
+
   return new Range(
     [clangRange.start.line, clangRange.start.column],
     [clangRange.end.line, clangRange.end.column],
   );
 }
 
-function atomRangeFromLocation(location: ClangLocation): atom$Range {
-  const line = Math.max(0, location.line);
-  return new Range([line, 0], [line + 1, 0]);
+function atomRangeFromLocation(
+  editor: atom$TextEditor,
+  location: {line: number, column: number},
+): atom$Range {
+  if (location.line < 0) {
+    return editor.getBuffer().rangeForRow(0);
+  }
+  // Attempt to match a C/C++ identifier at the given location.
+  const word = wordAtPosition(
+    editor,
+    new Point(location.line, location.column),
+    IDENTIFIER_REGEX,
+  );
+  if (word != null) {
+    return word.range;
+  }
+  return editor.getBuffer().rangeForRow(location.line);
 }
 
 export default class ClangLinter {
@@ -49,7 +78,8 @@ export default class ClangLinter {
 
     try {
       const diagnostics = await getDiagnostics(textEditor);
-      if (diagnostics == null) {
+      // Editor may have been destroyed during the fetch.
+      if (diagnostics == null || textEditor.isDestroyed()) {
         return [];
       }
 
@@ -58,7 +88,7 @@ export default class ClangLinter {
         count: String(diagnostics.diagnostics.length),
         accurateFlags: String(diagnostics.accurateFlags),
       });
-      return ClangLinter._processDiagnostics(diagnostics, filePath);
+      return ClangLinter._processDiagnostics(diagnostics, textEditor);
     } catch (error) {
       getLogger().error(`ClangLinter: error linting ${filePath}`, error);
       return [];
@@ -67,9 +97,10 @@ export default class ClangLinter {
 
   static _processDiagnostics(
     data: ClangCompileResult,
-    editorPath: string,
+    editor: atom$TextEditor,
   ): Array<LinterMessage> {
     const result = [];
+    const buffer = editor.getBuffer();
     if (data.accurateFlags || featureConfig.get('nuclide-clang.defaultDiagnostics')) {
       data.diagnostics.forEach(diagnostic => {
         // We show only warnings, errors and fatals (2, 3 and 4, respectively).
@@ -77,17 +108,15 @@ export default class ClangLinter {
           return;
         }
 
-        // Clang adds file-wide errors on line -1, so we put it on line 0 instead.
-        // The usual file-wide error is 'too many errors emitted, stopping now'.
         let range;
         if (diagnostic.ranges) {
           // Use the first range from the diagnostic as the range for Linter.
-          range = atomRangeFromSourceRange(diagnostic.ranges[0]);
+          range = atomRangeFromSourceRange(editor, diagnostic.ranges[0]);
         } else {
-          range = atomRangeFromLocation(diagnostic.location);
+          range = atomRangeFromLocation(editor, diagnostic.location);
         }
 
-        const filePath = diagnostic.location.file || editorPath;
+        const filePath = diagnostic.location.file || buffer.getPath();
 
         let trace;
         if (diagnostic.children != null) {
@@ -95,8 +124,8 @@ export default class ClangLinter {
             return {
               type: 'Trace',
               text: child.spelling,
-              filePath: child.location.file || editorPath,
-              range: atomRangeFromLocation(child.location),
+              filePath: child.location.file || buffer.getPath(),
+              range: atomRangeFromLocation(editor, child.location),
             };
           });
         }
@@ -107,7 +136,7 @@ export default class ClangLinter {
           const fixit = diagnostic.fixits[0];
           if (fixit != null) {
             fix = {
-              range: atomRangeFromSourceRange(fixit.range),
+              range: atomRangeFromSourceRange(editor, fixit.range),
               newText: fixit.value,
             };
           }
@@ -129,9 +158,9 @@ export default class ClangLinter {
         scope: 'file',
         providerName: 'Clang',
         type: 'Warning',
-        filePath: editorPath,
+        filePath: buffer.getPath(),
         text: DEFAULT_FLAGS_WARNING,
-        range: new Range([0, 0], [1, 0]),
+        range: buffer.rangeForRow(0),
       });
     }
 

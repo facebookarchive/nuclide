@@ -11,17 +11,44 @@
 
 import {Range} from 'atom';
 import ClangLinter from '../lib/ClangLinter';
+import * as range from '../../commons-atom/range';
 
 describe('ClangDiagnosticsProvider', () => {
 
   const TEST_PATH = '/path/test.cpp';
   const TEST_PATH2 = '/path/asdf';
 
+  const fakeEditor: any = {
+    getBuffer: () => ({
+      isDestroyed: () => false,
+      getPath: () => TEST_PATH,
+      rangeForRow: row => new Range([row, 0], [row + 1], 0),
+    }),
+  };
+
+  beforeEach(() => {
+    spyOn(range, 'wordAtPosition').andCallFake((editor, pos, regex) => {
+      return {
+        range: new Range(pos, [pos.row, pos.column + 1]),
+      };
+    });
+  });
+
   describe('processDiagnostics', () => {
     it('should group diagnostics by file', () => {
       const messages = ClangLinter
         ._processDiagnostics({
           diagnostics: [
+            {
+              severity: 2,
+              location: {
+                file: '',
+                line: -1,
+                column: -1,
+              },
+              ranges: null,
+              spelling: 'whole file',
+            },
             {
               severity: 1, // severity < 2 is ignored
               location: {
@@ -46,7 +73,7 @@ describe('ClangDiagnosticsProvider', () => {
                   range: {
                     file: TEST_PATH2,
                     start: {line: 3, column: 4},
-                    end: {line: 3, column: 5},
+                    end: {line: 3, column: 4},
                   },
                   value: 'fixit',
                 },
@@ -91,22 +118,32 @@ describe('ClangDiagnosticsProvider', () => {
             },
           ],
           accurateFlags: true,
-        }, TEST_PATH);
+        }, fakeEditor);
 
       expect(messages).toEqual([
         {
           scope: 'file',
           providerName: 'Clang',
           type: 'Warning',
+          filePath: TEST_PATH,
+          text: 'whole file',
+          range: new Range([0, 0], [1, 0]),
+          fix: undefined,
+          trace: undefined,
+        },
+        {
+          scope: 'file',
+          providerName: 'Clang',
+          type: 'Warning',
           filePath: TEST_PATH2,
           text: 'other file',
-          range: new Range([0, 0], [1, 0]),
+          range: new Range([0, 0], [0, 1]),
           trace: [
             {
               type: 'Trace',
               text: 'child error',
               filePath: TEST_PATH2,
-              range: new Range([0, 0], [1, 0]),
+              range: new Range([0, 0], [0, 1]),
             },
           ],
           fix: {
@@ -120,7 +157,7 @@ describe('ClangDiagnosticsProvider', () => {
           type: 'Warning',
           filePath: TEST_PATH,
           text: 'test error',
-          range: new Range([0, 0], [1, 0]),
+          range: new Range([0, 0], [0, 1]),
           fix: undefined,
           trace: undefined,
         },
