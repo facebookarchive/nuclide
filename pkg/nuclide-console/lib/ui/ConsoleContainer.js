@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {Viewable} from '../../../nuclide-workspace-views/lib/types';
 import type {
   AppState,
   Executor,
@@ -19,6 +20,7 @@ import type {
   Store,
 } from '../types';
 
+import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
 import getCurrentExecutorId from '../getCurrentExecutorId';
 import * as Actions from '../redux/Actions';
 import Console from './Console';
@@ -122,6 +124,17 @@ export class ConsoleContainer extends React.Component {
 
   componentWillUnmount() {
     this._statesSubscription.unsubscribe();
+  }
+
+  copy(): Viewable {
+    return viewableFromReactElement(
+      <ConsoleContainer
+        store={this.props.store}
+        initialFilterText={this.state.filterText}
+        initialEnableRegExpFilter={this.state.enableRegExpFilter}
+        initialUnselectedSourceIds={this.state.unselectedSourceIds}
+      />,
+    );
   }
 
   _getBoundActionCreators(): BoundActionCreators {
