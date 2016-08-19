@@ -12,7 +12,7 @@
 import type {Message, OutputProviderStatus} from './types';
 import type {ConnectableObservable} from 'rxjs';
 
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
@@ -112,7 +112,7 @@ export class LogTailer {
   }
 
   observeStatus(cb: (status: 'starting' | 'running' | 'stopped') => void): IDisposable {
-    return new DisposableSubscription(this._statuses.subscribe(cb));
+    return new UniversalDisposable(this._statuses.subscribe(cb));
   }
 
   _invokeRunningCallbacks(err: ?Error): void {

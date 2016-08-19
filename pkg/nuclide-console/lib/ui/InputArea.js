@@ -12,7 +12,6 @@
 import {React, ReactDOM} from 'react-for-atom';
 import {AtomTextEditor} from '../../../nuclide-ui/lib/AtomTextEditor';
 import Rx from 'rxjs';
-import {DisposableSubscription} from '../../../commons-node/stream';
 
 type Props = {
   onSubmit: (value: string) => mixed,
@@ -24,7 +23,7 @@ const ENTER_KEY_CODE = 13;
 export default class OutputTable extends React.Component {
   props: Props;
 
-  _keySubscription: ?IDisposable;
+  _keySubscription: ?rx$ISubscription;
   _textEditorModel: ?atom$TextEditor;
 
   constructor(props: Props) {
@@ -36,14 +35,12 @@ export default class OutputTable extends React.Component {
   _handleTextEditor(component: ?AtomTextEditor): void {
     if (this._keySubscription) {
       this._textEditorModel = null;
-      this._keySubscription.dispose();
+      this._keySubscription.unsubscribe();
     }
     if (component) {
       this._textEditorModel = component.getModel();
       const el = ReactDOM.findDOMNode(component);
-      this._keySubscription = new DisposableSubscription(
-        Rx.Observable.fromEvent(el, 'keydown').subscribe(this._handleKeyDown),
-      );
+      this._keySubscription = Rx.Observable.fromEvent(el, 'keydown').subscribe(this._handleKeyDown);
     }
   }
 
