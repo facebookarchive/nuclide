@@ -21,12 +21,13 @@ import type {
 } from '../types';
 
 import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
+import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import getCurrentExecutorId from '../getCurrentExecutorId';
 import * as Actions from '../redux/Actions';
 import Console from './Console';
 import escapeStringRegexp from 'escape-string-regexp';
 import {React} from 'react-for-atom';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 
 type Props = {
   store: Store,
@@ -70,6 +71,8 @@ export class ConsoleContainer extends React.Component {
 
   _actionCreators: BoundActionCreators;
   _statesSubscription: rx$ISubscription;
+  _stateChanges: Subject<void>;
+  _titleChanges: Observable<string>;
 
   constructor(props: Props) {
     super(props);
@@ -89,6 +92,16 @@ export class ConsoleContainer extends React.Component {
       enableRegExpFilter: Boolean(initialEnableRegExpFilter),
       unselectedSourceIds: initialUnselectedSourceIds == null ? [] : initialUnselectedSourceIds,
     };
+    this._stateChanges = new Subject();
+    this._titleChanges = this._stateChanges
+      .map(() => this.state)
+      .distinctUntilChanged()
+      .map(() => this.getTitle())
+      .distinctUntilChanged();
+  }
+
+  componentDidUpdate(): void {
+    this._stateChanges.next();
   }
 
   getIconName(): string {
@@ -96,7 +109,19 @@ export class ConsoleContainer extends React.Component {
   }
 
   getTitle(): string {
+    // If there's only one source selected, use its name in the tab title.
+    if (this.state.sources.length - this.state.unselectedSourceIds.length === 1) {
+      const selectedSource = this.state.sources
+        .find(source => this.state.unselectedSourceIds.indexOf(source.id) === -1);
+      if (selectedSource) {
+        return `Console: ${selectedSource.name}`;
+      }
+    }
     return 'Console';
+  }
+
+  onDidChangeTitle(callback: (title: string) => mixed): IDisposable {
+    return new UniversalDisposable(this._titleChanges.subscribe(callback));
   }
 
   componentDidMount() {
