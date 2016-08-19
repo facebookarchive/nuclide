@@ -20,6 +20,7 @@ import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {isValidRename} from '../lib/FileTreeHgHelpers';
+import os from 'os';
 
 const store = FileTreeStore.getInstance();
 const getActions = FileTreeActions.getInstance;
@@ -178,7 +179,7 @@ export class FileTreeEntryComponent extends React.Component {
     event.stopPropagation();
     const node = this.props.node;
 
-    const modifySelection = event.ctrlKey || event.metaKey;
+    const modifySelection = shouldModifySelection(event);
     if (modifySelection && !node.isSelected) {
       getActions().addSelectedNode(node.rootUri, node.uri);
     } else if (!node.isSelected) {
@@ -202,7 +203,7 @@ export class FileTreeEntryComponent extends React.Component {
       return;
     }
 
-    const modifySelection = event.ctrlKey || event.metaKey;
+    const modifySelection = shouldModifySelection(event);
     if (modifySelection) {
       if (node.isFocused) {
         getActions().unselectNode(node.rootUri, node.uri);
@@ -328,5 +329,13 @@ export class FileTreeEntryComponent extends React.Component {
 
   _checkboxOnClick(event: SyntheticEvent): void {
     event.stopPropagation();
+  }
+}
+
+function shouldModifySelection(event: SyntheticMouseEvent): boolean {
+  if (os.platform() === 'darwin') {
+    return event.metaKey;
+  } else {
+    return event.ctrlKey;
   }
 }
