@@ -5,6 +5,18 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+ @import "ui-variables";
+
+ // Unfortunately, only SOME themes have values for tooltip text/background colour variables.
+ // (;´༎ຶД༎ຶ`) ༼ つ ಥ_ಥ ༽つ (ง'̀-'́)ง
+ // So, we define fallback values to these variables based on the Atom UI variables.
+ // This may not be ideal, but is the best solution until tooltip colours are added to `ui-variables`.
+ .define-tooltip-colors-if-not-defined() {
+   @tooltip-text-color: @text-color;
+   @tooltip-background-color: @base-background-color;
+ }
+.define-tooltip-colors-if-not-defined();
+
 .nuclide-nux-tooltip-helper-parent {
   position: relative;
 }
@@ -17,6 +29,44 @@
   left: 0;
 }
 
-.nuclide-nux-dismiss-link {
-  color: white;
+.nuclide-nux-content-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.nuclide-nux-navigation {
+  align-self: flex-end;
+  margin-top: 10px;
+  color: @tooltip-text-color;
+}
+
+// Style the links like buttons using the tooltip color sceheme.
+// This is done since the Atom button styling is quite inconsistent across themes.
+.nuclide-nux-link {
+  border: 1px solid @tooltip-text-color;
+  background-color: @tooltip-background-color;
+  border-radius: @component-border-radius;
+  padding: 3px 8px 3px 8px;
+  -webkit-user-select: none; /* Disable text selection, useful when double clicking */
+  margin-left: 3px;
+  font-size: 11px;
+}
+
+// Invert colours on hover.
+.nuclide-nux-link-enabled:hover {
+  color: @tooltip-background-color;
+  background-color: @tooltip-text-color;
+}
+
+.nuclide-nux-link-enabled {
+  cursor: pointer;
+}
+
+.nuclide-nux-link-disabled {
+  cursor: not-allowed;
+}
+
+.nuclide-nux-link-disabled {
+  border: 1px solid @tooltip-text-color;
+  opacity: 0.6;
 }

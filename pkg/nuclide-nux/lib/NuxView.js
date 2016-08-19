@@ -36,10 +36,12 @@ export class NuxView {
   _disposables : CompositeDisposable;
   _callback: ?((success: boolean) => void);
   _tooltipDisposable: IDisposable;
-  _completePredicate: (() => boolean);
+  _completePredicate: ?(() => boolean);
   _tooltipDiv: HTMLElement;
+  _modifiedElem: HTMLElement;
   _tourId: number;
   _index: number;
+  _finalNuxInTour: boolean;
 
   /**
    * Constructor for the NuxView.
@@ -57,6 +59,7 @@ export class NuxView {
    * the NUX has been completed/viewed. The NUX will only be completed if this returns true.
    * If null, the predicate used will always return true.
    * @param {number} indexInTour - The index of the NuxView in the associated NuxTour
+   * @param {number} tourSize - The number of NuxViews in the associated tour
    *
    * @throws Errors if both `selectorString` and `selectorFunction` are null.
    */
@@ -68,6 +71,7 @@ export class NuxView {
     content: string,
     completePredicate: ?(() => boolean) = null,
     indexInTour: number,
+    tourSize: number,
   ) : void {
     this._tourId = tourId;
     if (selectorFunction != null) {
@@ -79,8 +83,9 @@ export class NuxView {
     }
     this._content = content;
     this._position = validatePlacement(position) ? position : 'auto';
-    this._completePredicate = completePredicate || (() => true);
+    this._completePredicate = completePredicate;
     this._index = indexInTour;
+    this._finalNuxInTour = indexInTour === tourSize - 1;
 
     this._disposables = new CompositeDisposable();
   }
@@ -111,10 +116,14 @@ export class NuxView {
       return;
     }
 
+    // A reference to the element we decorate with classes and listeners is retained
+    // for easy cleanup when the NUX is destroyed.
+    this._modifiedElem = elem;
+
     this._tooltipDiv = document.createElement('div');
     this._tooltipDiv.className = 'nuclide-nux-tooltip-helper';
-    elem.classList.add('nuclide-nux-tooltip-helper-parent');
-    elem.appendChild(this._tooltipDiv);
+    this._modifiedElem.classList.add('nuclide-nux-tooltip-helper-parent');
+    this._modifiedElem.appendChild(this._tooltipDiv);
 
     this._createDisposableTooltip();
 
@@ -155,17 +164,13 @@ export class NuxView {
       }
     }));
 
-    const tooltip = document.querySelector('.nuclide-nux-tooltip');
     const boundClickListener = this._handleDisposableClick.bind(
       this,
-      this._tooltipDisposable,
-      elem,
+      true /* continue to the next NUX in the NuxTour */,
     );
-    elem.addEventListener('click', boundClickListener);
-    tooltip.addEventListener('click', boundClickListener);
+    this._modifiedElem.addEventListener('click', boundClickListener);
     this._disposables.add(new Disposable(() => {
-      elem.removeEventListener('click', boundClickListener);
-      tooltip.removeEventListener('click', boundClickListener);
+      this._modifiedElem.removeEventListener('click', boundClickListener);
       window.removeEventListener('resize', debouncedWindowResizeListener);
     }));
   }
@@ -176,12 +181,45 @@ export class NuxView {
   }
 
   _createDisposableTooltip() : void {
-    const content = `<span class="nuclide-nux-content-container">
-                        <span class="nuclide-nux-content">${this._content}</span>
-                        <a class="nuclide-nux-dismiss-link">
-                          <span class="icon-x"></span>
-                        </a>
-                    </span>`;
+    const LINK_ENABLED = 'nuclide-nux-link-enabled';
+    const LINK_DISABLED = 'nuclide-nux-link-disabled';
+
+    // Let the link to the next NuxView be enabled iff
+    //  a) it is not the last NuxView in the tour AND
+    //  b) there is no condition for completion
+    const nextLinkStyle =
+      !this._finalNuxInTour && this._completePredicate == null ?
+        LINK_ENABLED : LINK_DISABLED;
+
+    // Additionally, the `Next` button may be disabled if an action must be completed.
+    // In this case we show a hint to the user.
+    const nextLinkButton = `\
+      <span
+        class="nuclide-nux-link ${nextLinkStyle} nuclide-nux-next-link-${this._index}"
+        ${nextLinkStyle === LINK_DISABLED ?
+            'title="Interact with the indicated UI element to proceed."' : ''}>
+        Continue
+      </span>
+    `;
+
+    // The next NUX in the tour can be created and added before this NUX
+    // has completed its disposal. So, we attach an index to the classname
+    // of the navigation links to specificy which specific NUX the event listener
+    // should be attached to.
+    // Also, we don't show the
+    const content = `\
+      <span class="nuclide-nux-content-container">
+        <div class="nuclide-nux-content">
+            ${this._content}
+        </div>
+        <div class="nuclide-nux-navigation">
+          <span class="nuclide-nux-link ${LINK_ENABLED} nuclide-nux-dismiss-link-${this._index}">
+            ${!this._finalNuxInTour ? 'Dismiss' : 'Complete'} Tour
+          </span>
+          ${!this._finalNuxInTour ? nextLinkButton : ''}
+      </div>
+    </span>`;
+
     this._tooltipDisposable = atom.tooltips.add(
       this._tooltipDiv,
       {
@@ -197,30 +235,43 @@ export class NuxView {
     );
     this._disposables.add(this._tooltipDisposable);
 
-    const dismissElementClickListener = this._onNuxComplete.bind(this, false);
-    const dismissElement = document.querySelector('.nuclide-nux-dismiss-link');
+    if (nextLinkStyle === LINK_ENABLED) {
+      const nextElementClickListener =
+        this._handleDisposableClick.bind(this, true /* continue to the next NUX in the tour */);
+      const nextElement = document.querySelector(`.nuclide-nux-next-link-${this._index}`);
+      nextElement.addEventListener('click', nextElementClickListener);
+      this._disposables.add(new Disposable(() =>
+        nextElement.removeEventListener('click', nextElementClickListener),
+      ));
+    }
+
+    const dismissElementClickListener =
+      this._handleDisposableClick.bind(this, false  /* skip to the end of the tour */);
+    const dismissElement = document.querySelector(`.nuclide-nux-dismiss-link-${this._index}`);
     dismissElement.addEventListener('click', dismissElementClickListener);
 
     this._disposables.add(new Disposable(() =>
       dismissElement.removeEventListener('click', dismissElementClickListener),
     ));
+
+
   }
 
   _handleDisposableClick(
-    disposable: IDisposable,
-    addedElement: HTMLElement,
+    success: boolean = true,
   ): void {
-    // Only consider the NUX as complete if the completion condition has been met.
-    if (!this._completePredicate()) {
+    // If a completion predicate exists, only consider the NUX as complete
+    // if the completion condition has been met.
+    // Use `success` to short circuit the check and immediately dispose of the NUX.
+    if (success && this._completePredicate != null && !this._completePredicate()) {
       return;
     }
 
     // Cleanup changes made to the DOM.
-    addedElement.classList.remove('nuclide-nux-tooltip-helper-parent');
-    disposable.dispose();
+    this._modifiedElem.classList.remove('nuclide-nux-tooltip-helper-parent');
     this._tooltipDiv.remove();
 
-    this._onNuxComplete(true);
+    this._onNuxComplete(success);
   }
 
   showNux() : void {

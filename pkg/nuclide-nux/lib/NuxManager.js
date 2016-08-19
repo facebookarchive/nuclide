@@ -112,7 +112,7 @@ export class NuxManager {
 
   // Handles new NUXes emitted from the store
   _handleNewNux(nuxTourModel: NuxTourModel): void {
-    const nuxViews = arrayCompact(nuxTourModel.nuxList.map((model, index) => {
+    const nuxViews = arrayCompact(nuxTourModel.nuxList.map((model, index, arr) => {
       try {
         return new NuxView(
           nuxTourModel.id,
@@ -122,6 +122,7 @@ export class NuxManager {
           model.content,
           model.completionPredicate,
           index,
+          arr.length, // Number of NuxViewModels in the NuxTourModel
         );
       } catch (err) {
         const error = `NuxView #${index} for "${nuxTourModel.id}" failed to instantiate.`;
