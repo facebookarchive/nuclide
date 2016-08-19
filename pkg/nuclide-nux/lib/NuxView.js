@@ -147,7 +147,7 @@ export class NuxView {
       }
       if (isHidden) {
         // Consider the NUX to be dismissed and mark it as completed.
-        this._onNuxComplete(false);
+        this._handleDisposableClick(false);
       }
     };
     // The element is polled every `POLL_ELEMENT_TIMEOUT` milliseconds instead
