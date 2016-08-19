@@ -24,6 +24,10 @@
     "name": "FlowService"
   },
   {
+    "implementation": "../nuclide-open-files-rpc/lib/OpenFilesService.js",
+    "name": "OpenFilesService"
+  },
+  {
     "implementation": "../nuclide-fuzzy-file-search-rpc/lib/FuzzyFileSearchService.js",
     "name": "FuzzyFileSearchService"
   },
