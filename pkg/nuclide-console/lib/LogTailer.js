@@ -51,47 +51,57 @@ export class LogTailer {
   _subscription: ?rx$ISubscription;
   _messages: ConnectableObservable<Message>;
   _ready: ?Observable<void>;
+  _runningCallbacks: Array<(err?: Error) => mixed>;
+  _startCount: number;
   _statuses: BehaviorSubject<OutputProviderStatus>;
 
   constructor(options: Options) {
     this._name = options.name;
     this._eventNames = options.trackingEvents;
     this._ready = options.ready;
-    this._messages = options.messages
+    this._runningCallbacks = [];
+    this._startCount = 0;
+    this._statuses = new BehaviorSubject('stopped');
+
+    this._messages = Observable.merge(
+      options.messages,
+      this._ready == null ? Observable.empty() : this._ready.ignoreElements(), // For the errors.
+    )
       .do({
+        error: err => {
+          this._stop(false);
+          this._invokeRunningCallbacks(err);
+        },
         complete: () => {
           this._stop();
         },
       })
-      .catch(err => {
-        this._stop(false);
-        getLogger().error(`Error with ${this._name} tailer.`, err);
-        const message = `An unexpected error occurred while running the ${this._name} process`
-          + (err.message ? `:\n\n**${err.message}**` : '.');
-        const notification = atom.notifications.addError(message, {
-          dismissable: true,
-          detail: err.stack == null ? '' : err.stack.toString(),
-          buttons: [{
-            text: `Restart ${this._name}`,
-            className: 'icon icon-sync',
-            onDidClick: () => {
-              notification.dismiss();
-              this.restart();
-            },
-          }],
-        });
-        return Observable.empty();
-      })
       .share()
       .publish();
-    this._statuses = new BehaviorSubject('stopped');
+
+    // Whenever the status becomes "running," invoke all of the registered running callbacks.
+    this._statuses
+      .distinctUntilChanged()
+      .filter(status => status === 'running')
+      .subscribe(() => { this._invokeRunningCallbacks(); });
   }
 
   start(options?: StartOptions): void {
-    this._start(true, options);
+    this._startCount += 1;
+    if (options != null && options.onRunning != null) {
+      this._runningCallbacks.push(options.onRunning);
+    }
+    this._start(true);
   }
 
   stop(): void {
+    // If the process is explicitly stopped, call all of the running callbacks with a cancelation
+    // error.
+    this._startCount = 0;
+    this._runningCallbacks.forEach(cb => {
+      cb(new ProcessCancelledError(this._name));
+    });
+
     this._stop();
   }
 
@@ -105,65 +115,74 @@ export class LogTailer {
     return new DisposableSubscription(this._statuses.subscribe(cb));
   }
 
-  _start(trackCall: boolean, options?: StartOptions): void {
+  _invokeRunningCallbacks(err: ?Error): void {
+    // Invoke all of the registered running callbacks.
+    if (this._runningCallbacks.length > 0) {
+      this._runningCallbacks.forEach(cb => {
+        if (err == null) {
+          cb();
+        } else {
+          cb(err);
+        }
+      });
+    }
+
+    if (err != null && this._startCount !== this._runningCallbacks.length) {
+      getLogger().error(`Error with ${this._name} tailer.`, err);
+      const message = `An unexpected error occurred while running the ${this._name} process`
+        + (err.message ? `:\n\n**${err.message}**` : '.');
+      const notification = atom.notifications.addError(message, {
+        dismissable: true,
+        detail: err.stack == null ? '' : err.stack.toString(),
+        buttons: [{
+          text: `Restart ${this._name}`,
+          className: 'icon icon-sync',
+          onDidClick: () => {
+            notification.dismiss();
+            this.restart();
+          },
+        }],
+      });
+    }
+
+    this._runningCallbacks = [];
+    this._startCount = 0;
+  }
+
+  _start(trackCall: boolean): void {
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
       'nuclide-console:toggle',
       {visible: true},
     );
 
-    const shouldRun = this._statuses.getValue() === 'stopped';
-
-    if (shouldRun) {
-      if (trackCall) {
-        track(this._eventNames.start);
-      }
-
-      // If the LogTailer was created with a way of detecting when the source was ready, the initial
-      // status is "starting." Otherwise, assume that it's started immediately.
-      const initialStatus = this._ready == null ? 'running' : 'starting';
-      this._statuses.next(initialStatus);
-    }
-
-    // If the user provided an `onRunning` callback, hook it up.
-    if (options != null) {
-      const {onRunning} = options;
-      Observable.merge(
-        this._statuses,
-        this._messages.ignoreElements(), // For the errors
-      )
-        .takeWhile(status => status !== 'stopped')
-        .first(status => status === 'running')
-        .catch(err => {
-          // If it's stopped before it starts running, emit a special error.
-          if (err.name === 'EmptyError') { throw new ProcessCancelledError(this._name); }
-          throw err;
-        })
-        .mapTo(undefined)
-        .subscribe(
-          () => { onRunning(); },
-          err => { onRunning(err); },
-        );
-    }
-
-    if (!shouldRun) {
+    if (this._statuses.getValue() !== 'stopped') {
       return;
     }
+
+    if (trackCall) {
+      track(this._eventNames.start);
+    }
+
+    // If the LogTailer was created with a way of detecting when the source was ready, the initial
+    // status is "starting." Otherwise, assume that it's started immediately.
+    const initialStatus = this._ready == null ? 'running' : 'starting';
+    this._statuses.next(initialStatus);
 
     if (this._subscription != null) {
       this._subscription.unsubscribe();
     }
 
     const sub = new Subscription();
-
     if (this._ready != null) {
       sub.add(
         this._ready
+          // Ignore errors here. We'll catch them above.
+          .catch(error => Observable.empty())
           .takeUntil(this._statuses.filter(status => status !== 'starting'))
           .subscribe(() => { this._statuses.next('running'); }),
       );
     }
-
     sub.add(this._messages.connect());
     this._subscription = sub;
   }
