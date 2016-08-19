@@ -72,7 +72,8 @@ export default class DebuggerInspector extends React.Component {
             onClick={this._handleClickDevTools}
           />
           <Button
-            title="Switch back to the old debugger UI"
+            className="nuclide-debugger-toggle-old-ui-button"
+            title="Toggle new / old Nuclide Debugger UI"
             icon="history"
             onClick={this._handleClickUISwitch}
           />

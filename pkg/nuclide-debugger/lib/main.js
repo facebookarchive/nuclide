@@ -25,6 +25,11 @@ import type {
 } from './types';
 import type {Observable} from 'rxjs';
 import type {WatchExpressionStore} from './WatchExpressionStore';
+import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
+import type {
+  RegisterNux,
+  TriggerNux,
+} from '../../nuclide-nux/lib/main';
 
 import {DisposableSubscription} from '../../commons-node/stream';
 import {Subject} from 'rxjs';
@@ -59,6 +64,9 @@ const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
 const GK_DEBUGGER_LAUNCH_ATTACH_UI = 'nuclide_debugger_launch_attach_ui';
 const GK_DEBUGGER_UI_REVAMP = 'nuclide_debugger_ui_revamp';
 const GK_TIMEOUT = 5000;
+const NUX_NEW_DEBUGGER_UI_ID = 4377;
+const GK_NEW_DEBUGGER_UI_NUX = 'mp_nuclide_new_debugger_ui';
+const NUX_NEW_DEBUGGER_UI_NAME = 'nuclide_new_debugger_ui';
 
 type Props = {
   model: DebuggerModel,
@@ -70,6 +78,7 @@ type State = {
 class DebuggerView extends React.Component {
   props: Props;
   state: State;
+  _nuxTimeout: ?number;
 
   constructor(props: Props) {
     super(props);
@@ -87,6 +96,12 @@ class DebuggerView extends React.Component {
     track('debugger-ui-mounted', {
       frontend: this._getUiTypeForAnalytics(),
     });
+    // Wait for UI to initialize and "calm down"
+    this._nuxTimeout = setTimeout(() => {
+      if (activation != null && !this.state.showOldView) {
+        activation.tryTriggerNux(NUX_NEW_DEBUGGER_UI_ID);
+      }
+    }, 2000);
   }
 
   componentDidUpdate(prevProps: Props, prevState: State): void {
@@ -94,6 +109,12 @@ class DebuggerView extends React.Component {
       track('debugger-ui-toggled', {
         frontend: this._getUiTypeForAnalytics(),
       });
+    }
+  }
+
+  componentWillUnmount(): void {
+    if (this._nuxTimeout) {
+      clearTimeout(this._nuxTimeout);
     }
   }
 
@@ -152,6 +173,7 @@ class Activation {
   _model: DebuggerModel;
   _panel: ?Object;
   _launchAttachDialog: ?atom$Panel;
+  _tryTriggerNux: ?TriggerNux;
 
   constructor(state: ?SerializedState) {
     this._model = new DebuggerModel(state);
@@ -253,6 +275,22 @@ class Activation {
 
   getModel(): DebuggerModel {
     return this._model;
+  }
+
+  consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
+    const disposable = addNewNux(createDebuggerNuxTourModel());
+    this._disposables.add(disposable);
+    return disposable;
+  }
+
+  setTriggerNux(triggerNux: TriggerNux): void {
+    this._tryTriggerNux = triggerNux;
+  }
+
+  tryTriggerNux(id: number): void {
+    if (this._tryTriggerNux != null) {
+      this._tryTriggerNux(id);
+    }
   }
 
   async _toggle() {
@@ -528,4 +566,39 @@ export function consumeDatatipService(service: DatatipService): IDisposable {
   activation.getModel().getThreadStore().setDatatipService(service);
   activation._disposables.add(disposable);
   return disposable;
+}
+
+function createDebuggerNuxTourModel(): NuxTourModel {
+  const welcomeToNewUiNux = {
+    content: 'Welcome to the new Nuclide debugger UI!</br>' +
+      'We are evolving the debugger to integrate more closely with Nuclide.',
+    selector: '.nuclide-debugger-container-new',
+    position: 'left',
+  };
+
+  const toggleOldNewUiNux = {
+    content: 'You can always switch back to the old UI.',
+    selector: '.nuclide-debugger-toggle-old-ui-button',
+    position: 'bottom',
+  };
+
+  const newDebuggerUINuxTour = {
+    id: NUX_NEW_DEBUGGER_UI_ID,
+    name: NUX_NEW_DEBUGGER_UI_NAME,
+    nuxList: [welcomeToNewUiNux, toggleOldNewUiNux],
+    gatekeeperID: GK_NEW_DEBUGGER_UI_NUX,
+  };
+
+  return newDebuggerUINuxTour;
+}
+
+export function consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
+  invariant(activation);
+  return activation.consumeRegisterNuxService(addNewNux);
+}
+
+export function consumeTriggerNuxService(tryTriggerNux: TriggerNux): void {
+  if (activation != null) {
+    activation.setTriggerNux(tryTriggerNux);
+  }
 }

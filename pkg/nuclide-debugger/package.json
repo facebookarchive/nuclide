@@ -47,6 +47,16 @@
       "versions": {
         "0.0.0": "consumeDebuggerProvider"
       }
+    },
+    "nux-register": {
+      "versions": {
+        "0.0.0": "consumeRegisterNuxService"
+      }
+    },
+    "nux-trigger": {
+      "versions": {
+        "0.0.0": "consumeTriggerNuxService"
+      }
     }
   }
 }
