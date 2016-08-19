@@ -245,8 +245,12 @@ export class NuxView {
       ));
     }
 
+    // Record the NUX as dismissed iff it is not the last NUX in the tour.
+    // Clicking "Complete Tour" on the last NUX should be tracked as succesful completion.
     const dismissElementClickListener =
-      this._handleDisposableClick.bind(this, false  /* skip to the end of the tour */);
+      !this._finalNuxInTour ?
+        this._handleDisposableClick.bind(this, false  /* skip to the end of the tour */) :
+        this._handleDisposableClick.bind(this, true /* continue to the next NUX in the tour */);
     const dismissElement = document.querySelector(`.nuclide-nux-dismiss-link-${this._index}`);
     dismissElement.addEventListener('click', dismissElementClickListener);
 
