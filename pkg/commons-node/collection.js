@@ -194,6 +194,18 @@ export class MultiMap<K, V> {
   }
 
   /*
+   * Mimics the Map.prototype.set interface. Replaces the previous binding with new values.
+   */
+  set(key: K, values: Iterable<V>): void {
+    this.deleteAll(key);
+    const newSet = new Set(values);
+    if (newSet.size !== 0) {
+      this._map.set(key, newSet);
+      this.size += newSet.size;
+    }
+  }
+
+  /*
    * Deletes a single binding. Returns true iff the binding existed.
    */
   delete(key: K, value: V): boolean {
@@ -228,6 +240,12 @@ export class MultiMap<K, V> {
 
   hasAny(key: K): boolean {
     return this._map.has(key);
+  }
+
+  *values(): Iterable<V> {
+    for (const set of this._map.values()) {
+      yield* set;
+    }
   }
 }
 

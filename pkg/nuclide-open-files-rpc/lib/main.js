@@ -9,6 +9,12 @@
  * the root directory of this source tree.
  */
 
-// import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+
+import {fileCache} from './OpenFilesService';
 
 export const OPEN_FILES_SERVICE = 'OpenFilesService';
+
+export function getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
+  return fileCache.getBufferAtVersion(fileVersion);
+}
