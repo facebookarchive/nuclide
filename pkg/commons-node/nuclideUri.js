@@ -106,7 +106,7 @@ function parse(uri: NuclideUri): ParsedUrl {
     };
   }
 
-  const parsedUri = url.parse(_escapeBackslashes(uri));
+  const parsedUri = url.parse(_escapeSpecialCharacters(uri));
 
   invariant(
     parsedUri.path,
@@ -281,7 +281,7 @@ function stripExtension(uri: NuclideUri): NuclideUri {
  * Returns null if not a valid file: URI.
  */
 function uriToNuclideUri(uri: string): ?string {
-  const urlParts = url.parse(_escapeBackslashes(uri), false);
+  const urlParts = url.parse(_escapeSpecialCharacters(uri), false);
   if (urlParts.protocol === 'file:' && urlParts.path) { // only handle real files for now.
     return urlParts.path;
   } else if (isRemote(uri)) {
@@ -588,12 +588,12 @@ function _pathModuleFor(uri: NuclideUri): typeof pathModule {
 }
 
 /**
- * The backslash character (\) is unfortunately a valid symbol to be used in POSIX paths.
- * It, however, is being automatically "corrected" by node's `url.parse()` method if not escaped
- * properly.
+ * The backslash and percent characters (\ %) are, unfortunately, valid symbols to be used in POSIX
+ * paths. They, however, are being automatically "corrected" by node's `url.parse()` method if not
+ * escaped properly.
  */
-function _escapeBackslashes(uri: NuclideUri): NuclideUri {
-  return uri.replace(/\\/g, '%5C');
+function _escapeSpecialCharacters(uri: NuclideUri): NuclideUri {
+  return uri.replace(/%/g, '%25').replace(/\\/g, '%5C');
 }
 
 export default {
