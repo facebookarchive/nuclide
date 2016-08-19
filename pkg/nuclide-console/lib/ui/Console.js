@@ -9,11 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type {Executor, Record, OutputProvider, Source} from '../types';
+import type {Record, Executor, OutputProvider, Source} from '../types';
 
-import ConsoleView from './ConsoleView';
-import escapeStringRegexp from 'escape-string-regexp';
+import debounce from '../../../commons-node/debounce';
 import {React} from 'react-for-atom';
+import OutputTable from './OutputTable';
+import ConsoleHeader from './ConsoleHeader';
+import InputArea from './InputArea';
+import PromptButton from './PromptButton';
+import UnseenMessagesNotification from './UnseenMessagesNotification';
+import invariant from 'assert';
+import shallowEqual from 'shallowequal';
 
 type Props = {
   records: Array<Record>,
@@ -21,124 +27,181 @@ type Props = {
   execute: (code: string) => void,
   currentExecutor: ?Executor,
   executors: Map<string, Executor>,
-  getProvider: (id: string) => ?OutputProvider,
-  initialUnselectedSourceIds: Array<string>,
+  invalidFilterInput: boolean,
+  enableRegExpFilter: boolean,
+  selectedSourceIds: Array<string>,
   selectExecutor: (executorId: string) => void,
+  selectSources: (sourceIds: Array<string>) => void,
   sources: Array<Source>,
+  toggleRegExpFilter: () => void,
+  updateFilterText: (filterText: string) => void,
+  getProvider: (id: string) => ?OutputProvider,
 };
 
 type State = {
-  filterText: string,
-  enableRegExpFilter: boolean,
-
-  // A blacklist of sources. We must use a blacklist so that newly registered sources will be
-  // selected by default. It's not enough to just add them to the selection at registration time
-  // because that would clobber serialization--though we aren't currently doing any :(
-  unselectedSourceIds: Array<string>,
+  unseenMessages: boolean,
 };
 
-/**
- * A component that wraps ConsoleView to handle instance-specific record filtering state.
- */
 export default class Console extends React.Component {
   props: Props;
   state: State;
 
+  _shouldScrollToBottom: boolean;
+  _scrollPane: ?HTMLElement;
+
   constructor(props: Props) {
     super(props);
     this.state = {
-      filterText: '',
-      enableRegExpFilter: false,
-      unselectedSourceIds: props.initialUnselectedSourceIds,
+      unseenMessages: false,
     };
-    (this: any)._selectSources = this._selectSources.bind(this);
+    this._shouldScrollToBottom = false;
     (this: any)._getExecutor = this._getExecutor.bind(this);
-    (this: any)._updateFilterText = this._updateFilterText.bind(this);
-    (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
+    (this: any)._getProvider = this._getProvider.bind(this);
+    (this: any)._handleScrollPane = this._handleScrollPane.bind(this);
+    (this: any)._handleScroll = this._handleScroll.bind(this);
+    (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
+    (this: any)._scrollToBottom = this._scrollToBottom.bind(this);
   }
 
-  _getFilterPattern(filterText: string, isRegExp: boolean): {pattern: ?RegExp, isValid: boolean} {
-    if (filterText === '') {
-      return {pattern: null, isValid: true};
-    }
-    const source = isRegExp ? filterText : escapeStringRegexp(filterText);
-    try {
-      return {
-        pattern: new RegExp(source, 'i'),
-        isValid: true,
-      };
-    } catch (err) {
-      return {
-        pattern: null,
-        isValid: false,
-      };
+  componentDidUpdate(prevProps: Props): void {
+    // If records are added while we're scrolled to the bottom (or very very close, at least),
+    // automatically scroll.
+    if (this._shouldScrollToBottom) {
+      this._scrollToBottom();
     }
   }
 
-  render(): React.Element<any> {
-    const {pattern, isValid} =
-      this._getFilterPattern(this.state.filterText, this.state.enableRegExpFilter);
-
-    const selectedSourceIds = this.props.sources
-      .map(source => source.id)
-      .filter(sourceId => this.state.unselectedSourceIds.indexOf(sourceId) === -1);
-
-    const records = filterRecords(
-      this.props.records,
-      selectedSourceIds,
-      pattern,
-      this.props.sources.length !== selectedSourceIds.length,
-    );
-
+  _renderPromptButton(): React.Element<any> {
+    invariant(this.props.currentExecutor != null);
+    const {currentExecutor} = this.props;
+    const options = Array.from(this.props.executors.values())
+      .map(executor => ({
+        id: executor.id,
+        label: executor.name,
+      }));
     return (
-      <ConsoleView {...this.props}
-        invalidFilterInput={!isValid}
-        records={records}
-        enableRegExpFilter={this.state.enableRegExpFilter}
-        getProvider={this.props.getProvider}
-        selectedSourceIds={selectedSourceIds}
-        selectSources={this._selectSources}
-        toggleRegExpFilter={this._toggleRegExpFilter}
-        updateFilterText={this._updateFilterText}
+      <PromptButton
+        value={currentExecutor.id}
+        onChange={this.props.selectExecutor}
+        options={options}
+        children={currentExecutor.name}
       />
     );
   }
 
-  _selectSources(selectedSourceIds: Array<string>): void {
-    const sourceIds = this.props.sources.map(source => source.id);
-    const unselectedSourceIds = sourceIds
-      .filter(sourceId => selectedSourceIds.indexOf(sourceId) === -1);
-    this.setState({unselectedSourceIds});
+  _isScrolledToBottom(): boolean {
+    if (this._scrollPane == null) { return true; }
+    const {scrollTop, scrollHeight, offsetHeight} = this._scrollPane;
+    return scrollHeight - (offsetHeight + scrollTop) < 5;
   }
 
-  _toggleRegExpFilter(): void {
-    this.setState({enableRegExpFilter: !this.state.enableRegExpFilter});
+  componentWillReceiveProps(nextProps: Props): void {
+    if (nextProps.records !== this.props.records) {
+      const isScrolledToBottom = this._isScrolledToBottom();
+
+      this._shouldScrollToBottom = isScrolledToBottom;
+
+      // If we receive new messages after we've scrolled away from the bottom, show the
+      // "new messages" notification.
+      if (!isScrolledToBottom) {
+        this.setState({unseenMessages: true});
+      }
+    }
   }
 
-  _updateFilterText(filterText: string): void {
-    this.setState({filterText});
+  shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
+    return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
   }
 
   _getExecutor(id: string): ?Executor {
     return this.props.executors.get(id);
   }
 
-}
+  _getProvider(id: string): ?OutputProvider {
+    return this.props.getProvider(id);
+  }
 
-function filterRecords(
-  records: Array<Record>,
-  selectedSourceIds: Array<string>,
-  filterPattern: ?RegExp,
-  filterSources: boolean,
-): Array<Record> {
-  if (!filterSources && filterPattern == null) { return records; }
+  render(): ?React.Element<any> {
+    return (
+      <div className="nuclide-console">
+        <ConsoleHeader
+          clear={this.props.clearRecords}
+          invalidFilterInput={this.props.invalidFilterInput}
+          enableRegExpFilter={this.props.enableRegExpFilter}
+          selectedSourceIds={this.props.selectedSourceIds}
+          sources={this.props.sources}
+          toggleRegExpFilter={this.props.toggleRegExpFilter}
+          onFilterTextChange={this.props.updateFilterText}
+          onSelectedSourcesChange={this.props.selectSources}
+        />
+        {/*
+          We need an extra wrapper element here in order to have the new messages notification stick
+          to the bottom of the scrollable area (and not scroll with it).
+        */}
+        <div className="nuclide-console-body">
+          <div className="nuclide-console-scroll-pane-wrapper">
+            <div
+              ref={this._handleScrollPane}
+              className="nuclide-console-scroll-pane"
+              onScroll={this._handleScroll}>
+              <OutputTable
+                records={this.props.records}
+                showSourceLabels={this.props.selectedSourceIds.length > 1}
+                getExecutor={this._getExecutor}
+                getProvider={this._getProvider}
+              />
+            </div>
+            <UnseenMessagesNotification
+              visible={this.state.unseenMessages}
+              onClick={this._scrollToBottom}
+            />
+          </div>
+          {this._renderPrompt()}
+        </div>
+      </div>
+    );
+  }
 
-  return records.filter(record => {
-    // Only filter regular messages
-    if (record.kind !== 'message') { return true; }
+  _renderPrompt(): ?React.Element<any> {
+    const {currentExecutor} = this.props;
+    if (currentExecutor == null) {
+      return;
+    }
+    return (
+      <div className="nuclide-console-prompt">
+        {this._renderPromptButton()}
+        <InputArea
+          scopeName={currentExecutor.scopeName}
+          onSubmit={this.props.execute}
+        />
+      </div>
+    );
+  }
 
-    const sourceMatches = selectedSourceIds.indexOf(record.sourceId) !== -1;
-    const filterMatches = filterPattern == null || filterPattern.test(record.text);
-    return sourceMatches && filterMatches;
-  });
+  _handleScroll(event: SyntheticMouseEvent): void {
+    this._handleScrollEnd();
+  }
+
+  _handleScrollEnd(): void {
+    if (!this._scrollPane) {
+      return;
+    }
+
+    const isScrolledToBottom = this._isScrolledToBottom();
+    this.setState({unseenMessages: this.state.unseenMessages && !isScrolledToBottom});
+  }
+
+  _handleScrollPane(el: HTMLElement): void {
+    this._scrollPane = el;
+  }
+
+  _scrollToBottom(): void {
+    if (!this._scrollPane) {
+      return;
+    }
+    // TODO: Animate?
+    this._scrollPane.scrollTop = this._scrollPane.scrollHeight;
+    this.setState({unseenMessages: false});
+  }
+
 }

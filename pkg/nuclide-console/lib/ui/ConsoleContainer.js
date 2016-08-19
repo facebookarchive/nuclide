@@ -22,14 +22,22 @@ import type {
 import getCurrentExecutorId from '../getCurrentExecutorId';
 import * as Actions from '../redux/Actions';
 import Console from './Console';
+import escapeStringRegexp from 'escape-string-regexp';
 import {React} from 'react-for-atom';
 import {Observable} from 'rxjs';
 
 type Props = {
   store: Store,
+  initialFilterText?: string,
+  initialEnableRegExpFilter?: boolean,
+  initialUnselectedSourceIds?: Array<string>,
 };
 
 type State = {
+  //
+  // State shared between all Console instances
+  //
+
   currentExecutor: ?Executor,
   providers: Map<string, OutputProvider>,
   providerStatuses: Map<string, OutputProviderStatus>,
@@ -37,6 +45,14 @@ type State = {
   records: Array<Record>,
   sources: Array<Source>,
   executors: Map<string, Executor>,
+
+  //
+  // State unique to this particular Console instance
+  //
+
+  filterText: string,
+  enableRegExpFilter: boolean,
+  unselectedSourceIds: Array<string>,
 };
 
 type BoundActionCreators = {
@@ -55,6 +71,10 @@ export class ConsoleContainer extends React.Component {
 
   constructor(props: Props) {
     super(props);
+    (this: any)._selectSources = this._selectSources.bind(this);
+    (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
+    (this: any)._updateFilterText = this._updateFilterText.bind(this);
+    const {initialFilterText, initialEnableRegExpFilter, initialUnselectedSourceIds} = props;
     this.state = {
       ready: false,
       currentExecutor: null,
@@ -63,6 +83,9 @@ export class ConsoleContainer extends React.Component {
       executors: new Map(),
       records: [],
       sources: [],
+      filterText: initialFilterText == null ? '' : initialFilterText,
+      enableRegExpFilter: Boolean(initialEnableRegExpFilter),
+      unselectedSourceIds: initialUnselectedSourceIds == null ? [] : initialUnselectedSourceIds,
     };
   }
 
@@ -117,20 +140,75 @@ export class ConsoleContainer extends React.Component {
     if (!this.state.ready) { return <span />; }
 
     const actionCreators = this._getBoundActionCreators();
+
+    const {pattern, isValid} =
+      this._getFilterPattern(this.state.filterText, this.state.enableRegExpFilter);
+
+    const selectedSourceIds = this.state.sources
+      .map(source => source.id)
+      .filter(sourceId => this.state.unselectedSourceIds.indexOf(sourceId) === -1);
+
+    const records = filterRecords(
+      this.state.records,
+      selectedSourceIds,
+      pattern,
+      this.state.sources.length !== selectedSourceIds.length,
+    );
+
     // TODO(matthewwithanm): serialize and restore `initialSelectedSourceId`
     return (
       <Console
+        invalidFilterInput={!isValid}
         execute={actionCreators.execute}
         selectExecutor={actionCreators.selectExecutor}
         clearRecords={actionCreators.clearRecords}
         currentExecutor={this.state.currentExecutor}
-        initialUnselectedSourceIds={[]}
-        records={this.state.records}
+        unselectedSourceIds={this.state.unselectedSourceIds}
+        filterText={this.state.filterText}
+        enableRegExpFilter={this.state.enableRegExpFilter}
+        records={records}
         sources={this.state.sources}
+        selectedSourceIds={selectedSourceIds}
+        selectSources={this._selectSources}
         executors={this.state.executors}
         getProvider={id => this.state.providers.get(id)}
+        toggleRegExpFilter={this._toggleRegExpFilter}
+        updateFilterText={this._updateFilterText}
       />
     );
+  }
+
+  _selectSources(selectedSourceIds: Array<string>): void {
+    const sourceIds = this.state.sources.map(source => source.id);
+    const unselectedSourceIds = sourceIds
+      .filter(sourceId => selectedSourceIds.indexOf(sourceId) === -1);
+    this.setState({unselectedSourceIds});
+  }
+
+  _toggleRegExpFilter(): void {
+    this.setState({enableRegExpFilter: !this.state.enableRegExpFilter});
+  }
+
+  _updateFilterText(filterText: string): void {
+    this.setState({filterText});
+  }
+
+  _getFilterPattern(filterText: string, isRegExp: boolean): {pattern: ?RegExp, isValid: boolean} {
+    if (filterText === '') {
+      return {pattern: null, isValid: true};
+    }
+    const source = isRegExp ? filterText : escapeStringRegexp(filterText);
+    try {
+      return {
+        pattern: new RegExp(source, 'i'),
+        isValid: true,
+      };
+    } catch (err) {
+      return {
+        pattern: null,
+        isValid: false,
+      };
+    }
   }
 
 }
@@ -171,4 +249,22 @@ function getSources(state: AppState): Array<Source> {
   }
 
   return Array.from(mapOfSources.values());
+}
+
+
+function filterRecords(
+  records: Array<Record>,
+  selectedSourceIds: Array<string>,
+  filterPattern: ?RegExp,
+  filterSources: boolean,
+): Array<Record> {
+  if (!filterSources && filterPattern == null) { return records; }
+
+  return records.filter(record => {
+    // Only filter regular messages
+    if (record.kind !== 'message') { return true; }
+
+    const sourceMatches = selectedSourceIds.indexOf(record.sourceId) !== -1;
+    return sourceMatches && (filterPattern == null || filterPattern.test(record.text));
+  });
 }
