@@ -11,7 +11,7 @@
 
 import {Range} from 'atom';
 
-import applyTextEdits from '../lib/applyTextEdits';
+import applyTextEdits from '..';
 
 const fakeFile = '/tmp/file.txt';
 

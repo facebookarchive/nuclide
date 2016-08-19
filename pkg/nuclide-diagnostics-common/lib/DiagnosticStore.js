@@ -20,9 +20,9 @@ import type {
 } from '..';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {TextEdit} from './applyTextEdits';
+import type {TextEdit} from '../../nuclide-textedit';
 
-import applyTextEdits from './applyTextEdits';
+import applyTextEdits from '../../nuclide-textedit';
 import {arrayRemove, MultiMap} from '../../commons-node/collection';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {MarkerTracker} from './MarkerTracker';

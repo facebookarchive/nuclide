@@ -12,7 +12,7 @@
 import type {Observable} from 'rxjs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import type {TextEdit} from './applyTextEdits';
+import type {TextEdit} from '../../nuclide-textedit';
 
 export type InvalidationMessage = {
   scope: 'file',
