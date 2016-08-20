@@ -277,7 +277,7 @@ function getSources(state: AppState): Array<Source> {
         record.sourceId,
         {
           id: record.sourceId,
-          name: record.sourceName || record.sourceId,
+          name: record.sourceId,
           status: 'stopped',
           start: undefined,
           stop: undefined,
