@@ -117,4 +117,23 @@ describe('LogTailer', () => {
     expect(err.name).toBe('ProcessCancelledError');
   });
 
+  it("invokes the running callback immediately if it's already running", () => {
+    const ready = new Subject();
+    const logTailer = new LogTailer({
+      name: 'test',
+      messages: Observable.never(),
+      ready,
+      trackingEvents: {
+        start: 'logtailer-test-start',
+        stop: 'logtailer-test-stop',
+        restart: 'logtailer-test-restart',
+      },
+    });
+    const handleRunning = jasmine.createSpy();
+    logTailer.start();
+    ready.next();
+    logTailer.start({onRunning: handleRunning});
+    expect(handleRunning).toHaveBeenCalled();
+  });
+
 });

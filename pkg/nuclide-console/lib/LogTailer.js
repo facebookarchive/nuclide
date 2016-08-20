@@ -156,7 +156,11 @@ export class LogTailer {
       {visible: true},
     );
 
-    if (this._statuses.getValue() !== 'stopped') {
+    const currentStatus = this._statuses.getValue();
+    if (currentStatus === 'starting') {
+      return;
+    } else if (currentStatus === 'running') {
+      this._invokeRunningCallbacks();
       return;
     }
 
