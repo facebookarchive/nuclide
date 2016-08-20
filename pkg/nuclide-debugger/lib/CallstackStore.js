@@ -66,10 +66,14 @@ export default class CallstackStore {
     const path = nuclideUri.uriToNuclideUri(sourceURL);
     if (path != null && atom.workspace != null) { // only handle real files for now.
       atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
-        editor.scrollToBufferPosition([lineNumber, 0]);
-        editor.setCursorBufferPosition([lineNumber, 0]);
+        this._nagivateToLocation(editor, lineNumber);
       });
     }
+  }
+
+  _nagivateToLocation(editor: atom$TextEditor, line: number): void {
+    editor.scrollToBufferPosition([line, 0]);
+    editor.setCursorBufferPosition([line, 0]);
   }
 
   _handleClearInterface(): void {
@@ -85,6 +89,7 @@ export default class CallstackStore {
         atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
           this._clearSelectedCallFrameMarker();
           this._highlightCallFrameLine(editor, lineNumber);
+          this._nagivateToLocation(editor, lineNumber);
         });
       }
     } else {
