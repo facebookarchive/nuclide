@@ -168,6 +168,7 @@ export class NewDebuggerView extends React.Component {
             />
           </div>
         </Section>
+        {threadsSection}
         <Section collapsable={true} headline="Call Stack">
           <div className="nuclide-debugger-section-content">
             <DebuggerCallstackComponent
@@ -176,7 +177,6 @@ export class NewDebuggerView extends React.Component {
             />
           </div>
         </Section>
-        {threadsSection}
         <Section collapsable={true} headline="Breakpoints">
           <div className="nuclide-debugger-section-content">
             <BreakpointListComponent
