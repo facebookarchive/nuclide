@@ -188,13 +188,6 @@ class NuclideBridge {
       };
   }
 
-  selectThread(threadId: string) {
-    const target = WebInspector.targetManager.mainTarget();
-    if (target != null) {
-      target.debuggerModel.selectThread(threadId);
-    }
-  }
-
   _handleWindowLoad() {
     ipcRenderer.sendToHost('notification', 'ready');
   }
@@ -296,6 +289,17 @@ class NuclideBridge {
     });
   }
 
+  selectThread(threadId: string) {
+    const target = WebInspector.targetManager.mainTarget();
+    if (target != null) {
+      target.debuggerModel.selectThread(threadId);
+      target.debuggerModel.threadStore.getActiveThreadStack(callFrames => {
+        const callstack = this._convertFramesToIPCFrames(callFrames);
+        ipcRenderer.sendToHost('notification', 'CallstackUpdate', callstack);
+      });
+    }
+  }
+
   _sendCallstack(): void {
     const target = WebInspector.targetManager.mainTarget();
     if (target == null) {
@@ -309,7 +313,12 @@ class NuclideBridge {
     if (callFrames == null) {
       return;
     }
-    const callstack = callFrames.map(callFrame => {
+    const callstack = this._convertFramesToIPCFrames(callFrames);
+    ipcRenderer.sendToHost('notification', 'CallstackUpdate', callstack);
+  }
+
+  _convertFramesToIPCFrames(callFrames: Array<Object>): Array<Object> {
+    return callFrames.map(callFrame => {
       const location = callFrame.location();
       /* names anonymous functions "(anonymous function)" */
       const functionName = WebInspector.beautifyFunctionName(callFrame.functionName);
@@ -322,7 +331,6 @@ class NuclideBridge {
         },
       };
     });
-    ipcRenderer.sendToHost('notification', 'CallstackUpdate', callstack);
   }
 
   _getProperties(objectId: string): void {

@@ -88,9 +88,9 @@ WebInspector.DebuggerModel.ThreadStore.prototype = {
                 }
                 thread.stackFrames = parsedFrames;
                 callback(parsedFrames);
+                thread.isCallstackFetched = true;
             }
             this._debuggerModel.getThreadStack(threadId, onThreadStackFetched.bind(this));
-            thread.isCallstackFetched = true;
         } else {
             callback(thread.stackFrames);
         }
