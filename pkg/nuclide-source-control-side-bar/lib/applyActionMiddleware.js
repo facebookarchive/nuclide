@@ -17,7 +17,7 @@ import {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';
 import invariant from 'assert';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 const HANDLED_ACTION_TYPES = [
   ActionType.DELETE_BOOKMARK,
@@ -27,10 +27,10 @@ const HANDLED_ACTION_TYPES = [
 ];
 
 export function applyActionMiddleware(
-  actions: Rx.Observable<Action>,
+  actions: Observable<Action>,
   getState: () => AppState,
-): Rx.Observable<Action> {
-  const output = Rx.Observable.merge(
+): Observable<Action> {
+  const output = Observable.merge(
     // Skip unhandled ActionTypes.
     actions.filter(action => HANDLED_ACTION_TYPES.indexOf(action.type) === -1),
 
@@ -39,13 +39,13 @@ export function applyActionMiddleware(
       .switchMap(action => {
         const {projectDirectories} = getState();
 
-        return Rx.Observable.from(projectDirectories).flatMap(directory => {
+        return Observable.from(projectDirectories).flatMap(directory => {
           const repository = repositoryForPath(directory.getPath());
           if (repository == null) {
-            return Rx.Observable.empty();
+            return Observable.empty();
           }
 
-          let observable = Rx.Observable.of({
+          let observable = Observable.of({
             payload: {
               directory,
               repository,
@@ -60,7 +60,7 @@ export function applyActionMiddleware(
             invariant(repositoryAsync instanceof HgRepositoryClientAsync);
 
             observable = observable.concat(
-              Rx.Observable.merge(
+              Observable.merge(
                 observableFromSubscribeFunction(
                   // Re-fetch when the list of bookmarks changes.
                   repositoryAsync.onDidChangeBookmarks.bind(repositoryAsync),
@@ -73,7 +73,7 @@ export function applyActionMiddleware(
               )
               .startWith(null) // Kick it off the first time
               .switchMap(() => {
-                return Rx.Observable.fromPromise(repositoryAsync.getBookmarks());
+                return Observable.fromPromise(repositoryAsync.getBookmarks());
               })
               .map(bookmarks => ({
                 payload: {
@@ -95,7 +95,7 @@ export function applyActionMiddleware(
         invariant(action.type === ActionType.UPDATE_TO_BOOKMARK);
 
         const {bookmark, repository} = action.payload;
-        return Rx.Observable
+        return Observable
           .fromPromise(repository.async.checkoutReference(bookmark.bookmark, false))
           .ignoreElements()
           .catch(error => {
@@ -105,7 +105,7 @@ export function applyActionMiddleware(
               dismissable: true,
             });
 
-            return Rx.Observable.empty();
+            return Observable.empty();
           });
       }),
 
@@ -127,7 +127,7 @@ export function applyActionMiddleware(
               detail: `Expected repository type 'hg' but found ${repository.getType()}`,
               dismissable: true,
             });
-            return Rx.Observable.empty();
+            return Observable.empty();
           }
 
           const {
@@ -138,14 +138,14 @@ export function applyActionMiddleware(
           // Type was checked. Downcast to safely access members with Flow.
           invariant(repositoryAsync instanceof HgRepositoryClientAsync);
 
-          return Rx.Observable.of({
+          return Observable.of({
             payload: {
               bookmark,
               repository,
             },
             type: ActionType.SET_BOOKMARK_IS_LOADING,
           }).concat(
-            Rx.Observable
+            Observable
               .fromPromise(repositoryAsync.renameBookmark(bookmark.bookmark, nextName))
               .ignoreElements()
               .catch(error => {
@@ -154,7 +154,7 @@ export function applyActionMiddleware(
                   dismissable: true,
                 });
 
-                return Rx.Observable.of({
+                return Observable.of({
                   payload: {
                     bookmark,
                     repository,
@@ -184,7 +184,7 @@ export function applyActionMiddleware(
               detail: `Expected repository type 'hg' but found ${repository.getType()}`,
               dismissable: true,
             });
-            return Rx.Observable.empty();
+            return Observable.empty();
           }
 
           const {bookmark} = action.payload;
@@ -192,14 +192,14 @@ export function applyActionMiddleware(
           // Type was checked with `getType`. Downcast to safely access members with Flow.
           invariant(repositoryAsync instanceof HgRepositoryClientAsync);
 
-          return Rx.Observable.of({
+          return Observable.of({
             payload: {
               bookmark,
               repository,
             },
             type: ActionType.SET_BOOKMARK_IS_LOADING,
           }).concat(
-            Rx.Observable
+            Observable
               .fromPromise(repositoryAsync.deleteBookmark(bookmark.bookmark))
               .ignoreElements()
               .catch(error => {
@@ -208,7 +208,7 @@ export function applyActionMiddleware(
                   dismissable: true,
                 });
 
-                return Rx.Observable.of({
+                return Observable.of({
                   payload: {
                     bookmark,
                     repository,

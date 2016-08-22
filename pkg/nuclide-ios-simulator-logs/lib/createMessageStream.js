@@ -15,9 +15,9 @@ import {bufferUntil} from '../../commons-node/stream';
 import featureConfig from '../../commons-atom/featureConfig';
 import {createMessage} from './createMessage';
 import plist from 'plist';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
-export function createMessageStream(line$: Rx.Observable<string>): Rx.Observable<Message> {
+export function createMessageStream(line$: Observable<string>): Observable<Message> {
 
   // Group the lines into valid plist strings.
   return bufferUntil(line$, line => line.trim() === '</plist>')

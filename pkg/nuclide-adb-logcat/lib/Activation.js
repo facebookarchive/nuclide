@@ -17,14 +17,14 @@ import createMessageStream from './createMessageStream';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {CompositeDisposable, Disposable} from 'atom';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 class Activation {
   _disposables: CompositeDisposable;
   _logTailer: LogTailer;
 
   constructor(state: ?Object) {
-    const message$ = Rx.Observable.defer(() =>
+    const message$ = Observable.defer(() =>
       createMessageStream(
         createProcessStream()
           // Retry 3 times (unless we get a ENOENT)
@@ -47,7 +47,7 @@ class Activation {
                 pathSetting: 'nuclide-adb-logcat.pathToAdb',
               });
               atom.notifications.addError(message, meta);
-              return Rx.Observable.empty();
+              return Observable.empty();
             }
 
             throw err;

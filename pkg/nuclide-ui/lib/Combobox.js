@@ -15,7 +15,7 @@ type ComboboxOption = {
   matchIndex: number,
 };
 
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 import {CompositeDisposable} from 'atom';
 import {AtomInput} from './AtomInput';
 import {React, ReactDOM} from 'react-for-atom';
@@ -125,7 +125,7 @@ export class Combobox extends React.Component {
 
     this.setState({error: null, loadingOptions: true});
 
-    this._updateSubscription = Rx.Observable.fromPromise(
+    this._updateSubscription = Observable.fromPromise(
       this.props.requestOptions(textInput),
     )
       .subscribe(

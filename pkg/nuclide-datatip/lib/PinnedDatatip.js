@@ -21,7 +21,7 @@ import {
   React,
   ReactDOM,
 } from 'react-for-atom';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 import invariant from 'assert';
 
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
@@ -29,17 +29,17 @@ import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 const LINE_END_MARGIN = 20;
 
 let _mouseMove$;
-function documentMouseMove$(): Rx.Observable<MouseEvent> {
+function documentMouseMove$(): Observable<MouseEvent> {
   if (_mouseMove$ == null) {
-    _mouseMove$ = Rx.Observable.fromEvent(document, 'mousemove');
+    _mouseMove$ = Observable.fromEvent(document, 'mousemove');
   }
   return _mouseMove$;
 }
 
 let _mouseUp$;
-function documentMouseUp$(): Rx.Observable<MouseEvent> {
+function documentMouseUp$(): Observable<MouseEvent> {
   if (_mouseUp$ == null) {
-    _mouseUp$ = Rx.Observable.fromEvent(document, 'mouseup');
+    _mouseUp$ = Observable.fromEvent(document, 'mouseup');
   }
   return _mouseUp$;
 }

@@ -13,7 +13,7 @@ import {CompositeSubscription} from '../../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../../nuclide-debugger-base';
 import {DebuggerProxyClient} from './DebuggerProxyClient';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 import WS from 'ws';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {Session} from '../../../nuclide-debugger-node/lib/Session';
@@ -88,7 +88,7 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
  * This stream is shared so that only one client is created when there is more than one subscriber.
  */
 // $FlowFixMe(matthewwithanm): Type this.
-const pid$ = Rx.Observable.using(
+const pid$ = Observable.using(
   () => {
     const client = new DebuggerProxyClient();
     client.connect();
@@ -106,7 +106,7 @@ const pid$ = Rx.Observable.using(
  * complete unless the connection closes.
  */
 // $FlowFixMe(matthewwithanm): Type this.
-const uiConnection$ = Rx.Observable.using(
+const uiConnection$ = Observable.using(
   () => {
     // TODO(natthu): Assign random port instead.
     const server = new WS.Server({port: PORT});
@@ -116,23 +116,23 @@ const uiConnection$ = Rx.Observable.using(
     };
   },
   ({server}) => (
-    Rx.Observable.merge(
-      Rx.Observable.fromEvent(server, 'error').flatMap(Rx.Observable.throw),
-      Rx.Observable.fromEvent(server, 'connection'),
+    Observable.merge(
+      Observable.fromEvent(server, 'error').flatMap(Observable.throw),
+      Observable.fromEvent(server, 'connection'),
     )
-      .takeUntil(Rx.Observable.fromEvent(server, 'close'))
+      .takeUntil(Observable.fromEvent(server, 'close'))
   ),
 )
 .publish();
 
-function createSessionStream(ws: WS, debugPort: number): Rx.Observable<Session> {
+function createSessionStream(ws: WS, debugPort: number): Observable<Session> {
   const config = {
     debugPort,
     // This makes the node inspector not load all the source files on startup:
     preload: false,
   };
 
-  return Rx.Observable.create(observer => {
+  return Observable.create(observer => {
     // Creating a new Session is actually side-effecty.
     const session = new Session(config, debugPort, ws);
     observer.next(session);

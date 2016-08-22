@@ -17,14 +17,14 @@ import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {createMessageStream} from './createMessageStream';
 import {createProcessStream} from './createProcessStream';
 import {CompositeDisposable, Disposable} from 'atom';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 class Activation {
   _disposables: CompositeDisposable;
   _logTailer: LogTailer;
 
   constructor(state: ?Object) {
-    const message$ = Rx.Observable.defer(() => createMessageStream(createProcessStream()))
+    const message$ = Observable.defer(() => createMessageStream(createProcessStream()))
       .catch(err => {
         if (err.code === 'ENOENT') {
           const {message, meta} = formatEnoentNotification({
@@ -33,7 +33,7 @@ class Activation {
             pathSetting: 'nuclide-ios-simulator-logs.pathToSyslog',
           });
           atom.notifications.addError(message, meta);
-          return Rx.Observable.empty();
+          return Observable.empty();
         }
         throw err;
       });

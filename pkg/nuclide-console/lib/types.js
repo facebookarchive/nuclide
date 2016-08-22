@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type Rx from 'rxjs';
+import type {Observable} from 'rxjs';
 import type {EvaluationResult, ExpansionResult} from '../../nuclide-debugger/lib/types';
 
 export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | 'success' | Color;
@@ -45,11 +45,11 @@ export type AppState = {
 export type OutputProviderStatus = 'starting' | 'running' | 'stopped';
 
 type BasicOutputProvider = {
-  messages: Rx.Observable<Message>,
+  messages: Observable<Message>,
   // The source can't be part of the message because we want to be able to populate a filter menu
   // before we even have any messages.
   id: string,
-  getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>,
+  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };
 
 type ControllableOutputProvider = BasicOutputProvider & {
@@ -69,9 +69,9 @@ export type Source = {
 export type OutputProvider = BasicOutputProvider | ControllableOutputProvider;
 
 export type RecordProvider = {
-  records: Rx.Observable<Record>,
+  records: Observable<Record>,
   id: string,
-  getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>,
+  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };
 
 export type OutputService = {
@@ -83,9 +83,9 @@ export type Executor = {
   name: string,
   send(message: string): void,
   // $FlowFixMe
-  output: Rx.Observable<Message> | Rx.Observable<{result?: EvaluationResult}>,
+  output: Observable<Message> | Observable<{result?: EvaluationResult}>,
   scopeName?: string,
-  getProperties?: (objectId: string) => Rx.Observable<?ExpansionResult>,
+  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };
 
 export type RegisterExecutorFunction = (executor: Executor) => IDisposable;

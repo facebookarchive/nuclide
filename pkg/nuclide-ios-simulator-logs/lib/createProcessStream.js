@@ -14,9 +14,9 @@ import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
-export function createProcessStream(): Rx.Observable<string> {
+export function createProcessStream(): Observable<string> {
   // Get a list of devices and their states from `xcrun simctl`.
   const simctlOutput$ = observeProcess(spawnSimctlList)
     .map(event => {

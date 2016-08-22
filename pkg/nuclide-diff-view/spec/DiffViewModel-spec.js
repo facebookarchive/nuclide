@@ -12,7 +12,7 @@
 import invariant from 'assert';
 
 import DiffViewModel from '../lib/DiffViewModel';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 describe('DiffViewModel', () => {
   let model = null;
@@ -32,7 +32,7 @@ describe('DiffViewModel', () => {
     input: Array<{stdout?: string, stderr?: string}>,
     expectedOutput: Array<{level: string, text: string}>,
   ): Promise<void> {
-    const stream = Rx.Observable.from(input);
+    const stream = Observable.from(input);
     invariant(messages != null);
     const resultStream = messages.take(expectedOutput.length).toArray().toPromise();
     invariant(model != null);

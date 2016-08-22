@@ -16,6 +16,7 @@ import type {
 } from './types';
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideSideBarService} from '../../nuclide-side-bar';
+import type {Observable} from 'rxjs';
 
 import * as ActionType from './ActionType';
 import {applyActionMiddleware} from './applyActionMiddleware';
@@ -25,7 +26,7 @@ import Commands from './Commands';
 import {CompositeDisposable, Disposable} from 'atom';
 import {DisposableSubscription} from '../../commons-node/stream';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import Rx from 'rxjs';
+import {BehaviorSubject, Subject} from 'rxjs';
 import SideBarComponent from './SideBarComponent';
 import {track} from '../../nuclide-analytics';
 
@@ -37,10 +38,10 @@ export type AppState = {
 };
 
 function createStateStream(
-  actions: Rx.Observable<Action>,
+  actions: Observable<Action>,
   initialState: AppState,
-): Rx.BehaviorSubject<AppState> {
-  const states = new Rx.BehaviorSubject(initialState);
+): BehaviorSubject<AppState> {
+  const states = new BehaviorSubject(initialState);
   actions.scan(accumulateState, initialState).subscribe(states);
   return states;
 }
@@ -56,11 +57,11 @@ function getInitialState() {
 
 let commands: Commands;
 let disposables: CompositeDisposable;
-let states: Rx.BehaviorSubject<AppState>;
+let states: BehaviorSubject<AppState>;
 
 export function activate(rawState: Object): void {
   const initialState = getInitialState();
-  const actions = new Rx.Subject();
+  const actions = new Subject();
   states = createStateStream(
     applyActionMiddleware(actions, () => states.getValue()),
     initialState,

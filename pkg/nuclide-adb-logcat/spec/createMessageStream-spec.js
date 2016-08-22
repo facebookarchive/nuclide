@@ -10,13 +10,13 @@
  */
 
 import createMessageStream from '../lib/createMessageStream';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 describe('createMessageStream', () => {
 
   it('splits the output by message', () => {
     waitsForPromise(async () => {
-      const output$ = Rx.Observable.from([
+      const output$ = Observable.from([
         '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
         'Prepared write state in 0ms',
         '',

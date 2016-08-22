@@ -11,7 +11,7 @@
 
 import featureConfig from '../../commons-atom/featureConfig';
 import {createMessageStream} from '../lib/createMessageStream';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 describe('createMessageStream', () => {
 
@@ -26,7 +26,7 @@ describe('createMessageStream', () => {
 
   it('splits the output by record', () => {
     waitsForPromise(async () => {
-      const output$ = Rx.Observable.from(OUTPUT_LINES);
+      const output$ = Observable.from(OUTPUT_LINES);
       const message$ = createMessageStream(output$)
         .map(message => message.text)
         .toArray();

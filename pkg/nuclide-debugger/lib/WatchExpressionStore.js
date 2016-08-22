@@ -22,7 +22,7 @@ import {
 } from 'atom';
 import {DebuggerMode} from './DebuggerStore';
 import {Actions} from './Constants';
-import Rx from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 import invariant from 'assert';
 import {DisposableSubscription} from '../../commons-node/stream';
 
@@ -31,7 +31,7 @@ type Expression = string;
 export class WatchExpressionStore {
   _bridge: Bridge;
   _disposables: CompositeDisposable;
-  _watchExpressions: Map<Expression, Rx.BehaviorSubject<?EvaluationResult>>;
+  _watchExpressions: Map<Expression, BehaviorSubject<?EvaluationResult>>;
   _previousEvaluationSubscriptions: CompositeDisposable;
 
   constructor(dispatcher: Dispatcher, bridge: Bridge) {
@@ -70,20 +70,20 @@ export class WatchExpressionStore {
   }
 
   _requestActionFromBridge<T>(
-    subject: Rx.BehaviorSubject<T>,
+    subject: BehaviorSubject<T>,
     callback: () => Promise<T>,
   ): IDisposable {
     return new DisposableSubscription(
-      Rx.Observable
+      Observable
       .fromPromise(callback())
-      .merge(Rx.Observable.never())
+      .merge(Observable.never())
       .subscribe(subject),
     );
   }
 
   _requestExpressionEvaluation(
     expression: Expression,
-    subject: Rx.BehaviorSubject<?EvaluationResult>,
+    subject: BehaviorSubject<?EvaluationResult>,
     supportRepl: boolean,
   ): void {
     const evaluationDisposable = this._requestActionFromBridge(
@@ -106,15 +106,15 @@ export class WatchExpressionStore {
    * Returns an observable of child properties for the given objectId.
    * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
    */
-  getProperties(objectId: string): Rx.Observable<?ExpansionResult> {
-    return Rx.Observable.fromPromise(this._bridge.getProperties(objectId));
+  getProperties(objectId: string): Observable<?ExpansionResult> {
+    return Observable.fromPromise(this._bridge.getProperties(objectId));
   }
 
-  evaluateConsoleExpression(expression: Expression): Rx.Observable<?EvaluationResult> {
+  evaluateConsoleExpression(expression: Expression): Observable<?EvaluationResult> {
     return this._evaluateExpression(expression, true /* support REPL */);
   }
 
-  evaluateWatchExpression(expression: Expression): Rx.Observable<?EvaluationResult> {
+  evaluateWatchExpression(expression: Expression): Observable<?EvaluationResult> {
     return this._evaluateExpression(expression, false /* do not support REPL */);
   }
 
@@ -127,13 +127,13 @@ export class WatchExpressionStore {
   _evaluateExpression(
     expression: Expression,
     supportRepl: boolean,
-  ): Rx.Observable<?EvaluationResult> {
+  ): Observable<?EvaluationResult> {
     if (!supportRepl && this._watchExpressions.has(expression)) {
       const cachedResult = this._watchExpressions.get(expression);
       invariant(cachedResult);
       return cachedResult;
     }
-    const subject = new Rx.BehaviorSubject();
+    const subject = new BehaviorSubject();
     this._requestExpressionEvaluation(expression, subject, supportRepl);
     if (!supportRepl) {
       this._watchExpressions.set(expression, subject);

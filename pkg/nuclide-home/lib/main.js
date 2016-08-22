@@ -19,13 +19,13 @@ import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElem
 import HomePaneItem from './HomePaneItem';
 import Immutable from 'immutable';
 import {React} from 'react-for-atom';
-import Rx from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 
 let subscriptions: CompositeDisposable = (null: any);
 
 // A stream of all of the fragments. This is essentially the state of our panel.
-const allHomeFragmentsStream: Rx.BehaviorSubject<Immutable.Set<HomeFragments>> =
-  new Rx.BehaviorSubject(Immutable.Set());
+const allHomeFragmentsStream: BehaviorSubject<Immutable.Set<HomeFragments>> =
+  new BehaviorSubject(Immutable.Set());
 
 export function activate(state: ?Object): void {
   considerDisplayingHome();

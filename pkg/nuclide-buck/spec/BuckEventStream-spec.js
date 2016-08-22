@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import Rx from 'rxjs';
+import {Subject} from 'rxjs';
 import {combineEventStreams} from '../lib/BuckEventStream';
 
 describe('combineEventStreams', () => {
@@ -18,8 +18,8 @@ describe('combineEventStreams', () => {
   let processSubject;
 
   beforeEach(() => {
-    socketSubject = new Rx.Subject();
-    processSubject = new Rx.Subject();
+    socketSubject = new Subject();
+    processSubject = new Subject();
   });
 
   it('takes non-log-level messages from the process', () => {

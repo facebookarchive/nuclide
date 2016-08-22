@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-import Rx from 'rxjs';
+import type {Observable} from 'rxjs';
+
+import {Subject} from 'rxjs';
 
 type NuclideConsoleMessage = {
   data: string,
@@ -19,14 +21,14 @@ type NuclideConsoleMessage = {
 };
 
 let sub = null;
-function getSubject(): Rx.Subject<NuclideConsoleMessage> {
+function getSubject(): Subject<NuclideConsoleMessage> {
   if (sub == null) {
-    sub = new Rx.Subject();
+    sub = new Subject();
   }
   return sub;
 }
 
-export function getNuclideConsoleMessages(): Rx.Observable<NuclideConsoleMessage> {
+export function getNuclideConsoleMessages(): Observable<NuclideConsoleMessage> {
   return getSubject().asObservable();
 }
 

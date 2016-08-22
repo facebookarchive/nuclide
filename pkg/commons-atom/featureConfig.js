@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 const NUCLIDE_CONFIG_SCOPE = 'nuclide.';
 
@@ -60,8 +60,8 @@ module.exports = {
    * Behaves similarly to the `observe` function, but returns a stream of values, rather
    * then receiving a callback.
    */
-  observeAsStream(keyPath: string, options: Object = {}): Rx.Observable<any> {
-    return Rx.Observable.create(observer => {
+  observeAsStream(keyPath: string, options: Object = {}): Observable<any> {
+    return Observable.create(observer => {
       const disposable = module.exports.observe(keyPath, options, observer.next.bind(observer));
       return disposable.dispose.bind(disposable);
     });

@@ -10,13 +10,13 @@
  */
 
 import type {PaneItemState} from './types';
-import type Rx from 'rxjs';
+import type {Observable} from 'rxjs';
 
 import HealthPaneItemComponent from './ui/HealthPaneItemComponent';
 import {React} from 'react-for-atom';
 
 type Props = {
-  stateStream: Rx.Observable<?PaneItemState>,
+  stateStream: Observable<?PaneItemState>,
 };
 
 export default class HealthPaneItem extends React.Component {

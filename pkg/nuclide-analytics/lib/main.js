@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type Rx from 'rxjs';
+import type {Observable} from 'rxjs';
 
 import invariant from 'assert';
 import {DisposableSubscription} from '../../commons-node/stream';
@@ -49,7 +49,7 @@ export function trackEvent(event: TrackingEvent): Promise<mixed> {
 /**
  * Track each event in a stream of TrackingEvents.
  */
-export function trackEvents(events: Rx.Observable<TrackingEvent>): IDisposable {
+export function trackEvents(events: Observable<TrackingEvent>): IDisposable {
   return new DisposableSubscription(events.subscribe(trackEvent));
 }
 

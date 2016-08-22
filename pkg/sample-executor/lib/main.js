@@ -13,7 +13,7 @@ import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
-import Rx from 'rxjs';
+import {Subject} from 'rxjs';
 
 let disposables: ?CompositeDisposable = null;
 
@@ -30,7 +30,7 @@ export function deactivate(): void {
 
 export function consumeRegisterExecutor(registerExecutor: RegisterExecutorFunction): void {
   invariant(disposables != null);
-  const messages: Rx.Subject<{result?: Object}> = new Rx.Subject();
+  const messages: Subject<{result?: Object}> = new Subject();
   disposables.add(
     registerExecutor({
       id: 'echo',

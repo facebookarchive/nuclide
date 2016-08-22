@@ -12,9 +12,9 @@
 import {observeProcess, safeSpawn} from '../../commons-node/process';
 import {compact} from '../../commons-node/stream';
 import featureConfig from '../../commons-atom/featureConfig';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
-export function createProcessStream(): Rx.Observable<string> {
+export function createProcessStream(): Observable<string> {
   return compact(
     observeProcess(spawnAdbLogcat)
       // Forward the event, but add the last line of std err too. We can use this later if the

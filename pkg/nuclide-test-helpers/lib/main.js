@@ -11,7 +11,8 @@
 
 import type {Observable} from 'rxjs';
 
-import Rx from 'rxjs';
+import {Observer} from 'rxjs';
+
 import {
   copyFixture,
   copyMercurialFixture,
@@ -153,8 +154,6 @@ function areSetsEqual(set1: Set<any>, set2: Set<any>): boolean {
   return true;
 }
 
-import type {Observer} from 'rxjs';
-
 /**
  * Logs an observable to the console.
  * Useful for debugging observable code.
@@ -162,7 +161,7 @@ import type {Observer} from 'rxjs';
  *     observable = observable.do(loggingObserver('My Prefix'));
  */
 function loggingObserver(message: string): Observer<any> {
-  return Rx.Observer.create(
+  return Observer.create(
     value => {
       // eslint-disable-next-line no-console
       console.log(`${message}: ${JSON.stringify(value)}`);

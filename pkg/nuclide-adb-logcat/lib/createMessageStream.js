@@ -14,14 +14,14 @@ import type {Message} from '../../nuclide-console/lib/types';
 import {CompositeSubscription} from '../../commons-node/stream';
 import createMessage from './createMessage';
 import parseLogcatMetadata from './parseLogcatMetadata';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 export default function createMessageStream(
-  line$: Rx.Observable<string>,
-): Rx.Observable<Message> {
+  line$: Observable<string>,
+): Observable<Message> {
 
   // Separate the lines into groups, beginning with metadata lines.
-  return Rx.Observable.create(observer => {
+  return Observable.create(observer => {
     let buffer = [];
     let prevMetadata = null;
     const prevLineIsBlank = () => buffer[buffer.length - 1] === '';

@@ -15,7 +15,7 @@ import {React} from 'react-for-atom';
 
 /**
  * Injects any key/value pairs from the given Observable value into the component as named props.
- * e.g. `bindObservableAsProps(Rx.Observable.just({val: 42}), FooComponent)` will translate to
+ * e.g. `bindObservableAsProps(Observable.just({val: 42}), FooComponent)` will translate to
  * `<FooComponent val={42} />`.
  *
  * The resulting component re-renders on updates to the observable.

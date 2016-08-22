@@ -10,7 +10,7 @@
 
 /* eslint-disable no-unused-vars */
 
-import type Rx from 'rxjs';
+import type {Observable} from 'rxjs';
 
 /* Evaluation & values */
 export type EvaluationResult = {
@@ -30,7 +30,7 @@ export type ExpansionResult = Array<{
 export type Expression = string;
 export type EvaluatedExpression = {
   expression: Expression,
-  value: Rx.Observable<?EvaluationResult>,
+  value: Observable<?EvaluationResult>,
 };
 export type EvaluatedExpressionList = Array<EvaluatedExpression>;
 

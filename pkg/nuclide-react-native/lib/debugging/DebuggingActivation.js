@@ -14,7 +14,7 @@ import type {DebuggerProcessInfo} from '../../../nuclide-debugger-base';
 import consumeFirstProvider from '../../../commons-atom/consumeFirstProvider';
 import {ReactNativeProcessInfo} from './ReactNativeProcessInfo';
 import {CompositeDisposable, Disposable} from 'atom';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 /**
  * Connects the executor to the debugger.
@@ -50,10 +50,10 @@ export class DebuggingActivation {
     atom.commands.dispatch(workspace, 'nuclide-debugger:stop-debugging');
     atom.commands.dispatch(workspace, 'nuclide-debugger:show');
 
-    const debuggerServiceStream = Rx.Observable.fromPromise(
+    const debuggerServiceStream = Observable.fromPromise(
       consumeFirstProvider('nuclide-debugger.remote'),
     );
-    const processInfoLists = Rx.Observable.fromPromise(getProcessInfoList());
+    const processInfoLists = Observable.fromPromise(getProcessInfoList());
     this._startDebuggingSubscription = debuggerServiceStream.combineLatest(processInfoLists)
       .subscribe(([debuggerService, processInfoList]) => {
         const processInfo = processInfoList[0];

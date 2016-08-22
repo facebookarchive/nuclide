@@ -10,23 +10,24 @@
  */
 
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
+import type {Observable} from 'rxjs';
 
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {DisposableSubscription} from '../../commons-node/stream';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 import {CompositeDisposable, Directory as LocalDirectory} from 'atom';
-import Rx from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 
 type Directory = LocalDirectory | RemoteDirectory;
 
 export class CwdApi {
-  _cwd$: Rx.Observable<?Directory>;
-  _cwdPath$: Rx.BehaviorSubject<?string>;
+  _cwd$: Observable<?Directory>;
+  _cwdPath$: BehaviorSubject<?string>;
   _disposables: CompositeDisposable;
 
   constructor(initialCwdPath: ?string) {
-    this._cwdPath$ = new Rx.BehaviorSubject(initialCwdPath);
+    this._cwdPath$ = new BehaviorSubject(initialCwdPath);
     this._cwd$ = this._cwdPath$
       // Re-check the CWD every time the project paths change.
       // Adding/removing projects can affect the validity of cwdPath.

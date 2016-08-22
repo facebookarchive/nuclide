@@ -63,7 +63,7 @@ import {mapUnion, mapFilter} from '../../commons-node/collection';
 import {bufferUntil} from '../../commons-node/stream';
 import nuclideUri from '../../commons-node/nuclideUri';
 import RepositoryStack from './RepositoryStack';
-import Rx from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {notifyInternalError} from './notifications';
 import {bufferForUri, loadBufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
@@ -192,7 +192,7 @@ class DiffViewModel {
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
   _isActive: boolean;
   _state: State;
-  _publishUpdates: Rx.Subject<any>;
+  _publishUpdates: Subject<any>;
   _serializedUpdateActiveFileDiff: () => Promise<void>;
 
   constructor() {
@@ -203,7 +203,7 @@ class DiffViewModel {
     this._repositoryStacks = new Map();
     this._repositorySubscriptions = new Map();
     this._isActive = false;
-    this._publishUpdates = new Rx.Subject();
+    this._publishUpdates = new Subject();
     this._state = {
       viewMode: DiffMode.BROWSE_MODE,
       commitMessage: null,
@@ -655,7 +655,7 @@ class DiffViewModel {
     return this._activeFileState;
   }
 
-  getPublishUpdates(): Rx.Subject<any> {
+  getPublishUpdates(): Subject<any> {
     return this._publishUpdates;
   }
 
@@ -953,7 +953,7 @@ class DiffViewModel {
     return phabricatorRevision;
   }
 
-  async _processArcanistOutput(stream_: Rx.Observable<any>): Promise<void> {
+  async _processArcanistOutput(stream_: Observable<any>): Promise<void> {
     let stream = stream_;
     let fatalError = false;
     stream = stream
@@ -1028,7 +1028,7 @@ class DiffViewModel {
         }
         return splitMessages;
       });
-    const levelStreams: Array<Rx.Observable<Array<{level: string, text: string}>>> = [];
+    const levelStreams: Array<Observable<Array<{level: string, text: string}>>> = [];
     for (const level of ['log', 'error']) {
       const levelStream = stream
         .filter(
@@ -1037,7 +1037,7 @@ class DiffViewModel {
         .share();
       levelStreams.push(bufferUntil(levelStream, message => message.text.endsWith('\n')));
     }
-    await Rx.Observable.merge(...levelStreams)
+    await Observable.merge(...levelStreams)
       .do(
         (messages: Array<{level: string, text: string}>) => {
           if (messages.length > 0) {

@@ -11,7 +11,7 @@
 
 import {React, ReactDOM} from 'react-for-atom';
 import {AtomTextEditor} from '../../../nuclide-ui/lib/AtomTextEditor';
-import Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
 type Props = {
   onSubmit: (value: string) => mixed,
@@ -40,7 +40,7 @@ export default class OutputTable extends React.Component {
     if (component) {
       this._textEditorModel = component.getModel();
       const el = ReactDOM.findDOMNode(component);
-      this._keySubscription = Rx.Observable.fromEvent(el, 'keydown').subscribe(this._handleKeyDown);
+      this._keySubscription = Observable.fromEvent(el, 'keydown').subscribe(this._handleKeyDown);
     }
   }
 

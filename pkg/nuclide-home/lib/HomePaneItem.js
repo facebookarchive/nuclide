@@ -10,7 +10,7 @@
  */
 
 import type {HomeFragments} from './types';
-import type Rx from 'rxjs';
+import type {BehaviorSubject} from 'rxjs';
 
 import Immutable from 'immutable';
 import {React} from 'react-for-atom';
@@ -37,7 +37,7 @@ const DEFAULT_WELCOME = (
 );
 
 type Props = {
-  allHomeFragmentsStream: Rx.BehaviorSubject<Immutable.Set<HomeFragments>>,
+  allHomeFragmentsStream: BehaviorSubject<Immutable.Set<HomeFragments>>,
 };
 
 export default class HomePaneItem extends React.Component {

@@ -16,12 +16,13 @@ import type {
 } from './types';
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {Dispatcher} from 'flux';
+import type {Observable} from 'rxjs';
 
 import {
   Disposable,
   CompositeDisposable,
 } from 'atom';
-import Rx from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 import Constants from './Constants';
 import {DebuggerMode} from './DebuggerStore';
 
@@ -31,7 +32,7 @@ export class WatchExpressionListStore {
   /**
    * Treat the underlying EvaluatedExpressionList as immutable.
    */
-  _watchExpressions: Rx.BehaviorSubject<EvaluatedExpressionList>;
+  _watchExpressions: BehaviorSubject<EvaluatedExpressionList>;
 
   constructor(watchExpressionStore: WatchExpressionStore, dispatcher: Dispatcher) {
     this._watchExpressionStore = watchExpressionStore;
@@ -41,7 +42,7 @@ export class WatchExpressionListStore {
         dispatcher.unregister(dispatcherToken);
       }),
     );
-    this._watchExpressions = new Rx.BehaviorSubject([]);
+    this._watchExpressions = new BehaviorSubject([]);
   }
 
   _handlePayload(payload: Object) {
@@ -72,7 +73,7 @@ export class WatchExpressionListStore {
     };
   }
 
-  getWatchExpressions(): Rx.Observable<EvaluatedExpressionList> {
+  getWatchExpressions(): Observable<EvaluatedExpressionList> {
     return this._watchExpressions.asObservable();
   }
 
