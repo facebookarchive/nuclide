@@ -18,7 +18,7 @@ import {
   stopNuclideServer,
 } from './utils/integration-test-helpers';
 import pollFor from './utils/pollFor';
-import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
+import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import fs from 'fs';
 
@@ -32,7 +32,7 @@ describe('Edit remote file Integration Test', () => {
       // Activate nuclide packages.
       await activateAllPackages();
 
-      const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
+      const repoPath = await generateHgRepo1Fixture();
       startNuclideServer();
       const connection = await addRemoteProject(repoPath);
       invariant(connection, 'Failed to make connection to a remote server');

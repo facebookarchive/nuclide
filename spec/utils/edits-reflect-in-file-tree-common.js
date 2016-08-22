@@ -12,22 +12,18 @@
 import type {TestContext} from './remotable-tests';
 
 import invariant from 'assert';
-import fs from 'fs';
-import nuclideUri from '../../pkg/commons-node/nuclideUri';
 
 import {
   fileTreeHasFinishedLoading,
   getVisibleEntryFromFileTree,
 } from './file-tree-common';
 import pollFor from './pollFor';
-import {copyMercurialFixture} from '../../pkg/nuclide-test-helpers';
+import {generateHgRepo1Fixture} from '../../pkg/nuclide-test-helpers';
 
 export function runTest(context: TestContext) {
   it('changes the color of the file in the file tree after an edit', () => {
     waitsForPromise({timeout: 60000}, async () => {
-      const projectPath = await copyMercurialFixture('hg_repo_1', __dirname);
-
-      fs.writeFileSync(nuclideUri.join(projectPath, '.watchmanconfig'), '{}');
+      const projectPath = await generateHgRepo1Fixture();
 
       // Add this directory as an atom project.
       await context.setProject(projectPath);

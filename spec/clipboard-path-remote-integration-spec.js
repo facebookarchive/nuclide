@@ -17,7 +17,7 @@ import {
   startNuclideServer,
   stopNuclideServer,
 } from './utils/integration-test-helpers';
-import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
+import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
 import {dispatchKeyboardEvent} from '../pkg/commons-atom/testHelpers';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import invariant from 'assert';
@@ -29,7 +29,7 @@ describe('Remote clipboard path integration test', () => {
       // Activate nuclide packages.
       await activateAllPackages();
       // Copy mercurial project to temp directory.
-      const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
+      const repoPath = await generateHgRepo1Fixture();
       // Start the Nuclide server and add a remote project.
       startNuclideServer();
       const connection = await addRemoteProject(repoPath);

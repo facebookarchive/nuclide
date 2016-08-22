@@ -17,6 +17,7 @@ import {
   copyFixture,
   copyMercurialFixture,
   copyBuildFixture,
+  generateHgRepo1Fixture,
   generateFixture,
 } from './fixtures';
 import {addMatchers} from './matchers';
@@ -199,6 +200,7 @@ export {
   copyBuildFixture,
   expectAsyncFailure,
   expectObservableToStartWith,
+  generateHgRepo1Fixture,
   generateFixture,
   loggingObserver,
   spyOnDefault,

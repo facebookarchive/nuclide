@@ -14,7 +14,7 @@ import {
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
 } from './utils/integration-test-helpers';
-import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
+import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
 
 describe('Blame context menu integration test', () => {
   it('has toggle blame option in the context menu', () => {
@@ -23,7 +23,7 @@ describe('Blame context menu integration test', () => {
       // Activate atom packages.
       await activateAllPackages();
       // Copy mercurial project to temporary directory.
-      const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
+      const repoPath = await generateHgRepo1Fixture();
       // Add this directory as a new project in atom.
       atom.project.setPaths([repoPath]);
       // Check that context menu has 'toggle blame'

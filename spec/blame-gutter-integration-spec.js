@@ -23,7 +23,7 @@ describeRemotableTest('Blame gutter integration test', (context: TestContext) =>
 
     waitsForPromise({timeout: 60000}, async () => {
       // Copy mercurial project to temporary directory.
-      const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
+      const repoPath = await copyMercurialFixture('hg_repo_2', __dirname);
       // Add this directory as a new project in atom.
       await context.setProject(repoPath);
       // Open the test.txt file in the repo.

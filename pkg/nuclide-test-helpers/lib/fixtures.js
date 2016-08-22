@@ -17,6 +17,7 @@ import invariant from 'assert';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncLimit} from '../../commons-node/promise';
+import {checkOutput} from '../../commons-node/process';
 
 /**
  * Traverses up the parent directories looking for `fixtures/FIXTURE_NAME`.
@@ -95,6 +96,37 @@ export async function copyMercurialFixture(
   });
 
   return repo;
+}
+
+/**
+ * Generates an hg repository with the following structure:
+ *
+ * @ second commit
+ * |
+ * |
+ * o first commit
+ *
+ * @returns the path to the temporary directory that this function creates.
+ */
+export async function generateHgRepo1Fixture(): Promise<string> {
+  const testTxt = 'this is a test file\nline 2\n\n  indented line\n';
+  const tempDir = await generateFixture('hg_repo_1', new Map([
+    ['.watchmanconfig', '{}\n'],
+    ['test.txt', testTxt],
+  ]));
+  const repoPath = await fsPromise.realpath(tempDir);
+  await checkOutput('hg', ['init'], {cwd: repoPath});
+  await fsPromise.writeFile(
+    nuclideUri.join(repoPath, '.hg/hgrc'),
+    '[paths]\ndefault = .\n',
+  );
+  await checkOutput('hg', ['commit', '-A', '-m', 'first commit'], {cwd: repoPath});
+  await fsPromise.writeFile(
+    nuclideUri.join(repoPath, 'test.txt'),
+    testTxt + '\nthis line added on second commit\n',
+  );
+  await checkOutput('hg', ['commit', '-A', '-m', 'second commit'], {cwd: repoPath});
+  return repoPath;
 }
 
 /**
