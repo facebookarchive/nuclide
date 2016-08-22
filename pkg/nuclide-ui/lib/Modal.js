@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import {Observable} from 'rxjs';
@@ -75,7 +75,7 @@ export class Modal extends React.Component {
     el.focus();
     this._cancelDisposable = new CompositeDisposable(
       atom.commands.add(window, 'core:cancel', () => { this.props.onDismiss(); }),
-      new DisposableSubscription(
+      new UniversalDisposable(
         Observable.fromEvent(window, 'click')
           // Ignore clicks in the current tick. We don't want to capture the click that showed this
           // modal.

@@ -14,7 +14,7 @@ import type {SerializedAppState, Store, ViewableFactory, WorkspaceViewsService} 
 import createPackage from '../../commons-atom/createPackage';
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {getLogger} from '../../nuclide-logging';
 import * as AppSerialization from './AppSerialization';
 import * as Actions from './redux/Actions';
@@ -85,7 +85,7 @@ class Activation {
         cb: (factories: Set<ViewableFactory>) => void,
       ): IDisposable {
         invariant(pkg != null, 'Viewables API used after deactivation');
-        return new DisposableSubscription(
+        return new UniversalDisposable(
           // $FlowFixMe: Teach flow about Symbol.observable
           Observable.from(pkg._getStore())
             .map(state => state.viewableFactories)

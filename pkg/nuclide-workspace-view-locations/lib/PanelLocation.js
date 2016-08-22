@@ -15,7 +15,7 @@ import type {Viewable} from '../../nuclide-workspace-views/lib/types';
 import createPaneContainer from '../../commons-atom/create-pane-container';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import * as PanelLocationIds from './PanelLocationIds';
@@ -75,7 +75,7 @@ export class PanelLocation extends SimpleModel<State> {
 
       // Render whenever the state changes. Note that state is shared between this instance and the
       // pane container, so we have to watch it as well.
-      new DisposableSubscription(
+      new UniversalDisposable(
         Observable.merge(
           observableFromSubscribeFunction(paneContainer.onDidAddPaneItem.bind(paneContainer)),
           observableFromSubscribeFunction(paneContainer.onDidDestroyPaneItem.bind(paneContainer)),

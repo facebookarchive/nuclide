@@ -19,7 +19,7 @@ import {DebuggerInstance} from '../../nuclide-debugger-base';
 import {CompositeDisposable, Emitter} from 'atom';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {getConfig} from './utils';
 import WS from 'ws';
 import {stringifyError} from '../../commons-node/string';
@@ -58,7 +58,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
   _registerConnection(connection: DebuggerConnectionType): void {
     this._debuggerConnection = connection;
     this._disposables.add(connection);
-    this._disposables.add(new DisposableSubscription(
+    this._disposables.add(new UniversalDisposable(
       connection.getServerMessageObservable().refCount().subscribe(
         this._handleServerMessage.bind(this),
         this._handleServerError.bind(this),

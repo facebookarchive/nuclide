@@ -13,7 +13,7 @@ import type {ExecutorResponse, ExecutorResult, ExecutorRequest, RnMessage} from 
 import type {ConnectableObservable} from 'rxjs';
 
 import formatEnoentNotification from '../../../commons-atom/format-enoent-notification';
-import {DisposableSubscription} from '../../../commons-node/stream';
+import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import {getLogger} from '../../../nuclide-logging';
 import {executeRequests} from './executeRequests';
 import {runApp} from './runApp';
@@ -153,7 +153,7 @@ export class DebuggerProxyClient {
    * An API for subscribing to the next worker process pid.
    */
   onDidEvalApplicationScript(callback: (pid: number) => mixed): IDisposable {
-    return new DisposableSubscription(
+    return new UniversalDisposable(
       this._pids.subscribe(callback),
     );
   }

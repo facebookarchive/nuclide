@@ -25,7 +25,7 @@ import {CompositeDisposable} from 'atom';
 import {Dispatcher} from 'flux';
 import {quote} from 'shell-quote';
 
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {createBuckProject} from '../../nuclide-buck-base';
@@ -90,7 +90,7 @@ export class BuckBuildSystem {
     this._initialState = initialState;
     this._disposables = new CompositeDisposable();
     this._outputMessages = new Subject();
-    this._disposables.add(new DisposableSubscription(this._outputMessages));
+    this._disposables.add(new UniversalDisposable(this._outputMessages));
   }
 
   getTaskList() {
@@ -113,7 +113,7 @@ export class BuckBuildSystem {
           .map(() => this.getTaskList()),
       );
     }
-    return new DisposableSubscription(
+    return new UniversalDisposable(
       this._tasks.subscribe({next: cb}),
     );
   }

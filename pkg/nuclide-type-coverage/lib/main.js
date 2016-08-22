@@ -21,7 +21,7 @@ import {Observable, Subject} from 'rxjs';
 
 import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
 import {track} from '../../nuclide-analytics';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 import {StatusBarTile} from './StatusBarTile';
 import {diagnosticProviderForResultStream} from './coverageDiagnostics';
@@ -63,7 +63,7 @@ class Activation {
       ),
     );
 
-    this._disposables.add(new DisposableSubscription(
+    this._disposables.add(new UniversalDisposable(
         this._toggleEvents.subscribe(() => track('nuclide-type-coverage:toggle')),
       ),
     );

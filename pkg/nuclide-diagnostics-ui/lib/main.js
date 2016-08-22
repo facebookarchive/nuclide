@@ -23,7 +23,7 @@ import {track} from '../../nuclide-analytics';
 
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import createDiagnosticsPanel from './createPanel';
 import StatusBarTile from './StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
@@ -163,7 +163,7 @@ function gutterConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticU
     const callback = (update: FileMessageUpdate) => {
       applyUpdateToEditor(editor, update, fixer);
     };
-    const disposable = new DisposableSubscription(
+    const disposable = new UniversalDisposable(
       diagnosticUpdater.getFileMessageUpdates(filePath).subscribe(callback),
     );
 

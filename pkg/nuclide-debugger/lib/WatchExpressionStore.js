@@ -24,7 +24,7 @@ import {DebuggerMode} from './DebuggerStore';
 import {Actions} from './Constants';
 import {BehaviorSubject, Observable} from 'rxjs';
 import invariant from 'assert';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 type Expression = string;
 
@@ -73,7 +73,7 @@ export class WatchExpressionStore {
     subject: BehaviorSubject<T>,
     callback: () => Promise<T>,
   ): IDisposable {
-    return new DisposableSubscription(
+    return new UniversalDisposable(
       Observable
       .fromPromise(callback())
       .merge(Observable.never())

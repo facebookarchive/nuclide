@@ -26,7 +26,8 @@ import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
 
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
-import {DisposableSubscription, toggle} from '../../commons-node/stream';
+import {toggle} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {Section} from '../../nuclide-ui/lib/Section';
 import featureConfig from '../../commons-atom/featureConfig';
@@ -93,12 +94,12 @@ class FileTreeSidebarComponent extends React.Component {
     this._disposables.add(
       this._store.subscribe(this._processExternalUpdate),
       atom.project.onDidChangePaths(this._processExternalUpdate),
-      new DisposableSubscription(
+      new UniversalDisposable(
         toggle(observeAllModifiedStatusChanges(), this._showOpenConfigValues)
           .subscribe(() => this._setModifiedUris()),
       ),
       this._monitorActiveUri(),
-      new DisposableSubscription(
+      new UniversalDisposable(
         this._showOpenConfigValues.subscribe(showOpenFiles => this.setState({showOpenFiles})),
       ),
       new Disposable(() => {
@@ -229,7 +230,7 @@ class FileTreeSidebarComponent extends React.Component {
       atom.workspace.onDidStopChangingActivePaneItem.bind(atom.workspace),
     );
 
-    return new DisposableSubscription(
+    return new UniversalDisposable(
       toggle(activeEditors, this._showOpenConfigValues)
       .subscribe(editor => {
         if (editor == null || typeof editor.getPath !== 'function' || editor.getPath() == null) {

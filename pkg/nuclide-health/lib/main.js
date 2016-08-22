@@ -24,7 +24,7 @@ import {track} from '../../nuclide-analytics';
 import createPackage from '../../commons-atom/createPackage';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import featureConfig from '../../commons-atom/featureConfig';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 // Imports from within this Nuclide package.
 import HealthPaneItem from './HealthPaneItem';
@@ -70,14 +70,14 @@ class Activation {
 
     this._subscriptions = new CompositeDisposable(
       // Keep the toolbar jewel up-to-date.
-      new DisposableSubscription(
+      new UniversalDisposable(
         packageStates
           .map(formatToolbarJewelLabel)
           .subscribe(this._updateToolbarJewel),
       ),
 
       // Buffer the stats and send analytics periodically.
-      new DisposableSubscription(
+      new UniversalDisposable(
         statsStream
           .buffer(analyticsTimeouts.switchMap(Observable.interval))
           .subscribe(this._updateAnalytics),

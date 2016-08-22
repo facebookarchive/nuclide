@@ -29,7 +29,7 @@ import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import createPackage from '../../commons-atom/createPackage';
 import {arrayRemove} from '../../commons-node/collection';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {trackEvent} from '../../nuclide-analytics';
 import {createEmptyAppState} from './createEmptyAppState';
 import * as Actions from './redux/Actions';
@@ -166,7 +166,7 @@ class Activation {
     });
     element.className += ' nuclide-task-runner-tool-bar-button';
 
-    const buttonUpdatesDisposable = new DisposableSubscription(
+    const buttonUpdatesDisposable = new UniversalDisposable(
       // $FlowFixMe: Update rx defs to accept ish with Symbol.observable
       Observable.from(this._store).subscribe(state => {
         if (state.taskRunners.size > 0) {

@@ -18,7 +18,7 @@ import {Observable, Subject} from 'rxjs';
 import {Dispatcher} from 'flux';
 import {CompositeDisposable, Disposable} from 'atom';
 import {React} from 'react-for-atom';
-import {DisposableSubscription} from '../../../commons-node/stream';
+import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import fsPromise from '../../../commons-node/fsPromise';
 import {observeProcess, safeSpawn} from '../../../commons-node/process';
 import {taskFromObservable} from '../../../commons-node/tasks';
@@ -71,7 +71,7 @@ export class SwiftPMTaskRunner {
     this._initialState = initialState;
     this._disposables = new CompositeDisposable();
     this._outputMessages = new Subject();
-    this._disposables.add(new DisposableSubscription(this._outputMessages));
+    this._disposables.add(new UniversalDisposable(this._outputMessages));
   }
 
   dispose(): void {

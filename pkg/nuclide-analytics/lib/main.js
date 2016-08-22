@@ -12,7 +12,7 @@
 import type {Observable} from 'rxjs';
 
 import invariant from 'assert';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {isPromise} from '../../commons-node/promise';
 import {maybeToString} from '../../commons-node/string';
 import {track as rawTrack} from './track';
@@ -50,7 +50,7 @@ export function trackEvent(event: TrackingEvent): Promise<mixed> {
  * Track each event in a stream of TrackingEvents.
  */
 export function trackEvents(events: Observable<TrackingEvent>): IDisposable {
-  return new DisposableSubscription(events.subscribe(trackEvent));
+  return new UniversalDisposable(events.subscribe(trackEvent));
 }
 
 /**

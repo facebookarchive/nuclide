@@ -12,7 +12,7 @@
 import type {Task} from '../../commons-node/tasks';
 import type {TaskMetadata} from '../lib/types';
 
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {BehaviorSubject} from 'rxjs';
 
 export class TaskRunner {
@@ -32,7 +32,7 @@ export class TaskRunner {
   }
 
   observeTaskList(callback: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
-    return new DisposableSubscription(
+    return new UniversalDisposable(
       this._taskLists.subscribe(taskList => { callback(taskList); }),
     );
   }

@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import UniversalDisposable from './UniversalDisposable';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'event-kit';
 import {Observable, ReplaySubject, Subscription} from 'rxjs';
@@ -199,7 +200,7 @@ export function reconcileSetDiffs<T>(
   };
 
   return new CompositeDisposable(
-    new DisposableSubscription(
+    new UniversalDisposable(
       diffs.subscribe(diff => {
         // For every item that got added, perform the add action.
         diff.added.forEach(item => { itemsToDisposables.set(hash(item), addAction(item)); });

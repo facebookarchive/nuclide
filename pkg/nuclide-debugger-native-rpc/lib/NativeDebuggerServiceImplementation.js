@@ -27,8 +27,8 @@ import {ClientCallback} from '../../nuclide-debugger-common';
 import {
   observeStream,
   splitStream,
-  DisposableSubscription,
 } from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {checkOutput} from '../../commons-node/process';
 
 type AttachInfoArgsType = {
@@ -216,7 +216,7 @@ export class NativeDebuggerService {
     const IPC_CHANNEL_FD = 4;
     /* $FlowFixMe - update Flow defs for ChildProcess */
     const ipcStream = lldbProcess.stdio[IPC_CHANNEL_FD];
-    this._subscriptions.add(new DisposableSubscription(
+    this._subscriptions.add(new UniversalDisposable(
       splitStream(observeStream(ipcStream)).subscribe(
         this._handleIpcMessage.bind(this, ipcStream),
         error => logError(`ipcStream error: ${JSON.stringify(error)}`),
@@ -269,7 +269,7 @@ export class NativeDebuggerService {
     // Make sure the bidirectional communication channel is set up before
     // sending data.
     argumentsStream.write('init\n');
-    this._subscriptions.add(new DisposableSubscription(
+    this._subscriptions.add(new UniversalDisposable(
       observeStream(argumentsStream).first().subscribe(
         text => {
           if (text.startsWith('ready')) {

@@ -35,7 +35,7 @@ import {diffSets} from '../../commons-node/stream';
 import {getLogger} from '../../nuclide-logging';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {
   shortHeadChangedNotification,
@@ -135,9 +135,9 @@ class Activation {
 
     this._disposables = new CompositeDisposable(
       new Disposable(actions.complete.bind(actions)),
-      new DisposableSubscription(repoDiffsSubscription),
-      new DisposableSubscription(paneStateChangeSubscription),
-      new DisposableSubscription(shortHeadChangeSubscription),
+      new UniversalDisposable(repoDiffsSubscription),
+      new UniversalDisposable(paneStateChangeSubscription),
+      new UniversalDisposable(shortHeadChangeSubscription),
     );
   }
 

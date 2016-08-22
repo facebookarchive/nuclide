@@ -24,7 +24,7 @@ import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps'
 import bookmarkIsEqual from './bookmarkIsEqual';
 import Commands from './Commands';
 import {CompositeDisposable, Disposable} from 'atom';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {BehaviorSubject, Subject} from 'rxjs';
 import SideBarComponent from './SideBarComponent';
@@ -79,7 +79,7 @@ export function activate(rawState: Object): void {
     });
 
   disposables = new CompositeDisposable(
-    new DisposableSubscription(subscription),
+    new UniversalDisposable(subscription),
   );
 }
 

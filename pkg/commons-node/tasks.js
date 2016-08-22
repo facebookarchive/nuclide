@@ -13,7 +13,7 @@
 // interface](https://atom.io/docs/api/latest/Task). These are utilities for converting between the
 // two.
 
-import {DisposableSubscription} from './stream';
+import UniversalDisposable from './UniversalDisposable';
 import {observableFromSubscribeFunction} from './event';
 import invariant from 'assert';
 import {Observable, Subscription} from 'rxjs';
@@ -58,15 +58,15 @@ export function taskFromObservable(observable: Observable<TaskEvent>): Task {
       }
     },
     onDidComplete(callback: () => mixed): IDisposable {
-      return new DisposableSubscription(
+      return new UniversalDisposable(
         events.subscribe({complete: callback, error: () => {}}),
       );
     },
     onDidError(callback: (err: Error) => mixed): IDisposable {
-      return new DisposableSubscription(events.subscribe({error: callback}));
+      return new UniversalDisposable(events.subscribe({error: callback}));
     },
     onProgress(callback: (progress: ?number) => mixed): IDisposable {
-      return new DisposableSubscription(
+      return new UniversalDisposable(
         events
           .filter(event => event.type === 'progress')
           .map(event => {

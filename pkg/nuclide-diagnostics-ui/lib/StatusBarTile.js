@@ -21,7 +21,7 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 
 type DiagnosticCount = {
@@ -60,7 +60,7 @@ class StatusBarTile {
     };
     this._diagnosticUpdaters.set(diagnosticUpdater, diagnosticCount);
     this._subscriptions.add(
-      new DisposableSubscription(diagnosticUpdater.allMessageUpdates.subscribe(
+      new UniversalDisposable(diagnosticUpdater.allMessageUpdates.subscribe(
         this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater),
       )),
     );

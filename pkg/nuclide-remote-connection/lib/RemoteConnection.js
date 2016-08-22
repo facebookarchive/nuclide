@@ -19,7 +19,7 @@ import type {RemoteFile} from './RemoteFile';
 import type {RemoteDirectory} from './RemoteDirectory';
 
 import invariant from 'assert';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {ServerConnection} from './ServerConnection';
 import {CompositeDisposable, Emitter} from 'atom';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -218,7 +218,7 @@ export class RemoteConnection {
       // Nothing needs to be done if the root directory watch has ended.
       logger.info(`Watcher Features Ended for project: ${rootDirectoryUri}`);
     });
-    this._subscriptions.add(new DisposableSubscription(subscription));
+    this._subscriptions.add(new UniversalDisposable(subscription));
   }
 
   async close(shutdownIfLast: boolean): Promise<void> {

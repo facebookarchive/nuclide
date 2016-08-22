@@ -16,7 +16,7 @@ import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Message} from '../../nuclide-console/lib/types';
 
 import {CompositeDisposable} from 'atom';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import HhvmIcon from './ui/HhvmIcon';
@@ -39,7 +39,7 @@ export default class HhvmBuildSystem {
     this._model = this._getModel();
     this.name = this._model.getName();
     this._disposables = new CompositeDisposable(
-      new DisposableSubscription(this._outputMessages),
+      new UniversalDisposable(this._outputMessages),
     );
   }
 
@@ -67,7 +67,7 @@ export default class HhvmBuildSystem {
           .map(() => this._model.getTaskList()),
       );
     }
-    return new DisposableSubscription(
+    return new UniversalDisposable(
       this._tasks.subscribe({next: cb}),
     );
   }

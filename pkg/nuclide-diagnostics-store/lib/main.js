@@ -19,7 +19,7 @@ import type {
 
 import {Disposable, CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {getLogger} from '../../nuclide-logging';
 import {DiagnosticStore} from '../../nuclide-diagnostics-common';
@@ -144,12 +144,12 @@ export function consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvi
   const store = getDiagnosticStore();
 
   compositeDisposable.add(
-    new DisposableSubscription(
+    new UniversalDisposable(
       provider.updates.subscribe(update => store.updateMessages(provider, update)),
     ),
   );
   compositeDisposable.add(
-    new DisposableSubscription(
+    new UniversalDisposable(
       provider.invalidations.subscribe(
         invalidation => store.invalidateMessages(provider, invalidation),
       ),

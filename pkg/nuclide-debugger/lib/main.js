@@ -31,7 +31,7 @@ import type {
   TriggerNux,
 } from '../../nuclide-nux/lib/main';
 
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Subject} from 'rxjs';
 import invariant from 'assert';
 import classnames from 'classnames';
@@ -471,7 +471,7 @@ function registerConsoleExecutor(
   const disposables = new CompositeDisposable();
   const rawOutput: Subject<?EvaluationResult> = new Subject();
   const send = expression => {
-    disposables.add(new DisposableSubscription(
+    disposables.add(new UniversalDisposable(
       // We filter here because the first value in the BehaviorSubject is null no matter what, and
       // we want the console to unsubscribe the stream after the first non-null value.
       watchExpressionStore.evaluateConsoleExpression(expression)

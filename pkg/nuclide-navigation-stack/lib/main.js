@@ -14,7 +14,7 @@ import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import {getViewOfEditor} from '../../commons-atom/text-editor';
 import {NavigationStackController} from './NavigationStackController';
 import {trackOperationTiming} from '../../nuclide-analytics';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observeNavigatingEditors} from '../../commons-atom/go-to-location';
 
 const controller = new NavigationStackController();
@@ -76,7 +76,7 @@ class Activation {
         path, atom.project.getDirectories().map(directory => directory.getPath()));
     }));
     this._disposables.add(
-      new DisposableSubscription(
+      new UniversalDisposable(
         observeNavigatingEditors().subscribe(editor => {
           controller.onOptInNavigation(editor);
         }),

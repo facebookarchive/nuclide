@@ -24,7 +24,7 @@ import type {TextEdit} from '../../nuclide-textedit';
 
 import applyTextEdits from '../../nuclide-textedit';
 import {arrayRemove, MultiMap} from '../../commons-node/collection';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {MarkerTracker} from './MarkerTracker';
 import invariant from 'assert';
 import {BehaviorSubject, Subject, Observable} from 'rxjs';
@@ -243,7 +243,7 @@ class DiagnosticStore {
     callback: (update: FileMessageUpdate) => mixed,
     filePath: NuclideUri,
   ): IDisposable {
-    return new DisposableSubscription(this.getFileMessageUpdates(filePath).subscribe(callback));
+    return new UniversalDisposable(this.getFileMessageUpdates(filePath).subscribe(callback));
   }
 
   /**
@@ -257,7 +257,7 @@ class DiagnosticStore {
   onProjectMessagesDidUpdate(
     callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
   ): IDisposable {
-    return new DisposableSubscription(this.getProjectMessageUpdates().subscribe(callback));
+    return new UniversalDisposable(this.getProjectMessageUpdates().subscribe(callback));
   }
 
   /**
@@ -270,7 +270,7 @@ class DiagnosticStore {
   onAllMessagesDidUpdate(
     callback: (messages: Array<DiagnosticMessage>) => mixed,
   ): IDisposable {
-    return new DisposableSubscription(this.getAllMessageUpdates().subscribe(callback));
+    return new UniversalDisposable(this.getAllMessageUpdates().subscribe(callback));
   }
 
   /**

@@ -14,7 +14,7 @@ import {getOutputService} from '../../nuclide-debugger-base';
 import utils from './utils';
 const {log, logError} = utils;
 import {Observable} from 'rxjs';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 type NotificationMessage = {
   type: 'info' | 'warning' | 'error' | 'fatalError',
@@ -59,13 +59,13 @@ export class ObservableManager {
 
   _subscribe(): void {
     const sharedNotifications = this._notifications.share();
-    this._disposables.add(new DisposableSubscription(sharedNotifications.subscribe(
+    this._disposables.add(new UniversalDisposable(sharedNotifications.subscribe(
       this._handleNotificationMessage.bind(this),
       this._handleNotificationError.bind(this),
       this._handleNotificationEnd.bind(this),
     )));
     const sharedServerMessages = this._serverMessages.share();
-    this._disposables.add(new DisposableSubscription(sharedServerMessages.subscribe(
+    this._disposables.add(new UniversalDisposable(sharedServerMessages.subscribe(
       this._handleServerMessage.bind(this),
       this._handleServerError.bind(this),
       this._handleServerEnd.bind(this),
@@ -90,7 +90,7 @@ export class ObservableManager {
             text: messageObj.params.message.text,
           };
         });
-      this._disposables.add(new DisposableSubscription(sharedOutputWindowMessages.subscribe({
+      this._disposables.add(new UniversalDisposable(sharedOutputWindowMessages.subscribe({
         complete: this._handleOutputWindowEnd.bind(this),
       })));
       this._disposables.add(api.registerOutputProvider({

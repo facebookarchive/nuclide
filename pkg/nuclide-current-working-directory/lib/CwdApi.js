@@ -13,7 +13,7 @@ import type {RemoteDirectory} from '../../nuclide-remote-connection';
 import type {Observable} from 'rxjs';
 
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 import {CompositeDisposable, Directory as LocalDirectory} from 'atom';
@@ -50,7 +50,7 @@ export class CwdApi {
   }
 
   observeCwd(callback: (directory: ?Directory) => void): IDisposable {
-    const disposable = new DisposableSubscription(
+    const disposable = new UniversalDisposable(
       this._cwd$.subscribe(directory => { callback(directory); }),
     );
     this._disposables.add(disposable);
