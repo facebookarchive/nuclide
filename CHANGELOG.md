@@ -2,6 +2,10 @@
 
 ## v0.164.0
 
+### Highlights
+* New Debugger UI
+* Fix issue with lingering code highlights when editing
+
 ### General
 
 * Compatibility fixes for Atom 1.9.x
@@ -10,18 +14,16 @@
 
 ### debugger
 
-* Properly clear & switch state in thread window for all debugger backends
 * UX & UI improvements to native launch/attach modal
-* Fix for setting breakpoints in scripts
 * NUX for new debugger UI
 
 ### Languages
 
-* Python: Fixed flake8 lint, fix outline view + typehints for Python 3
-* Clang: Improvements and fixes to autocomplete, diagnostics
+* Python: Fix outline view with Python 3 typehints
+* Clang: Improvements and fixes to autocomplete, C++ diagnostics
 
 ### Remote connection
-* Fixing treatment of `%` in remote paths
+* Fixed: File-tree failed to expand a directory with file names containing `%` character
 
 ## v0.163.0
 
