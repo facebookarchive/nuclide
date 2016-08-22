@@ -878,11 +878,10 @@ export class HgService {
       cwd: this._workingDirectory,
     };
     try {
-      const {stdout: output} = await this._hgAsyncExecute(args, execOptions);
+      const {stdout} = await this._hgAsyncExecute(args, execOptions);
       // It is most certianly not going to come here ever, the hg commit
       // is always going to error since no change is made to the commit message.
-      const stdout = output.stdout.trim();
-      return stdout || null;
+      return stdout;
     } catch (e) {
       // Since no change was made stderr is returned and the service thinks the
       // command execution failed. This is to get the stdout part of the message.
@@ -892,7 +891,8 @@ export class HgService {
       const stdout = re.exec(e.message);
 
       if (stdout === null) {
-        return this.getConfigValueAsync('committemplate.emptymsg');
+        // Return the message as is
+        return e.message;
       }
 
       // Match exists, return the commit message
