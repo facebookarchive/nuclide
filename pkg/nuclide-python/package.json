@@ -60,7 +60,8 @@
     "testRunner": "apm"
   },
   "activationHooks": [
-    "language-python:grammar-used"
+    "language-python:grammar-used",
+    "MagicPython:grammar-used"
   ],
   "providedServices": {
     "autocomplete.provider": {
