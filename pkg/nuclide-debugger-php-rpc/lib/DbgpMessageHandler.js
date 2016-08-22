@@ -59,13 +59,6 @@ export class DbgpMessageHandler {
       if (this._isCompletedMessage(prevIncompletedMessage)) {
         results.push(this._parseXml(prevIncompletedMessage));
         prevIncompletedMessage = null;
-      } else if (this._isCompletedMessageWithGarbageAtTheEnd(prevIncompletedMessage)) {
-        // TODO(jonaldislarry): This is a hack to fix the issue of HHVM sending us XML messages with
-        // trailing numbers (e.g. "<response>....</response>3294839").  Remove it when the HHVM
-        // memory corruption bug causing this issue is fixed.  See: t11895240.
-        const completeXml = this._stripGarbage(prevIncompletedMessage.content);
-        results.push(this._parseXml({content: completeXml, length: completeXml.length}));
-        prevIncompletedMessage = null;
       }
     }
 
@@ -129,21 +122,6 @@ export class DbgpMessageHandler {
 
   _isIncompletedMessage(message: DbgpMessage): boolean {
     return message.length > message.content.length;
-  }
-
-  _isCompletedMessageWithGarbageAtTheEnd(message: DbgpMessage): boolean {
-    const {length, content} = message;
-    if (length >= content.length) {
-      return false;
-    }
-    return /(<\/stream>|<\/response>)[0-9]+$/.test(content);
-  }
-
-  _stripGarbage(content: string): string {
-    const matches = content.match(/\d+$/);
-    invariant(matches != null, `Garbage XML had no garbage: ${content}`);
-    const garbageSize = matches[0].length;
-    return content.substring(0, content.length - garbageSize);
   }
 
   /**
