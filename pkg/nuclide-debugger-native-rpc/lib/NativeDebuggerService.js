@@ -9,14 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {
-  AttachTargetInfo,
-  LaunchTargetInfo,
-  DebuggerConfig,
-} from './NativeDebuggerServiceInterface';
+import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
+import type {ConnectableObservable} from 'rxjs';
 
 import {CompositeDisposable, Disposable} from 'event-kit';
-import type {ConnectableObservable} from 'rxjs';
 import child_process from 'child_process';
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -30,6 +26,27 @@ import {
 } from '../../commons-node/stream';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {checkOutput} from '../../commons-node/process';
+
+export type AttachTargetInfo = {
+  pid: number,
+  name: string,
+  commandName: string,
+  basepath?: string,
+};
+
+export type LaunchTargetInfo = {
+  executablePath: string,
+  arguments: string,
+  environmentVariables: Array<string>,
+  workingDirectory: string,
+  basepath?: string
+};
+
+export type DebuggerConfig = {
+  logLevel: LogLevel,
+  pythonBinaryPath: string,
+  buckConfigRootFile: string,
+};
 
 type AttachInfoArgsType = {
   pid: string,
@@ -77,90 +94,32 @@ export async function getAttachTargetInfoList(
   });
   // Filter out processes that have died in between ps calls and zombiue processes.
   // Place pid, process, and command info into AttachTargetInfo objects and return in an array.
-  return Array.from(pidToName.entries())
-    .filter(entry => {
-      if (targetPid == null) {
-        return true;
-      }
-      const [pid] = entry;
+  return Array.from(pidToName.entries()).filter((arr => {
+    const [pid, name] = arr;
+    if (targetPid != null) {
       return pid === targetPid;
-    })
-    .filter((arr => {
-      const [pid, name] = arr;
-      if (targetPid != null) {
-        return pid === targetPid;
-      }
-      return (
-        pidToCommand.has(pid) &&
-        !(name.startsWith('(') && name.endsWith(')')) &&
-        (name.length < 9 || name.slice(-9) !== '<defunct>')
-      );
-    }))
-    .map(arr => {
-      const [pid, name] = arr;
-      const commandName = pidToCommand.get(pid);
-      invariant(commandName != null);
-      return {
-        pid,
-        name,
-        commandName,
-      };
-    });
-}
-
-export class DebuggerConnection {
-  _clientCallback: ClientCallback;
-  _lldbWebSocket: ?WS;
-  _lldbProcess: child_process$ChildProcess;
-  _subscriptions: CompositeDisposable;
-
-  constructor(
-    clientCallback: ClientCallback,
-    lldbWebSocket: WS,
-    lldbProcess: child_process$ChildProcess,
-    subscriptions: CompositeDisposable,
-  ) {
-    this._clientCallback = clientCallback;
-    this._lldbWebSocket = lldbWebSocket;
-    this._lldbProcess = lldbProcess;
-    this._subscriptions = subscriptions;
-    lldbWebSocket.on('message', this._handleLLDBMessage.bind(this));
-    lldbProcess.on('exit', this._handleLLDBExit.bind(this));
-  }
-
-  getServerMessageObservable(): ConnectableObservable<string> {
-    return this._clientCallback.getServerMessageObservable().publish();
-  }
-
-  _handleLLDBMessage(message: string): void {
-    logTrace(`lldb message: ${message}`);
-    this._clientCallback.sendChromeMessage(message);
-  }
-
-  _handleLLDBExit(): void {
-    // Fire and forget.
-    this.dispose();
-  }
-
-  async sendCommand(message: string): Promise<void> {
-    const lldbWebSocket = this._lldbWebSocket;
-    if (lldbWebSocket != null) {
-      logTrace(`forward client message to lldb: ${message}`);
-      lldbWebSocket.send(message);
-    } else {
-      logInfo(`Nuclide sent message to LLDB after socket closed: ${message}`);
     }
-  }
-
-  async dispose(): Promise<void> {
-    log('DebuggerConnection disposed');
-    this._subscriptions.dispose();
-    this._lldbWebSocket = null;
-  }
+    return (
+      pidToCommand.has(pid) &&
+      !(name.startsWith('(') && name.endsWith(')')) &&
+      (name.length < 9 || name.slice(-9) !== '<defunct>')
+    );
+  }))
+  .map(arr => {
+    const [pid, name] = arr;
+    const commandName = pidToCommand.get(pid);
+    invariant(commandName != null);
+    return {
+      pid,
+      name,
+      commandName,
+    };
+  });
 }
 
 export class NativeDebuggerService {
   _clientCallback: ClientCallback;
+  _lldbWebSocket: ?WS;
   _config: DebuggerConfig;
   _subscriptions: CompositeDisposable;
 
@@ -175,16 +134,20 @@ export class NativeDebuggerService {
     return this._clientCallback.getOutputWindowObservable().publish();
   }
 
-  async attach(attachInfo: AttachTargetInfo): Promise<DebuggerConnection> {
+  getServerMessageObservable(): ConnectableObservable<string> {
+    return this._clientCallback.getServerMessageObservable().publish();
+  }
+
+  async attach(attachInfo: AttachTargetInfo): Promise<void> {
     log(`attach process: ${JSON.stringify(attachInfo)}`);
     const inferiorArguments = {
       pid: String(attachInfo.pid),
       basepath: attachInfo.basepath ? attachInfo.basepath : this._config.buckConfigRootFile,
     };
-    return await this._startDebugging(inferiorArguments);
+    await this._startDebugging(inferiorArguments);
   }
 
-  async launch(launchInfo: LaunchTargetInfo): Promise<DebuggerConnection> {
+  async launch(launchInfo: LaunchTargetInfo): Promise<void> {
     log(`launch process: ${JSON.stringify(launchInfo)}`);
     const inferiorArguments = {
       executable_path: launchInfo.executablePath,
@@ -193,23 +156,20 @@ export class NativeDebuggerService {
       working_directory: launchInfo.workingDirectory,
       basepath: launchInfo.basepath ? launchInfo.basepath : this._config.buckConfigRootFile,
     };
-    return await this._startDebugging(inferiorArguments);
+    await this._startDebugging(inferiorArguments);
   }
 
   async _startDebugging(
     inferiorArguments: LaunchAttachArgsType,
-  ): Promise<DebuggerConnection> {
+  ): Promise<void> {
     const lldbProcess = this._spawnPythonBackend();
+    lldbProcess.on('exit', this._handleLLDBExit.bind(this));
     this._registerIpcChannel(lldbProcess);
     this._sendArgumentsToPythonBackend(lldbProcess, inferiorArguments);
     const lldbWebSocket = await this._connectWithLLDB(lldbProcess);
+    this._lldbWebSocket = lldbWebSocket;
     this._subscriptions.add(new Disposable(() => lldbWebSocket.terminate()));
-    return new DebuggerConnection(
-      this._clientCallback,
-      lldbWebSocket,
-      lldbProcess,
-      this._subscriptions,
-    );
+    lldbWebSocket.on('message', this._handleLLDBMessage.bind(this));
   }
 
   _registerIpcChannel(lldbProcess: child_process$ChildProcess): void {
@@ -326,7 +286,28 @@ export class NativeDebuggerService {
     });
   }
 
+  _handleLLDBMessage(message: string): void {
+    logTrace(`lldb message: ${message}`);
+    this._clientCallback.sendChromeMessage(message);
+  }
+
+  _handleLLDBExit(): void {
+    // Fire and forget.
+    this.dispose();
+  }
+
+  async sendCommand(message: string): Promise<void> {
+    const lldbWebSocket = this._lldbWebSocket;
+    if (lldbWebSocket != null) {
+      logTrace(`forward client message to lldb: ${message}`);
+      lldbWebSocket.send(message);
+    } else {
+      logInfo(`Nuclide sent message to LLDB after socket closed: ${message}`);
+    }
+  }
+
   async dispose(): Promise<void> {
     logInfo('NativeDebuggerService disposed');
+    this._subscriptions.dispose();
   }
 }

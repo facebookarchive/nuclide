@@ -13,7 +13,7 @@ import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 import type {
   AttachTargetInfo,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
 
 import {React} from 'react-for-atom';
 import classnames from 'classnames';

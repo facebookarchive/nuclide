@@ -14,9 +14,9 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   LaunchTargetInfo,
   NativeDebuggerService as NativeDebuggerServiceType,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
-import typeof * as NativeDebuggerServiceInterface
-  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
+import typeof * as NativeDebuggerService
+  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
 
 import invariant from 'assert';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
@@ -49,10 +49,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     let outputDisposable
       = registerOutputWindowLogging(rpcService.getOutputWindowObservable().refCount());
     try {
-      const connection = await rpcService.launch(this._launchTargetInfo);
-      rpcService.dispose();
+      await rpcService.launch(this._launchTargetInfo);
       // Start websocket server with Chrome after launch completed.
-      debugSession = new LldbDebuggerInstance(this, connection, outputDisposable);
+      invariant(outputDisposable);
+      debugSession = new LldbDebuggerInstance(this, rpcService, outputDisposable);
       outputDisposable = null;
     } finally {
       if (outputDisposable != null) {
@@ -72,7 +72,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       pythonBinaryPath: getConfig().pythonBinaryPath,
       buckConfigRootFile: getConfig().buckConfigRootFile,
     };
-    const service: ?NativeDebuggerServiceInterface
+    const service: ?NativeDebuggerService
       = getServiceByNuclideUri('NativeDebuggerService', this.getTargetUri());
     invariant(service);
     return new service.NativeDebuggerService(debuggerConfig);

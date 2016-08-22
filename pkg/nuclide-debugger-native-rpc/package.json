@@ -1,7 +1,7 @@
 {
   "name": "nuclide-debugger-native-rpc",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/NativeDebuggerServiceImplementation.js",
+  "main": "./lib/NativeDebuggerService.js",
   "version": "0.0.0",
   "description": "Nuclide lldb debugging server",
   "nuclide": {

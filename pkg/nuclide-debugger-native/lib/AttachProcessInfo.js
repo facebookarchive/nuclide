@@ -15,9 +15,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   AttachTargetInfo,
   NativeDebuggerService as NativeDebuggerServiceType,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
-import typeof * as NativeDebuggerServiceInterface
-  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
 
 import {
   DebuggerProcessInfo,
@@ -46,10 +44,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     let outputDisposable
       = registerOutputWindowLogging(rpcService.getOutputWindowObservable().refCount());
     try {
-      const connection = await rpcService.attach(this._targetInfo);
-      rpcService.dispose();
+      await rpcService.attach(this._targetInfo);
       // Start websocket server with Chrome after attach completed.
-      debugSession = new LldbDebuggerInstance(this, connection, outputDisposable);
+      invariant(outputDisposable);
+      debugSession = new LldbDebuggerInstance(this, rpcService, outputDisposable);
       outputDisposable = null;
     } finally {
       if (outputDisposable != null) {
@@ -65,8 +63,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
       pythonBinaryPath: getConfig().pythonBinaryPath,
       buckConfigRootFile: getConfig().buckConfigRootFile,
     };
-    const service: ?NativeDebuggerServiceInterface =
-      getServiceByNuclideUri('NativeDebuggerService', this.getTargetUri());
+    const service = getServiceByNuclideUri('NativeDebuggerService', this.getTargetUri());
     invariant(service);
     return new service.NativeDebuggerService(debuggerConfig);
   }

@@ -13,8 +13,6 @@ import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {BuckProject} from '../../nuclide-buck-rpc';
 import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import type {BuckEvent} from './BuckEventStream';
-import typeof * as NativeDebuggerServiceInterface
-  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -87,8 +85,7 @@ async function _getAttachProcessInfoFromPid(
   pid: number,
   buckProjectPath: string,
 ): Promise<?AttachProcessInfo> {
-  const rpcService: ?NativeDebuggerServiceInterface
-    = getServiceByNuclideUri('NativeDebuggerService', buckProjectPath);
+  const rpcService = getServiceByNuclideUri('NativeDebuggerService', buckProjectPath);
   invariant(rpcService);
   const attachTargetList = await rpcService.getAttachTargetInfoList(pid);
   if (attachTargetList.length === 0) {

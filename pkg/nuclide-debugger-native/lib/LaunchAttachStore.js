@@ -11,7 +11,7 @@
 
 import type {
   AttachTargetInfo,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
 import type {Dispatcher} from 'flux';
 
 import {Emitter} from 'atom';

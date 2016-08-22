@@ -10,8 +10,8 @@
  */
 
 import type {
-  DebuggerConnection as DebuggerConnectionType,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+  NativeDebuggerService,
+} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
 import utils from './utils';
@@ -29,8 +29,8 @@ const {log, logInfo, logError} = utils;
 const SESSION_END_EVENT = 'session-end-event';
 
 export class LldbDebuggerInstance extends DebuggerInstance {
-  _debuggerConnection: ?DebuggerConnectionType;
-  _attachPromise: ?Promise<DebuggerConnectionType>;
+  _rpcService: NativeDebuggerService;
+  _attachPromise: ?Promise<NativeDebuggerService>;
   _chromeWebSocketServer: ?WS.Server;
   _chromeWebSocket: ?WebSocket;
   _disposables: atom$CompositeDisposable;
@@ -38,28 +38,24 @@ export class LldbDebuggerInstance extends DebuggerInstance {
 
   constructor(
     processInfo: DebuggerProcessInfo,
-    connection: DebuggerConnectionType,
-    outputDisposable: ?IDisposable,
+    rpcService: NativeDebuggerService,
+    outputDisposable: IDisposable,
   ) {
     super(processInfo);
-
-    this._debuggerConnection = null;
+    this._rpcService = rpcService;
     this._attachPromise = null;
     this._chromeWebSocketServer = null;
     this._chromeWebSocket = null;
     this._disposables = new CompositeDisposable();
-    if (outputDisposable != null) {
-      this._disposables.add(outputDisposable);
-    }
+    this._disposables.add(outputDisposable);
     this._emitter = new Emitter();
-    this._registerConnection(connection);
+    this._registerServerHandlers(rpcService);
   }
 
-  _registerConnection(connection: DebuggerConnectionType): void {
-    this._debuggerConnection = connection;
-    this._disposables.add(connection);
+  _registerServerHandlers(rpcService: NativeDebuggerService): void {
+    this._disposables.add(rpcService);
     this._disposables.add(new UniversalDisposable(
-      connection.getServerMessageObservable().refCount().subscribe(
+      rpcService.getServerMessageObservable().refCount().subscribe(
         this._handleServerMessage.bind(this),
         this._handleServerError.bind(this),
         this._handleSessionEnd.bind(this),
@@ -158,12 +154,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
 
   _onChromeSocketMessage(message: string): void {
     log('Recieved Chrome message: ' + message);
-    const connection = this._debuggerConnection;
-    if (connection) {
-      connection.sendCommand(translateMessageToServer(message));
-    } else {
-      logError('Why isn\'t debuger RPC service available?');
-    }
+    this._rpcService.sendCommand(translateMessageToServer(message));
   }
 
   _onChromeSocketError(error: Error): void {
