@@ -13,7 +13,7 @@ import type {
   ObjectGroup,
   WebInspector$CallFrame,
   WebInspector$Event,
-  WebInspector$UILocation,
+  IPCBreakpoint,
 } from '../../lib/types';
 
 import invariant from 'assert';
@@ -203,6 +203,9 @@ class NuclideBridge {
         break;
       case 'AddBreakpoint':
         this._addBreakpoint(args[0]);
+        break;
+      case 'UpdateBreakpoint':
+        this._updateBreakpoint(args[0]);
         break;
       case 'DeleteBreakpoint':
         this._deleteBreakpoint(args[0]);
@@ -480,25 +483,33 @@ class NuclideBridge {
   }
 
   _handleBreakpointAdded(event: WebInspector$Event) {
-    const location = event.data.uiLocation;
-    this._sendBreakpointNotification(location, 'BreakpointAdded');
+    this._sendBreakpointNotification(event, 'BreakpointAdded');
   }
 
   _handleBreakpointRemoved(event: WebInspector$Event) {
-    const location = event.data.uiLocation;
-    this._sendBreakpointNotification(location, 'BreakpointRemoved');
+    this._sendBreakpointNotification(event, 'BreakpointRemoved');
   }
 
-  _sendBreakpointNotification(location: WebInspector$UILocation, type: BreakpointNotificationType) {
+  _sendBreakpointNotification(event: WebInspector$Event, type: BreakpointNotificationType) {
     if (!this._suppressBreakpointNotification) {
-      ipcRenderer.sendToHost('notification', type, {
-        sourceURL: location.uiSourceCode.uri(),
-        lineNumber: location.lineNumber,
-      });
+      ipcRenderer.sendToHost(
+        'notification',
+        type,
+        this._getIPCBreakpointFromEvent(event),
+      );
     }
   }
 
-  // TODO[jeffreytan]: this is a hack to enable debugger
+  _getIPCBreakpointFromEvent(event: WebInspector$Event): IPCBreakpoint {
+    const {breakpoint, uiLocation} = event.data;
+    return {
+      sourceURL: uiLocation.uiSourceCode.uri(),
+      lineNumber: uiLocation.lineNumber,
+      condition: breakpoint.condition(),
+    };
+  }
+
+  // TODO[jeffreytan]: this is a hack to enable hhvm/lldb debugger
   // setting breakpoints in non-parsed files.
   // Open issues:
   // Any breakpoints in this list will shown as bound/resolved;
@@ -558,17 +569,36 @@ class NuclideBridge {
 
   _addBreakpoint(breakpoint: Object): boolean {
     this._parseBreakpointSourceIfNeeded(breakpoint);
-    const source = WebInspector.workspace.uiSourceCodeForOriginURL(breakpoint.sourceURL);
+    const {sourceURL, lineNumber, condition} = breakpoint;
+    const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceURL);
     if (source == null) {
       return false;
     }
     WebInspector.breakpointManager.setBreakpoint(
       source,
-      breakpoint.lineNumber,
-      0,    // columnNumber
-      '',   // Condition
-      true, // enabled
+      lineNumber,
+      0,                  // columnNumber
+      condition || '',    // Condition
+      true,               // enabled
     );
+    return true;
+  }
+
+  _updateBreakpoint(breakpoint: Object): boolean {
+    const {sourceURL, lineNumber, condition} = breakpoint;
+    const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceURL);
+    if (source == null) {
+      return false;
+    }
+    const chromeBreakpoint = WebInspector.breakpointManager.findBreakpointOnLine(
+      source,
+      lineNumber,
+    );
+    if (chromeBreakpoint == null) {
+      return false;
+    }
+    invariant(condition != null);
+    chromeBreakpoint.setCondition(condition);
     return true;
   }
 

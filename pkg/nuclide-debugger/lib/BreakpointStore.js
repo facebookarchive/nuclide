@@ -44,7 +44,9 @@ const DELETEBREAKPOINT_ACTION = 'DeleteBreakpoint';
 class BreakpointStore {
   _disposables: IDisposable;
   _breakpoints: Map<string, LineToBreakpointMap>;
+  _idToBreakpointMap: Map<number, FileLineBreakpoint>;
   _emitter: atom$Emitter;
+  _breakpointIdSeed: number;
 
   constructor(
     dispatcher: Dispatcher,
@@ -56,7 +58,9 @@ class BreakpointStore {
         dispatcher.unregister(dispatcherToken);
       }),
     );
+    this._breakpointIdSeed = 0;
     this._breakpoints = new Map();
+    this._idToBreakpointMap = new Map();
     this._emitter = new Emitter();
     if (initialBreakpoints) {
       this._deserializeBreakpoints(initialBreakpoints);
@@ -69,6 +73,9 @@ class BreakpointStore {
       case Constants.Actions.ADD_BREAKPOINT:
         this._addBreakpoint(data.path, data.line);
         break;
+      case Constants.Actions.UPDATE_BREAKPOINT:
+        this._updateBreakpoint(data.breakpointId, data.condition);
+        break;
       case Constants.Actions.DELETE_BREAKPOINT:
         this._deleteBreakpoint(data.path, data.line);
         break;
@@ -79,7 +86,7 @@ class BreakpointStore {
         this._deleteBreakpoint(data.path, data.line, false);
         break;
       case Constants.Actions.BIND_BREAKPOINT_IPC:
-        this._bindBreakpoint(data.path, data.line);
+        this._bindBreakpoint(data.path, data.line, data.condition);
         break;
       case Constants.Actions.DEBUGGER_MODE_CHANGE:
         this._handleDebuggerModeChange(data);
@@ -92,15 +99,20 @@ class BreakpointStore {
   _addBreakpoint(
     path: string,
     line: number,
+    condition: string = '',
     resolved: boolean = false,
     userAction: boolean = true,
   ): void {
+    this._breakpointIdSeed++;
     const breakpoint = {
+      id: this._breakpointIdSeed,
       path,
       line,
+      condition,
       enabled: true,
       resolved,
     };
+    this._idToBreakpointMap.set(breakpoint.id, breakpoint);
     if (!this._breakpoints.has(path)) {
       this._breakpoints.set(path, new Map());
     }
@@ -116,6 +128,22 @@ class BreakpointStore {
     }
   }
 
+  _updateBreakpoint(
+    breakpointId: number,
+    condition: string,
+  ): void {
+    const breakpoint = this._idToBreakpointMap.get(breakpointId);
+    if (breakpoint == null) {
+      return;
+    }
+    breakpoint.condition = condition;
+    this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
+    this._emitter.emit(BREAKPOINT_USER_CHANGED, {
+      action: 'UpdateBreakpoint',
+      breakpoint,
+    });
+  }
+
   _deleteBreakpoint(
     path: string,
     line: number,
@@ -125,9 +153,10 @@ class BreakpointStore {
     invariant(lineMap != null);
     const breakpoint = lineMap.get(line);
     if (lineMap.delete(line)) {
+      invariant(breakpoint);
+      this._idToBreakpointMap.delete(breakpoint.id);
       this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
       if (userAction) {
-        invariant(breakpoint);
         this._emitter.emit(BREAKPOINT_USER_CHANGED, {
           action: DELETEBREAKPOINT_ACTION,
           breakpoint,
@@ -145,14 +174,15 @@ class BreakpointStore {
     if (lineMap.has(line)) {
       this._deleteBreakpoint(path, line);
     } else {
-      this._addBreakpoint(path, line);
+      this._addBreakpoint(path, line, '');
     }
   }
 
-  _bindBreakpoint(path: string, line: number): void {
+  _bindBreakpoint(path: string, line: number, condition: string): void {
     this._addBreakpoint(
       path,
       line,
+      condition,
       true,   // resolved
       false,  // userAction
     );
@@ -185,6 +215,14 @@ class BreakpointStore {
     return lineMap != null ? new Set(lineMap.keys()) : new Set();
   }
 
+  getBreakpointAtLine(path: string, line: number): ?FileLineBreakpoint {
+    const lineMap = this._breakpoints.get(path);
+    if (lineMap == null) {
+      return;
+    }
+    return lineMap.get(line);
+  }
+
   getAllBreakpoints(): FileLineBreakpoints {
     const breakpoints: FileLineBreakpoints = [];
     for (const [, lineMap] of this._breakpoints) {
@@ -199,6 +237,7 @@ class BreakpointStore {
     const breakpoints = [];
     for (const [path, lineMap] of this._breakpoints) {
       for (const line of lineMap.keys()) {
+        // TODO: serialize condition and enabled states.
         breakpoints.push({
           line,
           sourceURL: path,

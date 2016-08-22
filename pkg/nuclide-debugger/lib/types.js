@@ -36,12 +36,21 @@ export type EvaluatedExpressionList = Array<EvaluatedExpression>;
 
 /* Breakpoints */
 export type FileLineBreakpoint = {
+  id: number,
   path: string,
   line: number,
+  condition: string,
   enabled: boolean,
   resolved: boolean,
 };
 export type FileLineBreakpoints = Array<FileLineBreakpoint>;
+
+// TODO: handle non file line breakpoints.
+export type IPCBreakpoint = {
+  sourceURL: string,
+  lineNumber: number,
+  condition: string,
+};
 
 export type BreakpointUserChangeArgType = {
   action: string,
@@ -233,6 +242,7 @@ declare class WebInspector$BreakpointManager$Breakpoint {
   uiSourceCode(): ?WebInspector$UISourceCode,
   lineNumber(): number,
   remove(keepInStorage: boolean): void,
+  setCondition(condition: string): void,
 }
 
 declare class WebInspector$RuntimeAgent {

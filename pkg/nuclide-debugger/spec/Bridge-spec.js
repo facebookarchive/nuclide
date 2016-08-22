@@ -175,6 +175,7 @@ describe('Bridge', () => {
     expect(mockWebview.send).toHaveBeenCalledWith('command', 'AddBreakpoint', {
       sourceURL: 'file:///tmp/foobarbaz.js',
       lineNumber: 4,
+      condition: '',
     });
   });
 
@@ -210,11 +211,13 @@ describe('Bridge', () => {
 
   it('should change BreakpointStore when getting add/remove breakpoints notification', () => {
     const line = 15;
+    const condition = 'Condtion expression';
     sendIpcNotification('BreakpointAdded', {
       sourceURL: 'file://' + path,
       lineNumber: line,
+      condition,
     });
-    expect(breakpointStore._bindBreakpoint).toHaveBeenCalledWith(path, line);
+    expect(breakpointStore._bindBreakpoint).toHaveBeenCalledWith(path, line, condition);
 
     sendIpcNotification('BreakpointRemoved', {
       sourceURL: 'file://' + path,

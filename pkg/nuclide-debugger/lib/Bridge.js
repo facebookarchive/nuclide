@@ -17,6 +17,7 @@ import type {
   ObjectGroup,
   NuclideThreadData,
   BreakpointUserChangeArgType,
+  IPCBreakpoint,
 } from './types';
 
 type ExpressionResult = ChromeProtocolResponse & {
@@ -447,26 +448,28 @@ class Bridge {
     );
   }
 
-  _bindBreakpoint(location: {sourceURL: string, lineNumber: number}) {
-    const path = nuclideUri.uriToNuclideUri(location.sourceURL);
+  _bindBreakpoint(breakpoint: IPCBreakpoint) {
+    const {sourceURL, lineNumber, condition} = breakpoint;
+    const path = nuclideUri.uriToNuclideUri(sourceURL);
     // only handle real files for now.
     if (path) {
       try {
         this._suppressBreakpointSync = true;
-        this._debuggerModel.getActions().bindBreakpointIPC(path, location.lineNumber);
+        this._debuggerModel.getActions().bindBreakpointIPC(path, lineNumber, condition);
       } finally {
         this._suppressBreakpointSync = false;
       }
     }
   }
 
-  _removeBreakpoint(location: {sourceURL: string, lineNumber: number}) {
-    const path = nuclideUri.uriToNuclideUri(location.sourceURL);
+  _removeBreakpoint(breakpoint: IPCBreakpoint) {
+    const {sourceURL, lineNumber} = breakpoint;
+    const path = nuclideUri.uriToNuclideUri(sourceURL);
     // only handle real files for now.
     if (path) {
       try {
         this._suppressBreakpointSync = true;
-        this._debuggerModel.getActions().deleteBreakpointIPC(path, location.lineNumber);
+        this._debuggerModel.getActions().deleteBreakpointIPC(path, lineNumber);
       } finally {
         this._suppressBreakpointSync = false;
       }
@@ -480,6 +483,7 @@ class Bridge {
       webview.send('command', action, {
         sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
         lineNumber: breakpoint.line,
+        condition: breakpoint.condition,
       });
     }
   }
@@ -497,6 +501,7 @@ class Bridge {
         results.push({
           sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
           lineNumber: breakpoint.line,
+          condition: breakpoint.condition,
         });
       });
       webview.send('command', 'SyncBreakpoints', results);
