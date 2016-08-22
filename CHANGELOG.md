@@ -1,5 +1,28 @@
 # Nuclide Changelog
 
+## v0.164.0
+
+### General
+
+* Compatibility fixes for Atom 1.9.x
+* 40+ quality, performance and & stability improvements
+* UX Improvements to task runner, console, NUX tours, ctrl-clicking on mac, and more
+
+### debugger
+
+* Properly clear & switch state in thread window for all debugger backends
+* UX & UI improvements to native launch/attach modal
+* Fix for setting breakpoints in scripts
+* NUX for new debugger UI
+
+### Languages
+
+* Python: Fixed flake8 lint, fix outline view + typehints for Python 3
+* Clang: Improvements and fixes to autocomplete, diagnostics
+
+### Remote connection
+* Fixing treatment of `%` in remote paths
+
 ## v0.163.0
 
 ### Hotfixes
