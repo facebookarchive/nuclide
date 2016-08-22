@@ -114,7 +114,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
     // The project was removed from the tree.
     subscription.dispose();
 
-    closeOpenFilesForRemoteProject(connection.getConfig());
+    closeOpenFilesForRemoteProject(connection);
 
     const hostname = connection.getRemoteHostname();
     const closeConnection = (shutdownIfLast: boolean) => {
@@ -165,12 +165,18 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
   }
 }
 
-function closeOpenFilesForRemoteProject(remoteProjectConfig: RemoteConnectionConfiguration): void {
+function closeOpenFilesForRemoteProject(connection: RemoteConnection): void {
+  const remoteProjectConfig = connection.getConfig();
   const openInstances = getOpenFileEditorForRemoteProject(remoteProjectConfig);
   for (const openInstance of openInstances) {
-    const {editor, pane} = openInstance;
-    pane.removeItem(editor);
-    editor.destroy();
+    const {uri, editor, pane} = openInstance;
+    // It's possible to open files outside of the root of the connection.
+    // Only clean up these files if we're the only connection left.
+    if (connection.isOnlyConnection() ||
+        nuclideUri.contains(connection.getUriForInitialWorkingDirectory(), uri)) {
+      pane.removeItem(editor);
+      editor.destroy();
+    }
   }
 }
 
