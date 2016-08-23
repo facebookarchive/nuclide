@@ -42,7 +42,7 @@ export type TaskMetadata = {
   type: string,
   label: string,
   description: string,
-  enabled: boolean, // Can the action be run now?
+  runnable: boolean, // Can the action be run now?
   cancelable?: boolean, // By default, this is true (all tasks are cancelable).
   icon: atom$Octicon,
 };

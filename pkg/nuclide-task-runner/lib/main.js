@@ -85,7 +85,7 @@ class Activation {
         },
       }),
 
-      // Add a command for each task type. If there's more than one of the same type enabled, the
+      // Add a command for each task type. If there's more than one of the same type runnable, the
       // first is used.
       // TODO: Instead, prompt user for which to use and remember their choice.
       syncAtomCommands(
@@ -96,7 +96,7 @@ class Activation {
           .map(taskLists => {
             const allTasks = Array.prototype.concat(...Array.from(taskLists.values()));
             const types = allTasks
-              .filter(taskMeta => taskMeta.enabled)
+              .filter(taskMeta => taskMeta.runnable)
               .map(taskMeta => taskMeta.type);
             return new Set(types);
           }),
@@ -115,7 +115,7 @@ class Activation {
                 const taskList = state.taskLists.get(taskRunnerId);
                 if (taskList == null) { continue; }
                 for (const taskMeta of taskList) {
-                  if (taskMeta.enabled && taskMeta.type === taskType) {
+                  if (taskMeta.runnable && taskMeta.type === taskType) {
                     this._actionCreators.runTask(taskMeta);
                     return;
                   }

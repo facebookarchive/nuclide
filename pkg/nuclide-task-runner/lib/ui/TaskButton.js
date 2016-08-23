@@ -28,7 +28,7 @@ type Props = {
 };
 
 export function TaskButton(props: Props): React.Element<any> {
-  const confirmDisabled = props.taskIsRunning || !props.activeTask || !props.activeTask.enabled;
+  const confirmDisabled = props.taskIsRunning || !props.activeTask || !props.activeTask.runnable;
   const run = () => {
     if (props.activeTask != null) {
       props.runTask(props.activeTask);

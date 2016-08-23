@@ -77,6 +77,6 @@ const createTask = name => ({
   type: name,
   label: name,
   description: name,
-  enabled: true,
+  runnable: true,
   icon: 'triangle-right',
 });

@@ -156,7 +156,7 @@ export function runTaskEpic(
           const taskMeta = getTaskMetadata(taskToRun, state.taskLists);
           invariant(taskMeta != null);
 
-          if (!taskMeta.enabled) {
+          if (!taskMeta.runnable) {
             return Observable.empty();
           }
 

@@ -100,7 +100,7 @@ export class BuckBuildSystem {
     return TASKS
       .map(task => ({
         ...task,
-        enabled: hasBuildTarget && shouldEnableTask(task.type, store),
+        runnable: hasBuildTarget && shouldEnableTask(task.type, store),
       }));
   }
 
@@ -346,28 +346,28 @@ const TASKS = [
     type: 'build',
     label: 'Build',
     description: 'Build the specified Buck target',
-    enabled: true,
+    runnable: true,
     icon: 'tools',
   },
   {
     type: 'run',
     label: 'Run',
     description: 'Run the specfied Buck target',
-    enabled: true,
+    runnable: true,
     icon: 'triangle-right',
   },
   {
     type: 'test',
     label: 'Test',
     description: 'Test the specfied Buck target',
-    enabled: true,
+    runnable: true,
     icon: 'checklist',
   },
   {
     type: 'debug',
     label: 'Debug',
     description: 'Debug the specfied Buck target',
-    enabled: true,
+    runnable: true,
     icon: 'plug',
   },
 ];
