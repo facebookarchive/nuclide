@@ -70,10 +70,10 @@ describe('Diff View Right Editor Save and Edit Test', () => {
       const diffViewPackage = atom.packages.getActivePackage('nuclide-diff-view');
       invariant(diffViewPackage, 'The "nuclide-diff-view" package is not active!');
       // Get active diff view
-      const activeDiffView = (diffViewPackage.mainModule: any).__getActiveDiffView();
-      invariant(activeDiffView, 'No active diff view!');
+      const diffViewComponent = (diffViewPackage.mainModule: any).__getDiffViewComponent();
+      invariant(diffViewComponent, 'No active diff view!');
 
-      const diffViewContainer = ReactDOM.findDOMNode(activeDiffView.component);
+      const diffViewContainer = ReactDOM.findDOMNode(diffViewComponent);
       expect(diffViewContainer.parentNode).toBe(diffViewElement);
       invariant(diffViewElement != null);
       // Ensure both panels TextEditors are showing in diff view
