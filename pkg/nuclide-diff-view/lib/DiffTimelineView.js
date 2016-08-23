@@ -10,7 +10,7 @@
  */
 
 import type DiffViewModel from './DiffViewModel';
-import type {RevisionsState, DiffStatusDisplay} from './types';
+import type {DiffStatusDisplay} from './types';
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {CompositeDisposable} from 'atom';
@@ -28,13 +28,8 @@ type DiffTimelineViewProps = {
   onSelectionChange: (revisionInfo: RevisionInfo) => any,
 };
 
-type DiffTimelineViewState = {
-  revisionsState: ?RevisionsState,
-};
-
 export default class DiffTimelineView extends React.Component {
   props: DiffTimelineViewProps;
-  state: DiffTimelineViewState;
   _subscriptions: CompositeDisposable;
 
   constructor(props: DiffTimelineViewProps) {
@@ -42,29 +37,23 @@ export default class DiffTimelineView extends React.Component {
     this._subscriptions = new CompositeDisposable();
     (this: any)._updateRevisions = this._updateRevisions.bind(this);
     (this: any)._handleClickPublish = this._handleClickPublish.bind(this);
-    this.state = {
-      revisionsState: null,
-    };
   }
 
   componentDidMount(): void {
     const {diffModel} = this.props;
     this._subscriptions.add(
-      diffModel.onRevisionsUpdate(this._updateRevisions),
+      diffModel.onDidUpdateState(this._updateRevisions),
     );
-    diffModel.getActiveRevisionsState().then(this._updateRevisions);
   }
 
-  _updateRevisions(newRevisionsState: ?RevisionsState): void {
-    this.setState({
-      revisionsState: newRevisionsState,
-    });
+  _updateRevisions(): void {
+    this.forceUpdate();
   }
 
   render(): ?React.Element<any> {
     let content = null;
     const {diffModel, onSelectionChange} = this.props;
-    const {revisionsState} = this.state;
+    const {revisionsState} = diffModel.getState();
     if (revisionsState == null) {
       content = 'Revisions not loaded...';
     } else {

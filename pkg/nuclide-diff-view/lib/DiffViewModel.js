@@ -78,7 +78,6 @@ import {bufferForUri, loadBufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
-const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
 
@@ -123,6 +122,7 @@ function getInitialState(): State {
     dirtyFileChanges: new Map(),
     selectedFileChanges: new Map(),
     showNonHgRepos: true,
+    revisionsState: null,
   };
 }
 
@@ -209,6 +209,7 @@ export type State = {
   dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
   selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>,
   showNonHgRepos: boolean,
+  revisionsState: ?RevisionsState,
 };
 
 class DiffViewModel {
@@ -407,7 +408,11 @@ class DiffViewModel {
     track('diff-view-update-timeline-revisions', {
       revisionsCount: `${revisionsState.revisions.length}`,
     });
-    this._onUpdateRevisionsState(revisionsState);
+    this._setState({
+      ...this._state,
+      revisionsState,
+    });
+    this._loadModeState(true);
 
     // Update the active file, if changed.
     const {filePath} = this._state;
@@ -443,11 +448,6 @@ class DiffViewModel {
       filesystemContents,
       revisionInfo,
     );
-  }
-
-  _onUpdateRevisionsState(revisionsState: RevisionsState): void {
-    this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
-    this._loadModeState(true);
   }
 
   setPublishMessage(publishMessage: ?string): void {
@@ -1097,10 +1097,6 @@ class DiffViewModel {
     return this._emitter.on(DID_UPDATE_STATE_EVENT, callback);
   }
 
-  onRevisionsUpdate(callback: (state: ?RevisionsState) => void): IDisposable {
-    return this._emitter.on(CHANGE_REVISIONS_EVENT, callback);
-  }
-
   async _updateInlineComponents(): Promise<void> {
     const {filePath} = this._state;
     if (!filePath) {
@@ -1193,7 +1189,7 @@ class DiffViewModel {
     headRevision: RevisionInfo,
     phabricatorRevision: ?PhabricatorRevisionInfo,
   }> {
-    const revisionsState = await this.getActiveRevisionsState();
+    const revisionsState = await this._getActiveRevisionsState();
     if (revisionsState == null) {
       throw new Error('Cannot Load Publish View: No active file or repository');
     }
@@ -1213,7 +1209,7 @@ class DiffViewModel {
     if (this._activeRepositoryStack == null) {
       throw new Error('Diff View: No active file or repository open');
     }
-    const revisionsState = await this.getActiveRevisionsState();
+    const revisionsState = await this._getActiveRevisionsState();
     invariant(revisionsState, 'Diff View Internal Error: revisionsState cannot be null');
     const {revisions} = revisionsState;
     invariant(revisions.length > 0, 'Diff View Error: Cannot amend non-existing commit');
@@ -1233,7 +1229,7 @@ class DiffViewModel {
     return commitMessage;
   }
 
-  async getActiveRevisionsState(): Promise<?RevisionsState> {
+  async _getActiveRevisionsState(): Promise<?RevisionsState> {
     if (this._activeRepositoryStack == null || !this._isActive) {
       return null;
     }
