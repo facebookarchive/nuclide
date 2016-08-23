@@ -136,7 +136,7 @@ export class BuckBuildSystem {
 
   setProjectRoot(projectRoot: ?Directory): void {
     const path = projectRoot == null ? null : projectRoot.getPath();
-    this._getFlux().actions.updateProjectPath(path);
+    this._getFlux().actions.updateProjectRoot(path);
   }
 
   _logOutput(text: string, level: Level) {

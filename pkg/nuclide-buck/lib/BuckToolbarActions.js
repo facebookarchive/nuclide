@@ -46,10 +46,11 @@ export default class BuckToolbarActions {
     this._loadingRules = 0;
   }
 
-  async updateProjectPath(path: ?string): Promise<void> {
+  async updateProjectRoot(path: ?string): Promise<void> {
     const buckRoot = path == null ? null : await getBuckProjectRoot(path);
     this._dispatcher.dispatch({
       actionType: BuckToolbarActions.ActionType.UPDATE_BUCK_ROOT,
+      projectRoot: path,
       buckRoot,
     });
     // Update the build target information as well.

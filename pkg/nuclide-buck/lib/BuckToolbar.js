@@ -12,6 +12,7 @@
 import type {TaskType, TaskSettings} from './types';
 
 import {CompositeDisposable, Disposable} from 'atom';
+import nullthrows from 'nullthrows';
 import {React} from 'react-for-atom';
 
 import {lastly} from '../../commons-node/promise';
@@ -123,15 +124,25 @@ class BuckToolbar extends React.Component {
         </div>;
     } else if (buckToolbarStore.getBuildTarget() &&
                buckToolbarStore.getRuleType() == null) {
+      let title;
+      const buckRoot = buckToolbarStore.getCurrentBuckRoot();
+      const projectRoot = buckToolbarStore.getCurrentProjectRoot();
+      if (buckRoot == null) {
+        if (projectRoot != null) {
+          title = `No Buck project found in the Current Working Root:<br />${projectRoot}`;
+        } else {
+          title = 'No Current Working Root.';
+        }
+      } else {
+        title =
+          `Rule "${buckToolbarStore.getBuildTarget()}" could not be found in ${buckRoot}.<br />` +
+          `Check your Current Working Root: ${nullthrows(projectRoot)}`;
+      }
+
       status =
         <span
           className="icon icon-alert"
-          ref={addTooltip({
-            title: buckToolbarStore.getCurrentBuckRoot() == null ?
-              NO_ACTIVE_PROJECT_ERROR :
-              `Rule "${buckToolbarStore.getBuildTarget()}" could not be found.`,
-            delay: 0,
-          })}
+          ref={addTooltip({title, delay: 0})}
         />;
     }
 

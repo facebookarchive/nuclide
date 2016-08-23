@@ -21,6 +21,7 @@ export default class BuckToolbarStore {
   _devices: Array<Device>;
   _dispatcher: Dispatcher;
   _emitter: Emitter;
+  _currentProjectRoot: ?string;
   _currentBuckRoot: ?string;
   _isLoadingRule: boolean;
   _buildTarget: string;
@@ -50,6 +51,7 @@ export default class BuckToolbarStore {
     this._dispatcher.register(action => {
       switch (action.actionType) {
         case BuckToolbarActions.ActionType.UPDATE_BUCK_ROOT:
+          this._currentProjectRoot = action.projectRoot;
           this._currentBuckRoot = action.buckRoot;
           break;
         case BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET:
@@ -101,6 +103,10 @@ export default class BuckToolbarStore {
 
   getBuildTarget(): string {
     return this._buildTarget;
+  }
+
+  getCurrentProjectRoot(): ?string {
+    return this._currentProjectRoot;
   }
 
   getCurrentBuckRoot(): ?string {
