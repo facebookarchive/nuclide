@@ -29,7 +29,7 @@ import {
   STATUS_BREAK,
   STATUS_ERROR,
   STATUS_END,
-  COMMAND_RUN,
+
   COMMAND_STEP_INTO,
   COMMAND_STEP_OVER,
   COMMAND_STEP_OUT,
@@ -89,7 +89,7 @@ export class DebuggerHandler extends Handler {
         break;
 
       case 'pause':
-        await this._sendBreakCommand(id);
+        this._pause();
         break;
 
       case 'stepInto':
@@ -105,7 +105,7 @@ export class DebuggerHandler extends Handler {
         break;
 
       case 'resume':
-        this._sendContinuationCommand(COMMAND_RUN);
+        this._resume();
         break;
 
       case 'setPauseOnExceptions':
@@ -219,21 +219,22 @@ export class DebuggerHandler extends Handler {
   }
 
   _sendContinuationCommand(command: string): void {
+    logger.log('Sending continuation command: ' + command);
+    this._connectionMultiplexer.sendContinuationCommand(command);
+  }
+
+  _pause(): void {
+    this._connectionMultiplexer.asyncBreak();
+  }
+
+  _resume(): void {
     if (!this._hadFirstContinuationCommand) {
       this._hadFirstContinuationCommand = true;
       this.sendMethod('Debugger.resumed');
       this._connectionMultiplexer.listen();
       return;
     }
-    logger.log('Sending continuation command: ' + command);
-    this._connectionMultiplexer.sendContinuationCommand(command);
-  }
-
-  async _sendBreakCommand(id: number): Promise<any> {
-    const response = await this._connectionMultiplexer.sendBreakCommand();
-    if (!response) {
-      this.replyWithError(id, 'Unable to break');
-    }
+    this._connectionMultiplexer.resume();
   }
 
   async _onStatusChanged(status: string, params: ?Object): Promise<void> {

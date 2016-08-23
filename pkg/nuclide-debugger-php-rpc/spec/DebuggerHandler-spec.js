@@ -56,10 +56,11 @@ describe('debugger-php-rpc DebuggerHandler', () => {
         'getStatus',
         'getStackFrames',
         'sendContinuationCommand',
-        'sendBreakCommand',
         'getScopesForFrame',
         'getRequestSwitchMessage',
         'resetRequestSwitchMessage',
+        'asyncBreak',
+        'resume',
       ]): any
     ): ConnectionMultiplexerType);
     onStatusSubscription = jasmine.createSpyObj('onStatusSubscription', ['dispose']);
@@ -170,22 +171,12 @@ describe('debugger-php-rpc DebuggerHandler', () => {
   });
 
   it('pause - success', () => {
-    connectionMultiplexer.sendBreakCommand =
-      jasmine.createSpy('sendBreakCommand').andReturn(Promise.resolve(true));
+    connectionMultiplexer.asyncBreak =
+      jasmine.createSpy('asyncBreak').andReturn(Promise.resolve(true));
     handler.handleMethod(1, 'pause');
-    expect(connectionMultiplexer.sendBreakCommand).toHaveBeenCalledWith();
-  });
+    expect(connectionMultiplexer.asyncBreak).toHaveBeenCalledWith();
 
-  it('pause - failure', () => {
-    waitsForPromise(async () => {
-      connectionMultiplexer.sendBreakCommand =
-        jasmine.createSpy('sendBreakCommand').andReturn(Promise.resolve(false));
 
-      await handler.handleMethod(1, 'pause');
-
-      expect(connectionMultiplexer.sendBreakCommand).toHaveBeenCalledWith();
-      expect(clientCallback.replyWithError).toHaveBeenCalledWith(1, jasmine.any(String));
-    });
   });
 
   it('continue from fake loader bp', () => {
@@ -242,6 +233,49 @@ describe('debugger-php-rpc DebuggerHandler', () => {
     };
   }
 
+  function testRun(chromeCommand) {
+    return async () => {
+      expect(connectionMultiplexer.onStatus).toHaveBeenCalled();
+
+      // Fake the run from loader bp
+      await handler.handleMethod(1, 'resume');
+      expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
+        'Debugger.resumed',
+        undefined,
+      );
+      expect(connectionMultiplexer.resume).not.toHaveBeenCalled();
+
+      connectionMultiplexer.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(
+        Promise.resolve({stack: []}),
+      );
+
+      await handler.handleMethod(1, chromeCommand);
+
+      expect(connectionMultiplexer.resume).toHaveBeenCalledWith();
+
+      await onStatus(STATUS_RUNNING);
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
+        'Debugger.resumed',
+        undefined,
+      );
+
+      await onStatus(STATUS_BREAK);
+      expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
+        observableSpy,
+        'Debugger.paused',
+        {
+          callFrames: [],
+          reason: 'breakpoint',
+          data: {},
+        });
+    };
+  }
+
+
   it('stepInto', () => {
     waitsForPromise(testContinuationCommand('stepInto', 'step_into'));
   });
@@ -255,7 +289,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
   });
 
   it('resume', () => {
-    waitsForPromise(testContinuationCommand('resume', 'run'));
+    waitsForPromise(testRun('resume'));
   });
 
   it('stopping', () => {

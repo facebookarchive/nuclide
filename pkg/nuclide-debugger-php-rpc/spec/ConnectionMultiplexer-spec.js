@@ -181,6 +181,10 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         return connection._status;
       });
       // $FlowFixMe override instance method.
+      connection.stopReason = jasmine.createSpy('stopReason').andCallFake(() => {
+        return 'breakpoint';
+      });
+      // $FlowFixMe override instance method.
       connection.dispose = jasmine.createSpy('connection.dispose' + connectionCount);
 
       const statusDispose = jasmine.createSpy('connection.onStatus.dispose' + connectionCount);
@@ -734,8 +738,8 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   it('sendBreakCommand', () => {
     waitsForPromise(async () => {
       await doEnable();
-
-      connectionMultiplexer.sendBreakCommand();
+      connections[0]._status = STATUS_RUNNING;
+      connectionMultiplexer.asyncBreak();
       expect(connections[0].sendBreakCommand).toHaveBeenCalledWith();
     });
   });

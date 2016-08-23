@@ -36,6 +36,9 @@ import {
   BREAKPOINT_RESOLVED_NOTIFICATION,
   COMMAND_RUN,
 } from './DbgpSocket';
+import {
+  ASYNC_BREAK,
+} from './Connection';
 import {EventEmitter} from 'events';
 import invariant from 'assert';
 import {ClientCallback} from './ClientCallback';
@@ -46,6 +49,8 @@ import type {DbgpBreakpoint} from './DbgpSocket';
 
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 const CONNECTION_MUX_NOTIFICATION_EVENT = 'connection-mux-notification';
+
+const STATUS_ASYNC_BREAK_SENT = 'async_break_sent';
 
 type DbgpError = {
   $: {
@@ -289,7 +294,7 @@ export class ConnectionMultiplexer {
         if (connection === this._enabledConnection) {
           // This can happen when we step.
           logger.log('Mux break on enabled connection');
-          this._emitStatus(STATUS_BREAK);
+          this._setStatus(STATUS_BREAK);
           return;
         }
         break;
@@ -338,14 +343,20 @@ export class ConnectionMultiplexer {
 
     // now check if we can move from running to break...
     for (const connection of this._connections) {
-      if (connection.getStatus() === STATUS_BREAK) {
-        if (!(getSettings().singleThreadStepping) || this._lastEnabledConnection === null ||
-          (connection === this._lastEnabledConnection)) {
-          this._enableConnection(connection);
-          break;
-        }
+      if (this._shouldEnableConnection(connection)) {
+        this._enableConnection(connection);
+        break;
       }
     }
+  }
+
+  _shouldEnableConnection(connection: Connection): boolean {
+    return connection.getStatus() === STATUS_BREAK &&
+      // Only enable connection paused by async_break if user has explicityly issued an async_break.
+      (connection.stopReason() !== ASYNC_BREAK || this._status === STATUS_ASYNC_BREAK_SENT) &&
+      // Don't switch threads unnecessarily in single thread stepping mode
+      (!(getSettings().singleThreadStepping) || this._lastEnabledConnection === null ||
+      connection === this._lastEnabledConnection);
   }
 
   _enableConnection(connection: Connection): void {
@@ -452,10 +463,7 @@ export class ConnectionMultiplexer {
   }
 
   sendContinuationCommand(command: string): void {
-    if (command === COMMAND_RUN) {
-      // For now we will have only single thread stepping, not single thread running.
-      this._lastEnabledConnection = null;
-    }
+    this._resumeBackgroundConnections();
     if (this._enabledConnection) {
       this._enabledConnection.sendContinuationCommand(command);
     } else {
@@ -463,12 +471,27 @@ export class ConnectionMultiplexer {
     }
   }
 
-  sendBreakCommand(): Promise<boolean> {
-    if (this._enabledConnection) {
-      return this._enabledConnection.sendBreakCommand();
-    } else {
-      return Promise.resolve(false);
+  _resumeBackgroundConnections(): void {
+    for (const connection of this._connections) {
+      if (connection !== this._enabledConnection && connection.stopReason() === ASYNC_BREAK) {
+        connection.sendContinuationCommand(COMMAND_RUN);
+      }
     }
+  }
+
+  asyncBreak(): void {
+    this._status = STATUS_ASYNC_BREAK_SENT;
+    for (const connection of this._connections) {
+      if (connection.getStatus() === STATUS_RUNNING) {
+        connection.sendBreakCommand();
+      }
+    }
+  }
+
+  resume(): void {
+    // For now we will have only single thread stepping, not single thread running.
+    this._lastEnabledConnection = null;
+    this.sendContinuationCommand(COMMAND_RUN);
   }
 
   getProperties(remoteId: Runtime$RemoteObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
