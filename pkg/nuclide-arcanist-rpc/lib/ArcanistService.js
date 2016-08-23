@@ -32,8 +32,6 @@ import {
 } from '../../nuclide-source-control-helpers';
 import {getLogger} from '../../nuclide-logging';
 
-const logger = getLogger();
-
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
 
 export type ArcDiagnostic = {
@@ -203,7 +201,7 @@ async function execArcLint(
     try {
       json = JSON.parse(line);
     } catch (error) {
-      logger.warn('Error parsing `arc lint` JSON output', line);
+      getLogger().warn('Error parsing `arc lint` JSON output', line);
       continue;
     }
     for (const file of Object.keys(json)) {

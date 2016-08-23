@@ -77,6 +77,7 @@ import {notifyInternalError} from './notifications';
 import {bufferForUri, loadBufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
+import stripAnsi from 'strip-ansi';
 
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
@@ -973,7 +974,9 @@ class DiffViewModel {
     return phabricatorRevision;
   }
 
-  async _processArcanistOutput(stream_: Observable<any>): Promise<void> {
+  async _processArcanistOutput(
+    stream_: Observable<{stderr?: string, stdout?: string}>,
+  ): Promise<void> {
     let stream = stream_;
     let fatalError = false;
     stream = stream
@@ -1018,13 +1021,13 @@ class DiffViewModel {
         switch (decodedJSON.type) {
           case 'phutil:out':
           case 'phutil:out:raw':
-            messages.push({level: 'log', text: decodedJSON.message});
+            messages.push({level: 'log', text: stripAnsi(decodedJSON.message)});
             break;
           case 'phutil:err':
-            messages.push({level: 'error', text: decodedJSON.message});
+            messages.push({level: 'error', text: stripAnsi(decodedJSON.message)});
             break;
           case 'error':
-            messages.push({level: 'error', text: decodedJSON.message});
+            messages.push({level: 'error', text: stripAnsi(decodedJSON.message)});
             fatalError = true;
             break;
           default:
