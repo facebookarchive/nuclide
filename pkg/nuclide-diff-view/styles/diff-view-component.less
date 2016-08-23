@@ -299,6 +299,13 @@ atom-text-editor, atom-text-editor::shadow {
       &.is-focused {
         border-color: @background-color-selected;
         box-shadow: 0 0 0 1px @background-color-selected;
+
+        &::shadow {
+          .cursor {
+            border-color: @text-color-highlight;
+            border-width: thin;
+          }
+        }
       }
     }
 
