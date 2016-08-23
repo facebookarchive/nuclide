@@ -155,7 +155,7 @@ class FileTreeContextMenu {
 
     const shouldDisplaySetToCurrentWorkingRootOption = () => {
       const node = this._store.getSingleSelectedNode();
-      return node != null && node.isRoot && this._store.hasCwd() && !node.isCwd;
+      return node != null && node.isContainer && this._store.hasCwd() && !node.isCwd;
     };
 
     this._addContextMenuItemGroup([

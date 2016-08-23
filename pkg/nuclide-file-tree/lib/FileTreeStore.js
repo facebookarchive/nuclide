@@ -814,7 +814,11 @@ export class FileTreeStore {
           return prevNode;
         }
 
-        return new FileTreeNode({uri, rootUri: node.rootUri}, this._conf);
+        return new FileTreeNode({
+          uri,
+          rootUri: node.rootUri,
+          isCwd: uri === this._cwdKey,
+        }, this._conf);
       });
 
       const children = FileTreeNode.childrenFromArray(childrenNodes);
@@ -897,8 +901,13 @@ export class FileTreeStore {
   }
 
   _setCwdKey(cwdKey: ?NuclideUri): void {
+    if (this._cwdKey != null) {
+      this._updateNodeAtAllRoots(this._cwdKey, node => node.setIsCwd(false));
+    }
     this._cwdKey = cwdKey;
-    this._updateRoots(root => root.setIsCwd(root.uri === cwdKey));
+    if (cwdKey != null) {
+      this._updateNodeAtAllRoots(cwdKey, node => node.setIsCwd(true));
+    }
   }
 
   getFilter(): string {
