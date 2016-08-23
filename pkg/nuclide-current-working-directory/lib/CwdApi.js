@@ -14,6 +14,7 @@ import type {Observable} from 'rxjs';
 
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import nuclideUri from '../../commons-node/nuclideUri';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
 import {CompositeDisposable, Directory as LocalDirectory} from 'atom';
@@ -44,7 +45,7 @@ export class CwdApi {
 
   setCwd(path: string): void {
     if (getDirectory(path) == null) {
-      throw new Error(`Path is not a project root: ${path}`);
+      throw new Error(`Path does not belong to a project root: ${path}`);
     }
     this._cwdPath$.next(path);
   }
@@ -76,7 +77,13 @@ function getDirectory(path: ?string): ?Directory {
   if (path == null) {
     return null;
   }
-  return atom.project.getDirectories().find(dir => dir.getPath() === path);
+  for (const directory of atom.project.getDirectories()) {
+    const dirPath = directory.getPath();
+    if (nuclideUri.contains(dirPath, path)) {
+      const relative = nuclideUri.relative(dirPath, path);
+      return directory.getSubdirectory(relative);
+    }
+  }
 }
 
 function isValidDirectory(directory: ?Directory): boolean {

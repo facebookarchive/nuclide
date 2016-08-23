@@ -58,6 +58,14 @@ describe('current-working-directory', () => {
       expect(setInvalidCwd).toThrow();
     });
 
+    it('allows subdirectories to be the CWD', () => {
+      const api = new CwdApi('/a/b/c');
+      api.setCwd('/a/b/c/d');
+      const cwd = api.getCwd();
+      invariant(cwd != null);
+      expect(cwd.getPath()).toBe('/a/b/c/d');
+    });
+
   });
 
 });
