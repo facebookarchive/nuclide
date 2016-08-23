@@ -85,7 +85,7 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
 
           observer.next({kind: 'message', message: parseRegularMessage(line)});
 
-          if (!sawReadyMessage && READY_LINE.test('React packager ready')) {
+          if (!sawReadyMessage && READY_LINE.test(line)) {
             sawReadyMessage = true;
             observer.next({kind: 'ready'});
           }
