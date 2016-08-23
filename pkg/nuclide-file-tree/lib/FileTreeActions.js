@@ -157,6 +157,12 @@ class FileTreeActions {
     });
   }
 
+  clearTrackedNode(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.CLEAR_TRACKED_NODE,
+    });
+  }
+
   moveToNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionType.MOVE_TO_NODE,

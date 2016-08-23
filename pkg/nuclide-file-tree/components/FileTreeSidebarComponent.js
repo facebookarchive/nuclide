@@ -54,6 +54,7 @@ class FileTreeSidebarComponent extends React.Component {
   _disposables: CompositeDisposable;
   _afRequestId: ?number;
   _showOpenConfigValues: Observable<boolean>;
+  _scrollWasTriggeredProgrammatically: boolean;
   state: State;
   props: Props;
 
@@ -75,8 +76,10 @@ class FileTreeSidebarComponent extends React.Component {
 
     this._disposables = new CompositeDisposable();
     this._afRequestId = null;
+    this._scrollWasTriggeredProgrammatically = false;
     (this: any)._handleFocus = this._handleFocus.bind(this);
     (this: any)._onViewChange = this._onViewChange.bind(this);
+    (this: any)._onScroll = this._onScroll.bind(this);
     (this: any)._scrollToPosition = this._scrollToPosition.bind(this);
     (this: any)._processExternalUpdate = this._processExternalUpdate.bind(this);
     (this: any)._handleOpenFilesExpandedChange = this._handleOpenFilesExpandedChange.bind(this);
@@ -186,7 +189,7 @@ class FileTreeSidebarComponent extends React.Component {
         {foldersCaption}
         <PanelComponentScroller
           ref="scroller"
-          onScroll={this._onViewChange}>
+          onScroll={this._onScroll}>
           <FileTree
             ref="fileTree"
             containerHeight={this.state.scrollerHeight}
@@ -252,6 +255,14 @@ class FileTreeSidebarComponent extends React.Component {
     }
   }
 
+  _onScroll(): void {
+    if (!this._scrollWasTriggeredProgrammatically) {
+      this._actions.clearTrackedNode();
+    }
+    this._scrollWasTriggeredProgrammatically = false;
+    this._onViewChange();
+  }
+
   _scrollToPosition(top: number, height: number): void {
     const requestedBottom = top + height;
     const currentBottom = this.state.scrollerScrollTop + this.state.scrollerHeight;
@@ -266,6 +277,7 @@ class FileTreeSidebarComponent extends React.Component {
     const newTop = Math.max(top + height / 2 - this.state.scrollerHeight / 2, 0);
     setImmediate(() => {
       try {  // For the rather unlikely chance that the node is already gone from the DOM
+        this._scrollWasTriggeredProgrammatically = true;
         node.scrollTop = newTop;
         this.setState({scrollerScrollTop: newTop});
       } catch (e) {}

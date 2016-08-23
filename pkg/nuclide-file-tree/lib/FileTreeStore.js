@@ -290,6 +290,9 @@ export class FileTreeStore {
       case ActionType.SET_TRACKED_NODE:
         this._setTrackedNode(payload.rootKey, payload.nodeKey);
         break;
+      case ActionType.CLEAR_TRACKED_NODE:
+        this._clearTrackedNode();
+        break;
       case ActionType.MOVE_TO_NODE:
         this._moveToNode(payload.rootKey, payload.nodeKey);
         break;
