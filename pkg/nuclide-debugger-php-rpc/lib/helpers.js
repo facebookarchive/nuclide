@@ -15,7 +15,7 @@ import child_process from 'child_process';
 import url from 'url';
 import logger from './utils';
 import {getConfig} from './config';
-import {parse} from 'shell-quote';
+import {shellParse} from '../../commons-node/string';
 import {checkOutput} from '../../commons-node/process';
 import fsPlus from 'fs-plus';
 
@@ -103,7 +103,7 @@ export function launchPhpScriptWithXDebugEnabled(
   scriptPath: string,
   sendToOutputWindowAndResolve?: (text: string) => void,
 ): child_process$ChildProcess {
-  const args = parse(scriptPath);
+  const args = shellParse(scriptPath);
   let modifiedArgs = args;
   // TODO: will remove when t10747769 is resolved.
   if (fsPlus.existsSync('fb/cli.hdf')) {

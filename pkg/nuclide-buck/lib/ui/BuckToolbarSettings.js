@@ -12,8 +12,9 @@
 import type {TaskSettings} from '../types';
 
 import {React} from 'react-for-atom';
-import {parse, quote} from 'shell-quote';
+import {quote} from 'shell-quote';
 
+import {shellParse} from '../../../commons-node/string';
 import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
 import {Button, ButtonTypes} from '../../../nuclide-ui/lib/Button';
 import {ButtonGroup} from '../../../nuclide-ui/lib/ButtonGroup';
@@ -89,9 +90,9 @@ export default class BuckToolbarSettings extends React.Component {
 
   _onSave() {
     try {
-      const parsed = parse(this.state.arguments)
-        .filter(x => typeof x === 'string');
-      this.props.onSave({arguments: parsed});
+      this.props.onSave({
+        arguments: shellParse(this.state.arguments),
+      });
     } catch (err) {
       atom.notifications.addError(
         'Could not parse arguments',

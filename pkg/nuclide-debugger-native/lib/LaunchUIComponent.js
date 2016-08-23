@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {parse} from 'shell-quote';
+import {shellParse} from '../../commons-node/string';
 
 import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
@@ -107,7 +107,7 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
     // TODO: perform some validation for the input.
     const launchExecutable = this.refs.launchExecutable.getText().trim();
     const launchArguments = this.refs.launchArguments.getText().trim();
-    const launchEnvironmentVariables = parse(
+    const launchEnvironmentVariables = shellParse(
       this.refs.launchEnvironmentVariables.getText());
     const launchWorkingDirectory = this.refs.launchWorkingDirectory.getText().trim();
     // TODO: fill other fields from UI.

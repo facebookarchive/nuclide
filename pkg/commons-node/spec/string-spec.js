@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {maybeToString, relativeDate, countOccurrences} from '../string';
+import {maybeToString, relativeDate, countOccurrences, shellParse} from '../string';
 
 describe('relativeDate', () => {
   it('works', () => {
@@ -72,5 +72,20 @@ describe('countOccurrences', () => {
     expect(() => {
       countOccurrences('abc', 'abc');
     }).toThrow();
+  });
+});
+
+describe('shellParse', () => {
+  it('parses a list of arguments', () => {
+    expect(shellParse('1 2 3 "a b c"')).toEqual(['1', '2', '3', 'a b c']);
+  });
+
+  it('throws if operators are given', () => {
+    expect(() => {
+      shellParse('a | b');
+    }).toThrow(Error('Unexpected operator "|" provided to shellParse'));
+    expect(() => {
+      shellParse('a > b');
+    }).toThrow(Error('Unexpected operator ">" provided to shellParse'));
   });
 });

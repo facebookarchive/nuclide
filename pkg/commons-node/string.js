@@ -10,6 +10,7 @@
  */
 
 import invariant from 'assert';
+import {parse} from 'shell-quote';
 
 export function stringifyError(error: Error): string {
   return `name: ${error.name}, message: ${error.message}, stack: ${error.stack}.`;
@@ -99,3 +100,18 @@ export function countOccurrences(haystack: string, char: string) {
   }
   return count;
 }
+
+/**
+ * shell-quote's parse allows pipe operators.
+ * Generally users don't care about this, so throw if we encounter any operators.
+ */
+export function shellParse(str: string, env?: Object): Array<string> {
+  const result = parse(str, env);
+  for (let i = 0; i < result.length; i++) {
+    if (typeof result[i] !== 'string') {
+      throw new Error(`Unexpected operator "${result[i].op}" provided to shellParse`);
+    }
+  }
+  return result;
+}
+

@@ -27,9 +27,9 @@ import type {
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {shellParse} from '../../commons-node/string';
 import {Console} from 'console';
 import electron from 'electron';
-import {parse} from 'shell-quote';
 
 const {ipcRenderer} = electron;
 invariant(ipcRenderer != null);
@@ -87,7 +87,7 @@ export default async function runTest(
     const argsAtomScript = process.env.ARGS_ATOM_SCRIPT;
 
     const scriptPath = nuclideUri.resolve(fileAtomScript);
-    const scriptArgs = argsAtomScript === "''" ? [] : parse(argsAtomScript);
+    const scriptArgs = argsAtomScript === "''" ? [] : shellParse(argsAtomScript);
 
     // Unfortunately we have to pollute our environment if we want to take
     // advantage of Atom's v8 cache. Ideally, we'd run the script file using

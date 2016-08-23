@@ -13,8 +13,8 @@ import invariant from 'assert';
 import fs from 'fs';
 import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {shellParse} from '../../commons-node/string';
 import {Observable, Subscription} from 'rxjs';
-import {parse} from 'shell-quote';
 import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
@@ -244,7 +244,7 @@ class ClangFlagsManager {
       await Promise.all(data.map(async entry => {
         const {command, file} = entry;
         const directory = await fsPromise.realpath(entry.directory, this._realpathCache);
-        const args = ClangFlagsManager.parseArgumentsFromCommand(command);
+        const args = shellParse(command);
         const filename = nuclideUri.resolve(directory, file);
         if (await fsPromise.exists(filename)) {
           const realpath = await fsPromise.realpath(filename, this._realpathCache);
@@ -388,19 +388,6 @@ class ClangFlagsManager {
       }
     }));
     return bestMatch;
-  }
-
-  static parseArgumentsFromCommand(command: string): Array<string> {
-    const result = [];
-    // shell-quote returns objects for things like pipes.
-    // This should never happen with proper flags, but ignore them to be safe.
-    for (const arg of parse(command)) {
-      if (typeof arg !== 'string') {
-        break;
-      }
-      result.push(arg);
-    }
-    return result;
   }
 
   static sanitizeCommand(

@@ -240,12 +240,6 @@ describe('ClangFlagsManager', () => {
     });
   });
 
-  it('correctly parses arguments from raw commands', () => {
-    // shell-quote is pretty safe; just make sure we ignore unexpected Objects like operators.
-    expect(ClangFlagsManager.parseArgumentsFromCommand('test "a\\" b c" \'a b\' || x'))
-      .toEqual(['test', 'a" b c', 'a b']);
-  });
-
   it('tracks flag changes', () => {
     waitsForPromise(async () => {
       // Create a mock file watcher.
