@@ -29,7 +29,9 @@ export const STATUS_END = 'end';
 // stdout and stderr are emitted when DBGP sends the corresponding message packets.
 export const STATUS_STDOUT = 'stdout';
 export const STATUS_STDERR = 'stderr';
-
+// Break message statuses allow us to identify whether a connection stopped because of a break
+// message or a breakpoint
+export const STATUS_BREAK_MESSAGE_RECEIVED = 'status_break_message_received';
 // Notifications.
 export const BREAKPOINT_RESOLVED_NOTIFICATION = 'breakpoint_resolved';
 
@@ -321,6 +323,9 @@ export class DbgpSocket {
 
   async sendBreakCommand(): Promise<boolean> {
     const response = await this._callDebugger('break');
+    if (response.$.success !== '0') {
+      this._emitStatus(STATUS_BREAK_MESSAGE_RECEIVED);
+    }
     return response.$.success !== '0';
   }
 

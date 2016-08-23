@@ -64,7 +64,6 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
 
   beforeEach(() => {
     updateSettings({singleThreadStepping: false});
-
     connectionCount = 0;
     onStatus = jasmine.createSpy('onStatus');
     onNotification = jasmine.createSpy('onNotification');
@@ -165,7 +164,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       // $FlowFixMe override instance method.
       connection.getId = () => id;
 
-      connection.status = STATUS_STARTING;
+      connection._status = STATUS_STARTING;
 
       // $FlowFixMe override instance method.
       connection.evaluateOnCallFrame = jasmine.createSpy('evaluateOnCallFrame').andReturn({});
@@ -179,7 +178,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       connection.sendStderrRequest = jasmine.createSpy('sendStderrRequest').andReturn(true);
       // $FlowFixMe override instance method.
       connection.getStatus = jasmine.createSpy('getStatus').andCallFake(() => {
-        return connection.status;
+        return connection._status;
       });
       // $FlowFixMe override instance method.
       connection.dispose = jasmine.createSpy('connection.dispose' + connectionCount);
@@ -199,7 +198,8 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       });
       connection._disposables = new CompositeDisposable(
         connection.onStatus((status, ...args) => {
-          connectionMultiplexer._connectionOnStatus(connection, status, ...args);
+          connection._status = status;
+          return connectionMultiplexer._connectionOnStatus(connection, status, ...args);
         }),
         connection.onNotification(connectionMultiplexer._handleNotification.bind(
           connectionMultiplexer, connection)),

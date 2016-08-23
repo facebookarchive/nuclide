@@ -12,8 +12,12 @@
 import {DbgpSocket} from './DbgpSocket';
 import {DataCache} from './DataCache';
 import {
+  STATUS_BREAK,
   STATUS_STARTING,
+  STATUS_RUNNING,
+  STATUS_BREAK_MESSAGE_RECEIVED,
 } from './DbgpSocket';
+
 import {CompositeDisposable} from 'event-kit';
 
 import type {Socket} from 'net';
@@ -36,13 +40,17 @@ type NotificationCallback = (
   notify: Object
 ) => void;
 
+export const ASYNC_BREAK = 'async_break';
+export const BREAKPOINT = 'breakpoint';
+export const STATUS_BREAK_MESSAGE_SENT = 'status_break_message_sent';
 
 export class Connection {
   _socket: DbgpSocket;
   _dataCache: DataCache;
   _id: number;
   _disposables: CompositeDisposable;
-  status: string;
+  _status: string;
+  _stopReason: ?string;
 
   constructor(
     socket: Socket,
@@ -53,7 +61,7 @@ export class Connection {
     this._socket = dbgpSocket;
     this._dataCache = new DataCache(dbgpSocket);
     this._id = connectionCount++;
-    this.status = STATUS_STARTING;
+    this._status = STATUS_STARTING;
     this._disposables = new CompositeDisposable();
     if (onStatusCallback != null) {
       this._disposables.add(this.onStatus((status, ...args) =>
@@ -63,6 +71,7 @@ export class Connection {
       this._disposables.add(this.onNotification((notifyName, notify) =>
         onNotificationCallback(this, notifyName, notify)));
     }
+    this._stopReason = null;
   }
 
   getId(): number {
@@ -70,7 +79,41 @@ export class Connection {
   }
 
   onStatus(callback: (status: string, ...args: Array<string>) => mixed): IDisposable {
-    return this._socket.onStatus(callback);
+    return this._socket.onStatus(this._handleStatus.bind(this, callback));
+  }
+
+  _handleStatus(
+    callback: (newStatus: string, ...args: Array<string>) => mixed,
+    newStatus: string,
+    ...args: Array<string>
+  ): mixed {
+    const prevStatus = this._status;
+    switch (newStatus) {
+      case STATUS_RUNNING:
+        this._stopReason = null;
+        break;
+      case STATUS_BREAK:
+        if (prevStatus === STATUS_BREAK_MESSAGE_RECEIVED) {
+          this._stopReason = ASYNC_BREAK;
+        } else if (prevStatus !== STATUS_BREAK) {
+          // TODO(dbonafilia): investigate why we sometimes receive two STATUS_BREAK_MESSAGES
+          this._stopReason = BREAKPOINT;
+        }
+        break;
+    }
+    if (newStatus === STATUS_BREAK_MESSAGE_RECEIVED && prevStatus !== STATUS_BREAK_MESSAGE_SENT) {
+      return;
+    }
+    this._status = newStatus;
+    if (!this._isInternalStatus(newStatus)) {
+      // Don't bubble up irrelevant statuses to the multiplexer
+      // TODO(dbonafilia): Add Enums to make status association clearer
+      return callback(newStatus, ...args);
+    }
+  }
+
+  _isInternalStatus(status: string) {
+    return status === STATUS_BREAK_MESSAGE_RECEIVED || status === STATUS_BREAK_MESSAGE_SENT;
   }
 
   onNotification(callback: (notifyName: string, notify: Object) => mixed): IDisposable {
@@ -110,7 +153,7 @@ export class Connection {
   }
 
   getStatus(): string {
-    return this.status;
+    return this._status;
   }
 
   sendContinuationCommand(command: string): Promise<string> {
@@ -126,6 +169,7 @@ export class Connection {
   }
 
   sendBreakCommand(): Promise<boolean> {
+    this._status = STATUS_BREAK_MESSAGE_SENT;
     return this._socket.sendBreakCommand();
   }
 
@@ -135,6 +179,10 @@ export class Connection {
 
   getProperties(remoteId: Runtime$RemoteObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
     return this._dataCache.getProperties(remoteId);
+  }
+
+  stopReason(): ?string {
+    return this._stopReason;
   }
 
   dispose(): void {

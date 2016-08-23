@@ -274,22 +274,18 @@ export class ConnectionMultiplexer {
         // Starting status has no stack.
         // step before reporting initial status to get to the first instruction.
         // TODO: Use loader breakpoint configuration to choose between step/run.
-        connection.status = status;
         connection.sendContinuationCommand(COMMAND_RUN);
         return;
       case STATUS_STOPPING:
         // TODO: May want to enable post-mortem features?
-        connection.status = status;
         connection.sendContinuationCommand(COMMAND_RUN);
         return;
       case STATUS_RUNNING:
-        connection.status = status;
         if (connection === this._enabledConnection) {
           this._disableConnection();
         }
         break;
       case STATUS_BREAK:
-        connection.status = status;
         if (connection === this._enabledConnection) {
           // This can happen when we step.
           logger.log('Mux break on enabled connection');
@@ -310,7 +306,6 @@ export class ConnectionMultiplexer {
         break;
       case STATUS_STOPPED:
       case STATUS_END:
-        connection.status = status;
         this._removeConnection(connection);
         break;
       case STATUS_STDOUT:
