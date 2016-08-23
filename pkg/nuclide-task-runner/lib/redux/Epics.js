@@ -57,10 +57,10 @@ export function createPanelEpic(actions: ActionsObservable<Action>): Observable<
             ...staticProps,
             taskRunnerInfo: Array.from(state.taskRunners.values()),
             getExtraUi: getExtraUiFactory(activeTaskRunner),
-            progress: state.taskStatus && state.taskStatus.progress,
+            progress: state.runningTaskInfo && state.runningTaskInfo.progress,
             visible: state.visible,
             activeTaskId: state.activeTaskId,
-            taskIsRunning: state.taskStatus != null,
+            taskIsRunning: state.runningTaskInfo != null,
             taskLists: state.taskLists,
           };
         });
@@ -139,7 +139,7 @@ export function runTaskEpic(
       if (taskToRun == null) { return Observable.empty(); }
 
       // Don't do anything if a task is already running.
-      if (store.getState().taskStatus != null) { return Observable.empty(); }
+      if (store.getState().runningTaskInfo != null) { return Observable.empty(); }
 
       return Observable.concat(
         taskIdsAreEqual(store.getState().activeTaskId, taskToRun)
@@ -211,8 +211,8 @@ export function stopTaskEpic(
 ): Observable<Action> {
   return actions.ofType(Actions.STOP_TASK)
     .switchMap(action => {
-      const {taskStatus} = store.getState();
-      const task = taskStatus == null ? null : taskStatus.task;
+      const {runningTaskInfo} = store.getState();
+      const task = runningTaskInfo == null ? null : runningTaskInfo.task;
       if (task == null) { return Observable.empty(); }
       return Observable.of({
         type: Actions.TASK_STOPPED,
@@ -302,12 +302,12 @@ function createTaskObservable(
           dismissable: true,
         },
       );
-      const {taskStatus} = getState();
+      const {runningTaskInfo} = getState();
       return Observable.of({
         type: Actions.TASK_ERRORED,
         payload: {
           error,
-          task: taskStatus == null ? null : taskStatus.task,
+          task: runningTaskInfo == null ? null : runningTaskInfo.task,
         },
       });
     })

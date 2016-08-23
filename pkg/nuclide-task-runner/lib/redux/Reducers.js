@@ -41,15 +41,15 @@ export function app(state: AppState, action: Action): AppState {
     case Actions.TASK_COMPLETED: {
       return {
         ...state,
-        taskStatus: null,
+        runningTaskInfo: null,
       };
     }
     case Actions.TASK_PROGRESS: {
       const {progress} = action.payload;
       return {
         ...state,
-        taskStatus: {
-          ...state.taskStatus,
+        runningTaskInfo: {
+          ...state.runningTaskInfo,
           progress,
         },
       };
@@ -57,14 +57,14 @@ export function app(state: AppState, action: Action): AppState {
     case Actions.TASK_ERRORED: {
       return {
         ...state,
-        taskStatus: null,
+        runningTaskInfo: null,
       };
     }
     case Actions.TASK_STARTED: {
       const {task} = action.payload;
       return {
         ...state,
-        taskStatus: {
+        runningTaskInfo: {
           task,
           progress: null,
         },
@@ -73,7 +73,7 @@ export function app(state: AppState, action: Action): AppState {
     case Actions.TASK_STOPPED: {
       return {
         ...state,
-        taskStatus: null,
+        runningTaskInfo: null,
       };
     }
     case Actions.TOOLBAR_VISIBILITY_UPDATED: {

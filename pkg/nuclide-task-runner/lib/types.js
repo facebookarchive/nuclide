@@ -21,7 +21,7 @@ export type AppState = {
   previousSessionActiveTaskId: ?TaskId,
   projectRoot: ?Directory,
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
-  taskStatus: ?{
+  runningTaskInfo: ?{
     task: Task,
     progress: ?number,
   },
