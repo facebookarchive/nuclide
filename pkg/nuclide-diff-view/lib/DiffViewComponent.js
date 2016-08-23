@@ -78,7 +78,7 @@ function initialEditorState(): EditorState {
 const EMPTY_FUNCTION = () => {};
 const SCROLL_FIRST_CHANGE_DELAY_MS = 100;
 
-class DiffViewComponent extends React.Component {
+export default class DiffViewComponent extends React.Component {
   props: Props;
   state: State;
 
@@ -522,5 +522,3 @@ class DiffViewComponent extends React.Component {
     });
   }
 }
-
-module.exports = DiffViewComponent;

@@ -28,7 +28,7 @@ type Props = {
   onSwitchMode: (mode: DiffModeType) => mixed,
 };
 
-class DiffViewToolbar extends React.Component {
+export default class DiffViewToolbar extends React.Component {
   props: Props;
 
   render(): React.Element<any> {
@@ -56,5 +56,3 @@ class DiffViewToolbar extends React.Component {
     );
   }
 }
-
-module.exports = DiffViewToolbar;

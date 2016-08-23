@@ -213,7 +213,7 @@ export type State = {
   revisionsState: ?RevisionsState,
 };
 
-class DiffViewModel {
+export default class DiffViewModel {
 
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
@@ -1343,5 +1343,3 @@ class DiffViewModel {
     this._activeSubscriptions.dispose();
   }
 }
-
-module.exports = DiffViewModel;

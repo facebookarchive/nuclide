@@ -33,7 +33,7 @@ type Props = {
   diffModel: DiffViewModel,
 };
 
-class DiffCommitView extends React.Component {
+export default class DiffCommitView extends React.Component {
   props: Props;
 
   constructor(props: Props) {
@@ -150,5 +150,3 @@ class DiffCommitView extends React.Component {
     });
   }
 }
-
-module.exports = DiffCommitView;

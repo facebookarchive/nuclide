@@ -82,7 +82,7 @@ describe('Diff View Browse Mode Integration Test', () => {
   function getDiffViewComponent(): DiffViewComponent {
     const diffViewPackage = atom.packages.getActivePackage('nuclide-diff-view');
     invariant(diffViewPackage, 'nuclide-diff-view is not active!');
-    const activeDiffView = (diffViewPackage.mainModule: any).__testDiffView;
+    const activeDiffView = (diffViewPackage.mainModule: any).__getActiveDiffView();
     invariant(activeDiffView, 'no active diff view!');
     return activeDiffView.component;
   }

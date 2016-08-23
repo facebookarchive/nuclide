@@ -70,7 +70,7 @@ describe('Diff View Right Editor Save and Edit Test', () => {
       const diffViewPackage = atom.packages.getActivePackage('nuclide-diff-view');
       invariant(diffViewPackage, 'The "nuclide-diff-view" package is not active!');
       // Get active diff view
-      const activeDiffView = (diffViewPackage.mainModule: any).__testDiffView;
+      const activeDiffView = (diffViewPackage.mainModule: any).__getActiveDiffView();
       invariant(activeDiffView, 'No active diff view!');
 
       const diffViewContainer = ReactDOM.findDOMNode(activeDiffView.component);

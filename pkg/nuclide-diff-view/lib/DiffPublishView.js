@@ -58,7 +58,7 @@ type Props = {
   diffModel: DiffViewModel,
 };
 
-class DiffPublishView extends React.Component {
+export default class DiffPublishView extends React.Component {
   props: Props;
   _textBuffer: TextBuffer;
   _subscriptions: CompositeDisposable;
@@ -232,5 +232,3 @@ class DiffPublishView extends React.Component {
     this.props.diffModel.setViewMode(DiffMode.BROWSE_MODE);
   }
 }
-
-module.exports = DiffPublishView;
