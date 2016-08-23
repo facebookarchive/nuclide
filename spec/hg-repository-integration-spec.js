@@ -56,7 +56,7 @@ describe('Mercurial Repository Integration Tests', () => {
   });
 
   it('can commit changes', () => {
-    waitsForPromise({timeout: 15000}, async () => {
+    waitsForPromise({timeout: 20000}, async () => {
       const repoPath = await generateHgRepo1Fixture();
       const filePath = nuclideUri.join(repoPath, 'test.txt');
       atom.project.setPaths([repoPath]);
@@ -75,7 +75,7 @@ describe('Mercurial Repository Integration Tests', () => {
   });
 
   it('can amend changes', () => {
-    waitsForPromise({timeout: 20000}, async () => {
+    waitsForPromise({timeout: 30000}, async () => {
       const repoPath = await generateHgRepo1Fixture();
       const filePath = nuclideUri.join(repoPath, 'test.txt');
       atom.project.setPaths([repoPath]);
