@@ -14,7 +14,8 @@ import type {ProcessMessage} from './process-rpc-types';
 
 import child_process from 'child_process';
 import nuclideUri from './nuclideUri';
-import {CompositeSubscription, observeStream, splitStream, takeWhileInclusive} from './stream';
+import {observeStream, splitStream, takeWhileInclusive} from './stream';
+import UniversalDisposable from './UniversalDisposable';
 import {maybeToString} from './string';
 import {Observable} from 'rxjs';
 import {PromiseQueue} from './promise-executors';
@@ -369,7 +370,7 @@ function _createProcessStream(
       .do(() => { exited = true; });
     const completion = throwOnError ? exit : exit.race(errors);
 
-    return new CompositeSubscription(
+    return new UniversalDisposable(
       processStream
         .merge(throwOnError ? errors.flatMap(Observable.throw) : Observable.empty())
         .takeUntil(completion)

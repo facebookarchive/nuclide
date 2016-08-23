@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {CompositeSubscription} from '../../../commons-node/stream';
+import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {DebuggerInstance, DebuggerProcessInfo} from '../../../nuclide-debugger-base';
 import {DebuggerProxyClient} from './DebuggerProxyClient';
@@ -43,7 +43,7 @@ export class ReactNativeDebuggerInstance extends DebuggerInstance {
       .switchMap(([ws, pid]) => createSessionStream(ws, debugPort))
       .publish();
 
-    this._subscriptions = new CompositeSubscription(
+    this._subscriptions = new UniversalDisposable(
       // Tell the user if we can't connect to the debugger UI.
       uiConnection$.subscribe(
         null,

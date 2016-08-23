@@ -11,7 +11,7 @@
 
 import type {Message} from '../../nuclide-console/lib/types';
 
-import {CompositeSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import createMessage from './createMessage';
 import parseLogcatMetadata from './parseLogcatMetadata';
 import {Observable} from 'rxjs';
@@ -46,7 +46,7 @@ export default function createMessageStream(
 
     const sharedLine$ = line$.share();
 
-    return new CompositeSubscription(
+    return new UniversalDisposable(
       // Buffer incoming lines.
       sharedLine$.subscribe(
         // onNext

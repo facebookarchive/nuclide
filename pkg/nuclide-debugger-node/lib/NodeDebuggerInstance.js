@@ -12,7 +12,7 @@
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
 import WS from 'ws';
-import {DisposableSubscription} from '../../commons-node/stream';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import Rx from 'rxjs';
 import {Session} from './Session';
 import {DebuggerInstance} from '../../nuclide-debugger-base';
@@ -56,6 +56,6 @@ export class NodeDebuggerInstance extends DebuggerInstance {
   }
 
   onSessionEnd(callback: () => mixed): IDisposable {
-    return new DisposableSubscription(this._close$.first().subscribe(callback));
+    return new UniversalDisposable(this._close$.first().subscribe(callback));
   }
 }

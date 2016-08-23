@@ -12,7 +12,7 @@
 import UniversalDisposable from './UniversalDisposable';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'event-kit';
-import {Observable, ReplaySubject, Subscription} from 'rxjs';
+import {Observable, ReplaySubject} from 'rxjs';
 
 /**
  * Observe a stream like stdout or stderr.
@@ -56,35 +56,6 @@ export function splitStream(input: Observable<string>): Observable<string> {
       () => { onEnd(); observer.complete(); },
     );
   });
-}
-
-export class DisposableSubscription {
-  _subscription: rx$ISubscription;
-
-  constructor(subscription: rx$ISubscription) {
-    this._subscription = subscription;
-  }
-
-  dispose(): void {
-    this._subscription.unsubscribe();
-  }
-}
-
-type TeardownLogic = (() => void) | rx$ISubscription;
-
-export class CompositeSubscription {
-  _subscription: Subscription;
-
-  constructor(...subscriptions: Array<TeardownLogic>) {
-    this._subscription = new Subscription();
-    subscriptions.forEach(sub => {
-      this._subscription.add(sub);
-    });
-  }
-
-  unsubscribe(): void {
-    this._subscription.unsubscribe();
-  }
 }
 
 // TODO: We used to use `stream.buffer(stream.filter(...))` for this but it doesn't work in RxJS 5.
