@@ -10,12 +10,11 @@
  */
 
 import type {
-  FileChangeState,
   OffsetMap,
   DiffModeType,
   UIElement,
 } from './types';
-import type DiffViewModel from './DiffViewModel';
+import type DiffViewModel, {State as DiffViewStateType} from './DiffViewModel';
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
@@ -122,17 +121,15 @@ class DiffViewComponent extends React.Component {
 
   componentDidMount(): void {
     const {diffModel, tryTriggerNux} = this.props;
-    this._subscriptions.add(diffModel.onActiveFileUpdates(activeFileState => {
-      this._updateLineDiffState(activeFileState);
-      // The diff tree needs to update the active diffed file.
-      // TODO(most): merge ActiveFileState into DiffModel's State.
+    this._subscriptions.add(diffModel.onDidUpdateState(() => {
+      this._updateLineDiffState(diffModel.getState());
       this._renderTree();
     }));
     this._subscriptions.add(diffModel.onDidUpdateState(this._onModelStateChange));
     this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem(activeItem => {
       if (activeItem != null && (activeItem: any).tagName === 'NUCLIDE-DIFF-VIEW') {
         // Re-render on activation.
-        this._updateLineDiffState(diffModel.getActiveFileState());
+        this._updateLineDiffState(diffModel.getState());
       }
     }));
 
@@ -167,7 +164,7 @@ class DiffViewComponent extends React.Component {
       atom.views.getView(this._paneContainer),
     );
 
-    this._updateLineDiffState(diffModel.getActiveFileState());
+    this._updateLineDiffState(diffModel.getState());
 
     tryTriggerNux();
   }
@@ -331,7 +328,7 @@ class DiffViewComponent extends React.Component {
   _renderTree(): void {
     const {diffModel} = this.props;
     const {selectedFileChanges, showNonHgRepos} = diffModel.getState();
-    const {filePath} = diffModel.getActiveFileState();
+    const {filePath} = diffModel.getState();
     this._treeComponent = ReactDOM.render(
       (
         <div className="nuclide-diff-view-tree padded">
@@ -484,7 +481,7 @@ class DiffViewComponent extends React.Component {
   /**
    * Updates the line diff state on active file state change.
    */
-  _updateLineDiffState(fileState: FileChangeState): void {
+  _updateLineDiffState(fileState: DiffViewStateType): void {
     const {
       filePath,
       oldContents,

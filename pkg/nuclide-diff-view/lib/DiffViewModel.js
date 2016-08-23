@@ -13,7 +13,6 @@ import type {
   HgRepositoryClient,
 } from '../../nuclide-hg-repository-client';
 import type {
-  FileChangeState,
   RevisionsState,
   FileChangeStatusValue,
   CommitModeType,
@@ -33,6 +32,16 @@ type FileDiffState = {
   revisionInfo: RevisionInfo,
   committedContents: string,
   filesystemContents: string,
+};
+
+type FileChangeState = {
+  filePath: NuclideUri,
+  oldContents: string,
+  newContents: string,
+  fromRevisionTitle: string,
+  toRevisionTitle: string,
+  compareRevisionInfo: ?RevisionInfo,
+  inlineComponents?: Array<UIElement>,
 };
 
 export type DiffEntityOptions = {
@@ -69,7 +78,6 @@ import {bufferForUri, loadBufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
-const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
@@ -98,6 +106,23 @@ function getInitialFileChangeState(): FileChangeState {
     oldContents: '',
     newContents: '',
     compareRevisionInfo: null,
+  };
+}
+
+function getInitialState(): State {
+  return {
+    ...getInitialFileChangeState(),
+    viewMode: DiffMode.BROWSE_MODE,
+    commitMessage: null,
+    commitMode: CommitMode.COMMIT,
+    commitModeState: CommitModeState.READY,
+    publishMessage: null,
+    publishMode: PublishMode.CREATE,
+    publishModeState: PublishModeState.READY,
+    headRevision: null,
+    dirtyFileChanges: new Map(),
+    selectedFileChanges: new Map(),
+    showNonHgRepos: true,
   };
 }
 
@@ -165,7 +190,14 @@ function notifyRevisionStatus(
   });
 }
 
-type State = {
+export type State = {
+  filePath: NuclideUri,
+  oldContents: string,
+  newContents: string,
+  fromRevisionTitle: string,
+  toRevisionTitle: string,
+  compareRevisionInfo: ?RevisionInfo,
+  inlineComponents?: Array<UIElement>,
   viewMode: DiffModeType,
   commitMessage: ?string,
   commitMode: CommitModeType,
@@ -184,9 +216,7 @@ class DiffViewModel {
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
   _activeSubscriptions: CompositeDisposable;
-  _activeFileState: FileChangeState;
   _activeRepositoryStack: ?RepositoryStack;
-  _newEditor: ?TextEditor;
   _uiProviders: Array<UIProvider>;
   _repositoryStacks: Map<HgRepositoryClient, RepositoryStack>;
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
@@ -204,23 +234,10 @@ class DiffViewModel {
     this._repositorySubscriptions = new Map();
     this._isActive = false;
     this._publishUpdates = new Subject();
-    this._state = {
-      viewMode: DiffMode.BROWSE_MODE,
-      commitMessage: null,
-      commitMode: CommitMode.COMMIT,
-      commitModeState: CommitModeState.READY,
-      publishMessage: null,
-      publishMode: PublishMode.CREATE,
-      publishModeState: PublishModeState.READY,
-      headRevision: null,
-      dirtyFileChanges: new Map(),
-      selectedFileChanges: new Map(),
-      showNonHgRepos: true,
-    };
+    this._state = getInitialState();
     this._serializedUpdateActiveFileDiff = serializeAsyncCall(
       () => this._updateActiveFileDiff(),
     );
-    this._setActiveFileState(getInitialFileChangeState());
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
   }
@@ -267,14 +284,17 @@ class DiffViewModel {
     this._updateDirtyChangedStatus();
     this._updateSelectedFileChanges();
     // Clear the active diff state if it was from a repo that's now removed.
-    const {filePath} = this._activeFileState;
+    const {filePath} = this._state;
     if (filePath && !repositories.has((repositoryForPath(filePath): any))) {
       getLogger().info(
         'Diff View\'s active buffer was belonging to a removed project.\n' +
         'Clearing the UI state.',
       );
       this._activeSubscriptions.dispose();
-      this._setActiveFileState(getInitialFileChangeState());
+      this._setState({
+        ...this._state,
+        ...getInitialFileChangeState(),
+      });
     }
   }
 
@@ -390,7 +410,7 @@ class DiffViewModel {
     this._onUpdateRevisionsState(revisionsState);
 
     // Update the active file, if changed.
-    const {filePath} = this._activeFileState;
+    const {filePath} = this._state;
     if (!filePath || !reloadFileDiffState) {
       return;
     }
@@ -398,19 +418,18 @@ class DiffViewModel {
   }
 
   async _updateActiveFileDiff(): Promise<void> {
-    const {filePath} = this._activeFileState;
+    const {filePath, commitMode, viewMode} = this._state;
     if (!filePath) {
       return;
     }
     // Capture the view state before the update starts.
-    const {viewMode, commitMode} = this._state;
     const {
       committedContents,
       filesystemContents,
       revisionInfo,
     } = await this._fetchFileDiff(filePath);
     if (
-      this._activeFileState.filePath !== filePath ||
+      this._state.filePath !== filePath ||
       this._state.viewMode !== viewMode ||
       this._state.commitMode !== commitMode
     ) {
@@ -552,10 +571,11 @@ class DiffViewModel {
   }
 
   _diffFilePath(filePath: NuclideUri): void {
-    if (filePath === this._activeFileState.filePath) {
+    if (filePath === this._state.filePath) {
       return;
     }
-    this._setActiveFileState({
+    this._setState({
+      ...this._state,
       ...getInitialFileChangeState(),
       filePath,
     });
@@ -572,7 +592,10 @@ class DiffViewModel {
         'The underlying file could have been removed.',
       );
       this._activeSubscriptions.dispose();
-      this._setActiveFileState(getInitialFileChangeState());
+      this._setState({
+        ...this._state,
+        ...getInitialFileChangeState(),
+      });
     }));
     this._activeSubscriptions.add(buffer.onDidChangeModified(
       this.emitActiveBufferChangeModified.bind(this),
@@ -590,7 +613,7 @@ class DiffViewModel {
     const {
       oldContents: committedContents,
       compareRevisionInfo: revisionInfo,
-    } = this._activeFileState;
+    } = this._state;
     if (revisionInfo == null) {
       // The file could be just loaded.
       return;
@@ -614,7 +637,7 @@ class DiffViewModel {
   }
 
   isActiveBufferModified(): boolean {
-    const {filePath} = this._activeFileState;
+    const {filePath} = this._state;
     const buffer = bufferForUri(filePath);
     return buffer.isModified();
   }
@@ -625,7 +648,7 @@ class DiffViewModel {
     filesystemContents: string,
     revisionInfo: RevisionInfo,
   ): Promise<void> {
-    if (this._activeFileState.filePath !== filePath) {
+    if (this._state.filePath !== filePath) {
       return;
     }
     const updatedDiffState = {
@@ -640,19 +663,21 @@ class DiffViewModel {
   }
 
   setNewContents(newContents: string): void {
-    this._setActiveFileState({...this._activeFileState, newContents});
+    this._setState({
+      ...this._state,
+      newContents,
+    });
   }
 
   setRevision(revision: RevisionInfo): void {
     track('diff-view-set-revision');
     const repositoryStack = this._activeRepositoryStack;
     invariant(repositoryStack, 'There must be an active repository stack!');
-    this._activeFileState = {...this._activeFileState, compareRevisionInfo: revision};
+    this._setState({
+      ...this._state,
+      compareRevisionInfo: revision,
+    });
     repositoryStack.setRevision(revision).catch(notifyInternalError);
-  }
-
-  getActiveFileState(): FileChangeState {
-    return this._activeFileState;
   }
 
   getPublishUpdates(): Subject<any> {
@@ -680,23 +705,18 @@ class DiffViewModel {
       revisionInfo,
     } = fileDiffState;
     const {hash, bookmarks} = revisionInfo;
-    const newFileState = {
+    this._setState({
+      ...this._state,
       filePath,
       oldContents,
       newContents,
       compareRevisionInfo: revisionInfo,
       fromRevisionTitle: `${hash}` + (bookmarks.length === 0 ? '' : ` - (${bookmarks.join(', ')})`),
       toRevisionTitle: 'Filesystem / Editor',
-    };
-    this._setActiveFileState(newFileState);
+    });
     // TODO(most): Fix: this assumes that the editor contents aren't changed while
     // fetching the comments, that's okay now because we don't fetch them.
     await this._updateInlineComponents();
-  }
-
-  _setActiveFileState(state: FileChangeState): void {
-    this._activeFileState = state;
-    this._emitter.emit(ACTIVE_FILE_UPDATE_EVENT, this._activeFileState);
   }
 
   @trackTiming('diff-view.hg-state-update')
@@ -738,7 +758,7 @@ class DiffViewModel {
 
   @trackTiming('diff-view.save-file')
   saveActiveFile(): Promise<void> {
-    const {filePath} = this._activeFileState;
+    const {filePath} = this._state;
     track('diff-view-save-file', {filePath});
     return this._saveFile(filePath).catch(notifyInternalError);
   }
@@ -891,7 +911,7 @@ class DiffViewModel {
   }
 
   _getArcanistFilePath(): string {
-    let {filePath} = this._activeFileState;
+    let {filePath} = this._state;
     if (filePath === '' && this._activeRepositoryStack != null) {
       filePath = this._activeRepositoryStack.getRepository().getProjectDirectory();
     }
@@ -1081,20 +1101,19 @@ class DiffViewModel {
     return this._emitter.on(CHANGE_REVISIONS_EVENT, callback);
   }
 
-  onActiveFileUpdates(callback: (state: FileChangeState) => void): IDisposable {
-    return this._emitter.on(ACTIVE_FILE_UPDATE_EVENT, callback);
-  }
-
   async _updateInlineComponents(): Promise<void> {
-    const {filePath} = this._activeFileState;
+    const {filePath} = this._state;
     if (!filePath) {
       return;
     }
     const inlineComponents = await this._fetchInlineComponents(filePath);
-    if (filePath !== this._activeFileState.filePath) {
+    if (filePath !== this._state.filePath) {
       return;
     }
-    this._setActiveFileState({...this._activeFileState, inlineComponents});
+    this._setState({
+      ...this._state,
+      inlineComponents,
+    });
   }
 
   @trackTiming('diff-view.fetch-comments')
@@ -1310,7 +1329,10 @@ class DiffViewModel {
       this._activeRepositoryStack.deactivate();
       this._activeRepositoryStack = null;
     }
-    this._setActiveFileState(getInitialFileChangeState());
+    this._setState({
+      ...this._state,
+      ...getInitialFileChangeState(),
+    });
     this._activeSubscriptions.dispose();
   }
 

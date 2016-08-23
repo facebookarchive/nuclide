@@ -291,7 +291,7 @@ module.exports = {
       'nuclide-diff-view:switch-to-editor',
       () => {
         const diffModel = getDiffViewModel();
-        const {filePath} = diffModel.getActiveFileState();
+        const {filePath} = diffModel.getState();
         if (filePath != null && filePath.length) {
           atom.workspace.open(filePath);
         }
@@ -424,8 +424,7 @@ module.exports = {
         visible: false,
       };
     }
-    const {filePath} = diffViewModel.getActiveFileState();
-    const {viewMode, commitMode} = diffViewModel.getState();
+    const {commitMode, filePath, viewMode} = diffViewModel.getState();
     return {
       visible: true,
       activeFilePath: filePath,

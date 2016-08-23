@@ -30,7 +30,7 @@ class DiffViewElement extends HTMLElement {
     this._subscriptions = new CompositeDisposable();
 
     let fileName = this._getActiveFileName();
-    this._subscriptions.add(this._diffModel.onActiveFileUpdates(() => {
+    this._subscriptions.add(this._diffModel.onDidUpdateState(() => {
       const newFileName = this._getActiveFileName();
       if (newFileName !== fileName) {
         fileName = newFileName;
@@ -42,7 +42,7 @@ class DiffViewElement extends HTMLElement {
   }
 
   _getActiveFileName(): ?string {
-    const {filePath} = this._diffModel.getActiveFileState();
+    const {filePath} = this._diffModel.getState();
     if (filePath == null || filePath.length === 0) {
       return null;
     }

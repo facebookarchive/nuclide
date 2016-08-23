@@ -38,16 +38,6 @@ export type FileChange = {
   statusCode?: FileChangeStatusValue,
 };
 
-export type FileChangeState = {
-  filePath: NuclideUri,
-  oldContents: string,
-  newContents: string,
-  fromRevisionTitle: string,
-  toRevisionTitle: string,
-  compareRevisionInfo: ?RevisionInfo,
-  inlineComponents?: Array<UIElement>,
-};
-
 export type DiffStatusDisplay = {
   name: string,
   className: ?string,
