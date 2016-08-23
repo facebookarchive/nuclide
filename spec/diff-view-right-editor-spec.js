@@ -14,7 +14,7 @@ import {
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
 } from './utils/integration-test-helpers';
-import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
+import {generateHgRepo2Fixture} from '../pkg/nuclide-test-helpers';
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import invariant from 'assert';
 import fs from 'fs';
@@ -40,7 +40,7 @@ describe('Diff View Right Editor Save and Edit Test', () => {
       // Activate nuclide packages.
       await activateAllPackages();
       // Copy mercurial project to temporary directory.
-      repoPath = await copyMercurialFixture('hg_repo_2', __dirname);
+      repoPath = await generateHgRepo2Fixture();
       // Add this directory as a new project in atom.
       setLocalProject(repoPath);
       // Open the test.txt file in the repo.

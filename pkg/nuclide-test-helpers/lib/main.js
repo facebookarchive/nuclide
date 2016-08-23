@@ -15,9 +15,9 @@ import {Observer} from 'rxjs';
 
 import {
   copyFixture,
-  copyMercurialFixture,
   copyBuildFixture,
   generateHgRepo1Fixture,
+  generateHgRepo2Fixture,
   generateFixture,
 } from './fixtures';
 import {addMatchers} from './matchers';
@@ -196,11 +196,11 @@ export {
   areSetsEqual,
   clearRequireCache,
   copyFixture,
-  copyMercurialFixture,
   copyBuildFixture,
   expectAsyncFailure,
   expectObservableToStartWith,
   generateHgRepo1Fixture,
+  generateHgRepo2Fixture,
   generateFixture,
   loggingObserver,
   spyOnDefault,

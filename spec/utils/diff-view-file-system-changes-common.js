@@ -11,7 +11,7 @@
 
 import type {TestContext} from './remotable-tests';
 
-import {copyMercurialFixture} from '../../pkg/nuclide-test-helpers';
+import {generateHgRepo2Fixture} from '../../pkg/nuclide-test-helpers';
 import fs from 'fs';
 import invariant from 'assert';
 import nuclideUri from '../../pkg/commons-node/nuclideUri';
@@ -46,7 +46,7 @@ export function runTest(context: TestContext) {
 
   function openDiffViewForTestFile() {
     waitsForPromise({timeout: 20000}, async () => {
-      repoPath = await copyMercurialFixture('hg_repo_2', __dirname);
+      repoPath = await generateHgRepo2Fixture();
       localFilePath = nuclideUri.join(repoPath, TEST_FILE_NAME);
       invariant(repoPath != null);
       await context.setProject(repoPath);

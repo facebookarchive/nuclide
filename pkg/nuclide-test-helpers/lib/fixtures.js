@@ -64,40 +64,6 @@ export async function copyFixture(
   return realTempDir;
 }
 
-/*
- * Copies a specified subdirectory of `spec/fixtures` to a temporary
- * location. The `fixtureName` parameter must contain a directory named
- * `.hg-rename`. After the directory specified by `fixtureName` is copied, its
- * `.hg-rename` folder will be renamed to `.hg`, so that it can act as a
- * mercurial repository.
- *
- * @param fixtureName The name of the subdirectory of the `fixtures/` directory.
- * Must contain a .hg-rename folder.
- * @returns the path to the temporary directory that this function creates.
- */
-export async function copyMercurialFixture(
-  fixtureName: string,
-  source: string,
-): Promise<string> {
-  const repo = await copyFixture(fixtureName, source);
-
-  const pathToFakeHg = nuclideUri.join(repo, '.hg-rename');
-  const pathToRealHg = nuclideUri.join(repo, '.hg');
-  invariant(fs.existsSync(pathToFakeHg), `Directory: ${pathToFakeHg} was not found.`);
-
-  await new Promise((resolve, reject) => {
-    fse.move(pathToFakeHg, pathToRealHg, (err: ?Error) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
-
-  return repo;
-}
-
 /**
  * Generates an hg repository with the following structure:
  *
@@ -126,6 +92,46 @@ export async function generateHgRepo1Fixture(): Promise<string> {
     testTxt + '\nthis line added on second commit\n',
   );
   await checkOutput('hg', ['commit', '-A', '-m', 'second commit'], {cwd: repoPath});
+  return repoPath;
+}
+
+/**
+ * Generates an hg repository with the following structure:
+ *
+ * @ add .arcconfig to select mercurial compare default
+ * |
+ * |
+ * o second commit
+ * |
+ * |
+ * o first commit
+ *
+ * @returns the path to the temporary directory that this function creates.
+ */
+export async function generateHgRepo2Fixture(): Promise<string> {
+  const testTxt = 'this is a test file\nline 2\n\n  indented line\n';
+  const tempDir = await generateFixture('hg_repo_2', new Map([
+    ['.watchmanconfig', '{}\n'],
+    ['test.txt', testTxt],
+  ]));
+  const repoPath = await fsPromise.realpath(tempDir);
+  await checkOutput('hg', ['init'], {cwd: repoPath});
+  await fsPromise.writeFile(
+    nuclideUri.join(repoPath, '.hg/hgrc'),
+    '[paths]\ndefault = .\n',
+  );
+  await checkOutput('hg', ['commit', '-A', '-m', 'first commit'], {cwd: repoPath});
+  await fsPromise.writeFile(
+    nuclideUri.join(repoPath, 'test.txt'),
+    testTxt + '\nthis line added on second commit\n',
+  );
+  await checkOutput('hg', ['commit', '-A', '-m', 'second commit'], {cwd: repoPath});
+  await fsPromise.writeFile(
+    nuclideUri.join(repoPath, '.arcconfig'),
+    '{\n  "arc.feature.start.default": "master_base"\n}\n',
+  );
+  await checkOutput('hg', ['commit', '-A', '-m', 'add .arcconfig to set base'], {cwd: repoPath});
+  await checkOutput('hg', ['bookmark', '--rev', '.~2', 'master_base'], {cwd: repoPath});
   return repoPath;
 }
 

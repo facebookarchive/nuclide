@@ -13,7 +13,6 @@ import fs from 'fs';
 import glob from 'glob';
 import {
   copyFixture,
-  copyMercurialFixture,
   copyBuildFixture,
   generateFixture,
 } from '../lib/fixtures';
@@ -52,32 +51,6 @@ describe('copyFixture', () => {
       const file1txt = nuclideUri.join(copyOfFixture, 'file1.txt');
       expect(fs.statSync(file1txt).isFile()).toBe(true);
       expect(fs.readFileSync(file1txt, 'utf8')).toBe('beep boop\n');
-    });
-  });
-});
-
-describe('copyMercurialFixture', () => {
-  it('should rename .hg-rename to .hg', () => {
-    waitsForPromise(async () => {
-      const hgFixture = await copyMercurialFixture('hg-fixture', __dirname);
-      expect(nuclideUri.isAbsolute(hgFixture)).toBe(true);
-
-      expect(fs.statSync(hgFixture).isDirectory()).toBe(true);
-
-      const dotHg = nuclideUri.join(hgFixture, '.hg');
-      const dotHgDotHgTxt = nuclideUri.join(hgFixture, '.hg/dot-hg.txt');
-      const dotHgFileText = nuclideUri.join(hgFixture, 'file.txt');
-
-      expect(fs.statSync(dotHg).isDirectory()).toBe(true);
-      expect(fs.statSync(dotHgFileText).isFile()).toBe(true);
-      expect(fs.statSync(dotHgDotHgTxt).isFile()).toBe(true);
-
-      expect(fs.readFileSync(dotHgFileText, 'utf8')).toBe('boop\n');
-      expect(fs.readFileSync(dotHgDotHgTxt, 'utf8')).toBe('beep\n');
-
-      const dotHgRename = nuclideUri.join(hgFixture, '.hg-rename');
-
-      expect(await fsPromise.exists(dotHgRename)).toBe(false);
     });
   });
 });
@@ -157,4 +130,3 @@ describe('generateFixture', () => {
     });
   });
 });
-

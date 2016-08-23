@@ -14,7 +14,7 @@ import {
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
 } from './utils/integration-test-helpers';
-import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
+import {generateHgRepo2Fixture} from '../pkg/nuclide-test-helpers';
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import fs from 'fs';
@@ -33,7 +33,7 @@ describe('Diff View Commit Mode Integration Test', () => {
       // Activate atom packages.
       await activateAllPackages();
       // Copy mercurial project to temporary directory.
-      repoPath = await copyMercurialFixture('hg_repo_2', __dirname);
+      repoPath = await generateHgRepo2Fixture();
       // This is an existing file to be changed & committed.
       filePath = nuclideUri.join(repoPath, 'test.txt');
       // Add this directory as a new project in atom.
@@ -146,7 +146,7 @@ describe('Diff View Commit Mode Integration Test', () => {
     });
 
     runs(() => {
-      expect(getDiffHeaderTitle()).toBe('a570d5d57a44...Filesystem / Editor');
+      expect(/[0-9a-f]{12}...Filesystem \/ Editor/.test(getDiffHeaderTitle())).toBeTruthy();
       const editorElements = diffViewElement.querySelectorAll('atom-text-editor');
       const oldEditor = ((editorElements[0]: any): atom$TextEditorElement).getModel();
       const newEditor = ((editorElements[1]: any): atom$TextEditorElement).getModel();

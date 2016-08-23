@@ -13,7 +13,7 @@ import type {TestContext} from './utils/remotable-tests';
 
 import {describeRemotableTest} from './utils/remotable-tests';
 import {waitsForRepositoryReady} from './utils/diff-view-utils';
-import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
+import {generateHgRepo2Fixture} from '../pkg/nuclide-test-helpers';
 import invariant from 'assert';
 
 describeRemotableTest('Diff View Toolbar Button Test', (context: TestContext) => {
@@ -24,7 +24,7 @@ describeRemotableTest('Diff View Toolbar Button Test', (context: TestContext) =>
   beforeEach(() => {
     waitsForPromise({timeout: 10000}, async () => {
       // Copy mercurial project to temporary directory.
-      repoPath = await copyMercurialFixture('hg_repo_2', __dirname);
+      repoPath = await generateHgRepo2Fixture();
       await context.setProject(repoPath);
       // Open the test.txt file in the repo.
       filePath = context.getProjectRelativePath('test.txt');

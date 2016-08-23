@@ -28,7 +28,7 @@ import uiTreePath from '../pkg/commons-atom/ui-tree-path';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {NON_MERCURIAL_REPO_DISPLAY_NAME} from '../pkg/nuclide-diff-view/lib/constants';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
-import {copyMercurialFixture, generateFixture} from '../pkg/nuclide-test-helpers';
+import {generateHgRepo2Fixture, generateFixture} from '../pkg/nuclide-test-helpers';
 
 describe('Diff View Browse Mode Integration Test', () => {
 
@@ -44,7 +44,7 @@ describe('Diff View Browse Mode Integration Test', () => {
       // Activate atom packages.
       await activateAllPackages();
       // Copy local mercurial project to temporary directory.
-      localRepoPath = await copyMercurialFixture('hg_repo_2', __dirname);
+      localRepoPath = await generateHgRepo2Fixture();
       fs.writeFileSync(nuclideUri.join(localRepoPath, 'test.txt'), 'dirty changes', 'utf8');
 
       // Non-Mercurial project.
@@ -57,7 +57,7 @@ describe('Diff View Browse Mode Integration Test', () => {
       setLocalProject([localRepoPath, nonRepoPath]);
 
       // Start the Nuclide server and add a remote mercurial repository project.
-      remoteRepoLocalPath = await copyMercurialFixture('hg_repo_2', __dirname);
+      remoteRepoLocalPath = await generateHgRepo2Fixture();
       fs.writeFileSync(nuclideUri.join(remoteRepoLocalPath, 'untracked.txt'), 'untracked', 'utf8');
       await startNuclideServer();
       connection = await addRemoteProject(remoteRepoLocalPath);

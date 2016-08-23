@@ -11,9 +11,8 @@
 
 import type {TestContext} from './utils/remotable-tests';
 
-import {copyMercurialFixture} from '../pkg/nuclide-test-helpers';
+import {generateHgRepo2Fixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
-
 
 describeRemotableTest('Blame gutter integration test', (context: TestContext) => {
   it('renders the blame gutter', () => {
@@ -23,7 +22,7 @@ describeRemotableTest('Blame gutter integration test', (context: TestContext) =>
 
     waitsForPromise({timeout: 60000}, async () => {
       // Copy mercurial project to temporary directory.
-      const repoPath = await copyMercurialFixture('hg_repo_2', __dirname);
+      const repoPath = await generateHgRepo2Fixture();
       // Add this directory as a new project in atom.
       await context.setProject(repoPath);
       // Open the test.txt file in the repo.
@@ -49,18 +48,16 @@ describeRemotableTest('Blame gutter integration test', (context: TestContext) =>
     runs(() => {
       expect(blameEntries.length).toBe(6);
 
-      blameEntries.map(blameEntry => {
+      const blameLines = blameEntries.map(blameEntry => {
         return Array.from(blameEntry.querySelectorAll('span')).map(spans => spans.innerHTML);
-      }).forEach((textContents, i) => {
-        const name = textContents[0];
-        const commitHash = textContents[1];
-        expect(name).toBe('jonaldislarry');
-        if (i < 4) {
-          expect(commitHash).toBe('d2a75cf1');
-        } else {
-          expect(commitHash).toBe('c1c23528');
-        }
       });
+
+      expect(blameLines.every(blameLine => blameLine[0] === process.env.USER)).toBeTruthy();
+      expect(blameLines[0][1]).toEqual(blameLines[1][1]);
+      expect(blameLines[0][1]).toEqual(blameLines[2][1]);
+      expect(blameLines[0][1]).toEqual(blameLines[3][1]);
+      expect(blameLines[0][1]).not.toEqual(blameLines[4][1]);
+      expect(blameLines[4][1]).toEqual(blameLines[5][1]);
     });
   });
 });
