@@ -33,7 +33,6 @@ type ChromeProtocolResponse = {
   error: ?Object,
 };
 
-import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import {getLogger} from '../../nuclide-logging';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -84,14 +83,16 @@ class Bridge {
   _webview: ?WebviewElement;
   _suppressBreakpointSync: boolean;
   // Tracks requests for expression evaluation, keyed by the expression body.
-  _expressionsInFlight: Map<string, Deferred<?EvaluationResult>>;
-  _getPropertiesRequestsInFlight: Map<string, Deferred<?ExpansionResult>>;
+  _expressionsInFlight: Map<number, Deferred<?EvaluationResult>>;
+  _getPropertiesRequestsInFlight: Map<number, Deferred<?ExpansionResult>>;
+  _evaluationId: number;
 
   constructor(debuggerModel: DebuggerModel) {
     this._debuggerModel = debuggerModel;
     this._cleanupDisposables = new CompositeDisposable();
     this._webview = null;
     this._suppressBreakpointSync = false;
+    this._evaluationId = 0;
     this._disposables = new CompositeDisposable(
       debuggerModel.getBreakpointStore().onUserChange(this._handleUserBreakpointChange.bind(this)),
     );
@@ -149,7 +150,11 @@ class Bridge {
   }
 
   getProperties(objectId: string): Promise<?ExpansionResult> {
-    return this._cachedSendCommand(this._getPropertiesRequestsInFlight, 'getProperties', objectId);
+    return this._sendEvaluationCommand(
+      this._getPropertiesRequestsInFlight,
+      'getProperties',
+      objectId,
+    );
   }
 
   evaluateWatchExpression(expression: string): Promise<?EvaluationResult> {
@@ -218,7 +223,7 @@ class Bridge {
     expression: string,
     objectGroup: ObjectGroup,
   ): Promise<?EvaluationResult> {
-    const result = await this._cachedSendCommand(
+    const result = await this._sendEvaluationCommand(
       this._expressionsInFlight,
       'evaluateOnSelectedCallFrame',
       expression,
@@ -236,7 +241,7 @@ class Bridge {
   }
 
   async _runtimeEvaluate(expression: string): Promise<?EvaluationResult> {
-    const result = await this._cachedSendCommand(
+    const result = await this._sendEvaluationCommand(
       this._expressionsInFlight,
       'runtimeEvaluate',
       expression,
@@ -252,8 +257,8 @@ class Bridge {
     }
   }
 
-  async _cachedSendCommand<T>(
-    cache: Map<string, Deferred<?T>>,
+  async _sendEvaluationCommand<T>(
+    pending: Map<number, Deferred<?T>>,
     command: string,
     ...args: Array<mixed>
   ): Promise<?T> {
@@ -261,38 +266,31 @@ class Bridge {
     if (webview == null) {
       return null;
     }
-    const value = args[0];
-    invariant(typeof value === 'string');
-    let deferred;
-    if (cache.has(value)) {
-      deferred = cache.get(value);
-    } else {
-      deferred = new Deferred();
-      cache.set(value, deferred);
-      webview.send('command', command, ...args);
-    }
-    invariant(deferred != null);
-    let result;
+    const deferred = new Deferred();
+    const evalId = this._evaluationId;
+    ++this._evaluationId;
+    pending.set(evalId, deferred);
+    webview.send('command', command, evalId, ...args);
+    let result = null;
     try {
       result = await deferred.promise;
     } catch (e) {
       getLogger().warn(`${command}: Error getting result.`, e);
-      result = null;
     }
-    cache.delete(value);
+    pending.delete(evalId);
     return result;
   }
 
   _handleExpressionEvaluationResponse(response: ExpressionResult): void {
     response.result = normalizeRemoteObjectValue(response.result);
-    this._handleResponseForPendingRequest(this._expressionsInFlight, response, response.expression);
+    this._handleResponseForPendingRequest(response.id, this._expressionsInFlight, response);
   }
 
   _handleGetPropertiesResponse(response: GetPropertiesResult): void {
     this._handleResponseForPendingRequest(
+      response.id,
       this._getPropertiesRequestsInFlight,
       response,
-      response.objectId,
     );
   }
 
@@ -305,15 +303,15 @@ class Bridge {
   }
 
   _handleResponseForPendingRequest<T>(
-    pending: Map<string, Deferred<?T>>,
+    id: number,
+    pending: Map<number, Deferred<?T>>,
     response: ChromeProtocolResponse,
-    key: string,
   ): void {
     const {
       result,
       error,
     } = response;
-    const deferred = pending.get(key);
+    const deferred = pending.get(id);
     if (deferred == null) {
       // Nobody is listening for the result of this expression.
       return;
@@ -407,7 +405,6 @@ class Bridge {
   }
 
   _handleDebuggerPaused(): void {
-    this._expressionsInFlight.clear();
     this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.PAUSED);
   }
 

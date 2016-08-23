@@ -223,13 +223,13 @@ class NuclideBridge {
         this._stepOut();
         break;
       case 'evaluateOnSelectedCallFrame':
-        this._evaluateOnSelectedCallFrame(args[0], args[1]);
+        this._evaluateOnSelectedCallFrame(args[0], args[1], args[2]);
         break;
       case 'runtimeEvaluate':
-        this._runtimeEvaluate(args[0]);
+        this._runtimeEvaluate(args[0], args[1]);
         break;
       case 'getProperties':
-        this._getProperties(args[0]);
+        this._getProperties(args[0], args[1]);
         break;
       case 'triggerDebuggerAction':
         this._triggerDebuggerAction(args[0]);
@@ -336,7 +336,7 @@ class NuclideBridge {
     });
   }
 
-  _getProperties(objectId: string): void {
+  _getProperties(id: number, objectId: string): void {
     const mainTarget = WebInspector.targetManager.mainTarget();
     if (mainTarget == null) {
       return;
@@ -355,12 +355,13 @@ class NuclideBridge {
           result: properties,
           error,
           objectId,
+          id,
         });
       },
     );
   }
 
-  _evaluateOnSelectedCallFrame(expression: string, objectGroup: ObjectGroup): void {
+  _evaluateOnSelectedCallFrame(id: number, expression: string, objectGroup: ObjectGroup): void {
     const mainTarget = WebInspector.targetManager.mainTarget();
     if (mainTarget == null) {
       return;
@@ -377,12 +378,13 @@ class NuclideBridge {
           result: wasThrown ? null : remoteObject,
           error: wasThrown ? error : null,
           expression,
+          id,
         });
       },
     );
   }
 
-  _runtimeEvaluate(expression: string): void {
+  _runtimeEvaluate(id: number, expression: string): void {
     const mainTarget = WebInspector.targetManager.mainTarget();
     if (mainTarget == null) {
       return;
@@ -404,6 +406,7 @@ class NuclideBridge {
           result: wasThrown ? null : remoteObject,
           error: wasThrown ? error : null,
           expression,
+          id,
         });
       },
     );
