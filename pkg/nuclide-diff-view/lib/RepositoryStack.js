@@ -209,7 +209,7 @@ export default class RepositoryStack {
       return;
     }
     const lastRevisionsState = this._lastRevisionsState;
-    const revisionsState = await this.getRevisionsStatePromise();
+    const revisionsState = await this._fetchRevisionsState();
     this._lastRevisionsState = revisionsState;
     if (!isEqualRevisionsStates(revisionsState, lastRevisionsState)) {
       this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
@@ -223,13 +223,13 @@ export default class RepositoryStack {
     if (!this._isActive) {
       return;
     }
-    const cachedRevisionsState = await this.getCachedRevisionsStatePromise();
+    const cachedRevisionsState = await this.getCachedRevisionsState();
     this._commitIdsToDiffStatuses = await getDiffStatusFetcher()(
       this._repository.getWorkingDirectory(),
       cachedRevisionsState.revisions,
     );
     // Emit the new revisions state with the diff statuses.
-    this._emitter.emit(CHANGE_REVISIONS_EVENT, await this.getCachedRevisionsStatePromise());
+    this._emitter.emit(CHANGE_REVISIONS_EVENT, await this.getCachedRevisionsState());
   }
 
   /**
@@ -239,7 +239,7 @@ export default class RepositoryStack {
    * and `hg log --rev ${revId}` for every commit.
    */
   async _updateSelectedFileChanges(): Promise<void> {
-    const revisionsState = await this.getCachedRevisionsStatePromise();
+    const revisionsState = await this.getCachedRevisionsState();
     switch (this._diffOption) {
       case DiffOption.DIRTY:
         this._selectedFileChanges = this._dirtyFileChanges;
@@ -287,7 +287,11 @@ export default class RepositoryStack {
     );
   }
 
-  async getRevisionsStatePromise(): Promise<RevisionsState> {
+  refreshRevisionsState(): void {
+    this._fetchRevisionsState();
+  }
+
+  async _fetchRevisionsState(): Promise<RevisionsState> {
     const revisionPromise = this._fetchRevisionsPromise = this._fetchRevisions();
     let revisions;
     try {
@@ -301,11 +305,11 @@ export default class RepositoryStack {
     return this._createRevisionsState(revisions);
   }
 
-  async getCachedRevisionsStatePromise(): Promise<RevisionsState> {
+  async getCachedRevisionsState(): Promise<RevisionsState> {
     if (this._fetchRevisionsPromise != null) {
       return this._createRevisionsState(await this._fetchRevisionsPromise);
     } else {
-      return this.getRevisionsStatePromise();
+      return this._fetchRevisionsState();
     }
   }
 
@@ -424,7 +428,7 @@ export default class RepositoryStack {
   }
 
   async fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
-    const revisionsState = await this.getCachedRevisionsStatePromise();
+    const revisionsState = await this.getCachedRevisionsState();
     const {revisions, commitId} = revisionsState;
     // When `compareCommitId` is null, the `HEAD` commit contents is compared
     // to the filesystem, otherwise it compares that commit to filesystem.
@@ -479,7 +483,7 @@ export default class RepositoryStack {
   }
 
   async setRevision(revision: RevisionInfo): Promise<void> {
-    const revisionsState = await this.getCachedRevisionsStatePromise();
+    const revisionsState = await this.getCachedRevisionsState();
     const {revisions} = revisionsState;
 
     invariant(

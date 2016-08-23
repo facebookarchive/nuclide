@@ -751,7 +751,7 @@ class DiffViewModel {
     if (!this._isActive) {
       return;
     }
-    const revisionsState = await repositoryStack.getCachedRevisionsStatePromise();
+    const revisionsState = await repositoryStack.getCachedRevisionsState();
     this._updateChangedRevisions(repositoryStack, revisionsState, false);
   }
 
@@ -940,8 +940,8 @@ class DiffViewModel {
     await this._processArcanistOutput(stream);
     const asyncHgRepo = activeRepositoryStack.getRepository().async;
     const headCommitMessagePromise = asyncHgRepo.getHeadCommitMessage();
-    // Invalidate the current revisions state because the current commit info has changed.
-    activeRepositoryStack.getRevisionsStatePromise();
+    // Refresh revisions state to update the UI with the new commit info.
+    activeRepositoryStack.refreshRevisionsState();
     const commitMessage = await headCommitMessagePromise;
     if (commitMessage == null) {
       return null;
@@ -1268,8 +1268,8 @@ class DiffViewModel {
           break;
       }
 
-      // Force trigger an update to the revisions to update the UI state with the new commit info.
-      activeStack.getRevisionsStatePromise();
+      // Refresh revisions state to update the UI with the new commit info.
+      activeStack.refreshRevisionsState();
       this.setViewMode(DiffMode.BROWSE_MODE);
     } catch (e) {
       atom.notifications.addError('Error creating commit', {
