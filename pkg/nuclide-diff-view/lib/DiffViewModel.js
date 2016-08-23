@@ -118,7 +118,7 @@ function getInitialState(): State {
     publishMessage: null,
     publishMode: PublishMode.CREATE,
     publishModeState: PublishModeState.READY,
-    headRevision: null,
+    headCommitMessage: null,
     dirtyFileChanges: new Map(),
     selectedFileChanges: new Map(),
     showNonHgRepos: true,
@@ -205,7 +205,7 @@ export type State = {
   publishMessage: ?string,
   publishMode: PublishModeType,
   publishModeState: PublishModeStateType,
-  headRevision: ?RevisionInfo,
+  headCommitMessage: ?string,
   dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
   selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>,
   showNonHgRepos: boolean,
@@ -954,7 +954,7 @@ class DiffViewModel {
     allowUntracked: boolean,
   ): Promise<PhabricatorRevisionInfo> {
     const filePath = this._getArcanistFilePath();
-    const {phabricatorRevision} = await this._getActiveHeadRevisionDetails();
+    const {phabricatorRevision} = await this._getActiveHeadCommitDetails();
     invariant(phabricatorRevision != null, 'A phabricator revision must exist to update!');
     const updateTemplate = getRevisionUpdateMessage(phabricatorRevision).trim();
     const userUpdateMessage = publishMessage.replace(updateTemplate, '').trim();
@@ -1168,39 +1168,36 @@ class DiffViewModel {
       publishMode: PublishMode.CREATE,
       publishModeState: PublishModeState.LOADING_PUBLISH_MESSAGE,
       publishMessage: null,
-      headRevision: null,
+      headCommitMessage: null,
     });
-    const {headRevision, phabricatorRevision} = await this._getActiveHeadRevisionDetails();
+    const {headCommitMessage, phabricatorRevision} = await this._getActiveHeadCommitDetails();
     if (publishMessage == null || publishMessage.length === 0) {
       publishMessage = phabricatorRevision != null
         ? getRevisionUpdateMessage(phabricatorRevision)
-        : headRevision.description;
+        : headCommitMessage;
     }
     this._setState({
       ...this._state,
       publishMode: phabricatorRevision != null ? PublishMode.UPDATE : PublishMode.CREATE,
       publishModeState: PublishModeState.READY,
       publishMessage,
-      headRevision,
+      headCommitMessage,
     });
   }
 
-  async _getActiveHeadRevisionDetails(): Promise<{
-    headRevision: RevisionInfo,
+  async _getActiveHeadCommitDetails(): Promise<{
+    headCommitMessage: string,
     phabricatorRevision: ?PhabricatorRevisionInfo,
   }> {
-    const revisionsState = await this._getActiveRevisionsState();
-    if (revisionsState == null) {
-      throw new Error('Cannot Load Publish View: No active file or repository');
+    const headCommitMessage = await this._getActiveHeadCommitMessage();
+    if (headCommitMessage == null) {
+      throw new Error('Cannot Fetch Head Commit Message!');
     }
-    const {revisions} = revisionsState;
-    invariant(revisions.length > 0, 'Diff View Error: Zero Revisions');
-    const headRevision = revisions[revisions.length - 1];
     const phabricatorRevision = getPhabricatorRevisionFromCommitMessage(
-      headRevision.description,
+      headCommitMessage,
     );
     return {
-      headRevision,
+      headCommitMessage,
       phabricatorRevision,
     };
   }
@@ -1209,11 +1206,9 @@ class DiffViewModel {
     if (this._activeRepositoryStack == null) {
       throw new Error('Diff View: No active file or repository open');
     }
-    const revisionsState = await this._getActiveRevisionsState();
-    invariant(revisionsState, 'Diff View Internal Error: revisionsState cannot be null');
-    const {revisions} = revisionsState;
-    invariant(revisions.length > 0, 'Diff View Error: Cannot amend non-existing commit');
-    return revisions[revisions.length - 1].description;
+    const headCommitMessage = await this._getActiveHeadCommitMessage();
+    invariant(headCommitMessage, 'Diff View Internal Error: head commit message cannot be null');
+    return headCommitMessage;
   }
 
   async _loadActiveRepositoryTemplateCommitMessage(): Promise<?string> {
@@ -1229,11 +1224,11 @@ class DiffViewModel {
     return commitMessage;
   }
 
-  async _getActiveRevisionsState(): Promise<?RevisionsState> {
+  async _getActiveHeadCommitMessage(): Promise<?string> {
     if (this._activeRepositoryStack == null || !this._isActive) {
       return null;
     }
-    return await this._activeRepositoryStack.getCachedRevisionsStatePromise();
+    return await this._activeRepositoryStack.getRepository().async.getHeadCommitMessage();
   }
 
   _setState(newState: State) {

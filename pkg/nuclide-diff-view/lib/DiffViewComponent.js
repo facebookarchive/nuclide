@@ -309,14 +309,14 @@ class DiffViewComponent extends React.Component {
       publishMode,
       publishModeState,
       publishMessage,
-      headRevision,
+      headCommitMessage,
     } = diffModel.getState();
     const component = ReactDOM.render(
       <DiffPublishView
         publishModeState={publishModeState}
         message={publishMessage}
         publishMode={publishMode}
-        headRevision={headRevision}
+        headCommitMessage={headCommitMessage}
         diffModel={diffModel}
       />,
       this._getPaneElement(this._bottomRightPane),

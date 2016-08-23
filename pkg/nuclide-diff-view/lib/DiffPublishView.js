@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type DiffViewModel from './DiffViewModel';
 import type {PublishModeType, PublishModeStateType} from './types';
 
@@ -30,21 +29,21 @@ import {CompositeDisposable, TextBuffer} from 'atom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 type DiffRevisionViewProps = {
-  revision: RevisionInfo,
+  commitMessage: string,
 };
 
 class DiffRevisionView extends React.Component {
   props: DiffRevisionViewProps;
 
   render(): React.Element<any> {
-    const {hash, title, description} = this.props.revision;
-    const tooltip = `${hash}: ${title}`;
-    const revision = getPhabricatorRevisionFromCommitMessage(description);
+    const {commitMessage} = this.props;
+    const commitTitle = commitMessage.split(/\n/)[0];
+    const revision = getPhabricatorRevisionFromCommitMessage(commitMessage);
 
     return (revision == null)
       ? <span />
       : (
-        <a href={revision.url} title={tooltip}>
+        <a href={revision.url} title={commitTitle}>
           {revision.name}
         </a>
       );
@@ -55,7 +54,7 @@ type Props = {
   message: ?string,
   publishMode: PublishModeType,
   publishModeState: PublishModeStateType,
-  headRevision: ?RevisionInfo,
+  headCommitMessage: ?string,
   diffModel: DiffViewModel,
 };
 
@@ -135,11 +134,11 @@ class DiffPublishView extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {publishModeState, publishMode, headRevision} = this.props;
+    const {publishModeState, publishMode, headCommitMessage} = this.props;
 
     let revisionView;
-    if (headRevision != null) {
-      revisionView = <DiffRevisionView revision={headRevision} />;
+    if (headCommitMessage != null) {
+      revisionView = <DiffRevisionView commitMessage={headCommitMessage} />;
     }
 
     let isBusy;
