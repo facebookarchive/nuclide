@@ -91,4 +91,5 @@ module.exports = {
   getService,
   getServiceByNuclideUri,
   setUseLocalRpc,
+  getlocalService,
 };

@@ -338,6 +338,11 @@ class ServerConnection {
     return ServerConnection._connections.get(hostname);
   }
 
+  static observeConnections(handler: (connection: ServerConnection) => void): IDisposable {
+    ServerConnection._connections.forEach(handler);
+    return ServerConnection.onDidAddServerConnection(handler);
+  }
+
   getRemoteConnectionForUri(uri: NuclideUri): ?RemoteConnection {
     const {path} = nuclideUri.parse(uri);
     return this.getConnections().filter(connection => {

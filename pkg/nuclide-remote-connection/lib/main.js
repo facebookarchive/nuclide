@@ -29,6 +29,7 @@ import {
 import {
   getService,
   getServiceByNuclideUri,
+  getlocalService,
 } from './service-manager';
 
 export {
@@ -41,6 +42,7 @@ export {
   decorateSshConnectionDelegateWithTracking,
   getService,
   getServiceByNuclideUri,
+  getlocalService,
 };
 
 export function getFileSystemServiceByNuclideUri(uri: NuclideUri): FileSystemService {
