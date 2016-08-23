@@ -28,7 +28,7 @@ Verify that you are using the correct node version by running:
 node --version
 ```
 
-and verifying that you have version 5.0.0 or higher.
+and verifying that you have version 5.10.0 or higher.
 
 *Permissions*
 

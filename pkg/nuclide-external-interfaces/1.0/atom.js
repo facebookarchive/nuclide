@@ -626,6 +626,13 @@ type ChangeCursorPositionEvent = {
   cursor: atom$Cursor,
 };
 
+type MarkerOptions = $Shape<{
+  reversed?: boolean,
+  tailed?: boolean,
+  invalidate?: 'never' | 'surround' | 'overlap' | 'inside' | 'touch',
+  exclusive?: boolean,
+}>;
+
 declare class atom$TextEditor extends atom$Model {
   id: number,
   firstVisibleScreenRow: number,
@@ -712,19 +719,9 @@ declare class atom$TextEditor extends atom$Model {
   getDecorations(options?: {class?: string, type?: string}): Array<atom$Decoration>,
 
   // Markers
-  markBufferPosition(position: atom$Point | Array<number>): atom$Marker,
-  markBufferRange(range: atom$Range | Array<Array<number>>, properties?: {
-    maintainHistory?: boolean,
-    reversed?: boolean,
-    persistent?: boolean,
-    invalidate?: string,
-  }): atom$Marker,
-  markScreenRange(range: atom$Range | Array<Array<number>>, properties?: {
-    maintainHistory?: boolean,
-    reversed?: boolean,
-    persistent?: boolean,
-    invalidate?: string,
-  }): atom$Marker,
+  markBufferPosition(position: atom$Point | Array<number>, options?: MarkerOptions): atom$Marker,
+  markBufferRange(range: atom$Range | Array<Array<number>>, options?: MarkerOptions): atom$Marker,
+  markScreenRange(range: atom$Range | Array<Array<number>>, options?: MarkerOptions): atom$Marker,
 
   // Cursors
   getCursors(): Array<atom$Cursor>,

@@ -16,7 +16,7 @@ those willing to live on the bleeding edge, you can install Nuclide from source.
 ### Prerequisites
 
 You must have the [general prerequisites](/docs/editor/setup#mac__prerequisites) installed. In
-addition, you must have Xcode and **Node 5.0.0** installed as well.
+addition, you must have Xcode and **Node 5.10.0** installed as well.
 
 Xcode can be installed from the App Store. Installation can take a *long, long* time. So be patient.
 
@@ -30,11 +30,11 @@ You can verify all the appropriate dependencies. All the following should be on 
 $ git --version
 git version 2.5.4 (Apple Git-61)
 $ node --version
-v5.1.1
+v5.10.0
 $ npm --version
-3.3.12
+3.8.3
 $ apm --version
-apm  1.9.2
+apm  1.10.0
 npm  2.13.3
 node 0.10.40
 python 2.7.10
@@ -70,7 +70,7 @@ Verify the installation by:
 ### Prerequisites
 
 You must have the [general prerequisites](/docs/editor/setup#linux__prerequisites) installed. In
-addition, you must have **Node 5.0.0** installed as well.
+addition, you must have **Node 5.10.0** installed as well.
 
 To install Node, see [Node.js's download page](https://nodejs.org/en/download/) for steps that work best for your setup.
 
@@ -81,11 +81,11 @@ You can verify all the appropriate dependencies. All the following should be on 
 $ git --version
 git version 1.9.1
 $ node --version
-v5.1.1
+v5.10.0
 $ npm --version
-3.3.12
+3.8.3
 $ apm --version
-apm  1.5.0
+apm  1.10.0
 npm  2.13.3
 node 0.10.40
 python 2.7.6
