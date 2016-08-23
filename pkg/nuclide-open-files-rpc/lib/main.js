@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +10,23 @@
  * the root directory of this source tree.
  */
 
-import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
-import type {Observable} from 'rxjs';
-import type {LocalFileEvent} from './FileCache';
+exports.getBufferAtVersion = getBufferAtVersion;
+exports.observeFileEvents = observeFileEvents;
 
-import {fileCache} from './OpenFilesService';
+var _OpenFilesService2;
 
-export const OPEN_FILES_SERVICE = 'OpenFilesService';
-
-export function getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
-  return fileCache.getBufferAtVersion(fileVersion);
+function _OpenFilesService() {
+  return _OpenFilesService2 = require('./OpenFilesService');
 }
 
-export function observeFileEvents(): Observable<LocalFileEvent> {
-  return fileCache.observeFileEvents();
+var OPEN_FILES_SERVICE = 'OpenFilesService';
+
+exports.OPEN_FILES_SERVICE = OPEN_FILES_SERVICE;
+
+function getBufferAtVersion(fileVersion) {
+  return (_OpenFilesService2 || _OpenFilesService()).fileCache.getBufferAtVersion(fileVersion);
+}
+
+function observeFileEvents() {
+  return (_OpenFilesService2 || _OpenFilesService()).fileCache.observeFileEvents();
 }

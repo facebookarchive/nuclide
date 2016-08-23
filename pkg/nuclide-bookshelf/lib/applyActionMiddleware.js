@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,165 +10,159 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Action,
-  ActionTypeValue,
-  AddProjectRepositoryAction,
-  BookShelfState,
-  RestorePaneItemStateAction,
-} from './types';
-import type {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';
+exports.applyActionMiddleware = applyActionMiddleware;
 
-import {ActionType, EMPTY_SHORTHEAD} from './constants';
-import {getRepoPathToEditors} from './utils';
-import invariant from 'assert';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {Observable} from 'rxjs';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const HANDLED_ACTION_TYPES = [
-  ActionType.ADD_PROJECT_REPOSITORY,
-  ActionType.RESTORE_PANE_ITEM_STATE,
-];
+var _constants2;
 
-function getActionsOfType(actions: Observable<Action>, type: ActionTypeValue): Observable<Action> {
-  return actions.filter(action => action.type === type);
+function _constants() {
+  return _constants2 = require('./constants');
 }
 
-export function applyActionMiddleware(
-  actions: Observable<Action>,
-  getState: () => BookShelfState,
-): Observable<Action> {
-  const output = Observable.merge(
-    // Let the unhandled ActionTypes pass through.
-    actions.filter(action => HANDLED_ACTION_TYPES.indexOf(action.type) === -1),
+var _utils2;
 
-    getActionsOfType(actions, ActionType.ADD_PROJECT_REPOSITORY).flatMap(action => {
-      invariant(action.type === ActionType.ADD_PROJECT_REPOSITORY);
-      return watchProjectRepository(action, getState);
-    }),
+function _utils() {
+  return _utils2 = require('./utils');
+}
 
-    getActionsOfType(actions, ActionType.RESTORE_PANE_ITEM_STATE).switchMap(action => {
-      invariant(action.type === ActionType.RESTORE_PANE_ITEM_STATE);
-      return restorePaneItemState(action, getState);
-    }),
-  );
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsNodeEvent2;
+
+function _commonsNodeEvent() {
+  return _commonsNodeEvent2 = require('../../commons-node/event');
+}
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
+
+var HANDLED_ACTION_TYPES = [(_constants2 || _constants()).ActionType.ADD_PROJECT_REPOSITORY, (_constants2 || _constants()).ActionType.RESTORE_PANE_ITEM_STATE];
+
+function getActionsOfType(actions, type) {
+  return actions.filter(function (action) {
+    return action.type === type;
+  });
+}
+
+function applyActionMiddleware(actions, getState) {
+  var output = (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.merge(
+  // Let the unhandled ActionTypes pass through.
+  actions.filter(function (action) {
+    return HANDLED_ACTION_TYPES.indexOf(action.type) === -1;
+  }), getActionsOfType(actions, (_constants2 || _constants()).ActionType.ADD_PROJECT_REPOSITORY).flatMap(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_constants2 || _constants()).ActionType.ADD_PROJECT_REPOSITORY);
+    return watchProjectRepository(action, getState);
+  }), getActionsOfType(actions, (_constants2 || _constants()).ActionType.RESTORE_PANE_ITEM_STATE).switchMap(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_constants2 || _constants()).ActionType.RESTORE_PANE_ITEM_STATE);
+    return restorePaneItemState(action, getState);
+  }));
   return output.share();
 }
 
-function watchProjectRepository(
-  action: AddProjectRepositoryAction,
-  getState: () => BookShelfState,
-): Observable<Action> {
+function watchProjectRepository(action, getState) {
+  var repository = action.payload.repository;
 
-  const {repository} = action.payload;
-  const repositoryAsync: HgRepositoryClientAsync = (repository.async: any);
+  var repositoryAsync = repository.async;
   // Type was checked with `getType`. Downcast to safely access members with Flow.
-  return Observable.merge(
-    observableFromSubscribeFunction(
-      // Re-fetch when the list of bookmarks changes.
-      repositoryAsync.onDidChangeBookmarks.bind(repositoryAsync),
-    ),
-    observableFromSubscribeFunction(
-      // Re-fetch when the active bookmark changes (called "short head" to match
-      // Atom's Git API).
-      repositoryAsync.onDidChangeShortHead.bind(repositoryAsync),
-    ),
-  )
-  .startWith(null) // Kick it off the first time
-  .switchMap(() => Observable.fromPromise(repositoryAsync.getBookmarks()))
-  .map(bookmarks => {
-    const bookmarkNames = new Set(
-      bookmarks.map(bookmark => bookmark.bookmark).concat([EMPTY_SHORTHEAD]),
-    );
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.merge((0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(
+  // Re-fetch when the list of bookmarks changes.
+  repositoryAsync.onDidChangeBookmarks.bind(repositoryAsync)), (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(
+  // Re-fetch when the active bookmark changes (called "short head" to match
+  // Atom's Git API).
+  repositoryAsync.onDidChangeShortHead.bind(repositoryAsync))).startWith(null) // Kick it off the first time
+  .switchMap(function () {
+    return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromPromise(repositoryAsync.getBookmarks());
+  }).map(function (bookmarks) {
+    var bookmarkNames = new Set(bookmarks.map(function (bookmark) {
+      return bookmark.bookmark;
+    }).concat([(_constants2 || _constants()).EMPTY_SHORTHEAD]));
 
-    const activeBookmark = bookmarks.filter(bookmark => bookmark.active)[0];
-    const activeShortHead = activeBookmark == null
-      ? EMPTY_SHORTHEAD
-      : activeBookmark.bookmark;
+    var activeBookmark = bookmarks.filter(function (bookmark) {
+      return bookmark.active;
+    })[0];
+    var activeShortHead = activeBookmark == null ? (_constants2 || _constants()).EMPTY_SHORTHEAD : activeBookmark.bookmark;
 
     return {
       payload: {
-        activeShortHead,
-        bookmarkNames,
-        repository,
+        activeShortHead: activeShortHead,
+        bookmarkNames: bookmarkNames,
+        repository: repository
       },
-      type: ActionType.UPDATE_REPOSITORY_BOOKMARKS,
+      type: (_constants2 || _constants()).ActionType.UPDATE_REPOSITORY_BOOKMARKS
     };
-  })
-  .takeUntil(observableFromSubscribeFunction(repository.onDidDestroy.bind(repository)))
-  .concat(Observable.of({
+  }).takeUntil((0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(repository.onDidDestroy.bind(repository))).concat((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of({
     payload: {
-      repository,
+      repository: repository
     },
-    type: ActionType.REMOVE_PROJECT_REPOSITORY,
+    type: (_constants2 || _constants()).ActionType.REMOVE_PROJECT_REPOSITORY
   }));
 }
 
-function restorePaneItemState(
-  action: RestorePaneItemStateAction,
-  getState: () => BookShelfState,
-): Observable<Action> {
-  const {repository, shortHead} = action.payload;
+function restorePaneItemState(action, getState) {
+  var _action$payload = action.payload;
+  var repository = _action$payload.repository;
+  var shortHead = _action$payload.shortHead;
 
-  const repositoryState = getState().repositoryPathToState.get(
-    repository.getWorkingDirectory(),
-  );
+  var repositoryState = getState().repositoryPathToState.get(repository.getWorkingDirectory());
   if (repositoryState == null) {
-    return Observable.empty();
+    return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.empty();
   }
 
   // TODO(most): refactor to a `Set` all the way.
-  const fileUris = new Set(repositoryState.shortHeadsToFileList.get(shortHead) || []);
+  var fileUris = new Set(repositoryState.shortHeadsToFileList.get(shortHead) || []);
 
-  const oldOpenEditors = getRepoPathToEditors().get(repository.getWorkingDirectory()) || [];
-  const oldOpenUris = oldOpenEditors.map(textEditor => textEditor.getPath() || '');
+  var oldOpenEditors = (0, (_utils2 || _utils()).getRepoPathToEditors)().get(repository.getWorkingDirectory()) || [];
+  var oldOpenUris = oldOpenEditors.map(function (textEditor) {
+    return textEditor.getPath() || '';
+  });
 
-  const editorsToReload = oldOpenEditors
-    .filter(textEditor => fileUris.has(textEditor.getPath() || ''));
-  const editorsToClose = oldOpenEditors
-    .filter(textEditor => !fileUris.has(textEditor.getPath() || ''));
-  const urisToOpen = Array.from(fileUris)
-    .filter(fileUri => oldOpenUris.indexOf(fileUri) === -1);
+  var editorsToReload = oldOpenEditors.filter(function (textEditor) {
+    return fileUris.has(textEditor.getPath() || '');
+  });
+  var editorsToClose = oldOpenEditors.filter(function (textEditor) {
+    return !fileUris.has(textEditor.getPath() || '');
+  });
+  var urisToOpen = Array.from(fileUris).filter(function (fileUri) {
+    return oldOpenUris.indexOf(fileUri) === -1;
+  });
 
-  return Observable.concat(
-    Observable.of({
-      payload: {
-        repository,
-      },
-      type: ActionType.START_RESTORING_REPOSITORY_STATE,
-    }),
-    Observable.from(editorsToClose)
-      // Close the open files from the old short head.
-      .map(textEditor => {
-        const editorPane = atom.workspace.paneForItem(textEditor);
-        invariant(editorPane);
-        editorPane.destroyItem(textEditor);
-      })
-      .ignoreElements(),
-    // Note: the reloading step can be omitted if the file watchers are proven to be robust.
-    // But that's not the case; hence, a reload on bookmark switch/restore doesn't hurt.
-    Observable.from(editorsToReload)
-      .flatMap(textEditor => {
-        // Reload the open files that also exist to be in the current.
-        if (textEditor.isModified()) {
-          // If the filesystem version has changed while it's edited,
-          // the user will be prompted to resolve the conflict: `file-watcher`.
-          return Observable.empty();
-        } else {
-          return Observable.fromPromise(textEditor.getBuffer().load());
-        }
-      })
-      .ignoreElements(),
-    Observable.from(urisToOpen)
-      .flatMap(fileUri => {
-        return Observable.fromPromise(atom.workspace.open(fileUri));
-      })
-      .ignoreElements(),
-    Observable.of({
-      payload: {
-        repository,
-      },
-      type: ActionType.COMPLETE_RESTORING_REPOSITORY_STATE,
-    }),
-  );
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.concat((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of({
+    payload: {
+      repository: repository
+    },
+    type: (_constants2 || _constants()).ActionType.START_RESTORING_REPOSITORY_STATE
+  }), (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.from(editorsToClose)
+  // Close the open files from the old short head.
+  .map(function (textEditor) {
+    var editorPane = atom.workspace.paneForItem(textEditor);
+    (0, (_assert2 || _assert()).default)(editorPane);
+    editorPane.destroyItem(textEditor);
+  }).ignoreElements(),
+  // Note: the reloading step can be omitted if the file watchers are proven to be robust.
+  // But that's not the case; hence, a reload on bookmark switch/restore doesn't hurt.
+  (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.from(editorsToReload).flatMap(function (textEditor) {
+    // Reload the open files that also exist to be in the current.
+    if (textEditor.isModified()) {
+      // If the filesystem version has changed while it's edited,
+      // the user will be prompted to resolve the conflict: `file-watcher`.
+      return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.empty();
+    } else {
+      return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromPromise(textEditor.getBuffer().load());
+    }
+  }).ignoreElements(), (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.from(urisToOpen).flatMap(function (fileUri) {
+    return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromPromise(atom.workspace.open(fileUri));
+  }).ignoreElements(), (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of({
+    payload: {
+      repository: repository
+    },
+    type: (_constants2 || _constants()).ActionType.COMPLETE_RESTORING_REPOSITORY_STATE
+  }));
 }

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +8,7 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {VoidTypeAnnotation} from 'ast-types-flow';
-
-function printVoidTypeAnnotation(
-  print: Print,
-  node: VoidTypeAnnotation,
-): Lines {
+function printVoidTypeAnnotation(print, node) {
   return ['void'];
 }
 

@@ -1,4 +1,0 @@
-const four = require('four');
-const one = require('one');
-
-one(four);

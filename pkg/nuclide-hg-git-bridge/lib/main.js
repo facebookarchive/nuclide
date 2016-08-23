@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,5 +12,10 @@
  * the root directory of this source tree.
  */
 
-export {default as repositoryContainsPath} from './repositoryContainsPath';
-export {default as repositoryForPath} from './repositoryForPath';
+var _repositoryContainsPath = require('./repositoryContainsPath');
+
+exports.repositoryContainsPath = _interopRequire(_repositoryContainsPath);
+
+var _repositoryForPath = require('./repositoryForPath');
+
+exports.repositoryForPath = _interopRequire(_repositoryForPath);

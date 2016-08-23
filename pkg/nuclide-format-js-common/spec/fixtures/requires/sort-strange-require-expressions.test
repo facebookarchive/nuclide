@@ -1,5 +1,0 @@
-const a = require('a')()()().a().b.c[0];
-require('b')().x;
-const D = require('meh').a.b.c('123');
-const C = 'not'.a.require('meh');
-a(D);

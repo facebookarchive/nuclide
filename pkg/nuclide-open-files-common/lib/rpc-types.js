@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +10,6 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-
 // Version of atom$Point
-export type AtomPoint = {
-  row: number,
-  column: number,
-};
 
 // Version of atom$Range
-export type AtomRange = {
-  start: AtomPoint,
-  end: AtomPoint,
-};
-
-export type FileVersion = {
-  filePath: NuclideUri,
-  version: number,
-};
