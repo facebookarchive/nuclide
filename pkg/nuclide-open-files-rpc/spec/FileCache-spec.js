@@ -192,7 +192,7 @@ describe('FileCache', () => {
         kind: 'open',
         fileVersion: {
           filePath: 'f2',
-          version: 42,
+          version: 4,
         },
         contents: 'blip',
       });
@@ -200,14 +200,14 @@ describe('FileCache', () => {
         kind: 'sync',
         fileVersion: {
           filePath: 'f2',
-          version: 4,
+          version: 42,
         },
         contents: 'contents12',
       });
       expect(cacheToObject(cache)).toEqual({
         f2: {
           text: 'contents12',
-          changeCount: 4,
+          changeCount: 42,
         },
       });
       expect(JSON.stringify(await finishEvents())).toEqual(
@@ -215,7 +215,7 @@ describe('FileCache', () => {
           kind: 'open',
           contents: 'blip',
           filePath: 'f2',
-          changeCount: 42,
+          changeCount: 4,
         },
         {
           kind: 'edit',
@@ -230,7 +230,40 @@ describe('FileCache', () => {
           },
           newText: 'contents12',
           filePath: 'f2',
-          changeCount: 4,
+          changeCount: 42,
+        }]));
+    });
+  });
+  it('out of date sync', () => {
+    waitsForPromise(async () => {
+      cache.onEvent({
+        kind: 'open',
+        fileVersion: {
+          filePath: 'f2',
+          version: 42,
+        },
+        contents: 'blip',
+      });
+      cache.onEvent({
+        kind: 'sync',
+        fileVersion: {
+          filePath: 'f2',
+          version: 4,
+        },
+        contents: 'contents12',
+      });
+      expect(cacheToObject(cache)).toEqual({
+        f2: {
+          text: 'blip',
+          changeCount: 42,
+        },
+      });
+      expect(JSON.stringify(await finishEvents())).toEqual(
+        JSON.stringify([{
+          kind: 'open',
+          contents: 'blip',
+          filePath: 'f2',
+          changeCount: 42,
         }]));
     });
   });

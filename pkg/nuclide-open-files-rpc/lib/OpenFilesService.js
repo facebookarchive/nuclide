@@ -11,9 +11,7 @@
 
 import type {FileEvent} from './rpc-types';
 
-import {FileCache} from './FileCache';
-
-export const fileCache: FileCache = new FileCache();
+import {fileCache} from './FileCache';
 
 export async function initialize(): Promise<FileNotifier> {
   fileCache.dispose();

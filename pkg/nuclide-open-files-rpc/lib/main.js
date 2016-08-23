@@ -13,7 +13,7 @@ import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 import type {Observable} from 'rxjs';
 import type {LocalFileEvent} from './FileCache';
 
-import {fileCache} from './OpenFilesService';
+import {fileCache} from './FileCache';
 
 export const OPEN_FILES_SERVICE = 'OpenFilesService';
 

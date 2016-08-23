@@ -83,6 +83,11 @@ export class FileCache {
     contents: string,
     changeCount: number,
   ): void {
+    // messages are out of order
+    if (changeCount < buffer.changeCount) {
+      return;
+    }
+
     const oldText = buffer.getText();
     const oldRange = buffer.getRange();
     buffer.setText(contents);
@@ -203,3 +208,5 @@ class Request extends Deferred<atom$TextBuffer> {
     this.changeCount = changeCount;
   }
 }
+
+export const fileCache: FileCache = new FileCache();
