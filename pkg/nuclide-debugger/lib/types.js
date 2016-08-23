@@ -33,6 +33,19 @@ export type EvaluatedExpression = {
   value: Observable<?EvaluationResult>,
 };
 export type EvaluatedExpressionList = Array<EvaluatedExpression>;
+export type EvalCommand = 'runtimeEvaluate' | 'evaluateOnSelectedCallFrame' | 'getProperties';
+export type ExpressionResult = ChromeProtocolResponse & {
+  expression: string,
+};
+
+export type GetPropertiesResult = ChromeProtocolResponse & {
+  objectId: string,
+};
+
+export type ChromeProtocolResponse = {
+  result: ?EvaluationResult | ?GetPropertiesResult,
+  error: ?Object,
+};
 
 /* Breakpoints */
 export type FileLineBreakpoint = {

@@ -11,8 +11,11 @@
 
 import type Bridge from './Bridge';
 import type {
+  ChromeProtocolResponse,
+  EvalCommand,
   EvaluationResult,
   ExpansionResult,
+  ObjectGroup,
 } from './types';
 import type Dispatcher from 'flux';
 
@@ -25,6 +28,9 @@ import {Actions} from './Constants';
 import {BehaviorSubject, Observable} from 'rxjs';
 import invariant from 'assert';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {Deferred} from '../../commons-node/promise';
+import {getLogger} from '../../nuclide-logging';
+import {normalizeRemoteObjectValue} from './normalizeRemoteObjectValue';
 
 type Expression = string;
 
@@ -33,11 +39,17 @@ export class WatchExpressionStore {
   _disposables: CompositeDisposable;
   _watchExpressions: Map<Expression, BehaviorSubject<?EvaluationResult>>;
   _previousEvaluationSubscriptions: CompositeDisposable;
+  _evaluationId: number;
+  _isPaused: boolean;
+  _evaluationRequestsInFlight: Map<number, Deferred<mixed>>;
 
   constructor(dispatcher: Dispatcher, bridge: Bridge) {
+    this._evaluationId = 0;
+    this._isPaused = false;
     this._bridge = bridge;
     this._disposables = new CompositeDisposable();
     this._watchExpressions = new Map();
+    this._evaluationRequestsInFlight = new Map();
     this._disposables.add(new Disposable(() => this._watchExpressions.clear()));
     // `this._previousEvaluationSubscriptions` can change at any time and are a distinct subset of
     // `this._disposables`.
@@ -53,52 +65,59 @@ export class WatchExpressionStore {
 
   _handlePayload(payload: Object) {
     switch (payload.actionType) {
-      case Actions.CLEAR_INTERFACE:
+      case Actions.CLEAR_INTERFACE: {
         this._clearEvaluationValues();
         break;
-      case Actions.DEBUGGER_MODE_CHANGE:
+      }
+      case Actions.DEBUGGER_MODE_CHANGE: {
+        this._isPaused = false;
         if (payload.data === DebuggerMode.PAUSED) {
+          this._isPaused = true;
           this._triggerReevaluation();
         } else if (payload.data === DebuggerMode.STOPPED) {
           this._cancelRequestsToBridge();
           this._clearEvaluationValues();
         }
         break;
-      default:
+      }
+      case Actions.RECEIVED_GET_PROPERTIES_RESPONSE: {
+        const {id, response} = payload.data;
+        this._handleResponseForPendingRequest(id, response);
+        break;
+      }
+      case Actions.RECEIVED_EXPRESSION_EVALUATION_RESPONSE: {
+        const {id, response} = payload.data;
+        response.result = normalizeRemoteObjectValue(response.result);
+        this._handleResponseForPendingRequest(id, response);
+        break;
+      }
+      default: {
         return;
+      }
     }
   }
 
-  _requestActionFromBridge<T>(
-    subject: BehaviorSubject<T>,
-    callback: () => Promise<T>,
-  ): IDisposable {
-    return new UniversalDisposable(
-      Observable
-      .fromPromise(callback())
-      .merge(Observable.never())
-      .subscribe(subject),
-    );
+  _triggerReevaluation(): void {
+    this._cancelRequestsToBridge();
+    for (const [expression, subject] of this._watchExpressions) {
+      if (subject.observers == null || subject.observers.length === 0) {
+        // Nobody is watching this expression anymore.
+        this._watchExpressions.delete(expression);
+        continue;
+      }
+      this._requestExpressionEvaluation(expression, subject, false /* no REPL support */);
+    }
   }
 
-  _requestExpressionEvaluation(
-    expression: Expression,
-    subject: BehaviorSubject<?EvaluationResult>,
-    supportRepl: boolean,
-  ): void {
-    const evaluationDisposable = this._requestActionFromBridge(
-      subject,
-      () => (
-        supportRepl
-          ? this._bridge.evaluateConsoleExpression(expression)
-          : this._bridge.evaluateWatchExpression(expression)
-      ),
-    );
-    // Non-REPL environments will want to record these requests so they can be canceled on
-    // re-evaluation, e.g. in the case of stepping.  REPL environments should let them complete so
-    // we can have e.g. a history of evaluations in the console.
-    if (!supportRepl) {
-      this._previousEvaluationSubscriptions.add(evaluationDisposable);
+  _cancelRequestsToBridge(): void {
+    this._previousEvaluationSubscriptions.dispose();
+    this._previousEvaluationSubscriptions = new CompositeDisposable();
+  }
+
+  // Resets all values to N/A, for examples when the debugger resumes or stops.
+  _clearEvaluationValues(): void {
+    for (const subject of this._watchExpressions.values()) {
+      subject.next(null);
     }
   }
 
@@ -107,7 +126,11 @@ export class WatchExpressionStore {
    * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
    */
   getProperties(objectId: string): Observable<?ExpansionResult> {
-    return Observable.fromPromise(this._bridge.getProperties(objectId));
+    const getPropertiesPromise: Promise<?ExpansionResult> = this._sendEvaluationCommand(
+      'getProperties',
+      objectId,
+    );
+    return Observable.fromPromise(getPropertiesPromise);
   }
 
   evaluateConsoleExpression(expression: Expression): Observable<?EvaluationResult> {
@@ -142,27 +165,100 @@ export class WatchExpressionStore {
     return subject.asObservable();
   }
 
-  _triggerReevaluation(): void {
-    this._cancelRequestsToBridge();
-    for (const [expression, subject] of this._watchExpressions) {
-      if (subject.observers == null || subject.observers.length === 0) {
-        // Nobody is watching this expression anymore.
-        this._watchExpressions.delete(expression);
-        continue;
-      }
-      this._requestExpressionEvaluation(expression, subject, false /* no REPL support */);
+  _requestExpressionEvaluation(
+    expression: Expression,
+    subject: BehaviorSubject<?EvaluationResult>,
+    supportRepl: boolean,
+  ): void {
+    let evaluationPromise;
+    if (supportRepl) {
+      evaluationPromise = this._isPaused
+        ? this._evaluateOnSelectedCallFrame(expression, 'console')
+        : this._runtimeEvaluate(expression);
+    } else {
+      evaluationPromise = this._evaluateOnSelectedCallFrame(expression, 'watch-group');
+    }
+
+    const evaluationDisposable = new UniversalDisposable(
+      Observable
+        .fromPromise(evaluationPromise)
+        .merge(Observable.never()) // So that we do not unsubscribe `subject` when disposed.
+        .subscribe(subject),
+    );
+
+    // Non-REPL environments will want to record these requests so they can be canceled on
+    // re-evaluation, e.g. in the case of stepping.  REPL environments should let them complete so
+    // we can have e.g. a history of evaluations in the console.
+    if (!supportRepl) {
+      this._previousEvaluationSubscriptions.add(evaluationDisposable);
+    } else {
+      this._disposables.add(evaluationDisposable);
     }
   }
 
-  _cancelRequestsToBridge(): void {
-    this._previousEvaluationSubscriptions.dispose();
-    this._previousEvaluationSubscriptions = new CompositeDisposable();
+  async _evaluateOnSelectedCallFrame(
+    expression: string,
+    objectGroup: ObjectGroup,
+  ): Promise<?EvaluationResult> {
+    const result: ?EvaluationResult = await this._sendEvaluationCommand(
+      'evaluateOnSelectedCallFrame',
+      expression,
+      objectGroup,
+    );
+    if (result == null) {
+      // TODO: It would be nice to expose a better error from the backend here.
+      return {
+        type: 'text',
+        value: `Failed to evaluate: ${expression}`,
+      };
+    } else {
+      return result;
+    }
   }
 
-  // Resets all values to N/A, for examples when the debugger resumes or stops.
-  _clearEvaluationValues(): void {
-    for (const subject of this._watchExpressions.values()) {
-      subject.next(null);
+  async _runtimeEvaluate(expression: string): Promise<?EvaluationResult> {
+    const result: ?EvaluationResult = await this._sendEvaluationCommand(
+      'runtimeEvaluate',
+      expression,
+    );
+    if (result == null) {
+      // TODO: It would be nice to expose a better error from the backend here.
+      return {
+        type: 'text',
+        value: `Failed to evaluate: ${expression}`,
+      };
+    } else {
+      return result;
+    }
+  }
+
+  async _sendEvaluationCommand(command: EvalCommand, ...args: Array<mixed>): Promise<any> {
+    const deferred = new Deferred();
+    const evalId = this._evaluationId;
+    ++this._evaluationId;
+    this._evaluationRequestsInFlight.set(evalId, deferred);
+    this._bridge.sendEvaluationCommand(command, evalId, ...args);
+    let result = null;
+    try {
+      result = await deferred.promise;
+    } catch (e) {
+      getLogger().warn(`${command}: Error getting result.`, e);
+    }
+    this._evaluationRequestsInFlight.delete(evalId);
+    return result;
+  }
+
+  _handleResponseForPendingRequest(id: number, response: ChromeProtocolResponse): void {
+    const {result, error} = response;
+    const deferred = this._evaluationRequestsInFlight.get(id);
+    if (deferred == null) {
+      // Nobody is listening for the result of this expression.
+      return;
+    }
+    if (error != null) {
+      deferred.reject(error);
+    } else {
+      deferred.resolve(result);
     }
   }
 

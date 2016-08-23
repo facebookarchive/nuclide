@@ -12,33 +12,18 @@
 import type DebuggerModel from './DebuggerModel';
 import type {
   Callstack,
-  EvaluationResult,
+  EvalCommand,
   ExpansionResult,
-  ObjectGroup,
   NuclideThreadData,
   BreakpointUserChangeArgType,
   IPCBreakpoint,
+  ExpressionResult,
+  GetPropertiesResult,
 } from './types';
 
-type ExpressionResult = ChromeProtocolResponse & {
-  expression: string,
-};
-
-type GetPropertiesResult = ChromeProtocolResponse & {
-  objectId: string,
-};
-
-type ChromeProtocolResponse = {
-  result: ?EvaluationResult | ?GetPropertiesResult,
-  error: ?Object,
-};
-
 import {CompositeDisposable, Disposable} from 'atom';
-import {getLogger} from '../../nuclide-logging';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {Deferred} from '../../commons-node/promise';
 import {DebuggerMode} from './DebuggerStore';
-import {normalizeRemoteObjectValue} from './normalizeRemoteObjectValue';
 
 const INJECTED_CSS = [
   /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
@@ -82,22 +67,15 @@ class Bridge {
   _cleanupDisposables: CompositeDisposable;
   _webview: ?WebviewElement;
   _suppressBreakpointSync: boolean;
-  // Tracks requests for expression evaluation, keyed by the expression body.
-  _expressionsInFlight: Map<number, Deferred<?EvaluationResult>>;
-  _getPropertiesRequestsInFlight: Map<number, Deferred<?ExpansionResult>>;
-  _evaluationId: number;
 
   constructor(debuggerModel: DebuggerModel) {
     this._debuggerModel = debuggerModel;
     this._cleanupDisposables = new CompositeDisposable();
     this._webview = null;
     this._suppressBreakpointSync = false;
-    this._evaluationId = 0;
     this._disposables = new CompositeDisposable(
       debuggerModel.getBreakpointStore().onUserChange(this._handleUserBreakpointChange.bind(this)),
     );
-    this._expressionsInFlight = new Map();
-    this._getPropertiesRequestsInFlight = new Map();
   }
 
   setWebviewElement(webview: WebviewElement) {
@@ -146,26 +124,6 @@ class Bridge {
   stepOut() {
     if (this._webview) {
       this._webview.send('command', 'StepOut');
-    }
-  }
-
-  getProperties(objectId: string): Promise<?ExpansionResult> {
-    return this._sendEvaluationCommand(
-      this._getPropertiesRequestsInFlight,
-      'getProperties',
-      objectId,
-    );
-  }
-
-  evaluateWatchExpression(expression: string): Promise<?EvaluationResult> {
-    return this._evaluateOnSelectedCallFrame(expression, 'watch-group');
-  }
-
-  evaluateConsoleExpression(expression: string): Promise<?EvaluationResult> {
-    if (this._debuggerModel.getStore().getDebuggerMode() === 'paused') {
-      return this._evaluateOnSelectedCallFrame(expression, 'console');
-    } else {
-      return this._runtimeEvaluate(expression);
     }
   }
 
@@ -219,79 +177,22 @@ class Bridge {
     }
   }
 
-  async _evaluateOnSelectedCallFrame(
-    expression: string,
-    objectGroup: ObjectGroup,
-  ): Promise<?EvaluationResult> {
-    const result = await this._sendEvaluationCommand(
-      this._expressionsInFlight,
-      'evaluateOnSelectedCallFrame',
-      expression,
-      objectGroup,
-    );
-    if (result == null) {
-      // TODO: It would be nice to expose a better error from the backend here.
-      return {
-        type: 'text',
-        value: `Failed to evaluate: ${expression}`,
-      };
-    } else {
-      return result;
-    }
-  }
-
-  async _runtimeEvaluate(expression: string): Promise<?EvaluationResult> {
-    const result = await this._sendEvaluationCommand(
-      this._expressionsInFlight,
-      'runtimeEvaluate',
-      expression,
-    );
-    if (result == null) {
-      // TODO: It would be nice to expose a better error from the backend here.
-      return {
-        type: 'text',
-        value: `Failed to evaluate: ${expression}`,
-      };
-    } else {
-      return result;
-    }
-  }
-
-  async _sendEvaluationCommand<T>(
-    pending: Map<number, Deferred<?T>>,
-    command: string,
+  sendEvaluationCommand(
+    command: EvalCommand,
+    evalId: number,
     ...args: Array<mixed>
-  ): Promise<?T> {
-    const webview = this._webview;
-    if (webview == null) {
-      return null;
+  ): void {
+    if (this._webview != null) {
+      this._webview.send('command', command, evalId, ...args);
     }
-    const deferred = new Deferred();
-    const evalId = this._evaluationId;
-    ++this._evaluationId;
-    pending.set(evalId, deferred);
-    webview.send('command', command, evalId, ...args);
-    let result = null;
-    try {
-      result = await deferred.promise;
-    } catch (e) {
-      getLogger().warn(`${command}: Error getting result.`, e);
-    }
-    pending.delete(evalId);
-    return result;
   }
 
-  _handleExpressionEvaluationResponse(response: ExpressionResult): void {
-    response.result = normalizeRemoteObjectValue(response.result);
-    this._handleResponseForPendingRequest(response.id, this._expressionsInFlight, response);
+  _handleExpressionEvaluationResponse(response: ExpressionResult & {id: number}): void {
+    this._debuggerModel.getActions().receiveExpressionEvaluationResponse(response.id, response);
   }
 
-  _handleGetPropertiesResponse(response: GetPropertiesResult): void {
-    this._handleResponseForPendingRequest(
-      response.id,
-      this._getPropertiesRequestsInFlight,
-      response,
-    );
+  _handleGetPropertiesResponse(response: GetPropertiesResult & {id: number}): void {
+    this._debuggerModel.getActions().receiveGetPropertiesResponse(response.id, response);
   }
 
   _handleCallstackUpdate(callstack: Callstack): void {
@@ -300,27 +201,6 @@ class Bridge {
 
   _handleLocalsUpdate(locals: ExpansionResult): void {
     this._debuggerModel.getActions().updateLocals(locals);
-  }
-
-  _handleResponseForPendingRequest<T>(
-    id: number,
-    pending: Map<number, Deferred<?T>>,
-    response: ChromeProtocolResponse,
-  ): void {
-    const {
-      result,
-      error,
-    } = response;
-    const deferred = pending.get(id);
-    if (deferred == null) {
-      // Nobody is listening for the result of this expression.
-      return;
-    }
-    if (error != null) {
-      deferred.reject(error);
-    } else {
-      deferred.resolve(((result : any) : T));
-    }
   }
 
   _handleIpcMessage(stdEvent: Event): void {

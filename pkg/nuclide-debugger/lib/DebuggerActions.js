@@ -24,6 +24,8 @@ import type {
   Callstack,
   DebuggerModeType,
   ExpansionResult,
+  ExpressionResult,
+  GetPropertiesResult,
   NuclideThreadData,
 } from './types';
 
@@ -460,6 +462,26 @@ class DebuggerActions {
         sourceURL,
         lineNumber,
         message,
+      },
+    });
+  }
+
+  receiveExpressionEvaluationResponse(id: number, response: ExpressionResult): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.RECEIVED_EXPRESSION_EVALUATION_RESPONSE,
+      data: {
+        id,
+        response,
+      },
+    });
+  }
+
+  receiveGetPropertiesResponse(id: number, response: GetPropertiesResult): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.RECEIVED_GET_PROPERTIES_RESPONSE,
+      data: {
+        id,
+        response,
       },
     });
   }
