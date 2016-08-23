@@ -29,20 +29,22 @@ import {
   STATUS_BREAK,
   STATUS_ERROR,
   STATUS_END,
-
   COMMAND_STEP_INTO,
   COMMAND_STEP_OVER,
   COMMAND_STEP_OUT,
   BREAKPOINT_RESOLVED_NOTIFICATION,
 } from './DbgpSocket';
+import {
+  STATUS_ALL_CONNECTIONS_BREAK,
+} from './ConnectionMultiplexer';
 
 import FileCache from './FileCache';
 import {EventEmitter} from 'events';
 import {CompositeDisposable} from 'event-kit';
-
 import type {Breakpoint} from './BreakpointStore';
 import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import type {ClientCallback} from './ClientCallback';
+
 
 const SESSION_END_EVENT = 'session-end-event';
 
@@ -240,6 +242,7 @@ export class DebuggerHandler extends Handler {
   async _onStatusChanged(status: string, params: ?Object): Promise<void> {
     logger.log('Sending status: ' + status);
     switch (status) {
+      case STATUS_ALL_CONNECTIONS_BREAK:
       case STATUS_BREAK:
         await this._sendPausedMessage();
         break;
