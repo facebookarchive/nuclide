@@ -22,7 +22,7 @@ describeRemotableTest('Diff View Toolbar Button Test', (context: TestContext) =>
   let filePath: string = (null: any);
 
   beforeEach(() => {
-    waitsForPromise({timeout: 10000}, async () => {
+    waitsForPromise({timeout: 20000}, async () => {
       // Copy mercurial project to temporary directory.
       repoPath = await generateHgRepo2Fixture();
       await context.setProject(repoPath);

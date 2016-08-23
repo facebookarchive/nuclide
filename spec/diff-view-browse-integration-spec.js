@@ -39,7 +39,7 @@ describe('Diff View Browse Mode Integration Test', () => {
   let connection: ?RemoteConnection = (null : any);
 
   beforeEach(() => {
-    waitsForPromise({timeout: 60000}, async () => {
+    waitsForPromise({timeout: 200000}, async () => {
       jasmineIntegrationTestSetup();
       // Activate atom packages.
       await activateAllPackages();

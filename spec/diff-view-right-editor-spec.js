@@ -34,7 +34,7 @@ describe('Diff View Right Editor Save and Edit Test', () => {
   let repoPath: string = (null: any);
 
   beforeEach(() => {
-    waitsForPromise({timeout: 20000}, async () => {
+    waitsForPromise({timeout: 30000}, async () => {
       // Configure some jasmine specific things for integration testing.
       jasmineIntegrationTestSetup();
       // Activate nuclide packages.

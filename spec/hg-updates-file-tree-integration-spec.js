@@ -35,7 +35,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
 
   beforeEach(() => {
     // Waiting for the UI to update is slow...
-    jasmine.getEnv().defaultTimeoutInterval = 15000;
+    jasmine.getEnv().defaultTimeoutInterval = 25000;
 
     waitsForPromise(async () => {
       // Set up repo and handles to file tree DOM nodes

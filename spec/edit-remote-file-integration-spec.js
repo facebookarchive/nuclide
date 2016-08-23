@@ -26,7 +26,7 @@ import invariant from 'assert';
 
 describe('Edit remote file Integration Test', () => {
   it('supports editing, saving and the modified status detection of remote files', () => {
-    waitsForPromise({timeout: 60000}, async () => {
+    waitsForPromise({timeout: 70000}, async () => {
       // Configure some jasmine specific things for integration testing.
       jasmineIntegrationTestSetup();
       // Activate nuclide packages.

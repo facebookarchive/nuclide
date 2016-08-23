@@ -45,7 +45,7 @@ export function runTest(context: TestContext) {
   }
 
   function openDiffViewForTestFile() {
-    waitsForPromise({timeout: 20000}, async () => {
+    waitsForPromise({timeout: 30000}, async () => {
       repoPath = await generateHgRepo2Fixture();
       localFilePath = nuclideUri.join(repoPath, TEST_FILE_NAME);
       invariant(repoPath != null);
