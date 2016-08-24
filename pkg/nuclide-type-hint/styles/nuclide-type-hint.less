@@ -19,7 +19,6 @@
   display: flex;
   flex-grow: 1;
   max-width: 60em;
-  overflow-x: scroll;
 }
 
 .nuclide-type-hint-text-editor atom-text-editor {
@@ -29,6 +28,14 @@
 
   &::shadow .editor-contents--private {
     cursor: inherit!important; // Let the enclosing datatip override the cursor.
+  }
+
+  // Prevent forced scroll bar in Atom 1.9.x
+  &::shadow .scroll-view .horizontal-scrollbar {
+    display: none;
+  }
+  &::shadow .scrollbar-corner {
+    display: none;
   }
 }
 
