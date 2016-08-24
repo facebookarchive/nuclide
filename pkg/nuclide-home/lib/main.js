@@ -33,7 +33,7 @@ export function activate(state: ?Object): void {
   considerDisplayingHome();
   subscriptions = new CompositeDisposable();
   subscriptions.add(
-    // eslint-disable-next-line
+    // eslint-disable-next-line nuclide-internal/command-menu-items
     atom.commands.add('atom-workspace', 'nuclide-docs:open', e => {
       const url = createUtmUrl('http://nuclide.io/docs', 'help');
       shell.openExternal(url);
