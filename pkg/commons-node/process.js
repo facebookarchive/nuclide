@@ -17,6 +17,7 @@ import {observeStream, splitStream, takeWhileInclusive} from './stream';
 import {maybeToString} from './string';
 import {Observable} from 'rxjs';
 import {PromiseQueue} from './promise-executors';
+import invariant from 'assert';
 import {quote} from 'shell-quote';
 
 // Node crashes if we allow buffers that are too large.
@@ -234,6 +235,18 @@ function _createProcessStream(
   return Observable.defer(() => {
     const process = createProcess();
     let finished = false;
+
+    // If the process returned by `createProcess()` was not created by it (or at least in the same
+    // tick), it's possible that its error event has already been dispatched. This is a bug that
+    // needs to be fixed in the caller. Generally, that would just mean refactoring your code to
+    // create the process in the function you pass. If for some reason, this is absolutely not
+    // possible, you need to make sure that the process is passed here immediately after it's
+    // created (i.e. before an ENOENT error event would be dispatched). Don't refactor your code to
+    // avoid this function; you'll have the same bug, you just won't be notified! XD
+    invariant(
+      process.exitCode == null && !process.killed,
+      'Process already exited. (This indicates a race condition in Nuclide.)',
+    );
 
     const errors = Observable.fromEvent(process, 'error');
     const exit = Observable.fromEvent(process, 'exit', (code, signal) => signal)

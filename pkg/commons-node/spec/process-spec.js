@@ -12,6 +12,7 @@
 import child_process from 'child_process';
 import invariant from 'assert';
 import mockSpawn from 'mock-spawn';
+import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
 
 import {
   asyncExecute,
@@ -241,6 +242,52 @@ describe('commons-node/process', () => {
         } catch (err) {}
         expect(createProcess.callCount).toEqual(3);
       });
+    });
+
+    describe('already exited processeses', () => {
+
+      it('protects against giving an exited process', () => {
+        waitsForPromise(async () => {
+          spyOn(console, 'error'); // suppress error printing
+          const childProcess = safeSpawn('fakeCommand');
+          // Wait until after the "error" event is dispatched. (This is what makes the usage
+          // invalid.)
+          await new Promise(resolve => process.nextTick(resolve));
+          const func = () => createProcessStream(() => childProcess).subscribe();
+          expect(func)
+            .toThrow('Process already exited. (This indicates a race condition in Nuclide.)');
+        });
+      });
+
+      it("doesn't complain when given a process that subsequently errors", () => {
+        waitsForPromise(async () => {
+          spyOn(console, 'error'); // suppress error printing
+          let error;
+          try {
+            await createProcessStream(() => safeSpawn('fakeCommand')).toPromise();
+          } catch (err) {
+            error = err;
+          }
+          expect((error: any).code).toBe('ENOENT');
+        });
+      });
+
+      it("doesn't complain when given a forked process that errors", () => {
+        waitsForPromise(async () => {
+          let error;
+          const childProcess = child_process.fork(
+            path.join(__dirname, 'fixtures', 'throw'),
+            {silent: true},
+          );
+          try {
+            await createProcessStream(() => childProcess).toPromise();
+          } catch (err) {
+            error = err;
+          }
+          expect(error).toEqual(null);
+        });
+      });
+
     });
 
   });
