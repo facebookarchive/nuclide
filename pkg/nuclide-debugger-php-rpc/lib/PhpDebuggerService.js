@@ -31,6 +31,7 @@ export type PhpDebuggerSessionConfig = {
   targetUri: string,
   phpRuntimePath: string,
   dummyRequestFilePath: string,
+  stopOneStopAll: boolean,
 };
 
 export type NotificationMessage = {
@@ -62,6 +63,9 @@ let lastServiceObjectDispose = null;
  *    and be prepared to receive notifications via the server notifications observable.
  */
 import {ClientCallback} from './ClientCallback';
+import passesGK from '../../commons-node/passesGK';
+
+const GK_PAUSE_ONE_PAUSE_ALL = 'nuclide_debugger_php_pause_one_pause_all';
 
 export class PhpDebuggerService {
   _state: string;
@@ -97,6 +101,9 @@ export class PhpDebuggerService {
     logger.logInfo('Connecting config: ' + JSON.stringify(config));
 
     await this._warnIfHphpdAttached();
+    if (!(await passesGK(GK_PAUSE_ONE_PAUSE_ALL))) {
+      config.stopOneStopAll = false;
+    }
 
     setConfig(config);
     await setRootDirectoryUri(config.targetUri);

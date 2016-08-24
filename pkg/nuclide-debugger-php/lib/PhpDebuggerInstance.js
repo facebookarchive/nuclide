@@ -88,6 +88,7 @@ export class PhpDebuggerInstance extends DebuggerInstance {
       endDebugWhenNoRequests: false,
       phpRuntimePath: config.phpRuntimePath,
       dummyRequestFilePath: 'php_only_xdebug_request.php',
+      stopOneStopAll: config.stopOneStopAll,
     };
     logInfo('Connection config: ' + JSON.stringify(config));
 

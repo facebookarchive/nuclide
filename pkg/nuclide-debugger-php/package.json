@@ -58,6 +58,12 @@
           "FATAL",
           "OFF"
         ]
+      },
+     "stopOneStopAll": {
+       "title": "Stop one, stop all",
+       "type": "boolean",
+       "default": true,
+       "description": "Specifies whether we stop all requests once we hit a breakpoint"
       }
     },
     "packageType": "Atom",

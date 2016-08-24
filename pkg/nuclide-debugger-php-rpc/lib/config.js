@@ -19,6 +19,7 @@ const defaultConfig: PhpDebuggerSessionConfig = {
   targetUri: '',
   phpRuntimePath: '/usr/local/bin/php',
   dummyRequestFilePath: 'php_only_xdebug_request.php',
+  stopOneStopAll: false,
 };
 
 let config: PhpDebuggerSessionConfig = defaultConfig;
