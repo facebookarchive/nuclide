@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.165.0
+
+### Hotfixes
+
+* Fixed type-hint scroll bar on Atom 1.9.x
+
 ## v0.164.0
 
 ### Highlights
