@@ -158,13 +158,14 @@ export function getLLDBInstallEvents(
     .switchMap(lldbPid => {
       return processStream
         .filter(message => message.kind === 'exit' && message.exitCode === 0)
-        .map(() => {
-          debugPidWithLLDB(lldbPid, buckProject);
-          return {
-            type: 'log',
-            message: `Attaching LLDB debugger to pid ${lldbPid}...`,
-            level: 'info',
-          };
+        .switchMap(() => {
+          return Observable.fromPromise(debugPidWithLLDB(lldbPid, buckProject))
+            .ignoreElements()
+            .startWith({
+              type: 'log',
+              message: `Attaching LLDB debugger to pid ${lldbPid}...`,
+              level: 'info',
+            });
         });
     });
 }
