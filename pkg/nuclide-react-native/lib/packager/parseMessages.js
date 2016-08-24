@@ -14,11 +14,11 @@ import type {PackagerEvent} from './types';
 
 import {Observable} from 'rxjs';
 
-const PORT_LINE = /.*(Running packager on port.*?)\s*│/;
+const PORT_LINE = /.*Running.*on port\s+(\d+)/;
 const SOURCE_LIST_START = /Looking for JS files in/;
 const NORMAL_LINE = /^\s*\[(\d+):(\d+):(\d+) (A|P)M\]\s*(.*?)\s*$/;
 const ERROR_LINE = /^\s*ERROR\s*(.*?)\s*$/;
-const READY_LINE = /React packager ready/i;
+const READY_LINE = /(packager|server) ready/i;
 
 /**
  * Parses output from the packager into messages.
@@ -38,7 +38,6 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
         // starts with a "[", we probably missed the closing of the preamble somehow. (Like the
         // packager output changed).
         sawPreamble = sawPreamble || (sawPortLine && sawSourcesEnd) || line.startsWith('[');
-
         if (!sawPortLine && !sawPreamble) {
           const match = line.match(PORT_LINE);
           if (match != null) {
@@ -47,7 +46,7 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
               kind: 'message',
               message: {
                 level: 'info',
-                text: match[1],
+                text: `Running packager on port ${match[1]}.`,
               },
             });
             return;

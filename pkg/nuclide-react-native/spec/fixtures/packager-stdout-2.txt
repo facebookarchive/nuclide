@@ -1,0 +1,33 @@
+Note: Using legacy nodeModules.js method for installation.
+node_modules already up to date (valid-hash): abcdefg
+
+ ================================================================
+ |  Running the React Native JavaScript Bundle Server on port 8081.
+ |  Keep this server running while developing on any React Native
+ |  projects. Feel free to close this tab and run your own
+ |  server instance if you prefer.
+ |
+ |     https://our.intern.facebook.com/intern/dex/react-native
+ |
+ ================================================================
+
+Looking for JS files in
+   /path/to/greatness
+
+[2:10:48 PM] <START> Building Dependency Graph
+[2:10:48 PM] <START> Crawling File System
+[Hot Module Replacement] Server listening on /hot
+
+FB React Native server ready.
+
+[Hot Module Replacement] Flow delays HMR updates. Shutdown Flow server for a better experience.
+[2:10:50 PM] <END>   Crawling File System (1891ms)
+[2:10:50 PM] <START> Building in-memory fs for JavaScript
+[2:10:51 PM] <END>   Building in-memory fs for JavaScript (624ms)
+[2:10:51 PM] <START> Building in-memory fs for Assets
+[2:10:52 PM] <END>   Building in-memory fs for Assets (609ms)
+[2:10:52 PM] <START> Building Haste Map
+[2:10:52 PM] <START> Building (deprecated) Asset Map
+[2:10:52 PM] <END>   Building (deprecated) Asset Map (137ms)
+[2:10:52 PM] <END>   Building Haste Map (544ms)
+[2:10:52 PM] <END>   Building Dependency Graph (3771ms)
