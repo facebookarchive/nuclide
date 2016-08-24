@@ -15,11 +15,10 @@ import type {ProcessMessage} from './process-rpc-types';
 
 import {StreamTransport, RpcConnection} from '../nuclide-rpc';
 import {getOutputStream} from './process';
-import {serializeAsyncCall} from './promise';
 import {getLogger} from '../nuclide-logging';
 import invariant from 'assert';
 
-export type ProcessMaker = () => Promise<child_process$ChildProcess>;
+export type ProcessMaker = () => child_process$ChildProcess;
 
 const logger = getLogger();
 
@@ -37,11 +36,12 @@ const logger = getLogger();
  *   Don't override the stdio to close off any of these streams in the constructor opts.
  */
 export default class RpcProcess {
+  _createProcess: ProcessMaker;
+  _messageLogger: MessageLogger;
   _name: string;
   _disposed: boolean;
   _process: ?child_process$ChildProcess;
   _subscription: ?Subscription;
-  _ensureProcess: () => Promise<void>;
   _serviceRegistry: ServiceRegistry;
   _rpcConnection: ?RpcConnection<StreamTransport>;
 
@@ -56,13 +56,12 @@ export default class RpcProcess {
     createProcess: ProcessMaker,
     messageLogger: MessageLogger = (direction, message) => { return; },
   ) {
+    this._createProcess = createProcess;
+    this._messageLogger = messageLogger;
     this._name = name;
     this._serviceRegistry = serviceRegistry;
     this._rpcConnection = null;
     this._disposed = false;
-    this._ensureProcess = serializeAsyncCall(() =>
-      this._ensureProcessImpl(createProcess, messageLogger),
-    );
   }
 
   getName(): string {
@@ -79,8 +78,8 @@ export default class RpcProcess {
     return this._disposed;
   }
 
-  async getService(serviceName: string): Promise<Object> {
-    await this._ensureProcess();
+  getService(serviceName: string): Object {
+    this._ensureProcess();
     invariant(this._rpcConnection != null);
     return this._rpcConnection.getService(serviceName);
   }
@@ -89,15 +88,12 @@ export default class RpcProcess {
    * Ensures that the child process is available. Asynchronously creates the child process,
    * only if it is currently null.
    */
-  async _ensureProcessImpl(
-    createProcess: ProcessMaker,
-    messageLogger: MessageLogger,
-  ): Promise<void> {
+  _ensureProcess(): void {
     if (this._process) {
       return;
     }
     try {
-      const proc = await createProcess();
+      const proc = this._createProcess();
       logger.info(`${this._name} - created child process with PID: `, proc.pid);
 
       proc.stdin.on('error', error => {
@@ -107,7 +103,7 @@ export default class RpcProcess {
       this._rpcConnection = new RpcConnection(
         'client',
         this._serviceRegistry,
-        new StreamTransport(proc.stdin, proc.stdout, messageLogger));
+        new StreamTransport(proc.stdin, proc.stdout, this._messageLogger));
       this._subscription = getOutputStream(proc)
         .subscribe(this._onProcessMessage.bind(this));
       this._process = proc;

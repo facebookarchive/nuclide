@@ -37,7 +37,7 @@ function spawnClangProcess(
   src: string,
   serverArgs: ClangServerArgs,
   flags: Array<string>,
-): Promise<child_process$ChildProcess> {
+): child_process$ChildProcess {
   const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = serverArgs;
   const pathToLibClangServer = nuclideUri.join(__dirname, '../python/clang_server.py');
   const args = [pathToLibClangServer];

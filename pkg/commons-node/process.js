@@ -14,7 +14,6 @@ import type {ProcessMessage} from './process-rpc-types';
 
 import child_process from 'child_process';
 import {observeStream, splitStream, takeWhileInclusive} from './stream';
-import UniversalDisposable from './UniversalDisposable';
 import {maybeToString} from './string';
 import {Observable} from 'rxjs';
 import {PromiseQueue} from './promise-executors';
@@ -135,11 +134,11 @@ function monitorStreamErrors(process: child_process$ChildProcess, command, args,
  * the process. This is much lower-level than asyncExecute. Unless you have a
  * specific reason you should use asyncExecute instead.
  */
-export async function safeSpawn(
+export function safeSpawn(
   command: string,
   args?: Array<string> = [],
   options?: Object = {},
-): Promise<child_process$ChildProcess> {
+): child_process$ChildProcess {
   const child = child_process.spawn(command, args, options);
   monitorStreamErrors(child, command, args, options);
   child.on('error', error => {
@@ -175,7 +174,7 @@ export function scriptSafeSpawn(
   command: string,
   args?: Array<string> = [],
   options?: Object = {},
-): Promise<child_process$ChildProcess> {
+): child_process$ChildProcess {
   const newArgs = createArgsForScriptCommand(command, args);
   return safeSpawn('script', newArgs, options);
 }
@@ -190,28 +189,25 @@ export function scriptSafeSpawnAndObserveOutput(
   options?: Object = {},
 ): Observable<{stderr?: string, stdout?: string}> {
   return Observable.create((observer: Observer<any>) => {
-    let childProcess;
-    scriptSafeSpawn(command, args, options).then(proc => {
-      childProcess = proc;
+    let childProcess = scriptSafeSpawn(command, args, options);
 
-      childProcess.stdout.on('data', data => {
-        observer.next({stdout: data.toString()});
-      });
+    childProcess.stdout.on('data', data => {
+      observer.next({stdout: data.toString()});
+    });
 
-      let stderr = '';
-      childProcess.stderr.on('data', data => {
-        stderr += data;
-        observer.next({stderr: data.toString()});
-      });
+    let stderr = '';
+    childProcess.stderr.on('data', data => {
+      stderr += data;
+      observer.next({stderr: data.toString()});
+    });
 
-      childProcess.on('exit', (exitCode: number) => {
-        if (exitCode !== 0) {
-          observer.error(stderr);
-        } else {
-          observer.complete();
-        }
-        childProcess = null;
-      });
+    childProcess.on('exit', (exitCode: number) => {
+      if (exitCode !== 0) {
+        observer.error(stderr);
+      } else {
+        observer.complete();
+      }
+      childProcess = null;
     });
 
     return () => {
@@ -232,53 +228,38 @@ export function scriptSafeSpawnAndObserveOutput(
  * IMPORTANT: The exit event does NOT mean that all stdout and stderr events have been received.
  */
 function _createProcessStream(
-  createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
+  createProcess: () => child_process$ChildProcess,
   throwOnError: boolean,
 ): Observable<child_process$ChildProcess> {
-  return Observable.create(observer => {
-    const promise = Promise.resolve(createProcess());
-    let process;
-    let disposed = false;
-    let exited = false;
-    const maybeKill = () => {
-      if (process != null && disposed && !exited) {
-        process.kill();
-        process = null;
-      }
-    };
+  return Observable.defer(() => {
+    const process = createProcess();
+    let finished = false;
 
-    promise.then(p => {
-      process = p;
-      maybeKill();
-    });
-
-    // Create a stream that contains the process but never completes. We'll use this to build the
-    // completion conditions.
-    const processStream = Observable.fromPromise(promise).merge(Observable.never());
-
-    const errors = processStream.switchMap(p => Observable.fromEvent(p, 'error'));
-    const exit = processStream
-      .flatMap(p => Observable.fromEvent(p, 'exit', (code, signal) => signal))
+    const errors = Observable.fromEvent(process, 'error');
+    const exit = Observable.fromEvent(process, 'exit', (code, signal) => signal)
       // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
-      .filter(signal => signal !== 'SIGUSR1')
-      .do(() => { exited = true; });
-    const completion = throwOnError ? exit : exit.race(errors);
+      .filter(signal => signal !== 'SIGUSR1');
 
-    return new UniversalDisposable(
-      processStream
-        .merge(throwOnError ? errors.flatMap(Observable.throw) : Observable.empty())
-        .takeUntil(completion)
-        .subscribe(observer),
-      (() => { disposed = true; maybeKill(); }: () => void),
-    );
+    return Observable.of(process)
+      // Don't complete until we say so!
+      .merge(Observable.never())
+      // Get the errors.
+      .takeUntil(throwOnError ? errors.flatMap(Observable.throw) : errors)
+      .takeUntil(exit)
+      .do({
+        error: () => { finished = true; },
+        complete: () => { finished = true; },
+      })
+      .finally(() => {
+        if (!finished) {
+          process.kill();
+        }
+      });
   });
-  // TODO: We should really `.share()` this observable, but there seem to be issues with that and
-  //   `.retry()` in Rx 3 and 4. Once we upgrade to Rx5, we should share this observable and verify
-  //   that our retry logic (e.g. in adb-logcat) works.
 }
 
 export function createProcessStream(
-  createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
+  createProcess: () => child_process$ChildProcess,
 ): Observable<child_process$ChildProcess> {
   return _createProcessStream(createProcess, true);
 }
@@ -288,48 +269,47 @@ export function createProcessStream(
  * stdout and stderr are split by newlines.
  */
 export function observeProcessExit(
-  createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
+  createProcess: () => child_process$ChildProcess,
 ): Observable<number> {
   return _createProcessStream(createProcess, false)
     .flatMap(process => Observable.fromEvent(process, 'exit').take(1));
 }
 
 export function getOutputStream(
-  childProcess: child_process$ChildProcess | Promise<child_process$ChildProcess>,
+  process: child_process$ChildProcess,
 ): Observable<ProcessMessage> {
-  return Observable.fromPromise(Promise.resolve(childProcess))
-    .flatMap(process => {
-      // We need to start listening for the exit event immediately, but defer emitting it until the
-      // output streams end.
-      const exit = Observable.fromEvent(process, 'exit')
-        .take(1)
-        .map(exitCode => ({kind: 'exit', exitCode}))
-        .publishReplay();
-      const exitSub = exit.connect();
+  return Observable.defer(() => {
+    // We need to start listening for the exit event immediately, but defer emitting it until the
+    // output streams end.
+    const exit = Observable.fromEvent(process, 'exit')
+      .take(1)
+      .map(exitCode => ({kind: 'exit', exitCode}))
+      .publishReplay();
+    const exitSub = exit.connect();
 
-      const error = Observable.fromEvent(process, 'error')
-        .map(errorObj => ({kind: 'error', error: errorObj}));
-      const stdout = splitStream(observeStream(process.stdout))
-        .map(data => ({kind: 'stdout', data}));
-      const stderr = splitStream(observeStream(process.stderr))
-        .map(data => ({kind: 'stderr', data}));
+    const error = Observable.fromEvent(process, 'error')
+      .map(errorObj => ({kind: 'error', error: errorObj}));
+    const stdout = splitStream(observeStream(process.stdout))
+      .map(data => ({kind: 'stdout', data}));
+    const stderr = splitStream(observeStream(process.stderr))
+      .map(data => ({kind: 'stderr', data}));
 
-      return takeWhileInclusive(
-        Observable.merge(
-          Observable.merge(stdout, stderr).concat(exit),
-          error,
-        ),
-        event => event.kind !== 'error' && event.kind !== 'exit',
-      )
-        .finally(() => { exitSub.unsubscribe(); });
-    });
+    return takeWhileInclusive(
+      Observable.merge(
+        Observable.merge(stdout, stderr).concat(exit),
+        error,
+      ),
+      event => event.kind !== 'error' && event.kind !== 'exit',
+    )
+      .finally(() => { exitSub.unsubscribe(); });
+  });
 }
 
 /**
  * Observe the stdout, stderr and exit code of a process.
  */
 export function observeProcess(
-  createProcess: () => child_process$ChildProcess | Promise<child_process$ChildProcess>,
+  createProcess: () => child_process$ChildProcess,
 ): Observable<ProcessMessage> {
   return _createProcessStream(createProcess, false).flatMap(getOutputStream);
 }

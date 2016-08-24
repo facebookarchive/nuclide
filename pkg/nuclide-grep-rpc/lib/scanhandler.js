@@ -141,38 +141,33 @@ function getLinesFromCommand(
   localDirectoryPath: string,
 ): Observable<string> {
   return Observable.create(observer => {
-    let proc: ?child_process$ChildProcess = null;
     let exited = false;
 
     // Spawn the search command in the given directory.
-    safeSpawn(command, args, {cwd: localDirectoryPath}).then(child => {
-      proc = child;
+    const proc = safeSpawn(command, args, {cwd: localDirectoryPath});
 
-      // Reject on error.
-      proc.on('error', observer.error.bind(observer));
+    // Reject on error.
+    proc.on('error', observer.error.bind(observer));
 
-      // Call the callback on each line.
-      proc.stdout.pipe(split()).on('data', observer.next.bind(observer));
+    // Call the callback on each line.
+    proc.stdout.pipe(split()).on('data', observer.next.bind(observer));
 
-      // Keep a running string of stderr, in case we need to throw an error.
-      let stderr = '';
-      proc.stderr.on('data', data => {
-        stderr += data;
-      });
+    // Keep a running string of stderr, in case we need to throw an error.
+    let stderr = '';
+    proc.stderr.on('data', data => {
+      stderr += data;
+    });
 
-      // Resolve promise if error code is 0 (found matches) or 1 (found no matches). Otherwise
-      // reject. However, if a process was killed with a signal, don't reject, since this was likely
-      // to cancel the search.
-      proc.on('close', (code, signal) => {
-        exited = true;
-        if (signal || code <= 1) {
-          observer.complete();
-        } else {
-          observer.error(new Error(stderr));
-        }
-      });
-    }).catch(error => {
-      observer.error(error);
+    // Resolve promise if error code is 0 (found matches) or 1 (found no matches). Otherwise
+    // reject. However, if a process was killed with a signal, don't reject, since this was likely
+    // to cancel the search.
+    proc.on('close', (code, signal) => {
+      exited = true;
+      if (signal || code <= 1) {
+        observer.complete();
+      } else {
+        observer.error(new Error(stderr));
+      }
     });
 
     // Kill the search process on dispose.

@@ -23,7 +23,7 @@ let SCRIBE_CAT_COMMAND = 'scribe_cat';
  */
 export default class ScribeProcess {
   _scribeCategory: string;
-  _childPromise: ?Promise<child_process$ChildProcess>;
+  _childProcess: ?child_process$ChildProcess;
   _childProcessRunning: WeakMap<child_process$ChildProcess, boolean>;
 
   constructor(scribeCategory: string) {
@@ -52,8 +52,8 @@ export default class ScribeProcess {
   }
 
   async dispose(): Promise<void> {
-    if (this._childPromise) {
-      const child = await this._childPromise;
+    if (this._childProcess != null) {
+      const child = this._childProcess;
       if (this._childProcessRunning.get(child)) {
         child.kill();
       }
@@ -61,8 +61,8 @@ export default class ScribeProcess {
   }
 
   async join(timeout: number = DEFAULT_JOIN_TIMEOUT): Promise<void> {
-    if (this._childPromise) {
-      const child = await this._childPromise;
+    if (this._childProcess != null) {
+      const child = this._childProcess;
       child.stdin.end();
       return new Promise(resolve => {
         child.on('exit', () => resolve());
@@ -71,27 +71,24 @@ export default class ScribeProcess {
     }
   }
 
-  _getOrCreateChildProcess(): Promise<child_process$ChildProcess> {
-    if (this._childPromise) {
-      return this._childPromise;
+  _getOrCreateChildProcess(): child_process$ChildProcess {
+    if (this._childProcess) {
+      return this._childProcess;
     }
 
-    this._childPromise = safeSpawn(SCRIBE_CAT_COMMAND, [this._scribeCategory])
-        .then(child => {
-          child.stdin.setDefaultEncoding('utf8');
-          this._childProcessRunning.set(child, true);
-          child.on('error', error => {
-            this._childPromise = null;
-            this._childProcessRunning.set(child, false);
-          });
-          child.on('exit', e => {
-            this._childPromise = null;
-            this._childProcessRunning.set(child, false);
-          });
-          return child;
-        });
+    const child = this._childProcess = safeSpawn(SCRIBE_CAT_COMMAND, [this._scribeCategory]);
+    child.stdin.setDefaultEncoding('utf8');
+    this._childProcessRunning.set(child, true);
+    child.on('error', error => {
+      this._childProcess = null;
+      this._childProcessRunning.set(child, false);
+    });
+    child.on('exit', e => {
+      this._childProcess = null;
+      this._childProcessRunning.set(child, false);
+    });
 
-    return this._childPromise;
+    return child;
   }
 }
 

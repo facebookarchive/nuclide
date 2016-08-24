@@ -164,41 +164,13 @@ describe('commons-node/process', () => {
       });
     });
 
-    it("kills the process when it becomes ready if you unsubscribe before it's returned", () => {
-      waitsForPromise(async () => {
-        spyOn(console, 'log'); // suppress log printing
-
-        // A process that lasts ten seconds.
-        const process = mockSpawn(cb => {
-          setTimeout(() => cb(0), 10000);
-        })();
-        spyOn(process, 'kill');
-        const createProcess = async () => {
-          // Take five seconds to "create" the process.
-          await new Promise(resolve => { setTimeout(resolve, 5000); });
-          return process;
-        };
-        const promise = createProcess();
-        const subscription = observeProcess(() => promise).subscribe(() => {});
-
-        // Unsubscribe before the process is "created".
-        subscription.unsubscribe();
-
-        // Make sure the process is killed when we get it.
-        advanceClock(20000);
-        await promise;
-        expect(process.kill).toHaveBeenCalled();
-      });
-    });
-
   });
 
   describe('getOutputStream', () => {
     it('captures stdout, stderr and exitCode', () => {
       waitsForPromise(async () => {
-        const promise = safeSpawn(process.execPath,
+        const child = safeSpawn(process.execPath,
           ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
-        const child = await promise;
         const results = await getOutputStream(child).toArray().toPromise();
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
@@ -210,9 +182,9 @@ describe('commons-node/process', () => {
 
     it('captures stdout, stderr and exitCode when passed a promise', () => {
       waitsForPromise(async () => {
-        const promise = safeSpawn(process.execPath,
+        const child = safeSpawn(process.execPath,
           ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
-        const results = await getOutputStream(promise).toArray().toPromise();
+        const results = await getOutputStream(child).toArray().toPromise();
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},
@@ -304,7 +276,7 @@ describe('commons-node/process', () => {
         it('should quote arguments', () => {
           expect(process.platform).toEqual('linux', 'Platform was not properly mocked.');
           waitsForPromise(async () => {
-            const child = await scriptSafeSpawn(bin, testCase.arguments);
+            const child = scriptSafeSpawn(bin, testCase.arguments);
             expect(child).not.toBeNull();
             await new Promise((resolve, reject) => {
               child.on('close', resolve);

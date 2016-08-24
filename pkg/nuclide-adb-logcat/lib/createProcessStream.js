@@ -56,7 +56,7 @@ export function createProcessStream(): Observable<string> {
     .skip(1);
 }
 
-function spawnAdbLogcat(): Promise<child_process$ChildProcess> {
+function spawnAdbLogcat(): child_process$ChildProcess {
   return safeSpawn(
     ((featureConfig.get('nuclide-adb-logcat.pathToAdb'): any): string),
     ['logcat', '-v', 'long', '-T', '1'],

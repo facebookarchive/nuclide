@@ -77,7 +77,7 @@ export function _findAvailableDevice(devices: Object): ?Object {
   }
 }
 
-function spawnSimctlList(): Promise<child_process$ChildProcess> {
+function spawnSimctlList(): child_process$ChildProcess {
   return safeSpawn('xcrun', [
     'simctl',
     'list',
@@ -85,7 +85,7 @@ function spawnSimctlList(): Promise<child_process$ChildProcess> {
   ]);
 }
 
-function tailDeviceLogs(udid: string): Promise<child_process$ChildProcess> {
+function tailDeviceLogs(udid: string): child_process$ChildProcess {
   const logDir = nuclideUri.join(
     os.homedir(),
     'Library',
