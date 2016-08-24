@@ -16,6 +16,7 @@ import type {BuckEvent} from './BuckEventStream';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
+
 import {compact} from '../../commons-node/stream';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
@@ -36,6 +37,7 @@ async function getDebuggerService(): Promise<RemoteControlService> {
 async function debugBuckTarget(
   buckProject: BuckProject,
   buildTarget: string,
+  runArguments: Array<string>,
 ): Promise<string> {
   const output = await buckProject.showOutput(buildTarget);
   if (output.length === 0) {
@@ -56,11 +58,19 @@ async function debugBuckTarget(
   const remoteBuckRoot = nuclideUri.getPath(buckRoot);
   const remoteOutputPath = nuclideUri.getPath(nuclideUri.join(buckRoot, relativeOutputPath));
 
+  const env = [];
+  if (targetOutput.env) {
+    for (const key of Object.keys(targetOutput.env)) {
+      // NOTE: no escaping is necessary here; LLDB passes these directly to the process.
+      env.push(key + '=' + targetOutput.env[key]);
+    }
+  }
+
   const info = new LaunchProcessInfo(buckRoot, {
     executablePath: remoteOutputPath,
-    arguments: targetOutput.args || [],
-    // TODO(hansonw): Add this when nuclide-debugger-native supports environment vars.
-    environmentVariables: [],
+    // Allow overriding of a test's default arguments if provided.
+    arguments: (runArguments.length ? runArguments : targetOutput.args) || [],
+    environmentVariables: env,
     workingDirectory: '', // use the default
     basepath: remoteBuckRoot,
   });
@@ -100,11 +110,12 @@ export function getLLDBBuildEvents(
   processStream: Observable<ProcessMessage>,
   buckProject: BuckProject,
   buildTarget: string,
+  runArguments: Array<string>,
 ): Observable<BuckEvent> {
   return processStream
     .filter(message => message.kind === 'exit' && message.exitCode === 0)
     .switchMap(() => {
-      return Observable.fromPromise(debugBuckTarget(buckProject, buildTarget))
+      return Observable.fromPromise(debugBuckTarget(buckProject, buildTarget, runArguments))
         .map(path => ({
           type: 'log',
           message: `Launched LLDB debugger with ${path}`,

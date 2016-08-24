@@ -268,6 +268,7 @@ export class BuckBuildSystem {
             processMessages,
             buckProject,
             buildTarget,
+            settings.runArguments || [],
           ) : Observable.empty(),
         )
           .switchMap(event => {

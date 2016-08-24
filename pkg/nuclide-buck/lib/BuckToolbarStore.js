@@ -138,7 +138,8 @@ export default class BuckToolbarStore {
   }
 
   isDebuggableRule(): boolean {
-    return this.isInstallableRule() || this._buildRuleType === 'cxx_test';
+    return this.isInstallableRule() || this._buildRuleType === 'cxx_test' ||
+      this._buildRuleType === 'cxx_binary';
   }
 
   getSimulator(): ?string {
