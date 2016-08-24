@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,37 @@
  * the root directory of this source tree.
  */
 
-import type {CodeHighlightProvider} from './types';
+exports.activate = activate;
+exports.consumeProvider = consumeProvider;
+exports.deactivate = deactivate;
 
-import invariant from 'assert';
-import HighlightManager from './CodeHighlightManager';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let codeHighlightManager: ?HighlightManager = null;
+var _assert2;
 
-export function activate(state: ?Object) {
-  codeHighlightManager = new HighlightManager();
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
 }
 
-export function consumeProvider(provider: CodeHighlightProvider) {
-  invariant(codeHighlightManager != null);
+var _CodeHighlightManager2;
+
+function _CodeHighlightManager() {
+  return _CodeHighlightManager2 = _interopRequireDefault(require('./CodeHighlightManager'));
+}
+
+var codeHighlightManager = null;
+
+function activate(state) {
+  codeHighlightManager = new (_CodeHighlightManager2 || _CodeHighlightManager()).default();
+}
+
+function consumeProvider(provider) {
+  (0, (_assert2 || _assert()).default)(codeHighlightManager != null);
   codeHighlightManager.addProvider(provider);
 }
 
-export function deactivate() {
-  invariant(codeHighlightManager != null);
+function deactivate() {
+  (0, (_assert2 || _assert()).default)(codeHighlightManager != null);
   codeHighlightManager.dispose();
   codeHighlightManager = null;
 }

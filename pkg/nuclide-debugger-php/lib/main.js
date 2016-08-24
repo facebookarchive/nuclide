@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +10,40 @@
  * the root directory of this source tree.
  */
 
-import type {HomeFragments} from '../../nuclide-home/lib/types';
-import type {
-  NuclideDebuggerProvider,
-} from '../../nuclide-debugger-interfaces/service';
-import type {OutputService} from '../../nuclide-console/lib/types';
-import DebuggerProvider from './DebuggerProvider';
-import {setOutputService} from '../../nuclide-debugger-base';
+exports.consumeOutputService = consumeOutputService;
+exports.createDebuggerProvider = createDebuggerProvider;
+exports.getHomeFragments = getHomeFragments;
 
-export function consumeOutputService(api: OutputService): void {
-  setOutputService(api);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _DebuggerProvider2;
+
+function _DebuggerProvider() {
+  return _DebuggerProvider2 = _interopRequireDefault(require('./DebuggerProvider'));
 }
 
-export function createDebuggerProvider(): NuclideDebuggerProvider {
-  return DebuggerProvider;
+var _nuclideDebuggerBase2;
+
+function _nuclideDebuggerBase() {
+  return _nuclideDebuggerBase2 = require('../../nuclide-debugger-base');
 }
 
-export function getHomeFragments(): HomeFragments {
+function consumeOutputService(api) {
+  (0, (_nuclideDebuggerBase2 || _nuclideDebuggerBase()).setOutputService)(api);
+}
+
+function createDebuggerProvider() {
+  return (_DebuggerProvider2 || _DebuggerProvider()).default;
+}
+
+function getHomeFragments() {
   return {
     feature: {
       title: 'PHP Debugger',
       icon: 'plug',
       description: 'Connect to a PHP server process and debug Hack code from within Nuclide.',
-      command: 'nuclide-debugger:toggle',
+      command: 'nuclide-debugger:toggle'
     },
-    priority: 6,
+    priority: 6
   };
 }

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,5 +10,11 @@
  * the root directory of this source tree.
  */
 
+var _WorkingSet = require('./WorkingSet');
 
-export {WorkingSet} from './WorkingSet';
+Object.defineProperty(exports, 'WorkingSet', {
+  enumerable: true,
+  get: function get() {
+    return _WorkingSet.WorkingSet;
+  }
+});
