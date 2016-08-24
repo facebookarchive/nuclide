@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TaskSettings} from '../types';
+import type {TaskSettings, TaskType} from '../types';
 
 import {React} from 'react-for-atom';
 import {quote} from 'shell-quote';
@@ -23,13 +23,14 @@ import {Modal} from '../../../nuclide-ui/lib/Modal';
 type Props = {
   currentBuckRoot: ?string,
   settings: TaskSettings,
-  buildType: string,
+  buildType: TaskType,
   onDismiss: () => void,
   onSave: (settings: TaskSettings) => void,
 };
 
 type State = {
   arguments: string,
+  runArguments: string,
 };
 
 export default class BuckToolbarSettings extends React.Component {
@@ -38,13 +39,30 @@ export default class BuckToolbarSettings extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    const {arguments: args} = props.settings;
+    const {arguments: args, runArguments} = props.settings;
     this.state = {
       arguments: args == null ? '' : quote(args),
+      runArguments: runArguments == null ? '' : quote(runArguments),
     };
   }
 
   render(): React.Element<any> {
+    let runArguments;
+    if (this.props.buildType === 'debug' || this.props.buildType === 'run') {
+      runArguments = (
+        <div>
+          <label>Run Arguments:</label>
+          <AtomInput
+            tabIndex="0"
+            initialValue={this.state.runArguments}
+            placeholderText="Custom command-line arguments to pass to the app/binary"
+            onDidChange={this._onRunArgsChange.bind(this)}
+            onConfirm={this._onSave.bind(this)}
+          />
+        </div>
+      );
+    }
+
     return (
       <Modal onDismiss={this.props.onDismiss}>
         <div className="block">
@@ -58,7 +76,7 @@ export default class BuckToolbarSettings extends React.Component {
                 {this.props.currentBuckRoot || 'No Buck project found.'}
               </code>
             </p>
-            <label>Arguments:</label>
+            <label>Buck Arguments:</label>
             <AtomInput
               tabIndex="0"
               initialValue={this.state.arguments}
@@ -66,6 +84,7 @@ export default class BuckToolbarSettings extends React.Component {
               onDidChange={this._onArgsChange.bind(this)}
               onConfirm={this._onSave.bind(this)}
             />
+            {runArguments}
           </div>
           <div style={{display: 'flex', justifyContent: 'flex-end'}}>
             <ButtonGroup>
@@ -88,10 +107,15 @@ export default class BuckToolbarSettings extends React.Component {
     this.setState({arguments: args});
   }
 
+  _onRunArgsChange(args: string) {
+    this.setState({runArguments: args});
+  }
+
   _onSave() {
     try {
       this.props.onSave({
         arguments: shellParse(this.state.arguments),
+        runArguments: shellParse(this.state.runArguments),
       });
     } catch (err) {
       atom.notifications.addError(
