@@ -49,8 +49,8 @@ export type NuclideRemoteConnectionProfile = {
 };
 
 export type NuclideSavedConnectionDialogConfig = {
-  config: NuclideRemoteConnectionParams,
-  lastOfficialRemoteServerCommand: string,
+  lastOfficialRemoteServerCommand?: string,
+  updatedConfig?: NuclideRemoteConnectionParams,
 };
 
 // This type should not be saved -- it contains the user's password.

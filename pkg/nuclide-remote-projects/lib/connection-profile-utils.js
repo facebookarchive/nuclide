@@ -18,9 +18,8 @@ import type {
   SshConnectionConfiguration,
 } from '../../nuclide-remote-connection/lib/SshHandshake';
 
-// $UPFixMe: These settings should go through featureConfig
-const CONNECTION_PROFILES_KEY = 'nuclide.connectionProfiles';
-const LAST_USED_CONNECTION_KEY = 'nuclide.lastConnectionDetails';
+import invariant from 'assert';
+import featureConfig from '../../commons-atom/featureConfig';
 
 /**
  * Section: Default Connection Profile
@@ -35,13 +34,21 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
   const defaultConnectionSettings = getDefaultConfig();
   const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
 
-  const lastConnectionDetails = getSavedConnectionConfig() || {};
+  const rawLastConnectionDetails =
+    window.localStorage.getItem('nuclide:nuclide-remote-projects:lastConnectionDetails');
+
+  let lastConnectionDetails: NuclideSavedConnectionDialogConfig = {};
+  try {
+    lastConnectionDetails = JSON.parse(rawLastConnectionDetails);
+  } catch (err) {
+    // nothing to do...
+  }
+
   const lastConfig = lastConnectionDetails.updatedConfig || {};
 
   // Only use the user's last saved remote server command if there has been no
   // change (upgrade) in the official remote server command.
   let remoteServerCommand = currentOfficialRSC;
-  // $FlowFixMe
   if (lastConnectionDetails.lastOfficialRemoteServerCommand === currentOfficialRSC
       && lastConfig.remoteServerCommand) {
     remoteServerCommand = lastConfig.remoteServerCommand;
@@ -68,9 +75,10 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
  */
 export function getSavedConnectionProfiles(): Array<NuclideRemoteConnectionProfile> {
   const connectionProfiles: ?Array<NuclideRemoteConnectionProfile> =
-    (atom.config.get(CONNECTION_PROFILES_KEY): any);
+    (featureConfig.get('nuclide-remote-projects.connectionProfiles'): any);
+  invariant(Array.isArray(connectionProfiles));
   prepareSavedConnectionProfilesForDisplay(connectionProfiles);
-  return connectionProfiles || [];
+  return connectionProfiles;
 }
 
 /**
@@ -78,7 +86,7 @@ export function getSavedConnectionProfiles(): Array<NuclideRemoteConnectionProfi
  */
 export function saveConnectionProfiles(profiles: Array<NuclideRemoteConnectionProfile>): void {
   prepareConnectionProfilesForSaving(profiles);
-  atom.config.set(CONNECTION_PROFILES_KEY, profiles);
+  featureConfig.set('nuclide-remote-projects.connectionProfiles', profiles);
 }
 
 
@@ -94,8 +102,8 @@ type ConnectionProfileChange = {
 export function onSavedConnectionProfilesDidChange(
   callback: (newProfiles: ?Array<NuclideRemoteConnectionProfile>) => mixed,
 ): IDisposable {
-  return atom.config.onDidChange(
-    CONNECTION_PROFILES_KEY,
+  return featureConfig.onDidChange(
+    'nuclide-remote-projects.connectionProfiles',
     (event: ConnectionProfileChange) => {
       const newProfiles = event.newValue;
       prepareSavedConnectionProfilesForDisplay(newProfiles);
@@ -110,15 +118,6 @@ export function onSavedConnectionProfilesDidChange(
  */
 
 /**
- * Gets the NuclideSavedConnectionDialogConfig representing the user's last
- * connection.
- */
-export function getSavedConnectionConfig(): ?NuclideSavedConnectionDialogConfig {
-  const savedConfig: any = atom.config.get(LAST_USED_CONNECTION_KEY);
-  return (savedConfig : ?NuclideSavedConnectionDialogConfig);
-}
-
-/**
  * Saves a connection configuration along with the last official server command.
  */
 export function saveConnectionConfig(
@@ -130,11 +129,14 @@ export function saveConnectionConfig(
   // SshConnectionConfiguration's sshPort type is 'number', but we want to save
   // everything as strings.
   updatedConfig.sshPort = String(config.sshPort);
-  atom.config.set(LAST_USED_CONNECTION_KEY, {
-    updatedConfig,
-    // Save last official command to detect upgrade.
-    lastOfficialRemoteServerCommand,
-  });
+  window.localStorage.setItem(
+    'nuclide:nuclide-remote-projects:lastConnectionDetails',
+    JSON.stringify({
+      updatedConfig,
+      // Save last official command to detect upgrade.
+      lastOfficialRemoteServerCommand,
+    }),
+  );
 }
 
 let defaultConfig: ?any = null;

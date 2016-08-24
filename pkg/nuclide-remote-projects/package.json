@@ -19,6 +19,14 @@
         "description": "Confirm whether to Shutdown or Keep the server after all remote projects are disconnected",
         "default": true
       },
+      "connectionProfiles": {
+        "title": "Connection Profiles",
+        "type": "array",
+        "default": [],
+        "items": {
+          "type": "object"
+        }
+      },
       "shutdownServerAfterDisconnection": {
         "title": "Shutdown Server After Disconnect",
         "type": "boolean",
