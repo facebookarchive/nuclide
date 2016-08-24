@@ -16,8 +16,10 @@ import Immutable from 'immutable';
 import {React} from 'react-for-atom';
 import HomeFeatureComponent from './HomeFeatureComponent';
 import NuclideLogo from './NuclideLogo';
+import createUtmUrl from './createUtmUrl';
 import featureConfig from '../../commons-atom/featureConfig';
 
+const NUCLIDE_DOCS_URL = createUtmUrl('http://nuclide.io', 'welcome');
 const DEFAULT_WELCOME = (
   <div>
     <p>
@@ -25,13 +27,18 @@ const DEFAULT_WELCOME = (
       <br />
       unified developer environment.
     </p>
+    <ul className="text-left">
+      <li>
+        <a href={NUCLIDE_DOCS_URL}>Get Started!</a> In-depth docs on our features.
+      </li>
+      <li>
+        <a href="https://github.com/facebook/nuclide">GitHub</a> Pull requests, issues, and feedback.
+      </li>
+    </ul>
     <p>
-      We would love your feedback and contributions to continue to make it better. Please
-      raise issues and pull-requests directly on
-      our <a href="https://github.com/facebook/nuclide">GitHub repo</a>.
-    </p>
-    <p>
-      Thank you!
+      We hope you enjoy using Nuclide
+      <br />
+      at least as much as we enjoy building it.
     </p>
   </div>
 );

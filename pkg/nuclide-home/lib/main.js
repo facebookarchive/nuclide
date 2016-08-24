@@ -14,12 +14,14 @@ import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/type
 import type {HomeFragments} from './types';
 
 import {CompositeDisposable, Disposable} from 'atom';
+import createUtmUrl from './createUtmUrl';
 import featureConfig from '../../commons-atom/featureConfig';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import HomePaneItem from './HomePaneItem';
 import Immutable from 'immutable';
 import {React} from 'react-for-atom';
 import {BehaviorSubject} from 'rxjs';
+import {shell} from 'electron';
 
 let subscriptions: CompositeDisposable = (null: any);
 
@@ -30,6 +32,13 @@ const allHomeFragmentsStream: BehaviorSubject<Immutable.Set<HomeFragments>> =
 export function activate(state: ?Object): void {
   considerDisplayingHome();
   subscriptions = new CompositeDisposable();
+  subscriptions.add(
+    // eslint-disable-next-line
+    atom.commands.add('atom-workspace', 'nuclide-docs:open', e => {
+      const url = createUtmUrl('http://nuclide.io/docs', 'help');
+      shell.openExternal(url);
+    }),
+  );
 }
 
 export function setHomeFragments(homeFragments: HomeFragments): Disposable {
