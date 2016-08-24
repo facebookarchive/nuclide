@@ -364,8 +364,19 @@ export class ConnectionMultiplexer {
     this._enabledConnection = connection;
     this._handlePotentialRequestSwitch(connection);
     this._lastEnabledConnection = connection;
-    this._setStatus(this._status !== STATUS_USER_ASYNC_BREAK_SENT ?
-      STATUS_BREAK : STATUS_ALL_CONNECTIONS_BREAK);
+    this._pauseConnectionsIfNeeded();
+    this._setBreakStatus();
+  }
+
+  _pauseConnectionsIfNeeded(): void {
+    if (getConfig().stopOneStopAll && this._status !== STATUS_USER_ASYNC_BREAK_SENT) {
+      this._asyncBreak();
+    }
+  }
+
+  _setBreakStatus(): void {
+    this._setStatus((this._status === STATUS_USER_ASYNC_BREAK_SENT || getConfig().stopOneStopAll) ?
+      STATUS_ALL_CONNECTIONS_BREAK : STATUS_BREAK);
   }
 
   _setStatus(status: string): void {
