@@ -16,6 +16,7 @@ import {serializeAsyncCall} from '../../commons-node/promise';
 import {getLogger} from '../../nuclide-logging';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
+import findClangServerArgs from './find-clang-server-args';
 
 // Limit the number of active Clang servers.
 const SERVER_LIMIT = 20;
@@ -83,7 +84,10 @@ export default class ClangServerManager {
         return server;
       }
     }
-    const flagsResult = await this._getFlags(src, defaultFlags);
+    const [serverArgs, flagsResult] = await Promise.all([
+      findClangServerArgs(),
+      this._getFlags(src, defaultFlags),
+    ]);
     if (flagsResult == null) {
       return null;
     }
@@ -93,7 +97,7 @@ export default class ClangServerManager {
     if (server != null) {
       return server;
     }
-    server = new ClangServer(src, flags, usesDefaultFlags);
+    server = new ClangServer(src, serverArgs, flags, usesDefaultFlags);
     // Seed with a compile request to ensure fast responses.
     server.compile(contents)
       .then(() => this._checkMemoryUsage());

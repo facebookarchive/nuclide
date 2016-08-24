@@ -11,13 +11,13 @@
 
 import typeof * as ClangProcessService from './ClangProcessService';
 import type {ClangCompileResult} from './rpc-types';
+import type {ClangServerArgs} from './find-clang-server-args';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {BehaviorSubject} from 'rxjs';
 
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import RpcProcess from '../../commons-node/RpcProcess';
-import findClangServerArgs from './find-clang-server-args';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 
 export type ClangServerStatus = 'ready' | 'compiling';
@@ -33,11 +33,12 @@ function getServiceRegistry(): ServiceRegistry {
   return serviceRegistry;
 }
 
-async function spawnClangProcess(
+function spawnClangProcess(
   src: string,
+  serverArgs: ClangServerArgs,
   flags: Array<string>,
 ): Promise<child_process$ChildProcess> {
-  const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = await findClangServerArgs();
+  const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = serverArgs;
   const pathToLibClangServer = nuclideUri.join(__dirname, '../python/clang_server.py');
   const args = [pathToLibClangServer];
   if (libClangLibraryFile != null) {
@@ -73,10 +74,15 @@ export default class ClangServer extends RpcProcess {
 
   constructor(
     src: string,
+    serverArgs: ClangServerArgs,
     flags: Array<string>,
     usesDefaultFlags?: boolean = false,
   ) {
-    super(`ClangServer-${src}`, getServiceRegistry(), () => spawnClangProcess(src, flags));
+    super(
+      `ClangServer-${src}`,
+      getServiceRegistry(),
+      () => spawnClangProcess(src, serverArgs, flags),
+    );
     this._usesDefaultFlags = usesDefaultFlags;
     this._pendingCompileRequests = 0;
     this._serverStatus = new BehaviorSubject(ClangServer.Status.READY);

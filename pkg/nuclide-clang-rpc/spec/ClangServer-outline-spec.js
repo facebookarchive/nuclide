@@ -15,6 +15,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {addMatchers} from '../../nuclide-test-helpers';
 
 import ClangServer from '../lib/ClangServer';
+import findClangServerArgs from '../lib/find-clang-server-args';
 
 const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'outline.cpp');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE, 'utf8');
@@ -26,7 +27,8 @@ describe('ClangServer', () => {
 
   it('can return outline data', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(TEST_FILE, ['-x', 'c++']);
+      const serverArgs = await findClangServerArgs();
+      const server = new ClangServer(TEST_FILE, serverArgs, ['-x', 'c++']);
       const service = await server.getService();
       const response = await service.get_outline(
         FILE_CONTENTS,

@@ -13,6 +13,7 @@ import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
 import ClangServer from '../lib/ClangServer';
+import findClangServerArgs from '../lib/find-clang-server-args';
 
 const TEST_FILE = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
 const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
@@ -43,7 +44,8 @@ describe('ClangServer', () => {
 
   it('can handle requests', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(TEST_FILE, []);
+      const serverArgs = await findClangServerArgs();
+      const server = new ClangServer(TEST_FILE, serverArgs, []);
       const service = await server.getService();
       let response = await server.compile(
         FILE_CONTENTS,
@@ -179,7 +181,8 @@ describe('ClangServer', () => {
 
   it('gracefully handles server crashes', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(TEST_FILE, []);
+      const serverArgs = await findClangServerArgs();
+      const server = new ClangServer(TEST_FILE, serverArgs, []);
       let response = await server.compile(
         FILE_CONTENTS,
       );
@@ -213,7 +216,8 @@ describe('ClangServer', () => {
 
   it('tracks server status', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(TEST_FILE, []);
+      const serverArgs = await findClangServerArgs();
+      const server = new ClangServer(TEST_FILE, serverArgs, []);
       expect(server.getStatus()).toBe('ready');
       server.compile('');
 
