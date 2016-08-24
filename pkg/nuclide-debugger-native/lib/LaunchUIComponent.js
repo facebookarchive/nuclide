@@ -106,7 +106,7 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
   _handleLaunchClick(): void {
     // TODO: perform some validation for the input.
     const launchExecutable = this.refs.launchExecutable.getText().trim();
-    const launchArguments = this.refs.launchArguments.getText().trim();
+    const launchArguments = shellParse(this.refs.launchArguments.getText());
     const launchEnvironmentVariables = shellParse(
       this.refs.launchEnvironmentVariables.getText());
     const launchWorkingDirectory = this.refs.launchWorkingDirectory.getText().trim();

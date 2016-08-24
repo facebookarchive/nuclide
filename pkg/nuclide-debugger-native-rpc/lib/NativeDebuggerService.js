@@ -36,7 +36,7 @@ export type AttachTargetInfo = {
 
 export type LaunchTargetInfo = {
   executablePath: string,
-  arguments: string,
+  arguments: Array<string>,
   environmentVariables: Array<string>,
   workingDirectory: string,
   basepath?: string
@@ -55,7 +55,7 @@ type AttachInfoArgsType = {
 
 type LaunchInfoArgsType = {
   executable_path: string,
-  launch_arguments: string,
+  launch_arguments: Array<string>,
   launch_environment_variables: Array<string>,
   working_directory: string,
   basepath: string,

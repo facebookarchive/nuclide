@@ -59,7 +59,7 @@ def parse_args():
     launch_group.add_argument('--executable_path', '-e', type=str,
                               help='The executable path to launch.')
     launch_group.add_argument('--launch_arguments', '-args', type=str,
-                              help='Launch arguments.')
+                              action='append', help='Launch arguments.')
     launch_group.add_argument('--launch_environment_variables', '-env',
                               type=str,
                               help='Comma-separated environment variables')
@@ -117,7 +117,7 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
     listener = lldb.SBListener('Chrome Dev Tools Listener')
     error = lldb.SBError()
     if getattr(arguments, 'executable_path', None):
-        argument_list = split(str(arguments.launch_arguments)) \
+        argument_list = map(str, arguments.launch_arguments) \
             if arguments.launch_arguments else None
         environment_variables = [six.binary_type(arg) for arg in
                                  arguments.launch_environment_variables] \

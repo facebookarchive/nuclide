@@ -50,7 +50,6 @@ async function debugBuckTarget(
   if (relativeOutputPath == null) {
     throw new Error(`Target ${buildTarget} does not have executable build output.`);
   }
-  const args = targetOutput.args;
 
   const buckRoot = await buckProject.getPath();
   // LaunchProcessInfo's arguments should be local to the remote directory.
@@ -59,9 +58,7 @@ async function debugBuckTarget(
 
   const info = new LaunchProcessInfo(buckRoot, {
     executablePath: remoteOutputPath,
-    // TODO(hansonw): Fix this when nuclide-debugger-native-rpc supports proper array args.
-    // This will break for quoted arguments and the like.
-    arguments: args == null ? '' : args.join(' '),
+    arguments: targetOutput.args || [],
     // TODO(hansonw): Add this when nuclide-debugger-native supports environment vars.
     environmentVariables: [],
     workingDirectory: '', // use the default
