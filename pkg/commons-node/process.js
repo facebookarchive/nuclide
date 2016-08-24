@@ -13,7 +13,6 @@ import type {Observer} from 'rxjs';
 import type {ProcessMessage} from './process-rpc-types';
 
 import child_process from 'child_process';
-import nuclideUri from './nuclideUri';
 import {observeStream, splitStream, takeWhileInclusive} from './stream';
 import UniversalDisposable from './UniversalDisposable';
 import {maybeToString} from './string';
@@ -99,97 +98,9 @@ export type AsyncExecuteOptions = child_process$execFileOpts & {
   stdin?: ?string,
 };
 
-let platformPathPromise: ?Promise<string>;
-
 const blockingQueues = {};
-const COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin'];
-
-/**
- * Captures the value of the PATH env variable returned by Darwin's (OS X) `path_helper` utility.
- * `path_helper -s`'s return value looks like this:
- *
- *     PATH="/usr/bin"; export PATH;
- */
-const DARWIN_PATH_HELPER_REGEXP = /PATH="([^"]+)"/;
 
 const STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
-
-function getPlatformPath(): Promise<string> {
-  // Do not return the cached value if we are executing under the test runner.
-  if (platformPathPromise && process.env.NODE_ENV !== 'test') {
-    // Path is being fetched, await the Promise that's in flight.
-    return platformPathPromise;
-  }
-
-  // We do not cache the result of this check because we have unit tests that temporarily redefine
-  // the value of process.platform.
-  if (process.platform === 'darwin') {
-    // OS X apps don't inherit PATH when not launched from the CLI, so reconstruct it. This is a
-    // bug, filed against Atom Linter here: https://github.com/AtomLinter/Linter/issues/150
-    // TODO(jjiaa): remove this hack when the Atom issue is closed
-    platformPathPromise = new Promise((resolve, reject) => {
-      child_process.execFile('/usr/libexec/path_helper', ['-s'], (error, stdout, stderr) => {
-        if (error) {
-          reject(error);
-        } else {
-          // $FlowFixMe (stdout is a Buffer, which does not have match)
-          const match = stdout.match(DARWIN_PATH_HELPER_REGEXP);
-          resolve((match && match.length > 1) ? match[1] : '');
-        }
-      });
-    });
-  } else {
-    platformPathPromise = Promise.resolve('');
-  }
-
-  return platformPathPromise;
-}
-
-/**
- * Since OS X apps don't inherit PATH when not launched from the CLI, this function creates a new
- * environment object given the original environment by modifying the env.PATH using following
- * logic:
- *  1) If originalEnv.PATH doesn't equal to process.env.PATH, which means the PATH has been
- *    modified, we shouldn't do anything.
- *  1) If we are running in OS X, use `/usr/libexec/path_helper -s` to get the correct PATH and
- *    REPLACE the PATH.
- *  2) If step 1 failed or we are not running in OS X, APPEND commonBinaryPaths to current PATH.
- */
-export async function createExecEnvironment(
-  originalEnv: Object,
-  commonBinaryPaths: Array<string>,
-): Promise<Object> {
-  const execEnv = {...originalEnv};
-
-  if (execEnv.PATH !== process.env.PATH) {
-    return execEnv;
-  }
-
-  execEnv.PATH = execEnv.PATH || '';
-
-  let platformPath = null;
-  try {
-    platformPath = await getPlatformPath();
-  } catch (error) {
-    logError('Failed to getPlatformPath', error);
-  }
-
-  // If the platform returns a non-empty PATH, use it. Otherwise use the default set of common
-  // binary paths.
-  if (platformPath) {
-    execEnv.PATH = platformPath;
-  } else if (commonBinaryPaths.length) {
-    const paths = nuclideUri.splitPathList(execEnv.PATH);
-    commonBinaryPaths.forEach(commonBinaryPath => {
-      if (paths.indexOf(commonBinaryPath) === -1) {
-        paths.push(commonBinaryPath);
-      }
-    });
-    execEnv.PATH = nuclideUri.joinPathList(paths);
-  }
-
-  return execEnv;
-}
 
 function logError(...args) {
   // Can't use nuclide-logging here to not cause cycle dependency.
@@ -229,27 +140,10 @@ export async function safeSpawn(
   args?: Array<string> = [],
   options?: Object = {},
 ): Promise<child_process$ChildProcess> {
-  options.env = await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS);
   const child = child_process.spawn(command, args, options);
   monitorStreamErrors(child, command, args, options);
   child.on('error', error => {
     logError('error with command:', command, args, options, 'error:', error);
-  });
-  return child;
-}
-
-export async function forkWithExecEnvironment(
-  modulePath: string,
-  args?: Array<string> = [],
-  options?: Object = {},
-): Promise<child_process$ChildProcess> {
-  const forkOptions = {
-    ...options,
-    env: await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS),
-  };
-  const child = child_process.fork(modulePath, args, forkOptions);
-  child.on('error', error => {
-    logError('error from module:', modulePath, args, options, 'error:', error);
   });
   return child;
 }
@@ -454,7 +348,6 @@ export async function asyncExecute(
   args: Array<string>,
   options?: AsyncExecuteOptions = {},
 ): Promise<AsyncExecuteReturn> {
-  const env = await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS);
   const executor = (resolve, reject) => {
     const process = child_process.execFile(
       command,
@@ -462,7 +355,6 @@ export async function asyncExecute(
       {
         maxBuffer: DEFAULT_MAX_BUFFER,
         ...options,
-        env,
       },
       // Node embeds various properties like code/errno in the Error object.
       (err: any /* Error */, stdoutBuf, stderrBuf) => {
@@ -588,7 +480,3 @@ export function runCommand(
       return acc.stdout;
     });
 }
-
-export const __test__ = {
-  DARWIN_PATH_HELPER_REGEXP,
-};

@@ -12,12 +12,10 @@
 import child_process from 'child_process';
 import invariant from 'assert';
 import mockSpawn from 'mock-spawn';
-import nuclideUri from '../nuclideUri';
 
 import {
   asyncExecute,
   checkOutput,
-  createExecEnvironment,
   createProcessStream,
   getOutputStream,
   observeProcess,
@@ -25,7 +23,6 @@ import {
   runCommand,
   safeSpawn,
   scriptSafeSpawn,
-  __test__,
 } from '../process';
 
 describe('commons-node/process', () => {
@@ -41,53 +38,6 @@ describe('commons-node/process', () => {
 
   afterEach(() => {
     Object.defineProperty(process, 'platform', {value: origPlatform});
-  });
-
-  describe('createExecEnvironment()', () => {
-    it('don\'t overwrite the PATH if it\'s different than process.env.PATH', () => {
-      waitsForPromise(async () => {
-        expect(
-          await createExecEnvironment({foo: 'bar', PATH: '/bin'}, ['/abc/def']),
-        ).toEqual({foo: 'bar', PATH: '/bin'});
-      });
-    });
-
-    it('combine the existing environment variables with the common paths passed', () => {
-      waitsForPromise(async () => {
-        const PATH = process.env.PATH;
-        invariant(PATH != null);
-        const delimitedPath = nuclideUri.splitPathList(PATH);
-        expect(
-          await createExecEnvironment({foo: 'bar', PATH}, ['/abc/def']),
-        ).toEqual({foo: 'bar', PATH: nuclideUri.joinPathList([...delimitedPath, '/abc/def'])});
-      });
-    });
-
-    // This is a regression test. Previously, we were doing simple string matching that would give
-    // us false positives when checking if paths were in PATH.
-    it('adds paths that are descendents of paths in PATH', () => {
-      waitsForPromise(async () => {
-        const oldPath = process.env.PATH;
-        process.env.PATH = '/abc/def';
-        let execEnv;
-        try {
-          execEnv = await createExecEnvironment(process.env, ['/abc']);
-        } finally {
-          process.env.PATH = oldPath;
-        }
-        expect(execEnv.PATH).toEqual(nuclideUri.joinPathList(['/abc/def', '/abc']));
-      });
-    });
-
-  });
-
-  describe('OS X path_helper regexp', () => {
-    it('matches and captures valid PATH', () => {
-      const matches = 'PATH="/usr/bin:/usr/local/bin"; export PATH; echo ""'
-        .match(__test__.DARWIN_PATH_HELPER_REGEXP);
-      invariant(matches);
-      expect(matches[1]).toEqual('/usr/bin:/usr/local/bin');
-    });
   });
 
   describe('checkOutput', () => {

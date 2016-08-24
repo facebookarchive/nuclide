@@ -12,13 +12,10 @@
 import type {ExecutorResponse, ExecutorRequest} from './types';
 
 import featureConfig from '../../../commons-atom/featureConfig';
-import {
-  createProcessStream,
-  forkWithExecEnvironment,
-  getOutputStream,
-} from '../../../commons-node/process';
+import {createProcessStream, getOutputStream} from '../../../commons-node/process';
 import {getLogger} from '../../../nuclide-logging';
 import nuclideUri from '../../../commons-node/nuclideUri';
+import child_process from 'child_process';
 import {Observable} from 'rxjs';
 
 const logger = getLogger();
@@ -67,12 +64,12 @@ function createWorker(): Observable<child_process$ChildProcess> {
   return createProcessStream(() => (
     // TODO: The node location/path needs to be more configurable. We need to figure out a way to
     //   handle this across the board.
-    forkWithExecEnvironment(
+    child_process.fork(
       nuclideUri.join(__dirname, 'executor.js'),
       [],
       {
         execArgv: ['--debug-brk'],
-        execPath: featureConfig.get('nuclide-react-native.pathToNode'),
+        execPath: ((featureConfig.get('nuclide-react-native.pathToNode'): any): string),
         silent: true,
       },
     )
