@@ -739,7 +739,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await doEnable();
       connections[0]._status = STATUS_RUNNING;
-      connectionMultiplexer.asyncBreak();
+      connectionMultiplexer._asyncBreak();
       expect(connections[0].sendBreakCommand).toHaveBeenCalledWith();
     });
   });

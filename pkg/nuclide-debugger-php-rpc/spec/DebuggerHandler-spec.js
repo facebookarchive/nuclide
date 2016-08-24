@@ -59,7 +59,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
         'getScopesForFrame',
         'getRequestSwitchMessage',
         'resetRequestSwitchMessage',
-        'asyncBreak',
+        'pause',
         'resume',
       ]): any
     ): ConnectionMultiplexerType);
@@ -171,10 +171,10 @@ describe('debugger-php-rpc DebuggerHandler', () => {
   });
 
   it('pause - success', () => {
-    connectionMultiplexer.asyncBreak =
-      jasmine.createSpy('asyncBreak').andReturn(Promise.resolve(true));
+    connectionMultiplexer.pause =
+      jasmine.createSpy('pause').andReturn(Promise.resolve(true));
     handler.handleMethod(1, 'pause');
-    expect(connectionMultiplexer.asyncBreak).toHaveBeenCalledWith();
+    expect(connectionMultiplexer.pause).toHaveBeenCalledWith();
 
 
   });

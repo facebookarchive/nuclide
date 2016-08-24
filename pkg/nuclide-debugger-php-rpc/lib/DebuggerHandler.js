@@ -226,7 +226,7 @@ export class DebuggerHandler extends Handler {
   }
 
   _pause(): void {
-    this._connectionMultiplexer.asyncBreak();
+    this._connectionMultiplexer.pause();
   }
 
   _resume(): void {
