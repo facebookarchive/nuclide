@@ -9,11 +9,10 @@
  * the root directory of this source tree.
  */
 
-import {__test__, LOG_FILE_PATH} from '../lib/config';
+import {getPathToLogFileForDate, LOG_FILE_PATH} from '../lib/config';
 
 describe('nuclide-logging/lib/config.js', () => {
   describe('getPathToLogFileForDate', () => {
-    const {getPathToLogFileForDate} = __test__;
     it('returns the file path to the log file for today.', () => {
       const YEAR = 2015;
       const MONTH = 0; // January

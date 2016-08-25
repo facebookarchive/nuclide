@@ -20,7 +20,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {asString as log4jsFormatter} from 'log4js/lib/date_format';
 
 const LOG_DIRECTORY = nuclideUri.join(os.tmpdir(), `/nuclide-${userInfo().username}-logs`);
-const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
+export const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
 
 let logDirectoryInitialized = false;
 const scribeAppenderPath = nuclideUri.join(__dirname, '../fb/scribeAppender.js');
@@ -53,67 +53,60 @@ async function getServerLogAppenderConfig(): Promise<?Object> {
 /**
  * @return The absolute path to the log file for the specified date.
  */
-function getPathToLogFileForDate(targetDate: Date): string {
+export function getPathToLogFileForDate(targetDate: Date): string {
   return LOG_FILE_PATH + log4jsFormatter(LOG4JS_DATE_FORMAT, targetDate);
 }
 
 /**
  * @return The absolute path to the log file for today.
  */
-function getPathToLogFileForToday(): string {
+export function getPathToLogFileForToday(): string {
   return getPathToLogFileForDate(new Date());
 }
 
-module.exports = {
-  async getDefaultConfig(): Promise<LoggingAppender> {
+export async function getDefaultConfig(): Promise<LoggingAppender> {
 
-    if (!logDirectoryInitialized) {
-      await fsPromise.mkdirp(LOG_DIRECTORY);
-      logDirectoryInitialized = true;
-    }
+  if (!logDirectoryInitialized) {
+    await fsPromise.mkdirp(LOG_DIRECTORY);
+    logDirectoryInitialized = true;
+  }
 
-    const config = {
-      appenders: [
-        {
-          type: 'logLevelFilter',
-          level: 'INFO',
-          appender: {
-            type: nuclideUri.join(__dirname, './consoleAppender'),
-          },
+  const config = {
+    appenders: [
+      {
+        type: 'logLevelFilter',
+        level: 'INFO',
+        appender: {
+          type: nuclideUri.join(__dirname, './consoleAppender'),
         },
-        {
-          type: 'logLevelFilter',
-          level: 'ALL',
-          appender: {
-            type: nuclideUri.join(__dirname, './nuclideConsoleAppender'),
-          },
+      },
+      {
+        type: 'logLevelFilter',
+        level: 'ALL',
+        appender: {
+          type: nuclideUri.join(__dirname, './nuclideConsoleAppender'),
         },
-        {
-          type: 'dateFile',
-          alwaysIncludePattern: true,
-          absolute: true,
-          filename: LOG_FILE_PATH,
-          pattern: LOG4JS_DATE_FORMAT,
-          layout: {
-            type: 'pattern',
-            // Format log in following pattern:
-            // yyyy-MM-dd HH:mm:ss.mil $Level (pid:$pid) $categroy - $message.
-            pattern: `%d{ISO8601} %p (pid:${process.pid}) %c - %m`,
-          },
+      },
+      {
+        type: 'dateFile',
+        alwaysIncludePattern: true,
+        absolute: true,
+        filename: LOG_FILE_PATH,
+        pattern: LOG4JS_DATE_FORMAT,
+        layout: {
+          type: 'pattern',
+          // Format log in following pattern:
+          // yyyy-MM-dd HH:mm:ss.mil $Level (pid:$pid) $categroy - $message.
+          pattern: `%d{ISO8601} %p (pid:${process.pid}) %c - %m`,
         },
-      ],
-    };
+      },
+    ],
+  };
 
-    const serverLogAppenderConfig = await getServerLogAppenderConfig();
-    if (serverLogAppenderConfig) {
-      config.appenders.push(serverLogAppenderConfig);
-    }
+  const serverLogAppenderConfig = await getServerLogAppenderConfig();
+  if (serverLogAppenderConfig) {
+    config.appenders.push(serverLogAppenderConfig);
+  }
 
-    return config;
-  },
-  getPathToLogFileForToday,
-  LOG_FILE_PATH,
-  __test__: {
-    getPathToLogFileForDate,
-  },
-};
+  return config;
+}
