@@ -22,6 +22,7 @@ export type Message = {
   text: string,
   level: Level,
   data?: EvaluationResult,
+  tags?: Array<string>,
 };
 
 // A normalized type used internally to represent all possible kinds of messages. Responses and

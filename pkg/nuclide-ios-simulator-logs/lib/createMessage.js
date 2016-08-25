@@ -12,13 +12,17 @@
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {AslLevel, AslRecord} from './types';
 
+import {parseMessageText} from './parseMessageText';
+
 /**
  * Convert a structured logcat entry into the format that nuclide-console wants.
  */
 export function createMessage(record: AslRecord): Message {
+  const {text, level, tags} = parseMessageText(record.Message);
   return {
-    text: record.Message,
-    level: getLevel(record.Level),
+    text,
+    level: level == null ? getLevel(record.Level) : level,
+    tags: tags == null ? undefined : tags,
   };
 }
 
