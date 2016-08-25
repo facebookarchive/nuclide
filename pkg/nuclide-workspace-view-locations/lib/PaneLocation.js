@@ -50,7 +50,8 @@ export class PaneLocation {
   }
 
   itemIsVisible(item: Viewable): boolean {
-    return atom.workspace.paneForItem(item) != null;
+    const pane = atom.workspace.paneForItem(item);
+    return pane != null && pane.getActiveItem() === item;
   }
 
   showItem(item: Viewable): void {
