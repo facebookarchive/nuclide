@@ -243,22 +243,7 @@
                 "kind": "function",
                 "argumentTypes": [
                     {
-                        "name": {
-                            "type": "Identifier",
-                            "start": 653,
-                            "end": 654,
-                            "loc": {
-                                "start": {
-                                    "line": 31,
-                                    "column": 4
-                                },
-                                "end": {
-                                    "line": 31,
-                                    "column": 5
-                                }
-                            },
-                            "name": "a"
-                        },
+                        "name": "a",
                         "type": {
                             "location": {
                                 "type": "source",

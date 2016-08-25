@@ -264,6 +264,7 @@ export class TypeRegistry {
       this.marshal(context, args[i], param.type)));
     const result = {};
     marshalledargs.forEach((arg, i) => {
+      invariant(typeof argTypes[i].name === 'string');
       result[argTypes[i].name] = arg;
     });
     return result;

@@ -438,6 +438,7 @@ class FileParser {
       `${definition.key.name} missing a return type annotation.`);
 
     const returnType = this._parseTypeAnnotation(definition.value.returnType);
+    invariant(typeof definition.key.name === 'string');
     return {
       location: this._locationOfNode(definition.key),
       name: definition.key.name,
@@ -454,7 +455,8 @@ class FileParser {
     if (!param.typeAnnotation) {
       throw this._error(param, `Parameter ${param.name} doesn't have type annotation.`);
     } else {
-      const name = param.name;
+      const name = param.name.name;
+      invariant(typeof name === 'string');
       const type = this._parseTypeAnnotation(param.typeAnnotation);
       if (param.optional && type.kind !== 'nullable') {
         return {
