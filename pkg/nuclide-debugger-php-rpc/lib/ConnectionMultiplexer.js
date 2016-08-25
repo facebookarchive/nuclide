@@ -513,7 +513,7 @@ export class ConnectionMultiplexer {
   }
 
   getProperties(remoteId: Runtime$RemoteObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
-    if (this._enabledConnection && this._status === STATUS_BREAK) {
+    if (this._enabledConnection) {
       return this._enabledConnection.getProperties(remoteId);
     } else if (this._dummyConnection) {
       return this._dummyConnection.getProperties(remoteId);
