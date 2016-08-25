@@ -15,6 +15,8 @@ export {ServiceRegistry} from './ServiceRegistry';
 export {RpcConnection} from './RpcConnection';
 export {LoopbackTransports} from './LoopbackTransports';
 export {StreamTransport} from './StreamTransport';
+export {SocketTransport} from './SocketTransport';
+export {SocketServer} from './SocketServer';
 
 import loadServicesConfig from './loadServicesConfig';
 export {loadServicesConfig};
