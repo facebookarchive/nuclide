@@ -79,6 +79,20 @@ describe('ClangServer', () => {
               },
               children: [
                 {
+                  cursor_kind: 'PRAGMA_MARK',
+                  name: 'before function',
+                  extent: {
+                    start: {
+                      column: 0,
+                      line: 4,
+                    },
+                    end: {
+                      column: 0,
+                      line: 5,
+                    },
+                  },
+                },
+                {
                   cursor_kind: 'FUNCTION_DECL',
                   name: 'function',
                   extent: {
@@ -98,23 +112,23 @@ describe('ClangServer', () => {
                   tparams: [
                   ],
                 },
+                {
+                  cursor_kind: 'PRAGMA_MARK',
+                  name: 'after function',
+                  extent: {
+                    start: {
+                      column: 0,
+                      line: 7,
+                    },
+                    end: {
+                      column: 0,
+                      line: 8,
+                    },
+                  },
+                },
               ],
             },
           ],
-        },
-        {
-          cursor_kind: 'PRAGMA_MARK',
-          name: 'Section 1',
-          extent: {
-            start: {
-              column: 0,
-              line: 10,
-            },
-            end: {
-              column: 0,
-              line: 11,
-            },
-          },
         },
         {
           cursor_kind: 'FUNCTION_TEMPLATE',
@@ -169,6 +183,20 @@ describe('ClangServer', () => {
               tparams: [
                 'T',
               ],
+            },
+            {
+              cursor_kind: 'PRAGMA_MARK',
+              name: 'inside TestClass',
+              extent: {
+                start: {
+                  column: 0,
+                  line: 20,
+                },
+                end: {
+                  column: 0,
+                  line: 21,
+                },
+              },
             },
             {
               cursor_kind: 'CXX_METHOD',
@@ -329,6 +357,20 @@ describe('ClangServer', () => {
             'a',
             'b',
           ],
+        },
+        {
+          cursor_kind: 'PRAGMA_MARK',
+          name: 'end of file',
+          extent: {
+            start: {
+              column: 0,
+              line: 43,
+            },
+            end: {
+              column: 0,
+              line: 44,
+            },
+          },
         },
       ]);
     });

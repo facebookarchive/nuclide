@@ -8,15 +8,12 @@
 
 from __future__ import print_function
 
-from clang.cindex import Config, Cursor, CursorKind, Index, TokenKind
+from clang.cindex import Cursor, CursorKind, TokenKind
 from utils import range_dict_relative
 
 import ctypes
 import itertools
-import json
-import os
 import re
-import sys
 
 # Function/method cursor kinds.
 FUNCTION_KINDS = set([
@@ -75,7 +72,8 @@ ALL_KINDS = FUNCTION_KINDS | CLASS_KINDS | MEMBER_KINDS | VAR_KINDS | OTHER_KIND
 
 
 # People like adding a '-' by convention, but strip that out.
-PRAGMA_MARK_REGEX = re.compile('^\s*#pragma\s+mark\s+(?:-\s*)?(.+)$', re.MULTILINE)
+PRAGMA_MARK_REGEX = re.compile(
+    '^[ \t]*#[ \t]*pragma[ \t]+mark[ \t]+(?:-[ \t]*)?(.+)$', re.MULTILINE)
 
 
 def visit_cursor(libclang, cursor):
@@ -151,6 +149,28 @@ def visit_cursor(libclang, cursor):
     return {k: v for k, v in ret.items() if v is not None}
 
 
+# Scan through the outline tree and insert pragma marks as we pass by them.
+def insert_pragma_marks(marks, outline_tree, tree_end=None):
+    new_result = []
+    for node in outline_tree:
+        while len(marks) > 0:
+            if marks[-1]['extent']['start']['line'] > node['extent']['start']['line']:
+                break
+            new_result.append(marks.pop())
+        children = node.get('children')
+        if children:
+            children[:] = insert_pragma_marks(marks, children, node['extent']['end']['line'])
+        new_result.append(node)
+
+    # Consume all remaining marks included in this subtree.
+    while len(marks) > 0:
+        if tree_end is not None and marks[-1]['extent']['start']['line'] > tree_end:
+            break
+        new_result.append(marks.pop())
+
+    return new_result
+
+
 def get_outline(libclang, translation_unit, contents):
     root_cursor = translation_unit.cursor
 
@@ -171,12 +191,13 @@ def get_outline(libclang, translation_unit, contents):
     # Look for pragma marks. These are not detectable in the AST.
     line = 0
     lastpos = 0
+    pragma_marks = []
     for mark in PRAGMA_MARK_REGEX.finditer(contents):
         while lastpos < mark.start():
             if contents[lastpos] == '\n':
                 line += 1
             lastpos += 1
-        result.append({
+        pragma_marks.append({
             'name': mark.group(1),
             'cursor_kind': 'PRAGMA_MARK',
             'extent': {
@@ -185,9 +206,14 @@ def get_outline(libclang, translation_unit, contents):
             },
         })
 
-    return sorted(result, key=lambda x: (
+    # Top-level macro instantiations appear out of order.
+    result = sorted(result, key=lambda x: (
         x['extent']['start']['line'],
         x['extent']['start']['column'],
         x['extent']['end']['line'],
         x['extent']['end']['column'],
     ))
+
+    # Convert into a stack for efficient removal.
+    pragma_marks.reverse()
+    return insert_pragma_marks(pragma_marks, result)

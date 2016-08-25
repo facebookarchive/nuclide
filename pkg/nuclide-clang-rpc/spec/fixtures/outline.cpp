@@ -2,13 +2,13 @@ int global_var;
 
 namespace test_namespace {
 namespace {
-
+#pragma mark - before function
 void function(const int, bool param) {
 }
+#pragma mark - after function
+}
+}
 
-}
-}
-#pragma mark - Section 1
 template<typename T>
 int templated_function(T x) {
   return 0;
@@ -18,7 +18,7 @@ class TestClass {
   template<typename T>
   void method(T param) {
   }
-
+  #pragma mark - inside TestClass
   void partialMethod();
   static int partialVar;
 };
@@ -40,3 +40,5 @@ enum TestEnum {
 #define TEST_F(x, y) 1
 
 TEST_F ( a , b ) {}
+
+#pragma mark - end of file
