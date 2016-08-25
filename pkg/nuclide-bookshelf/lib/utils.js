@@ -115,7 +115,7 @@ export function shortHeadChangedNotification(
       : '';
 
     const shortHeadChangeNotification = atom.notifications.addInfo(
-      `\`${workingDirectoryName}\`'s active bookmark have changed ${newShortHeadDisplayText}`, {
+      `\`${workingDirectoryName}\`'s active bookmark has changed ${newShortHeadDisplayText}`, {
         detail: 'Would you like to open the files you had active then?\n \n' +
           'ProTip: Change the default behavior from \'Nuclide Settings>IDE Settings>Book Shelf\'',
         dismissable: true,
