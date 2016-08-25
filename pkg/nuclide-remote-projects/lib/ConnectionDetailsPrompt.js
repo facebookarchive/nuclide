@@ -215,37 +215,34 @@ export default class ConnectionDetailsPrompt extends React.Component {
     }
 
     return (
-      <div className="nuclide-connection-details-prompt container-fluid">
-        <div className="row" style={{display: 'flex'}}>
-          <div className="connection-profiles col-xs-3 inset-panel">
-            {defaultConnectionProfileList}
-            <h6>Profiles</h6>
-            <MutableListSelector
-              items={listSelectorItems}
-              idOfSelectedItem={idOfSelectedItem}
-              onItemClicked={this._onProfileClicked}
-              onItemDoubleClicked={this.props.onConfirm}
-              onAddButtonClicked={this.props.onAddProfileClicked}
-              onDeleteButtonClicked={this._onDeleteProfileClicked}
-            />
-          </div>
-          <div className="connection-details-form col-xs-9">
-            <ConnectionDetailsForm
-              initialUsername={prefilledConnectionParams.username}
-              initialServer={prefilledConnectionParams.server}
-              initialRemoteServerCommand={prefilledConnectionParams.remoteServerCommand}
-              initialCwd={prefilledConnectionParams.cwd}
-              initialSshPort={prefilledConnectionParams.sshPort}
-              initialPathToPrivateKey={prefilledConnectionParams.pathToPrivateKey}
-              initialAuthMethod={prefilledConnectionParams.authMethod}
-              initialDisplayTitle={prefilledConnectionParams.displayTitle}
-              onConfirm={this.props.onConfirm}
-              onCancel={this.props.onCancel}
-              onDidChange={this._handleConnectionDetailsFormDidChange}
-              ref="connection-details-form"
-            />
-          </div>
+      <div className="nuclide-remote-projects-connection-dialog">
+        <div className="nuclide-remote-projects-connection-profiles">
+          {defaultConnectionProfileList}
+          <h6>Profiles</h6>
+          <MutableListSelector
+            items={listSelectorItems}
+            idOfSelectedItem={idOfSelectedItem}
+            onItemClicked={this._onProfileClicked}
+            onItemDoubleClicked={this.props.onConfirm}
+            onAddButtonClicked={this.props.onAddProfileClicked}
+            onDeleteButtonClicked={this._onDeleteProfileClicked}
+          />
         </div>
+        <ConnectionDetailsForm
+          className="nuclide-remote-projects-connection-details"
+          initialUsername={prefilledConnectionParams.username}
+          initialServer={prefilledConnectionParams.server}
+          initialRemoteServerCommand={prefilledConnectionParams.remoteServerCommand}
+          initialCwd={prefilledConnectionParams.cwd}
+          initialSshPort={prefilledConnectionParams.sshPort}
+          initialPathToPrivateKey={prefilledConnectionParams.pathToPrivateKey}
+          initialAuthMethod={prefilledConnectionParams.authMethod}
+          initialDisplayTitle={prefilledConnectionParams.displayTitle}
+          onConfirm={this.props.onConfirm}
+          onCancel={this.props.onCancel}
+          onDidChange={this._handleConnectionDetailsFormDidChange}
+          ref="connection-details-form"
+        />
       </div>
     );
   }

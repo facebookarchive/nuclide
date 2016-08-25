@@ -49,13 +49,24 @@ atom-panel.modal .nuclide-connections-dialog-input-unstyled[mini] {
   margin: 0;
 }
 
-.nuclide-connection-details-prompt .connection-profiles {
-  padding-bottom: @component-padding;
-  padding-top: @component-padding;
-}
-
 /* Prefix with `.list-group` to match specificity from themes */
 .list-group .connection-details-icon-info:before {
   cursor: help;
   margin-right: 0;
+}
+
+.nuclide-remote-projects-connection-dialog {
+  display: flex;
+}
+
+.nuclide-remote-projects-connection-profiles {
+  background-color: @inset-panel-background-color;
+  border-radius: @component-border-radius;
+  flex-grow: 1;
+  padding: @component-padding;
+}
+
+.nuclide-remote-projects-connection-details {
+  flex-grow: 3;
+  padding: @component-padding;
 }

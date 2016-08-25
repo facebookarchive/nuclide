@@ -30,6 +30,7 @@ const authMethods = [
 ];
 
 type Props = {
+  className?: string,
   initialUsername: string,
   initialServer: string,
   initialCwd: string,
@@ -129,6 +130,7 @@ export default class ConnectionDetailsForm extends React.Component {
   }
 
   render(): React.Element<any> {
+    const {className} = this.props;
     const activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
     // We need native-key-bindings so that delete works and we need
     // _onKeyPress so that escape and enter work
@@ -174,7 +176,7 @@ export default class ConnectionDetailsForm extends React.Component {
       </div>
     );
     return (
-      <div>
+      <div className={className}>
         <div className="form-group">
           <label>Username:</label>
           <AtomInput
