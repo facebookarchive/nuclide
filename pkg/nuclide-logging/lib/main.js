@@ -19,13 +19,23 @@
 import addPrepareStackTraceHook from './stacktrace';
 import invariant from 'assert';
 import singleton from '../../commons-node/singleton';
-import {getDefaultConfig, getPathToLogFileForToday} from './config';
+import {
+  getDefaultConfig,
+  getPathToLogFileForToday,
+  CurrentDateFileAppender,
+  getServerLogAppenderConfig,
+} from './config';
 import log4js from 'log4js';
 
 import type {LogLevel} from './rpc-types';
 import type {Logger} from './types';
 
-export {getDefaultConfig, getPathToLogFileForToday};
+export {
+  getDefaultConfig,
+  getPathToLogFileForToday,
+  CurrentDateFileAppender,
+  getServerLogAppenderConfig,
+};
 
 /* Listed in order of severity. */
 type Level = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';

@@ -27,7 +27,7 @@ const scribeAppenderPath = nuclideUri.join(__dirname, '../fb/scribeAppender.js')
 
 const LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
 
-async function getServerLogAppenderConfig(): Promise<?Object> {
+export async function getServerLogAppenderConfig(): Promise<?Object> {
   // Skip config scribe_cat logger if
   // 1) running in test environment
   // 2) or running in Atom client
@@ -64,6 +64,20 @@ export function getPathToLogFileForToday(): string {
   return getPathToLogFileForDate(new Date());
 }
 
+export const CurrentDateFileAppender: Object = {
+  type: 'dateFile',
+  alwaysIncludePattern: true,
+  absolute: true,
+  filename: LOG_FILE_PATH,
+  pattern: LOG4JS_DATE_FORMAT,
+  layout: {
+    type: 'pattern',
+    // Format log in following pattern:
+    // yyyy-MM-dd HH:mm:ss.mil $Level (pid:$pid) $categroy - $message.
+    pattern: `%d{ISO8601} %p (pid:${process.pid}) %c - %m`,
+  },
+};
+
 export async function getDefaultConfig(): Promise<LoggingAppender> {
 
   if (!logDirectoryInitialized) {
@@ -87,19 +101,7 @@ export async function getDefaultConfig(): Promise<LoggingAppender> {
           type: nuclideUri.join(__dirname, './nuclideConsoleAppender'),
         },
       },
-      {
-        type: 'dateFile',
-        alwaysIncludePattern: true,
-        absolute: true,
-        filename: LOG_FILE_PATH,
-        pattern: LOG4JS_DATE_FORMAT,
-        layout: {
-          type: 'pattern',
-          // Format log in following pattern:
-          // yyyy-MM-dd HH:mm:ss.mil $Level (pid:$pid) $categroy - $message.
-          pattern: `%d{ISO8601} %p (pid:${process.pid}) %c - %m`,
-        },
-      },
+      CurrentDateFileAppender,
     ],
   };
 
