@@ -52,28 +52,32 @@ class JsTestRunner(object):
             if f.endswith('-spec.js')
         ]
 
-        if self._parallel:
-            logging.info('Running %s integration tests across %d workers...',
-                         len(spec_files), INTEGRATION_TEST_WORKERS)
-        else:
-            logging.info('Running %s integration tests...', len(spec_files))
-        start = datetime.now()
-
-        test_arg_list = []
+        parallel_test_arg_list = []
+        serial_test_arg_list = []
         for spec_file in spec_files:
-            test_arg_list.append((
+            test_arg = (
                 ['atom', '--dev', '--test', '--v=-3', spec_file],
                 nuclide_dir,
                 os.path.basename(spec_file),
                 True,  # retryable
                 self._continue_on_errors,
                 True,  # is_integration_test
-            ))
+            )
+            if spec_file.endswith('-serial-spec.js') or not self._parallel:
+                serial_test_arg_list.append(test_arg)
+            else:
+                parallel_test_arg_list.append(test_arg)
 
-        if self._parallel:
-            run_parallel_tests(test_arg_list, INTEGRATION_TEST_WORKERS)
-        else:
-            for test_args in test_arg_list:
+        start = datetime.now()
+
+        if len(parallel_test_arg_list):
+            logging.info('Running %s integration tests across %d workers...',
+                         len(parallel_test_arg_list), INTEGRATION_TEST_WORKERS)
+            run_parallel_tests(parallel_test_arg_list, INTEGRATION_TEST_WORKERS)
+
+        if len(serial_test_arg_list):
+            logging.info('Running %s integration tests serially...', len(serial_test_arg_list))
+            for test_args in serial_test_arg_list:
                 run_test(*test_args)
 
         end = datetime.now()
