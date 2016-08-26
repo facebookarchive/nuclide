@@ -32,7 +32,16 @@
   -webkit-user-select: none;
   position: relative;
   text-overflow: ellipsis;
+  vertical-align: baseline; // align sort icons with text
   white-space: nowrap;
+}
+
+.nuclide-ui-table-header-cell-sortable {
+  cursor: pointer;
+}
+
+.nuclide-ui-table-header-cell-sortable:hover {
+  color: @text-color-highlight;
 }
 
 .nuclide-ui-table-header-resize-handle {

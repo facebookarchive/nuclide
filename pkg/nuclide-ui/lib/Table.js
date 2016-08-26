@@ -15,6 +15,7 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import {Disposable} from 'atom';
+import {Icon} from './Icon';
 
 // ColumnKey must be unique within the containing collection.
 type ColumnKey = string;
@@ -54,6 +55,14 @@ type Props = {
    */
   resizeable?: boolean,
   children?: React.Element<any>,
+  /**
+   * Whether columns can be sorted.
+   * If specified, `onSort`, `sortedColumn`, and `sortDescending` must also be specified.
+   */
+  sortable?: boolean,
+  onSort?: (sortedBy: ?ColumnKey, sortDescending: boolean) => void,
+  sortedColumn?: ?ColumnKey,
+  sortDescending?: boolean,
 };
 type State = {
   columnWidthRatios: WidthMap,
@@ -204,6 +213,23 @@ export class Table extends React.Component {
     this._dispose();
   }
 
+  _handleSortByColumn(sortedBy: ColumnKey): void {
+    const {
+      onSort,
+      sortDescending,
+      sortedColumn,
+    } = this.props;
+    if (onSort == null) {
+      return;
+    }
+    onSort(
+      sortedBy,
+      sortDescending == null || sortedBy !== sortedColumn
+        ? false
+        : !sortDescending,
+    );
+  }
+
   _renderEmptyCellContent(): React.Element<any> {
     return <div />;
   }
@@ -215,6 +241,9 @@ export class Table extends React.Component {
       columns,
       maxBodyHeight,
       rows,
+      sortable,
+      sortedColumn,
+      sortDescending,
     } = this.props;
     const header = columns.map((column, i) => {
       const {
@@ -226,6 +255,10 @@ export class Table extends React.Component {
         : <div
             className="nuclide-ui-table-header-resize-handle"
             onMouseDown={this._handleResizerMouseDown.bind(this, key)}
+            onClick={(e: SyntheticMouseEvent) => {
+              // Prevent sortable column header click event from firing.
+              e.stopPropagation();
+            }}
           />;
       const width = this.state.columnWidthRatios[key];
       const optionalHeaderCellProps = {};
@@ -234,13 +267,27 @@ export class Table extends React.Component {
           width: width + '%',
         };
       }
+      let sortIndicator;
+      let titleOverlay = title;
+      if (sortable) {
+        optionalHeaderCellProps.onClick = this._handleSortByColumn.bind(this, key);
+        titleOverlay += ' – click to sort';
+        if (sortedColumn === key) {
+          sortIndicator =
+            <span> <Icon icon={sortDescending ? 'triangle-down' : 'triangle-up'} /></span>;
+        }
+      }
       return (
         <th
-          className="nuclide-ui-table-header-cell"
-          title={title}
+          className={classnames({
+            'nuclide-ui-table-header-cell': true,
+            'nuclide-ui-table-header-cell-sortable': sortable,
+          })}
+          title={titleOverlay}
           key={key}
           {...optionalHeaderCellProps}>
           {title}
+          {sortIndicator}
           {resizeHandle}
         </th>
       );

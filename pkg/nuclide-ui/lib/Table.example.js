@@ -76,6 +76,83 @@ const TableExample = (): React.Element<any> => {
   );
 };
 
+class SortableTableExample extends React.Component {
+  props: mixed;
+  state: {
+    rows: Array<Object>,
+    sortDescending: boolean,
+    sortedColumn: ?string,
+  };
+
+  constructor(props: mixed) {
+    super(props);
+    const rows = [
+      {
+        first: 1,
+        second: 3,
+        third: 300,
+      },
+      {
+        first: 2,
+        second: 5,
+        third: 200,
+      },
+      {
+        first: 3,
+        second: 4,
+        third: 100,
+      },
+    ];
+    this.state = {
+      sortDescending: false,
+      sortedColumn: null,
+      rows,
+    };
+    (this: any)._handleSort = this._handleSort.bind(this);
+  }
+
+  _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
+    const sortedRows = this.state.rows.sort((obj1, obj2) => {
+      const order = sortDescending ? -1 : 1;
+      return order * (obj1[sortedColumn] - obj2[sortedColumn]);
+    });
+    this.setState({
+      rows: sortedRows,
+      sortedColumn,
+      sortDescending,
+    });
+  }
+
+  render(): React.Element<any> {
+    const columns = [
+      {
+        title: 'first',
+        key: 'first',
+      },
+      {
+        title: 'second',
+        key: 'second',
+      },
+      {
+        title: 'third',
+        key: 'third',
+      },
+    ];
+    return (
+      <Block>
+        <Table
+          columns={columns}
+          rows={this.state.rows}
+          sortable={true}
+          onSort={this._handleSort}
+          sortedColumn={this.state.sortedColumn}
+          sortDescending={this.state.sortDescending}
+        />
+      </Block>
+    );
+  }
+}
+
 export const TableExamples = {
   sectionName: 'Table',
   description: '',
@@ -83,6 +160,10 @@ export const TableExamples = {
     {
       title: 'Simple Table',
       component: TableExample,
+    },
+    {
+      title: 'Sortable Table',
+      component: SortableTableExample,
     },
   ],
 };
