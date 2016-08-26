@@ -63,6 +63,8 @@ export type Trace = {
   range?: atom$Range,
 };
 
+export type Fix = TextEdit;
+
 export type FileDiagnosticMessage = {
   scope: 'file',
   providerName: string,
@@ -72,7 +74,7 @@ export type FileDiagnosticMessage = {
   html?: string,
   range?: atom$Range,
   trace?: Array<Trace>,
-  fix?: TextEdit,
+  fix?: Fix,
 };
 
 export type ProjectDiagnosticMessage = {
