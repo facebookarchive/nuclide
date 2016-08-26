@@ -63,6 +63,16 @@ type Props = {
   onSort?: (sortedBy: ?ColumnKey, sortDescending: boolean) => void,
   sortedColumn?: ?ColumnKey,
   sortDescending?: boolean,
+  /**
+   * Whether items can be selected.
+   * If specified, `onSelect` must also be specified.
+   */
+  selectable?: boolean,
+  selectedIndex?: ?number,
+  /**
+   * Handler to be called upon selection. Called iff `selectable` is `true`.
+   */
+  onSelect?: (selectedItem: any, selectedIndex: number) => mixed,
 };
 type State = {
   columnWidthRatios: WidthMap,
@@ -230,6 +240,18 @@ export class Table extends React.Component {
     );
   }
 
+  _handleRowClick(selectedIndex: number, event: SyntheticMouseEvent): void {
+    const {
+      onSelect,
+      rows,
+    } = this.props;
+    if (onSelect == null) {
+      return;
+    }
+    const selectedItem = rows[selectedIndex];
+    onSelect(selectedItem, selectedIndex);
+  }
+
   _renderEmptyCellContent(): React.Element<any> {
     return <div />;
   }
@@ -241,6 +263,8 @@ export class Table extends React.Component {
       columns,
       maxBodyHeight,
       rows,
+      selectable,
+      selectedIndex,
       sortable,
       sortedColumn,
       sortDescending,
@@ -321,12 +345,20 @@ export class Table extends React.Component {
           </td>
         );
       });
+      const rowProps = {};
+      if (selectable) {
+        rowProps.onClick = this._handleRowClick.bind(this, i);
+      }
+      const isSelectedRow = selectedIndex != null && i === selectedIndex;
       return (
         <tr
           className={classnames({
+            'nuclide-ui-table-row-selectable': selectable,
+            'nuclide-ui-table-row-selected': isSelectedRow,
             'nuclide-ui-table-row-alternate': alternateBackground !== false && i % 2 === 1,
           })}
-          key={i}>
+          key={i}
+          {...rowProps}>
           {renderedRow}
         </tr>
       );
