@@ -13,6 +13,10 @@ import {React} from 'react-for-atom';
 import {Block} from './Block';
 import {Table} from './Table';
 
+const Highlight42Component = (props: {data: ?number}): ?React.Element<any> => (
+  <div style={props.data === 42 ? {fontWeight: 'bold'} : {}}>{props.data}</div>
+);
+
 const TableExample = (): React.Element<any> => {
   const columns = [
     {
@@ -22,6 +26,7 @@ const TableExample = (): React.Element<any> => {
     {
       title: 'second column',
       key: 'second',
+      component: Highlight42Component,
     },
     {
       title: 'third column',
@@ -46,14 +51,14 @@ const TableExample = (): React.Element<any> => {
     },
     {
       first: 4,
-      second: 5,
+      second: 42,
       third: 6,
       fourth: 66,
       fifth: 123,
     },
     {
       first: 7,
-      second: 8,
+      second: 42,
       // third is empty
       fourth: 66,
       fifth: 123,

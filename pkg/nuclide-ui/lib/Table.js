@@ -23,6 +23,9 @@ type Column = {
   key: ColumnKey,
   // Percentage. The `width`s of all columns must add up to 1.
   width?: number,
+  // Optional React component for rendering cell contents.
+  // The component receives the cell value via `props.data`.
+  component?: ReactClass<any>,
 };
 type Row = {
   [key: ColumnKey]: ?mixed;
@@ -246,9 +249,12 @@ export class Table extends React.Component {
       const renderedRow = columns.map((column, j) => {
         const {
           key,
+          component: Component,
         } = column;
         let datum = row[key];
-        if (datum == null) {
+        if (Component != null) {
+          datum = <Component data={datum} />;
+        } else if (datum == null) {
           datum = this._renderEmptyCellContent();
         }
 
