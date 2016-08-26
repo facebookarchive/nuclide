@@ -16,6 +16,8 @@ import type {
   MessageInvalidationCallback,
 } from '../../nuclide-diagnostics-common';
 
+import type {ArcDiagnostic} from '../../nuclide-arcanist-rpc';
+
 import {CompositeDisposable, Range} from 'atom';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 
@@ -31,7 +33,7 @@ const logger = getLogger();
 
 export class ArcanistDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
-  _requestSerializer: RequestSerializer<any>;
+  _requestSerializer: RequestSerializer<Array<ArcDiagnostic>>;
   _subscriptions: atom$CompositeDisposable;
   _busySignalProvider: BusySignalProviderBase;
 
@@ -108,9 +110,9 @@ export class ArcanistDiagnosticsProvider {
           diagnostic.original !== diagnostic.replacement
         ) {
           maybeProperties.fix = {
-            oldRange: this._getRangeForFix(diagnostic.row, diagnostic.col, diagnostic.original),
             newText: diagnostic.replacement,
             oldText: diagnostic.original,
+            oldRange: this._getRangeForFix(diagnostic.row, diagnostic.col, diagnostic.original),
           };
         }
         return {

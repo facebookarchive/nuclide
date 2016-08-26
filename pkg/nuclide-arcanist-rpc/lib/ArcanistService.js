@@ -35,7 +35,7 @@ import {getLogger} from '../../nuclide-logging';
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
 
 export type ArcDiagnostic = {
-  type: string,
+  type: 'Error' | 'Warning',
   text: string,
   filePath: NuclideUri,
   row: number,

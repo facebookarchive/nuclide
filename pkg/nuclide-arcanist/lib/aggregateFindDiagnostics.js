@@ -11,13 +11,14 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as ArcanistService from '../../nuclide-arcanist-rpc';
+import type {ArcDiagnostic} from '../../nuclide-arcanist-rpc';
 
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export default async function aggregateFindDiagnostics(
   fileNames: Iterable<NuclideUri>,
   skip: Array<string>,
-): Promise<Array<Object>> {
+): Promise<Array<ArcDiagnostic>> {
   const serviceToFileNames: Map<ArcanistService, Array<NuclideUri>> = new Map();
   for (const file of fileNames) {
     const service = getArcanistServiceByNuclideUri(file);
