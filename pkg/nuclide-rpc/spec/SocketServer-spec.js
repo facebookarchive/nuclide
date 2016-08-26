@@ -47,10 +47,10 @@ describe('SocketServer', () => {
       const services = loadServicesConfig(configPath);
       const registry = ServiceRegistry.createLocal(services);
       const server = new SocketServer(registry);
-      const port = await server.getPort();
-      invariant(port !== 0);
+      const address = await server.getAddress();
+      invariant(address.port !== 0);
 
-      const clientSocket = net.connect(port);
+      const clientSocket = net.connect(address.port);
       const clientTransport = new SocketTransport(clientSocket);
       const clientConnection = RpcConnection.createLocal(clientTransport, services);
 

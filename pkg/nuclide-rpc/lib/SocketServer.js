@@ -67,9 +67,9 @@ export class SocketServer {
     return this._listening.promise;
   }
 
-  async getPort(): Promise<number> {
+  async getAddress(): Promise<net$Socket$address> {
     await this.untilListening();
-    return this._server.address().port;
+    return this._server.address();
   }
 
   // Close all open connections and shutdown the server.
