@@ -64,6 +64,10 @@ export function consumeOutputService(service: OutputService): void {
   }));
 }
 
+export function provideObservableDiagnosticUpdates() {
+  return getBuildSystem().getDiagnosticProvider();
+}
+
 export function serialize(): ?SerializedState {
   if (buildSystem != null) {
     return buildSystem.serialize();

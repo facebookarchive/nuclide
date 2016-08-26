@@ -18,6 +18,11 @@ import type {
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-rpc';
 import type {BuckSubcommand, SerializedState, TaskType} from './types';
+import type {
+  DiagnosticProviderUpdate,
+  InvalidationMessage,
+  ObservableDiagnosticProvider,
+} from '../../nuclide-diagnostics-common';
 
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
@@ -83,6 +88,8 @@ export class BuckBuildSystem {
   _initialState: ?SerializedState;
   _tasks: Observable<Array<TaskMetadata>>;
   _outputMessages: Subject<Message>;
+  _diagnosticUpdates: Subject<DiagnosticProviderUpdate>;
+  _diagnosticInvalidations: Subject<InvalidationMessage>;
 
   constructor(initialState: ?SerializedState) {
     this.id = 'buck';
@@ -90,6 +97,8 @@ export class BuckBuildSystem {
     this._initialState = initialState;
     this._disposables = new CompositeDisposable();
     this._outputMessages = new Subject();
+    this._diagnosticUpdates = new Subject();
+    this._diagnosticInvalidations = new Subject();
     this._disposables.add(new UniversalDisposable(this._outputMessages));
   }
 
@@ -132,6 +141,13 @@ export class BuckBuildSystem {
 
   getOutputMessages(): Observable<Message> {
     return this._outputMessages;
+  }
+
+  getDiagnosticProvider(): ObservableDiagnosticProvider {
+    return {
+      updates: this._diagnosticUpdates,
+      invalidations: this._diagnosticInvalidations,
+    };
   }
 
   setProjectRoot(projectRoot: ?Directory): void {
@@ -203,6 +219,9 @@ export class BuckBuildSystem {
   }
 
   _runTaskType(taskType: TaskType): Observable<TaskEvent> {
+    // Clear Buck diagnostics every time we run build.
+    this._diagnosticInvalidations.next({scope: 'all'});
+
     const {store} = this._getFlux();
     const buckRoot = store.getCurrentBuckRoot();
     const buildTarget = store.getBuildTarget();
