@@ -4,6 +4,7 @@
   border: 1px solid @base-border-color;
   table-layout: fixed;
   width: 100%;
+  -webkit-user-select: none;
 }
 
 .nuclide-ui-table-header {
@@ -24,8 +25,21 @@
 }
 
 .nuclide-ui-table-header-cell {
+  -webkit-user-select: none;
+  position: relative;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.nuclide-ui-table-header-resize-handle {
+  cursor: ew-resize;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  margin-right: -3px;
+  z-index: 1;
 }
 
 .nuclide-ui-table-row-alternate {
