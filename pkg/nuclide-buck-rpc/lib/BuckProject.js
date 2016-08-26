@@ -40,6 +40,9 @@ export type doRunOptions = {
 export type BuckRunOptions = dontRunOptions | doRunOptions;
 
 export type BuckWebSocketMessage = {
+  // Not actually from Buck - this is to let the receiver know that the socket is connected.
+  type: 'SocketConnected',
+} | {
   type: 'BuildProgressUpdated',
   progressValue: number,
 } | {

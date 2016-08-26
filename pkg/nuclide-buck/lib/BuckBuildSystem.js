@@ -59,6 +59,8 @@ type Flux = {
   store: BuckToolbarStore,
 };
 
+const SOCKET_TIMEOUT = 30000;
+
 function shouldEnableTask(taskType: TaskType, store: BuckToolbarStore): boolean {
   switch (taskType) {
     case 'run':
@@ -282,21 +284,31 @@ export class BuckBuildSystem {
             .share();
         }
 
-        return this._consumeEventStream(
-          Observable.merge(
-            mergedEvents,
-            featureConfig.get('nuclide-buck.compileErrorDiagnostics') ?
-              getDiagnosticEvents(mergedEvents, buckRoot) : Observable.empty(),
-            isDebug && subcommand === 'install' ? getLLDBInstallEvents(
-              processMessages,
-              buckProject,
-            ) : Observable.empty(),
-            isDebug && subcommand === 'build' ? getLLDBBuildEvents(
-              processMessages,
-              buckProject,
-              buildTarget,
-              settings.runArguments || [],
-            ) : Observable.empty(),
+        return Observable.concat(
+          // Wait until the socket starts up before triggering the Buck process.
+          socketEvents == null ? Observable.empty() :
+            socketEvents
+              .filter(event => event.type === 'socket-connected')
+              .take(1)
+              .timeout(SOCKET_TIMEOUT, Error('Timed out connecting to Buck server.'))
+              .ignoreElements(),
+
+          this._consumeEventStream(
+            Observable.merge(
+              mergedEvents,
+              featureConfig.get('nuclide-buck.compileErrorDiagnostics') ?
+                getDiagnosticEvents(mergedEvents, buckRoot) : Observable.empty(),
+              isDebug && subcommand === 'install' ? getLLDBInstallEvents(
+                processMessages,
+                buckProject,
+              ) : Observable.empty(),
+              isDebug && subcommand === 'build' ? getLLDBBuildEvents(
+                processMessages,
+                buckProject,
+                buildTarget,
+                settings.runArguments || [],
+              ) : Observable.empty(),
+            ),
           ),
         );
       })

@@ -24,6 +24,11 @@ export default function createBuckWebSocket(
     const socket = new WS(uri);
     let buildId: ?string = null;
 
+    socket.on('open', () => {
+      // Emit a message so the client knows the socket is ready for Buck events.
+      observer.next({type: 'SocketConnected'});
+    });
+
     socket.on('message', data => {
       let message;
       try {

@@ -33,6 +33,8 @@ export type BuckEvent = {
 } | {
   type: 'diagnostics',
   diagnostics: Array<FileDiagnosticMessage>,
+} | {
+  type: 'socket-connected',
 };
 
 function convertJavaLevel(level: string): Level {
@@ -59,6 +61,8 @@ export function getEventsFromSocket(
   const eventStream = socketStream
     .flatMap((message: BuckWebSocketMessage) => {
       switch (message.type) {
+        case 'SocketConnected':
+          return Observable.of({type: 'socket-connected'});
         case 'ParseStarted':
           return log('Parsing BUCK files...');
         case 'ParseFinished':
