@@ -9,14 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {Level} from '../../nuclide-console/lib/types';
 import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
+import type {Level} from '../../nuclide-console/lib/types';
+import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {BuckSubcommand} from './types';
 
 import {Observable} from 'rxjs';
 import stripAnsi from 'strip-ansi';
 import {getLogger} from '../../nuclide-logging';
+import getDiagnostics from './getDiagnostics';
 
 const PROGRESS_OUTPUT_INTERVAL = 5 * 1000;
 const BUILD_FAILED_MESSAGE = 'BUILD FAILED:';
@@ -28,6 +30,9 @@ export type BuckEvent = {
   type: 'log',
   message: string,
   level: Level,
+} | {
+  type: 'diagnostics',
+  diagnostics: Array<FileDiagnosticMessage>,
 };
 
 function convertJavaLevel(level: string): Level {
@@ -218,4 +223,19 @@ export function combineEventStreams(
     );
   }
   return mergedEvents;
+}
+
+export function getDiagnosticEvents(
+  events: Observable<BuckEvent>,
+  buckRoot: string,
+): Observable<BuckEvent> {
+  return events
+    .flatMap(event => {
+      // For log messages, try to detect compile errors and emit diagnostics.
+      if (event.type === 'log') {
+        return Observable.fromPromise(getDiagnostics(event.message, event.level, buckRoot))
+          .map(diagnostics => ({type: 'diagnostics', diagnostics}));
+      }
+      return Observable.empty();
+    });
 }

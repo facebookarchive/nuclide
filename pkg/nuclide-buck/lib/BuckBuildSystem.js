@@ -18,6 +18,7 @@ import type {
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-rpc';
 import type {BuckSubcommand, SerializedState, TaskType} from './types';
+import type {BuckEvent} from './BuckEventStream';
 import type {
   DiagnosticProviderUpdate,
   InvalidationMessage,
@@ -32,8 +33,10 @@ import {quote} from 'shell-quote';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {compact} from '../../commons-node/stream';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {createBuckProject} from '../../nuclide-buck-base';
+import * as featureConfig from '../../commons-atom/featureConfig';
 import {getLogger} from '../../nuclide-logging';
 import {startPackager} from '../../nuclide-react-native-base';
 import {BuckIcon} from './ui/BuckIcon';
@@ -42,6 +45,7 @@ import BuckToolbarActions from './BuckToolbarActions';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
 import {
   combineEventStreams,
+  getDiagnosticEvents,
   getEventsFromSocket,
   getEventsFromProcess,
 } from './BuckEventStream';
@@ -274,33 +278,75 @@ export class BuckBuildSystem {
           // Without a websocket, just pipe the Buck output directly.
           mergedEvents = processEvents;
         } else {
-          mergedEvents = combineEventStreams(subcommand, socketEvents, processEvents);
+          mergedEvents = combineEventStreams(subcommand, socketEvents, processEvents)
+            .share();
         }
 
-        return Observable.merge(
-          mergedEvents,
-          isDebug && subcommand === 'install' ? getLLDBInstallEvents(
-            processMessages,
-            buckProject,
-          ) : Observable.empty(),
-          isDebug && subcommand === 'build' ? getLLDBBuildEvents(
-            processMessages,
-            buckProject,
-            buildTarget,
-            settings.runArguments || [],
-          ) : Observable.empty(),
-        )
-          .switchMap(event => {
-            if (event.type === 'progress') {
-              return Observable.of(event);
-            } else if (event.type === 'log') {
-              this._logOutput(event.message, event.level);
-            }
-            return Observable.empty();
-          });
+        return this._consumeEventStream(
+          Observable.merge(
+            mergedEvents,
+            featureConfig.get('nuclide-buck.compileErrorDiagnostics') ?
+              getDiagnosticEvents(mergedEvents, buckRoot) : Observable.empty(),
+            isDebug && subcommand === 'install' ? getLLDBInstallEvents(
+              processMessages,
+              buckProject,
+            ) : Observable.empty(),
+            isDebug && subcommand === 'build' ? getLLDBBuildEvents(
+              processMessages,
+              buckProject,
+              buildTarget,
+              settings.runArguments || [],
+            ) : Observable.empty(),
+          ),
+        );
       })
       .finally(() => buckProject.dispose())
       .share();
+  }
+
+  /**
+   * Processes side effects (console output and diagnostics).
+   * Returns only the progress events.
+   */
+  _consumeEventStream(events: Observable<BuckEvent>): Observable<TaskEvent> {
+    // TODO: the Diagnostics API does not allow emitting one message at a time.
+    // We have to accumulate messages per-file and emit them all.
+    const fileDiagnostics = new Map();
+    return compact(
+      events
+        .do(event => {
+          // Side effects: emit console output and diagnostics
+          if (event.type === 'log') {
+            this._logOutput(event.message, event.level);
+          } else if (event.type === 'diagnostics') {
+            const {diagnostics} = event;
+            // Update only the files that changed in this message.
+            // Since emitting messages for a file invalidates it, we have to
+            // be careful to emit all previous messages for it as well.
+            const changedFiles = new Map();
+            diagnostics.forEach(diagnostic => {
+              let messages = fileDiagnostics.get(diagnostic.filePath);
+              if (messages == null) {
+                messages = [];
+                fileDiagnostics.set(diagnostic.filePath, messages);
+              }
+              messages.push(diagnostic);
+              changedFiles.set(diagnostic.filePath, messages);
+            });
+            this._diagnosticUpdates.next({filePathToMessages: changedFiles});
+          }
+        })
+        // Let progress events flow through to the task runner.
+        .map(event => (event.type === 'progress' ? event : null))
+        .finally(() => {
+          if (fileDiagnostics.size > 0) {
+            this._logOutput(
+              'Compilation errors detected: open the Diagnostics pane to jump to them.',
+              'info',
+            );
+          }
+        }),
+    );
   }
 
   _runBuckCommand(

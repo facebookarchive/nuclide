@@ -20,6 +20,12 @@
         "type": "string",
         "default": "buck",
         "description": "Absolute path to the Buck executable on your system."
+      },
+      "compileErrorDiagnostics": {
+        "title": "Show compile errors from Buck in Diagnostics",
+        "type": "boolean",
+        "default": "true",
+        "description": "Attempt to detect and display compile errors in Diagnostics."
       }
     }
   },
