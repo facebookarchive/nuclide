@@ -13,7 +13,6 @@ import {Dropdown} from '../lib/Dropdown';
 import {React, ReactDOM, TestUtils} from 'react-for-atom';
 
 const {
-  Simulate,
   renderIntoDocument,
   scryRenderedDOMComponentsWithTag,
 } = TestUtils;
@@ -32,28 +31,8 @@ describe('Dropdown', () => {
       />,
     );
 
-    const select = scryRenderedDOMComponentsWithTag(component, 'select');
-    expect(ReactDOM.findDOMNode(select[0]).selectedIndex).toBe(1);
+    const button = scryRenderedDOMComponentsWithTag(component, 'button');
+    expect(ReactDOM.findDOMNode(button[0]).innerText).toBe('bar');
   });
 
-  it('calls the callback with the new index when a different menu item is selected', () => {
-    let changedValue;
-    const component = renderIntoDocument(
-      <Dropdown
-        options={[
-          {label: 'foo', value: 'vfoo'},
-          {label: 'bar', value: 'vbar'},
-        ]}
-        onChange={value => {
-          changedValue = value;
-        }}
-        value="vfoo"
-      />,
-    );
-
-    const select = scryRenderedDOMComponentsWithTag(component, 'select');
-    ReactDOM.findDOMNode(select[0]).selectedIndex = 1;
-    Simulate.change(ReactDOM.findDOMNode(select[0]));
-    expect(changedValue).toBe('vbar');
-  });
 });

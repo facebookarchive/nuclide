@@ -1,41 +1,26 @@
 @import "ui-variables";
 
-@icon-width: 2.4em;
-
-.nuclide-dropdown-container {
-  display: inline-block;
-  position: relative;
-
-  > .icon {
-    pointer-events: none;
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-
-    &::before {
-      font-size: 11px;
-    }
-  }
-}
-
-.nuclide-dropdown {
-  display: flex;
-}
-
-/* Match specificity of `.btn.btn-*` to override padding set by that selector. */
-.btn.btn.nuclide-dropdown {
-  /* Provide space for the right .icon */
-  padding-right: @icon-width;
-  -webkit-appearance: none;
-}
-
-.nuclide-dropdown-flat {
+.btn.btn.nuclide-ui-dropdown-flat {
   background: transparent;
   border: none;
   border-radius: 0;
   border-right: 1px solid @pane-item-border-color;
-  /* Provide space for the right .icon */
-  padding-right: @icon-width;
+  padding-left: 0;
+  line-height: inherit;
+  outline: none;
   -webkit-appearance: none;
+}
+
+.nuclide-ui-dropdown-icon {
+  &::before {
+    font-size: 11px;
+    width: initial;
+    margin-right: 0;
+  }
+}
+
+.nuclide-dropdown-label-text-wrapper {
+  // We put this on a text wrapper (instead of the icon) so we can skip it if
+  // there's no text (e.g. in a SplitButtonDropdown).
+  margin-right: @component-padding;
 }

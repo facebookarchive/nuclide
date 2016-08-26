@@ -14,7 +14,7 @@ import {
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
 } from './utils/integration-test-helpers';
-import invariant from 'assert';
+import {sleep} from '../pkg/commons-node/promise';
 import {spyOnDefault, unspyOnDefault} from '../pkg/nuclide-test-helpers';
 
 describe('side-bar', () => {
@@ -35,10 +35,6 @@ describe('side-bar', () => {
   });
 
   it('renders options for each of its clients, responds to registered commands', () => {
-    expect(
-      document.querySelectorAll('.left.tool-panel:last-child .nuclide-dropdown option').length,
-    ).toBe(2);
-
     // file-tree is the first client, it should show up first
     expect(document.querySelector('.left.tool-panel:last-child .nuclide-file-tree')).toExist();
 
@@ -47,19 +43,16 @@ describe('side-bar', () => {
       'nuclide-source-control-side-bar:toggle',
     );
 
-    let dropdown;
-    waitsFor(() => {
-      dropdown = ((document.querySelector('.left.tool-panel:last-child .nuclide-dropdown')
-        : any): HTMLSelectElement);
-      return dropdown != null && dropdown.querySelectorAll('option').length === 2;
-    }, 'all client views to register');
+    // Give the client views a change to register.
+    waitsForPromise(() => sleep(500));
 
     runs(() => {
+      const dropdown = (
+        (document.querySelector('.left.tool-panel:last-child .nuclide-ui-dropdown'): any)
+        : HTMLSelectElement
+      );
       // Selected option should be the source-control-side-bar, titled "Source Control"
-      const selectedOption = dropdown.options.item(dropdown.selectedIndex);
-      invariant(selectedOption != null);
-      invariant(selectedOption.innerText != null);
-      expect(selectedOption.innerText.trim()).toBe('Source Control');
+      expect(dropdown.innerText).toBe('Source Control');
     });
 
     let panel;

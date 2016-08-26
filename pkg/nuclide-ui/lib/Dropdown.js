@@ -9,87 +9,142 @@
  * the root directory of this source tree.
  */
 
+import {Button, ButtonSizes} from './Button';
+import {Icon} from './Icon';
 import classnames from 'classnames';
+import invariant from 'assert';
+import electron from 'electron';
 import {React} from 'react-for-atom';
-import {maybeToString} from '../../commons-node/string';
 
-type DefaultProps = {
-  className: string,
-  disabled: boolean,
-  isFlat: boolean,
-  onChange: (value: any) => void,
-  options: Array<{label: React.Children, value: any}>,
+const {remote} = electron;
+invariant(remote != null);
+
+// For backwards compat, we have to do some conversion here.
+type ShortButtonSize = 'xs' | 'sm' | 'lg';
+type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
+
+type Separator = {
+  type: 'separator',
+};
+
+export type Option = Separator | {
+  type?: void,
   value: any,
-  title: string,
+  label: string,
+  selectedLabel?: string,
+  icon?: atom$Octicon,
+  disabled?: boolean,
 };
 
 type Props = {
   className: string,
-  disabled: boolean,
+  disabled?: boolean,
+
+  // Normally, a dropdown is styled like a button. This prop allows you to avoid that.
   isFlat: boolean,
-  options: Array<{label: React.Children, value: any}>,
-  value: any,
-  /**
-   * A function that gets called with the new value on change.
-   */
-  onChange: (value: any) => void,
-  /**
-   * Size of dropdown. Sizes match .btn classes in Atom's style guide. Default is medium (which
-   * does not have an associated 'size' string).
-   */
-  size?: 'xs' | 'sm' | 'lg',
+
   title: string,
+  value: any,
+  buttonComponent?: ReactClass<any>,
+  options: Array<Option>,
+  onChange?: (value: any) => mixed,
+  size?: ShortButtonSize,
 };
 
 export class Dropdown extends React.Component {
   props: Props;
 
-  static defaultProps: DefaultProps = {
+  static defaultProps = {
     className: '',
     disabled: false,
     isFlat: false,
-    onChange(value: any) {},
     options: [],
-    value: null,
+    value: (null: any),
     title: '',
   };
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleChange = this._handleChange.bind(this);
+    (this: any)._handleDropdownClick = this._handleDropdownClick.bind(this);
   }
 
-  _handleChange(event: SyntheticMouseEvent): void {
-    const selectedIndex = (event.currentTarget: any).selectedIndex;
-    const option = this.props.options[selectedIndex];
-    this.props.onChange(option == null ? null : option.value);
+  _getButtonSize(size: ?ShortButtonSize): ButtonSize {
+    switch (size) {
+      case 'xs': return 'EXTRA_SMALL';
+      case 'sm': return 'SMALL';
+      case 'lg': return 'LARGE';
+      default: return 'SMALL';
+    }
   }
 
   render(): React.Element<any> {
-    const options = this.props.options.map((item, index) =>
-      // Use indexes for values. This allows us to have non-string values in our options object.
-      <option key={index} value={index}>{item.label}</option>,
-    );
-    const selectClassName = classnames('nuclide-dropdown', {
-      'btn': !this.props.isFlat,
-      [`btn-${maybeToString(this.props.size)}`]: !this.props.isFlat && this.props.size != null,
-      'nuclide-dropdown-flat': this.props.isFlat,
-    });
+    const selectedOption = this.props.options.find(option => (
+      option.type !== 'separator' && option.value === this.props.value),
+    ) || this.props.options[0];
 
-    const selectedIndex = this.props.options.findIndex(option => option.value === this.props.value);
+    const ButtonComponent = this.props.buttonComponent || Button;
+    const className = classnames(
+      'nuclide-ui-dropdown',
+      this.props.className,
+      {
+        'nuclide-ui-dropdown-flat': this.props.isFlat === true,
+      },
+    );
 
     return (
-      <div className={'nuclide-dropdown-container ' + this.props.className}>
-        <select
-          className={selectClassName}
-          disabled={this.props.disabled}
-          onChange={this._handleChange}
-          title={this.props.title}
-          value={selectedIndex === -1 ? '' : selectedIndex}>
-          {options}
-        </select>
-        <i className="icon icon-triangle-down text-center" />
-      </div>
+      <ButtonComponent
+        size={this._getButtonSize(this.props.size)}
+        className={className}
+        disabled={this.props.disabled === true}
+        onClick={this._handleDropdownClick}>
+        {this._renderSelectedLabel(selectedOption)}
+        <Icon
+          icon="triangle-down"
+          className="nuclide-ui-dropdown-icon"
+        />
+      </ButtonComponent>
     );
   }
+
+  _renderSelectedLabel(option: Option): ?React.Element<any> {
+    let text;
+    if (option == null) {
+      text = '';
+    } else if (option.selectedLabel != null) {
+      text = option.selectedLabel;
+    } else if (option.label != null) {
+      text = option.label;
+    }
+
+    if (text == null || text === '') { return null; }
+    return (
+      <span className="nuclide-dropdown-label-text-wrapper">{text}</span>
+    );
+  }
+
+  _handleDropdownClick(event: SyntheticMouseEvent): void {
+    const currentWindow = remote.getCurrentWindow();
+    const menu = new remote.Menu();
+    this.props.options.forEach(option => {
+      if (option.type === 'separator') {
+        menu.append(new remote.MenuItem({type: 'separator'}));
+        return;
+      }
+      menu.append(new remote.MenuItem({
+        type: 'checkbox',
+        checked: this.props.value === option.value,
+        label: option.label,
+        enabled: option.disabled !== true,
+        click: () => {
+          if (this.props.onChange != null) {
+            this.props.onChange(option.value);
+          }
+        },
+      }));
+    });
+    menu.popup(currentWindow, event.clientX, event.clientY);
+  }
+
 }
+
+export {ButtonSizes};

@@ -144,13 +144,17 @@ const SplitButtonDropdownExample = (() => {
     {value: 3, label: 'Rocket', icon: 'rocket'},
     {type: 'separator'},
     {value: 4, label: 'Squirrel', icon: 'squirrel'},
-    {value: 5, label: 'Beaker', icon: 'beaker', disabled: true},
+    {value: 5, label: 'Beaker', icon: 'telescope', disabled: true},
   ];
   return (): React.Element<any> => (
     <div>
       <SplitButtonDropdown
         options={options}
         value={2}
+        onConfirm={
+          // eslint-disable-next-line no-alert
+          x => window.alert(`You selected ${x}!`)
+        }
       />
     </div>
   );

@@ -10,7 +10,7 @@
  */
 
 import type {AnnotatedTaskMetadata, TaskId, TaskRunnerInfo} from '../types';
-import type {Option} from '../../../nuclide-ui/lib/SplitButtonDropdown';
+import type {Option} from '../../../nuclide-ui/lib/Dropdown';
 
 import {Button, ButtonSizes} from '../../../nuclide-ui/lib/Button';
 import {SplitButtonDropdown} from '../../../nuclide-ui/lib/SplitButtonDropdown';
@@ -88,7 +88,7 @@ const indent = label => `   ${label}`;
 function getTaskOptions(
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
   taskRunnerInfo: Array<TaskRunnerInfo>,
-): Array<Option<mixed>> {
+): Array<Option> {
   const taskOptions = [];
   const tasklessRunners = [];
   let hasRelevantTasks = false;
