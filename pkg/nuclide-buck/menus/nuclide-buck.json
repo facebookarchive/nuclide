@@ -1,0 +1,34 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Buck",
+          "submenu": [
+            {
+              "label": "Toggle Buck Toolbar",
+              "command": "nuclide-task-runner:toggle-Buck-toolbar"
+            },
+            {
+              "label": "Build",
+              "command": "nuclide-task-runner:Buck-build"
+            },
+            {
+              "label": "Run",
+              "command": "nuclide-task-runner:Buck-run"
+            },
+            {
+              "label": "Test",
+              "command": "nuclide-task-runner:Buck-test"
+            },
+            {
+              "label": "Debug",
+              "command": "nuclide-task-runner:Buck-debug"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
