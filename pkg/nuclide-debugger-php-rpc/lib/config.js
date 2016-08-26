@@ -18,6 +18,7 @@ const defaultConfig: PhpDebuggerSessionConfig = {
   logLevel: 'INFO',
   targetUri: '',
   phpRuntimePath: '/usr/local/bin/php',
+  phpRuntimeArgs: '',
   dummyRequestFilePath: 'php_only_xdebug_request.php',
   stopOneStopAll: false,
 };

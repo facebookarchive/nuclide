@@ -40,8 +40,14 @@
       "phpRuntimePath": {
         "title": "Path to your PHP runtime",
         "type": "string",
-        "default": "/usr/local/hphpi/bin/hhvm",
+        "default": "/usr/local/bin/php",
         "description": "Path to the PHP runtime on your server."
+      },
+      "phpRuntimeArgs": {
+        "title": "Arguments for your PHP runtime",
+        "type": "string",
+        "default": "",
+        "description": "Arguments to call the PHP runtime with, e.g. to pass a config file."
       },
       "logLevel": {
         "title": "Log Level",

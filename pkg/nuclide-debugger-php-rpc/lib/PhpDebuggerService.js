@@ -30,6 +30,7 @@ export type PhpDebuggerSessionConfig = {
   logLevel: LogLevel,
   targetUri: string,
   phpRuntimePath: string,
+  phpRuntimeArgs: string,
   dummyRequestFilePath: string,
   stopOneStopAll: boolean,
 };
