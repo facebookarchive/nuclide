@@ -31,6 +31,15 @@ type WidthMap = {
   [key: ColumnKey]: number,
 };
 type Props = {
+  /**
+   * Optional classname for the entire table.
+   */
+   className?: string,
+  /**
+   * Optional max-height for the body container.
+   * Useful for making the table scrollable while keeping the header fixed.
+   */
+  maxBodyHeight?: string,
   columns: Array<Column>,
   rows: Array<Row>,
   /**
@@ -199,7 +208,9 @@ export class Table extends React.Component {
   render(): React.Element<any> {
     const {
       alternateBackground,
+      className,
       columns,
+      maxBodyHeight,
       rows,
     } = this.props;
     const header = columns.map((column, i) => {
@@ -240,8 +251,21 @@ export class Table extends React.Component {
         if (datum == null) {
           datum = this._renderEmptyCellContent();
         }
+
+        const cellStyle = {};
+        if (i === 0) {
+          const width = this.state.columnWidthRatios[key];
+          if (width != null) {
+            cellStyle.width = width + '%';
+          }
+        }
         return (
-          <td className="nuclide-ui-table-body-cell" key={j}>{datum}</td>
+          <td
+            className="nuclide-ui-table-body-cell"
+            key={j}
+            style={cellStyle}>
+            {datum}
+          </td>
         );
       });
       return (
@@ -254,13 +278,24 @@ export class Table extends React.Component {
         </tr>
       );
     });
+    const scrollableBodyStyle = {};
+    if (maxBodyHeight != null) {
+      scrollableBodyStyle.maxHeight = maxBodyHeight;
+      scrollableBodyStyle.overflowY = 'auto';
+    }
     return (
-      <table
-        className="nuclide-ui-table"
-        ref="table">
-        <thead className="nuclide-ui-table-header"><tr>{header}</tr></thead>
-        <tbody>{body}</tbody>
-      </table>
+      <div className={className}>
+        <table
+          className="nuclide-ui-table"
+          ref="table">
+          <thead className="nuclide-ui-table-header"><tr>{header}</tr></thead>
+        </table>
+        <div style={scrollableBodyStyle}>
+          <table className="nuclide-ui-table nuclide-ui-table-body">
+            <tbody>{body}</tbody>
+          </table>
+        </div>
+      </div>
     );
   }
 }
