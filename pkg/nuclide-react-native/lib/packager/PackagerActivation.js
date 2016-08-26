@@ -96,8 +96,13 @@ export class PackagerActivation {
 
 class NoReactNativeProjectError extends Error {
   constructor() {
-    super('No React Native Project found');
+    // TODO: Remove `captureStackTrace()` call and `this.message` assignment when we remove our
+    // class transform and switch to native classes.
+    const message = 'No React Native Project found';
+    super(message);
     this.name = 'NoReactNativeProjectError';
+    this.message = message;
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 

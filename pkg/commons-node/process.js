@@ -50,13 +50,18 @@ export class ProcessSystemError extends Error {
   originalError: Error;
 
   constructor(opts: ProcessSystemErrorOptions) {
-    super(`"${opts.command}" failed with code ${opts.code}`);
+    // TODO: Remove `captureStackTrace()` call and `this.message` assignment when we remove our
+    // class transform and switch to native classes.
+    const message = `"${opts.command}" failed with code ${opts.code}`;
+    super(message);
     this.name = 'ProcessSystemError';
+    this.message = message;
     this.command = opts.command;
     this.args = opts.args;
     this.options = opts.options;
     this.code = opts.code;
     this.originalError = opts.originalError;
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 
@@ -78,14 +83,19 @@ export class ProcessExitError extends Error {
   stderr: string;
 
   constructor(opts: ProcessExitErrorOptions) {
-    super(`"${opts.command}" failed with code ${opts.code}\n\n${opts.stderr}`);
+    // TODO: Remove `captureStackTrace()` call and `this.message` assignment when we remove our
+    // class transform and switch to native classes.
+    const message = `"${opts.command}" failed with code ${opts.code}\n\n${opts.stderr}`;
+    super(message);
     this.name = 'ProcessExitError';
+    this.message = message;
     this.command = opts.command;
     this.args = opts.args;
     this.options = opts.options;
     this.code = opts.code;
     this.stdout = opts.stdout;
     this.stderr = opts.stderr;
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 

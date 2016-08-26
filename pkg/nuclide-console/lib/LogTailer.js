@@ -214,7 +214,12 @@ export class LogTailer {
 
 class ProcessCancelledError extends Error {
   constructor(logProducerName: string) {
-    super(`${logProducerName} was stopped`);
+    // TODO: Remove `captureStackTrace()` call and `this.message` assignment when we remove our
+    // class transform and switch to native classes.
+    const message = `${logProducerName} was stopped`;
+    super(message);
     this.name = 'ProcessCancelledError';
+    this.message = message;
+    Error.captureStackTrace(this, this.constructor);
   }
 }
