@@ -37,6 +37,7 @@ import * as Epics from './redux/Epics';
 import * as Reducers from './redux/Reducers';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
+import nullthrows from 'nullthrows';
 import {applyMiddleware, bindActionCreators, createStore} from 'redux';
 import {Observable} from 'rxjs';
 
@@ -121,6 +122,32 @@ class Activation {
                   }
                 }
               }
+            },
+          },
+        }),
+      ),
+
+      // Add a command for each individual task ID.
+      syncAtomCommands(
+        states
+          .debounceTime(500)
+          .map(state => state.taskLists)
+          .distinctUntilChanged()
+          .map(taskLists => {
+            const state = this._store.getState();
+            const taskIds = new Set();
+            for (const [taskRunnerId, taskList] of taskLists) {
+              const taskRunnerName = nullthrows(state.taskRunners.get(taskRunnerId)).name;
+              for (const taskMeta of taskList) {
+                taskIds.add({taskRunnerId, taskRunnerName, type: taskMeta.type});
+              }
+            }
+            return taskIds;
+          }),
+        taskId => ({
+          'atom-workspace': {
+            [`nuclide-task-runner:${taskId.taskRunnerName}-${taskId.type}`]: () => {
+              this._actionCreators.runTask(taskId);
             },
           },
         }),
