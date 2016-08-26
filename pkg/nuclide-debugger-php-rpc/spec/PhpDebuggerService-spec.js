@@ -30,7 +30,12 @@ describe('debugger-php-rpc proxy', () => {
       callback => {
         clientCallback = callback;
         return translater;
-      });
+      },
+    );
+    // $FlowFixMe override instance method.
+    MessageTranslator.handleCommand = jasmine
+      .createSpy('handleCommand')
+      .andReturn(Promise.resolve());
 
     PhpDebuggerService = ((
       uncachedRequire(require, '../lib/PhpDebuggerService'): any

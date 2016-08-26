@@ -93,6 +93,8 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     connector.onError = jasmine.createSpy('onError').andCallFake(
       callback => { onDbgpConnectorError = callback; },
     );
+    // $FlowFixMe override instance methods.
+    connector.listen = jasmine.createSpy('listen').andReturn();
     DbgpConnector = ((
       spyOn(require('../lib/DbgpConnector'), 'DbgpConnector').andReturn(connector): any
     ): () => DbgpConnectorType);

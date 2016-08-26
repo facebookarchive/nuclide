@@ -146,7 +146,7 @@ describe('debugger-php-rpc DbgpConnector', () => {
   });
 
   it('connection error - EADDRINUSE', () => {
-    const port = 7781;
+    const port = 7783;
     const config = {
       xdebugAttachPort: port,
       logLevel: '',
@@ -186,7 +186,7 @@ describe('debugger-php-rpc DbgpConnector', () => {
   });
 
   it('connection error - unknown error', () => {
-    const port = 7781;
+    const port = 7785;
     const config = {
       xdebugAttachPort: port,
       logLevel: '',
