@@ -80,4 +80,34 @@ describe('ArcanistDiagnosticsProvider', () => {
       expect(range).toEqual(new Range([3, 4], [6, 0]));
     });
   });
+
+  describe('_getFix', () => {
+    it('should return the fix', () => {
+      const fix = provider._getFix({
+        row: 1,
+        col: 3,
+        original: 'foo',
+        replacement: 'bar',
+      });
+      expect(fix).toEqual({
+        oldRange: new Range([1, 3], [1, 6]),
+        oldText: 'foo',
+        newText: 'bar',
+      });
+    });
+
+    it('should truncate a common suffix', () => {
+      const fix = provider._getFix({
+        row: 1,
+        col: 3,
+        original: 'foobar',
+        replacement: 'fbar',
+      });
+      expect(fix).toEqual({
+        oldRange: new Range([1, 3], [1, 6]),
+        oldText: 'foo',
+        newText: 'f',
+      });
+    });
+  });
 });

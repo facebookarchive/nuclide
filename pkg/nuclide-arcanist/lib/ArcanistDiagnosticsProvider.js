@@ -14,6 +14,7 @@ import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import type {
   MessageUpdateCallback,
   MessageInvalidationCallback,
+  Fix,
 } from '../../nuclide-diagnostics-common';
 
 import type {ArcDiagnostic} from '../../nuclide-arcanist-rpc';
@@ -25,6 +26,7 @@ import featureConfig from '../../commons-atom/featureConfig';
 import {trackTiming} from '../../nuclide-analytics';
 import onWillDestroyTextBuffer from '../../commons-atom/on-will-destroy-text-buffer';
 import {RequestSerializer} from '../../commons-node/promise';
+import {removeCommonSuffix} from '../../commons-node/string';
 import invariant from 'assert';
 import aggregateFindDiagnostics from './aggregateFindDiagnostics';
 import {getLogger} from '../../nuclide-logging';
@@ -109,11 +111,8 @@ export class ArcanistDiagnosticsProvider {
           // fix anything.
           diagnostic.original !== diagnostic.replacement
         ) {
-          maybeProperties.fix = {
-            newText: diagnostic.replacement,
-            oldText: diagnostic.original,
-            oldRange: this._getRangeForFix(diagnostic.row, diagnostic.col, diagnostic.original),
-          };
+          // Copy the object so the type refinements hold...
+          maybeProperties.fix = this._getFix({...diagnostic});
         }
         return {
           scope: 'file',
@@ -137,6 +136,19 @@ export class ArcanistDiagnosticsProvider {
       logger.error(error);
       return;
     }
+  }
+
+  // This type is a bit different than an ArcDiagnostic since original and replacement are
+  // mandatory.
+  _getFix(diagnostic: {row: number, col: number, original: string, replacement: string}): Fix {
+    // For now just remove the suffix. The prefix would be nice too but it's a bit harder since we
+    // then also have to manipulate the row/col accordingly.
+    const [original, replacement] = removeCommonSuffix(diagnostic.original, diagnostic.replacement);
+    return {
+      oldRange: this._getRangeForFix(diagnostic.row, diagnostic.col, original),
+      newText: replacement,
+      oldText: original,
+    };
   }
 
   _getRangeForFix(startRow: number, startCol: number, originalText: string): atom$Range {
