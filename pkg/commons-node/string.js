@@ -115,3 +115,18 @@ export function shellParse(str: string, env?: Object): Array<string> {
   return result;
 }
 
+export function removeCommonPrefix(a: string, b: string): [string, string] {
+  let i = 0;
+  while (a[i] === b[i] && i < a.length && i < b.length) {
+    i++;
+  }
+  return [a.substring(i), b.substring(i)];
+}
+
+export function removeCommonSuffix(a: string, b: string): [string, string] {
+  let i = 0;
+  while (a[a.length - 1 - i] === b[b.length - 1 - i] && i < a.length && i < b.length) {
+    i++;
+  }
+  return [a.substring(0, a.length - i), b.substring(0, b.length - i)];
+}

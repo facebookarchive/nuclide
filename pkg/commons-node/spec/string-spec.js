@@ -9,7 +9,14 @@
  * the root directory of this source tree.
  */
 
-import {maybeToString, relativeDate, countOccurrences, shellParse} from '../string';
+import {
+  maybeToString,
+  relativeDate,
+  countOccurrences,
+  shellParse,
+  removeCommonPrefix,
+  removeCommonSuffix,
+} from '../string';
 
 describe('relativeDate', () => {
   it('works', () => {
@@ -87,5 +94,47 @@ describe('shellParse', () => {
     expect(() => {
       shellParse('a > b');
     }).toThrow(Error('Unexpected operator ">" provided to shellParse'));
+  });
+});
+
+describe('removeCommonPrefix', () => {
+  it('does nothing if there is no common prefix', () => {
+    expect(removeCommonPrefix('foo', 'bar')).toEqual(['foo', 'bar']);
+  });
+
+  it('removes a common prefix', () => {
+    expect(removeCommonPrefix('foo', 'fbar')).toEqual(['oo', 'bar']);
+    expect(removeCommonPrefix('asdffoo', 'asdfbar')).toEqual(['foo', 'bar']);
+  });
+
+  it('works with the empty string', () => {
+    expect(removeCommonPrefix('', 'bar')).toEqual(['', 'bar']);
+    expect(removeCommonPrefix('foo', '')).toEqual(['foo', '']);
+    expect(removeCommonPrefix('', '')).toEqual(['', '']);
+  });
+
+  it('returns empty strings for identical strings', () => {
+    expect(removeCommonPrefix('foo', 'foo')).toEqual(['', '']);
+  });
+});
+
+describe('removeCommonSuffix', () => {
+  it('does nothing if there is no common suffix', () => {
+    expect(removeCommonSuffix('foo', 'bar')).toEqual(['foo', 'bar']);
+  });
+
+  it('removes a common suffix', () => {
+    expect(removeCommonSuffix('foo', 'baro')).toEqual(['fo', 'bar']);
+    expect(removeCommonSuffix('fooasdf', 'baroasdf')).toEqual(['fo', 'bar']);
+  });
+
+  it('works with the empty string', () => {
+    expect(removeCommonSuffix('', 'bar')).toEqual(['', 'bar']);
+    expect(removeCommonSuffix('foo', '')).toEqual(['foo', '']);
+    expect(removeCommonSuffix('', '')).toEqual(['', '']);
+  });
+
+  it('returns empty strings for identical strings', () => {
+    expect(removeCommonSuffix('foo', 'foo')).toEqual(['', '']);
   });
 });
