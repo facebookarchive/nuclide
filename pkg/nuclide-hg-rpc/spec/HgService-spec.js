@@ -450,43 +450,35 @@ describe('HgService', () => {
 
   describe('::_checkConflictChange', () => {
     let mergeConflicts;
+    let mergeDirectoryExists;
 
     beforeEach(() => {
+      mergeDirectoryExists = false;
       mergeConflicts = [];
-      spyOn(hgService, '_updateStateFilesExistence');
+      spyOn(hgService, '_checkMergeDirectoryExists').andCallFake(() => {
+        return mergeDirectoryExists;
+      });
       spyOn(hgService, 'fetchMergeConflicts').andCallFake(() => mergeConflicts);
     });
 
-    it('reports no conflicts when lock is held', () => {
-      hgService._lockFileHeld = true;
-      hgService._isRebasing = false;
+    it('reports no conflicts when the merge directory isn\'t there', () => {
+      waitsForPromise(async () => {
+        mergeDirectoryExists = false;
+        await hgService._checkConflictChange();
+        expect(hgService._isInConflict).toBeFalsy();
+      });
+    });
+
+    it('reports no conflicts even when merge directory exists, but no conflicts found', () => {
+      mergeDirectoryExists = true;
       waitsForPromise(async () => {
         await hgService._checkConflictChange();
         expect(hgService._isInConflict).toBeFalsy();
       });
     });
 
-    it('reports no conflicts even when lock not held but is rebasing', () => {
-      hgService._lockFileHeld = false;
-      hgService._isRebasing = true;
-      waitsForPromise(async () => {
-        await hgService._checkConflictChange();
-        expect(hgService._isInConflict).toBeFalsy();
-      });
-    });
-
-    it('reports no conflicts even when lock not held + rebasing, but no conflicts found', () => {
-      hgService._lockFileHeld = false;
-      hgService._isRebasing = true;
-      waitsForPromise(async () => {
-        await hgService._checkConflictChange();
-        expect(hgService._isInConflict).toBeFalsy();
-      });
-    });
-
-    it('reports conflicts when lock not held + rebasing + conflicts found', () => {
-      hgService._lockFileHeld = false;
-      hgService._isRebasing = true;
+    it('reports conflicts when merge directory exists + conflicts found', () => {
+      mergeDirectoryExists = true;
       mergeConflicts = [{path: PATH_1, status: StatusCodeId.UNRESOLVED}];
       waitsForPromise(async () => {
         await hgService._checkConflictChange();
@@ -494,14 +486,13 @@ describe('HgService', () => {
       });
     });
 
-    it('exits of conflict state when rebasing is done', () => {
-      hgService._lockFileHeld = false;
-      hgService._isRebasing = true;
+    it('exits of conflict state when the merge directory is removed', () => {
+      mergeDirectoryExists = true;
       mergeConflicts = [{path: PATH_1, status: StatusCodeId.UNRESOLVED}];
       waitsForPromise(async () => {
         await hgService._checkConflictChange();
         expect(hgService._isInConflict).toBeTruthy();
-        hgService._isRebasing = false;
+        mergeDirectoryExists = false;
         await hgService._checkConflictChange();
         expect(hgService._isInConflict).toBeFalsy();
       });

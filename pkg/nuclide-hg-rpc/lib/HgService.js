@@ -12,7 +12,6 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import fs from 'fs';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 
 import {
@@ -50,7 +49,9 @@ const WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-
 const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
 const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS = 'hg-repository-watchman-subscription-hgbookmarks';
 const WATCHMAN_HG_DIR_STATE = 'hg-repository-watchman-subscription-dirstate';
-const CHECK_CONFLICT_DELAY_MS = 500;
+const WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS = 'hg-repository-watchman-subscription-conflicts';
+
+const CHECK_CONFLICT_DELAY_MS = 2000;
 
 // If Watchman reports that many files have changed, it's not really useful to report this.
 // This is typically caused by a large rebase or a Watchman re-crawl.
@@ -195,13 +196,8 @@ function getPrimaryWatchmanSubscriptionRefinements(): Array<mixed> {
 }
 
 export class HgService {
-  _lockFileHeld: boolean;
-  _lockFilePath: string;
-  _isRebasing: boolean;
   _isInConflict: boolean;
-  _rebaseStateFilePath: string;
   _watchmanClient: ?WatchmanClient;
-  _hgDirWatcher: ?fs.FSWatcher;
   _origBackupPath: ?string;
 
   _workingDirectory: string;
@@ -220,10 +216,6 @@ export class HgService {
     this._hgBookmarksDidChangeObserver = new Subject();
     this._hgRepoStateDidChangeObserver = new Subject();
     this._hgConflictStateDidChangeObserver = new Subject();
-    this._lockFileHeld = false;
-    this._lockFilePath = nuclideUri.join(workingDirectory, '.hg', 'wlock');
-    this._rebaseStateFilePath = nuclideUri.join(workingDirectory, '.hg', 'rebasestate');
-    this._isRebasing = false;
     this._isInConflict = false;
     this._debouncedCheckConflictChange = debounce(
       () => {
@@ -244,10 +236,6 @@ export class HgService {
     this._hgActiveBookmarkDidChangeObserver.complete();
     this._hgBookmarksDidChangeObserver.complete();
     this._hgConflictStateDidChangeObserver.complete();
-    if (this._hgDirWatcher != null) {
-      this._hgDirWatcher.close();
-      this._hgDirWatcher = null;
-    }
     await this._cleanUpWatchman();
   }
 
@@ -337,24 +325,18 @@ export class HgService {
     );
     logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_PRIMARY} established.`);
 
-    // TODO(most): Replace the usage of node watchers when watchman is ready
-    //  with the advanced option: "defer": "hg.update"
-    // Watchman currently (v4.5) doesn't report `.hg` file updates until it reaches
-    // a stable filesystem (not respecting `defer_vcs` option) and
-    // that doesn't happen with big mercurial updates (the primary use of state file watchers).
-    // Hence, we here use node's filesystem watchers instead.
-    try {
-      this._hgDirWatcher = fs.watch(nuclideUri.join(workingDirectory, '.hg'), (event, fileName) => {
-        if (fileName === 'wlock') {
-          this._debouncedCheckConflictChange();
-        } else if (fileName === 'rebasestate') {
-          this._debouncedCheckConflictChange();
-        }
-      });
-      logger.debug('Node watcher created for wlock files.');
-    } catch (error) {
-      getLogger().error('Error when creating node watcher for hg state files', error);
-    }
+
+    // Subscribe to changes to files unrelated to source control.
+    const conflictStateSubscribtion = await watchmanClient.watchDirectoryRecursive(
+      workingDirectory,
+      WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS,
+      {
+        fields: ['name', 'exists', 'new'],
+        expression: ['name', '.hg/merge', 'wholename'],
+        defer: ['hg.update'],
+      },
+    );
+    logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS} established.`);
 
     // Subscribe to changes to the active Mercurial bookmark.
     const hgActiveBookmarkSubscription = await watchmanClient.watchDirectoryRecursive(
@@ -395,6 +377,7 @@ export class HgService {
     hgActiveBookmarkSubscription.on('change', this._hgActiveBookmarkDidChange.bind(this));
     hgBookmarksSubscription.on('change', this._hgBookmarksDidChange.bind(this));
     dirStateSubscribtion.on('change', this._emitHgRepoStateChanged.bind(this));
+    conflictStateSubscribtion.on('change', this._debouncedCheckConflictChange);
   }
 
   async _cleanUpWatchman(): Promise<void> {
@@ -418,26 +401,20 @@ export class HgService {
     this._filesDidChangeObserver.next(changedFiles);
   }
 
-  async _updateStateFilesExistence(): Promise<void> {
-    const [lockExists, rebaseStateExists] = await Promise.all([
-      fsPromise.exists(this._lockFilePath),
-      fsPromise.exists(this._rebaseStateFilePath),
-    ]);
-    this._lockFileHeld = lockExists;
-    this._isRebasing = rebaseStateExists;
+  _checkMergeDirectoryExists(): Promise<boolean> {
+    return fsPromise.exists(nuclideUri.join(this._workingDirectory, '.hg', 'merge'));
   }
 
   async _checkConflictChange(): Promise<void> {
-    await this._updateStateFilesExistence();
+    const mergeDirectoryExists = await this._checkMergeDirectoryExists();
     if (this._isInConflict) {
-      if (!this._isRebasing) {
+      if (!mergeDirectoryExists) {
         this._isInConflict = false;
         this._hgConflictStateDidChangeObserver.next(false);
       }
       return;
-    }
-    // Detect if we are not in a conflict.
-    if (!this._lockFileHeld && this._isRebasing) {
+    } else if (mergeDirectoryExists) {
+      // Detect if the repository is in a conflict state.
       const mergeConflicts = await this.fetchMergeConflicts();
       if (mergeConflicts.length > 0) {
         this._isInConflict = true;
