@@ -162,7 +162,9 @@ class FileSystemActions {
     const hgRepository = this._getHgRepositoryForPath(newPath);
     if (hgRepository != null && addToVCS) {
       try {
-        await hgRepository.copy([nodePath], newPath, /* after */ true);
+        // We are not recording the copy in mercurial on purpose, because most of the time
+        // it's either templates or files that have greatly changed since duplicating.
+        await hgRepository.addAll([newPath]);
       } catch (e) {
         const message = newPath + ' was duplicated, but there was an error adding it to ' +
           'version control.  Error: ' + e.toString();
