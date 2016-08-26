@@ -14,10 +14,11 @@ import type {LaunchAttachActions} from './LaunchAttachActions';
 import type {
   AttachTargetInfo,
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
+import type {Column} from '../../nuclide-ui/lib/Table';
 
 import {React} from 'react-for-atom';
-import classnames from 'classnames';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {Table} from '../../nuclide-ui/lib/Table';
 import {
   Button,
   ButtonTypes,
@@ -32,10 +33,58 @@ type PropsType = {
 type StateType = {
   targetListChangeDisposable: IDisposable,
   attachTargetInfos: Array<AttachTargetInfo>,
-  filteredAttachTargetInfos: Array<AttachTargetInfo>,
   selectedAttachTarget: ?AttachTargetInfo,
   filterText: string,
+  sortDescending: boolean,
+  sortedColumn: ?string,
 };
+
+function getColumns(): Array<Column> {
+  return [
+    {
+      title: 'Process Name',
+      key: 'process',
+      width: 0.25,
+    },
+    {
+      title: 'PID',
+      key: 'pid',
+      width: 0.10,
+    },
+    {
+      title: 'Command Name',
+      key: 'command',
+      width: 0.65,
+    },
+  ];
+}
+
+function getCompareFunction(
+  sortedColumn: ?string,
+  sortDescending: boolean,
+): (a: AttachTargetInfo, b: AttachTargetInfo) => number {
+  switch (sortedColumn) {
+    case 'pid':
+      const order = sortDescending ? -1 : 1;
+      return (target1: AttachTargetInfo, target2: AttachTargetInfo) => (
+        order * (target1.pid - target2.pid)
+      );
+    case 'process':
+      return (target1: AttachTargetInfo, target2: AttachTargetInfo) => {
+        const first = sortDescending ? target2.name : target1.name;
+        const second = sortDescending ? target1.name : target2.name;
+        return first.toLowerCase().localeCompare(second.toLowerCase());
+      };
+    case 'command':
+      return (target1: AttachTargetInfo, target2: AttachTargetInfo) => {
+        const first = sortDescending ? target2.commandName : target1.commandName;
+        const second = sortDescending ? target1.commandName : target2.commandName;
+        return first.toLowerCase().localeCompare(second.toLowerCase());
+      };
+    default: break;
+  }
+  return () => 0;
+}
 
 export class AttachUIComponent extends React.Component<void, PropsType, StateType> {
   props: PropsType;
@@ -45,16 +94,19 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     super(props);
 
     (this: any)._handleFilterTextChange = this._handleFilterTextChange.bind(this);
+    (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);
     (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
     (this: any)._handleAttachClick = this._handleAttachClick.bind(this);
     (this: any)._updateAttachTargetList = this._updateAttachTargetList.bind(this);
     (this: any)._updateList = this._updateList.bind(this);
+    (this: any)._handleSort = this._handleSort.bind(this);
     this.state = {
       targetListChangeDisposable: this.props.store.onAttachTargetListChanged(this._updateList),
       attachTargetInfos: [],
-      filteredAttachTargetInfos: [],
       selectedAttachTarget: null,
       filterText: '',
+      sortDescending: false,
+      sortedColumn: null,
     };
   }
 
@@ -65,58 +117,57 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _updateList(): void {
-    this._updateFilteredList(this.props.store.getAttachTargetInfos(), this.state.filterText);
+    const newSelectedTarget = this.state.selectedAttachTarget == null ? null :
+      this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
+    this.setState({
+      attachTargetInfos: this.props.store.getAttachTargetInfos(),
+      selectedAttachTarget: newSelectedTarget,
+    });
   }
 
-  _updateFilteredList(rawTargets: Array<AttachTargetInfo>, newFilterText: string): void {
-    let filteredTargets = rawTargets;
-    if (newFilterText.length !== 0) {
-      const filterRegex = new RegExp(newFilterText, 'i');
-      filteredTargets = rawTargets.filter(item => filterRegex.test(item.name)
-                                           || filterRegex.test(item.pid.toString())
-                                           || filterRegex.test(item.commandName));
+  _getAttachTargetOfPid(pid: number): ?AttachTargetInfo {
+    for (const target of this.props.store.getAttachTargetInfos()) {
+      if (target.pid === pid) {
+        return target;
+      }
     }
+    return null;
+  }
 
-    let newSelectedTarget = this.state.selectedAttachTarget;
-    // Auto-select if only one target is available
-    if (filteredTargets.length === 1) {
-      newSelectedTarget = filteredTargets[0];
-    }
-
+  _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
     this.setState({
-      attachTargetInfos: rawTargets,
-      selectedAttachTarget: newSelectedTarget,
-      filterText: newFilterText,
-      filteredAttachTargetInfos: filteredTargets,
+      sortedColumn,
+      sortDescending,
     });
   }
 
   render(): React.Element<any> {
-    const containerStyle = {
-      maxHeight: '30em',
-      overflow: 'auto',
-      position: 'relative',
-    };
-    let hasSelectedItem = false;
-    const selectedTarget = this.state.selectedAttachTarget;
-    const children = this.state.filteredAttachTargetInfos.map((item, index) => {
-      // Be sure to compare PIDs rather than objects, since multiple distinct objects can be
-      // returned from different calls to getAttachTargetInfos() that represent the same process
-      const isSelected = (selectedTarget != null && selectedTarget.pid === item.pid);
-      if (isSelected) {
-        hasSelectedItem = true;
-      }
-      return <tr
-            key={index + 1}
-            className={classnames({'attach-selected-row': isSelected})}
-            onClick={this._handleClickTableRow.bind(this, item)}
-            onDoubleClick={this._handleDoubleClickTableRow.bind(this, index)}>
-          <td>{item.name}</td>
-          <td>{item.pid}</td>
-          <td>{item.commandName}</td>
-        </tr>;
-    });
-    // TODO: wrap into separate React components.
+    const filterRegex = new RegExp(this.state.filterText, 'i');
+    const {
+      attachTargetInfos,
+      sortedColumn,
+      sortDescending,
+    } = this.state;
+    const compareFn = getCompareFunction(sortedColumn, sortDescending);
+    const {selectedAttachTarget} = this.state;
+    let selectedIndex = null;
+    const rows = attachTargetInfos
+      .filter(item => filterRegex.test(item.name) || filterRegex.test(item.pid.toString()) ||
+        filterRegex.test(item.commandName))
+      .sort(compareFn)
+      .map((item, index) => {
+        const row = {
+          data: {
+            process: item.name,
+            pid: item.pid,
+            command: item.commandName,
+          },
+        };
+        if (selectedAttachTarget != null && row.data.pid === selectedAttachTarget.pid) {
+          selectedIndex = index;
+        }
+        return row;
+      });
     return (
       <div className="block">
         <AtomInput
@@ -125,20 +176,19 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
           onDidChange={this._handleFilterTextChange}
           size="sm"
         />
-        <div style={containerStyle}>
-          <table className="nuclide-debugger-native-process-table" width="100%">
-            <thead>
-            <tr key="0">
-                <td>Process Name</td>
-                <td>PID</td>
-                <td>Command Name</td>
-              </tr>
-            </thead>
-            <tbody>
-              {children}
-            </tbody>
-          </table>
-        </div>
+        <Table
+          columns={getColumns()}
+          fixedHeader={true}
+          maxBodyHeight="30em"
+          rows={rows}
+          sortable={true}
+          onSort={this._handleSort}
+          sortedColumn={this.state.sortedColumn}
+          sortDescending={this.state.sortDescending}
+          selectable={true}
+          selectedIndex={selectedIndex}
+          onSelect={this._handleSelectTableRow}
+        />
         <div className="nuclide-debugger-native-launch-attach-actions">
           <ButtonGroup>
             <Button onClick={this._handleCancelButtonClick}>
@@ -147,7 +197,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
             <Button
                 buttonType={ButtonTypes.PRIMARY}
                 onClick={this._handleAttachClick}
-                disabled={!hasSelectedItem}>
+                disabled={selectedIndex == null}>
               Attach
             </Button>
           </ButtonGroup>
@@ -157,10 +207,12 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _handleFilterTextChange(text: string): void {
-    this._updateFilteredList(this.state.attachTargetInfos, text);
+    this.setState({
+      filterText: text,
+    });
   }
 
-  _handleClickTableRow(item: AttachTargetInfo): void {
+  _handleSelectTableRow(item: AttachTargetInfo, selectedIndex: number): void {
     this.setState({
       selectedAttachTarget: item,
     });

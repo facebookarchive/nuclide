@@ -19,7 +19,7 @@ import {Icon} from './Icon';
 
 // ColumnKey must be unique within the containing collection.
 type ColumnKey = string;
-type Column = {
+export type Column = {
   title: string,
   key: ColumnKey,
   // Percentage. The `width`s of all columns must add up to 1.
