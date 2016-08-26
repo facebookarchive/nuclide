@@ -179,7 +179,7 @@ export class RemoteConnection {
 
   _watchRootProjectDirectory(): void {
     const rootDirectoryUri = this.getUriForInitialWorkingDirectory();
-    const rootDirectotyPath = this.getPathForInitialWorkingDirectory();
+    const rootDirectoryPath = this.getPathForInitialWorkingDirectory();
     const FileWatcherService: FileWatcherServiceType = this.getService(FILE_WATCHER_SERVICE);
     invariant(FileWatcherService);
     const {watchDirectoryRecursive} = FileWatcherService;
@@ -192,9 +192,11 @@ export class RemoteConnection {
       logger.info(`Watcher Features Initialized for project: ${rootDirectoryUri}`, watchUpdate);
     }, async error => {
       let warningMessageToUser = 'You just connected to a remote project ' +
-        `\`${rootDirectotyPath}\` but we recommend you remove this directory now ` +
-        'because crucial features like synced remote file editing, file search, ' +
-        'and Mercurial-related updates will not work.<br/>';
+        `\`${rootDirectoryPath}\` without Watchman support, which means that ` +
+        'crucial features such as synced remote file editing, file search, ' +
+        'and Mercurial-related updates will not work.<br/><br/>' +
+        'A possible workaround is to create an empty `.watchmanconfig` file ' +
+        'in the remote folder, which will enable Watchman if you have it installed.<br/><br/>';
 
       const loggedErrorMessage = error.message || error;
       logger.error(
@@ -202,9 +204,9 @@ export class RemoteConnection {
       );
 
       const FileSystemService = this.getService(FILE_SYSTEM_SERVICE);
-      if (await FileSystemService.isNfs(rootDirectotyPath)) {
+      if (await FileSystemService.isNfs(rootDirectoryPath)) {
         warningMessageToUser +=
-          `This project directory: \`${rootDirectotyPath}\` is on <b>\`NFS\`</b> filesystem. ` +
+          `This project directory: \`${rootDirectoryPath}\` is on <b>\`NFS\`</b> filesystem. ` +
           'Nuclide works best with local (non-NFS) root directory.' +
           'e.g. `/data/users/$USER`';
       } else {
