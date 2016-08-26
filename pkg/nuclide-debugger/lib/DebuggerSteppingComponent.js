@@ -61,6 +61,13 @@ export class DebuggerSteppingComponent extends React.Component {
             }
           />
           <Button
+            icon="primitive-square"
+            title="stop debugging"
+            onClick={
+              () => actions.stopDebugging()
+            }
+          />
+          <Button
             icon="arrow-right"
             title="step over"
             onClick={
