@@ -43,25 +43,32 @@ const TableExample = (): React.Element<any> => {
   ];
   const rows = [
     {
-      first: 1,
-      second: 2,
-      third: 3,
-      fourth: 33,
-      fifth: 123,
+      data: {
+        first: 1,
+        second: 2,
+        third: 3,
+        fourth: 33,
+        fifth: 123,
+      },
     },
     {
-      first: 4,
-      second: 42,
-      third: 6,
-      fourth: 66,
-      fifth: 123,
+      className: 'this-is-an-optional-classname',
+      data: {
+        first: 4,
+        second: 42,
+        third: 6,
+        fourth: 66,
+        fifth: 123,
+      },
     },
     {
-      first: 7,
-      second: 42,
-      // third is empty
-      fourth: 66,
-      fifth: 123,
+      data: {
+        first: 7,
+        second: 42,
+        // third is empty
+        fourth: 66,
+        fifth: 123,
+      },
     },
   ];
   return (
@@ -88,19 +95,26 @@ class SortableTableExample extends React.Component {
     super(props);
     const rows = [
       {
-        first: 1,
-        second: 3,
-        third: 300,
+        data: {
+          first: 1,
+          second: 3,
+          third: 300,
+        },
       },
       {
-        first: 2,
-        second: 5,
-        third: 200,
+        data: {
+          first: 2,
+          second: 5,
+          third: 200,
+        },
       },
       {
-        first: 3,
-        second: 4,
-        third: 100,
+        className: 'nuclide-ui-custom-classname-example',
+        data: {
+          first: 3,
+          second: 4,
+          third: 100,
+        },
       },
     ];
     this.state = {
@@ -114,7 +128,7 @@ class SortableTableExample extends React.Component {
   _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
     const sortedRows = this.state.rows.sort((obj1, obj2) => {
       const order = sortDescending ? -1 : 1;
-      return order * (obj1[sortedColumn] - obj2[sortedColumn]);
+      return order * (obj1.data[sortedColumn] - obj2.data[sortedColumn]);
     });
     this.setState({
       rows: sortedRows,

@@ -29,7 +29,10 @@ type Column = {
   component?: ReactClass<any>,
 };
 type Row = {
-  [key: ColumnKey]: ?mixed;
+  className?: string,
+  data: {
+    [key: ColumnKey]: ?mixed,
+  },
 };
 type WidthMap = {
   [key: ColumnKey]: number,
@@ -249,7 +252,7 @@ export class Table extends React.Component {
       return;
     }
     const selectedItem = rows[selectedIndex];
-    onSelect(selectedItem, selectedIndex);
+    onSelect(selectedItem.data, selectedIndex);
   }
 
   _renderEmptyCellContent(): React.Element<any> {
@@ -317,18 +320,21 @@ export class Table extends React.Component {
       );
     });
     const body = rows.map((row, i) => {
+      const {
+        className: rowClassName,
+        data,
+      } = row;
       const renderedRow = columns.map((column, j) => {
         const {
           key,
           component: Component,
         } = column;
-        let datum = row[key];
+        let datum = data[key];
         if (Component != null) {
           datum = <Component data={datum} />;
         } else if (datum == null) {
           datum = this._renderEmptyCellContent();
         }
-
         const cellStyle = {};
         if (i === 0) {
           const width = this.state.columnWidthRatios[key];
@@ -352,11 +358,14 @@ export class Table extends React.Component {
       const isSelectedRow = selectedIndex != null && i === selectedIndex;
       return (
         <tr
-          className={classnames({
-            'nuclide-ui-table-row-selectable': selectable,
-            'nuclide-ui-table-row-selected': isSelectedRow,
-            'nuclide-ui-table-row-alternate': alternateBackground !== false && i % 2 === 1,
-          })}
+          className={classnames(
+            rowClassName,
+            {
+              'nuclide-ui-table-row-selectable': selectable,
+              'nuclide-ui-table-row-selected': isSelectedRow,
+              'nuclide-ui-table-row-alternate': alternateBackground !== false && i % 2 === 1,
+            },
+          )}
           key={i}
           {...rowProps}>
           {renderedRow}
