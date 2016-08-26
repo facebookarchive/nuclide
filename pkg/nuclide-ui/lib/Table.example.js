@@ -74,7 +74,6 @@ const TableExample = (): React.Element<any> => {
   return (
     <Block>
       <Table
-        emptyComponent={() => <div>empty</div>}
         columns={columns}
         rows={rows}
         selectable={true}
@@ -155,6 +154,7 @@ class SortableTableExample extends React.Component {
     return (
       <Block>
         <Table
+          emptyComponent={() => <div>An optional, custom "empty message" component.</div>}
           columns={columns}
           rows={this.state.rows}
           sortable={true}
@@ -167,6 +167,32 @@ class SortableTableExample extends React.Component {
   }
 }
 
+const EmptyTableExample = (): React.Element<any> => {
+  const columns = [
+    {
+      title: 'first column',
+      key: 'first',
+    },
+    {
+      title: 'second column',
+      key: 'second',
+    },
+    {
+      title: 'third column',
+      key: 'third',
+    },
+  ];
+  const rows = [];
+  return (
+    <Block>
+      <Table
+        columns={columns}
+        rows={rows}
+      />
+    </Block>
+  );
+};
+
 export const TableExamples = {
   sectionName: 'Table',
   description: '',
@@ -178,6 +204,10 @@ export const TableExamples = {
     {
       title: 'Sortable Table',
       component: SortableTableExample,
+    },
+    {
+      title: 'Empty Table',
+      component: EmptyTableExample,
     },
   ],
 };

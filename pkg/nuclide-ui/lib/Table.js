@@ -17,6 +17,9 @@ import {
 import {Disposable} from 'atom';
 import {Icon} from './Icon';
 
+const DefaultEmptyComponent =
+  () => <div className="nuclide-ui-table-empty-message">Empty table</div>;
+
 // ColumnKey must be unique within the containing collection.
 type ColumnKey = string;
 export type Column = {
@@ -76,6 +79,11 @@ type Props = {
    * Handler to be called upon selection. Called iff `selectable` is `true`.
    */
   onSelect?: (selectedItem: any, selectedIndex: number) => mixed,
+  /**
+   * Optional React Component to override the default message when zero rows are provided.
+   * Useful for showing loading spinners and custom messages.
+   */
+  emptyComponent?: ReactClass<any>,
 };
 type State = {
   columnWidthRatios: WidthMap,
@@ -319,7 +327,7 @@ export class Table extends React.Component {
         </th>
       );
     });
-    const body = rows.map((row, i) => {
+    let body = rows.map((row, i) => {
       const {
         className: rowClassName,
         data,
@@ -372,6 +380,10 @@ export class Table extends React.Component {
         </tr>
       );
     });
+    if (rows.length === 0) {
+      const EmptyComponent = this.props.emptyComponent || DefaultEmptyComponent;
+      body = <tr><td><EmptyComponent /></td></tr>;
+    }
     const scrollableBodyStyle = {};
     if (maxBodyHeight != null) {
       scrollableBodyStyle.maxHeight = maxBodyHeight;
