@@ -295,10 +295,12 @@ atom-text-editor, atom-text-editor::shadow {
       line-height: @component-line-height;
       border-radius: @component-border-radius;
       padding-left: @component-padding/2;
+      color: @text-color-highlight;
 
       &.is-focused {
         border-color: @background-color-selected;
         box-shadow: 0 0 0 1px @background-color-selected;
+        color: @text-color-highlight;
 
         &::shadow {
           .cursor {
