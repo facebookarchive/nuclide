@@ -181,7 +181,6 @@ function notifyRevisionStatus(
   const {name, url} = phabRevision;
   message = `Revision '${name}' ${statusMessage}`;
   atom.notifications.addSuccess(message, {
-    dismissable: true,
     buttons: [{
       className: 'icon icon-globe',
       onDidClick() { shell.openExternal(url); },
