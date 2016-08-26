@@ -44,6 +44,7 @@ export default class HyperclickForTextEditor {
   _isDestroyed: boolean;
   _isLoading: boolean;
   _loadingTracker: ?TimingTracker;
+  _triggerKeys: Set<'shiftKey' | 'ctrlKey' | 'altKey' | 'metaKey'>;
 
   constructor(textEditor: atom$TextEditor, hyperclick: Hyperclick) {
     this._textEditor = textEditor;
@@ -72,6 +73,8 @@ export default class HyperclickForTextEditor {
     this._textEditorView.addEventListener('keydown', this._onKeyDown);
     this._onKeyUp = this._onKeyUp.bind(this);
     this._textEditorView.addEventListener('keyup', this._onKeyUp);
+    (this: any)._onContextMenu = this._onContextMenu.bind(this);
+    this._textEditorView.addEventListener('contextmenu', this._onContextMenu);
 
     this._subscriptions.add(atom.commands.add(this._textEditorView, {
       'hyperclick:confirm-cursor': () => this._confirmSuggestionAtCursor(),
@@ -80,6 +83,17 @@ export default class HyperclickForTextEditor {
     this._isDestroyed = false;
     this._isLoading = false;
     this._loadingTracker = null;
+
+    this._subscriptions.add(
+      atom.config.observe(
+        process.platform === 'darwin' ? 'nuclide.hyperclick.darwinTriggerKeys' :
+        (process.platform === 'win32' ? 'nuclide.hyperclick.win32TriggerKeys' :
+                                        'nuclide.hyperclick.linuxTriggerKeys'),
+        (newValue: string) => {
+          this._triggerKeys = new Set(newValue.split(','));
+        },
+      ),
+    );
   }
 
   _setupMouseDownListener(): void {
@@ -109,6 +123,17 @@ export default class HyperclickForTextEditor {
     } else {
       invariant(typeof suggestion.callback === 'function');
       suggestion.callback();
+    }
+  }
+
+  _onContextMenu(event: Event): void {
+    const mouseEvent: MouseEvent = (event: any);
+    // If the key trigger happens to cause the context menu to show up, then
+    // cancel it. By this point, it's too late to know if you're at a suggestion
+    // position to be more fine grained. So if your trigger keys are "ctrl+cmd",
+    // then you can't use that combination to bring up the context menu.
+    if (this._isHyperclickEvent(mouseEvent)) {
+      event.stopPropagation();
     }
   }
 
@@ -331,8 +356,12 @@ export default class HyperclickForTextEditor {
    * Returns whether an event should be handled by hyperclick or not.
    */
   _isHyperclickEvent(event: SyntheticKeyboardEvent | MouseEvent): boolean {
-    // If the user is pressing either the meta/ctrl key or the alt key.
-    return process.platform === 'darwin' ? event.metaKey : event.ctrlKey;
+    return (
+      event.shiftKey === this._triggerKeys.has('shiftKey') &&
+      event.ctrlKey === this._triggerKeys.has('ctrlKey') &&
+      event.altKey === this._triggerKeys.has('altKey') &&
+      event.metaKey === this._triggerKeys.has('metaKey')
+    );
   }
 
   _doneLoading(): void {
@@ -347,6 +376,7 @@ export default class HyperclickForTextEditor {
     this._textEditorView.removeEventListener('mousemove', this._onMouseMove);
     this._textEditorView.removeEventListener('keydown', this._onKeyDown);
     this._textEditorView.removeEventListener('keyup', this._onKeyUp);
+    this._textEditorView.removeEventListener('contextmenu', this._onContextMenu);
     this._subscriptions.dispose();
   }
 }
