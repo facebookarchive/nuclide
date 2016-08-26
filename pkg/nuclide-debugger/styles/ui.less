@@ -169,66 +169,22 @@ Use flexbox cross-axis stretch to fill the vertical space.
 }
 
 /* Thread list */
-
-.nuclide-debugger-thread-list-table {
-  border-collapse: separate;
-  table-layout: fixed;
-  width: 100%;
-}
-
-.nuclide-debugger-thread-list-table-row-odd {
-  background-color: @background-color-highlight;
-}
-
-.nuclide-debugger-thread-list-table > thead {
-  font-weight: bold;
-}
-
-.nuclide-debugger-thread-list-item {
-  cursor: pointer;
-}
-
-.nuclide-debugger-thread-list-item:hover {
-  color: @text-color-highlight;
-}
-
 .nuclide-debugger-thread-list-item-selected {
   color: @text-color-highlight;
   font-weight: bold;
 }
 
+.nuclide-debugger-thread-list-empty {
+  font-style: italic;
+  padding: 1em;
+  text-align: center;
+}
+
 .nuclide-debugger-thread-list-item-current-indicator {
-  padding: 0.4em 4px;
-  width: 5%;
+  text-align: center;
 }
 
-.nuclide-debugger-thread-list-item-id {
-  width: 15%;
-}
-
-.nuclide-debugger-thread-list-item-address {
-  width: 55%;
-  font-family: Menlo, Monaco, Consolas, monospace;
-}
-
-.nuclide-debugger-thread-list-item-stop-reason {
-  width: 25%;
-}
-
-.nuclide-debugger-thread-list-item-id,
-.nuclide-debugger-thread-list-item-address,
-.nuclide-debugger-thread-list-item-stop-reason {
-  overflow: hidden;
-  margin-left: 4px;
-  text-overflow: ellipsis;
-  padding: 0.4em 0;
-}
-
-.nuclide-debugger-thread-list-header {
-  background-color: transparent;
-  font-weight: bold;
-}
-
+/* Thread switch datatip */
 .nuclide-debugger-thread-switch-alert {
     padding: 1px 4px;
     font-weight: bold;

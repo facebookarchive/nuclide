@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import type {ThreadItem} from './types';
 import type Bridge from './Bridge';
 
 import {Icon} from '../../nuclide-ui/lib/Icon';
+import {Table} from '../../nuclide-ui/lib/Table';
 
 type DebuggerThreadsComponentProps = {
   bridge: Bridge,
@@ -22,64 +22,82 @@ type DebuggerThreadsComponentProps = {
   selectedThreadId: number,
 };
 
+const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
+  <div className="nuclide-debugger-thread-list-item-current-indicator">
+    {props.cellData
+      ? <Icon icon="arrow-right" title="Selected Thread" />
+      : null
+    }
+  </div>
+);
+
 export class DebuggerThreadsComponent extends React.Component {
   props: DebuggerThreadsComponentProps;
 
+  constructor(props: DebuggerThreadsComponentProps) {
+    super(props);
+    (this: any)._handleSelectThread = this._handleSelectThread.bind(this);
+  }
+
+  _handleSelectThread(data: ThreadItem, selectedIndex: number): void {
+    this.props.bridge.selectThread(data.id);
+  }
+
   render(): ?React.Element<any> {
     const {
-      bridge,
       threadList,
       selectedThreadId,
     } = this.props;
-    const renderedThreadList = threadList == null || threadList.length === 0
-      ? '(threads unavailable)'
+    const columns = [
+      {
+        component: activeThreadIndicatorComponent,
+        title: '',
+        key: 'isSelected',
+        width: 0.05,
+      },
+      {
+        title: 'ID',
+        key: 'id',
+        width: 0.15,
+      },
+      {
+        title: 'Address',
+        key: 'address',
+        width: 0.55,
+      },
+      {
+        title: 'Stop Reason',
+        key: 'stopReason',
+        width: 0.25,
+      },
+    ];
+    const emptyComponent = () =>
+      <div className="nuclide-debugger-thread-list-empty">
+        {threadList == null ? '(threads unavailable)' : 'no threads to display'}
+      </div>;
+    const rows = threadList == null
+      ? []
       : threadList.map((threadItem, i) => {
-        const {
-          id,
-          address,
-          stopReason,
-        } = threadItem;
-        const isSelected = id === selectedThreadId;
-        return (
-          <tr
-            className={classnames(
-              'nuclide-debugger-thread-list-item',
-              {
-                'nuclide-debugger-thread-list-item-selected': isSelected,
-                'nuclide-debugger-thread-list-table-row-odd': i % 2 === 1,
-              },
-            )}
-            onClick={() => bridge.selectThread(id)}
-            key={i}>
-            <td className="nuclide-debugger-thread-list-item-current-indicator">
-              {isSelected ? <Icon icon="arrow-right" title="Selected Thread" /> : null}
-            </td>
-            <td className="nuclide-debugger-thread-list-item-id" title={id}>{id}</td>
-            <td className="nuclide-debugger-thread-list-item-address" title={address}>
-              {address}
-            </td>
-            <td className="nuclide-debugger-thread-list-item-stop-reason" title={stopReason}>
-              {stopReason}
-            </td>
-          </tr>
-        );
+        const cellData = {
+          data: {
+            ...threadItem,
+            isSelected: threadItem.id === selectedThreadId,
+          },
+        };
+        if (threadItem.id === selectedThreadId) {
+          // $FlowIssue className is an optional property of a table row
+          cellData.className = 'nuclide-debugger-thread-list-item-selected';
+        }
+        return cellData;
       });
     return (
-      <div>
-        <table className="nuclide-debugger-thread-list-table">
-          <thead>
-            <tr className="nuclide-debugger-thread-list-item">
-              <td className="nuclide-debugger-thread-list-item-current-indicator" />
-              <td className="nuclide-debugger-thread-list-item-id">ID</td>
-              <td className="nuclide-debugger-thread-list-item-address">Address</td>
-              <td className="nuclide-debugger-thread-list-item-stop-reason">Stop Reason</td>
-            </tr>
-          </thead>
-          <tbody>
-            {renderedThreadList}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        columns={columns}
+        emptyComponent={emptyComponent}
+        rows={rows}
+        selectable={true}
+        onSelect={this._handleSelectThread}
+      />
     );
   }
-  }
+}
