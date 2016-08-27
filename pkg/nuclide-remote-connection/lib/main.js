@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as ArcanistService from '../../nuclide-arcanist-rpc';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
+import type {Directory as LocalDirectoryType} from 'atom';
 
 import nullthrows from 'nullthrows';
 
@@ -31,6 +32,8 @@ import {
   getServiceByNuclideUri,
   getlocalService,
 } from './service-manager';
+
+export type Directory = LocalDirectoryType | RemoteDirectory;
 
 export {
   RemoteConnection,

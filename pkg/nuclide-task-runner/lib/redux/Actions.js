@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {Directory} from '../../../nuclide-remote-connection';
 import type {
   TaskRunner,
   CreatePanelAction,
   DestroyPanelAction,
-  Directory,
   RegisterTaskRunnerAction,
   RunTaskAction,
   SelectTaskAction,

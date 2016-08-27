@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteDirectory} from '../../nuclide-remote-connection';
+import type {Directory} from '../../nuclide-remote-connection';
 import type {Observable} from 'rxjs';
 
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -17,10 +17,8 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import nuclideUri from '../../commons-node/nuclideUri';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
-import {CompositeDisposable, Directory as LocalDirectory} from 'atom';
+import {CompositeDisposable} from 'atom';
 import {BehaviorSubject} from 'rxjs';
-
-type Directory = LocalDirectory | RemoteDirectory;
 
 export class CwdApi {
   _cwd$: Observable<?Directory>;

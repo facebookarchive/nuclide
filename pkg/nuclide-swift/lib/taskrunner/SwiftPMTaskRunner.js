@@ -10,8 +10,9 @@
  */
 
 import type {Task} from '../../../commons-node/tasks';
-import type {Directory, TaskMetadata} from '../../../nuclide-task-runner/lib/types';
+import type {TaskMetadata} from '../../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../../nuclide-console/lib/types';
+import type {Directory} from '../../../nuclide-remote-connection';
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 
 import {Observable, Subject} from 'rxjs';

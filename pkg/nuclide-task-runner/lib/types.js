@@ -9,10 +9,7 @@
  */
 
 import type {Task} from '../../commons-node/tasks';
-import type {RemoteDirectory} from '../../nuclide-remote-connection';
-import type {Directory as LocalDirectoryType} from 'atom';
-
-export type Directory = LocalDirectoryType | RemoteDirectory;
+import type {Directory} from '../../nuclide-remote-connection';
 
 export type AppState = {
   activeTaskId: ?TaskId,

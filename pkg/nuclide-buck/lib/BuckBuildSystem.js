@@ -11,10 +11,8 @@
 
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {Task, TaskEvent} from '../../commons-node/tasks';
-import type {
-  Directory,
-  TaskMetadata,
-} from '../../nuclide-task-runner/lib/types';
+import type {Directory} from '../../nuclide-remote-connection';
+import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckProject} from '../../nuclide-buck-rpc';
 import type {BuckSubcommand, SerializedState, TaskType} from './types';
