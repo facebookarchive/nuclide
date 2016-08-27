@@ -16,6 +16,7 @@ import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import classnames from 'classnames';
 import {DiffMode, CommitMode, CommitModeState} from './constants';
+import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 import {
   Button,
@@ -35,6 +36,7 @@ type Props = {
 
 export default class DiffCommitView extends React.Component {
   props: Props;
+  _subscriptions: CompositeDisposable;
 
   constructor(props: Props) {
     super(props);
@@ -45,6 +47,14 @@ export default class DiffCommitView extends React.Component {
 
   componentDidMount(): void {
     this._setCommitMessage();
+
+    // Shortcut to commit when on form
+    this._subscriptions = new CompositeDisposable(
+      atom.commands.add(
+        '.commit-form-wrapper',
+        'nuclide-diff-view:commit-message',
+        event => this._onClickCommit()),
+    );
   }
 
   componentDidUpdate(prevProps: Props, prevState: void): void {
@@ -148,5 +158,7 @@ export default class DiffCommitView extends React.Component {
     process.nextTick(() => {
       diffModel.setCommitMessage(message);
     });
+
+    this._subscriptions.dispose();
   }
 }
