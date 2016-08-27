@@ -52,7 +52,7 @@ describe('side-bar', () => {
         : HTMLSelectElement
       );
       // Selected option should be the source-control-side-bar, titled "Source Control"
-      expect(dropdown.innerText).toBe('Source Control');
+      expect(String(dropdown.innerText).trim()).toBe('Source Control');
     });
 
     let panel;

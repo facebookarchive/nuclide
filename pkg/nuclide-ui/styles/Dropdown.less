@@ -23,4 +23,14 @@
   // We put this on a text wrapper (instead of the icon) so we can skip it if
   // there's no text (e.g. in a SplitButtonDropdown).
   margin-right: @component-padding;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nuclide-ui-dropdown {
+  display: flex;
+
+  // Make sure the icon's all the way to the right.
+  justify-content: space-between;
 }
