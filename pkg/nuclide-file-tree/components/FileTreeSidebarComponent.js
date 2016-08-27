@@ -153,7 +153,7 @@ class FileTreeSidebarComponent extends React.Component {
     let openFilesSection = null;
     let openFilesList = null;
     let foldersCaption = null;
-    if (this.state.showOpenFiles) {
+    if (this.state.showOpenFiles && this.state.openFilesUris.length > 0) {
       if (this._store.openFilesExpanded) {
         openFilesList = (
           <OpenFilesListComponent
