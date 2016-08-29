@@ -151,6 +151,7 @@ export class Combobox extends React.Component {
       loadingOptions: false,
       options: newOptions,
       filteredOptions,
+      selectedIndex: this._getNewSelectedIndex(filteredOptions),
     });
   }
 
@@ -188,6 +189,19 @@ export class Combobox extends React.Component {
       ).slice(0, this.props.maxOptionCount);
   }
 
+  _getNewSelectedIndex(filteredOptions: Array<ComboboxOption>): number {
+    if (filteredOptions.length === 0) {
+      // If there aren't any options, don't select anything.
+      return -1;
+    } else if (this.state.selectedIndex === -1 ||
+        this.state.selectedIndex >= filteredOptions.length) {
+      // If there are options and the selected index is out of bounds,
+      // default to the first item.
+      return 0;
+    }
+    return this.state.selectedIndex;
+  }
+
   _handleTextInputChange(): void {
     const newText = this.refs.freeformInput.getText();
     if (newText === this.state.textInput) {
@@ -195,23 +209,11 @@ export class Combobox extends React.Component {
     }
     this.requestUpdate(newText);
     const filteredOptions = this._getFilteredOptions(this.state.options, newText);
-    let selectedIndex;
-    if (filteredOptions.length === 0) {
-      // If there aren't any options, don't select anything.
-      selectedIndex = -1;
-    } else if (this.state.selectedIndex === -1 ||
-        this.state.selectedIndex >= filteredOptions.length) {
-      // If there are options and the selected index is out of bounds,
-      // default to the first item.
-      selectedIndex = 0;
-    } else {
-      selectedIndex = this.state.selectedIndex;
-    }
     this.setState({
       textInput: newText,
       optionsVisible: true,
       filteredOptions,
-      selectedIndex,
+      selectedIndex: this._getNewSelectedIndex(filteredOptions),
     });
     this.props.onChange(newText);
   }
