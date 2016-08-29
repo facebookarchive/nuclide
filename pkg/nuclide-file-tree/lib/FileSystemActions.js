@@ -93,16 +93,18 @@ class FileSystemActions {
         const newFile = directory.getFile(filePath);
         const created = await newFile.create();
         if (created) {
+          const newFilePath = newFile.getPath();
+          // Open a new text editor while VCS actions complete in the background.
+          onDidConfirm(newFilePath);
           if (hgRepository != null && options.addToVCS === true) {
             try {
-              await hgRepository.addAll([newFile.getPath()]);
+              await hgRepository.addAll([newFilePath]);
             } catch (e) {
               atom.notifications.addError(
-                `Failed to add '${newFile.getPath()}' to version control.  Error: ${e.toString()}`,
+                `Failed to add '${newFilePath}' to version control. Error: ${e.toString()}`,
               );
             }
           }
-          onDidConfirm(newFile.getPath());
         } else {
           atom.notifications.addError(`'${filePath}' already exists.`);
           onDidConfirm(null);
