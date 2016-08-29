@@ -1,5 +1,5 @@
 {
-  "name": "nuclide-remote-atom-server",
+  "name": "nuclide-remote-atom-rpc",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/CommandServer.js",
   "version": "0.0.0",

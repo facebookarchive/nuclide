@@ -36,7 +36,7 @@ describe('Remote Open', () => {
     waitsForPromise(async () => {
       // Open file via remote atom command
       const remoteAtomCommand =
-        nuclideUri.join(__dirname, '../pkg/nuclide-remote-atom-server/bin/atom');
+        nuclideUri.join(__dirname, '../pkg/nuclide-remote-atom-rpc/bin/atom');
       const result = await checkOutput(remoteAtomCommand, [filePath]);
 
       // Process should exit cleanly

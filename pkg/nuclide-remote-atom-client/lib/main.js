@@ -10,8 +10,8 @@
  */
 
 import typeof * as RemoteCommandServiceType
-  from '../../nuclide-remote-atom-server/lib/RemoteCommandService';
-import type {AtomCommands, AtomFileEvent} from '../../nuclide-remote-atom-server/lib/rpc-types';
+  from '../../nuclide-remote-atom-rpc/lib/RemoteCommandService';
+import type {AtomCommands, AtomFileEvent} from '../../nuclide-remote-atom-rpc/lib/rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 

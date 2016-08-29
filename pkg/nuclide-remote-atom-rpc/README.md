@@ -3,7 +3,7 @@
 This package enables a command line utility on the nuclide server to invoke
 commands on the connected Atom process.
 
-On the server, the user can invoke `pkg/nuclide-remote-atom-server/bin/atom` to
+On the server, the user can invoke `pkg/nuclide-remote-atom-rpc/bin/atom` to
 invoke a command. Currently the only available command is to open files.
 
 # Code Layout
@@ -12,7 +12,7 @@ invoke a command. Currently the only available command is to open files.
 
 This package runs in the Atom process.
 
-## nuclide-remote-atom-server Package
+## nuclide-remote-atom-rpc Package
 
 This package contains all of the server side code.
 
@@ -36,15 +36,15 @@ The `shared` directory contains code which runs in both the Nuclide Server
 - On Atom startup the nuclide-remote-atom-client package is initialized.
 - When a ServerConnection is initialized, the nuclide-remote-atom-client package
   creates an instance of the `AtomCommands` interface and registers it
-  with the nuclide-remote-atom-server package with `RemoteCommandService.registerAtomCommands`.
-- Once the `AtomCommands` are registered the nuclide-remote-atom-server package
+  with the nuclide-remote-atom-rpc package with `RemoteCommandService.registerAtomCommands`.
+- Once the `AtomCommands` are registered the nuclide-remote-atom-rpc package
   begins listening for the `CommandService` RPC interface on a local socket.
 - It writes a `ServerInfo` to a file in a well known location containing
   the socket port and family. Something like `~/.nuclide/command-server/1234/serverInfo.json`.
 
 ## Command Execution
 
-On the server, the user can invoke `pkg/nuclide-remote-atom-server/bin/atom` to
+On the server, the user can invoke `pkg/nuclide-remote-atom-rpc/bin/atom` to
 invoke a command. That command does the following:
 
 - Get the `ServerInfo` from the `serverInfo.json` file.
