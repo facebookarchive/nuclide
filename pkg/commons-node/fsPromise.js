@@ -195,6 +195,22 @@ async function glob(pattern: string, options?: Object): Promise<Array<string>> {
   });
 }
 
+async function isNonNfsDirectory(directoryPath: string): Promise<boolean> {
+  try {
+    const stats = await stat(directoryPath);
+    if (stats.isDirectory()) {
+      return !(await isNfs(directoryPath));
+    } else {
+      return false;
+    }
+  } catch (e) {
+    // If the directory cannot be probed for whatever reason, just
+    // indicate that this is not a valid candidate directory.
+    // Typically this is ENOENT for missing directory.
+    return false;
+  }
+}
+
 /**
  * Takes a method from Node's fs module and returns a "denodeified" equivalent, i.e., an adapter
  * with the same functionality, but returns a Promise rather than taking a callback. This isn't
@@ -211,6 +227,8 @@ function _denodeifyFsMethod(methodName: string): () => Promise<any> {
   };
 }
 
+const stat = _denodeifyFsMethod('stat');
+
 export default {
   tempdir,
   tempfile,
@@ -222,6 +240,7 @@ export default {
   rmdir,
   isNfs,
   glob,
+  isNonNfsDirectory,
 
   copy: _denodeifyFsMethod('copy'),
   chmod: _denodeifyFsMethod('chmod'),
@@ -233,7 +252,7 @@ export default {
   realpath: _denodeifyFsMethod('realpath'),
   rename: _denodeifyFsMethod('rename'),
   move: _denodeifyFsMethod('move'),
-  stat: _denodeifyFsMethod('stat'),
+  stat,
   symlink: _denodeifyFsMethod('symlink'),
   unlink: _denodeifyFsMethod('unlink'),
   writeFile: _denodeifyFsMethod('writeFile'),

@@ -1,0 +1,6 @@
+[
+  {
+    "implementation": "./lib/CommandService.js",
+    "name": "CommandService"
+  }
+]

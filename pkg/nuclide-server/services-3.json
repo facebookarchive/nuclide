@@ -8,6 +8,10 @@
     "name": "BuckProject"
   },
   {
+    "implementation": "../nuclide-remote-atom-server/lib/RemoteCommandService.js",
+    "name": "RemoteCommandService"
+  },
+  {
     "implementation": "./lib/services/FileSystemService.js",
     "name": "FileSystemService"
   },

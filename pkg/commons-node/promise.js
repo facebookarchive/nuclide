@@ -309,7 +309,7 @@ export class Deferred<T> {
  */
 export function asyncFind<T, U>(
   items_: Array<T>,
-  test: (t: T) => ?Promise<U>,
+  test: (t: T) => ?Promise<?U>,
   thisArg?: mixed,
 ): Promise<?U> {
   let items = items_;
