@@ -31,7 +31,7 @@ This directory will contain the user and feature documentation for Nuclide.
 4. Run Jekyll's server.
 
     ```
-    bundle exec jekyll serve
+    bundle exec jekyll serve --incremental
     ```
 
 5. The site will be served from http://localhost:4000.
