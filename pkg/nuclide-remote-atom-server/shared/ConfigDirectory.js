@@ -104,7 +104,7 @@ export async function getServer(): Promise<?ServerInfo> {
 
 async function getServerInfos(configDirectory: NuclideUri): Promise<Array<ServerInfo>> {
   const entries = await fs.readdir(configDirectory);
-  return (await Promise.all(entries, async entry => {
+  return (await Promise.all(entries.map(async entry => {
     const subdir = nuclideUri.join(configDirectory, entry);
     const info = JSON.parse(await fs.readFile(nuclideUri.join(subdir, SERVER_INFO_FILE)));
     if (info.commandPort != null && info.family != null) {
@@ -112,7 +112,7 @@ async function getServerInfos(configDirectory: NuclideUri): Promise<Array<Server
     } else {
       return null;
     }
-  })).filter(serverInfo => serverInfo != null);
+  }))).filter(serverInfo => serverInfo != null);
 }
 
 async function findPathToConfigDirectory(clearDirectory: boolean): Promise<?string> {
