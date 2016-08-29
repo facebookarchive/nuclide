@@ -1,5 +1,55 @@
 # Nuclide Changelog
 
+## v0.166.0
+
+### Highlights
+
+* Allow subdirectories of project roots to be the Current Working Root
+* Added Open File in Atom from your remote server:
+  * `nuclide/pkg/nuclide-remote-atom-rpc/bin/atom [--wait] <FileName>[:line[:column]]`
+* Hyperclick trigger keys are now customizable
+
+### General
+
+* Added Atom commands for all Task Runner tasks (Buck, Swift, etc)
+* Remote connection config is now stored under `nuclide.nuclide-remote-projects`
+* Remove Recent Files keyboard shortcut (`cmd-alt-r`) due to conflict with React Native packager
+* File tree: Only show the "Open Files" label if there are open files
+
+### Languages
+
+* C++: Fix `#pragma mark` positioning in Outline View
+* Python: Enable language features for MagicPython users
+
+### Buck
+
+* C++ build errors are now displayed as in-editor diagnostics
+* Enable the “Debug” toolbar option for C++ binaries
+  * Launch arguments can be provided from the settings button in the toolbar
+* Added a Nuclide > Buck submenu for Buck tasks
+* Fix race condition with build output
+
+### Debugger
+
+* Single thread/request stepping option for PHP and C++
+* Improved UI for attaching the native debugger to a process
+* Improved Threads List table
+* For C++
+  * Suspends all threads besides the active thread while stepping
+  * Fix LLDB launch arguments with quotes/escapes
+  * Enable Buck "Debug" button for C++ binaries
+* For PHP: prevents the debugger from jumping between requests while debugging
+
+### Source Control
+
+* Improve Nuclide's merge conflicts detection to report conflicts only when not resolved in any other merge tool / editor
+
+### Fixes
+
+* Removed hardcoded paths in the debugger in favor of a new PHP Runtime Arguments field in settings
+* Removed hack to work around debugger XML corruption bug in HHVM
+* Make arc lint autofix more robust
+
 ## v0.165.0
 
 ### Hotfixes
