@@ -25,7 +25,7 @@ function convertStringFamilyToNumberFamily(family: string): number {
 
 // Connects to the local NuclideServer process, opens the file in the connected
 // Atom process, and resolves once the file is open in Atom.
-export async function openFile(filePath: string): Promise<void> {
+export async function openFile(filePath: string, line: number, column: number): Promise<void> {
   // Get the RPC connection info for the filesystem.
   const serverInfo = await getServer();
   if (serverInfo == null) {
@@ -48,5 +48,5 @@ export async function openFile(filePath: string): Promise<void> {
   if (commands == null) {
     throw new Error('Nuclide server is running but no Atom process with Nuclide is connected.');
   }
-  return await commands.openFile(filePath);
+  return await commands.openFile(filePath, line, column);
 }

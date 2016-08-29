@@ -27,9 +27,8 @@ class Activation {
 
   constructor() {
     this._commands = {
-      async openFile(filePath: NuclideUri): Promise<void> {
-        // TODO: Add optional line, column.
-        goToLocation(filePath);
+      async openFile(filePath: NuclideUri, line: number, column: number): Promise<void> {
+        goToLocation(filePath, line, column);
       },
       dispose(): void {
       },

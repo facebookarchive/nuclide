@@ -57,12 +57,38 @@ async function setupLogging() {
   updateConfig(config);
 }
 
-async function main(argv): Promise<number> {
-  if (argv._.length === 0) {
-    process.stderr.write('Error: must specify a file to open.\n');
-    return 1;
-  }
+type FileLocation = {
+  filePath: string,
+  line: number,
+  column: number,
+};
 
+const LocationSuffixRegExp = /(:\d+)(:\d+)?$/;
+
+// This code is coped from Atom: src/main-process/atom-application.coffee
+function parseLocationParameter(value: string): FileLocation {
+  let filePath: string = value.replace(/[:\s]+$/, '');
+  const match = filePath.match(LocationSuffixRegExp);
+
+  let line: number = 0;
+  let column: number = 0;
+  if (match) {
+    filePath = filePath.slice(0, -match[0].length);
+    if (match[1]) {
+      line = Math.max(0, parseInt(match[1].slice(1), 10) - 1);
+    }
+    if (match[2]) {
+      column = Math.max(0, parseInt(match[2].slice(1), 10) - 1);
+    }
+  }
+  return {
+    filePath,
+    line,
+    column,
+  };
+}
+
+async function main(argv): Promise<number> {
   await setupLogging();
   setupErrorHandling();
 
@@ -70,7 +96,8 @@ async function main(argv): Promise<number> {
 
   // TODO(t10180322): Support the --wait argument.
   // TODO(t10180337): Consider a batch API for openFile().
-  for (const filePath of argv._) {
+  for (const arg of argv._) {
+    const {filePath, line, column} = parseLocationParameter(arg);
     let realpath;
     try {
       // eslint-disable-next-line babel/no-await-in-loop
@@ -84,7 +111,7 @@ async function main(argv): Promise<number> {
 
     try {
       // eslint-disable-next-line babel/no-await-in-loop
-      await openFile(realpath);
+      await openFile(realpath, line, column);
     } catch (e) {
       process.stderr.write('Error: Unable to connect to Nuclide server process.\n');
       process.stderr.write('Do you have Atom with Nuclide open?\n');
@@ -99,6 +126,8 @@ async function main(argv): Promise<number> {
 
 async function run() {
   const {argv} = yargs
+    .usage('Usage: atom <file>')
+    .demand(1, 'At least one file name is required.')
     .help('h')
     .alias('h', 'help');
   const exitCode = await main(argv);

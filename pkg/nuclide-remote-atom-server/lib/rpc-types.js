@@ -11,6 +11,6 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export interface AtomCommands {
-  openFile(filePath: NuclideUri): Promise<void>,
+  openFile(filePath: NuclideUri, line: number, column: number): Promise<void>,
   dispose(): void,
 }
