@@ -1,5 +1,5 @@
 {
-  "name": "nuclide-remote-atom-client",
+  "name": "nuclide-remote-atom",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",

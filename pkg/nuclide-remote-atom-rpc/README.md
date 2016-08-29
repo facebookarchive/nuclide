@@ -8,7 +8,7 @@ invoke a command. Currently the only available command is to open files.
 
 # Code Layout
 
-## nuclide-remote-atom-client Package
+## nuclide-remote-atom Package
 
 This package runs in the Atom process.
 
@@ -33,8 +33,8 @@ The `shared` directory contains code which runs in both the Nuclide Server
 
 ## Initialization
 
-- On Atom startup the nuclide-remote-atom-client package is initialized.
-- When a ServerConnection is initialized, the nuclide-remote-atom-client package
+- On Atom startup the nuclide-remote-atom package is initialized.
+- When a ServerConnection is initialized, the nuclide-remote-atom package
   creates an instance of the `AtomCommands` interface and registers it
   with the nuclide-remote-atom-rpc package with `RemoteCommandService.registerAtomCommands`.
 - Once the `AtomCommands` are registered the nuclide-remote-atom-rpc package
