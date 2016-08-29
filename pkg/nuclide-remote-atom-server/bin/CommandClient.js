@@ -10,6 +10,9 @@
  */
 
 import typeof * as CommandService from '../lib/CommandService';
+import type {AtomCommands, AtomFileEvent} from '../lib/rpc-types';
+
+import {Observable} from 'rxjs';
 import {getServer} from '../shared/ConfigDirectory';
 import net from 'net';
 import {loadServicesConfig, RpcConnection, SocketTransport} from '../../nuclide-rpc';
@@ -23,9 +26,7 @@ function convertStringFamilyToNumberFamily(family: string): number {
   }
 }
 
-// Connects to the local NuclideServer process, opens the file in the connected
-// Atom process, and resolves once the file is open in Atom.
-export async function openFile(filePath: string, line: number, column: number): Promise<void> {
+async function getCommands(): Promise<AtomCommands> {
   // Get the RPC connection info for the filesystem.
   const serverInfo = await getServer();
   if (serverInfo == null) {
@@ -43,10 +44,24 @@ export async function openFile(filePath: string, line: number, column: number): 
   await transport.onConnected();
   const connection = RpcConnection.createLocal(transport, services);
 
+  // Get the command interface
   const service: CommandService = connection.getService('CommandService');
   const commands = await service.getAtomCommands();
   if (commands == null) {
     throw new Error('Nuclide server is running but no Atom process with Nuclide is connected.');
   }
-  return await commands.openFile(filePath, line, column);
+  return commands;
+}
+
+// Connects to the local NuclideServer process, opens the file in the connected
+// Atom process.
+export function openFile(
+  filePath: string,
+  line: number,
+  column: number,
+): Observable<AtomFileEvent> {
+  return Observable.fromPromise(getCommands())
+    .flatMap(commands => {
+      return commands.openFile(filePath, line, column).refCount();
+    });
 }

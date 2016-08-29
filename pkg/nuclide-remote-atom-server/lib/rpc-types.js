@@ -9,8 +9,14 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {ConnectableObservable} from 'rxjs';
 
+export type AtomFileEvent = 'open' | 'close';
 export interface AtomCommands {
-  openFile(filePath: NuclideUri, line: number, column: number): Promise<void>,
+  openFile(
+    filePath: NuclideUri,
+    line: number,
+    column: number,
+  ): ConnectableObservable<AtomFileEvent>,
   dispose(): void,
 }

@@ -125,3 +125,9 @@ export function getCursorPositions(editor: atom$TextEditor): Observable<atom$Poi
       .map(event => event.newBufferPosition),
   );
 }
+
+export function observeEditorDestroy(editor: atom$TextEditor): Observable<atom$TextEditor> {
+  return observableFromSubscribeFunction(editor.onDidDestroy.bind(editor))
+    .map(event => editor)
+    .take(1);
+}

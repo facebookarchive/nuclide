@@ -115,7 +115,7 @@ async function getServerInfos(configDirectory: NuclideUri): Promise<Array<Server
   }))).filter(serverInfo => serverInfo != null);
 }
 
-async function findPathToConfigDirectory(clearDirectory: boolean): Promise<?string> {
+function findPathToConfigDirectory(clearDirectory: boolean): Promise<?string> {
   // Try some candidate directories. We exclude the directory if it is on NFS
   // because nuclide-server is local, so it should only write out its state to
   // a local directory.

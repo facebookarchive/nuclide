@@ -11,15 +11,17 @@
 
 import typeof * as RemoteCommandServiceType
   from '../../nuclide-remote-atom-server/lib/RemoteCommandService';
-import type {AtomCommands} from '../../nuclide-remote-atom-server/lib/rpc-types';
+import type {AtomCommands, AtomFileEvent} from '../../nuclide-remote-atom-server/lib/rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {ConnectableObservable} from 'rxjs';
 
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {goToLocation} from '../../commons-atom/go-to-location';
-
 import createPackage from '../../commons-atom/createPackage';
 import {CompositeDisposable} from 'atom';
 import {getlocalService} from '../../nuclide-remote-connection';
+import {observeEditorDestroy} from '../../commons-atom/text-editor';
+import {Observable} from 'rxjs';
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -27,8 +29,17 @@ class Activation {
 
   constructor() {
     this._commands = {
-      async openFile(filePath: NuclideUri, line: number, column: number): Promise<void> {
-        goToLocation(filePath, line, column);
+      openFile(
+        filePath: NuclideUri,
+        line: number,
+        column: number,
+      ): ConnectableObservable<AtomFileEvent> {
+        return Observable.fromPromise(goToLocation(filePath, line, column))
+          .switchMap(editor =>
+            Observable.merge(
+              Observable.of('open'),
+              observeEditorDestroy(editor).map(value => 'close')))
+          .publish();
       },
       dispose(): void {
       },

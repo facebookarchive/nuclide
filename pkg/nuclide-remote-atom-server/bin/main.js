@@ -110,8 +110,14 @@ async function main(argv): Promise<number> {
     }
 
     try {
-      // eslint-disable-next-line babel/no-await-in-loop
-      await openFile(realpath, line, column);
+      const result = openFile(realpath, line, column);
+      if (argv.wait) {
+        // eslint-disable-next-line babel/no-await-in-loop
+        await result.toPromise();
+      } else {
+        // eslint-disable-next-line babel/no-await-in-loop
+        await result.take(1).toPromise();
+      }
     } catch (e) {
       process.stderr.write('Error: Unable to connect to Nuclide server process.\n');
       process.stderr.write('Do you have Atom with Nuclide open?\n');
@@ -128,6 +134,9 @@ async function run() {
   const {argv} = yargs
     .usage('Usage: atom <file>')
     .demand(1, 'At least one file name is required.')
+    .boolean('w')
+    .alias('wait', 'w')
+    .describe('w', 'Wait for the opened file to be closed in Atom before exiting')
     .help('h')
     .alias('h', 'help');
   const exitCode = await main(argv);
