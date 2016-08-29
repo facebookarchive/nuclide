@@ -190,7 +190,7 @@ export class NuclideSocket {
     this._pingTimer = setTimeout(() => {
       ws.ping(data);
       this._pingTimer = setTimeout(() => {
-        logger.error('Failed to receive pong in response to ping');
+        logger.warn('Failed to receive pong in response to ping');
         ws.close();
       }, PING_WAIT_INTERVAL);
     }, PING_SEND_INTERVAL);
