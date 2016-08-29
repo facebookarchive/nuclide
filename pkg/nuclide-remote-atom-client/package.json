@@ -1,0 +1,12 @@
+{
+  "name": "nuclide-remote-atom-client",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Client side of command-line interface for communicating with nuclide-server",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "atomTestRunner": "../../lib/test-runner.js"
+}

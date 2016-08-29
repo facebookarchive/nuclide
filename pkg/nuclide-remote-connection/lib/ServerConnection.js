@@ -318,11 +318,11 @@ class ServerConnection {
     }
   }
 
-  static onDidAddServerConnection(handler: (connection: ServerConnection) => void): IDisposable {
+  static onDidAddServerConnection(handler: (connection: ServerConnection) => mixed): IDisposable {
     return ServerConnection._emitter.on('did-add', handler);
   }
 
-  static onDidCloseServerConnection(handler: (connection: ServerConnection) => void): IDisposable {
+  static onDidCloseServerConnection(handler: (connection: ServerConnection) => mixed): IDisposable {
     return ServerConnection._emitter.on('did-close', handler);
   }
 
@@ -338,7 +338,7 @@ class ServerConnection {
     return ServerConnection._connections.get(hostname);
   }
 
-  static observeConnections(handler: (connection: ServerConnection) => void): IDisposable {
+  static observeConnections(handler: (connection: ServerConnection) => mixed): IDisposable {
     ServerConnection._connections.forEach(handler);
     return ServerConnection.onDidAddServerConnection(handler);
   }
