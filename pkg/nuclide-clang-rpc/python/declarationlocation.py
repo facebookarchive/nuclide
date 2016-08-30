@@ -12,7 +12,7 @@ import re
 
 logger = logging.getLogger(__name__)
 patterns = {
-    'incl':  re.compile('^[ \t]*#include[ \t]+["<]([^\s"<>]+?)[">][ \t]*$'),
+    'incl':  re.compile('^[ \t]*#[ \t]*(?:include|import)[ \t]+["<]([^\s"<>]+?)[">][ \t]*$'),
     'rel':   re.compile('"(.+?)"'),
     'abs':   re.compile('<(.+?)>'),
     'iflag': re.compile('^-I(\S+)$')
