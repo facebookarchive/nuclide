@@ -44,7 +44,7 @@ class ThreadManager(object):
                 'description': description_stream.GetData(),
             })
         stopThreadId = process.GetSelectedThread().GetThreadID()
-        if self._previousStopThreadId != stopThreadId:
+        if self._previousStopThreadId is not None and self._previousStopThreadId != stopThreadId:
             self._threadSwitchMessage = "Active thread switched from thread {0} to thread {1}" \
                 .format(self._previousStopThreadId, stopThreadId)
         else:
