@@ -77,6 +77,7 @@ import {notifyInternalError} from './notifications';
 import {bufferForUri, loadBufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {hgConstants} from '../../nuclide-hg-rpc';
 import stripAnsi from 'strip-ansi';
 
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
@@ -901,7 +902,7 @@ export default class DiffViewModel {
       }
     }
     if (shouldAmend) {
-      await activeStack.amend(commitMessage);
+      await activeStack.amend(commitMessage, hgConstants.AmendMode.CLEAN).toArray().toPromise();
       amended = true;
     }
     return {
@@ -928,7 +929,9 @@ export default class DiffViewModel {
     invariant(activeRepositoryStack, 'No active repository stack');
     if (!amended && publishMessage !== lastCommitMessage) {
       getLogger().info('Amending commit with the updated message');
-      await activeRepositoryStack.amend(publishMessage);
+      await activeRepositoryStack
+        .amend(publishMessage, hgConstants.AmendMode.CLEAN)
+        .toArray().toPromise();
       atom.notifications.addSuccess('Commit amended with the updated message');
     }
 
@@ -1261,11 +1264,11 @@ export default class DiffViewModel {
       invariant(activeStack, 'No active repository stack');
       switch (commitMode) {
         case CommitMode.COMMIT:
-          await activeStack.commit(message);
+          await activeStack.commit(message).toArray().toPromise();
           atom.notifications.addSuccess('Commit created', {nativeFriendly: true});
           break;
         case CommitMode.AMEND:
-          await activeStack.amend(message);
+          await activeStack.amend(message, hgConstants.AmendMode.CLEAN).toArray().toPromise();
           atom.notifications.addSuccess('Commit amended', {nativeFriendly: true});
           break;
       }

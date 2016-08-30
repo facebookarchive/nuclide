@@ -17,6 +17,7 @@ import type {RevisionInfo} from '../pkg/nuclide-hg-rpc/lib/HgService';
 import type {TestContext} from './utils/remotable-tests';
 
 import fsPromise from '../pkg/commons-node/fsPromise';
+import {hgConstants} from '../pkg/nuclide-hg-rpc';
 import invariant from 'assert';
 import shallowEqual from 'shallowequal';
 import nullthrows from 'nullthrows';
@@ -25,6 +26,8 @@ import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 import {repositoryForPath} from '../pkg/nuclide-hg-git-bridge';
 import {waitsForRepositoryReady} from './utils/diff-view-utils';
+
+const {AmendMode} = hgConstants;
 
 describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context: TestContext) => {
   let repoPath: string = (null : any);
@@ -100,7 +103,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
     });
 
     waitsForPromise({label: 'commit edited file'}, async () => {
-      await hgRepository.commit('edited test.txt');
+      await hgRepository.commit('edited test.txt').toArray().toPromise();
 
       await waitsForRepositoryReady(repoRemotePath);
     });
@@ -138,7 +141,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       // doing an amend removes all .status-added and .status-modified classes from the file tree
 
       // Amend commit
-      await hgRepository.amend('forgot to add new.txt');
+      await hgRepository.amend('forgot to add new.txt', AmendMode.CLEAN).toArray().toPromise();
 
       await waitsForRepositoryReady(repoRemotePath);
     });
@@ -163,7 +166,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       const filename = nuclideUri.join(repoPath, 'new.txt');
       await fsPromise.writeFile(filename, 'adding changes to new.txt', 'utf8');
       await hgRepository.addAll([repoPath]);
-      await hgRepository.commit('edit new.txt');
+      await hgRepository.commit('edit new.txt').toArray().toPromise();
       const laterRevision = await hgRepository.getBaseRevision();
 
       // Make 'new' bookmark at laterRevision and 'other' bookmark at firstRevision
@@ -190,7 +193,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       const filename = nuclideUri.join(repoPath, 'other.txt');
       await fsPromise.writeFile(filename, 'this file created in the `other` bookmark', 'utf8');
       await hgRepository.addAll([repoPath]);
-      await hgRepository.commit('add other.txt');
+      await hgRepository.commit('add other.txt').toArray().toPromise();
       // Update to 'new' bookmark to see if file tree updates list of files
       await hgRepository.checkoutRevision('new', false);
 

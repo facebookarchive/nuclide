@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rxjs';
 import type {LRUCache} from 'lru-cache';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {
@@ -19,10 +20,12 @@ import type {
   RevisionsState,
 } from './types';
 import type {
+  AmendModeValue,
   RevisionFileChanges,
   RevisionInfo,
 } from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus, DiffOption} from './constants';
@@ -523,12 +526,12 @@ export default class RepositoryStack {
     return this._repository;
   }
 
-  commit(message: string): Promise<void> {
+  commit(message: string): Observable<ProcessMessage> {
     return this._repository.commit(message);
   }
 
-  amend(message: ?string): Promise<void> {
-    return this._repository.amend(message);
+  amend(message: ?string, amendMode: AmendModeValue): Observable<ProcessMessage> {
+    return this._repository.amend(message, amendMode);
   }
 
   revert(filePaths: Array<NuclideUri>): Promise<void> {

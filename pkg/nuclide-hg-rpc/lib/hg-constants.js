@@ -12,6 +12,7 @@
 /* @providesModule HgConstants */
 
 import type {
+  AmendModeValue,
   StatusCodeIdValue,
   StatusCodeNumberValue,
   HgStatusOptionValue,
@@ -75,7 +76,17 @@ const MergeConflictStatus = Object.freeze({
 // This is to work around flow's missing support of enums.
 (MergeConflictStatus: { [key: string]: MergeConflictStatusValue });
 
+const AmendMode = Object.freeze({
+  CLEAN: 'Clean',
+  FIXUP: 'Fixup',
+  REBASE: 'Rebase',
+});
+
+// This is to work around flow's missing support of enums.
+(AmendMode: { [key: string]: AmendModeValue });
+
 module.exports = {
+  AmendMode,
   HgStatusOption,
   MergeConflictStatus,
   StatusCodeId,

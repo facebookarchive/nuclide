@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rxjs';
 import type {
+  AmendModeValue,
   HgService,
   DiffInfo,
   HgStatusCommandOptions,
@@ -22,6 +24,7 @@ import type {
   StatusCodeNumberValue,
   VcsLogResponse,
 } from '../../nuclide-hg-rpc/lib/HgService';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import HgRepositoryClientAsync from './HgRepositoryClientAsync';
@@ -919,14 +922,16 @@ export class HgRepositoryClient {
     return this._service.add(filePaths);
   }
 
-  async commit(message: string): Promise<void> {
-    await this._service.commit(message);
-    this._clearClientCache();
+  commit(message: string): Observable<ProcessMessage> {
+    return this._service.commit(message)
+      .refCount()
+      .finally(this._clearClientCache.bind(this));
   }
 
-  async amend(message: ?string): Promise<void> {
-    await this._service.amend(message);
-    this._clearClientCache();
+  amend(message: ?string, amendMode: AmendModeValue): Observable<ProcessMessage> {
+    return this._service.amend(message, amendMode)
+      .refCount()
+      .finally(this._clearClientCache.bind(this));
   }
 
   revert(filePaths: Array<NuclideUri>): Promise<void> {

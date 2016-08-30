@@ -10,12 +10,19 @@
  */
 
 import type {HgRepositoryClient} from '../pkg/nuclide-hg-repository-client';
+
 import {
   activateAllPackages,
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
 } from './utils/integration-test-helpers';
 import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
+import {
+  hgConstants,
+} from '../pkg/nuclide-hg-rpc';
+
+const {AmendMode} = hgConstants;
+
 import {repositoryForPath} from '../pkg/nuclide-hg-git-bridge';
 import {
   fetchFileContentAtRevision,
@@ -63,7 +70,7 @@ describe('Mercurial Repository Integration Tests', () => {
       const hgRepository = ((repositoryForPath(repoPath): any): HgRepositoryClient);
       invariant(hgRepository != null);
       await fsPromise.writeFile(filePath, 'new text');
-      await hgRepository.commit('commit msg');
+      await hgRepository.commit('commit msg').toArray().toPromise();
       const changes = await fetchFilesChangedAtRevision('.', repoPath);
       invariant(changes != null);
       expect(changes.all.length).toEqual(1);
@@ -82,11 +89,11 @@ describe('Mercurial Repository Integration Tests', () => {
       const hgRepository = ((repositoryForPath(repoPath): any): HgRepositoryClient);
       invariant(hgRepository != null);
       await fsPromise.writeFile(filePath, 'new text 1');
-      await hgRepository.commit('commit msg 1');
+      await hgRepository.commit('commit msg 1').toArray().toPromise();
       await fsPromise.writeFile(filePath, 'new text 2');
-      await hgRepository.commit('commit msg 2');
+      await hgRepository.commit('commit msg 2').toArray().toPromise();
       await fsPromise.writeFile(filePath, 'new text 3');
-      await hgRepository.amend('commit msg 3');
+      await hgRepository.amend('commit msg 3', AmendMode.CLEAN).toArray().toPromise();
       const changes = await fetchFilesChangedAtRevision('.', repoPath);
       invariant(changes != null);
       expect(changes.all.length).toEqual(1);

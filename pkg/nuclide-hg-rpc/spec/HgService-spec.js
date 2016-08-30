@@ -12,12 +12,14 @@
 import nuclideUri from '../../commons-node/nuclideUri';
 import {HgService} from '../lib/HgService';
 import {
+  AmendMode,
   StatusCodeId,
   HgStatusOption,
   MergeConflictStatus,
 } from '../lib/hg-constants';
 import invariant from 'assert';
 import fsPromise from '../../commons-node/fsPromise';
+import {Observable} from 'rxjs';
 
 class TestHgService extends HgService {
   // These tests target the non-watchman-dependent features of LocalHgService.
@@ -333,12 +335,12 @@ describe('HgService', () => {
       spyOn(fsPromise, 'unlink').andCallFake(async () => {
         tempFileRemoved = true;
       });
-      spyOn(fsPromise, 'writeFile').andCallFake((filePath, contents) => {
+      spyOn(fsPromise, 'writeFile').andCallFake(async (filePath, contents) => {
         expect(contents).toBe(commitMessage);
         tempFileWritten = true;
       });
       committedToHg = false;
-      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+      spyOn(hgService, '_hgObserveExecution').andCallFake((args, options) => {
         expect(expectedArgs).not.toBeNull();
         invariant(expectedArgs !== null);
         expect(args.length).toBe(
@@ -354,6 +356,7 @@ describe('HgService', () => {
           expect(args.pop()).toBe(expectedArg);
         }
         committedToHg = true;
+        return Observable.of(null);
       });
     });
 
@@ -361,7 +364,7 @@ describe('HgService', () => {
       it('can commit changes', () => {
         expectedArgs = ['commit', '-l', messageFile];
         waitsForPromise(async () => {
-          await hgService.commit(commitMessage);
+          await hgService.commit(commitMessage).refCount().toArray().toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
           expect(tempFileCreated).toBeTruthy('No temporary file created');
           expect(tempFileRemoved).toBeTruthy('Temporary file was not removed');
@@ -371,9 +374,9 @@ describe('HgService', () => {
 
     describe('::amend', () => {
       it('can amend changes with a message', () => {
-        expectedArgs = ['commit', '-l', messageFile, '--amend'];
+        expectedArgs = ['amend', '-l', messageFile];
         waitsForPromise(async () => {
-          await hgService.amend(commitMessage);
+          await hgService.amend(commitMessage, AmendMode.CLEAN).refCount().toArray().toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
           expect(tempFileCreated).toBeTruthy('No temporary file created');
           expect(tempFileRemoved).toBeTruthy('Temporary file was not removed');
@@ -381,9 +384,31 @@ describe('HgService', () => {
       });
 
       it('can amend changes without a message', () => {
-        expectedArgs = ['commit', '--amend', '--reuse-message', '.'];
+        expectedArgs = ['amend'];
         waitsForPromise(async () => {
-          await hgService.amend();
+          await hgService.amend(null, AmendMode.CLEAN).refCount().toArray().toPromise();
+          expect(committedToHg).toBeTruthy('Looks like commit did not happen');
+          expect(tempFileCreated).not.toBeTruthy('Temporary file created while it is not needed');
+          expect(tempFileRemoved).not.toBeTruthy(
+            'Temporary file should not exist and removal should not have been attempted',
+          );
+        });
+      });
+
+      it('can amend with --rebase & a commit message', () => {
+        expectedArgs = ['amend', '--rebase', '-l', messageFile];
+        waitsForPromise(async () => {
+          await hgService.amend(commitMessage, AmendMode.REBASE).refCount().toArray().toPromise();
+          expect(committedToHg).toBeTruthy('Looks like commit did not happen');
+          expect(tempFileCreated).toBeTruthy('No temporary file created');
+          expect(tempFileRemoved).toBeTruthy('Temporary file was not removed');
+        });
+      });
+
+      it('can amend with --fixup', () => {
+        expectedArgs = ['amend', '--fixup'];
+        waitsForPromise(async () => {
+          await hgService.amend(null, AmendMode.FIXUP).refCount().toArray().toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
           expect(tempFileCreated).not.toBeTruthy('Temporary file created while it is not needed');
           expect(tempFileRemoved).not.toBeTruthy(

@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
@@ -18,8 +20,8 @@ import {
   HgStatusOption,
   MergeConflictStatus,
   StatusCodeId,
+  AmendMode,
 } from './hg-constants';
-import type {ConnectableObservable} from 'rxjs';
 import {Subject} from 'rxjs';
 import {parseHgBlameOutput} from './hg-blame-output-parser';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
@@ -33,13 +35,18 @@ import {
   fetchFileContentAtRevision,
   fetchFilesChangedAtRevision,
 } from './hg-revision-state-helpers';
-import {hgAsyncExecute} from './hg-utils';
+import {
+  createCommmitMessageTempFile,
+  hgAsyncExecute,
+  hgObserveExecution,
+} from './hg-utils';
 import fsPromise from '../../commons-node/fsPromise';
 import debounce from '../../commons-node/debounce';
 
 import {fetchActiveBookmark} from './hg-bookmark-helpers';
 import {readArcConfig} from '../../nuclide-arcanist-rpc';
 import {getLogger} from '../../nuclide-logging';
+import {Observable} from 'rxjs';
 
 const logger = getLogger();
 const DEFAULT_ARC_PROJECT_FORK_BASE = 'remote/master';
@@ -57,15 +64,6 @@ const CHECK_CONFLICT_DELAY_MS = 2000;
 // This is typically caused by a large rebase or a Watchman re-crawl.
 // We'll just report that the repository state changed, which should trigger a full client refresh.
 const FILES_CHANGED_LIMIT = 1000;
-
-// Mercurial (as of v3.7.2) [strips lines][1] matching the following prefix when a commit message is
-// created by an editor invoked by Mercurial. Because Nuclide is not invoked by Mercurial, Nuclide
-// must mimic the same stripping.
-//
-// Note: `(?m)` converts to `/m` in JavaScript-flavored RegExp to mean 'multiline'.
-//
-// [1] https://selenic.com/hg/file/3.7.2/mercurial/cmdutil.py#l2734
-const COMMIT_MESSAGE_STRIP_LINE = /^HG:.*(\n|$)/gm;
 
 // Suffixes of hg error messages that indicate that an error is safe to ignore,
 // and should not warrant a user-visible error. These generally happen
@@ -170,6 +168,8 @@ export type MergeConflict = {
 
 export type CheckoutSideName = 'ours' | 'theirs';
 
+export type AmendModeValue = 'Clean' | 'Rebase' | 'Fixup';
+
 async function getForkBaseName(directoryPath: string): Promise<string> {
   const arcConfig = await readArcConfig(directoryPath);
   if (arcConfig != null) {
@@ -240,8 +240,12 @@ export class HgService {
   }
 
   // Wrapper to help mocking during tests.
-  _hgAsyncExecute(args: Array<string>, options: any): Promise<any> {
+  _hgAsyncExecute(args: Array<string>, options: Object): Promise<any> {
     return hgAsyncExecute(args, options);
+  }
+
+  _hgObserveExecution(args: Array<string>, options: Object): Observable<ProcessMessage> {
+    return hgObserveExecution(args, options);
   }
 
   /**
@@ -689,48 +693,62 @@ export class HgService {
     return await this._hgAsyncExecute(args, execOptions);
   }
 
-  async _commitCode(
+  _commitCode(
     message: ?string,
-    extraArgs?: Array<string> = [],
-  ): Promise<void> {
-    const args = ['commit'];
+    args: Array<string>,
+  ): Observable<ProcessMessage> {
     let tempFile = null;
-    if (message != null) {
-      tempFile = await fsPromise.tempfile();
-      const strippedMessage = message.replace(COMMIT_MESSAGE_STRIP_LINE, '');
-      await fsPromise.writeFile(tempFile, strippedMessage);
-      args.push('-l', tempFile);
-    }
-    const execOptions = {
-      cwd: this._workingDirectory,
-    };
-    try {
-      await this._hgAsyncExecute(args.concat(extraArgs), execOptions);
-    } finally {
-      if (tempFile != null) {
-        await fsPromise.unlink(tempFile);
+
+    return Observable.fromPromise((async () => {
+      if (message == null) {
+        return args;
+      } else {
+        tempFile = await createCommmitMessageTempFile(message);
+        return [...args, '-l', tempFile];
       }
-    }
+    })()).switchMap(argumentsWithCommitFile => {
+      const execOptions = {
+        cwd: this._workingDirectory,
+      };
+      return this._hgObserveExecution(argumentsWithCommitFile, execOptions);
+    }).finally(() => {
+      if (tempFile != null) {
+        fsPromise.unlink(tempFile);
+      }
+    });
   }
 
   /**
    * Commit code to version control.
    * @param message Commit message.
    */
-  commit(message: string): Promise<void> {
-    return this._commitCode(message);
+  commit(message: string): ConnectableObservable<ProcessMessage> {
+    return this._commitCode(message, ['commit']).publish();
   }
 
   /**
    * Amend code changes to the latest commit.
    * @param message Commit message.  Message will remain unchaged if not provided.
+   * @param amendMode Decide the amend functionality to apply.
+   *  Clean to just amend.
+   *  Rebase to amend and rebase the stacked diffs.
+   *  Fixup to fix the stacked commits, rebasing them on top of this commit.
    */
-  amend(message: ?string): Promise<void> {
-    const extraArgs = ['--amend'];
-    if (message == null) {
-      extraArgs.push('--reuse-message', '.');
+  amend(message: ?string, amendMode: AmendModeValue): ConnectableObservable<ProcessMessage> {
+    const args = ['amend'];
+    switch (amendMode) {
+      case AmendMode.CLEAN:
+        break;
+      case AmendMode.REBASE:
+        args.push('--rebase');
+        break;
+      case AmendMode.FIXUP:
+        args.push('--fixup');
+        break;
+      default:
+        throw new Error('Unexpected AmendMode');
     }
-    return this._commitCode(message, extraArgs);
+    return this._commitCode(message, args).publish();
   }
 
   revert(filePaths: Array<NuclideUri>): Promise<void> {

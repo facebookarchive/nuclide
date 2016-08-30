@@ -9,8 +9,23 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rxjs';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+
 import {asyncExecute, createArgsForScriptCommand} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
+import fsPromise from '../../commons-node/fsPromise';
+import {observeProcess, safeSpawn} from '../../commons-node/process';
+
+
+// Mercurial (as of v3.7.2) [strips lines][1] matching the following prefix when a commit message is
+// created by an editor invoked by Mercurial. Because Nuclide is not invoked by Mercurial, Nuclide
+// must mimic the same stripping.
+//
+// Note: `(?m)` converts to `/m` in JavaScript-flavored RegExp to mean 'multiline'.
+//
+// [1] https://selenic.com/hg/file/3.7.2/mercurial/cmdutil.py#l2734
+const COMMIT_MESSAGE_STRIP_LINE = /^HG:.*(\n|$)/gm;
 
 /**
  * Calls out to checkOutput using the 'hg' command.
@@ -18,35 +33,73 @@ import {getLogger} from '../../nuclide-logging';
  *   - NO_HGPLAIN set if the $HGPLAIN environment variable should not be used.
  *   - TTY_OUTPUT set if the command should be run as if it were attached to a tty.
  */
-export async function hgAsyncExecute(args_: Array<string>, options: any): Promise<any> {
+export async function hgAsyncExecute(args_: Array<string>, options_: Object): Promise<any> {
+  const {command, args, options} = getHgExecParams(args_, options_);
+  const result = await asyncExecute(command, args, options);
+  if (result.exitCode === 0) {
+    return result;
+  } else {
+    logAndThrowHgError(args, options, result.stdout, result.stderr);
+  }
+}
+
+/**
+ * Calls hg commands, returning an Observable to allow aborting and streaming progress output.
+ */
+export function hgObserveExecution(
+  args_: Array<string>,
+  options_: Object,
+): Observable<ProcessMessage> {
+  const {command, args, options} = getHgExecParams(args_, options_);
+  return observeProcess(
+    () => safeSpawn(command, args, options),
+  );
+}
+
+function logAndThrowHgError(
+  args: Array<string>,
+  options: Object,
+  stdout: string,
+  stderr: string,
+): void {
+  getLogger().error(`Error executing hg command: ${JSON.stringify(args)} ` +
+    `options: ${JSON.stringify(options)}`);
+  if (stderr.length > 0 && stdout.length > 0) {
+    throw new Error(`hg error\nstderr: ${stderr}\nstdout: ${stdout}`);
+  } else {
+    // One of `stderr` or `stdout` is empty - not both.
+    throw new Error(stderr || stdout);
+  }
+}
+
+function getHgExecParams(
+  args_: Array<string>,
+  options_: Object,
+): {command: string, args: Array<string>, options: Object} {
   let args = args_;
+  const options = {...options_};
   if (!options.NO_HGPLAIN) {
     // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
     if (options.env) {
-      options.env.HGPLAIN = 1;
+      options.env = {...options.env, HGPLAIN: 1};
     } else {
       options.env = {...process.env || {}, HGPLAIN: 1};
     }
   }
 
-  let cmd;
+  let command;
   if (options.TTY_OUTPUT) {
-    cmd = 'script';
+    command = 'script';
     args = createArgsForScriptCommand('hg', args);
   } else {
-    cmd = 'hg';
+    command = 'hg';
   }
-  const result = await asyncExecute(cmd, args, options);
-  if (result.exitCode === 0) {
-    return result;
-  } else {
-    getLogger().error(`Error executing hg command: ${JSON.stringify(args)} ` +
-        `options: ${JSON.stringify(options)} ${JSON.stringify(result)}`);
-    if (result.stderr.length > 0 && result.stdout.length > 0) {
-      throw new Error(`hg error\nstderr: ${result.stderr}\nstdout: ${result.stdout}`);
-    } else {
-      // One of `stderr` or `stdout` is empty - not both.
-      throw new Error(result.stderr || result.stdout);
-    }
-  }
+  return {command, args, options};
+}
+
+export async function createCommmitMessageTempFile(commitMessage: string): Promise<string> {
+  const tempFile = await fsPromise.tempfile();
+  const strippedMessage = commitMessage.replace(COMMIT_MESSAGE_STRIP_LINE, '');
+  await fsPromise.writeFile(tempFile, strippedMessage);
+  return tempFile;
 }
