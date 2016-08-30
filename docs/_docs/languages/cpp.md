@@ -173,32 +173,36 @@ Nuclide supports [LLDB](http://lldb.llvm.org/) as the backend for its native C++
 > by using `-g`. e.g., `clang++ hello.cpp -g -o hello.cpp`. If you are using `cmake` or some other
 > build management system, ensure that you are compiling in debug mode with symbols.
 
-### Attach and Debug
+There are three ways to invoke the LLDB debugger:
 
-Debugging C++ requires attaching to a running C++ process (after
+- [Attaching to a running process](#attaching-to-a-running-process)
+- [Launching a process](#launching-a-process)
+- [Debugging a Buck target](#debugging-a-buck-target)
+
+### Attaching to a running process
+
+Nuclide can attach to a running C++ process (after
 [adding a C++ project](/docs/quick-start/getting-started/#adding-a-project) to Nuclide). Once you
 compile your code, run it.
 
-> Currently, unless your program has a built-in execution blocking mechanism, you are going to have
-> to add a block (e.g., via something like a `getChar()`) in order to pause execution such that the
-> debugger can run. In the future, we are planning to support *launching* your C++ program from
-> Nuclide itself where this will not be necessary.
+Bring up the debugger target pane via `cmd-shift-Y` (`ctrl-shift-Y` on Linux).
+Switch the debugging type to C++, select "Attach", and find your process in the list.
 
-Bring up the debugger target pane via `cmd-shift-Y` (`ctrl-shift-Y` on Linux). In the process list
-you should find your program name prefixed by `lldb:` and postfixed by the process id.
+<img src="/static/images/docs/feature-debugger-languages-cpp-attach.png" width="545" />
 
-![](/static/images/docs/feature-debugger-languages-cpp-attach.png)
+After you attach to the process, the actual Nuclide Debugger appears.
+You can then debug your code normally, [following the Debugger guide](/docs/features/debugger/#basics).
 
-After you attach to the process, the actual Nuclide Debugger appears. And you can debug your
-code [normally](/docs/features/debugger/#basics), by first pressing the
-[resume execution button](/docs/features/debugger/#basics__stepping).
+### Launching a process
 
-![](/static/images/docs/feature-debugger-languages-cpp-breakpoint.png)
+Launching a process is similar to the "Attach" flow - bring up the debugger pane
+and select "Launch" from the Action dropdown, then fill out the fields.
 
-> In order to actually break into debug mode, you may have to click the resume execution button one
-> time. If, when the debugger appears, you are paused, click the button and debugging should begin.
+<img src="/static/images/docs/feature-debugger-languages-cpp-launch.png" width="545" />
 
-![](/static/images/docs/feature-debugger-languages-cpp-quirk.png)
+### Debugging a Buck target
+
+See the [Buck guide](/docs/features/buck#debug) for instructions on how to debug C++ Buck targets.
 
 ### LLDB Commands
 
