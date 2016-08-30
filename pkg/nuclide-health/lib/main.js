@@ -28,6 +28,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 // Imports from within this Nuclide package.
 import HealthPaneItem from './HealthPaneItem';
+import getChildProcessesTree from './getChildProcessesTree';
 import getStats from './getStats';
 
 class Activation {
@@ -54,6 +55,11 @@ class Activation {
       .map(getStats)
       .share();
 
+    const childProcessesTreeStream = Observable.of(null)
+      .concat(viewTimeouts.switchMap(Observable.interval))
+      .switchMap(getChildProcessesTree)
+      .share();
+
     const packageStates = statsStream
       .withLatestFrom(toolbarJewels)
       .map(([stats, toolbarJewel]) => ({stats, toolbarJewel}))
@@ -63,10 +69,15 @@ class Activation {
     const updateToolbarJewel = value => {
       featureConfig.set('nuclide-health.toolbarJewel', value);
     };
-    this._paneItemStates = packageStates.map(packageState => ({
-      ...packageState,
-      updateToolbarJewel,
-    }));
+    this._paneItemStates = Observable.combineLatest(
+      packageStates,
+      Observable.of(null).concat(childProcessesTreeStream),
+      (packageState, childProcessesTree) => ({
+        ...packageState,
+        childProcessesTree,
+        updateToolbarJewel,
+      }),
+    );
 
     this._subscriptions = new CompositeDisposable(
       // Keep the toolbar jewel up-to-date.

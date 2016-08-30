@@ -9,6 +9,20 @@
  * the root directory of this source tree.
  */
 
+export type IOBytesStats = {
+  stdin: number,
+  stdout: number,
+  stderr: number,
+};
+
+export type ChildProcessInfo = {
+  pid: number,
+  command: string,
+  cpuPercentage: number,
+  children: Array<ChildProcessInfo>,
+  ioBytesStats: ?IOBytesStats,
+};
+
 export type HandlesByType = {[type: string]: Array<Object>};
 
 export type HealthStats = {
@@ -23,7 +37,8 @@ export type HealthStats = {
 };
 
 export type PaneItemState = {
-  stats?: HealthStats,
+  stats: ?HealthStats,
+  childProcessesTree: ?ChildProcessInfo,
   toolbarJewel?: string,
   updateToolbarJewel?: (value: string) => void,
 };

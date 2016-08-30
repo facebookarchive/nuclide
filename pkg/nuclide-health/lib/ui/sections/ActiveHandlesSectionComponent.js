@@ -11,7 +11,6 @@
 
 import type {HandlesByType} from '../../types';
 
-import nuclideUri from '../../../../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
 import HandlesTableComponent from './HandlesTableComponent';
 
@@ -33,37 +32,6 @@ export default class ActiveHandlesSectionComponent extends React.Component {
     // Note that widthPercentage properties should add up to 90 since the ID column always adds 10.
     return (
       <div>
-        <HandlesTableComponent
-          key={1}
-          title="Child processes"
-          handles={this.props.activeHandlesByType.childprocess}
-          keyed={process => process.pid}
-          columns={[{
-            title: 'Name',
-            value: process => nuclideUri.basename(process.spawnfile),
-            widthPercentage: 15,
-          }, {
-            title: 'In',
-            value: process => process.stdin && process.stdin.bytesWritten,
-            widthPercentage: 5,
-          }, {
-            title: 'Out',
-            value: process => process.stdout && process.stdout.bytesRead,
-            widthPercentage: 5,
-          }, {
-            title: 'Err',
-            value: process => process.stderr && process.stderr.bytesRead,
-            widthPercentage: 5,
-          }, {
-            title: 'Args',
-            value: process => {
-              if (process.spawnargs && process.spawnargs.length > 1) {
-                return process.spawnargs.slice(1).join(' ');
-              }
-            },
-            widthPercentage: 60,
-          }]}
-        />
         <HandlesTableComponent
           key={2}
           title="TLS Sockets"

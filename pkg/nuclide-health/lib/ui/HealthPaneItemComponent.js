@@ -9,11 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {HandlesByType} from '../types';
+import type {HandlesByType, ChildProcessInfo} from '../types';
 
 import {React} from 'react-for-atom';
 import BasicStatsSectionComponent from './sections/BasicStatsSectionComponent';
 import ActiveHandlesSectionComponent from './sections/ActiveHandlesSectionComponent';
+import ChildProcessTreeComponent from './sections/ChildProcessTreeComponent';
 
 type Props = {
   toolbarJewel: string,
@@ -24,6 +25,7 @@ type Props = {
   activeHandles: number,
   activeRequests: number,
   activeHandlesByType: HandlesByType,
+  childProcessesTree: ?ChildProcessInfo,
 };
 
 export default class HealthPaneItemComponent extends React.Component {
@@ -34,6 +36,8 @@ export default class HealthPaneItemComponent extends React.Component {
     const sections = {
       Stats:
         <BasicStatsSectionComponent {...this.props} />,
+      Subprocesses:
+        <ChildProcessTreeComponent childProcessesTree={this.props.childProcessesTree} />,
       Handles:
         <ActiveHandlesSectionComponent activeHandlesByType={this.props.activeHandlesByType} />,
     };

@@ -27,7 +27,10 @@ export default class HealthPaneItem extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    this.state = {};
+    this.state = {
+      stats: null,
+      childProcessesTree: null,
+    };
   }
 
   componentDidMount() {
@@ -53,7 +56,7 @@ export default class HealthPaneItem extends React.Component {
   }
 
   render() {
-    const {toolbarJewel, updateToolbarJewel, stats} = this.state;
+    const {toolbarJewel, updateToolbarJewel, childProcessesTree, stats} = this.state;
 
     if (stats == null) {
       return <div />;
@@ -70,6 +73,7 @@ export default class HealthPaneItem extends React.Component {
           activeHandles={stats.activeHandles}
           activeRequests={stats.activeRequests}
           activeHandlesByType={stats.activeHandlesByType}
+          childProcessesTree={childProcessesTree}
         />
       </div>
     );
