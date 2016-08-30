@@ -51,6 +51,14 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   );
 }
 
+export function deserializeExampleGadgetA() {
+  return new ExampleGadgetA();
+}
+
+export function deserializeExampleGadgetB() {
+  return viewableFromReactElement(<ExampleGadgetB />);
+}
+
 export function deactivate(): void {
   invariant(disposables != null);
   disposables.dispose();

@@ -7,11 +7,11 @@
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm",
-    "deserializers": {
-      "ExampleGadgetA": "./lib/deserializeExampleGadgetA.js",
-      "ExampleGadgetB": "./lib/deserializeExampleGadgetB.js"
-    }
+    "testRunner": "apm"
+  },
+  "deserializers": {
+    "ExampleGadgetA": "deserializeExampleGadgetA",
+    "ExampleGadgetB": "deserializeExampleGadgetB"
   },
   "consumedServices": {
     "nuclide.workspace-views": {
