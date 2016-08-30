@@ -272,6 +272,7 @@ export default class DiffViewComponent extends React.Component {
       commitMessage,
       commitMode,
       commitModeState,
+      shouldRebaseOnAmend,
     } = this.props.diffModel.getState();
 
     const passes = await passesGK('nuclide_diff_commit_form');
@@ -295,6 +296,7 @@ export default class DiffViewComponent extends React.Component {
         commitMessage={commitMessage}
         commitMode={commitMode}
         commitModeState={commitModeState}
+        shouldRebaseOnAmend={shouldRebaseOnAmend}
         // `diffModel` is acting as the action creator for commit view and needs to be passed so
         // methods can be called on it.
         diffModel={this.props.diffModel}

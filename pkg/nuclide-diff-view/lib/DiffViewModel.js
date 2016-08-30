@@ -24,7 +24,10 @@ import type {
   UIProvider,
   UIElement,
 } from './types';
-import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
+import type {
+  AmendModeValue,
+  RevisionInfo,
+} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-rpc/lib/utils';
 
@@ -117,6 +120,7 @@ function getInitialState(): State {
     commitMessage: null,
     commitMode: CommitMode.COMMIT,
     commitModeState: CommitModeState.READY,
+    shouldRebaseOnAmend: true,
     publishMessage: null,
     publishMode: PublishMode.CREATE,
     publishModeState: PublishModeState.READY,
@@ -203,6 +207,7 @@ export type State = {
   commitMessage: ?string,
   commitMode: CommitModeType,
   commitModeState: CommitModeStateType,
+  shouldRebaseOnAmend: boolean,
   publishMessage: ?string,
   publishMode: PublishModeType,
   publishModeState: PublishModeStateType,
@@ -902,7 +907,7 @@ export default class DiffViewModel {
       }
     }
     if (shouldAmend) {
-      await activeStack.amend(commitMessage, hgConstants.AmendMode.CLEAN).toArray().toPromise();
+      await activeStack.amend(commitMessage, this._getSelectedAmendMode()).toArray().toPromise();
       amended = true;
     }
     return {
@@ -929,6 +934,9 @@ export default class DiffViewModel {
     invariant(activeRepositoryStack, 'No active repository stack');
     if (!amended && publishMessage !== lastCommitMessage) {
       getLogger().info('Amending commit with the updated message');
+      // We intentionally amend in clean mode here, because creating the revision
+      // amends the commit message (with the revision url), breaking the stack on top of it.
+      // Consider prompting for `hg amend --fixup` after to rebase the stack when needed.
       await activeRepositoryStack
         .amend(publishMessage, hgConstants.AmendMode.CLEAN)
         .toArray().toPromise();
@@ -1268,7 +1276,7 @@ export default class DiffViewModel {
           atom.notifications.addSuccess('Commit created', {nativeFriendly: true});
           break;
         case CommitMode.AMEND:
-          await activeStack.amend(message, hgConstants.AmendMode.CLEAN).toArray().toPromise();
+          await activeStack.amend(message, this._getSelectedAmendMode()).toArray().toPromise();
           atom.notifications.addSuccess('Commit amended', {nativeFriendly: true});
           break;
       }
@@ -1308,6 +1316,21 @@ export default class DiffViewModel {
     if (loadModeState) {
       // When the commit mode changes, load the appropriate commit message.
       this._loadModeState(true);
+    }
+  }
+
+  setShouldAmendRebase(shouldRebaseOnAmend: boolean): void {
+    this._setState({
+      ...this._state,
+      shouldRebaseOnAmend,
+    });
+  }
+
+  _getSelectedAmendMode(): AmendModeValue {
+    if (this._state.shouldRebaseOnAmend) {
+      return hgConstants.AmendMode.REBASE;
+    } else {
+      return hgConstants.AmendMode.CLEAN;
     }
   }
 

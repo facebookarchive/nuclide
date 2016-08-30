@@ -531,6 +531,7 @@ export default class RepositoryStack {
   }
 
   amend(message: ?string, amendMode: AmendModeValue): Observable<ProcessMessage> {
+    // TODO(most): report progress, especially in Rebase and Fixup modes.
     return this._repository.amend(message, amendMode);
   }
 
