@@ -37,19 +37,25 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
   const rawLastConnectionDetails =
     window.localStorage.getItem('nuclide:nuclide-remote-projects:lastConnectionDetails');
 
-  let lastConnectionDetails: NuclideSavedConnectionDialogConfig = {};
+  let lastConnectionDetails: ?NuclideSavedConnectionDialogConfig;
   try {
     lastConnectionDetails = JSON.parse(rawLastConnectionDetails);
   } catch (err) {
     // nothing to do...
+  } finally {
+    if (lastConnectionDetails == null) {
+      lastConnectionDetails = {};
+    }
   }
 
-  const lastConfig = lastConnectionDetails.updatedConfig || {};
+  invariant(lastConnectionDetails != null);
+  const {lastOfficialRemoteServerCommand, updatedConfig} = lastConnectionDetails;
+  const lastConfig = updatedConfig || {};
 
   // Only use the user's last saved remote server command if there has been no
   // change (upgrade) in the official remote server command.
   let remoteServerCommand = currentOfficialRSC;
-  if (lastConnectionDetails.lastOfficialRemoteServerCommand === currentOfficialRSC
+  if (lastOfficialRemoteServerCommand === currentOfficialRSC
       && lastConfig.remoteServerCommand) {
     remoteServerCommand = lastConfig.remoteServerCommand;
   }
