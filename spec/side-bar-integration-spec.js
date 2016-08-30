@@ -47,12 +47,14 @@ describe('side-bar', () => {
     waitsForPromise(() => sleep(500));
 
     runs(() => {
-      const dropdown = (
-        (document.querySelector('.left.tool-panel:last-child .nuclide-ui-dropdown'): any)
+      const tabTitleContent = (
+        (document.querySelector(
+          '.left.tool-panel:last-child .nuclide-tabs .tab:last-child .title span',
+        ): any)
         : HTMLSelectElement
       );
       // Selected option should be the source-control-side-bar, titled "Source Control"
-      expect(String(dropdown.innerText).trim()).toBe('Source Control');
+      expect(String(tabTitleContent.innerText).trim()).toBe('Source Control');
     });
 
     let panel;

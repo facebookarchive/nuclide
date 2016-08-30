@@ -9,39 +9,54 @@
  * the root directory of this source tree.
  */
 
-import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
+import type {Tab} from '../../nuclide-ui/lib/Tabs';
+
 import {React, ReactDOM} from 'react-for-atom';
-import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
-import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
+import Tabs from '../../nuclide-ui/lib/Tabs';
+
+type Props = {
+  children?: React.Element<any>,
+  menuItems: Array<{label: string, value: string}>,
+  onSelectedViewMenuItemChange: (value: ?string) => void,
+  selectedViewMenuItemValue: ?string,
+};
 
 export default class SideBarPanelComponent extends React.Component {
-  props: {
-    children?: React.Element<any>,
-    menuItems: Array<{label: string, value: string}>,
-    onSelectedViewMenuItemChange: (value: ?string) => void,
-    selectedViewMenuItemValue: ?string,
-  };
+  props: Props;
 
-  focus() {
+  constructor(props: Props) {
+    super(props);
+    (this: any)._handleTabChange = this._handleTabChange.bind(this);
+  }
+
+  focus(): void {
     ReactDOM.findDOMNode(this.refs.child).focus();
   }
 
-  render() {
+  _handleTabChange(newTab: Tab): void {
+    const value = newTab.name;
+    this.props.onSelectedViewMenuItemChange(value);
+  }
+
+  render(): React.Element<any> {
+    const {
+      menuItems,
+      selectedViewMenuItemValue,
+    } = this.props;
+    const tabs = menuItems.map(menuItem => ({
+      name: menuItem.value,
+      tabContent: <span>{menuItem.label}</span>,
+    }));
+    const activeTabName = selectedViewMenuItemValue;
     return (
       <div style={{display: 'flex', flex: 1, flexDirection: 'column', minWidth: 0}} tabIndex={0}>
-        <Toolbar location="top">
-          <ToolbarLeft>
-            <Dropdown
-              isFlat={true}
-              options={this.props.menuItems}
-              onChange={this.props.onSelectedViewMenuItemChange}
-              value={this.props.selectedViewMenuItemValue}
-            />
-          </ToolbarLeft>
-        </Toolbar>
+        <Tabs
+          activeTabName={activeTabName}
+          tabs={tabs}
+          onActiveTabChange={this._handleTabChange}
+        />
         {React.cloneElement(React.Children.only(this.props.children), {ref: 'child'})}
       </div>
     );
   }
-
 }

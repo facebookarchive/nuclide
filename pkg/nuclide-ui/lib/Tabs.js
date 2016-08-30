@@ -21,7 +21,7 @@ export type Tab = {
 
 type Props = {
   tabs: Array<Tab>,
-  activeTabName: string,
+  activeTabName: ?string,
   closeable: boolean,
   onActiveTabChange: (tab: Tab) => void,
   onClose?: () => void,
