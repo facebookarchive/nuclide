@@ -20,7 +20,7 @@ import invariant from 'assert';
 import electron from 'electron';
 
 import Emitter from './Emitter';
-import Multimap from '../../lib/Multimap';
+import {MultiMap} from '../../../commons-node/collection';
 import {
   beginTimerTracking,
   endTimerTracking,
@@ -37,7 +37,7 @@ type BreakpointNotificationType = 'BreakpointAdded' | 'BreakpointRemoved';
 
 class NuclideBridge {
   _allBreakpoints: {sourceURL: string, lineNumber: number}[];
-  _unresolvedBreakpoints: Multimap<string, number>;
+  _unresolvedBreakpoints: MultiMap<string, number>;
   _emitter: Emitter;
   _debuggerPausedCount: number;
   _suppressBreakpointNotification: boolean;
@@ -45,7 +45,7 @@ class NuclideBridge {
 
   constructor() {
     this._allBreakpoints = [];
-    this._unresolvedBreakpoints = new Multimap();
+    this._unresolvedBreakpoints = new MultiMap();
     this._emitter = new Emitter();
     this._debuggerPausedCount = 0;
     this._suppressBreakpointNotification = false;
@@ -556,12 +556,12 @@ class NuclideBridge {
       this._parseBreakpointSources();
 
       // Add the ones that don't.
-      this._unresolvedBreakpoints = new Multimap();
+      this._unresolvedBreakpoints = new MultiMap();
       this._allBreakpoints.forEach(breakpoint => {
         if (!this._addBreakpoint(breakpoint)) {
           // No API exists for adding breakpoints to source files that are not
           // yet known, store it locally and try to add them later.
-          this._unresolvedBreakpoints.set(breakpoint.sourceURL, breakpoint.lineNumber);
+          this._unresolvedBreakpoints.set(breakpoint.sourceURL, [breakpoint.lineNumber]);
         }
       });
       this._emitter.emit('unresolved-breakpoints-changed', null);

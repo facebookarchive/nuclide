@@ -247,6 +247,10 @@ export class MultiMap<K, V> {
       yield* set;
     }
   }
+
+  forEach(callback: (value: V, key: K, obj: MultiMap<K, V>) => void): void {
+    this._map.forEach((values, key) => values.forEach(value => callback(value, key, this)));
+  }
 }
 
 export function objectEntries<T>(obj: {[key: string]: T}): Array<[string, T]> {
