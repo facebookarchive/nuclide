@@ -16,6 +16,7 @@ import userInfo from '../../commons-node/userInfo';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getLogger} from '../../nuclide-logging';
 import {asyncFind} from '../../commons-node/promise';
+import os from 'os';
 
 const logger = getLogger();
 
@@ -123,6 +124,8 @@ function findPathToConfigDirectory(clearDirectory: boolean): Promise<?string> {
   const {homedir, username} = userInfo();
 
   const candidateDirectories: Array<?string> = [
+    // Start with the tmpdir
+    os.tmpdir(),
     // The user's home directory is probably the most common place to store
     // this information, but it may also be on NFS.
     homedir,
