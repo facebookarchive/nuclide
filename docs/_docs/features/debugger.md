@@ -222,3 +222,5 @@ language specific debugging workflows that require discussion and illustration.
 - [React Native](/docs/platforms/react-native/#debugging)
 - [iOS](/docs/platforms/ios/#debugging)
 - [Android](/docs/platforms/android/#debugging)
+
+Buck projects can be more easily debugged via the [Buck toolbar](/docs/features/buck#debug).

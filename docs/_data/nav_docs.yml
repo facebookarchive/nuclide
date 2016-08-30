@@ -16,6 +16,7 @@
   - id: feature-quick-open
   - id: feature-working-sets
   - id: feature-outline-view
+  - id: feature-buck
   - id: feature-health
   - id: feature-format-js
 - title: Languages
