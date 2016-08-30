@@ -11,6 +11,7 @@
 
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import type ProjectStore from './ProjectStore';
+import {HACK_GRAMMARS} from '../../nuclide-hack-common/lib/constants.js';
 import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {React} from 'react-for-atom';
@@ -90,8 +91,17 @@ class HhvmToolbar extends React.Component {
   }
 
   _isTargetLaunchable(targetFilePath: string): boolean {
-    return targetFilePath.endsWith('.php') ||
-      targetFilePath.endsWith('.hh');
+    if (targetFilePath.endsWith('.php') || targetFilePath.endsWith('.hh')) {
+      return true;
+    }
+    return atom.workspace.getTextEditors().some(editor => {
+      const editorPath = editor.getPath();
+      if (editorPath != null && editorPath.endsWith(targetFilePath)) {
+        const grammar = editor.getGrammar();
+        return HACK_GRAMMARS.indexOf(grammar.scopeName) >= 0;
+      }
+      return false;
+    });
   }
 
   componentWillReceiveProps(nextProps: Object) {
