@@ -180,7 +180,7 @@ class BuckToolbar extends React.Component {
               className="nuclide-buck-react-native-packager-checkbox"
               checked={buckToolbarStore.isReactNativeServerMode()}
               onChange={this._handleReactNativeServerModeChanged}
-              label={'React Native Server Mode'}
+              label="Start React Native Packager"
             />
           </div>,
         );
