@@ -21,6 +21,7 @@ import electron from 'electron';
 
 import Emitter from './Emitter';
 import {MultiMap} from '../../../commons-node/collection';
+import nuclideUri from '../../../commons-node/nuclideUri';
 import {
   beginTimerTracking,
   endTimerTracking,
@@ -32,6 +33,18 @@ invariant(ipcRenderer != null);
 
 const NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
 const DebuggerSettingsChangedEvent = 'debugger-settings-updated';
+const PARSABLE_EXTENSIONS = [
+  '.php',
+  '.hh',
+  '.c',
+  '.cpp',
+  '.h',
+  '.hpp',
+  '.js',
+  '.m',
+  '.mm',
+];
+
 
 type BreakpointNotificationType = 'BreakpointAdded' | 'BreakpointRemoved';
 
@@ -523,17 +536,17 @@ class NuclideBridge {
     });
   }
 
+  _hasParsableExtension(sourceUrl: string): boolean {
+    return PARSABLE_EXTENSIONS.some(extension => nuclideUri.extname(sourceUrl) === extension);
+  }
+
+  _isFileWithNoExtension(sourceUrl: string): boolean {
+    return !nuclideUri.endsWithSeparator(sourceUrl) && nuclideUri.extname(sourceUrl) === '';
+  }
+
   _parseBreakpointSourceIfNeeded(breakpoint: Object): void {
     const sourceUrl = breakpoint.sourceURL;
-    if (sourceUrl.endsWith('.php') ||
-        sourceUrl.endsWith('.hh') ||
-        sourceUrl.endsWith('.c') ||
-        sourceUrl.endsWith('.cpp') ||
-        sourceUrl.endsWith('.h') ||
-        sourceUrl.endsWith('.hpp') ||
-        sourceUrl.endsWith('.js') ||
-        sourceUrl.endsWith('.m') ||
-        sourceUrl.endsWith('.mm')) {
+    if (this._hasParsableExtension(sourceUrl) || this._isFileWithNoExtension(sourceUrl)) {
       const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceUrl);
       if (source != null) {
         return;
