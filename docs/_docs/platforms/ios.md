@@ -37,20 +37,13 @@ You can also use the command-line tools such as `xcodebuild`, etc.
 
 ### Buck Integration
 
-Nuclide supports the [Buck](https://buckbuild.com/) build system. On the Nuclide
-[toolbar](/docs/features/toolbar), there is a button to enable the Buck toolbar for Nuclide (or you
-can go to the [command palette](/docs/editor/basics/#command-palette) and search for
-`Nuclide Buck Toolbar: Toggle`).
-
-If you are familiar with Buck, you can create your own `.buckconfig` and `BUCK` compilation files
-in order to build, run and eventually debug your iOS app directly from Nuclide.
-
-![](/static/images/docs/platform-ios-buck-build.png)
+Nuclide supports the [Buck](https://buckbuild.com/) build system. See the
+[Buck guide](/docs/features/buck) for how to build, run and debug iOS apps.
 
 ## Debugging
 
 Debugging native [Objective-C](/docs/languages/objective-c/) iOS applications is
-[supported using Buck](/docs/languages/objective-c/#debugging).
+[supported using Buck](/docs/features/buck/#debug).
 
 > [React Native](/docs/platforms/react-native/#debugging) is also supported.
 

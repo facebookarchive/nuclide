@@ -79,7 +79,7 @@ The following features require that your Objective-C project is compiled with
 * [Autocomplete](#buck-enabled-features__autocomplete)
 * [Jump to Definition](#buck-enabled-features__jump-to-definition)
 
-> The [Buck toolbar](/docs/platforms/ios/#running-applications__buck-integration) allows you to
+> The [Buck toolbar](/docs/features/buck) allows you to
 > build and run your Buck-enabled programs.
 
 ### Code Diagnostics
@@ -139,54 +139,16 @@ implementation files (`.cpp`).
 ## Debugging
 
 Nuclide has support for both [iOS](/docs/platforms/ios) debugging through
-[React Native](/docs/platforms/react-native/#debugging) and native Objective-C (e.g., `.m` files)
-applications. This section discusses the latter.
+[React Native](/docs/platforms/react-native/#debugging) and [Buck](http://buckbuild.com)
+for native Objective-C (e.g., `.m` files) applications.
 
 > Debugging Swift applications is currently not supported.
 
-### Buck
-
-Currently, debugging Objective-C applications requires compiling your program with
-[Buck](https://buckbuild.com/).
+See the [Buck guide](/docs/features/buck) for how to build, run and debug iOS apps.
 
 > Optimally it would be nice to run the application directly from Xcode and attach to the
 > simulator process associated with that Xcode project. However, due to `lldb` process conflict
 > issues, this is currently not possible.
-
-### Open your Project
-
-Open your Objective-C project normally so that it appears in the
-[project explorer](/docs/editor/basics/#project-and-file-explorer).
-
-![](/static/images/docs/feature-debugger-languages-ios-project.png)
-
-### Bring up the Buck Toolbar
-
-Using the [Nuclide toolbar](/docs/features/toolbar/#buttons) (or using the
-[command-palette](/docs/editor/basics/#command-palette) `Nuclide Buck Toolbar: Toggle`).
-
-![](/static/images/docs/feature-debugger-languages-ios-nuclide-toolbar-buck.png)
-
-![](/static/images/docs/feature-debugger-languages-ios-buck-toolbar.png)
-
-### Find Your Build Target
-
-Nuclide will automatically search your `.buckconfig` file and find your build target. Once you
-find the appropriate target, choose it.
-
-![](/static/images/docs/feature-debugger-languages-ios-build-target.png)
-
-### Start Debugging
-
-Set [breakpoints](/docs/features/debugger/#basics__breakpoints) in your Objective-C files and press
-the `Debug` button.
-
-You will see Buck starting to compile your application, the iOS simulator appear for your
-application, and then the debugger show and stopped on your first breakpoint.
-
-![](/static/images/docs/feature-debugger-languages-ios-debugger-breakpoint.png)
-
-And from here you can [debug normally](/docs/features/debugger/#basics__debugger).
 
 ### LLDB Commands
 
