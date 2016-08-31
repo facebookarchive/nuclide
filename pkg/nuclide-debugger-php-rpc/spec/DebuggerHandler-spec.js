@@ -15,14 +15,7 @@ import type {
 } from '../lib/ConnectionMultiplexer';
 
 
-import {
-  STATUS_STOPPING,
-  STATUS_STOPPED,
-  STATUS_RUNNING,
-  STATUS_BREAK,
-  STATUS_ERROR,
-  STATUS_END,
-} from '../lib/DbgpSocket';
+import {MULTIPLEXER_STATUS} from '../lib/ConnectionMultiplexer';
 import {DebuggerHandler} from '../lib/DebuggerHandler';
 
 describe('debugger-php-rpc DebuggerHandler', () => {
@@ -125,7 +118,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
           ],
         }));
 
-      await onStatus(STATUS_BREAK);
+      await onStatus(MULTIPLEXER_STATUS.BREAK);
 
       expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
       expect(connectionMultiplexer.getScopesForFrame).toHaveBeenCalledWith(0);
@@ -214,14 +207,14 @@ describe('debugger-php-rpc DebuggerHandler', () => {
 
       expect(connectionMultiplexer.sendContinuationCommand).toHaveBeenCalledWith(dbgpCommand);
 
-      await onStatus(STATUS_RUNNING);
+      await onStatus(MULTIPLEXER_STATUS.RUNNING);
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         observableSpy,
         'Debugger.resumed',
         undefined,
       );
 
-      await onStatus(STATUS_BREAK);
+      await onStatus(MULTIPLEXER_STATUS.BREAK);
       expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         observableSpy,
@@ -256,14 +249,14 @@ describe('debugger-php-rpc DebuggerHandler', () => {
 
       expect(connectionMultiplexer.resume).toHaveBeenCalledWith();
 
-      await onStatus(STATUS_RUNNING);
+      await onStatus(MULTIPLEXER_STATUS.RUNNING);
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         observableSpy,
         'Debugger.resumed',
         undefined,
       );
 
-      await onStatus(STATUS_BREAK);
+      await onStatus(MULTIPLEXER_STATUS.BREAK);
       expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
       expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         observableSpy,
@@ -295,31 +288,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
 
   it('stopping', () => {
     waitsForPromise(async () => {
-      await onStatus(STATUS_STOPPING);
       expect(connectionMultiplexer.sendContinuationCommand).not.toHaveBeenCalled();
-    });
-  });
-
-  it('stopped', () => {
-    waitsForPromise(async () => {
-      const onSessionEnd = jasmine.createSpy('onSessionEnd');
-      handler.onSessionEnd(onSessionEnd);
-
-      await onStatus(STATUS_STOPPED);
-
-      expect(onSessionEnd).toHaveBeenCalledWith();
-      expect(onStatusSubscription.dispose).toHaveBeenCalledWith();
-    });
-  });
-
-  it('error', () => {
-    waitsForPromise(async () => {
-      const onSessionEnd = jasmine.createSpy('onSessionEnd');
-      handler.onSessionEnd(onSessionEnd);
-
-      await onStatus(STATUS_ERROR);
-      expect(onSessionEnd).toHaveBeenCalledWith();
-      expect(onStatusSubscription.dispose).toHaveBeenCalledWith();
     });
   });
 
@@ -328,7 +297,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
       const onSessionEnd = jasmine.createSpy('onSessionEnd');
       handler.onSessionEnd(onSessionEnd);
 
-      await onStatus(STATUS_END);
+      await onStatus(MULTIPLEXER_STATUS.END);
       expect(onSessionEnd).toHaveBeenCalledWith();
       expect(onStatusSubscription.dispose).toHaveBeenCalledWith();
     });

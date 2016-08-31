@@ -29,13 +29,7 @@ import {convertValue} from './values';
 import type {DbgpContext, DbgpSocket} from './DbgpSocket';
 import type {ObjectId} from './ObjectId';
 
-import {
-  STATUS_BREAK,
-  STATUS_STOPPING,
-  STATUS_STOPPED,
-  STATUS_RUNNING,
-  STATUS_STARTING,
-} from './DbgpSocket';
+import {CONNECTION_STATUS} from './DbgpSocket';
 
 const EVAL_IDENTIFIER = '$__unique_xdebug_variable_name__';
 
@@ -62,13 +56,13 @@ export class DataCache {
 
   _onStatusChanged(status: string): void {
     switch (status) {
-      case STATUS_BREAK:
+      case CONNECTION_STATUS.BREAK:
         this._enable();
         break;
-      case STATUS_STARTING:
-      case STATUS_STOPPING:
-      case STATUS_STOPPED:
-      case STATUS_RUNNING:
+      case CONNECTION_STATUS.STARTING:
+      case CONNECTION_STATUS.STOPPING:
+      case CONNECTION_STATUS.STOPPED:
+      case CONNECTION_STATUS.RUNNING:
         this._disable();
         break;
     }

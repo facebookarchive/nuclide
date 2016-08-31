@@ -17,21 +17,25 @@ import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHa
 import {attachEvent} from '../../commons-node/event';
 import type {Socket} from 'net';
 
-// Responses to the DBGP 'status' command
-export const STATUS_STARTING = 'starting';
-export const STATUS_STOPPING = 'stopping';
-export const STATUS_STOPPED = 'stopped';
-export const STATUS_RUNNING = 'running';
-export const STATUS_BREAK = 'break';
-// Error and End are not dbgp status codes, they relate to socket states.
-export const STATUS_ERROR = 'error';
-export const STATUS_END = 'end';
-// stdout and stderr are emitted when DBGP sends the corresponding message packets.
-export const STATUS_STDOUT = 'stdout';
-export const STATUS_STDERR = 'stderr';
-// Break message statuses allow us to identify whether a connection stopped because of a break
-// message or a breakpoint
-export const STATUS_BREAK_MESSAGE_RECEIVED = 'status_break_message_received';
+export const CONNECTION_STATUS = {
+  // Responses to the DBGP 'status' command
+  STARTING: 'starting',
+  STOPPING: 'stopping',
+  STOPPED: 'stopped',
+  RUNNING: 'running',
+  BREAK: 'break',
+  // Error and End are not dbgp status codes, they relate to socket states.
+  ERROR: 'error',
+  END: 'end',
+  // stdout and stderr are emitted when DBGP sends the corresponding message packets.
+  STDOUT: 'stdout',
+  STDERR: 'stderr',
+  // Break message statuses allow us to identify whether a connection stopped because of a break
+  // message or a breakpoint
+  BREAK_MESSAGE_RECEIVED: 'status_break_message_received',
+  BREAK_MESSAGE_SENT: 'status_break_message_sent',
+};
+
 // Notifications.
 export const BREAKPOINT_RESOLVED_NOTIFICATION = 'breakpoint_resolved';
 
@@ -145,13 +149,13 @@ export class DbgpSocket {
     // Not sure if hhvm is alive or not
     // do not set _isClosed flag so that detach will be sent before dispose().
     logger.logError('socket error ' + error.code);
-    this._emitStatus(STATUS_ERROR, error.code);
+    this._emitStatus(CONNECTION_STATUS.ERROR, error.code);
   }
 
   _onEnd(): void {
     this._isClosed = true;
     this.dispose();
-    this._emitStatus(STATUS_END);
+    this._emitStatus(CONNECTION_STATUS.END);
   }
 
   _onData(data: Buffer | string): void {
@@ -163,7 +167,7 @@ export class DbgpSocket {
     } catch (e) {
       // If message parsing fails, then our contract with HHVM is violated and we need to kill the
       // connection.
-      this._emitStatus(STATUS_ERROR, e.message);
+      this._emitStatus(CONNECTION_STATUS.ERROR, e.message);
       return;
     }
     responses.forEach(r => {
@@ -209,7 +213,7 @@ export class DbgpSocket {
     // The body of the `stream` XML can be omitted, e.g. `echo null`, so we defend against this.
     const outputText = stream._ != null ? base64Decode(stream._) : '';
     logger.log(`${outputType} message received: ${outputText}`);
-    const status = outputType === 'stdout' ? STATUS_STDOUT : STATUS_STDERR;
+    const status = outputType === 'stdout' ? CONNECTION_STATUS.STDOUT : CONNECTION_STATUS.STDERR;
     this._emitStatus(status, outputText);
   }
 
@@ -314,7 +318,7 @@ export class DbgpSocket {
   // Continuation commands get a response, but that response
   // is a status message which occurs after execution stops.
   async sendContinuationCommand(command: string): Promise<string> {
-    this._emitStatus(STATUS_RUNNING);
+    this._emitStatus(CONNECTION_STATUS.RUNNING);
     const response = await this._callDebugger(command);
     const status = response.$.status;
     this._emitStatus(status);
@@ -324,7 +328,7 @@ export class DbgpSocket {
   async sendBreakCommand(): Promise<boolean> {
     const response = await this._callDebugger('break');
     if (response.$.success !== '0') {
-      this._emitStatus(STATUS_BREAK_MESSAGE_RECEIVED);
+      this._emitStatus(CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED);
     }
     return response.$.success !== '0';
   }

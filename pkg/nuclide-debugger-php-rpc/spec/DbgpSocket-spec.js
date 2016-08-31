@@ -16,11 +16,7 @@ import {makeMessage} from '../lib/helpers';
 import {
   DbgpSocket,
   COMMAND_STEP_OVER,
-  STATUS_RUNNING,
-  STATUS_BREAK,
-  STATUS_STOPPING,
-  STATUS_ERROR,
-  STATUS_END,
+  CONNECTION_STATUS,
 } from '../lib/DbgpSocket';
 import {idOfFrame, functionOfFrame, fileOfFrame, locationOfFrame} from '../lib/frame';
 
@@ -83,12 +79,12 @@ describe('debugger-php-rpc DbgpSocket', () => {
 
   it('error', () => {
     onError({code: 42});
-    expect(onStatus).toHaveBeenCalledWith(STATUS_ERROR, 42);
+    expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.ERROR, 42);
   });
 
   it('end', () => {
     onEnd();
-    expect(onStatus).toHaveBeenCalledWith(STATUS_END);
+    expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.END);
   });
 
   it('getStatus', () => {
@@ -109,7 +105,7 @@ describe('debugger-php-rpc DbgpSocket', () => {
   it('sendContinuationCommand - break', () => {
     waitsForPromise(async () => {
       const resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
-      expect(onStatus).toHaveBeenCalledWith(STATUS_RUNNING);
+      expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.RUNNING);
       await testCall(
           resultPromise,
           'step_over -i 1',
@@ -119,15 +115,15 @@ describe('debugger-php-rpc DbgpSocket', () => {
           command: 'step_over',
           transaction_id: '1',
         },
-          STATUS_BREAK);
-      expect(onStatus).toHaveBeenCalledWith(STATUS_BREAK);
+          CONNECTION_STATUS.BREAK);
+      expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.BREAK);
     });
   });
 
   it('sendContinuationCommand - stopping', () => {
     waitsForPromise(async () => {
       const resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
-      expect(onStatus).toHaveBeenCalledWith(STATUS_RUNNING);
+      expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.RUNNING);
       await testCall(
           resultPromise,
           'step_over -i 1',
@@ -137,8 +133,8 @@ describe('debugger-php-rpc DbgpSocket', () => {
           command: 'step_over',
           transaction_id: '1',
         },
-          STATUS_STOPPING);
-      expect(onStatus).toHaveBeenCalledWith(STATUS_STOPPING);
+          CONNECTION_STATUS.STOPPING);
+      expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.STOPPING);
     });
   });
 

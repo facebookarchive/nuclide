@@ -22,21 +22,15 @@ import {
   locationOfFrame,
 } from './frame';
 import {
-  STATUS_STARTING,
-  STATUS_STOPPING,
-  STATUS_STOPPED,
-  STATUS_RUNNING,
-  STATUS_BREAK,
-  STATUS_ERROR,
-  STATUS_END,
+  CONNECTION_STATUS,
   COMMAND_STEP_INTO,
   COMMAND_STEP_OVER,
   COMMAND_STEP_OUT,
   BREAKPOINT_RESOLVED_NOTIFICATION,
 } from './DbgpSocket';
 import {
-  STATUS_ALL_CONNECTIONS_BREAK,
   CONNECTION_MUX_NOTIFICATION,
+  MULTIPLEXER_STATUS,
 } from './ConnectionMultiplexer.js';
 
 import FileCache from './FileCache';
@@ -258,21 +252,15 @@ export class DebuggerHandler extends Handler {
   async _onStatusChanged(status: string, params: ?Object): Promise<void> {
     logger.log('Sending status: ' + status);
     switch (status) {
-      case STATUS_ALL_CONNECTIONS_BREAK:
-      case STATUS_BREAK:
+      case MULTIPLEXER_STATUS.ALL_CONNECTIONS_BREAK:
+      case MULTIPLEXER_STATUS.BREAK:
         await this._sendPausedMessage();
         break;
-      case STATUS_RUNNING:
+      case MULTIPLEXER_STATUS.RUNNING:
         this.sendMethod('Debugger.resumed');
         break;
-      case STATUS_STOPPED:
-      case STATUS_ERROR:
-      case STATUS_END:
+      case MULTIPLEXER_STATUS.END:
         this._endSession();
-        break;
-      case STATUS_STARTING:
-      case STATUS_STOPPING:
-        // These two should be hidden by the ConnectionMultiplexer
         break;
       default:
         logger.logErrorAndThrow('Unexpected status: ' + status);
@@ -291,7 +279,7 @@ export class DebuggerHandler extends Handler {
         break;
       case CONNECTION_MUX_NOTIFICATION.REQUEST_UPDATE:
         invariant(params);
-        const frame = params.status === STATUS_BREAK ?
+        const frame = params.status === CONNECTION_STATUS.BREAK ?
           await this._getTopFrameForConnection(params.id) : null;
         this.sendMethod('Debugger.threadUpdated', {
           thread: {

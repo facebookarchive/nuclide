@@ -17,10 +17,7 @@ import type {
 import invariant from 'assert';
 import logger from './utils';
 import {
-  STATUS_STOPPING,
-  STATUS_STOPPED,
-  STATUS_ERROR,
-  STATUS_END,
+  CONNECTION_STATUS,
 } from './DbgpSocket';
 
 import type {Connection} from './Connection';
@@ -209,10 +206,10 @@ export class BreakpointStore {
     this._connections.set(connection, map);
     connection.onStatus(status => {
       switch (status) {
-        case STATUS_STOPPING:
-        case STATUS_STOPPED:
-        case STATUS_ERROR:
-        case STATUS_END:
+        case CONNECTION_STATUS.STOPPING:
+        case CONNECTION_STATUS.STOPPED:
+        case CONNECTION_STATUS.ERROR:
+        case CONNECTION_STATUS.END:
           this._removeConnection(connection);
       }
     });

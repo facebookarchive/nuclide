@@ -11,12 +11,7 @@
 
 import {DbgpSocket} from './DbgpSocket';
 import {DataCache} from './DataCache';
-import {
-  STATUS_BREAK,
-  STATUS_STARTING,
-  STATUS_RUNNING,
-  STATUS_BREAK_MESSAGE_RECEIVED,
-} from './DbgpSocket';
+import {CONNECTION_STATUS} from './DbgpSocket';
 
 import {CompositeDisposable} from 'event-kit';
 
@@ -42,7 +37,6 @@ type NotificationCallback = (
 
 export const ASYNC_BREAK = 'async_break';
 export const BREAKPOINT = 'breakpoint';
-export const STATUS_BREAK_MESSAGE_SENT = 'status_break_message_sent';
 
 export class Connection {
   _socket: DbgpSocket;
@@ -61,7 +55,7 @@ export class Connection {
     this._socket = dbgpSocket;
     this._dataCache = new DataCache(dbgpSocket);
     this._id = connectionCount++;
-    this._status = STATUS_STARTING;
+    this._status = CONNECTION_STATUS.STARTING;
     this._disposables = new CompositeDisposable();
     if (onStatusCallback != null) {
       this._disposables.add(this.onStatus((status, ...args) =>
@@ -89,19 +83,20 @@ export class Connection {
   ): mixed {
     const prevStatus = this._status;
     switch (newStatus) {
-      case STATUS_RUNNING:
+      case CONNECTION_STATUS.RUNNING:
         this._stopReason = null;
         break;
-      case STATUS_BREAK:
-        if (prevStatus === STATUS_BREAK_MESSAGE_RECEIVED) {
+      case CONNECTION_STATUS.BREAK:
+        if (prevStatus === CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED) {
           this._stopReason = ASYNC_BREAK;
-        } else if (prevStatus !== STATUS_BREAK) {
-          // TODO(dbonafilia): investigate why we sometimes receive two STATUS_BREAK_MESSAGES
+        } else if (prevStatus !== CONNECTION_STATUS.BREAK) {
+          // TODO(dbonafilia): investigate why we sometimes receive two BREAK_MESSAGES
           this._stopReason = BREAKPOINT;
         }
         break;
     }
-    if (newStatus === STATUS_BREAK_MESSAGE_RECEIVED && prevStatus !== STATUS_BREAK_MESSAGE_SENT) {
+    if (newStatus === CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED &&
+      prevStatus !== CONNECTION_STATUS.BREAK_MESSAGE_SENT) {
       return;
     }
     this._status = newStatus;
@@ -113,7 +108,8 @@ export class Connection {
   }
 
   _isInternalStatus(status: string) {
-    return status === STATUS_BREAK_MESSAGE_RECEIVED || status === STATUS_BREAK_MESSAGE_SENT;
+    return status === CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED ||
+      status === CONNECTION_STATUS.BREAK_MESSAGE_SENT;
   }
 
   onNotification(callback: (notifyName: string, notify: Object) => mixed): IDisposable {
@@ -169,7 +165,7 @@ export class Connection {
   }
 
   sendBreakCommand(): Promise<boolean> {
-    this._status = STATUS_BREAK_MESSAGE_SENT;
+    this._status = CONNECTION_STATUS.BREAK_MESSAGE_SENT;
     return this._socket.sendBreakCommand();
   }
 
