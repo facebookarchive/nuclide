@@ -297,6 +297,9 @@ export class ConnectionMultiplexer {
         return;
       case CONNECTION_STATUS.STOPPING:
         // TODO: May want to enable post-mortem features?
+        if (this._isPaused()) {
+          this._emitRequestUpdate(connection);
+        }
         connection.sendContinuationCommand(COMMAND_RUN);
         return;
       case CONNECTION_STATUS.RUNNING:
@@ -322,10 +325,16 @@ export class ConnectionMultiplexer {
           type: 'error',
           message,
         });
+        if (this._isPaused()) {
+          this._emitRequestUpdate(connection);
+        }
         this._removeConnection(connection);
         break;
       case CONNECTION_STATUS.STOPPED:
       case CONNECTION_STATUS.END:
+        if (this._isPaused()) {
+          this._emitRequestUpdate(connection);
+        }
         this._removeConnection(connection);
         break;
       case CONNECTION_STATUS.STDOUT:

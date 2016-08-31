@@ -99,7 +99,14 @@ export default class ThreadStore {
   }
 
   _updateThread(thread: ThreadItem): void {
-    this._threadMap.set(Number(thread.id), thread);
+    // TODO(jonaldislarry): add deleteThread API so that this stop reason checking is not needed.
+    if (thread.stopReason === 'end' ||
+      thread.stopReason === 'error' ||
+      thread.stopReason === 'stopped') {
+      this._threadMap.delete(Number(thread.id));
+    } else {
+      this._threadMap.set(Number(thread.id), thread);
+    }
   }
 
   _updateStopThread(id: number) {
