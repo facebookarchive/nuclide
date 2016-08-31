@@ -4,7 +4,7 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
-from clang.cindex import *
+from clang.cindex import Cursor, CursorKind
 from utils import location_dict, range_dict, resolve_file_name
 import logging
 import os

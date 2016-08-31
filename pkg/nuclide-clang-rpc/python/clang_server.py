@@ -9,10 +9,12 @@
 # To ensure that Nuclide is easy to set up and install,
 # we want to limit our dependencies to built-in Python libraries and libclang
 # (which is provided in ../pythonpath)
-from clang.cindex import *
-from codecomplete import CompletionCache
-from ctypes import *
+
+from clang.cindex import Config, Cursor, CursorKind, Diagnostic, Index,\
+                         SourceLocation, TranslationUnit
 from declarationlocation import get_declaration_location_and_spelling
+from utils import is_header_file, resolve_file, range_dict, location_dict
+import codecomplete
 import outline
 
 import argparse
@@ -21,14 +23,13 @@ import getpass
 import hashlib
 import logging
 import os
-import re
 import sys
 import tempfile
 import time
 import traceback
+from ctypes import c_char_p, c_int, c_uint, c_void_p, POINTER
 from distutils.version import LooseVersion
 from logging import FileHandler
-from utils import is_header_file, resolve_file, range_dict, location_dict
 
 LOGGING_DIR = 'nuclide-%s-logs/clang' % getpass.getuser()
 FD_FOR_READING = 3
@@ -108,7 +109,9 @@ class Server:
             [c_void_p],
             c_char_p),
 
-        ("clang_sortCodeCompletionResults", [c_void_p, c_uint], None),
+        ("clang_sortCodeCompletionResults",
+            [c_void_p, c_uint],
+            None),
 
         # Much faster than actually fetching/checking the file string.
         ("clang_Location_isFromMainFile",
@@ -254,7 +257,6 @@ class Server:
     def get_completions(self, request):
         contents = request['contents']
         line = request['line']
-        column = request['column']
         prefix = request['prefix']
         token_start_column = request['tokenStartColumn']
 
@@ -264,7 +266,7 @@ class Server:
         translation_unit = self._get_translation_unit(None)
         if translation_unit:
             if self.completion_cache is None:
-                self.completion_cache = CompletionCache(
+                self.completion_cache = codecomplete.CompletionCache(
                     self.src, translation_unit, self.custom_clang_lib)
             return self.completion_cache.get_completions(
                 line + 1,
