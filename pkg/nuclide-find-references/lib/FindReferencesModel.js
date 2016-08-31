@@ -12,7 +12,6 @@
 import type {
   FileReferences,
   Location,
-  NuclideUri,
   Reference,
   ReferenceGroup,
 } from './types';
@@ -44,7 +43,7 @@ function compareReference(x: Reference, y: Reference): number {
   return compareLocation(x.start, y.start) || compareLocation(x.end, y.end);
 }
 
-async function readFileContents(uri: NuclideUri): Promise<?string> {
+async function readFileContents(uri: string): Promise<?string> {
   const localPath = nuclideUri.getPath(uri);
   let contents;
   try {
@@ -68,7 +67,7 @@ function addReferenceGroup(
 }
 
 class FindReferencesModel {
-  _basePath: NuclideUri;
+  _basePath: string;
   _symbolName: string;
   _references: Array<[string, Array<ReferenceGroup>]>;
   _referenceCount: number;
@@ -81,7 +80,7 @@ class FindReferencesModel {
    * @param options     See `FindReferencesOptions`.
    */
   constructor(
-    basePath: NuclideUri,
+    basePath: string,
     symbolName: string,
     references: Array<Reference>,
     options?: FindReferencesOptions,
@@ -112,7 +111,7 @@ class FindReferencesModel {
     return arrayCompact(fileReferences);
   }
 
-  getBasePath(): NuclideUri {
+  getBasePath(): string {
     return this._basePath;
   }
 

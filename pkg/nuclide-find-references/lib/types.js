@@ -9,15 +9,13 @@
  * the root directory of this source tree.
  */
 
-export type NuclideUri = string;
-
 export type Location = {
   line: number,
   column: number,
 };
 
 export type Reference = {
-  uri: NuclideUri,  // Nuclide URI of the file path
+  uri: string,      // Nuclide URI of the file path
   name: ?string,    // name of calling method/function/symbol
   start: Location,
   end: Location,
@@ -31,7 +29,7 @@ export type ReferenceGroup = {
 };
 
 export type FileReferences = {
-  uri: NuclideUri,
+  uri: string,
   grammar: Object /* atom$Grammar */,
   previewText: Array<string>,
   refGroups: Array<ReferenceGroup>,
