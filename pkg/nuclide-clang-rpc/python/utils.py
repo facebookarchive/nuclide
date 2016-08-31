@@ -24,12 +24,8 @@ def resolve_file(file):
 
 
 def resolve_file_name(file_name):
-    realpath = os.path.realpath(file_name)
-    # If the file itself is a symlink, always resolve it.
-    # Otherwise, do not resolve '/mnt' paths, since Nuclide can't open them remotely.
-    # TODO(hansonw): this is a hack! Remove when we support arbitrary filesystem paths.
-    if os.path.islink(file_name) or not realpath.startswith('/mnt'):
-        return realpath
+    if os.path.islink(file_name):
+        return os.path.realpath(file_name)
     return file_name
 
 
