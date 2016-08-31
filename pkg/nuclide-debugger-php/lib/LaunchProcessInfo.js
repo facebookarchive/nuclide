@@ -26,6 +26,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     return new PhpDebuggerInstance(this, this._launchTarget);
   }
 
+  supportThreads(): boolean {
+    return true;
+  }
+
   supportSingleThreadStepping(): boolean {
     return true;
   }

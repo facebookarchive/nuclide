@@ -27,6 +27,7 @@ import type {
   ExpressionResult,
   GetPropertiesResult,
   NuclideThreadData,
+  ThreadItem,
 } from './types';
 
 import Constants from './Constants';
@@ -451,6 +452,24 @@ class DebuggerActions {
       actionType: Constants.Actions.UPDATE_THREADS,
       data: {
         threadData,
+      },
+    });
+  }
+
+  updateThread(thread: ThreadItem): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.UPDATE_THREAD,
+      data: {
+        thread,
+      },
+    });
+  }
+
+  updateStopThread(id: number): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.UPDATE_STOP_THREAD,
+      data: {
+        id,
       },
     });
   }

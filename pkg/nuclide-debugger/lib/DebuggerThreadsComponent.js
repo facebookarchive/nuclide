@@ -81,7 +81,7 @@ export class DebuggerThreadsComponent extends React.Component {
         const cellData = {
           data: {
             ...threadItem,
-            isSelected: threadItem.id === selectedThreadId,
+            isSelected: Number(threadItem.id) === selectedThreadId,
           },
         };
         if (threadItem.id === selectedThreadId) {

@@ -71,6 +71,14 @@ export default class ThreadStore {
         this._updateThreads(payload.data.threadData);
         this._emitter.emit('change');
         break;
+      case Constants.Actions.UPDATE_THREAD:
+        this._updateThread(payload.data.thread);
+        this._emitter.emit('change');
+        break;
+      case Constants.Actions.UPDATE_STOP_THREAD:
+        this._updateStopThread(payload.data.id);
+        this._emitter.emit('change');
+        break;
       case Constants.Actions.NOTIFY_THREAD_SWITCH:
         this._notifyThreadSwitch(payload.data.sourceURL, payload.data.lineNumber,
           payload.data.message);
@@ -88,6 +96,15 @@ export default class ThreadStore {
     threadData.threads.forEach(thread =>
       this._threadMap.set(Number(thread.id), thread),
     );
+  }
+
+  _updateThread(thread: ThreadItem): void {
+    this._threadMap.set(Number(thread.id), thread);
+  }
+
+  _updateStopThread(id: number) {
+    this._stopThreadId = Number(id);
+    this._selectedThreadId = Number(id);
   }
 
   _handleClearInterface(): void {

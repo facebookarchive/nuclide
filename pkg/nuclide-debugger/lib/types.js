@@ -189,8 +189,8 @@ declare class WebInspector$DebuggerModel {
     DebuggerPaused: string,
     ThreadsUpdated: string,
     ThreadsUpdateIPC: string,
+    ThreadUpdateIPC: string,
     SelectedThreadChanged: string,
-    StopThreadSwitched: string,
   },
 
   threadStore: WebInspector$ThreadStore,

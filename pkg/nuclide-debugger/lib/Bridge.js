@@ -15,6 +15,7 @@ import type {
   EvalCommand,
   ExpansionResult,
   NuclideThreadData,
+  ThreadItem,
   BreakpointUserChangeArgType,
   IPCBreakpoint,
   ExpressionResult,
@@ -241,7 +242,7 @@ class Bridge {
             this._removeBreakpoint(event.args[1]);
             break;
           case 'NonLoaderDebuggerPaused':
-            this._handleDebuggerPaused();
+            this._handleDebuggerPaused(event.args[1]);
             break;
           case 'ExpressionEvaluationResponse':
             this._handleExpressionEvaluationResponse(event.args[1]);
@@ -258,8 +259,8 @@ class Bridge {
           case 'ThreadsUpdate':
             this._handleThreadsUpdate(event.args[1]);
             break;
-          case 'StopThreadSwitch':
-            this._handleStopThreadSwitch(event.args[1]);
+          case 'ThreadUpdate':
+            this._handleThreadUpdate(event.args[1]);
             break;
         }
         break;
@@ -284,8 +285,17 @@ class Bridge {
     this.setSingleThreadStepping(store.getEnableSingleThreadStepping());
   }
 
-  _handleDebuggerPaused(): void {
+  _handleDebuggerPaused(options: ?{
+    stopThreadId: number,
+    threadSwitchNotification: {sourceURL: string, lineNumber: number, message: string}
+  }): void {
     this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.PAUSED);
+    if (options != null) {
+      if (options.stopThreadId != null) {
+        this._handleStopThreadUpdate(options.stopThreadId);
+      }
+      this._handleStopThreadSwitch(options.threadSwitchNotification);
+    }
   }
 
   _handleDebuggerResumed(): void {
@@ -367,6 +377,14 @@ class Bridge {
 
   _handleThreadsUpdate(threadData: NuclideThreadData): void {
     this._debuggerModel.getActions().updateThreads(threadData);
+  }
+
+  _handleThreadUpdate(thread: ThreadItem): void {
+    this._debuggerModel.getActions().updateThread(thread);
+  }
+
+  _handleStopThreadUpdate(id: number): void {
+    this._debuggerModel.getActions().updateStopThread(id);
   }
 
   _sendAllBreakpoints() {

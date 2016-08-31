@@ -29,6 +29,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return new PhpDebuggerInstance(this);
   }
 
+  supportThreads(): boolean {
+    return true;
+  }
+
   supportSingleThreadStepping(): boolean {
     return true;
   }
