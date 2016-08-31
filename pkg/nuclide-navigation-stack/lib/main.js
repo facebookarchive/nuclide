@@ -17,6 +17,7 @@ import {trackOperationTiming} from '../../nuclide-analytics';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observeNavigatingEditors} from '../../commons-atom/go-to-location';
 import createPackage from '../../commons-atom/createPackage';
+import {consumeStatusBar} from './StatusBar';
 
 const controller = new NavigationStackController();
 
@@ -93,6 +94,12 @@ class Activation {
         trackOperationTiming(
           'nuclide-navigation-stack:backwards', () => controller.navigateBackwards());
       }));
+  }
+
+  consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
+    const disposable = consumeStatusBar(statusBar);
+    this._disposables.add(disposable);
+    return disposable;
   }
 
   dispose() {
