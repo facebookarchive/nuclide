@@ -16,6 +16,7 @@ import {NavigationStackController} from './NavigationStackController';
 import {trackOperationTiming} from '../../nuclide-analytics';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observeNavigatingEditors} from '../../commons-atom/go-to-location';
+import createPackage from '../../commons-atom/createPackage';
 
 const controller = new NavigationStackController();
 
@@ -24,9 +25,6 @@ class Activation {
 
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable();
-  }
-
-  activate() {
 
     const subscribeEditor = (editor: atom$TextEditor) => {
       const cursorSubscription = editor.onDidChangeCursorPosition(
@@ -102,18 +100,4 @@ class Activation {
   }
 }
 
-let activation: ?Activation = null;
-
-export function activate(state: ?Object) {
-  if (activation == null) {
-    activation = new Activation(state);
-    activation.activate();
-  }
-}
-
-export function deactivate() {
-  if (activation != null) {
-    activation.dispose();
-    activation = null;
-  }
-}
+export default createPackage(Activation);
