@@ -10,12 +10,14 @@
  */
 
 import type {NavigationStackController} from './NavigationStackController';
+import type {Observable} from 'rxjs';
 
 import {React, ReactDOM} from 'react-for-atom';
 import {Disposable} from 'atom';
 import {Button} from '../../nuclide-ui/lib/Button';
 import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
 import {Block} from '../../nuclide-ui/lib/Block';
+import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 
 // Since this is a button which can change the current file, place it where
 // it won't change position when the current file name changes, which means way left.
@@ -33,16 +35,19 @@ export function consumeStatusBar(
     priority: STATUS_BAR_PRIORITY,
   });
 
-  const navigateBack = () => controller.navigateBackwards();
-  const navigateForward = () => controller.navigateForwards();
+  const onBack = () => controller.navigateBackwards();
+  const onForward = () => controller.navigateForwards();
 
-  ReactDOM.render(
-    <NavStackStatusBarTile
-      enableBack={true}
-      enableForward={true}
-      onBack={navigateBack}
-      onForward={navigateForward}
-    />,
+  const props: Observable<Props> = controller.observeStackChanges()
+    .map(stack => ({
+      enableBack: stack.hasPrevious(),
+      enableForward: stack.hasNext(),
+      onBack,
+      onForward,
+    }));
+
+  const Tile = bindObservableAsProps(props, NavStackStatusBarTile);
+  ReactDOM.render(<Tile />,
     item,
   );
   return new Disposable(() => {
@@ -58,11 +63,12 @@ type Props = {
   onForward: () => mixed,
 };
 
-export function NavStackStatusBarTile(props: Props): React.Element<any> {
+// $FlowFixMe: `bindObservableAsProps` needs to be typed better.
+function NavStackStatusBarTile(props: Props): React.Element<any> {
   return <Block>
       <ButtonGroup>
-        <Button icon="chevron-left" onClick={props.onBack} />
-        <Button icon="chevron-right" onClick={props.onForward} />
+        <Button icon="chevron-left" onClick={props.onBack} disabled={!props.enableBack} />
+        <Button icon="chevron-right" onClick={props.onForward} disabled={!props.enableForward} />
       </ButtonGroup>
     </Block>;
 }

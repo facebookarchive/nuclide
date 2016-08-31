@@ -10,8 +10,10 @@
  */
 
 import type {EditorLocation, Location} from './Location';
+import type {Observable} from 'rxjs';
 
 import invariant from 'assert';
+import {Subject} from 'rxjs';
 
 const MAX_STACK_DEPTH = 100;
 
@@ -43,10 +45,16 @@ const MAX_STACK_DEPTH = 100;
 export class NavigationStack {
   _elements: Array<Location>;
   _index: number;
+  _changes: Subject<NavigationStack>;
 
   constructor() {
     this._elements = [];
     this._index = -1;
+    this._changes = new Subject();
+  }
+
+  observeChanges(): Observable<NavigationStack> {
+    return this._changes;
   }
 
   isEmpty(): boolean {
@@ -81,6 +89,7 @@ export class NavigationStack {
     invariant(this._elements.length <= MAX_STACK_DEPTH);
 
     this._index = this._elements.length - 1;
+    this._hasChanged();
   }
 
   // Updates the current location if the editors match.
@@ -95,12 +104,22 @@ export class NavigationStack {
     }
   }
 
+  hasNext(): boolean {
+    return (this._index + 1) < this._elements.length;
+  }
+
+  hasPrevious(): boolean {
+    return this._index > 0;
+  }
+
   // Moves current to the previous entry.
   // Returns null if there is no previous entry.
   previous(): ?Location {
-    if (this._index > 0) {
+    if (this.hasPrevious()) {
       this._index -= 1;
-      return this.getCurrent();
+      const result = this.getCurrent();
+      this._hasChanged();
+      return result;
     } else {
       return null;
     }
@@ -109,12 +128,14 @@ export class NavigationStack {
   // Moves to the next entry.
   // Returns null if already at the last entry.
   next(): ?Location {
-    if ((this._index + 1) >= this._elements.length) {
+    if (!this.hasNext()) {
       return null;
     }
 
     this._index += 1;
-    return this.getCurrent();
+    const result = this.getCurrent();
+    this._hasChanged();
+    return result;
   }
 
   // When opening a new editor, convert all Uri locations on the stack to editor
@@ -158,6 +179,7 @@ export class NavigationStack {
 
   // Removes all entries which do not match the predicate.
   filter(predicate: (location: Location) => boolean): void {
+    const originalSize = this._elements.length;
     let newIndex = this._index;
     this._elements = this._elements.filter((location, index) => {
       const result = predicate(location);
@@ -167,6 +189,13 @@ export class NavigationStack {
       return result;
     });
     this._index = Math.min(Math.max(newIndex, 0), this._elements.length - 1);
+    if (originalSize !== this._elements.length) {
+      this._hasChanged();
+    }
+  }
+
+  _hasChanged(): void {
+    this._changes.next(this);
   }
 
   // For testing ...

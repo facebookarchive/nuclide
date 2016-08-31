@@ -20,6 +20,7 @@ import {NavigationStack} from './NavigationStack';
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getPathOfLocation, getLocationOfEditor, editorOfLocation} from './Location';
+import {Observable} from 'rxjs';
 
 function log(message: string): void {
   // Uncomment this to debug
@@ -203,6 +204,10 @@ export class NavigationStackController {
     if (!this._isNavigating) {
       await this._navigateTo(this._navigationStack.previous());
     }
+  }
+
+  observeStackChanges(): Observable<NavigationStack> {
+    return Observable.of(this._navigationStack).concat(this._navigationStack.observeChanges());
   }
 
   // For Testing.
