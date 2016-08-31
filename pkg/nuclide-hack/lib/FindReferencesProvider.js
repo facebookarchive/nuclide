@@ -28,7 +28,7 @@ async function doFindReferences(
     'Loading references from Hack server...',
   );
   if (!result) {
-    return {type: 'error', message: 'Only classes/functions/methods are supported.'};
+    return {type: 'error', message: 'No references found.'};
   }
 
   const {baseUri} = result;
