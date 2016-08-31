@@ -97,7 +97,7 @@ class Activation {
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
-    const disposable = consumeStatusBar(statusBar);
+    const disposable = consumeStatusBar(statusBar, controller);
     this._disposables.add(disposable);
     return disposable;
   }

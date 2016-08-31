@@ -9,15 +9,22 @@
  * the root directory of this source tree.
  */
 
+import type {NavigationStackController} from './NavigationStackController';
+
 import {React, ReactDOM} from 'react-for-atom';
 import {Disposable} from 'atom';
 import {Button} from '../../nuclide-ui/lib/Button';
 import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
 import {Block} from '../../nuclide-ui/lib/Block';
 
-const STATUS_BAR_PRIORITY = 105;
+// Since this is a button which can change the current file, place it where
+// it won't change position when the current file name changes, which means way left.
+const STATUS_BAR_PRIORITY = -100;
 
-export function consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
+export function consumeStatusBar(
+  statusBar: atom$StatusBar,
+  controller: NavigationStackController,
+): IDisposable {
   const item = document.createElement('div');
   item.className = 'inline-block';
 
@@ -26,12 +33,15 @@ export function consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
     priority: STATUS_BAR_PRIORITY,
   });
 
+  const navigateBack = () => controller.navigateBackwards();
+  const navigateForward = () => controller.navigateForwards();
+
   ReactDOM.render(
     <NavStackStatusBarTile
       enableBack={true}
       enableForward={true}
-      onBack={() => {}}
-      onForward={() => {}}
+      onBack={navigateBack}
+      onForward={navigateForward}
     />,
     item,
   );
@@ -51,8 +61,8 @@ type Props = {
 export function NavStackStatusBarTile(props: Props): React.Element<any> {
   return <Block>
       <ButtonGroup>
-        <Button icon="chevron-left" />
-        <Button icon="chevron-right" />
+        <Button icon="chevron-left" onClick={props.onBack} />
+        <Button icon="chevron-right" onClick={props.onForward} />
       </ButtonGroup>
     </Block>;
 }
