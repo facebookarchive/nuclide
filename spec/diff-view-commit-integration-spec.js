@@ -173,7 +173,10 @@ describe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('commit mode to open', () => {
-      return diffViewElement.querySelector('.message-editor-wrapper') != null;
+      return (
+        diffViewElement.querySelector('.commit-form-wrapper') != null ||
+        diffViewElement.querySelector('.message-editor-wrapper') != null
+      );
     });
 
     let commitModeContainer: HTMLElement = (null: any);
@@ -189,15 +192,18 @@ describe('Diff View Commit Mode Integration Test', () => {
       return modeButtons.length === 2 && modeButtons[1].textContent === 'Commit';
     });
 
-    let commitMessage = 'Commit title from nuclide\nThat is a multi-line commit message';
+    let commitMessage = 'Commit title from nuclide.';
+    const testPlan = 'This is the test plan';
     let amendCheckbox: HTMLInputElement = (null: any);
 
     runs(() => {
       amendCheckbox = (commitModeContainer.querySelector('input[type=checkbox]'): any);
       expect(amendCheckbox.checked).toBe(false);
-      const commitEditorElement = commitModeContainer.querySelector('atom-text-editor');
-      const commitEditor = ((commitEditorElement: any): atom$TextEditorElement).getModel();
+      const commitEditorElement = commitModeContainer.querySelectorAll('atom-text-editor');
+      const commitEditor = ((commitEditorElement[0]: any): atom$TextEditorElement).getModel();
       commitEditor.setText(commitMessage);
+      const testPlanEditor = ((commitEditorElement[2]: any): atom$TextEditorElement).getModel();
+      testPlanEditor.setText(testPlan);
 
       const doCommitButton = modeButtons[1];
       // Now, commit.
@@ -227,7 +233,10 @@ describe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('amend mode to open', () => {
-      return diffViewElement.querySelector('.message-editor-wrapper') != null;
+      return (
+        diffViewElement.querySelector('.commit-form-wrapper') != null ||
+        diffViewElement.querySelector('.message-editor-wrapper') != null
+      );
     });
 
     runs(() => {
@@ -245,9 +254,11 @@ describe('Diff View Commit Mode Integration Test', () => {
       amendCheckbox = (commitModeContainer.querySelector('input[type=checkbox]'): any);
       expect(amendCheckbox.checked).toBe(true);
 
-      const commitEditorElement = commitModeContainer.querySelector('atom-text-editor');
-      const commitEditor = ((commitEditorElement: any): atom$TextEditorElement).getModel();
+      const commitEditorElement = commitModeContainer.querySelectorAll('atom-text-editor');
+      const commitEditor = ((commitEditorElement[0]: any): atom$TextEditorElement).getModel();
       expect(commitEditor.getText()).toBe(commitMessage);
+      const testPlanEditor = ((commitEditorElement[2]: any): atom$TextEditorElement).getModel();
+      expect(testPlanEditor.getText()).toBe(testPlan);
       commitMessage = `Amended:${commitMessage}`;
       commitEditor.setText(commitMessage);
 

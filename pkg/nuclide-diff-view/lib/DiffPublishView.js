@@ -66,7 +66,7 @@ export default class DiffPublishView extends React.Component {
   constructor(props: Props) {
     super(props);
     (this: any)._onClickBack = this._onClickBack.bind(this);
-    (this: any)._onClickPublish = this._onClickPublish.bind(this);
+    (this: any).__onClickPublish = this.__onClickPublish.bind(this);
   }
 
   componentDidMount(): void {
@@ -80,7 +80,7 @@ export default class DiffPublishView extends React.Component {
           .subscribe(this._onPublishUpdate.bind(this)),
       ),
     );
-    this._setPublishText();
+    this.__populatePublishText();
   }
 
   _onPublishUpdate(message: Object): void {
@@ -96,14 +96,14 @@ export default class DiffPublishView extends React.Component {
       this.props.message !== prevProps.message ||
       this.props.publishModeState !== prevProps.publishModeState
     ) {
-      this._setPublishText();
+      this.__populatePublishText();
     }
   }
 
   componentWillUnmount(): void {
     this._subscriptions.dispose();
     // Save the latest edited publish message for layout switches.
-    const message = this._getPublishMessage();
+    const message = this.__getPublishMessage();
     const {diffModel} = this.props;
     // Let the component unmount before propagating the final message change to the model,
     // So the subsequent change event avoids re-rendering this component.
@@ -112,19 +112,19 @@ export default class DiffPublishView extends React.Component {
     });
   }
 
-  _setPublishText(): void {
+  __populatePublishText(): void {
     const messageEditor = this.refs.message;
     if (messageEditor != null) {
       messageEditor.getTextBuffer().setText(this.props.message || '');
     }
   }
 
-  _onClickPublish(): void {
+  __onClickPublish(): void {
     this._textBuffer.setText('');
-    this.props.diffModel.publishDiff(this._getPublishMessage() || '');
+    this.props.diffModel.publishDiff(this.__getPublishMessage() || '');
   }
 
-  _getPublishMessage(): ?string {
+  __getPublishMessage(): ?string {
     const messageEditor = this.refs.message;
     if (messageEditor != null) {
       return messageEditor.getTextBuffer().getText();
@@ -133,17 +133,10 @@ export default class DiffPublishView extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
-    const {publishModeState, publishMode, headCommitMessage} = this.props;
-
-    let revisionView;
-    if (headCommitMessage != null) {
-      revisionView = <DiffRevisionView commitMessage={headCommitMessage} />;
-    }
-
+  __getStatusEditor(): React.Element<any> {
+    const {publishModeState} = this.props;
     let isBusy;
-    let publishMessage;
-    let statusEditor = null;
+    let statusEditor;
 
     const getStreamStatusEditor = () => {
       return (
@@ -171,28 +164,58 @@ export default class DiffPublishView extends React.Component {
     switch (publishModeState) {
       case PublishModeState.READY:
         isBusy = false;
-        if (publishMode === PublishMode.CREATE) {
-          publishMessage = 'Publish Phabricator Revision';
-        } else {
-          publishMessage = 'Update Phabricator Revision';
-        }
         statusEditor = getPublishMessageEditor();
         break;
       case PublishModeState.LOADING_PUBLISH_MESSAGE:
         isBusy = true;
-        publishMessage = 'Loading...';
         statusEditor = getPublishMessageEditor();
         break;
       case PublishModeState.AWAITING_PUBLISH:
         isBusy = true;
-        publishMessage = 'Publishing...';
         statusEditor = getStreamStatusEditor();
         break;
       case PublishModeState.PUBLISH_ERROR:
         isBusy = false;
         statusEditor = getStreamStatusEditor();
+        break;
+      default:
+        throw new Error('Invalid publish mode!');
+    }
+
+    return statusEditor;
+  }
+
+  _getToolbar(): Toolbar {
+    const {publishModeState, publishMode, headCommitMessage} = this.props;
+    let revisionView;
+    if (headCommitMessage != null) {
+      revisionView = <DiffRevisionView commitMessage={headCommitMessage} />;
+    }
+    let isBusy;
+    let publishMessage;
+    switch (publishModeState) {
+      case PublishModeState.READY:
+        isBusy = false;
+        if (publishMode === PublishMode.CREATE) {
+          publishMessage = 'Publish Phabricator Revision';
+        } else {
+          publishMessage = 'Update Phabricator Revision';
+        }
+        break;
+      case PublishModeState.LOADING_PUBLISH_MESSAGE:
+        isBusy = true;
+        publishMessage = 'Loading...';
+        break;
+      case PublishModeState.AWAITING_PUBLISH:
+        isBusy = true;
+        publishMessage = 'Publishing...';
+        break;
+      case PublishModeState.PUBLISH_ERROR:
+        isBusy = false;
         publishMessage = 'Fixed? - Retry Publishing';
         break;
+      default:
+        throw new Error('Invalid publish mode!');
     }
 
     const publishButton = (
@@ -200,30 +223,36 @@ export default class DiffPublishView extends React.Component {
         className={classnames({'btn-progress': isBusy})}
         size={ButtonSizes.SMALL}
         buttonType={ButtonTypes.SUCCESS}
-        onClick={this._onClickPublish}
+        onClick={this.__onClickPublish}
         disabled={isBusy}>
         {publishMessage}
       </Button>
     );
 
     return (
+      <Toolbar location="bottom">
+        <ToolbarLeft>
+          {revisionView}
+        </ToolbarLeft>
+        <ToolbarRight>
+          <Button
+            size={ButtonSizes.SMALL}
+            onClick={this._onClickBack}>
+            Back
+          </Button>
+          {publishButton}
+        </ToolbarRight>
+      </Toolbar>
+    );
+  }
+
+  render(): React.Element<any> {
+    return (
       <div className="nuclide-diff-mode">
         <div className="message-editor-wrapper">
-          {statusEditor}
+          {this.__getStatusEditor()}
         </div>
-        <Toolbar location="bottom">
-          <ToolbarLeft>
-            {revisionView}
-          </ToolbarLeft>
-          <ToolbarRight>
-            <Button
-              size={ButtonSizes.SMALL}
-              onClick={this._onClickBack}>
-              Back
-            </Button>
-            {publishButton}
-          </ToolbarRight>
-        </Toolbar>
+        {this._getToolbar()}
       </div>
     );
   }

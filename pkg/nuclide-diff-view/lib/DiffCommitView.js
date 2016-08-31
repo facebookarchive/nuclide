@@ -32,6 +32,7 @@ type Props = {
   commitMode: string,
   commitModeState: CommitModeStateType,
   diffModel: DiffViewModel,
+  shouldRebaseOnAmend: boolean,
 };
 
 export default class DiffCommitView extends React.Component {
@@ -40,105 +41,130 @@ export default class DiffCommitView extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._onClickCommit = this._onClickCommit.bind(this);
+    (this: any).__onClickCommit = this.__onClickCommit.bind(this);
     (this: any)._onToggleAmend = this._onToggleAmend.bind(this);
+    (this: any)._onToggleAmendRebase = this._onToggleAmendRebase.bind(this);
     (this: any)._onClickBack = this._onClickBack.bind(this);
   }
 
   componentDidMount(): void {
-    this._setCommitMessage();
+    this.__populateCommitMessage();
 
     // Shortcut to commit when on form
     this._subscriptions = new CompositeDisposable(
       atom.commands.add(
         '.commit-form-wrapper',
         'nuclide-diff-view:commit-message',
-        event => this._onClickCommit()),
+        event => this.__onClickCommit()),
     );
   }
 
   componentDidUpdate(prevProps: Props, prevState: void): void {
     if (this.props.commitMessage !== prevProps.commitMessage) {
-      this._setCommitMessage();
+      this.__populateCommitMessage();
     }
   }
 
-  _setCommitMessage(): void {
+  __populateCommitMessage(): void {
     this.refs.message.getTextBuffer().setText(this.props.commitMessage || '');
   }
 
-  render(): React.Element<any> {
+  _isLoading(): boolean {
     const {commitModeState} = this.props;
-    const isLoading = commitModeState !== CommitModeState.READY;
+    return commitModeState !== CommitModeState.READY;
+  }
 
+  _getToolbar(): Toolbar {
+    const {commitModeState} = this.props;
     let message;
-    if (isLoading) {
-      switch (commitModeState) {
-        case CommitModeState.AWAITING_COMMIT:
-          message = 'Committing...';
-          break;
-        case CommitModeState.LOADING_COMMIT_MESSAGE:
-          message = 'Loading...';
-          break;
-        default:
-          message = 'Unknown Commit State!';
-          break;
-      }
-    } else {
-      message = 'Commit';
+    switch (commitModeState) {
+      case CommitModeState.AWAITING_COMMIT:
+        message = 'Committing...';
+        break;
+      case CommitModeState.LOADING_COMMIT_MESSAGE:
+        message = 'Loading...';
+        break;
+      case CommitModeState.READY:
+        message = 'Commit';
+        break;
+      default:
+        message = 'Unknown Commit State!';
+        break;
     }
 
+    const isLoading = this._isLoading();
     const btnClassname = classnames('pull-right', {
       'btn-progress': isLoading,
     });
+
+    let rebaseOptionElement = null;
+    if (this.props.commitMode === CommitMode.AMEND) {
+      rebaseOptionElement = (
+        <Checkbox
+          className="padded"
+          checked={this.props.shouldRebaseOnAmend}
+          disabled={isLoading}
+          label="Rebase stacked commits"
+          onChange={this._onToggleAmendRebase}
+          tabIndex="-1"
+        />
+      );
+    }
+
+    return (
+      <Toolbar location="bottom">
+        <ToolbarLeft>
+          <Checkbox
+            checked={this.props.commitMode === CommitMode.AMEND}
+            disabled={isLoading}
+            label="Amend"
+            onChange={this._onToggleAmend}
+          />
+          {rebaseOptionElement}
+        </ToolbarLeft>
+        <ToolbarRight>
+          <Button
+            size={ButtonSizes.SMALL}
+            onClick={this._onClickBack}>
+            Back
+          </Button>
+          <Button
+            className={btnClassname}
+            size={ButtonSizes.SMALL}
+            buttonType={ButtonTypes.SUCCESS}
+            disabled={isLoading}
+            onClick={this.__onClickCommit}>
+            {message}
+          </Button>
+        </ToolbarRight>
+      </Toolbar>);
+  }
+
+  render(): React.Element<any> {
     return (
       <div className="nuclide-diff-mode">
         <div className="message-editor-wrapper">
           <AtomTextEditor
             gutterHidden={true}
             path=".HG_COMMIT_EDITMSG"
-            readOnly={isLoading}
+            readOnly={this._isLoading()}
             ref="message"
           />
         </div>
-        <Toolbar location="bottom">
-          <ToolbarLeft>
-            <Checkbox
-              checked={this.props.commitMode === CommitMode.AMEND}
-              disabled={isLoading}
-              label="Amend"
-              onChange={this._onToggleAmend}
-            />
-          </ToolbarLeft>
-          <ToolbarRight>
-            <Button
-              size={ButtonSizes.SMALL}
-              onClick={this._onClickBack}>
-              Back
-            </Button>
-            <Button
-              className={btnClassname}
-              size={ButtonSizes.SMALL}
-              buttonType={ButtonTypes.SUCCESS}
-              disabled={isLoading}
-              onClick={this._onClickCommit}>
-              {message}
-            </Button>
-          </ToolbarRight>
-        </Toolbar>
+        {this._getToolbar()}
       </div>
     );
   }
 
-  _onClickCommit(): void {
-    this.props.diffModel.commit(this._getCommitMessage());
+  __onClickCommit(): void {
+    this.props.diffModel.commit(this.__getCommitMessage());
   }
 
   _onClickBack(): void {
     this.props.diffModel.setViewMode(DiffMode.BROWSE_MODE);
   }
 
-  _getCommitMessage(): string {
+  __getCommitMessage(): string {
     return this.refs.message.getTextBuffer().getText();
   }
 
@@ -149,9 +175,13 @@ export default class DiffCommitView extends React.Component {
     );
   }
 
+  _onToggleAmendRebase(isChecked: boolean): void {
+    this.props.diffModel.setShouldAmendRebase(isChecked);
+  }
+
   componentWillUnmount(): void {
     // Save the latest edited commit message for layout switches.
-    const message = this._getCommitMessage();
+    const message = this.__getCommitMessage();
     const {diffModel} = this.props;
     // Let the component unmount before propagating the final message change to the model,
     // So the subsequent change event avoids re-rendering this component.

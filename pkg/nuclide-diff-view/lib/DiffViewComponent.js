@@ -36,7 +36,6 @@ import {computeDiff, getOffsetLineNumber} from './diff-utils';
 import createPaneContainer from '../../commons-atom/create-pane-container';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {DiffMode} from './constants';
-import passesGK from '../../commons-node/passesGK';
 
 type Props = {
   diffModel: DiffViewModel,
@@ -75,6 +74,37 @@ function initialEditorState(): EditorState {
   };
 }
 
+let CachedPublishComponent;
+function getPublishComponent() {
+  if (CachedPublishComponent == null) {
+    // Try requiring private module
+    try {
+      // $FlowFB
+      const {DiffViewPublishForm} = require('./fb/DiffViewPublishForm');
+      CachedPublishComponent = DiffViewPublishForm;
+    } catch (ex) {
+      CachedPublishComponent = DiffPublishView;
+    }
+  }
+  return CachedPublishComponent;
+}
+
+let CachedDiffComponent;
+function getDiffComponent() {
+  if (CachedDiffComponent == null) {
+    // Try requiring private module
+    try {
+      // $FlowFB
+      const {DiffViewCreateForm} = require('./fb/DiffViewCreateForm');
+      CachedDiffComponent = DiffViewCreateForm;
+    } catch (ex) {
+      CachedDiffComponent = DiffCommitView;
+    }
+  }
+
+  return CachedDiffComponent;
+}
+
 const EMPTY_FUNCTION = () => {};
 const SCROLL_FIRST_CHANGE_DELAY_MS = 100;
 
@@ -95,7 +125,7 @@ export default class DiffViewComponent extends React.Component {
   _treeComponent: React.Component<any, any, any>;
   _navigationPane: atom$Pane;
   _navigationComponent: DiffNavigationBar;
-  _publishComponent: ?DiffPublishView;
+  _publishComponent: ?React.Component<any, any, any>;
   _readonlyBuffer: atom$TextBuffer;
 
   constructor(props: Props) {
@@ -267,7 +297,7 @@ export default class DiffViewComponent extends React.Component {
     }
   }
 
-  async _renderCommitView(): Promise<void> {
+  _renderCommitView(): void {
     const {
       commitMessage,
       commitMode,
@@ -275,22 +305,7 @@ export default class DiffViewComponent extends React.Component {
       shouldRebaseOnAmend,
     } = this.props.diffModel.getState();
 
-    const passes = await passesGK('nuclide_diff_commit_form');
-    let DiffComponent;
-
-    if (passes) {
-      // Try requiring private module
-      try {
-        // $FlowFB
-        const {DiffViewCommitForm} = require('./fb/DiffViewCommitForm');
-        DiffComponent = DiffViewCommitForm;
-      } catch (ex) {
-        DiffComponent = DiffCommitView;
-      }
-    } else {
-      DiffComponent = DiffCommitView;
-    }
-
+    const DiffComponent = getDiffComponent();
     ReactDOM.render(
       <DiffComponent
         commitMessage={commitMessage}
@@ -313,8 +328,9 @@ export default class DiffViewComponent extends React.Component {
       publishMessage,
       headCommitMessage,
     } = diffModel.getState();
+    const PublishComponent = getPublishComponent();
     const component = ReactDOM.render(
-      <DiffPublishView
+      <PublishComponent
         publishModeState={publishModeState}
         message={publishMessage}
         publishMode={publishMode}
@@ -323,7 +339,6 @@ export default class DiffViewComponent extends React.Component {
       />,
       this._getPaneElement(this._bottomRightPane),
     );
-    invariant(component instanceof DiffPublishView);
     this._publishComponent = component;
   }
 
