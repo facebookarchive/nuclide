@@ -184,8 +184,12 @@ class BreakpointDisplayController {
   _handleGutterClick(event: Event): void {
     // Filter out clicks to the folding chevron.
     const FOLDING_CHEVRON_CLASS_NAME = 'icon-right';
+    const BLAME_HASH_CLICKABLE_CLASS_NAME = 'nuclide-blame-hash-clickable';
     const target: Object = event.target; // classList isn't in the defs of HTMLElement...
-    if (target.classList.contains(FOLDING_CHEVRON_CLASS_NAME)) {
+    if (
+      target.classList.contains(FOLDING_CHEVRON_CLASS_NAME) ||
+      target.classList.contains(BLAME_HASH_CLICKABLE_CLASS_NAME)
+    ) {
       return;
     }
 
