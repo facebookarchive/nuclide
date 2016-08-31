@@ -33,12 +33,16 @@ export default class NuclideTextBuffer extends TextBuffer {
   // We use this to accurately detect changes on disk - conflicts should not be reported
   // if any saves finished while fetching the updated contents.
   _saveID: number;
+  // Handling pending saves is also tricky. It's possible we get the file change event
+  // before the file finishes saving, which is fine.
+  _pendingSaveContents: ?string;
 
   constructor(connection: ServerConnection, params: any) {
     super(params);
     this._exists = true;
     this._connection = connection;
     this._saveID = 0;
+    this._pendingSaveContents = null;
     this.setPath(params.filePath);
     const encoding: string = (atom.config.get('core.fileEncoding'): any);
     this.setEncoding(encoding);
@@ -97,6 +101,7 @@ export default class NuclideTextBuffer extends TextBuffer {
     try {
       const file = this.file;
       invariant(file, 'Cannot save an null file!');
+      this._pendingSaveContents = toSaveContents;
       await file.write(toSaveContents);
       this.cachedDiskContents = toSaveContents;
       this._saveID++;
@@ -121,6 +126,9 @@ export default class NuclideTextBuffer extends TextBuffer {
       atom.notifications.addError(`Failed to save remote file ${filePath}: ${message}`);
       success = false;
     }
+
+    // Once the save is finished, cachedDiskContents is the source of truth.
+    this._pendingSaveContents = null;
 
     track('remoteprojects-text-buffer-save-as', {
       'remoteprojects-file-path': filePath,
@@ -175,8 +183,12 @@ export default class NuclideTextBuffer extends TextBuffer {
       // If any save requests finished in the meantime, previousContents is not longer accurate.
       // The most recent save request should trigger another change event, so we'll check for
       // conflicts when that happens.
+      // Also, if a save is currently pending, it's possible we get the change event before the
+      // write promise comes back.
       // Otherwise, what we wrote and what we read should match exactly.
-      if (this._saveID !== previousSaveID || previousContents === this.cachedDiskContents) {
+      if (this._saveID !== previousSaveID ||
+          previousContents === this.cachedDiskContents ||
+          this._pendingSaveContents === this.cachedDiskContents) {
         this.conflict = false;
         return;
       }
