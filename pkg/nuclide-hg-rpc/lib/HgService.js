@@ -868,7 +868,11 @@ export class HgService {
     } else {
       editor = 'cat';
     }
-    const args = ['commit', '--config', `ui.editor=${editor}`];
+    const args = [
+      'commit',
+      '--config', `ui.editor=${editor}`,
+      '--config', 'ui.allowemptycommit=true',
+    ];
     const execOptions = {
       cwd: this._workingDirectory,
     };
