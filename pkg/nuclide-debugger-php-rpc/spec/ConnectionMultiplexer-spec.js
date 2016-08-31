@@ -147,6 +147,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         jasmine.createSpyObj('connection' + connectionCount, [
           'onStatus',
           'onNotification',
+          'isRunning',
           'runtimeEvaluate',
           'evaluateOnCallFrame',
           'getProperties',
@@ -183,7 +184,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         return connection._status;
       });
       // $FlowFixMe override instance method.
-      connection.stopReason = jasmine.createSpy('stopReason').andCallFake(() => {
+      connection.getStopReason = jasmine.createSpy('getStopReason').andCallFake(() => {
         return 'breakpoint';
       });
       // $FlowFixMe override instance method.

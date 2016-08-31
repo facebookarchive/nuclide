@@ -58,6 +58,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
         'sendContinuationCommand',
         'getScopesForFrame',
         'getRequestSwitchMessage',
+        'getEnabledConnectionId',
         'resetRequestSwitchMessage',
         'pause',
         'resume',

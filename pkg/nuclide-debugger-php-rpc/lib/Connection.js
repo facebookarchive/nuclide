@@ -181,7 +181,7 @@ export class Connection {
     return this._dataCache.getProperties(remoteId);
   }
 
-  stopReason(): ?string {
+  getStopReason(): ?string {
     return this._stopReason;
   }
 

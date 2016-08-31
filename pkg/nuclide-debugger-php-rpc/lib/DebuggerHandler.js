@@ -36,7 +36,8 @@ import {
 } from './DbgpSocket';
 import {
   STATUS_ALL_CONNECTIONS_BREAK,
-} from './ConnectionMultiplexer';
+  CONNECTION_MUX_NOTIFICATION,
+} from './ConnectionMultiplexer.js';
 
 import FileCache from './FileCache';
 import {EventEmitter} from 'events';
@@ -204,6 +205,11 @@ export class DebuggerHandler extends Handler {
       frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
   }
 
+  async _getTopFrameForConnection(id: number): Promise<Object> {
+    const frames = await this._connectionMultiplexer.getConnectionStackFrames(id);
+    return await this._convertFrame(frames.stack[0], 0);
+  }
+
   async _convertFrame(frame: Object, frameIndex: number): Promise<Object> {
     logger.log('Converting frame: ' + JSON.stringify(frame));
     const file = this._files.registerFile(fileUrlOfFrame(frame));
@@ -273,6 +279,22 @@ export class DebuggerHandler extends Handler {
           location: getBreakpointLocation(breakpoint),
         });
         break;
+      case CONNECTION_MUX_NOTIFICATION.REQUEST_UPDATE:
+        invariant(params);
+        const frame = params.status === STATUS_BREAK ?
+          await this._getTopFrameForConnection(params.id) : null;
+        this.sendMethod('Debugger.threadUpdated', {
+          thread: {
+            id: String(params.id),
+            name: String(params.id),
+            address: frame != null ? frame.functionName : 'N/A',
+            location: frame != null ? frame.location : null,
+            hasSource: true,
+            stopReason: params.stopReason,
+            description: 'N/A',
+          },
+        });
+        break;
       default:
         logger.logErrorAndThrow(`Unexpected notification: ${notifyName}`);
     }
@@ -295,6 +317,7 @@ export class DebuggerHandler extends Handler {
         reason: 'breakpoint', // TODO: better reason?
         threadSwitchMessage: requestSwitchMessage,
         data: {},
+        stopThreadId: this._connectionMultiplexer.getEnabledConnectionId(),
       },
     );
   }

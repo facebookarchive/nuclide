@@ -84,7 +84,7 @@ export class DebuggerThreadsComponent extends React.Component {
             isSelected: Number(threadItem.id) === selectedThreadId,
           },
         };
-        if (threadItem.id === selectedThreadId) {
+        if (Number(threadItem.id) === selectedThreadId) {
           // $FlowIssue className is an optional property of a table row
           cellData.className = 'nuclide-debugger-thread-list-item-selected';
         }
