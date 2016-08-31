@@ -67,8 +67,18 @@ type Props = {
 function NavStackStatusBarTile(props: Props): React.Element<any> {
   return <Block>
       <ButtonGroup>
-        <Button icon="chevron-left" onClick={props.onBack} disabled={!props.enableBack} />
-        <Button icon="chevron-right" onClick={props.onForward} disabled={!props.enableForward} />
+        <Button
+          icon="chevron-left"
+          onClick={props.onBack}
+          disabled={!props.enableBack}
+          title="Navigate Backwards"
+        />
+        <Button
+          icon="chevron-right"
+          onClick={props.onForward}
+          disabled={!props.enableForward}
+          title="Navigate Forwards"
+        />
       </ButtonGroup>
     </Block>;
 }
