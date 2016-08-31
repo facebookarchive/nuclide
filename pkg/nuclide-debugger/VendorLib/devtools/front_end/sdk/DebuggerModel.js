@@ -244,7 +244,7 @@ WebInspector.DebuggerModel.prototype = {
 
     selectThread: function(threadId)
     {
-        this._agent.selectThread(threadId);
+        this._agent.selectThread(Number(threadId));
         this.threadStore.selectThread(threadId);
     },
 

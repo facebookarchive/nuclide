@@ -685,6 +685,13 @@ export class ConnectionMultiplexer {
     }
   }
 
+  selectThread(id: number): void {
+    const connection = this._connections.get(id);
+    if (connection != null && connection.getStatus() === STATUS_BREAK) {
+      this._enabledConnection = connection;
+    }
+  }
+
   dispose(): void {
     if (this._launchedScriptProcess != null) {
       this._launchedScriptProcessPromise = null;

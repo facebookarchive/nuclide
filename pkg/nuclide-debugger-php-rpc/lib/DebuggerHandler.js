@@ -143,6 +143,10 @@ export class DebuggerHandler extends Handler {
         this.replyToCommand(id, result);
         break;
 
+      case 'selectThread':
+        this._selectThread(params);
+        break;
+
       case 'setDebuggerSettings':
         updateSettings(params);
         break;
@@ -151,6 +155,12 @@ export class DebuggerHandler extends Handler {
         this.unknownMethod(id, method, params);
         break;
     }
+  }
+
+  async _selectThread(params: Object): Promise<void> {
+    const {threadId} = params;
+    await this._connectionMultiplexer.selectThread(threadId);
+    this._sendPausedMessage();
   }
 
   async _setPauseOnExceptions(id: number, params: Object): Promise<any> {
