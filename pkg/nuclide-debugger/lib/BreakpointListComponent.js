@@ -58,7 +58,7 @@ export class BreakpointListComponent extends React.Component {
         enabled,
         resolved,
       } = breakpoint;
-      const label = `${nuclideUri.basename(path)}:${line}`;
+      const label = `${nuclideUri.basename(path)}:${line + 1}`;
       return (
         <div className="nuclide-debugger-breakpoint" key={i}>
           {
