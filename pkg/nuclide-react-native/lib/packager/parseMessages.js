@@ -9,15 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {Message} from '../../../nuclide-console/lib/types';
 import type {PackagerEvent} from './types';
 
+import {parseRegularLine} from './parseRegularLine';
 import {Observable} from 'rxjs';
 
 const PORT_LINE = /.*Running.*on port\s+(\d+)/;
 const SOURCE_LIST_START = /Looking for JS files in/;
-const NORMAL_LINE = /^\s*\[(\d+):(\d+):(\d+) (A|P)M\]\s*(.*?)\s*$/;
-const ERROR_LINE = /^\s*ERROR\s*(.*?)\s*$/;
 const READY_LINE = /(packager|server) ready/i;
 
 /**
@@ -82,7 +80,7 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
           // Drop all blank lines that come after the preamble.
           if (isBlankLine(line)) { return; }
 
-          observer.next({kind: 'message', message: parseRegularMessage(line)});
+          observer.next({kind: 'message', message: parseRegularLine(line)});
 
           if (!sawReadyMessage && READY_LINE.test(line)) {
             sawReadyMessage = true;
@@ -102,30 +100,3 @@ export function parseMessages(raw: Observable<string>): Observable<PackagerEvent
 }
 
 const isBlankLine = line => /^\s*$/.test(line);
-
-function parseRegularMessage(line: string): Message {
-  const normalMatch = line.match(NORMAL_LINE);
-  if (normalMatch != null) {
-    // TODO (matthewwithanm): Add support for showing timestamps and include that in the message.
-    return {
-      level: 'log',
-      text: normalMatch[5],
-    };
-  }
-
-  const errorMatch = line.match(ERROR_LINE);
-  if (errorMatch != null) {
-    return {
-      level: 'error',
-      text: errorMatch[1],
-    };
-  }
-
-  // If we weren't able to successfully parse a message, just fall back to using the line. This
-  // is expected for some of the packagers output ("[Hot Module Replacement] Server listening on
-  // /hot", "React packager ready.").
-  return {
-    level: 'log',
-    text: line,
-  };
-}

@@ -18,7 +18,7 @@ describe('parseMessages', () => {
 
   // Run the same tests for each format of the packager output. We do this not because we want to
   // stay DRY, but to ensure that we're testing for the same output for each format.
-  ['packager-stdout-1', 'packager-stdout-2'].forEach(fixtureName => {
+  ['packager-stdout-1', 'packager-stdout-2', 'packager-stdout-3'].forEach(fixtureName => {
 
     describe(fixtureName, () => {
 
