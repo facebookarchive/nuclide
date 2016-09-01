@@ -23,12 +23,6 @@ describe('Hyperclick', () => {
   let hyperclickForTextEditor: HyperclickForTextEditor = (null: any);
 
   beforeEach(() => waitsForPromise(async () => {
-    // TODO(asuarez): Remove this once this package is independent.
-    const config = require('../package.json').nuclide.config;
-    Object.keys(config).forEach(k =>
-      atom.config.setSchema(`nuclide.hyperclick.${k}`, config[k]),
-    );
-
     textEditor = await atom.workspace.open('hyperclick.txt');
     textEditorView = atom.views.getView(textEditor);
 

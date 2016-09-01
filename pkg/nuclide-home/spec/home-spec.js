@@ -39,12 +39,6 @@ describe('Home', () => {
   beforeEach(() => {
     waitsForPromise(async () => {
       jasmine.unspy(window, 'setTimeout');
-      const config = require('../package.json').nuclide.config;
-      // $UPFixMe: With UP, the default settings are set by the loader, but
-      // I don't have a good way to do that just for tests (yet).
-      Object.keys(config).forEach(k =>
-        featureConfig.setSchema(`nuclide-home.${k}`, config[k]),
-      );
       const WORKSPACE_VIEW_DIRS = [
         nuclideUri.dirname(require.resolve('../../nuclide-workspace-views/package.json')),
         nuclideUri.dirname(require.resolve('../../nuclide-workspace-view-locations/package.json')),
