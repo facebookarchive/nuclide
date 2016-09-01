@@ -760,7 +760,18 @@ declare class atom$TextEditor extends atom$Model {
       stop: () => mixed,
       replace: (replaceWith: string) => mixed,
     }) => mixed
-  ): mixed,
+  ): void,
+
+  scan(
+    regex: RegExp,
+    iterator: (foundMatch: {
+      match: mixed,
+      matchText: string,
+      range: atom$Range,
+      stop: () => mixed,
+      replace: (replaceWith: string) => mixed,
+    }) => mixed
+  ): void,
 
   // Tab Behavior
   // Soft Wrap Behavior
