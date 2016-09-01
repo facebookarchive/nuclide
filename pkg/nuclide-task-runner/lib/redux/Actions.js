@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,105 +10,118 @@
  * the root directory of this source tree.
  */
 
-import type {Directory} from '../../../nuclide-remote-connection';
-import type {
-  TaskRunner,
-  CreatePanelAction,
-  DestroyPanelAction,
-  RegisterTaskRunnerAction,
-  RunTaskAction,
-  SelectTaskAction,
-  SetProjectRootAction,
-  SetToolbarVisibilityAction,
-  StopTaskAction,
-  Store,
-  TaskId,
-  ToggleToolbarVisibilityAction,
-  UnregisterTaskRunnerAction,
-} from '../types';
+exports.createPanel = createPanel;
+exports.destroyPanel = destroyPanel;
+exports.registerTaskRunner = registerTaskRunner;
+exports.runTask = runTask;
+exports.selectTask = selectTask;
+exports.setProjectRoot = setProjectRoot;
+exports.setToolbarVisibility = setToolbarVisibility;
+exports.stopTask = stopTask;
+exports.toggleToolbarVisibility = toggleToolbarVisibility;
+exports.unregisterTaskRunner = unregisterTaskRunner;
+var CREATE_PANEL = 'CREATE_PANEL';
+exports.CREATE_PANEL = CREATE_PANEL;
+var DESTROY_PANEL = 'DESTROY_PANEL';
+exports.DESTROY_PANEL = DESTROY_PANEL;
+var PANEL_CREATED = 'PANEL_CREATED';
+exports.PANEL_CREATED = PANEL_CREATED;
+var PANEL_DESTROYED = 'PANEL_DESTROYED';
+exports.PANEL_DESTROYED = PANEL_DESTROYED;
+var REGISTER_TASK_RUNNER = 'REGISTER_TASK_RUNNER';
+exports.REGISTER_TASK_RUNNER = REGISTER_TASK_RUNNER;
+var RUN_TASK = 'RUN_TASK';
+exports.RUN_TASK = RUN_TASK;
+var SELECT_TASK = 'SELECT_TASK';
+exports.SELECT_TASK = SELECT_TASK;
+var SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';
+exports.SET_PROJECT_ROOT = SET_PROJECT_ROOT;
+var SET_TOOLBAR_VISIBILITY = 'SET_TOOLBAR_VISIBILITY';
+exports.SET_TOOLBAR_VISIBILITY = SET_TOOLBAR_VISIBILITY;
+var STOP_TASK = 'STOP_TASK';
+exports.STOP_TASK = STOP_TASK;
+var TASK_COMPLETED = 'TASK_COMPLETED';
+exports.TASK_COMPLETED = TASK_COMPLETED;
+var TASK_PROGRESS = 'TASK_PROGRESS';
+exports.TASK_PROGRESS = TASK_PROGRESS;
+var TASK_STARTED = 'TASK_STARTED';
+exports.TASK_STARTED = TASK_STARTED;
+var TASK_STOPPED = 'TASK_STOPPED';
+exports.TASK_STOPPED = TASK_STOPPED;
+var TASK_ERRORED = 'TASK_ERRORED';
+exports.TASK_ERRORED = TASK_ERRORED;
+var TASK_LIST_UPDATED = 'TASK_LIST_UPDATED';
+exports.TASK_LIST_UPDATED = TASK_LIST_UPDATED;
+var TOGGLE_TOOLBAR_VISIBILITY = 'TOGGLE_TOOLBAR_VISIBILITY';
+exports.TOGGLE_TOOLBAR_VISIBILITY = TOGGLE_TOOLBAR_VISIBILITY;
+var TOOLBAR_VISIBILITY_UPDATED = 'TOOLBAR_VISIBILITY_UPDATED';
+exports.TOOLBAR_VISIBILITY_UPDATED = TOOLBAR_VISIBILITY_UPDATED;
+var UNREGISTER_TASK_RUNNER = 'UNREGISTER_TASK_RUNNER';
 
-export const CREATE_PANEL = 'CREATE_PANEL';
-export const DESTROY_PANEL = 'DESTROY_PANEL';
-export const PANEL_CREATED = 'PANEL_CREATED';
-export const PANEL_DESTROYED = 'PANEL_DESTROYED';
-export const REGISTER_TASK_RUNNER = 'REGISTER_TASK_RUNNER';
-export const RUN_TASK = 'RUN_TASK';
-export const SELECT_TASK = 'SELECT_TASK';
-export const SET_PROJECT_ROOT = 'SET_PROJECT_ROOT';
-export const SET_TOOLBAR_VISIBILITY = 'SET_TOOLBAR_VISIBILITY';
-export const STOP_TASK = 'STOP_TASK';
-export const TASK_COMPLETED = 'TASK_COMPLETED';
-export const TASK_PROGRESS = 'TASK_PROGRESS';
-export const TASK_STARTED = 'TASK_STARTED';
-export const TASK_STOPPED = 'TASK_STOPPED';
-export const TASK_ERRORED = 'TASK_ERRORED';
-export const TASK_LIST_UPDATED = 'TASK_LIST_UPDATED';
-export const TOGGLE_TOOLBAR_VISIBILITY = 'TOGGLE_TOOLBAR_VISIBILITY';
-export const TOOLBAR_VISIBILITY_UPDATED = 'TOOLBAR_VISIBILITY_UPDATED';
-export const UNREGISTER_TASK_RUNNER = 'UNREGISTER_TASK_RUNNER';
+exports.UNREGISTER_TASK_RUNNER = UNREGISTER_TASK_RUNNER;
 
-export function createPanel(store: Store): CreatePanelAction {
+function createPanel(store) {
   return {
     type: CREATE_PANEL,
-    payload: {store},
+    payload: { store: store }
   };
 }
 
-export function destroyPanel(): DestroyPanelAction {
-  return {type: DESTROY_PANEL};
+function destroyPanel() {
+  return { type: DESTROY_PANEL };
 }
 
-export function registerTaskRunner(taskRunner: TaskRunner): RegisterTaskRunnerAction {
+function registerTaskRunner(taskRunner) {
   return {
     type: REGISTER_TASK_RUNNER,
-    payload: {taskRunner},
+    payload: { taskRunner: taskRunner }
   };
 }
 
-export function runTask(taskId?: TaskId): RunTaskAction {
+function runTask(taskId) {
   return {
     type: RUN_TASK,
-    payload: {taskId},
+    payload: { taskId: taskId }
   };
 }
 
-export function selectTask(taskId: TaskId): SelectTaskAction {
+function selectTask(taskId) {
   return {
     type: SELECT_TASK,
-    payload: {taskId},
+    payload: { taskId: taskId }
   };
 }
 
-export function setProjectRoot(projectRoot: ?Directory): SetProjectRootAction {
+function setProjectRoot(projectRoot) {
   return {
     type: SET_PROJECT_ROOT,
-    payload: {projectRoot},
+    payload: { projectRoot: projectRoot }
   };
 }
 
-export function setToolbarVisibility(visible: boolean): SetToolbarVisibilityAction {
+function setToolbarVisibility(visible) {
   return {
     type: SET_TOOLBAR_VISIBILITY,
-    payload: {visible},
+    payload: { visible: visible }
   };
 }
 
-export function stopTask(): StopTaskAction {
-  return {type: STOP_TASK};
+function stopTask() {
+  return { type: STOP_TASK };
 }
 
-export function toggleToolbarVisibility(taskRunnerId?: string): ToggleToolbarVisibilityAction {
+function toggleToolbarVisibility(taskRunnerId) {
   return {
     type: TOGGLE_TOOLBAR_VISIBILITY,
-    payload: {taskRunnerId},
+    payload: { taskRunnerId: taskRunnerId }
   };
 }
 
-export function unregisterTaskRunner(taskRunner: TaskRunner): UnregisterTaskRunnerAction {
+function unregisterTaskRunner(taskRunner) {
   return {
     type: UNREGISTER_TASK_RUNNER,
     payload: {
-      id: taskRunner.id,
-    },
+      id: taskRunner.id
+    }
   };
 }

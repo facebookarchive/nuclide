@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +10,35 @@
  * the root directory of this source tree.
  */
 
-import type {
-  AtomRange,
-  FileVersion,
-} from './rpc-types';
+exports.convertRange = convertRange;
+exports.getFileVersionOfBuffer = getFileVersionOfBuffer;
+exports.getFileVersionOfEditor = getFileVersionOfEditor;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
 // Workaround for flow
-export function convertRange(range: atom$Range): AtomRange {
+
+function convertRange(range) {
   return {
     start: range.start,
-    end: range.end,
+    end: range.end
   };
 }
 
-export function getFileVersionOfBuffer(buffer: atom$TextBuffer): FileVersion {
-  invariant(buffer.getPath() !== '');
+function getFileVersionOfBuffer(buffer) {
+  (0, (_assert2 || _assert()).default)(buffer.getPath() !== '');
   return {
     filePath: buffer.getPath(),
-    version: buffer.changeCount,
+    version: buffer.changeCount
   };
 }
 
-export function getFileVersionOfEditor(editor: atom$TextEditor): FileVersion {
+function getFileVersionOfEditor(editor) {
   return getFileVersionOfBuffer(editor.getBuffer());
 }

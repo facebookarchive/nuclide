@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,113 +8,91 @@
  * the root directory of this source tree.
  */
 
-import type {
-  ObjectGroup,
-  WebInspector$CallFrame,
-  WebInspector$Event,
-  IPCBreakpoint,
-} from '../../lib/types';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import invariant from 'assert';
-import electron from 'electron';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import Emitter from './Emitter';
-import Multimap from '../../lib/Multimap';
-import {
-  beginTimerTracking,
-  endTimerTracking,
-} from '../../lib/AnalyticsHelper';
-import WebInspector from '../../lib/WebInspector';
+var _assert2;
 
-const {ipcRenderer} = electron;
-invariant(ipcRenderer != null);
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
-const NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
-const DebuggerSettingsChangedEvent = 'debugger-settings-updated';
+var _electron2;
 
-type BreakpointNotificationType = 'BreakpointAdded' | 'BreakpointRemoved';
+function _electron() {
+  return _electron2 = _interopRequireDefault(require('electron'));
+}
 
-class NuclideBridge {
-  _allBreakpoints: {sourceURL: string, lineNumber: number}[];
-  _unresolvedBreakpoints: Multimap<string, number>;
-  _emitter: Emitter;
-  _debuggerPausedCount: number;
-  _suppressBreakpointNotification: boolean;
-  _settings: Object;
+var _Emitter2;
 
-  constructor() {
+function _Emitter() {
+  return _Emitter2 = _interopRequireDefault(require('./Emitter'));
+}
+
+var _libMultimap2;
+
+function _libMultimap() {
+  return _libMultimap2 = _interopRequireDefault(require('../../lib/Multimap'));
+}
+
+var _libAnalyticsHelper2;
+
+function _libAnalyticsHelper() {
+  return _libAnalyticsHelper2 = require('../../lib/AnalyticsHelper');
+}
+
+var _libWebInspector2;
+
+function _libWebInspector() {
+  return _libWebInspector2 = _interopRequireDefault(require('../../lib/WebInspector'));
+}
+
+var ipcRenderer = (_electron2 || _electron()).default.ipcRenderer;
+
+(0, (_assert2 || _assert()).default)(ipcRenderer != null);
+
+var NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
+var DebuggerSettingsChangedEvent = 'debugger-settings-updated';
+
+var NuclideBridge = (function () {
+  function NuclideBridge() {
+    _classCallCheck(this, NuclideBridge);
+
     this._allBreakpoints = [];
-    this._unresolvedBreakpoints = new Multimap();
-    this._emitter = new Emitter();
+    this._unresolvedBreakpoints = new (_libMultimap2 || _libMultimap()).default();
+    this._emitter = new (_Emitter2 || _Emitter()).default();
     this._debuggerPausedCount = 0;
     this._suppressBreakpointNotification = false;
     this._settings = {};
 
     ipcRenderer.on('command', this._handleIpcCommand.bind(this));
 
-    WebInspector.targetManager.addModelListener(
-      WebInspector.DebuggerModel,
-      WebInspector.DebuggerModel.Events.CallFrameSelected,
-      this._handleCallFrameSelected,
-      this);
+    (_libWebInspector2 || _libWebInspector()).default.targetManager.addModelListener((_libWebInspector2 || _libWebInspector()).default.DebuggerModel, (_libWebInspector2 || _libWebInspector()).default.DebuggerModel.Events.CallFrameSelected, this._handleCallFrameSelected, this);
 
-    WebInspector.targetManager.addModelListener(
-      WebInspector.DebuggerModel,
-      WebInspector.DebuggerModel.Events.ClearInterface,
-      this._handleClearInterface,
-      this);
+    (_libWebInspector2 || _libWebInspector()).default.targetManager.addModelListener((_libWebInspector2 || _libWebInspector()).default.DebuggerModel, (_libWebInspector2 || _libWebInspector()).default.DebuggerModel.Events.ClearInterface, this._handleClearInterface, this);
 
-    WebInspector.targetManager.addModelListener(
-      WebInspector.DebuggerModel,
-      WebInspector.DebuggerModel.Events.DebuggerResumed,
-      this._handleDebuggerResumed,
-      this);
+    (_libWebInspector2 || _libWebInspector()).default.targetManager.addModelListener((_libWebInspector2 || _libWebInspector()).default.DebuggerModel, (_libWebInspector2 || _libWebInspector()).default.DebuggerModel.Events.DebuggerResumed, this._handleDebuggerResumed, this);
 
-    WebInspector.targetManager.addModelListener(
-      WebInspector.DebuggerModel,
-      WebInspector.DebuggerModel.Events.DebuggerPaused,
-      this._handleDebuggerPaused,
-      this);
+    (_libWebInspector2 || _libWebInspector()).default.targetManager.addModelListener((_libWebInspector2 || _libWebInspector()).default.DebuggerModel, (_libWebInspector2 || _libWebInspector()).default.DebuggerModel.Events.DebuggerPaused, this._handleDebuggerPaused, this);
 
-    WebInspector.targetManager.addModelListener(
-        WebInspector.DebuggerModel,
-        WebInspector.DebuggerModel.Events.ThreadsUpdateIPC,
-        this._handleThreadsUpdated,
-        this,
-      );
+    (_libWebInspector2 || _libWebInspector()).default.targetManager.addModelListener((_libWebInspector2 || _libWebInspector()).default.DebuggerModel, (_libWebInspector2 || _libWebInspector()).default.DebuggerModel.Events.ThreadsUpdateIPC, this._handleThreadsUpdated, this);
 
-    WebInspector.targetManager.addModelListener(
-        WebInspector.DebuggerModel,
-        WebInspector.DebuggerModel.Events.StopThreadSwitched,
-        this._handleStopThreadSwitched,
-        this,
-      );
+    (_libWebInspector2 || _libWebInspector()).default.targetManager.addModelListener((_libWebInspector2 || _libWebInspector()).default.DebuggerModel, (_libWebInspector2 || _libWebInspector()).default.DebuggerModel.Events.StopThreadSwitched, this._handleStopThreadSwitched, this);
 
-    WebInspector.workspace.addEventListener(
-      WebInspector.Workspace.Events.UISourceCodeAdded,
-      this._handleUISourceCodeAdded,
-      this);
+    (_libWebInspector2 || _libWebInspector()).default.workspace.addEventListener((_libWebInspector2 || _libWebInspector()).default.Workspace.Events.UISourceCodeAdded, this._handleUISourceCodeAdded, this);
 
-    WebInspector.notifications.addEventListener(
-      WebInspector.UserMetrics.UserAction,
-      function(event: WebInspector.Event) {
-        if (event.data.action === 'openSourceLink') {
-          this._handleOpenSourceLocation(event);
-        }
-      },
-      this);
+    (_libWebInspector2 || _libWebInspector()).default.notifications.addEventListener((_libWebInspector2 || _libWebInspector()).default.UserMetrics.UserAction, function (event) {
+      if (event.data.action === 'openSourceLink') {
+        this._handleOpenSourceLocation(event);
+      }
+    }, this);
 
-    WebInspector.breakpointManager.addEventListener(
-      WebInspector.BreakpointManager.Events.BreakpointAdded,
-      this._handleBreakpointAdded,
-      this);
+    (_libWebInspector2 || _libWebInspector()).default.breakpointManager.addEventListener((_libWebInspector2 || _libWebInspector()).default.BreakpointManager.Events.BreakpointAdded, this._handleBreakpointAdded, this);
 
-    WebInspector.breakpointManager.addEventListener(
-      WebInspector.BreakpointManager.Events.BreakpointRemoved,
-      this._handleBreakpointRemoved,
-      this);
+    (_libWebInspector2 || _libWebInspector()).default.breakpointManager.addEventListener((_libWebInspector2 || _libWebInspector()).default.BreakpointManager.Events.BreakpointRemoved, this._handleBreakpointRemoved, this);
 
-    (this: any)._handleSettingsUpdated = this._handleSettingsUpdated.bind(this);
+    this._handleSettingsUpdated = this._handleSettingsUpdated.bind(this);
     this._customizeWebInspector();
     window.runOnWindowLoad(this._handleWindowLoad.bind(this));
   }
@@ -124,10 +101,12 @@ class NuclideBridge {
    * Override and customize some functionalities of WebInspector.
    * Deliberately suppress any flow errors in this method.
    */
-  _customizeWebInspector() {
-    // $FlowFixMe.
-    WebInspector.ObjectPropertyTreeElement._populate =
-      function(treeElement, value, skipProto, emptyPlaceholder) {
+
+  _createClass(NuclideBridge, [{
+    key: '_customizeWebInspector',
+    value: function _customizeWebInspector() {
+      // $FlowFixMe.
+      (_libWebInspector2 || _libWebInspector()).default.ObjectPropertyTreeElement._populate = function (treeElement, value, skipProto, emptyPlaceholder) {
         /**
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} properties
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
@@ -138,22 +117,14 @@ class NuclideBridge {
             return;
           }
           // $FlowFixMe.
-          WebInspector.ObjectPropertyTreeElement.populateWithProperties(
-            treeElement,
-            properties,
-            internalProperties,
-            skipProto,
-            value,
-            emptyPlaceholder,
-          );
+          (_libWebInspector2 || _libWebInspector()).default.ObjectPropertyTreeElement.populateWithProperties(treeElement, properties, internalProperties, skipProto, value, emptyPlaceholder);
         }
         // $FlowFixMe.
-        WebInspector.RemoteObject.loadFromObjectPerProto(value, callback);
+        (_libWebInspector2 || _libWebInspector()).default.RemoteObject.loadFromObjectPerProto(value, callback);
       };
 
-    // $FlowFixMe.
-    WebInspector.ObjectPropertiesSection.prototype.update =
-      function() {
+      // $FlowFixMe.
+      (_libWebInspector2 || _libWebInspector()).default.ObjectPropertiesSection.prototype.update = function () {
         /**
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} properties
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
@@ -164,542 +135,571 @@ class NuclideBridge {
             return;
           }
           this.updateProperties(properties, internalProperties);
-          const neededProperties = properties.map(({name, value}) => {
-            const {type, subtype, objectId, value: innerValue, description} = value;
+          var neededProperties = properties.map(function (_ref) {
+            var name = _ref.name;
+            var value = _ref.value;
+            var type = value.type;
+            var subtype = value.subtype;
+            var objectId = value.objectId;
+            var innerValue = value.value;
+            var description = value.description;
+
             return {
-              name,
+              name: name,
               value: {
-                type,
-                subtype,
-                objectId,
+                type: type,
+                subtype: subtype,
+                objectId: objectId,
                 value: innerValue,
-                description,
-              },
+                description: description
+              }
             };
           });
           ipcRenderer.sendToHost('notification', 'LocalsUpdate', neededProperties);
         }
         // $FlowFixMe.
-        WebInspector.RemoteObject.loadFromObject(
-          this.object,
-          Boolean(this.ignoreHasOwnProperty),
-          callback.bind(this),
-        );
+        (_libWebInspector2 || _libWebInspector()).default.RemoteObject.loadFromObject(this.object, Boolean(this.ignoreHasOwnProperty), callback.bind(this));
       };
-  }
-
-  _handleWindowLoad() {
-    ipcRenderer.sendToHost('notification', 'ready');
-  }
-
-  _handleIpcCommand(event: Object, command: string, ...args: any[]) {
-    switch (command) {
-      case 'UpdateSettings':
-        this._handleSettingsUpdated(args[0]);
-        break;
-      case 'SyncBreakpoints':
-        this._allBreakpoints = args[0];
-        this._syncBreakpoints();
-        break;
-      case 'AddBreakpoint':
-        this._addBreakpoint(args[0]);
-        break;
-      case 'UpdateBreakpoint':
-        this._updateBreakpoint(args[0]);
-        break;
-      case 'DeleteBreakpoint':
-        this._deleteBreakpoint(args[0]);
-        break;
-      case 'Continue':
-        this._continue();
-        break;
-      case 'StepOver':
-        this._stepOver();
-        break;
-      case 'StepInto':
-        this._stepInto();
-        break;
-      case 'StepOut':
-        this._stepOut();
-        break;
-      case 'evaluateOnSelectedCallFrame':
-        this._evaluateOnSelectedCallFrame(args[0], args[1], args[2]);
-        break;
-      case 'runtimeEvaluate':
-        this._runtimeEvaluate(args[0], args[1]);
-        break;
-      case 'getProperties':
-        this._getProperties(args[0], args[1]);
-        break;
-      case 'triggerDebuggerAction':
-        this._triggerDebuggerAction(args[0]);
-        break;
-      case 'setPauseOnException':
-        this._setPauseOnException(args[0]);
-        break;
-      case 'setPauseOnCaughtException':
-        this._setPauseOnCaughtException(args[0]);
-        break;
-      case 'setSingleThreadStepping':
-        this._setSingleThreadStepping(args[0]);
-        break;
-      case 'selectThread':
-        this.selectThread(args[0]);
-        break;
     }
-  }
-
-  getSettings(): Object {
-    return this._settings;
-  }
-
-  _handleSettingsUpdated(settingsData: string): void {
-    this._settings = JSON.parse(settingsData);
-    this._emitter.emit(DebuggerSettingsChangedEvent, null);
-  }
-
-  onDebuggerSettingsChanged(callback: () => void): IDisposable {
-    return this._emitter.on(DebuggerSettingsChangedEvent, callback);
-  }
-
-  _handleCallFrameSelected(event: WebInspector.Event) {
-    // TODO(jonaldislarry): Extend chrome protocol as per t12187369.
-    if (this._debuggerPausedCount <= 1) {
-      return;
+  }, {
+    key: '_handleWindowLoad',
+    value: function _handleWindowLoad() {
+      ipcRenderer.sendToHost('notification', 'ready');
     }
-    const frame: WebInspector$CallFrame = event.data;
-    const uiLocation =
-      WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
-    ipcRenderer.sendToHost('notification', 'CallFrameSelected', {
-      sourceURL: uiLocation.uiSourceCode.uri(),
-      lineNumber: uiLocation.lineNumber,
-    });
-  }
-
-  _handleOpenSourceLocation(event: WebInspector.Event) {
-    // TODO(jonaldislarry): Extend chrome protocol as per t12187369.
-    if (this._debuggerPausedCount <= 1) {
-      return;
-    }
-    const eventData = event.data;
-    this.sendOpenSourceLocation(eventData.url, eventData.lineNumber);
-  }
-
-  sendOpenSourceLocation(sourceURL: string, line: number) {
-    ipcRenderer.sendToHost('notification', 'OpenSourceLocation', {
-      sourceURL,
-      lineNumber: line,
-    });
-  }
-
-  selectThread(threadId: string) {
-    const target = WebInspector.targetManager.mainTarget();
-    if (target != null) {
-      target.debuggerModel.selectThread(threadId);
-      target.debuggerModel.threadStore.getActiveThreadStack(callFrames => {
-        const callstack = this._convertFramesToIPCFrames(callFrames);
-        ipcRenderer.sendToHost('notification', 'CallstackUpdate', callstack);
-      });
-    }
-  }
-
-  _sendCallstack(): void {
-    const target = WebInspector.targetManager.mainTarget();
-    if (target == null) {
-      return;
-    }
-    const model = target.debuggerModel;
-    if (model == null) {
-      return;
-    }
-    const callFrames = model.callFrames;
-    if (callFrames == null) {
-      return;
-    }
-    const callstack = this._convertFramesToIPCFrames(callFrames);
-    ipcRenderer.sendToHost('notification', 'CallstackUpdate', callstack);
-  }
-
-  _convertFramesToIPCFrames(callFrames: Array<Object>): Array<Object> {
-    return callFrames.map(callFrame => {
-      const location = callFrame.location();
-      /* names anonymous functions "(anonymous function)" */
-      const functionName = WebInspector.beautifyFunctionName(callFrame.functionName);
-      return {
-        name: functionName,
-        location: {
-          path: callFrame.script.sourceURL,
-          column: location.columnNumber,
-          line: location.lineNumber,
-        },
-      };
-    });
-  }
-
-  _getProperties(id: number, objectId: string): void {
-    const mainTarget = WebInspector.targetManager.mainTarget();
-    if (mainTarget == null) {
-      return;
-    }
-    const runtimeAgent = mainTarget.runtimeAgent();
-    if (runtimeAgent == null) {
-      return;
-    }
-    runtimeAgent.getProperties(
-      objectId,
-      false, // ownProperties
-      false, // accessorPropertiesOnly
-      false, // generatePreview
-      (error, properties, internalProperties) => {
-        ipcRenderer.sendToHost('notification', 'GetPropertiesResponse', {
-          result: properties,
-          error,
-          objectId,
-          id,
-        });
-      },
-    );
-  }
-
-  _evaluateOnSelectedCallFrame(id: number, expression: string, objectGroup: ObjectGroup): void {
-    const mainTarget = WebInspector.targetManager.mainTarget();
-    if (mainTarget == null) {
-      return;
-    }
-    mainTarget.debuggerModel.evaluateOnSelectedCallFrame(
-      expression,
-      objectGroup,
-      false, /* includeCommandLineAPI */
-      true, /* doNotPauseOnExceptionsAndMuteConsole */
-      false,  /* returnByValue */
-      false, /* generatePreview */
-      (remoteObject, wasThrown, error) => {
-        ipcRenderer.sendToHost('notification', 'ExpressionEvaluationResponse', {
-          result: wasThrown ? null : remoteObject,
-          error: wasThrown ? error : null,
-          expression,
-          id,
-        });
-      },
-    );
-  }
-
-  _runtimeEvaluate(id: number, expression: string): void {
-    const mainTarget = WebInspector.targetManager.mainTarget();
-    if (mainTarget == null) {
-      return;
-    }
-    const executionContexts = mainTarget.runtimeModel.executionContexts();
-    if (executionContexts.length === 0) {
-      return;
-    }
-    const firstContext = executionContexts[0];
-    firstContext.evaluate(
-      expression,
-      NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP,
-      false, /* includeCommandLineAPI */
-      true, /* doNotPauseOnExceptionsAndMuteConsole */
-      false,  /* returnByValue */
-      false, /* generatePreview */
-      (remoteObject, wasThrown, error) => {
-        ipcRenderer.sendToHost('notification', 'ExpressionEvaluationResponse', {
-          result: wasThrown ? null : remoteObject,
-          error: wasThrown ? error : null,
-          expression,
-          id,
-        });
-      },
-    );
-  }
-
-  _setPauseOnException(pauseOnExceptionEnabled: boolean): void {
-    WebInspector.settings.pauseOnExceptionEnabled.set(pauseOnExceptionEnabled);
-  }
-
-  _setPauseOnCaughtException(pauseOnCaughtExceptionEnabled: boolean): void {
-    WebInspector.settings.pauseOnCaughtException.set(pauseOnCaughtExceptionEnabled);
-  }
-
-  _setSingleThreadStepping(singleThreadStepping: boolean): void {
-    WebInspector.settings.singleThreadStepping.set(singleThreadStepping);
-  }
-
-  _triggerDebuggerAction(actionId: string): void {
-    switch (actionId) {
-      case 'debugger.toggle-pause':
-      case 'debugger.step-over':
-      case 'debugger.step-into':
-      case 'debugger.step-out':
-      case 'debugger.run-snippet':
-        WebInspector.actionRegistry.execute(actionId);
-        break;
-      default:
-        // console.error because throwing can fatal the Chrome dev tools.
-        // eslint-disable-next-line no-console
-        console.error('_triggerDebuggerAction: unrecognized actionId', actionId);
-        break;
-    }
-  }
-
-  _handleDebuggerPaused(event: WebInspector$Event) {
-    endTimerTracking();
-    ++this._debuggerPausedCount;
-    if (this._debuggerPausedCount === 1) {
-      ipcRenderer.sendToHost('notification', 'LoaderBreakpointHit', {});
-      this._handleLoaderBreakpoint();
-    } else {
-      ipcRenderer.sendToHost('notification', 'NonLoaderDebuggerPaused', {});
-    }
-    this._sendCallstack();
-  }
-
-  _handleLoaderBreakpoint() {
-    // Sync any initial breakpoints to engine during loader breakpoint
-    // and continue from it.
-    this._syncBreakpoints();
-
-    // If we were to continue synchronously here, the debugger would no longer be paused when the
-    // remaining subscribers' callbacks were invoked. That's a violation of a pretty basic
-    // assumption (that the debugger will be paused when your paused event callback is called) so
-    // instead we wait until the next tick. If the debugger is still paused then, we continue. Not
-    // doing this results in an "Runtime.getProperties failed" error in node-inspector since that
-    // call is only valid during a paused state.
-    process.nextTick(() => {
-      const targetManager = WebInspector != null ? WebInspector.targetManager : null;
-      const mainTarget = targetManager != null ? targetManager.mainTarget() : null;
-      const debuggerModel = mainTarget != null ? mainTarget.debuggerModel : null;
-      const stillPaused = debuggerModel != null && debuggerModel.isPaused();
-      if (stillPaused) {
-        this._continue();
+  }, {
+    key: '_handleIpcCommand',
+    value: function _handleIpcCommand(event, command) {
+      switch (command) {
+        case 'UpdateSettings':
+          this._handleSettingsUpdated(arguments[2]);
+          break;
+        case 'SyncBreakpoints':
+          this._allBreakpoints = arguments[2];
+          this._syncBreakpoints();
+          break;
+        case 'AddBreakpoint':
+          this._addBreakpoint(arguments[2]);
+          break;
+        case 'UpdateBreakpoint':
+          this._updateBreakpoint(arguments[2]);
+          break;
+        case 'DeleteBreakpoint':
+          this._deleteBreakpoint(arguments[2]);
+          break;
+        case 'Continue':
+          this._continue();
+          break;
+        case 'StepOver':
+          this._stepOver();
+          break;
+        case 'StepInto':
+          this._stepInto();
+          break;
+        case 'StepOut':
+          this._stepOut();
+          break;
+        case 'evaluateOnSelectedCallFrame':
+          this._evaluateOnSelectedCallFrame(arguments[2], arguments[3], arguments[4]);
+          break;
+        case 'runtimeEvaluate':
+          this._runtimeEvaluate(arguments[2], arguments[3]);
+          break;
+        case 'getProperties':
+          this._getProperties(arguments[2], arguments[3]);
+          break;
+        case 'triggerDebuggerAction':
+          this._triggerDebuggerAction(arguments[2]);
+          break;
+        case 'setPauseOnException':
+          this._setPauseOnException(arguments[2]);
+          break;
+        case 'setPauseOnCaughtException':
+          this._setPauseOnCaughtException(arguments[2]);
+          break;
+        case 'setSingleThreadStepping':
+          this._setSingleThreadStepping(arguments[2]);
+          break;
+        case 'selectThread':
+          this.selectThread(arguments[2]);
+          break;
       }
-    });
-
-    ipcRenderer.sendToHost('notification', 'LoaderBreakpointResumed', {});
-  }
-
-  _handleDebuggerResumed(event: WebInspector$Event) {
-    ipcRenderer.sendToHost('notification', 'DebuggerResumed', {});
-  }
-
-  _handleClearInterface(event: WebInspector$Event) {
-    ipcRenderer.sendToHost('notification', 'ClearInterface', {});
-  }
-
-  _handleBreakpointAdded(event: WebInspector$Event) {
-    this._sendBreakpointNotification(event, 'BreakpointAdded');
-  }
-
-  _handleBreakpointRemoved(event: WebInspector$Event) {
-    this._sendBreakpointNotification(event, 'BreakpointRemoved');
-  }
-
-  _sendBreakpointNotification(event: WebInspector$Event, type: BreakpointNotificationType) {
-    if (!this._suppressBreakpointNotification) {
-      ipcRenderer.sendToHost(
-        'notification',
-        type,
-        this._getIPCBreakpointFromEvent(event),
-      );
     }
-  }
-
-  _getIPCBreakpointFromEvent(event: WebInspector$Event): IPCBreakpoint {
-    const {breakpoint, uiLocation} = event.data;
-    return {
-      sourceURL: uiLocation.uiSourceCode.uri(),
-      lineNumber: uiLocation.lineNumber,
-      condition: breakpoint.condition(),
-    };
-  }
-
-  // TODO[jeffreytan]: this is a hack to enable hhvm/lldb debugger
-  // setting breakpoints in non-parsed files.
-  // Open issues:
-  // Any breakpoints in this list will shown as bound/resolved;
-  // needs to revisit the unresolved breakpoints detection logic.
-  _parseBreakpointSources(): void {
-    this._allBreakpoints.forEach(breakpoint => {
-      this._parseBreakpointSourceIfNeeded(breakpoint);
-    });
-  }
-
-  _parseBreakpointSourceIfNeeded(breakpoint: Object): void {
-    const sourceUrl = breakpoint.sourceURL;
-    if (sourceUrl.endsWith('.php') ||
-        sourceUrl.endsWith('.hh') ||
-        sourceUrl.endsWith('.c') ||
-        sourceUrl.endsWith('.cpp') ||
-        sourceUrl.endsWith('.h') ||
-        sourceUrl.endsWith('.hpp') ||
-        sourceUrl.endsWith('.js') ||
-        sourceUrl.endsWith('.m') ||
-        sourceUrl.endsWith('.mm')) {
-      const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceUrl);
-      if (source != null) {
+  }, {
+    key: 'getSettings',
+    value: function getSettings() {
+      return this._settings;
+    }
+  }, {
+    key: '_handleSettingsUpdated',
+    value: function _handleSettingsUpdated(settingsData) {
+      this._settings = JSON.parse(settingsData);
+      this._emitter.emit(DebuggerSettingsChangedEvent, null);
+    }
+  }, {
+    key: 'onDebuggerSettingsChanged',
+    value: function onDebuggerSettingsChanged(callback) {
+      return this._emitter.on(DebuggerSettingsChangedEvent, callback);
+    }
+  }, {
+    key: '_handleCallFrameSelected',
+    value: function _handleCallFrameSelected(event) {
+      // TODO(jonaldislarry): Extend chrome protocol as per t12187369.
+      if (this._debuggerPausedCount <= 1) {
         return;
       }
-      const target = WebInspector.targetManager.mainTarget();
+      var frame = event.data;
+      var uiLocation = (_libWebInspector2 || _libWebInspector()).default.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
+      ipcRenderer.sendToHost('notification', 'CallFrameSelected', {
+        sourceURL: uiLocation.uiSourceCode.uri(),
+        lineNumber: uiLocation.lineNumber
+      });
+    }
+  }, {
+    key: '_handleOpenSourceLocation',
+    value: function _handleOpenSourceLocation(event) {
+      // TODO(jonaldislarry): Extend chrome protocol as per t12187369.
+      if (this._debuggerPausedCount <= 1) {
+        return;
+      }
+      var eventData = event.data;
+      this.sendOpenSourceLocation(eventData.url, eventData.lineNumber);
+    }
+  }, {
+    key: 'sendOpenSourceLocation',
+    value: function sendOpenSourceLocation(sourceURL, line) {
+      ipcRenderer.sendToHost('notification', 'OpenSourceLocation', {
+        sourceURL: sourceURL,
+        lineNumber: line
+      });
+    }
+  }, {
+    key: 'selectThread',
+    value: function selectThread(threadId) {
+      var _this = this;
+
+      var target = (_libWebInspector2 || _libWebInspector()).default.targetManager.mainTarget();
+      if (target != null) {
+        target.debuggerModel.selectThread(threadId);
+        target.debuggerModel.threadStore.getActiveThreadStack(function (callFrames) {
+          var callstack = _this._convertFramesToIPCFrames(callFrames);
+          ipcRenderer.sendToHost('notification', 'CallstackUpdate', callstack);
+        });
+      }
+    }
+  }, {
+    key: '_sendCallstack',
+    value: function _sendCallstack() {
+      var target = (_libWebInspector2 || _libWebInspector()).default.targetManager.mainTarget();
       if (target == null) {
         return;
       }
-      target.debuggerModel._parsedScriptSource(
-        sourceUrl,
-        sourceUrl,
-      );
+      var model = target.debuggerModel;
+      if (model == null) {
+        return;
+      }
+      var callFrames = model.callFrames;
+      if (callFrames == null) {
+        return;
+      }
+      var callstack = this._convertFramesToIPCFrames(callFrames);
+      ipcRenderer.sendToHost('notification', 'CallstackUpdate', callstack);
     }
-  }
+  }, {
+    key: '_convertFramesToIPCFrames',
+    value: function _convertFramesToIPCFrames(callFrames) {
+      return callFrames.map(function (callFrame) {
+        var location = callFrame.location();
+        /* names anonymous functions "(anonymous function)" */
+        var functionName = (_libWebInspector2 || _libWebInspector()).default.beautifyFunctionName(callFrame.functionName);
+        return {
+          name: functionName,
+          location: {
+            path: callFrame.script.sourceURL,
+            column: location.columnNumber,
+            line: location.lineNumber
+          }
+        };
+      });
+    }
+  }, {
+    key: '_getProperties',
+    value: function _getProperties(id, objectId) {
+      var mainTarget = (_libWebInspector2 || _libWebInspector()).default.targetManager.mainTarget();
+      if (mainTarget == null) {
+        return;
+      }
+      var runtimeAgent = mainTarget.runtimeAgent();
+      if (runtimeAgent == null) {
+        return;
+      }
+      runtimeAgent.getProperties(objectId, false, // ownProperties
+      false, // accessorPropertiesOnly
+      false, // generatePreview
+      function (error, properties, internalProperties) {
+        ipcRenderer.sendToHost('notification', 'GetPropertiesResponse', {
+          result: properties,
+          error: error,
+          objectId: objectId,
+          id: id
+        });
+      });
+    }
+  }, {
+    key: '_evaluateOnSelectedCallFrame',
+    value: function _evaluateOnSelectedCallFrame(id, expression, objectGroup) {
+      var mainTarget = (_libWebInspector2 || _libWebInspector()).default.targetManager.mainTarget();
+      if (mainTarget == null) {
+        return;
+      }
+      mainTarget.debuggerModel.evaluateOnSelectedCallFrame(expression, objectGroup, false, /* includeCommandLineAPI */
+      true, /* doNotPauseOnExceptionsAndMuteConsole */
+      false, /* returnByValue */
+      false, /* generatePreview */
+      function (remoteObject, wasThrown, error) {
+        ipcRenderer.sendToHost('notification', 'ExpressionEvaluationResponse', {
+          result: wasThrown ? null : remoteObject,
+          error: wasThrown ? error : null,
+          expression: expression,
+          id: id
+        });
+      });
+    }
+  }, {
+    key: '_runtimeEvaluate',
+    value: function _runtimeEvaluate(id, expression) {
+      var mainTarget = (_libWebInspector2 || _libWebInspector()).default.targetManager.mainTarget();
+      if (mainTarget == null) {
+        return;
+      }
+      var executionContexts = mainTarget.runtimeModel.executionContexts();
+      if (executionContexts.length === 0) {
+        return;
+      }
+      var firstContext = executionContexts[0];
+      firstContext.evaluate(expression, NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP, false, /* includeCommandLineAPI */
+      true, /* doNotPauseOnExceptionsAndMuteConsole */
+      false, /* returnByValue */
+      false, /* generatePreview */
+      function (remoteObject, wasThrown, error) {
+        ipcRenderer.sendToHost('notification', 'ExpressionEvaluationResponse', {
+          result: wasThrown ? null : remoteObject,
+          error: wasThrown ? error : null,
+          expression: expression,
+          id: id
+        });
+      });
+    }
+  }, {
+    key: '_setPauseOnException',
+    value: function _setPauseOnException(pauseOnExceptionEnabled) {
+      (_libWebInspector2 || _libWebInspector()).default.settings.pauseOnExceptionEnabled.set(pauseOnExceptionEnabled);
+    }
+  }, {
+    key: '_setPauseOnCaughtException',
+    value: function _setPauseOnCaughtException(pauseOnCaughtExceptionEnabled) {
+      (_libWebInspector2 || _libWebInspector()).default.settings.pauseOnCaughtException.set(pauseOnCaughtExceptionEnabled);
+    }
+  }, {
+    key: '_setSingleThreadStepping',
+    value: function _setSingleThreadStepping(singleThreadStepping) {
+      (_libWebInspector2 || _libWebInspector()).default.settings.singleThreadStepping.set(singleThreadStepping);
+    }
+  }, {
+    key: '_triggerDebuggerAction',
+    value: function _triggerDebuggerAction(actionId) {
+      switch (actionId) {
+        case 'debugger.toggle-pause':
+        case 'debugger.step-over':
+        case 'debugger.step-into':
+        case 'debugger.step-out':
+        case 'debugger.run-snippet':
+          (_libWebInspector2 || _libWebInspector()).default.actionRegistry.execute(actionId);
+          break;
+        default:
+          // console.error because throwing can fatal the Chrome dev tools.
+          // eslint-disable-next-line no-console
+          console.error('_triggerDebuggerAction: unrecognized actionId', actionId);
+          break;
+      }
+    }
+  }, {
+    key: '_handleDebuggerPaused',
+    value: function _handleDebuggerPaused(event) {
+      (0, (_libAnalyticsHelper2 || _libAnalyticsHelper()).endTimerTracking)();
+      ++this._debuggerPausedCount;
+      if (this._debuggerPausedCount === 1) {
+        ipcRenderer.sendToHost('notification', 'LoaderBreakpointHit', {});
+        this._handleLoaderBreakpoint();
+      } else {
+        ipcRenderer.sendToHost('notification', 'NonLoaderDebuggerPaused', {});
+      }
+      this._sendCallstack();
+    }
+  }, {
+    key: '_handleLoaderBreakpoint',
+    value: function _handleLoaderBreakpoint() {
+      var _this2 = this;
 
-  // Synchronizes nuclide BreakpointStore and BreakpointManager
-  _syncBreakpoints() {
-    try {
-      this._suppressBreakpointNotification = true;
-      this._parseBreakpointSources();
+      // Sync any initial breakpoints to engine during loader breakpoint
+      // and continue from it.
+      this._syncBreakpoints();
 
-      // Add the ones that don't.
-      this._unresolvedBreakpoints = new Multimap();
-      this._allBreakpoints.forEach(breakpoint => {
-        if (!this._addBreakpoint(breakpoint)) {
-          // No API exists for adding breakpoints to source files that are not
-          // yet known, store it locally and try to add them later.
-          this._unresolvedBreakpoints.set(breakpoint.sourceURL, breakpoint.lineNumber);
+      // If we were to continue synchronously here, the debugger would no longer be paused when the
+      // remaining subscribers' callbacks were invoked. That's a violation of a pretty basic
+      // assumption (that the debugger will be paused when your paused event callback is called) so
+      // instead we wait until the next tick. If the debugger is still paused then, we continue. Not
+      // doing this results in an "Runtime.getProperties failed" error in node-inspector since that
+      // call is only valid during a paused state.
+      process.nextTick(function () {
+        var targetManager = (_libWebInspector2 || _libWebInspector()).default != null ? (_libWebInspector2 || _libWebInspector()).default.targetManager : null;
+        var mainTarget = targetManager != null ? targetManager.mainTarget() : null;
+        var debuggerModel = mainTarget != null ? mainTarget.debuggerModel : null;
+        var stillPaused = debuggerModel != null && debuggerModel.isPaused();
+        if (stillPaused) {
+          _this2._continue();
         }
       });
-      this._emitter.emit('unresolved-breakpoints-changed', null);
-    } finally {
-      this._suppressBreakpointNotification = false;
-    }
-  }
 
-  _addBreakpoint(breakpoint: Object): boolean {
-    this._parseBreakpointSourceIfNeeded(breakpoint);
-    const {sourceURL, lineNumber, condition} = breakpoint;
-    const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceURL);
-    if (source == null) {
-      return false;
+      ipcRenderer.sendToHost('notification', 'LoaderBreakpointResumed', {});
     }
-    WebInspector.breakpointManager.setBreakpoint(
-      source,
-      lineNumber,
-      0,                  // columnNumber
-      condition || '',    // Condition
-      true,               // enabled
-    );
-    return true;
-  }
-
-  _updateBreakpoint(breakpoint: Object): boolean {
-    const {sourceURL, lineNumber, condition} = breakpoint;
-    const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceURL);
-    if (source == null) {
-      return false;
+  }, {
+    key: '_handleDebuggerResumed',
+    value: function _handleDebuggerResumed(event) {
+      ipcRenderer.sendToHost('notification', 'DebuggerResumed', {});
     }
-    const chromeBreakpoint = WebInspector.breakpointManager.findBreakpointOnLine(
-      source,
-      lineNumber,
-    );
-    if (chromeBreakpoint == null) {
-      return false;
+  }, {
+    key: '_handleClearInterface',
+    value: function _handleClearInterface(event) {
+      ipcRenderer.sendToHost('notification', 'ClearInterface', {});
     }
-    invariant(condition != null);
-    chromeBreakpoint.setCondition(condition);
-    return true;
-  }
-
-  _deleteBreakpoint(breakpoint: Object): boolean {
-    const source = WebInspector.workspace.uiSourceCodeForOriginURL(breakpoint.sourceURL);
-    if (source == null) {
-      return false;
+  }, {
+    key: '_handleBreakpointAdded',
+    value: function _handleBreakpointAdded(event) {
+      this._sendBreakpointNotification(event, 'BreakpointAdded');
     }
-    const chromeBreakpoint = WebInspector.breakpointManager.findBreakpointOnLine(
-      source,
-      breakpoint.lineNumber,
-    );
-    if (chromeBreakpoint == null) {
-      return false;
+  }, {
+    key: '_handleBreakpointRemoved',
+    value: function _handleBreakpointRemoved(event) {
+      this._sendBreakpointNotification(event, 'BreakpointRemoved');
     }
-    chromeBreakpoint.remove(false);
-    return true;
-  }
-
-  _continue(): void {
-    const target = WebInspector.targetManager.mainTarget();
-    if (target) {
-      beginTimerTracking('nuclide-debugger-atom:continue');
-      target.debuggerModel.resume();
-    }
-  }
-
-  _stepOver(): void {
-    const target = WebInspector.targetManager.mainTarget();
-    if (target) {
-      beginTimerTracking('nuclide-debugger-atom:stepOver');
-      target.debuggerModel.stepOver();
-    }
-  }
-
-  _stepInto(): void {
-    const target = WebInspector.targetManager.mainTarget();
-    if (target) {
-      beginTimerTracking('nuclide-debugger-atom:stepInto');
-      target.debuggerModel.stepInto();
-    }
-  }
-
-  _stepOut(): void {
-    const target = WebInspector.targetManager.mainTarget();
-    if (target) {
-      beginTimerTracking('nuclide-debugger-atom:stepOut');
-      target.debuggerModel.stepOut();
-    }
-  }
-
-  _handleUISourceCodeAdded(event: Object) {
-    const source = event.data;
-    this._unresolvedBreakpoints.get(source.uri()).forEach(line => {
-      WebInspector.breakpointManager.setBreakpoint(source, line, 0, '', true);
-    });
-    if (this._unresolvedBreakpoints.deleteAll(source.uri())) {
-      this._emitter.emit('unresolved-breakpoints-changed', null);
-    }
-  }
-
-  onUnresolvedBreakpointsChanged(callback: () => void): IDisposable {
-    return this._emitter.on('unresolved-breakpoints-changed', callback);
-  }
-
-  getUnresolvedBreakpointsList(): {url: string, line: number}[] {
-    const result = [];
-    this._unresolvedBreakpoints.forEach((line, url) => {
-      result.push({url, line});
-    });
-    result.sort((a, b) => {
-      if (a.url < b.url) {
-        return -1;
-      } else if (a.url > b.url) {
-        return 1;
-      } else {
-        return a.line - b.line;
+  }, {
+    key: '_sendBreakpointNotification',
+    value: function _sendBreakpointNotification(event, type) {
+      if (!this._suppressBreakpointNotification) {
+        ipcRenderer.sendToHost('notification', type, this._getIPCBreakpointFromEvent(event));
       }
-    });
-    return result;
-  }
-
-  _handleThreadsUpdated(event: WebInspector.Event): void {
-    ipcRenderer.sendToHost('notification', 'ThreadsUpdate', event.data);
-  }
-
-  _handleStopThreadSwitched(event: WebInspector.Event): void {
-    if (this._debuggerPausedCount <= 1) {
-      return;
     }
-    const uiLocation =
-      WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(event.data.location);
-    ipcRenderer.sendToHost('notification', 'StopThreadSwitch', {
-      sourceURL: uiLocation.uiSourceCode.uri(),
-      lineNumber: uiLocation.lineNumber,
-      message: event.data.message,
-    });
-  }
-}
+  }, {
+    key: '_getIPCBreakpointFromEvent',
+    value: function _getIPCBreakpointFromEvent(event) {
+      var _event$data = event.data;
+      var breakpoint = _event$data.breakpoint;
+      var uiLocation = _event$data.uiLocation;
+
+      return {
+        sourceURL: uiLocation.uiSourceCode.uri(),
+        lineNumber: uiLocation.lineNumber,
+        condition: breakpoint.condition()
+      };
+    }
+
+    // TODO[jeffreytan]: this is a hack to enable hhvm/lldb debugger
+    // setting breakpoints in non-parsed files.
+    // Open issues:
+    // Any breakpoints in this list will shown as bound/resolved;
+    // needs to revisit the unresolved breakpoints detection logic.
+  }, {
+    key: '_parseBreakpointSources',
+    value: function _parseBreakpointSources() {
+      var _this3 = this;
+
+      this._allBreakpoints.forEach(function (breakpoint) {
+        _this3._parseBreakpointSourceIfNeeded(breakpoint);
+      });
+    }
+  }, {
+    key: '_parseBreakpointSourceIfNeeded',
+    value: function _parseBreakpointSourceIfNeeded(breakpoint) {
+      var sourceUrl = breakpoint.sourceURL;
+      if (sourceUrl.endsWith('.php') || sourceUrl.endsWith('.hh') || sourceUrl.endsWith('.c') || sourceUrl.endsWith('.cpp') || sourceUrl.endsWith('.h') || sourceUrl.endsWith('.hpp') || sourceUrl.endsWith('.js') || sourceUrl.endsWith('.m') || sourceUrl.endsWith('.mm')) {
+        var source = (_libWebInspector2 || _libWebInspector()).default.workspace.uiSourceCodeForOriginURL(sourceUrl);
+        if (source != null) {
+          return;
+        }
+        var target = (_libWebInspector2 || _libWebInspector()).default.targetManager.mainTarget();
+        if (target == null) {
+          return;
+        }
+        target.debuggerModel._parsedScriptSource(sourceUrl, sourceUrl);
+      }
+    }
+
+    // Synchronizes nuclide BreakpointStore and BreakpointManager
+  }, {
+    key: '_syncBreakpoints',
+    value: function _syncBreakpoints() {
+      var _this4 = this;
+
+      try {
+        this._suppressBreakpointNotification = true;
+        this._parseBreakpointSources();
+
+        // Add the ones that don't.
+        this._unresolvedBreakpoints = new (_libMultimap2 || _libMultimap()).default();
+        this._allBreakpoints.forEach(function (breakpoint) {
+          if (!_this4._addBreakpoint(breakpoint)) {
+            // No API exists for adding breakpoints to source files that are not
+            // yet known, store it locally and try to add them later.
+            _this4._unresolvedBreakpoints.set(breakpoint.sourceURL, breakpoint.lineNumber);
+          }
+        });
+        this._emitter.emit('unresolved-breakpoints-changed', null);
+      } finally {
+        this._suppressBreakpointNotification = false;
+      }
+    }
+  }, {
+    key: '_addBreakpoint',
+    value: function _addBreakpoint(breakpoint) {
+      this._parseBreakpointSourceIfNeeded(breakpoint);
+      var sourceURL = breakpoint.sourceURL;
+      var lineNumber = breakpoint.lineNumber;
+      var condition = breakpoint.condition;
+
+      var source = (_libWebInspector2 || _libWebInspector()).default.workspace.uiSourceCodeForOriginURL(sourceURL);
+      if (source == null) {
+        return false;
+      }
+      (_libWebInspector2 || _libWebInspector()).default.breakpointManager.setBreakpoint(source, lineNumber, 0, // columnNumber
+      condition || '', // Condition
+      true);
+      // enabled
+      return true;
+    }
+  }, {
+    key: '_updateBreakpoint',
+    value: function _updateBreakpoint(breakpoint) {
+      var sourceURL = breakpoint.sourceURL;
+      var lineNumber = breakpoint.lineNumber;
+      var condition = breakpoint.condition;
+
+      var source = (_libWebInspector2 || _libWebInspector()).default.workspace.uiSourceCodeForOriginURL(sourceURL);
+      if (source == null) {
+        return false;
+      }
+      var chromeBreakpoint = (_libWebInspector2 || _libWebInspector()).default.breakpointManager.findBreakpointOnLine(source, lineNumber);
+      if (chromeBreakpoint == null) {
+        return false;
+      }
+      (0, (_assert2 || _assert()).default)(condition != null);
+      chromeBreakpoint.setCondition(condition);
+      return true;
+    }
+  }, {
+    key: '_deleteBreakpoint',
+    value: function _deleteBreakpoint(breakpoint) {
+      var source = (_libWebInspector2 || _libWebInspector()).default.workspace.uiSourceCodeForOriginURL(breakpoint.sourceURL);
+      if (source == null) {
+        return false;
+      }
+      var chromeBreakpoint = (_libWebInspector2 || _libWebInspector()).default.breakpointManager.findBreakpointOnLine(source, breakpoint.lineNumber);
+      if (chromeBreakpoint == null) {
+        return false;
+      }
+      chromeBreakpoint.remove(false);
+      return true;
+    }
+  }, {
+    key: '_continue',
+    value: function _continue() {
+      var target = (_libWebInspector2 || _libWebInspector()).default.targetManager.mainTarget();
+      if (target) {
+        (0, (_libAnalyticsHelper2 || _libAnalyticsHelper()).beginTimerTracking)('nuclide-debugger-atom:continue');
+        target.debuggerModel.resume();
+      }
+    }
+  }, {
+    key: '_stepOver',
+    value: function _stepOver() {
+      var target = (_libWebInspector2 || _libWebInspector()).default.targetManager.mainTarget();
+      if (target) {
+        (0, (_libAnalyticsHelper2 || _libAnalyticsHelper()).beginTimerTracking)('nuclide-debugger-atom:stepOver');
+        target.debuggerModel.stepOver();
+      }
+    }
+  }, {
+    key: '_stepInto',
+    value: function _stepInto() {
+      var target = (_libWebInspector2 || _libWebInspector()).default.targetManager.mainTarget();
+      if (target) {
+        (0, (_libAnalyticsHelper2 || _libAnalyticsHelper()).beginTimerTracking)('nuclide-debugger-atom:stepInto');
+        target.debuggerModel.stepInto();
+      }
+    }
+  }, {
+    key: '_stepOut',
+    value: function _stepOut() {
+      var target = (_libWebInspector2 || _libWebInspector()).default.targetManager.mainTarget();
+      if (target) {
+        (0, (_libAnalyticsHelper2 || _libAnalyticsHelper()).beginTimerTracking)('nuclide-debugger-atom:stepOut');
+        target.debuggerModel.stepOut();
+      }
+    }
+  }, {
+    key: '_handleUISourceCodeAdded',
+    value: function _handleUISourceCodeAdded(event) {
+      var source = event.data;
+      this._unresolvedBreakpoints.get(source.uri()).forEach(function (line) {
+        (_libWebInspector2 || _libWebInspector()).default.breakpointManager.setBreakpoint(source, line, 0, '', true);
+      });
+      if (this._unresolvedBreakpoints.deleteAll(source.uri())) {
+        this._emitter.emit('unresolved-breakpoints-changed', null);
+      }
+    }
+  }, {
+    key: 'onUnresolvedBreakpointsChanged',
+    value: function onUnresolvedBreakpointsChanged(callback) {
+      return this._emitter.on('unresolved-breakpoints-changed', callback);
+    }
+  }, {
+    key: 'getUnresolvedBreakpointsList',
+    value: function getUnresolvedBreakpointsList() {
+      var result = [];
+      this._unresolvedBreakpoints.forEach(function (line, url) {
+        result.push({ url: url, line: line });
+      });
+      result.sort(function (a, b) {
+        if (a.url < b.url) {
+          return -1;
+        } else if (a.url > b.url) {
+          return 1;
+        } else {
+          return a.line - b.line;
+        }
+      });
+      return result;
+    }
+  }, {
+    key: '_handleThreadsUpdated',
+    value: function _handleThreadsUpdated(event) {
+      ipcRenderer.sendToHost('notification', 'ThreadsUpdate', event.data);
+    }
+  }, {
+    key: '_handleStopThreadSwitched',
+    value: function _handleStopThreadSwitched(event) {
+      if (this._debuggerPausedCount <= 1) {
+        return;
+      }
+      var uiLocation = (_libWebInspector2 || _libWebInspector()).default.debuggerWorkspaceBinding.rawLocationToUILocation(event.data.location);
+      ipcRenderer.sendToHost('notification', 'StopThreadSwitch', {
+        sourceURL: uiLocation.uiSourceCode.uri(),
+        lineNumber: uiLocation.lineNumber,
+        message: event.data.message
+      });
+    }
+  }]);
+
+  return NuclideBridge;
+})();
 
 module.exports = new NuclideBridge();

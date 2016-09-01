@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,106 +10,145 @@
  * the root directory of this source tree.
  */
 
-import type {Task, TaskEvent} from '../../commons-node/tasks';
-import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
-import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {Message} from '../../nuclide-console/lib/types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable} from 'atom';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {taskFromObservable} from '../../commons-node/tasks';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import HhvmIcon from './ui/HhvmIcon';
-import {createExtraUiComponent} from './ui/createExtraUiComponent';
-import {Observable, Subject} from 'rxjs';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export default class HhvmBuildSystem {
-  _model: ArcToolbarModelType;
-  _extraUi: ?ReactClass<any>;
-  id: string;
-  name: string;
-  _tasks: ?Observable<Array<TaskMetadata>>;
-  _cwdApi: ?CwdApi;
-  _outputMessages: Subject<Message>;
-  _disposables: CompositeDisposable;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor() {
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _commonsNodeUniversalDisposable2;
+
+function _commonsNodeUniversalDisposable() {
+  return _commonsNodeUniversalDisposable2 = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _commonsNodeTasks2;
+
+function _commonsNodeTasks() {
+  return _commonsNodeTasks2 = require('../../commons-node/tasks');
+}
+
+var _commonsNodeEvent2;
+
+function _commonsNodeEvent() {
+  return _commonsNodeEvent2 = require('../../commons-node/event');
+}
+
+var _uiHhvmIcon2;
+
+function _uiHhvmIcon() {
+  return _uiHhvmIcon2 = _interopRequireDefault(require('./ui/HhvmIcon'));
+}
+
+var _uiCreateExtraUiComponent2;
+
+function _uiCreateExtraUiComponent() {
+  return _uiCreateExtraUiComponent2 = require('./ui/createExtraUiComponent');
+}
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
+
+var HhvmBuildSystem = (function () {
+  function HhvmBuildSystem() {
+    _classCallCheck(this, HhvmBuildSystem);
+
     this.id = 'hhvm';
-    this._outputMessages = new Subject();
+    this._outputMessages = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Subject();
     this._model = this._getModel();
     this.name = this._model.getName();
-    this._disposables = new CompositeDisposable(
-      new UniversalDisposable(this._outputMessages),
-    );
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable(new (_commonsNodeUniversalDisposable2 || _commonsNodeUniversalDisposable()).default(this._outputMessages));
   }
 
-  setCwdApi(cwdApi: ?CwdApi): void {
-    this._cwdApi = cwdApi;
-    this._model.setCwdApi(cwdApi);
-  }
-
-  _getModel(): ArcToolbarModelType {
-    let ArcToolbarModel;
-    try {
-      // $FlowFB
-      ArcToolbarModel = require('./fb/FbArcToolbarModel').FbArcToolbarModel;
-    } catch (_) {
-      ArcToolbarModel = require('./ArcToolbarModel').ArcToolbarModel;
+  _createClass(HhvmBuildSystem, [{
+    key: 'setCwdApi',
+    value: function setCwdApi(cwdApi) {
+      this._cwdApi = cwdApi;
+      this._model.setCwdApi(cwdApi);
     }
-    return new ArcToolbarModel(this._outputMessages);
-  }
-
-  observeTaskList(cb: (taskList: Array<TaskMetadata>) => mixed): IDisposable {
-    if (this._tasks == null) {
-      this._tasks = Observable.concat(
-        Observable.of(this._model.getTaskList()),
-        observableFromSubscribeFunction(this._model.onChange.bind(this._model))
-          .map(() => this._model.getTaskList()),
-      );
+  }, {
+    key: '_getModel',
+    value: function _getModel() {
+      var ArcToolbarModel = undefined;
+      try {
+        // $FlowFB
+        ArcToolbarModel = require('./fb/FbArcToolbarModel').FbArcToolbarModel;
+      } catch (_) {
+        ArcToolbarModel = require('./ArcToolbarModel').ArcToolbarModel;
+      }
+      return new ArcToolbarModel(this._outputMessages);
     }
-    return new UniversalDisposable(
-      this._tasks.subscribe({next: cb}),
-    );
-  }
+  }, {
+    key: 'observeTaskList',
+    value: function observeTaskList(cb) {
+      var _this = this;
 
-  getExtraUi(): ReactClass<any> {
-    if (this._extraUi == null) {
-      this._extraUi = createExtraUiComponent(this._model);
+      if (this._tasks == null) {
+        this._tasks = (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.concat((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.of(this._model.getTaskList()), (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(this._model.onChange.bind(this._model)).map(function () {
+          return _this._model.getTaskList();
+        }));
+      }
+      return new (_commonsNodeUniversalDisposable2 || _commonsNodeUniversalDisposable()).default(this._tasks.subscribe({ next: cb }));
     }
-    return this._extraUi;
-  }
-
-  getIcon(): ReactClass<any> {
-    return HhvmIcon;
-  }
-
-  getOutputMessages(): Observable<Message> {
-    return this._outputMessages;
-  }
-
-  runTask(taskType: string): Task {
-    if (!this._model.getTaskList().some(task => task.type === taskType)) {
-      throw new Error(`There's no hhvm task named "${taskType}"`);
+  }, {
+    key: 'getExtraUi',
+    value: function getExtraUi() {
+      if (this._extraUi == null) {
+        this._extraUi = (0, (_uiCreateExtraUiComponent2 || _uiCreateExtraUiComponent()).createExtraUiComponent)(this._model);
+      }
+      return this._extraUi;
     }
+  }, {
+    key: 'getIcon',
+    value: function getIcon() {
+      return (_uiHhvmIcon2 || _uiHhvmIcon()).default;
+    }
+  }, {
+    key: 'getOutputMessages',
+    value: function getOutputMessages() {
+      return this._outputMessages;
+    }
+  }, {
+    key: 'runTask',
+    value: function runTask(taskType) {
+      if (!this._model.getTaskList().some(function (task) {
+        return task.type === taskType;
+      })) {
+        throw new Error('There\'s no hhvm task named "' + taskType + '"');
+      }
 
-    const taskFunction = getTaskRunFunction(this._model, taskType);
-    return taskFromObservable(taskFunction());
-  }
+      var taskFunction = getTaskRunFunction(this._model, taskType);
+      return (0, (_commonsNodeTasks2 || _commonsNodeTasks()).taskFromObservable)(taskFunction());
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
 
-  dispose(): void {
-    this._disposables.dispose();
-  }
-}
+  return HhvmBuildSystem;
+})();
 
-function getTaskRunFunction(
-  model: ArcToolbarModelType,
-  taskType: string,
-): () => Observable<TaskEvent> {
+exports.default = HhvmBuildSystem;
+
+function getTaskRunFunction(model, taskType) {
   switch (taskType) {
     case 'build':
-      return () => model.arcBuild();
+      return function () {
+        return model.arcBuild();
+      };
     default:
-      throw new Error(`Invalid task type: ${taskType}`);
+      throw new Error('Invalid task type: ' + taskType);
   }
 }
+module.exports = exports.default;

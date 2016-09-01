@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = createUtmUrl;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,6 +11,8 @@
  * the root directory of this source tree.
  */
 
-export default function createUtmUrl(url: string, campaign: string) {
-  return `${url}/?utm_source=nuclide&utm_medium=app&utm_campaign=${campaign}`;
+function createUtmUrl(url, campaign) {
+  return url + '/?utm_source=nuclide&utm_medium=app&utm_campaign=' + campaign;
 }
+
+module.exports = exports.default;

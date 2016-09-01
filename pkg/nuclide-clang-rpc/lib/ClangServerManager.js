@@ -1,31 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import LRUCache from 'lru-cache';
-import os from 'os';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {serializeAsyncCall} from '../../commons-node/promise';
-import {getLogger} from '../../nuclide-logging';
-import ClangFlagsManager from './ClangFlagsManager';
-import ClangServer from './ClangServer';
-import findClangServerArgs from './find-clang-server-args';
-
-// Limit the number of active Clang servers.
-const SERVER_LIMIT = 20;
-
-// Limit the total memory usage of all Clang servers.
-const MEMORY_LIMIT = Math.round(os.totalmem() * 15 / 100);
-
-let _getDefaultFlags;
-async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<Array<string>> {
+var augmentDefaultFlags = _asyncToGenerator(function* (src, flags) {
   if (_getDefaultFlags === undefined) {
     _getDefaultFlags = null;
     try {
@@ -36,29 +17,88 @@ async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<A
     }
   }
   if (_getDefaultFlags != null) {
-    return flags.concat(await _getDefaultFlags(src));
+    return flags.concat((yield _getDefaultFlags(src)));
   }
   return flags;
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var _lruCache2;
+
+function _lruCache() {
+  return _lruCache2 = _interopRequireDefault(require('lru-cache'));
 }
 
-export default class ClangServerManager {
+var _os2;
 
-  _flagsManager: ClangFlagsManager;
-  _servers: LRUCache<any, any>;
-  _checkMemoryUsage: () => Promise<void>;
+function _os() {
+  return _os2 = _interopRequireDefault(require('os'));
+}
 
-  constructor() {
-    this._flagsManager = new ClangFlagsManager();
-    this._servers = new LRUCache({
+var _commonsNodePromise2;
+
+function _commonsNodePromise() {
+  return _commonsNodePromise2 = require('../../commons-node/promise');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _ClangFlagsManager2;
+
+function _ClangFlagsManager() {
+  return _ClangFlagsManager2 = _interopRequireDefault(require('./ClangFlagsManager'));
+}
+
+var _ClangServer2;
+
+function _ClangServer() {
+  return _ClangServer2 = _interopRequireDefault(require('./ClangServer'));
+}
+
+var _findClangServerArgs2;
+
+function _findClangServerArgs() {
+  return _findClangServerArgs2 = _interopRequireDefault(require('./find-clang-server-args'));
+}
+
+// Limit the number of active Clang servers.
+var SERVER_LIMIT = 20;
+
+// Limit the total memory usage of all Clang servers.
+var MEMORY_LIMIT = Math.round((_os2 || _os()).default.totalmem() * 15 / 100);
+
+var _getDefaultFlags = undefined;
+
+var ClangServerManager = (function () {
+  function ClangServerManager() {
+    _classCallCheck(this, ClangServerManager);
+
+    this._flagsManager = new (_ClangFlagsManager2 || _ClangFlagsManager()).default();
+    this._servers = new (_lruCache2 || _lruCache()).default({
       max: SERVER_LIMIT,
-      dispose(_, val: ClangServer) {
+      dispose: function dispose(_, val) {
         val.dispose();
-      },
+      }
     });
     // Avoid race conditions with simultaneous _checkMemoryUsage calls.
-    this._checkMemoryUsage = serializeAsyncCall(
-      this._checkMemoryUsageImpl.bind(this),
-    );
+    this._checkMemoryUsage = (0, (_commonsNodePromise2 || _commonsNodePromise()).serializeAsyncCall)(this._checkMemoryUsageImpl.bind(this));
   }
 
   /**
@@ -70,107 +110,126 @@ export default class ClangServerManager {
    * Currently, there's no "status" observable, so we can only provide a busy signal to the user
    * on diagnostic requests - and hence we only restart on 'compile' requests.
    */
-  async getClangServer(
-    src: string,
-    contents: string,
-    defaultFlags?: ?Array<string>,
-    restartIfChanged?: boolean,
-  ): Promise<?ClangServer> {
-    let server = this._servers.get(src);
-    if (server != null) {
-      if (restartIfChanged && this._flagsManager.getFlagsChanged(src)) {
-        this.reset(src);
-      } else {
+
+  _createClass(ClangServerManager, [{
+    key: 'getClangServer',
+    value: _asyncToGenerator(function* (src, contents, defaultFlags, restartIfChanged) {
+      var _this = this;
+
+      var server = this._servers.get(src);
+      if (server != null) {
+        if (restartIfChanged && this._flagsManager.getFlagsChanged(src)) {
+          this.reset(src);
+        } else {
+          return server;
+        }
+      }
+
+      var _ref = yield Promise.all([(0, (_findClangServerArgs2 || _findClangServerArgs()).default)(), this._getFlags(src, defaultFlags)]);
+
+      var _ref2 = _slicedToArray(_ref, 2);
+
+      var serverArgs = _ref2[0];
+      var flagsResult = _ref2[1];
+
+      if (flagsResult == null) {
+        return null;
+      }
+      var flags = flagsResult.flags;
+      var usesDefaultFlags = flagsResult.usesDefaultFlags;
+
+      // Another server could have been created while we were waiting.
+      server = this._servers.get(src);
+      if (server != null) {
         return server;
       }
-    }
-    const [serverArgs, flagsResult] = await Promise.all([
-      findClangServerArgs(),
-      this._getFlags(src, defaultFlags),
-    ]);
-    if (flagsResult == null) {
-      return null;
-    }
-    const {flags, usesDefaultFlags} = flagsResult;
-    // Another server could have been created while we were waiting.
-    server = this._servers.get(src);
-    if (server != null) {
+      server = new (_ClangServer2 || _ClangServer()).default(src, serverArgs, flags, usesDefaultFlags);
+      // Seed with a compile request to ensure fast responses.
+      server.compile(contents).then(function () {
+        return _this._checkMemoryUsage();
+      });
+      this._servers.set(src, server);
       return server;
-    }
-    server = new ClangServer(src, serverArgs, flags, usesDefaultFlags);
-    // Seed with a compile request to ensure fast responses.
-    server.compile(contents)
-      .then(() => this._checkMemoryUsage());
-    this._servers.set(src, server);
-    return server;
-  }
+    })
 
-  // 1. Attempt to get flags from ClangFlagsManager.
-  // 2. Otherwise, fall back to default flags.
-  async _getFlags(
-    src: string,
-    defaultFlags: ?Array<string>,
-  ): Promise<?{flags: Array<string>, usesDefaultFlags: boolean}> {
-    const trueFlags = await this._flagsManager.getFlagsForSrc(src)
-      .catch(e => {
-        getLogger().error(`Error getting flags for ${src}:`, e);
+    // 1. Attempt to get flags from ClangFlagsManager.
+    // 2. Otherwise, fall back to default flags.
+  }, {
+    key: '_getFlags',
+    value: _asyncToGenerator(function* (src, defaultFlags) {
+      var trueFlags = yield this._flagsManager.getFlagsForSrc(src).catch(function (e) {
+        (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)().error('Error getting flags for ' + src + ':', e);
         return null;
       });
-    if (trueFlags != null) {
-      return {flags: trueFlags, usesDefaultFlags: false};
-    } else if (defaultFlags != null) {
-      return {flags: await augmentDefaultFlags(src, defaultFlags), usesDefaultFlags: true};
-    } else {
-      return null;
-    }
-  }
-
-  reset(src?: string): void {
-    if (src != null) {
-      this._servers.del(src);
-    } else {
-      this._servers.reset();
-    }
-    this._flagsManager.reset();
-  }
-
-  dispose() {
-    this._servers.reset();
-    this._flagsManager.reset();
-  }
-
-  async _checkMemoryUsageImpl(): Promise<void> {
-    const usage = new Map();
-    await Promise.all(this._servers.values().map(async server => {
-      const mem = await server.getMemoryUsage();
-      usage.set(server, mem);
-    }));
-
-    // Servers may have been deleted in the meantime, so calculate the total now.
-    let total = 0;
-    let count = 0;
-    this._servers.forEach(server => {
-      const mem = usage.get(server);
-      if (mem) {
-        total += mem;
-        count++;
+      if (trueFlags != null) {
+        return { flags: trueFlags, usesDefaultFlags: false };
+      } else if (defaultFlags != null) {
+        return { flags: yield augmentDefaultFlags(src, defaultFlags), usesDefaultFlags: true };
+      } else {
+        return null;
       }
-    });
+    })
+  }, {
+    key: 'reset',
+    value: function reset(src) {
+      if (src != null) {
+        this._servers.del(src);
+      } else {
+        this._servers.reset();
+      }
+      this._flagsManager.reset();
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._servers.reset();
+      this._flagsManager.reset();
+    }
+  }, {
+    key: '_checkMemoryUsageImpl',
+    value: _asyncToGenerator(function* () {
+      var _this2 = this;
 
-    // Remove servers until we're under the memory limit.
-    // Make sure we allow at least one server to stay alive.
-    if (count > 1 && total > MEMORY_LIMIT) {
-      const toDispose = [];
-      this._servers.rforEach((server, key) => {
-        const mem = usage.get(server);
-        if (mem && count > 1 && total > MEMORY_LIMIT) {
-          total -= mem;
-          count--;
-          toDispose.push(key);
+      var usage = new Map();
+      yield Promise.all(this._servers.values().map(_asyncToGenerator(function* (server) {
+        var mem = yield server.getMemoryUsage();
+        usage.set(server, mem);
+      })));
+
+      // Servers may have been deleted in the meantime, so calculate the total now.
+      var total = 0;
+      var count = 0;
+      this._servers.forEach(function (server) {
+        var mem = usage.get(server);
+        if (mem) {
+          total += mem;
+          count++;
         }
       });
-      toDispose.forEach(key => this._servers.del(key));
-    }
-  }
 
-}
+      // Remove servers until we're under the memory limit.
+      // Make sure we allow at least one server to stay alive.
+      if (count > 1 && total > MEMORY_LIMIT) {
+        (function () {
+          var toDispose = [];
+          _this2._servers.rforEach(function (server, key) {
+            var mem = usage.get(server);
+            if (mem && count > 1 && total > MEMORY_LIMIT) {
+              total -= mem;
+              count--;
+              toDispose.push(key);
+            }
+          });
+          toDispose.forEach(function (key) {
+            return _this2._servers.del(key);
+          });
+        })();
+      }
+    })
+  }]);
+
+  return ClangServerManager;
+})();
+
+exports.default = ClangServerManager;
+module.exports = exports.default;

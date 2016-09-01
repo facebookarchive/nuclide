@@ -1,30 +1,16 @@
-'use babel';
-/* @flow */
 
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
-
-import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {getLogger} from '../../nuclide-logging';
-
-const logger = getLogger();
 
 /**
  * @param repoPath The full path to the repository directory (.hg).
  * @return A promise that resolves to the current bookmark name, if it exists,
  *   or else an empty string.
  */
-async function fetchActiveBookmark(repoPath: string): Promise<string> {
-  const bookmarkFile = nuclideUri.join(repoPath, 'bookmarks.current');
-  let result;
+
+var fetchActiveBookmark = _asyncToGenerator(function* (repoPath) {
+  var bookmarkFile = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(repoPath, 'bookmarks.current');
+  var result = undefined;
   try {
-    result = await fsPromise.readFile(bookmarkFile, 'utf-8');
+    result = yield (_commonsNodeFsPromise2 || _commonsNodeFsPromise()).default.readFile(bookmarkFile, 'utf-8');
   } catch (e) {
     if (!(e.code === 'ENOENT')) {
       // We expect an error if the bookmark file doesn't exist. Otherwise, the
@@ -34,8 +20,40 @@ async function fetchActiveBookmark(repoPath: string): Promise<string> {
     result = '';
   }
   return result;
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var _commonsNodeFsPromise2;
+
+function _commonsNodeFsPromise() {
+  return _commonsNodeFsPromise2 = _interopRequireDefault(require('../../commons-node/fsPromise'));
 }
 
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
+
 module.exports = {
-  fetchActiveBookmark,
+  fetchActiveBookmark: fetchActiveBookmark
 };

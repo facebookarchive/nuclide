@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.proxyFilename = proxyFilename;
+exports.createProxyFactory = createProxyFactory;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,99 +14,95 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs';
-import nuclideUri from '../../commons-node/nuclideUri';
-import invariant from 'assert';
-import Module from 'module';
+var _fs2;
 
-import {generateProxy} from './proxy-generator';
-import {parseServiceDefinition} from './service-parser';
+function _fs() {
+  return _fs2 = _interopRequireDefault(require('fs'));
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _module2;
+
+function _module() {
+  return _module2 = _interopRequireDefault(require('module'));
+}
+
+var _proxyGenerator2;
+
+function _proxyGenerator() {
+  return _proxyGenerator2 = require('./proxy-generator');
+}
+
+var _serviceParser2;
+
+function _serviceParser() {
+  return _serviceParser2 = require('./service-parser');
+}
 
 // Proxy dependencies
-import {Observable} from 'rxjs';
-import {trackOperationTiming} from '../../nuclide-analytics';
 
-import type {
-  ReturnKind,
-  Type,
-  Parameter,
-} from './types';
+var _rxjsBundlesRxUmdMinJs2;
 
-export type RpcContext = {
-  callRemoteFunction(functionName: string, returnType: ReturnKind, args: Object): any,
-  callRemoteMethod(
-    objectId: number,
-    methodName: string,
-    returnType: ReturnKind,
-    args: Object
-  ): any,
-  createRemoteObject(
-    interfaceName: string,
-    thisArg: Object,
-    unmarshalledArgs: Array<any>,
-    argTypes: Array<Parameter>
-  ): void,
-  disposeRemoteObject(object: Object): Promise<void>,
-  marshal(value: any, type: Type): any,
-  unmarshal(value: any, type: Type): any,
-  marshalArguments(
-    args: Array<any>,
-    argTypes: Array<Parameter>
-  ): Promise<Object>,
-  unmarshalArguments(
-    args: Object,
-    argTypes: Array<Parameter>
-  ): Promise<Array<any>>,
-};
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
 
-export type ProxyFactory = (context: RpcContext) => Object;
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
 
 /** Cache for remote proxies. */
-const proxiesCache: Map<string, ProxyFactory> = new Map();
+var proxiesCache = new Map();
 
-export function proxyFilename(definitionPath: string): string {
-  invariant(
-    nuclideUri.isAbsolute(definitionPath),
-    `"${definitionPath}" definition path must be absolute.`,
-  );
-  const dir = nuclideUri.dirname(definitionPath);
-  const name = nuclideUri.basename(definitionPath, nuclideUri.extname(definitionPath));
-  const filename = nuclideUri.join(dir, name + 'Proxy.js');
+function proxyFilename(definitionPath) {
+  (0, (_assert2 || _assert()).default)((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.isAbsolute(definitionPath), '"' + definitionPath + '" definition path must be absolute.');
+  var dir = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.dirname(definitionPath);
+  var name = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.basename(definitionPath, (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.extname(definitionPath));
+  var filename = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(dir, name + 'Proxy.js');
   return filename;
 }
 
-export function createProxyFactory(
-  serviceName: string,
-  preserveFunctionNames: boolean,
-  definitionPath: string,
-): ProxyFactory {
+function createProxyFactory(serviceName, preserveFunctionNames, definitionPath) {
   if (!proxiesCache.has(definitionPath)) {
-    const filename = proxyFilename(definitionPath);
+    var filename = proxyFilename(definitionPath);
 
-    let code;
-    if (fs.existsSync(filename)) {
-      code = fs.readFileSync(filename, 'utf8');
+    var code = undefined;
+    if ((_fs2 || _fs()).default.existsSync(filename)) {
+      code = (_fs2 || _fs()).default.readFileSync(filename, 'utf8');
     } else {
-      const definitionSource = fs.readFileSync(definitionPath, 'utf8');
-      const defs = parseServiceDefinition(definitionPath, definitionSource);
-      code = generateProxy(serviceName, preserveFunctionNames, defs);
+      var definitionSource = (_fs2 || _fs()).default.readFileSync(definitionPath, 'utf8');
+      var defs = (0, (_serviceParser2 || _serviceParser()).parseServiceDefinition)(definitionPath, definitionSource);
+      code = (0, (_proxyGenerator2 || _proxyGenerator()).generateProxy)(serviceName, preserveFunctionNames, defs);
     }
 
-    const m = loadCodeAsModule(code, filename);
-    m.exports.inject(Observable, trackOperationTiming);
+    var m = loadCodeAsModule(code, filename);
+    m.exports.inject((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable, (_nuclideAnalytics2 || _nuclideAnalytics()).trackOperationTiming);
 
     proxiesCache.set(definitionPath, m.exports);
   }
 
-  const factory = proxiesCache.get(definitionPath);
-  invariant(factory != null);
+  var factory = proxiesCache.get(definitionPath);
+  (0, (_assert2 || _assert()).default)(factory != null);
 
   return factory;
 }
 
-function loadCodeAsModule(code: string, filename: string): Module {
-  invariant(code.length > 0, 'Code must not be empty.');
-  const m = new Module(filename);
+function loadCodeAsModule(code, filename) {
+  (0, (_assert2 || _assert()).default)(code.length > 0, 'Code must not be empty.');
+  var m = new (_module2 || _module()).default(filename);
   m.filename = filename;
   m.paths = []; // Disallow require resolving by removing lookup paths.
   m._compile(code, filename);
@@ -111,6 +112,7 @@ function loadCodeAsModule(code: string, filename: string): Module {
 }
 
 // Export caches for testing.
-export const __test__ = {
-  proxiesCache,
+var __test__ = {
+  proxiesCache: proxiesCache
 };
+exports.__test__ = __test__;
