@@ -52,7 +52,7 @@ export type ClangFlags = {
   // Will be computed and memoized from rawData on demand.
   flags?: ?Array<string>,
   rawData: ?{
-    flags: Array<string>,
+    flags: Array<string> | string,
     file: string,
     directory: string,
   },
@@ -153,12 +153,15 @@ class ClangFlagsManager {
     }
     if (data.flags === undefined) {
       const {rawData} = data;
-      data.flags = rawData == null ? null :
-        ClangFlagsManager.sanitizeCommand(
-          rawData.file,
-          rawData.flags,
-          rawData.directory,
-        );
+      if (rawData == null) {
+        data.flags = null;
+      } else {
+        let {flags} = rawData;
+        if (typeof flags === 'string') {
+          flags = shellParse(flags);
+        }
+        data.flags = ClangFlagsManager.sanitizeCommand(rawData.file, flags, rawData.directory);
+      }
       // Subscribe to changes.
       this._subscriptions.push(data.changes.subscribe({
         next: change => {
@@ -244,13 +247,12 @@ class ClangFlagsManager {
       await Promise.all(data.map(async entry => {
         const {command, file} = entry;
         const directory = await fsPromise.realpath(entry.directory, this._realpathCache);
-        const args = shellParse(command);
         const filename = nuclideUri.resolve(directory, file);
         if (await fsPromise.exists(filename)) {
           const realpath = await fsPromise.realpath(filename, this._realpathCache);
           const result = {
             rawData: {
-              flags: args,
+              flags: command,
               file,
               directory,
             },
