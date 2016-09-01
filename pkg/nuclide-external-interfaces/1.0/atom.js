@@ -64,6 +64,7 @@ declare class atom$Package {
   getType(): 'atom' | 'textmate' | 'theme',
   hasActivationCommands(): boolean,
   hasActivationHooks(): boolean,
+  getActivationHooks(): Array<string>,
   onDidDeactivate(cb: () => mixed): IDisposable,
   activateNow(): void,
 }
@@ -308,6 +309,7 @@ declare class atom$PackageManager {
   loadPackages(): void,
   serviceHub: atom$ServiceHub,
   packageDirPaths: Array<string>,
+  triggerActivationHook(hook: string): void,
   triggerDeferredActivationHooks(): void,
   unloadPackage(name: string): void,
   unloadPackages(): void,
