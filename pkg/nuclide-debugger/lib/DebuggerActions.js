@@ -47,6 +47,7 @@ const AnalyticsEvents = Object.freeze({
   DEBUGGER_STOP: 'debugger-stop',
 });
 
+const GK_DEBUGGER_REQUEST_WINDOW = 'nuclide_debugger_php_request_window';
 const GK_DEBUGGER_THREADS_WINDOW = 'nuclide_debugger_threads_window';
 const GK_DEBUGGER_CONSOLE_WINDOW = 'nuclide_debugger_console_window';
 const GK_DEBUGGER_SINGLE_THREAD_STEPPING = 'nuclide_debugger_single_thread_stepping';
@@ -81,7 +82,8 @@ class DebuggerActions {
         this._registerConsole();
       }
       const supportThreadsWindow = processInfo.supportThreads()
-        && await passesGK(GK_DEBUGGER_THREADS_WINDOW);
+        && await passesGK(GK_DEBUGGER_THREADS_WINDOW) &&
+        await this._allowThreadsForPhp(processInfo);
       this._store.getSettings().set('SupportThreadsWindow', supportThreadsWindow);
       const singleThreadStepping = processInfo.supportSingleThreadStepping();
       if (singleThreadStepping && await passesGK(GK_DEBUGGER_SINGLE_THREAD_STEPPING)) {
@@ -98,6 +100,13 @@ class DebuggerActions {
       atom.notifications.addError(errorMessage);
       this.stopDebugging();
     }
+  }
+
+  async _allowThreadsForPhp(processInfo: DebuggerProcessInfo): Promise<boolean> {
+    if (processInfo.getServiceName() === 'hhvm') {
+      return await passesGK(GK_DEBUGGER_REQUEST_WINDOW);
+    }
+    return true;
   }
 
   setDebuggerMode(debuggerMode: DebuggerModeType): void {

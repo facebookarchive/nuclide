@@ -40,7 +40,6 @@ import type {Breakpoint} from './BreakpointStore';
 import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import type {ClientCallback} from './ClientCallback';
 
-
 const SESSION_END_EVENT = 'session-end-event';
 
 // Handles all 'Debug.*' Chrome dev tools messages
