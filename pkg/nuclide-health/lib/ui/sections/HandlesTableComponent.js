@@ -11,19 +11,21 @@
 
 import {React} from 'react-for-atom';
 
-type Props = {
+type Props<T> = {
   title: string,
-  handles: Array<Object>,
+  handles: Array<T>,
   keyed: Function,
   columns: Array<{
     title: string,
-    value: (handle: any) => ?string,
+    value: (handle: T) => ?string | ?number,
     widthPercentage: number,
   }>,
 };
 
-export default class HandlesTableComponent extends React.Component {
-  props: Props;
+export default class HandlesTableComponent<T: Object>
+  extends React.Component<void, Props<T>, void> {
+
+  props: Props<T>;
 
   previousHandleSummaries: Object;
 
@@ -32,7 +34,7 @@ export default class HandlesTableComponent extends React.Component {
     this.previousHandleSummaries = {};
   }
 
-  getHandleSummaries(handles: Array<Object>): Object {
+  getHandleSummaries(handles: Array<T>): Object {
     const handleSummaries = {};
     handles.forEach((handle, h) => {
       const summarizedHandle = {};
