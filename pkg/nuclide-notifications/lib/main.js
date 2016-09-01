@@ -13,22 +13,16 @@ import invariant from 'assert';
 import electron from 'electron';
 import {CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
-import {isGkEnabled, onceGkInitialized} from '../../commons-node/passesGK';
 
 const {remote} = electron;
 invariant(remote != null);
 
 let subscriptions: CompositeDisposable = (null: any);
-let gkEnabled = false;
 
 export function activate(state: ?Object): void {
   subscriptions = new CompositeDisposable(
     // Listen for Atom notifications:
     atom.notifications.onDidAddNotification(proxyToNativeNotification),
-    // Listen for the gatekeeper to tell us if we can generate native notifications.
-    onceGkInitialized(() => {
-      gkEnabled = isGkEnabled('nuclide_native_notifications');
-    }),
   );
 }
 
@@ -49,11 +43,6 @@ function proxyToNativeNotification(notification: atom$Notification): void {
 }
 
 function raiseNativeNotification(title: string, body: string): void {
-  // Check we're in the gatekeeper for native notifications at all.
-  if (!gkEnabled) {
-    return;
-  }
-
   if (!featureConfig.get('nuclide-notifications.whenFocused') &&
       remote.getCurrentWindow().isFocused()) {
     return;
