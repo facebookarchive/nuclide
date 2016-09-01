@@ -145,7 +145,7 @@ class NuclideServerManager(object):
     def cleanup_certificates(self, days_to_keep):
         try:
             self.logger.info('Cleaning up old certificate files...')
-            certs_dir = self.options.certs_dir or self._ensure_certs_dir()
+            certs_dir = self.options.certs_dir or CERTS_DIR
             current = time.time()
             seconds_to_keep = 3600 * 24 * days_to_keep
             for file in glob.glob(os.path.join(certs_dir, 'nuclide*')):
