@@ -10,10 +10,11 @@
 # we want to limit our dependencies to built-in Python libraries and libclang
 # (which is provided in ../pythonpath)
 
-from clang.cindex import Config, Cursor, CursorKind, Diagnostic, Index,\
+from clang.cindex import Config, Cursor, CursorKind, Diagnostic, File, Index,\
                          SourceLocation, TranslationUnit
 from declarationlocation import get_declaration_location_and_spelling
-from utils import is_header_file, resolve_file, range_dict, location_dict
+from utils import is_header_file, resolve_file, range_dict, location_dict,\
+                  CXCursorAndRangeVisitor
 import codecomplete
 import outline
 import references
@@ -118,6 +119,10 @@ class Server:
         ("clang_Location_isFromMainFile",
             [SourceLocation],
             c_int),
+
+        ("clang_findReferencesInFile",
+            [Cursor, File, CXCursorAndRangeVisitor],
+            c_uint),
     ]
 
     # New in Clang 3.8: not in the Python bindings yet.

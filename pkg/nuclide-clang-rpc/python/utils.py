@@ -5,9 +5,19 @@
 # the root directory of this source tree.
 
 import os
+import ctypes
+from clang.cindex import Cursor, SourceRange
 
 
 HEADER_EXTENSIONS = ['.h', '.hh', '.hpp', '.hxx', '.h++']
+
+
+# ctypes binding used for clang_findReferencesInFile.
+class CXCursorAndRangeVisitor(ctypes.Structure):
+    _fields_ = [
+        ("context", ctypes.c_void_p),
+        ("visit", ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_void_p, Cursor, SourceRange)),
+    ]
 
 
 def is_header_file(src):

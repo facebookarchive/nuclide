@@ -12,6 +12,7 @@
 import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {addMatchers} from '../../nuclide-test-helpers';
 import ClangServer from '../lib/ClangServer';
 import findClangServerArgs from '../lib/find-clang-server-args';
 
@@ -41,6 +42,10 @@ const EXPECTED_FILE_OUTLINE = [
 ];
 
 describe('ClangServer', () => {
+
+  beforeEach(function() {
+    addMatchers(this);
+  });
 
   it('can handle requests', () => {
     waitsForPromise(async () => {
@@ -211,6 +216,71 @@ describe('ClangServer', () => {
         2,
       );
       expect(response).not.toBe(null);
+    });
+  });
+
+  it('supports get_local_references', () => {
+    waitsForPromise(async () => {
+      const file = nuclideUri.join(__dirname, 'fixtures', 'references.cpp');
+      const serverArgs = await findClangServerArgs();
+      const server = new ClangServer(file, serverArgs, []);
+      const service = await server.getService();
+
+      const fileContents = fs.readFileSync(file).toString('utf8');
+      const compileResponse = await server.compile(fileContents);
+
+      invariant(compileResponse != null);
+      expect(compileResponse.diagnostics).toEqual([]);
+
+      // param var1
+      expect(await service.get_local_references(fileContents, 1, 24)).diffJson({
+        cursor_name: 'var1',
+        cursor_kind: 'PARM_DECL',
+        references: [
+          {start: {line: 1, column: 24}, end: {line: 1, column: 27}},
+          {start: {line: 2, column: 13}, end: {line: 2, column: 16}},
+          {start: {line: 2, column: 20}, end: {line: 2, column: 23}},
+          {start: {line: 3, column: 20}, end: {line: 3, column: 23}},
+          {start: {line: 4, column: 2}, end: {line: 4, column: 5}},
+          {start: {line: 9, column: 9}, end: {line: 9, column: 12}},
+          {start: {line: 9, column: 16}, end: {line: 9, column: 19}},
+        ],
+      });
+
+      // var2 (from a reference)
+      expect(await service.get_local_references(fileContents, 4, 9)).diffJson({
+        cursor_name: 'var2',
+        cursor_kind: 'VAR_DECL',
+        references: [
+          {start: {line: 2, column: 6}, end: {line: 2, column: 9}},
+          {start: {line: 4, column: 9}, end: {line: 4, column: 12}},
+        ],
+      });
+
+      // var3
+      expect(await service.get_local_references(fileContents, 2, 26)).diffJson({
+        cursor_name: 'var3',
+        cursor_kind: 'VAR_DECL',
+        references: [
+          {start: {line: 2, column: 26}, end: {line: 2, column: 29}},
+        ],
+      });
+
+      // inner var1
+      expect(await service.get_local_references(fileContents, 6, 11)).diffJson({
+        cursor_name: 'var1',
+        cursor_kind: 'VAR_DECL',
+        references: [
+          {start: {line: 6, column: 11}, end: {line: 6, column: 14}},
+          {start: {line: 6, column: 22}, end: {line: 6, column: 25}},
+          {start: {line: 6, column: 33}, end: {line: 6, column: 36}},
+          {start: {line: 7, column: 11}, end: {line: 7, column: 14}},
+        ],
+      });
+
+      // nothing
+      expect(await service.get_local_references(fileContents, 0, 0)).toBe(null);
+      expect(await service.get_local_references(fileContents, 11, 0)).toBe(null);
     });
   });
 
