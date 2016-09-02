@@ -91,6 +91,7 @@ export type ClangCursor = {
   type: ClangCursorType,
   cursor_usr: string,
   file: ?NuclideUri,
+  extent: ClangCursorExtent,
 };
 
 export type ClangOutlineTree = {

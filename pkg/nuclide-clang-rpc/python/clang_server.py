@@ -13,8 +13,8 @@
 from clang.cindex import Config, Cursor, CursorKind, Diagnostic, File, Index,\
                          SourceLocation, TranslationUnit
 from declarationlocation import get_declaration_location_and_spelling
-from utils import is_header_file, resolve_file, range_dict, location_dict,\
-                  CXCursorAndRangeVisitor
+from utils import is_header_file, resolve_file, range_dict, range_dict_relative,\
+                  location_dict, CXCursorAndRangeVisitor
 import codecomplete
 import outline
 import references
@@ -333,6 +333,7 @@ class Server:
                 'type': cursor.kind.name,
                 'cursor_usr': cursor.get_usr(),
                 'file': resolve_file(file),
+                'extent': range_dict_relative(cursor.extent),
             })
             cursor = cursor.semantic_parent
 
