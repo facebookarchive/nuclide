@@ -58,7 +58,7 @@ describe('Buck building via toolbar', () => {
 
     waitsFor(
       'the toolbar to be shown',
-      10,
+      500,
       () => {
         atom.commands.dispatch(
           workspaceView,

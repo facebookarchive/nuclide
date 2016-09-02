@@ -21,7 +21,6 @@ type Props = {
   getActiveTaskRunnerIcon: () => ?ReactClass<any>,
   getExtraUi: ?() => ReactClass<any>,
   progress: ?number,
-  visible: boolean,
   runTask: (taskId?: TaskId) => void,
   activeTaskId: ?TaskId,
   selectTask: (taskId: TaskId) => void,
@@ -51,10 +50,6 @@ export class Toolbar extends React.Component {
   }
 
   render(): ?React.Element<any> {
-    if (!this.props.visible) {
-      return null;
-    }
-
     const activeTaskId = this.props.activeTaskId;
     const activeTask = activeTaskId == null
       ? null

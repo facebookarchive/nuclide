@@ -14,86 +14,11 @@ import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
 import {observableFromTask} from '../../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
-import {bindObservableAsProps} from '../../../nuclide-ui/lib/bindObservableAsProps';
-import {Toolbar} from '../ui/Toolbar';
 import {getActiveTaskRunner} from '../getActiveTaskRunner';
 import {getTaskMetadata} from '../getTaskMetadata';
 import * as Actions from './Actions';
 import invariant from 'assert';
-import memoize from 'lodash.memoize';
-import {React, ReactDOM} from 'react-for-atom';
 import {Observable} from 'rxjs';
-
-
-// We expect a store here because we want to subscribe to it. The one we get as an argument if we
-// return a function here doesn't have Symbol.observable.
-export function createPanelEpic(actions: ActionsObservable<Action>): Observable<Action> {
-  return actions.ofType(Actions.CREATE_PANEL)
-    .map(action => {
-      invariant(action.type === Actions.CREATE_PANEL);
-
-      // Ideally we would just use the store that's passed to the epic (and not have to include
-      // it with the action), however that store doesn't have the full functionality (see
-      // @reactjs/redux#1834)
-      const {store} = action.payload;
-
-      const staticProps = {
-        runTask: taskId => { store.dispatch(Actions.runTask(taskId)); },
-        selectTask: taskId => { store.dispatch(Actions.selectTask(taskId)); },
-        stopTask: () => { store.dispatch(Actions.stopTask()); },
-        getActiveTaskRunnerIcon: () => {
-          const activeTaskRunner = getActiveTaskRunner(store.getState());
-          return activeTaskRunner && activeTaskRunner.getIcon();
-        },
-      };
-
-      // Delay the inital render. This way we (probably) won't wind up rendering the wrong task
-      // runner before the correct one is registered.
-      const props = Observable.interval(300).first()
-        .switchMap(() => Observable.from(store))
-        .map(state => {
-          const activeTaskRunner = getActiveTaskRunner(state);
-          return {
-            ...staticProps,
-            taskRunnerInfo: Array.from(state.taskRunners.values()),
-            getExtraUi: getExtraUiFactory(activeTaskRunner),
-            progress: state.runningTaskInfo && state.runningTaskInfo.progress,
-            visible: state.visible,
-            activeTaskId: state.activeTaskId,
-            taskIsRunning: state.runningTaskInfo != null,
-            taskLists: state.taskLists,
-          };
-        });
-
-      const StatefulToolbar = bindObservableAsProps(props, Toolbar);
-      const container = document.createElement('div');
-      // $FlowIssue: bindObservableAsProps doesn't handle props exactly right.
-      ReactDOM.render(<StatefulToolbar />, container);
-      const panel = atom.workspace.addTopPanel({item: container});
-
-      return {
-        type: Actions.PANEL_CREATED,
-        payload: {panel},
-      };
-    });
-}
-
-export function destroyPanelEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.DESTROY_PANEL)
-    .switchMap(action => {
-      const {panel} = store.getState();
-      if (panel == null) {
-        return Observable.empty();
-      }
-      const item = panel.getItem();
-      ReactDOM.unmountComponentAtNode(item);
-      panel.destroy();
-      return Observable.of({type: Actions.PANEL_DESTROYED});
-    });
-}
 
 export function registerTaskRunnerEpic(
   actions: ActionsObservable<Action>,
@@ -317,19 +242,4 @@ function createTaskObservable(
 function taskIdsAreEqual(a: ?TaskId, b: ?TaskId): boolean {
   if (a == null || b == null) { return false; }
   return a.type === b.type && a.taskRunnerId === b.taskRunnerId;
-}
-
-/**
- * Since `getExtraUi` may create a React class dynamically, we want to ensure that we only ever call
- * it once. To do that, we memoize the function and cache the result.
- */
-const extraUiFactories = new WeakMap();
-function getExtraUiFactory(taskRunner: ?TaskRunner): ?() => ReactClass<any> {
-  let getExtraUi = extraUiFactories.get(taskRunner);
-  if (getExtraUi != null) { return getExtraUi; }
-  if (taskRunner == null) { return null; }
-  if (taskRunner.getExtraUi == null) { return null; }
-  getExtraUi = memoize(taskRunner.getExtraUi.bind(taskRunner));
-  extraUiFactories.set(taskRunner, getExtraUi);
-  return getExtraUi;
 }

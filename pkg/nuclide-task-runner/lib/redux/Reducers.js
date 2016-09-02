@@ -17,19 +17,6 @@ import * as Actions from './Actions';
 // we ported to Redux, we just left it this way.
 export function app(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case Actions.PANEL_CREATED: {
-      const {panel} = action.payload;
-      return {
-        ...state,
-        panel,
-      };
-    }
-    case Actions.PANEL_DESTROYED: {
-      return {
-        ...state,
-        panel: null,
-      };
-    }
     case Actions.SELECT_TASK: {
       const {taskId} = action.payload;
       return {

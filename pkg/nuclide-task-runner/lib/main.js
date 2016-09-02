@@ -27,6 +27,7 @@ import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-m
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import createPackage from '../../commons-atom/createPackage';
+import PanelRenderer from '../../commons-atom/PanelRenderer';
 import {arrayRemove} from '../../commons-node/collection';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -35,15 +36,17 @@ import {createEmptyAppState} from './createEmptyAppState';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import * as Reducers from './redux/Reducers';
+import {createPanelItem} from './ui/createPanelItem';
 import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 import nullthrows from 'nullthrows';
 import {applyMiddleware, bindActionCreators, createStore} from 'redux';
 import {Observable} from 'rxjs';
 
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _actionCreators: BoundActionCreators;
+  _panelRenderer: PanelRenderer;
   _store: Store;
 
   constructor(rawState: ?SerializedAppState): void {
@@ -63,13 +66,13 @@ class Activation {
     );
     const states = Observable.from(this._store);
     this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
+    this._panelRenderer = new PanelRenderer({
+      location: 'top',
+      createItem: () => createPanelItem(this._store),
+    });
 
-    // Add the panel.
-    // TODO: Defer this. We can subscribe to store and do this the first time visible === true
-    this._actionCreators.createPanel(this._store);
-
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => { this._actionCreators.destroyPanel(); }),
+    this._disposables = new UniversalDisposable(
+      this._panelRenderer,
       atom.commands.add('atom-workspace', {
         'nuclide-task-runner:toggle-toolbar-visibility': event => {
           const visible = event.detail == null ? undefined : event.detail.visible;
@@ -169,6 +172,11 @@ class Activation {
         }),
         taskRunner => taskRunner.id,
       ),
+
+      states
+        .map(state => state.visible)
+        .distinctUntilChanged()
+        .subscribe(visible => { this._panelRenderer.render({visible}); }),
     );
   }
 

@@ -12,24 +12,17 @@
 import type {Directory} from '../../../nuclide-remote-connection';
 import type {
   TaskRunner,
-  CreatePanelAction,
-  DestroyPanelAction,
   RegisterTaskRunnerAction,
   RunTaskAction,
   SelectTaskAction,
   SetProjectRootAction,
   SetToolbarVisibilityAction,
   StopTaskAction,
-  Store,
   TaskId,
   ToggleToolbarVisibilityAction,
   UnregisterTaskRunnerAction,
 } from '../types';
 
-export const CREATE_PANEL = 'CREATE_PANEL';
-export const DESTROY_PANEL = 'DESTROY_PANEL';
-export const PANEL_CREATED = 'PANEL_CREATED';
-export const PANEL_DESTROYED = 'PANEL_DESTROYED';
 export const REGISTER_TASK_RUNNER = 'REGISTER_TASK_RUNNER';
 export const RUN_TASK = 'RUN_TASK';
 export const SELECT_TASK = 'SELECT_TASK';
@@ -45,17 +38,6 @@ export const TASK_LIST_UPDATED = 'TASK_LIST_UPDATED';
 export const TOGGLE_TOOLBAR_VISIBILITY = 'TOGGLE_TOOLBAR_VISIBILITY';
 export const TOOLBAR_VISIBILITY_UPDATED = 'TOOLBAR_VISIBILITY_UPDATED';
 export const UNREGISTER_TASK_RUNNER = 'UNREGISTER_TASK_RUNNER';
-
-export function createPanel(store: Store): CreatePanelAction {
-  return {
-    type: CREATE_PANEL,
-    payload: {store},
-  };
-}
-
-export function destroyPanel(): DestroyPanelAction {
-  return {type: DESTROY_PANEL};
-}
 
 export function registerTaskRunner(taskRunner: TaskRunner): RegisterTaskRunnerAction {
   return {

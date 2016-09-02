@@ -14,7 +14,6 @@ import type {Directory} from '../../nuclide-remote-connection';
 export type AppState = {
   activeTaskId: ?TaskId,
   taskRunners: Map<string, TaskRunner>,
-  panel: ?atom$Panel,
   previousSessionActiveTaskId: ?TaskId,
   projectRoot: ?Directory,
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
@@ -70,8 +69,6 @@ export type Store = {
 };
 
 export type BoundActionCreators = {
-  createPanel(store: Store): void,
-  destroyPanel(): void,
   registerTaskRunner(taskRunner: TaskRunner): void,
   runTask(taskId: ?TaskId): void,
   selectTask(taskId: TaskId): void,
@@ -85,28 +82,6 @@ export type BoundActionCreators = {
 //
 // Action types.
 //
-
-export type CreatePanelAction = {
-  type: 'CREATE_PANEL',
-  payload: {
-    store: Store,
-  },
-};
-
-export type DestroyPanelAction = {
-  type: 'DESTROY_PANEL',
-};
-
-export type PanelCreatedAction = {
-  type: 'PANEL_CREATED',
-  payload: {
-    panel: Object,
-  },
-};
-
-export type PanelDestroyedAction = {
-  type: 'PANEL_DESTROYED',
-};
 
 export type SelectTaskAction = {
   type: 'SELECT_TASK',
@@ -213,9 +188,7 @@ export type UnregisterTaskRunnerAction = {
 };
 
 export type Action =
-  PanelCreatedAction
-  | PanelDestroyedAction
-  | RunTaskAction
+  RunTaskAction
   | SelectTaskAction
   | SetProjectRootAction
   | SetToolbarVisibilityAction
