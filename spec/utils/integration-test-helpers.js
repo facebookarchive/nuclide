@@ -35,6 +35,9 @@ export function jasmineIntegrationTestSetup(): void {
   process.env.NO_BUCKD = '1';
 
   // Set the testing window dimensions (smallish, yet realistic).
+  // TODO: In Atom 1.10.0 these styles changed. https://github.com/atom/atom/pull/11960
+  // .spec-reporter-container now covers #jasmine-content and that makes it
+  // annoying to debug issues. Fix this.
   const styleCSS = `
     height: 600px;
     width: 1000px;

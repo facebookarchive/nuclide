@@ -2,10 +2,10 @@
   "atom": {
     "clientOnly": true,
     "dependency": "Atom",
-    "version": "1.9.9",
-    "version-output": "Atom    : 1.9.9\nElectron: 0.37.8\nChrome  : 49.0.2623.75\nNode    : 5.10.0",
-    "url": "https://github.com/atom/atom/releases/download/v1.9.9/atom-mac.zip",
-    "shasum": "db9dc23eb2c34db671153db31bdd3ea73ee12d461d75b4c15a84a2e88a16ae3d"
+    "version": "1.10.0",
+    "version-output": "Atom    : 1.10.0\nElectron: 0.37.8\nChrome  : 49.0.2623.75\nNode    : 5.10.0",
+    "url": "https://github.com/atom/atom/releases/download/v1.10.0/atom-mac.zip",
+    "shasum": "d996c6c5630434b4b4e8e48484fa6760923eb5eb06f18ff2d9063e4850f834bb"
   },
   "flow": {
     "clientOnly": false,
