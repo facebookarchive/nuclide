@@ -43,11 +43,12 @@ export default class FileReferencesView extends React.Component {
     (this: any)._onFileNameClick = this._onFileNameClick.bind(this);
   }
 
-  _onRefClick(ref: Reference) {
+  _onRefClick(evt: SyntheticEvent, ref: Reference) {
     atom.workspace.open(this.props.uri, {
       initialLine: ref.start.line - 1,
       initialColumn: ref.start.column - 1,
     });
+    evt.stopPropagation();
   }
 
   _onFileClick() {
@@ -57,8 +58,11 @@ export default class FileReferencesView extends React.Component {
     });
   }
 
-  _onFileNameClick() {
-    atom.workspace.open(this.props.uri);
+  _onFileNameClick(evt: SyntheticEvent, line?: number) {
+    atom.workspace.open(this.props.uri, {
+      initialLine: line,
+    });
+    evt.stopPropagation();
   }
 
   render(): React.Element<any> {
@@ -79,7 +83,7 @@ export default class FileReferencesView extends React.Component {
           <div
             key={j}
             className="nuclide-find-references-ref-name"
-            onClick={this._onRefClick.bind(this, ref)}>
+            onClick={evt => this._onRefClick(evt, ref)}>
             Line {range} {caller}
           </div>
         );
@@ -92,7 +96,8 @@ export default class FileReferencesView extends React.Component {
             grammar={this.props.grammar}
             text={previewText}
             {...group}
-            onClick={this._onRefClick.bind(this, group.references[0])}
+            onClick={evt => this._onRefClick(evt, group.references[0])}
+            onLineClick={this._onFileNameClick}
           />
         </li>
       );
@@ -104,9 +109,10 @@ export default class FileReferencesView extends React.Component {
     });
 
     return (
-      <li className={`${outerClassName}`}
+      <li className={`${outerClassName}`}>
+        <div
+          className="nuclide-find-references-filename list-item"
           onClick={this._onFileClick}>
-        <div className="nuclide-find-references-filename list-item">
           <span className="icon-file-text icon" />
           <a onClick={this._onFileNameClick}>
             {nuclideUri.relative(this.props.basePath, this.props.uri)}

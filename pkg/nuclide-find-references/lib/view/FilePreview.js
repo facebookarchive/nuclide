@@ -21,6 +21,7 @@ type Props = {
   startLine: number,
   endLine: number,
   onClick: (event: SyntheticMouseEvent) => mixed,
+  onLineClick: (event: SyntheticMouseEvent, line: number) => mixed,
 };
 
 export default class FilePreview extends React.Component {
@@ -53,7 +54,10 @@ export default class FilePreview extends React.Component {
     const lineNumbers = [];
     for (let i = this.props.startLine; i <= this.props.endLine; i++) {
       lineNumbers.push(
-        <div key={i} className="nuclide-find-references-line-number">
+        <div
+          key={i}
+          className="nuclide-find-references-line-number"
+          onClick={evt => this.props.onLineClick(evt, i - 1)}>
           {i}
         </div>,
       );
