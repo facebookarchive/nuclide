@@ -67,36 +67,28 @@ export default class FileReferencesView extends React.Component {
 
   render(): React.Element<any> {
     const groups = this.props.refGroups.map((group: ReferenceGroup, i) => {
-      const previewText = this.props.previewText[i];
-      const ranges = group.references.map((ref, j) => {
-        let range = ref.start.line;
-        if (ref.end.line !== ref.start.line) {
-          range += '-' + ref.end.line;
-        } else {
-          range += ', column ' + ref.start.column;
-        }
-        let caller;
-        if (ref.name) {
-          caller = <span>{' '}in <code>{ref.name}</code></span>;
-        }
-        return (
-          <div
-            key={j}
-            className="nuclide-find-references-ref-name"
-            onClick={evt => this._onRefClick(evt, ref)}>
-            Line {range} {caller}
-          </div>
-        );
-      });
+      const firstRef = group.references[0];
+      const lastRef = group.references[group.references.length - 1];
+
+      let caller;
+      if (firstRef.name && firstRef.name === lastRef.name) {
+        caller = <span> in <code>{firstRef.name}</code></span>;
+      }
 
       return (
         <li key={group.startLine} className="nuclide-find-references-ref">
-          {ranges}
+          <div
+            className="nuclide-find-references-ref-name"
+            onClick={evt => this._onRefClick(evt, firstRef)}>
+            {'Line '}
+            {firstRef.start.line}:{firstRef.start.column} - {lastRef.end.line}:{lastRef.end.column}
+            {caller}
+          </div>
           <FilePreview
             grammar={this.props.grammar}
-            text={previewText}
+            text={this.props.previewText[i]}
             {...group}
-            onClick={evt => this._onRefClick(evt, group.references[0])}
+            onClick={evt => this._onRefClick(evt, firstRef)}
             onLineClick={this._onFileNameClick}
           />
         </li>
