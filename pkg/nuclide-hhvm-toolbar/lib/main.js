@@ -15,7 +15,9 @@ import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {OutputService} from '../../nuclide-console/lib/types';
 
-import {CompositeDisposable, Disposable} from 'atom';
+import PanelRenderer from '../../commons-atom/PanelRenderer';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {Disposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 import invariant from 'assert';
 import HhvmIcon from './ui/HhvmIcon';
@@ -25,23 +27,31 @@ import ProjectStore from './ProjectStore';
 
 class Activation {
 
-  _disposables: atom$CompositeDisposable;
-  _item: ?HTMLElement;
-  _panel: Object;
+  _disposables: UniversalDisposable;
   _projectStore: ProjectStore;
   _state: Object;
   _buildSystem: ?HhvmBuildSystem;
   _cwdApi: ?CwdApi;
+  _panelRenderer: PanelRenderer;
 
   constructor(state: ?Object) {
     this._state = {
       panelVisible: state != null && state.panelVisible != null ? state.panelVisible : true,
     };
-
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._projectStore = new ProjectStore();
     this._addCommands();
-    this._createToolbar();
+    this._disposables.add(
+      this._panelRenderer = new PanelRenderer({
+        location: 'top',
+        createItem: this._createPanelItem.bind(this),
+        // Increase priority (default is 100) to ensure this toolbar comes after the 'tool-bar'
+        // package's toolbar. Hierarchically the controlling toolbar should be above, and
+        // practically this ensures the popover in this build toolbar stacks on top of other UI.
+        priority: 200,
+      }),
+    );
+    this._renderToolbar();
   }
 
   setCwdApi(cwdApi: ?CwdApi) {
@@ -59,6 +69,10 @@ class Activation {
         () => { this.togglePanel(); },
       ),
     );
+  }
+
+  _renderToolbar(): void {
+    this._panelRenderer.render({visible: this._state.panelVisible});
   }
 
   consumeToolBar(getToolBar: GetToolBar): IDisposable {
@@ -118,38 +132,24 @@ class Activation {
     };
   }
 
-  _createToolbar() {
-    const item = document.createElement('div');
-    ReactDOM.render(<NuclideToolbar projectStore={this._projectStore} />, item);
-    const panel = atom.workspace.addTopPanel({
-      item,
-      // Increase priority (default is 100) to ensure this toolbar comes after the 'tool-bar'
-      // package's toolbar. Hierarchically the controlling toolbar should be above, and practically
-      // this ensures the popover in this build toolbar stacks on top of other UI.
-      priority: 200,
-    });
-    this._disposables.add(new Disposable(() => {
-      ReactDOM.unmountComponentAtNode(item);
-      panel.destroy();
-    }));
-    this._panel = panel;
-    this._updatePanelVisibility();
-  }
-
-  /**
-   * Show or hide the panel, if necessary, to match the current state.
-   */
-  _updatePanelVisibility(): void {
-    if (!this._panel) {
-      return;
-    }
-    if (this._state.panelVisible !== this._panel.visible) {
-      if (this._state.panelVisible) {
-        this._panel.show();
-      } else {
-        this._panel.hide();
-      }
-    }
+  _createPanelItem() {
+    const disposables = new UniversalDisposable();
+    let element;
+    return {
+      getElement: () => {
+        if (element == null) {
+          element = document.createElement('div');
+          ReactDOM.render(<NuclideToolbar projectStore={this._projectStore} />, element);
+          disposables.add(() => {
+            ReactDOM.unmountComponentAtNode(element);
+          });
+        }
+        return element;
+      },
+      destroy() {
+        disposables.dispose();
+      },
+    };
   }
 
   serialize(): Object {
@@ -165,7 +165,7 @@ class Activation {
 
   togglePanel(): void {
     this._state.panelVisible = !this._state.panelVisible;
-    this._updatePanelVisibility();
+    this._renderToolbar();
   }
 }
 
