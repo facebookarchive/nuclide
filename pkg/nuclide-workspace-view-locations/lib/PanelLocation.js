@@ -13,6 +13,7 @@ import type {PanelLocationId, SerializedPanelLocation} from './types';
 import type {Viewable} from '../../nuclide-workspace-views/lib/types';
 
 import createPaneContainer from '../../commons-atom/create-pane-container';
+import PanelRenderer from '../../commons-atom/PanelRenderer';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -20,8 +21,7 @@ import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import * as PanelLocationIds from './PanelLocationIds';
 import {Panel} from './ui/Panel';
-import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+import nullthrows from 'nullthrows';
 import {React} from 'react-for-atom';
 import {Observable} from 'rxjs';
 
@@ -35,17 +35,21 @@ type State = {
 export class PanelLocation extends SimpleModel<State> {
   _addPanel: any;
   _disposables: IDisposable;
-  _locationId: PanelLocationId;
-  _panel: ?atom$Panel;
   _paneContainer: atom$PaneContainer;
+  _panelRenderer: PanelRenderer;
+  _position: 'top' | 'right' | 'bottom' | 'left';
   _size: ?number;
 
   constructor(locationId: PanelLocationId, serializedState: Object = {}) {
     super();
     (this: any)._handlePanelResize = this._handlePanelResize.bind(this);
-    this._locationId = locationId;
     const serializedData = serializedState.data || {};
     this._paneContainer = deserializePaneContainer(serializedData.paneContainer);
+    this._position = nullthrows(locationsToPosition.get(locationId));
+    this._panelRenderer = new PanelRenderer({
+      location: this._position,
+      createItem: this._createItem.bind(this),
+    });
     this._size = serializedData.size || null;
     this.state = {
       visible: serializedData.visible === true,
@@ -58,7 +62,8 @@ export class PanelLocation extends SimpleModel<State> {
   initialize(): void {
     const paneContainer = this._paneContainer;
 
-    this._disposables = new CompositeDisposable(
+    this._disposables = new UniversalDisposable(
+      this._panelRenderer,
 
       // Add a tab bar to any panes created in the container.
       paneContainer.observePanes(pane => {
@@ -75,15 +80,13 @@ export class PanelLocation extends SimpleModel<State> {
 
       // Render whenever the state changes. Note that state is shared between this instance and the
       // pane container, so we have to watch it as well.
-      new UniversalDisposable(
-        Observable.merge(
-          observableFromSubscribeFunction(paneContainer.onDidAddPaneItem.bind(paneContainer)),
-          observableFromSubscribeFunction(paneContainer.onDidDestroyPaneItem.bind(paneContainer)),
-          // $FlowIssue: We need to teach flow about Symbol.observable.
-          Observable.from(this).map(state => state.visible).distinctUntilChanged(),
-        )
-          .subscribe(() => { this._render(); }),
-      ),
+      Observable.merge(
+        observableFromSubscribeFunction(paneContainer.onDidAddPaneItem.bind(paneContainer)),
+        observableFromSubscribeFunction(paneContainer.onDidDestroyPaneItem.bind(paneContainer)),
+        // $FlowIssue: We need to teach flow about Symbol.observable.
+        Observable.from(this).map(state => state.visible).distinctUntilChanged(),
+      )
+        .subscribe(() => { this._render(); }),
 
     );
   }
@@ -92,19 +95,10 @@ export class PanelLocation extends SimpleModel<State> {
     // Only show the panel if it's supposed to be visible *and* there are items to show in it
     // (even if `core.destroyEmptyPanes` is `false`).
     const shouldBeVisible = this.state.visible && this._paneContainer.getPaneItems().length > 0;
-    if (shouldBeVisible) {
-      // Lazily create the panel the first time we want to show it.
-      this._createPanel();
-      invariant(this._panel != null);
-      this._panel.show();
-    } else if (this._panel != null) {
-      this._panel.hide();
-    }
+    this._panelRenderer.render({visible: shouldBeVisible});
   }
 
-  _createPanel(): void {
-    if (this._panel != null) { return; }
-
+  _createItem(): Object {
     // Create an item to display in the panel. Atom will associate this item with a view via the
     // view registry (and its `getElement` method). That view will be used to display views for this
     // panel.
@@ -112,17 +106,12 @@ export class PanelLocation extends SimpleModel<State> {
     const props = Observable.from(this).map(state => ({
       initialSize: this._size,
       item: this._paneContainer,
-      position: locationsToPosition.get(this._locationId),
+      position: this._position,
       onResize: this._handlePanelResize,
     }));
     const Component = bindObservableAsProps(props, Panel);
     // $FlowFixMe: Flow doesn't understand bindObservableAsProps
-    const item = {getElement: () => renderReactRoot(<Component />)};
-
-    // Create the panel and add the item to it.
-    const addPanel = locationsToAddPanelFunctions.get(this._locationId);
-    invariant(addPanel != null);
-    this._panel = addPanel({item, visible: true});
+    return {getElement: () => renderReactRoot(<Component />)};
   }
 
   _handlePanelResize(size: number): void {
@@ -145,10 +134,6 @@ export class PanelLocation extends SimpleModel<State> {
   destroy(): void {
     this._disposables.dispose();
     this._paneContainer.destroy();
-
-    if (this._panel != null) {
-      this._panel.destroy();
-    }
   }
 
   destroyItem(item: Object): void {
@@ -223,13 +208,6 @@ function deserializePaneContainer(serialized: ?Object): atom$PaneContainer {
   }
   return paneContainer;
 }
-
-const locationsToAddPanelFunctions = new Map([
-  [PanelLocationIds.TOP_PANEL, atom.workspace.addTopPanel.bind(atom.workspace)],
-  [PanelLocationIds.RIGHT_PANEL, atom.workspace.addRightPanel.bind(atom.workspace)],
-  [PanelLocationIds.BOTTOM_PANEL, atom.workspace.addBottomPanel.bind(atom.workspace)],
-  [PanelLocationIds.LEFT_PANEL, atom.workspace.addLeftPanel.bind(atom.workspace)],
-]);
 
 const locationsToPosition = new Map([
   [PanelLocationIds.TOP_PANEL, 'top'],
