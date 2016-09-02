@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {openFile} from './CommandClient';
+import {openFile, addProject} from './CommandClient';
 import fsPromise from '../../commons-node/fsPromise';
 import {
   CurrentDateFileAppender,
@@ -99,9 +99,13 @@ async function main(argv): Promise<number> {
   for (const arg of argv._) {
     const {filePath, line, column} = parseLocationParameter(arg);
     let realpath;
+    let isDirectory;
     try {
       // eslint-disable-next-line babel/no-await-in-loop
       realpath = await fsPromise.realpath(filePath);
+      // eslint-disable-next-line babel/no-await-in-loop
+      const stats = await fsPromise.stat(filePath);
+      isDirectory = stats.isDirectory();
     } catch (e) {
       process.stderr.write(`Error: Cannot find file: ${filePath}\n`);
       process.stderr.write(e.stack);
@@ -110,13 +114,19 @@ async function main(argv): Promise<number> {
     }
 
     try {
-      const result = openFile(realpath, line, column);
-      if (argv.wait) {
+      if (isDirectory) {
+        // file/line/wait are ignored on directories
         // eslint-disable-next-line babel/no-await-in-loop
-        await result.toPromise();
+        await addProject(realpath);
       } else {
-        // eslint-disable-next-line babel/no-await-in-loop
-        await result.take(1).toPromise();
+        const result = openFile(realpath, line, column);
+        if (argv.wait) {
+          // eslint-disable-next-line babel/no-await-in-loop
+          await result.toPromise();
+        } else {
+          // eslint-disable-next-line babel/no-await-in-loop
+          await result.take(1).toPromise();
+        }
       }
     } catch (e) {
       process.stderr.write('Error: Unable to connect to Nuclide server process.\n');

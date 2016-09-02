@@ -11,6 +11,7 @@
 
 import typeof * as CommandService from '../lib/CommandService';
 import type {AtomCommands, AtomFileEvent} from '../lib/rpc-types';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {Observable} from 'rxjs';
 import {getServer} from '../shared/ConfigDirectory';
@@ -56,7 +57,7 @@ async function getCommands(): Promise<AtomCommands> {
 // Connects to the local NuclideServer process, opens the file in the connected
 // Atom process.
 export function openFile(
-  filePath: string,
+  filePath: NuclideUri,
   line: number,
   column: number,
 ): Observable<AtomFileEvent> {
@@ -64,4 +65,9 @@ export function openFile(
     .flatMap(commands => {
       return commands.openFile(filePath, line, column).refCount();
     });
+}
+
+export async function addProject(projectPath: NuclideUri): Promise<void> {
+  const commands: AtomCommands = await getCommands();
+  await commands.addProject(projectPath);
 }
