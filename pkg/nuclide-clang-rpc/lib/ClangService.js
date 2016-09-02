@@ -14,8 +14,9 @@ import typeof * as ClangProcessService from './ClangProcessService';
 import type {
   ClangCompileResult,
   ClangCompletion,
-  ClangDeclaration,
   ClangCursor,
+  ClangDeclaration,
+  ClangLocalReferences,
   ClangOutlineTree,
 } from './rpc-types';
 import type {ConnectableObservable} from 'rxjs';
@@ -189,6 +190,19 @@ export async function getOutline(
   const service = await getClangService(src, contents, defaultFlags, true);
   if (service != null) {
     return service.get_outline(contents);
+  }
+}
+
+export async function getLocalReferences(
+  src: NuclideUri,
+  contents: string,
+  line: number,
+  column: number,
+  defaultFlags: ?Array<string>,
+): Promise<?ClangLocalReferences> {
+  const service = await getClangService(src, contents, defaultFlags, true);
+  if (service != null) {
+    return service.get_local_references(contents, line, column);
   }
 }
 

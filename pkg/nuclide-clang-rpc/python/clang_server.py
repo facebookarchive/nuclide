@@ -16,6 +16,7 @@ from declarationlocation import get_declaration_location_and_spelling
 from utils import is_header_file, resolve_file, range_dict, location_dict
 import codecomplete
 import outline
+import references
 
 import argparse
 import json
@@ -185,6 +186,8 @@ class Server:
                 result = self.get_declaration_info(args)
             elif method == 'get_outline':
                 result = self.get_outline(args)
+            elif method == 'get_local_references':
+                result = self.get_local_references(args)
             else:
                 error = 'Unknown method to clang_server.py: %s.' % method
         except:
@@ -351,6 +354,16 @@ class Server:
         if not translation_unit:
             return None
         return outline.get_outline(self.custom_clang_lib, translation_unit, contents)
+
+    def get_local_references(self, request):
+        contents = request['contents']
+        line = request['line']
+        column = request['column']
+        translation_unit = self._update_translation_unit(contents)
+        if not translation_unit:
+            return None
+        return references.local_references(
+            self.custom_clang_lib, translation_unit, self.src, line + 1, column + 1)
 
     def _get_translation_unit(self, unsaved_contents):
         '''

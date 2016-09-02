@@ -8,7 +8,6 @@
  * @flow
  */
 
-
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 // NOTE that the definitions in this file are shared between
@@ -90,7 +89,7 @@ export type ClangDeclaration = {
 export type ClangCursor = {
   name: string,
   type: ClangCursorType,
-  cursor_usr: ?string,
+  cursor_usr: string,
   file: ?NuclideUri,
 };
 
@@ -107,4 +106,10 @@ export type ClangOutlineTree = {
   tparams?: Array<string>,
   // Will be non-null for class-like containers only.
   children?: Array<ClangOutlineTree>,
+};
+
+export type ClangLocalReferences = {
+  cursor_name: string,
+  cursor_kind: string,
+  references: Array<ClangCursorExtent>,
 };

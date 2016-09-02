@@ -12,13 +12,13 @@
 import type {
   ClangCompileResult,
   ClangCompletion,
-  ClangDeclaration,
   ClangCursor,
+  ClangDeclaration,
+  ClangLocalReferences,
   ClangOutlineTree,
 } from './rpc-types';
 
 // This file contains RPC definitions for clang_server.py.
-
 
 export function compile(contents: string): Promise<ClangCompileResult> {
   throw new Error('Rpc Stub');
@@ -52,5 +52,13 @@ export function get_declaration_info(
 
 export function get_outline(contents: string)
     : Promise<?Array<ClangOutlineTree>> {
+  throw new Error('Rpc Stub');
+}
+
+export function get_local_references(
+  contents: string,
+  line: number,
+  column: number,
+): Promise<?ClangLocalReferences> {
   throw new Error('Rpc Stub');
 }
