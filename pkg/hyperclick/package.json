@@ -77,7 +77,7 @@
         "title": "Trigger keys for Linux",
         "description": "Linux: Combination of keys to activate Hyperclick while hovering for text",
         "type": "string",
-        "default": "metaKey",
+        "default": "ctrlKey",
         "enum": [
           {
             "value": "shiftKey",
@@ -141,7 +141,7 @@
         "title": "Trigger keys for Windows",
         "description": "Windows: Combination of keys to activate Hyperclick while hovering for text",
         "type": "string",
-        "default": "altKey",
+        "default": "ctrlKey",
         "enum": [
           {
             "value": "shiftKey",
