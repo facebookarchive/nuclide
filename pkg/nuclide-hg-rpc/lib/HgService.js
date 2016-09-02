@@ -875,6 +875,7 @@ export class HgService {
     ];
     const execOptions = {
       cwd: this._workingDirectory,
+      env: {...process.env, HGEDITOR: ''},
     };
     try {
       const {stdout} = await this._hgAsyncExecute(args, execOptions);
