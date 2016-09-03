@@ -64,11 +64,6 @@ export type HgDiffState = {
   committedContents: string,
 };
 
-export type LineRangesWithOffsets = {
-  regions: Array<{bufferRows: number, screenRows: number}>,
-  screenLines: Array<any>,
-};
-
 export type HighlightedLines = {
   added: Array<number>,
   removed: Array<number>,
