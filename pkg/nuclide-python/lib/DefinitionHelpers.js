@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {DefinitionQueryResult} from '../../nuclide-definition-service';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {Definition, DefinitionQueryResult} from '../../nuclide-definition-service';
 import typeof * as PythonService from '../../nuclide-python-rpc';
 
 import invariant from 'assert';
@@ -77,4 +78,12 @@ export default class DefinitionHelpers {
     };
   }
 
+  @trackTiming('python.get-definition-by-id')
+  static async getDefinitionById(
+    filePath: NuclideUri,
+    id: string,
+  ): Promise<?Definition> {
+    // TODO:
+    return null;
+  }
 }

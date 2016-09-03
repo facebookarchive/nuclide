@@ -51,6 +51,8 @@ export type DefinitionProvider = {
   priority: number,
   grammarScopes: Array<string>,
   getDefinition: (editor: TextEditor, position: atom$Point) => Promise<?DefinitionQueryResult>,
+  // filename is any file/path in the project containing id.
+  getDefinitionById: (filename: NuclideUri, id: string) => Promise<?Definition>,
 };
 
 export type DefinitionService = {

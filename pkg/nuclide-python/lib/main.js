@@ -64,6 +64,9 @@ export function provideDefinitions(): DefinitionProvider {
     getDefinition(editor, position) {
       return DefinitionHelpers.getDefinition(editor, position);
     },
+    getDefinitionById(filePath, id) {
+      return DefinitionHelpers.getDefinitionById(filePath, id);
+    },
   };
 }
 

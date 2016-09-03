@@ -18,6 +18,7 @@ import type {
 import type {
   HackDiagnostic,
   HackReference,
+  HackIdeOutlineItem,
   HackIdeOutline,
   HackDefinition,
 } from '../../nuclide-hack-rpc/lib/HackService';
@@ -176,6 +177,14 @@ export class HackLanguage {
     }
     return definitions.filter(definition => definition.definition_pos != null)
       .map(convertDefinition);
+  }
+
+  async getDefinitionById(id: string): Promise<?HackIdeOutlineItem> {
+    const rootPath = this._basePath;
+    if (rootPath == null) {
+      return null;
+    }
+    return await this._hackService.getDefinitionById(rootPath, id);
   }
 
   async getType(

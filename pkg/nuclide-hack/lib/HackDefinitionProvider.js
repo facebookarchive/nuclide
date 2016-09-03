@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {DefinitionQueryResult} from '../../nuclide-definition-service';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {Definition, DefinitionQueryResult} from '../../nuclide-definition-service';
 
 import {getHackLanguageForUri} from './HackLanguage';
 import {HACK_GRAMMARS_SET, HACK_GRAMMARS} from '../../nuclide-hack-common';
@@ -65,6 +66,28 @@ export class HackDefinitionProvider {
     return {
       queryRange: definitions[0].queryRange,
       definitions: definitions.map(convertDefinition),
+    };
+  }
+
+  @trackTiming('hack.get-definition-by-id')
+  async getDefinitionById(filePath: NuclideUri, id: string): Promise<?Definition> {
+    const hackLanguage = await getHackLanguageForUri(filePath);
+    if (hackLanguage == null) {
+      return null;
+    }
+
+    const definition = await hackLanguage.getDefinitionById(filePath, id);
+    if (definition == null) {
+      return null;
+    }
+
+    return {
+      path: definition.position.filename,
+      position: new Point(definition.position.line - 1, definition.position.char_start - 1),
+      id: definition.id,
+      name: definition.name,
+      language: 'php',
+      // TODO: range, project root
     };
   }
 }
