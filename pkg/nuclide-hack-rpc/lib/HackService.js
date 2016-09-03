@@ -92,6 +92,7 @@ export type HackIdeOutlineItem = {
     | 'enum' | 'typeconst' | 'param' | 'trait' | 'interface',
   name: string,
   position: HackRange,
+  id?: string,
   span: HackSpan,
   modifiers: ?Array<string>,
   children?: Array<HackIdeOutlineItem>,
@@ -228,6 +229,20 @@ export async function getDefinition(
     fixupDefinition(result);
     return [result];
   }
+}
+
+export async function getDefinitionById(
+  file: NuclideUri,
+  id: string,
+): Promise<?HackIdeOutlineItem> {
+  const result: any = await callHHClient(
+    /* args */ ['--get-definition-by-id', id],
+    /* errorStream */ false,
+    /* outputJson */ true,
+    /* processInput */ null,
+    /* cwd */ file,
+  );
+  return result;
 }
 
 export async function findReferences(
