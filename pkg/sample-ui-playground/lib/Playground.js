@@ -23,6 +23,7 @@ import {TextInputExamples} from '../../nuclide-ui/lib/TextInputs.example';
 import {ToolbarExamples} from '../../nuclide-ui/lib/Toolbar.example';
 import {DiagnosticsExamples} from '../../nuclide-ui/lib/Diagnostics.example';
 import {BadgeExamples} from '../../nuclide-ui/lib/Badge.example';
+import {HighlightExamples} from '../../nuclide-ui/lib/Highlight.example';
 import {IconExamples} from '../../nuclide-ui/lib/Icon.example';
 import {TreeExamples} from '../../nuclide-ui/lib/Tree.example';
 import {ListviewExamples} from '../../nuclide-ui/lib/ListView.example';
@@ -38,6 +39,7 @@ const playgroundComponents = [
   ToolbarExamples,
   DiagnosticsExamples,
   BadgeExamples,
+  HighlightExamples,
   IconExamples,
   TreeExamples,
   ListviewExamples,
