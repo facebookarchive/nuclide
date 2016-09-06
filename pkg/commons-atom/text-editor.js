@@ -35,6 +35,22 @@ export function existingEditorForUri(path: NuclideUri): ?atom$TextEditor {
   return null;
 }
 
+/**
+ * Returns a text editor that has the given buffer open, or null if none exists. If there are
+ * multiple text editors for this buffer, one is chosen arbitrarily.
+ */
+export function existingEditorForBuffer(buffer: atom$TextBuffer): ?atom$TextEditor {
+  // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
+  // real problem. And if you have more than a few hundred you probably have bigger problems.
+  for (const editor of atom.workspace.getTextEditors()) {
+    if (editor.getBuffer() === buffer) {
+      return editor;
+    }
+  }
+
+  return null;
+}
+
 export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer> {
   let buffer = existingBufferForUri(uri);
   if (buffer == null) {

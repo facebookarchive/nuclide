@@ -18,7 +18,7 @@ import {React} from 'react-for-atom';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
-import {existingEditorForUri} from '../../commons-atom/text-editor';
+import {existingEditorForBuffer} from '../../commons-atom/text-editor';
 import {track} from '../../nuclide-analytics';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
@@ -120,7 +120,7 @@ export class DefinitionPreviewView extends React.Component {
     if (this.state.oldBuffer != null) {
       // Only destroy oldBuffer if it's not already open in a tab - otherwise it'll
       // close the tab using oldBuffer
-      if (existingEditorForUri(this.state.oldBuffer.getPath()) == null) {
+      if (existingEditorForBuffer(this.state.oldBuffer) == null) {
         invariant(this.state.oldBuffer != null);
         this.state.oldBuffer.destroy();
       }

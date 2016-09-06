@@ -36,7 +36,7 @@ const RESYNC_TIMEOUT_MS = 2000;
 // a buffer is destroyed, the outstanding close messages are kept with the
 // per-connection info in NotifiersByConnection.
 export class BufferSubscription {
-  _oldPath: NuclideUri;
+  _oldPath: ?NuclideUri;
   _notifiers: NotifiersByConnection;
   _buffer: atom$TextBuffer;
   _notifier: ?Promise<FileNotifier>;
@@ -173,7 +173,9 @@ export class BufferSubscription {
 
   sendClose() {
     // Use different retry policy for close messages.
-    this._notifiers.sendClose(this._oldPath, this._buffer.changeCount);
+    if (this._oldPath != null) {
+      this._notifiers.sendClose(this._oldPath, this._buffer.changeCount);
+    }
   }
 
   dispose() {

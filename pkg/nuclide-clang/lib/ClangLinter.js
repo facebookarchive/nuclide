@@ -15,6 +15,7 @@ import type {
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
+import invariant from 'assert';
 import {track, trackTiming} from '../../nuclide-analytics';
 import featureConfig from '../../commons-atom/featureConfig';
 import {wordAtPosition} from '../../commons-atom/range';
@@ -72,7 +73,7 @@ export default class ClangLinter {
   @trackTiming('nuclide-clang-atom.fetch-diagnostics')
   static async lint(textEditor: atom$TextEditor): Promise<Array<LinterMessage>> {
     const filePath = textEditor.getPath();
-    if (!filePath) {
+    if (filePath == null) {
       return [];
     }
 
@@ -101,6 +102,8 @@ export default class ClangLinter {
   ): Array<LinterMessage> {
     const result = [];
     const buffer = editor.getBuffer();
+    const bufferPath = buffer.getPath();
+    invariant(bufferPath != null);
     if (data.accurateFlags || featureConfig.get('nuclide-clang.defaultDiagnostics')) {
       data.diagnostics.forEach(diagnostic => {
         // We show only warnings, errors and fatals (2, 3 and 4, respectively).
@@ -116,7 +119,7 @@ export default class ClangLinter {
           range = atomRangeFromLocation(editor, diagnostic.location);
         }
 
-        const filePath = diagnostic.location.file || buffer.getPath();
+        const filePath = diagnostic.location.file || bufferPath;
 
         let trace;
         if (diagnostic.children != null) {
@@ -124,7 +127,7 @@ export default class ClangLinter {
             return {
               type: 'Trace',
               text: child.spelling,
-              filePath: child.location.file || buffer.getPath(),
+              filePath: child.location.file || bufferPath,
               range: atomRangeFromLocation(editor, child.location),
             };
           });
@@ -158,7 +161,7 @@ export default class ClangLinter {
         scope: 'file',
         providerName: 'Clang',
         type: 'Warning',
-        filePath: buffer.getPath(),
+        filePath: bufferPath,
         text: DEFAULT_FLAGS_WARNING,
         range: buffer.rangeForRow(0),
       });

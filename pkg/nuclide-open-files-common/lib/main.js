@@ -25,9 +25,10 @@ export function convertRange(range: atom$Range): AtomRange {
 }
 
 export function getFileVersionOfBuffer(buffer: atom$TextBuffer): FileVersion {
-  invariant(buffer.getPath() !== '');
+  const filePath = buffer.getPath();
+  invariant(filePath !== '' && filePath != null);
   return {
-    filePath: buffer.getPath(),
+    filePath,
     version: buffer.changeCount,
   };
 }

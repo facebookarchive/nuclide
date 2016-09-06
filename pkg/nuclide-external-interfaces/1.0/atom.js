@@ -1337,7 +1337,7 @@ declare class atom$TextBuffer {
 
   // File Details
   setPath(filePath: string): void,
-  getPath(): string,
+  getPath(): ?string,
   setEncoding(encoding: string): void,
   getEncoding(): string,
   getUri(): string,
