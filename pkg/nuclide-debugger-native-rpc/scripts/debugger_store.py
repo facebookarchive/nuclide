@@ -52,7 +52,7 @@ class DebuggerStore:
             log_debug('executable_file_path: %s' % executable_file_path)
             executable_file_path = os.path.realpath(
                 os.path.normpath(os.path.expanduser(executable_file_path)))
-            BUCK_OUTPUT_IDENTIFY_REGEX = '/buck-out/gen/'
+            BUCK_OUTPUT_IDENTIFY_REGEX = '/buck-out/'
             search_result = re.search(BUCK_OUTPUT_IDENTIFY_REGEX, executable_file_path)
             if search_result:
                 basepath = executable_file_path[:search_result.start()]
