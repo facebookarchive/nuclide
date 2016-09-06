@@ -64,6 +64,13 @@ function isRemote(uri: NuclideUri): boolean {
   return uri.startsWith(REMOTE_PATH_URI_PREFIX);
 }
 
+// When restoring Atom state on load, Atom mangles our remote URIs by
+// removing one of the '/'s. These TextBuffers/TextEditors live for a short time
+// and are destroyed during Nuclide startup.
+function isBrokenDeserializedUri(uri: ?NuclideUri): boolean {
+  return uri != null && uri.match(/nuclide:\/[^/]/) != null;
+}
+
 function isLocal(uri: NuclideUri): boolean {
   return !isRemote(uri);
 }
@@ -602,6 +609,7 @@ export default {
   extname,
   stripExtension,
   isRemote,
+  isBrokenDeserializedUri,
   isLocal,
   createRemoteUri,
   parse,

@@ -190,6 +190,40 @@ describe('nuclide-open-files', () => {
         ]);
       });
     });
+
+    it('broken deserialized URIs dont create events', () => {
+      runs(() => {
+        const brokenBuffer = new TextBuffer({filePath: 'nuclide:/f1', text: 'contents1'});
+        atom.project.addBuffer(brokenBuffer);
+
+        // close
+        brokenBuffer.destroy();
+
+        // simulates an open
+        const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
+        atom.project.addBuffer(buffer);
+
+        // close
+        buffer.destroy();
+      });
+      waitsFor(() => eventCount >= 2);
+
+      waitsForPromise(async () => {
+        expect(await finishEvents()).toEqual([
+          {
+            kind: 'open',
+            filePath: 'f1',
+            changeCount: 1,
+            contents: 'contents1',
+          },
+          {
+            kind: 'close',
+            filePath: 'f1',
+            changeCount: 1,
+          },
+        ]);
+      });
+    });
   });
 
 

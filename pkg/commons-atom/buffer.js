@@ -9,7 +9,15 @@
  * the root directory of this source tree.
  */
 
+import nuclideUri from '../commons-node/nuclideUri';
+
 export function observeBuffers(observeBuffer: (buffer: atom$TextBuffer) => mixed): IDisposable {
-  atom.project.getBuffers().forEach(observeBuffer);
-  return atom.project.onDidAddBuffer(observeBuffer);
+  atom.project.getBuffers()
+    .filter(buffer => !nuclideUri.isBrokenDeserializedUri(buffer.getPath()))
+    .forEach(observeBuffer);
+  return atom.project.onDidAddBuffer(buffer => {
+    if (!nuclideUri.isBrokenDeserializedUri(buffer.getPath())) {
+      observeBuffer(buffer);
+    }
+  });
 }
