@@ -64,7 +64,7 @@ function renderBoolean(evaluationResult: EvaluationResult): ?React.Element<any> 
   const {type, value} = evaluationResult;
   return (
     type === 'boolean'
-      ? <span className={ValueComponentClassNames.boolean}>{value}</span>
+      ? <span className={ValueComponentClassNames.boolean}>{String(value)}</span>
       : null
   );
 }
