@@ -49,6 +49,7 @@ type Props = {
   options: Array<Option>,
   onChange?: (value: any) => mixed,
   size?: ShortButtonSize,
+  tooltip?: atom$TooltipsAddOptions
 };
 
 export class Dropdown extends React.Component {
@@ -93,6 +94,7 @@ export class Dropdown extends React.Component {
 
     return (
       <ButtonComponent
+        tooltip={this.props.tooltip}
         size={this._getButtonSize(this.props.size)}
         className={className}
         disabled={this.props.disabled === true}

@@ -12,6 +12,7 @@
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {maybeToString} from '../../commons-node/string';
+import addTooltip from './add-tooltip';
 
 export type ButtonType = 'PRIMARY' | 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
 export type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
@@ -30,6 +31,7 @@ type Props = {
   children?: mixed,
   /** Allows specifying an element other than `button` to be used as the wrapper node. */
   wrapperElement?: ButtonNodeName,
+  tooltip?: atom$TooltipsAddOptions
 };
 
 export const ButtonSizes = Object.freeze({
@@ -72,10 +74,12 @@ export const Button = (props: Props) => {
     children,
     className,
     wrapperElement,
+    tooltip,
     ...remainingProps,
   } = props;
   const sizeClassname = size == null ? '' : ButtonSizeClassnames[size] || '';
   const buttonTypeClassname = buttonType == null ? '' : ButtonTypeClassnames[buttonType] || '';
+  const ref = tooltip ? addTooltip(tooltip) : null;
   const newClassName = classnames(
     className,
     'btn',
@@ -88,7 +92,7 @@ export const Button = (props: Props) => {
   );
   const Wrapper = wrapperElement == null ? 'button' : wrapperElement;
   return (
-    <Wrapper className={newClassName} {...remainingProps}>
+    <Wrapper className={newClassName} ref={ref} {...remainingProps}>
       {children}
     </Wrapper>
   );
