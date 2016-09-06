@@ -18,6 +18,10 @@
             {
               "label": "Reveal Active File in File Tree",
               "command": "nuclide-file-tree:reveal-active-file"
+            },
+            {
+              "label": "Collapse File Tree",
+              "command": "nuclide-file-tree:recursive-collapse-all"
             }
           ]
         }

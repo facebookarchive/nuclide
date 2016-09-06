@@ -7,6 +7,9 @@
     "ctrl-\\": "nuclide-file-tree:toggle",
     "ctrl-|": "nuclide-file-tree:reveal-active-file"
   },
+  "atom-workspace": {
+    "ctrl-{": "nuclide-file-tree:recursive-collapse-all"
+  },
   ".nuclide-file-tree": {
     "right": "nuclide-file-tree:expand-directory",
     "ctrl-]": "nuclide-file-tree:expand-directory",
@@ -16,7 +19,6 @@
     "alt-right": "nuclide-file-tree:recursive-expand-directory",
     "alt-ctrl-[": "nuclide-file-tree:recursive-collapse-directory",
     "alt-left": "nuclide-file-tree:recursive-collapse-directory",
-    "ctrl-{": "nuclide-file-tree:recursive-collapse-all",
     "enter": "nuclide-file-tree:open-selected-entry",
     "delete": "nuclide-file-tree:remove",
     "backspace": "nuclide-file-tree:remove-letter",
