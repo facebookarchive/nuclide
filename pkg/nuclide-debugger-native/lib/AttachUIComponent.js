@@ -117,8 +117,9 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _updateList(): void {
-    const newSelectedTarget = this.state.selectedAttachTarget == null ? null :
-      this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
+    const newSelectedTarget = this.state.selectedAttachTarget == null
+      ? null
+      : this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
     this.setState({
       attachTargetInfos: this.props.store.getAttachTargetInfos(),
       selectedAttachTarget: newSelectedTarget,
@@ -212,9 +213,10 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     });
   }
 
-  _handleSelectTableRow(item: AttachTargetInfo, selectedIndex: number): void {
+  _handleSelectTableRow(item: {pid: number}, selectedIndex: number): void {
+    const attachTarget = this._getAttachTargetOfPid(item.pid);
     this.setState({
-      selectedAttachTarget: item,
+      selectedAttachTarget: attachTarget,
     });
   }
 
