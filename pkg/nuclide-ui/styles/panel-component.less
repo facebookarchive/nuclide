@@ -27,6 +27,18 @@
     flex-direction: row;
     height: inherit;
   }
+
+  &.top {
+    // Make sure this appears over atom-tabs, including the "selected tab"
+    // indicator of One Light/Dark
+    z-index: 4;
+  }
+
+  &.left,
+  &.right {
+    // Make sure that these appear over the top panel.
+    z-index: 5;
+  }
 }
 
 .nuclide-ui-panel-component-content {
