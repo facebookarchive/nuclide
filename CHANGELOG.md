@@ -1,5 +1,28 @@
 # Nuclide Changelog
 
+## v0.167.0
+
+### General
+
+* Fix incorrect remote file save / reload conflict warnings.
+
+### Languages
+
+* Objective-C: Support go-to-declaration for `#imports`.
+* C++: fix out-of-memory crashes with large compile_commands.json files
+* Fix default Hyperclick trigger keys for Linux/Windows to be the same as before.
+
+### Debugger
+
+* Fix breakpoint line numbers off by one.
+* Breakpoints can now be placed in files with no extension.
+* PHP scripts without file extensions are now able to be launched under the debugger from the HHVM toolbar.
+
+### Source Control
+
+* Add navigation buttons and keyboard shortcuts (`cmd-ctrl-]` & `cmd-ctrl-[`) to Diff View's toolbar.
+* Add 'Rebase Stacked Commits' option in Diff View's Amend Form.
+
 ## v0.166.0
 
 ### Highlights
