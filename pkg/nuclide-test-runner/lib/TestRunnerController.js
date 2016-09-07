@@ -204,9 +204,6 @@ export default class TestRunnerController {
       atom.views.getView(atom.workspace),
       'nuclide-debugger:continue-debugging',
     );
-    if (this._runTestsSubscription != null) {
-      this._runTestsSubscription.dispose();
-    }
     this._stopListening();
     // Respond in the UI immediately and assume the process is properly killed.
     this._setExecutionState(TestRunnerPanel.ExecutionState.STOPPED);

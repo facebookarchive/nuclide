@@ -114,7 +114,8 @@ function getUndefinedValue(): Runtime$RemoteObject {
 
 function convertArrayValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Runtime$RemoteObject {
   const remoteId = getAggregateRemoteObjectId(contextId, dbgpProperty);
-  let description = `Array[${dbgpProperty.$.numchildren || 0}]`;
+  const numchildren = String(dbgpProperty.$.numchildren != null ? dbgpProperty.$.numchildren : 0);
+  let description = `Array[${numchildren}]`;
   if (dbgpProperty.$.recursive != null) {
     description = '* Recursive *';
   }

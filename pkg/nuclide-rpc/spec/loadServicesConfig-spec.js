@@ -58,6 +58,7 @@ describe('loadServicesConfig()', () => {
     const servicesConfig = loadServicesConfig(configPath);
     const fooService = servicesConfig
       .find(service => service.name === 'FooService');
+    invariant(fooService != null);
     expect(fooService.definition).toBe(fooService.implementation);
   });
 
@@ -67,14 +68,17 @@ describe('loadServicesConfig()', () => {
 
     const fooService = servicesConfig
       .find(service => service.name === 'FooService');
+    invariant(fooService != null);
     expect(fooService.preserveFunctionNames).toBe(false);
 
     const barService = servicesConfig
       .find(service => service.name === 'BarService');
+    invariant(barService != null);
     expect(barService.preserveFunctionNames).toBe(false);
 
     const BazService = servicesConfig
       .find(service => service.name === 'BazService');
+    invariant(BazService != null);
     expect(BazService.preserveFunctionNames).toBe(true);
   });
 });

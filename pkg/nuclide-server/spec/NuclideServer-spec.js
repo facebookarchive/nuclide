@@ -84,6 +84,7 @@ describe('Nuclide Server test suite', () => {
         // Close the client socket and start a reconnect trial, send a message in between.
         // A server socket close will trigger a client disconnect and a scheduled reconnect.
         if (serverSocketClient != null && serverSocketClient.socket != null) {
+          // $FlowIgnore: This test has bitrotted
           serverSocketClient.socket.close();
           serverSocketClient.getTransport().send(message2);
           // The default WebSocket's close timeout is 30 seconds.

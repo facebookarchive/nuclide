@@ -11,7 +11,7 @@
 
 import type WS from 'ws';
 
-import {EventEmitter} from 'events';
+import EventEmitter from 'events';
 import {WebSocketTransport} from '../lib/WebSocketTransport';
 import {compress, decompress} from '../lib/compression';
 

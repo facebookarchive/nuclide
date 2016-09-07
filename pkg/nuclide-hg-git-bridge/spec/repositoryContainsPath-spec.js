@@ -27,7 +27,6 @@ describe('repositoryContainsPath', () => {
     // Create a temporary Hg repository.
     waitsForPromise(async () => {
       tempFolder = await generateFixture('hg-git-bridge', new Map([
-        // $FlowIssue t12774012
         ['repoRoot/file.txt', 'hello world'],
       ]));
       repoRoot = nuclideUri.join(tempFolder, 'repoRoot');

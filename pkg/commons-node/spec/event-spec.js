@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {EventEmitter} from 'events';
+import EventEmitter from 'events';
 import {attachEvent, observableFromSubscribeFunction} from '../event';
 
 describe('attachEvent', () => {

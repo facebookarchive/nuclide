@@ -23,7 +23,6 @@ describe('ArcanistDiagnosticsProvider', () => {
   beforeEach(() => {
     waitsForPromise(async () => {
       const folder = await generateFixture('arcanist_diagnostic_provider', new Map([
-        // $FlowIssue t12774012
         ['test', 'abc'],
       ]));
       tempFile = nuclideUri.join(folder, 'test');

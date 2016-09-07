@@ -31,7 +31,10 @@ export function createProcessStream(): Observable<string> {
       return event.data;
     })
     .reduce((acc, next) => acc + next, '')
-    .map(rawJson => JSON.parse(rawJson));
+    .map(rawJson => {
+      invariant(typeof rawJson === 'string');
+      return JSON.parse(rawJson);
+    });
 
   const udid$ = simctlOutput$
     .map(json => {
@@ -57,7 +60,7 @@ export function createProcessStream(): Observable<string> {
         })
         .filter(event => event.kind === 'stdout')
         .map(event => {
-          invariant(event.data != null);
+          invariant(typeof event.data === 'string');
           return event.data;
         })
     ));

@@ -286,6 +286,7 @@ function getSources(state: AppState): Array<Source> {
     }
   }
 
+  // $FlowFixMe(matthewwithanm)
   return Array.from(mapOfSources.values());
 }
 

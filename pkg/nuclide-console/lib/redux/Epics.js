@@ -90,6 +90,7 @@ export function registerRecordProviderEpic(
     // TODO: Can this be delayed until sometime after registration?
     const statusActions = recordProvider.observeStatus == null
       ? Observable.empty()
+      // $FlowFixMe(matthewwithanm)
       : observableFromSubscribeFunction(recordProvider.observeStatus)
         .map(status => Actions.updateStatus(recordProvider.id, status));
 

@@ -198,7 +198,7 @@ export default class NuclideSettingsPaneItem extends React.Component {
 }
 
 function getOrder(schema: atom$ConfigSchema): number {
-  return (schema.order ? schema.order : 0);
+  return typeof schema.order === 'number' ? schema.order : 0;
 }
 
 function getTitle(schema: atom$ConfigSchema, settingName: string): string {

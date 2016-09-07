@@ -31,7 +31,7 @@ import {
 import {
   ASYNC_BREAK,
 } from './Connection';
-import {EventEmitter} from 'events';
+import EventEmitter from 'events';
 import invariant from 'assert';
 import {ClientCallback} from './ClientCallback';
 import {attachEvent} from '../../commons-node/event';

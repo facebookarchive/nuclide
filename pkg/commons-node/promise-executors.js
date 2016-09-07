@@ -10,7 +10,7 @@
  */
 
 import Dequeue from 'dequeue';
-import {EventEmitter} from 'events';
+import EventEmitter from 'events';
 
 type Executor = (resolve: any, reject: any) => any;
 

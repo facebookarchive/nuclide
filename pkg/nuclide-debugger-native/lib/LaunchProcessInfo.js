@@ -41,7 +41,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
 
   async debug(): Promise<DebuggerInstance> {
     const rpcService = this._getRpcService();
-    if (this.basepath) {
+    if (typeof this.basepath === 'string') {
       this._launchTargetInfo.basepath = this.basepath;
     }
 

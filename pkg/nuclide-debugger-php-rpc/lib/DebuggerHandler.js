@@ -34,7 +34,7 @@ import {
 } from './ConnectionMultiplexer.js';
 
 import FileCache from './FileCache';
-import {EventEmitter} from 'events';
+import EventEmitter from 'events';
 import {CompositeDisposable} from 'event-kit';
 import type {Breakpoint} from './BreakpointStore';
 import type {ConnectionMultiplexer} from './ConnectionMultiplexer';

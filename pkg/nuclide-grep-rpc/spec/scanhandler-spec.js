@@ -52,7 +52,6 @@ describe('Scan Handler Tests', () => {
     waitsForPromise(async () => {
       // Setup the test folder.
       const folder = await generateFixture('grep-rpc', new Map([
-        // $FlowIssue t12774012
         ['file1.js', `var a = 4;
         console.log("Hello World!");
         console.log(a);

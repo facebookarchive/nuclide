@@ -194,15 +194,18 @@ export default class ConnectionDialog extends React.Component {
       '',
     );
 
-    if (validationResult.errorMessage) {
+    if (typeof validationResult.errorMessage === 'string') {
       atom.notifications.addError(validationResult.errorMessage);
       return;
     }
 
-    invariant(validationResult.validatedProfile != null);
+    invariant(
+      validationResult.validatedProfile != null &&
+      typeof validationResult.validatedProfile === 'object',
+    );
     // Save the validated profile, and show any warning messages.
     const newProfile = validationResult.validatedProfile;
-    if (validationResult.warningMessage) {
+    if (typeof validationResult.warningMessage === 'string') {
       atom.notifications.addWarning(validationResult.warningMessage);
     }
 

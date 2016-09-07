@@ -60,7 +60,10 @@ export class PackagerActivation {
       new Disposable(() => { this._logTailer.stop(); }),
       atom.commands.add('atom-workspace', {
         'nuclide-react-native:start-packager': event => {
-          this._logTailer.start(event.detail == null ? undefined : event.detail);
+          const detail = event.detail != null && typeof event.detail === 'object'
+            ? event.detail
+            : undefined;
+          this._logTailer.start(detail);
         },
         'nuclide-react-native:stop-packager': () => this._logTailer.stop(),
         'nuclide-react-native:restart-packager': () => this._logTailer.restart(),

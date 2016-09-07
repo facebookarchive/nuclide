@@ -49,7 +49,7 @@ class WebViewPane extends HTMLElement {
     this._webview = webview;
 
     webview.addEventListener('page-title-set', (event: Event) => {
-      if (event.title) {
+      if (typeof event.title === 'string') {
         this._title = event.title;
         this._emitter.emit('did-change-title');
       }

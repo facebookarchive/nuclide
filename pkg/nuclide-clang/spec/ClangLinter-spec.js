@@ -22,7 +22,7 @@ describe('ClangDiagnosticsProvider', () => {
     getBuffer: () => ({
       isDestroyed: () => false,
       getPath: () => TEST_PATH,
-      rangeForRow: row => new Range([row, 0], [row + 1], 0),
+      rangeForRow: row => new Range([row, 0], [row + 1, 0]),
     }),
   };
 

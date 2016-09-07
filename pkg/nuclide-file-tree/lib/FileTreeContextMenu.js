@@ -394,7 +394,7 @@ function initCommandIfPresent(item: FileTreeContextMenuItem): {
   item: atom$ContextMenuItem,
 } {
   const itemDisposable = new CompositeDisposable();
-  if (item.callback != null && item.label != null) {
+  if (typeof item.callback === 'function' && item.label != null) {
     const command = item.command || generateNextInternalCommand(item.label);
     itemDisposable.add(atom.commands.add(FILE_TREE_CSS, command, item.callback));
     return {itemDisposable, item: {...item, command}};

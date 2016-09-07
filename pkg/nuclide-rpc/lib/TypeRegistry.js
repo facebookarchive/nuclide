@@ -88,7 +88,7 @@ function statsToObject(stats: fs.Stats): Object {
     ctime: stats.ctime.toJSON(),
   };
 
-  if (stats.birthtime) {
+  if (stats.birthtime instanceof Date) {
     return {...result, birthtime: stats.birthtime.toJSON()};
   }
 

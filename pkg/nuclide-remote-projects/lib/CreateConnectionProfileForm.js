@@ -140,14 +140,17 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
       connectionDetails,
       DEFAULT_SERVER_COMMAND_PLACEHOLDER,
     );
-    if (validationResult.errorMessage) {
+    if (typeof validationResult.errorMessage === 'string') {
       atom.notifications.addError(validationResult.errorMessage);
       return;
     }
-    invariant(validationResult.validatedProfile != null);
-    // Save the validated profile, and show any warning messages.
+    invariant(
+      validationResult.validatedProfile != null &&
+      typeof validationResult.validatedProfile === 'object',
+    );
     const newProfile = validationResult.validatedProfile;
-    if (validationResult.warningMessage) {
+    // Save the validated profile, and show any warning messages.
+    if (typeof validationResult.warningMessage === 'string') {
       atom.notifications.addWarning(validationResult.warningMessage);
     }
     this.props.onSave(newProfile);

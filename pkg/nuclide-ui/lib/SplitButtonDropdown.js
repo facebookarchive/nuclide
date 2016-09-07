@@ -42,6 +42,8 @@ export class SplitButtonDropdown extends React.Component {
       option.type !== 'separator' && option.value === this.props.value),
     ) || this.props.options[0];
 
+    invariant(selectedOption.type !== 'separator');
+
     const ButtonComponent = this.props.buttonComponent || Button;
 
     const dropdownOptions = this.props.options.map(option => ({

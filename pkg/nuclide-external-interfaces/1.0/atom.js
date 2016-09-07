@@ -846,7 +846,15 @@ declare class atom$TextEditorComponent {
   domNode: HTMLElement,
   presenter: atom$TextEditorPresenter,
   linesComponent: atom$LinesComponent,
+  pixelPositionForScreenPosition(
+    screenPosition: atom$Point,
+    clip?: boolean,
+  ): {top: number, left: number},
   screenPositionForMouseEvent(event: MouseEvent): atom$Point,
+  pixelPositionForMouseEvent(
+    event: MouseEvent,
+    linesClientRect?: {top: number, left: number, bottom: number, right: number},
+  ): {top: number, left: number, bottom: number, right: number},
 }
 
 /**
@@ -1638,6 +1646,7 @@ declare class atom$RepositoryAsync {
 type atom$AutocompleteSuggestion = {
   text?: string,
   snippet?: string,
+  displayText?: string,
   replacementPrefix?: string,
   type?: ?string,
   leftLabel?: ?string,

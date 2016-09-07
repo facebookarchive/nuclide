@@ -41,10 +41,8 @@ export default function getChildProcessesTree(): Observable<?ChildProcessInfo> {
 }
 
 function getActiveHandles(): Array<Object> {
-  if (process._getActiveHandles) {
-    return process._getActiveHandles();
-  }
-  return [];
+  // $FlowFixMe: Private method.
+  return process._getActiveHandles();
 }
 
 function parsePSOutput(output: string): PSTable {

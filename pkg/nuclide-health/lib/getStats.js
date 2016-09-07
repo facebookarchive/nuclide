@@ -30,10 +30,8 @@ export default function getStats(): HealthStats {
 
 // These two functions are to defend against undocumented Node functions.
 function getActiveHandles(): Array<Object> {
-  if (process._getActiveHandles) {
-    return process._getActiveHandles();
-  }
-  return [];
+  // $FlowFixMe: Private method
+  return process._getActiveHandles();
 }
 
 function getActiveHandlesByType(handles: Array<Object>): {[type: string]: Array<Object>} {
@@ -75,8 +73,6 @@ function getTopLevelHandles(handles: Array<Object>): Array<Object> {
 }
 
 function getActiveRequests(): Array<Object> {
-  if (process._getActiveRequests) {
-    return process._getActiveRequests();
-  }
-  return [];
+  // $FlowFixMe: Private method.
+  return process._getActiveRequests();
 }

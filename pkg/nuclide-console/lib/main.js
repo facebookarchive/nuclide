@@ -53,7 +53,7 @@ class Activation {
         'nuclide-console:copy-message',
         event => {
           const el = event.target;
-          if (el == null || el.innerText == null) {
+          if (el == null || typeof el.innerText !== 'string') {
             return;
           }
           atom.clipboard.write(el.innerText);

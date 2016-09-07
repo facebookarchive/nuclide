@@ -12,7 +12,7 @@
 import type {DiagnosticMessage, MessageType} from '../../nuclide-diagnostics-common';
 
 function fileOfDiagnosticMessage(diagnostic: DiagnosticMessage): string {
-  if (diagnostic.filePath != null) {
+  if (typeof diagnostic.filePath === 'string') {
     return diagnostic.filePath;
   } else {
     return '';

@@ -176,17 +176,13 @@ export class Table extends React.Component {
     if (selection != null) {
       selection.removeAllRanges();
     }
-    // $FlowIssue https://github.com/facebook/flow/issues/770
     document.addEventListener('mousemove', this._handleResizerGlobalMouseMove);
-    // $FlowIssue https://github.com/facebook/flow/issues/770
     document.addEventListener('mouseup', this._handleResizerGlobalMouseUp);
     this._resizeStartX = event.pageX;
     this._tableWidth = ReactDOM.findDOMNode(this.refs.table).getBoundingClientRect().width;
     this._columnBeingResized = key;
     this._globalEventsDisposable = new Disposable(() => {
-      // $FlowIssue https://github.com/facebook/flow/issues/770
       document.removeEventListener('mousemove', this._handleResizerGlobalMouseMove);
-      // $FlowIssue https://github.com/facebook/flow/issues/770
       document.removeEventListener('mouseup', this._handleResizerGlobalMouseUp);
       this._resizeStartX = null;
       this._tableWidth = null;

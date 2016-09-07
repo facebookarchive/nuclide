@@ -12,6 +12,7 @@
 import {Icon} from './Icon';
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
+import nullthrows from 'nullthrows';
 
 export type Tab = {
   name: string,
@@ -46,7 +47,7 @@ export default class Tabs extends React.Component {
   _handleTabChange(selectedTabName: string) {
     if (typeof this.props.onActiveTabChange === 'function') {
       this.props.onActiveTabChange(
-        this.props.tabs.find(tab => tab.name === selectedTabName),
+        nullthrows(this.props.tabs.find(tab => tab.name === selectedTabName)),
       );
     }
   }

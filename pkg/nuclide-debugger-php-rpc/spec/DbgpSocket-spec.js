@@ -11,7 +11,7 @@
 
 import type {Socket} from 'net';
 
-import {EventEmitter} from 'events';
+import EventEmitter from 'events';
 import {makeMessage} from '../lib/helpers';
 import {
   DbgpSocket,

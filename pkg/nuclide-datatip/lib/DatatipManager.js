@@ -81,7 +81,9 @@ export class DatatipManager {
       }));
 
       const editorView = atom.views.getView(editor);
-      const mouseMoveListener = event => { this.handleMouseMove(event, editor, editorView); };
+      const mouseMoveListener = (event: Event) => {
+        this.handleMouseMove(event, editor, editorView);
+      };
       editorView.addEventListener('mousemove', mouseMoveListener);
       const mouseListenerSubscription = new Disposable(() =>
           editorView.removeEventListener('mousemove', mouseMoveListener));
@@ -96,7 +98,7 @@ export class DatatipManager {
     this._ephemeralDatatipElement = document.createElement('div');
     this._ephemeralDatatipElement.className = 'nuclide-datatip-overlay';
 
-    const datatipMouseEnter = event => this._handleElementMouseEnter(event);
+    const datatipMouseEnter = (event: Event) => this._handleElementMouseEnter(event);
     const datatipMouseLeave = debounce(event => this._handleElementMouseLeave(event), 100);
     this._ephemeralDatatipElement.addEventListener('mouseenter', datatipMouseEnter);
     this._ephemeralDatatipElement.addEventListener('mouseleave', datatipMouseLeave);
@@ -161,7 +163,11 @@ export class DatatipManager {
     this._isHoveringDatatip = false;
   }
 
-  _datatipForMouseEvent(e: MouseEvent, editor: TextEditor, editorView: HTMLElement): void {
+  _datatipForMouseEvent(
+    e: MouseEvent,
+    editor: TextEditor,
+    editorView: atom$TextEditorElement,
+  ): void {
     if (!editorView.component || this._isHoveringDatatip) {
       // The editor was destroyed, but the destroy handler haven't yet been called to cancel
       // the timer.

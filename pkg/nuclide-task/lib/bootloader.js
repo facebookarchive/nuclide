@@ -10,7 +10,7 @@
  */
 
 import child_process from 'child_process';
-import {EventEmitter} from 'events';
+import EventEmitter from 'events';
 
 export type InvokeRemoteMethodParams = {
   file: string,

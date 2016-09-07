@@ -12,7 +12,7 @@
 
 import logger from './utils';
 import {base64Decode, base64Encode} from './helpers';
-import {EventEmitter} from 'events';
+import EventEmitter from 'events';
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 import {attachEvent} from '../../commons-node/event';
 import type {Socket} from 'net';

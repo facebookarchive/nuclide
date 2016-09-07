@@ -75,7 +75,9 @@ class Activation {
       this._panelRenderer,
       atom.commands.add('atom-workspace', {
         'nuclide-task-runner:toggle-toolbar-visibility': event => {
-          const visible = event.detail == null ? undefined : event.detail.visible;
+          const visible = event.detail != null && typeof event.detail === 'object'
+           ? event.detail.visible
+           : undefined;
           if (typeof visible === 'boolean') {
             this._actionCreators.setToolbarVisibility(visible);
           } else {
@@ -285,7 +287,7 @@ function trackTaskAction(
   state: AppState,
 ): void {
   const task = action.payload.task;
-  const taskTrackingData = task != null && task.getTrackingData != null
+  const taskTrackingData = task != null && typeof task.getTrackingData === 'function'
     ? task.getTrackingData()
     : {};
   const error = action.type === Actions.TASK_ERRORED ? action.payload.error : null;

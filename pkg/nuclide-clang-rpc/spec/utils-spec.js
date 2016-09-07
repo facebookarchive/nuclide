@@ -18,7 +18,6 @@ describe('findIncludingSourceFile', () => {
   it('is able to find an absolute include', () => {
     waitsForPromise(async () => {
       const tmpdir = await generateFixture('clang_rpc', new Map([
-        // $FlowIssue t12774012
         ['a/b.cpp', '#include <a/b.h>'],
       ]));
       const sourceFile = nuclideUri.join(tmpdir, 'a/b.cpp');
@@ -31,7 +30,6 @@ describe('findIncludingSourceFile', () => {
   it('is able to find a relative include', () => {
     waitsForPromise(async () => {
       const tmpdir = await generateFixture('clang_rpc', new Map([
-        // $FlowIssue t12774012
         ['a/x.cpp', '#include <../x.h>'],
       ]));
       const sourceFile = nuclideUri.join(tmpdir, 'a/x.cpp');
@@ -44,7 +42,6 @@ describe('findIncludingSourceFile', () => {
   it('rejects non-matching relative includes', () => {
     waitsForPromise(async () => {
       const tmpdir = await generateFixture('clang_rpc', new Map([
-        // $FlowIssue t12774012
         ['a/b.cpp', '#include <../../x.h>'],
       ]));
       const file = await findIncludingSourceFile(nuclideUri.join(tmpdir, 'x.h'), tmpdir)
