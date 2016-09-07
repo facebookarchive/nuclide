@@ -10,8 +10,9 @@
  */
 
 import type {
-  OffsetMap,
+  DiffSection,
   DiffModeType,
+  OffsetMap,
   UIElement,
 } from './types';
 import type DiffViewModel, {State as DiffViewStateType} from './DiffViewModel';
@@ -32,10 +33,17 @@ import DiffViewToolbar from './DiffViewToolbar';
 import DiffNavigationBar from './DiffNavigationBar';
 import DiffCommitView from './DiffCommitView';
 import DiffPublishView from './DiffPublishView';
-import {computeDiff, getOffsetLineNumber} from './diff-utils';
+import {
+  computeDiff,
+  computeDiffSections,
+  getOffsetLineCount,
+  getOffsetLineNumber,
+} from './diff-utils';
 import createPaneContainer from '../../commons-atom/create-pane-container';
 import {bufferForUri} from '../../commons-atom/text-editor';
-import {DiffMode} from './constants';
+import {
+  DiffMode,
+} from './constants';
 
 type Props = {
   diffModel: DiffViewModel,
@@ -58,6 +66,8 @@ type State = {
   filePath: NuclideUri,
   oldEditorState: EditorState,
   newEditorState: EditorState,
+  diffSections: Array<DiffSection>,
+  offsetLineCount: number,
   toolbarVisible: boolean,
 };
 
@@ -105,6 +115,18 @@ function getDiffComponent() {
   return CachedDiffComponent;
 }
 
+function getInitialState(): State {
+  return {
+    diffSections: [],
+    filePath: '',
+    mode: DiffMode.BROWSE_MODE,
+    newEditorState: initialEditorState(),
+    offsetLineCount: 0,
+    oldEditorState: initialEditorState(),
+    toolbarVisible: true,
+  };
+}
+
 const EMPTY_FUNCTION = () => {};
 const SCROLL_FIRST_CHANGE_DELAY_MS = 100;
 
@@ -130,13 +152,7 @@ export default class DiffViewComponent extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    this.state = {
-      mode: DiffMode.BROWSE_MODE,
-      filePath: '',
-      toolbarVisible: true,
-      oldEditorState: initialEditorState(),
-      newEditorState: initialEditorState(),
-    };
+    this.state = getInitialState();
     (this: any)._onModelStateChange = this._onModelStateChange.bind(this);
     (this: any)._updateLineDiffState = this._updateLineDiffState.bind(this);
     (this: any)._onChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
@@ -511,7 +527,6 @@ export default class DiffViewComponent extends React.Component {
     const {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
       computeDiff(oldContents, newContents);
 
-    // TODO(most): Sync the used comment vertical space on both editors.
     const oldEditorState = {
       revisionTitle: fromRevisionTitle,
       text: oldContents,
@@ -532,10 +547,27 @@ export default class DiffViewComponent extends React.Component {
       },
       inlineElements: [],
     };
+
+    const diffSections = computeDiffSections(
+      addedLines,
+      removedLines,
+      oldLineOffsets,
+      newLineOffsets,
+    );
+
+    const offsetLineCount = getOffsetLineCount(
+      oldContents,
+      oldLineOffsets,
+      newContents,
+      newLineOffsets,
+    );
+
     this.setState({
+      diffSections,
       filePath,
-      oldEditorState,
+      offsetLineCount,
       newEditorState,
+      oldEditorState,
     });
   }
 }
