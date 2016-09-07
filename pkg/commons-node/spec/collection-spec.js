@@ -22,6 +22,7 @@ import {
   MultiMap,
   objectEntries,
   objectFromMap,
+  concatIterators,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -297,6 +298,19 @@ describe('objectFromMap', () => {
 
   it('converts a map to an object', () => {
     expect(objectFromMap(new Map([['a', 1], ['b', 2]]))).toEqual({a: 1, b: 2});
+  });
+
+});
+
+describe('concatIterators', () => {
+
+  it('concatenates different iterable stuff to a single iterator', () => {
+
+    expect(Array.from(concatIterators(
+      new Set([1, 2, 3]),
+      [4, 5, 6],
+      new Set([7, 8, 9]).values(),
+    ))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
 });

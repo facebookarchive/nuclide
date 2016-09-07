@@ -269,3 +269,11 @@ export function objectFromMap<T>(map: Map<string, T>): {[key: string]: T} {
   map.forEach((v, k) => { obj[k] = v; });
   return obj;
 }
+
+export function *concatIterators<T>(...iterators: Array<Iterable<T>>): Iterator<T> {
+  for (const iterator of iterators) {
+    for (const element of iterator) {
+      yield element;
+    }
+  }
+}
