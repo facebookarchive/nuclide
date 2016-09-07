@@ -9,9 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {TextDiff, OffsetMap} from './types';
+import type {
+  DiffSection,
+  DiffSectionStatusType,
+  OffsetMap,
+  TextDiff,
+} from './types';
 
 import {diffLines} from 'diff';
+import {DiffSectionStatus} from './constants';
+import {concatIterators} from '../../commons-node/collection';
 
 type ChunkPiece = {
   added: number,
@@ -142,4 +149,77 @@ export function getOffsetLineNumber(lineNumber: number, offsets: OffsetMap): num
     }
   }
   return offsetLineNumber;
+}
+
+export function computeDiffSections(
+  addedLines: Array<number>,
+  removedLines: Array<number>,
+  oldLineOffsets: OffsetMap,
+  newLineOffsets: OffsetMap,
+): Array<DiffSection> {
+  // The old and new text editor contents use offsets to create a global line number identifier
+  // being the line number with offset.
+
+  // Here is the mapping between the offset line numbers to the original line number.
+  const addedLinesWithOffsets = new Map();
+  for (const addedLine of addedLines) {
+    addedLinesWithOffsets.set(getOffsetLineNumber(addedLine, newLineOffsets), addedLine);
+  }
+
+  const removedLinesWithOffsets = new Map();
+  for (const removedLine of removedLines) {
+    removedLinesWithOffsets.set(getOffsetLineNumber(removedLine, oldLineOffsets), removedLine);
+  }
+
+  // Intersect the added and removed lines maps, taking the values of the added lines.
+  const changedLinesWithOffsets: Map<number, number> = new Map();
+  for (const [addedLinesOffset, addedLineNumber] of addedLinesWithOffsets.entries()) {
+    if (removedLinesWithOffsets.has(addedLinesOffset)) {
+      removedLinesWithOffsets.delete(addedLinesOffset);
+      addedLinesWithOffsets.delete(addedLinesOffset);
+      changedLinesWithOffsets.set(addedLinesOffset, addedLineNumber);
+    }
+  }
+
+  const lineSections = Array.from(concatIterators(
+    getLineSectionsWithStatus(addedLinesWithOffsets.entries(), DiffSectionStatus.ADDED),
+    getLineSectionsWithStatus(changedLinesWithOffsets.entries(), DiffSectionStatus.CHANGED),
+    getLineSectionsWithStatus(removedLinesWithOffsets.entries(), DiffSectionStatus.REMOVED),
+  ));
+
+  lineSections.sort((diffSection1, diffSection2) => {
+    return diffSection1.offsetLineNumber - diffSection2.offsetLineNumber;
+  });
+
+  // Merge line sections into region sections.
+  const diffSections = lineSections.length === 0 ? [] : [lineSections[0]];
+
+  for (let i = 1; i < lineSections.length; i++) {
+    const lastSection = diffSections[diffSections.length - 1];
+    const lineSection = lineSections[i];
+    if (
+      lastSection.status === lineSection.status &&
+      lastSection.lineNumber + lastSection.lineCount === lineSection.lineNumber
+    ) {
+      lastSection.lineCount += 1;
+    } else {
+      diffSections.push(lineSection);
+    }
+  }
+
+  return diffSections;
+}
+
+function *getLineSectionsWithStatus(
+  lineWithOffsets: Iterator<[number, number]>,
+  status: DiffSectionStatusType,
+): Iterator<DiffSection> {
+  for (const [offsetLineNumber, lineNumber] of lineWithOffsets) {
+    yield {
+      lineCount: 1,
+      lineNumber,
+      offsetLineNumber,
+      status,
+    };
+  }
 }

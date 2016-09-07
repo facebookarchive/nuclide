@@ -9,7 +9,14 @@
  * the root directory of this source tree.
  */
 
-import {computeDiff, getLineCountWithOffsets, getOffsetLineNumber} from '../lib/diff-utils';
+import {
+  computeDiff,
+  computeDiffSections,
+  getLineCountWithOffsets,
+  getOffsetLineNumber,
+} from '../lib/diff-utils';
+
+import {DiffSectionStatus} from '../lib/constants';
 
 describe('diff-utils', () => {
   describe('computeDiff()', () => {
@@ -100,6 +107,132 @@ adding a non-new-line line`,
       expect(getOffsetLineNumber(2, offsets)).toBe(5);
       expect(getOffsetLineNumber(3, offsets)).toBe(9);
       expect(getOffsetLineNumber(4, offsets)).toBe(10);
+    });
+
+  });
+
+  describe('computeDiffSections()', () => {
+
+    it('returns empty sections when there are no changed lines', () => {
+      const diffSections = computeDiffSections([], [], new Map(), new Map());
+      expect(diffSections.length).toBe(0);
+    });
+
+    it('returns added/removed sections for lines --> without offsets', () => {
+      const diffSections = computeDiffSections(
+        [3, 4, 7], [9, 10], new Map(), new Map(),
+      );
+      expect(diffSections.length).toBe(3);
+      expect(diffSections[0]).toEqual({
+        lineCount: 2,
+        lineNumber: 3,
+        offsetLineNumber: 3,
+        status: DiffSectionStatus.ADDED,
+      });
+
+      expect(diffSections[1]).toEqual({
+        lineCount: 1,
+        lineNumber: 7,
+        offsetLineNumber: 7,
+        status: DiffSectionStatus.ADDED,
+      });
+
+      expect(diffSections[2]).toEqual({
+        lineCount: 2,
+        lineNumber: 9,
+        offsetLineNumber: 9,
+        status: DiffSectionStatus.REMOVED,
+      });
+    });
+
+    it('returns added/removed offset sections for lines --> with normal offsets', () => {
+      const diffSections = computeDiffSections(
+        [3, 4, 5], [0, 1], new Map([[3, 2]]), new Map([[0, 2]]),
+      );
+      expect(diffSections.length).toBe(2);
+      expect(diffSections[0]).toEqual({
+        lineCount: 2,
+        lineNumber: 0,
+        offsetLineNumber: 0,
+        status: DiffSectionStatus.REMOVED,
+      });
+
+      expect(diffSections[1]).toEqual({
+        lineCount: 3,
+        lineNumber: 3,
+        offsetLineNumber: 5,
+        status: DiffSectionStatus.ADDED,
+      });
+    });
+
+    it('returns changed sections for added/removed intersection --> without offsets', () => {
+      const diffSections = computeDiffSections(
+        [2, 3, 4, 10, 11, 12], [3, 4, 5, 6], new Map(), new Map(),
+      );
+      expect(diffSections.length).toBe(4);
+
+      expect(diffSections[0]).toEqual({
+        lineCount: 1,
+        lineNumber: 2,
+        offsetLineNumber: 2,
+        status: DiffSectionStatus.ADDED,
+      });
+
+      expect(diffSections[1]).toEqual({
+        lineCount: 2,
+        lineNumber: 3,
+        offsetLineNumber: 3,
+        status: DiffSectionStatus.CHANGED,
+      });
+
+      expect(diffSections[2]).toEqual({
+        lineCount: 2,
+        lineNumber: 5,
+        offsetLineNumber: 5,
+        status: DiffSectionStatus.REMOVED,
+      });
+
+      expect(diffSections[3]).toEqual({
+        lineCount: 3,
+        lineNumber: 10,
+        offsetLineNumber: 10,
+        status: DiffSectionStatus.ADDED,
+      });
+    });
+
+    it('returns changed sections for added/removed intersection --> with offsets', () => {
+      const diffSections = computeDiffSections(
+        [2, 4, 5, 10, 11, 12], [3, 4, 5, 6], new Map([[2, 1]]), new Map([[5, 2]]),
+      );
+      expect(diffSections.length).toBe(4);
+
+      expect(diffSections[0]).toEqual({
+        lineCount: 1,
+        lineNumber: 2,
+        offsetLineNumber: 2,
+        status: DiffSectionStatus.ADDED,
+      });
+
+      expect(diffSections[1]).toEqual({
+        lineCount: 2,
+        lineNumber: 4,
+        offsetLineNumber: 4,
+        status: DiffSectionStatus.CHANGED,
+      });
+
+      expect(diffSections[2]).toEqual({
+        lineCount: 2,
+        lineNumber: 5,
+        offsetLineNumber: 6,
+        status: DiffSectionStatus.REMOVED,
+      });
+
+      expect(diffSections[3]).toEqual({
+        lineCount: 3,
+        lineNumber: 10,
+        offsetLineNumber: 12,
+        status: DiffSectionStatus.ADDED,
+      });
     });
 
   });

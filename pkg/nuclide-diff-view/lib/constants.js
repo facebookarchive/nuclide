@@ -17,6 +17,7 @@ import type {
   CommitModeType,
   CommitModeStateType,
   DiffModeType,
+  DiffSectionStatusType,
   FileChangeStatusValue,
   PublishModeType,
   PublishModeStateType,
@@ -111,3 +112,12 @@ export const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = 
 });
 
 export const NON_MERCURIAL_REPO_DISPLAY_NAME = '[X] Non-Mercurial Repository';
+
+export const DiffSectionStatus = Object.freeze({
+  ADDED: 'Added',
+  CHANGED: 'Changed',
+  REMOVED: 'Removed',
+});
+
+// This is to work around flow's missing support of enums.
+(DiffSectionStatus: { [key: string]: DiffSectionStatusType });

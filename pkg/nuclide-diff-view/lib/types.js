@@ -69,6 +69,15 @@ export type HighlightedLines = {
   removed: Array<number>,
 };
 
+export type DiffSectionStatusType = 'Added' | 'Changed' | 'Removed';
+
+export type DiffSection = {
+  lineCount: number,
+  lineNumber: number,
+  offsetLineNumber: number,
+  status: DiffSectionStatusType,
+};
+
 export type UIElement = {
   node: React.Element<any>,
   bufferRow: number,
