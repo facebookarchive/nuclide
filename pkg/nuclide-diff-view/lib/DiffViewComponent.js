@@ -11,6 +11,7 @@
 
 import type {
   DiffSection,
+  DiffSectionStatusType,
   DiffModeType,
   OffsetMap,
   UIElement,
@@ -43,6 +44,7 @@ import createPaneContainer from '../../commons-atom/create-pane-container';
 import {bufferForUri} from '../../commons-atom/text-editor';
 import {
   DiffMode,
+  DiffSectionStatus,
 } from './constants';
 
 type Props = {
@@ -432,19 +434,13 @@ export default class DiffViewComponent extends React.Component {
   }
 
   _renderNavigation(): void {
-    const {oldEditorState, newEditorState} = this.state;
-    const {offsets: oldOffsets, highlightedLines: oldLines, text: oldContents} = oldEditorState;
-    const {offsets: newOffsets, highlightedLines: newLines, text: newContents} = newEditorState;
+    const {diffSections, offsetLineCount} = this.state;
     const navigationPaneElement = this._getPaneElement(this._navigationPane);
     const component = ReactDOM.render(
       <DiffNavigationBar
         elementHeight={navigationPaneElement.clientHeight}
-        addedLines={newLines.added}
-        newOffsets={newOffsets}
-        newContents={newContents}
-        removedLines={oldLines.removed}
-        oldOffsets={oldOffsets}
-        oldContents={oldContents}
+        diffSections={diffSections}
+        offsetLineCount={offsetLineCount}
         onClick={this._onNavigationClick}
       />,
       navigationPaneElement,
@@ -453,11 +449,21 @@ export default class DiffViewComponent extends React.Component {
     this._navigationComponent = component;
   }
 
-  _onNavigationClick(lineNumber: number, isAddedLine: boolean): void {
-    const textEditorComponent = isAddedLine ? this._newEditorComponent : this._oldEditorComponent;
-    invariant(textEditorComponent, 'Diff View Navigation Error: Non valid text editor component');
-    const textEditor = textEditorComponent.getEditorModel();
-    textEditor.scrollToBufferPosition([lineNumber, 0]);
+  _onNavigationClick(diffSectionStatus: DiffSectionStatusType, scrollToLineNumber: number): void {
+    const textEditor = this._diffSectionStatusToEditor(diffSectionStatus);
+    textEditor.scrollToBufferPosition([scrollToLineNumber, 0]);
+  }
+
+  _diffSectionStatusToEditor(diffSectionStatus: DiffSectionStatusType): atom$TextEditor {
+    switch (diffSectionStatus) {
+      case DiffSectionStatus.ADDED:
+      case DiffSectionStatus.CHANGED:
+        return this._newEditorComponent.getEditorModel();
+      case DiffSectionStatus.REMOVED:
+        return this._oldEditorComponent.getEditorModel();
+      default:
+        throw new Error('Invalid diff section status');
+    }
   }
 
   _getPaneElement(pane: atom$Pane): HTMLElement {

@@ -9,21 +9,20 @@
  * the root directory of this source tree.
  */
 
-import type {OffsetMap} from './types';
+import type {
+  DiffSection,
+  DiffSectionStatusType,
+} from './types';
 
-import {React} from 'react-for-atom';
-import {getLineCountWithOffsets, getOffsetLineNumber} from './diff-utils';
 import classnames from 'classnames';
+import {DiffSectionStatus} from './constants';
+import {React} from 'react-for-atom';
 
 type DiffNavigationBarProps = {
   elementHeight: number,
-  addedLines: Array<number>,
-  removedLines: Array<number>,
-  oldContents: string,
-  newContents: string,
-  oldOffsets: OffsetMap,
-  newOffsets: OffsetMap,
-  onClick: (lineNumber: number, isAddedLine: boolean) => any,
+  diffSections: Array<DiffSection>,
+  offsetLineCount: number,
+  onClick: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
 };
 
 export default class DiffNavigationBar extends React.Component {
@@ -34,93 +33,19 @@ export default class DiffNavigationBar extends React.Component {
     (this: any)._handleClick = this._handleClick.bind(this);
   }
 
-  render(): ?React.Element<any> {
-    const {
-      addedLines,
-      removedLines,
-      newContents,
-      oldContents,
-      newOffsets,
-      oldOffsets,
-      elementHeight,
-    } = this.props;
-    const newLinesCount = getLineCountWithOffsets(newContents, newOffsets);
-    const oldLinesCount = getLineCountWithOffsets(oldContents, oldOffsets);
-
-    const linesCount = Math.max(newLinesCount, oldLinesCount);
-
-    // The old and new text editor contents use offsets to create a global line number identifier
-    // being the line number with offset.
-
-    // Here are the mapping between the offset line numbers to the original line number.
-    const addedLinesWithOffsets = new Map(addedLines.map(
-      addedLine => [getOffsetLineNumber(addedLine, newOffsets), addedLine],
-    ));
-    const removedLinesWithOffsets = new Map(removedLines.map(
-      removedLine => [getOffsetLineNumber(removedLine, oldOffsets), removedLine],
-    ));
-    // Interset the added and removed lines maps, taking the values of the added lines.
-    const changedLinesWithOffsets = new Map(
-      Array.from(addedLinesWithOffsets.keys())
-      .filter(addedLineWithOffset => removedLinesWithOffsets.has(addedLineWithOffset))
-      .map(changedLineWithOffset => [
-        changedLineWithOffset,
-        addedLinesWithOffsets.get(changedLineWithOffset),
-      ]),
-    );
-
-    // These regions will now be 'modified' regions.
-    for (const changedLineWithOffset of changedLinesWithOffsets.keys()) {
-      addedLinesWithOffsets.delete(changedLineWithOffset);
-      removedLinesWithOffsets.delete(changedLineWithOffset);
-    }
-
-    const jumpTargets = [];
-
-    for (const [addedLineWithOffset, addedLine] of addedLinesWithOffsets) {
-      jumpTargets.push(
+  render(): React.Element<any> {
+    const {elementHeight, offsetLineCount} = this.props;
+    const jumpTargets = this.props.diffSections.map(diffSection => {
+      return (
         <NavigatonBarJumpTarget
-          offsetLineNumber={addedLineWithOffset}
-          key={addedLineWithOffset}
-          lineNumber={addedLine}
-          linesCount={linesCount}
-          lineChangeClass="added"
-          isAddedLine={true}
           containerHeight={elementHeight}
+          diffSection={diffSection}
+          key={diffSection.offsetLineNumber}
+          offsetLineCount={offsetLineCount}
           onClick={this._handleClick}
-        />,
+        />
       );
-    }
-
-    for (const [changedLineWithOffset, changedLine] of changedLinesWithOffsets) {
-      jumpTargets.push(
-        <NavigatonBarJumpTarget
-          offsetLineNumber={changedLineWithOffset}
-          key={changedLineWithOffset}
-          lineNumber={changedLine}
-          linesCount={linesCount}
-          lineChangeClass="modified"
-          isAddedLine={true}
-          containerHeight={elementHeight}
-          onClick={this._handleClick}
-        />,
-      );
-    }
-
-    for (const [removedLineWithOffset, removedLine] of removedLinesWithOffsets) {
-      jumpTargets.push(
-        <NavigatonBarJumpTarget
-          offsetLineNumber={removedLineWithOffset}
-          key={removedLineWithOffset}
-          lineNumber={removedLine}
-          linesCount={linesCount}
-          lineChangeClass="removed"
-          isAddedLine={false}
-          containerHeight={elementHeight}
-          onClick={this._handleClick}
-        />,
-      );
-    }
+    });
 
     return (
       <div className="nuclide-diff-view-navigation-bar">
@@ -129,19 +54,29 @@ export default class DiffNavigationBar extends React.Component {
     );
   }
 
-  _handleClick(lineNumber: number, isAddedLine: boolean): void {
-    this.props.onClick(lineNumber, isAddedLine);
+  _handleClick(diffSectionStatus: DiffSectionStatusType, lineNumber: number): void {
+    this.props.onClick(diffSectionStatus, lineNumber);
+  }
+}
+
+function sectionStatusToClassName(statusType: DiffSectionStatusType): string {
+  switch (statusType) {
+    case DiffSectionStatus.ADDED:
+      return 'added';
+    case DiffSectionStatus.CHANGED:
+      return 'modified';
+    case DiffSectionStatus.REMOVED:
+      return 'removed';
+    default:
+      throw new Error('Invalid diff section status');
   }
 }
 
 type NavigatonBarJumpTargetProps = {
-  offsetLineNumber: number,
-  lineNumber: number,
-  lineChangeClass: string,
-  linesCount: number,
-  isAddedLine: boolean,
   containerHeight: number,
-  onClick: (lineNumber: number, isAddedLine: boolean) => any,
+  diffSection: DiffSection,
+  offsetLineCount: number,
+  onClick: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
 };
 
 class NavigatonBarJumpTarget extends React.Component {
@@ -153,12 +88,14 @@ class NavigatonBarJumpTarget extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {offsetLineNumber, linesCount, containerHeight, lineChangeClass} = this.props;
-    const targertTop = Math.ceil(containerHeight * offsetLineNumber / linesCount);
-    const targertHeight = Math.ceil(containerHeight / linesCount);
+    const {diffSection, offsetLineCount, containerHeight} = this.props;
+    const lineChangeClass = sectionStatusToClassName(diffSection.status);
+    const {offsetLineNumber, lineCount} = diffSection;
+    const targetTop = Math.ceil(containerHeight * offsetLineNumber / offsetLineCount);
+    const targetHeight = Math.ceil(lineCount * containerHeight / offsetLineCount);
     const targetStyle = {
-      top: `${targertTop}px`,
-      height: `${targertHeight}px`,
+      top: `${targetTop}px`,
+      height: `${targetHeight}px`,
     };
     const targetClassName = classnames({
       'nuclide-diff-view-navigation-target': true,
@@ -174,7 +111,12 @@ class NavigatonBarJumpTarget extends React.Component {
     );
   }
 
-  _handleClick(): void {
-    this.props.onClick(this.props.lineNumber, this.props.isAddedLine);
+  _handleClick(e: SyntheticMouseEvent): void {
+    const {diffSection} = this.props;
+    const targetRectangle = ((e.target: any): HTMLElement).getBoundingClientRect();
+    const lineHeight = (e.clientY - targetRectangle.top) / targetRectangle.height;
+    const scrollToLineNumber = diffSection.lineNumber +
+      Math.floor(diffSection.lineCount * lineHeight);
+    this.props.onClick(diffSection.status, scrollToLineNumber);
   }
 }
