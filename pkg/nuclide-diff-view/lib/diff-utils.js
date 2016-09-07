@@ -223,3 +223,15 @@ function *getLineSectionsWithStatus(
     };
   }
 }
+
+export function getOffsetLineCount(
+  oldContents: string,
+  oldLineOffsets: OffsetMap,
+  newContents: string,
+  newLineOffsets: OffsetMap,
+): number {
+  const newLinesCount = getLineCountWithOffsets(newContents, newLineOffsets);
+  const oldLinesCount = getLineCountWithOffsets(oldContents, oldLineOffsets);
+  const offsetLineCount = Math.max(newLinesCount, oldLinesCount);
+  return offsetLineCount;
+}
