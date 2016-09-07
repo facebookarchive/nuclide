@@ -79,6 +79,9 @@ class BreakpointStore {
       case Constants.Actions.DELETE_BREAKPOINT:
         this._deleteBreakpoint(data.path, data.line);
         break;
+      case Constants.Actions.DELETE_ALL_BREAKPOINTS:
+        this._deleteAllBreakpoints();
+        break;
       case Constants.Actions.TOGGLE_BREAKPOINT:
         this._toggleBreakpoint(data.path, data.line);
         break;
@@ -142,6 +145,16 @@ class BreakpointStore {
       action: 'UpdateBreakpoint',
       breakpoint,
     });
+  }
+
+  _deleteAllBreakpoints(): void {
+    for (const path of this._breakpoints.keys()) {
+      const lineMap = this._breakpoints.get(path);
+      invariant(lineMap != null);
+      for (const line of lineMap.keys()) {
+        this._deleteBreakpoint(path, line);
+      }
+    }
   }
 
   _deleteBreakpoint(

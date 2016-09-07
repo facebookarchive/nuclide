@@ -227,9 +227,18 @@ class Activation {
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:toggle-launch-attach': this._toggleLaunchAttachDialog.bind(this),
       }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:remove-all-breakpoints': this._deleteAllBreakpoints.bind(this),
+      }),
 
       // Context Menu Items.
       atom.contextMenu.add({
+        '.nuclide-debugger-breakpoint': [
+          {
+            label: 'Remove All Breakpoints',
+            command: 'nuclide-debugger:remove-all-breakpoints',
+          },
+        ],
         'atom-text-editor': [
           {type: 'separator'},
           {
@@ -349,6 +358,11 @@ class Activation {
     }
   }
 
+
+  _deleteAllBreakpoints(): void {
+    const actions = this._model.getActions();
+    actions.deleteAllBreakpoints();
+  }
 
   _toggleLaunchAttachDialog(): void {
     const dialog = this._getLaunchAttachDialog();

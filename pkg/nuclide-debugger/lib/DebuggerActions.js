@@ -390,6 +390,12 @@ class DebuggerActions {
     });
   }
 
+  deleteAllBreakpoints(): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.DELETE_ALL_BREAKPOINTS,
+    });
+  }
+
   toggleBreakpoint(path: string, line: number): void {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.TOGGLE_BREAKPOINT,

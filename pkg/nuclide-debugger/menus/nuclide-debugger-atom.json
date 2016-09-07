@@ -35,6 +35,10 @@
               "command": "nuclide-debugger:toggle-breakpoint"
             },
             {
+              "label": "Remove All Breakpoints",
+              "command": "nuclide-debugger:remove-all-breakpoints"
+            },
+            {
               "label": "Step Over",
               "command": "nuclide-debugger:step-over"
             },
