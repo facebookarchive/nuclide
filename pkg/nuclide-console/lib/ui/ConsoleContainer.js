@@ -260,8 +260,8 @@ function getSources(state: AppState): Array<Source> {
           id: provider.id,
           name: provider.id,
           status: state.providerStatuses.get(provider.id) || 'stopped',
-          start: provider.start != null ? provider.start : undefined,
-          stop: provider.stop != null ? provider.stop : undefined,
+          start: typeof provider.start === 'function' ? provider.start : undefined,
+          stop: typeof provider.stop === 'function' ? provider.stop : undefined,
         };
         return [k, source];
       },
@@ -286,7 +286,6 @@ function getSources(state: AppState): Array<Source> {
     }
   }
 
-  // $FlowFixMe(matthewwithanm)
   return Array.from(mapOfSources.values());
 }
 

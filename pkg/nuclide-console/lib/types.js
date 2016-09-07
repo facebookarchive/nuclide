@@ -53,11 +53,25 @@ type BasicOutputProvider = {
   getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };
 
-type ControllableOutputProvider = BasicOutputProvider & {
+type ControllableOutputProviderProps = {
   observeStatus(callback: (status: OutputProviderStatus) => mixed): IDisposable,
   start(): void,
   stop(): void,
 };
+
+type ControllableOutputProvider = BasicOutputProvider & ControllableOutputProviderProps;
+
+export type OutputProvider = BasicOutputProvider | ControllableOutputProvider;
+
+type BasicRecordProvider = {
+  records: Observable<Record>,
+  id: string,
+  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
+};
+
+type ControllableRecordProvider = BasicRecordProvider & ControllableOutputProviderProps;
+
+export type RecordProvider = BasicRecordProvider | ControllableRecordProvider;
 
 export type Source = {
   id: string,
@@ -65,14 +79,6 @@ export type Source = {
   status: OutputProviderStatus,
   start: ?() => void,
   stop: ?() => void,
-};
-
-export type OutputProvider = BasicOutputProvider | ControllableOutputProvider;
-
-export type RecordProvider = {
-  records: Observable<Record>,
-  id: string,
-  getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };
 
 export type OutputService = {
@@ -83,8 +89,7 @@ export type Executor = {
   id: string,
   name: string,
   send(message: string): void,
-  // $FlowFixMe
-  output: Observable<Message> | Observable<{result?: EvaluationResult}>,
+  output: Observable<Message | {result?: EvaluationResult}>,
   scopeName?: string,
   getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };

@@ -88,11 +88,10 @@ export function registerRecordProviderEpic(
     const messageActions = recordProvider.records.map(Actions.recordReceived);
 
     // TODO: Can this be delayed until sometime after registration?
-    const statusActions = recordProvider.observeStatus == null
-      ? Observable.empty()
-      // $FlowFixMe(matthewwithanm)
-      : observableFromSubscribeFunction(recordProvider.observeStatus)
-        .map(status => Actions.updateStatus(recordProvider.id, status));
+    const statusActions = typeof recordProvider.observeStatus === 'function'
+      ? observableFromSubscribeFunction(recordProvider.observeStatus)
+          .map(status => Actions.updateStatus(recordProvider.id, status))
+      : Observable.empty();
 
     const unregisteredEvents = actions.ofType(Actions.REMOVE_SOURCE).filter(a => {
       invariant(a.type === Actions.REMOVE_SOURCE);
