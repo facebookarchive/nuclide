@@ -38,7 +38,6 @@ import {
   computeDiff,
   computeDiffSections,
   getOffsetLineCount,
-  getOffsetLineNumber,
 } from './diff-utils';
 import createPaneContainer from '../../commons-atom/create-pane-container';
 import {bufferForUri} from '../../commons-atom/text-editor';
@@ -240,34 +239,19 @@ export default class DiffViewComponent extends React.Component {
   }
 
   _scrollToFirstHighlightedLine(): void {
+    const {filePath} = this.state;
     // Schedule scroll to first line after all lines have been rendered.
-    const {oldEditorState, newEditorState, filePath} = this.state;
-    const removedLines = oldEditorState.highlightedLines.removed;
-    const addedLines = newEditorState.highlightedLines.added;
-    if (addedLines.length === 0 && removedLines.length === 0) {
-      return;
-    }
-    const firstRemovedLine = getOffsetLineNumber(
-      removedLines[0] || 0,
-      oldEditorState.offsets,
-    );
-    const firstAddedLine = getOffsetLineNumber(
-      addedLines[0] || 0,
-      newEditorState.offsets,
-    );
     const scrollTimeout = setTimeout(() => {
       this._subscriptions.remove(clearScrollTimeoutSubscription);
-      if (this.state.filePath !== filePath) {
+      const {diffSections} = this.state;
+      if (this.state.filePath !== filePath || diffSections.length === 0) {
         return;
       }
-      if (
-        addedLines.length === 0 ||
-        (removedLines.length > 0 && firstRemovedLine < firstAddedLine)
-      ) {
-        this._oldEditorComponent.scrollToScreenLine(firstRemovedLine);
-      } else {
-        this._newEditorComponent.scrollToScreenLine(firstAddedLine);
-      }
+
+      const {status, lineNumber} = diffSections[0];
+      const textEditor = this._diffSectionStatusToEditor(status);
+      textEditor.scrollToBufferPosition([lineNumber, 0]);
+
     }, SCROLL_FIRST_CHANGE_DELAY_MS);
     const clearScrollTimeoutSubscription = new Disposable(() => {
       clearTimeout(scrollTimeout);
