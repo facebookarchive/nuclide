@@ -1,12 +1,28 @@
 {
   ".platform-darwin atom-workspace": {
-    "alt-cmd-shift-d": "nuclide-diff-view:open",
-    "cmd-shift-e": "nuclide-diff-view:switch-to-editor",
-    "cmd-ctrl-enter": "nuclide-diff-view:commit-message"
+    "alt-cmd-shift-d": "nuclide-diff-view:open"
   },
   ".platform-win32 atom-workspace, .platform-linux atom-workspace": {
-    "alt-ctrl-shift-d": "nuclide-diff-view:open",
-    "ctrl-shift-e": "nuclide-diff-view:switch-to-editor",
+    "alt-ctrl-shift-d": "nuclide-diff-view:open"
+  },
+  ".platform-darwin .nuclide-diff-editor-container": {
+    "cmd-shift-e": "nuclide-diff-view:switch-to-editor"
+  },
+  ".platform-win32 nuclide-diff-editor-container, .platform-linux nuclide-diff-editor-container": {
+    "ctrl-shift-e": "nuclide-diff-view:switch-to-editor"
+  },
+  ".platform-darwin .commit-form-wrapper": {
+    "cmd-ctrl-enter": "nuclide-diff-view:commit-message"
+  },
+  ".platform-win32 .commit-form-wrapper, .platform-linux .commit-form-wrapper": {
     "alt-ctrl-enter": "nuclide-diff-view:commit-message"
+  },
+  ".platform-darwin .nuclide-diff-editor-container": {
+    "cmd-ctrl-]": "nuclide-diff-view:next-diff-section",
+    "cmd-ctrl-[": "nuclide-diff-view:previous-diff-section"
+  },
+  ".platform-win32 .nuclide-diff-editor-container, .platform-linux .nuclide-diff-editor-container": {
+    "alt-ctrl-]": "nuclide-diff-view:next-diff-section",
+    "alt-ctrl-[": "nuclide-diff-view:previous-diff-section"
   }
 }

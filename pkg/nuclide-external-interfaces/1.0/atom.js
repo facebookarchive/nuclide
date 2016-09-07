@@ -711,6 +711,7 @@ declare class atom$TextEditor extends atom$Model {
       screenLine?: boolean,
     },
   ): atom$Point,
+  getVisibleRowRange(): ?[number, number],
 
   // Decorations
   decorateMarker(marker: atom$Marker, decorationParams: DecorateMarkerParams): atom$Decoration,

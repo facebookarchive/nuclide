@@ -34,6 +34,7 @@ type Props = {
   inlineElements: Array<UIElement>,
   readOnly: boolean,
   onChange: (newContents: string) => any,
+  onDidChangeScrollTop?: () => mixed,
   onDidUpdateTextEditorElement: () => mixed,
 };
 
@@ -62,7 +63,8 @@ export default class DiffViewEditorPane extends React.Component {
     const editorSubscriptions = this._editorSubscriptions = new CompositeDisposable();
     this._subscriptions.add(editorSubscriptions);
 
-    this._diffViewEditor = new DiffViewEditor(this.getEditorDomElement());
+    const editorDomElement = this.getEditorDomElement();
+    this._diffViewEditor = new DiffViewEditor(editorDomElement);
     const textEditor = this.getEditorModel();
     const textBuffer = textEditor.getBuffer();
 
@@ -91,6 +93,12 @@ export default class DiffViewEditorPane extends React.Component {
     editorSubscriptions.add(atom.config.observe('editor.softTabs', softTabs => {
       textEditor.setSoftTabs(softTabs);
     }));
+
+    if (this.props.onDidChangeScrollTop != null) {
+      editorSubscriptions.add(
+        editorDomElement.onDidChangeScrollTop(this.props.onDidChangeScrollTop),
+      );
+    }
 
     if (this.props.onDidUpdateTextEditorElement) {
       this.props.onDidUpdateTextEditorElement();
@@ -152,11 +160,6 @@ export default class DiffViewEditorPane extends React.Component {
       this._renderComponentsInline(newProps.inlineElements);
     }
     this._setHighlightedLines(newProps.highlightedLines);
-  }
-
-  scrollToScreenLine(screenLine: number): void {
-    invariant(this._diffViewEditor, 'diffViewEditor has not been setup yet.');
-    this._diffViewEditor.scrollToScreenLine(screenLine);
   }
 
   _setTextContent(filePath: string, text: string): void {

@@ -22,7 +22,7 @@ type DiffNavigationBarProps = {
   elementHeight: number,
   diffSections: Array<DiffSection>,
   offsetLineCount: number,
-  onClick: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
+  onNavigateToDiffSection: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
 };
 
 export default class DiffNavigationBar extends React.Component {
@@ -55,7 +55,7 @@ export default class DiffNavigationBar extends React.Component {
   }
 
   _handleClick(diffSectionStatus: DiffSectionStatusType, lineNumber: number): void {
-    this.props.onClick(diffSectionStatus, lineNumber);
+    this.props.onNavigateToDiffSection(diffSectionStatus, lineNumber);
   }
 }
 

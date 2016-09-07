@@ -68,6 +68,10 @@ type State = {
   oldEditorState: EditorState,
   newEditorState: EditorState,
   diffSections: Array<DiffSection>,
+  // The offset of the scroll line number, being:
+  // `offsetOf(lineNumer(scrollTop + scrollHeight /2))`
+  // That helps derive which diff section are we on, next and previous sections.
+  middleScrollOffsetLineNumber: number,
   offsetLineCount: number,
   toolbarVisible: boolean,
 };
@@ -120,6 +124,7 @@ function getInitialState(): State {
   return {
     diffSections: [],
     filePath: '',
+    middleScrollOffsetLineNumber: 0,
     mode: DiffMode.BROWSE_MODE,
     newEditorState: initialEditorState(),
     offsetLineCount: 0,
@@ -158,10 +163,11 @@ export default class DiffViewComponent extends React.Component {
     (this: any)._updateLineDiffState = this._updateLineDiffState.bind(this);
     (this: any)._onChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
     (this: any)._onTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
-    (this: any)._onNavigationClick = this._onNavigationClick.bind(this);
+    (this: any)._handleNavigateToDiffSection = this._handleNavigateToDiffSection.bind(this);
     (this: any)._onDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
     (this: any)._onChangeMode = this._onChangeMode.bind(this);
     (this: any)._onSwitchToEditor = this._onSwitchToEditor.bind(this);
+    (this: any)._onDidChangeScrollTop = this._onDidChangeScrollTop.bind(this);
     this._readonlyBuffer = new TextBuffer();
     this._subscriptions = new CompositeDisposable();
   }
@@ -249,8 +255,7 @@ export default class DiffViewComponent extends React.Component {
       }
 
       const {status, lineNumber} = diffSections[0];
-      const textEditor = this._diffSectionStatusToEditor(status);
-      textEditor.scrollToBufferPosition([lineNumber, 0]);
+      this._handleNavigateToDiffSection(status, lineNumber);
 
     }, SCROLL_FIRST_CHANGE_DELAY_MS);
     const clearScrollTimeoutSubscription = new Disposable(() => {
@@ -376,6 +381,7 @@ export default class DiffViewComponent extends React.Component {
           inlineElements={oldState.inlineElements}
           readOnly={true}
           onChange={EMPTY_FUNCTION}
+          onDidChangeScrollTop={this._onDidChangeScrollTop}
           onDidUpdateTextEditorElement={EMPTY_FUNCTION}
         />,
         this._getPaneElement(this._oldEditorPane),
@@ -425,7 +431,7 @@ export default class DiffViewComponent extends React.Component {
         elementHeight={navigationPaneElement.clientHeight}
         diffSections={diffSections}
         offsetLineCount={offsetLineCount}
-        onClick={this._onNavigationClick}
+        onNavigateToDiffSection={this._handleNavigateToDiffSection}
       />,
       navigationPaneElement,
     );
@@ -433,18 +439,32 @@ export default class DiffViewComponent extends React.Component {
     this._navigationComponent = component;
   }
 
-  _onNavigationClick(diffSectionStatus: DiffSectionStatusType, scrollToLineNumber: number): void {
-    const textEditor = this._diffSectionStatusToEditor(diffSectionStatus);
-    textEditor.scrollToBufferPosition([scrollToLineNumber, 0]);
+  _handleNavigateToDiffSection(
+    diffSectionStatus: DiffSectionStatusType,
+    scrollToLineNumber: number,
+  ): void {
+    const textEditorElement = this._diffSectionStatusToEditorElement(diffSectionStatus);
+    const textEditor = textEditorElement.getModel();
+    const pixelPositionTop = textEditorElement
+      .pixelPositionForBufferPosition([scrollToLineNumber, 0]).top;
+    // Manually calculate the scroll location, instead of using
+    // `textEditor.scrollToBufferPosition([lineNumber, 0], {center: true})`
+    // because that API to wouldn't center the line if it was in the visible screen range.
+    const scrollTop = pixelPositionTop
+      + textEditor.getLineHeightInPixels() / 2
+      - textEditorElement.clientHeight / 2;
+    textEditorElement.setScrollTop(scrollTop);
   }
 
-  _diffSectionStatusToEditor(diffSectionStatus: DiffSectionStatusType): atom$TextEditor {
+  _diffSectionStatusToEditorElement(
+    diffSectionStatus: DiffSectionStatusType,
+  ): atom$TextEditorElement {
     switch (diffSectionStatus) {
       case DiffSectionStatus.ADDED:
       case DiffSectionStatus.CHANGED:
-        return this._newEditorComponent.getEditorModel();
+        return this._newEditorComponent.getEditorDomElement();
       case DiffSectionStatus.REMOVED:
-        return this._oldEditorComponent.getEditorModel();
+        return this._oldEditorComponent.getEditorDomElement();
       default:
         throw new Error('Invalid diff section status');
     }
@@ -466,22 +486,25 @@ export default class DiffViewComponent extends React.Component {
   }
 
   render(): React.Element<any> {
-    let toolbarComponent = null;
-    if (this.state.toolbarVisible) {
-      const {oldEditorState, newEditorState} = this.state;
-      toolbarComponent = (
+    const {
+      diffSections,
+      filePath,
+      middleScrollOffsetLineNumber,
+      newEditorState,
+      oldEditorState,
+    } = this.state;
+    return (
+      <div className="nuclide-diff-view-container">
         <DiffViewToolbar
-          filePath={this.state.filePath}
+          diffSections={diffSections}
+          filePath={filePath}
+          middleScrollOffsetLineNumber={middleScrollOffsetLineNumber}
           newRevisionTitle={newEditorState.revisionTitle}
           oldRevisionTitle={oldEditorState.revisionTitle}
           onSwitchMode={this._onChangeMode}
           onSwitchToEditor={this._onSwitchToEditor}
+          onNavigateToDiffSection={this._handleNavigateToDiffSection}
         />
-      );
-    }
-    return (
-      <div className="nuclide-diff-view-container">
-        {toolbarComponent}
         <div className="nuclide-diff-view-component" ref="paneContainer" />
       </div>
     );
@@ -499,6 +522,19 @@ export default class DiffViewComponent extends React.Component {
 
   _onTimelineChangeRevision(revision: RevisionInfo): void {
     this.props.diffModel.setRevision(revision);
+  }
+
+  _onDidChangeScrollTop(): void {
+    const textEditorElement = this._oldEditorComponent.getEditorDomElement();
+    const textEditor = textEditorElement.getModel();
+    const linePixels = textEditor.getLineHeightInPixels();
+    const middleVerticalScroll = Math.floor(
+      textEditorElement.getScrollTop()
+      + textEditorElement.clientHeight / 2
+      - linePixels / 2,
+    );
+    const middleScrollOffsetLineNumber = middleVerticalScroll / linePixels;
+    this.setState({middleScrollOffsetLineNumber});
   }
 
   /**
