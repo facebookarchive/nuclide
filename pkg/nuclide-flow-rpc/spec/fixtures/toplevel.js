@@ -17,3 +17,13 @@ function baz(arg: ?Type, a: any): RetType {
 function foo({bar, y}, [b]): void {
   baz();
 }
+
+const funExpr1 = function(param1: string): void {
+  funExpr2(true, null);
+};
+
+const funExpr2 = (arg1: boolean, arg2: any) => {
+  return funExpr1(shouldNotShowUp);
+};
+
+const shouldNotShowUp = '';

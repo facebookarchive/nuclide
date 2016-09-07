@@ -46,19 +46,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
   const extent = getExtent(item);
   switch (item.type) {
     case 'FunctionDeclaration':
-      return {
-        tokenizedText: [
-          keyword('function'),
-          whitespace(' '),
-          method(item.id.name),
-          plain('('),
-          ...paramsTokenizedText(item.params),
-          plain(')'),
-        ],
-        representativeName: item.id.name,
-        children: [],
-        ...extent,
-      };
+      return functionOutline(item.id.name, item.params, extent);
     case 'ClassDeclaration':
       return {
         tokenizedText: [
@@ -120,6 +108,8 @@ function itemToTree(item: any): ?FlowOutlineTree {
       return topLevelExpressionOutline(item);
     case 'TypeAlias':
       return typeAliasOutline(item);
+    case 'VariableDeclaration':
+      return functionExpressionOutline(item);
     default:
       return null;
   }
@@ -166,6 +156,22 @@ function getExtent(item: any): Extent {
       line: item.loc.end.line - 1,
       column: item.loc.end.column,
     },
+  };
+}
+
+function functionOutline(name: string, params: Array<any>, extent: Extent): FlowOutlineTree {
+  return {
+    tokenizedText: [
+      keyword('function'),
+      whitespace(' '),
+      method(name),
+      plain('('),
+      ...paramsTokenizedText(params),
+      plain(')'),
+    ],
+    representativeName: name,
+    children: [],
+    ...extent,
   };
 }
 
@@ -377,4 +383,14 @@ function getFunctionBody(fn: ?any): ?Array<any> {
     return null;
   }
   return fn.body.body;
+}
+
+function functionExpressionOutline(varDeclaration: any): ?FlowOutlineTree {
+  // If there are multiple var declarations in one line, just take the first.
+  const decl = varDeclaration.declarations[0];
+  if (decl.init == null ||
+    (decl.init.type !== 'FunctionExpression' && decl.init.type !== 'ArrowFunctionExpression')) {
+    return null;
+  }
+  return functionOutline(decl.id.name, decl.init.params, getExtent(varDeclaration));
 }

@@ -149,6 +149,49 @@ const expectedToplevelOutline = [
     },
     children: [],
   },
+  {
+    tokenizedText: [
+      {kind: 'keyword', value: 'function'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'method', value: 'funExpr1'},
+      {kind: 'plain', value: '('},
+      {kind: 'param', value: 'param1'},
+      {kind: 'plain', value: ')'},
+    ],
+    representativeName: 'funExpr1',
+    startPosition: {
+      line: 20,
+      column: 0,
+    },
+    endPosition: {
+      line: 22,
+      column: 2,
+    },
+    children: [],
+  },
+  {
+    tokenizedText: [
+      {kind: 'keyword', value: 'function'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'method', value: 'funExpr2'},
+      {kind: 'plain', value: '('},
+      {kind: 'param', value: 'arg1'},
+      {kind: 'plain', value: ','},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'param', value: 'arg2'},
+      {kind: 'plain', value: ')'},
+    ],
+    representativeName: 'funExpr2',
+    startPosition: {
+      line: 24,
+      column: 0,
+    },
+    endPosition: {
+      line: 26,
+      column: 2,
+    },
+    children: [],
+  },
 ];
 
 const expectedJasmineOutline = [
