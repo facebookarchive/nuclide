@@ -213,7 +213,7 @@ export default class RepositoryStack {
     const revisionsState = await this._fetchRevisionsState();
     this._lastRevisionsState = revisionsState;
     if (!isEqualRevisionsStates(revisionsState, lastRevisionsState)) {
-      this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
+      this._emitter.emit(CHANGE_REVISIONS_EVENT);
       this._serializedUpdateDiffStatusForCommits().catch(error => {
         getLogger().warn('Failed to update diff status for commits', error);
       });
@@ -230,7 +230,7 @@ export default class RepositoryStack {
       cachedRevisionsState.revisions,
     );
     // Emit the new revisions state with the diff statuses.
-    this._emitter.emit(CHANGE_REVISIONS_EVENT, await this.getCachedRevisionsState());
+    this._emitter.emit(CHANGE_REVISIONS_EVENT);
   }
 
   /**
@@ -507,8 +507,8 @@ export default class RepositoryStack {
       'Diff Viw Timeline: non-applicable selected revision',
     );
 
-    this._selectedCompareCommitId = revisionsState.compareCommitId = revision.id;
-    this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
+    this._selectedCompareCommitId = revision.id;
+    this._emitter.emit(CHANGE_REVISIONS_EVENT);
 
     invariant(
       this._diffOption === DiffOption.COMPARE_COMMIT,
@@ -530,7 +530,7 @@ export default class RepositoryStack {
   }
 
   onDidChangeRevisions(
-    callback: (revisionsState: RevisionsState) => void,
+    callback: () => void,
   ): IDisposable {
     return this._emitter.on(CHANGE_REVISIONS_EVENT, callback);
   }

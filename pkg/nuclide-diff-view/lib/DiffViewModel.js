@@ -318,8 +318,8 @@ export default class DiffViewModel {
       repositoryStack.onDidUpdateSelectedFileChanges(
         this._updateSelectedFileChanges.bind(this),
       ),
-      repositoryStack.onDidChangeRevisions(revisionsState => {
-        this._updateChangedRevisions(repositoryStack, revisionsState, true)
+      repositoryStack.onDidChangeRevisions(() => {
+        this._updateChangedRevisions(repositoryStack, true)
           .catch(notifyInternalError);
       }),
     );
@@ -405,15 +405,18 @@ export default class DiffViewModel {
 
   async _updateChangedRevisions(
     repositoryStack: RepositoryStack,
-    revisionsState: RevisionsState,
     reloadFileDiffState: boolean,
   ): Promise<void> {
     if (repositoryStack !== this._activeRepositoryStack) {
       return;
     }
-    track('diff-view-update-timeline-revisions', {
-      revisionsCount: `${revisionsState.revisions.length}`,
-    });
+
+    const revisionsState = await repositoryStack.getCachedRevisionsState();
+    if (repositoryStack !== this._activeRepositoryStack) {
+      return;
+    }
+
+    track('diff-view-update-timeline-revisions');
     this._setState({
       ...this._state,
       revisionsState,
@@ -757,8 +760,7 @@ export default class DiffViewModel {
     if (!this._isActive) {
       return;
     }
-    const revisionsState = await repositoryStack.getCachedRevisionsState();
-    this._updateChangedRevisions(repositoryStack, revisionsState, false);
+    this._updateChangedRevisions(repositoryStack, false);
   }
 
 
