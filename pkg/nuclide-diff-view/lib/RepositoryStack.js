@@ -248,7 +248,7 @@ export default class RepositoryStack {
       case DiffOption.COMPARE_COMMIT:
         if (
           revisionsState.compareCommitId == null ||
-          revisionsState.compareCommitId === revisionsState.commitId
+          revisionsState.compareCommitId === revisionsState.headCommitId
         ) {
           this._selectedFileChanges = this._dirtyFileChanges;
         } else {
@@ -260,13 +260,13 @@ export default class RepositoryStack {
         }
         break;
       case DiffOption.LAST_COMMIT:
-        const {revisions} = revisionsState;
-        if (revisions.length <= 1) {
+        const {headToForkBaseRevisions} = revisionsState;
+        if (headToForkBaseRevisions.length <= 1) {
           this._selectedFileChanges = this._dirtyFileChanges;
         } else {
           await this._updateSelectedChangesToCommit(
             revisionsState,
-            revisions[revisions.length - 2].id,
+            headToForkBaseRevisions[headToForkBaseRevisions.length - 2].id,
           );
         }
         break;
@@ -278,7 +278,7 @@ export default class RepositoryStack {
     revisionsState: RevisionsState,
     beforeCommitId: number,
   ): Promise<void> {
-    const latestToOldesRevisions = revisionsState.revisions.slice().reverse();
+    const latestToOldesRevisions = revisionsState.headToForkBaseRevisions.slice().reverse();
     const revisionChanges = await this._fetchFileChangesForRevisions(
       latestToOldesRevisions.filter(revision => revision.id > beforeCommitId),
     );
@@ -343,10 +343,11 @@ export default class RepositoryStack {
     }
 
     return {
-      commitId: tipRevision == null ? 0 : tipRevision.id,
+      headCommitId: tipRevision == null ? 0 : tipRevision.id,
       compareCommitId,
       diffStatuses,
-      revisions: headToForkBaseRevisions,
+      headToForkBaseRevisions,
+      revisions,
     };
   }
 
@@ -445,27 +446,29 @@ export default class RepositoryStack {
 
   async fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
     const revisionsState = await this.getCachedRevisionsState();
-    const {revisions, commitId} = revisionsState;
+    const {headToForkBaseRevisions, headCommitId} = revisionsState;
     // When `compareCommitId` is null, the `HEAD` commit contents is compared
     // to the filesystem, otherwise it compares that commit to filesystem.
     let compareCommitId;
     switch (this._diffOption) {
       case DiffOption.DIRTY:
-        compareCommitId = commitId;
+        compareCommitId = headCommitId;
         break;
       case DiffOption.LAST_COMMIT:
-        compareCommitId = revisions.length > 1
-          ? revisions[revisions.length - 2].id
-          : commitId;
+        compareCommitId = headToForkBaseRevisions.length > 1
+          ? headToForkBaseRevisions[headToForkBaseRevisions.length - 2].id
+          : headCommitId;
         break;
       case DiffOption.COMPARE_COMMIT:
-        compareCommitId = revisionsState.compareCommitId || commitId;
+        compareCommitId = revisionsState.compareCommitId || headCommitId;
         break;
       default:
         throw new Error(`Invalid Diff Option: ${this._diffOption}`);
     }
 
-    const [revisionInfo] = revisions.filter(revision => revision.id === compareCommitId);
+    const revisionInfo = headToForkBaseRevisions.find(
+      revision => revision.id === compareCommitId,
+    );
     invariant(
       revisionInfo,
       `Diff Viw Fetcher: revision with id ${compareCommitId} not found`,
@@ -500,10 +503,10 @@ export default class RepositoryStack {
 
   async setRevision(revision: RevisionInfo): Promise<void> {
     const revisionsState = await this.getCachedRevisionsState();
-    const {revisions} = revisionsState;
+    const {headToForkBaseRevisions} = revisionsState;
 
     invariant(
-      revisions && revisions.find(check => check.id === revision.id),
+      headToForkBaseRevisions && headToForkBaseRevisions.find(check => check.id === revision.id),
       'Diff Viw Timeline: non-applicable selected revision',
     );
 

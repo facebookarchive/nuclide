@@ -57,15 +57,20 @@ export default class DiffTimelineView extends React.Component {
     if (revisionsState == null) {
       content = 'Revisions not loaded...';
     } else {
-      const {revisions, compareCommitId, commitId, diffStatuses} = revisionsState;
+      const {
+        compareCommitId,
+        diffStatuses,
+        headCommitId,
+        headToForkBaseRevisions,
+      } = revisionsState;
       content = (
         <RevisionsTimelineComponent
           diffModel={diffModel}
-          compareRevisionId={compareCommitId || commitId}
+          compareRevisionId={compareCommitId || headCommitId}
           dirtyFileCount={diffModel.getActiveStackDirtyFileChanges().size}
           onSelectionChange={onSelectionChange}
           onClickPublish={this._handleClickPublish}
-          revisions={revisions}
+          revisions={headToForkBaseRevisions}
           diffStatuses={diffStatuses}
         />
       );

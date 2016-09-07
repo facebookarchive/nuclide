@@ -44,10 +44,11 @@ export type DiffStatusDisplay = {
 };
 
 export type RevisionsState = {
-  revisions: Array<RevisionInfo>,
+  headToForkBaseRevisions: Array<RevisionInfo>,
   compareCommitId: ?number,
-  commitId: number,
+  headCommitId: number,
   diffStatuses: Map<number, DiffStatusDisplay>,
+  revisions: Array<RevisionInfo>,
 };
 
 export type OffsetMap = Map<number, number>;
