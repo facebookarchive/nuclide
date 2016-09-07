@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
 import type {LRUCache} from 'lru-cache';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {
@@ -20,12 +19,10 @@ import type {
   RevisionsState,
 } from './types';
 import type {
-  AmendModeValue,
   RevisionFileChanges,
   RevisionInfo,
 } from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus, DiffOption} from './constants';
@@ -496,11 +493,6 @@ export default class RepositoryStack {
     };
   }
 
-  getTemplateCommitMessage(): Promise<?string> {
-    // TODO(t12228275) This is a stopgap hack, fix it.
-    return this._repository.getTemplateCommitMessage();
-  }
-
   async setRevision(revision: RevisionInfo): Promise<void> {
     const revisionsState = await this.getCachedRevisionsState();
     const {headToForkBaseRevisions} = revisionsState;
@@ -540,23 +532,6 @@ export default class RepositoryStack {
 
   getRepository(): HgRepositoryClient {
     return this._repository;
-  }
-
-  commit(message: string): Observable<ProcessMessage> {
-    return this._repository.commit(message);
-  }
-
-  amend(message: ?string, amendMode: AmendModeValue): Observable<ProcessMessage> {
-    // TODO(most): report progress, especially in Rebase and Fixup modes.
-    return this._repository.amend(message, amendMode);
-  }
-
-  revert(filePaths: Array<NuclideUri>): Promise<void> {
-    return this._repository.revert(filePaths);
-  }
-
-  addAll(filePaths: Array<NuclideUri>): Promise<void> {
-    return this._repository.addAll(filePaths);
   }
 
   dispose(): void {

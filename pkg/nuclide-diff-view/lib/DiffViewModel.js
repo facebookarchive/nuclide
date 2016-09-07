@@ -879,7 +879,7 @@ export default class DiffViewModel {
       if (untrackedChoice === 0) /* Cancel */ {
         return null;
       } else if (untrackedChoice === 1) /* Add */ {
-        await activeStack.addAll(Array.from(untrackedChanges.keys()));
+        await activeStack.getRepository().addAll(Array.from(untrackedChanges.keys()));
         shouldAmend = true;
       } else if (untrackedChoice === 2) /* Allow Untracked */ {
         allowUntracked = true;
@@ -903,13 +903,15 @@ export default class DiffViewModel {
           Array.from(dirtyFileChanges.entries())
           .filter(fileChange => fileChange[1] !== FileChangeStatus.UNTRACKED)
           .map(fileChange => fileChange[0]);
-        await activeStack.revert(canRevertFilePaths);
+        await activeStack.getRepository().revert(canRevertFilePaths);
       } else if (cleanChoice === 2) /* Amend */ {
         shouldAmend = true;
       }
     }
     if (shouldAmend) {
-      await activeStack.amend(commitMessage, this._getSelectedAmendMode()).toArray().toPromise();
+      await activeStack.getRepository()
+        .amend(commitMessage, this._getSelectedAmendMode())
+        .toArray().toPromise();
       amended = true;
     }
     return {
@@ -940,6 +942,7 @@ export default class DiffViewModel {
       // amends the commit message (with the revision url), breaking the stack on top of it.
       // Consider prompting for `hg amend --fixup` after to rebase the stack when needed.
       await activeRepositoryStack
+        .getRepository()
         .amend(publishMessage, hgConstants.AmendMode.CLEAN)
         .toArray().toPromise();
       atom.notifications.addSuccess('Commit amended with the updated message');
@@ -1230,7 +1233,9 @@ export default class DiffViewModel {
     if (this._activeRepositoryStack == null) {
       throw new Error('Diff View: No active file or repository open');
     }
-    let commitMessage = await this._activeRepositoryStack.getTemplateCommitMessage();
+    let commitMessage = await this._activeRepositoryStack
+      .getRepository()
+      .getTemplateCommitMessage();
     // Commit templates that include newline strings, '\\n' in JavaScript, need to convert their
     // strings to literal newlines, '\n' in JavaScript, to be rendered as line breaks.
     if (commitMessage != null) {
@@ -1274,11 +1279,15 @@ export default class DiffViewModel {
       invariant(activeStack, 'No active repository stack');
       switch (commitMode) {
         case CommitMode.COMMIT:
-          await activeStack.commit(message).toArray().toPromise();
+          await activeStack.getRepository()
+            .commit(message)
+            .toArray().toPromise();
           atom.notifications.addSuccess('Commit created', {nativeFriendly: true});
           break;
         case CommitMode.AMEND:
-          await activeStack.amend(message, this._getSelectedAmendMode()).toArray().toPromise();
+          await activeStack.getRepository()
+            .amend(message, this._getSelectedAmendMode())
+            .toArray().toPromise();
           atom.notifications.addSuccess('Commit amended', {nativeFriendly: true});
           break;
       }
