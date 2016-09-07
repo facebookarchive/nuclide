@@ -17,10 +17,10 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 
 import {
+  AmendMode,
   HgStatusOption,
   MergeConflictStatus,
   StatusCodeId,
-  AmendMode,
 } from './hg-constants';
 import {Subject} from 'rxjs';
 import {parseHgBlameOutput} from './hg-blame-output-parser';
@@ -30,6 +30,7 @@ import {
   expressionForRevisionsBeforeHead,
   fetchRevisionInfoBetweenRevisions,
   fetchRevisionInfo,
+  fetchSmartlogRevisions,
 } from './hg-revision-expression-helpers';
 import {
   fetchFileContentAtRevision,
@@ -114,15 +115,21 @@ export type DiffInfo = {
   lineDiffs: Array<LineDiff>,
 };
 
+export type CommitPhaseType = 'public' | 'draft' | 'secret';
+
 export type RevisionInfo = {
-  id: number,
-  hash: string,
-  title: string,
   author: string,
+  bookmarks: Array<string>,
+  branch: string,
   date: Date,
   description: string,
-  // List of bookmarks at this revision.
-  bookmarks: Array<string>,
+  hash: string,
+  id: number,
+  remoteBookmarks: Array<string>,
+  parents: Array<string>,
+  phase: CommitPhaseType,
+  tags: Array<string>,
+  title: string,
 };
 
 export type AsyncExecuteRet = {
@@ -586,7 +593,7 @@ export class HgService {
    * @return an array with the revision info (`title`, `author`, `date` and `id`)
    * or `null` if no common ancestor was found.
    */
-  async fetchRevisionInfoBetweenHeadAndBase(): Promise<?Array<RevisionInfo>> {
+  async fetchRevisionInfoBetweenHeadAndBase(): Promise<Array<RevisionInfo>> {
     const forkBaseName = await getForkBaseName(this._workingDirectory);
     const revisionsInfo = await fetchRevisionInfoBetweenRevisions(
       expressionForCommonAncestor(forkBaseName),
@@ -594,6 +601,10 @@ export class HgService {
       this._workingDirectory,
     );
     return revisionsInfo;
+  }
+
+  fetchSmartlogRevisions(): Promise<Array<RevisionInfo>> {
+    return fetchSmartlogRevisions(this._workingDirectory);
   }
 
   /**

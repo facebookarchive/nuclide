@@ -31,10 +31,11 @@ import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus, DiffOption} from './constants';
 import {arrayEqual} from '../../commons-node/collection';
 import debounce from '../../commons-node/debounce';
-import {serializeAsyncCall, retryLimit} from '../../commons-node/promise';
+import {serializeAsyncCall} from '../../commons-node/promise';
 import {trackTiming} from '../../nuclide-analytics';
 import {notifyInternalError} from './notifications';
 import {getLogger} from '../../nuclide-logging';
+import {hgConstants} from '../../nuclide-hg-rpc';
 import invariant from 'assert';
 import LRU from 'lru-cache';
 
@@ -42,9 +43,6 @@ const UPDATE_SELECTED_FILE_CHANGES_EVENT = 'update-selected-file-changes';
 const UPDATE_DIRTY_FILES_EVENT = 'update-dirty-files';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
-
-const FETCH_REV_INFO_RETRY_TIME_MS = 1000;
-const FETCH_REV_INFO_MAX_TRIES = 5;
 
 type DiffStatusFetcher = (
   directoryPath: NuclideUri,
@@ -320,7 +318,9 @@ export default class RepositoryStack {
    * Amend the revisions state with the latest selected valid compare commit id.
    */
   _createRevisionsState(revisions: Array<RevisionInfo>): RevisionsState {
-    const commitId = revisions[revisions.length - 1].id;
+    const {HEAD_COMMIT_TAG, CommitPhase} = hgConstants;
+    const hashToRevisionInfo = new Map(revisions.map(revision => [revision.hash, revision]));
+    const tipRevision = revisions.find(revision => revision.tags.includes(HEAD_COMMIT_TAG));
     // Prioritize the cached compaereCommitId, if it exists.
     // The user could have selected that from the timeline view.
     let compareCommitId = this._selectedCompareCommitId;
@@ -329,11 +329,24 @@ export default class RepositoryStack {
       compareCommitId = null;
     }
     const diffStatuses = this._commitIdsToDiffStatuses;
+
+    // `headToForkBaseRevisions` should have the public commit at the fork base as the first.
+    // and the rest of the current `HEAD` stack in order with the `HEAD` being last.
+    const headToForkBaseRevisions = [];
+    let parentRevision = tipRevision;
+    while (parentRevision != null && parentRevision.phase !== CommitPhase.PUBLIC) {
+      headToForkBaseRevisions.unshift(parentRevision);
+      parentRevision = hashToRevisionInfo.get(parentRevision.parents[0]);
+    }
+    if (parentRevision != null) {
+      headToForkBaseRevisions.unshift(parentRevision);
+    }
+
     return {
-      commitId,
+      commitId: tipRevision == null ? 0 : tipRevision.id,
       compareCommitId,
       diffStatuses,
-      revisions,
+      revisions: headToForkBaseRevisions,
     };
   }
 
@@ -346,14 +359,14 @@ export default class RepositoryStack {
     // may be not applicable, but that's defined once the rebase is done.
     // Hence, we need to retry fetching the revision info (depending on the common ancestor)
     // because the watchman-based Mercurial updates doesn't consider or wait while rebasing.
-    const revisions = await retryLimit(
-      () => this._repository.fetchRevisionInfoBetweenHeadAndBase(),
-      result => result != null,
-      FETCH_REV_INFO_MAX_TRIES,
-      FETCH_REV_INFO_RETRY_TIME_MS,
-    );
-    if (revisions == null || revisions.length === 0) {
-      throw new Error('Cannot fetch revision info needed!');
+    let revisions;
+    try {
+      revisions = await this._repository.fetchSmartlogRevisions();
+    } catch (error) {
+      throw new Error('Cannot fetch revision info needed!\n' +
+        'Make sure to have the \'smartlog\' mercurial extension\n' +
+        error.message,
+      );
     }
     return revisions;
   }

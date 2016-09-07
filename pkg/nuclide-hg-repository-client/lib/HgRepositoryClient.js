@@ -874,8 +874,12 @@ export class HgRepositoryClient {
     return this._service.fetchFilesChangedAtRevision(revision);
   }
 
-  fetchRevisionInfoBetweenHeadAndBase(): Promise<?Array<RevisionInfo>> {
+  fetchRevisionInfoBetweenHeadAndBase(): Promise<Array<RevisionInfo>> {
     return this._service.fetchRevisionInfoBetweenHeadAndBase();
+  }
+
+  fetchSmartlogRevisions(): Promise<Array<RevisionInfo>> {
+    return this._service.fetchSmartlogRevisions();
   }
 
   // See HgService.getBaseRevision.

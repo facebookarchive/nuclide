@@ -12,7 +12,6 @@
 import type {RevisionInfo} from './HgService';
 
 import {hgAsyncExecute} from './hg-utils';
-import invariant from 'assert';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -29,19 +28,26 @@ const logger = getLogger();
 
 const HG_CURRENT_WORKING_DIRECTORY_PARENT = '.';
 
-const INFO_ID_PREFIX = 'id:';
-const INFO_HASH_PREFIX = 'hash:';
-const INFO_TITLE_PREFIX = 'title:';
-const INFO_AUTHOR_PREFIX = 'author:';
-const INFO_DATE_PREFIX = 'date:';
 // Exported for testing.
 export const INFO_REV_END_MARK = '<<NUCLIDE_REV_END_MARK>>';
 
-const REVISION_INFO_TEMPLATE = `${INFO_ID_PREFIX}{rev}
-${INFO_TITLE_PREFIX}{desc|firstline}
-${INFO_AUTHOR_PREFIX}{author}
-${INFO_DATE_PREFIX}{date|isodate}
-${INFO_HASH_PREFIX}{node|short}
+// We use `{p1node|short} {p2node|short}` instead of `{parents}`
+// because `{parents}` only prints when a node has more than one parent,
+// not when a node has one natural parent.
+// Reference: `hg help templates`
+const NO_NODE_HASH = '000000000000';
+
+const REVISION_INFO_TEMPLATE = `{rev}
+{desc|firstline}
+{author}
+{date|isodate}
+{node|short}
+{branch}
+{phase}
+{bookmarks}
+{remotenames}
+{tags}
+{p1node|short} {p2node|short}
 {desc}
 ${INFO_REV_END_MARK}
 `;
@@ -111,7 +117,6 @@ export async function fetchCommonAncestorOfHeadAndRevision(
   }
 }
 
-
 async function fetchRevisions(
   revisionExpression: string,
   workingDirectory: string,
@@ -121,22 +126,12 @@ async function fetchRevisions(
     '--rev', revisionExpression,
     '--limit', '20',
   ];
-  const bookmarksArgs = ['bookmarks'];
   const options = {
     cwd: workingDirectory,
   };
-
   try {
-    const [revisionsResult, bookmarksResult] = await Promise.all([
-      hgAsyncExecute(revisionLogArgs, options),
-      hgAsyncExecute(bookmarksArgs, options),
-    ]);
-    const revisionsInfo = parseRevisionInfoOutput(revisionsResult.stdout);
-    const bookmarksInfo = parseBookmarksOutput(bookmarksResult.stdout);
-    for (const revisionInfo of revisionsInfo) {
-      revisionInfo.bookmarks = bookmarksInfo.get(revisionInfo.id) || [];
-    }
-    return revisionsInfo;
+    const revisionsResult = await hgAsyncExecute(revisionLogArgs, options);
+    return parseRevisionInfoOutput(revisionsResult.stdout);
   } catch (e) {
     logger.warn(
       'Failed to get revision info for revisions' +
@@ -159,22 +154,28 @@ async function fetchRevisions(
  * For each RevisionInfo, the `bookmarks` field will contain the list
  * of bookmark names applied to that revision.
  */
-export async function fetchRevisionInfoBetweenRevisions(
+export function fetchRevisionInfoBetweenRevisions(
   revisionFrom: string,
   revisionTo: string,
   workingDirectory: string,
 ): Promise<Array<RevisionInfo>> {
   const revisionExpression = `${revisionFrom}::${revisionTo}`;
-  return await fetchRevisions(revisionExpression, workingDirectory);
+  return fetchRevisions(revisionExpression, workingDirectory);
 }
 
 export async function fetchRevisionInfo(
     revisionExpression: string,
     workingDirectory: string,
   ): Promise<RevisionInfo> {
-
   const [revisionInfo] = await fetchRevisions(revisionExpression, workingDirectory);
   return revisionInfo;
+}
+
+export function fetchSmartlogRevisions(
+  workingDirectory: string,
+): Promise<Array<RevisionInfo>> {
+  const revisionExpression = 'smartlog() + ancestor(smartlog())';
+  return fetchRevisions(revisionExpression, workingDirectory);
 }
 
 /**
@@ -185,45 +186,34 @@ export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<Revi
   const revisionInfo = [];
   for (const chunk of revisions) {
     const revisionLines = chunk.trim().split('\n');
-    if (revisionLines.length < 6) {
+    if (revisionLines.length < 12) {
       continue;
     }
     revisionInfo.push({
-      id: parseInt(revisionLines[0].slice(INFO_ID_PREFIX.length), 10),
-      title: revisionLines[1].slice(INFO_TITLE_PREFIX.length),
-      author: revisionLines[2].slice(INFO_AUTHOR_PREFIX.length),
-      date: new Date(revisionLines[3].slice(INFO_DATE_PREFIX.length)),
-      hash: revisionLines[4].slice(INFO_HASH_PREFIX.length),
-      description: revisionLines.slice(5).join('\n'),
-      bookmarks: [],
+      id: parseInt(revisionLines[0], 10),
+      title: revisionLines[1],
+      author: revisionLines[2],
+      date: new Date(revisionLines[3]),
+      hash: revisionLines[4],
+      branch: revisionLines[5],
+      // Phase is either `public`, `draft` or `secret`.
+      // https://www.mercurial-scm.org/wiki/Phases
+      phase: (revisionLines[6]: any),
+      bookmarks: splitLine(revisionLines[7]),
+      remoteBookmarks: splitLine(revisionLines[8]),
+      tags: splitLine(revisionLines[9]),
+      parents: splitLine(revisionLines[10])
+        .filter(hash => hash !== NO_NODE_HASH),
+      description: revisionLines.slice(11).join('\n'),
     });
   }
   return revisionInfo;
 }
 
-// Capture the local commit id and bookmark name from the `hg bookmarks` output.
-const BOOKMARK_MATCH_REGEX = /^ . ([^ ]+)\s+(\d+):([0-9a-f]+)$/;
-
-/**
- * Parse the result of `hg bookmarks` into a `Map` from
- * revision id to a array of bookmark names applied to revision.
- */
-export function parseBookmarksOutput(bookmarksOutput: string): Map<number, Array<string>> {
-  const bookmarksLines = bookmarksOutput.split('\n');
-  const commitsToBookmarks = new Map();
-  for (const bookmarkLine of bookmarksLines) {
-    const match = BOOKMARK_MATCH_REGEX.exec(bookmarkLine);
-    if (match == null) {
-      continue;
-    }
-    const [, bookmarkString, commitIdString] = match;
-    const commitId = parseInt(commitIdString, 10);
-    if (!commitsToBookmarks.has(commitId)) {
-      commitsToBookmarks.set(commitId, []);
-    }
-    const bookmarks = commitsToBookmarks.get(commitId);
-    invariant(bookmarks != null);
-    bookmarks.push(bookmarkString);
+function splitLine(line: string): Array<string> {
+  if (line.length === 0) {
+    return [];
+  } else {
+    return line.split(' ');
   }
-  return commitsToBookmarks;
 }

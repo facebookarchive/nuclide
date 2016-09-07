@@ -128,10 +128,13 @@ export async function generateHgRepo2Fixture(): Promise<string> {
   await checkOutput('hg', ['commit', '-A', '-m', 'second commit'], {cwd: repoPath});
   await fsPromise.writeFile(
     nuclideUri.join(repoPath, '.arcconfig'),
-    '{\n  "arc.feature.start.default": "master_base"\n}\n',
+    '{\n  "arc.feature.start.default": "master"\n}\n',
   );
   await checkOutput('hg', ['commit', '-A', '-m', 'add .arcconfig to set base'], {cwd: repoPath});
-  await checkOutput('hg', ['bookmark', '--rev', '.~2', 'master_base'], {cwd: repoPath});
+  await checkOutput('hg', [
+    'bookmark', '--rev', '.~2', 'master',
+    '--config', 'remotenames.disallowedbookmarks=',
+  ], {cwd: repoPath});
   return repoPath;
 }
 

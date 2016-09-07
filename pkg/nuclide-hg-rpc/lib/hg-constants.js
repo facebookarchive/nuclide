@@ -13,10 +13,11 @@
 
 import type {
   AmendModeValue,
-  StatusCodeIdValue,
-  StatusCodeNumberValue,
+  CommitPhaseType,
   HgStatusOptionValue,
   MergeConflictStatusValue,
+  StatusCodeIdValue,
+  StatusCodeNumberValue,
 } from './HgService';
 
 const StatusCodeId = Object.freeze({
@@ -85,8 +86,21 @@ const AmendMode = Object.freeze({
 // This is to work around flow's missing support of enums.
 (AmendMode: { [key: string]: AmendModeValue });
 
+const HEAD_COMMIT_TAG = 'tip';
+
+const CommitPhase = Object.freeze({
+  PUBLIC: 'public',
+  DRAFT: 'draft',
+  SECRET: 'secret',
+});
+
+// This is to work around flow's missing support of enums.
+(CommitPhase: { [key: string]: CommitPhaseType });
+
 module.exports = {
   AmendMode,
+  CommitPhase,
+  HEAD_COMMIT_TAG,
   HgStatusOption,
   MergeConflictStatus,
   StatusCodeId,

@@ -12,7 +12,6 @@
 import {
   expressionForRevisionsBeforeHead,
   parseRevisionInfoOutput,
-  parseBookmarksOutput,
   INFO_REV_END_MARK,
 } from '../lib/hg-revision-expression-helpers';
 
@@ -40,29 +39,47 @@ Still, multi-line commit 2 message
 
 Test Plan: complete`;
       const revisionsString =
-`id:124
-title:Commit 1 'title'.
-author:Author Name<auth_2_alias@domain.com>
-date:2015-10-15 16:03 -0700
-hash:a343fb3
+`124
+Commit 1 'title'.
+Author Name<auth_2_alias@domain.com>
+2015-10-15 16:03 -0700
+a343fb3
+default
+draft
+b-1 b-2
+
+tip
+a343fb211111 000000000000
 ${commit1Description}
 ${INFO_REV_END_MARK}
-id:123
-title:Commit 2 'title'.
-author:Author Name<auth_2_alias@domain.com>
-date:2015-10-15 16:02 -0700
-hash:a343fb2
+123
+Commit 2 'title'.
+Author Name<auth_2_alias@domain.com>
+2015-10-15 16:02 -0700
+a343fb2
+default
+public
+
+remote/master
+
+abc123411111 000000000000
 ${commit2Description}
 ${INFO_REV_END_MARK}
 `;
+
       expect(parseRevisionInfoOutput(revisionsString)).toEqual([
         {
           id: 124,
           title: "Commit 1 'title'.",
           author: 'Author Name<auth_2_alias@domain.com>',
           hash: 'a343fb3',
-          bookmarks: [],
+          bookmarks: ['b-1', 'b-2'],
+          remoteBookmarks: [],
           date: new Date('2015-10-15 16:03 -0700'),
+          branch: 'default',
+          phase: 'draft',
+          tags: ['tip'],
+          parents: ['a343fb211111'],
           description: commit1Description,
         },
         {
@@ -71,7 +88,12 @@ ${INFO_REV_END_MARK}
           author: 'Author Name<auth_2_alias@domain.com>',
           hash: 'a343fb2',
           bookmarks: [],
+          remoteBookmarks: ['remote/master'],
           date: new Date('2015-10-15 16:02 -0700'),
+          branch: 'default',
+          phase: 'public',
+          tags: [],
+          parents: ['abc123411111'],
           description: commit2Description,
         },
       ]);
@@ -79,22 +101,6 @@ ${INFO_REV_END_MARK}
 
     it('skips an entry if invalid - should never happen', () => {
       expect(parseRevisionInfoOutput('revision:123')).toEqual([]);
-    });
-  });
-
-  describe('parseBookmarksOutput', () => {
-    it('returns the parsed revision info if is valid.', () => {
-      const bookmarksString =
-`invalid bookmark line (never happens)
-   dv-ws            849619:a7211db98af0
- * dv-timeline            849620:a7211db98af1
-   dv-timeline-2            849620:a7211db98af1
-`;
-
-      const commitsToBookmarks = parseBookmarksOutput(bookmarksString);
-      expect(commitsToBookmarks.size).toBe(2);
-      expect(commitsToBookmarks.get(849619)).toEqual(['dv-ws']);
-      expect(commitsToBookmarks.get(849620)).toEqual(['dv-timeline', 'dv-timeline-2']);
     });
   });
 });
