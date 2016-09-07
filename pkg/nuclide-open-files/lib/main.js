@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+
+import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import {observeBuffers} from '../../commons-atom/buffer';
 import {NotifiersByConnection} from './NotifiersByConnection';
@@ -16,13 +19,13 @@ import {BufferSubscription} from './BufferSubscription';
 
 export class Activation {
   _disposables: CompositeDisposable;
+  notifiers: NotifiersByConnection;
 
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable();
-  }
 
-  activate() {
     const notifiers = new NotifiersByConnection();
+    this.notifiers = notifiers;
     this._disposables.add(notifiers);
 
     this._disposables.add(observeBuffers(buffer => {
@@ -41,18 +44,32 @@ export class Activation {
   }
 }
 
-let activation: ?Activation = null;
+// Mutable for testing.
+let activation: Activation = new Activation();
 
-export function activate(state: ?Object) {
-  if (activation == null) {
-    activation = new Activation(state);
-    activation.activate();
-  }
+// exported for testing
+export function reset(): void {
+  activation.dispose();
+  activation = new Activation();
+}
+export function getActivation(): Activation {
+  return activation;
 }
 
-export function deactivate() {
-  if (activation != null) {
-    activation.dispose();
-    activation = null;
+export async function getFileVersionOfBuffer(buffer: atom$TextBuffer): Promise<?FileVersion> {
+  const filePath = buffer.getPath();
+  const notifier = activation.notifiers.getForPath(filePath);
+  if (notifier == null) {
+    return null;
   }
+  invariant(filePath != null);
+  return {
+    notifier: await notifier,
+    filePath,
+    version: buffer.changeCount,
+  };
+}
+
+export function getFileVersionOfEditor(editor: atom$TextEditor): Promise<?FileVersion> {
+  return getFileVersionOfBuffer(editor.getBuffer());
 }

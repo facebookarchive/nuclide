@@ -9,15 +9,14 @@
  * the root directory of this source tree.
  */
 
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/OpenFilesService';
-import type {FileEvent} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {FileEvent, FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {NotifiersByConnection} from './NotifiersByConnection';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import {getLogger} from '../../nuclide-logging';
-import {convertRange, getFileVersionOfBuffer} from '../../nuclide-open-files-common';
+import {convertRange} from '../../nuclide-open-files-common';
 
 const logger = getLogger();
 
@@ -53,17 +52,34 @@ export class BufferSubscription {
 
     const subscriptions = new CompositeDisposable();
 
-    subscriptions.add(buffer.onDidChange((event: atom$TextEditEvent) => {
-      if (this._notifier != null) {
-        this.sendEvent({
-          kind: 'edit',
-          fileVersion: getFileVersionOfBuffer(buffer),
-          oldRange: convertRange(event.oldRange),
-          newRange: convertRange(event.newRange),
-          oldText: event.oldText,
-          newText: event.newText,
-        });
+    subscriptions.add(buffer.onDidChange(async (event: atom$TextEditEvent) => {
+      if (this._notifier == null) {
+        return;
       }
+      // Must inspect the buffer before awaiting on the notifier
+      // to avoid race conditions
+      const filePath = this._buffer.getPath();
+      invariant(filePath != null);
+      const version = this._buffer.changeCount;
+      const oldRange = convertRange(event.oldRange);
+      const newRange = convertRange(event.newRange);
+      const oldText = event.oldText;
+      const newText = event.newText;
+
+      invariant(this._notifier != null);
+      const notifier = await this._notifier;
+      this.sendEvent({
+        kind: 'edit',
+        fileVersion: {
+          notifier,
+          filePath,
+          version,
+        },
+        oldRange,
+        newRange,
+        oldText,
+        newText,
+      });
     }));
     subscriptions.add(buffer.onDidChangePath(() => {
       this.sendClose();
@@ -79,7 +95,7 @@ export class BufferSubscription {
     this.onChangePath();
   }
 
-  onChangePath() {
+  onChangePath(): void {
     this._oldPath = this._buffer.getPath();
     this._notifier = this._notifiers.get(this._buffer);
     this.sendOpen();
@@ -87,19 +103,17 @@ export class BufferSubscription {
 
   async sendEvent(event: FileEvent) {
     invariant(event.kind !== 'sync');
-    if (this._notifier != null) {
-      try {
-        await (await this._notifier).onEvent(event);
-        this.updateServerVersion(event.fileVersion.version);
-      } catch (e) {
-        logger.error(`Error sending file event: ${JSON.stringify(event)}`, e);
+    try {
+      await event.fileVersion.notifier.onEvent(event);
+      this.updateServerVersion(event.fileVersion.version);
+    } catch (e) {
+      logger.error(`Error sending file event: ${JSON.stringify(event)}`, e);
 
-        if (event.fileVersion.filePath === this._buffer.getPath()) {
-          logger.error('Attempting file resync');
-          this.attemptResync();
-        } else {
-          logger.error('File renamed, so no resync attempted');
-        }
+      if (event.fileVersion.filePath === this._buffer.getPath()) {
+        logger.error('Attempting file resync');
+        this.attemptResync();
+      } else {
+        logger.error('File renamed, so no resync attempted');
       }
     }
   }
@@ -114,6 +128,7 @@ export class BufferSubscription {
   attemptResync() {
     // always attempt to resync to the latest version
     const resyncVersion = this._buffer.changeCount;
+    const filePath = this._buffer.getPath();
 
     // don't send a resync if another edit has already succeeded at this version
     // or an attempt to sync at this version is already underway
@@ -122,22 +137,31 @@ export class BufferSubscription {
       this._lastAttemptedSync = resyncVersion;
 
       const sendResync = async () => {
+        if (this._notifier == null) {
+          logger.error('Resync preempted by remote connection closed');
+          return;
+        }
+        invariant(filePath != null);
+        const notifier = await this._notifier;
         if (this._buffer.isDestroyed()) {
           logger.error('Resync preempted by later event');
-        } else if (this._notifier == null) {
-          logger.error('Resync preempted by remote connection closed, or file rename');
-        } else if (resyncVersion !== this._lastAttemptedSync
-            || resyncVersion !== this._buffer.changeCount) {
-          logger.error('Resync preempted by later edit or resync');
+        } else if (filePath !== this._buffer.getPath()) {
+          logger.error('Resync preempted by file rename');
+        } else if (resyncVersion !== this._lastAttemptedSync) {
+          logger.error('Resync preempted by later resync');
+        } else if (resyncVersion !== this._buffer.changeCount) {
+          logger.error('Resync preempted by later edit');
         } else {
           const syncEvent = {
             kind: 'sync',
-            fileVersion: getFileVersionOfBuffer(this._buffer),
+            fileVersion: {
+              notifier,
+              filePath,
+              version: resyncVersion,
+            },
             contents: this._buffer.getText(),
           };
           try {
-            invariant(this._notifier != null);
-            const notifier = await this._notifier;
             await notifier.onEvent(syncEvent);
             this.updateServerVersion(resyncVersion);
 
@@ -161,14 +185,29 @@ export class BufferSubscription {
     }
   }
 
-  sendOpen() {
-    if (this._notifier != null) {
-      this.sendEvent({
-        kind: 'open',
-        fileVersion: getFileVersionOfBuffer(this._buffer),
-        contents: this._buffer.getText(),
-      });
+  async sendOpen(): Promise<void> {
+    if (this._notifier == null) {
+      return;
     }
+
+    // Must inspect the buffer before awaiting on the notifier
+    // to avoid race conditions
+    const filePath = this._buffer.getPath();
+    invariant(filePath != null);
+    const version = this._buffer.changeCount;
+    const contents = this._buffer.getText();
+
+    invariant(this._notifier != null);
+    const notifier = await this._notifier;
+    this.sendEvent({
+      kind: 'open',
+      fileVersion: {
+        notifier,
+        filePath,
+        version,
+      },
+      contents,
+    });
   }
 
   sendClose() {

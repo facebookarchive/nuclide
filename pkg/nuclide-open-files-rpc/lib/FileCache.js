@@ -16,7 +16,7 @@ import type {
   FileEditEvent,
   FileEvent,
 } from './rpc-types';
-import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+import type {FileVersion, AtomRange} from '../../nuclide-open-files-common/lib/rpc-types';
 
 import TextBuffer from 'simple-text-buffer';
 import {convertRange} from '../../nuclide-open-files-common';
@@ -40,7 +40,7 @@ export class FileCache {
 
   // If any out of sync state is detected then an Error is thrown.
   // This will force the client to send a 'sync' event to get back on track.
-  onEvent(event: FileEvent): void {
+  onEvent(event: FileEvent): Promise<void> {
     const filePath = event.fileVersion.filePath;
     const changeCount = event.fileVersion.version;
     const buffer = this._buffers.get(filePath);
@@ -75,6 +75,7 @@ export class FileCache {
         throw new Error(`Unexpected FileEvent.kind: ${event.kind}`);
     }
     this._checkRequests(filePath);
+    return Promise.resolve(undefined);
   }
 
   _syncEdit(
@@ -93,17 +94,13 @@ export class FileCache {
     buffer.setText(contents);
     const newRange = buffer.getRange();
     buffer.changeCount = changeCount;
-    this._events.next({
-      kind: 'edit',
-      fileVersion: {
-        filePath,
-        version: changeCount,
-      },
-      oldRange: convertRange(oldRange),
+    this._events.next(createEditEvent(
+      this.createFileVersion(filePath, changeCount),
+      convertRange(oldRange),
       oldText,
-      newRange: convertRange(newRange),
-      newText: buffer.getText(),
-    });
+      convertRange(newRange),
+      buffer.getText(),
+    ));
   }
 
   _open(filePath: NuclideUri, contents: string, changeCount: number): void {
@@ -112,14 +109,7 @@ export class FileCache {
     const newBuffer: atom$TextBuffer = new TextBuffer(contents);
     newBuffer.changeCount = changeCount;
     this._buffers.set(filePath, newBuffer);
-    this._events.next({
-      kind: 'open',
-      fileVersion: {
-        filePath,
-        version: changeCount,
-      },
-      contents,
-    });
+    this._events.next(createOpenEvent(this.createFileVersion(filePath, changeCount), contents));
   }
 
   dispose(): void {
@@ -132,9 +122,6 @@ export class FileCache {
     for (const request of this._requests.values()) {
       request.reject(createRejectError());
     }
-
-    this._buffers = new Map();
-    this._requests.clear();
   }
 
   getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
@@ -171,26 +158,64 @@ export class FileCache {
     return Observable.from(
       Array.from(this._buffers.entries()).map(([filePath, buffer]) => {
         invariant(buffer != null);
-        return {
-          kind: 'open',
-          fileVersion: {
-            filePath,
-            version: buffer.changeCount,
-          },
-          contents: buffer.getText(),
-        };
+        return createOpenEvent(
+          this.createFileVersion(filePath, buffer.changeCount),
+          buffer.getText());
       })).concat(this._events);
   }
 
   _emitClose(filePath: NuclideUri, buffer: atom$TextBuffer): void {
-    this._events.next({
-      kind: 'close',
-      fileVersion: {
-        filePath,
-        version: buffer.changeCount,
-      },
-    });
+    this._events.next(createCloseEvent(
+      this.createFileVersion(filePath, buffer.changeCount)));
   }
+
+  createFileVersion(
+    filePath: NuclideUri,
+    version: number,
+  ): FileVersion {
+    return {
+      notifier: this,
+      filePath,
+      version,
+    };
+  }
+}
+
+function createOpenEvent(
+  fileVersion: FileVersion,
+  contents: string,
+): FileOpenEvent {
+  return {
+    kind: 'open',
+    fileVersion,
+    contents,
+  };
+}
+
+function createCloseEvent(
+  fileVersion: FileVersion,
+): FileCloseEvent {
+  return {
+    kind: 'close',
+    fileVersion,
+  };
+}
+
+function createEditEvent(
+  fileVersion: FileVersion,
+  oldRange: AtomRange,
+  oldText: string,
+  newRange: AtomRange,
+  newText: string,
+): FileEditEvent {
+  return {
+    kind: 'edit',
+    fileVersion,
+    oldRange,
+    oldText,
+    newRange,
+    newText,
+  };
 }
 
 function createRejectError(): Error {
@@ -208,5 +233,3 @@ class Request extends Deferred<atom$TextBuffer> {
     this.changeCount = changeCount;
   }
 }
-
-export const fileCache: FileCache = new FileCache();

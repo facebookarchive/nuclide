@@ -9,20 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {FileEvent} from './rpc-types';
+import type {FileNotifier} from './rpc-types';
 
-import {fileCache} from './FileCache';
+import {FileCache} from './FileCache';
 
 export async function initialize(): Promise<FileNotifier> {
-  fileCache.dispose();
-  return new FileNotifier();
-}
-
-export class FileNotifier {
-  async onEvent(event: FileEvent): Promise<void> {
-    fileCache.onEvent(event);
-  }
-  dispose(): void {
-    fileCache.dispose();
-  }
+  return new FileCache();
 }

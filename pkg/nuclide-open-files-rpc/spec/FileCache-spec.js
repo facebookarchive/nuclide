@@ -33,7 +33,8 @@ describe('FileCache', () => {
   let finishEvents: () => Promise<Array<Object>> = async () => [];
 
   async function getFileContentsByVersion(filePath, changeCount): Promise<string> {
-    return (await cache.getBufferAtVersion({filePath, version: changeCount})).getText();
+    return (await cache.getBufferAtVersion(cache.createFileVersion(filePath, changeCount)))
+      .getText();
   }
 
   beforeEach(() => {
@@ -62,6 +63,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -86,6 +88,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -94,6 +97,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'close',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -117,6 +121,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -125,6 +130,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'edit',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 4,
         },
@@ -167,6 +173,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'sync',
         fileVersion: {
+          notifier: cache,
           filePath: 'f2',
           version: 4,
         },
@@ -191,6 +198,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f2',
           version: 4,
         },
@@ -199,6 +207,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'sync',
         fileVersion: {
+          notifier: cache,
           filePath: 'f2',
           version: 42,
         },
@@ -239,6 +248,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f2',
           version: 42,
         },
@@ -247,6 +257,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'sync',
         fileVersion: {
+          notifier: cache,
           filePath: 'f2',
           version: 4,
         },
@@ -274,6 +285,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -283,6 +295,7 @@ describe('FileCache', () => {
         cache.onEvent({
           kind: 'open',
           fileVersion: {
+            notifier: cache,
             filePath: 'f1',
             version: 3,
           },
@@ -303,6 +316,7 @@ describe('FileCache', () => {
         cache.onEvent({
           kind: 'close',
           fileVersion: {
+            notifier: cache,
             filePath: 'f1',
             version: 3,
           },
@@ -317,6 +331,7 @@ describe('FileCache', () => {
         cache.onEvent({
           kind: 'edit',
           fileVersion: {
+            notifier: cache,
             filePath: 'f1',
             version: 4,
           },
@@ -340,6 +355,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -353,6 +369,7 @@ describe('FileCache', () => {
         cache.onEvent({
           kind: 'edit',
           fileVersion: {
+            notifier: cache,
             filePath: 'f1',
             version: 5,
           },
@@ -381,6 +398,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -390,6 +408,7 @@ describe('FileCache', () => {
         cache.onEvent({
           kind: 'edit',
           fileVersion: {
+            notifier: cache,
             filePath: 'f1',
             version: 4,
           },
@@ -420,6 +439,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -434,6 +454,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -453,6 +474,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -462,6 +484,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'edit',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 4,
         },
@@ -486,6 +509,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -501,6 +525,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -521,6 +546,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'sync',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -536,6 +562,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -544,6 +571,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'sync',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 6,
         },
@@ -559,6 +587,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -567,6 +596,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'close',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },
@@ -575,6 +605,7 @@ describe('FileCache', () => {
       cache.onEvent({
         kind: 'open',
         fileVersion: {
+          notifier: cache,
           filePath: 'f1',
           version: 3,
         },

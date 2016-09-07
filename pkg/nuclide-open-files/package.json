@@ -6,9 +6,7 @@
   "description": "Sends status of files open in Nuclide to the server",
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
-    "packageType": "Atom",
+    "packageType": "Node",
     "testRunner": "apm"
-  },
-  "activationCommands": {
   }
 }

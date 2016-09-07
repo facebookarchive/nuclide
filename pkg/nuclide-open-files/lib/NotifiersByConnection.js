@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/OpenFilesService';
 import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import invariant from 'assert';
 import {getlocalService, ServerConnection} from '../../nuclide-remote-connection';
@@ -98,15 +98,9 @@ export class NotifiersByConnection {
   // Will keep trying to send until the send succeeds or
   // the corresponding ServerConnection is closed.
   sendClose(filePath: NuclideUri, version: number): void {
-    invariant(filePath !== '');
-
-    const message = {
-      kind: 'close',
-      fileVersion: {
-        filePath,
-        version,
-      },
-    };
+    if (filePath === '') {
+      return;
+    }
 
     // Keep trying until either the close completes, or
     // the remote connection goes away
@@ -114,9 +108,19 @@ export class NotifiersByConnection {
       const notifier = this.getForPath(filePath);
       if (notifier != null) {
         try {
-          await (await notifier).onEvent(message);
+          const n = await notifier;
+          const message = {
+            kind: 'close',
+            fileVersion: {
+              notifier: n,
+              filePath,
+              version,
+            },
+          };
+
+          await message.fileVersion.notifier.onEvent(message);
         } catch (e) {
-          logger.error(`Error sending file close event: ${JSON.stringify(message)}`, e);
+          logger.error(`Error sending file close event: ${filePath} ${version}`, e);
           setTimeout(sendMessage, RESYNC_TIMEOUT_MS);
         }
       }

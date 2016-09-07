@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 // Version of atom$Point
 export type AtomPoint = {
@@ -24,6 +25,7 @@ export type AtomRange = {
 };
 
 export type FileVersion = {
+  notifier: FileNotifier,
   filePath: NuclideUri,
   version: number,
 };

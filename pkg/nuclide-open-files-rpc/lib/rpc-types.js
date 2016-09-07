@@ -1,12 +1,11 @@
-'use babel';
-/* @flow */
-
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
+ *
+ * @flow
  */
 
 import type {AtomRange, FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
@@ -40,3 +39,8 @@ export type FileEditEvent = {
 
 // TODO: Save Events?
 export type FileEvent = FileOpenEvent | FileCloseEvent | FileEditEvent | FileSyncEvent;
+
+export interface FileNotifier {
+  onEvent(event: FileEvent): Promise<void>,
+  dispose(): void,
+}

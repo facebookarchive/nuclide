@@ -9,55 +9,63 @@
  * the root directory of this source tree.
  */
 
-import {Activation} from '../lib/main';
+import invariant from 'assert';
+import {FileCache} from '../../nuclide-open-files-rpc/lib/FileCache';
+import {getActivation, reset, getFileVersionOfBuffer} from '../lib/main';
 import {TextBuffer} from 'atom';
-import {getBufferAtVersion, observeFileEvents} from '../../nuclide-open-files-rpc';
-import {getFileVersionOfBuffer} from '../../nuclide-open-files-common';
+import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {Subject} from 'rxjs';
 
 describe('nuclide-open-files', () => {
-  let activation: Activation = (null: any);
 
-  beforeEach(() => {
-    activation = new Activation();
-    activation.activate();
-  });
-  afterEach(() => {
-    activation.dispose();
-    activation = (null: any);
-  });
+  let notifier: FileCache = (null: any);
+
+  async function getFileCache(): Promise<FileCache> {
+    const cache = await getActivation().notifiers._notifiers.get(null);
+    invariant(cache != null);
+    return (cache: any);
+  }
 
   describe('observeFileEvents', () => {
+
+    beforeEach(() => {
+      waitsForPromise(async () => {
+        reset();
+        notifier = await getFileCache();
+      });
+    });
+
     let finishEvents: () => Promise<Array<Object>> = (null: any);
     let eventCount: number = (null: any);
 
     beforeEach(() => {
-      eventCount = 0;
-      finishEvents = async () => [];
-      const done = new Subject();
-      const events = observeFileEvents()
-        .map(event => {
-          eventCount++;
-          const result = {
-            ...event,
-            filePath: event.fileVersion.filePath,
-            changeCount: event.fileVersion.version,
-          };
-          delete result.fileVersion;
-          return result;
-        }).takeUntil(done).toArray().toPromise();
+      waitsForPromise(async () => {
+        eventCount = 0;
+        const done = new Subject();
+        const events = (await getFileCache()).observeFileEvents()
+          .map(event => {
+            eventCount++;
+            const result = {
+              ...event,
+              filePath: event.fileVersion.filePath,
+              changeCount: event.fileVersion.version,
+            };
+            delete result.fileVersion;
+            return result;
+          }).takeUntil(done).toArray().toPromise();
 
-      finishEvents = () => {
-        done.next();
-        done.complete();
-        return events;
-      };
+        finishEvents = () => {
+          done.next();
+          done.complete();
+          return events;
+        };
+      });
     });
 
     it('open/close', () => {
+      const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
       runs(() => {
         // simulates an open
-        const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
         atom.project.addBuffer(buffer);
 
         // close
@@ -83,15 +91,15 @@ describe('nuclide-open-files', () => {
     });
 
     it('edit', () => {
+      const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
       runs(() => {
-        const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
         atom.project.addBuffer(buffer);
 
         buffer.append('42');
 
         buffer.destroy();
       });
-      waitsFor(() => eventCount >= 2);
+      waitsFor(() => eventCount >= 3);
 
       waitsForPromise(async () => {
         expect(await finishEvents()).toEqual([
@@ -124,9 +132,10 @@ describe('nuclide-open-files', () => {
         ]);
       });
     });
+
     it('rename', () => {
+      const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
       runs(() => {
-        const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
         atom.project.addBuffer(buffer);
 
         buffer.setPath('f2');
@@ -164,8 +173,8 @@ describe('nuclide-open-files', () => {
     });
 
     it('rename new file', () => {
+      const buffer = new TextBuffer('contents1');
       runs(() => {
-        const buffer = new TextBuffer('contents1');
         atom.project.addBuffer(buffer);
 
         buffer.setPath('f2');
@@ -226,14 +235,23 @@ describe('nuclide-open-files', () => {
     });
   });
 
-
   describe('getBufferAtVersion', () => {
+
+    beforeEach(() => {
+      waitsForPromise(async () => {
+        reset();
+        notifier = await getFileCache();
+      });
+    });
+
     it('get current version', () => {
       waitsForPromise(async () => {
-        const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
+        const buffer = new TextBuffer({notifier, filePath: 'f1', text: 'contents1'});
         atom.project.addBuffer(buffer);
 
-        const serverBuffer = await getBufferAtVersion(getFileVersionOfBuffer(buffer));
+        const fileVersion = await getFileVersionOfBuffer(buffer);
+        invariant(fileVersion != null);
+        const serverBuffer = await getBufferAtVersion(fileVersion);
         expect(serverBuffer.getText()).toEqual('contents1');
 
         buffer.destroy();
@@ -245,7 +263,8 @@ describe('nuclide-open-files', () => {
         const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
         atom.project.addBuffer(buffer);
 
-        const fileVersion = getFileVersionOfBuffer(buffer);
+        const fileVersion = await getFileVersionOfBuffer(buffer);
+        invariant(fileVersion != null);
         fileVersion.version++;
         const serverBuffer = getBufferAtVersion(fileVersion);
 
@@ -262,10 +281,13 @@ describe('nuclide-open-files', () => {
         const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
         atom.project.addBuffer(buffer);
 
-        const outdatedFileVersion = getFileVersionOfBuffer(buffer);
+        const outdatedFileVersion = await getFileVersionOfBuffer(buffer);
+        invariant(outdatedFileVersion != null);
 
         buffer.append('42');
-        await getBufferAtVersion(getFileVersionOfBuffer(buffer));
+        const fileVersion = await getFileVersionOfBuffer(buffer);
+        invariant(fileVersion != null);
+        await getBufferAtVersion(fileVersion);
 
         let hadError = false;
         try {
@@ -283,6 +305,7 @@ describe('nuclide-open-files', () => {
     it('get version before file opens', () => {
       waitsForPromise(async () => {
         const serverBuffer = getBufferAtVersion({
+          notifier,
           filePath: 'f3',
           version: 1,
         });
@@ -299,6 +322,7 @@ describe('nuclide-open-files', () => {
     it('get out of date version on open', () => {
       waitsForPromise(async () => {
         const serverBuffer = getBufferAtVersion({
+          notifier,
           filePath: 'f3',
           version: 0,
         });
@@ -324,10 +348,12 @@ describe('nuclide-open-files', () => {
         const buffer = new TextBuffer({filePath: 'f3', text: 'contents3'});
         atom.project.addBuffer(buffer);
 
-        expect((await getBufferAtVersion(getFileVersionOfBuffer(buffer))).getText())
+        const fileVersion = await getFileVersionOfBuffer(buffer);
+        invariant(fileVersion != null);
+        expect((await getBufferAtVersion(fileVersion)).getText())
           .toEqual('contents3');
 
-        const recievedClose = observeFileEvents()
+        const recievedClose = (await getFileCache()).observeFileEvents()
           .filter(event => event.kind === 'close')
           .take(1)
           .toArray()
@@ -337,8 +363,9 @@ describe('nuclide-open-files', () => {
 
         const buffer2 = new TextBuffer({filePath: 'f3', text: 'contents4'});
         atom.project.addBuffer(buffer2);
-
-        expect((await getBufferAtVersion(getFileVersionOfBuffer(buffer2))).getText())
+        const fileVersion2 = await getFileVersionOfBuffer(buffer2);
+        invariant(fileVersion2 != null);
+        expect((await getBufferAtVersion(fileVersion2)).getText())
           .toEqual('contents4');
 
         buffer2.destroy();
