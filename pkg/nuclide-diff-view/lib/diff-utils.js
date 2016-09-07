@@ -135,13 +135,13 @@ function _computeOffsets(
   };
 }
 
-export function getLineCountWithOffsets(contents: string, offsets: OffsetMap): number {
+function getLineCountWithOffsets(contents: string, offsets: OffsetMap): number {
   const linesCount = contents.split(/\r\n|\n/).length;
   return Array.from(offsets.values())
     .reduce((count, offsetLines) => count + offsetLines, linesCount);
 }
 
-export function getOffsetLineNumber(lineNumber: number, offsets: OffsetMap): number {
+function getOffsetLineNumber(lineNumber: number, offsets: OffsetMap): number {
   let offsetLineNumber = lineNumber;
   for (const [offsetLine, offsetLineNumbers] of offsets) {
     if (lineNumber > offsetLine) {
@@ -235,3 +235,8 @@ export function getOffsetLineCount(
   const offsetLineCount = Math.max(newLinesCount, oldLinesCount);
   return offsetLineCount;
 }
+
+export const __TEST__ = {
+  getOffsetLineNumber,
+  getLineCountWithOffsets,
+};

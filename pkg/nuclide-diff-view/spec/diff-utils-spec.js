@@ -12,11 +12,14 @@
 import {
   computeDiff,
   computeDiffSections,
+  __TEST__,
+} from '../lib/diff-utils';
+import {DiffSectionStatus} from '../lib/constants';
+
+const {
   getLineCountWithOffsets,
   getOffsetLineNumber,
-} from '../lib/diff-utils';
-
-import {DiffSectionStatus} from '../lib/constants';
+} = __TEST__;
 
 describe('diff-utils', () => {
   describe('computeDiff()', () => {
