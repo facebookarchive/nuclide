@@ -10,24 +10,20 @@
  */
 
 import type {TaskType, TaskSettings} from './types';
+import type BuckToolbarActions from './BuckToolbarActions';
+import type BuckToolbarStore from './BuckToolbarStore';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import nullthrows from 'nullthrows';
 import {React} from 'react-for-atom';
 
-import {lastly} from '../../commons-node/promise';
-import {createBuckProject} from '../../nuclide-buck-base';
-import BuckToolbarActions from './BuckToolbarActions';
 import BuckToolbarSettings from './ui/BuckToolbarSettings';
-import BuckToolbarStore from './BuckToolbarStore';
+import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
 import {Button, ButtonSizes} from '../../nuclide-ui/lib/Button';
-import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
 import {LoadingSpinner} from '../../nuclide-ui/lib/LoadingSpinner';
 import addTooltip from '../../nuclide-ui/lib/add-tooltip';
-
-const NO_ACTIVE_PROJECT_ERROR = 'No active Buck project. Check your Current Working Root.';
 
 type Props = {
   activeTaskType: ?TaskType,
@@ -48,21 +44,14 @@ class BuckToolbar extends React.Component {
   _buckToolbarActions: BuckToolbarActions;
   _fetchDevicesTimeoutId: ?number;
 
-  // Querying Buck can be slow, so cache aliases by project.
-  // Putting the cache here allows the user to refresh it by toggling the UI.
-  _projectAliasesCache: Map<string, Promise<Array<string>>>;
-
   constructor(props: Props) {
     super(props);
-    (this: any)._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
     (this: any)._handleSimulatorChange = this._handleSimulatorChange.bind(this);
     (this: any)._handleReactNativeServerModeChanged =
       this._handleReactNativeServerModeChanged.bind(this);
-    (this: any)._requestOptions = this._requestOptions.bind(this);
 
     this._buckToolbarActions = this.props.actions;
     this._buckToolbarStore = this.props.store;
-    this._projectAliasesCache = new Map();
 
     this._disposables = new CompositeDisposable();
 
@@ -83,29 +72,6 @@ class BuckToolbar extends React.Component {
 
   componentWillUnmount() {
     this._disposables.dispose();
-  }
-
-  async _requestOptions(inputText: string): Promise<Array<string>> {
-    const buckRoot = this._buckToolbarStore.getCurrentBuckRoot();
-    if (buckRoot == null) {
-      throw new Error(NO_ACTIVE_PROJECT_ERROR);
-    }
-
-    let aliases = this._projectAliasesCache.get(buckRoot);
-    if (!aliases) {
-      const buckProject = createBuckProject(buckRoot);
-      aliases = lastly(
-        buckProject.listAliases(),
-        () => buckProject.dispose(),
-      );
-      this._projectAliasesCache.set(buckRoot, aliases);
-    }
-
-    const result = (await aliases).slice();
-    if (inputText.trim() && result.indexOf(inputText) === -1) {
-      result.splice(0, 0, inputText);
-    }
-    return result;
   }
 
   render(): React.Element<any> {
@@ -190,18 +156,9 @@ class BuckToolbar extends React.Component {
     const {activeTaskType} = this.props;
     return (
       <div className="nuclide-buck-toolbar">
-        <Combobox
-          className="inline-block nuclide-buck-target-combobox"
-          ref="buildTarget"
-          formatRequestOptionsErrorMessage={err => err.message}
-          requestOptions={this._requestOptions}
-          size="sm"
-          loadingMessage="Updating target names..."
-          initialTextInput={this.props.store.getBuildTarget()}
-          onSelect={this._handleBuildTargetChange}
-          onBlur={this._handleBuildTargetChange}
-          placeholderText="Buck build target"
-          width={null}
+        <BuckToolbarTargetSelector
+          store={this.props.store}
+          actions={this.props.actions}
         />
         <Button
           className="nuclide-buck-settings icon icon-gear"
@@ -221,14 +178,6 @@ class BuckToolbar extends React.Component {
           null}
       </div>
     );
-  }
-
-  _handleBuildTargetChange(value: string) {
-    const trimmed = value.trim();
-    if (this.props.store.getBuildTarget() === trimmed) {
-      return;
-    }
-    this._buckToolbarActions.updateBuildTarget(trimmed);
   }
 
   _handleSimulatorChange(deviceId: string) {
