@@ -19,23 +19,6 @@
               "command": "nuclide-ios-simulator-logs:restart"
             }
           ]
-        },
-        {
-          "label": "React Native iOS Logs",
-          "submenu": [
-            {
-              "label": "Start",
-              "command": "nuclide-react-native-ios-logs:start"
-            },
-            {
-              "label": "Stop",
-              "command": "nuclide-react-native-ios-logs:stop"
-            },
-            {
-              "label": "Restart",
-              "command": "nuclide-react-native-ios-logs:restart"
-            }
-          ]
         }
       ]
     }

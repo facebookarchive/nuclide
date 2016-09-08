@@ -9,22 +9,58 @@
  * the root directory of this source tree.
  */
 
+import featureConfig from '../../commons-atom/featureConfig';
 import {createMessageStream} from '../lib/createMessageStream';
 import {Observable} from 'rxjs';
 
 describe('createMessageStream', () => {
-  it('splits the output by record', () => {
-    waitsForPromise(async () => {
-      const output$ = Observable.from(OUTPUT_LINES);
-      const message$ = createMessageStream(output$)
-        .map(message => message.text)
-        .toArray();
 
-      const messages = await message$.toPromise();
+  it('splits the output by record', () => {
+    const original = featureConfig.observeAsStream.bind(featureConfig);
+    spyOn(featureConfig, 'observeAsStream').andCallFake(name => (
+      name === 'nuclide-ios-simulator-logs.whitelistedTags' ? Observable.of('.*') : original(name)
+    ));
+    waitsForPromise(async () => {
+      const output = Observable.from(OUTPUT_LINES);
+      const messages = await createMessageStream(output)
+        .map(message => message.text)
+        .toArray()
+        .toPromise();
       expect(messages).toEqual([
         'Message 1',
         'Message 2',
       ]);
+    });
+  });
+
+  it('only includes messages with whitelisted tags', () => {
+    waitsForPromise(async () => {
+      const original = featureConfig.observeAsStream.bind(featureConfig);
+      spyOn(featureConfig, 'observeAsStream').andCallFake(name => (
+        name === 'nuclide-ios-simulator-logs.whitelistedTags'
+          ? Observable.of('X|ExampleTag')
+          : original(name)
+      ));
+      const output = Observable.from(OUTPUT_LINES);
+      const messages = await createMessageStream(output)
+        .map(message => message.text)
+        .toArray()
+        .toPromise();
+      expect(messages).toEqual(['Message 2']);
+    });
+  });
+
+  it('shows an error (once) if the regular expression is invalid', () => {
+    spyOn(atom.notifications, 'addError');
+    const original = featureConfig.observeAsStream.bind(featureConfig);
+    spyOn(featureConfig, 'observeAsStream').andCallFake(name => (
+      name === 'nuclide-ios-simulator-logs.whitelistedTags' ? Observable.of('(') : original(name)
+    ));
+
+    waitsForPromise(async () => {
+      const output = Observable.from(OUTPUT_LINES);
+      await createMessageStream(output).toPromise();
+      expect(atom.notifications.addError.callCount).toBe(1);
     });
   });
 
@@ -95,7 +131,7 @@ const OUTPUT_LINES = [
   '    <key>Facility</key>',
   '    <string>user</string>',
   '    <key>Message</key>',
-  '    <string>Message 2</string>',
+  '    <string>2016-08-24 15:58:33.113 [ExampleTag] Message 2</string>',
   '    <key>ASLSHIM</key>',
   '    <string>1</string>',
   '    <key>SenderMachUUID</key>',

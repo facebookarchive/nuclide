@@ -37,6 +37,12 @@
         "type": "string",
         "default": "syslog",
         "description": "Absolute path to the syslog executable on your system."
+      },
+      "whitelistedTags": {
+        "title": "Tags to include",
+        "description": "Messages that don't have tags that match this pattern will be ignored.",
+        "default": "^(core\\.react|tid:com\\.facebook\\.react\\.JavaScript)$",
+        "type": "string"
       }
     }
   },

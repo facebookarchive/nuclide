@@ -20,7 +20,7 @@ import {Observable} from 'rxjs';
 export function createMessageStream(line$: Observable<string>): Observable<Message> {
 
   // Group the lines into valid plist strings.
-  return bufferUntil(line$, line => line.trim() === '</plist>')
+  const messages = bufferUntil(line$, line => line.trim() === '</plist>')
     // Don't include empty buffers. This happens if the stream completes since we opened a new
     // buffer when the previous record ended.
     .filter(lines => lines.length > 1)
@@ -45,4 +45,31 @@ export function createMessageStream(line$: Observable<string>): Observable<Messa
 
     // Format the messages for Nuclide.
     .map(createMessage);
+
+  return filter(messages);
+}
+
+
+function filter(messages: Observable<Message>): Observable<Message> {
+  const patterns = featureConfig.observeAsStream('nuclide-ios-simulator-logs.whitelistedTags')
+    .map(source => {
+      try {
+        return new RegExp(source);
+      } catch (err) {
+        atom.notifications.addError(
+          'The nuclide-ios-simulator-logs.whitelistedTags setting contains an invalid regular'
+          + ' expression string. Fix it in your Atom settings.',
+        );
+        return /.*/;
+      }
+    });
+
+  return messages
+    .withLatestFrom(patterns)
+    .filter(([message, pattern]) => {
+      // Add an empty tag to untagged messages so they cfeaturean be matched by `.*` etc.
+      const tags = message.tags == null ? [''] : message.tags;
+      return tags.some(tag => pattern.test(tag));
+    })
+    .map(([message, pattern]) => message);
 }
