@@ -198,7 +198,10 @@ export class TypeRegistry {
     unmarshaller: Transformer,
   ): void {
     invariant(!this._kindMarshallers.has(kind));
-    this._kindMarshallers.set(kind, {marshaller, unmarshaller});
+    this._kindMarshallers.set(kind, {
+      marshaller: makeKindMarshaller(kind, marshaller),
+      unmarshaller: makeKindMarshaller(kind, unmarshaller),
+    });
   }
 
   /**
@@ -223,7 +226,12 @@ export class TypeRegistry {
         + ` been registered at ${locationToString(existingMarshaller.location)}.`);
       }
     } else {
-      this._namedMarshallers.set(typeName, {location, marshaller, unmarshaller});
+      this._namedMarshallers.set(typeName,
+        {
+          location,
+          marshaller: makeNamedMarshaller(typeName, marshaller),
+          unmarshaller: makeNamedMarshaller(typeName, unmarshaller),
+        });
     }
   }
 
@@ -520,13 +528,23 @@ export class TypeRegistry {
       invariant(type.kind === 'object');
       const newObj = {}; // Create a new object so we don't mutate the original one.
       const promise = checkedSmartPromiseAll(type.fields.map(prop => {
+        const name = prop.name;
+        const originalValue = obj[name];
+        const annotateErrorAndThrow = e => {
+          addMarshallingContextToError(`Field: ${name}`, originalValue, e);
+          throw e;
+        };
         // Check if the source object has this key.
-        if (obj != null && obj.hasOwnProperty(prop.name)) {
-          const value = this._marshal(context, obj[prop.name], prop.type);
-          if (value instanceof Promise) {
-            return value.then(result => (newObj[prop.name] = result));
-          } else {
-            newObj[prop.name] = value;
+        if (obj != null && obj.hasOwnProperty(name)) {
+          try {
+            const value = this._marshal(context, originalValue, prop.type);
+            if (value instanceof Promise) {
+              return value.then(result => (newObj[name] = result), annotateErrorAndThrow);
+            } else {
+              newObj[name] = value;
+            }
+          } catch (e) {
+            annotateErrorAndThrow(e);
           }
         } else if (!prop.optional) {
           // If the property is optional, it's okay for it to be missing.
@@ -546,11 +564,21 @@ export class TypeRegistry {
       const promise = checkedSmartPromiseAll(type.fields.map(prop => {
         // Check if the source object has this key.
         if (obj != null && obj.hasOwnProperty(prop.name)) {
-          const value = this._unmarshal(context, obj[prop.name], prop.type);
-          if (value instanceof Promise) {
-            return value.then(result => (newObj[prop.name] = result));
-          } else {
-            newObj[prop.name] = value;
+          const name = prop.name;
+          const originalValue = obj[name];
+          const annotateErrorAndThrow = e => {
+            addMarshallingContextToError(`Field: ${name}`, originalValue, e);
+            throw e;
+          };
+          try {
+            const value = this._unmarshal(context, originalValue, prop.type);
+            if (value instanceof Promise) {
+              return value.then(result => (newObj[name] = result), annotateErrorAndThrow);
+            } else {
+              newObj[name] = value;
+            }
+          } catch (e) {
+            annotateErrorAndThrow(e);
           }
         } else if (!prop.optional && !canBeUndefined(prop.type)) {
           // If the property is optional, it's okay for it to be missing.
@@ -660,4 +688,42 @@ function findAlternate(arg: Object, type: UnionType): ObjectType {
   });
   invariant(result != null);
   return result;
+}
+
+function valueToString(value: any): string {
+  try {
+    return JSON.stringify(value);
+  } catch (e) {
+    return String(value);
+  }
+}
+
+function addMarshallingContextToError(message: string, value: any, e: Error): void {
+  if (e.hasMarshallingError == null) {
+    (e: any).hasMarshallingError = true;
+    e.message += `\nError marshalling value: '${valueToString(value)}'\n`;
+  }
+  e.message += `${message}\n`;
+}
+
+function makeKindMarshaller(kind: string, transformer: Transformer): Transformer {
+  return (value: any, type: Type, context: ObjectRegistry) => {
+    try {
+      return transformer(value, type, context);
+    } catch (e) {
+      addMarshallingContextToError(kind, value, e);
+      throw e;
+    }
+  };
+}
+
+function makeNamedMarshaller(typeName: string, transformer: NamedTransformer): NamedTransformer {
+  return (value: any, context: ObjectRegistry) => {
+    try {
+      return transformer(value, context);
+    } catch (e) {
+      addMarshallingContextToError(typeName, value, e);
+      throw e;
+    }
+  };
 }
