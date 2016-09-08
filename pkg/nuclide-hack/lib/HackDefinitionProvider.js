@@ -52,12 +52,14 @@ export class HackDefinitionProvider {
     if (definitions.length === 0) {
       return null;
     }
-
+    const projectRoot = hackLanguage.getBasePath();
+    invariant(projectRoot != null);
     function convertDefinition(definition) {
       return {
         path: definition.path,
         position: new Point(definition.line - 1, definition.column - 1),
-        // TODO: range, projectRoot
+        // TODO: range
+        projectRoot,
         id: definition.name,
         name: definition.name,
         language: 'php',
