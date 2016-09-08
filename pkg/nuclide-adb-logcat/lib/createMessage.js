@@ -17,9 +17,11 @@ import type {LogcatEntry, Priority} from './types';
  */
 export default function createMessage(entry: LogcatEntry): Message {
   const priority = entry.metadata && entry.metadata.priority || 'I';
+  const tag = entry.metadata && entry.metadata.tag || null;
   return {
     text: entry.message,
     level: priorityToLevel(priority),
+    tags: tag ? [tag] : null,
   };
 }
 

@@ -11,6 +11,7 @@
 
 import type {Message} from '../../nuclide-console/lib/types';
 
+import featureConfig from '../../commons-atom/featureConfig';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import createMessage from './createMessage';
 import parseLogcatMetadata from './parseLogcatMetadata';
@@ -21,7 +22,7 @@ export default function createMessageStream(
 ): Observable<Message> {
 
   // Separate the lines into groups, beginning with metadata lines.
-  return Observable.create(observer => {
+  const messages = Observable.create(observer => {
     let buffer = [];
     let prevMetadata = null;
     const prevLineIsBlank = () => buffer[buffer.length - 1] === '';
@@ -87,6 +88,31 @@ export default function createMessageStream(
     );
 
   })
-  .map(createMessage)
-  .share();
+  .map(createMessage);
+
+  return filter(messages).share();
+}
+
+function filter(messages: Observable<Message>): Observable<Message> {
+  const patterns = featureConfig.observeAsStream('nuclide-adb-logcat.whitelistedTags')
+    .map(source => {
+      try {
+        return new RegExp(source);
+      } catch (err) {
+        atom.notifications.addError(
+          'The nuclide-adb-logcat.whitelistedTags setting contains an invalid regular expression'
+          + ' string. Fix it in your Atom settings.',
+        );
+        return /.*/;
+      }
+    });
+
+  return messages
+    .withLatestFrom(patterns)
+    .filter(([message, pattern]) => {
+      // Add an empty tag to untagged messages so they cfeaturean be matched by `.*` etc.
+      const tags = message.tags == null ? [''] : message.tags;
+      return tags.some(tag => pattern.test(tag));
+    })
+    .map(([message, pattern]) => message);
 }

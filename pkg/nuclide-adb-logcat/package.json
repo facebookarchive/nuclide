@@ -20,6 +20,12 @@
         "type": "string",
         "default": "adb",
         "description": "Absolute path to the adb executable on your system."
+      },
+      "whitelistedTags": {
+        "title": "Tags to include",
+        "description": "Messages that don't have tags that match this pattern will be ignored.",
+        "default": "^(React|ReactNativeJS|ACRA|AndroidRuntime|TTI|BuckReporting|unknown)$",
+        "type": "string"
       }
     }
   },
