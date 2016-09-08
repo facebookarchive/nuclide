@@ -11,8 +11,15 @@
 
 /* eslint-disable no-console */
 
+import yargs from 'yargs';
+import fs from 'fs';
+import nuclideUri from '../../commons-node/nuclideUri';
+import {createProxyFactory, proxyFilename} from './main';
+import {stripLocationsFileName} from './location';
+import {generateProxy} from './proxy-generator';
+import {parseServiceDefinition} from './service-parser';
 
-const argv = require('yargs')
+const argv = yargs
   .usage('Usage: $0 -d path/to/definition -n serviceName')
   .options({
     definitionPath: {
@@ -64,17 +71,7 @@ const argv = require('yargs')
   })
   .argv;
 
-const fs = require('fs');
-const path = require('path');
-
-const createProxyFactory = require('./main').createProxyFactory;
-const proxyFilename = require('./main').proxyFilename;
-const stripLocationsFileName = require('./location').stripLocationsFileName;
-
-const generateProxy = require('./proxy-generator').generateProxy;
-const parseServiceDefinition = require('./service-parser').parseServiceDefinition;
-
-const definitionPath = path.resolve(argv.definitionPath);
+const definitionPath = nuclideUri.resolve(argv.definitionPath);
 const preserveFunctionNames = argv.preserveFunctionNames;
 const serviceName = argv.serviceName;
 
