@@ -16,7 +16,7 @@ import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 import {Listview} from '../../nuclide-ui/lib/ListView';
-import type {FileLineBreakpoints} from './types';
+import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
 
 type BreakpointListComponentProps = {
   actions: DebuggerActions,
@@ -32,8 +32,8 @@ export class BreakpointListComponent extends React.Component {
     (this: any)._handleBreakpointClick = this._handleBreakpointClick.bind(this);
   }
 
-  _handleBreakpointEnabledChange(path: string, line: number, enabled: boolean): void {
-    // TODO jxg toggle breakpoint enabled/disabled on store
+  _handleBreakpointEnabledChange(breakpoint: FileLineBreakpoint, enabled: boolean): void {
+    this.props.actions.updateBreakpointEnabled(breakpoint.id, enabled);
   }
 
   _handleBreakpointClick(breakpointIndex: number, event: SyntheticMouseEvent): void {
@@ -66,7 +66,7 @@ export class BreakpointListComponent extends React.Component {
               ? <Checkbox
                   label={label}
                   checked={enabled}
-                  onChange={this._handleBreakpointEnabledChange.bind(this, path, line)}
+                  onChange={this._handleBreakpointEnabledChange.bind(this, breakpoint)}
                 />
               : <span>(unresolved) {label}</span>
           }

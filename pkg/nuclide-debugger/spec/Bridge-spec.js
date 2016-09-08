@@ -176,6 +176,7 @@ describe('Bridge', () => {
       sourceURL: 'file:///tmp/foobarbaz.js',
       lineNumber: 4,
       condition: '',
+      enabled: true,
     });
   });
 
@@ -212,12 +213,14 @@ describe('Bridge', () => {
   it('should change BreakpointStore when getting add/remove breakpoints notification', () => {
     const line = 15;
     const condition = 'Condtion expression';
+    const enabled = true;
     sendIpcNotification('BreakpointAdded', {
       sourceURL: 'file://' + path,
       lineNumber: line,
       condition,
+      enabled,
     });
-    expect(breakpointStore._bindBreakpoint).toHaveBeenCalledWith(path, line, condition);
+    expect(breakpointStore._bindBreakpoint).toHaveBeenCalledWith(path, line, condition, enabled);
 
     sendIpcNotification('BreakpointRemoved', {
       sourceURL: 'file://' + path,

@@ -541,6 +541,7 @@ class NuclideBridge {
       sourceURL: uiLocation.uiSourceCode.uri(),
       lineNumber: uiLocation.lineNumber,
       condition: breakpoint.condition(),
+      enabled: breakpoint.enabled(),
     };
   }
 
@@ -620,7 +621,7 @@ class NuclideBridge {
   }
 
   _updateBreakpoint(breakpoint: Object): boolean {
-    const {sourceURL, lineNumber, condition} = breakpoint;
+    const {sourceURL, lineNumber, condition, enabled} = breakpoint;
     const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceURL);
     if (source == null) {
       return false;
@@ -634,6 +635,8 @@ class NuclideBridge {
     }
     invariant(condition != null);
     chromeBreakpoint.setCondition(condition);
+    invariant(enabled != null);
+    chromeBreakpoint.setEnabled(enabled);
     return true;
   }
 

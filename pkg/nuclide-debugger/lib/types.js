@@ -63,6 +63,7 @@ export type IPCBreakpoint = {
   sourceURL: string,
   lineNumber: number,
   condition: string,
+  enabled: boolean,
 };
 
 export type BreakpointUserChangeArgType = {
@@ -256,6 +257,7 @@ declare class WebInspector$BreakpointManager$Breakpoint {
   lineNumber(): number,
   remove(keepInStorage: boolean): void,
   setCondition(condition: string): void,
+  setEnabled(enabled: boolean): void,
 }
 
 declare class WebInspector$RuntimeAgent {

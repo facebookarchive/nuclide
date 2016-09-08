@@ -73,8 +73,11 @@ class BreakpointStore {
       case Constants.Actions.ADD_BREAKPOINT:
         this._addBreakpoint(data.path, data.line);
         break;
-      case Constants.Actions.UPDATE_BREAKPOINT:
-        this._updateBreakpoint(data.breakpointId, data.condition);
+      case Constants.Actions.UPDATE_BREAKPOINT_CONDITION:
+        this._updateBreakpointCondition(data.breakpointId, data.condition);
+        break;
+      case Constants.Actions.UPDATE_BREAKPOINT_ENABLED:
+        this._updateBreakpointEnabled(data.breakpointId, data.enabled);
         break;
       case Constants.Actions.DELETE_BREAKPOINT:
         this._deleteBreakpoint(data.path, data.line);
@@ -89,7 +92,7 @@ class BreakpointStore {
         this._deleteBreakpoint(data.path, data.line, false);
         break;
       case Constants.Actions.BIND_BREAKPOINT_IPC:
-        this._bindBreakpoint(data.path, data.line, data.condition);
+        this._bindBreakpoint(data.path, data.line, data.condition, data.enabled);
         break;
       case Constants.Actions.DEBUGGER_MODE_CHANGE:
         this._handleDebuggerModeChange(data);
@@ -105,6 +108,7 @@ class BreakpointStore {
     condition: string = '',
     resolved: boolean = false,
     userAction: boolean = true,
+    enabled: boolean = true,
   ): void {
     this._breakpointIdSeed++;
     const breakpoint = {
@@ -112,7 +116,7 @@ class BreakpointStore {
       path,
       line,
       condition,
-      enabled: true,
+      enabled,
       resolved,
     };
     this._idToBreakpointMap.set(breakpoint.id, breakpoint);
@@ -131,15 +135,25 @@ class BreakpointStore {
     }
   }
 
-  _updateBreakpoint(
-    breakpointId: number,
-    condition: string,
-  ): void {
+  _updateBreakpointEnabled(breakpointId: number, enabled: boolean): void {
+    const breakpoint = this._idToBreakpointMap.get(breakpointId);
+    if (breakpoint == null) {
+      return;
+    }
+    breakpoint.enabled = enabled;
+    this._updateBreakpoint(breakpoint);
+  }
+
+  _updateBreakpointCondition(breakpointId: number, condition: string): void {
     const breakpoint = this._idToBreakpointMap.get(breakpointId);
     if (breakpoint == null) {
       return;
     }
     breakpoint.condition = condition;
+    this._updateBreakpoint(breakpoint);
+  }
+
+  _updateBreakpoint(breakpoint: FileLineBreakpoint): void {
     this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
     this._emitter.emit(BREAKPOINT_USER_CHANGED, {
       action: 'UpdateBreakpoint',
@@ -191,13 +205,14 @@ class BreakpointStore {
     }
   }
 
-  _bindBreakpoint(path: string, line: number, condition: string): void {
+  _bindBreakpoint(path: string, line: number, condition: string, enabled: boolean): void {
     this._addBreakpoint(
       path,
       line,
       condition,
       true,   // resolved
       false,  // userAction
+      enabled,
     );
   }
 

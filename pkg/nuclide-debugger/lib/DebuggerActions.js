@@ -370,9 +370,19 @@ class DebuggerActions {
     });
   }
 
-  updateBreakpoint(breakpointId: number, condition: string): void {
+  updateBreakpointEnabled(breakpointId: number, enabled: boolean): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.UPDATE_BREAKPOINT,
+      actionType: Constants.Actions.UPDATE_BREAKPOINT_ENABLED,
+      data: {
+        breakpointId,
+        enabled,
+      },
+    });
+  }
+
+  updateBreakpointCondition(breakpointId: number, condition: string): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.UPDATE_BREAKPOINT_CONDITION,
       data: {
         breakpointId,
         condition,
@@ -416,13 +426,14 @@ class DebuggerActions {
     });
   }
 
-  bindBreakpointIPC(path: string, line: number, condition: string): void {
+  bindBreakpointIPC(path: string, line: number, condition: string, enabled: boolean): void {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.BIND_BREAKPOINT_IPC,
       data: {
         path,
         line,
         condition,
+        enabled,
       },
     });
   }

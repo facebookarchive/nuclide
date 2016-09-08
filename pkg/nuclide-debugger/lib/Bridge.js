@@ -336,13 +336,13 @@ class Bridge {
   }
 
   _bindBreakpoint(breakpoint: IPCBreakpoint) {
-    const {sourceURL, lineNumber, condition} = breakpoint;
+    const {sourceURL, lineNumber, condition, enabled} = breakpoint;
     const path = nuclideUri.uriToNuclideUri(sourceURL);
     // only handle real files for now.
     if (path) {
       try {
         this._suppressBreakpointSync = true;
-        this._debuggerModel.getActions().bindBreakpointIPC(path, lineNumber, condition);
+        this._debuggerModel.getActions().bindBreakpointIPC(path, lineNumber, condition, enabled);
       } finally {
         this._suppressBreakpointSync = false;
       }
@@ -371,6 +371,7 @@ class Bridge {
         sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
         lineNumber: breakpoint.line,
         condition: breakpoint.condition,
+        enabled: breakpoint.enabled,
       });
     }
   }
@@ -397,6 +398,7 @@ class Bridge {
           sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
           lineNumber: breakpoint.line,
           condition: breakpoint.condition,
+          enabled: breakpoint.enabled,
         });
       });
       webview.send('command', 'SyncBreakpoints', results);
