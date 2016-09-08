@@ -31,7 +31,7 @@ import time
 import traceback
 from ctypes import c_char_p, c_int, c_uint, c_void_p, POINTER
 from distutils.version import LooseVersion
-from logging import FileHandler
+from logging import FileHandler, StreamHandler
 
 LOGGING_DIR = 'nuclide-%s-logs/clang' % getpass.getuser()
 FD_FOR_READING = 3
@@ -65,6 +65,12 @@ def set_up_logging(src):
         'nuclide-clang-py %(asctime)s: [%(name)s] %(message)s'
     ))
     root_logger.addHandler(handler)
+
+    # Output warning logs to stderr to be surfaced in Nuclide.
+    handler = StreamHandler(sys.stderr)
+    handler.setLevel(logging.WARNING)
+    root_logger.addHandler(handler)
+
     root_logger.setLevel(logging.INFO)
     root_logger.info('starting for ' + src)
 
