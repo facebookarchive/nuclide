@@ -51,6 +51,7 @@ export default class RadioGroup extends React.Component {
       return (
         <div key={i}>
           <input
+            className="input-radio"
             type="radio"
             checked={i === this.props.selectedIndex}
             name={'radiogroup-' + this.state.uid}
@@ -58,7 +59,7 @@ export default class RadioGroup extends React.Component {
             onChange={() => { onSelectedChange(i); }}
           />
           <label
-            className="nuclide-ui-radiogroup-label"
+            className="input-label nuclide-ui-radiogroup-label"
             htmlFor={id}>
             {labelContent}
           </label>
