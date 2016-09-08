@@ -192,33 +192,6 @@ export class ConnectionMultiplexer {
     return connector;
   }
 
-  async _handleDummyConnection(socket: Socket): Promise<void> {
-    logger.log('ConnectionMultiplexer successfully got dummy connection.');
-    const dummyConnection = new Connection(
-      socket,
-      (status, message) => {
-        switch (status) {
-          case CONNECTION_STATUS.STDOUT:
-            this._sendOutput(message, 'log');
-            break;
-          case CONNECTION_STATUS.STDERR:
-            this._sendOutput(message, 'info');
-            break;
-        }
-      },
-    );
-    await this._handleSetupForConnection(dummyConnection);
-
-    // Continue from loader breakpoint to hit xdebug_break()
-    // which will load whole www repo for evaluation if possible.
-    await dummyConnection.sendContinuationCommand(COMMAND_RUN);
-    this._dummyConnection = dummyConnection;
-
-    const text = 'Pre-loading is done! You can use console window now.';
-    this._clientCallback.sendUserMessage('console', {text, level: 'warning'});
-    this._clientCallback.sendUserMessage('outputWindow', {text, level: 'success'});
-  }
-
   // For testing purpose.
   getDummyConnection(): ?Connection {
     return this._dummyConnection;
@@ -230,23 +203,26 @@ export class ConnectionMultiplexer {
       failConnection(socket, 'Discarding connection ' + JSON.stringify(message));
       return;
     }
-    if (isDummyConnection(message)) {
-      await this._handleDummyConnection(socket);
-    } else {
-      await this._handleNewConnection(socket);
-    }
+    await this._handleNewConnection(socket, message);
   }
 
-  async _handleNewConnection(socket: Socket): Promise<void> {
+  async _handleNewConnection(socket: Socket, message: Object): Promise<void> {
     const connection = new Connection(
       socket,
       this._connectionOnStatus.bind(this),
       this._handleNotification.bind(this),
+      isDummyConnection(message),
     );
     this._connections.set(connection.getId(), connection);
     await this._handleSetupForConnection(connection);
     await this._breakpointStore.addConnection(connection);
     this._connectionOnStatus(connection, connection.getStatus());
+    if (connection.isDummyConnection()) {
+      this._dummyConnection = connection;
+      const text = 'Pre-loading is done! You can use console window now.';
+      this._clientCallback.sendUserMessage('console', {text, level: 'warning'});
+      this._clientCallback.sendUserMessage('outputWindow', {text, level: 'success'});
+    }
   }
 
   _handleNotification(
@@ -366,7 +342,7 @@ export class ConnectionMultiplexer {
       return;
     }
 
-    // now check if we can move from running to break...
+    // Now check if we can move from running to break.
     for (const connection of this._connections.values()) {
       if (this._shouldEnableConnection(connection)) {
         this._enableConnection(connection);
@@ -377,12 +353,14 @@ export class ConnectionMultiplexer {
 
   _shouldEnableConnection(connection: Connection): boolean {
     return connection.getStatus() === CONNECTION_STATUS.BREAK &&
-      // Only enable connection paused by async_break if user has explicityly issued an async_break.
+      // Only enable connection paused by async_break if user has explicitly issued an async_break.
       (connection.getStopReason() !== ASYNC_BREAK ||
       this._status === MULTIPLEXER_STATUS.USER_ASYNC_BREAK_SENT) &&
-      // Don't switch threads unnecessarily in single thread stepping mode
-      (!(getSettings().singleThreadStepping) || this._lastEnabledConnection === null ||
-      connection === this._lastEnabledConnection);
+      // Don't switch threads unnecessarily in single thread stepping mode.
+      (!getSettings().singleThreadStepping || this._lastEnabledConnection === null
+        || connection === this._lastEnabledConnection) &&
+      // Respect the visibility of the dummy connection.
+      (!connection.isDummyConnection() || connection.isViewable());
   }
 
   _enableConnection(connection: Connection): void {
@@ -618,7 +596,7 @@ export class ConnectionMultiplexer {
   }
 
   async _checkForEnd(): Promise<void> {
-    if (this._connections.size === 0 &&
+    if (this._onlyDummyRemains() &&
       (this._attachConnector == null ||
         this._launchConnector == null ||
         getConfig().endDebugWhenNoRequests)) {
@@ -630,6 +608,12 @@ export class ConnectionMultiplexer {
 
       this._setStatus(MULTIPLEXER_STATUS.END);
     }
+  }
+
+  _onlyDummyRemains(): boolean {
+    return this._connections.size === 1
+      && this._dummyConnection != null
+      && this._connections.has(this._dummyConnection.getId());
   }
 
   _noConnectionError(): Error {

@@ -45,17 +45,22 @@ export class Connection {
   _disposables: CompositeDisposable;
   _status: string;
   _stopReason: ?string;
+  _isDummyConnection: boolean;
+  _isDummyViewable: boolean;
 
   constructor(
     socket: Socket,
-    onStatusCallback?: StatusCallback,
-    onNotificationCallback?: NotificationCallback,
+    onStatusCallback: StatusCallback,
+    onNotificationCallback: NotificationCallback,
+    isDummyConnection: boolean,
   ) {
     const dbgpSocket = new DbgpSocket(socket);
     this._socket = dbgpSocket;
     this._dataCache = new DataCache(dbgpSocket);
     this._id = connectionCount++;
     this._status = CONNECTION_STATUS.STARTING;
+    this._isDummyConnection = isDummyConnection;
+    this._isDummyViewable = false;
     this._disposables = new CompositeDisposable();
     if (onStatusCallback != null) {
       this._disposables.add(this.onStatus((status, ...args) =>
@@ -66,6 +71,10 @@ export class Connection {
         onNotificationCallback(this, notifyName, notify)));
     }
     this._stopReason = null;
+  }
+
+  isDummyConnection(): boolean {
+    return this._isDummyConnection;
   }
 
   getId(): number {
@@ -94,6 +103,12 @@ export class Connection {
           this._stopReason = BREAKPOINT;
         }
         break;
+      case CONNECTION_STATUS.DUMMY_IS_VIEWABLE:
+        this._isDummyViewable = true;
+        return;
+      case CONNECTION_STATUS.DUMMY_IS_HIDDEN:
+        this._isDummyViewable = false;
+        return;
     }
     if (newStatus === CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED &&
       prevStatus !== CONNECTION_STATUS.BREAK_MESSAGE_SENT) {
@@ -108,8 +123,24 @@ export class Connection {
   }
 
   _isInternalStatus(status: string) {
-    return status === CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED ||
-      status === CONNECTION_STATUS.BREAK_MESSAGE_SENT;
+    return [
+      CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED,
+      CONNECTION_STATUS.BREAK_MESSAGE_SENT,
+      CONNECTION_STATUS.DUMMY_IS_HIDDEN,
+      CONNECTION_STATUS.DUMMY_IS_VIEWABLE,
+    ].some(internalStatus => internalStatus === status);
+  }
+
+  /**
+   * We only want to show the dummy connection's IP to the user when it is outside the entry-point
+   * specified by the user in the Debugger config.
+   */
+  isViewable(): boolean {
+    if (this._isDummyConnection) {
+      return this._status === CONNECTION_STATUS.BREAK && this._isDummyViewable;
+    } else {
+      return this._status === CONNECTION_STATUS.BREAK;
+    }
   }
 
   onNotification(callback: (notifyName: string, notify: Object) => mixed): IDisposable {

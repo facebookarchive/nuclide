@@ -35,6 +35,9 @@ export const CONNECTION_STATUS = {
   // message or a breakpoint
   BREAK_MESSAGE_RECEIVED: 'status_break_message_received',
   BREAK_MESSAGE_SENT: 'status_break_message_sent',
+  // Indicates if the dummy connection should be shown in the UI.
+  DUMMY_IS_VIEWABLE: 'dummy is viewable',
+  DUMMY_IS_HIDDEN: 'dummy is hidden',
 };
 
 // Notifications.
@@ -213,6 +216,7 @@ export class DbgpSocket {
         // record this response ID on our stack, so we can later identify the second response.
         // Then send a user-friendly message to the console, and trigger a UI update by moving to
         // running status briefly, and then back to break status.
+        this._emitStatus(CONNECTION_STATUS.DUMMY_IS_VIEWABLE);
         this._emitStatus(CONNECTION_STATUS.STDOUT, 'Hit breakpoint in evaluated code.');
         this._emitStatus(CONNECTION_STATUS.RUNNING);
         this._emitStatus(CONNECTION_STATUS.BREAK);
@@ -237,6 +241,11 @@ export class DbgpSocket {
       lastEvalId === transactionId,
       'Evaluation requests are being processed out of order.',
     );
+    if (this._pendingEvalTransactionIdStack.length === 0) {
+      // This is the last eval command before returning to the dummy connection entry-point, so
+      // we will signal to the CM that the dummy connection is now un-viewable.
+      this._emitStatus(CONNECTION_STATUS.DUMMY_IS_HIDDEN);
+    }
     const continuationCommandCall = this._calls.get(continuationId);
     invariant(continuationCommandCall != null, 'no pending continuation command request');
     this._completeRequest(

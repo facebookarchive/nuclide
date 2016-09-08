@@ -139,7 +139,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     connectionMultiplexer = new ConnectionMultiplexer(clientCallback);
     connectionMultiplexer.onStatus(onStatus);
     connectionMultiplexer.onNotification(onNotification);
-    function createConnectionSpy() {
+    function createConnectionSpy(isDummy: boolean) {
       const result = {};
       const connection = ((
         jasmine.createSpyObj('connection' + connectionCount, [
@@ -158,6 +158,8 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
           'sendStdoutRequest',
           'sendStderrRequest',
           'setFeature',
+          'isDummyConnection',
+          'isViewable',
           'dispose',
         ]): any
       ): ConnectionType);
@@ -167,6 +169,11 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
 
       connection._status = CONNECTION_STATUS.STARTING;
 
+      // $FlowFixMe override instance method.
+      connection.isViewable = jasmine.createSpy('isViewable')
+        .andReturn(connection._status === CONNECTION_STATUS.BREAK);
+      // $FlowFixMe override instance method.
+      connection.isDummyConnection = jasmine.createSpy('isDummyConnection').andReturn(isDummy);
       // $FlowFixMe override instance method.
       connection.evaluateOnCallFrame = jasmine.createSpy('evaluateOnCallFrame').andReturn({});
       // $FlowFixMe override instance method.
@@ -222,8 +229,9 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     }
 
     Connection = ((
-      spyOn(require('../lib/Connection'), 'Connection').andCallFake(() => {
-        return createConnectionSpy();
+      spyOn(require('../lib/Connection'), 'Connection').andCallFake((...args) => {
+        const isDummy = args[3];
+        return createConnectionSpy(isDummy);
       }): any
     ): () => ConnectionType);
 
@@ -757,6 +765,11 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       config.endDebugWhenNoRequests = true;
       await doEnable();
+      isDummyConnectionResult = true;
+      await onDbgpConnectorAttach({
+        socket,
+        message: 'dummy connection',
+      });
       sendConnectionStatus(0, CONNECTION_STATUS.END);
       expect(onStatus).toHaveBeenCalledWith(MULTIPLEXER_STATUS.END);
     });
