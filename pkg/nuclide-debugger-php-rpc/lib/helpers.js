@@ -20,6 +20,21 @@ import {checkOutput} from '../../commons-node/process';
 
 export const DUMMY_FRAME_ID = 'Frame.0';
 
+export function isContinuationCommand(command: string): boolean {
+  return [
+    'run',
+    'step_into',
+    'step_over',
+    'step_out',
+    'stop',
+    'detach',
+  ].some(continuationCommand => continuationCommand === command);
+}
+
+export function isEvaluationCommand(command: string): boolean {
+  return command === 'eval';
+}
+
 export function base64Decode(value: string): string {
   return new Buffer(value, 'base64').toString();
 }

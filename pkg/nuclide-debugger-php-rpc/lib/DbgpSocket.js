@@ -11,10 +11,11 @@
 
 
 import logger from './utils';
-import {base64Decode, base64Encode} from './helpers';
+import {base64Decode, base64Encode, isContinuationCommand, isEvaluationCommand} from './helpers';
 import EventEmitter from 'events';
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 import {attachEvent} from '../../commons-node/event';
+import invariant from 'assert';
 import type {Socket} from 'net';
 
 export const CONNECTION_STATUS = {
@@ -105,6 +106,11 @@ type EvaluationResult = {
   wasThrown: boolean,
 };
 
+type Call = {
+  command: string,
+  complete: (results: Object) => void,
+};
+
 const DEFAULT_DBGP_PROPERTY: DbgpProperty = {
   $: {
     type: 'undefined',
@@ -119,10 +125,12 @@ export class DbgpSocket {
   _socket: ?Socket;
   _transactionId: number;
   // Maps from transactionId -> call
-  _calls: Map<number, {command: string, complete: (results: Object) => void}>;
+  _calls: Map<number, Call>;
   _emitter: EventEmitter;
   _isClosed: boolean;
   _messageHandler: DbgpMessageHandler;
+  _pendingEvalTransactionIdStack: Array<number>;
+  _lastContinuationCommandTransactionId: ?number;
 
   constructor(socket: Socket) {
     this._socket = socket;
@@ -131,6 +139,8 @@ export class DbgpSocket {
     this._emitter = new EventEmitter();
     this._isClosed = false;
     this._messageHandler = getDbgpMessageHandlerInstance();
+    this._pendingEvalTransactionIdStack = [];
+    this._lastContinuationCommandTransactionId = null;
 
     socket.on('end', this._onEnd.bind(this));
     socket.on('error', this._onError.bind(this));
@@ -186,26 +196,56 @@ export class DbgpSocket {
 
   _handleResponse(response: Object, message: string): void {
     const responseAttributes = response.$;
-    const {command, transaction_id} = responseAttributes;
+    const {command, transaction_id, status} = responseAttributes;
     const transactionId = Number(transaction_id);
     const call = this._calls.get(transactionId);
     if (!call) {
       logger.logError('Missing call for response: ' + message);
       return;
     }
-    this._calls.delete(transactionId);
+    // We handle evaluation commands specially since they can trigger breakpoints.
+    if (isEvaluationCommand(command)) {
+      if (status === CONNECTION_STATUS.BREAK) {
+        // The eval command's response with a `break` status is special because the backend will
+        // send two responses for one xdebug eval request.  One when we hit a breakpoint in the
+        // code being eval'd, and another when we finish executing the code being eval'd.
+        // In this case, we are processing the first response for our eval request.  We will
+        // record this response ID on our stack, so we can later identify the second response.
+        // Then send a user-friendly message to the console, and trigger a UI update by moving to
+        // running status briefly, and then back to break status.
+        this._emitStatus(CONNECTION_STATUS.STDOUT, 'Hit breakpoint in evaluated code.');
+        this._emitStatus(CONNECTION_STATUS.RUNNING);
+        this._emitStatus(CONNECTION_STATUS.BREAK);
+        return;  // Return early so that we don't complete any request.
+      }
+      this._handleEvaluationCommand(transactionId, message);
+    }
+    this._completeRequest(message, response, call, command, transactionId);
+  }
 
-    if (call.command !== command) {
-      logger.logError('Bad command in response. Found ' +
-        command + '. expected ' + call.command);
+  _handleEvaluationCommand(transactionId: number, message: string): void {
+    invariant(this._pendingEvalTransactionIdStack.length > 0, 'No pending Eval Ids');
+    const lastEvalId = this._pendingEvalTransactionIdStack.pop();
+    const continuationId = this._lastContinuationCommandTransactionId;
+    if (continuationId == null) {
       return;
     }
-    try {
-      logger.log('Completing call: ' + message);
-      call.complete(response);
-    } catch (e) {
-      logger.logError('Exception: ' + e.toString() + ' handling call: ' + message);
-    }
+    // In this case, we are processing the second response to our eval request.  So we can
+    // complete the current continuation command promise, and then complete the original
+    // eval command promise.
+    invariant(
+      lastEvalId === transactionId,
+      'Evaluation requests are being processed out of order.',
+    );
+    const continuationCommandCall = this._calls.get(continuationId);
+    invariant(continuationCommandCall != null, 'no pending continuation command request');
+    this._completeRequest(
+      message,
+      {$: {status: CONNECTION_STATUS.BREAK}},
+      continuationCommandCall,
+      continuationCommandCall.command,
+      continuationId,
+    );
   }
 
   _handleStream(stream: Object): void {
@@ -230,6 +270,27 @@ export class DbgpSocket {
       this._emitNotification(BREAKPOINT_RESOLVED_NOTIFICATION, breakpoint);
     } else {
       logger.logError(`Unknown notify: ${JSON.stringify(notify)}`);
+    }
+  }
+
+  _completeRequest(
+    message: string,
+    response: Object,
+    call: Call,
+    command: string,
+    transactionId: number,
+  ): void {
+    this._calls.delete(transactionId);
+    if (call.command !== command) {
+      logger.logError('Bad command in response. Found ' +
+        command + '. expected ' + call.command);
+      return;
+    }
+    try {
+      logger.log('Completing call: ' + message);
+      call.complete(response);
+    } catch (e) {
+      logger.logError('Exception: ' + e.toString() + ' handling call: ' + message);
     }
   }
 
@@ -372,11 +433,11 @@ export class DbgpSocket {
       };
     } else {
       logger.log(`Received non-error runtimeEvaluate response with no properties: ${expr}`);
-      return {
-        result: DEFAULT_DBGP_PROPERTY,
-        wasThrown: false,
-      };
     }
+    return {
+      result: DEFAULT_DBGP_PROPERTY,
+      wasThrown: false,
+    };
   }
 
   /**
@@ -441,12 +502,28 @@ export class DbgpSocket {
 
   // Sends command to hhvm.
   // Returns an object containing the resulting attributes.
-  _callDebugger(command: string, params: ?string): Promise<Object> {
+  _callDebugger(
+    command: string,
+    params: ?string,
+  ): Promise<Object> {
     const transactionId = this._sendCommand(command, params);
+    if (isEvaluationCommand(command)) {
+      this._pendingEvalTransactionIdStack.push(transactionId);
+    }
+    const isContinuation = isContinuationCommand(command);
+    if (isContinuation) {
+      // Continuation commands can sometimes only be completed by an evaluation response.
+      this._lastContinuationCommandTransactionId = transactionId;
+    }
     return new Promise((resolve, reject) => {
       this._calls.set(transactionId, {
         command,
-        complete: result => resolve(result),
+        complete: result => {
+          if (isContinuation) {
+            this._lastContinuationCommandTransactionId = null;
+          }
+          resolve(result);
+        },
       });
     });
   }

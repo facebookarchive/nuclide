@@ -17,6 +17,7 @@ import {
   DbgpSocket,
   COMMAND_STEP_OVER,
   CONNECTION_STATUS,
+  COMMAND_RUN,
 } from '../lib/DbgpSocket';
 import {idOfFrame, functionOfFrame, fileOfFrame, locationOfFrame} from '../lib/frame';
 
@@ -104,8 +105,10 @@ describe('debugger-php-rpc DbgpSocket', () => {
 
   it('sendContinuationCommand - break', () => {
     waitsForPromise(async () => {
+      expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(null);
       const resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
       expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.RUNNING);
+      expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(1);
       await testCall(
           resultPromise,
           'step_over -i 1',
@@ -117,13 +120,16 @@ describe('debugger-php-rpc DbgpSocket', () => {
         },
           CONNECTION_STATUS.BREAK);
       expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.BREAK);
+      expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(null);
     });
   });
 
   it('sendContinuationCommand - stopping', () => {
     waitsForPromise(async () => {
+      expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(null);
       const resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
       expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.RUNNING);
+      expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(1);
       await testCall(
           resultPromise,
           'step_over -i 1',
@@ -135,6 +141,7 @@ describe('debugger-php-rpc DbgpSocket', () => {
         },
           CONNECTION_STATUS.STOPPING);
       expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.STOPPING);
+      expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(null);
     });
   });
 
@@ -158,6 +165,33 @@ describe('debugger-php-rpc DbgpSocket', () => {
           transaction_id: '2',
         },
           false);
+    });
+  });
+
+  it('runtimeEvaluate - continuation from eval with break', () => {
+    waitsForPromise(async () => {
+      expect(dbgpSocket._pendingEvalTransactionIdStack.length).toBe(0);
+      dbgpSocket.runtimeEvaluate('foo()');
+      testCallResult(
+        'eval -i 1 -- Zm9vKCk=',
+        {
+          status: 'break',
+          command: 'eval',
+          transaction_id: '1',
+        },
+      );
+      expect(dbgpSocket._pendingEvalTransactionIdStack[0]).toBe(1);
+      dbgpSocket.sendContinuationCommand(COMMAND_RUN);
+      expect(onStatus).toHaveBeenCalledWith(CONNECTION_STATUS.RUNNING);
+      await testCallResult(
+        'run -i 2',
+        {
+          command: 'eval',
+          transaction_id: '1',
+        },
+      );
+      expect(dbgpSocket._lastContinuationCommandTransactionId).toBe(null);
+      expect(dbgpSocket._pendingEvalTransactionIdStack.length).toBe(0);
     });
   });
 
