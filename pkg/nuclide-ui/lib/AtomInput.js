@@ -82,7 +82,7 @@ export class AtomInput extends React.Component {
     // setState({value}) in response to onDidChange() causes another change
     // event.
     const textEditor = this.getTextEditor();
-    const textEditorElement = this._getTextEditorElement();
+    const textEditorElement = this.getTextEditorElement();
     disposables.add(
       atom.commands.add(textEditorElement, {
         'core:confirm': () => {
@@ -101,7 +101,7 @@ export class AtomInput extends React.Component {
     if (placeholderText != null) {
       textEditor.setPlaceholderText(placeholderText);
     }
-    this._getTextEditorElement().setAttribute('tabindex', this.props.tabIndex);
+    this.getTextEditorElement().setAttribute('tabindex', this.props.tabIndex);
     if (this.props.disabled) {
       this._updateDisabledState(true);
     }
@@ -144,9 +144,9 @@ export class AtomInput extends React.Component {
   _updateDisabledState(isDisabled: boolean): void {
     // Hack to set TextEditor to read-only mode, per https://github.com/atom/atom/issues/6880
     if (isDisabled) {
-      this._getTextEditorElement().removeAttribute('tabindex');
+      this.getTextEditorElement().removeAttribute('tabindex');
     } else {
-      this._getTextEditorElement().setAttribute('tabindex', this.props.tabIndex);
+      this.getTextEditorElement().setAttribute('tabindex', this.props.tabIndex);
     }
   }
 
@@ -180,26 +180,26 @@ export class AtomInput extends React.Component {
   }
 
   getTextEditor(): TextEditor {
-    return this._getTextEditorElement().getModel();
+    return this.getTextEditorElement().getModel();
   }
 
   onDidChange(callback: () => any): IDisposable {
     return this.getTextEditor().onDidChange(callback);
   }
 
-  _getTextEditorElement(): atom$TextEditorElement {
+  getTextEditorElement(): atom$TextEditorElement {
     return ReactDOM.findDOMNode(this);
   }
 
   _updateWidth(prevWidth?: number): void {
     if (this.props.width !== prevWidth) {
       const width = this.props.width == null ? undefined : this.props.width;
-      this._getTextEditorElement().setWidth(width);
+      this.getTextEditorElement().setWidth(width);
     }
   }
 
   focus(): void {
     this.getTextEditor().moveToEndOfLine();
-    this._getTextEditorElement().focus();
+    this.getTextEditorElement().focus();
   }
 }
