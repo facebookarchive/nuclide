@@ -348,7 +348,7 @@ atom-text-editor, atom-text-editor::shadow {
  *
  * [1] https://github.com/atom/settings-view/blob/cc409bacf1c44dbd7d27626809b11ea7a01639a0/styles/package-card.less#L296
  */
-@-webkit-keyframes btn-progress {
+@keyframes btn-progress {
   100% { background-position: -10px 0px; }
 }
 
@@ -360,5 +360,5 @@ atom-text-editor, atom-text-editor::shadow {
 .nuclide-diff-view-component .btn.btn-progress:hover {
   background-image: linear-gradient(to right, transparent 50%, hsla(0,0%,0%,.15) 50%);
   background-size: 10px 100%;
-  -webkit-animation: btn-progress .5s linear infinite;
+  animation: btn-progress .5s linear infinite;
 }
