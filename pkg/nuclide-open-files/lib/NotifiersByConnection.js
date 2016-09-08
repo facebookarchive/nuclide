@@ -14,7 +14,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import invariant from 'assert';
-import {getlocalService, ServerConnection} from '../../nuclide-remote-connection';
+import {getServiceByConnection, ServerConnection} from '../../nuclide-remote-connection';
 import {OPEN_FILES_SERVICE} from '../../nuclide-open-files-rpc';
 import {getLogger} from '../../nuclide-logging';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -23,15 +23,8 @@ const logger = getLogger();
 
 const RESYNC_TIMEOUT_MS = 2000;
 
-function getServiceByConnection(connection: ?ServerConnection): OpenFilesService {
-  let service: ?OpenFilesService;
-  if (connection == null) {
-    service = getlocalService(OPEN_FILES_SERVICE);
-  } else {
-    service = connection.getService(OPEN_FILES_SERVICE);
-  }
-  invariant(service != null);
-  return service;
+function getOpenFilesService(connection: ?ServerConnection): OpenFilesService {
+  return getServiceByConnection(OPEN_FILES_SERVICE, connection);
 }
 
 // Keeps a FileNotifier around per ServerConnection.
@@ -45,7 +38,7 @@ export class NotifiersByConnection {
   _getService: (connection: ?ServerConnection) => OpenFilesService;
 
   constructor(
-    getService: (connection: ?ServerConnection) => OpenFilesService = getServiceByConnection,
+    getService: (connection: ?ServerConnection) => OpenFilesService = getOpenFilesService,
   ) {
     this._getService = getService;
     this._notifiers = new Map();

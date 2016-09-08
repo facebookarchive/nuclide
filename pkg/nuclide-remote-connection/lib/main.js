@@ -29,6 +29,7 @@ import {
 
 import {
   getService,
+  getServiceByConnection,
   getServiceByNuclideUri,
   getlocalService,
 } from './service-manager';
@@ -44,6 +45,7 @@ export {
   NuclideTextBuffer,
   decorateSshConnectionDelegateWithTracking,
   getService,
+  getServiceByConnection,
   getServiceByNuclideUri,
   getlocalService,
 };
