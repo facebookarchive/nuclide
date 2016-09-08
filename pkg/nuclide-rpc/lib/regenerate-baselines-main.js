@@ -11,19 +11,18 @@
 
 // Regenerates the .proxy baseline files in the spec/fixtures directory.
 
-const parseServiceDefinition = require('./service-parser').parseServiceDefinition;
-const generateProxy = require('./proxy-generator').generateProxy;
-const stripLocationsFileName = require('./location').stripLocationsFileName;
+import {parseServiceDefinition} from './service-parser';
+import {generateProxy} from './proxy-generator';
+import {stripLocationsFileName} from './location';
+import fs from 'fs';
+import nuclideUri from '../../commons-node/nuclideUri';
 
-const fs = require('fs');
-const path = require('path');
-
-const dir = path.join(__dirname, '../spec/fixtures');
+const dir = nuclideUri.join(__dirname, '../spec/fixtures');
 for (const file of fs.readdirSync(dir)) {
   if (file.endsWith('.def')) {
-    const serviceName = path.basename(file, '.def');
+    const serviceName = nuclideUri.basename(file, '.def');
     const preserveFunctionNames = false;
-    const definitionPath = path.join(dir, file);
+    const definitionPath = nuclideUri.join(dir, file);
 
     const definitionSource = fs.readFileSync(definitionPath, 'utf8');
     const definitions = parseServiceDefinition(
