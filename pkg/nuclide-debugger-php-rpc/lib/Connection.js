@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,180 +14,208 @@
  * the root directory of this source tree.
  */
 
-import {DbgpSocket} from './DbgpSocket';
-import {DataCache} from './DataCache';
-import {CONNECTION_STATUS} from './DbgpSocket';
+var _DbgpSocket2;
 
-import {CompositeDisposable} from 'event-kit';
+function _DbgpSocket() {
+  return _DbgpSocket2 = require('./DbgpSocket');
+}
 
-import type {Socket} from 'net';
-import type {
-  DbgpBreakpoint,
-  FileLineBreakpointInfo,
-} from './DbgpSocket';
+var _DataCache2;
 
-let connectionCount = 1;
+function _DataCache() {
+  return _DataCache2 = require('./DataCache');
+}
 
-type StatusCallback = (
-  connection: Connection,
-  status: string,
-  ...args: Array<string>
-) => void;
+var _DbgpSocket4;
 
-type NotificationCallback = (
-  connection: Connection,
-  notifyName: string,
-  notify: Object
-) => void;
+function _DbgpSocket3() {
+  return _DbgpSocket4 = require('./DbgpSocket');
+}
 
-export const ASYNC_BREAK = 'async_break';
-export const BREAKPOINT = 'breakpoint';
+var _eventKit2;
 
-export class Connection {
-  _socket: DbgpSocket;
-  _dataCache: DataCache;
-  _id: number;
-  _disposables: CompositeDisposable;
-  _status: string;
-  _stopReason: ?string;
+function _eventKit() {
+  return _eventKit2 = require('event-kit');
+}
 
-  constructor(
-    socket: Socket,
-    onStatusCallback?: StatusCallback,
-    onNotificationCallback?: NotificationCallback,
-  ) {
-    const dbgpSocket = new DbgpSocket(socket);
+var connectionCount = 1;
+
+var ASYNC_BREAK = 'async_break';
+exports.ASYNC_BREAK = ASYNC_BREAK;
+var BREAKPOINT = 'breakpoint';
+
+exports.BREAKPOINT = BREAKPOINT;
+
+var Connection = (function () {
+  function Connection(socket, onStatusCallback, onNotificationCallback) {
+    var _this = this;
+
+    _classCallCheck(this, Connection);
+
+    var dbgpSocket = new (_DbgpSocket2 || _DbgpSocket()).DbgpSocket(socket);
     this._socket = dbgpSocket;
-    this._dataCache = new DataCache(dbgpSocket);
+    this._dataCache = new (_DataCache2 || _DataCache()).DataCache(dbgpSocket);
     this._id = connectionCount++;
-    this._status = CONNECTION_STATUS.STARTING;
-    this._disposables = new CompositeDisposable();
+    this._status = (_DbgpSocket4 || _DbgpSocket3()).CONNECTION_STATUS.STARTING;
+    this._disposables = new (_eventKit2 || _eventKit()).CompositeDisposable();
     if (onStatusCallback != null) {
-      this._disposables.add(this.onStatus((status, ...args) =>
-        onStatusCallback(this, status, ...args)));
+      this._disposables.add(this.onStatus(function (status) {
+        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+          args[_key - 1] = arguments[_key];
+        }
+
+        return onStatusCallback.apply(undefined, [_this, status].concat(args));
+      }));
     }
     if (onNotificationCallback != null) {
-      this._disposables.add(this.onNotification((notifyName, notify) =>
-        onNotificationCallback(this, notifyName, notify)));
+      this._disposables.add(this.onNotification(function (notifyName, notify) {
+        return onNotificationCallback(_this, notifyName, notify);
+      }));
     }
     this._stopReason = null;
   }
 
-  getId(): number {
-    return this._id;
-  }
-
-  onStatus(callback: (status: string, ...args: Array<string>) => mixed): IDisposable {
-    return this._socket.onStatus(this._handleStatus.bind(this, callback));
-  }
-
-  _handleStatus(
-    callback: (newStatus: string, ...args: Array<string>) => mixed,
-    newStatus: string,
-    ...args: Array<string>
-  ): mixed {
-    const prevStatus = this._status;
-    switch (newStatus) {
-      case CONNECTION_STATUS.RUNNING:
-        this._stopReason = null;
-        break;
-      case CONNECTION_STATUS.BREAK:
-        if (prevStatus === CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED) {
-          this._stopReason = ASYNC_BREAK;
-        } else if (prevStatus !== CONNECTION_STATUS.BREAK) {
-          // TODO(dbonafilia): investigate why we sometimes receive two BREAK_MESSAGES
-          this._stopReason = BREAKPOINT;
+  _createClass(Connection, [{
+    key: 'getId',
+    value: function getId() {
+      return this._id;
+    }
+  }, {
+    key: 'onStatus',
+    value: function onStatus(callback) {
+      return this._socket.onStatus(this._handleStatus.bind(this, callback));
+    }
+  }, {
+    key: '_handleStatus',
+    value: function _handleStatus(callback, newStatus) {
+      var prevStatus = this._status;
+      switch (newStatus) {
+        case (_DbgpSocket4 || _DbgpSocket3()).CONNECTION_STATUS.RUNNING:
+          this._stopReason = null;
+          break;
+        case (_DbgpSocket4 || _DbgpSocket3()).CONNECTION_STATUS.BREAK:
+          if (prevStatus === (_DbgpSocket4 || _DbgpSocket3()).CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED) {
+            this._stopReason = ASYNC_BREAK;
+          } else if (prevStatus !== (_DbgpSocket4 || _DbgpSocket3()).CONNECTION_STATUS.BREAK) {
+            // TODO(dbonafilia): investigate why we sometimes receive two BREAK_MESSAGES
+            this._stopReason = BREAKPOINT;
+          }
+          break;
+      }
+      if (newStatus === (_DbgpSocket4 || _DbgpSocket3()).CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED && prevStatus !== (_DbgpSocket4 || _DbgpSocket3()).CONNECTION_STATUS.BREAK_MESSAGE_SENT) {
+        return;
+      }
+      this._status = newStatus;
+      if (!this._isInternalStatus(newStatus)) {
+        for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+          args[_key2 - 2] = arguments[_key2];
         }
-        break;
+
+        // Don't bubble up irrelevant statuses to the multiplexer
+        // TODO(dbonafilia): Add Enums to make status association clearer
+        return callback.apply(undefined, [newStatus].concat(args));
+      }
     }
-    if (newStatus === CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED &&
-      prevStatus !== CONNECTION_STATUS.BREAK_MESSAGE_SENT) {
-      return;
+  }, {
+    key: '_isInternalStatus',
+    value: function _isInternalStatus(status) {
+      return status === (_DbgpSocket4 || _DbgpSocket3()).CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED || status === (_DbgpSocket4 || _DbgpSocket3()).CONNECTION_STATUS.BREAK_MESSAGE_SENT;
     }
-    this._status = newStatus;
-    if (!this._isInternalStatus(newStatus)) {
-      // Don't bubble up irrelevant statuses to the multiplexer
-      // TODO(dbonafilia): Add Enums to make status association clearer
-      return callback(newStatus, ...args);
+  }, {
+    key: 'onNotification',
+    value: function onNotification(callback) {
+      return this._socket.onNotification(callback);
     }
-  }
+  }, {
+    key: 'evaluateOnCallFrame',
+    value: function evaluateOnCallFrame(frameIndex, expression) {
+      return this._dataCache.evaluateOnCallFrame(frameIndex, expression);
+    }
+  }, {
+    key: 'runtimeEvaluate',
+    value: function runtimeEvaluate(frameIndex, expression) {
+      return this._dataCache.runtimeEvaluate(frameIndex, expression);
+    }
+  }, {
+    key: 'setExceptionBreakpoint',
+    value: function setExceptionBreakpoint(exceptionName) {
+      return this._socket.setExceptionBreakpoint(exceptionName);
+    }
+  }, {
+    key: 'setFileLineBreakpoint',
+    value: function setFileLineBreakpoint(breakpointInfo) {
+      return this._socket.setFileLineBreakpoint(breakpointInfo);
+    }
+  }, {
+    key: 'getBreakpoint',
+    value: function getBreakpoint(breakpointId) {
+      return this._socket.getBreakpoint(breakpointId);
+    }
+  }, {
+    key: 'removeBreakpoint',
+    value: function removeBreakpoint(breakpointId) {
+      return this._socket.removeBreakpoint(breakpointId);
+    }
+  }, {
+    key: 'getStackFrames',
+    value: function getStackFrames() {
+      return this._socket.getStackFrames();
+    }
+  }, {
+    key: 'getScopesForFrame',
+    value: function getScopesForFrame(frameIndex) {
+      return this._dataCache.getScopesForFrame(frameIndex);
+    }
+  }, {
+    key: 'getStatus',
+    value: function getStatus() {
+      return this._status;
+    }
+  }, {
+    key: 'sendContinuationCommand',
+    value: function sendContinuationCommand(command) {
+      return this._socket.sendContinuationCommand(command);
+    }
+  }, {
+    key: 'sendStdoutRequest',
+    value: function sendStdoutRequest() {
+      return this._socket.sendStdoutRequest();
+    }
+  }, {
+    key: 'sendStderrRequest',
+    value: function sendStderrRequest() {
+      return this._socket.sendStderrRequest();
+    }
+  }, {
+    key: 'sendBreakCommand',
+    value: function sendBreakCommand() {
+      this._status = (_DbgpSocket4 || _DbgpSocket3()).CONNECTION_STATUS.BREAK_MESSAGE_SENT;
+      return this._socket.sendBreakCommand();
+    }
+  }, {
+    key: 'setFeature',
+    value: function setFeature(name, value) {
+      return this._socket.setFeature(name, value);
+    }
+  }, {
+    key: 'getProperties',
+    value: function getProperties(remoteId) {
+      return this._dataCache.getProperties(remoteId);
+    }
+  }, {
+    key: 'getStopReason',
+    value: function getStopReason() {
+      return this._stopReason;
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+      this._socket.dispose();
+    }
+  }]);
 
-  _isInternalStatus(status: string) {
-    return status === CONNECTION_STATUS.BREAK_MESSAGE_RECEIVED ||
-      status === CONNECTION_STATUS.BREAK_MESSAGE_SENT;
-  }
+  return Connection;
+})();
 
-  onNotification(callback: (notifyName: string, notify: Object) => mixed): IDisposable {
-    return this._socket.onNotification(callback);
-  }
-
-  evaluateOnCallFrame(frameIndex: number, expression: string): Promise<Object> {
-    return this._dataCache.evaluateOnCallFrame(frameIndex, expression);
-  }
-
-  runtimeEvaluate(frameIndex: number, expression: string): Promise<Object> {
-    return this._dataCache.runtimeEvaluate(frameIndex, expression);
-  }
-
-  setExceptionBreakpoint(exceptionName: string): Promise<string> {
-    return this._socket.setExceptionBreakpoint(exceptionName);
-  }
-
-  setFileLineBreakpoint(breakpointInfo: FileLineBreakpointInfo): Promise<string> {
-    return this._socket.setFileLineBreakpoint(breakpointInfo);
-  }
-
-  getBreakpoint(breakpointId: string): Promise<DbgpBreakpoint> {
-    return this._socket.getBreakpoint(breakpointId);
-  }
-
-  removeBreakpoint(breakpointId: string): Promise<any> {
-    return this._socket.removeBreakpoint(breakpointId);
-  }
-
-  getStackFrames(): Promise<Object> {
-    return this._socket.getStackFrames();
-  }
-
-  getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {
-    return this._dataCache.getScopesForFrame(frameIndex);
-  }
-
-  getStatus(): string {
-    return this._status;
-  }
-
-  sendContinuationCommand(command: string): Promise<string> {
-    return this._socket.sendContinuationCommand(command);
-  }
-
-  sendStdoutRequest(): Promise<boolean> {
-    return this._socket.sendStdoutRequest();
-  }
-
-  sendStderrRequest(): Promise<boolean> {
-    return this._socket.sendStderrRequest();
-  }
-
-  sendBreakCommand(): Promise<boolean> {
-    this._status = CONNECTION_STATUS.BREAK_MESSAGE_SENT;
-    return this._socket.sendBreakCommand();
-  }
-
-  setFeature(name: string, value: string): Promise<boolean> {
-    return this._socket.setFeature(name, value);
-  }
-
-  getProperties(remoteId: Runtime$RemoteObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
-    return this._dataCache.getProperties(remoteId);
-  }
-
-  getStopReason(): ?string {
-    return this._stopReason;
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
-    this._socket.dispose();
-  }
-}
+exports.Connection = Connection;

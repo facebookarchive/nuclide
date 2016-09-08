@@ -1,4 +1,0 @@
-const foo = require('foo');
-
-var [a, b] = foo;
-function bar([c, d]) {}

@@ -1,7 +1,0 @@
-if (one) {
-  // Nothing.
-} else if (two) {
-  // Nothing.
-} else {
-  // Nothing.
-}

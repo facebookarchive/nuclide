@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +10,9 @@
  * the root directory of this source tree.
  */
 
-import type {AppState, TaskRunner} from './types';
+exports.getActiveTaskRunner = getActiveTaskRunner;
 
-export function getActiveTaskRunner(state: AppState): ?TaskRunner {
-  const activeTaskRunnerId = state.activeTaskId && state.activeTaskId.taskRunnerId;
-  return activeTaskRunnerId == null
-    ? null
-    : state.taskRunners.get(activeTaskRunnerId);
+function getActiveTaskRunner(state) {
+  var activeTaskRunnerId = state.activeTaskId && state.activeTaskId.taskRunnerId;
+  return activeTaskRunnerId == null ? null : state.taskRunners.get(activeTaskRunnerId);
 }

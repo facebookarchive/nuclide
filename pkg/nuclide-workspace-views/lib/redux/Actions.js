@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,107 +10,124 @@
  * the root directory of this source tree.
  */
 
-import type {TrackingEvent} from '../../../nuclide-analytics';
-import type {Action, Location, LocationFactory, Viewable, ViewableFactory} from '../types';
+exports.createViewable = createViewable;
+exports.itemCreated = itemCreated;
+exports.registerViewableFactory = registerViewableFactory;
+exports.track = track;
+exports.unregisterViewableFactory = unregisterViewableFactory;
+exports.viewableFactoryUnregistered = viewableFactoryUnregistered;
+exports.registerLocation = registerLocation;
+exports.registerLocationFactory = registerLocationFactory;
+exports.unregisterLocation = unregisterLocation;
+exports.locationUnregistered = locationUnregistered;
+exports.setItemVisibility = setItemVisibility;
+exports.toggleItemVisibility = toggleItemVisibility;
+var CREATE_VIEWABLE = 'CREATE_VIEWABLE';
+exports.CREATE_VIEWABLE = CREATE_VIEWABLE;
+var ITEM_CREATED = 'ITEM_CREATED';
+exports.ITEM_CREATED = ITEM_CREATED;
+var SET_ITEM_VISIBILITY = 'SET_ITEM_VISIBILITY';
+exports.SET_ITEM_VISIBILITY = SET_ITEM_VISIBILITY;
+var TOGGLE_ITEM_VISIBILITY = 'TOGGLE_ITEM_VISIBILITY';
+exports.TOGGLE_ITEM_VISIBILITY = TOGGLE_ITEM_VISIBILITY;
+var TRACK = 'TRACK';
+exports.TRACK = TRACK;
+var REGISTER_VIEWABLE_FACTORY = 'REGISTER_VIEWABLE_FACTORY';
+exports.REGISTER_VIEWABLE_FACTORY = REGISTER_VIEWABLE_FACTORY;
+var UNREGISTER_VIEWABLE_FACTORY = 'UNREGISTER_VIEWABLE_FACTORY';
+exports.UNREGISTER_VIEWABLE_FACTORY = UNREGISTER_VIEWABLE_FACTORY;
+var REGISTER_LOCATION = 'REGISTER_LOCATION';
+exports.REGISTER_LOCATION = REGISTER_LOCATION;
+var REGISTER_LOCATION_FACTORY = 'REGISTER_LOCATION_FACTORY';
+exports.REGISTER_LOCATION_FACTORY = REGISTER_LOCATION_FACTORY;
+var UNREGISTER_LOCATION = 'UNREGISTER_LOCATION';
+exports.UNREGISTER_LOCATION = UNREGISTER_LOCATION;
+var LOCATION_UNREGISTERED = 'LOCATION_UNREGISTERED';
+exports.LOCATION_UNREGISTERED = LOCATION_UNREGISTERED;
+var VIEWABLE_FACTORY_UNREGISTERED = 'VIEWABLE_FACTORY_UNREGISTERED';
 
-export const CREATE_VIEWABLE = 'CREATE_VIEWABLE';
-export const ITEM_CREATED = 'ITEM_CREATED';
-export const SET_ITEM_VISIBILITY = 'SET_ITEM_VISIBILITY';
-export const TOGGLE_ITEM_VISIBILITY = 'TOGGLE_ITEM_VISIBILITY';
-export const TRACK = 'TRACK';
-export const REGISTER_VIEWABLE_FACTORY = 'REGISTER_VIEWABLE_FACTORY';
-export const UNREGISTER_VIEWABLE_FACTORY = 'UNREGISTER_VIEWABLE_FACTORY';
-export const REGISTER_LOCATION = 'REGISTER_LOCATION';
-export const REGISTER_LOCATION_FACTORY = 'REGISTER_LOCATION_FACTORY';
-export const UNREGISTER_LOCATION = 'UNREGISTER_LOCATION';
-export const LOCATION_UNREGISTERED = 'LOCATION_UNREGISTERED';
-export const VIEWABLE_FACTORY_UNREGISTERED = 'VIEWABLE_FACTORY_UNREGISTERED';
+exports.VIEWABLE_FACTORY_UNREGISTERED = VIEWABLE_FACTORY_UNREGISTERED;
 
-export function createViewable(itemType: string): Action {
+function createViewable(itemType) {
   return {
     type: CREATE_VIEWABLE,
-    payload: {itemType},
+    payload: { itemType: itemType }
   };
 }
 
-export function itemCreated(item: Object, itemType: string) {
+function itemCreated(item, itemType) {
   return {
     type: ITEM_CREATED,
-    payload: {item, itemType},
+    payload: { item: item, itemType: itemType }
   };
 }
 
-export function registerViewableFactory(viewableFactory: ViewableFactory): Action {
+function registerViewableFactory(viewableFactory) {
   return {
     type: REGISTER_VIEWABLE_FACTORY,
-    payload: {viewableFactory},
+    payload: { viewableFactory: viewableFactory }
   };
 }
 
-export function track(event: TrackingEvent) {
+function track(event) {
   return {
     type: TRACK,
-    payload: {event},
+    payload: { event: event }
   };
 }
 
-export function unregisterViewableFactory(id: string): Action {
+function unregisterViewableFactory(id) {
   return {
     type: UNREGISTER_VIEWABLE_FACTORY,
-    payload: {id},
+    payload: { id: id }
   };
 }
 
-export function viewableFactoryUnregistered(id: string): Action {
+function viewableFactoryUnregistered(id) {
   return {
     type: VIEWABLE_FACTORY_UNREGISTERED,
-    payload: {id},
+    payload: { id: id }
   };
 }
 
-export function registerLocation(id: string, location: Location): Action {
+function registerLocation(id, location) {
   return {
     type: REGISTER_LOCATION,
-    payload: {id, location},
+    payload: { id: id, location: location }
   };
 }
 
-export function registerLocationFactory(locationFactory: LocationFactory): Action {
+function registerLocationFactory(locationFactory) {
   return {
     type: REGISTER_LOCATION_FACTORY,
-    payload: {locationFactory},
+    payload: { locationFactory: locationFactory }
   };
 }
 
-export function unregisterLocation(id: string): Action {
+function unregisterLocation(id) {
   return {
     type: UNREGISTER_LOCATION,
-    payload: {id},
+    payload: { id: id }
   };
 }
 
-export function locationUnregistered(id: string): Action {
+function locationUnregistered(id) {
   return {
     type: LOCATION_UNREGISTERED,
-    payload: {id},
+    payload: { id: id }
   };
 }
 
-type SetItemVisibilityOptions = {
-  item: Viewable,
-  locationId: string,
-  visible: boolean,
-};
-export function setItemVisibility(options: SetItemVisibilityOptions): Action {
+function setItemVisibility(options) {
   return {
     type: SET_ITEM_VISIBILITY,
-    payload: options,
+    payload: options
   };
 }
 
-export function toggleItemVisibility(itemType: string, visible?: boolean): Action {
+function toggleItemVisibility(itemType, visible) {
   return {
     type: TOGGLE_ITEM_VISIBILITY,
-    payload: {itemType, visible},
+    payload: { itemType: itemType, visible: visible }
   };
 }

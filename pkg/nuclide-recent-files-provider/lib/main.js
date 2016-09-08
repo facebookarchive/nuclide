@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +10,20 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from '../../nuclide-quick-open/lib/types';
+exports.registerProvider = registerProvider;
+exports.consumeRecentFilesService = consumeRecentFilesService;
 
-import {RecentFilesProvider} from './RecentFilesProvider';
+var _RecentFilesProvider2;
 
-export function registerProvider(): Provider {
-  return RecentFilesProvider;
+function _RecentFilesProvider() {
+  return _RecentFilesProvider2 = require('./RecentFilesProvider');
 }
 
-export function consumeRecentFilesService(service: mixed) {
+function registerProvider() {
+  return (_RecentFilesProvider2 || _RecentFilesProvider()).RecentFilesProvider;
+}
+
+function consumeRecentFilesService(service) {
   // $FlowFixMe
-  RecentFilesProvider.setRecentFilesService(service);
+  (_RecentFilesProvider2 || _RecentFilesProvider()).RecentFilesProvider.setRecentFilesService(service);
 }

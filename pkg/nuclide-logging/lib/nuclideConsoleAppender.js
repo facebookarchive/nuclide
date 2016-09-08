@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +10,33 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
+exports.getNuclideConsoleMessages = getNuclideConsoleMessages;
 
-import {Subject} from 'rxjs';
+var _rxjsBundlesRxUmdMinJs2;
 
-type NuclideConsoleMessage = {
-  data: string,
-  level: string,
-  startTime: string,
-  categoryName: string,
-};
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
 
-let sub = null;
-function getSubject(): Subject<NuclideConsoleMessage> {
+var sub = null;
+function getSubject() {
   if (sub == null) {
-    sub = new Subject();
+    sub = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Subject();
   }
   return sub;
 }
 
-export function getNuclideConsoleMessages(): Observable<NuclideConsoleMessage> {
+function getNuclideConsoleMessages() {
   return getSubject().asObservable();
 }
 
-function consoleAppender(): (loggingEvent: any) => void {
-  return loggingEvent => {
+function consoleAppender() {
+  return function (loggingEvent) {
     getSubject().next(loggingEvent);
   };
 }
 
-export const appender = consoleAppender;
-export const configure = consoleAppender;
+var appender = consoleAppender;
+exports.appender = appender;
+var configure = consoleAppender;
+exports.configure = configure;

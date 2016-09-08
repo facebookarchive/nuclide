@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _StatusCodeIdToNumber;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,15 +12,7 @@
 
 /* @providesModule HgConstants */
 
-import type {
-  AmendModeValue,
-  StatusCodeIdValue,
-  StatusCodeNumberValue,
-  HgStatusOptionValue,
-  MergeConflictStatusValue,
-} from './HgService';
-
-const StatusCodeId = Object.freeze({
+var StatusCodeId = Object.freeze({
   ADDED: 'A',
   CLEAN: 'C',
   IGNORED: 'I',
@@ -27,13 +20,13 @@ const StatusCodeId = Object.freeze({
   MISSING: '!', // (deleted by non-hg command, but still tracked)
   REMOVED: 'R',
   UNTRACKED: '?',
-  UNRESOLVED: 'U',
+  UNRESOLVED: 'U'
 });
 
 // This is to work around flow's missing support of enums.
-(StatusCodeId: {[key: string]: StatusCodeIdValue});
+StatusCodeId;
 
-const StatusCodeNumber = Object.freeze({
+var StatusCodeNumber = Object.freeze({
   ADDED: 1,
   CLEAN: 2,
   IGNORED: 3,
@@ -41,55 +34,46 @@ const StatusCodeNumber = Object.freeze({
   MISSING: 5,
   REMOVED: 6,
   UNTRACKED: 7,
-  UNRESOLVED: 8,
+  UNRESOLVED: 8
 });
 
 // This is to work around flow's missing support of enums.
-(StatusCodeNumber: { [key: string]: StatusCodeNumberValue });
+StatusCodeNumber;
 
-const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
-  [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
-  [StatusCodeId.CLEAN]: StatusCodeNumber.CLEAN,
-  [StatusCodeId.IGNORED]: StatusCodeNumber.IGNORED,
-  [StatusCodeId.MODIFIED]: StatusCodeNumber.MODIFIED,
-  [StatusCodeId.MISSING]: StatusCodeNumber.MISSING,
-  [StatusCodeId.REMOVED]: StatusCodeNumber.REMOVED,
-  [StatusCodeId.UNTRACKED]: StatusCodeNumber.UNTRACKED,
-  [StatusCodeId.UNRESOLVED]: StatusCodeNumber.UNRESOLVED,
-};
+var StatusCodeIdToNumber = (_StatusCodeIdToNumber = {}, _defineProperty(_StatusCodeIdToNumber, StatusCodeId.ADDED, StatusCodeNumber.ADDED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.CLEAN, StatusCodeNumber.CLEAN), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.IGNORED, StatusCodeNumber.IGNORED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.MODIFIED, StatusCodeNumber.MODIFIED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.MISSING, StatusCodeNumber.MISSING), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.REMOVED, StatusCodeNumber.REMOVED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.UNTRACKED, StatusCodeNumber.UNTRACKED), _defineProperty(_StatusCodeIdToNumber, StatusCodeId.UNRESOLVED, StatusCodeNumber.UNRESOLVED), _StatusCodeIdToNumber);
 
-const HgStatusOption = Object.freeze({
-  ONLY_NON_IGNORED: 1,  // only the output of `hg status`
-  ONLY_IGNORED: 2,      // only the output of `hg status --ignored`
-  ALL_STATUSES: 3,      // the output of `hg status --all`
-});
+var HgStatusOption = Object.freeze({
+  ONLY_NON_IGNORED: 1, // only the output of `hg status`
+  ONLY_IGNORED: 2, // only the output of `hg status --ignored`
+  ALL_STATUSES: 3 });
 
 // This is to work around flow's missing support of enums.
-(HgStatusOption: {[key: string]: HgStatusOptionValue});
+// the output of `hg status --all`
+HgStatusOption;
 
-const MergeConflictStatus = Object.freeze({
+var MergeConflictStatus = Object.freeze({
   BOTH_CHANGED: 'both changed',
   DELETED_IN_THEIRS: 'deleted in theirs',
-  DELETED_IN_OURS: 'deleted in ours',
+  DELETED_IN_OURS: 'deleted in ours'
 });
 
 // This is to work around flow's missing support of enums.
-(MergeConflictStatus: { [key: string]: MergeConflictStatusValue });
+MergeConflictStatus;
 
-const AmendMode = Object.freeze({
+var AmendMode = Object.freeze({
   CLEAN: 'Clean',
   FIXUP: 'Fixup',
-  REBASE: 'Rebase',
+  REBASE: 'Rebase'
 });
 
 // This is to work around flow's missing support of enums.
-(AmendMode: { [key: string]: AmendModeValue });
+AmendMode;
 
 module.exports = {
-  AmendMode,
-  HgStatusOption,
-  MergeConflictStatus,
-  StatusCodeId,
-  StatusCodeIdToNumber,
-  StatusCodeNumber,
+  AmendMode: AmendMode,
+  HgStatusOption: HgStatusOption,
+  MergeConflictStatus: MergeConflictStatus,
+  StatusCodeId: StatusCodeId,
+  StatusCodeIdToNumber: StatusCodeIdToNumber,
+  StatusCodeNumber: StatusCodeNumber
 };

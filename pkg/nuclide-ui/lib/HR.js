@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,13 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+var _reactForAtom2;
 
-export const HR = () => {
-  return (
-    <hr className="nuclide-ui-hr" />
-  );
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var HR = function HR() {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement('hr', { className: 'nuclide-ui-hr' });
 };
+exports.HR = HR;

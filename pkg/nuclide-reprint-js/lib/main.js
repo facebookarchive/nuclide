@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +8,12 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get reprint() {
-    return require('./reprint');
-  },
-};
+module.exports = Object.defineProperties({}, {
+  reprint: {
+    get: function get() {
+      return require('./reprint');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});
