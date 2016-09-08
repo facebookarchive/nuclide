@@ -120,17 +120,24 @@ export async function fetchCommonAncestorOfHeadAndRevision(
 async function fetchRevisions(
   revisionExpression: string,
   workingDirectory: string,
+  options?: {
+    shouldLimit?: boolean,
+  },
 ): Promise<Array<RevisionInfo>> {
   const revisionLogArgs = [
     'log', '--template', REVISION_INFO_TEMPLATE,
     '--rev', revisionExpression,
-    '--limit', '20',
   ];
-  const options = {
+  if (options == null || options.shouldLimit == null || options.shouldLimit) {
+    revisionLogArgs.push(
+      '--limit', '20',
+    );
+  }
+  const hgOptions = {
     cwd: workingDirectory,
   };
   try {
-    const revisionsResult = await hgAsyncExecute(revisionLogArgs, options);
+    const revisionsResult = await hgAsyncExecute(revisionLogArgs, hgOptions);
     return parseRevisionInfoOutput(revisionsResult.stdout);
   } catch (e) {
     logger.warn(
@@ -175,7 +182,7 @@ export function fetchSmartlogRevisions(
   workingDirectory: string,
 ): Promise<Array<RevisionInfo>> {
   const revisionExpression = 'smartlog() + ancestor(smartlog())';
-  return fetchRevisions(revisionExpression, workingDirectory);
+  return fetchRevisions(revisionExpression, workingDirectory, {shouldLimit: false});
 }
 
 /**
