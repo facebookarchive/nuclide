@@ -81,13 +81,20 @@ export class HackDefinitionProvider {
       return null;
     }
 
-    return {
+    const result = {
       path: definition.position.filename,
       position: new Point(definition.position.line - 1, definition.position.char_start - 1),
-      id: definition.id,
       name: definition.name,
       language: 'php',
       // TODO: range, project root
     };
+    if (typeof definition.id === 'string') {
+      return {
+        ...result,
+        id: definition.id,
+      };
+    } else {
+      return result;
+    }
   }
 }

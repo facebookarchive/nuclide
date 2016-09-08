@@ -92,7 +92,7 @@ export type HackIdeOutlineItem = {
     | 'enum' | 'typeconst' | 'param' | 'trait' | 'interface',
   name: string,
   position: HackRange,
-  id?: string,
+  id?: ?string,
   span: HackSpan,
   modifiers: ?Array<string>,
   children?: Array<HackIdeOutlineItem>,
