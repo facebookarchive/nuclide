@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +10,38 @@
  * the root directory of this source tree.
  */
 
-import type {OutputService} from '../../nuclide-console/lib/types';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeOutputService = consumeOutputService;
 
-import invariant from 'assert';
-import Activation from './Activation';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let activation: ?Object = null;
+var _assert2;
 
-export function activate(state: ?Object) {
-  invariant(activation == null);
-  activation = new Activation(state);
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
 }
 
-export function deactivate() {
-  invariant(activation);
+var _Activation2;
+
+function _Activation() {
+  return _Activation2 = _interopRequireDefault(require('./Activation'));
+}
+
+var activation = null;
+
+function activate(state) {
+  (0, (_assert2 || _assert()).default)(activation == null);
+  activation = new (_Activation2 || _Activation()).default(state);
+}
+
+function deactivate() {
+  (0, (_assert2 || _assert()).default)(activation);
   activation.dispose();
   activation = null;
 }
 
-export function consumeOutputService(api: OutputService): void {
-  invariant(activation);
+function consumeOutputService(api) {
+  (0, (_assert2 || _assert()).default)(activation);
   activation.consumeOutputService(api);
 }

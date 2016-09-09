@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,16 @@
  * the root directory of this source tree.
  */
 
-import type {BlameProvider} from '../../nuclide-blame/lib/types';
+exports.provideHgBlameProvider = provideHgBlameProvider;
 
-import HgBlameProvider from './HgBlameProvider';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function provideHgBlameProvider(): BlameProvider {
-  return HgBlameProvider;
+var _HgBlameProvider2;
+
+function _HgBlameProvider() {
+  return _HgBlameProvider2 = _interopRequireDefault(require('./HgBlameProvider'));
+}
+
+function provideHgBlameProvider() {
+  return (_HgBlameProvider2 || _HgBlameProvider()).default;
 }

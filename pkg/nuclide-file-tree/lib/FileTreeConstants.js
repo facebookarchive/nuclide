@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -47,7 +46,7 @@ exports.ActionType = Object.freeze({
   MOVE_SELECTION_TO_BOTTOM: 'MOVE_SELECTION_TO_BOTTOM',
   ENSURE_CHILD_NODE: 'ENSURE_CHILD_NODE',
   CLEAR_FILTER: 'CLEAR_FILTER',
-  SET_OPEN_FILES_EXPANDED: 'SET_OPEN_FILES_EXPANDED',
+  SET_OPEN_FILES_EXPANDED: 'SET_OPEN_FILES_EXPANDED'
 });
 
 exports.EVENT_HANDLER_SELECTOR = '.nuclide-file-tree';

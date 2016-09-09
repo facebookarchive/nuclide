@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +10,82 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import {
-  Highlight,
-  HighlightColors,
-} from './Highlight';
+var _reactForAtom2;
 
-const HighlightExample = (): React.Element<any> => (
-  <div>
-    <Block>
-      <Highlight>Default</Highlight>
-    </Block>
-    <Block>
-      <Highlight color={HighlightColors.info}>Info</Highlight>
-    </Block>
-    <Block>
-      <Highlight color={HighlightColors.success}>Success</Highlight>
-    </Block>
-    <Block>
-      <Highlight color={HighlightColors.warning}>Warning</Highlight>
-    </Block>
-    <Block>
-      <Highlight color={HighlightColors.error}>Error</Highlight>
-    </Block>
-  </div>
-);
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
 
-export const HighlightExamples = {
+var _Block2;
+
+function _Block() {
+  return _Block2 = require('./Block');
+}
+
+var _Highlight2;
+
+function _Highlight() {
+  return _Highlight2 = require('./Highlight');
+}
+
+var HighlightExample = function HighlightExample() {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'div',
+    null,
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Block2 || _Block()).Block,
+      null,
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_Highlight2 || _Highlight()).Highlight,
+        null,
+        'Default'
+      )
+    ),
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Block2 || _Block()).Block,
+      null,
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_Highlight2 || _Highlight()).Highlight,
+        { color: (_Highlight2 || _Highlight()).HighlightColors.info },
+        'Info'
+      )
+    ),
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Block2 || _Block()).Block,
+      null,
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_Highlight2 || _Highlight()).Highlight,
+        { color: (_Highlight2 || _Highlight()).HighlightColors.success },
+        'Success'
+      )
+    ),
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Block2 || _Block()).Block,
+      null,
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_Highlight2 || _Highlight()).Highlight,
+        { color: (_Highlight2 || _Highlight()).HighlightColors.warning },
+        'Warning'
+      )
+    ),
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      (_Block2 || _Block()).Block,
+      null,
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        (_Highlight2 || _Highlight()).Highlight,
+        { color: (_Highlight2 || _Highlight()).HighlightColors.error },
+        'Error'
+      )
+    )
+  );
+};
+
+var HighlightExamples = {
   sectionName: 'Highlight',
   description: 'Highlights are useful for calling out inline content, such as tags.',
-  examples: [
-    {
-      title: 'Highlights',
-      component: HighlightExample,
-    },
-  ],
+  examples: [{
+    title: 'Highlights',
+    component: HighlightExample
+  }]
 };
+exports.HighlightExamples = HighlightExamples;

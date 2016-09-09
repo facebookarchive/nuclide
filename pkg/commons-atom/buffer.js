@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.observeBuffers = observeBuffers;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +11,7 @@
  * the root directory of this source tree.
  */
 
-export function observeBuffers(observeBuffer: (buffer: atom$TextBuffer) => mixed): IDisposable {
+function observeBuffers(observeBuffer) {
   atom.project.getBuffers().forEach(observeBuffer);
   return atom.project.onDidAddBuffer(observeBuffer);
 }

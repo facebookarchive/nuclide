@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,45 @@
  * the root directory of this source tree.
  */
 
-import type {Message} from '../../nuclide-console/lib/types';
+exports.default = createMessageStream;
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import createMessage from './createMessage';
-import parseLogcatMetadata from './parseLogcatMetadata';
-import {Observable} from 'rxjs';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export default function createMessageStream(
-  line$: Observable<string>,
-): Observable<Message> {
+var _commonsNodeUniversalDisposable2;
+
+function _commonsNodeUniversalDisposable() {
+  return _commonsNodeUniversalDisposable2 = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _createMessage2;
+
+function _createMessage() {
+  return _createMessage2 = _interopRequireDefault(require('./createMessage'));
+}
+
+var _parseLogcatMetadata2;
+
+function _parseLogcatMetadata() {
+  return _parseLogcatMetadata2 = _interopRequireDefault(require('./parseLogcatMetadata'));
+}
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
+
+function createMessageStream(line$) {
 
   // Separate the lines into groups, beginning with metadata lines.
-  return Observable.create(observer => {
-    let buffer = [];
-    let prevMetadata = null;
-    const prevLineIsBlank = () => buffer[buffer.length - 1] === '';
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.create(function (observer) {
+    var buffer = [];
+    var prevMetadata = null;
+    var prevLineIsBlank = function prevLineIsBlank() {
+      return buffer[buffer.length - 1] === '';
+    };
 
-    const flush = () => {
+    var flush = function flush() {
       if (buffer.length === 0) {
         return;
       }
@@ -38,55 +60,52 @@ export default function createMessageStream(
 
       observer.next({
         metadata: prevMetadata,
-        message: buffer.join('\n'),
+        message: buffer.join('\n')
       });
       buffer = [];
       prevMetadata = null;
     };
 
-    const sharedLine$ = line$.share();
+    var sharedLine$ = line$.share();
 
-    return new UniversalDisposable(
-      // Buffer incoming lines.
-      sharedLine$.subscribe(
-        // onNext
-        line => {
-          let metadata;
-          const hasPreviousLines = buffer.length > 0;
+    return new (_commonsNodeUniversalDisposable2 || _commonsNodeUniversalDisposable()).default(
+    // Buffer incoming lines.
+    sharedLine$.subscribe(
+    // onNext
+    function (line) {
+      var metadata = undefined;
+      var hasPreviousLines = buffer.length > 0;
 
-          if (!hasPreviousLines || prevLineIsBlank()) {
-            metadata = parseLogcatMetadata(line);
-          }
+      if (!hasPreviousLines || prevLineIsBlank()) {
+        metadata = (0, (_parseLogcatMetadata2 || _parseLogcatMetadata()).default)(line);
+      }
 
-          if (metadata) {
-            // We've reached a new message so the other one must be done.
-            flush();
-            prevMetadata = metadata;
-          } else {
-            buffer.push(line);
-          }
-        },
+      if (metadata) {
+        // We've reached a new message so the other one must be done.
+        flush();
+        prevMetadata = metadata;
+      } else {
+        buffer.push(line);
+      }
+    },
 
-        // onError
-        error => {
-          flush();
-          observer.error(error);
-        },
+    // onError
+    function (error) {
+      flush();
+      observer.error(error);
+    },
 
-        // onCompleted
-        () => {
-          flush();
-          observer.complete();
-        },
-      ),
+    // onCompleted
+    function () {
+      flush();
+      observer.complete();
+    }),
 
-      // We know *for certain* that we have a complete entry once we see the metadata for the next
-      // one. But what if the next one takes a long time to happen? After a certain point, we need
-      // to just assume we have the complete entry and move on.
-      sharedLine$.debounceTime(200).subscribe(flush),
-    );
-
-  })
-  .map(createMessage)
-  .share();
+    // We know *for certain* that we have a complete entry once we see the metadata for the next
+    // one. But what if the next one takes a long time to happen? After a certain point, we need
+    // to just assume we have the complete entry and move on.
+    sharedLine$.debounceTime(200).subscribe(flush));
+  }).map((_createMessage2 || _createMessage()).default).share();
 }
+
+module.exports = exports.default;

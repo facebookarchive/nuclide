@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +8,7 @@
  * the root directory of this source tree.
  */
 
-const Actions = Object.freeze({
+var Actions = Object.freeze({
   SET_DEBUGGER_INSTANCE: 'SET_DEBUGGER_INSTANCE',
   SET_ERROR: 'SET_ERROR',
   SET_PROCESS_SOCKET: 'SET_PROCESS_SOCKET',
@@ -46,9 +45,9 @@ const Actions = Object.freeze({
   NOTIFY_THREAD_SWITCH: 'NOTIFY_THREAD_SWITCH',
   TOGGLE_SINGLE_THREAD_STEPPING: 'TOGGLE_SINGLE_THREAD_STEPPING',
   RECEIVED_EXPRESSION_EVALUATION_RESPONSE: 'RECEIVED_EXPRESSION_EVALUATION_RESPONSE',
-  RECEIVED_GET_PROPERTIES_RESPONSE: 'RECEIVED_GET_PROPERTIES_RESPONSE',
+  RECEIVED_GET_PROPERTIES_RESPONSE: 'RECEIVED_GET_PROPERTIES_RESPONSE'
 });
 
 module.exports = {
-  Actions,
+  Actions: Actions
 };

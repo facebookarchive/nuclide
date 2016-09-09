@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = humanizeKeystroke;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -13,20 +15,20 @@
  * adapted from https://github.com/atom/underscore-plus/blob/master/src/underscore-plus.coffee
  */
 
-const MAC_MODIFIER_KEYMAP = {
-  alt: '\u2325',
-  cmd: '\u2318',
-  ctrl: '\u2303',
-  down: '\u2193',
-  enter: '\u23ce',
-  left: '\u2190',
-  option: '\u2325',
-  right: '\u2192',
-  shift: '\u21e7',
-  up: '\u2191',
+var MAC_MODIFIER_KEYMAP = {
+  alt: '⌥',
+  cmd: '⌘',
+  ctrl: '⌃',
+  down: '↓',
+  enter: '⏎',
+  left: '←',
+  option: '⌥',
+  right: '→',
+  shift: '⇧',
+  up: '↑'
 };
 
-const NON_MAC_MODIFIER_KEYMAP = {
+var NON_MAC_MODIFIER_KEYMAP = {
   alt: 'Alt',
   cmd: 'Cmd',
   ctrl: 'Ctrl',
@@ -36,12 +38,12 @@ const NON_MAC_MODIFIER_KEYMAP = {
   option: 'Alt',
   right: 'Right',
   shift: 'Shift',
-  up: 'Up',
+  up: 'Up'
 };
 
 // Human key combos should always explicitly state the shift key. This map is a disambiguator.
 // 'shift-version': 'no-shift-version'
-const SHIFT_KEYMAP = {
+var SHIFT_KEYMAP = {
   '_': '-',
   ':': ';',
   '?': '/',
@@ -52,15 +54,15 @@ const SHIFT_KEYMAP = {
   '<': ',',
   '>': '.',
   '|': '\\',
-  '~': '`',
+  '~': '`'
 };
 
-const FN_KEY_RE = /f[0-9]{1,2}/;
+var FN_KEY_RE = /f[0-9]{1,2}/;
 
 // $FlowIssue
-function flatten<T>(arr: Array<T | Array<T>>): Array<T> {
-  let flattened = [];
-  for (const el of arr) {
+function flatten(arr) {
+  var flattened = [];
+  for (var el of arr) {
     if (Array.isArray(el)) {
       flattened = flattened.concat(flatten(el));
     } else {
@@ -70,17 +72,17 @@ function flatten<T>(arr: Array<T | Array<T>>): Array<T> {
   return flattened;
 }
 
-function capitalize(word: string): string {
-  const first = word[0] || '';
-  const rest = word.slice(1);
+function capitalize(word) {
+  var first = word[0] || '';
+  var rest = word.slice(1);
   return first.toUpperCase() + rest;
 }
 
-function humanizeKey(key: string, platform: ?string): string | Array<string> {
+function humanizeKey(key, platform) {
   if (!key) {
     return key;
   }
-  const modifierKeyMap = platform === 'darwin' ? MAC_MODIFIER_KEYMAP : NON_MAC_MODIFIER_KEYMAP;
+  var modifierKeyMap = platform === 'darwin' ? MAC_MODIFIER_KEYMAP : NON_MAC_MODIFIER_KEYMAP;
   if (modifierKeyMap[key]) {
     return modifierKeyMap[key];
   }
@@ -88,7 +90,7 @@ function humanizeKey(key: string, platform: ?string): string | Array<string> {
     if (SHIFT_KEYMAP[key]) {
       return [modifierKeyMap.shift, SHIFT_KEYMAP[key]];
     }
-    const uppercase = key.toUpperCase();
+    var uppercase = key.toUpperCase();
     if (key === uppercase && uppercase !== key.toLowerCase()) {
       return [modifierKeyMap.shift, uppercase];
     }
@@ -109,23 +111,24 @@ function humanizeKey(key: string, platform: ?string): string | Array<string> {
  * @param platform An optional String platform to humanize for (default: `process.platform`).
  * @return a humanized representation of the keystroke.
  */
-export default function humanizeKeystroke(keystroke: string, platform_: ?string): string {
-  let platform = platform_;
+
+function humanizeKeystroke(keystroke, platform_) {
+  var platform = platform_;
   if (!keystroke) {
     return keystroke;
   }
   platform = platform || process.platform;
-  const separator = platform === 'darwin' ? '' : '+';
-  let key;
-  let keys;
-  let splitKeystroke;
-  const keystrokes = keystroke.split(' ');
-  const humanizedKeystrokes = [];
-  for (let i = 0; i < keystrokes.length; i++) {
-    const currentKeystroke = keystrokes[i];
+  var separator = platform === 'darwin' ? '' : '+';
+  var key = undefined;
+  var keys = undefined;
+  var splitKeystroke = undefined;
+  var keystrokes = keystroke.split(' ');
+  var humanizedKeystrokes = [];
+  for (var i = 0; i < keystrokes.length; i++) {
+    var currentKeystroke = keystrokes[i];
     splitKeystroke = currentKeystroke.split('-');
     keys = [];
-    for (let index = 0; index < splitKeystroke.length; index++) {
+    for (var index = 0; index < splitKeystroke.length; index++) {
       key = splitKeystroke[index];
       if (key === '' && splitKeystroke[index - 1] === '') {
         key = '-';
@@ -139,3 +142,5 @@ export default function humanizeKeystroke(keystroke: string, platform_: ?string)
   }
   return humanizedKeystrokes.join(' ');
 }
+
+module.exports = exports.default;
