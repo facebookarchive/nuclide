@@ -28,7 +28,7 @@ for (const file of fs.readdirSync(dir)) {
     const definitions = parseServiceDefinition(
       definitionPath,
       definitionSource,
-      [nuclideUri.NUCLIDE_URI_TYPE_NAME],
+      [],
     );
 
     stripLocationsFileName(definitions);

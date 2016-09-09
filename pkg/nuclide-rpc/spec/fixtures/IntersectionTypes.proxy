@@ -62,12 +62,6 @@ Object.defineProperty(module.exports, "defs", {
     location: {
       type: "builtin"
     }
-  }], ["NuclideUri", {
-    kind: "alias",
-    name: "NuclideUri",
-    location: {
-      type: "builtin"
-    }
   }], ["Foo", {
     kind: "alias",
     location: {

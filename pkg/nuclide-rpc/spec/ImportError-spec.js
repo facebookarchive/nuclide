@@ -20,7 +20,7 @@ describe('Import Errors', () => {
       let hadError = false;
       try {
         invariant(new ServiceRegistry(
-          [nuclideUri.localMarshallers],
+          [],
           [{
             name: 'ImportClassService',
             definition: nuclideUri.join(__dirname, 'ImportClassService.js'),
@@ -39,7 +39,7 @@ describe('Import Errors', () => {
       let hadError = false;
       try {
         invariant(new ServiceRegistry(
-          [nuclideUri.localMarshallers],
+          [],
           [{
             name: 'ImportFunctionService',
             definition: nuclideUri.join(__dirname, 'ImportFunctionService.js'),

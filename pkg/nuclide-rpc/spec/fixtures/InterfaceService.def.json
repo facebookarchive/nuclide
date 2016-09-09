@@ -34,13 +34,6 @@
             "type": "builtin"
         }
     },
-    "NuclideUri": {
-        "kind": "alias",
-        "name": "NuclideUri",
-        "location": {
-            "type": "builtin"
-        }
-    },
     "Vector2": {
         "constructorArgs": [
             {

@@ -34,13 +34,6 @@
             "type": "builtin"
         }
     },
-    "NuclideUri": {
-        "kind": "alias",
-        "name": "NuclideUri",
-        "location": {
-            "type": "builtin"
-        }
-    },
     "TestFunctionA": {
         "kind": "function",
         "name": "TestFunctionA",

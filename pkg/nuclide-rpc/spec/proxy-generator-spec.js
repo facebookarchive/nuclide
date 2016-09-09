@@ -35,7 +35,7 @@ describe('Proxy generator test suite.', () => {
       it(`Successfully generates proxy for ${file}`, () => {
         const fixturePath = nuclideUri.join(__dirname, 'fixtures', file);
         const definitions = parseServiceDefinition(
-          file, fs.readFileSync(fixturePath, 'utf8'), [nuclideUri.NUCLIDE_URI_TYPE_NAME]);
+          file, fs.readFileSync(fixturePath, 'utf8'), []);
 
         const code = generateProxy(nuclideUri.basename(file, '.def'), false, definitions);
         const expected = fs.readFileSync(
