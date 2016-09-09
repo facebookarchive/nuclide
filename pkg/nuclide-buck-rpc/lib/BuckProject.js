@@ -114,7 +114,7 @@ type FullBuckBuildOptions = {
 };
 type BuckCommandAndOptions = {
   pathToBuck: string,
-  buckCommandOptions: AsyncExecuteOptions,
+  buckCommandOptions: AsyncExecuteOptions & child_process$spawnOpts,
 };
 
 /**

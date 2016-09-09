@@ -148,7 +148,7 @@ function monitorStreamErrors(process: child_process$ChildProcess, command, args,
 export function safeSpawn(
   command: string,
   args?: Array<string> = [],
-  options?: Object = {},
+  options?: child_process$spawnOpts = {},
 ): child_process$ChildProcess {
   const child = child_process.spawn(command, args, options);
   monitorStreamErrors(child, command, args, options);
