@@ -29,7 +29,7 @@ describe('RpcProcess', () => {
     };
 
     const serviceRegistry = new ServiceRegistry(
-      [nuclideUri.localMarshallers],
+      [],
       [{
         name: 'dummy',
         definition: nuclideUri.join(__dirname, 'fixtures/dummy-service/DummyService.js'),
