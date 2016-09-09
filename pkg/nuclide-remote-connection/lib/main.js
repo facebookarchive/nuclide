@@ -20,6 +20,7 @@ import {RemoteConnection} from './RemoteConnection';
 import {RemoteDirectory} from './RemoteDirectory';
 import {RemoteFile} from './RemoteFile';
 import {ServerConnection} from './ServerConnection';
+import {ConnectionCache} from './ConnectionCache';
 import NuclideTextBuffer from './NuclideTextBuffer';
 
 import {
@@ -41,6 +42,7 @@ export {
   RemoteDirectory,
   RemoteFile,
   ServerConnection,
+  ConnectionCache,
   SshHandshake,
   NuclideTextBuffer,
   decorateSshConnectionDelegateWithTracking,
