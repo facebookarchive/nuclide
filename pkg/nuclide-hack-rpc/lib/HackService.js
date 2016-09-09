@@ -132,7 +132,6 @@ export async function getDiagnostics(
     () => callHHClient(
       /* args */ [],
       /* errorStream */ true,
-      /* outputJson */ true,
       /* processInput */ null,
       /* file */ file,
     ),
@@ -189,7 +188,6 @@ export async function getCompletions(
     const result: any = await callHHClient(
       /* args */ ['--auto-complete'],
       /* errorStream */ false,
-      /* outputJson */ true,
       /* processInput */ markedContents,
       /* file */ file,
     );
@@ -206,7 +204,6 @@ export async function getDefinition(
   const result: any = await callHHClient(
     /* args */ ['--ide-get-definition', formatLineColumn(line, column)],
     /* errorStream */ false,
-    /* outputJson */ true,
     /* processInput */ contents,
     /* cwd */ file,
   );
@@ -238,7 +235,6 @@ export async function getDefinitionById(
   const result: any = await callHHClient(
     /* args */ ['--get-definition-by-id', id],
     /* errorStream */ false,
-    /* outputJson */ true,
     /* processInput */ null,
     /* cwd */ file,
   );
@@ -254,7 +250,6 @@ export async function findReferences(
   const result: any = await callHHClient(
     /* args */ ['--ide-find-refs', formatLineColumn(line, column)],
     /* errorStream */ false,
-    /* outputJson */ true,
     /* processInput */ contents,
     /* cwd */ file,
   );
@@ -314,7 +309,6 @@ export async function getTypedRegions(
   const result = await callHHClient(
     /* args */ ['--colour', filePath],
     /* errorStream */ false,
-    /* outputJson */ true,
     /* processInput */ null,
     /* file */ filePath,
   );
@@ -328,7 +322,6 @@ export async function getIdeOutline(
   const result = await callHHClient(
     /* args */ ['--ide-outline'],
     /* errorStream */ false,
-    /* outputJson */ true,
     /* processInput */ contents,
     filePath,
   );
@@ -344,7 +337,6 @@ export async function getTypeAtPos(
   const result = await callHHClient(
     /* args */ ['--type-at-pos', formatLineColumn(line, column)],
     /* errorStream */ false,
-    /* outputJson */ true,
     /* processInput */ contents,
     /* file */ filePath,
   );
@@ -360,7 +352,6 @@ export async function getSourceHighlights(
   const result = await callHHClient(
     /* args */ ['--ide-highlight-refs', formatLineColumn(line, column)],
     /* errorStream */ false,
-    /* outputJson */ true,
     /* processInput */ contents,
     /* file */ filePath,
   );
@@ -376,7 +367,6 @@ export async function formatSource(
   const result = await callHHClient(
     /* args */ ['--format', startOffset, endOffset],
     /* errorStream */ false,
-    /* outputJson */ true,
     /* processInput */ contents,
     /* file */ filePath,
   );

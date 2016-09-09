@@ -32,7 +32,6 @@ const pendingSearchPromises: Map<string, Promise<any>> = new Map();
 export async function callHHClient(
   args: Array<any>,
   errorStream: boolean,
-  outputJson: boolean,
   processInput: ?string,
   filePath: string): Promise<?(string | Object)> {
 
@@ -49,10 +48,7 @@ export async function callHHClient(
   invariant(hhPromiseQueue);
   return hhPromiseQueue.submit(async (resolve, reject) => {
     // Append args on the end of our commands.
-    const defaults = ['--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
-    if (outputJson) {
-      defaults.unshift('--json');
-    }
+    const defaults = ['--json', '--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
 
     const allArgs = defaults.concat(args);
     allArgs.push(hackRoot);
@@ -76,10 +72,6 @@ export async function callHHClient(
 
     const output = errorStream ? stderr : stdout;
     logger.logTrace(`Hack output for ${allArgs.toString()}: ${output}`);
-    if (!outputJson) {
-      resolve(output);
-      return;
-    }
     try {
       resolve(JSON.parse(output));
     } catch (err) {
@@ -113,7 +105,6 @@ export async function getSearchResults(
     searchPromise = callHHClient(
         /* args */ ['--search' + (searchPostfix || ''), search],
         /* errorStream */ false,
-        /* outputJson */ true,
         /* processInput */ null,
         /* file */ filePath,
     );
