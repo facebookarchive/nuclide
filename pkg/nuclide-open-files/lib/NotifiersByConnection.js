@@ -13,11 +13,13 @@ import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenF
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
-import invariant from 'assert';
-import {getServiceByConnection, ServerConnection} from '../../nuclide-remote-connection';
+import {
+  getServiceByConnection,
+  ServerConnection,
+  ConnectionCache,
+} from '../../nuclide-remote-connection';
 import {OPEN_FILES_SERVICE} from '../../nuclide-open-files-rpc';
 import {getLogger} from '../../nuclide-logging';
-import nuclideUri from '../../commons-node/nuclideUri';
 
 const logger = getLogger();
 
@@ -33,58 +35,30 @@ function getOpenFilesService(connection: ?ServerConnection): OpenFilesService {
 // the per-Buffer BufferSubscription does not need to live past
 // the buffer being destroyed.
 export class NotifiersByConnection {
-  _notifiers: Map<?ServerConnection, Promise<FileNotifier>>;
-  _subscription: IDisposable;
+  _notifiers: ConnectionCache<FileNotifier>;
   _getService: (connection: ?ServerConnection) => OpenFilesService;
 
   constructor(
     getService: (connection: ?ServerConnection) => OpenFilesService = getOpenFilesService,
   ) {
     this._getService = getService;
-    this._notifiers = new Map();
-
-    this._subscription = ServerConnection.onDidCloseServerConnection(connection => {
-      this._notifiers.delete(connection);
-    });
-
-    this._addConnection(null);
-    ServerConnection.observeConnections(connection => {
-      this._addConnection(connection);
-    });
+    this._notifiers = new ConnectionCache(connection => this._getService(connection).initialize());
   }
 
   dispose() {
-    this._subscription.dispose();
+    this._notifiers.dispose();
   }
 
   // Returns null for a buffer to a file on a closed remote connection
   // or a new buffer which has not been saved.
   get(buffer: atom$TextBuffer): ?Promise<FileNotifier> {
-    return this.getForPath(buffer.getPath());
+    return this.getForUri(buffer.getPath());
   }
 
   // Returns null for a buffer to a file on a closed remote connection
   // or a new buffer which has not been saved.
-  getForPath(path: ?NuclideUri): ?Promise<FileNotifier> {
-    if (path == null) {
-      return null;
-    }
-
-    // Note that there is a window after a ServerConnection is closed when
-    // TextBuffers on that connection are still around receiving events.
-    const connection = ServerConnection.getForUri(path);
-    if (connection == null && nuclideUri.isRemote(path)) {
-      return null;
-    }
-
-    return this._notifiers.get(connection);
-  }
-
-  _addConnection(connection: ?ServerConnection) {
-    invariant(!this._notifiers.has(connection));
-    const service: ?OpenFilesService = this._getService(connection);
-    invariant(service != null);
-    this._notifiers.set(connection, service.initialize());
+  getForUri(path: ?NuclideUri): ?Promise<FileNotifier> {
+    return this._notifiers.getForUri(path);
   }
 
   // Sends the close message to the appropriate FileNotifier.
@@ -98,7 +72,7 @@ export class NotifiersByConnection {
     // Keep trying until either the close completes, or
     // the remote connection goes away
     const sendMessage = async () => {
-      const notifier = this.getForPath(filePath);
+      const notifier = this.getForUri(filePath);
       if (notifier != null) {
         try {
           const n = await notifier;

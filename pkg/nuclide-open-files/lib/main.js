@@ -58,7 +58,7 @@ export function getActivation(): Activation {
 
 export async function getFileVersionOfBuffer(buffer: atom$TextBuffer): Promise<?FileVersion> {
   const filePath = buffer.getPath();
-  const notifier = activation.notifiers.getForPath(filePath);
+  const notifier = activation.notifiers.getForUri(filePath);
   if (notifier == null) {
     return null;
   }
