@@ -18,6 +18,8 @@ import HomeFeatureComponent from './HomeFeatureComponent';
 import NuclideLogo from './NuclideLogo';
 import createUtmUrl from './createUtmUrl';
 import featureConfig from '../../commons-atom/featureConfig';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
 
 const NUCLIDE_DOCS_URL = createUtmUrl('http://nuclide.io', 'welcome');
 const DEFAULT_WELCOME = (
@@ -51,24 +53,30 @@ export default class HomePaneItem extends React.Component {
   props: Props;
   state: {
     allHomeFragments: Immutable.Set<string, React.Element<any>>,
+    showOnStartup: boolean,
   };
 
-  _homeFragmentsSubscription: rx$ISubscription;
+  _disposables: ?UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
+    (this: any)._handleShowOnStartupChange = this._handleShowOnStartupChange.bind(this);
     this.state = {
+      showOnStartup: Boolean(featureConfig.get('nuclide-home.showHome')),
       allHomeFragments: Immutable.Set(),
     };
   }
 
   componentDidMount() {
     // Note: We're assuming that the allHomeFragmentsStream prop never changes.
-    this._homeFragmentsSubscription = this.props.allHomeFragmentsStream.subscribe(
-      allHomeFragments => this.setState({allHomeFragments}),
+    this._disposables = new UniversalDisposable(
+      this.props.allHomeFragmentsStream.subscribe(
+        allHomeFragments => this.setState({allHomeFragments}),
+      ),
+      featureConfig.observeAsStream('nuclide-home.showHome').subscribe(
+        showOnStartup => { this.setState({showOnStartup}); },
+      ),
     );
-
-    featureConfig.set('nuclide-home.showHome', true);
   }
 
   render() {
@@ -96,6 +104,13 @@ export default class HomePaneItem extends React.Component {
         <section className="text-center">
           {welcomes.length > 0 ? welcomes : DEFAULT_WELCOME}
         </section>
+        <section className="text-center">
+          <Checkbox
+            checked={this.state.showOnStartup}
+            onChange={this._handleShowOnStartupChange}
+            label="Show this screen on startup."
+          />
+        </section>
       </div>,
     ];
 
@@ -109,6 +124,10 @@ export default class HomePaneItem extends React.Component {
         {containers}
       </div>
     );
+  }
+
+  _handleShowOnStartupChange(checked: boolean): void {
+    featureConfig.set('nuclide-home.showHome', checked);
   }
 
   getTitle(): string {
@@ -125,10 +144,8 @@ export default class HomePaneItem extends React.Component {
   }
 
   componentWillUnmount() {
-    featureConfig.set('nuclide-home.showHome', false);
-
-    if (this._homeFragmentsSubscription) {
-      this._homeFragmentsSubscription.unsubscribe();
+    if (this._disposables != null) {
+      this._disposables.dispose();
     }
   }
 
