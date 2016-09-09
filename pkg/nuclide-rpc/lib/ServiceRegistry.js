@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {PredefinedTransformer} from './TypeRegistry';
+
 import {createProxyFactory} from './main';
 import {TypeRegistry} from './TypeRegistry';
 import type {
@@ -49,20 +50,19 @@ export class ServiceRegistry {
    */
   _classesByName: Map<string, ClassDefinition>;
 
+  _predefinedTypes: Array<string>;
   _services: Map<string, ServiceDefinition>;
 
   // Don't call directly, use factory methods below.
   constructor(
-    marshalUri: (uri: NuclideUri) => string,
-    unmarshalUri: (value: string) => NuclideUri,
+    predefinedTypes: Array<PredefinedTransformer>,
     services: Array<ConfigEntry>,
   ) {
-    this._typeRegistry = new TypeRegistry();
+    this._typeRegistry = new TypeRegistry(predefinedTypes);
+    this._predefinedTypes = predefinedTypes.map(predefinedType => predefinedType.typeName);
     this._functionsByName = new Map();
     this._classesByName = new Map();
     this._services = new Map();
-
-    this._typeRegistry.registerPredefinedType('NuclideUri', marshalUri, unmarshalUri);
 
     this.addServices(services);
   }
@@ -71,8 +71,13 @@ export class ServiceRegistry {
   // NuclideUri type requires no transformations (it is done on the client side).
   static createLocal(services: Array<ConfigEntry>): ServiceRegistry {
     return new ServiceRegistry(
-      uri => uri,
-      remotePath => remotePath,
+      [
+        {
+          typeName: 'NuclideUri',
+          marshaller: uri => uri,
+          unmarshaller: remotePath => remotePath,
+        },
+      ],
       services);
   }
 
@@ -81,9 +86,14 @@ export class ServiceRegistry {
     hostname: string, services: Array<ConfigEntry>,
   ): ServiceRegistry {
     return new ServiceRegistry(
-        remoteUri => nuclideUri.getPath(remoteUri),
-        path => nuclideUri.createRemoteUri(hostname, path),
-        services);
+      [
+        {
+          typeName: 'NuclideUri',
+          marshaller: remoteUri => nuclideUri.getPath(remoteUri),
+          unmarshaller: path => nuclideUri.createRemoteUri(hostname, path),
+        },
+      ],
+      services);
   }
 
   addServices(services: Array<ConfigEntry>): void {
@@ -99,7 +109,7 @@ export class ServiceRegistry {
         service.name,
         preserveFunctionNames,
         service.definition,
-        ['NuclideUri'],
+        this._predefinedTypes,
       );
       // $FlowIssue - the parameter passed to require must be a literal string.
       const localImpl = require(service.implementation);

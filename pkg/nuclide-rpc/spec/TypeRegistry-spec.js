@@ -40,7 +40,7 @@ describe('TypeRegistry', () => {
   let typeRegistry: TypeRegistry = (null: any);
   let context: ObjectRegistry = (null: any);
   beforeEach(() => {
-    typeRegistry = new TypeRegistry();
+    typeRegistry = new TypeRegistry([]);
     context = ({}: any);
   });
 

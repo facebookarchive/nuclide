@@ -48,6 +48,12 @@ export type Transformer =
 export type NamedTransformer
   = (value: any, context: ObjectRegistry) => (any | Promise<any>);
 
+export type PredefinedTransformer = {
+  typeName: string,
+  marshaller: NamedTransformer,
+  unmarshaller: NamedTransformer,
+};
+
 // Equivalent to Promise.all, but avoids wrappers if nothing is actually a promise.
 // Input must be homogenously typed.
 function smartPromiseAll<T>(arr: Array<T>): Array<T> | Promise<Array<T>> {
@@ -144,7 +150,7 @@ export class TypeRegistry {
       unmarshaller: NamedTransformer,
     }>;
 
-  constructor() {
+  constructor(predefinedTypes: Array<PredefinedTransformer>) {
     this._kindMarshallers = new Map();
     this._namedMarshallers = new Map();
 
@@ -190,6 +196,10 @@ export class TypeRegistry {
       'void',
       (value, type, context) => Promise.resolve(null),
       (value, type, context) => Promise.resolve(null));
+
+    predefinedTypes.forEach(type => {
+      this.registerPredefinedType(type.typeName, type.marshaller, type.unmarshaller);
+    });
   }
 
   _registerKind(
