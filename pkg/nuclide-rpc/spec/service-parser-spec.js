@@ -399,5 +399,5 @@ export function parseDefinition(
   fileName: string,
   source: string,
 ): Definitions {
-  return parseServiceDefinition(fileName, source, ['NuclideUri']);
+  return parseServiceDefinition(fileName, source, [nuclideUri.NUCLIDE_URI_TYPE_NAME]);
 }

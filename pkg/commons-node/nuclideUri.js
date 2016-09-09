@@ -609,9 +609,11 @@ type Marshallers = {
     unmarshaller: (value: any, context: any) => any,
   };
 
+const NUCLIDE_URI_TYPE_NAME = 'NuclideUri';
+
 function getRemoteMarshallers(hostname: string): Marshallers {
   return {
-    typeName: 'NuclideUri',
+    typeName: NUCLIDE_URI_TYPE_NAME,
     marshaller: remoteUri => getPath(remoteUri),
     unmarshaller: path => createRemoteUri(hostname, path),
   };
@@ -619,7 +621,7 @@ function getRemoteMarshallers(hostname: string): Marshallers {
 
 const localMarshallers: Marshallers =
   {
-    typeName: 'NuclideUri',
+    typeName: NUCLIDE_URI_TYPE_NAME,
     marshaller: uri => uri,
     unmarshaller: remotePath => remotePath,
   };
@@ -664,6 +666,7 @@ export default {
   split,
   getRemoteMarshallers,
   localMarshallers,
+  NUCLIDE_URI_TYPE_NAME,
 };
 
 export const __TEST__ = {

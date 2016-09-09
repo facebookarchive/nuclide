@@ -11,6 +11,7 @@
 
 import {createProxyFactory, __test__} from '../lib/main';
 import {addMatchers} from '../../nuclide-test-helpers';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 describe('Module public API.', () => {
   beforeEach(function() {
@@ -24,7 +25,8 @@ describe('Module public API.', () => {
 
     expect(__test__.proxiesCache.size).toBe(0);
 
-    const factory = createProxyFactory('FunctionService', false, defFile, ['NuclideUri']);
+    const factory = createProxyFactory(
+      'FunctionService', false, defFile, [nuclideUri.NUCLIDE_URI_TYPE_NAME]);
     const proxy = factory(fakeClient);
 
     expect(Object.keys(proxy)).diffJson([
