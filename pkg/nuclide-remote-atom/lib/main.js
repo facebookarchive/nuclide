@@ -15,16 +15,21 @@ import type {AtomCommands, AtomFileEvent} from '../../nuclide-remote-atom-rpc/li
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 
-import {ServerConnection} from '../../nuclide-remote-connection';
+import {
+  getServiceByConnection,
+  ConnectionCache,
+} from '../../nuclide-remote-connection';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import createPackage from '../../commons-atom/createPackage';
-import {CompositeDisposable} from 'atom';
-import {getlocalService} from '../../nuclide-remote-connection';
 import {observeEditorDestroy} from '../../commons-atom/text-editor';
 import {Observable} from 'rxjs';
 
+// Use dummy 0 port for local connections.
+const DUMMY_LOCAL_PORT = 0;
+const REMOTE_COMMAND_SERVICE = 'RemoteCommandService';
+
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: IDisposable;
   _commands: AtomCommands;
 
   constructor() {
@@ -48,34 +53,14 @@ class Activation {
       },
     };
 
-    this._disposables = new CompositeDisposable();
-    this._initialize();
-  }
-
-  async _initialize(): Promise<void> {
-    const addConnection = async connection => {
-      const service: RemoteCommandServiceType = connection.getService('RemoteCommandService');
-      const remoteCommands = await service.RemoteCommandService.registerAtomCommands(
-        connection.getPort(), this._commands);
-      this._disposables.add(remoteCommands);
-      const onClose = closingConnection => {
-        if (closingConnection === connection) {
-          closeSubscription.dispose();
-          this._disposables.remove(closeSubscription);
-        }
-      };
-
-      const closeSubscription = ServerConnection.onDidCloseServerConnection(onClose);
-      this._disposables.add(closeSubscription);
-    };
-
-    // Add local service
-    const service: RemoteCommandServiceType = getlocalService('RemoteCommandService');
-    const remoteCommands = await service.RemoteCommandService.registerAtomCommands(
-      0, this._commands);
-    this._disposables.add(remoteCommands);
-
-    this._disposables.add(ServerConnection.observeConnections(addConnection));
+    this._disposables = new ConnectionCache(
+        async connection => {
+          const service: RemoteCommandServiceType =
+            getServiceByConnection(REMOTE_COMMAND_SERVICE, connection);
+          const port = connection == null ? DUMMY_LOCAL_PORT : connection.getPort();
+          return await service.RemoteCommandService.registerAtomCommands(
+            port, this._commands);
+        });
   }
 
   dispose(): void {
