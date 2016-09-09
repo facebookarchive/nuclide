@@ -100,6 +100,7 @@ export class ServiceRegistry {
         service.name,
         preserveFunctionNames,
         service.definition,
+        ['NuclideUri'],
       );
       // $FlowIssue - the parameter passed to require must be a literal string.
       const localImpl = require(service.implementation);

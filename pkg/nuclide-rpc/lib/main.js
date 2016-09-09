@@ -74,6 +74,7 @@ export function createProxyFactory(
   serviceName: string,
   preserveFunctionNames: boolean,
   definitionPath: string,
+  predefinedTypes: Array<string>,
 ): ProxyFactory {
   if (!proxiesCache.has(definitionPath)) {
     const filename = proxyFilename(definitionPath);
@@ -83,7 +84,8 @@ export function createProxyFactory(
       code = fs.readFileSync(filename, 'utf8');
     } else {
       const definitionSource = fs.readFileSync(definitionPath, 'utf8');
-      const defs = parseServiceDefinition(definitionPath, definitionSource);
+      const defs = parseServiceDefinition(
+        definitionPath, definitionSource, predefinedTypes);
       code = generateProxy(serviceName, preserveFunctionNames, defs);
     }
 

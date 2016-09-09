@@ -43,8 +43,12 @@ function isPrivateMemberName(name: string): boolean {
  * data over a network.
  * @param source - The string source of the definition file.
  */
-export function parseServiceDefinition(fileName: string, source: string): Definitions {
-  return new ServiceParser().parseService(fileName, source);
+export function parseServiceDefinition(
+  fileName: string,
+  source: string,
+  predefinedTypes: Array<string>,
+): Definitions {
+  return new ServiceParser(predefinedTypes).parseService(fileName, source);
 }
 
 class ServiceParser {
@@ -52,13 +56,14 @@ class ServiceParser {
   _filesTodo: Array<string>;
   _filesSeen: Set<string>;
 
-  constructor() {
+  constructor(predefinedTypes: Array<string>) {
     this._defs = new Map();
     this._filesTodo = [];
     this._filesSeen = new Set();
 
     // Add all builtin types
     const defineBuiltinType = name => {
+      invariant(!this._defs.has(name), 'Duplicate builtin type');
       this._defs.set(name, {
         kind: 'alias',
         name,
@@ -66,8 +71,7 @@ class ServiceParser {
       });
     };
     namedBuiltinTypes.forEach(defineBuiltinType);
-    // TODO: Find a better place for this.
-    defineBuiltinType('NuclideUri');
+    predefinedTypes.forEach(defineBuiltinType);
   }
 
   parseService(fileName: string, source: string): Definitions {
@@ -118,7 +122,11 @@ class FileParser {
   // Set of files required by imports
   _importsUsed: Set<string>;
 
-  constructor(fileName: string, fileType: FileType, defs: Map<string, Definition>) {
+  constructor(
+    fileName: string,
+    fileType: FileType,
+    defs: Map<string, Definition>,
+  ) {
     this._fileType = fileType;
     this._fileName = fileName;
     this._defs = defs;
@@ -634,7 +642,7 @@ class FileParser {
             `Unknown generic type ${id}.`);
 
         const imp = this._imports.get(id);
-        if (id !== 'NuclideUri' && imp != null && !imp.added) {
+        if (!this._defs.has(id) && imp != null && !imp.added) {
           imp.added = true;
           this._importsUsed.add(imp.file);
           if (id !== imp.imported) {

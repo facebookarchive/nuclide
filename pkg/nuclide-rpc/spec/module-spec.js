@@ -24,7 +24,7 @@ describe('Module public API.', () => {
 
     expect(__test__.proxiesCache.size).toBe(0);
 
-    const factory = createProxyFactory('FunctionService', false, defFile);
+    const factory = createProxyFactory('FunctionService', false, defFile, ['NuclideUri']);
     const proxy = factory(fakeClient);
 
     expect(Object.keys(proxy)).diffJson([

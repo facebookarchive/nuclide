@@ -77,7 +77,7 @@ const serviceName = argv.serviceName;
 
 const filename = proxyFilename(definitionPath);
 const definitionSource = fs.readFileSync(definitionPath, 'utf8');
-const defs = parseServiceDefinition(definitionPath, definitionSource);
+const defs = parseServiceDefinition(definitionPath, definitionSource, ['NuclideUri']);
 if (argv.useBasename) {
   stripLocationsFileName(defs);
 }
@@ -90,6 +90,7 @@ if (argv.validate) {
       serviceName,
       preserveFunctionNames,
       definitionPath,
+      ['NuclideUri'],
     );
     factory(fakeClient);
   } catch (e) {
