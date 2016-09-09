@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.167.1
+
+_OSS only release_
+
+* Workaround possible deferred activation.
+
 ## v0.167.0
 
 ### General
