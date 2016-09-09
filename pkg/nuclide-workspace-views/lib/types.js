@@ -165,6 +165,7 @@ type ToggleItemVisibilityAction = {
   payload: {
     itemType: string,
     visible: ?boolean,
+    immediate: boolean,
   },
 };
 

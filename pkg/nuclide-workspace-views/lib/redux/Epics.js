@@ -116,11 +116,36 @@ export function trackEpic(
     .ignoreElements();
 }
 
+/**
+ * Some packages (nuclide-home) will call the command that triggers this action during their
+ * activation. However, that may be before locations have had a chance to register. Therefore, we
+ * want to defer the command. Atom does offer an event for listening to when the activation phase is
+ * done (`PackageManager::onDidActivateInitialPackages`), but there's no way to tell if we missed
+ * it! So we'll just settle for using `nextTick`.
+ */
 export function toggleItemVisibilityEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(Actions.TOGGLE_ITEM_VISIBILITY)
+  const toggleActions = actions
+    .filter(action => action.type === Actions.TOGGLE_ITEM_VISIBILITY && !action.payload.immediate);
+  const nextTick = Observable.create(observer => { process.nextTick(() => { observer.next(); }); });
+  // $FlowFixMe: Add `concatAll()` to flow-typed
+  const missedActions = toggleActions.buffer(nextTick).take(1).concatAll();
+  return Observable.concat(missedActions, toggleActions)
+    .map(action => {
+      invariant(action.type === Actions.TOGGLE_ITEM_VISIBILITY);
+      const {itemType, visible} = action.payload;
+      return Actions.toggleItemVisibility(itemType, visible == null ? undefined : visible, true);
+    });
+}
+
+export function toggleItemVisibilityImmediatelyEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .filter(action => action.type === Actions.TOGGLE_ITEM_VISIBILITY && action.payload.immediate)
     .switchMap(action => {
       invariant(action.type === Actions.TOGGLE_ITEM_VISIBILITY);
       const {itemType, visible} = action.payload;

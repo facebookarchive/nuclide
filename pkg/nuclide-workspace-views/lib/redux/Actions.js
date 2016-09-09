@@ -107,9 +107,13 @@ export function setItemVisibility(options: SetItemVisibilityOptions): Action {
   };
 }
 
-export function toggleItemVisibility(itemType: string, visible?: boolean): Action {
+export function toggleItemVisibility(
+  itemType: string,
+  visible?: boolean,
+  immediate?: boolean,
+): Action {
   return {
     type: TOGGLE_ITEM_VISIBILITY,
-    payload: {itemType, visible},
+    payload: {itemType, visible, immediate: immediate || false},
   };
 }
