@@ -276,7 +276,9 @@ class ServerConnection {
 
     const socket = new NuclideSocket(uri, options);
     const client = RpcConnection.createRemote(
-      this.getRemoteHostname(), socket, servicesConfig,
+      socket,
+      [nuclideUri.getRemoteMarshallers(this.getRemoteHostname())],
+      servicesConfig,
     );
 
     this._client = client;

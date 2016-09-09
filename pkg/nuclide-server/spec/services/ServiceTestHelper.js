@@ -9,10 +9,12 @@
  * the root directory of this source tree.
  */
 
+import type {ConfigEntry} from '../../../nuclide-rpc';
+
 import NuclideServer from '../../lib/NuclideServer';
 import {NuclideSocket} from '../../lib/NuclideSocket';
 import {RpcConnection} from '../../../nuclide-rpc';
-import type {ConfigEntry} from '../../../nuclide-rpc';
+import nuclideUri from '../../../commons-node/nuclideUri';
 
 type Services = Array<ConfigEntry>;
 
@@ -26,7 +28,9 @@ export default class ServiceTestHelper {
 
     const port = this._server._webServer.address().port;
     this._client = RpcConnection.createRemote(
-      'localhost', new NuclideSocket(`http://localhost:${port}`, null), customServices);
+      new NuclideSocket(`http://localhost:${port}`, null),
+      [nuclideUri.getRemoteMarshallers('localhost')],
+      customServices);
   }
 
   stop(): void {

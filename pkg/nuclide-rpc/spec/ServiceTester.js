@@ -30,7 +30,9 @@ export class ServiceTester {
       this._serviceRegistry, transports.serverTransport);
 
     this._client = RpcConnection.createRemote(
-      'localhost', transports.clientTransport, customServices);
+      transports.clientTransport,
+      [nuclideUri.getRemoteMarshallers('localhost')],
+      customServices);
   }
 
   stop(): void {

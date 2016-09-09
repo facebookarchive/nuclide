@@ -36,7 +36,8 @@ function createLocalRpcClient(): RpcConnection<Transport> {
   const localClientConnection
     = RpcConnection.createServer(serviceRegistry, localTransports.serverTransport);
   invariant(localClientConnection != null); // silence lint...
-  return RpcConnection.createLocal(localTransports.clientTransport, servicesConfig);
+  return RpcConnection.createLocal(
+    localTransports.clientTransport, [nuclideUri.localMarshallers], servicesConfig);
 }
 
 function setUseLocalRpc(value: boolean): void {

@@ -43,7 +43,7 @@ async function getCommands(): Promise<AtomCommands> {
   });
   const transport = new SocketTransport(socket);
   await transport.onConnected();
-  const connection = RpcConnection.createLocal(transport, services);
+  const connection = RpcConnection.createLocal(transport, [nuclideUri.localMarshallers], services);
 
   // Get the command interface
   const service: CommandService = connection.getService('CommandService');

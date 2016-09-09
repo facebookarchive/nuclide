@@ -25,8 +25,8 @@ import type {
 } from './ServiceRegistry';
 import type {TimingTracker} from '../../nuclide-analytics';
 import type {Observer} from 'rxjs';
+import type {PredefinedTransformer} from './TypeRegistry';
 
-import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
 import {Observable, ConnectableObservable} from 'rxjs';
 import {ServiceRegistry} from './ServiceRegistry';
@@ -185,22 +185,25 @@ export class RpcConnection<TransportType: Transport> {
 
   // Creates a client side connection to a server on another machine.
   static createRemote(
-    hostname: string, transport: TransportType, services: Array<ConfigEntry>,
+    transport: TransportType,
+    predefinedTypes: Array<PredefinedTransformer>,
+    services: Array<ConfigEntry>,
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
-      new ServiceRegistry([nuclideUri.getRemoteMarshallers(hostname)], services),
+      new ServiceRegistry(predefinedTypes, services),
       transport);
   }
 
   // Creates a client side connection to a server on the same machine.
   static createLocal(
     transport: TransportType,
+    predefinedTypes: Array<PredefinedTransformer>,
     services: Array<ConfigEntry>,
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
-      new ServiceRegistry([nuclideUri.localMarshallers], services),
+      new ServiceRegistry(predefinedTypes, services),
       transport);
   }
 

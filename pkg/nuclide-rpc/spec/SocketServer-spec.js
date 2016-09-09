@@ -54,7 +54,8 @@ describe('SocketServer', () => {
 
       const clientSocket = net.connect(address.port);
       const clientTransport = new SocketTransport(clientSocket);
-      const clientConnection = RpcConnection.createLocal(clientTransport, services);
+      const clientConnection = RpcConnection.createLocal(
+        clientTransport, [nuclideUri.localMarshallers], services);
 
       const echoService: EchoService = clientConnection.getService('EchoService');
       const result = await echoService.echoString('Hello World!');

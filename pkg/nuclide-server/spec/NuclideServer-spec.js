@@ -16,6 +16,7 @@ import servicesConfig from '../lib/servicesConfig';
 
 import invariant from 'assert';
 import {NuclideSocket} from '../lib/NuclideSocket';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 let server;
 let client;
@@ -29,7 +30,10 @@ describe('Nuclide Server test suite', () => {
       server = new NuclideServer({port: 8176}, servicesConfig);
       await server.connect();
       socket = new NuclideSocket('http://localhost:8176', null);
-      client = RpcConnection.createRemote('localhost', socket, servicesConfig);
+      client = RpcConnection.createRemote(
+        socket,
+        [nuclideUri.getRemoteMarshallers('localhost')],
+        servicesConfig);
     });
   });
 
