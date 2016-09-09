@@ -10,6 +10,8 @@
  */
 
 import type {ConfigEntry, Transport} from '../lib/index';
+
+import nuclideUri from '../../commons-node/nuclideUri';
 import {LoopbackTransports} from '../lib/LoopbackTransports';
 import {RpcConnection} from '../lib/RpcConnection';
 import {ServiceRegistry} from '../lib/ServiceRegistry';
@@ -21,7 +23,9 @@ export class ServiceTester {
 
   async start(customServices: Array<ConfigEntry>): Promise<void> {
     const transports = new LoopbackTransports();
-    this._serviceRegistry = ServiceRegistry.createLocal(customServices);
+    this._serviceRegistry = new ServiceRegistry(
+      [nuclideUri.localMarshallers],
+      customServices);
     this._clientConnection = RpcConnection.createServer(
       this._serviceRegistry, transports.serverTransport);
 

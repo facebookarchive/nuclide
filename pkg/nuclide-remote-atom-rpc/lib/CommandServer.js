@@ -29,7 +29,9 @@ export class CommandServer {
     this._nuclidePort = nuclidePort;
     this._atomCommands = atomCommands;
     const services = loadServicesConfig(nuclideUri.join(__dirname, '..'));
-    const registry = ServiceRegistry.createLocal(services);
+    const registry = new ServiceRegistry(
+      [nuclideUri.localMarshallers],
+      services);
     this._server = new SocketServer(registry);
   }
 

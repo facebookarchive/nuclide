@@ -32,7 +32,8 @@ let serviceRegistry: ?ServiceRegistry = null;
 
 function getServiceRegistry(): ServiceRegistry {
   if (serviceRegistry == null) {
-    serviceRegistry = ServiceRegistry.createLocal(
+    serviceRegistry = new ServiceRegistry(
+      [nuclideUri.localMarshallers],
       loadServicesConfig(nuclideUri.join(__dirname, '..')),
     );
   }

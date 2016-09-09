@@ -11,6 +11,7 @@
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {ServiceRegistry} from '../lib/ServiceRegistry';
+import invariant from 'assert';
 
 describe('Import Errors', () => {
 
@@ -18,11 +19,13 @@ describe('Import Errors', () => {
     waitsForPromise(async () => {
       let hadError = false;
       try {
-        ServiceRegistry.createLocal([{
-          name: 'ImportClassService',
-          definition: nuclideUri.join(__dirname, 'ImportClassService.js'),
-          implementation: nuclideUri.join(__dirname, 'ImportClassService.js'),
-        }]);
+        invariant(new ServiceRegistry(
+          [nuclideUri.localMarshallers],
+          [{
+            name: 'ImportClassService',
+            definition: nuclideUri.join(__dirname, 'ImportClassService.js'),
+            implementation: nuclideUri.join(__dirname, 'ImportClassService.js'),
+          }]) != null);
       } catch (e) {
         hadError = true;
         expect(e.message).toMatch('Exported class in imported RPC file');
@@ -35,11 +38,13 @@ describe('Import Errors', () => {
     waitsForPromise(async () => {
       let hadError = false;
       try {
-        ServiceRegistry.createLocal([{
-          name: 'ImportFunctionService',
-          definition: nuclideUri.join(__dirname, 'ImportFunctionService.js'),
-          implementation: nuclideUri.join(__dirname, 'ImportFunctionService.js'),
-        }]);
+        invariant(new ServiceRegistry(
+          [nuclideUri.localMarshallers],
+          [{
+            name: 'ImportFunctionService',
+            definition: nuclideUri.join(__dirname, 'ImportFunctionService.js'),
+            implementation: nuclideUri.join(__dirname, 'ImportFunctionService.js'),
+          }]) != null);
       } catch (e) {
         hadError = true;
         expect(e.message).toMatch('Exported function in imported RPC file');

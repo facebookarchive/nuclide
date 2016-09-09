@@ -26,6 +26,7 @@ import type {
 import type {TimingTracker} from '../../nuclide-analytics';
 import type {Observer} from 'rxjs';
 
+import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
 import {Observable, ConnectableObservable} from 'rxjs';
 import {ServiceRegistry} from './ServiceRegistry';
@@ -188,7 +189,7 @@ export class RpcConnection<TransportType: Transport> {
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
-      ServiceRegistry.createRemote(hostname, services),
+      new ServiceRegistry([nuclideUri.getRemoteMarshallers(hostname)], services),
       transport);
   }
 
@@ -199,7 +200,7 @@ export class RpcConnection<TransportType: Transport> {
   ): RpcConnection<TransportType> {
     return new RpcConnection(
       'client',
-      ServiceRegistry.createLocal(services),
+      new ServiceRegistry([nuclideUri.localMarshallers], services),
       transport);
   }
 

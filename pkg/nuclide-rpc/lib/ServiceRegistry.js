@@ -23,7 +23,6 @@ import type {ProxyFactory} from './main';
 import invariant from 'assert';
 import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';
-import nuclideUri from '../../commons-node/nuclideUri';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -53,7 +52,6 @@ export class ServiceRegistry {
   _predefinedTypes: Array<string>;
   _services: Map<string, ServiceDefinition>;
 
-  // Don't call directly, use factory methods below.
   constructor(
     predefinedTypes: Array<PredefinedTransformer>,
     services: Array<ConfigEntry>,
@@ -65,35 +63,6 @@ export class ServiceRegistry {
     this._services = new Map();
 
     this.addServices(services);
-  }
-
-  // Create local service registry.
-  // NuclideUri type requires no transformations (it is done on the client side).
-  static createLocal(services: Array<ConfigEntry>): ServiceRegistry {
-    return new ServiceRegistry(
-      [
-        {
-          typeName: 'NuclideUri',
-          marshaller: uri => uri,
-          unmarshaller: remotePath => remotePath,
-        },
-      ],
-      services);
-  }
-
-  // Create service registry for connections to a remote machine.
-  static createRemote(
-    hostname: string, services: Array<ConfigEntry>,
-  ): ServiceRegistry {
-    return new ServiceRegistry(
-      [
-        {
-          typeName: 'NuclideUri',
-          marshaller: remoteUri => nuclideUri.getPath(remoteUri),
-          unmarshaller: path => nuclideUri.createRemoteUri(hostname, path),
-        },
-      ],
-      services);
   }
 
   addServices(services: Array<ConfigEntry>): void {

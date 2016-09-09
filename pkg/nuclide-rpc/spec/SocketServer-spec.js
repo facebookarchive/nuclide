@@ -45,7 +45,9 @@ describe('SocketServer', () => {
     waitsForPromise(async () => {
       invariant(configPath);
       const services = loadServicesConfig(configPath);
-      const registry = ServiceRegistry.createLocal(services);
+      const registry = new ServiceRegistry(
+        [nuclideUri.localMarshallers],
+        services);
       const server = new SocketServer(registry);
       const address = await server.getAddress();
       invariant(address.port !== 0);

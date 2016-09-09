@@ -28,12 +28,14 @@ describe('RpcProcess', () => {
       detached: false,
     };
 
-    const serviceRegistry = ServiceRegistry.createLocal([{
-      name: 'dummy',
-      definition: nuclideUri.join(__dirname, 'fixtures/dummy-service/DummyService.js'),
-      implementation: nuclideUri.join(__dirname, 'fixtures/dummy-service/DummyService.js'),
-      preserveFunctionNames: true,
-    }]);
+    const serviceRegistry = new ServiceRegistry(
+      [nuclideUri.localMarshallers],
+      [{
+        name: 'dummy',
+        definition: nuclideUri.join(__dirname, 'fixtures/dummy-service/DummyService.js'),
+        implementation: nuclideUri.join(__dirname, 'fixtures/dummy-service/DummyService.js'),
+        preserveFunctionNames: true,
+      }]);
 
     waitsForPromise(async () => {
       const createProcess = () => safeSpawn('python', [PROCESS_PATH], OPTS);
