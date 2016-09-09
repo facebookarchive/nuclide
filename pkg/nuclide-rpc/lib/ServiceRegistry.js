@@ -23,7 +23,6 @@ import invariant from 'assert';
 import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {builtinLocation} from './builtin-types';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -63,13 +62,13 @@ export class ServiceRegistry {
     this._classesByName = new Map();
     this._services = new Map();
 
-    // NuclideUri type requires no transformations (it is done on the client side).
-    this._typeRegistry.registerType('NuclideUri', builtinLocation, marshalUri, unmarshalUri);
+    this._typeRegistry.registerPredefinedType('NuclideUri', marshalUri, unmarshalUri);
 
     this.addServices(services);
   }
 
   // Create local service registry.
+  // NuclideUri type requires no transformations (it is done on the client side).
   static createLocal(services: Array<ConfigEntry>): ServiceRegistry {
     return new ServiceRegistry(
       uri => uri,

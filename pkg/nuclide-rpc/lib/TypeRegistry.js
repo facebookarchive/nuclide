@@ -204,6 +204,14 @@ export class TypeRegistry {
     });
   }
 
+  registerPredefinedType(
+    typeName: string,
+    marshaller: NamedTransformer,
+    unmarshaller: NamedTransformer,
+  ): void {
+    this.registerType(typeName, builtinLocation, marshaller, unmarshaller);
+  }
+
   /**
    * Register a type by providing both a marshaller and an unmarshaller. The marshaller
    * will be called to transform the type before sending it out onto the network, while the
