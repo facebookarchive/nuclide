@@ -17,6 +17,9 @@ import {CompositeDisposable} from 'atom';
 import {getOutline} from './JSONOutlineProvider';
 import {getNPMHyperclickProvider} from './NPMHyperclickProvider';
 
+import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
+import CodeFormatHelpers from './CodeFormatHelpers';
+
 class Activation {
   _disposables: CompositeDisposable;
 
@@ -57,4 +60,14 @@ export function provideOutlines(): OutlineProvider {
 
 export function getHyperclickProvider(): HyperclickProvider {
   return getNPMHyperclickProvider();
+}
+
+export function provideCodeFormat(): CodeFormatProvider {
+  return {
+    selector: 'source.json',
+    inclusionPriority: 1,
+    formatEntireFile(editor, range) {
+      return CodeFormatHelpers.formatEntireFile(editor, range);
+    },
+  };
 }

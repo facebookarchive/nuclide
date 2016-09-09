@@ -668,6 +668,7 @@ declare class atom$TextEditor extends atom$Model {
   isEmpty(): boolean,
   getEncoding(): buffer$Encoding,
   setEncoding(encoding: string): void,
+  getTabLength() : number,
 
   // File Operations
   save(): void,
