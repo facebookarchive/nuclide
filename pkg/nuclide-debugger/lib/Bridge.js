@@ -138,6 +138,16 @@ class Bridge {
     }
   }
 
+  setSelectedCallFrameIndex(callFrameIndex: number): void {
+    if (this._webview != null) {
+      this._webview.send(
+        'command',
+        'setSelectedCallFrameIndex',
+        callFrameIndex,
+      );
+    }
+  }
+
   setPauseOnException(pauseOnExceptionEnabled: boolean): void {
     if (this._webview) {
       this._webview.send(
@@ -311,7 +321,7 @@ class Bridge {
   }
 
   _setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}): void {
-    this._debuggerModel.getActions().setSelectedCallFrameline(options);
+    this._debuggerModel.getActions().setSelectedCallFrameLine(options);
   }
 
   _openSourceLocation(options: ?{sourceURL: string, lineNumber: number}): void {

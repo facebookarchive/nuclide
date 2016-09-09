@@ -174,6 +174,7 @@ export class NewDebuggerView extends React.Component {
             <DebuggerCallstackComponent
               actions={actions}
               callstack={this.state.callstack}
+              bridge={this.props.model.getBridge()}
             />
           </div>
         </Section>

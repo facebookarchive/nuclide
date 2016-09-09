@@ -259,6 +259,8 @@ class NuclideBridge {
       case 'selectThread':
         this.selectThread(args[0]);
         break;
+      case 'setSelectedCallFrameIndex':
+        this._handleSetSelectedCallFrameIndex(args[0]);
     }
   }
 
@@ -313,6 +315,14 @@ class NuclideBridge {
         const callstack = this._convertFramesToIPCFrames(callFrames);
         ipcRenderer.sendToHost('notification', 'CallstackUpdate', callstack);
       });
+    }
+  }
+
+  _handleSetSelectedCallFrameIndex(callframeIndex: number): void {
+    const target = WebInspector.targetManager.mainTarget();
+    if (target != null) {
+      const selectedFrame = target.debuggerModel.callFrames[callframeIndex];
+      target.debuggerModel.setSelectedCallFrame(selectedFrame);
     }
   }
 

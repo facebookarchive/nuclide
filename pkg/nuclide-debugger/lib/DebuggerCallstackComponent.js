@@ -15,13 +15,14 @@ import {
 import type {Callstack} from './types';
 import type DebuggerActions from './DebuggerActions';
 
-import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Listview} from '../../nuclide-ui/lib/ListView';
+import Bridge from './Bridge';
 
 type DebuggerCallstackComponentProps = {
   actions: DebuggerActions,
   callstack: ?Callstack,
+  bridge: Bridge,
 };
 
 export class DebuggerCallstackComponent extends React.Component {
@@ -33,13 +34,7 @@ export class DebuggerCallstackComponent extends React.Component {
   }
 
   _handleCallframeClick(callFrameIndex: number, event: SyntheticMouseEvent): void {
-    invariant(this.props.callstack != null);
-    const {location} = this.props.callstack[callFrameIndex];
-    const options = {
-      sourceURL: location.path,
-      lineNumber: location.line,
-    };
-    this.props.actions.setSelectedCallFrameline(options);
+    this.props.bridge.setSelectedCallFrameIndex(callFrameIndex);
   }
 
   render(): ?React.Element<any> {
