@@ -12,6 +12,7 @@
 import type {RevisionInfo} from './HgService';
 
 import {hgAsyncExecute} from './hg-utils';
+import {HEAD_COMMIT_TAG} from './hg-constants';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -178,11 +179,21 @@ export async function fetchRevisionInfo(
   return revisionInfo;
 }
 
-export function fetchSmartlogRevisions(
+export async function fetchSmartlogRevisions(
   workingDirectory: string,
 ): Promise<Array<RevisionInfo>> {
-  const revisionExpression = 'smartlog() + ancestor(smartlog())';
-  return fetchRevisions(revisionExpression, workingDirectory, {shouldLimit: false});
+  const revisionExpression = 'smartlog(all) + ancestor(smartlog(all))';
+  const [smartlogRevisions, [headRevision]] = await Promise.all([
+    fetchRevisions(revisionExpression, workingDirectory, {shouldLimit: false}),
+    fetchRevisions('.', workingDirectory),
+  ]);
+  // Add the `HEAD` tag to the head revision.
+  smartlogRevisions.forEach(revision => {
+    if (headRevision.id === revision.id) {
+      revision.tags.push(HEAD_COMMIT_TAG);
+    }
+  });
+  return smartlogRevisions;
 }
 
 /**

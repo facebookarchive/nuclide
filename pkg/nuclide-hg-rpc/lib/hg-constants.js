@@ -86,7 +86,7 @@ const AmendMode = Object.freeze({
 // This is to work around flow's missing support of enums.
 (AmendMode: { [key: string]: AmendModeValue });
 
-const HEAD_COMMIT_TAG = 'tip';
+const HEAD_COMMIT_TAG = 'head';
 
 const CommitPhase = Object.freeze({
   PUBLIC: 'public',

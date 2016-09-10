@@ -317,7 +317,7 @@ export default class RepositoryStack {
   _createRevisionsState(revisions: Array<RevisionInfo>): RevisionsState {
     const {HEAD_COMMIT_TAG, CommitPhase} = hgConstants;
     const hashToRevisionInfo = new Map(revisions.map(revision => [revision.hash, revision]));
-    const tipRevision = revisions.find(revision => revision.tags.includes(HEAD_COMMIT_TAG));
+    const headRevision = revisions.find(revision => revision.tags.includes(HEAD_COMMIT_TAG));
     // Prioritize the cached compaereCommitId, if it exists.
     // The user could have selected that from the timeline view.
     let compareCommitId = this._selectedCompareCommitId;
@@ -330,7 +330,7 @@ export default class RepositoryStack {
     // `headToForkBaseRevisions` should have the public commit at the fork base as the first.
     // and the rest of the current `HEAD` stack in order with the `HEAD` being last.
     const headToForkBaseRevisions = [];
-    let parentRevision = tipRevision;
+    let parentRevision = headRevision;
     while (parentRevision != null && parentRevision.phase !== CommitPhase.PUBLIC) {
       headToForkBaseRevisions.unshift(parentRevision);
       parentRevision = hashToRevisionInfo.get(parentRevision.parents[0]);
@@ -340,7 +340,7 @@ export default class RepositoryStack {
     }
 
     return {
-      headCommitId: tipRevision == null ? 0 : tipRevision.id,
+      headCommitId: headRevision == null ? 0 : headRevision.id,
       compareCommitId,
       diffStatuses,
       headToForkBaseRevisions,
