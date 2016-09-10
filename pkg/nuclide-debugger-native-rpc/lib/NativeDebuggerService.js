@@ -20,10 +20,8 @@ import utils from './utils';
 import WS from 'ws';
 const {log, logTrace, logError, logInfo, setLogLevel} = utils;
 import {ClientCallback} from '../../nuclide-debugger-common';
-import {
-  observeStream,
-  splitStream,
-} from '../../commons-node/stream';
+import {observeStream} from '../../commons-node/stream';
+import {splitStream} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {checkOutput} from '../../commons-node/process';
 

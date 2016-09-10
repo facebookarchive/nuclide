@@ -10,7 +10,8 @@
  */
 
 import type {Observable} from 'rxjs';
-import {observeStream, splitStream} from '../../commons-node/stream';
+import {splitStream} from '../../commons-node/observable';
+import {observeStream} from '../../commons-node/stream';
 import invariant from 'assert';
 import type {MessageLogger} from './index';
 

@@ -13,7 +13,8 @@ import type {Observer} from 'rxjs';
 import type {ProcessMessage} from './process-rpc-types';
 
 import child_process from 'child_process';
-import {observeStream, splitStream, takeWhileInclusive} from './stream';
+import {splitStream, takeWhileInclusive} from './observable';
+import {observeStream} from './stream';
 import {maybeToString} from './string';
 import {Observable} from 'rxjs';
 import {PromiseQueue} from './promise-executors';

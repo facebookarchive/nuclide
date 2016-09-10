@@ -31,7 +31,7 @@ import {quote} from 'shell-quote';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {compact} from '../../commons-node/stream';
+import {compact} from '../../commons-node/observable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {createBuckProject} from '../../nuclide-buck-base';
 import * as featureConfig from '../../commons-atom/featureConfig';

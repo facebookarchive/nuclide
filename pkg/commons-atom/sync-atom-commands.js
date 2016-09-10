@@ -15,7 +15,7 @@ export type AtomCommands = {
   };
 };
 
-import {reconcileSets} from '../commons-node/stream';
+import {reconcileSets} from '../commons-node/observable';
 import {CompositeDisposable} from 'atom';
 import {Observable} from 'rxjs';
 

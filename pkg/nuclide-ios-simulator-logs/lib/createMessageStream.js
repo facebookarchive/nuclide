@@ -11,7 +11,7 @@
 
 import type {Message} from '../../nuclide-console/lib/types';
 
-import {bufferUntil} from '../../commons-node/stream';
+import {bufferUntil} from '../../commons-node/observable';
 import featureConfig from '../../commons-atom/featureConfig';
 import {createMessage} from './createMessage';
 import plist from 'plist';

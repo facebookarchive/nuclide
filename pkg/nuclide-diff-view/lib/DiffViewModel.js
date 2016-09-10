@@ -72,7 +72,7 @@ import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {serializeAsyncCall} from '../../commons-node/promise';
 import {mapUnion, mapFilter} from '../../commons-node/collection';
-import {bufferUntil} from '../../commons-node/stream';
+import {bufferUntil} from '../../commons-node/observable';
 import nuclideUri from '../../commons-node/nuclideUri';
 import RepositoryStack from './RepositoryStack';
 import {Observable, Subject} from 'rxjs';

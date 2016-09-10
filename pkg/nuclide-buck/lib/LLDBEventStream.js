@@ -17,7 +17,7 @@ import type {BuckEvent} from './BuckEventStream';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-import {compact} from '../../commons-node/stream';
+import {compact} from '../../commons-node/observable';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {AttachProcessInfo} from '../../nuclide-debugger-native/lib/AttachProcessInfo';

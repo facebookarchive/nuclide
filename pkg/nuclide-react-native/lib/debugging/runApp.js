@@ -13,7 +13,7 @@ import type {ExecutorResult, RnMessage} from './types';
 
 import {Observable} from 'rxjs';
 import WS from 'ws';
-import {cacheWhileSubscribed} from '../../../commons-node/stream';
+import {cacheWhileSubscribed} from '../../../commons-node/observable';
 
 const WS_URL = 'ws://localhost:8081/debugger-proxy?role=debugger&name=Nuclide';
 

@@ -31,7 +31,7 @@ import {
   getEmptBookShelfState,
   serializeBookShelfState,
 } from './utils';
-import {diffSets} from '../../commons-node/stream';
+import {diffSets} from '../../commons-node/observable';
 import {getLogger} from '../../nuclide-logging';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';

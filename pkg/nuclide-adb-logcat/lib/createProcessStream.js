@@ -10,7 +10,7 @@
  */
 
 import {observeProcess, safeSpawn} from '../../commons-node/process';
-import {compact} from '../../commons-node/stream';
+import {compact} from '../../commons-node/observable';
 import featureConfig from '../../commons-atom/featureConfig';
 import {Observable} from 'rxjs';
 

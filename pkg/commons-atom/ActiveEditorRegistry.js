@@ -23,7 +23,7 @@ import {
 } from './debounced';
 
 import {observableFromSubscribeFunction} from '../commons-node/event';
-import {cacheWhileSubscribed} from '../commons-node/stream';
+import {cacheWhileSubscribed} from '../commons-node/observable';
 
 import {getLogger} from '../nuclide-logging';
 const logger = getLogger();

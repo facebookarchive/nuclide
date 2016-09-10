@@ -22,7 +22,7 @@ import type {CoverageResult, CoverageProvider, UncoveredRegion} from './types';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-import {toggle, compact} from '../../commons-node/stream';
+import {toggle, compact} from '../../commons-node/observable';
 
 export function diagnosticProviderForResultStream(
   results: Observable<Result<CoverageProvider, ?CoverageResult>>,

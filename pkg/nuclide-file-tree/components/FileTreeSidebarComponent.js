@@ -26,7 +26,7 @@ import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
 
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
-import {toggle} from '../../commons-node/stream';
+import {toggle} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {Section} from '../../nuclide-ui/lib/Section';
