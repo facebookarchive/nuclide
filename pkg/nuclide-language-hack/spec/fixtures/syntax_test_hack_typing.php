@@ -20,3 +20,21 @@ interface ISomething {
   //                    ^ support.class.php
   //                       ^ punctuation.terminator.expression.php
 }
+
+function exampleWithDefaultParameters(
+  URI $href_uri,
+  ?Something $filter = null,
+  //                 ^ keyword.operator.assignment.php
+  //                   ^^^^ constant.language.php
+  //                       ^ meta.function.arguments.php
+  bool $notfilter = false,
+  //              ^ keyword.operator.assignment.php
+  //                ^^^^^ constant.language.php
+  //                     ^ meta.function.arguments.php
+  SomeEnum $mode = SomeEnum::NORMAL,
+  //             ^ keyword.operator.assignment.php
+  //               ^^^^^^^^^^^^^^^^ constant.language.php
+  //                               ^ meta.function.arguments.php
+): void {
+
+}

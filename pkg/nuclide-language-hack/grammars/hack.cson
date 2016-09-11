@@ -407,7 +407,7 @@
           \\s*(&)?      # Reference
           \\s*((\\$+)[a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*)  # The variable name
           (?:           # A default value
-            \\s*(?:(=)\\s*(?:(null)|((?:\\S*?\\(\\))|(?:\\S*?))))
+            \\s*(?:(=)\\s*(?:(null|(?:\\S*?))|(\\S*?\\(\\))))
           )?
           \\s*(?=,|\\)|/[/*]|\\#|$) # A closing parentheses (end of argument list) or a comma or a comment
           '''
@@ -442,7 +442,7 @@
               \\s*(&)?                  # Reference
               \\s*((\\$+)[a-z_\\x{7f}-\\x{ff}][a-z0-9_\\x{7f}-\\x{ff}]*)  # The variable name
               (?:
-                \\s*(?:(=)\\s*(?:(null)|((?:\\S*?\\(\\))|(?:\\S*?))))     # A default value
+                \\s*(?:(=)\\s*(?:(null|(?:\\S*?))|(\\S*?\\(\\))))     # A default value
               )?
               \\s*(?=,|\\)|/[/*]|\\#|$) # A closing parentheses (end of argument list) or a comma
               '''
