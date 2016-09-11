@@ -493,7 +493,7 @@ export default class RepositoryStack {
     };
   }
 
-  async setRevision(revision: RevisionInfo): Promise<void> {
+  async setCompareRevision(revision: RevisionInfo): Promise<void> {
     const revisionsState = await this.getCachedRevisionsState();
     const {headToForkBaseRevisions} = revisionsState;
 

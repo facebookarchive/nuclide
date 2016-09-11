@@ -521,7 +521,7 @@ export default class DiffViewComponent extends React.Component {
   }
 
   _onTimelineChangeRevision(revision: RevisionInfo): void {
-    this.props.diffModel.setRevision(revision);
+    this.props.diffModel.setCompareRevision(revision);
   }
 
   _onDidChangeScrollTop(): void {

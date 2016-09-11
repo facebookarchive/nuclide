@@ -678,7 +678,7 @@ export default class DiffViewModel {
     });
   }
 
-  setRevision(revision: RevisionInfo): void {
+  setCompareRevision(revision: RevisionInfo): void {
     track('diff-view-set-revision');
     const repositoryStack = this._activeRepositoryStack;
     invariant(repositoryStack, 'There must be an active repository stack!');
@@ -686,7 +686,7 @@ export default class DiffViewModel {
       ...this._state,
       compareRevisionInfo: revision,
     });
-    repositoryStack.setRevision(revision).catch(notifyInternalError);
+    repositoryStack.setCompareRevision(revision).catch(notifyInternalError);
   }
 
   getPublishUpdates(): Subject<any> {
