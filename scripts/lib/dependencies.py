@@ -26,25 +26,23 @@ def get_dependencies_filename():
 def load_dependencies():
     return utils.json_load(get_dependencies_filename())
 
-def check_dependency(binary, expected_version):
-    # Since flow v0.18.1 `--version` was deprecated in favor a `version` command
-    cmd = [binary, '--version'] if binary != 'flow' else [binary, 'version']
+
+def check_dependency(cmd, expected_output):
     try:
-        actual_version = utils.check_output(cmd).rstrip()
+        actual_output = utils.check_output(cmd).rstrip()
     except OSError as e:
-        raise Exception('Error while running %s: %s' % (binary, str(e), ))
-    if actual_version != expected_version:
-        raise Exception(('Incorrect %s version. Found %s, expected %s. ' +
+        raise Exception('Error while running %s: %s' % (' '.join(cmd), str(e)))
+    if actual_output != expected_output:
+        raise Exception(('Ran "%s" and found %s but expected %s. ' +
                          'Use the --no-version option to ignore this test.') %
-                        (binary, actual_version, expected_version))
+                        (' '.join(cmd), actual_output, expected_output))
 
 def check_dependencies(include_apm):
     dependencies = load_dependencies()
     for dependency_name in dependencies.keys():
         dependency = dependencies[dependency_name]
         if include_apm or not dependency['clientOnly']:
-            check_dependency(dependency['dependency'],
-                             dependency.get('version-output', dependency['version']))
+            check_dependency(dependency['version-cmd'], dependency['version-output'])
 
 def get_atom_version():
     return load_dependencies()['atom']['version']
