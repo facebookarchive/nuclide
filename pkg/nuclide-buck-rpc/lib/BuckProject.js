@@ -18,6 +18,7 @@ import {
   checkOutput,
   observeProcess,
   safeSpawn,
+  getOriginalEnvironment,
 } from '../../commons-node/process';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -207,6 +208,9 @@ export class BuckProject {
     const buckCommandOptions = {
       cwd: this._rootPath,
       queueName: this._serialQueueName,
+      // Buck restarts itself if the environment changes, so try to preserve
+      // the original environment that Nuclide was started in.
+      env: getOriginalEnvironment(),
       ...commandOptions,
     };
     return {pathToBuck, buckCommandOptions};

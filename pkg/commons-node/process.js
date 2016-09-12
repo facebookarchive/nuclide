@@ -484,3 +484,30 @@ export function runCommand(
       return acc.stdout;
     });
 }
+
+// If provided, read the original environment from NUCLIDE_ORIGINAL_ENV.
+// This should contain the base64-encoded output of `env -0`.
+let cachedOriginalEnvironment = null;
+
+export function getOriginalEnvironment(): Object {
+  if (cachedOriginalEnvironment != null) {
+    return cachedOriginalEnvironment;
+  }
+
+  const {NUCLIDE_ORIGINAL_ENV} = process.env;
+  if (NUCLIDE_ORIGINAL_ENV != null) {
+    const envString = new Buffer(NUCLIDE_ORIGINAL_ENV, 'base64').toString();
+    cachedOriginalEnvironment = {};
+    for (const envVar of envString.split('\0')) {
+      // envVar should look like A=value_of_A
+      const equalIndex = envVar.indexOf('=');
+      if (equalIndex !== -1) {
+        cachedOriginalEnvironment[envVar.substring(0, equalIndex)] =
+          envVar.substring(equalIndex + 1);
+      }
+    }
+  } else {
+    cachedOriginalEnvironment = process.env;
+  }
+  return cachedOriginalEnvironment;
+}
