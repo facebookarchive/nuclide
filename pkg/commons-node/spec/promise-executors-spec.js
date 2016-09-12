@@ -92,4 +92,12 @@ describe('PromisePool', () => {
       expect(end - start).toBeLessThan(numDelayedExecutors * delayMs / (poolSize - 1));
     });
   });
+
+  it('accepts functions returning promises', () => {
+    waitsForPromise(async () => {
+      const queue = new PromisePool(1);
+      const result = await queue.submitFunction(() => Promise.resolve('test'));
+      expect(result).toBe('test');
+    });
+  });
 });

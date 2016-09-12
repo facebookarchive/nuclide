@@ -12,7 +12,7 @@
 import Dequeue from 'dequeue';
 import EventEmitter from 'events';
 
-type Executor = (resolve: any, reject: any) => any;
+type Executor<T> = (resolve: (result: T) => any, reject: any) => any;
 
 /**
  * A pool that executes Promise executors in parallel given the poolSize, in order.
@@ -43,7 +43,7 @@ export class PromisePool {
    * @return A Promise that will be resolved/rejected in response to the
    *     execution of the executor.
    */
-  submit(executor: Executor): Promise<any> {
+  submit<T>(executor: Executor<T>): Promise<T> {
     const id = this._getNextRequestId();
     this._fifo.push({id, executor});
     const promise = new Promise((resolve, reject) => {
@@ -54,6 +54,11 @@ export class PromisePool {
     });
     this._run();
     return promise;
+  }
+
+  // Submit a function that wraps a promise.
+  submitFunction<T>(fn: () => Promise<T>): Promise<T> {
+    return this.submit((resolve, reject) => fn().then(resolve, reject));
   }
 
   _run() {
@@ -103,7 +108,7 @@ export class PromiseQueue {
    * @return A Promise that will be resolved/rejected in response to the
    *     execution of the executor.
    */
-  submit(executor: Executor): Promise<any> {
+  submit<T>(executor: Executor<T>): Promise<T> {
     return this._promisePool.submit(executor);
   }
 }
