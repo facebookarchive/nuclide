@@ -70,6 +70,9 @@ export function runTaskEpic(
         taskIdsAreEqual(store.getState().activeTaskId, taskToRun)
           ? Observable.empty()
           : Observable.of(Actions.selectTask(taskToRun)),
+        store.getState().visible
+          ? Observable.empty()
+          : Observable.of(Actions.setToolbarVisibility(true)),
         Observable.defer(() => {
           const state = store.getState();
           const activeTaskRunner = getActiveTaskRunner(state);

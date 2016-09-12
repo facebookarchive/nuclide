@@ -112,6 +112,7 @@ describe('Epics', () => {
 
         const result = await output.toArray().toPromise();
         expect(result.map(action => action.type)).toEqual([
+          Actions.SET_TOOLBAR_VISIBILITY,
           Actions.TASK_STARTED,
           Actions.TASK_COMPLETED,
         ]);
