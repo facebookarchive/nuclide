@@ -27,3 +27,14 @@ export async function getNumberOfMatches(searchToken: string): Promise<number> {
     return 0;
   }
 }
+
+/**
+ * Modifies the logfile by removing lines matching the provided searchToken.
+ */
+export async function deleteLogLinesMatching(searchToken: string): Promise<void> {
+  const logFilePath = getPathToLogFileForToday();
+  const args = ['-i', '', `/${searchToken}/d`, logFilePath];
+  try {
+    await asyncExecute('sed', args);
+  } catch (e) {}
+}

@@ -14,7 +14,7 @@ import {
   deactivateAllPackages,
   jasmineIntegrationTestSetup,
 } from './utils/integration-test-helpers';
-import {getNumberOfMatches} from './utils/logfile';
+import {getNumberOfMatches, deleteLogLinesMatching} from './utils/logfile';
 import {copyFixture} from '../pkg/nuclide-test-helpers';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 
@@ -32,6 +32,8 @@ describe('test the logfile grepper', () => {
       jasmine.unspy(require('../pkg/nuclide-logging'), 'getPathToLogFileForToday');
       spyOnLogFileGetter(nuclideUri.join(dirPath, 'log2.txt'));
       expect(await getNumberOfMatches(LOG_STRING)).toBe(NUM_LOGS);
+      await deleteLogLinesMatching('max');
+      expect(await getNumberOfMatches(LOG_STRING)).toBe(0);
       deactivateAllPackages();
     });
   });
