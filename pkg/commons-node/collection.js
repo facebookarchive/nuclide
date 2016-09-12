@@ -105,6 +105,22 @@ export function setIntersect<T>(a: Set<T>, b: Set<T>): Set<T> {
   return new Set(Array.from(a).filter(e => b.has(e)));
 }
 
+export function setDifference<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): Set<T> {
+  if (a.size === 0) {
+    return new Set();
+  } else if (b.size === 0) {
+    return new Set(a);
+  }
+  const result = new Set();
+  const hash = hash_ || (x => x);
+  const bHashes = hash_ == null ? b : new Set(Array.from(b.values()).map(hash));
+  a.forEach(value => {
+    if (!bHashes.has(hash(value))) {
+      result.add(value);
+    }
+  });
+  return result;
+}
 
 /**
  * O(1)-check if a given object is empty (has no properties, inherited or not)

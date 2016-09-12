@@ -11,6 +11,7 @@
 
 import UniversalDisposable from './UniversalDisposable';
 import invariant from 'assert';
+import {setDifference} from './collection';
 import {CompositeDisposable, Disposable} from 'event-kit';
 import {Observable, ReplaySubject} from 'rxjs';
 
@@ -98,23 +99,6 @@ type Diff<T> = {
   removed: Set<T>,
 };
 
-function subtractSet<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): Set<T> {
-  if (a.size === 0) {
-    return new Set();
-  } else if (b.size === 0) {
-    return new Set(a);
-  }
-  const result = new Set();
-  const hash = hash_ || (x => x);
-  const bHashes = hash_ == null ? b : new Set(Array.from(b.values()).map(hash));
-  a.forEach(value => {
-    if (!bHashes.has(hash(value))) {
-      result.add(value);
-    }
-  });
-  return result;
-}
-
 /**
  * Given a stream of sets, return a stream of diffs.
  * **IMPORTANT:** These sets are assumed to be immutable by convention. Don't mutate them!
@@ -127,8 +111,8 @@ export function diffSets<T>(sets: Observable<Set<T>>, hash?: (v: T) => any): Obs
     // $FlowFixMe(matthewwithanm): Type this.
     .pairwise()
     .map(([previous, next]) => ({
-      added: subtractSet(next, previous, hash),
-      removed: subtractSet(previous, next, hash),
+      added: setDifference(next, previous, hash),
+      removed: setDifference(previous, next, hash),
     }))
     .filter(diff => diff.added.size > 0 || diff.removed.size > 0);
 }
