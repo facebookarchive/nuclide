@@ -1,5 +1,24 @@
 # Nuclide Changelog
 
+## v0.168.0
+
+### General:
+
+* Merged RN iOS Log Tailer & iOS Log Tailer; Filtering is controlled via a setting (which only shows RN logs by default).
+* Added tag whitelist setting, with an RN appropriate default.
+* Add keyboard shortcut for clearing the console. (Shortcut: `⌃L`)
+* tool-bar@^1.0.0 are now the only versions supported.
+* Fixed Hack grammar type hinted default parameters.
+
+### Debugger:
+
+* Breakpoint checkboxes in the new debugger UI for enabling and disabling breakpoints now works.
+* Fixed bug where the C++ debugger wouldn't attach to a process in certain scenarios.
+
+### Source Control
+
+* Add navigation buttons and keyboard shortcuts (`cmd-ctrl-[` & `cmd-ctrl-]`) to Diff View's toolbar.
+
 ## v0.167.1
 
 _OSS only release_
