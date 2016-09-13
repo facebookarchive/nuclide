@@ -68,7 +68,7 @@ function isRemote(uri: NuclideUri): boolean {
 // removing one of the '/'s. These TextBuffers/TextEditors live for a short time
 // and are destroyed during Nuclide startup.
 function isBrokenDeserializedUri(uri: ?NuclideUri): boolean {
-  return uri != null && uri.match(/nuclide:\/[^/]/) != null;
+  return uri != null && uri.match(/nuclide:[\\/][^/]/) != null;
 }
 
 function isLocal(uri: NuclideUri): boolean {

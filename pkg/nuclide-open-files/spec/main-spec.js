@@ -202,11 +202,14 @@ describe('nuclide-open-files', () => {
 
     it('broken deserialized URIs dont create events', () => {
       runs(() => {
-        const brokenBuffer = new TextBuffer({filePath: 'nuclide:/f1', text: 'contents1'});
-        atom.project.addBuffer(brokenBuffer);
+        const brokenBuffer1 = new TextBuffer({filePath: 'nuclide:/f1', text: 'contents1'});
+        const brokenBuffer2 = new TextBuffer({filePath: 'nuclide:\\f1', text: 'contents1'});
+        atom.project.addBuffer(brokenBuffer1);
+        atom.project.addBuffer(brokenBuffer2);
 
         // close
-        brokenBuffer.destroy();
+        brokenBuffer1.destroy();
+        brokenBuffer2.destroy();
 
         // simulates an open
         const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
