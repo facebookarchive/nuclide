@@ -40,6 +40,7 @@ export type Viewable = atom$PaneItem & {
   // Used by PanelLocation to get an initial size for the panel.
   getPreferredInitialHeight?: () => number,
   getPreferredInitialWidth?: () => number,
+  didChangeVisibility?: (visible: boolean) => void,
 };
 
 export type Location = {

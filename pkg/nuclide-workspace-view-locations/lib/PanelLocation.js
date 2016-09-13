@@ -20,6 +20,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 import {observePanes} from './observePanes';
+import {syncPaneItemVisibility} from './syncPaneItemVisibility';
 import * as PanelLocationIds from './PanelLocationIds';
 import {Panel} from './ui/Panel';
 import nullthrows from 'nullthrows';
@@ -87,6 +88,14 @@ export class PanelLocation extends SimpleModel<State> {
       this._panelRenderer,
 
       observePanes(paneContainer).subscribe(this._panes),
+
+      syncPaneItemVisibility(
+        this._panes,
+        // $FlowFixMe: Teach Flow about Symbol.observable
+        Observable.from(this)
+          .map(state => state.visible)
+          .distinctUntilChanged(),
+      ),
 
       // Add a tab bar to any panes created in the container.
       paneContainer.observePanes(pane => {

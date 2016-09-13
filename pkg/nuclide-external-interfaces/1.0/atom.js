@@ -364,6 +364,7 @@ declare class atom$Pane {
   onDidRemoveItem(cb: (event: {item: Object, index: number}) => void): IDisposable,
   onWillRemoveItem(cb: (event: {item: Object, index: number}) => void): IDisposable,
   onDidDestroy(cb: () => void): IDisposable,
+  observeActiveItem(cb: (item: ?Object) => void): IDisposable,
 
   // Lifecycle
   isActive(): boolean,

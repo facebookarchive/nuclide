@@ -10,8 +10,19 @@
  */
 
 import type {Viewable} from '../../nuclide-workspace-views/lib/types';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observePanes} from './observePanes';
+import {syncPaneItemVisibility} from './syncPaneItemVisibility';
+import {Observable} from 'rxjs';
 
 export class PaneLocation {
+  _disposables: IDisposable;
+
+  constructor() {
+    this._disposables = new UniversalDisposable(
+      syncPaneItemVisibility(observePanes(atom.workspace.paneContainer), Observable.of(true)),
+    );
+  }
 
   addItem(item: Viewable): void {
     atom.workspace.getActivePane().addItem(item);
@@ -21,9 +32,10 @@ export class PaneLocation {
    * The PaneLocation is a little special. Since it delegates all of the work to Atom, it doesn't
    * actually manage all of its own state. A viewable added to this location in a previous session
    * (and then serialized and deserialized) is indistinguishable from a pane item added via other
-   * means, so we'll be conservative but predictable and not destroy anything.
+   * means, so we'll be conservative but predictable and not destroy any items.
    */
   destroy(): void {
+    this._disposables.dispose();
   }
 
   destroyItem(item: Object): void {
