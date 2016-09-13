@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {React, PureRenderMixin} from 'react-for-atom';
+import {React} from 'react-for-atom';
 import classnames from 'classnames';
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
@@ -34,7 +34,7 @@ type State = {
   hoveredUri: ?NuclideUri,
 };
 
-export class OpenFilesListComponent extends React.Component {
+export class OpenFilesListComponent extends React.PureComponent {
   props: Props;
   state: State;
 
@@ -44,10 +44,6 @@ export class OpenFilesListComponent extends React.Component {
       hoveredUri: null,
     };
     (this: any)._onListItemMouseLeave = this._onListItemMouseLeave.bind(this);
-  }
-
-  shouldComponentUpdate(nextProps: Object, nextState: State): boolean {
-    return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
   componentDidUpdate(prevProps: Props): void {

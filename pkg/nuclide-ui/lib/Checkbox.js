@@ -9,11 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {
-  PureRenderMixin,
-  React,
-  ReactDOM,
-} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
 
 type DefaultProps = {
@@ -37,7 +33,7 @@ type Props = {
  * A checkbox component with an input checkbox and a label. We restrict the label to a string
  * to ensure this component is pure.
  */
-export class Checkbox extends React.Component {
+export class Checkbox extends React.PureComponent {
   props: Props;
 
   static defaultProps: DefaultProps = {
@@ -54,10 +50,6 @@ export class Checkbox extends React.Component {
 
   componentDidMount() {
     this._setIndeterminate();
-  }
-
-  shouldComponentUpdate(nextProps: Object, nextState: void): boolean {
-    return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
   componentDidUpdate() {

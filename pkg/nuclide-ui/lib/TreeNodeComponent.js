@@ -11,7 +11,7 @@
 
 import type {LazyTreeNode} from './LazyTreeNode';
 
-import {PureRenderMixin, React, ReactDOM} from 'react-for-atom';
+import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
 
 const INDENT_IN_PX = 10;
@@ -41,7 +41,7 @@ type Props = {
 /**
  * Represents one entry in a TreeComponent.
  */
-export class TreeNodeComponent extends React.Component {
+export class TreeNodeComponent extends React.PureComponent {
   props: Props;
   state: void;
 
@@ -50,10 +50,6 @@ export class TreeNodeComponent extends React.Component {
     (this: any)._onClick = this._onClick.bind(this);
     (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
     (this: any)._onMouseDown = this._onMouseDown.bind(this);
-  }
-
-  shouldComponentUpdate(nextProps: Props, nextState: void): boolean {
-    return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
   render(): React.Element<any> {
