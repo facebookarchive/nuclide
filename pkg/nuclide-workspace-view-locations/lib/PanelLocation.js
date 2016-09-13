@@ -19,11 +19,12 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
+import {observePanes} from './observePanes';
 import * as PanelLocationIds from './PanelLocationIds';
 import {Panel} from './ui/Panel';
 import nullthrows from 'nullthrows';
 import {React} from 'react-for-atom';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 type State = {
   visible: boolean,
@@ -36,6 +37,7 @@ export class PanelLocation extends SimpleModel<State> {
   _addPanel: any;
   _disposables: IDisposable;
   _paneContainer: atom$PaneContainer;
+  _panes: BehaviorSubject<Set<atom$Pane>>;
   _panelRenderer: PanelRenderer;
   _position: 'top' | 'right' | 'bottom' | 'left';
   _size: ?number;
@@ -50,6 +52,7 @@ export class PanelLocation extends SimpleModel<State> {
       location: this._position,
       createItem: this._createItem.bind(this),
     });
+    this._panes = new BehaviorSubject(new Set());
     this._size = serializedData.size || null;
     this.state = {
       visible: serializedData.visible === true,
@@ -62,8 +65,28 @@ export class PanelLocation extends SimpleModel<State> {
   initialize(): void {
     const paneContainer = this._paneContainer;
 
+    // Create a stream that represents a change in the items of any pane. We need to do custom logic
+    // for this instead of using `PaneContainer::observePaneItems()`, or the other PaneContainer
+    // item events, because those [assume that moved items are not switching pane containers][1].
+    // Since we have multiple pane containers, they can.
+    //
+    // [1]: https://github.com/atom/atom/blob/v1.10.0/src/pane-container.coffee#L232-L236
+    const paneItemChanges = this._panes
+      .map(x => Array.from(x))
+      .switchMap(panes => {
+        const itemChanges: Array<Observable<mixed>> = panes.map(pane => (
+          Observable.merge(
+            observableFromSubscribeFunction(pane.onDidAddItem.bind(pane)),
+            observableFromSubscribeFunction(pane.onDidRemoveItem.bind(pane)),
+          )
+        ));
+        return Observable.merge(...itemChanges);
+      });
+
     this._disposables = new UniversalDisposable(
       this._panelRenderer,
+
+      observePanes(paneContainer).subscribe(this._panes),
 
       // Add a tab bar to any panes created in the container.
       paneContainer.observePanes(pane => {
@@ -81,8 +104,7 @@ export class PanelLocation extends SimpleModel<State> {
       // Render whenever the state changes. Note that state is shared between this instance and the
       // pane container, so we have to watch it as well.
       Observable.merge(
-        observableFromSubscribeFunction(paneContainer.onDidAddPaneItem.bind(paneContainer)),
-        observableFromSubscribeFunction(paneContainer.onDidDestroyPaneItem.bind(paneContainer)),
+        paneItemChanges,
         // $FlowIssue: We need to teach flow about Symbol.observable.
         Observable.from(this).map(state => state.visible).distinctUntilChanged(),
       )
@@ -123,7 +145,7 @@ export class PanelLocation extends SimpleModel<State> {
     if (!this.state.visible) {
       return false;
     }
-    for (const pane of this._paneContainer.getPanes()) {
+    for (const pane of this._panes.getValue()) {
       if (item === pane.getActiveItem()) {
         return true;
       }
@@ -137,7 +159,7 @@ export class PanelLocation extends SimpleModel<State> {
   }
 
   destroyItem(item: Object): void {
-    for (const pane of this._paneContainer.getPanes()) {
+    for (const pane of this._panes.getValue()) {
       for (const it of pane.getItems()) {
         if (it === item) {
           pane.destroyItem(it);
@@ -148,7 +170,7 @@ export class PanelLocation extends SimpleModel<State> {
 
   getItems(): Array<Viewable> {
     const items = [];
-    for (const pane of this._paneContainer.getPanes()) {
+    for (const pane of this._panes.getValue()) {
       items.push(...pane.getItems());
     }
     return items;

@@ -360,6 +360,9 @@ declare class atom$Pane {
   itemForURI(uri: string): Object,
 
   // Event subscriptions.
+  onDidAddItem(cb: (event: {item: Object, index: number}) => void): IDisposable,
+  onDidRemoveItem(cb: (event: {item: Object, index: number}) => void): IDisposable,
+  onWillRemoveItem(cb: (event: {item: Object, index: number}) => void): IDisposable,
   onDidDestroy(cb: () => void): IDisposable,
 
   // Lifecycle
@@ -413,6 +416,9 @@ declare class atom$PaneContainer {
   getPanes(): Array<atom$Pane>,
   getPaneItems(): Array<atom$PaneItem>,
   observePanes(cb: (pane: atom$Pane) => void): IDisposable,
+  onDidAddPane(cb: (event: {pane: atom$Pane}) => void): IDisposable,
+  onDidDestroyPane(cb: (event: {pane: atom$Pane}) => void): IDisposable,
+  onWillDestroyPane(cb: (event: {pane: atom$Pane}) => void): IDisposable,
   onDidAddPaneItem(cb: (item: atom$PaneItem) => void): IDisposable,
   onDidDestroyPaneItem(cb: (item: atom$Pane) => void): IDisposable,
   paneForItem(item: Object): ?atom$Pane,
