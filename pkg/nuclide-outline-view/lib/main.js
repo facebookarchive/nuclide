@@ -101,6 +101,10 @@ export type OutlineProvider = {
   getOutline: (editor: TextEditor) => Promise<?Outline>,
 };
 
+export type SerializedOutlineViewPanelState = {
+  deserializer: 'nuclide.OutlineViewPanelState',
+};
+
 export type ResultsStreamProvider = {
   getResultsStream: () => Observable<Result<OutlineProvider, ?Outline>>,
 };
@@ -206,6 +210,10 @@ class Activation {
         isInstance: item => item instanceof OutlineViewPanelState,
       }),
     );
+  }
+
+  deserializeOutlineViewPanelState(): OutlineViewPanelState {
+    return this._createOutlineViewPanelState();
   }
 
   getOutlineViewResultsStream(): ResultsStreamProvider {

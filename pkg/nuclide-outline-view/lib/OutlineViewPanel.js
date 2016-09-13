@@ -10,7 +10,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {OutlineForUi} from '..';
+import type {OutlineForUi, SerializedOutlineViewPanelState} from '..';
 
 import {React} from 'react-for-atom';
 
@@ -40,6 +40,12 @@ export class OutlineViewPanelState {
     return renderReactRoot(
       <OutlineView outlines={this._outlines} />,
     );
+  }
+
+  serialize(): SerializedOutlineViewPanelState {
+    return {
+      deserializer: 'nuclide.OutlineViewPanelState',
+    };
   }
 
 }

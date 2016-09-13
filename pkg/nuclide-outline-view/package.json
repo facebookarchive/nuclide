@@ -9,6 +9,9 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "deserializers": {
+    "nuclide.OutlineViewPanelState": "deserializeOutlineViewPanelState"
+  },
   "consumedServices": {
     "nuclide-outline-view": {
       "versions": {
