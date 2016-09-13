@@ -137,31 +137,31 @@ export function waitsForFilePosition(
  * unmounted. Having mounted React components after the creator has been
  * disposed is a sign that there are problems in the cleanup logic.
  *
- * If ReactComponentTreeDevtool ever goes missing, make sure we're not testing
+ * If ReactComponentTreeHook ever goes missing, make sure we're not testing
  * with the bundled version of React. If it's still missing, then retire this
  * test.
  *
  * If the displayNames are not helpful in identifying the unmounted component,
  * open Atom with `atom --dev` and inspect the components with:
  *
- *    ReactComponentTreeDevtool = require.cache[
- *      Object.keys(require.cache).find(x => x.endsWith('/ReactComponentTreeDevtool.js'))
+ *    ReactComponentTreeHook = require.cache[
+ *      Object.keys(require.cache).find(x => x.endsWith('/ReactComponentTreeHook.js'))
  *    ].exports;
  *
- *    ReactComponentTreeDevtool.getRootIDs().map(rootID => {
- *      console.log(ReactComponentTreeDevtool.getElement(rootID));
+ *    ReactComponentTreeHook.getRootIDs().map(rootID => {
+ *      console.log(ReactComponentTreeHook.getElement(rootID));
  *    });
  */
 export function getMountedReactRootNames(): Array<string> {
-  const ReactComponentTreeDevtoolPath =
-    Object.keys(require.cache).find(x => x.endsWith('react/lib/ReactComponentTreeDevtool.js'));
+  const ReactComponentTreeHookPath =
+    Object.keys(require.cache).find(x => x.endsWith('react/lib/ReactComponentTreeHook.js'));
   invariant(
-    ReactComponentTreeDevtoolPath != null,
-    'ReactComponentTreeDevtool could not be found in the module cache.',
+    ReactComponentTreeHookPath != null,
+    'ReactComponentTreeHook could not be found in the module cache.',
   );
-  const ReactComponentTreeDevtool = require.cache[ReactComponentTreeDevtoolPath].exports;
-  const reactRootNames = ReactComponentTreeDevtool.getRootIDs().map(rootID => {
-    return ReactComponentTreeDevtool.getDisplayName(rootID);
+  const ReactComponentTreeHook = require.cache[ReactComponentTreeHookPath].exports;
+  const reactRootNames = ReactComponentTreeHook.getRootIDs().map(rootID => {
+    return ReactComponentTreeHook.getDisplayName(rootID);
   });
   return reactRootNames;
 }
