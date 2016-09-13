@@ -957,6 +957,11 @@
       "from": "flat-cache@>=1.2.1 <2.0.0",
       "resolved": "https://registry.npmjs.org/flat-cache/-/flat-cache-1.2.1.tgz"
     },
+    "flow-bin": {
+      "version": "0.32.0",
+      "from": "flow-bin@0.32.0",
+      "resolved": "https://registry.npmjs.org/flow-bin/-/flow-bin-0.32.0.tgz"
+    },
     "flux": {
       "version": "2.0.3",
       "from": "flux@2.0.3",

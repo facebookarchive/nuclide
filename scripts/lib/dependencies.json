@@ -10,8 +10,8 @@
     "clientOnly": false,
     "version-cmd": ["flow", "version"],
     "version-output": "Flow, a static type checker for JavaScript, version 0.32.0",
-    "url": "https://github.com/facebook/flow/releases/download/v0.32.0/flow-osx-v0.32.0.zip",
-    "shasum": "21ed6fac8220f1cd12dd2a2646de16828640698b3a5db5b42454f06635f96219"
+    "url": null,
+    "shasum": null
   },
   "node": {
     "clientOnly": false,
