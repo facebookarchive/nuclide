@@ -1,6 +1,6 @@
-var Rx = require('rxjs/bundles/Rx.umd.min.js');
+var Rx = require('rxjs/bundles/Rx.min.js');
 
-var _require = require('rxjs/bundles/Rx.umd.min.js');
+var _require = require('rxjs/bundles/Rx.min.js');
 
 var Observable = _require.Observable;
 

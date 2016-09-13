@@ -1,7 +1,7 @@
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _rxjsBundlesRxUmdMinJs = require('rxjs/bundles/Rx.umd.min.js');
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-var _rxjsBundlesRxUmdMinJs2 = _interopRequireDefault(_rxjsBundlesRxUmdMinJs);
+var _rxjsBundlesRxMinJs2 = _interopRequireDefault(_rxjsBundlesRxMinJs);
 
-assert(_rxjsBundlesRxUmdMinJs2['default'].Observable === _rxjsBundlesRxUmdMinJs.Observable);
+assert(_rxjsBundlesRxMinJs2['default'].Observable === _rxjsBundlesRxMinJs.Observable);
