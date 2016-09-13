@@ -42,6 +42,8 @@ export type Viewable = atom$PaneItem & {
   /* $FlowFixMe: Class methods won't match this because of the nullability constraint. Fix this
      when we get readonly props. */
   getPreferredInitialWidth?: () => number,
+  /* $FlowFixMe: Class methods won't match this because of the nullability constraint. Fix this
+     when we get readonly props. */
   didChangeVisibility?: (visible: boolean) => void,
 };
 
