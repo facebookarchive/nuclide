@@ -16,6 +16,7 @@ import {
   splitStream,
   takeWhileInclusive,
   toggle,
+  concatLatest,
 } from '../observable';
 import {Disposable} from 'event-kit';
 import {Observable, Subject} from 'rxjs';
@@ -348,4 +349,30 @@ describe('toggle', () => {
     });
   });
 
+});
+
+describe('concatLatest', () => {
+  it('should work with empty input', () => {
+    waitsForPromise(async () => {
+      const output = await concatLatest().toArray().toPromise();
+      expect(output).toEqual([]);
+    });
+  });
+
+  it('should work with several observables', () => {
+    waitsForPromise(async () => {
+      const output = await concatLatest(
+        Observable.of([], [1]),
+        Observable.of([2]),
+        Observable.of([3], [3, 4]),
+      ).toArray().toPromise();
+      expect(output).toEqual([
+        [],
+        [1],
+        [1, 2],
+        [1, 2, 3],
+        [1, 2, 3, 4],
+      ]);
+    });
+  });
 });

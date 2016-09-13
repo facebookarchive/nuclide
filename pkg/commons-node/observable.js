@@ -224,3 +224,25 @@ export function takeWhileInclusive<T>(
     )
   ));
 }
+
+// Concatenate the latest values from each input observable into one big list.
+// Observables who have not emitted a value yet are treated as empty.
+export function concatLatest<T>(
+  ...observables: Array<Observable<Array<T>>>
+): Observable<Array<T>> {
+  // First, tag all input observables with their index.
+  // Flow errors with ambiguity without the explicit annotation.
+  const tagged: Array<Observable<[Array<T>, number]>> = observables.map(
+    (observable, index) => observable.map(list => [list, index]),
+  );
+  return Observable
+    .merge(...tagged)
+    .scan(
+      (accumulator, [list, index]) => {
+        accumulator[index] = list;
+        return accumulator;
+      },
+      observables.map(x => []),
+    )
+    .map(accumulator => [].concat(...accumulator));
+}
