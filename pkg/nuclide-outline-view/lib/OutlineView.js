@@ -21,6 +21,8 @@ import {track} from '../../nuclide-analytics';
 import {goToLocationInEditor} from '../../commons-atom/go-to-location';
 import {getLogger} from '../../nuclide-logging';
 import {LoadingSpinner, LoadingSpinnerSizes} from '../../nuclide-ui/lib/LoadingSpinner';
+import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
+
 const logger = getLogger();
 
 type State = {
@@ -76,8 +78,12 @@ export class OutlineView extends React.Component {
 
   render(): React.Element<any> {
     return (
-      <div className="pane-item padded nuclide-outline-view">
-        <OutlineViewComponent outline={this.state.outline} />
+      <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
+        <PanelComponentScroller>
+          <div className="padded nuclide-outline-view">
+            <OutlineViewComponent outline={this.state.outline} />
+          </div>
+        </PanelComponentScroller>
       </div>
     );
   }

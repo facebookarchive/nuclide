@@ -10,9 +10,9 @@
  */
 
 import type {HomeFragments} from '../../nuclide-home/lib/types';
-import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {Result} from '../../commons-atom/ActiveEditorRegistry';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {Observable} from 'rxjs';
 
 import {CompositeDisposable, Disposable} from 'atom';
@@ -101,30 +101,14 @@ export type OutlineProvider = {
   getOutline: (editor: TextEditor) => Promise<?Outline>,
 };
 
-type OutlineViewState = {
-  width: number,
-  visible: boolean,
-};
-
 export type ResultsStreamProvider = {
   getResultsStream: () => Observable<Result<OutlineProvider, ?Outline>>,
 };
-
-const DEFAULT_WIDTH = 300; // px
-
-function makeDefaultState(): OutlineViewState {
-  return {
-    width: DEFAULT_WIDTH,
-    visible: false,
-  };
-}
 
 class Activation {
   _disposables: CompositeDisposable;
 
   _editorService: ActiveEditorRegistry<OutlineProvider, ?Outline>;
-
-  _panel: OutlineViewPanelState;
 
   _createOutlineViewNuxTourModel(): NuxTourModel {
     const outlineViewToolbarIconNux = {
@@ -171,7 +155,7 @@ class Activation {
     return outlineViewNuxTour;
   }
 
-  constructor(state?: OutlineViewState = makeDefaultState()) {
+  constructor() {
     this._disposables = new CompositeDisposable();
 
     this._editorService = new ActiveEditorRegistry(
@@ -180,46 +164,10 @@ class Activation {
         return provider.getOutline(editor);
       },
     );
-
-    const panel = this._panel = new OutlineViewPanelState(
-      createOutlines(this._editorService),
-      state.width,
-      state.visible,
-    );
-    this._disposables.add(panel);
-
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-outline-view:toggle',
-        panel.toggle.bind(panel),
-      ),
-    );
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-outline-view:show',
-        panel.show.bind(panel),
-      ),
-    );
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-outline-view:hide',
-        panel.hide.bind(panel),
-      ),
-    );
   }
 
   dispose() {
     this._disposables.dispose();
-  }
-
-  serialize(): OutlineViewState {
-    return {
-      visible: this._panel.isVisible(),
-      width: this._panel.getWidth(),
-    };
   }
 
   consumeOutlineProvider(provider: OutlineProvider): IDisposable {
@@ -241,13 +189,23 @@ class Activation {
     return disposable;
   }
 
-  getDistractionFreeModeProvider(): DistractionFreeModeProvider {
-    const panel = this._panel;
-    return {
-      name: 'nuclide-outline-view',
-      isVisible: panel.isVisible.bind(panel),
-      toggle: panel.toggle.bind(panel),
-    };
+  _createOutlineViewPanelState(): OutlineViewPanelState {
+    track('nuclide-outline-view-show');
+    return new OutlineViewPanelState(createOutlines(this._editorService));
+  }
+
+  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+    this._disposables.add(
+      api.registerFactory({
+        id: 'nuclide-outline-view',
+        name: 'Outline View',
+        iconName: 'list-unordered',
+        toggleCommand: 'nuclide-outline-view:toggle',
+        defaultLocation: 'right-panel',
+        create: () => this._createOutlineViewPanelState(),
+        isInstance: item => item instanceof OutlineViewPanelState,
+      }),
+    );
   }
 
   getOutlineViewResultsStream(): ResultsStreamProvider {
@@ -268,7 +226,13 @@ class Activation {
         title: 'Outline View',
         icon: 'list-unordered',
         description: 'Displays major components of the current file (classes, methods, etc.)',
-        command: 'nuclide-outline-view:show',
+        command: () => {
+          atom.commands.dispatch(
+            atom.views.getView(atom.workspace),
+            'nuclide-outline-view:toggle',
+            {visible: true},
+          );
+        },
       },
       priority: 2.5, // Between diff view and test runner
     };
