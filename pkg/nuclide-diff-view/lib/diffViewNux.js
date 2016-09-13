@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,49 +10,45 @@
  * the root directory of this source tree.
  */
 
-import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
+exports.createDiffViewNux = createDiffViewNux;
 
 // Diff View NUX constants.
-export const NUX_DIFF_VIEW_ID = 4368;
-const NUX_DIFF_VIEW_NAME = 'nuclide_diff_view_nux';
-const NUX_DIFF_VIEW_GK = 'mp_nuclide_diff_view_nux';
+var NUX_DIFF_VIEW_ID = 4368;
+exports.NUX_DIFF_VIEW_ID = NUX_DIFF_VIEW_ID;
+var NUX_DIFF_VIEW_NAME = 'nuclide_diff_view_nux';
+var NUX_DIFF_VIEW_GK = 'mp_nuclide_diff_view_nux';
 
-export function createDiffViewNux(): NuxTourModel {
+function createDiffViewNux() {
 
-  const diffViewFilesNux = {
+  var diffViewFilesNux = {
     content: 'View the list of newly added and modified files.',
     selector: '.nuclide-diff-view-tree',
-    position: 'top',
+    position: 'top'
   };
 
-  const diffViewTimelineNux = {
+  var diffViewTimelineNux = {
     content: 'Compare, commit and amend revisions!',
     selector: '.nuclide-diff-timeline',
-    position: 'top',
+    position: 'top'
   };
 
-  const diffViewEditButtonNux = {
+  var diffViewEditButtonNux = {
     content: 'Want to make changes? Click here to open the file in an editor.',
     selector: '.nuclide-diff-view-goto-editor-button',
-    position: 'left',
+    position: 'left'
   };
 
-  const diffViewPhabricatorNux = {
+  var diffViewPhabricatorNux = {
     content: 'Publish your changes to Phabricator without leaving Nuclide!',
     selector: '.nuclide-diff-timeline .revision-timeline-wrap .btn',
-    position: 'bottom',
+    position: 'bottom'
   };
 
-  const diffViewNuxTour = {
+  var diffViewNuxTour = {
     id: NUX_DIFF_VIEW_ID,
     name: NUX_DIFF_VIEW_NAME,
     gatekeeperID: NUX_DIFF_VIEW_GK,
-    nuxList: [
-      diffViewFilesNux,
-      diffViewTimelineNux,
-      diffViewEditButtonNux,
-      diffViewPhabricatorNux,
-    ],
+    nuxList: [diffViewFilesNux, diffViewTimelineNux, diffViewEditButtonNux, diffViewPhabricatorNux]
   };
 
   return diffViewNuxTour;

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +8,34 @@
  * the root directory of this source tree.
  */
 
-import markers from '../constants/markers';
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../constants/markers'));
+}
 
 /**
  * This actualizes the forced markers we already have. It's not guaranteed to
  * remove all markers.
  */
-function resolveForcedMarkers(lines: Array<any>): Array<any> {
-  return lines
-    .map(line => {
-      if (line === markers.hardBreak) {
-        return '\n';
-      } else if (line === markers.multiHardBreak) {
-        return '\n';
-      } else if (line === markers.comma) {
-        return ',';
-      } else if (line === markers.space) {
-        return ' ';
-      } else if (line === markers.empty) {
-        return '';
-      } else {
-        return line;
-      }
-    })
-    .filter(line => line !== '');
+function resolveForcedMarkers(lines) {
+  return lines.map(function (line) {
+    if (line === (_constantsMarkers2 || _constantsMarkers()).default.hardBreak) {
+      return '\n';
+    } else if (line === (_constantsMarkers2 || _constantsMarkers()).default.multiHardBreak) {
+      return '\n';
+    } else if (line === (_constantsMarkers2 || _constantsMarkers()).default.comma) {
+      return ',';
+    } else if (line === (_constantsMarkers2 || _constantsMarkers()).default.space) {
+      return ' ';
+    } else if (line === (_constantsMarkers2 || _constantsMarkers()).default.empty) {
+      return '';
+    } else {
+      return line;
+    }
+  }).filter(function (line) {
+    return line !== '';
+  });
 }
 
 module.exports = resolveForcedMarkers;

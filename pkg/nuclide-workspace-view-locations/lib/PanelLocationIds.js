@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +10,13 @@
  * the root directory of this source tree.
  */
 
-export const TOP_PANEL = 'top-panel';
-export const RIGHT_PANEL = 'right-panel';
-export const BOTTOM_PANEL = 'bottom-panel';
-export const LEFT_PANEL = 'left-panel';
+var TOP_PANEL = 'top-panel';
+exports.TOP_PANEL = TOP_PANEL;
+var RIGHT_PANEL = 'right-panel';
+exports.RIGHT_PANEL = RIGHT_PANEL;
+var BOTTOM_PANEL = 'bottom-panel';
+exports.BOTTOM_PANEL = BOTTOM_PANEL;
+var LEFT_PANEL = 'left-panel';
 
-export default [TOP_PANEL, RIGHT_PANEL, BOTTOM_PANEL, LEFT_PANEL];
+exports.LEFT_PANEL = LEFT_PANEL;
+exports.default = [TOP_PANEL, RIGHT_PANEL, BOTTOM_PANEL, LEFT_PANEL];

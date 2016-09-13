@@ -1,8 +1,0 @@
-/**
- * Header comment.
- */
-
-import type {A, B} from 'AB';
-import type {Foo} from 'Foo';
-
-function foo(a: A, b: B, foo: Foo) {}

@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.observeStream = observeStream;
+exports.observeRawStream = observeRawStream;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +12,23 @@
  * the root directory of this source tree.
  */
 
-import {Observable} from 'rxjs';
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
 
 /**
  * Observe a stream like stdout or stderr.
  */
-export function observeStream(stream: stream$Readable): Observable<string> {
-  return observeRawStream(stream).map(data => data.toString());
+
+function observeStream(stream) {
+  return observeRawStream(stream).map(function (data) {
+    return data.toString();
+  });
 }
 
-export function observeRawStream(stream: stream$Readable): Observable<Buffer> {
-  const error = Observable.fromEvent(stream, 'error').flatMap(Observable.throw);
-  return Observable
-    .fromEvent(stream, 'data')
-    .merge(error)
-    .takeUntil(Observable.fromEvent(stream, 'end'));
+function observeRawStream(stream) {
+  var error = (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromEvent(stream, 'error').flatMap((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.throw);
+  return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromEvent(stream, 'data').merge(error).takeUntil((_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.fromEvent(stream, 'end'));
 }

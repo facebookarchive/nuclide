@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.observeBuffers = observeBuffers;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +13,18 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../commons-node/nuclideUri';
+var _commonsNodeNuclideUri2;
 
-export function observeBuffers(observeBuffer: (buffer: atom$TextBuffer) => mixed): IDisposable {
-  atom.project.getBuffers()
-    .filter(buffer => !nuclideUri.isBrokenDeserializedUri(buffer.getPath()))
-    .forEach(observeBuffer);
-  return atom.project.onDidAddBuffer(buffer => {
-    if (!nuclideUri.isBrokenDeserializedUri(buffer.getPath())) {
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+function observeBuffers(observeBuffer) {
+  atom.project.getBuffers().filter(function (buffer) {
+    return !(_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.isBrokenDeserializedUri(buffer.getPath());
+  }).forEach(observeBuffer);
+  return atom.project.onDidAddBuffer(function (buffer) {
+    if (!(_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.isBrokenDeserializedUri(buffer.getPath())) {
       observeBuffer(buffer);
     }
   });

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -12,11 +13,12 @@
 /**
  * Constants here represent enums with the same values got from hh_client.
  */
-export const HACK_GRAMMARS = ['text.html.hack', 'text.html.php'];
-export const HACK_GRAMMARS_SET = new Set(HACK_GRAMMARS);
+var HACK_GRAMMARS = ['text.html.hack', 'text.html.php'];
+exports.HACK_GRAMMARS = HACK_GRAMMARS;
+var HACK_GRAMMARS_SET = new Set(HACK_GRAMMARS);
 
-export type SearchResultTypeValue = 0| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-export const SearchResultType = Object.freeze({
+exports.HACK_GRAMMARS_SET = HACK_GRAMMARS_SET;
+var SearchResultType = Object.freeze({
   CLASS: 0,
   TYPEDEF: 1,
   METHOD: 2,
@@ -25,5 +27,6 @@ export const SearchResultType = Object.freeze({
   CONSTANT: 5,
   INTERFACE: 6,
   ABSTRACT_CLASS: 7,
-  TRAIT: 8,
+  TRAIT: 8
 });
+exports.SearchResultType = SearchResultType;

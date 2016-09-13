@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,7 +12,11 @@
  * the root directory of this source tree.
  */
 
-import {checkOutput} from './process';
+var _process2;
+
+function _process() {
+  return _process2 = require('./process');
+}
 
 /**
  * Provides a cross-platform way to check whether a binary is available.
@@ -17,12 +24,13 @@ import {checkOutput} from './process';
  * We ran into problems with the npm `which` package (the nature of which I unfortunately don't
  * remember) so we can use this for now.
  */
-export default async function which(command: string): Promise<?string> {
-  const whichCommand = process.platform === 'win32' ? 'where' : 'which';
+exports.default = _asyncToGenerator(function* (command) {
+  var whichCommand = process.platform === 'win32' ? 'where' : 'which';
   try {
-    const result = await checkOutput(whichCommand, [command]);
+    var result = yield (0, (_process2 || _process()).checkOutput)(whichCommand, [command]);
     return result.stdout.trim();
   } catch (e) {
     return null;
   }
-}
+});
+module.exports = exports.default;

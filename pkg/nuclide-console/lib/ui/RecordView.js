@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,123 +10,177 @@
  * the root directory of this source tree.
  */
 
-import type {Level, Record, Executor, OutputProvider} from '../types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
-import {LazyNestedValueComponent} from '../../../nuclide-ui/lib/LazyNestedValueComponent';
-import SimpleValueComponent from '../../../nuclide-ui/lib/SimpleValueComponent';
-import shallowEqual from 'shallowequal';
-import {TextRenderer} from '../../../nuclide-ui/lib/TextRenderer';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type Props = {
-  record: Record,
-  showSourceLabel: boolean,
-  getExecutor: (id: string) => ?Executor,
-  getProvider: (id: string) => ?OutputProvider,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export default class RecordView extends React.Component {
-  props: Props;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  _renderContent(record: Record): React.Element<any> {
-    if (record.kind === 'request') {
-      // TODO: We really want to use a text editor to render this so that we can get syntax
-      // highlighting, but they're just too expensive. Figure out a less-expensive way to get syntax
-      // highlighting.
-      return <pre>{record.text || ' '}</pre>;
-    } else if (record.kind === 'response') {
-      const executor = this.props.getExecutor(record.sourceId);
-      return this._renderNestedValueComponent(record, executor);
-    } else if (record.data != null) {
-      const provider = this.props.getProvider(record.sourceId);
-      return this._renderNestedValueComponent(record, provider);
-    } else {
-      // If there's not text, use a space to make sure the row doesn't collapse.
-      const text = record.text || ' ';
-      return <pre>{text}</pre>;
-    }
-  }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  shouldComponentUpdate(nextProps: Props): boolean {
-    return !shallowEqual(this.props, nextProps);
-  }
+var _classnames2;
 
-  _renderNestedValueComponent(
-    record: Record,
-    provider: ?OutputProvider | ?Executor,
-  ): React.Element<any> {
-    const getProperties = provider == null ? null : provider.getProperties;
-    const type = record.data == null ? null : record.data.type;
-    const simpleValueComponent = getComponent(type);
-    return (
-      <LazyNestedValueComponent
-        className="nuclide-console-lazy-nested-value"
-        evaluationResult={record.data}
-        fetchChildren={getProperties}
-        simpleValueComponent={simpleValueComponent}
-        shouldCacheChildren={true}
-      />
-    );
-  }
-
-  render(): React.Element<any> {
-    const {record} = this.props;
-    const classNames = classnames(
-      'nuclide-console-record',
-      `level-${record.level || 'log'}`,
-      {
-        request: record.kind === 'request',
-        response: record.kind === 'response',
-      },
-    );
-
-    const iconName = getIconName(record);
-    const icon = iconName ? <span className={`icon icon-${iconName}`} /> : null;
-    const sourceLabel = this.props.showSourceLabel
-      ? (
-        <span
-          className={`nuclide-console-record-source-label ${getHighlightClassName(record.level)}`}>
-          {record.sourceId}
-        </span>
-      )
-      : null;
-
-    return (
-      <div className={classNames}>
-        {icon}
-        <div className="nuclide-console-record-content-wrapper">
-          {this._renderContent(record)}
-        </div>
-        {sourceLabel}
-      </div>
-    );
-  }
-
+function _classnames() {
+  return _classnames2 = _interopRequireDefault(require('classnames'));
 }
 
-function getComponent(type: ?string): ReactClass<any> {
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _nuclideUiLibLazyNestedValueComponent2;
+
+function _nuclideUiLibLazyNestedValueComponent() {
+  return _nuclideUiLibLazyNestedValueComponent2 = require('../../../nuclide-ui/lib/LazyNestedValueComponent');
+}
+
+var _nuclideUiLibSimpleValueComponent2;
+
+function _nuclideUiLibSimpleValueComponent() {
+  return _nuclideUiLibSimpleValueComponent2 = _interopRequireDefault(require('../../../nuclide-ui/lib/SimpleValueComponent'));
+}
+
+var _shallowequal2;
+
+function _shallowequal() {
+  return _shallowequal2 = _interopRequireDefault(require('shallowequal'));
+}
+
+var _nuclideUiLibTextRenderer2;
+
+function _nuclideUiLibTextRenderer() {
+  return _nuclideUiLibTextRenderer2 = require('../../../nuclide-ui/lib/TextRenderer');
+}
+
+var RecordView = (function (_React$Component) {
+  _inherits(RecordView, _React$Component);
+
+  function RecordView() {
+    _classCallCheck(this, RecordView);
+
+    _get(Object.getPrototypeOf(RecordView.prototype), 'constructor', this).apply(this, arguments);
+  }
+
+  _createClass(RecordView, [{
+    key: '_renderContent',
+    value: function _renderContent(record) {
+      if (record.kind === 'request') {
+        // TODO: We really want to use a text editor to render this so that we can get syntax
+        // highlighting, but they're just too expensive. Figure out a less-expensive way to get syntax
+        // highlighting.
+        return (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'pre',
+          null,
+          record.text || ' '
+        );
+      } else if (record.kind === 'response') {
+        var executor = this.props.getExecutor(record.sourceId);
+        return this._renderNestedValueComponent(record, executor);
+      } else if (record.data != null) {
+        var provider = this.props.getProvider(record.sourceId);
+        return this._renderNestedValueComponent(record, provider);
+      } else {
+        // If there's not text, use a space to make sure the row doesn't collapse.
+        var text = record.text || ' ';
+        return (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'pre',
+          null,
+          text
+        );
+      }
+    }
+  }, {
+    key: 'shouldComponentUpdate',
+    value: function shouldComponentUpdate(nextProps) {
+      return !(0, (_shallowequal2 || _shallowequal()).default)(this.props, nextProps);
+    }
+  }, {
+    key: '_renderNestedValueComponent',
+    value: function _renderNestedValueComponent(record, provider) {
+      var getProperties = provider == null ? null : provider.getProperties;
+      var type = record.data == null ? null : record.data.type;
+      var simpleValueComponent = getComponent(type);
+      return (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibLazyNestedValueComponent2 || _nuclideUiLibLazyNestedValueComponent()).LazyNestedValueComponent, {
+        className: 'nuclide-console-lazy-nested-value',
+        evaluationResult: record.data,
+        fetchChildren: getProperties,
+        simpleValueComponent: simpleValueComponent,
+        shouldCacheChildren: true
+      });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var record = this.props.record;
+
+      var classNames = (0, (_classnames2 || _classnames()).default)('nuclide-console-record', 'level-' + (record.level || 'log'), {
+        request: record.kind === 'request',
+        response: record.kind === 'response'
+      });
+
+      var iconName = getIconName(record);
+      var icon = iconName ? (_reactForAtom2 || _reactForAtom()).React.createElement('span', { className: 'icon icon-' + iconName }) : null;
+      var sourceLabel = this.props.showSourceLabel ? (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'span',
+        {
+          className: 'nuclide-console-record-source-label ' + getHighlightClassName(record.level) },
+        record.sourceId
+      ) : null;
+
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: classNames },
+        icon,
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          { className: 'nuclide-console-record-content-wrapper' },
+          this._renderContent(record)
+        ),
+        sourceLabel
+      );
+    }
+  }]);
+
+  return RecordView;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
+
+exports.default = RecordView;
+
+function getComponent(type) {
   switch (type) {
-    case 'text': return props => TextRenderer(props.evaluationResult);
+    case 'text':
+      return function (props) {
+        return (0, (_nuclideUiLibTextRenderer2 || _nuclideUiLibTextRenderer()).TextRenderer)(props.evaluationResult);
+      };
     case 'boolean':
     case 'string':
     case 'number':
     case 'object':
-    default: return SimpleValueComponent;
+    default:
+      return (_nuclideUiLibSimpleValueComponent2 || _nuclideUiLibSimpleValueComponent()).default;
   }
 }
 
-function getHighlightClassName(level: Level): string {
+function getHighlightClassName(level) {
   switch (level) {
-    case 'info': return 'highlight-info';
-    case 'success': return 'highlight-success';
-    case 'warning': return 'highlight-warning';
-    case 'error': return 'highlight-error';
-    default: return 'highlight';
+    case 'info':
+      return 'highlight-info';
+    case 'success':
+      return 'highlight-success';
+    case 'warning':
+      return 'highlight-warning';
+    case 'error':
+      return 'highlight-error';
+    default:
+      return 'highlight';
   }
 }
 
-function getIconName(record: Record): ?string {
+function getIconName(record) {
   switch (record.kind) {
     case 'request':
       return 'chevron-right';
@@ -143,3 +198,4 @@ function getIconName(record: Record): ?string {
       return 'stop';
   }
 }
+module.exports = exports.default;

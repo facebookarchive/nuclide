@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,150 +10,215 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Action,
-  BookShelfState,
-  SerializedBookShelfState,
-} from './types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {accumulateState} from './accumulateState';
-import {
-  ActiveShortHeadChangeBehavior,
-  ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG,
-} from './constants';
-import {arrayCompact} from '../../commons-node/collection';
-import {applyActionMiddleware} from './applyActionMiddleware';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {Commands} from './Commands';
-import {Disposable, CompositeDisposable} from 'atom';
-import createPackage from '../../commons-atom/createPackage';
-import {
-  deserializeBookShelfState,
-  getEmptBookShelfState,
-  serializeBookShelfState,
-} from './utils';
-import {diffSets} from '../../commons-node/observable';
-import {getLogger} from '../../nuclide-logging';
-import featureConfig from '../../commons-atom/featureConfig';
-import invariant from 'assert';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {
-  shortHeadChangedNotification,
-  getShortHeadChangesFromStateStream,
-} from './utils';
-import {track} from '../../nuclide-analytics';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-function createStateStream(
-  actions: Observable<Action>,
-  initialState: BookShelfState,
-): BehaviorSubject<BookShelfState> {
-  const states = new BehaviorSubject(initialState);
-  actions.scan(accumulateState, initialState).subscribe(states);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _accumulateState2;
+
+function _accumulateState() {
+  return _accumulateState2 = require('./accumulateState');
+}
+
+var _constants2;
+
+function _constants() {
+  return _constants2 = require('./constants');
+}
+
+var _commonsNodeCollection2;
+
+function _commonsNodeCollection() {
+  return _commonsNodeCollection2 = require('../../commons-node/collection');
+}
+
+var _applyActionMiddleware2;
+
+function _applyActionMiddleware() {
+  return _applyActionMiddleware2 = require('./applyActionMiddleware');
+}
+
+var _rxjsBundlesRxUmdMinJs2;
+
+function _rxjsBundlesRxUmdMinJs() {
+  return _rxjsBundlesRxUmdMinJs2 = require('rxjs/bundles/Rx.umd.min.js');
+}
+
+var _Commands2;
+
+function _Commands() {
+  return _Commands2 = require('./Commands');
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _commonsAtomCreatePackage2;
+
+function _commonsAtomCreatePackage() {
+  return _commonsAtomCreatePackage2 = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _utils2;
+
+function _utils() {
+  return _utils2 = require('./utils');
+}
+
+var _commonsNodeObservable2;
+
+function _commonsNodeObservable() {
+  return _commonsNodeObservable2 = require('../../commons-node/observable');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _commonsAtomFeatureConfig2;
+
+function _commonsAtomFeatureConfig() {
+  return _commonsAtomFeatureConfig2 = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsNodeUniversalDisposable2;
+
+function _commonsNodeUniversalDisposable() {
+  return _commonsNodeUniversalDisposable2 = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _commonsNodeEvent2;
+
+function _commonsNodeEvent() {
+  return _commonsNodeEvent2 = require('../../commons-node/event');
+}
+
+var _utils4;
+
+function _utils3() {
+  return _utils4 = require('./utils');
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+function createStateStream(actions, initialState) {
+  var states = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).BehaviorSubject(initialState);
+  actions.scan((_accumulateState2 || _accumulateState()).accumulateState, initialState).subscribe(states);
   return states;
 }
 
-class Activation {
-  _disposables: CompositeDisposable;
-  _states: BehaviorSubject<BookShelfState>;
-  _commands: Commands;
+var Activation = (function () {
+  function Activation(state) {
+    var _this = this;
 
-  constructor(state: ?SerializedBookShelfState) {
-    let initialState;
+    _classCallCheck(this, Activation);
+
+    var initialState = undefined;
     try {
-      initialState = deserializeBookShelfState(state);
+      initialState = (0, (_utils2 || _utils()).deserializeBookShelfState)(state);
     } catch (error) {
-      getLogger().error('failed to deserialize nuclide-bookshelf state', state, error);
-      initialState = getEmptBookShelfState();
+      (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)().error('failed to deserialize nuclide-bookshelf state', state, error);
+      initialState = (0, (_utils2 || _utils()).getEmptBookShelfState)();
     }
 
-    const actions = new Subject();
-    const states = this._states = createStateStream(
-      applyActionMiddleware(actions, () => this._states.getValue()),
-      initialState,
-    );
+    var actions = new (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Subject();
+    var states = this._states = createStateStream((0, (_applyActionMiddleware2 || _applyActionMiddleware()).applyActionMiddleware)(actions, function () {
+      return _this._states.getValue();
+    }), initialState);
 
-    const dispatch = action => { actions.next(action); };
-    const commands = new Commands(dispatch, () => states.getValue());
+    var dispatch = function dispatch(action) {
+      actions.next(action);
+    };
+    var commands = new (_Commands2 || _Commands()).Commands(dispatch, function () {
+      return states.getValue();
+    });
 
     function getProjectRepositories() {
-      return new Set(
-        arrayCompact(atom.project.getRepositories())
-          .filter(repository => repository.getType() === 'hg'),
-      );
+      return new Set((0, (_commonsNodeCollection2 || _commonsNodeCollection()).arrayCompact)(atom.project.getRepositories()).filter(function (repository) {
+        return repository.getType() === 'hg';
+      }));
     }
 
-    const currentRepositories =
-      observableFromSubscribeFunction(atom.project.onDidChangePaths.bind(atom.project))
-      .startWith(null)
-      .map(() => getProjectRepositories());
+    var currentRepositories = (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(atom.project.onDidChangePaths.bind(atom.project)).startWith(null).map(function () {
+      return getProjectRepositories();
+    });
 
-    const repoDiffsSubscription = diffSets(currentRepositories)
-      .subscribe(repoDiff => {
-        Array.from(repoDiff.added).forEach(commands.addProjectRepository);
-      });
+    var repoDiffsSubscription = (0, (_commonsNodeObservable2 || _commonsNodeObservable()).diffSets)(currentRepositories).subscribe(function (repoDiff) {
+      Array.from(repoDiff.added).forEach(commands.addProjectRepository);
+    });
 
-    const paneStateChangeSubscription = Observable.merge(
-      observableFromSubscribeFunction(
-        atom.workspace.onDidAddPaneItem.bind(atom.workspace),
-      ),
-      observableFromSubscribeFunction(
-        atom.workspace.onDidDestroyPaneItem.bind(atom.workspace),
-      ),
-    ).subscribe(() => {
+    var paneStateChangeSubscription = (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.merge((0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(atom.workspace.onDidAddPaneItem.bind(atom.workspace)), (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(atom.workspace.onDidDestroyPaneItem.bind(atom.workspace))).subscribe(function () {
       commands.updatePaneItemState();
     });
 
-    const shortHeadChangeSubscription = getShortHeadChangesFromStateStream(states)
-      .switchMap(({repositoryPath, activeShortHead}) => {
-        const repository = atom.project.getRepositories().filter(repo => {
-          return repo != null && repo.getWorkingDirectory() === repositoryPath;
-        })[0];
-        invariant(repository != null, 'shortHead changed on a non-existing repository!');
+    var shortHeadChangeSubscription = (0, (_utils4 || _utils3()).getShortHeadChangesFromStateStream)(states).switchMap(function (_ref) {
+      var repositoryPath = _ref.repositoryPath;
+      var activeShortHead = _ref.activeShortHead;
 
-        switch (featureConfig.get(ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG)) {
-          case ActiveShortHeadChangeBehavior.ALWAYS_IGNORE:
-            track('bookshelf-always-ignore');
-            return Observable.empty();
-          case ActiveShortHeadChangeBehavior.ALWAYS_RESTORE:
-            track('bookshelf-always-restore');
-            // The restore needs to wait for the change shorthead state update to complete
-            // before triggering a cascaded state update when handling the restore action.
-            // TODO(most): move away from `nextTick`.
-            process.nextTick(() => {
-              commands.restorePaneItemState(repository, activeShortHead);
-            });
-            return Observable.empty();
-          default: // Including ActiveShortHeadChangeBehavior.PROMPT_TO_RESTORE
-            track('bookshelf-prompt-restore');
-            return shortHeadChangedNotification(
-              repository,
-              activeShortHead,
-              commands.restorePaneItemState,
-            );
-        }
-      }).subscribe();
+      var repository = atom.project.getRepositories().filter(function (repo) {
+        return repo != null && repo.getWorkingDirectory() === repositoryPath;
+      })[0];
+      (0, (_assert2 || _assert()).default)(repository != null, 'shortHead changed on a non-existing repository!');
 
-    this._disposables = new CompositeDisposable(
-      new Disposable(actions.complete.bind(actions)),
-      new UniversalDisposable(repoDiffsSubscription),
-      new UniversalDisposable(paneStateChangeSubscription),
-      new UniversalDisposable(shortHeadChangeSubscription),
-    );
+      switch ((_commonsAtomFeatureConfig2 || _commonsAtomFeatureConfig()).default.get((_constants2 || _constants()).ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG)) {
+        case (_constants2 || _constants()).ActiveShortHeadChangeBehavior.ALWAYS_IGNORE:
+          (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('bookshelf-always-ignore');
+          return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.empty();
+        case (_constants2 || _constants()).ActiveShortHeadChangeBehavior.ALWAYS_RESTORE:
+          (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('bookshelf-always-restore');
+          // The restore needs to wait for the change shorthead state update to complete
+          // before triggering a cascaded state update when handling the restore action.
+          // TODO(most): move away from `nextTick`.
+          process.nextTick(function () {
+            commands.restorePaneItemState(repository, activeShortHead);
+          });
+          return (_rxjsBundlesRxUmdMinJs2 || _rxjsBundlesRxUmdMinJs()).Observable.empty();
+        default:
+          // Including ActiveShortHeadChangeBehavior.PROMPT_TO_RESTORE
+          (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('bookshelf-prompt-restore');
+          return (0, (_utils4 || _utils3()).shortHeadChangedNotification)(repository, activeShortHead, commands.restorePaneItemState);
+      }
+    }).subscribe();
+
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable(new (_atom2 || _atom()).Disposable(actions.complete.bind(actions)), new (_commonsNodeUniversalDisposable2 || _commonsNodeUniversalDisposable()).default(repoDiffsSubscription), new (_commonsNodeUniversalDisposable2 || _commonsNodeUniversalDisposable()).default(paneStateChangeSubscription), new (_commonsNodeUniversalDisposable2 || _commonsNodeUniversalDisposable()).default(shortHeadChangeSubscription));
   }
 
-  dispose() {
-    this._disposables.dispose();
-  }
-
-  serialize(): ?SerializedBookShelfState {
-    try {
-      return serializeBookShelfState(this._states.getValue());
-    } catch (error) {
-      getLogger().error('failed to serialize nuclide-bookshelf state', error);
-      return null;
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
     }
-  }
-}
+  }, {
+    key: 'serialize',
+    value: function serialize() {
+      try {
+        return (0, (_utils2 || _utils()).serializeBookShelfState)(this._states.getValue());
+      } catch (error) {
+        (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)().error('failed to serialize nuclide-bookshelf state', error);
+        return null;
+      }
+    }
+  }]);
 
-export default createPackage(Activation);
+  return Activation;
+})();
+
+exports.default = (0, (_commonsAtomCreatePackage2 || _commonsAtomCreatePackage()).default)(Activation);
+module.exports = exports.default;

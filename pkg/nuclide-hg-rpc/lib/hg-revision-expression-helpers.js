@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,83 +10,10 @@
  * the root directory of this source tree.
  */
 
-import type {RevisionInfo} from './HgService';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import {hgAsyncExecute} from './hg-utils';
-import {HEAD_COMMIT_TAG} from './hg-constants';
-import {getLogger} from '../../nuclide-logging';
-
-const logger = getLogger();
-
-/**
- * This file contains utilities for getting an expression to specify a certain
- * revision in Hg (i.e. something that can be passed to the '--rev' option of
- * an Hg command).
- * Note: "Head" in this set of helper functions refers to the "current working
- * directory parent" in Hg terms.
- */
-
-// Section: Expression Formation
-
-const HG_CURRENT_WORKING_DIRECTORY_PARENT = '.';
-
-// Exported for testing.
-export const INFO_REV_END_MARK = '<<NUCLIDE_REV_END_MARK>>';
-
-// We use `{p1node|short} {p2node|short}` instead of `{parents}`
-// because `{parents}` only prints when a node has more than one parent,
-// not when a node has one natural parent.
-// Reference: `hg help templates`
-const NO_NODE_HASH = '000000000000';
-
-const REVISION_INFO_TEMPLATE = `{rev}
-{desc|firstline}
-{author}
-{date|isodate}
-{node|short}
-{branch}
-{phase}
-{bookmarks}
-{remotenames}
-{tags}
-{p1node|short} {p2node|short}
-{desc}
-${INFO_REV_END_MARK}
-`;
-
-/**
- * @param revisionExpression An expression that can be passed to hg as an argument
- * to the '--rev' option.
- * @param numberOfRevsBefore The number of revisions before the current revision
- * that you want a revision expression for. Passing 0 here will simply return 'revisionExpression'.
- * @return An expression for the 'numberOfRevsBefore'th revision before the given revision.
- */
-function expressionForRevisionsBefore(
-  revisionExpression: string,
-  numberOfRevsBefore: number,
-): string {
-  if (numberOfRevsBefore === 0) {
-    return revisionExpression;
-  } else {
-    return revisionExpression + '~' + numberOfRevsBefore.toString();
-  }
-}
-
-export function expressionForRevisionsBeforeHead(numberOfRevsBefore_: number): string {
-  let numberOfRevsBefore = numberOfRevsBefore_;
-  if (numberOfRevsBefore < 0) {
-    numberOfRevsBefore = 0;
-  }
-  return expressionForRevisionsBefore(HG_CURRENT_WORKING_DIRECTORY_PARENT, numberOfRevsBefore);
-}
-
-// Section: Revision Sets
-
-export function expressionForCommonAncestor(revision: string): string {
-  const commonAncestorExpression = `ancestor(${revision}, ${HG_CURRENT_WORKING_DIRECTORY_PARENT})`;
-  // shell-escape does not wrap ancestorExpression in quotes without this toString conversion.
-  return commonAncestorExpression.toString();
-}
+exports.expressionForRevisionsBeforeHead = expressionForRevisionsBeforeHead;
+exports.expressionForCommonAncestor = expressionForCommonAncestor;
 
 /**
  * @param revision The revision expression of a revision of interest.
@@ -93,61 +21,43 @@ export function expressionForCommonAncestor(revision: string): string {
  * @return An expression for the common ancestor of the revision of interest and
  * the current Hg head.
  */
-export async function fetchCommonAncestorOfHeadAndRevision(
-  revision: string,
-  workingDirectory: string,
-): Promise<string> {
-  const ancestorExpression = expressionForCommonAncestor(revision);
+
+var fetchCommonAncestorOfHeadAndRevision = _asyncToGenerator(function* (revision, workingDirectory) {
+  var ancestorExpression = expressionForCommonAncestor(revision);
   // shell-escape does not wrap '{rev}' in quotes unless it is double-quoted.
-  const args = [
-    'log',
-    '--template', '{rev}',
-    '--rev', ancestorExpression,
-    '--limit', '1',
-  ];
-  const options = {
-    cwd: workingDirectory,
+  var args = ['log', '--template', '{rev}', '--rev', ancestorExpression, '--limit', '1'];
+  var options = {
+    cwd: workingDirectory
   };
 
   try {
-    const {stdout: ancestorRevisionNumber} = await hgAsyncExecute(args, options);
+    var _ref = yield (0, (_hgUtils2 || _hgUtils()).hgAsyncExecute)(args, options);
+
+    var ancestorRevisionNumber = _ref.stdout;
+
     return ancestorRevisionNumber;
   } catch (e) {
     logger.warn('Failed to get hg common ancestor: ', e.stderr, e.command);
     throw new Error('Could not fetch common ancestor of head and revision: ' + revision);
   }
-}
+});
 
-async function fetchRevisions(
-  revisionExpression: string,
-  workingDirectory: string,
-  options?: {
-    shouldLimit?: boolean,
-  },
-): Promise<Array<RevisionInfo>> {
-  const revisionLogArgs = [
-    'log', '--template', REVISION_INFO_TEMPLATE,
-    '--rev', revisionExpression,
-  ];
+exports.fetchCommonAncestorOfHeadAndRevision = fetchCommonAncestorOfHeadAndRevision;
+
+var fetchRevisions = _asyncToGenerator(function* (revisionExpression, workingDirectory, options) {
+  var revisionLogArgs = ['log', '--template', REVISION_INFO_TEMPLATE, '--rev', revisionExpression];
   if (options == null || options.shouldLimit == null || options.shouldLimit) {
-    revisionLogArgs.push(
-      '--limit', '20',
-    );
+    revisionLogArgs.push('--limit', '20');
   }
-  const hgOptions = {
-    cwd: workingDirectory,
+  var hgOptions = {
+    cwd: workingDirectory
   };
   try {
-    const revisionsResult = await hgAsyncExecute(revisionLogArgs, hgOptions);
+    var revisionsResult = yield (0, (_hgUtils2 || _hgUtils()).hgAsyncExecute)(revisionLogArgs, hgOptions);
     return parseRevisionInfoOutput(revisionsResult.stdout);
   } catch (e) {
-    logger.warn(
-      'Failed to get revision info for revisions' +
-      ` ${revisionExpression}: ${e.stderr || e}, ${e.command}`,
-    );
-    throw new Error(
-      `Could not fetch revision info for revisions: ${revisionExpression}`,
-    );
+    logger.warn('Failed to get revision info for revisions' + (' ' + revisionExpression + ': ' + (e.stderr || e) + ', ' + e.command));
+    throw new Error('Could not fetch revision info for revisions: ' + revisionExpression);
   }
 }
 
@@ -162,35 +72,39 @@ async function fetchRevisions(
  * For each RevisionInfo, the `bookmarks` field will contain the list
  * of bookmark names applied to that revision.
  */
-export function fetchRevisionInfoBetweenRevisions(
-  revisionFrom: string,
-  revisionTo: string,
-  workingDirectory: string,
-): Promise<Array<RevisionInfo>> {
-  const revisionExpression = `${revisionFrom}::${revisionTo}`;
-  return fetchRevisions(revisionExpression, workingDirectory);
-}
+);
 
-export async function fetchRevisionInfo(
-    revisionExpression: string,
-    workingDirectory: string,
-  ): Promise<RevisionInfo> {
-  const [revisionInfo] = await fetchRevisions(revisionExpression, workingDirectory);
+exports.fetchRevisionInfoBetweenRevisions = fetchRevisionInfoBetweenRevisions;
+
+var fetchRevisionInfo = _asyncToGenerator(function* (revisionExpression, workingDirectory) {
+  var _ref2 = yield fetchRevisions(revisionExpression, workingDirectory);
+
+  var _ref22 = _slicedToArray(_ref2, 1);
+
+  var revisionInfo = _ref22[0];
+
   return revisionInfo;
-}
+});
 
-export async function fetchSmartlogRevisions(
-  workingDirectory: string,
-): Promise<Array<RevisionInfo>> {
-  const revisionExpression = 'smartlog(all) + ancestor(smartlog(all))';
-  const [smartlogRevisions, [headRevision]] = await Promise.all([
-    fetchRevisions(revisionExpression, workingDirectory, {shouldLimit: false}),
-    fetchRevisions('.', workingDirectory),
-  ]);
+exports.fetchRevisionInfo = fetchRevisionInfo;
+
+var fetchSmartlogRevisions = _asyncToGenerator(function* (workingDirectory) {
+  var revisionExpression = 'smartlog(all) + ancestor(smartlog(all))';
+
+  var _ref3 = yield Promise.all([fetchRevisions(revisionExpression, workingDirectory, { shouldLimit: false }), fetchRevisions('.', workingDirectory)]);
+
+  var _ref32 = _slicedToArray(_ref3, 2);
+
+  var smartlogRevisions = _ref32[0];
+
+  var _ref32$1 = _slicedToArray(_ref32[1], 1);
+
+  var headRevision = _ref32$1[0];
+
   // Add the `HEAD` tag to the head revision.
-  smartlogRevisions.forEach(revision => {
+  smartlogRevisions.forEach(function (revision) {
     if (headRevision.id === revision.id) {
-      revision.tags.push(HEAD_COMMIT_TAG);
+      revision.tags.push((_hgConstants2 || _hgConstants()).HEAD_COMMIT_TAG);
     }
   });
   return smartlogRevisions;
@@ -199,11 +113,98 @@ export async function fetchSmartlogRevisions(
 /**
  * Helper function to `fetchRevisionInfoBetweenRevisions`.
  */
-export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<RevisionInfo> {
-  const revisions = revisionsInfoOutput.split(INFO_REV_END_MARK);
-  const revisionInfo = [];
-  for (const chunk of revisions) {
-    const revisionLines = chunk.trim().split('\n');
+);
+
+exports.fetchSmartlogRevisions = fetchSmartlogRevisions;
+exports.parseRevisionInfoOutput = parseRevisionInfoOutput;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+var _hgUtils2;
+
+function _hgUtils() {
+  return _hgUtils2 = require('./hg-utils');
+}
+
+var _hgConstants2;
+
+function _hgConstants() {
+  return _hgConstants2 = require('./hg-constants');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
+
+/**
+ * This file contains utilities for getting an expression to specify a certain
+ * revision in Hg (i.e. something that can be passed to the '--rev' option of
+ * an Hg command).
+ * Note: "Head" in this set of helper functions refers to the "current working
+ * directory parent" in Hg terms.
+ */
+
+// Section: Expression Formation
+
+var HG_CURRENT_WORKING_DIRECTORY_PARENT = '.';
+
+// Exported for testing.
+var INFO_REV_END_MARK = '<<NUCLIDE_REV_END_MARK>>';
+
+exports.INFO_REV_END_MARK = INFO_REV_END_MARK;
+// We use `{p1node|short} {p2node|short}` instead of `{parents}`
+// because `{parents}` only prints when a node has more than one parent,
+// not when a node has one natural parent.
+// Reference: `hg help templates`
+var NO_NODE_HASH = '000000000000';
+
+var REVISION_INFO_TEMPLATE = '{rev}\n{desc|firstline}\n{author}\n{date|isodate}\n{node|short}\n{branch}\n{phase}\n{bookmarks}\n{remotenames}\n{tags}\n{p1node|short} {p2node|short}\n{desc}\n' + INFO_REV_END_MARK + '\n';
+
+/**
+ * @param revisionExpression An expression that can be passed to hg as an argument
+ * to the '--rev' option.
+ * @param numberOfRevsBefore The number of revisions before the current revision
+ * that you want a revision expression for. Passing 0 here will simply return 'revisionExpression'.
+ * @return An expression for the 'numberOfRevsBefore'th revision before the given revision.
+ */
+function expressionForRevisionsBefore(revisionExpression, numberOfRevsBefore) {
+  if (numberOfRevsBefore === 0) {
+    return revisionExpression;
+  } else {
+    return revisionExpression + '~' + numberOfRevsBefore.toString();
+  }
+}
+
+function expressionForRevisionsBeforeHead(numberOfRevsBefore_) {
+  var numberOfRevsBefore = numberOfRevsBefore_;
+  if (numberOfRevsBefore < 0) {
+    numberOfRevsBefore = 0;
+  }
+  return expressionForRevisionsBefore(HG_CURRENT_WORKING_DIRECTORY_PARENT, numberOfRevsBefore);
+}
+
+// Section: Revision Sets
+
+function expressionForCommonAncestor(revision) {
+  var commonAncestorExpression = 'ancestor(' + revision + ', ' + HG_CURRENT_WORKING_DIRECTORY_PARENT + ')';
+  // shell-escape does not wrap ancestorExpression in quotes without this toString conversion.
+  return commonAncestorExpression.toString();
+}
+
+function fetchRevisionInfoBetweenRevisions(revisionFrom, revisionTo, workingDirectory) {
+  var revisionExpression = revisionFrom + '::' + revisionTo;
+  return fetchRevisions(revisionExpression, workingDirectory);
+}
+
+function parseRevisionInfoOutput(revisionsInfoOutput) {
+  var revisions = revisionsInfoOutput.split(INFO_REV_END_MARK);
+  var revisionInfo = [];
+  for (var chunk of revisions) {
+    var revisionLines = chunk.trim().split('\n');
     if (revisionLines.length < 12) {
       continue;
     }
@@ -216,19 +217,20 @@ export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<Revi
       branch: revisionLines[5],
       // Phase is either `public`, `draft` or `secret`.
       // https://www.mercurial-scm.org/wiki/Phases
-      phase: (revisionLines[6]: any),
+      phase: revisionLines[6],
       bookmarks: splitLine(revisionLines[7]),
       remoteBookmarks: splitLine(revisionLines[8]),
       tags: splitLine(revisionLines[9]),
-      parents: splitLine(revisionLines[10])
-        .filter(hash => hash !== NO_NODE_HASH),
-      description: revisionLines.slice(11).join('\n'),
+      parents: splitLine(revisionLines[10]).filter(function (hash) {
+        return hash !== NO_NODE_HASH;
+      }),
+      description: revisionLines.slice(11).join('\n')
     });
   }
   return revisionInfo;
 }
 
-function splitLine(line: string): Array<string> {
+function splitLine(line) {
   if (line.length === 0) {
     return [];
   } else {

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,63 +10,96 @@
  * the root directory of this source tree.
  */
 
-import type {AtomCommands} from './rpc-types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import invariant from 'assert';
-import {loadServicesConfig, ServiceRegistry, SocketServer} from '../../nuclide-rpc';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {createNewEntry} from '../shared/ConfigDirectory';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _nuclideRpc2;
+
+function _nuclideRpc() {
+  return _nuclideRpc2 = require('../../nuclide-rpc');
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _sharedConfigDirectory2;
+
+function _sharedConfigDirectory() {
+  return _sharedConfigDirectory2 = require('../shared/ConfigDirectory');
+}
 
 // Ties the AtomCommands registered via RemoteCommandService to
 // the server side CommandService.
-export class CommandServer {
-  static _server: ?CommandServer = null;
 
-  _server: SocketServer;
-  _nuclidePort: number;
-  _atomCommands: AtomCommands;
+var CommandServer = (function () {
+  _createClass(CommandServer, null, [{
+    key: '_server',
+    value: null,
+    enumerable: true
+  }]);
 
-  constructor(nuclidePort: number, atomCommands: AtomCommands) {
+  function CommandServer(nuclidePort, atomCommands) {
+    _classCallCheck(this, CommandServer);
+
     this._nuclidePort = nuclidePort;
     this._atomCommands = atomCommands;
-    const services = loadServicesConfig(nuclideUri.join(__dirname, '..'));
-    const registry = new ServiceRegistry(
-      [nuclideUri.localMarshallers],
-      services);
-    this._server = new SocketServer(registry);
+    var services = (0, (_nuclideRpc2 || _nuclideRpc()).loadServicesConfig)((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(__dirname, '..'));
+    var registry = new (_nuclideRpc2 || _nuclideRpc()).ServiceRegistry([(_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.localMarshallers], services);
+    this._server = new (_nuclideRpc2 || _nuclideRpc()).SocketServer(registry);
   }
 
-  async _initialize(): Promise<void> {
-    const address = await this._server.getAddress();
+  _createClass(CommandServer, [{
+    key: '_initialize',
+    value: _asyncToGenerator(function* () {
+      var address = yield this._server.getAddress();
 
-    await createNewEntry(this._nuclidePort, address.port, address.family);
-  }
-
-  dispose(): void {
-    invariant(CommandServer._server === this);
-    CommandServer._server = null;
-    this._server.dispose();
-  }
-
-  static async create(
-    port: number,
-    atomCommands: AtomCommands,
-  ): Promise<CommandServer> {
-    if (CommandServer._server != null) {
-      CommandServer._server.dispose();
+      yield (0, (_sharedConfigDirectory2 || _sharedConfigDirectory()).createNewEntry)(this._nuclidePort, address.port, address.family);
+    })
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      (0, (_assert2 || _assert()).default)(CommandServer._server === this);
+      CommandServer._server = null;
+      this._server.dispose();
     }
-    invariant(CommandServer._server == null);
+  }], [{
+    key: 'create',
+    value: _asyncToGenerator(function* (port, atomCommands) {
+      if (CommandServer._server != null) {
+        CommandServer._server.dispose();
+      }
+      (0, (_assert2 || _assert()).default)(CommandServer._server == null);
 
-    const server = new CommandServer(port, atomCommands);
-    await server._initialize();
-    CommandServer._server = server;
-    return server;
-  }
-
-  static getAtomCommands(): ?AtomCommands {
-    if (CommandServer._server == null) {
-      return null;
+      var server = new CommandServer(port, atomCommands);
+      yield server._initialize();
+      CommandServer._server = server;
+      return server;
+    })
+  }, {
+    key: 'getAtomCommands',
+    value: function getAtomCommands() {
+      if (CommandServer._server == null) {
+        return null;
+      }
+      return CommandServer._server._atomCommands;
     }
-    return CommandServer._server._atomCommands;
-  }
-}
+  }]);
+
+  return CommandServer;
+})();
+
+exports.CommandServer = CommandServer;
