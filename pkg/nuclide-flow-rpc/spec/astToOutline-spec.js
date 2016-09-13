@@ -192,6 +192,57 @@ const expectedToplevelOutline = [
     },
     children: [],
   },
+  {
+    tokenizedText: [
+      {kind: 'keyword', value: 'const'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'param', value: 'varFoo'},
+    ],
+    representativeName: 'varFoo',
+    startPosition: {
+      line: 29,
+      column: 0,
+    },
+    endPosition: {
+      line: 29,
+      column: 18,
+    },
+    children: [],
+  },
+  {
+    tokenizedText: [
+      {kind: 'keyword', value: 'var'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'param', value: 'varBar'},
+    ],
+    representativeName: 'varBar',
+    startPosition: {
+      line: 31,
+      column: 0,
+    },
+    endPosition: {
+      line: 31,
+      column: 16,
+    },
+    children: [],
+  },
+  {
+    tokenizedText: [
+      {kind: 'keyword', value: 'let'},
+      {kind: 'whitespace', value: ' '},
+      {kind: 'param', value: 'varBaz'},
+    ],
+    representativeName: 'varBaz',
+    startPosition: {
+      line: 33,
+      column: 0,
+    },
+    endPosition: {
+      line: 38,
+      column: 2,
+    },
+    children: [],
+  },
 ];
 
 const expectedJasmineOutline = [

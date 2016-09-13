@@ -109,7 +109,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
     case 'TypeAlias':
       return typeAliasOutline(item);
     case 'VariableDeclaration':
-      return functionExpressionOutline(item);
+      return variableDeclarationOutline(item);
     default:
       return null;
   }
@@ -385,12 +385,33 @@ function getFunctionBody(fn: ?any): ?Array<any> {
   return fn.body.body;
 }
 
-function functionExpressionOutline(varDeclaration: any): ?FlowOutlineTree {
+function variableDeclarationOutline(declaration: any): ?FlowOutlineTree {
   // If there are multiple var declarations in one line, just take the first.
-  const decl = varDeclaration.declarations[0];
-  if (decl.init == null ||
-    (decl.init.type !== 'FunctionExpression' && decl.init.type !== 'ArrowFunctionExpression')) {
-    return null;
+  return variableDeclaratorOutline(
+           declaration.declarations[0],
+           declaration.kind,
+           getExtent(declaration),
+         );
+}
+
+function variableDeclaratorOutline(
+  declarator: any,
+  kind: string,
+  extent: Extent,
+): ?FlowOutlineTree {
+  if (declarator.init != null && (declarator.init.type === 'FunctionExpression'
+      || declarator.init.type === 'ArrowFunctionExpression')) {
+    return functionOutline(declarator.id.name, declarator.init.params, extent);
   }
-  return functionOutline(decl.id.name, decl.init.params, getExtent(varDeclaration));
+
+  return {
+    tokenizedText: [
+      keyword(kind),
+      whitespace(' '),
+      param(declarator.id.name),
+    ],
+    representativeName: declarator.id.name,
+    children: [],
+    ...extent,
+  };
 }

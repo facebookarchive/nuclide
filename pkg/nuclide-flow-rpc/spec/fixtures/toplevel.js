@@ -23,7 +23,18 @@ const funExpr1 = function(param1: string): void {
 };
 
 const funExpr2 = (arg1: boolean, arg2: any) => {
-  return funExpr1(shouldNotShowUp);
+  return funExpr1('');
 };
 
-const shouldNotShowUp = '';
+/* eslint-disable */
+const varFoo = '';
+
+var varBar = '';
+
+let varBaz = {
+  foo(): any {
+    const shouldNotShowUp = '';
+    return shouldNotShowUp;
+  },
+};
+/* eslint-enable */
