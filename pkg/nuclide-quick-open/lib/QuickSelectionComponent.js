@@ -483,7 +483,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _getOuterResults(
-    arrayOperation: Function,
+    arrayOperation: typeof Array.prototype.shift | typeof Array.prototype.pop,
   ): ?{serviceName: string, directoryName: string, results: Array<mixed>} {
     const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
     const serviceName = arrayOperation.call(sortServiceNames(Object.keys(nonEmptyResults)));
