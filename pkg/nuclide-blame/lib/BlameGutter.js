@@ -145,11 +145,10 @@ export default class BlameGutter {
     }
     this._loadingSpinnerIsPending = true;
     this._loadingSpinnerTimeoutId = window.setTimeout(() => {
+      const gutterView = atom.views.getView(this._gutter);
       this._loadingSpinnerIsPending = false;
       this._loadingSpinnerDiv = document.createElement('div');
       this._loadingSpinnerDiv.className = 'nuclide-blame-spinner';
-      const gutterView = atom.views.getView(this._gutter);
-      // $FlowFixMe
       gutterView.appendChild(this._loadingSpinnerDiv);
     }, MS_TO_WAIT_BEFORE_SPINNER);
   }
