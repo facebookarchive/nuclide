@@ -11,6 +11,8 @@
 
 import nuclideUri from '../commons-node/nuclideUri';
 
+// Once https://github.com/atom/atom/pull/12501 is released, switch to
+// `atom.project.observeBuffers`.
 export function observeBuffers(observeBuffer: (buffer: atom$TextBuffer) => mixed): IDisposable {
   atom.project.getBuffers()
     .filter(buffer => !nuclideUri.isBrokenDeserializedUri(buffer.getPath()))
