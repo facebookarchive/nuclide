@@ -16,9 +16,11 @@ import type BuckToolbarStore from '../BuckToolbarStore';
 
 import {Combobox} from '../../../nuclide-ui/lib/Combobox';
 
+import nuclideUri from '../../../commons-node/nuclideUri';
 import {lastly} from '../../../commons-node/promise';
 import {concatLatest} from '../../../commons-node/observable';
 import {createBuckProject} from '../../../nuclide-buck-base';
+import {getLogger} from '../../../nuclide-logging';
 
 const NO_ACTIVE_PROJECT_ERROR = 'No active Buck project. Check your Current Working Root.';
 
@@ -34,6 +36,9 @@ export default class BuckToolbarTargetSelector extends React.Component {
   // Putting the cache here allows the user to refresh it by toggling the UI.
   _projectAliasesCache: Map<string, Promise<Array<string>>>;
 
+  _cachedOwners: ?Promise<Array<string>>;
+  _cachedOwnersPath: ?string;
+
   constructor(props: Props) {
     super(props);
     (this: any)._requestOptions = this._requestOptions.bind(this);
@@ -48,6 +53,7 @@ export default class BuckToolbarTargetSelector extends React.Component {
     }
     return concatLatest(
       Observable.of(inputText.trim() === '' ? [] : [inputText]),
+      Observable.fromPromise(this._getActiveOwners(buckRoot)),
       Observable.fromPromise(this._getAliases(buckRoot)),
     )
       .map(list => Array.from(new Set(list)));
@@ -64,6 +70,35 @@ export default class BuckToolbarTargetSelector extends React.Component {
       this._projectAliasesCache.set(buckRoot, cachedAliases);
     }
     return cachedAliases;
+  }
+
+  _getActiveOwners(buckRoot: string): Promise<Array<string>> {
+    const editor = atom.workspace.getActiveTextEditor();
+    if (editor == null) {
+      return Promise.resolve([]);
+    }
+    const path = editor.getPath();
+    if (path == null || !nuclideUri.contains(buckRoot, path)) {
+      return Promise.resolve([]);
+    }
+    if (path === this._cachedOwnersPath && this._cachedOwners != null) {
+      return this._cachedOwners;
+    }
+    const buckProject = createBuckProject(buckRoot);
+    this._cachedOwners = lastly(
+      buckProject.getOwner(path)
+        .then(
+          // Strip off the optional leading "//" to match typical user input.
+          owners => owners.map(owner => (owner.startsWith('//') ? owner.substring(2) : owner)),
+        )
+        .catch(err => {
+          getLogger().error(`Error getting Buck owners for ${path}`, err);
+          return [];
+        }),
+      () => buckProject.dispose(),
+    );
+    this._cachedOwnersPath = path;
+    return this._cachedOwners;
   }
 
   _handleBuildTargetChange(value: string) {
