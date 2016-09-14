@@ -109,6 +109,22 @@ class NoReactNativeProjectError extends Error {
   }
 }
 
+class PackagerError extends Error {
+  exitCode: number;
+  stderr: string;
+  constructor(exitCode: number, stderr: string) {
+    // TODO: Remove `captureStackTrace()` call and `this.message` assignment when we remove our
+    // class transform and switch to native classes.
+    const message = 'An error occurred while running the packager';
+    super(message);
+    this.name = 'PackagerError';
+    this.message = message;
+    this.exitCode = exitCode;
+    this.stderr = stderr;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 /**
  * Create an observable that runs the packager and and collects its output.
  */
@@ -123,7 +139,18 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
       const {command, cwd, args} = commandInfo;
       return observeProcess(() => safeSpawn(command, args, {cwd}));
     })
-    .switchMap(event => {
+    // Accumulate the stderr so that we can show it to the user if something goes wrong.
+    .scan(
+      (acc, event) => {
+        return {
+          stderr: event.kind === 'stderr' ? acc.stderr + event.data : acc.stderr,
+          event,
+        };
+      },
+      {stderr: '', event: null},
+    )
+    .switchMap(({stderr, event}) => {
+      if (event == null) { return Observable.empty(); }
       switch (event.kind) {
         case 'error':
           return Observable.throw(event.error);
@@ -131,9 +158,7 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
           return Observable.of(event.data);
         case 'exit':
           if (event.exitCode !== 0) {
-            return Observable.throw(
-              new Error(`Packager exited with non-zero exit code (${event.exitCode})`),
-            );
+            return Observable.throw(new PackagerError(event.exitCode, stderr));
           }
           return Observable.empty();
         case 'stderr':
@@ -143,16 +168,25 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
       }
     })
     .catch(err => {
-      // If a React Native project hasn't been found, notify the user and complete normally.
-      if (err.name === 'NoReactNativeProjectError') {
-        atom.notifications.addError("Couldn't find a React Native project", {
-          dismissable: true,
-          description:
-            'Make sure that your current working root (or its ancestor) contains a "node_modules"' +
-            ' directory with react-native installed, or a .buckconfig file with a' +
-            ' "[react-native]" section that has a "server" key.',
-        });
-        return Observable.empty();
+      switch (err.name) {
+        case 'NoReactNativeProjectError':
+          // If a React Native project hasn't been found, notify the user and complete normally.
+          atom.notifications.addError("Couldn't find a React Native project", {
+            dismissable: true,
+            description:
+              'Make sure that your current working root (or its ancestor) contains a' +
+              ' "node_modules" directory with react-native installed, or a .buckconfig file with' +
+              ' a "[react-native]" section that has a "server" key.',
+          });
+          return Observable.empty();
+        case 'PackagerError':
+          atom.notifications.addError(
+            `Packager exited with non-zero exit code (${err.exitCode})`, {
+              dismissable: true,
+              detail: err.stderr.trim() === '' ? undefined : err.stderr,
+            },
+          );
+          return Observable.empty();
       }
       throw err;
     });
