@@ -10,6 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
+import {Observable} from 'rxjs';
 import {ArcToolbarModel} from './ArcToolbarModel';
 import {Combobox} from '../../nuclide-ui/lib/Combobox';
 import {getLogger} from '../../nuclide-logging';
@@ -67,8 +68,8 @@ export default class ArcToolbarSection extends React.Component {
     );
   }
 
-  _requestOptions(inputText: string): Promise<Array<string>> {
-    return this.props.model.loadBuildTargets();
+  _requestOptions(inputText: string): Observable<Array<string>> {
+    return Observable.fromPromise(this.props.model.loadBuildTargets());
   }
 
   _handleBuildTargetChange(value: string) {

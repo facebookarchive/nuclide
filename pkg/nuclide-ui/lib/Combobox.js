@@ -35,7 +35,7 @@ type Props = DefaultProps & {
   placeholderText?: string,
   onRequestOptionsError?: (error: Error) => void,
   onBlur?: (text: string) => void,
-  requestOptions: (inputText: string) => Promise<Array<string>>,
+  requestOptions: (inputText: string) => Observable<Array<string>>,
   size: 'xs' | 'sm' | 'lg',
 };
 
@@ -125,9 +125,7 @@ export class Combobox extends React.Component {
 
     this.setState({error: null, loadingOptions: true});
 
-    this._updateSubscription = Observable.fromPromise(
-      this.props.requestOptions(textInput),
-    )
+    this._updateSubscription = this.props.requestOptions(textInput)
       .subscribe(
         options => this.receiveUpdate(options),
         err => {
@@ -141,6 +139,7 @@ export class Combobox extends React.Component {
             this.props.onRequestOptionsError(err);
           }
         },
+        () => this.setState({loadingOptions: false}),
       );
   }
 
@@ -148,7 +147,6 @@ export class Combobox extends React.Component {
     const filteredOptions = this._getFilteredOptions(newOptions, this.state.textInput);
     this.setState({
       error: null,
-      loadingOptions: false,
       options: newOptions,
       filteredOptions,
       selectedIndex: this._getNewSelectedIndex(filteredOptions),
@@ -303,7 +301,7 @@ export class Combobox extends React.Component {
     if (this.state.error != null && this.props.formatRequestOptionsErrorMessage != null) {
       const message = this.props.formatRequestOptionsErrorMessage(this.state.error);
       options.push(
-        <li className="text-error">
+        <li key="text-error" className="text-error">
           {message}
         </li>,
       );
@@ -325,7 +323,7 @@ export class Combobox extends React.Component {
         return (
           <li
             className={isSelected ? 'selected' : null}
-            key={option.value}
+            key={'option-' + option.value}
             onClick={this._handleItemClick.bind(this, option.value)}
             onMouseOver={this._setSelectedIndex.bind(this, i)}
             ref={isSelected ? 'selectedOption' : null}>

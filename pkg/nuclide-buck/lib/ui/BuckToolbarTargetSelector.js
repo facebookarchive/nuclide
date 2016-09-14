@@ -10,12 +10,14 @@
  */
 
 import {React} from 'react-for-atom';
+import {Observable} from 'rxjs';
 import type BuckToolbarActions from '../BuckToolbarActions';
 import type BuckToolbarStore from '../BuckToolbarStore';
 
 import {Combobox} from '../../../nuclide-ui/lib/Combobox';
 
 import {lastly} from '../../../commons-node/promise';
+import {concatLatest} from '../../../commons-node/observable';
 import {createBuckProject} from '../../../nuclide-buck-base';
 
 const NO_ACTIVE_PROJECT_ERROR = 'No active Buck project. Check your Current Working Root.';
@@ -39,27 +41,29 @@ export default class BuckToolbarTargetSelector extends React.Component {
     this._projectAliasesCache = new Map();
   }
 
-  async _requestOptions(inputText: string): Promise<Array<string>> {
+  _requestOptions(inputText: string): Observable<Array<string>> {
     const buckRoot = this.props.store.getCurrentBuckRoot();
     if (buckRoot == null) {
-      throw new Error(NO_ACTIVE_PROJECT_ERROR);
+      return Observable.throw(Error(NO_ACTIVE_PROJECT_ERROR));
     }
+    return concatLatest(
+      Observable.of(inputText.trim() === '' ? [] : [inputText]),
+      Observable.fromPromise(this._getAliases(buckRoot)),
+    )
+      .map(list => Array.from(new Set(list)));
+  }
 
-    let aliases = this._projectAliasesCache.get(buckRoot);
-    if (!aliases) {
+  _getAliases(buckRoot: string): Promise<Array<string>> {
+    let cachedAliases = this._projectAliasesCache.get(buckRoot);
+    if (cachedAliases == null) {
       const buckProject = createBuckProject(buckRoot);
-      aliases = lastly(
+      cachedAliases = lastly(
         buckProject.listAliases(),
         () => buckProject.dispose(),
       );
-      this._projectAliasesCache.set(buckRoot, aliases);
+      this._projectAliasesCache.set(buckRoot, cachedAliases);
     }
-
-    const result = (await aliases).slice();
-    if (inputText.trim() && result.indexOf(inputText) === -1) {
-      result.splice(0, 0, inputText);
-    }
-    return result;
+    return cachedAliases;
   }
 
   _handleBuildTargetChange(value: string) {
