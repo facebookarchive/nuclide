@@ -17,7 +17,6 @@ import {splitStream, takeWhileInclusive} from './observable';
 import {observeStream} from './stream';
 import {maybeToString} from './string';
 import {Observable} from 'rxjs';
-import {PromiseQueue} from './promise-executors';
 import invariant from 'assert';
 import {quote} from 'shell-quote';
 
@@ -103,13 +102,9 @@ export class ProcessExitError extends Error {
 export type ProcessError = ProcessSystemError | ProcessExitError;
 
 export type AsyncExecuteOptions = child_process$execFileOpts & {
-  // The queue on which to block dependent calls.
-  queueName?: string,
   // The contents to write to stdin.
   stdin?: ?string,
 };
-
-const blockingQueues = {};
 
 const STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
 
@@ -352,7 +347,7 @@ export async function asyncExecute(
   args: Array<string>,
   options?: AsyncExecuteOptions = {},
 ): Promise<AsyncExecuteReturn> {
-  const executor = (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const process = child_process.execFile(
       command,
       args,
@@ -398,17 +393,7 @@ export async function asyncExecute(
       process.stdin.write(options.stdin);
       process.stdin.end();
     }
-  };
-
-  const {queueName} = options;
-  if (queueName === undefined) {
-    return new Promise(executor);
-  } else {
-    if (!blockingQueues[queueName]) {
-      blockingQueues[queueName] = new PromiseQueue();
-    }
-    return blockingQueues[queueName].submit(executor);
-  }
+  });
 }
 
 /**
