@@ -136,4 +136,27 @@ describe('LogTailer', () => {
     expect(handleRunning).toHaveBeenCalled();
   });
 
+  it("shows an error notification if there's an error after it starts running", () => {
+    spyOn(atom.notifications, 'addError');
+    const ready = new Subject();
+    const messages = new Subject();
+    const logTailer = new LogTailer({
+      name: 'test',
+      messages,
+      ready,
+      trackingEvents: {
+        start: 'logtailer-test-start',
+        stop: 'logtailer-test-stop',
+        restart: 'logtailer-test-restart',
+      },
+    });
+    const handleRunning = jasmine.createSpy();
+    logTailer.start({onRunning: handleRunning});
+    logTailer.start();
+    ready.next();
+    messages.error(new Error('Uh oh'));
+    expect(handleRunning).toHaveBeenCalledWith();
+    expect(atom.notifications.addError).toHaveBeenCalled();
+  });
+
 });

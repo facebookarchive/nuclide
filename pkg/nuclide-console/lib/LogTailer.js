@@ -69,8 +69,12 @@ export class LogTailer {
     )
       .do({
         error: err => {
+          const wasStarting = this._statuses.getValue() === 'starting';
           this._stop(false);
-          this._invokeRunningCallbacks(err);
+          const errorWasHandled = wasStarting && !this._invokeRunningCallbacks(err);
+          if (!errorWasHandled) {
+            this._unhandledError(err);
+          }
         },
         complete: () => {
           this._stop();
@@ -115,7 +119,10 @@ export class LogTailer {
     return new UniversalDisposable(this._statuses.subscribe(cb));
   }
 
-  _invokeRunningCallbacks(err: ?Error): void {
+  /**
+   * Invoke the running callbacks. Returns true if the error wasn't handled; otherwise false.
+   */
+  _invokeRunningCallbacks(err: ?Error): boolean {
     // Invoke all of the registered running callbacks.
     if (this._runningCallbacks.length > 0) {
       this._runningCallbacks.forEach(cb => {
@@ -127,26 +134,28 @@ export class LogTailer {
       });
     }
 
-    if (err != null && this._startCount !== this._runningCallbacks.length) {
-      getLogger().error(`Error with ${this._name} tailer.`, err);
-      const message = `An unexpected error occurred while running the ${this._name} process`
-        + (err.message ? `:\n\n**${err.message}**` : '.');
-      const notification = atom.notifications.addError(message, {
-        dismissable: true,
-        detail: err.stack == null ? '' : err.stack.toString(),
-        buttons: [{
-          text: `Restart ${this._name}`,
-          className: 'icon icon-sync',
-          onDidClick: () => {
-            notification.dismiss();
-            this.restart();
-          },
-        }],
-      });
-    }
-
+    const unhandledError = err != null && this._startCount !== this._runningCallbacks.length;
     this._runningCallbacks = [];
     this._startCount = 0;
+    return unhandledError;
+  }
+
+  _unhandledError(err: Error): void {
+    getLogger().error(`Error with ${this._name} tailer.`, err);
+    const message = `An unexpected error occurred while running the ${this._name} process`
+      + (err.message ? `:\n\n**${err.message}**` : '.');
+    const notification = atom.notifications.addError(message, {
+      dismissable: true,
+      detail: err.stack == null ? '' : err.stack.toString(),
+      buttons: [{
+        text: `Restart ${this._name}`,
+        className: 'icon icon-sync',
+        onDidClick: () => {
+          notification.dismiss();
+          this.restart();
+        },
+      }],
+    });
   }
 
   _start(trackCall: boolean): void {
