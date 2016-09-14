@@ -20,12 +20,14 @@ import {
   safeSpawn,
   getOriginalEnvironment,
 } from '../../commons-node/process';
+import {PromisePool} from '../../commons-node/promise-executors';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
 import createBuckWebSocket from './createBuckWebSocket';
 import {getLogger} from '../../nuclide-logging';
 import ini from 'ini';
+import os from 'os';
 
 const logger = getLogger();
 
@@ -123,10 +125,21 @@ type BuckCommandAndOptions = {
  * read-only. The read-only commands can be executed in parallel, but the rest
  * must be executed serially.
  *
- * TODO(mbolin): This does not account for the case where the user runs
- * `buck build` from the command line while Nuclide is also trying to build.
+ * Still, we try to make sure we don't slow down the user's computer.
  */
-const BLOCKING_BUCK_COMMAND_QUEUE_PREFIX = 'buck';
+const MAX_CONCURRENT_READ_ONLY = Math.max(1, os.cpus().length - 1);
+const pools = new Map();
+
+function getPool(path: string, readOnly: boolean): PromisePool {
+  const key = (readOnly ? 'ro:' : '') + path;
+  let pool = pools.get(key);
+  if (pool != null) {
+    return pool;
+  }
+  pool = new PromisePool(readOnly ? MAX_CONCURRENT_READ_ONLY : 1);
+  pools.set(key, pool);
+  return pool;
+}
 
 /**
  * Represents a Buck project on disk. All Buck commands for a project should be
@@ -138,7 +151,6 @@ const BLOCKING_BUCK_COMMAND_QUEUE_PREFIX = 'buck';
 export class BuckProject {
 
   _rootPath: string;
-  _serialQueueName: string;
   _buckConfig: ?BuckConfig;
 
   /**
@@ -147,7 +159,6 @@ export class BuckProject {
    */
   constructor(options: {rootPath: NuclideUri}) {
     this._rootPath = options.rootPath;
-    this._serialQueueName = BLOCKING_BUCK_COMMAND_QUEUE_PREFIX + this._rootPath;
   }
 
   dispose(): void {
@@ -189,11 +200,14 @@ export class BuckProject {
   _runBuckCommandFromProjectRoot(
     args: Array<string>,
     commandOptions?: AsyncExecuteOptions,
+    readOnly?: boolean = true,
   ): Promise<{stdout: string, stderr: string, exitCode?: number}> {
     const {pathToBuck, buckCommandOptions: options} =
       this._getBuckCommandAndOptions(commandOptions);
     logger.debug('Buck command:', pathToBuck, args, options);
-    return checkOutput(pathToBuck, args, options);
+    return getPool(this._rootPath, readOnly).submitFunction(
+      () => checkOutput(pathToBuck, args, options),
+    );
   }
 
   /**
@@ -207,7 +221,6 @@ export class BuckProject {
       global.atom && global.atom.config.get('nuclide.nuclide-buck.pathToBuck') || 'buck';
     const buckCommandOptions = {
       cwd: this._rootPath,
-      queueName: this._serialQueueName,
       // Buck restarts itself if the environment changes, so try to preserve
       // the original environment that Nuclide was started in.
       env: getOriginalEnvironment(),
@@ -313,7 +326,11 @@ export class BuckProject {
     });
 
     try {
-      await this._runBuckCommandFromProjectRoot(args, options.commandOptions);
+      await this._runBuckCommandFromProjectRoot(
+        args,
+        options.commandOptions,
+        true,   // Build commands are blocking.
+      );
     } catch (e) {
       // The build failed. However, because --keep-going was specified, the
       // build report should have still been written unless any of the target
