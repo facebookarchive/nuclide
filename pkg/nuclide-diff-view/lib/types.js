@@ -91,11 +91,30 @@ export type UIProvider = {
 
 export type RepositoryState = {
   diffOption: DiffOptionType,
+  revisionStatuses: Map<number, RevisionStatusDisplay>,
+  dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
+  headToForkBaseRevisions: Array<RevisionInfo>,
+  headRevision: ?RevisionInfo,
+  revisions: Array<RevisionInfo>,
+  selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>,
 };
 
 export type AppState = {
   activeRepository: ?HgRepositoryClient,
+  commitMessage: ?string,
+  commitMode: CommitModeType,
+  commitModeState: CommitModeStateType,
+  filePath: NuclideUri,
+  fromRevisionTitle: string,
+  newContents: string,
+  oldContents: string,
+  publishMessage: ?string,
+  publishMode: PublishModeType,
+  publishModeState: PublishModeStateType,
   repositoriesStates: Map<HgRepositoryClient, RepositoryState>,
+  shouldRebaseOnAmend: boolean,
+  toRevisionTitle: string,
+  viewMode: DiffModeType,
 };
 
 export type Store = {
