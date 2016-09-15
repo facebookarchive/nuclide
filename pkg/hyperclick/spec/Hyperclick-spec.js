@@ -812,7 +812,7 @@ describe('Hyperclick', () => {
 
   describe('when the editor has soft-wrapped lines', () => {
     beforeEach(() => {
-      textEditor.setSoftWrapped(true);
+      atom.config.set('editor.softWrap', true);
       atom.config.set('editor.softWrapAtPreferredLineLength', true);
       atom.config.set('editor.preferredLineLength', 6); // This wraps each word onto its own line.
     });
