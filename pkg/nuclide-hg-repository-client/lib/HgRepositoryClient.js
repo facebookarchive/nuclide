@@ -24,6 +24,7 @@ import type {
   VcsLogResponse,
 } from '../../nuclide-hg-rpc/lib/HgService';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LRUCache} from 'lru-cache';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import RevisionsCache from './RevisionsCache';
@@ -39,6 +40,7 @@ import debounce from '../../commons-node/debounce';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
 import {Observable} from 'rxjs';
+import LRU from 'lru-cache';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
 
@@ -140,6 +142,7 @@ export class HgRepositoryClient {
   _hgDiffCacheFilesToClear: Set<NuclideUri>;
   _revisionsCache: RevisionsCache;
   _revisionStatusCache: RevisionStatusCache;
+  _revisionIdToFileChanges: LRUCache<string, RevisionFileChanges>;
 
   _activeBookmark: ?string;
   _serializedRefreshStatusesCache: () => ?Promise<void>;
@@ -160,6 +163,7 @@ export class HgRepositoryClient {
       this._revisionsCache,
       this._workingDirectory.getPath(),
     );
+    this._revisionIdToFileChanges = new LRU({max: 100});
 
     this._emitter = new Emitter();
     this._editorSubscriptions = new Map();
@@ -271,6 +275,7 @@ export class HgRepositoryClient {
     this._editorSubscriptions.clear();
     this._emitter.emit('did-destroy');
     this._subscriptions.dispose();
+    this._revisionIdToFileChanges.reset();
   }
 
   _conflictStateChanged(isInConflict: boolean): void {
@@ -936,8 +941,13 @@ export class HgRepositoryClient {
     return this._service.fetchFileContentAtRevision(filePath, revision);
   }
 
-  fetchFilesChangedAtRevision(revision: string): Promise<?RevisionFileChanges> {
-    return this._service.fetchFilesChangedAtRevision(revision);
+  async fetchFilesChangedAtRevision(revision: string): Promise<RevisionFileChanges> {
+    let changes = this._revisionIdToFileChanges.get(revision);
+    if (changes == null) {
+      changes = await this._service.fetchFilesChangedAtRevision(revision);
+      this._revisionIdToFileChanges.set(revision, changes);
+    }
+    return changes;
   }
 
   fetchRevisionInfoBetweenHeadAndBase(): Promise<Array<RevisionInfo>> {

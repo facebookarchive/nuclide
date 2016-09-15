@@ -57,7 +57,6 @@ export default class RepositoryStack {
   _repository: HgRepositoryClient;
   _selectedCompareCommitId: ?number;
   _serializedUpdateSelectedFileChanges: () => Promise<void>;
-  _revisionIdToFileChanges: LRUCache<number, RevisionFileChanges>;
   _fileContentsAtCommitIds: LRUCache<number, Map<NuclideUri, string>>;
   _diffOption: DiffOptionType;
 
@@ -66,7 +65,6 @@ export default class RepositoryStack {
     this._emitter = new Emitter();
     this._dirtyFileChanges = new Map();
     this._selectedFileChanges = new Map();
-    this._revisionIdToFileChanges = new LRU({max: 100});
     this._fileContentsAtCommitIds = new LRU({max: 20});
     this._selectedCompareCommitId = null;
     this._diffOption = diffOption;
@@ -272,29 +270,14 @@ export default class RepositoryStack {
   }
 
   @trackTiming('diff-view.fetch-revisions-change-history')
-  async _fetchFileChangesForRevisions(
+  _fetchFileChangesForRevisions(
     revisions: Array<RevisionInfo>,
   ): Promise<Array<RevisionFileChanges>> {
     // Revision ids are unique and don't change, except when the revision is amended/rebased.
     // Hence, it's cached here to avoid service calls when working on a stack of commits.
-    const revisionsFileHistory = await Promise.all(revisions
-      .map(async revision => {
-        const {id} = revision;
-        let changes = null;
-        if (this._revisionIdToFileChanges.has(id)) {
-          changes = this._revisionIdToFileChanges.get(id);
-        } else {
-          changes = await this._repository.fetchFilesChangedAtRevision(`${id}`);
-          if (changes == null) {
-            throw new Error(`Changes not available for revision: ${id}`);
-          }
-          this._revisionIdToFileChanges.set(id, changes);
-        }
-        return changes;
-      }),
-    );
-
-    return revisionsFileHistory;
+    return Promise.all(revisions.map(revision =>
+      this._repository.fetchFilesChangedAtRevision(`${revision.id}`),
+    ));
   }
 
   /**
@@ -451,6 +434,5 @@ export default class RepositoryStack {
     this._subscriptions.dispose();
     this._dirtyFileChanges.clear();
     this._selectedFileChanges.clear();
-    this._revisionIdToFileChanges.reset();
   }
 }

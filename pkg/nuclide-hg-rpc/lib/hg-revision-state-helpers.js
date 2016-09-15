@@ -66,7 +66,7 @@ async function fetchFileContentAtRevision(
 async function fetchFilesChangedAtRevision(
   revision: string,
   workingDirectory: string,
-): Promise<?RevisionFileChanges> {
+): Promise<RevisionFileChanges> {
   const args = [
     'log',
     '--template', REVISION_FILE_CHANGES_TEMPLATE,
@@ -77,9 +77,6 @@ async function fetchFilesChangedAtRevision(
     cwd: workingDirectory,
   };
   const {stdout} = await hgAsyncExecute(args, execOptions);
-  if (!stdout) {
-    return null;
-  }
   return parseRevisionFileChangeOutput(stdout, workingDirectory);
 }
 
