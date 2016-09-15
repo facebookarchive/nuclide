@@ -62,10 +62,6 @@ describe('HackLanguage', () => {
     expect(hackLanguage.isHackAvailable()).toEqual(true);
   });
 
-  it('getBasePath', () => {
-    expect(hackLanguage.getBasePath()).toEqual(basePath);
-  });
-
   it('getCompletions', () => {
     waitsForPromise(async () => {
       const serviceResults: HackCompletionsResult = [

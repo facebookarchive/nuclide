@@ -218,10 +218,6 @@ export class HackLanguage {
     return {baseUri: this._basePath, symbolName: references[0].name, references};
   }
 
-  getBasePath(): ?string {
-    return this._basePath;
-  }
-
   isHackAvailable(): boolean {
     return this._hhAvailable;
   }
