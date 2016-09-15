@@ -73,7 +73,11 @@ export async function callHHClient(
     const output = errorStream ? stderr : stdout;
     logger.logTrace(`Hack output for ${allArgs.toString()}: ${output}`);
     try {
-      resolve(JSON.parse(output));
+      const result = JSON.parse(output);
+      invariant(result.hackRoot === undefined);
+      // result may be an array, so don't return a new object.
+      result.hackRoot = hackRoot;
+      resolve(result);
     } catch (err) {
       const errorMessage = `hh_client error, args: [${args.join(',')}]
 stdout: ${stdout}, stderr: ${stderr}`;

@@ -33,15 +33,13 @@ function createEditor(path: ?string, contents: string): atom$TextEditor {
 describe('HackDefinitionProvider', () => {
   let provider: HackDefinitionProvider = (null: any);
   let hackLanguage: HackLanguage = (null: any);
-  const basePath = '/tmp/project';
   const contents = 'lorem ipsut';
   const editor = createEditor('path1', contents);
   const nullEditor = createEditor(null, contents);
   const position = new Point(1, 2);
 
   beforeEach(() => {
-    hackLanguage = (jasmine.createSpyObj('hackLanguage', ['getIdeDefinition', 'getBasePath']): any);
-    hackLanguage.getBasePath.andReturn(basePath);
+    hackLanguage = (jasmine.createSpyObj('hackLanguage', ['getIdeDefinition']): any);
     spyOn(require('../lib/HackLanguage'), 'getHackLanguageForUri')
       .andCallFake(() => hackLanguage);
     const HackDefinitionProviderCtor
@@ -87,7 +85,8 @@ describe('HackDefinitionProvider', () => {
     waitsForPromise(async () => {
       const definition: Definition = {
         queryRange: new Range(new Point(1, 1), new Point(1, 5)),
-        path: 'def-path',
+        path: '/src/def-path',
+        projectRoot: '/src',
         line: 42,
         column: 12,
         name: 'symbol-name',
@@ -99,8 +98,8 @@ describe('HackDefinitionProvider', () => {
         queryRange: definition.queryRange,
         definitions: [{
           path: definition.path,
+          projectRoot: definition.projectRoot,
           position: new Point(41, 11),
-          projectRoot: basePath,
           id: 'symbol-name',
           name: 'symbol-name',
           language: 'php',

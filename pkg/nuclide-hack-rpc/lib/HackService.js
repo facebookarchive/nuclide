@@ -16,6 +16,7 @@ import type {
   HackCompletion,
 } from './rpc-types';
 
+import invariant from 'assert';
 import {retryLimit} from '../../commons-node/promise';
 import {
   callHHClient,
@@ -119,6 +120,7 @@ export type HackDefinition = {
   definition_pos: ?HackRange,
   name: string,
   pos: HackRange,
+  projectRoot: NuclideUri,
 };
 
 const HH_DIAGNOSTICS_DELAY_MS = 600;
@@ -210,14 +212,18 @@ export async function getDefinition(
   if (result == null) {
     return [];
   }
+  const projectRoot = result.hackRoot;
+  invariant(typeof projectRoot === 'string');
 
   function fixupDefinition(definition: HackDefinition): void {
+    invariant(typeof definition.name === 'string');
     if (definition.definition_pos != null && definition.definition_pos.filename === '') {
       definition.definition_pos.filename = file;
     }
     if (definition.pos.filename === '') {
       definition.pos.filename = file;
     }
+    definition.projectRoot = projectRoot;
   }
   if (Array.isArray(result)) {
     result.forEach(fixupDefinition);

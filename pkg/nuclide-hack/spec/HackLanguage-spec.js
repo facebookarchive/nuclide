@@ -307,6 +307,7 @@ HH\\fclass HackClass {}`, 19, 2, 5);
           char_start: 1,
           char_end: 3,
         },
+        projectRoot: basePath,
       }];
       mockService.getDefinition.andReturn(definitions);
 
@@ -316,6 +317,7 @@ HH\\fclass HackClass {}`, 19, 2, 5);
       expect(result).toEqual([{
         name: 'heyheyhey',
         path: filePath,
+        projectRoot: basePath,
         line: 42,
         column: 12,
         queryRange: {
@@ -349,6 +351,7 @@ HH\\fclass HackClass {}`, 19, 2, 5);
             char_start: 1,
             char_end: 3,
           },
+          projectRoot: basePath,
         },
         {
           definition_pos: {
@@ -364,6 +367,7 @@ HH\\fclass HackClass {}`, 19, 2, 5);
             char_start: 1,
             char_end: 3,
           },
+          projectRoot: basePath,
         },
       ];
       mockService.getDefinition.andReturn(definitions);
@@ -375,6 +379,7 @@ HH\\fclass HackClass {}`, 19, 2, 5);
         {
           name: 'heyheyhey',
           path: filePath,
+          projectRoot: basePath,
           line: 42,
           column: 12,
           queryRange: {
@@ -391,6 +396,7 @@ HH\\fclass HackClass {}`, 19, 2, 5);
         {
           name: 'heyheyhey::__construct',
           path: filePath,
+          projectRoot: basePath,
           line: 142,
           column: 121,
           queryRange: {

@@ -48,6 +48,7 @@ export type DefinitionResult = {
 export type Definition = {
   name: string,
   path: NuclideUri,
+  projectRoot: NuclideUri,
   line: number,
   column: number,
   // Range in the input where the symbol reference occurs.
@@ -170,6 +171,7 @@ export class HackLanguage {
       return {
         name: def.name,
         path: def.definition_pos.filename,
+        projectRoot: def.projectRoot,
         line: def.definition_pos.line,
         column: def.definition_pos.char_start,
         queryRange: hackRangeToAtomRange(def.pos),
