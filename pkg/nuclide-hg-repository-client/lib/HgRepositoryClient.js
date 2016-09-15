@@ -60,7 +60,6 @@ type HgRepositoryOptions = {
  */
 
 const DID_CHANGE_CONFLICT_STATE = 'did-change-conflict-state';
-const EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
 export const MAX_INDIVIDUAL_CHANGED_PATHS = 1;
 
 function filterForOnlyNotIgnored(code: StatusCodeIdValue): boolean {
@@ -93,6 +92,8 @@ function filterForAllStatues() {
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+
 export class HgRepositoryClient {
   _path: string;
   _workingDirectory: atom$Directory | RemoteDirectory;
@@ -102,7 +103,8 @@ export class HgRepositoryClient {
   _service: HgService;
   _emitter: Emitter;
   // A map from a key (in most cases, a file path), to a related Disposable.
-  _disposables: {[key: string]: IDisposable};
+  _editorSubscriptions: Map<NuclideUri, IDisposable>;
+  _subscriptions: UniversalDisposable;
   _hgStatusCache: {[filePath: NuclideUri]: StatusCodeIdValue};
   // Map of directory path to the number of modified files within that directory.
   _modifiedDirectoryCache: Map<string, number>;
@@ -128,7 +130,11 @@ export class HgRepositoryClient {
     this._revisionsCache = new RevisionsCache(hgService);
 
     this._emitter = new Emitter();
-    this._disposables = {};
+    this._editorSubscriptions = new Map();
+    this._subscriptions = new UniversalDisposable(
+      this._emitter,
+      this._service,
+    );
 
     this._hgStatusCache = {};
     this._modifiedDirectoryCache = new Map();
@@ -142,7 +148,7 @@ export class HgRepositoryClient {
       STATUS_DEBOUNCE_DELAY_MS,
     );
 
-    this._disposables[EDITOR_SUBSCRIPTION_NAME] = atom.workspace.observeTextEditors(editor => {
+    this._subscriptions.add(atom.workspace.observeTextEditors(editor => {
       const filePath = editor.getPath();
       if (!filePath) {
         // TODO: observe for when this editor's path changes.
@@ -153,12 +159,13 @@ export class HgRepositoryClient {
       }
       // If this editor has been previously active, we will have already
       // initialized diff info and registered listeners on it.
-      if (this._disposables[filePath]) {
+      if (this._editorSubscriptions.has(filePath)) {
         return;
       }
       // TODO (t8227570) Get initial diff stats for this editor, and refresh
       // this information whenever the content of the editor changes.
-      const editorSubscriptions = this._disposables[filePath] = new CompositeDisposable();
+      const editorSubscriptions = new CompositeDisposable();
+      this._editorSubscriptions.set(filePath, editorSubscriptions);
       editorSubscriptions.add(editor.onDidSave(event => {
         this._updateDiffInfo([event.path]);
       }));
@@ -172,10 +179,13 @@ export class HgRepositoryClient {
       // refetched the next time the file is edited.
       editorSubscriptions.add(editor.onDidDestroy(() => {
         this._hgDiffCacheFilesToClear.add(filePath);
-        this._disposables[filePath].dispose();
-        delete this._disposables[filePath];
+        const editorSubsciption = this._editorSubscriptions.get(filePath);
+        if (editorSubsciption != null) {
+          editorSubsciption.dispose();
+          this._editorSubscriptions.delete(filePath);
+        }
       }));
-    });
+    }));
 
     // Regardless of how frequently the service sends file change updates,
     // Only one batched status update can be running at any point of time.
@@ -198,24 +208,28 @@ export class HgRepositoryClient {
       atom.notifications.addWarning('Mercurial: failed to subscribe to watchman!');
     });
     // Get updates that tell the HgRepositoryClient when to clear its caches.
-    this._service.observeFilesDidChange().refCount().subscribe(onFilesChanges);
-    this._service.observeHgRepoStateDidChange().refCount()
-      .subscribe(this._serializedRefreshStatusesCache);
-    this._service.observeActiveBookmarkDidChange().refCount()
-      .subscribe(this.fetchActiveBookmark.bind(this));
-    this._service.observeBookmarksDidChange().refCount()
-      .subscribe(() => { this._emitter.emit('did-change-bookmarks'); });
-    this._service.observeHgConflictStateDidChange().refCount()
-      .subscribe(this._conflictStateChanged.bind(this));
+    const fileChanges = this._service.observeFilesDidChange().refCount();
+    const repoStateChanges = this._service.observeHgRepoStateDidChange().refCount();
+    const activeBookmarkChanges = this._service.observeActiveBookmarkDidChange().refCount();
+    const allBookmarChanges = this._service.observeBookmarksDidChange().refCount();
+    const conflictStateChanges = this._service.observeHgConflictStateDidChange().refCount();
+
+    this._subscriptions.add(
+      fileChanges.subscribe(onFilesChanges),
+      repoStateChanges.subscribe(this._serializedRefreshStatusesCache),
+      activeBookmarkChanges.subscribe(this.fetchActiveBookmark.bind(this)),
+      allBookmarChanges.subscribe(() => { this._emitter.emit('did-change-bookmarks'); }),
+      conflictStateChanges.subscribe(this._conflictStateChanged.bind(this)),
+    );
   }
 
   destroy() {
+    for (const editorSubsciption of this._editorSubscriptions.values()) {
+      editorSubsciption.dispose();
+    }
+    this._editorSubscriptions.clear();
     this._emitter.emit('did-destroy');
-    this._emitter.dispose();
-    Object.keys(this._disposables).forEach(key => {
-      this._disposables[key].dispose();
-    });
-    this._service.dispose();
+    this._subscriptions.dispose();
   }
 
   _conflictStateChanged(isInConflict: boolean): void {
