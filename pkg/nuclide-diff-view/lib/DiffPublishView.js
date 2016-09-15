@@ -14,6 +14,7 @@ import type {PublishModeType, PublishModeStateType} from './types';
 
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
+import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
 import classnames from 'classnames';
 import {DiffMode, PublishMode, PublishModeState} from './constants';
 import {React} from 'react-for-atom';
@@ -58,8 +59,13 @@ type Props = {
   diffModel: DiffViewModel,
 };
 
+type State = {
+  hasLintError: boolean,
+};
+
 export default class DiffPublishView extends React.Component {
   props: Props;
+  state: State;
   _textBuffer: TextBuffer;
   _subscriptions: CompositeDisposable;
 
@@ -67,6 +73,9 @@ export default class DiffPublishView extends React.Component {
     super(props);
     (this: any)._onClickBack = this._onClickBack.bind(this);
     (this: any).__onClickPublish = this.__onClickPublish.bind(this);
+    this.state = {
+      hasLintError: false,
+    };
   }
 
   componentDidMount(): void {
@@ -84,7 +93,12 @@ export default class DiffPublishView extends React.Component {
   }
 
   _onPublishUpdate(message: Object): void {
-    this._textBuffer.append(message.text);
+    const {level, text} = message;
+    // If its a error log with lint we show the lint excuse input
+    if (level === 'error' && text.includes('Usage Exception: Lint')) {
+      this.setState({hasLintError: true});
+    }
+    this._textBuffer.append(text);
     const updatesEditor = this.refs.publishUpdates;
     if (updatesEditor != null) {
       updatesEditor.getElement().scrollToBottom();
@@ -121,6 +135,7 @@ export default class DiffPublishView extends React.Component {
 
   __onClickPublish(): void {
     this._textBuffer.setText('');
+    this.setState({hasLintError: false});
     this.props.diffModel.publishDiff(this.__getPublishMessage() || '');
   }
 
@@ -185,7 +200,22 @@ export default class DiffPublishView extends React.Component {
     return statusEditor;
   }
 
-  _getToolbar(): Toolbar {
+  __getExcuseInput(): ?React.Element<any> {
+    if (this.state.hasLintError === true) {
+      return (
+        <AtomInput
+          className="nuclide-diff-view-lint-excuse"
+          placeholderText="Lint excuse"
+          ref="excuse"
+          size="lg"
+        />
+      );
+    }
+
+    return null;
+  }
+
+  _getToolbar(): React.Element<any> {
     const {publishModeState, publishMode, headCommitMessage} = this.props;
     let revisionView;
     if (headCommitMessage != null) {
@@ -230,19 +260,22 @@ export default class DiffPublishView extends React.Component {
     );
 
     return (
-      <Toolbar location="bottom">
-        <ToolbarLeft>
-          {revisionView}
-        </ToolbarLeft>
-        <ToolbarRight>
-          <Button
-            size={ButtonSizes.SMALL}
-            onClick={this._onClickBack}>
-            Back
-          </Button>
-          {publishButton}
-        </ToolbarRight>
-      </Toolbar>
+      <div className="publish-toolbar-wrapper">
+        <Toolbar location="bottom">
+          <ToolbarLeft className="nuclide-diff-view-publish-toolbar-left">
+            {revisionView}
+            {this.__getExcuseInput()}
+          </ToolbarLeft>
+          <ToolbarRight>
+            <Button
+              size={ButtonSizes.SMALL}
+              onClick={this._onClickBack}>
+              Back
+            </Button>
+            {publishButton}
+          </ToolbarRight>
+        </Toolbar>
+      </div>
     );
   }
 
