@@ -175,9 +175,9 @@ HH\\fclass HackClass {}`, 19, 2, 5);
       };
       mockService.formatSource.andReturn(serviceResult);
 
-      const result = await hackLanguage.formatSource(contents, 0, contents.length);
+      const result = await hackLanguage.formatSource(filePath, contents, 0, contents.length);
 
-      expect(mockService.formatSource).toHaveBeenCalledWith(basePath, contents, 0, contents.length);
+      expect(mockService.formatSource).toHaveBeenCalledWith(filePath, contents, 0, contents.length);
       expect(result).toEqual(serviceResult.result);
     });
   });

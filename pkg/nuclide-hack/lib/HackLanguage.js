@@ -93,16 +93,13 @@ export class HackLanguage {
   }
 
   async formatSource(
+    filePath: NuclideUri,
     contents: string,
     startPosition: number,
     endPosition: number,
   ): Promise<string> {
-    const path = this._basePath;
-    if (path == null) {
-      throw new Error('No Hack provider for this file.');
-    }
     const response =
-      await this._hackService.formatSource(path, contents, startPosition, endPosition);
+      await this._hackService.formatSource(filePath, contents, startPosition, endPosition);
     if (response == null) {
       throw new Error('Error formatting hack source.');
     } else if (response.error_message !== '') {
