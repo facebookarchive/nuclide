@@ -120,30 +120,34 @@ export function getDirtyFileChanges(
 function fetchFileChangesForRevisions(
   repository: HgRepositoryClient,
   revisions: Array<RevisionInfo>,
-): Promise<Array<RevisionFileChanges>> {
+): Observable<Array<RevisionFileChanges>> {
+  if (revisions.length === 0) {
+    return Observable.of([]);
+  }
   // Revision ids are unique and don't change, except when the revision is amended/rebased.
   // Hence, it's cached here to avoid service calls when working on a stack of commits.
-  return Promise.all(revisions.map(revision =>
+  // $FlowFixMe(matthewwithanm) Type this.
+  return Observable.forkJoin(...revisions.map(revision =>
     repository.fetchFilesChangedAtRevision(`${revision.id}`),
   ));
 }
 
-export async function getSelectedFileChanges(
+export function getSelectedFileChanges(
   repository: HgRepositoryClient,
   diffOption: DiffOptionType,
   revisions: Array<RevisionInfo>,
   compareCommitId: ?number,
-): Promise<Map<NuclideUri, FileChangeStatusValue>> {
+): Observable<Map<NuclideUri, FileChangeStatusValue>> {
   const dirtyFileChanges = getDirtyFileChanges(repository);
 
   if (diffOption === DiffOption.DIRTY ||
     (diffOption === DiffOption.COMPARE_COMMIT && compareCommitId == null)
   ) {
-    return dirtyFileChanges;
+    return Observable.of(dirtyFileChanges);
   }
   const headToForkBaseRevisions = getHeadToForkBaseRevisions(revisions);
   if (headToForkBaseRevisions.length <= 1) {
-    return dirtyFileChanges;
+    return Observable.of(dirtyFileChanges);
   }
 
   const beforeCommitId = diffOption === DiffOption.LAST_COMMIT
@@ -151,7 +155,7 @@ export async function getSelectedFileChanges(
     : compareCommitId;
 
   invariant(beforeCommitId != null, 'compareCommitId cannot be null!');
-  return await getSelectedFileChangesToCommit(
+  return getSelectedFileChangesToCommit(
     repository,
     headToForkBaseRevisions,
     beforeCommitId,
@@ -159,21 +163,20 @@ export async function getSelectedFileChanges(
   );
 }
 
-async function getSelectedFileChangesToCommit(
+function getSelectedFileChangesToCommit(
   repository: HgRepositoryClient,
   headToForkBaseRevisions: Array<RevisionInfo>,
   beforeCommitId: number,
   dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
-): Promise<Map<NuclideUri, FileChangeStatusValue>> {
+): Observable<Map<NuclideUri, FileChangeStatusValue>> {
   const latestToOldesRevisions = headToForkBaseRevisions.slice().reverse();
-  const revisionChanges = await fetchFileChangesForRevisions(
+  return fetchFileChangesForRevisions(
     repository,
     latestToOldesRevisions.filter(revision => revision.id > beforeCommitId),
-  );
-  return mergeFileStatuses(
+  ).map(revisionChanges => mergeFileStatuses(
     dirtyFileChanges,
     revisionChanges,
-  );
+  ));
 }
 
 export default class RepositoryStack {
@@ -293,7 +296,7 @@ export default class RepositoryStack {
       this._diffOption,
       revisionsState.revisions,
       revisionsState.compareCommitId,
-    );
+    ).toPromise();
     this._emitter.emit(UPDATE_SELECTED_FILE_CHANGES_EVENT);
   }
 

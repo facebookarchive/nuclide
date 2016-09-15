@@ -74,12 +74,12 @@ export function activateRepositoryEpic(
         const {repositoriesStates} = store.getState();
         const repositoryState = repositoriesStates.get(repository);
         invariant(repositoryState != null, 'Cannot activate repository before adding it!');
-        return Observable.fromPromise(getSelectedFileChanges(
+        return getSelectedFileChanges(
           repository,
           repositoryState.diffOption,
           revisions,
           repositoryState.selectedCompareId,
-        ));
+        );
       }).map(revisionFileChanges => Actions.updateSelectedFiles(repository, revisionFileChanges));
 
     const revisionStateUpdates = Observable.combineLatest(revisionChanges, revisionStatusChanges)

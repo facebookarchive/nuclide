@@ -13,7 +13,7 @@ import type {RevisionFileChanges} from './HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 
-import {hgAsyncExecute, hgRunCommand} from './hg-utils';
+import {hgRunCommand} from './hg-utils';
 import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
 
@@ -60,10 +60,10 @@ function fetchFileContentAtRevision(
  * if the operation fails for whatever reason, including invalid input (e.g. if
  * you pass an invalid revision).
  */
-async function fetchFilesChangedAtRevision(
+function fetchFilesChangedAtRevision(
   revision: string,
   workingDirectory: string,
-): Promise<RevisionFileChanges> {
+): ConnectableObservable<RevisionFileChanges> {
   const args = [
     'log',
     '--template', REVISION_FILE_CHANGES_TEMPLATE,
@@ -73,8 +73,9 @@ async function fetchFilesChangedAtRevision(
   const execOptions = {
     cwd: workingDirectory,
   };
-  const {stdout} = await hgAsyncExecute(args, execOptions);
-  return parseRevisionFileChangeOutput(stdout, workingDirectory);
+  return hgRunCommand(args, execOptions)
+    .map(stdout => parseRevisionFileChangeOutput(stdout, workingDirectory))
+    .publish();
 }
 
 /**

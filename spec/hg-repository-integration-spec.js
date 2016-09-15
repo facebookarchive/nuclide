@@ -71,7 +71,8 @@ describe('Mercurial Repository Integration Tests', () => {
       invariant(hgRepository != null);
       await fsPromise.writeFile(filePath, 'new text');
       await hgRepository.commit('commit msg').toArray().toPromise();
-      const changes = await fetchFilesChangedAtRevision('.', repoPath);
+      const changes = await fetchFilesChangedAtRevision('.', repoPath)
+        .refCount().toPromise();
       invariant(changes != null);
       expect(changes.all.length).toEqual(1);
       expect(changes.modified.length).toEqual(1);
@@ -95,7 +96,8 @@ describe('Mercurial Repository Integration Tests', () => {
       await hgRepository.commit('commit msg 2').toArray().toPromise();
       await fsPromise.writeFile(filePath, 'new text 3');
       await hgRepository.amend('commit msg 3', AmendMode.CLEAN).toArray().toPromise();
-      const changes = await fetchFilesChangedAtRevision('.', repoPath);
+      const changes = await fetchFilesChangedAtRevision('.', repoPath)
+        .refCount().toPromise();
       invariant(changes != null);
       expect(changes.all.length).toEqual(1);
       expect(changes.modified.length).toEqual(1);

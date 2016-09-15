@@ -956,13 +956,15 @@ export class HgRepositoryClient {
     }
   }
 
-  async fetchFilesChangedAtRevision(revision: string): Promise<RevisionFileChanges> {
-    let changes = this._revisionIdToFileChanges.get(revision);
-    if (changes == null) {
-      changes = await this._service.fetchFilesChangedAtRevision(revision);
-      this._revisionIdToFileChanges.set(revision, changes);
+  fetchFilesChangedAtRevision(revision: string): Observable<RevisionFileChanges> {
+    const changes = this._revisionIdToFileChanges.get(revision);
+    if (changes != null) {
+      return Observable.of(changes);
+    } else {
+      return this._service.fetchFilesChangedAtRevision(revision)
+        .refCount()
+        .do(fetchedChanges => this._revisionIdToFileChanges.set(revision, fetchedChanges));
     }
-    return changes;
   }
 
   fetchRevisionInfoBetweenHeadAndBase(): Promise<Array<RevisionInfo>> {

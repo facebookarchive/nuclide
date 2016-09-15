@@ -122,7 +122,7 @@ async function getMercurialHeadCommitChanges(filePath: string): Promise<?Revisio
   const filesChanged = await fetchFilesChangedAtRevision(
     expressionForRevisionsBeforeHead(0),
     hgRepoDetails.workingDirectoryPath,
-  );
+  ).toPromise();
   if (filesChanged == null) {
     throw new Error('Failed to fetch commit changed files while diffing');
   }

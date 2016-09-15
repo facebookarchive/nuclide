@@ -586,7 +586,7 @@ export class HgService {
     return fetchFileContentAtRevision(filePath, revision, this._workingDirectory);
   }
 
-  fetchFilesChangedAtRevision(revision: string): Promise<RevisionFileChanges> {
+  fetchFilesChangedAtRevision(revision: string): ConnectableObservable<RevisionFileChanges> {
     return fetchFilesChangedAtRevision(revision, this._workingDirectory);
   }
 
