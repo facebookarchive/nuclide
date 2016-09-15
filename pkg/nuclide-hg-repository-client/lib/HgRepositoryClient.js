@@ -27,6 +27,7 @@ import type {
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
 import {CompositeDisposable, Emitter} from 'atom';
+import RevisionsCache from './RevisionsCache';
 import HgRepositoryClientAsync from './HgRepositoryClientAsync';
 import {
   StatusCodeId,
@@ -108,6 +109,7 @@ export class HgRepositoryClient {
   _hgDiffCache: {[filePath: NuclideUri]: DiffInfo};
   _hgDiffCacheFilesUpdating: Set<NuclideUri>;
   _hgDiffCacheFilesToClear: Set<NuclideUri>;
+  _revisionsCache: RevisionsCache;
 
   _activeBookmark: ?string;
   _serializedRefreshStatusesCache: () => ?Promise<void>;
@@ -123,6 +125,7 @@ export class HgRepositoryClient {
     this._originURL = options.originURL;
     this._service = hgService;
     this._isInConflict = false;
+    this._revisionsCache = new RevisionsCache(hgService);
 
     this._emitter = new Emitter();
     this._disposables = {};
@@ -234,6 +237,12 @@ export class HgRepositoryClient {
     callback: (event: {path: string, pathStatus: StatusCodeNumberValue}) => mixed,
   ): IDisposable {
     return this._emitter.on('did-change-status', callback);
+  }
+
+  onDidChangeRevisions(
+    callback: (revisions: Array<RevisionInfo>) => mixed,
+  ): IDisposable {
+    return this._revisionsCache.onDidChangeRevisions(callback);
   }
 
   onDidChangeStatuses(callback: () => mixed): IDisposable {
@@ -880,6 +889,10 @@ export class HgRepositoryClient {
 
   fetchSmartlogRevisions(): Promise<Array<RevisionInfo>> {
     return this._service.fetchSmartlogRevisions();
+  }
+
+  refreshRevisions(): void {
+    this._revisionsCache.refreshRevisions();
   }
 
   // See HgService.getBaseRevision.
