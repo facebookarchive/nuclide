@@ -26,7 +26,6 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus, DiffOption} from './constants';
-import {arrayEqual} from '../../commons-node/collection';
 import debounce from '../../commons-node/debounce';
 import {serializeAsyncCall} from '../../commons-node/promise';
 import {trackTiming} from '../../nuclide-analytics';
@@ -62,30 +61,6 @@ function getDiffStatusFetcher(): DiffStatusFetcher {
     diffStatusFetcher = async () => new Map();
   }
   return diffStatusFetcher;
-}
-
-// The revisions haven't changed if the revisions' ids are the same.
-// That's because commit ids are unique and incremental.
-// Also, any write operation will update them.
-// That way, we guarantee we only update the revisions state if the revisions are changed.
-function isEqualRevisionsStates(
-  revisionsState1: ?RevisionsState,
-  revisionsState2: ?RevisionsState,
-): boolean {
-  if (revisionsState1 === revisionsState2) {
-    return true;
-  }
-  if (revisionsState1 == null || revisionsState2 == null) {
-    return false;
-  }
-  return arrayEqual(
-    revisionsState1.revisions,
-    revisionsState2.revisions,
-    (revision1, revision2) => {
-      return revision1.id === revision2.id &&
-        arrayEqual(revision1.bookmarks, revision2.bookmarks);
-    },
-  );
 }
 
 function getHeadRevision(revisions: Array<RevisionInfo>): ?RevisionInfo {
@@ -213,15 +188,10 @@ export default class RepositoryStack {
     if (!this._isActive) {
       return;
     }
-    const lastRevisionsState = this._lastRevisionsState;
-    const revisionsState = this.getCachedRevisionsState();
-    this._lastRevisionsState = revisionsState;
-    if (!isEqualRevisionsStates(revisionsState, lastRevisionsState)) {
-      this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
-      this._serializedUpdateDiffStatusForCommits().catch(error => {
-        getLogger().warn('Failed to update diff status for commits', error);
-      });
-    }
+    this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
+    this._serializedUpdateDiffStatusForCommits().catch(error => {
+      getLogger().warn('Failed to update diff status for commits', error);
+    });
   }
 
   async _updateDiffStatusForCommits(): Promise<void> {

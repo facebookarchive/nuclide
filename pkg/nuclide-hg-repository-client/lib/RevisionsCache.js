@@ -13,13 +13,39 @@ import type {
   HgService,
   RevisionInfo,
 } from '../../nuclide-hg-rpc/lib/HgService';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
+import {arrayEqual} from '../../commons-node/collection';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 
 const FETCH_REVISIONS_DEBOUNCE_MS = 100;
 // The request timeout is 60 seconds anyways.
 const FETCH_REVISIONS_TIMEOUT_MS = 50 * 1000;
+
+// The revisions haven't changed if the revisions' ids are the same.
+// That's because commit ids are unique and incremental.
+// Also, any write operation will update them.
+// That way, we guarantee we only update the revisions state if the revisions are changed.
+function isEqualRevisions(
+  revisions1: Array<RevisionInfo>,
+  revisions2: Array<RevisionInfo>,
+): boolean {
+  if (revisions1 === revisions2) {
+    return true;
+  }
+  if (revisions1 == null || revisions2 == null) {
+    return false;
+  }
+  return arrayEqual(
+    revisions1,
+    revisions2,
+    (revision1, revision2) => {
+      return revision1.id === revision2.id &&
+        arrayEqual(revision1.tags, revision2.tags) &&
+        arrayEqual(revision1.bookmarks, revision2.bookmarks);
+    },
+  );
+}
 
 export default class RevisionsCache {
 
@@ -37,6 +63,7 @@ export default class RevisionsCache {
       .startWith(null) // Initially, no refresh requests applied.
       .debounceTime(FETCH_REVISIONS_DEBOUNCE_MS)
       .switchMap(() => this._fetchSmartlogRevisions())
+      .distinctUntilChanged(isEqualRevisions)
       .do(revisions => this._revisions.next(revisions))
       .share();
   }
