@@ -25,7 +25,6 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus, DiffOption} from './constants';
-import debounce from '../../commons-node/debounce';
 import {serializeAsyncCall} from '../../commons-node/promise';
 import {trackTiming} from '../../nuclide-analytics';
 import {notifyInternalError} from './notifications';
@@ -35,6 +34,7 @@ import invariant from 'assert';
 import LRU from 'lru-cache';
 import {Observable} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 
 const UPDATE_SELECTED_FILE_CHANGES_EVENT = 'update-selected-file-changes';
 const UPDATE_DIRTY_FILES_EVENT = 'update-dirty-files';
@@ -51,13 +51,11 @@ export default class RepositoryStack {
 
   _emitter: Emitter;
   _subscriptions: UniversalDisposable;
+  _activeSubscriptions: ?UniversalDisposable;
   _dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _repository: HgRepositoryClient;
-  _lastRevisionsState: ?RevisionsState;
   _selectedCompareCommitId: ?number;
-  _isActive: boolean;
-  _serializedUpdateStackState: () => Promise<void>;
   _serializedUpdateSelectedFileChanges: () => Promise<void>;
   _revisionIdToFileChanges: LRUCache<number, RevisionFileChanges>;
   _fileContentsAtCommitIds: LRUCache<number, Map<NuclideUri, string>>;
@@ -66,42 +64,23 @@ export default class RepositoryStack {
   constructor(repository: HgRepositoryClient, diffOption: DiffOptionType) {
     this._repository = repository;
     this._emitter = new Emitter();
-    this._subscriptions = new UniversalDisposable();
     this._dirtyFileChanges = new Map();
     this._selectedFileChanges = new Map();
-    this._isActive = false;
     this._revisionIdToFileChanges = new LRU({max: 100});
     this._fileContentsAtCommitIds = new LRU({max: 20});
     this._selectedCompareCommitId = null;
-    this._lastRevisionsState = null;
     this._diffOption = diffOption;
 
-    this._serializedUpdateStackState = serializeAsyncCall(
-      () => this._tryUpdateStackState(),
-    );
     this._serializedUpdateSelectedFileChanges = serializeAsyncCall(
       () => this._updateSelectedFileChanges(),
     );
-    const debouncedSerializedUpdateStackState = debounce(
-      this._serializedUpdateStackState,
-      UPDATE_STATUS_DEBOUNCE_MS,
-      false,
-    );
-    this._serializedUpdateStackState();
     // Get the initial project status, if it's not already there,
     // triggered by another integration, like the file tree.
     repository.getStatuses([repository.getProjectDirectory()]);
-    this._subscriptions.add(
-      repository.onDidChangeStatuses(() => {
-        // Do the lightweight dirty cache update to reflect the changes,
-        // While only commit merge changes consumers wait for its results.
-        this._updateDirtyFileChanges();
-        debouncedSerializedUpdateStackState();
-      }),
-      repository.observeRevisionChanges().subscribe(debouncedSerializedUpdateStackState),
-      repository.observeRevisionStatusesChanges().subscribe(() => {
-        this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
-      }),
+    this._subscriptions = new UniversalDisposable(
+      // Do the lightweight dirty cache update to reflect the changes,
+      // While only commit merge changes consumers wait for its results.
+      repository.onDidChangeStatuses(this._updateDirtyFileChanges.bind(this)),
     );
   }
 
@@ -114,32 +93,46 @@ export default class RepositoryStack {
   }
 
   activate(): void {
-    if (this._isActive) {
+    if (this._activeSubscriptions != null) {
       return;
     }
-    this._isActive = true;
-    this._serializedUpdateStackState();
+    const revisionChanges = this._repository.observeRevisionChanges();
+    const revisionStatusChanges = this._repository.observeRevisionStatusesChanges();
+    const statusChanges = observableFromSubscribeFunction(
+        this._repository.onDidChangeStatuses.bind(this._repository),
+      )
+      .debounceTime(UPDATE_STATUS_DEBOUNCE_MS)
+      .startWith(null);
+
+    const updateSelectedFiles = Observable.merge(revisionChanges, statusChanges)
+      .switchMap(() =>
+        // Ideally, Observables should have no side effects,
+        // but here, that helps manage async code flows till migration complete to Observables.
+        Observable.fromPromise(this._serializedUpdateSelectedFileChanges()),
+      ).catch(error => {
+        notifyInternalError(error);
+        return Observable.empty();
+      })
+      .subscribe();
+
+    const updateRevisionsStateSubscription =
+      Observable.merge(revisionChanges, revisionStatusChanges)
+        .subscribe(() => {
+          this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
+        });
+
+    this._activeSubscriptions = new UniversalDisposable(
+      updateSelectedFiles,
+      updateRevisionsStateSubscription,
+    );
   }
 
   deactivate(): void {
-    this._isActive = false;
+    if (this._activeSubscriptions != null) {
+      this._activeSubscriptions.dispose();
+      this._activeSubscriptions = null;
+    }
     this._fileContentsAtCommitIds.reset();
-  }
-
-  @trackTiming('diff-view.update-change-status')
-  async _tryUpdateStackState(): Promise<void> {
-    if (!this._isActive) {
-      return;
-    }
-    try {
-      await this._updateRevisionsState();
-      if (!this._isActive) {
-        return;
-      }
-      await this._serializedUpdateSelectedFileChanges();
-    } catch (error) {
-      notifyInternalError(error);
-    }
   }
 
   _updateDirtyFileChanges(): void {
@@ -157,14 +150,6 @@ export default class RepositoryStack {
       }
     }
     return dirtyFileChanges;
-  }
-
-  _updateRevisionsState(): void {
-    // We should only update the revision state when the repository is active.
-    if (!this._isActive) {
-      return;
-    }
-    this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
   }
 
   _waitForValidRevisionsState(): Promise<void> {
