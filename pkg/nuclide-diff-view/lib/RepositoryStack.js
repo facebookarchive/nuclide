@@ -378,6 +378,7 @@ export default class RepositoryStack {
 
     const committedContents = await this._repository
       .fetchFileContentAtRevision(filePath, `${compareCommitId}`)
+      .toPromise()
       // If the file didn't exist on the previous revision,
       // Return the no such file at revision message.
       .catch(error => error.message || '');

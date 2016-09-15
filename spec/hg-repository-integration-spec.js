@@ -76,7 +76,8 @@ describe('Mercurial Repository Integration Tests', () => {
       expect(changes.all.length).toEqual(1);
       expect(changes.modified.length).toEqual(1);
       expect(changes.modified[0]).toEqual(filePath);
-      const content = await fetchFileContentAtRevision(filePath, '.', repoPath);
+      const content = await fetchFileContentAtRevision(filePath, '.', repoPath)
+        .refCount().toPromise();
       expect(content).toEqual('new text');
     });
   });
@@ -99,9 +100,11 @@ describe('Mercurial Repository Integration Tests', () => {
       expect(changes.all.length).toEqual(1);
       expect(changes.modified.length).toEqual(1);
       expect(changes.modified[0]).toEqual(filePath);
-      const content3 = await fetchFileContentAtRevision(filePath, '.', repoPath);
+      const content3 = await fetchFileContentAtRevision(filePath, '.', repoPath)
+        .refCount().toPromise();
       expect(content3).toEqual('new text 3');
-      const content1 = await fetchFileContentAtRevision(filePath, '.^', repoPath);
+      const content1 = await fetchFileContentAtRevision(filePath, '.^', repoPath)
+        .refCount().toPromise();
       expect(content1).toEqual('new text 1');
     });
   });

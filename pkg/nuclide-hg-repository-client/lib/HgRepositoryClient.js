@@ -940,19 +940,20 @@ export class HgRepositoryClient {
    * Section: Repository State at Specific Revisions
    *
    */
-  async fetchFileContentAtRevision(filePath: NuclideUri, revision: string): Promise<string> {
+  fetchFileContentAtRevision(filePath: NuclideUri, revision: string): Observable<string> {
     let fileContentsAtRevision = this._fileContentsAtRevisionIds.get(revision);
     if (fileContentsAtRevision == null) {
       fileContentsAtRevision = new Map();
       this._fileContentsAtRevisionIds.set(revision, fileContentsAtRevision);
     }
-    let committedContents = fileContentsAtRevision.get(filePath);
-    if (committedContents == null) {
-      committedContents = await this._service
-        .fetchFileContentAtRevision(filePath, revision);
-      fileContentsAtRevision.set(filePath, committedContents);
+    const committedContents = fileContentsAtRevision.get(filePath);
+    if (committedContents != null) {
+      return Observable.of(committedContents);
+    } else {
+      return this._service.fetchFileContentAtRevision(filePath, revision)
+        .refCount()
+        .do(contents => fileContentsAtRevision.set(filePath, contents));
     }
-    return committedContents;
   }
 
   async fetchFilesChangedAtRevision(revision: string): Promise<RevisionFileChanges> {

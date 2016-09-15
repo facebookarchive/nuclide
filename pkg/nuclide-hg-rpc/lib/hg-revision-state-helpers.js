@@ -11,8 +11,9 @@
 
 import type {RevisionFileChanges} from './HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {ConnectableObservable} from 'rxjs';
 
-import {hgAsyncExecute} from './hg-utils';
+import {hgAsyncExecute, hgRunCommand} from './hg-utils';
 import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
 
@@ -40,17 +41,16 @@ const COPIED_FILE_PAIR_REGEX = /(.+) \((.+)/;
  * if the operation fails for whatever reason, including invalid input (e.g. if
  * you pass a filePath that does not exist at the given revision).
  */
-async function fetchFileContentAtRevision(
+function fetchFileContentAtRevision(
   filePath: NuclideUri,
   revision: string,
   workingDirectory: string,
-): Promise<string> {
+): ConnectableObservable<string> {
   const args = ['cat', '--rev', revision, filePath];
   const execOptions = {
     cwd: workingDirectory,
   };
-  const {stdout: contents} = await hgAsyncExecute(args, execOptions);
-  return contents;
+  return hgRunCommand(args, execOptions).publish();
 }
 
 /**

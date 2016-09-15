@@ -579,7 +579,10 @@ export class HgService {
    * @param revision: An expression that hg can understand, specifying the
    * revision at which we want to see the file content.
    */
-  fetchFileContentAtRevision(filePath: NuclideUri, revision: string): Promise<string> {
+  fetchFileContentAtRevision(
+    filePath: NuclideUri,
+    revision: string,
+  ): ConnectableObservable<string> {
     return fetchFileContentAtRevision(filePath, revision, this._workingDirectory);
   }
 
