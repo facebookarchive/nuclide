@@ -178,12 +178,8 @@ export class HackLanguage {
       .map(convertDefinition);
   }
 
-  async getDefinitionById(id: string): Promise<?HackIdeOutlineItem> {
-    const rootPath = this._basePath;
-    if (rootPath == null) {
-      return null;
-    }
-    return await this._hackService.getDefinitionById(rootPath, id);
+  getDefinitionById(filePath: NuclideUri, id: string): Promise<?HackIdeOutlineItem> {
+    return this._hackService.getDefinitionById(filePath, id);
   }
 
   async getType(
