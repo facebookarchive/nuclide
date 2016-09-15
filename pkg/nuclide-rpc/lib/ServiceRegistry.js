@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {PredefinedTransformer} from './TypeRegistry';
+import type {PredefinedTransformer} from './index';
 
 import {createProxyFactory} from './main';
 import {TypeRegistry} from './TypeRegistry';

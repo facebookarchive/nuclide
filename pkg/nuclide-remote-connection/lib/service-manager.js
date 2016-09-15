@@ -22,6 +22,7 @@ import {
   RpcConnection,
 } from '../../nuclide-rpc';
 import {isRunningInTest} from '../../commons-node/system-info';
+import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 
 let localRpcClient: ?RpcConnection<Transport> = null;
 let knownLocalRpc = false;
@@ -31,13 +32,13 @@ let knownLocalRpc = false;
 function createLocalRpcClient(): RpcConnection<Transport> {
   const localTransports = new LoopbackTransports();
   const serviceRegistry = new ServiceRegistry(
-    [nuclideUri.localMarshallers],
+    [localNuclideUriMarshalers],
     servicesConfig);
   const localClientConnection
     = RpcConnection.createServer(serviceRegistry, localTransports.serverTransport);
   invariant(localClientConnection != null); // silence lint...
   return RpcConnection.createLocal(
-    localTransports.clientTransport, [nuclideUri.localMarshallers], servicesConfig);
+    localTransports.clientTransport, [localNuclideUriMarshalers], servicesConfig);
 }
 
 function setUseLocalRpc(value: boolean): void {

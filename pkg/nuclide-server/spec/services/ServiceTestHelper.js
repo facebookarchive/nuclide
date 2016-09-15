@@ -14,7 +14,7 @@ import type {ConfigEntry} from '../../../nuclide-rpc';
 import NuclideServer from '../../lib/NuclideServer';
 import {NuclideSocket} from '../../lib/NuclideSocket';
 import {RpcConnection} from '../../../nuclide-rpc';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import {getRemoteNuclideUriMarshalers} from '../../../nuclide-marshalers-common';
 
 type Services = Array<ConfigEntry>;
 
@@ -29,7 +29,7 @@ export default class ServiceTestHelper {
     const port = this._server._webServer.address().port;
     this._client = RpcConnection.createRemote(
       new NuclideSocket(`http://localhost:${port}`, null),
-      [nuclideUri.getRemoteMarshallers('localhost')],
+      [getRemoteNuclideUriMarshalers('localhost')],
       customServices);
   }
 

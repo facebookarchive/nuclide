@@ -32,6 +32,7 @@ import {
 } from './builtin-types';
 import type {ObjectRegistry} from './ObjectRegistry';
 import {locationsEqual, locationToString} from './location';
+import type {NamedTransformer, PredefinedTransformer} from './index';
 
 /*
  * This type represents a Transformer function, which takes in a value, and either serializes
@@ -45,14 +46,6 @@ import {locationsEqual, locationToString} from './location';
  */
 export type Transformer =
   (value: any, type: Type, context: ObjectRegistry) => (any | Promise<any>);
-export type NamedTransformer
-  = (value: any, context: ObjectRegistry) => (any | Promise<any>);
-
-export type PredefinedTransformer = {
-  typeName: string,
-  marshaller: NamedTransformer,
-  unmarshaller: NamedTransformer,
-};
 
 // Equivalent to Promise.all, but avoids wrappers if nothing is actually a promise.
 // Input must be homogenously typed.

@@ -16,6 +16,7 @@ import NuclideServer from '../lib/NuclideServer';
 import {RpcConnection} from '../../nuclide-rpc';
 import servicesConfig from '../lib/servicesConfig';
 import {NuclideSocket} from '../lib/NuclideSocket';
+import {getRemoteNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import invariant from 'assert';
 import child_process from 'child_process';
 
@@ -60,7 +61,7 @@ describe('Nuclide Secure Server test suite', () => {
       });
       const client = RpcConnection.createRemote(
         socket,
-        [nuclideUri.getRemoteMarshallers('localhost')],
+        [getRemoteNuclideUriMarshalers('localhost')],
         servicesConfig);
       invariant(client);
 

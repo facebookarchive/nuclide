@@ -11,10 +11,11 @@
 
 import type {ConfigEntry, Transport} from '../lib/index';
 
-import nuclideUri from '../../commons-node/nuclideUri';
 import {LoopbackTransports} from '../lib/LoopbackTransports';
 import {RpcConnection} from '../lib/RpcConnection';
 import {ServiceRegistry} from '../lib/ServiceRegistry';
+import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
+import {getRemoteNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 
 export class ServiceTester {
   _serviceRegistry: ServiceRegistry;
@@ -24,14 +25,14 @@ export class ServiceTester {
   async start(customServices: Array<ConfigEntry>): Promise<void> {
     const transports = new LoopbackTransports();
     this._serviceRegistry = new ServiceRegistry(
-      [nuclideUri.localMarshallers],
+      [localNuclideUriMarshalers],
       customServices);
     this._clientConnection = RpcConnection.createServer(
       this._serviceRegistry, transports.serverTransport);
 
     this._client = RpcConnection.createRemote(
       transports.clientTransport,
-      [nuclideUri.getRemoteMarshallers('localhost')],
+      [getRemoteNuclideUriMarshalers('localhost')],
       customServices);
   }
 

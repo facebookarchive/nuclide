@@ -17,6 +17,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {safeSpawn} from '../../commons-node/process';
 import RpcProcess from '../../commons-node/RpcProcess';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
+import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 
 const PYTHON_EXECUTABLE = 'python';
 const LIB_PATH = nuclideUri.join(__dirname, '../VendorLib');
@@ -33,7 +34,7 @@ let serviceRegistry: ?ServiceRegistry = null;
 function getServiceRegistry(): ServiceRegistry {
   if (serviceRegistry == null) {
     serviceRegistry = new ServiceRegistry(
-      [nuclideUri.localMarshallers],
+      [localNuclideUriMarshalers],
       loadServicesConfig(nuclideUri.join(__dirname, '..')),
     );
   }

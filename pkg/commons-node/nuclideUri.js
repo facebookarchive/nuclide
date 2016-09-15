@@ -603,28 +603,7 @@ function _escapeSpecialCharacters(uri: NuclideUri): NuclideUri {
   return uri.replace(/%/g, '%25').replace(/\\/g, '%5C');
 }
 
-type Marshallers = {
-    typeName: string,
-    marshaller: (value: any, context: any) => any,
-    unmarshaller: (value: any, context: any) => any,
-  };
-
 const NUCLIDE_URI_TYPE_NAME = 'NuclideUri';
-
-function getRemoteMarshallers(hostname: string): Marshallers {
-  return {
-    typeName: NUCLIDE_URI_TYPE_NAME,
-    marshaller: remoteUri => getPath(remoteUri),
-    unmarshaller: path => createRemoteUri(hostname, path),
-  };
-}
-
-const localMarshallers: Marshallers =
-  {
-    typeName: NUCLIDE_URI_TYPE_NAME,
-    marshaller: uri => uri,
-    unmarshaller: remotePath => remotePath,
-  };
 
 
 export default {
@@ -664,8 +643,6 @@ export default {
   isRoot,
   parsePath,
   split,
-  getRemoteMarshallers,
-  localMarshallers,
   NUCLIDE_URI_TYPE_NAME,
 };
 

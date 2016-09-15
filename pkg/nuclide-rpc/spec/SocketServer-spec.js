@@ -19,6 +19,7 @@ import {RpcConnection} from '../lib/RpcConnection';
 import loadServicesConfig from '../lib/loadServicesConfig';
 import {generateFixture} from '../../nuclide-test-helpers';
 import {ServiceRegistry} from '../lib/ServiceRegistry';
+import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 describe('SocketServer', () => {
@@ -46,7 +47,7 @@ describe('SocketServer', () => {
       invariant(configPath);
       const services = loadServicesConfig(configPath);
       const registry = new ServiceRegistry(
-        [nuclideUri.localMarshallers],
+        [localNuclideUriMarshalers],
         services);
       const server = new SocketServer(registry);
       const address = await server.getAddress();
@@ -55,7 +56,7 @@ describe('SocketServer', () => {
       const clientSocket = net.connect(address.port);
       const clientTransport = new SocketTransport(clientSocket);
       const clientConnection = RpcConnection.createLocal(
-        clientTransport, [nuclideUri.localMarshallers], services);
+        clientTransport, [localNuclideUriMarshalers], services);
 
       const echoService: EchoService = clientConnection.getService('EchoService');
       const result = await echoService.echoString('Hello World!');

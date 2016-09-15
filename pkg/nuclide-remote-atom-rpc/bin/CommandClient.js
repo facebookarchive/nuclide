@@ -18,6 +18,7 @@ import {getServer} from '../shared/ConfigDirectory';
 import net from 'net';
 import {loadServicesConfig, RpcConnection, SocketTransport} from '../../nuclide-rpc';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 
 function convertStringFamilyToNumberFamily(family: string): number {
   switch (family) {
@@ -43,7 +44,7 @@ async function getCommands(): Promise<AtomCommands> {
   });
   const transport = new SocketTransport(socket);
   await transport.onConnected();
-  const connection = RpcConnection.createLocal(transport, [nuclideUri.localMarshallers], services);
+  const connection = RpcConnection.createLocal(transport, [localNuclideUriMarshalers], services);
 
   // Get the command interface
   const service: CommandService = connection.getService('CommandService');

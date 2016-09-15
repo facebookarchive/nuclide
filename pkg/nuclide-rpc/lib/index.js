@@ -10,6 +10,7 @@
  */
 
 import type {Observable} from 'rxjs';
+import type {ObjectRegistry} from './ObjectRegistry';
 
 export {ServiceRegistry} from './ServiceRegistry';
 export {RpcConnection} from './RpcConnection';
@@ -29,6 +30,14 @@ export type ConfigEntry = {
   implementation: string,
   // When true, doesn't mangle in the service name into the method names for functions.
   preserveFunctionNames?: boolean,
+};
+
+export type NamedTransformer = (value: any, context: ObjectRegistry) => (any | Promise<any>);
+
+export type PredefinedTransformer = {
+  typeName: string,
+  marshaller: NamedTransformer,
+  unmarshaller: NamedTransformer,
 };
 
 export type Transport = {

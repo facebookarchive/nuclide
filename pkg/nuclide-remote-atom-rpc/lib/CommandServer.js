@@ -15,6 +15,7 @@ import invariant from 'assert';
 import {loadServicesConfig, ServiceRegistry, SocketServer} from '../../nuclide-rpc';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {createNewEntry} from '../shared/ConfigDirectory';
+import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 
 // Ties the AtomCommands registered via RemoteCommandService to
 // the server side CommandService.
@@ -30,7 +31,7 @@ export class CommandServer {
     this._atomCommands = atomCommands;
     const services = loadServicesConfig(nuclideUri.join(__dirname, '..'));
     const registry = new ServiceRegistry(
-      [nuclideUri.localMarshallers],
+      [localNuclideUriMarshalers],
       services);
     this._server = new SocketServer(registry);
   }

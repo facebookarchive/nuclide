@@ -18,6 +18,7 @@ import {maybeToString} from '../../commons-node/string';
 import RpcProcess from '../../commons-node/RpcProcess';
 import {getHackCommand, findHackConfigDir} from './hack-config';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
+import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import invariant from 'assert';
 
 // From https://reviews.facebook.net/diffusion/HHVM/browse/master/hphp/hack/src/utils/exit_status.ml
@@ -30,7 +31,7 @@ let serviceRegistry: ?ServiceRegistry = null;
 function getServiceRegistry(): ServiceRegistry {
   if (serviceRegistry == null) {
     serviceRegistry = new ServiceRegistry(
-      [nuclideUri.localMarshallers],
+      [localNuclideUriMarshalers],
       loadServicesConfig(nuclideUri.join(__dirname, '..')),
     );
   }

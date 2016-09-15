@@ -25,7 +25,7 @@ import type {
 } from './ServiceRegistry';
 import type {TimingTracker} from '../../nuclide-analytics';
 import type {Observer} from 'rxjs';
-import type {PredefinedTransformer} from './TypeRegistry';
+import type {PredefinedTransformer} from './index';
 
 import invariant from 'assert';
 import {Observable, ConnectableObservable} from 'rxjs';
