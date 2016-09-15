@@ -13,6 +13,7 @@ import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContex
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 
 import invariant from 'assert';
+import registerGrammar from '../../commons-atom/register-grammar';
 import {CompositeDisposable, Disposable} from 'atom';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {revertPath, addPath} from './actions';
@@ -132,6 +133,8 @@ export function activate(state: any): void {
       {type: 'separator'},
     ],
   }));
+
+  registerGrammar('source.ini', '.hgrc');
 }
 
 export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
