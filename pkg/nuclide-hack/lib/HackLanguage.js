@@ -63,15 +63,13 @@ export class HackLanguage {
 
   _hackService: HackService;
   _hhAvailable: boolean;
-  _basePath: ?string;
 
   /**
    * `basePath` should be the directory where the .hhconfig file is located.
    */
-  constructor(hackService: HackService, hhAvailable: boolean, basePath: ?string) {
+  constructor(hackService: HackService, hhAvailable: boolean) {
     this._hackService = hackService;
     this._hhAvailable = hhAvailable;
-    this._basePath = basePath;
   }
 
   dispose() {
@@ -316,9 +314,8 @@ const LOCAL_URI_KEY = 'local-hack-key';
 function createHackLanguage(
     hackService: HackService,
     hhAvailable: boolean,
-    basePath: ?string,
 ): HackLanguage {
-  return new HackLanguage(hackService, hhAvailable, basePath);
+  return new HackLanguage(hackService, hhAvailable);
 }
 
 // Returns null if we can't get the key at this time because the RemoteConnection is initializing.
@@ -360,7 +357,6 @@ async function createHackLanguageIfNotExisting(
       hackLanguage = createHackLanguage(
         hackEnvironment.hackService,
         hackEnvironment.isAvailable,
-        hackEnvironment.hackRoot,
       );
       uriToHackLanguage.set(key, hackLanguage);
     }
