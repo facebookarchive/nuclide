@@ -11,12 +11,35 @@
 
 import type {
   Action,
+  AppState,
   RepositoryState,
 } from '../types';
 
 import * as ActionTypes from './ActionTypes';
+import invariant from 'assert';
 
-export function reduceRepositoryAction(
+export function app(
+  state: AppState,
+  action: Action,
+): AppState {
+  switch (action.type) {
+    case ActionTypes.SET_DIFF_OPTION: {
+      const {repository} = action.payload;
+      const oldRepositoryState = state.repositoriesStates.get(repository);
+      invariant(oldRepositoryState != null);
+      return {
+        ...state,
+        repositoriesStates: new Map(state.repositoriesStates)
+          .set(repository, reduceRepositoryAction(oldRepositoryState, action)),
+      };
+    }
+    default: {
+      return state;
+    }
+  }
+}
+
+function reduceRepositoryAction(
   repositoryState: RepositoryState,
   action: Action,
 ): RepositoryState {
