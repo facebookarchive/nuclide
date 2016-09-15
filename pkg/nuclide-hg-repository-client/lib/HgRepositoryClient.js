@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
 import type {
   AmendModeValue,
   HgService,
@@ -39,6 +38,7 @@ import {serializeAsyncCall} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
+import {Observable} from 'rxjs';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
 
@@ -214,12 +214,21 @@ export class HgRepositoryClient {
     const allBookmarChanges = this._service.observeBookmarksDidChange().refCount();
     const conflictStateChanges = this._service.observeHgConflictStateDidChange().refCount();
 
+    const shouldRevisionsUpdate = Observable.merge(
+      fileChanges,
+      repoStateChanges,
+      activeBookmarkChanges,
+      allBookmarChanges,
+      // TODO(most): There are still missing cases when users strip commits.
+    );
+
     this._subscriptions.add(
       fileChanges.subscribe(onFilesChanges),
       repoStateChanges.subscribe(this._serializedRefreshStatusesCache),
       activeBookmarkChanges.subscribe(this.fetchActiveBookmark.bind(this)),
       allBookmarChanges.subscribe(() => { this._emitter.emit('did-change-bookmarks'); }),
       conflictStateChanges.subscribe(this._conflictStateChanged.bind(this)),
+      shouldRevisionsUpdate.subscribe(() => this._revisionsCache.refreshRevisions()),
     );
   }
 
