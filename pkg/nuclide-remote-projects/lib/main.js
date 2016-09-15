@@ -230,13 +230,25 @@ async function createEditorForNuclide(
     // Atom does this for local files.
     // https://github.com/atom/atom/blob/v1.9.8/src/workspace.coffee#L547
     const largeFileMode = buffer.getText().length > 2 * 1024 * 1024; // 2MB
-    const editor = atom.workspace.buildTextEditor({buffer, largeFileMode});
-    if (!atom.textEditors.editors.has(editor)) {
-      // https://github.com/atom/atom/blob/v1.9.8/src/workspace.coffee#L559-L562
-      const disposable = atom.textEditors.add(editor);
-      editor.onDidDestroy(() => { disposable.dispose(); });
+
+    // In Atom 1.11.0, `buildTextEditor` will call `textEditorRegistry.maintainGrammar`
+    // and `textEditorRegistry.maintainConfig` with the new editor. Since
+    // `createEditorForNuclide` is called via `openURIInPane` -> `addOpener`,
+    // that process will also call `maintainGrammar` and `maintainConfig`. This
+    // results in `undefined` disposables created in `Workspace.subscribeToAddedItems`.
+    // So when a pane is closed, the call to a non-existent `dispose` throws.
+    if (typeof atom.textEditors.build === 'function') {
+      const editor = atom.textEditors.build({buffer, largeFileMode});
+      return editor;
+    } else {
+      const editor = atom.workspace.buildTextEditor({buffer, largeFileMode});
+      if (!atom.textEditors.editors.has(editor)) {
+        // https://github.com/atom/atom/blob/v1.9.8/src/workspace.coffee#L559-L562
+        const disposable = atom.textEditors.add(editor);
+        editor.onDidDestroy(() => { disposable.dispose(); });
+      }
+      return editor;
     }
-    return editor;
   } catch (err) {
     logger.warn('buffer load issue:', err);
     atom.notifications.addError(`Failed to open ${uri}: ${err.message}`);
