@@ -122,6 +122,13 @@ export type Store = {
   dispatch(action: Action): void,
 };
 
+export type AddRepositoryAction = {
+  type: 'ADD_REPOSITORY',
+  payload: {
+    repository: HgRepositoryClient,
+  },
+};
+
 export type SetDiffOptionAction = {
   type: 'SET_DIFF_OPTION',
   payload: {
@@ -130,4 +137,6 @@ export type SetDiffOptionAction = {
   },
 };
 
-export type Action = SetDiffOptionAction;
+export type Action = AddRepositoryAction
+  | SetDiffOptionAction
+;

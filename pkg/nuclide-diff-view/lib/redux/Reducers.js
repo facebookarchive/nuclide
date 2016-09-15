@@ -17,6 +17,9 @@ import type {
 
 import * as ActionTypes from './ActionTypes';
 import invariant from 'assert';
+import {
+  DiffOption,
+} from '../constants';
 
 export function app(
   state: AppState,
@@ -33,10 +36,30 @@ export function app(
           .set(repository, reduceRepositoryAction(oldRepositoryState, action)),
       };
     }
+    case ActionTypes.ADD_REPOSITORY: {
+      const {repository} = action.payload;
+      return {
+        ...state,
+        repositoriesStates: new Map(state.repositoriesStates)
+          .set(repository, getEmptyRepositoryState()),
+      };
+    }
     default: {
       return state;
     }
   }
+}
+
+function getEmptyRepositoryState(): RepositoryState {
+  return {
+    diffOption: DiffOption.DIRTY,
+    revisionStatuses: new Map(),
+    dirtyFileChanges: new Map(),
+    headToForkBaseRevisions: [],
+    headRevision: null,
+    revisions: [],
+    selectedFileChanges: new Map(),
+  };
 }
 
 function reduceRepositoryAction(

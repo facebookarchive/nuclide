@@ -24,7 +24,7 @@ import createPackage from '../../commons-atom/createPackage';
 import {React, ReactDOM} from 'react-for-atom';
 import url from 'url';
 import uiTreePath from '../../commons-atom/ui-tree-path';
-import {repositoryForPath} from '../../nuclide-hg-git-bridge';
+import {repositoryForPath, getHgRepositoryStream} from '../../nuclide-hg-git-bridge';
 import {DiffMode, CommitMode} from './constants';
 import DiffViewElement from './DiffViewElement';
 import DiffViewComponent from './DiffViewComponent';
@@ -212,6 +212,7 @@ class Activation {
       this._subscriptions.add(
         // TODO(most): use action creators and consume states.
         states.subscribe(state => getLogger().info('diff-view-state', state)),
+        getHgRepositoryStream().subscribe(this._actionCreators.addRepository),
       );
     }
 

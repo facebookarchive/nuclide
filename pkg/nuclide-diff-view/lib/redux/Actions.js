@@ -10,12 +10,27 @@
  */
 
 import type {
+  AddRepositoryAction,
   DiffOptionType,
   SetDiffOptionAction,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 
-import {SET_DIFF_OPTION} from './ActionTypes';
+import {
+  SET_DIFF_OPTION,
+  ADD_REPOSITORY,
+} from './ActionTypes';
+
+export function addRepository(
+  repository: HgRepositoryClient,
+): AddRepositoryAction {
+  return {
+    type: ADD_REPOSITORY,
+    payload: {
+      repository,
+    },
+  };
+}
 
 export function setDiffOption(
   repository: HgRepositoryClient,
