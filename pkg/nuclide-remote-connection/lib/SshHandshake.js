@@ -60,11 +60,12 @@ const ErrorType = Object.freeze({
   SERVER_START_FAILED: 'SERVER_START_FAILED',
   SERVER_VERSION_MISMATCH: 'SERVER_VERSION_MISMATCH',
   SFTP_TIMEOUT: 'SFTP_TIMEOUT',
+  USER_CANCELLED: 'USER_CANCELLED',
 });
 
 export type SshHandshakeErrorType = 'UNKNOWN' | 'HOST_NOT_FOUND' | 'CANT_READ_PRIVATE_KEY' |
   'SSH_CONNECT_TIMEOUT' | 'SSH_CONNECT_FAILED' | 'SSH_AUTHENTICATION' | 'DIRECTORY_NOT_FOUND' |
-  'SERVER_START_FAILED' | 'SERVER_VERSION_MISMATCH' | 'SFTP_TIMEOUT';
+  'SERVER_START_FAILED' | 'SERVER_VERSION_MISMATCH' | 'SFTP_TIMEOUT' | 'USER_CANCELLED';
 
 type SshConnectionErrorLevel = 'client-timeout' | 'client-socket' | 'protocal' |
   'client-authentication' | 'agent' | 'client-dns';
@@ -124,8 +125,10 @@ export class SshHandshake {
   _clientCertificate: Buffer;
   _clientKey: Buffer;
   _passwordRetryCount: number;
+  _cancelled: boolean;
 
   constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
+    this._cancelled = false;
     this._delegate = delegate;
     this._connection = connection ? connection : new SshConnection();
     this._connection.on('ready', this._onConnect.bind(this));
@@ -262,6 +265,7 @@ export class SshHandshake {
   }
 
   cancel() {
+    this._cancelled = true;
     this._connection.end();
   }
 
@@ -426,11 +430,18 @@ export class SshHandshake {
               });
             });
           } else {
-            this._error(
-              'Remote shell execution failed',
-              SshHandshake.ErrorType.UNKNOWN,
-              new Error(stdOut),
-            );
+            if (this._cancelled) {
+              this._error(
+                'Cancelled by user',
+                SshHandshake.ErrorType.USER_CANCELLED,
+                new Error(stdOut));
+            } else {
+              this._error(
+                'Remote shell execution failed',
+                SshHandshake.ErrorType.UNKNOWN,
+                new Error(stdOut),
+              );
+            }
             return resolve(false);
           }
         }).on('data', data => {

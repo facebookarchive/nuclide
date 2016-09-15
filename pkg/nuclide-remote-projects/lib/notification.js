@@ -41,6 +41,12 @@ export function notifySshHandshakeError(
   let message = '';
   let detail = '';
   const originalErrorDetail = `Original error message:\n ${error.message}`;
+  const createTimeoutDetail = () => 'Troubleshooting:\n' +
+    `Make sure you can run "sftp ${config.host}" on the command line.\n` +
+    'Check your .bashrc / .bash_profile for extraneous output.\n' +
+    'You may need to add the following to the top of your .bashrc:\n' +
+    '  [ -z "$PS1" ] && return';
+
   switch (errorType) {
     case SshHandshake.ErrorType.HOST_NOT_FOUND:
       message = `Can't resolve IP address for host ${config.host}.`;
@@ -62,11 +68,11 @@ export function notifySshHandshakeError(
       break;
     case SshHandshake.ErrorType.SFTP_TIMEOUT:
       message = `Timeout while connecting to ${config.host}.`;
-      detail = 'Troubleshooting:\n' +
-        `Make sure you can run "sftp ${config.host}" on the command line.\n` +
-        'Check your .bashrc / .bash_profile for extraneous output.\n' +
-        'You may need to add the following to the top of your .bashrc:\n' +
-        '  [ -z "$PS1" ] && return';
+      detail = createTimeoutDetail();
+      break;
+    case SshHandshake.ErrorType.USER_CANCELLED:
+      message = `User cancelled while connecting to ${config.host}.`;
+      detail = createTimeoutDetail();
       break;
     case SshHandshake.ErrorType.SSH_CONNECT_FAILED:
       message = `Failed to connect to ${config.host}:${config.sshPort}.`;
