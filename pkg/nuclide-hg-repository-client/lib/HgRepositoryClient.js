@@ -968,8 +968,8 @@ export class HgRepositoryClient {
     return this._service.fetchRevisionInfoBetweenHeadAndBase();
   }
 
-  fetchSmartlogRevisions(): Promise<Array<RevisionInfo>> {
-    return this._service.fetchSmartlogRevisions();
+  fetchSmartlogRevisions(): Observable<Array<RevisionInfo>> {
+    return this._service.fetchSmartlogRevisions().refCount();
   }
 
   refreshRevisions(): void {

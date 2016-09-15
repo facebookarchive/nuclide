@@ -603,7 +603,7 @@ export class HgService {
     return revisionsInfo;
   }
 
-  fetchSmartlogRevisions(): Promise<Array<RevisionInfo>> {
+  fetchSmartlogRevisions(): ConnectableObservable<Array<RevisionInfo>> {
     return fetchSmartlogRevisions(this._workingDirectory);
   }
 

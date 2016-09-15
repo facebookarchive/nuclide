@@ -15,7 +15,7 @@ import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import {asyncExecute, createArgsForScriptCommand} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
 import fsPromise from '../../commons-node/fsPromise';
-import {observeProcess, safeSpawn} from '../../commons-node/process';
+import {observeProcess, safeSpawn, runCommand} from '../../commons-node/process';
 
 
 // Mercurial (as of v3.7.2) [strips lines][1] matching the following prefix when a commit message is
@@ -54,6 +54,18 @@ export function hgObserveExecution(
   return observeProcess(
     () => safeSpawn(command, args, options),
   );
+}
+
+/**
+ * Calls hg commands, returning an Observable to allow aborting.
+ * Resolves to stdout.
+ */
+export function hgRunCommand(
+  args_: Array<string>,
+  options_: Object,
+): Observable<string> {
+  const {command, args, options} = getHgExecParams(args_, options_);
+  return runCommand(command, args, options);
 }
 
 function logAndThrowHgError(

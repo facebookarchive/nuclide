@@ -70,8 +70,8 @@ export default class RevisionsCache {
   _fetchSmartlogRevisions(): Observable<Array<RevisionInfo>> {
     // TODO(most): change the service to return cancelable Observable
     // to exit when no longer needed
-    return Observable
-      .fromPromise(this._hgService.fetchSmartlogRevisions())
+    return this._hgService.fetchSmartlogRevisions()
+      .refCount()
       .timeout(
         FETCH_REVISIONS_TIMEOUT_MS,
         new Error('Timed out fetching smartlog revisions'),

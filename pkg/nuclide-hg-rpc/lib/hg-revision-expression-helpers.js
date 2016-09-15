@@ -10,12 +10,12 @@
  */
 
 import type {RevisionInfo} from './HgService';
+import type {ConnectableObservable} from 'rxjs';
 
-import {hgAsyncExecute} from './hg-utils';
+import {hgAsyncExecute, hgRunCommand} from './hg-utils';
 import {HEAD_COMMIT_TAG, HEAD_REVISION_EXPRESSION} from './hg-constants';
 import {getLogger} from '../../nuclide-logging';
-
-const logger = getLogger();
+import {Observable} from 'rxjs';
 
 /**
  * This file contains utilities for getting an expression to specify a certain
@@ -109,18 +109,18 @@ export async function fetchCommonAncestorOfHeadAndRevision(
     const {stdout: ancestorRevisionNumber} = await hgAsyncExecute(args, options);
     return ancestorRevisionNumber;
   } catch (e) {
-    logger.warn('Failed to get hg common ancestor: ', e.stderr, e.command);
+    getLogger().warn('Failed to get hg common ancestor: ', e.stderr, e.command);
     throw new Error('Could not fetch common ancestor of head and revision: ' + revision);
   }
 }
 
-async function fetchRevisions(
+function fetchRevisions(
   revisionExpression: string,
   workingDirectory: string,
   options?: {
     shouldLimit?: boolean,
   },
-): Promise<Array<RevisionInfo>> {
+): Observable<Array<RevisionInfo>> {
   const revisionLogArgs = [
     'log', '--template', REVISION_INFO_TEMPLATE,
     '--rev', revisionExpression,
@@ -133,18 +133,17 @@ async function fetchRevisions(
   const hgOptions = {
     cwd: workingDirectory,
   };
-  try {
-    const revisionsResult = await hgAsyncExecute(revisionLogArgs, hgOptions);
-    return parseRevisionInfoOutput(revisionsResult.stdout);
-  } catch (e) {
-    logger.warn(
-      'Failed to get revision info for revisions' +
-      ` ${revisionExpression}: ${e.stderr || e}, ${e.command}`,
-    );
-    throw new Error(
-      `Could not fetch revision info for revisions: ${revisionExpression}`,
-    );
-  }
+  return hgRunCommand(revisionLogArgs, hgOptions)
+    .map(stdout => parseRevisionInfoOutput(stdout))
+    .catch(e => {
+      getLogger().warn(
+        'Failed to get revision info for revisions' +
+        ` ${revisionExpression}: ${e.stderr || e}, ${e.command}`,
+      );
+      throw new Error(
+        `Could not fetch revision info for revisions: ${revisionExpression}`,
+      );
+    });
 }
 
 /**
@@ -164,32 +163,34 @@ export function fetchRevisionInfoBetweenRevisions(
   workingDirectory: string,
 ): Promise<Array<RevisionInfo>> {
   const revisionExpression = `${revisionFrom}::${revisionTo}`;
-  return fetchRevisions(revisionExpression, workingDirectory);
+  return fetchRevisions(revisionExpression, workingDirectory).toPromise();
 }
 
 export async function fetchRevisionInfo(
     revisionExpression: string,
     workingDirectory: string,
   ): Promise<RevisionInfo> {
-  const [revisionInfo] = await fetchRevisions(revisionExpression, workingDirectory);
+  const [revisionInfo] = await fetchRevisions(revisionExpression, workingDirectory).toPromise();
   return revisionInfo;
 }
 
-export async function fetchSmartlogRevisions(
+export function fetchSmartlogRevisions(
   workingDirectory: string,
-): Promise<Array<RevisionInfo>> {
+): ConnectableObservable<Array<RevisionInfo>> {
   const revisionExpression = 'smartlog(all) + ancestor(smartlog(all))';
-  const [smartlogRevisions, [headRevision]] = await Promise.all([
+  // $FlowFixMe(matthewwithanm): Type this.
+  return Observable.forkJoin(
     fetchRevisions(revisionExpression, workingDirectory, {shouldLimit: false}),
     fetchRevisions('.', workingDirectory),
-  ]);
-  // Add the `HEAD` tag to the head revision.
-  smartlogRevisions.forEach(revision => {
-    if (headRevision.id === revision.id) {
-      revision.tags.push(HEAD_COMMIT_TAG);
-    }
-  });
-  return smartlogRevisions;
+  ).map(([smartlogRevisions, [headRevision]]) => {
+    // Add the `HEAD` tag to the head revision.
+    smartlogRevisions.forEach(revision => {
+      if (headRevision.id === revision.id) {
+        revision.tags.push(HEAD_COMMIT_TAG);
+      }
+    });
+    return smartlogRevisions;
+  }).publish();
 }
 
 /**
