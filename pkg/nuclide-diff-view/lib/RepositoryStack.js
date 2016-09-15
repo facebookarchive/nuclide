@@ -45,6 +45,79 @@ function getHeadRevision(revisions: Array<RevisionInfo>): ?RevisionInfo {
   return revisions.find(revision => revision.tags.includes(HEAD_COMMIT_TAG));
 }
 
+/**
+ * Merges the file change statuses of the dirty filesystem state with
+ * the revision changes, where dirty changes and more recent revisions
+ * take priority in deciding which status a file is in.
+ */
+function mergeFileStatuses(
+  dirtyStatus: Map<NuclideUri, FileChangeStatusValue>,
+  revisionsFileChanges: Array<RevisionFileChanges>,
+): Map<NuclideUri, FileChangeStatusValue> {
+  const mergedStatus = new Map(dirtyStatus);
+  const mergedFilePaths = new Set(mergedStatus.keys());
+
+  function mergeStatusPaths(
+    filePaths: Array<NuclideUri>,
+    changeStatusValue: FileChangeStatusValue,
+  ) {
+    for (const filePath of filePaths) {
+      if (!mergedFilePaths.has(filePath)) {
+        mergedStatus.set(filePath, changeStatusValue);
+        mergedFilePaths.add(filePath);
+      }
+    }
+
+  }
+
+  // More recent revision changes takes priority in specifying a files' statuses.
+  const latestToOldestRevisionsChanges = revisionsFileChanges.slice().reverse();
+  for (const revisionFileChanges of latestToOldestRevisionsChanges) {
+    const {added, modified, deleted} = revisionFileChanges;
+
+    mergeStatusPaths(added, FileChangeStatus.ADDED);
+    mergeStatusPaths(modified, FileChangeStatus.MODIFIED);
+    mergeStatusPaths(deleted, FileChangeStatus.REMOVED);
+  }
+
+  return mergedStatus;
+}
+
+function getHeadToForkBaseRevisions(revisions: Array<RevisionInfo>): Array<RevisionInfo> {
+  // `headToForkBaseRevisions` should have the public commit at the fork base as the first.
+  // and the rest of the current `HEAD` stack in order with the `HEAD` being last.
+  const headRevision = getHeadRevision(revisions);
+  if (headRevision == null) {
+    return [];
+  }
+  const {CommitPhase} = hgConstants;
+  const hashToRevisionInfo = new Map(revisions.map(revision => [revision.hash, revision]));
+  const headToForkBaseRevisions = [];
+  let parentRevision = headRevision;
+  while (parentRevision != null && parentRevision.phase !== CommitPhase.PUBLIC) {
+    headToForkBaseRevisions.unshift(parentRevision);
+    parentRevision = hashToRevisionInfo.get(parentRevision.parents[0]);
+  }
+  if (parentRevision != null) {
+    headToForkBaseRevisions.unshift(parentRevision);
+  }
+  return headToForkBaseRevisions;
+}
+
+function getDirtyFileChanges(
+  repository: HgRepositoryClient,
+): Map<NuclideUri, FileChangeStatusValue> {
+  const dirtyFileChanges = new Map();
+  const statuses = repository.getAllPathStatuses();
+  for (const filePath in statuses) {
+    const changeStatus = HgStatusToFileChangeStatus[statuses[filePath]];
+    if (changeStatus != null) {
+      dirtyFileChanges.set(filePath, changeStatus);
+    }
+  }
+  return dirtyFileChanges;
+}
+
 export default class RepositoryStack {
 
   _emitter: Emitter;
@@ -129,20 +202,8 @@ export default class RepositoryStack {
   }
 
   _updateDirtyFileChanges(): void {
-    this._dirtyFileChanges = this._getDirtyChangedStatus();
+    this._dirtyFileChanges = getDirtyFileChanges(this._repository);
     this._emitter.emit(UPDATE_DIRTY_FILES_EVENT);
-  }
-
-  _getDirtyChangedStatus(): Map<NuclideUri, FileChangeStatusValue> {
-    const dirtyFileChanges = new Map();
-    const statuses = this._repository.getAllPathStatuses();
-    for (const filePath in statuses) {
-      const changeStatus = HgStatusToFileChangeStatus[statuses[filePath]];
-      if (changeStatus != null) {
-        dirtyFileChanges.set(filePath, changeStatus);
-      }
-    }
-    return dirtyFileChanges;
   }
 
   _waitForValidRevisionsState(): Promise<void> {
@@ -210,7 +271,7 @@ export default class RepositoryStack {
     const revisionChanges = await this._fetchFileChangesForRevisions(
       latestToOldesRevisions.filter(revision => revision.id > beforeCommitId),
     );
-    this._selectedFileChanges = this._mergeFileStatuses(
+    this._selectedFileChanges = mergeFileStatuses(
       this._dirtyFileChanges,
       revisionChanges,
     );
@@ -232,8 +293,6 @@ export default class RepositoryStack {
     if (headRevision == null) {
       return null;
     }
-    const {CommitPhase} = hgConstants;
-    const hashToRevisionInfo = new Map(revisions.map(revision => [revision.hash, revision]));
     // Prioritize the cached compaereCommitId, if it exists.
     // The user could have selected that from the timeline view.
     let compareCommitId = this._selectedCompareCommitId;
@@ -243,23 +302,11 @@ export default class RepositoryStack {
     }
     const revisionStatuses = this._repository.getCachedRevisionStatuses();
 
-    // `headToForkBaseRevisions` should have the public commit at the fork base as the first.
-    // and the rest of the current `HEAD` stack in order with the `HEAD` being last.
-    const headToForkBaseRevisions = [];
-    let parentRevision = headRevision;
-    while (parentRevision != null && parentRevision.phase !== CommitPhase.PUBLIC) {
-      headToForkBaseRevisions.unshift(parentRevision);
-      parentRevision = hashToRevisionInfo.get(parentRevision.parents[0]);
-    }
-    if (parentRevision != null) {
-      headToForkBaseRevisions.unshift(parentRevision);
-    }
-
     return {
       headCommitId: headRevision.id,
       compareCommitId,
       revisionStatuses,
-      headToForkBaseRevisions,
+      headToForkBaseRevisions: getHeadToForkBaseRevisions(revisions),
       revisions,
     };
   }
@@ -273,44 +320,6 @@ export default class RepositoryStack {
     return Promise.all(revisions.map(revision =>
       this._repository.fetchFilesChangedAtRevision(`${revision.id}`),
     ));
-  }
-
-  /**
-   * Merges the file change statuses of the dirty filesystem state with
-   * the revision changes, where dirty changes and more recent revisions
-   * take priority in deciding which status a file is in.
-   */
-  _mergeFileStatuses(
-    dirtyStatus: Map<NuclideUri, FileChangeStatusValue>,
-    revisionsFileChanges: Array<RevisionFileChanges>,
-  ): Map<NuclideUri, FileChangeStatusValue> {
-    const mergedStatus = new Map(dirtyStatus);
-    const mergedFilePaths = new Set(mergedStatus.keys());
-
-    function mergeStatusPaths(
-      filePaths: Array<NuclideUri>,
-      changeStatusValue: FileChangeStatusValue,
-    ) {
-      for (const filePath of filePaths) {
-        if (!mergedFilePaths.has(filePath)) {
-          mergedStatus.set(filePath, changeStatusValue);
-          mergedFilePaths.add(filePath);
-        }
-      }
-
-    }
-
-    // More recent revision changes takes priority in specifying a files' statuses.
-    const latestToOldestRevisionsChanges = revisionsFileChanges.slice().reverse();
-    for (const revisionFileChanges of latestToOldestRevisionsChanges) {
-      const {added, modified, deleted} = revisionFileChanges;
-
-      mergeStatusPaths(added, FileChangeStatus.ADDED);
-      mergeStatusPaths(modified, FileChangeStatus.MODIFIED);
-      mergeStatusPaths(deleted, FileChangeStatus.REMOVED);
-    }
-
-    return mergedStatus;
   }
 
   getDirtyFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
