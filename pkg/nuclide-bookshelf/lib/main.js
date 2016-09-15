@@ -20,7 +20,6 @@ import {
   ActiveShortHeadChangeBehavior,
   ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG,
 } from './constants';
-import {arrayCompact} from '../../commons-node/collection';
 import {applyActionMiddleware} from './applyActionMiddleware';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {Commands} from './Commands';
@@ -31,7 +30,7 @@ import {
   getEmptBookShelfState,
   serializeBookShelfState,
 } from './utils';
-import {diffSets} from '../../commons-node/observable';
+import {getHgRepositoryStream} from '../../nuclide-hg-git-bridge';
 import {getLogger} from '../../nuclide-logging';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
@@ -75,22 +74,10 @@ class Activation {
     const dispatch = action => { actions.next(action); };
     const commands = new Commands(dispatch, () => states.getValue());
 
-    function getProjectRepositories() {
-      return new Set(
-        arrayCompact(atom.project.getRepositories())
-          .filter(repository => repository.getType() === 'hg'),
-      );
-    }
-
-    const currentRepositories =
-      observableFromSubscribeFunction(atom.project.onDidChangePaths.bind(atom.project))
-      .startWith(null)
-      .map(() => getProjectRepositories());
-
-    const repoDiffsSubscription = diffSets(currentRepositories)
-      .subscribe(repoDiff => {
-        Array.from(repoDiff.added).forEach(commands.addProjectRepository);
-      });
+    const addedRepoSubscription = getHgRepositoryStream().subscribe(repository => {
+      // $FlowFixMe: why isn't HgRepositoryClient considered atom$Repository?
+      commands.addProjectRepository(repository);
+    });
 
     const paneStateChangeSubscription = Observable.merge(
       observableFromSubscribeFunction(
@@ -135,7 +122,7 @@ class Activation {
 
     this._disposables = new CompositeDisposable(
       new Disposable(actions.complete.bind(actions)),
-      new UniversalDisposable(repoDiffsSubscription),
+      new UniversalDisposable(addedRepoSubscription),
       new UniversalDisposable(paneStateChangeSubscription),
       new UniversalDisposable(shortHeadChangeSubscription),
     );
