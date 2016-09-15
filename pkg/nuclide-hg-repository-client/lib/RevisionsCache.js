@@ -26,7 +26,7 @@ export default class RevisionsCache {
   _hgService: HgService;
   _revisions: BehaviorSubject<Array<RevisionInfo>>;
   _lazyRevisionFetcher: Observable<Array<RevisionInfo>>;
-  _fetchRevisionsRequests: Subject<void>;
+  _fetchRevisionsRequests: Subject<null>;
 
   constructor(hgService: HgService) {
     this._hgService = hgService;
@@ -34,7 +34,7 @@ export default class RevisionsCache {
     this._fetchRevisionsRequests = new Subject();
 
     this._lazyRevisionFetcher = this._fetchRevisionsRequests
-      .startWith() // Initially, no refresh requests applied.
+      .startWith(null) // Initially, no refresh requests applied.
       .debounceTime(FETCH_REVISIONS_DEBOUNCE_MS)
       .switchMap(() => this._fetchSmartlogRevisions())
       .do(revisions => this._revisions.next(revisions))
@@ -54,7 +54,7 @@ export default class RevisionsCache {
   }
 
   refreshRevisions(): void {
-    this._fetchRevisionsRequests.next();
+    this._fetchRevisionsRequests.next(null);
   }
 
   getCachedRevisions(): Array<RevisionInfo> {

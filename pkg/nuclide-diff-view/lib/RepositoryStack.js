@@ -35,11 +35,14 @@ import {getLogger} from '../../nuclide-logging';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import invariant from 'assert';
 import LRU from 'lru-cache';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {Observable} from 'rxjs';
 
 const UPDATE_SELECTED_FILE_CHANGES_EVENT = 'update-selected-file-changes';
 const UPDATE_DIRTY_FILES_EVENT = 'update-dirty-files';
 const CHANGE_REVISIONS_STATE_EVENT = 'did-change-state-revisions';
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
+const REVISION_STATE_TIMEOUT_MS = 50 * 1000;
 
 type DiffStatusFetcher = (
   directoryPath: NuclideUri,
@@ -85,6 +88,11 @@ function isEqualRevisionsStates(
   );
 }
 
+function getHeadRevision(revisions: Array<RevisionInfo>): ?RevisionInfo {
+  const {HEAD_COMMIT_TAG} = hgConstants;
+  return revisions.find(revision => revision.tags.includes(HEAD_COMMIT_TAG));
+}
+
 export default class RepositoryStack {
 
   _emitter: Emitter;
@@ -94,7 +102,6 @@ export default class RepositoryStack {
   _commitIdsToDiffStatuses: Map<number, DiffStatusDisplay>;
   _repository: HgRepositoryClient;
   _lastRevisionsState: ?RevisionsState;
-  _fetchRevisionsPromise: ?Promise<Array<RevisionInfo>>;
   _selectedCompareCommitId: ?number;
   _isActive: boolean;
   _serializedUpdateStackState: () => Promise<void>;
@@ -143,6 +150,7 @@ export default class RepositoryStack {
         this._updateDirtyFileChanges();
         debouncedSerializedUpdateStackState();
       }),
+      repository.onDidChangeRevisions(debouncedSerializedUpdateStackState),
     );
   }
 
@@ -164,7 +172,6 @@ export default class RepositoryStack {
 
   deactivate(): void {
     this._isActive = false;
-    this._fetchRevisionsPromise = null;
     this._fileContentsAtCommitIds.reset();
   }
 
@@ -201,13 +208,13 @@ export default class RepositoryStack {
     return dirtyFileChanges;
   }
 
-  async _updateRevisionsState(): Promise<void> {
+  _updateRevisionsState(): void {
     // We should only update the revision state when the repository is active.
     if (!this._isActive) {
       return;
     }
     const lastRevisionsState = this._lastRevisionsState;
-    const revisionsState = await this._fetchRevisionsState();
+    const revisionsState = this.getCachedRevisionsState();
     this._lastRevisionsState = revisionsState;
     if (!isEqualRevisionsStates(revisionsState, lastRevisionsState)) {
       this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
@@ -221,13 +228,30 @@ export default class RepositoryStack {
     if (!this._isActive) {
       return;
     }
-    const cachedRevisionsState = await this.getCachedRevisionsState();
+    const cachedRevisionsState = this.getCachedRevisionsState();
+    if (cachedRevisionsState == null) {
+      getLogger().warn('Cannot update diff statuses for null revisions state');
+      return;
+    }
     this._commitIdsToDiffStatuses = await getDiffStatusFetcher()(
       this._repository.getWorkingDirectory(),
       cachedRevisionsState.revisions,
     );
     // Emit the new revisions state with the diff statuses.
     this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
+  }
+
+  _waitForValidRevisionsState(): Promise<void> {
+    return Observable.of(this._repository.getCachedRevisions())
+      .concat(observableFromSubscribeFunction(
+        this._repository.onDidChangeRevisions.bind(this._repository)))
+      .filter(revisions => getHeadRevision(revisions) != null)
+      .take(1)
+      .timeout(
+        REVISION_STATE_TIMEOUT_MS,
+        new Error('Timed out waiting for a valid revisions state'),
+      ).ignoreElements()
+      .toPromise();
   }
 
   /**
@@ -237,7 +261,11 @@ export default class RepositoryStack {
    * and `hg log --rev ${revId}` for every commit.
    */
   async _updateSelectedFileChanges(): Promise<void> {
-    const revisionsState = await this.getCachedRevisionsState();
+    const revisionsState = this.getCachedRevisionsState();
+    if (revisionsState == null) {
+      getLogger().warn('Cannot update selected file changes for null revisions state');
+      return;
+    }
     switch (this._diffOption) {
       case DiffOption.DIRTY:
         this._selectedFileChanges = this._dirtyFileChanges;
@@ -286,38 +314,23 @@ export default class RepositoryStack {
   }
 
   refreshRevisionsState(): void {
-    this._fetchRevisionsState();
+    this._repository.refreshRevisions();
   }
 
-  async _fetchRevisionsState(): Promise<RevisionsState> {
-    const revisionPromise = this._fetchRevisionsPromise = this._fetchRevisions();
-    let revisions;
-    try {
-      revisions = await this._fetchRevisionsPromise;
-    } catch (error) {
-      if (revisionPromise === this._fetchRevisionsPromise) {
-        this._fetchRevisionsPromise = null;
-      }
-      throw error;
-    }
-    return this._createRevisionsState(revisions);
-  }
-
-  async getCachedRevisionsState(): Promise<RevisionsState> {
-    if (this._fetchRevisionsPromise != null) {
-      return this._createRevisionsState(await this._fetchRevisionsPromise);
-    } else {
-      return this._fetchRevisionsState();
-    }
+  getCachedRevisionsState(): ?RevisionsState {
+    return this._createRevisionsState(this._repository.getCachedRevisions());
   }
 
   /**
    * Amend the revisions state with the latest selected valid compare commit id.
    */
-  _createRevisionsState(revisions: Array<RevisionInfo>): RevisionsState {
-    const {HEAD_COMMIT_TAG, CommitPhase} = hgConstants;
+  _createRevisionsState(revisions: Array<RevisionInfo>): ?RevisionsState {
+    const headRevision = getHeadRevision(revisions);
+    if (headRevision == null) {
+      return null;
+    }
+    const {CommitPhase} = hgConstants;
     const hashToRevisionInfo = new Map(revisions.map(revision => [revision.hash, revision]));
-    const headRevision = revisions.find(revision => revision.tags.includes(HEAD_COMMIT_TAG));
     // Prioritize the cached compaereCommitId, if it exists.
     // The user could have selected that from the timeline view.
     let compareCommitId = this._selectedCompareCommitId;
@@ -340,33 +353,12 @@ export default class RepositoryStack {
     }
 
     return {
-      headCommitId: headRevision == null ? 0 : headRevision.id,
+      headCommitId: headRevision.id,
       compareCommitId,
       diffStatuses,
       headToForkBaseRevisions,
       revisions,
     };
-  }
-
-  @trackTiming('diff-view.fetch-revisions-state')
-  async _fetchRevisions(): Promise<Array<RevisionInfo>> {
-    if (!this._isActive) {
-      throw new Error('Diff View should not fetch revisions while not active');
-    }
-    // While rebasing, the common ancestor of `HEAD` and `BASE`
-    // may be not applicable, but that's defined once the rebase is done.
-    // Hence, we need to retry fetching the revision info (depending on the common ancestor)
-    // because the watchman-based Mercurial updates doesn't consider or wait while rebasing.
-    let revisions;
-    try {
-      revisions = await this._repository.fetchSmartlogRevisions();
-    } catch (error) {
-      throw new Error('Cannot fetch revision info needed!\n' +
-        'Make sure to have the \'smartlog\' mercurial extension\n' +
-        error.message,
-      );
-    }
-    return revisions;
   }
 
   @trackTiming('diff-view.fetch-revisions-change-history')
@@ -442,7 +434,14 @@ export default class RepositoryStack {
   }
 
   async fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
-    const revisionsState = await this.getCachedRevisionsState();
+    // During a initialization, rebase or histedit,
+    // the loaded revisions may not have a head revision to be able to diff against.
+    await this._waitForValidRevisionsState();
+
+    const revisionsState = this.getCachedRevisionsState();
+    if (revisionsState == null) {
+      throw new Error('Cannot fetch hg diff while revisions not yet fetched!');
+    }
     const {headToForkBaseRevisions, headCommitId} = revisionsState;
     // When `compareCommitId` is null, the `HEAD` commit contents is compared
     // to the filesystem, otherwise it compares that commit to filesystem.
@@ -494,7 +493,10 @@ export default class RepositoryStack {
   }
 
   async setCompareRevision(revision: RevisionInfo): Promise<void> {
-    const revisionsState = await this.getCachedRevisionsState();
+    const revisionsState = this.getCachedRevisionsState();
+    if (revisionsState == null) {
+      throw new Error('Cannot set compare revision on a null revisions state');
+    }
     const {headToForkBaseRevisions} = revisionsState;
 
     invariant(

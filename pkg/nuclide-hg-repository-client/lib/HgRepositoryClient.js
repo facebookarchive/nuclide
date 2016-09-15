@@ -918,6 +918,10 @@ export class HgRepositoryClient {
     this._revisionsCache.refreshRevisions();
   }
 
+  getCachedRevisions(): Array<RevisionInfo> {
+    return this._revisionsCache.getCachedRevisions();
+  }
+
   // See HgService.getBaseRevision.
   getBaseRevision(): Promise<RevisionInfo> {
     return this._service.getBaseRevision();
