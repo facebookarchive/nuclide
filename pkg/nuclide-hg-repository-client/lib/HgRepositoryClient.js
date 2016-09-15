@@ -42,6 +42,11 @@ import {Observable} from 'rxjs';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
 
+export type RevisionStatusDisplay = {
+  name: string,
+  className: ?string,
+};
+
 type HgRepositoryOptions = {
   /** The origin URL of this repository. */
   originURL: ?string,
@@ -74,6 +79,28 @@ function filterForAllStatues() {
   return true;
 }
 
+export type RevisionStatuses = Map<number, RevisionStatusDisplay>;
+
+type RevisionStatusCache = {
+  getCachedRevisionStatuses(): Map<number, RevisionStatusDisplay>,
+  onDidChangeRevisionStatuses(callback: (RevisionStatuses: RevisionStatuses) => mixed): IDisposable,
+};
+
+function getRevisionStatusCache(
+  revisionsCache: RevisionsCache,
+  workingDirectoryPath: string,
+): RevisionStatusCache {
+  try {
+    // $FlowFB
+    const FbRevisionStatusCache = require('./fb/RevisionStatusCache');
+    return new FbRevisionStatusCache(revisionsCache, workingDirectoryPath);
+  } catch (e) {
+    return {
+      getCachedRevisionStatuses() { return new Map(); },
+      onDidChangeRevisionStatuses() { return new UniversalDisposable(); },
+    };
+  }
+}
 
 /**
  *
@@ -112,6 +139,7 @@ export class HgRepositoryClient {
   _hgDiffCacheFilesUpdating: Set<NuclideUri>;
   _hgDiffCacheFilesToClear: Set<NuclideUri>;
   _revisionsCache: RevisionsCache;
+  _revisionStatusCache: RevisionStatusCache;
 
   _activeBookmark: ?string;
   _serializedRefreshStatusesCache: () => ?Promise<void>;
@@ -128,6 +156,10 @@ export class HgRepositoryClient {
     this._service = hgService;
     this._isInConflict = false;
     this._revisionsCache = new RevisionsCache(hgService);
+    this._revisionStatusCache = getRevisionStatusCache(
+      this._revisionsCache,
+      this._workingDirectory.getPath(),
+    );
 
     this._emitter = new Emitter();
     this._editorSubscriptions = new Map();
@@ -266,6 +298,12 @@ export class HgRepositoryClient {
     callback: (revisions: Array<RevisionInfo>) => mixed,
   ): IDisposable {
     return this._revisionsCache.onDidChangeRevisions(callback);
+  }
+
+  onDidChangeRevisionStatuses(
+    callback: (revisionStatuses: RevisionStatuses) => mixed,
+  ): IDisposable {
+    return this._revisionStatusCache.onDidChangeRevisionStatuses(callback);
   }
 
   onDidChangeStatuses(callback: () => mixed): IDisposable {
@@ -920,6 +958,10 @@ export class HgRepositoryClient {
 
   getCachedRevisions(): Array<RevisionInfo> {
     return this._revisionsCache.getCachedRevisions();
+  }
+
+  getCachedRevisionStatuses(): RevisionStatuses {
+    return this._revisionStatusCache.getCachedRevisionStatuses();
   }
 
   // See HgService.getBaseRevision.

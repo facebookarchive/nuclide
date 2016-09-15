@@ -13,7 +13,6 @@ import type {LRUCache} from 'lru-cache';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {
   DiffOptionType,
-  DiffStatusDisplay,
   FileChangeStatusValue,
   HgDiffState,
   RevisionsState,
@@ -43,26 +42,6 @@ const CHANGE_REVISIONS_STATE_EVENT = 'did-change-state-revisions';
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
 const REVISION_STATE_TIMEOUT_MS = 50 * 1000;
 
-type DiffStatusFetcher = (
-  directoryPath: NuclideUri,
-  revisions: Array<RevisionInfo>,
-) => Promise<Map<number, DiffStatusDisplay>>;
-
-let diffStatusFetcher;
-
-function getDiffStatusFetcher(): DiffStatusFetcher {
-  if (diffStatusFetcher != null) {
-    return diffStatusFetcher;
-  }
-  try {
-    // $FlowFB
-    diffStatusFetcher = require('./fb/services').diffStatusFetcher;
-  } catch (e) {
-    diffStatusFetcher = async () => new Map();
-  }
-  return diffStatusFetcher;
-}
-
 function getHeadRevision(revisions: Array<RevisionInfo>): ?RevisionInfo {
   const {HEAD_COMMIT_TAG} = hgConstants;
   return revisions.find(revision => revision.tags.includes(HEAD_COMMIT_TAG));
@@ -74,14 +53,12 @@ export default class RepositoryStack {
   _subscriptions: CompositeDisposable;
   _dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  _commitIdsToDiffStatuses: Map<number, DiffStatusDisplay>;
   _repository: HgRepositoryClient;
   _lastRevisionsState: ?RevisionsState;
   _selectedCompareCommitId: ?number;
   _isActive: boolean;
   _serializedUpdateStackState: () => Promise<void>;
   _serializedUpdateSelectedFileChanges: () => Promise<void>;
-  _serializedUpdateDiffStatusForCommits: () => Promise<void>;
   _revisionIdToFileChanges: LRUCache<number, RevisionFileChanges>;
   _fileContentsAtCommitIds: LRUCache<number, Map<NuclideUri, string>>;
   _diffOption: DiffOptionType;
@@ -97,7 +74,6 @@ export default class RepositoryStack {
     this._fileContentsAtCommitIds = new LRU({max: 20});
     this._selectedCompareCommitId = null;
     this._lastRevisionsState = null;
-    this._commitIdsToDiffStatuses = new Map();
     this._diffOption = diffOption;
 
     this._serializedUpdateStackState = serializeAsyncCall(
@@ -105,9 +81,6 @@ export default class RepositoryStack {
     );
     this._serializedUpdateSelectedFileChanges = serializeAsyncCall(
       () => this._updateSelectedFileChanges(),
-    );
-    this._serializedUpdateDiffStatusForCommits = serializeAsyncCall(
-      () => this._updateDiffStatusForCommits(),
     );
     const debouncedSerializedUpdateStackState = debounce(
       this._serializedUpdateStackState,
@@ -126,6 +99,9 @@ export default class RepositoryStack {
         debouncedSerializedUpdateStackState();
       }),
       repository.onDidChangeRevisions(debouncedSerializedUpdateStackState),
+      repository.onDidChangeRevisionStatuses(() => {
+        this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
+      }),
     );
   }
 
@@ -188,26 +164,6 @@ export default class RepositoryStack {
     if (!this._isActive) {
       return;
     }
-    this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
-    this._serializedUpdateDiffStatusForCommits().catch(error => {
-      getLogger().warn('Failed to update diff status for commits', error);
-    });
-  }
-
-  async _updateDiffStatusForCommits(): Promise<void> {
-    if (!this._isActive) {
-      return;
-    }
-    const cachedRevisionsState = this.getCachedRevisionsState();
-    if (cachedRevisionsState == null) {
-      getLogger().warn('Cannot update diff statuses for null revisions state');
-      return;
-    }
-    this._commitIdsToDiffStatuses = await getDiffStatusFetcher()(
-      this._repository.getWorkingDirectory(),
-      cachedRevisionsState.revisions,
-    );
-    // Emit the new revisions state with the diff statuses.
     this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
   }
 
@@ -308,7 +264,7 @@ export default class RepositoryStack {
       // Invalidate if there there is no longer a revision with that id.
       compareCommitId = null;
     }
-    const diffStatuses = this._commitIdsToDiffStatuses;
+    const diffStatuses = this._repository.getCachedRevisionStatuses();
 
     // `headToForkBaseRevisions` should have the public commit at the fork base as the first.
     // and the rest of the current `HEAD` stack in order with the `HEAD` being last.
