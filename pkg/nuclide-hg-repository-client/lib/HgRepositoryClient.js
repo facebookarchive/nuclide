@@ -143,6 +143,7 @@ export class HgRepositoryClient {
   _revisionsCache: RevisionsCache;
   _revisionStatusCache: RevisionStatusCache;
   _revisionIdToFileChanges: LRUCache<string, RevisionFileChanges>;
+  _fileContentsAtRevisionIds: LRUCache<string, Map<NuclideUri, string>>;
 
   _activeBookmark: ?string;
   _serializedRefreshStatusesCache: () => ?Promise<void>;
@@ -164,6 +165,7 @@ export class HgRepositoryClient {
       this._workingDirectory.getPath(),
     );
     this._revisionIdToFileChanges = new LRU({max: 100});
+    this._fileContentsAtRevisionIds = new LRU({max: 20});
 
     this._emitter = new Emitter();
     this._editorSubscriptions = new Map();
@@ -276,6 +278,7 @@ export class HgRepositoryClient {
     this._emitter.emit('did-destroy');
     this._subscriptions.dispose();
     this._revisionIdToFileChanges.reset();
+    this._fileContentsAtRevisionIds.reset();
   }
 
   _conflictStateChanged(isInConflict: boolean): void {
@@ -937,8 +940,19 @@ export class HgRepositoryClient {
    * Section: Repository State at Specific Revisions
    *
    */
-  fetchFileContentAtRevision(filePath: NuclideUri, revision: ?string): Promise<?string> {
-    return this._service.fetchFileContentAtRevision(filePath, revision);
+  async fetchFileContentAtRevision(filePath: NuclideUri, revision: string): Promise<string> {
+    let fileContentsAtRevision = this._fileContentsAtRevisionIds.get(revision);
+    if (fileContentsAtRevision == null) {
+      fileContentsAtRevision = new Map();
+      this._fileContentsAtRevisionIds.set(revision, fileContentsAtRevision);
+    }
+    let committedContents = fileContentsAtRevision.get(filePath);
+    if (committedContents == null) {
+      committedContents = await this._service
+        .fetchFileContentAtRevision(filePath, revision);
+      fileContentsAtRevision.set(filePath, committedContents);
+    }
+    return committedContents;
   }
 
   async fetchFilesChangedAtRevision(revision: string): Promise<RevisionFileChanges> {

@@ -42,13 +42,10 @@ const COPIED_FILE_PAIR_REGEX = /(.+) \((.+)/;
  */
 async function fetchFileContentAtRevision(
   filePath: NuclideUri,
-  revision: ?string,
+  revision: string,
   workingDirectory: string,
-): Promise<?string> {
-  const args = ['cat', filePath];
-  if (revision) {
-    args.splice(1, 0, '--rev', revision);
-  }
+): Promise<string> {
+  const args = ['cat', '--rev', revision, filePath];
   const execOptions = {
     cwd: workingDirectory,
   };

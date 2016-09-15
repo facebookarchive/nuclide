@@ -94,6 +94,8 @@ const CommitPhase = Object.freeze({
   SECRET: 'secret',
 });
 
+const HEAD_REVISION_EXPRESSION = '.';
+
 // This is to work around flow's missing support of enums.
 (CommitPhase: { [key: string]: CommitPhaseType });
 
@@ -101,6 +103,7 @@ module.exports = {
   AmendMode,
   CommitPhase,
   HEAD_COMMIT_TAG,
+  HEAD_REVISION_EXPRESSION,
   HgStatusOption,
   MergeConflictStatus,
   StatusCodeId,

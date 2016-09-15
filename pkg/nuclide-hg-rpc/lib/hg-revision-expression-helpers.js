@@ -12,7 +12,7 @@
 import type {RevisionInfo} from './HgService';
 
 import {hgAsyncExecute} from './hg-utils';
-import {HEAD_COMMIT_TAG} from './hg-constants';
+import {HEAD_COMMIT_TAG, HEAD_REVISION_EXPRESSION} from './hg-constants';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -24,10 +24,6 @@ const logger = getLogger();
  * Note: "Head" in this set of helper functions refers to the "current working
  * directory parent" in Hg terms.
  */
-
-// Section: Expression Formation
-
-const HG_CURRENT_WORKING_DIRECTORY_PARENT = '.';
 
 // Exported for testing.
 export const INFO_REV_END_MARK = '<<NUCLIDE_REV_END_MARK>>';
@@ -76,13 +72,13 @@ export function expressionForRevisionsBeforeHead(numberOfRevsBefore_: number): s
   if (numberOfRevsBefore < 0) {
     numberOfRevsBefore = 0;
   }
-  return expressionForRevisionsBefore(HG_CURRENT_WORKING_DIRECTORY_PARENT, numberOfRevsBefore);
+  return expressionForRevisionsBefore(HEAD_REVISION_EXPRESSION, numberOfRevsBefore);
 }
 
 // Section: Revision Sets
 
 export function expressionForCommonAncestor(revision: string): string {
-  const commonAncestorExpression = `ancestor(${revision}, ${HG_CURRENT_WORKING_DIRECTORY_PARENT})`;
+  const commonAncestorExpression = `ancestor(${revision}, ${HEAD_REVISION_EXPRESSION})`;
   // shell-escape does not wrap ancestorExpression in quotes without this toString conversion.
   return commonAncestorExpression.toString();
 }

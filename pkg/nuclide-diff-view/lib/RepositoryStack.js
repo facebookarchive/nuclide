@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {LRUCache} from 'lru-cache';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {
   DiffOptionType,
@@ -31,7 +30,6 @@ import {notifyInternalError} from './notifications';
 import {getLogger} from '../../nuclide-logging';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import invariant from 'assert';
-import LRU from 'lru-cache';
 import {Observable} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -57,7 +55,6 @@ export default class RepositoryStack {
   _repository: HgRepositoryClient;
   _selectedCompareCommitId: ?number;
   _serializedUpdateSelectedFileChanges: () => Promise<void>;
-  _fileContentsAtCommitIds: LRUCache<number, Map<NuclideUri, string>>;
   _diffOption: DiffOptionType;
 
   constructor(repository: HgRepositoryClient, diffOption: DiffOptionType) {
@@ -65,7 +62,6 @@ export default class RepositoryStack {
     this._emitter = new Emitter();
     this._dirtyFileChanges = new Map();
     this._selectedFileChanges = new Map();
-    this._fileContentsAtCommitIds = new LRU({max: 20});
     this._selectedCompareCommitId = null;
     this._diffOption = diffOption;
 
@@ -130,7 +126,6 @@ export default class RepositoryStack {
       this._activeSubscriptions.dispose();
       this._activeSubscriptions = null;
     }
-    this._fileContentsAtCommitIds.reset();
   }
 
   _updateDirtyFileChanges(): void {
@@ -363,21 +358,11 @@ export default class RepositoryStack {
       `Diff Viw Fetcher: revision with id ${compareCommitId} not found`,
     );
 
-    if (!this._fileContentsAtCommitIds.has(compareCommitId)) {
-      this._fileContentsAtCommitIds.set(compareCommitId, new Map());
-    }
-    const fileContentsAtCommit = this._fileContentsAtCommitIds.get(compareCommitId);
-    let committedContents;
-    if (fileContentsAtCommit.has(filePath)) {
-      committedContents = fileContentsAtCommit.get(filePath);
-      invariant(committedContents != null);
-    } else {
-      committedContents = await this._repository
-        .fetchFileContentAtRevision(filePath, compareCommitId.toString())
-        // If the file didn't exist on the previous revision, return empty contents.
-        .catch(_err => '');
-      fileContentsAtCommit.set(filePath, committedContents);
-    }
+    const committedContents = await this._repository
+      .fetchFileContentAtRevision(filePath, `${compareCommitId}`)
+      // If the file didn't exist on the previous revision,
+      // Return the no such file at revision message.
+      .catch(error => error.message || '');
 
     return {
       committedContents,
