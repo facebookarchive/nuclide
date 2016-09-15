@@ -6,6 +6,20 @@
   "description": "Provides Diff Viewer agnostic to the source control type of a project",
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": [
+        "Source Control",
+        "Diff View"
+      ]
+    },
+    "config": {
+      "useReduxStore": {
+        "title": "Use the in-development redux store",
+        "type": "boolean",
+        "default": false,
+        "description": "In Development: For use by Nuclide team only."
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

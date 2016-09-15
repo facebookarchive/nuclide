@@ -32,6 +32,21 @@ import DiffViewModel from './DiffViewModel';
 import {track} from '../../nuclide-analytics';
 import {createDiffViewNux, NUX_DIFF_VIEW_ID} from './diffViewNux';
 
+// Redux store
+import type {Store} from './types';
+import typeof * as BoundActionCreators from './redux/Actions';
+
+import {createEmptyAppState} from './redux/createEmptyAppState';
+import * as Actions from './redux/Actions';
+import * as Epics from './redux/Epics';
+import * as Reducers from './redux/Reducers';
+import {applyMiddleware, bindActionCreators, createStore} from 'redux';
+import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
+import {Observable} from 'rxjs';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {getLogger} from '../../nuclide-logging';
+import featureConfig from '../../commons-atom/featureConfig';
+
 type SerializedDiffViewState = {
   visible: false,
 } | {
@@ -155,7 +170,7 @@ function addActivePathCommands(
 
 class Activation {
 
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
   _cwdApi: ?CwdApi;
   _diffViewModel: ?DiffViewModel;
   _diffViewElement: ?DiffViewElement;
@@ -163,9 +178,44 @@ class Activation {
   _tryTriggerNuxService: ?TriggerNux;
   _uiProviders: Array<UIProvider>;
 
-  constructor(state: ?SerializedDiffViewState) {
+  _store: Store;
+  _actionCreators: BoundActionCreators;
+
+  constructor(rawState: ?SerializedDiffViewState) {
     this._uiProviders = [];
-    this._subscriptions = new CompositeDisposable(
+    this._subscriptions = new UniversalDisposable();
+
+    const initialState = createEmptyAppState();
+
+    const epics = Object.keys(Epics)
+     .map(k => Epics[k])
+     .filter(epic => typeof epic === 'function');
+    const rootEpic = (actions, store) => (
+      combineEpics(...epics)(actions, store)
+        // Log errors and continue.
+        .catch((err, stream) => {
+          getLogger().error(err);
+          return stream;
+        })
+    );
+
+    this._store = createStore(
+     Reducers.app,
+     initialState,
+     applyMiddleware(createEpicMiddleware(rootEpic)),
+    );
+    const states = Observable.from(this._store);
+    this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
+
+    const useReduxStore: boolean = (featureConfig.get('nuclide-diff-view.useReduxStore'): any);
+    if (useReduxStore) {
+      this._subscriptions.add(
+        // TODO(most): use action creators and consume states.
+        states.subscribe(state => getLogger().info('diff-view-state', state)),
+      );
+    }
+
+    this._subscriptions.add(
       // Listen for menu item workspace diff view open command.
       addActivePathCommands('nuclide-diff-view:open'),
       addActivePathCommands('nuclide-diff-view:commit', {
@@ -254,11 +304,11 @@ class Activation {
       }),
     );
 
-    if (state == null || !state.visible) {
+    if (rawState == null || !rawState.visible) {
       return;
     }
 
-    const {activeFilePath, viewMode, commitMode} = state;
+    const {activeFilePath, viewMode, commitMode} = rawState;
 
     // Wait for the source control providers to be ready:
     const restorationSubscriptions = new CompositeDisposable(
