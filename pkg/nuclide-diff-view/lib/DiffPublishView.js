@@ -136,7 +136,11 @@ export default class DiffPublishView extends React.Component {
   __onClickPublish(): void {
     this._textBuffer.setText('');
     this.setState({hasLintError: false});
-    this.props.diffModel.publishDiff(this.__getPublishMessage() || '');
+    let lintExcuse;
+    if (this.refs.excuse != null) {
+      lintExcuse = this.refs.excuse.getText();
+    }
+    this.props.diffModel.publishDiff(this.__getPublishMessage() || '', lintExcuse);
   }
 
   __getPublishMessage(): ?string {

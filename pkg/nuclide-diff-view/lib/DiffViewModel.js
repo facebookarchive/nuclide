@@ -772,7 +772,10 @@ export default class DiffViewModel {
   }
 
   @trackTiming('diff-view.publish-diff')
-  async publishDiff(publishMessage: string): Promise<void> {
+  async publishDiff(
+    publishMessage: string,
+    lintExcuse: ?string,
+  ): Promise<void> {
     this._setState({
       ...this._state,
       publishMessage,
@@ -809,6 +812,7 @@ export default class DiffViewModel {
           const createdPhabricatorRevision = await this._createPhabricatorRevision(
             publishMessage,
             amended,
+            lintExcuse,
           );
           notifyRevisionStatus(createdPhabricatorRevision, 'created');
           break;
@@ -816,6 +820,7 @@ export default class DiffViewModel {
           const updatedPhabricatorRevision = await this._updatePhabricatorRevision(
             publishMessage,
             allowUntracked,
+            lintExcuse,
           );
           notifyRevisionStatus(updatedPhabricatorRevision, 'updated');
           break;
@@ -931,6 +936,7 @@ export default class DiffViewModel {
   async _createPhabricatorRevision(
     publishMessage: string,
     amended: boolean,
+    lintExcuse: ?string,
   ): Promise<?PhabricatorRevisionInfo> {
     const filePath = this._getArcanistFilePath();
     const lastCommitMessage = await this._loadActiveRepositoryLatestCommitMessage();
@@ -950,7 +956,7 @@ export default class DiffViewModel {
 
     this._publishUpdates.next({level: 'log', text: 'Creating new revision...\n'});
     const stream = getArcanistServiceByNuclideUri(filePath)
-      .createPhabricatorRevision(filePath)
+      .createPhabricatorRevision(filePath, lintExcuse)
       .refCount();
 
     await this._processArcanistOutput(stream);
@@ -968,6 +974,7 @@ export default class DiffViewModel {
   async _updatePhabricatorRevision(
     publishMessage: string,
     allowUntracked: boolean,
+    lintExcuse: ?string,
   ): Promise<PhabricatorRevisionInfo> {
     const filePath = this._getArcanistFilePath();
     const {phabricatorRevision} = await this._getActiveHeadCommitDetails();
@@ -983,7 +990,7 @@ export default class DiffViewModel {
       text: `Updating revision \`${phabricatorRevision.name}\`...\n`,
     });
     const stream = getArcanistServiceByNuclideUri(filePath)
-      .updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked)
+      .updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked, lintExcuse)
       .refCount();
     await this._processArcanistOutput(stream);
     return phabricatorRevision;

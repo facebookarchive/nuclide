@@ -163,18 +163,29 @@ function _callArcDiff(
     }).share();
 }
 
+function getArcDiffParams(lintExcuse: ?string): Array<string> {
+  if (lintExcuse != null) {
+    return ['--nolint', '--excuse', lintExcuse];
+  }
+
+  return [];
+}
+
 export function createPhabricatorRevision(
   filePath: NuclideUri,
+  lintExcuse: ?string,
 ): ConnectableObservable<{stderr?: string, stdout?: string}> {
-  return _callArcDiff(filePath, ['--verbatim']).publish();
+  const args = ['--verbatim', ...getArcDiffParams(lintExcuse)];
+  return _callArcDiff(filePath, args).publish();
 }
 
 export function updatePhabricatorRevision(
   filePath: NuclideUri,
   message: string,
   allowUntracked: boolean,
+  lintExcuse: ?string,
 ): ConnectableObservable<{stderr?: string, stdout?: string}> {
-  const args = ['-m', message];
+  const args = ['-m', message, ...getArcDiffParams(lintExcuse)];
   if (allowUntracked) {
     args.push('--allow-untracked');
   }
