@@ -12,12 +12,13 @@
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {BuckBuildSystem as BuckBuildSystemType} from './BuckBuildSystem';
 import type {OutputService} from '../../nuclide-console/lib/types';
+import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {SerializedState} from './types';
 
 import registerGrammar from '../../commons-atom/register-grammar';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
-import HyperclickProvider from './HyperclickProvider';
+import {getSuggestion} from './HyperclickProvider';
 import {BuckBuildSystem} from './BuckBuildSystem';
 
 let disposables: ?CompositeDisposable = null;
@@ -74,6 +75,12 @@ export function serialize(): ?SerializedState {
   }
 }
 
-export function getHyperclickProvider() {
-  return HyperclickProvider;
+export function getHyperclickProvider(): HyperclickProvider {
+  return {
+    priority: 200,
+    providerName: 'nuclide-buck',
+    getSuggestion(editor, position) {
+      return getSuggestion(editor, position);
+    },
+  };
 }

@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {BuckProject} from '../../nuclide-buck-rpc';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import {findTargetLocation, parseTarget} from '../lib/HyperclickProvider';
@@ -24,32 +23,29 @@ describe('HyperclickProvider', () => {
 
   describe('parseTarget', () => {
     it('searches //Apps/TestApp/BUCK-rename', () => {
-      const buckProject: BuckProject = Object.create(BuckProject.prototype);
-      spyOn(buckProject, 'getPath').andReturn(Promise.resolve(projectPath));
-      spyOn(buckProject, 'getBuckConfig').andReturn(Promise.resolve(null));
       waitsForPromise(async () => {
         let target = await parseTarget(
             ([':target1', null, 'target1']: Array<?string>),
             null,
-            buckProject);
+            projectPath);
         expect(target).toBe(null);
 
         target = await parseTarget(
             ([':target1', null, 'target1']: Array<?string>),
             projectPath + 'test/BUCK',
-            buckProject);
+            projectPath);
         expect(target).toEqual({path: projectPath + 'test/BUCK', name: 'target1'});
 
         target = await parseTarget(
             (['//Apps/TestApp:w3ird', '//Apps/TestApp', 'w3ird']: Array<string>),
             null,
-            buckProject);
+            projectPath);
         expect(target).toEqual(null);
 
         target = await parseTarget(
             (['//Apps/TestApp:w3ird', '//Apps/TestApp', 'w3ird']: Array<string>),
             '//test/BUCK',
-            buckProject);
+            projectPath);
         expect(target).toEqual({path: projectPath + 'Apps/TestApp/BUCK', name: 'w3ird'});
       });
     });

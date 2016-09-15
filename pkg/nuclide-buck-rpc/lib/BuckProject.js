@@ -151,7 +151,6 @@ function getPool(path: string, readOnly: boolean): PromisePool {
 export class BuckProject {
 
   _rootPath: string;
-  _buckConfig: ?BuckConfig;
 
   /**
    * @param options.rootPath Absolute path to the directory that contains the
@@ -256,10 +255,7 @@ export class BuckProject {
    * @return Promise that resolves to the value, if it is set, else `null`.
    */
   async getBuckConfig(section: string, property: string): Promise<?string> {
-    let buckConfig = this._buckConfig;
-    if (!buckConfig) {
-      buckConfig = this._buckConfig = await this._loadBuckConfig();
-    }
+    const buckConfig = await this._loadBuckConfig();
     if (!buckConfig.hasOwnProperty(section)) {
       return null;
     }
