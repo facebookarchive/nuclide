@@ -22,7 +22,7 @@ import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
 import {QueuedTransport} from './QueuedTransport';
 import {WebSocketTransport} from './WebSocketTransport';
 import {attachEvent} from '../../commons-node/event';
-import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
+import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 
 const connect: connect$module = require('connect');
 const http: http$fixed = (require('http'): any);
@@ -92,7 +92,7 @@ class NuclideServer {
     }
 
     this._rpcServiceRegistry = new ServiceRegistry(
-      [localNuclideUriMarshalers],
+      getServerSideMarshalers,
       services);
   }
 

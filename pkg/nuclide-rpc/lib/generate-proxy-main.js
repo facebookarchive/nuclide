@@ -75,10 +75,17 @@ const definitionPath = nuclideUri.resolve(argv.definitionPath);
 const preserveFunctionNames = argv.preserveFunctionNames;
 const serviceName = argv.serviceName;
 
+// TODO: Make this a command line option.
+const predefinedTypeNames = [
+  nuclideUri.NUCLIDE_URI_TYPE_NAME,
+  'atom$Point',
+  'atom$Range',
+];
+
 const filename = proxyFilename(definitionPath);
 const definitionSource = fs.readFileSync(definitionPath, 'utf8');
 const defs = parseServiceDefinition(
-  definitionPath, definitionSource, [nuclideUri.NUCLIDE_URI_TYPE_NAME]);
+  definitionPath, definitionSource, predefinedTypeNames);
 if (argv.useBasename) {
   stripLocationsFileName(defs);
 }
@@ -91,7 +98,7 @@ if (argv.validate) {
       serviceName,
       preserveFunctionNames,
       definitionPath,
-      [nuclideUri.NUCLIDE_URI_TYPE_NAME],
+      predefinedTypeNames,
     );
     factory(fakeClient);
   } catch (e) {

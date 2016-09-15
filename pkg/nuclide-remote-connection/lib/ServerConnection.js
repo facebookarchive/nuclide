@@ -21,7 +21,7 @@ import {setConnectionConfig, clearConnectionConfig} from './RemoteConnectionConf
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';
 import {RemoteDirectory} from './RemoteDirectory';
-import {getRemoteNuclideUriMarshalers} from '../../nuclide-marshalers-common';
+import {getAtomSideMarshalers} from '../../nuclide-marshalers-common';
 
 import {Emitter} from 'atom';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -278,7 +278,7 @@ class ServerConnection {
     const socket = new NuclideSocket(uri, options);
     const client = RpcConnection.createRemote(
       socket,
-      [getRemoteNuclideUriMarshalers(this.getRemoteHostname())],
+      getAtomSideMarshalers(this.getRemoteHostname()),
       servicesConfig,
     );
 
