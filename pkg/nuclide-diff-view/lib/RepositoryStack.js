@@ -25,7 +25,6 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus, DiffOption} from './constants';
 import {serializeAsyncCall} from '../../commons-node/promise';
-import {trackTiming} from '../../nuclide-analytics';
 import {notifyInternalError} from './notifications';
 import {getLogger} from '../../nuclide-logging';
 import {hgConstants} from '../../nuclide-hg-rpc';
@@ -116,6 +115,65 @@ function getDirtyFileChanges(
     }
   }
   return dirtyFileChanges;
+}
+
+function fetchFileChangesForRevisions(
+  repository: HgRepositoryClient,
+  revisions: Array<RevisionInfo>,
+): Promise<Array<RevisionFileChanges>> {
+  // Revision ids are unique and don't change, except when the revision is amended/rebased.
+  // Hence, it's cached here to avoid service calls when working on a stack of commits.
+  return Promise.all(revisions.map(revision =>
+    repository.fetchFilesChangedAtRevision(`${revision.id}`),
+  ));
+}
+
+async function getSelectedFileChanges(
+  repository: HgRepositoryClient,
+  diffOption: DiffOptionType,
+  revisions: Array<RevisionInfo>,
+  compareCommitId: ?number,
+): Promise<Map<NuclideUri, FileChangeStatusValue>> {
+  const dirtyFileChanges = getDirtyFileChanges(repository);
+
+  if (diffOption === DiffOption.DIRTY ||
+    (diffOption === DiffOption.COMPARE_COMMIT && compareCommitId == null)
+  ) {
+    return dirtyFileChanges;
+  }
+  const headToForkBaseRevisions = getHeadToForkBaseRevisions(revisions);
+  if (headToForkBaseRevisions.length <= 1) {
+    return dirtyFileChanges;
+  }
+
+  const beforeCommitId = diffOption === DiffOption.LAST_COMMIT
+    ? headToForkBaseRevisions[headToForkBaseRevisions.length - 2].id
+    : compareCommitId;
+
+  invariant(beforeCommitId != null, 'compareCommitId cannot be null!');
+  return await getSelectedFileChangesToCommit(
+    repository,
+    headToForkBaseRevisions,
+    beforeCommitId,
+    dirtyFileChanges,
+  );
+}
+
+async function getSelectedFileChangesToCommit(
+  repository: HgRepositoryClient,
+  headToForkBaseRevisions: Array<RevisionInfo>,
+  beforeCommitId: number,
+  dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
+): Promise<Map<NuclideUri, FileChangeStatusValue>> {
+  const latestToOldesRevisions = headToForkBaseRevisions.slice().reverse();
+  const revisionChanges = await fetchFileChangesForRevisions(
+    repository,
+    latestToOldesRevisions.filter(revision => revision.id > beforeCommitId),
+  );
+  return mergeFileStatuses(
+    dirtyFileChanges,
+    revisionChanges,
+  );
 }
 
 export default class RepositoryStack {
@@ -230,51 +288,13 @@ export default class RepositoryStack {
       getLogger().warn('Cannot update selected file changes for null revisions state');
       return;
     }
-    switch (this._diffOption) {
-      case DiffOption.DIRTY:
-        this._selectedFileChanges = this._dirtyFileChanges;
-        break;
-      case DiffOption.COMPARE_COMMIT:
-        if (
-          revisionsState.compareCommitId == null ||
-          revisionsState.compareCommitId === revisionsState.headCommitId
-        ) {
-          this._selectedFileChanges = this._dirtyFileChanges;
-        } else {
-          // No need to fetch every commit file changes unless requested.
-          await this._updateSelectedChangesToCommit(
-            revisionsState,
-            revisionsState.compareCommitId,
-          );
-        }
-        break;
-      case DiffOption.LAST_COMMIT:
-        const {headToForkBaseRevisions} = revisionsState;
-        if (headToForkBaseRevisions.length <= 1) {
-          this._selectedFileChanges = this._dirtyFileChanges;
-        } else {
-          await this._updateSelectedChangesToCommit(
-            revisionsState,
-            headToForkBaseRevisions[headToForkBaseRevisions.length - 2].id,
-          );
-        }
-        break;
-    }
+    this._selectedFileChanges = await getSelectedFileChanges(
+      this._repository,
+      this._diffOption,
+      revisionsState.revisions,
+      revisionsState.compareCommitId,
+    );
     this._emitter.emit(UPDATE_SELECTED_FILE_CHANGES_EVENT);
-  }
-
-  async _updateSelectedChangesToCommit(
-    revisionsState: RevisionsState,
-    beforeCommitId: number,
-  ): Promise<void> {
-    const latestToOldesRevisions = revisionsState.headToForkBaseRevisions.slice().reverse();
-    const revisionChanges = await this._fetchFileChangesForRevisions(
-      latestToOldesRevisions.filter(revision => revision.id > beforeCommitId),
-    );
-    this._selectedFileChanges = mergeFileStatuses(
-      this._dirtyFileChanges,
-      revisionChanges,
-    );
   }
 
   refreshRevisionsState(): void {
@@ -309,17 +329,6 @@ export default class RepositoryStack {
       headToForkBaseRevisions: getHeadToForkBaseRevisions(revisions),
       revisions,
     };
-  }
-
-  @trackTiming('diff-view.fetch-revisions-change-history')
-  _fetchFileChangesForRevisions(
-    revisions: Array<RevisionInfo>,
-  ): Promise<Array<RevisionFileChanges>> {
-    // Revision ids are unique and don't change, except when the revision is amended/rebased.
-    // Hence, it's cached here to avoid service calls when working on a stack of commits.
-    return Promise.all(revisions.map(revision =>
-      this._repository.fetchFilesChangedAtRevision(`${revision.id}`),
-    ));
   }
 
   getDirtyFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
