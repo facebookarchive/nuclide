@@ -10,7 +10,9 @@
  */
 
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
-import type {DiffStatusDisplay} from './types';
+import type {
+  RevisionStatusDisplay,
+} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
 
 import classnames from 'classnames';
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
@@ -19,7 +21,7 @@ import {React} from 'react-for-atom';
 import {track} from '../../nuclide-analytics';
 
 type RevisionTimelineNodeProps = {
-  diffStatus: ?DiffStatusDisplay,
+  revisionStatus: ?RevisionStatusDisplay,
   index: number,
   onSelectionChange: (revisionInfo: RevisionInfo) => any,
   revision: RevisionInfo,
@@ -50,7 +52,7 @@ export default class RevisionTimelineNode extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {diffStatus, index, revision, revisionsCount, selectedIndex} = this.props;
+    const {revisionStatus, index, revision, revisionsCount, selectedIndex} = this.props;
     const {author, bookmarks, date, description, hash, title} = revision;
     const revisionClassName = classnames('revision revision--actionable', {
       'selected-revision-inrange': index < selectedIndex,
@@ -82,11 +84,11 @@ export default class RevisionTimelineNode extends React.Component {
       );
     }
 
-    let diffStatusElement;
-    if (diffStatus != null) {
-      diffStatusElement = (
-        <span className={classnames('inline-block', diffStatus.className)}>
-          {diffStatus.name}
+    let revisionStatusElement;
+    if (revisionStatus != null) {
+      revisionStatusElement = (
+        <span className={classnames('inline-block', revisionStatus.className)}>
+          {revisionStatus.name}
         </span>
       );
     }
@@ -132,7 +134,7 @@ export default class RevisionTimelineNode extends React.Component {
           <span className="inline-block">{hash.substr(0, 7)}</span>
           {commitAuthorElement}
           {phabricatorRevisionElement}
-          {diffStatusElement}
+          {revisionStatusElement}
           {associatedExtraElement}
           {bookmarksElement}
           <br />

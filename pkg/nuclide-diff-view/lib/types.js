@@ -11,6 +11,9 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
+import type {
+  RevisionStatusDisplay,
+} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
 
 import {React} from 'react-for-atom';
 
@@ -38,16 +41,11 @@ export type FileChange = {
   statusCode?: FileChangeStatusValue,
 };
 
-export type DiffStatusDisplay = {
-  name: string,
-  className: ?string,
-};
-
 export type RevisionsState = {
   headToForkBaseRevisions: Array<RevisionInfo>,
   compareCommitId: ?number,
   headCommitId: number,
-  diffStatuses: Map<number, DiffStatusDisplay>,
+  revisionStatuses: Map<number, RevisionStatusDisplay>,
   revisions: Array<RevisionInfo>,
 };
 

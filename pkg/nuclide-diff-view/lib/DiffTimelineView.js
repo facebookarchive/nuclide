@@ -10,8 +10,10 @@
  */
 
 import type DiffViewModel from './DiffViewModel';
-import type {DiffStatusDisplay} from './types';
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
+import type {
+  RevisionStatusDisplay,
+} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
 
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
@@ -59,7 +61,7 @@ export default class DiffTimelineView extends React.Component {
     } else {
       const {
         compareCommitId,
-        diffStatuses,
+        revisionStatuses,
         headCommitId,
         headToForkBaseRevisions,
       } = revisionsState;
@@ -71,7 +73,7 @@ export default class DiffTimelineView extends React.Component {
           onSelectionChange={onSelectionChange}
           onClickPublish={this._handleClickPublish}
           revisions={headToForkBaseRevisions}
-          diffStatuses={diffStatuses}
+          revisionStatuses={revisionStatuses}
         />
       );
     }
@@ -100,12 +102,12 @@ type RevisionsComponentProps = {
   onSelectionChange: (revisionInfo: RevisionInfo) => mixed,
   onClickPublish: () => mixed,
   revisions: Array<RevisionInfo>,
-  diffStatuses: Map<number, DiffStatusDisplay>,
+  revisionStatuses: Map<number, RevisionStatusDisplay>,
 };
 
 function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Element<any> {
 
-  const {revisions, compareRevisionId, diffStatuses} = props;
+  const {revisions, compareRevisionId, revisionStatuses} = props;
   const latestToOldestRevisions = revisions.slice().reverse();
   const selectedIndex = latestToOldestRevisions.findIndex(
     revision => revision.id === compareRevisionId,
@@ -132,7 +134,7 @@ function RevisionsTimelineComponent(props: RevisionsComponentProps): React.Eleme
               key={revision.hash}
               selectedIndex={selectedIndex}
               revision={revision}
-              diffStatus={diffStatuses.get(revision.id)}
+              revisionStatus={revisionStatuses.get(revision.id)}
               revisionsCount={revisions.length}
               onSelectionChange={props.onSelectionChange}
             />,

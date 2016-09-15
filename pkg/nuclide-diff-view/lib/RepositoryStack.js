@@ -264,7 +264,7 @@ export default class RepositoryStack {
       // Invalidate if there there is no longer a revision with that id.
       compareCommitId = null;
     }
-    const diffStatuses = this._repository.getCachedRevisionStatuses();
+    const revisionStatuses = this._repository.getCachedRevisionStatuses();
 
     // `headToForkBaseRevisions` should have the public commit at the fork base as the first.
     // and the rest of the current `HEAD` stack in order with the `HEAD` being last.
@@ -281,7 +281,7 @@ export default class RepositoryStack {
     return {
       headCommitId: headRevision.id,
       compareCommitId,
-      diffStatuses,
+      revisionStatuses,
       headToForkBaseRevisions,
       revisions,
     };
