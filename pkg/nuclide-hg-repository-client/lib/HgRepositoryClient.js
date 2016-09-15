@@ -83,7 +83,7 @@ export type RevisionStatuses = Map<number, RevisionStatusDisplay>;
 
 type RevisionStatusCache = {
   getCachedRevisionStatuses(): Map<number, RevisionStatusDisplay>,
-  onDidChangeRevisionStatuses(callback: (RevisionStatuses: RevisionStatuses) => mixed): IDisposable,
+  observeRevisionStatusesChanges(): Observable<RevisionStatuses>,
 };
 
 function getRevisionStatusCache(
@@ -97,7 +97,7 @@ function getRevisionStatusCache(
   } catch (e) {
     return {
       getCachedRevisionStatuses() { return new Map(); },
-      onDidChangeRevisionStatuses() { return new UniversalDisposable(); },
+      observeRevisionStatusesChanges() { return Observable.empty(); },
     };
   }
 }
@@ -294,16 +294,12 @@ export class HgRepositoryClient {
     return this._emitter.on('did-change-status', callback);
   }
 
-  onDidChangeRevisions(
-    callback: (revisions: Array<RevisionInfo>) => mixed,
-  ): IDisposable {
-    return this._revisionsCache.onDidChangeRevisions(callback);
+  observeRevisionChanges(): Observable<Array<RevisionInfo>> {
+    return this._revisionsCache.observeRevisionChanges();
   }
 
-  onDidChangeRevisionStatuses(
-    callback: (revisionStatuses: RevisionStatuses) => mixed,
-  ): IDisposable {
-    return this._revisionStatusCache.onDidChangeRevisionStatuses(callback);
+  observeRevisionStatusesChanges(): Observable<RevisionStatuses> {
+    return this._revisionStatusCache.observeRevisionStatusesChanges();
   }
 
   onDidChangeStatuses(callback: () => mixed): IDisposable {

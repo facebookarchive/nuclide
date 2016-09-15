@@ -23,7 +23,7 @@ import type {
 } from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {CompositeDisposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus, DiffOption} from './constants';
 import debounce from '../../commons-node/debounce';
 import {serializeAsyncCall} from '../../commons-node/promise';
@@ -33,8 +33,8 @@ import {getLogger} from '../../nuclide-logging';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import invariant from 'assert';
 import LRU from 'lru-cache';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {Observable} from 'rxjs';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 const UPDATE_SELECTED_FILE_CHANGES_EVENT = 'update-selected-file-changes';
 const UPDATE_DIRTY_FILES_EVENT = 'update-dirty-files';
@@ -50,7 +50,7 @@ function getHeadRevision(revisions: Array<RevisionInfo>): ?RevisionInfo {
 export default class RepositoryStack {
 
   _emitter: Emitter;
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
   _dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _repository: HgRepositoryClient;
@@ -66,7 +66,7 @@ export default class RepositoryStack {
   constructor(repository: HgRepositoryClient, diffOption: DiffOptionType) {
     this._repository = repository;
     this._emitter = new Emitter();
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new UniversalDisposable();
     this._dirtyFileChanges = new Map();
     this._selectedFileChanges = new Map();
     this._isActive = false;
@@ -98,8 +98,8 @@ export default class RepositoryStack {
         this._updateDirtyFileChanges();
         debouncedSerializedUpdateStackState();
       }),
-      repository.onDidChangeRevisions(debouncedSerializedUpdateStackState),
-      repository.onDidChangeRevisionStatuses(() => {
+      repository.observeRevisionChanges().subscribe(debouncedSerializedUpdateStackState),
+      repository.observeRevisionStatusesChanges().subscribe(() => {
         this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
       }),
     );
@@ -169,8 +169,7 @@ export default class RepositoryStack {
 
   _waitForValidRevisionsState(): Promise<void> {
     return Observable.of(this._repository.getCachedRevisions())
-      .concat(observableFromSubscribeFunction(
-        this._repository.onDidChangeRevisions.bind(this._repository)))
+      .concat(this._repository.observeRevisionChanges())
       .filter(revisions => getHeadRevision(revisions) != null)
       .take(1)
       .timeout(

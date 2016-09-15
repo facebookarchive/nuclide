@@ -15,7 +15,6 @@ import type {
 } from '../../nuclide-hg-rpc/lib/HgService';
 
 import {arrayEqual} from '../../commons-node/collection';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 
 const FETCH_REVISIONS_DEBOUNCE_MS = 100;
@@ -88,10 +87,9 @@ export default class RevisionsCache {
     return this._revisions.getValue();
   }
 
-  onDidChangeRevisions(
-    callback: (revisions: Array<RevisionInfo>) => mixed,
-  ): IDisposable {
-    return new UniversalDisposable(this._lazyRevisionFetcher.subscribe(callback));
+  observeRevisionChanges(): Observable<Array<RevisionInfo>> {
+    return this._lazyRevisionFetcher
+      .startWith(this.getCachedRevisions());
   }
 
 }
