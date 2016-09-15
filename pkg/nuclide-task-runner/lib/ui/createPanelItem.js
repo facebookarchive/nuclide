@@ -49,7 +49,6 @@ export function createPanelItem(store: Store): Object {
       };
     });
   const StatefulToolbar = bindObservableAsProps(props, Toolbar);
-  // $FlowFixMe: bindObservableAsProps needs to be typed better.
   return viewableFromReactElement(<StatefulToolbar />);
 }
 

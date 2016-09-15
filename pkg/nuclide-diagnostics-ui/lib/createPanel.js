@@ -97,7 +97,6 @@ export default function createDiagnosticsPanel(
       toggle(propsStream, panelVisibilityStream),
       DiagnosticsPanel,
     );
-    // $FlowFixMe: `bindObservableAsProps` needs to be typed better.
     ReactDOM.render(<Component />, item);
   });
 

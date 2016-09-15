@@ -141,7 +141,6 @@ export class PanelLocation extends SimpleModel<State> {
       onResize: this._handlePanelResize,
     }));
     const Component = bindObservableAsProps(props, Panel);
-    // $FlowFixMe: Flow doesn't understand bindObservableAsProps
     return {getElement: () => renderReactRoot(<Component />)};
   }
 

@@ -22,10 +22,10 @@ import {React} from 'react-for-atom';
  * The wrapped component is guaranteed to render only if the observable has resolved;
  * otherwise, the wrapper component renders `null`.
  */
-export function bindObservableAsProps<T : ReactClass<any>>(
+export function bindObservableAsProps<T : ReactClass<any>, U : T>(
   stream: Observable<{[key: string]: any}>,
   ComposedComponent: T,
-): T {
+): U {
   // $FlowIssue The return type is guaranteed to be the same as the type of ComposedComponent.
   return class extends React.Component {
     _subscription: ?rx$ISubscription;

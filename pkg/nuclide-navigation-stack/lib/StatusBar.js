@@ -63,7 +63,6 @@ type Props = {
   onForward: () => mixed,
 };
 
-// $FlowFixMe: `bindObservableAsProps` needs to be typed better.
 function NavStackStatusBarTile(props: Props): React.Element<any> {
   return <Block>
       <ButtonGroup>
