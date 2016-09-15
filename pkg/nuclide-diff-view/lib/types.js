@@ -97,6 +97,7 @@ export type RepositoryState = {
   headRevision: ?RevisionInfo,
   revisions: Array<RevisionInfo>,
   selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>,
+  selectedCompareId: ?number,
 };
 
 export type AppState = {
@@ -129,6 +130,20 @@ export type AddRepositoryAction = {
   },
 };
 
+export type ActivateRepositoryAction = {
+  type: 'ACTIVATE_REPOSITORY',
+  payload: {
+    repository: HgRepositoryClient,
+  },
+};
+
+export type DeactivateRepositoryAction = {
+  type: 'DEACTIVATE_REPOSITORY',
+  payload: {
+    repository: HgRepositoryClient,
+  },
+};
+
 export type SetDiffOptionAction = {
   type: 'SET_DIFF_OPTION',
   payload: {
@@ -141,11 +156,15 @@ export type DummyAction = {
   type: 'DUMMY',
 };
 
-export type Action = AddRepositoryAction
+export type Action = ActivateRepositoryAction
+  | AddRepositoryAction
+  | DeactivateRepositoryAction
   | SetDiffOptionAction
   | DummyAction
 ;
 
-export type RepositoryAction = AddRepositoryAction
+export type RepositoryAction = ActivateRepositoryAction
+  | AddRepositoryAction
+  | DeactivateRepositoryAction
   | SetDiffOptionAction
 ;

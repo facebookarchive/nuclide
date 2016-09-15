@@ -212,7 +212,12 @@ class Activation {
       this._subscriptions.add(
         // TODO(most): use action creators and consume states.
         states.subscribe(state => getLogger().info('diff-view-state', state)),
-        getHgRepositoryStream().subscribe(this._actionCreators.addRepository),
+        getHgRepositoryStream().subscribe(repository => {
+          this._actionCreators.addRepository(repository);
+          // TODO(most): Only activate the repository when the diff view is open
+          // and has that repository selected.
+          this._actionCreators.activateRepository(repository);
+        }),
       );
     }
 

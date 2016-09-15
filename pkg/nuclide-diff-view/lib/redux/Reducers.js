@@ -59,6 +59,7 @@ function getEmptyRepositoryState(): RepositoryState {
     headToForkBaseRevisions: [],
     headRevision: null,
     revisions: [],
+    selectedCompareId: null,
     selectedFileChanges: new Map(),
   };
 }

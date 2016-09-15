@@ -9,18 +9,26 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
+  ActivateRepositoryAction,
   AddRepositoryAction,
   DiffOptionType,
   DummyAction,
+  FileChangeStatusValue,
   SetDiffOptionAction,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
+import type {RevisionStatuses} from '../../../nuclide-hg-repository-client/lib/HgRepositoryClient';
+import type {
+  RevisionInfo,
+} from '../../../nuclide-hg-rpc/lib/HgService';
 
 import {
-  SET_DIFF_OPTION,
+  ACTIVATE_REPOSITORY,
   ADD_REPOSITORY,
   DUMMY,
+  SET_DIFF_OPTION,
 } from './ActionTypes';
 
 export function addRepository(
@@ -49,6 +57,7 @@ export function setDiffOption(
 
 export function updateDirtyFiles(
   repository: HgRepositoryClient,
+  dirtyFiles: Map<NuclideUri, FileChangeStatusValue>,
 ): DummyAction {
   // TODO(most): return and handle the real action.
   return {
@@ -58,6 +67,38 @@ export function updateDirtyFiles(
 
 export function removeRepository(
   repository: HgRepositoryClient,
+): DummyAction {
+  // TODO(most): return and handle the real action.
+  return {
+    type: DUMMY,
+  };
+}
+
+export function activateRepository(
+  repository: HgRepositoryClient,
+): ActivateRepositoryAction {
+  return {
+    type: ACTIVATE_REPOSITORY,
+    payload: {
+      repository,
+    },
+  };
+}
+
+export function updateSelectedFiles(
+  repository: HgRepositoryClient,
+  revisionFileChanges: Map<NuclideUri, FileChangeStatusValue>,
+): DummyAction {
+  // TODO(most): return and handle the real action.
+  return {
+    type: DUMMY,
+  };
+}
+
+export function updateHeadToForkBaseRevisionsState(
+  repository: HgRepositoryClient,
+  revisions: Array<RevisionInfo>,
+  revisionStatuses: RevisionStatuses,
 ): DummyAction {
   // TODO(most): return and handle the real action.
   return {

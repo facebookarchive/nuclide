@@ -39,7 +39,7 @@ const CHANGE_REVISIONS_STATE_EVENT = 'did-change-state-revisions';
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
 const REVISION_STATE_TIMEOUT_MS = 50 * 1000;
 
-function getHeadRevision(revisions: Array<RevisionInfo>): ?RevisionInfo {
+export function getHeadRevision(revisions: Array<RevisionInfo>): ?RevisionInfo {
   const {HEAD_COMMIT_TAG} = hgConstants;
   return revisions.find(revision => revision.tags.includes(HEAD_COMMIT_TAG));
 }
@@ -82,7 +82,7 @@ function mergeFileStatuses(
   return mergedStatus;
 }
 
-function getHeadToForkBaseRevisions(revisions: Array<RevisionInfo>): Array<RevisionInfo> {
+export function getHeadToForkBaseRevisions(revisions: Array<RevisionInfo>): Array<RevisionInfo> {
   // `headToForkBaseRevisions` should have the public commit at the fork base as the first.
   // and the rest of the current `HEAD` stack in order with the `HEAD` being last.
   const headRevision = getHeadRevision(revisions);
@@ -103,7 +103,7 @@ function getHeadToForkBaseRevisions(revisions: Array<RevisionInfo>): Array<Revis
   return headToForkBaseRevisions;
 }
 
-function getDirtyFileChanges(
+export function getDirtyFileChanges(
   repository: HgRepositoryClient,
 ): Map<NuclideUri, FileChangeStatusValue> {
   const dirtyFileChanges = new Map();
@@ -128,7 +128,7 @@ function fetchFileChangesForRevisions(
   ));
 }
 
-async function getSelectedFileChanges(
+export async function getSelectedFileChanges(
   repository: HgRepositoryClient,
   diffOption: DiffOptionType,
   revisions: Array<RevisionInfo>,
