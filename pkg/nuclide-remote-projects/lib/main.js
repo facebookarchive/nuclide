@@ -238,7 +238,8 @@ async function createEditorForNuclide(
     // results in `undefined` disposables created in `Workspace.subscribeToAddedItems`.
     // So when a pane is closed, the call to a non-existent `dispose` throws.
     if (typeof atom.textEditors.build === 'function') {
-      const editor = atom.textEditors.build({buffer, largeFileMode});
+      // https://github.com/atom/atom/blob/v1.11.0-beta5/src/workspace.coffee#L564
+      const editor = atom.textEditors.build({buffer, largeFileMode, autoHeight: false});
       return editor;
     } else {
       const editor = atom.workspace.buildTextEditor({buffer, largeFileMode});
