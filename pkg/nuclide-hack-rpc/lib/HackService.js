@@ -78,6 +78,7 @@ export type HackSearchPosition = {
 export type HackReference = {
   name: string,
   filename: NuclideUri,
+  projectRoot: NuclideUri,
   line: number,
   char_start: number,
   char_end: number,
@@ -253,12 +254,16 @@ export async function findReferences(
   line: number,
   column: number,
 ): Promise<?HackReferencesResult> {
-  const result: any = await callHHClient(
+  const result: ?HackReferencesResult = (await callHHClient(
     /* args */ ['--ide-find-refs', formatLineColumn(line, column)],
     /* errorStream */ false,
     /* processInput */ contents,
     /* cwd */ file,
-  );
+  ): any);
+  if (result != null) {
+    const projectRoot: NuclideUri = (result: any).hackRoot;
+    result.forEach(reference => { reference.projectRoot = projectRoot; });
+  }
   return result;
 }
 

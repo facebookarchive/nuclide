@@ -436,6 +436,7 @@ HH\\fclass HackClass {}`, 19, 2, 5);
         {
           name: 'item_name',
           filename: filePath,
+          projectRoot: basePath,
           line: 1,
           char_start: 2,
           char_end: 3,
@@ -443,6 +444,7 @@ HH\\fclass HackClass {}`, 19, 2, 5);
         {
           name: 'item_name',
           filename: filePath,
+          projectRoot: basePath,
           line: 11,
           char_start: 4,
           char_end: 7,
@@ -451,7 +453,6 @@ HH\\fclass HackClass {}`, 19, 2, 5);
       mockService.findReferences.andReturn(findResult);
 
       const result = await hackLanguage.findReferences(filePath, contents, 2, 3);
-
       expect(result).toEqual(
         {
           baseUri: '/tmp/project',
@@ -460,6 +461,7 @@ HH\\fclass HackClass {}`, 19, 2, 5);
             {
               name: 'item_name',
               filename: filePath,
+              projectRoot: basePath,
               line: 1,
               char_start: 2,
               char_end: 3,
@@ -467,6 +469,7 @@ HH\\fclass HackClass {}`, 19, 2, 5);
             {
               name: 'item_name',
               filename: filePath,
+              projectRoot: basePath,
               line: 11,
               char_start: 4,
               char_end: 7,

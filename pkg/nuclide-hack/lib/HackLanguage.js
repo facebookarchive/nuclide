@@ -207,8 +207,7 @@ export class HackLanguage {
     if (references == null || references.length === 0) {
       return null;
     }
-    invariant(this._basePath != null);
-    return {baseUri: this._basePath, symbolName: references[0].name, references};
+    return {baseUri: references[0].projectRoot, symbolName: references[0].name, references};
   }
 
   isHackAvailable(): boolean {
