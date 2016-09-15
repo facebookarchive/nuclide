@@ -137,6 +137,15 @@ export type SetDiffOptionAction = {
   },
 };
 
+export type DummyAction = {
+  type: 'DUMMY',
+};
+
 export type Action = AddRepositoryAction
+  | SetDiffOptionAction
+  | DummyAction
+;
+
+export type RepositoryAction = AddRepositoryAction
   | SetDiffOptionAction
 ;

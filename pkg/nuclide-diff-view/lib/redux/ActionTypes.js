@@ -11,3 +11,4 @@
 
 export const SET_DIFF_OPTION = 'SET_DIFF_OPTION';
 export const ADD_REPOSITORY = 'ADD_REPOSITORY';
+export const DUMMY = 'DUMMY';

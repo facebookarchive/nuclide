@@ -12,6 +12,7 @@
 import type {
   AddRepositoryAction,
   DiffOptionType,
+  DummyAction,
   SetDiffOptionAction,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
@@ -19,6 +20,7 @@ import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 import {
   SET_DIFF_OPTION,
   ADD_REPOSITORY,
+  DUMMY,
 } from './ActionTypes';
 
 export function addRepository(
@@ -42,5 +44,23 @@ export function setDiffOption(
       repository,
       diffOption,
     },
+  };
+}
+
+export function updateDirtyFiles(
+  repository: HgRepositoryClient,
+): DummyAction {
+  // TODO(most): return and handle the real action.
+  return {
+    type: DUMMY,
+  };
+}
+
+export function removeRepository(
+  repository: HgRepositoryClient,
+): DummyAction {
+  // TODO(most): return and handle the real action.
+  return {
+    type: DUMMY,
   };
 }

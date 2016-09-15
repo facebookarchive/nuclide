@@ -12,6 +12,7 @@
 import type {
   Action,
   AppState,
+  RepositoryAction,
   RepositoryState,
 } from '../types';
 
@@ -64,7 +65,7 @@ function getEmptyRepositoryState(): RepositoryState {
 
 function reduceRepositoryAction(
   repositoryState: RepositoryState,
-  action: Action,
+  action: RepositoryAction,
 ): RepositoryState {
   switch (action.type) {
     case ActionTypes.SET_DIFF_OPTION: {

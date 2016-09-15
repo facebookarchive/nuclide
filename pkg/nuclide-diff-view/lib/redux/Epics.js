@@ -9,20 +9,37 @@
  * the root directory of this source tree.
  */
 
-import type {Action, Store} from '../types';
+import type {Store, Action} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
+import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 
 import * as ActionTypes from './ActionTypes';
+import * as Actions from './Actions';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
+import {observableFromSubscribeFunction} from '../../../commons-node/event';
 
-export function setDiffOptionEpic(
+const UPDATE_STATUS_DEBOUNCE_MS = 50;
+
+function observeStatusChanges(repository: HgRepositoryClient): Observable<void> {
+  return observableFromSubscribeFunction(
+    repository.onDidChangeStatuses.bind(repository),
+  )
+  .debounceTime(UPDATE_STATUS_DEBOUNCE_MS)
+  .startWith();
+}
+
+export function addRepositoryEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(ActionTypes.SET_DIFF_OPTION).switchMap(action => {
-    invariant(action.type === ActionTypes.SET_DIFF_OPTION);
-    // TODO(most): Use action.payload to do stuff
-    return Observable.empty();
+  return actions.ofType(ActionTypes.ADD_REPOSITORY).flatMap(action => {
+    invariant(action.type === ActionTypes.ADD_REPOSITORY);
+    const {repository} = action.payload;
+
+    return observeStatusChanges(repository)
+      .map(() => Actions.updateDirtyFiles(repository))
+      .takeUntil(observableFromSubscribeFunction(repository.onDidDestroy.bind(repository)))
+      .concat(Observable.of(Actions.removeRepository(repository)));
   });
 }
