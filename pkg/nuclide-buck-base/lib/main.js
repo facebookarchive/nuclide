@@ -10,14 +10,11 @@
  */
 
 import typeof * as BuckService from '../../nuclide-buck-rpc';
-import type {BuckProject} from '../../nuclide-buck-rpc';
 
-import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const buckProjectDirectoryByPath: Map<string, string> = new Map();
-const buckProjectForBuckProjectDirectory: Map<string, BuckProject> = new Map();
 
 export function isBuckFile(filePath: string): boolean {
   // TODO(mbolin): Buck does have an option where the user can customize the
@@ -26,17 +23,21 @@ export function isBuckFile(filePath: string): boolean {
   return nuclideUri.basename(filePath) === 'BUCK';
 }
 
+export function getBuckService(filePath: string): ?BuckService {
+  return getServiceByNuclideUri('BuckService', filePath);
+}
+
 /**
  * Cached, service-aware version of BuckProject.getRootForPath.
  */
 export async function getBuckProjectRoot(filePath: string): Promise<?string> {
   let directory = buckProjectDirectoryByPath.get(filePath);
   if (!directory) {
-    const service: ?BuckService = getServiceByNuclideUri('BuckProject', filePath);
+    const service = getBuckService(filePath);
     if (service == null) {
       return null;
     }
-    directory = await service.BuckProject.getRootForPath(filePath);
+    directory = await service.getRootForPath(filePath);
     if (directory == null) {
       return null;
     } else {
@@ -44,28 +45,4 @@ export async function getBuckProjectRoot(filePath: string): Promise<?string> {
     }
   }
   return directory;
-}
-
-export function createBuckProject(rootPath: string): BuckProject {
-  const buckService: ?BuckService = getServiceByNuclideUri('BuckProject', rootPath);
-  invariant(buckService != null);
-  return new buckService.BuckProject({rootPath});
-}
-
-/**
- * Given a file path, returns the BuckProject for its project root (if it exists).
- */
-export async function getBuckProject(filePath: string): Promise<?BuckProject> {
-  const rootPath = await getBuckProjectRoot(filePath);
-  if (rootPath == null) {
-    return null;
-  }
-
-  let buckProject = buckProjectForBuckProjectDirectory.get(rootPath);
-  if (buckProject != null) {
-    return buckProject;
-  }
-  buckProject = createBuckProject(rootPath);
-  buckProjectForBuckProjectDirectory.set(rootPath, buckProject);
-  return buckProject;
 }

@@ -18,7 +18,7 @@ import {Observable, Subscription} from 'rxjs';
 import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
-import {BuckProject} from '../../nuclide-buck-rpc';
+import * as BuckService from '../../nuclide-buck-rpc';
 import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';
 
 const logger = getLogger();
@@ -79,7 +79,6 @@ function overrideIncludePath(src: string): string {
 }
 
 class ClangFlagsManager {
-  _cachedBuckProjects: Map<string, BuckProject>;
   _cachedBuckFlags: Map<string, Promise<Map<string, ClangFlags>>>;
   _compilationDatabases: Set<string>;
   _realpathCache: Object;
@@ -92,7 +91,6 @@ class ClangFlagsManager {
 
   constructor() {
     this._pathToFlags = new Map();
-    this._cachedBuckProjects = new Map();
     this._cachedBuckFlags = new Map();
     this._compilationDatabases = new Set();
     this._realpathCache = {};
@@ -103,7 +101,6 @@ class ClangFlagsManager {
 
   reset() {
     this._pathToFlags.clear();
-    this._cachedBuckProjects.clear();
     this._cachedBuckFlags.clear();
     this._compilationDatabases.clear();
     this._realpathCache = {};
@@ -111,30 +108,6 @@ class ClangFlagsManager {
     this._flagsChanged.clear();
     this._subscriptions.forEach(s => s.unsubscribe());
     this._subscriptions = [];
-  }
-
-  async _getBuckProject(src: string): Promise<?BuckProject> {
-    // For now, if a user requests the flags for a path outside of a Buck project,
-    // such as /Applications/Xcode.app/Contents/Developer/Platforms/..., then
-    // return null. Going forward, we probably want to special-case some of the
-    // paths under /Applications/Xcode.app so that click-to-symbol works in
-    // files like Frameworks/UIKit.framework/Headers/UIImage.h.
-    const buckProjectRoot = await BuckProject.getRootForPath(src);
-    if (buckProjectRoot == null) {
-      logger.info(
-          'Did not try to attempt to get flags from Buck because ' +
-          'source file %s does not appear to be part of a Buck project.',
-          src);
-      return null;
-    }
-
-    if (this._cachedBuckProjects.has(buckProjectRoot)) {
-      return this._cachedBuckProjects.get(buckProjectRoot);
-    }
-
-    const buckProject = new BuckProject({rootPath: buckProjectRoot});
-    this._cachedBuckProjects.set(buckProjectRoot, buckProject);
-    return buckProject;
   }
 
   getFlagsChanged(src: string): boolean {
@@ -205,7 +178,7 @@ class ClangFlagsManager {
         return buckFlags.values().next().value;
       }
       // Try finding flags for a related source file.
-      const projectRoot = (await BuckProject.getRootForPath(src)) || dbDir;
+      const projectRoot = (await BuckService.getRootForPath(src)) || dbDir;
       // If we don't have a .buckconfig or a compile_commands.json, we won't find flags regardless.
       if (projectRoot == null) {
         return null;
@@ -270,31 +243,29 @@ class ClangFlagsManager {
   }
 
   async _loadFlagsFromBuck(src: string): Promise<Map<string, ClangFlags>> {
-    const buckProject = await this._getBuckProject(src);
-    if (!buckProject) {
+    const buckRoot = await BuckService.getRootForPath(src);
+    if (buckRoot == null) {
       return new Map();
     }
 
-    const target = (await buckProject.getOwner(src))
+    const target = (await BuckService.getOwner(buckRoot, src))
       .find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
 
     if (target == null) {
       return new Map();
     }
 
-    const buckProjectRoot = await buckProject.getPath();
-    const key = buckProjectRoot + ':' + target;
+    const key = buckRoot + ':' + target;
     let cached = this._cachedBuckFlags.get(key);
     if (cached != null) {
       return cached;
     }
-    cached = this._loadFlagsForBuckTarget(buckProject, buckProjectRoot, target);
+    cached = this._loadFlagsForBuckTarget(buckRoot, target);
     this._cachedBuckFlags.set(key, cached);
     return cached;
   }
 
   async _loadFlagsForBuckTarget(
-    buckProject: BuckProject,
     buckProjectRoot: string,
     target: string,
   ): Promise<Map<string, ClangFlags>> {
@@ -310,7 +281,8 @@ class ClangFlagsManager {
     // Since this is a background process, limit the number of threads to avoid
     // impacting the user too badly.
     const maxCpus = Math.ceil(os.cpus().length / 2);
-    const buildReport = await buckProject.build(
+    const buildReport = await BuckService.build(
+      buckProjectRoot,
       [buildTarget, '-j', String(maxCpus)],
       {commandOptions: {timeout: BUCK_TIMEOUT}},
     );
@@ -330,7 +302,7 @@ class ClangFlagsManager {
     );
 
     const flags = new Map();
-    const buildFile = await buckProject.getBuildFile(target);
+    const buildFile = await BuckService.getBuildFile(buckProjectRoot, target);
     const changes = buildFile == null ? Observable.empty() : this._watchFlagFile(buildFile);
     compilationDatabase.forEach(item => {
       const {file} = item;

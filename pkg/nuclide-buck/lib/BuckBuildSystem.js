@@ -14,7 +14,7 @@ import type {Task, TaskEvent} from '../../commons-node/tasks';
 import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
-import type {BuckProject} from '../../nuclide-buck-rpc';
+import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type {BuckSubcommand, SerializedState, TaskType} from './types';
 import type {BuckEvent} from './BuckEventStream';
 import type {
@@ -33,7 +33,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {compact} from '../../commons-node/observable';
 import {taskFromObservable} from '../../commons-node/tasks';
-import {createBuckProject} from '../../nuclide-buck-base';
+import {getBuckService} from '../../nuclide-buck-base';
 import * as featureConfig from '../../commons-atom/featureConfig';
 import {getLogger} from '../../nuclide-logging';
 import {startPackager} from '../../nuclide-react-native-base';
@@ -248,8 +248,10 @@ export class BuckBuildSystem {
     }
     this._logOutput(`Starting "buck ${subcommand} ${buildTarget}${argString}"`, 'log');
 
-    const buckProject = createBuckProject(buckRoot);
-    return Observable.fromPromise(buckProject.getHTTPServerPort())
+    const buckService = getBuckService(buckRoot);
+    invariant(buckService != null, 'Buck service is not available');
+
+    return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))
       .catch(err => {
         getLogger().warn(`Failed to get httpPort for ${buildTarget}`, err);
         return Observable.of(-1);
@@ -257,15 +259,17 @@ export class BuckBuildSystem {
       .switchMap(httpPort => {
         let socketEvents = null;
         if (httpPort > 0) {
-          socketEvents = getEventsFromSocket(buckProject.getWebSocketStream(httpPort).refCount())
-            .share();
+          socketEvents = getEventsFromSocket(
+            buckService.getWebSocketStream(buckRoot, httpPort).refCount(),
+          ).share();
         } else {
           this._logOutput('Enable httpserver in your .buckconfig for better output.', 'warning');
         }
 
         const isDebug = taskType === 'debug';
         const processMessages = this._runBuckCommand(
-          buckProject,
+          buckService,
+          buckRoot,
           buildTarget,
           subcommand,
           settings.arguments || [],
@@ -298,11 +302,12 @@ export class BuckBuildSystem {
                 getDiagnosticEvents(mergedEvents, buckRoot) : Observable.empty(),
               isDebug && subcommand === 'install' ? getLLDBInstallEvents(
                 processMessages,
-                buckProject,
+                buckRoot,
               ) : Observable.empty(),
               isDebug && subcommand === 'build' ? getLLDBBuildEvents(
                 processMessages,
-                buckProject,
+                buckService,
+                buckRoot,
                 buildTarget,
                 settings.runArguments || [],
               ) : Observable.empty(),
@@ -310,7 +315,6 @@ export class BuckBuildSystem {
           ),
         );
       })
-      .finally(() => buckProject.dispose())
       .share();
   }
 
@@ -360,7 +364,8 @@ export class BuckBuildSystem {
   }
 
   _runBuckCommand(
-    buckProject: BuckProject,
+    buckService: BuckService,
+    buckRoot: string,
     buildTarget: string,
     subcommand: BuckSubcommand,
     args: Array<string>,
@@ -393,7 +398,8 @@ export class BuckBuildSystem {
           .ignoreElements();
       }
       return rnObservable.concat(
-        buckProject.installWithOutput(
+        buckService.installWithOutput(
+          buckRoot,
           [buildTarget],
           args.concat(
             isReactNativeServerMode ? ['--', '-executor-override', 'RCTWebSocketExecutor'] : [],
@@ -406,9 +412,9 @@ export class BuckBuildSystem {
         ).refCount(),
       );
     } else if (subcommand === 'build') {
-      return buckProject.buildWithOutput([buildTarget], args).refCount();
+      return buckService.buildWithOutput(buckRoot, [buildTarget], args).refCount();
     } else if (subcommand === 'test') {
-      return buckProject.testWithOutput([buildTarget], args).refCount();
+      return buckService.testWithOutput(buckRoot, [buildTarget], args).refCount();
     } else {
       throw Error(`Unknown subcommand: ${subcommand}`);
     }

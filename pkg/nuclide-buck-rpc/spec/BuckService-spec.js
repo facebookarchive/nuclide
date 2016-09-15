@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {BuckProject} from '../lib/BuckProject';
+import * as BuckService from '../lib/BuckService';
 import {copyBuildFixture} from '../../nuclide-test-helpers';
 import nuclideUri from '../../commons-node/nuclideUri';
 
@@ -22,17 +22,16 @@ beforeEach(() => {
   jasmine.getEnv().defaultTimeoutInterval = 10000;
 });
 
-describe('BuckProject (test-project-with-failing-targets)', () => {
-  let buckProject: BuckProject = (null: any);
+describe('BuckService (test-project-with-failing-targets)', () => {
+  let buckRoot: string;
 
   beforeEach(() => {
     waitsForPromise(async () => {
-      if (buckProject == null) {
-        const projectDir = await copyBuildFixture(
+      if (buckRoot == null) {
+        buckRoot = await copyBuildFixture(
           'test-project-with-failing-targets',
           __dirname,
         );
-        buckProject = new BuckProject({rootPath: projectDir});
       }
     });
   });
@@ -42,7 +41,7 @@ describe('BuckProject (test-project-with-failing-targets)', () => {
       // First expensive buck operation gets a large timeout.
       waitsForPromise({timeout: 15000}, async () => {
         const targets = ['//:good_rule', '//:bad_rule'];
-        const report = await buckProject.build(targets);
+        const report = await BuckService.build(buckRoot, targets);
         const expectedReport = {
           success: false,
           results: {
@@ -71,7 +70,7 @@ describe('BuckProject (test-project-with-failing-targets)', () => {
       jasmine.useRealClock();
       waitsForPromise(async () => {
         try {
-          await buckProject.build(['//:good_rule'], {commandOptions: {timeout: 1}});
+          await BuckService.build(buckRoot, ['//:good_rule'], {commandOptions: {timeout: 1}});
         } catch (e) {
           expect(e.message).toMatch('Command failed');
           return;
@@ -83,7 +82,7 @@ describe('BuckProject (test-project-with-failing-targets)', () => {
     it('respects extra arguments', () => {
       waitsForPromise(async () => {
         try {
-          await buckProject.build(['//:good_rule'], {extraArguments: ['--help']});
+          await BuckService.build(buckRoot, ['//:good_rule'], {extraArguments: ['--help']});
         } catch (e) {
           // The help option, naturally, lists itself.
           expect(e.message).toContain('--help');
@@ -97,7 +96,7 @@ describe('BuckProject (test-project-with-failing-targets)', () => {
   describe('.resolveAlias(aliasOrTarget)', () => {
     it('resolves an alias', () => {
       waitsForPromise(async () => {
-        const target = await buckProject.resolveAlias('good');
+        const target = await BuckService.resolveAlias(buckRoot, 'good');
         expect(target).toBe('//:good_rule');
       });
     });
@@ -106,7 +105,7 @@ describe('BuckProject (test-project-with-failing-targets)', () => {
   describe('.showOutput(aliasOrTarget)', () => {
     it('returns the output data for a genrule()', () => {
       waitsForPromise(async () => {
-        const output = await buckProject.showOutput('good');
+        const output = await BuckService.showOutput(buckRoot, 'good');
         expect(output.length).toBe(1);
         expect(output[0]['buck.outputPath']).toBe('buck-out/gen/good_rule/good.txt');
       });
@@ -116,53 +115,51 @@ describe('BuckProject (test-project-with-failing-targets)', () => {
   describe('.buildRuleTypeFor(aliasOrTarget)', () => {
     it('returns the type of a build rule specified by alias', () => {
       waitsForPromise(async () => {
-        const type = await buckProject.buildRuleTypeFor('good');
+        const type = await BuckService.buildRuleTypeFor(buckRoot, 'good');
         expect(type).toBe('genrule');
       });
     });
 
     it('returns the type of a build rule by full path', () => {
       waitsForPromise(async () => {
-        const type = await buckProject.buildRuleTypeFor('//:good_rule');
+        const type = await BuckService.buildRuleTypeFor(buckRoot, '//:good_rule');
         expect(type).toBe('genrule');
       });
 
       waitsForPromise(async () => {
         // Omitting the // is fine too.
-        const type = await buckProject.buildRuleTypeFor(':good_rule');
+        const type = await BuckService.buildRuleTypeFor(buckRoot, ':good_rule');
         expect(type).toBe('genrule');
       });
 
       waitsForPromise(async () => {
         // Strip out flavors.
-        const type = await buckProject.buildRuleTypeFor('//:good_rule#');
+        const type = await BuckService.buildRuleTypeFor(buckRoot, '//:good_rule#');
         expect(type).toBe('genrule');
       });
 
       waitsForPromise(async () => {
         // If all rules are specified, just pick one.
-        const type = await buckProject.buildRuleTypeFor('//:');
+        const type = await BuckService.buildRuleTypeFor(buckRoot, '//:');
         expect(type).toBe('genrule');
       });
     });
 
     it('fails when passed an invalid target', () => {
       waitsForPromise({shouldReject: true}, async () => {
-        await buckProject.buildRuleTypeFor('//not:athing');
+        await BuckService.buildRuleTypeFor(buckRoot, '//not:athing');
       });
     });
   });
 });
 
-describe('BuckProject (buck-query-project)', () => {
-  let buckProject: BuckProject = (null: any);
-  let projectDir: string = (null: any);
+describe('BuckService (buck-query-project)', () => {
+  let buckRoot: string;
 
   beforeEach(() => {
     waitsForPromise(async () => {
-      if (buckProject == null) {
-        projectDir = await copyBuildFixture('buck-query-project', __dirname);
-        buckProject = new BuckProject({rootPath: projectDir});
+      if (buckRoot == null) {
+        buckRoot = await copyBuildFixture('buck-query-project', __dirname);
       }
     });
   });
@@ -171,15 +168,15 @@ describe('BuckProject (buck-query-project)', () => {
     it('gets the build file', () => {
       // First expensive buck operation gets a large timeout.
       waitsForPromise({timeout: 15000}, async () => {
-        const file = await buckProject.getBuildFile('//examples:one');
-        expect(file).toBe(nuclideUri.join(projectDir, 'examples', 'BUCK'));
+        const file = await BuckService.getBuildFile(buckRoot, '//examples:one');
+        expect(file).toBe(nuclideUri.join(buckRoot, 'examples', 'BUCK'));
       });
     });
 
     it('errors with non-existent rule', () => {
       waitsForPromise(async () => {
         spyOn(console, 'log');
-        const file = await buckProject.getBuildFile('//nonexistent:');
+        const file = await BuckService.getBuildFile(buckRoot, '//nonexistent:');
         expect(file).toBe(null);
         // eslint-disable-next-line no-console
         expect(console.log.argsForCall[0]).toMatch(/No build file for target "\/\/nonexistent:"/);
@@ -188,14 +185,13 @@ describe('BuckProject (buck-query-project)', () => {
   });
 });
 
-describe('BuckProject (buckconfig-project)', () => {
-  let buckProject: BuckProject = (null: any);
+describe('BuckService (buckconfig-project)', () => {
+  let buckRoot: string;
 
   beforeEach(() => {
     waitsForPromise(async () => {
-      if (buckProject == null) {
-        const projectDir = await copyBuildFixture('buckconfig-project', __dirname);
-        buckProject = new BuckProject({rootPath: projectDir});
+      if (buckRoot == null) {
+        buckRoot = await copyBuildFixture('buckconfig-project', __dirname);
       }
     });
   });
@@ -204,21 +200,21 @@ describe('BuckProject (buckconfig-project)', () => {
     it('returns the correct value if present', () => {
       // First expensive buck operation gets a large timeout.
       waitsForPromise({timeout: 15000}, async () => {
-        const value = await buckProject.getBuckConfig('cache', 'dir');
+        const value = await BuckService.getBuckConfig(buckRoot, 'cache', 'dir');
         expect(value).toBe('buck-cache');
       });
     });
 
     it('returns null if property is not set', () => {
       waitsForPromise(async () => {
-        const value = await buckProject.getBuckConfig('cache', 'http_timeout');
+        const value = await BuckService.getBuckConfig(buckRoot, 'cache', 'http_timeout');
         expect(value).toBe(null);
       });
     });
 
     it('returns null if section is not present', () => {
       waitsForPromise(async () => {
-        const value = await buckProject.getBuckConfig('android', 'target');
+        const value = await BuckService.getBuckConfig(buckRoot, 'android', 'target');
         expect(value).toBe(null);
       });
     });

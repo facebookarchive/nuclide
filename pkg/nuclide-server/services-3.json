@@ -4,8 +4,8 @@
     "name": "ArcanistService"
   },
   {
-    "implementation": "../nuclide-buck-rpc/lib/BuckProject.js",
-    "name": "BuckProject"
+    "implementation": "../nuclide-buck-rpc/lib/BuckService.js",
+    "name": "BuckService"
   },
   {
     "implementation": "../nuclide-remote-atom-rpc/lib/RemoteCommandService.js",

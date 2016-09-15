@@ -9,14 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {BuckProject, BuckWebSocketMessage} from './BuckProject';
+import type {BuckWebSocketMessage} from './BuckService';
 
 import {Observable} from 'rxjs';
 import {getLogger} from '../../nuclide-logging';
 import WS from 'ws';
 
 export default function createBuckWebSocket(
-  buckProject: BuckProject,
   httpPort: number,
 ): Observable<BuckWebSocketMessage> {
   return Observable.create(observer => {

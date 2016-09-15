@@ -17,9 +17,8 @@ import type BuckToolbarStore from '../BuckToolbarStore';
 import {Combobox} from '../../../nuclide-ui/lib/Combobox';
 
 import nuclideUri from '../../../commons-node/nuclideUri';
-import {lastly} from '../../../commons-node/promise';
 import {concatLatest} from '../../../commons-node/observable';
-import {createBuckProject} from '../../../nuclide-buck-base';
+import {getBuckService} from '../../../nuclide-buck-base';
 import {getLogger} from '../../../nuclide-logging';
 
 const NO_ACTIVE_PROJECT_ERROR = 'No active Buck project. Check your Current Working Root.';
@@ -62,11 +61,9 @@ export default class BuckToolbarTargetSelector extends React.Component {
   _getAliases(buckRoot: string): Promise<Array<string>> {
     let cachedAliases = this._projectAliasesCache.get(buckRoot);
     if (cachedAliases == null) {
-      const buckProject = createBuckProject(buckRoot);
-      cachedAliases = lastly(
-        buckProject.listAliases(),
-        () => buckProject.dispose(),
-      );
+      const buckService = getBuckService(buckRoot);
+      cachedAliases = buckService == null ? Promise.resolve([]) :
+        buckService.listAliases(buckRoot);
       this._projectAliasesCache.set(buckRoot, cachedAliases);
     }
     return cachedAliases;
@@ -84,9 +81,9 @@ export default class BuckToolbarTargetSelector extends React.Component {
     if (path === this._cachedOwnersPath && this._cachedOwners != null) {
       return this._cachedOwners;
     }
-    const buckProject = createBuckProject(buckRoot);
-    this._cachedOwners = lastly(
-      buckProject.getOwner(path)
+    const buckService = getBuckService(buckRoot);
+    this._cachedOwners = buckService == null ? Promise.resolve([]) :
+      buckService.getOwner(buckRoot, path)
         .then(
           // Strip off the optional leading "//" to match typical user input.
           owners => owners.map(owner => (owner.startsWith('//') ? owner.substring(2) : owner)),
@@ -94,9 +91,7 @@ export default class BuckToolbarTargetSelector extends React.Component {
         .catch(err => {
           getLogger().error(`Error getting Buck owners for ${path}`, err);
           return [];
-        }),
-      () => buckProject.dispose(),
-    );
+        });
     this._cachedOwnersPath = path;
     return this._cachedOwners;
   }

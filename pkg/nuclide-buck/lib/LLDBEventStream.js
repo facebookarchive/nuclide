@@ -10,7 +10,7 @@
  */
 
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
-import type {BuckProject} from '../../nuclide-buck-rpc';
+import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import type {BuckEvent} from './BuckEventStream';
 
@@ -35,11 +35,12 @@ async function getDebuggerService(): Promise<RemoteControlService> {
 }
 
 async function debugBuckTarget(
-  buckProject: BuckProject,
+  buckService: BuckService,
+  buckRoot: string,
   buildTarget: string,
   runArguments: Array<string>,
 ): Promise<string> {
-  const output = await buckProject.showOutput(buildTarget);
+  const output = await buckService.showOutput(buckRoot, buildTarget);
   if (output.length === 0) {
     throw new Error(`Could not find build output path for target ${buildTarget}`);
   }
@@ -53,7 +54,6 @@ async function debugBuckTarget(
     throw new Error(`Target ${buildTarget} does not have executable build output.`);
   }
 
-  const buckRoot = await buckProject.getPath();
   // LaunchProcessInfo's arguments should be local to the remote directory.
   const remoteBuckRoot = nuclideUri.getPath(buckRoot);
   const remoteOutputPath = nuclideUri.getPath(nuclideUri.join(buckRoot, relativeOutputPath));
@@ -80,9 +80,8 @@ async function debugBuckTarget(
   return remoteOutputPath;
 }
 
-async function debugPidWithLLDB(pid: number, buckProject: BuckProject) {
-  const buckProjectPath = await buckProject.getPath();
-  const attachInfo = await _getAttachProcessInfoFromPid(pid, buckProjectPath);
+async function debugPidWithLLDB(pid: number, buckRoot: string) {
+  const attachInfo = await _getAttachProcessInfoFromPid(pid, buckRoot);
   invariant(attachInfo);
   const debuggerService = await getDebuggerService();
   debuggerService.startDebugging(attachInfo);
@@ -108,14 +107,17 @@ async function _getAttachProcessInfoFromPid(
 
 export function getLLDBBuildEvents(
   processStream: Observable<ProcessMessage>,
-  buckProject: BuckProject,
+  buckService: BuckService,
+  buckRoot: string,
   buildTarget: string,
   runArguments: Array<string>,
 ): Observable<BuckEvent> {
   return processStream
     .filter(message => message.kind === 'exit' && message.exitCode === 0)
     .switchMap(() => {
-      return Observable.fromPromise(debugBuckTarget(buckProject, buildTarget, runArguments))
+      return Observable.fromPromise(
+        debugBuckTarget(buckService, buckRoot, buildTarget, runArguments),
+      )
         .map(path => ({
           type: 'log',
           message: `Launched LLDB debugger with ${path}`,
@@ -142,7 +144,7 @@ export function getLLDBBuildEvents(
 
 export function getLLDBInstallEvents(
   processStream: Observable<ProcessMessage>,
-  buckProject: BuckProject,
+  buckRoot: string,
 ): Observable<BuckEvent> {
   return compact(
     processStream.map(message => {
@@ -159,7 +161,7 @@ export function getLLDBInstallEvents(
       return processStream
         .filter(message => message.kind === 'exit' && message.exitCode === 0)
         .switchMap(() => {
-          return Observable.fromPromise(debugPidWithLLDB(lldbPid, buckProject))
+          return Observable.fromPromise(debugPidWithLLDB(lldbPid, buckRoot))
             .ignoreElements()
             .startWith({
               type: 'log',

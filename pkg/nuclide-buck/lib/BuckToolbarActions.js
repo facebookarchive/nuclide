@@ -14,7 +14,7 @@ import type {TaskSettings} from './types';
 
 import {Dispatcher} from 'flux';
 import {keyMirror} from '../../commons-node/collection';
-import {getBuckProjectRoot, createBuckProject} from '../../nuclide-buck-base';
+import {getBuckProjectRoot, getBuckService} from '../../nuclide-buck-base';
 import * as IosSimulator from './IosSimulator';
 
 export default class BuckToolbarActions {
@@ -72,12 +72,11 @@ export default class BuckToolbarActions {
           isLoadingRule: true,
         });
       }
-      const buckProject = createBuckProject(buckRoot);
-      const buildRuleType = buildTarget === '' ? null :
-        await buckProject.buildRuleTypeFor(buildTarget)
+      const buckService = getBuckService(buckRoot);
+      const buildRuleType = buckService == null || buildTarget === '' ? null :
+        await buckService.buildRuleTypeFor(buckRoot, buildTarget)
           // Most likely, this is an invalid target, so do nothing.
           .catch(e => null);
-      buckProject.dispose();
       this._dispatcher.dispatch({
         actionType: BuckToolbarActions.ActionType.UPDATE_RULE_TYPE,
         ruleType: buildRuleType,

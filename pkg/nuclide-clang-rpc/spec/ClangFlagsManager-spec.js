@@ -13,41 +13,40 @@ import invariant from 'assert';
 import {Emitter} from 'event-kit';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
+import * as BuckService from '../../nuclide-buck-rpc';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
 
 describe('ClangFlagsManager', () => {
 
   let flagsManager: ClangFlagsManager;
-  let buckProject;
+  let ownerSpy;
+  let buildSpy;
   beforeEach(() => {
     flagsManager = new ClangFlagsManager();
-    buckProject = {
-      getOwner(src) {
-        // Default header targets should be ignored.
-        return ['//test:__default_headers__', '//test'];
-      },
-      getPath() {
-        return nuclideUri.join(__dirname, 'fixtures');
-      },
-      getBuildFile() {
-        return nuclideUri.join(__dirname, 'fixtures', 'BUCK');
-      },
-      build() {
-        return {
-          success: true,
-          results: {
-            '//test#compilation-database,iphonesimulator-x86_64': {
-              output: 'compile_commands.json',
-            },
-            // For testing on non-Mac machines.
-            '//test#compilation-database,default': {
-              output: 'compile_commands.json',
-            },
+    spyOn(BuckService, 'getRootForPath').andReturn(
+      nuclideUri.join(__dirname, 'fixtures'),
+    );
+    ownerSpy = spyOn(BuckService, 'getOwner').andReturn(
+      // Default header targets should be ignored
+      ['//test:__default_headers__', '//test'],
+    );
+    spyOn(BuckService, 'getBuildFile').andReturn(
+      nuclideUri.join(__dirname, 'fixtures', 'BUCK'),
+    );
+    buildSpy = spyOn(BuckService, 'build').andReturn(
+      {
+        success: true,
+        results: {
+          '//test#compilation-database,iphonesimulator-x86_64': {
+            output: 'compile_commands.json',
           },
-        };
+          // For testing on non-Mac machines.
+          '//test#compilation-database,default': {
+            output: 'compile_commands.json',
+          },
+        },
       },
-    };
-    spyOn(flagsManager, '_getBuckProject').andReturn(buckProject);
+    );
   });
 
   it('sanitizeCommand()', () => {
@@ -165,30 +164,30 @@ describe('ClangFlagsManager', () => {
       expect(result).toEqual(['g++', '-fPIC', '-O3']);
 
       // Make sure this is cached (different file, but same target).
-      spyOn(buckProject, 'build').andCallThrough();
+      buildSpy.wasCalled = false;
       result = await flagsManager.getFlagsForSrc('test.h');
       expect(result).toEqual(['g++', '-fPIC', '-O3']);
-      expect(buckProject.build).not.toHaveBeenCalled();
+      expect(BuckService.build).not.toHaveBeenCalled();
 
       // Make sure cache gets reset.
       flagsManager.reset();
       result = await flagsManager.getFlagsForSrc('test.cpp');
       expect(result).toEqual(['g++', '-fPIC', '-O3']);
-      expect(buckProject.build).toHaveBeenCalled();
+      expect(BuckService.build).toHaveBeenCalled();
     });
   });
 
   it('supports negative caching', () => {
     waitsForPromise(async () => {
       // Unowned projects shouldn't invoke Buck again.
-      buckProject.getOwner = () => [];
+      ownerSpy.andReturn([]);
       let result = await flagsManager.getFlagsForSrc('test');
       expect(result).toBe(null);
 
-      spyOn(buckProject, 'getOwner').andCallThrough();
+      ownerSpy.wasCalled = false;
       result = await flagsManager.getFlagsForSrc('test');
       expect(result).toBe(null);
-      expect(buckProject.getOwner).not.toHaveBeenCalled();
+      expect(BuckService.getOwner).not.toHaveBeenCalled();
     });
   });
 
@@ -202,7 +201,7 @@ describe('ClangFlagsManager', () => {
 
       // When headers are not properly owned, we should look for source files
       // in the same directory.
-      const spy = spyOn(buckProject, 'getOwner').andReturn(['//test:__default_headers__']);
+      const spy = ownerSpy.andReturn(['//test:__default_headers__']);
       const dir = nuclideUri.join(__dirname, 'fixtures');
       result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'testInternal.h'));
       expect(result).toEqual(['g++', '-fPIC', '-O3']);
@@ -222,11 +221,10 @@ describe('ClangFlagsManager', () => {
 
   it('gets flags from the compilation database', () => {
     waitsForPromise(async () => {
-      spyOn(buckProject, 'build').andCallThrough();
       let testFile = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
       let result = await flagsManager.getFlagsForSrc(testFile);
       expect(result).toEqual(['g++', '-fPIC', '-O3']);
-      expect(buckProject.build).not.toHaveBeenCalled();
+      expect(BuckService.build).not.toHaveBeenCalled();
 
       testFile = nuclideUri.join(__dirname, 'fixtures', 'test.h');
       result = await flagsManager.getFlagsForSrc(testFile);
@@ -235,7 +233,7 @@ describe('ClangFlagsManager', () => {
       // Fall back to Buck if it's not in the compilation DB.
       testFile = nuclideUri.join(__dirname, 'fixtures', 'test2.cpp');
       result = await flagsManager.getFlagsForSrc(testFile);
-      expect(buckProject.build).toHaveBeenCalled();
+      expect(BuckService.build).toHaveBeenCalled();
       expect(result).toEqual(null);
     });
   });
@@ -251,7 +249,6 @@ describe('ClangFlagsManager', () => {
         return watcher;
       });
 
-      spyOn(buckProject, 'build').andCallThrough();
       const testFile = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
       const result = await flagsManager.getFlagsForSrc(testFile);
       invariant(result != null);

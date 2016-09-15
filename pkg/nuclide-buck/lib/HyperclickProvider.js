@@ -15,12 +15,11 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 import type {Point} from 'atom';
 
-import {getBuckProjectRoot, createBuckProject} from '../../nuclide-buck-base';
+import {getBuckProjectRoot, getBuckService} from '../../nuclide-buck-base';
 import {wordAtPosition} from '../../commons-atom/range';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {lastly} from '../../commons-node/promise';
 import escapeStringRegExp from 'escape-string-regexp';
 
 const buildFileNameCache = new Map();
@@ -29,12 +28,10 @@ function getBuildFileName(buckRoot: string): Promise<?string> {
   if (buildFileName != null) {
     return buildFileName;
   }
-  const buckProject = createBuckProject(buckRoot);
-  buildFileName = lastly(
-    buckProject.getBuckConfig('buildfile', 'name')
-      .catch(() => null),
-    () => buckProject.dispose(),
-  );
+  const buckService = getBuckService(buckRoot);
+  buildFileName = buckService == null ? Promise.resolve(null) :
+    buckService.getBuckConfig(buckRoot, 'buildfile', 'name')
+      .catch(() => null);
   buildFileNameCache.set(buckRoot, buildFileName);
   return buildFileName;
 }
