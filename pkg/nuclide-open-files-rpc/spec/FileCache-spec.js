@@ -11,6 +11,8 @@
 
 import {Subject} from 'rxjs';
 import {FileCache} from '../lib/FileCache';
+import {Point as ServerPoint, Range as ServerRange} from 'simple-text-buffer';
+import {addMatchers} from '../../nuclide-test-helpers';
 
 function bufferToObject(buffer: atom$TextBuffer): Object {
   return {
@@ -28,6 +30,11 @@ function cacheToObject(cache: FileCache): Object {
 }
 
 describe('FileCache', () => {
+
+  beforeEach(function() {
+    addMatchers(this);
+  });
+
   let cache: FileCache = (null: any);
   // Initialize with a placeholder
   let finishEvents: () => Promise<Array<Object>> = async () => [];
@@ -134,18 +141,18 @@ describe('FileCache', () => {
           filePath: 'f1',
           version: 4,
         },
-        oldRange: {
-          start: {row: 0, column: 3},
-          end: {row: 0, column: 6},
-        },
+        oldRange: new ServerRange(
+          new ServerPoint(0, 3),
+          new ServerPoint(0, 6),
+        ),
         oldText: 'ten',
-        newRange: {
-          start: {row: 0, column: 3},
-          end: {row: 0, column: 9},
-        },
+        newRange: new ServerRange(
+          new ServerPoint(0, 3),
+          new ServerPoint(0, 9),
+        ),
         newText: 'eleven',
       });
-      expect(await finishEvents()).toEqual([{
+      expect(await finishEvents()).diffJson([{
         kind: 'open',
         filePath: 'f1',
         changeCount: 3,
@@ -335,15 +342,15 @@ describe('FileCache', () => {
             filePath: 'f1',
             version: 4,
           },
-          oldRange: {
-            start: {row: 0, column: 3},
-            end: {row: 0, column: 6},
-          },
+          oldRange: new ServerRange(
+            new ServerPoint(0, 3),
+            new ServerPoint(0, 6),
+          ),
           oldText: 'ten',
-          newRange: {
-            start: {row: 0, column: 3},
-            end: {row: 0, column: 9},
-          },
+          newRange: new ServerRange(
+            new ServerPoint(0, 3),
+            new ServerPoint(0, 9),
+          ),
           newText: 'eleven',
         });
       }).toThrow();
@@ -373,15 +380,15 @@ describe('FileCache', () => {
             filePath: 'f1',
             version: 5,
           },
-          oldRange: {
-            start: {row: 0, column: 3},
-            end: {row: 0, column: 6},
-          },
+          oldRange: new ServerRange(
+            new ServerPoint(0, 3),
+            new ServerPoint(0, 6),
+          ),
           oldText: 'ten',
-          newRange: {
-            start: {row: 0, column: 3},
-            end: {row: 0, column: 9},
-          },
+          newRange: new ServerRange(
+            new ServerPoint(0, 3),
+            new ServerPoint(0, 9),
+          ),
           newText: 'eleven',
         });
       }).toThrow();
@@ -412,15 +419,15 @@ describe('FileCache', () => {
             filePath: 'f1',
             version: 4,
           },
-          oldRange: {
-            start: {row: 0, column: 3},
-            end: {row: 0, column: 6},
-          },
+          oldRange: new ServerRange(
+            new ServerPoint(0, 3),
+            new ServerPoint(0, 6),
+          ),
           oldText: 'one',
-          newRange: {
-            start: {row: 0, column: 3},
-            end: {row: 0, column: 9},
-          },
+          newRange: new ServerRange(
+            new ServerPoint(0, 3),
+            new ServerPoint(0, 9),
+          ),
           newText: 'eleven',
         });
       }).toThrow();
@@ -488,15 +495,15 @@ describe('FileCache', () => {
           filePath: 'f1',
           version: 4,
         },
-        oldRange: {
-          start: {row: 0, column: 3},
-          end: {row: 0, column: 6},
-        },
+        oldRange: new ServerRange(
+          new ServerPoint(0, 3),
+          new ServerPoint(0, 6),
+        ),
         oldText: 'ten',
-        newRange: {
-          start: {row: 0, column: 3},
-          end: {row: 0, column: 9},
-        },
+        newRange: new ServerRange(
+          new ServerPoint(0, 3),
+          new ServerPoint(0, 9),
+        ),
         newText: 'eleven',
       });
       const value = await result;

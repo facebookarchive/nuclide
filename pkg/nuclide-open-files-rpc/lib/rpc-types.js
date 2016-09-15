@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {AtomRange, FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 
 export type FileOpenEvent = {
   kind: 'open',
@@ -31,8 +31,8 @@ export type FileCloseEvent = {
 export type FileEditEvent = {
   kind: 'edit',
   fileVersion: FileVersion,
-  oldRange: AtomRange,
-  newRange: AtomRange,
+  oldRange: atom$Range,
+  newRange: atom$Range,
   oldText: string,
   newText: string,
 };

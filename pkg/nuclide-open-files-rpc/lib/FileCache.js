@@ -16,10 +16,9 @@ import type {
   FileEditEvent,
   FileEvent,
 } from './rpc-types';
-import type {FileVersion, AtomRange} from '../../nuclide-open-files-common/lib/rpc-types';
+import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 
 import TextBuffer from 'simple-text-buffer';
-import {convertRange} from '../../nuclide-open-files-common';
 import invariant from 'assert';
 import {Deferred} from '../../commons-node/promise';
 import {MultiMap} from '../../commons-node/collection';
@@ -58,9 +57,8 @@ export class FileCache {
       case 'edit':
         invariant(buffer != null);
         invariant(buffer.changeCount === (changeCount - 1));
-        const oldRange: atom$RangeObject = event.oldRange;
-        invariant(buffer.getTextInRange(oldRange) === event.oldText);
-        buffer.setTextInRange(oldRange, event.newText);
+        invariant(buffer.getTextInRange(event.oldRange) === event.oldText);
+        buffer.setTextInRange(event.oldRange, event.newText);
         invariant(buffer.changeCount === changeCount);
         this._events.next(event);
         break;
@@ -96,9 +94,9 @@ export class FileCache {
     buffer.changeCount = changeCount;
     this._events.next(createEditEvent(
       this.createFileVersion(filePath, changeCount),
-      convertRange(oldRange),
+      oldRange,
       oldText,
-      convertRange(newRange),
+      newRange,
       buffer.getText(),
     ));
   }
@@ -203,9 +201,9 @@ function createCloseEvent(
 
 function createEditEvent(
   fileVersion: FileVersion,
-  oldRange: AtomRange,
+  oldRange: atom$Range,
   oldText: string,
-  newRange: AtomRange,
+  newRange: atom$Range,
   newText: string,
 ): FileEditEvent {
   return {

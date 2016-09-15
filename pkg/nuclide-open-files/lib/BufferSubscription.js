@@ -16,7 +16,6 @@ import type {NotifiersByConnection} from './NotifiersByConnection';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import {getLogger} from '../../nuclide-logging';
-import {convertRange} from '../../nuclide-open-files-common';
 
 const logger = getLogger();
 
@@ -61,10 +60,6 @@ export class BufferSubscription {
       const filePath = this._buffer.getPath();
       invariant(filePath != null);
       const version = this._buffer.changeCount;
-      const oldRange = convertRange(event.oldRange);
-      const newRange = convertRange(event.newRange);
-      const oldText = event.oldText;
-      const newText = event.newText;
 
       invariant(this._notifier != null);
       const notifier = await this._notifier;
@@ -75,10 +70,10 @@ export class BufferSubscription {
           filePath,
           version,
         },
-        oldRange,
-        newRange,
-        oldText,
-        newText,
+        oldRange: event.oldRange,
+        newRange: event.newRange,
+        oldText: event.oldText,
+        newText: event.newText,
       });
     }));
     subscriptions.add(buffer.onDidChangePath(() => {
