@@ -14,6 +14,7 @@ import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {
   RevisionStatusDisplay,
 } from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
+import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 
 import {React} from 'react-for-atom';
 
@@ -85,3 +86,29 @@ export type UIElement = {
 export type UIProvider = {
   composeUiElements: (filePath: string) => Promise<Array<UIElement>>,
 };
+
+// Redux store types.
+
+export type RepositoryState = {
+  diffOption: DiffOptionType,
+};
+
+export type AppState = {
+  activeRepository: ?HgRepositoryClient,
+  repositoriesStates: Map<HgRepositoryClient, RepositoryState>,
+};
+
+export type Store = {
+  getState(): AppState,
+  dispatch(action: Action): void,
+};
+
+export type SetDiffOptionAction = {
+  type: 'SET_DIFF_OPTION',
+  payload: {
+    repository: HgRepositoryClient,
+    diffOption: DiffOptionType,
+  },
+};
+
+export type Action = SetDiffOptionAction;
