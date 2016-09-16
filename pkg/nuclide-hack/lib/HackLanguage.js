@@ -72,8 +72,16 @@ export class HackLanguage {
   dispose() {
   }
 
+  getHackService(): HackService {
+    return this._hackService;
+  }
+
   getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
     return this._hackService.getProjectRoot(filePath);
+  }
+
+  isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
+    return this._hackService.isFileInHackProject(fileUri);
   }
 
   async getCompletions(
@@ -305,4 +313,12 @@ export async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLang
 
 export function clearHackLanguageCache(): void {
   connectionToHackLanguage.dispose();
+}
+
+export async function isFileInHackProject(fileUri: NuclideUri): Promise<?HackService> {
+  const language = await getHackLanguageForUri(fileUri);
+  if (language == null) {
+    return null;
+  }
+  return (await language.isFileInHackProject(fileUri)) ? language.getHackService() : null;
 }
