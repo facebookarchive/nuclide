@@ -45,13 +45,12 @@ function getHackService(filePath: NuclideUri): HackService {
 
 export type HackEnvironment = {
   hackService: HackService,
-  hackRoot: ?NuclideUri,
-  hackCommand: ?string,
-  isAvailable: boolean,
+  hackRoot: NuclideUri,
+  hackCommand: string,
   useIdeConnection: boolean,
 };
 
-export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<HackEnvironment> {
+export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<?HackEnvironment> {
   const hackService = getHackService(fileUri);
   const config = getConfig();
   const useIdeConnection = config.useIdeConnection;
@@ -61,14 +60,11 @@ export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<Ha
     config.hhClientPath,
     useIdeConnection,
     config.logLevel);
-  const isAvailable = hackEnvironment != null;
-  const {hackRoot, hackCommand} = hackEnvironment || {};
 
-  return {
+  return hackEnvironment == null ? null : {
     hackService,
-    hackRoot,
-    hackCommand,
-    isAvailable,
+    hackRoot: hackEnvironment.hackRoot,
+    hackCommand: hackEnvironment.hackCommand,
     useIdeConnection,
   };
 }

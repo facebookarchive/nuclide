@@ -55,11 +55,7 @@ describe('HackLanguage', () => {
     const HackLanguageCtor =
       ((uncachedRequire(require, '../lib/HackLanguage'): any): HackLanguageType)
         .HackLanguage;
-    hackLanguage = new HackLanguageCtor((mockService: any), true, basePath);
-  });
-
-  it('isHackAvailable', () => {
-    expect(hackLanguage.isHackAvailable()).toEqual(true);
+    hackLanguage = new HackLanguageCtor((mockService: any), basePath);
   });
 
   it('getCompletions', () => {

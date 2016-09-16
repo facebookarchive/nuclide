@@ -27,5 +27,5 @@ export async function getHackService(
   // directory has the HackService registered: it does not guarantee that the specified
   // directory is searchable via Hack. As such, we have to perform a second check to make sure
   // that the specified directory belongs to a Hack project.
-  return hackEnvironment.isAvailable ? hackEnvironment.hackService : null;
+  return hackEnvironment == null ? null : hackEnvironment.hackService;
 }

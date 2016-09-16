@@ -62,14 +62,12 @@ export type Definition = {
 export class HackLanguage {
 
   _hackService: HackService;
-  _hhAvailable: boolean;
 
   /**
    * `basePath` should be the directory where the .hhconfig file is located.
    */
-  constructor(hackService: HackService, hhAvailable: boolean) {
+  constructor(hackService: HackService) {
     this._hackService = hackService;
-    this._hhAvailable = hhAvailable;
   }
 
   dispose() {
@@ -207,10 +205,6 @@ export class HackLanguage {
     }
     return {baseUri: references[0].projectRoot, symbolName: references[0].name, references};
   }
-
-  isHackAvailable(): boolean {
-    return this._hhAvailable;
-  }
 }
 
 function hackRangeToAtomRange(position: HackRange): atom$Range {
@@ -300,9 +294,9 @@ function processCompletions(
 /**
  * This is responsible for managing (creating/disposing) multiple HackLanguage instances,
  * creating the designated HackService instances with the NuclideClient it needs per remote project.
- * Also, it deelegates the language feature request to the correct HackLanguage instance.
+ * Also, it delegates the language feature request to the correct HackLanguage instance.
  */
-const uriToHackLanguage: Map<string, HackLanguage> = new Map();
+const uriToHackLanguage: Map<string, ?HackLanguage> = new Map();
 
 // dummy key into uriToHackLanguage for local projects.
 // Any non-remote NuclideUri will do.
@@ -310,13 +304,6 @@ const uriToHackLanguage: Map<string, HackLanguage> = new Map();
 // rather than having a single HackLanguage for all local requests. Regardless, we haven't tested
 // local hack services so save that for another day.
 const LOCAL_URI_KEY = 'local-hack-key';
-
-function createHackLanguage(
-    hackService: HackService,
-    hhAvailable: boolean,
-): HackLanguage {
-  return new HackLanguage(hackService, hhAvailable);
-}
 
 // Returns null if we can't get the key at this time because the RemoteConnection is initializing.
 // This can happen on startup when reloading remote files.
@@ -346,22 +333,18 @@ export async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLang
 async function createHackLanguageIfNotExisting(
   key: string,
   fileUri: NuclideUri,
-): Promise<HackLanguage> {
-  let hackLanguage = uriToHackLanguage.get(key);
-  if (hackLanguage == null) {
+): Promise<?HackLanguage> {
+  if (!uriToHackLanguage.has(key)) {
     const hackEnvironment = await getHackEnvironmentDetails(fileUri);
-
     // If multiple calls were done asynchronously, then return the single-created HackLanguage.
-    hackLanguage = uriToHackLanguage.get(key);
-    if (hackLanguage == null) {
-      hackLanguage = createHackLanguage(
-        hackEnvironment.hackService,
-        hackEnvironment.isAvailable,
-      );
+    if (!uriToHackLanguage.has(key)) {
+      const hackLanguage = (hackEnvironment == null)
+        ? null
+        : new HackLanguage(hackEnvironment.hackService);
       uriToHackLanguage.set(key, hackLanguage);
     }
   }
-  return hackLanguage;
+  return uriToHackLanguage.get(key);
 }
 
 // Must clear the cache when servers go away.

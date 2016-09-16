@@ -185,9 +185,6 @@ class HackDiagnosticsProvider {
   }
 
   _getPathsToInvalidate(hackLanguage: HackLanguage): Array<NuclideUri> {
-    if (!hackLanguage.isHackAvailable()) {
-      return [];
-    }
     const filePaths = this._hackLanguageToFilePaths.get(hackLanguage);
     if (!filePaths) {
       return [];
