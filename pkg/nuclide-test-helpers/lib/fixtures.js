@@ -140,7 +140,7 @@ export async function generateHgRepo2Fixture(): Promise<string> {
 
 /**
  * Like `copyMercurialFixture` but looks in the entire fixture directory for
- * `BUCK-rename` and `TARGETS-rename`.
+ * `BUCK-rename` and `TARGETS-rename` and inserts a .buckversion if applicable.
  *
  * @param fixtureName The name of the subdirectory of the `fixtures/` directory.
  * @returns the path to the temporary directory that this function creates.
@@ -150,6 +150,27 @@ export async function copyBuildFixture(
   source: string,
 ): Promise<string> {
   const projectDir = await copyFixture(fixtureName, source);
+
+  await Promise.all([
+    copyBuckVersion(projectDir),
+    renameBuckFiles(projectDir),
+  ]);
+
+  return projectDir;
+}
+
+async function copyBuckVersion(projectDir: string) {
+  const versionFile = '.buckversion';
+  const buckVersionDir = await fsPromise.findNearestFile(versionFile, __dirname);
+  if (buckVersionDir != null) {
+    await fsPromise.copy(
+      nuclideUri.join(buckVersionDir, versionFile),
+      nuclideUri.join(projectDir, versionFile),
+    );
+  }
+}
+
+async function renameBuckFiles(projectDir: string) {
   const renames = await fsPromise.glob('**/{BUCK,TARGETS}-rename', {cwd: projectDir});
   await Promise.all(
     renames.map(name => {
@@ -158,7 +179,6 @@ export async function copyBuildFixture(
       return fsPromise.rename(prevName, newName);
     }),
   );
-  return projectDir;
 }
 
 /**
