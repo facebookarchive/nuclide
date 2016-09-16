@@ -13,7 +13,7 @@ import * as arcanist from '..';
 import nuclideUri from '../../commons-node/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
 import invariant from 'assert';
-import {copyFixture, uncachedRequire} from '../../nuclide-test-helpers';
+import {copyFixture} from '../../nuclide-test-helpers';
 
 const rootConfig = {
   project_id: 'project1',
@@ -111,7 +111,6 @@ describe('nuclide-arcanist-rpc', () => {
     ]);
     let arcResult: any;
     let execArgs: any;
-    let arcanistService: any;
     const fakeLint = {
       description: 'Trailing spaces not allowed. (no-trailing-spaces)',
       severity: 'warning',
@@ -152,12 +151,12 @@ describe('nuclide-arcanist-rpc', () => {
           return arcResult;
         },
       );
-      arcanistService = (uncachedRequire(require, '../lib/ArcanistService'): any);
+      arcanist.__TEST__.reset();
       // Add these paths to the arcConfigDirectoryMap as a roundabout way to mock
       // findArcConfigDirectory.
       for (const [arcDir, filePaths] of filePathMap) {
         for (const filePath of filePaths) {
-          arcanistService.arcConfigDirectoryMap.set(filePath, arcDir);
+          arcanist.__TEST__.arcConfigDirectoryMap.set(filePath, arcDir);
         }
       }
     });
@@ -167,7 +166,7 @@ describe('nuclide-arcanist-rpc', () => {
         const filePaths = filePathMap.get('/fake/path/one');
         invariant(filePaths != null);
         expect(filePaths.length).toBe(3);
-        await arcanistService.findDiagnostics(filePaths, []);
+        await arcanist.findDiagnostics(filePaths, []);
         // Expect arc lint to be called once
         expect(execArgs.length).toBe(1);
         for (const filePath of filePaths) {
@@ -179,7 +178,7 @@ describe('nuclide-arcanist-rpc', () => {
     it('should call `arc lint` separately for paths in different arc config dirs', () => {
       waitsForPromise(async () => {
         const filePaths = ['path1', 'foo'];
-        await arcanistService.findDiagnostics(filePaths, []);
+        await arcanist.findDiagnostics(filePaths, []);
         // Expect arc lint to be called twice.
         expect(execArgs.length).toBe(2);
         let path1Args;
@@ -199,7 +198,7 @@ describe('nuclide-arcanist-rpc', () => {
         setResult({
           path1: [fakeLint],
         });
-        const lints = await arcanistService.findDiagnostics(['/fake/path/one/path1'], []);
+        const lints = await arcanist.findDiagnostics(['/fake/path/one/path1'], []);
         expect(lints).toEqual([fakeLintResult]);
       });
     });
@@ -208,7 +207,7 @@ describe('nuclide-arcanist-rpc', () => {
       waitsForPromise(async () => {
         const fakeArcResult = {path1: [fakeLint]};
         setResult(fakeArcResult, fakeArcResult);
-        const lints = await arcanistService.findDiagnostics(['/fake/path/one/path1'], []);
+        const lints = await arcanist.findDiagnostics(['/fake/path/one/path1'], []);
         expect(lints).toEqual([fakeLintResult, fakeLintResult]);
       });
     });

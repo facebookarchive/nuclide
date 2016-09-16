@@ -47,8 +47,7 @@ export type ArcDiagnostic = {
   replacement?: string,
 };
 
-// Exported for testing
-export const arcConfigDirectoryMap: Map<NuclideUri, ?NuclideUri> = new Map();
+const arcConfigDirectoryMap: Map<NuclideUri, ?NuclideUri> = new Map();
 const arcProjectMap: Map<?NuclideUri, ?Object> = new Map();
 
 export async function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {
@@ -285,3 +284,12 @@ function convertLints(
     return diagnostic;
   });
 }
+
+export const __TEST__ = {
+  arcConfigDirectoryMap,
+  arcProjectMap,
+  reset() {
+    arcConfigDirectoryMap.clear();
+    arcProjectMap.clear();
+  },
+};
