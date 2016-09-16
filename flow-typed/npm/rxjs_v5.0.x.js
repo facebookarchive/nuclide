@@ -1,5 +1,5 @@
-// flow-typed signature: 02770968100201152cae41962bc98c3c
-// flow-typed version: e0dc1a4345/rxjs_v5.0.x/flow_>=v0.29.0
+// flow-typed signature: 338686efdbe8909225901d17ef85165f
+// flow-typed version: 97ff8d7751/rxjs_v5.0.x/flow_>=v0.29.0
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
@@ -25,33 +25,6 @@ type TeardownLogic = rx$ISubscription | () => void;
 
 declare module 'rxjs' {
   declare class Observable<+T> {
-    // This is actually variadic, but we only support one or two other observables.
-    static combineLatest<T, U>(
-      t: Observable<T>,
-      u: Observable<U>,
-     // Prevents Flow from picking this case when it should pick the next one.
-     // Necessary with v0.28.0, but maybe not later versions. This can be
-     // removed if the tests pass without it.
-      _: void,
-    ): Observable<[T, U]>;
-    static combineLatest<T, U, V>(
-      t: Observable<T>,
-      u: Observable<U>,
-      resultSelector: (t: T, u: U) => V,
-    ): Observable<V>;
-    static combineLatest<T, U, V>(
-      t: Observable<T>,
-      u: Observable<U>,
-      v: Observable<V>,
-      _: void,
-    ): Observable<[T, U, V]>;
-    static combineLatest<T, U, V, W>(
-      t: Observable<T>,
-      u: Observable<U>,
-      v: Observable<V>,
-      resultSelector: (t: T, u: U, v: V) => W,
-    ): Observable<W>;
-
     static concat(...sources: Observable<T>[]): Observable<T>;
 
     static create(
@@ -104,32 +77,6 @@ declare module 'rxjs' {
     cache(bufferSize?: number, windowTime?: number): Observable<T>;
 
     catch<U>(selector: (err: any, caught: Observable<T>) => Observable<U>): Observable<U>;
-
-    // This is actually variadic, but we only support one or two other observables.
-    combineLatest<U>(u: Observable<U>): Observable<[T, U]>;
-    combineLatest<U, V>(u: Observable<U>, v: Observable<V>): Observable<[T, U, V]>;
-    combineLatest<U, V>(
-      u: Observable<U>,
-      resultSelector: (t: T, u: U) => V,
-    ): Observable<V>;
-    combineLatest<U, V, W>(
-      u: Observable<U>,
-      v: Observable<V>,
-      resultSelector: (t: T, u: U, v: V) => W,
-    ): Observable<W>;
-
-    // This is actually variadic, but we only support one or two other observables.
-    withLatestFrom<U>(u: Observable<U>): Observable<[T, U]>;
-    withLatestFrom<U, V>(u: Observable<U>, v: Observable<V>): Observable<[T, U, V]>;
-    withLatestFrom<U, V>(
-      u: Observable<U>,
-      resultSelector: (t: T, u: U) => V,
-    ): Observable<V>;
-    withLatestFrom<U, V, W>(
-      u: Observable<U>,
-      v: Observable<V>,
-      resultSelector: (t: T, u: U, v: V) => W,
-    ): Observable<W>;
 
     concat(...sources: Observable<T>[]): Observable<T>;
 
@@ -263,6 +210,238 @@ declare module 'rxjs' {
       onError: ?(error: any) => mixed,
       onCompleted: ?() => mixed,
     ): Subscription;
+
+    static combineLatest<A, B>(
+      a: Observable<A>,
+      resultSelector: (a: A) => B,
+    ): Observable<B>;
+
+    static combineLatest<A, B, C>(
+      a: Observable<A>,
+      b: Observable<B>,
+      resultSelector: (a: A, b: B) => C,
+    ): Observable<C>;
+
+    static combineLatest<A, B, C, D>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      resultSelector: (a: A, b: B, c: C) => D,
+    ): Observable<D>;
+
+    static combineLatest<A, B, C, D, E>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      resultSelector: (a: A, b: B, c: C, d: D) => E,
+    ): Observable<E>;
+
+    static combineLatest<A, B, C, D, E, F>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      resultSelector: (a: A, b: B, c: C, d: D, e: E) => F,
+    ): Observable<F>;
+
+    static combineLatest<A, B, C, D, E, F, G>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      f: Observable<F>,
+      resultSelector: (a: A, b: B, c: C, d: D, e: E, f: F) => G,
+    ): Observable<G>;
+
+    static combineLatest<A, B, C, D, E, F, G, H>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      f: Observable<F>,
+      g: Observable<G>,
+      resultSelector: (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => H,
+    ): Observable<H>;
+
+    static combineLatest<A, B>(
+      a: Observable<A>,
+      b: Observable<B>,
+    ): Observable<[A, B]>;
+
+    static combineLatest<A, B, C>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+    ): Observable<[A, B, C]>;
+
+    static combineLatest<A, B, C, D>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+    ): Observable<[A, B, C, D]>;
+
+    static combineLatest<A, B, C, D, E>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+    ): Observable<[A, B, C, D, E]>;
+
+    static combineLatest<A, B, C, D, E, F>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      f: Observable<F>,
+    ): Observable<[A, B, C, D, E, F]>;
+
+    static combineLatest<A, B, C, D, E, F, G>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      f: Observable<F>,
+      g: Observable<G>,
+    ): Observable<[A, B, C, D, E, F, G]>;
+
+    static combineLatest<A, B, C, D, E, F, G, H>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      f: Observable<F>,
+      g: Observable<G>,
+      h: Observable<H>,
+    ): Observable<[A, B, C, D, E, F, G, H]>;
+
+    combineLatest<A>(
+      a: Observable<A>
+    ): Observable<[T, A]>;
+
+    combineLatest<A, B>(
+      a: Observable<A>,
+      resultSelector: (a: A) => B,
+    ): Observable<B>;
+
+    combineLatest<A, B, C>(
+      a: Observable<A>,
+      b: Observable<B>,
+      resultSelector: (a: A, b: B) => C,
+    ): Observable<C>;
+
+    combineLatest<A, B, C, D>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      resultSelector: (a: A, b: B, c: C) => D,
+    ): Observable<D>;
+
+    combineLatest<A, B, C, D, E>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      resultSelector: (a: A, b: B, c: C, d: D) => E,
+    ): Observable<E>;
+
+    combineLatest<A, B, C, D, E, F>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      resultSelector: (a: A, b: B, c: C, d: D, e: E) => F,
+    ): Observable<F>;
+
+    combineLatest<A, B, C, D, E, F, G>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      f: Observable<F>,
+      resultSelector: (a: A, b: B, c: C, d: D, e: E, f: F) => G,
+    ): Observable<G>;
+
+    combineLatest<A, B, C, D, E, F, G, H>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      f: Observable<F>,
+      g: Observable<G>,
+      resultSelector: (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => H,
+    ): Observable<H>;
+
+    withLatestFrom<A>(
+      a: Observable<A>
+    ): Observable<[T, A]>;
+
+    withLatestFrom<A, B>(
+      a: Observable<A>,
+      resultSelector: (a: A) => B,
+    ): Observable<B>;
+
+    withLatestFrom<A, B, C>(
+      a: Observable<A>,
+      b: Observable<B>,
+      resultSelector: (a: A, b: B) => C,
+    ): Observable<C>;
+
+    withLatestFrom<A, B, C, D>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      resultSelector: (a: A, b: B, c: C) => D,
+    ): Observable<D>;
+
+    withLatestFrom<A, B, C, D, E>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      resultSelector: (a: A, b: B, c: C, d: D) => E,
+    ): Observable<E>;
+
+    withLatestFrom<A, B, C, D, E, F>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      resultSelector: (a: A, b: B, c: C, d: D, e: E) => F,
+    ): Observable<F>;
+
+    withLatestFrom<A, B, C, D, E, F, G>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      f: Observable<F>,
+      resultSelector: (a: A, b: B, c: C, d: D, e: E, f: F) => G,
+    ): Observable<G>;
+
+    withLatestFrom<A, B, C, D, E, F, G, H>(
+      a: Observable<A>,
+      b: Observable<B>,
+      c: Observable<C>,
+      d: Observable<D>,
+      e: Observable<E>,
+      f: Observable<F>,
+      g: Observable<G>,
+      resultSelector: (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => H,
+    ): Observable<H>;
   }
 
   declare class ConnectableObservable<T> extends Observable<T> {
