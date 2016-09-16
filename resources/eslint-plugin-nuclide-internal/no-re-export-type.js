@@ -36,10 +36,6 @@ module.exports = function(context) {
   const namedTypeExports = [];
   const valueExports = [];
 
-  // TODO(asuarez): Write tests for "includeTypeAlias" mode and turn it on.
-  // const includeTypeAlias = context.options.indexOf('includeTypeAlias') !== -1;
-  const includeTypeAlias = false;
-
   function isImportType(name, moduleScope) {
     assert(moduleScope.type === 'module');
     for (const variable of moduleScope.variables) {
@@ -92,18 +88,7 @@ module.exports = function(context) {
         return;
       }
 
-      if (includeTypeAlias) {
-        for (const typeExport of [aliasTypeExport, namedTypeExports]) {
-          for (const typeNode of typeExport) {
-            context.report({
-              node: typeNode,
-              message: 'Unexpected type exporting.',
-            });
-          }
-        }
-        return;
-      }
-
+      // Only namedTypeExports are considered (not aliasTypeExport).
       for (const typeNode of namedTypeExports) {
         // export type … from …;
         if (typeNode.source !== null) {
@@ -130,9 +115,3 @@ module.exports = function(context) {
     },
   };
 };
-
-module.exports.schema = [
-  {
-    enum: ['includeTypeAlias'],
-  },
-];
