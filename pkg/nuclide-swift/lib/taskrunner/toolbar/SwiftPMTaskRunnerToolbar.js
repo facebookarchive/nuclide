@@ -62,7 +62,7 @@ export default class SwiftPMTaskRunnerToolbar extends React.Component {
     }
 
     return (
-      <div>
+      <div className="nuclide-swift-task-runner-toolbar">
         <AtomInput
           className="inline-block"
           size="sm"
