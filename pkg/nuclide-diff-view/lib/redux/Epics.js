@@ -27,12 +27,13 @@ import {
 
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
 
-function observeStatusChanges(repository: HgRepositoryClient): Observable<void> {
+function observeStatusChanges(repository: HgRepositoryClient): Observable<null> {
   return observableFromSubscribeFunction(
     repository.onDidChangeStatuses.bind(repository),
   )
   .debounceTime(UPDATE_STATUS_DEBOUNCE_MS)
-  .startWith();
+  .map(() => null)
+  .startWith(null);
 }
 
 // An added, but not-activated repository would continue to provide dirty file change updates,
@@ -66,21 +67,39 @@ export function activateRepositoryEpic(
     const revisionChanges = repository.observeRevisionChanges();
     const revisionStatusChanges = repository.observeRevisionStatusesChanges();
 
-    // TODO(most): Add loading states.
-    const selectedFileUpdates = Observable.combineLatest(revisionChanges, statusChanges)
-      .map(([revisions]) => revisions)
-      .filter(revisions => getHeadRevision(revisions) != null)
-      .switchMap(revisions => {
-        const {repositoriesStates} = store.getState();
-        const repositoryState = repositoriesStates.get(repository);
-        invariant(repositoryState != null, 'Cannot activate repository before adding it!');
-        return getSelectedFileChanges(
-          repository,
-          repositoryState.diffOption,
-          revisions,
-          repositoryState.selectedCompareId,
-        );
-      }).map(revisionFileChanges => Actions.updateSelectedFiles(repository, revisionFileChanges));
+    const {repositoriesStates} = store.getState();
+    const initialRepositoryState = repositoriesStates.get(repository);
+    invariant(initialRepositoryState != null, 'Cannot activate repository before adding it!');
+
+    const diffOptionChanges = actions.filter(a =>
+      a.type === ActionTypes.SET_DIFF_OPTION &&
+        a.payload.repository === repository,
+    ).map(a => {
+      invariant(a.type === ActionTypes.SET_DIFF_OPTION);
+      return a.payload.diffOption;
+    }).startWith(initialRepositoryState.diffOption);
+
+    const compareIdChanges = actions.filter(a =>
+      a.type === ActionTypes.SET_COMPARE_ID &&
+        a.payload.repository === repository,
+    ).map(a => {
+      invariant(a.type === ActionTypes.SET_COMPARE_ID);
+      return a.payload.compareId;
+    }).startWith(initialRepositoryState.selectedCompareId);
+
+    const selectedFileUpdates = Observable.combineLatest(
+      revisionChanges, diffOptionChanges, compareIdChanges, statusChanges,
+      (revisions, diffOption, compareId) => ({revisions, diffOption, compareId}),
+    ).filter(({revisions}) => getHeadRevision(revisions) != null)
+    .switchMap(({revisions, compareId, diffOption}) =>
+      // TODO(most): Add loading states.
+      getSelectedFileChanges(
+        repository,
+        diffOption,
+        revisions,
+        compareId,
+      ),
+    ).map(revisionFileChanges => Actions.updateSelectedFiles(repository, revisionFileChanges));
 
     const revisionStateUpdates = Observable.combineLatest(revisionChanges, revisionStatusChanges)
       .filter(([revisions]) => getHeadRevision(revisions) != null)

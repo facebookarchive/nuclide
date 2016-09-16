@@ -53,7 +53,7 @@ export function app(
 
 function getEmptyRepositoryState(): RepositoryState {
   return {
-    diffOption: DiffOption.DIRTY,
+    diffOption: DiffOption.COMPARE_COMMIT,
     revisionStatuses: new Map(),
     dirtyFileChanges: new Map(),
     headToForkBaseRevisions: [],
