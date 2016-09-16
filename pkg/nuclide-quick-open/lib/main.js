@@ -32,7 +32,7 @@ function getSearchResultManager() {
 
 const DEFAULT_PROVIDER = 'OmniSearchResultProvider';
 const TOPBAR_APPROX_HEIGHT = 100; // A reasonable heuristic that prevents us from having to measure.
-const MODAL_MARGIN = 32;
+const MODAL_MARGIN = 65;
 // don't pre-fill search input if selection is longer than this
 const MAX_SELECTION_LENGTH = 1000;
 
