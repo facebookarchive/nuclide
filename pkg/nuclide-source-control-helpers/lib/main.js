@@ -15,8 +15,7 @@ export type HgRepositoryDescription = {
   workingDirectoryPath: string,
 };
 
-module.exports = {
-  get findHgRepository() {
-    return require('./hg-repository');
-  },
-};
+
+import findHgRepository from './hg-repository';
+
+export {findHgRepository};

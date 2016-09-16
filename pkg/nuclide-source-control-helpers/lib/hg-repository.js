@@ -11,7 +11,7 @@
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import ini from 'ini';
-import fsPlus from 'fs-plus';
+import fs from 'fs';
 
 import type {HgRepositoryDescription} from '..';
 
@@ -19,39 +19,44 @@ import type {HgRepositoryDescription} from '..';
  * This function returns HgRepositoryDescription filled with a repoPath and
  * originURL iff it finds that the given directory is within an Hg repository.
  */
-function findHgRepository(directoryPath: string): ?HgRepositoryDescription {
-  let workingDirectoryPath = directoryPath;
-  let repoPath = nuclideUri.join(workingDirectoryPath, '.hg');
-  let originURL = null;
+export default function findHgRepository(startDirectoryPath: string): ?HgRepositoryDescription {
+  let workingDirectoryPath = startDirectoryPath;
   for (;;) {
-    const dirToTest = nuclideUri.join(workingDirectoryPath, '.hg');
-    if (fsPlus.isDirectorySync(dirToTest)) {
-      repoPath = dirToTest;
-      const hgrc = nuclideUri.join(dirToTest, 'hgrc');
+    const repoPath = nuclideUri.join(workingDirectoryPath, '.hg');
+    if (tryIsDirectorySync(repoPath)) {
+      let originURL = null;
       // Note that .hg/hgrc will not exist in a local repo created via `hg init`, for example.
-      if (fsPlus.isFileSync(hgrc)) {
-        const config = ini.parse(fsPlus.readFileSync(hgrc, 'utf8'));
+      const hgrc = tryReadFileSync(nuclideUri.join(repoPath, 'hgrc'));
+      if (hgrc != null) {
+        const config = ini.parse(hgrc);
         if (typeof config.paths === 'object' && typeof config.paths.default === 'string') {
           originURL = config.paths.default;
         }
       }
-      break;
+      return {repoPath, originURL, workingDirectoryPath};
     }
-    if (isRootDir(workingDirectoryPath)) {
+    const parentDir = nuclideUri.join(workingDirectoryPath, '..');
+    if (parentDir === workingDirectoryPath) {
       return null;
     } else {
-      workingDirectoryPath = getParentDir(workingDirectoryPath);
+      workingDirectoryPath = parentDir;
     }
   }
-  return {repoPath, originURL, workingDirectoryPath};
 }
 
-function isRootDir(directoryPath: string): boolean {
-  return nuclideUri.isRoot(directoryPath);
+function tryIsDirectorySync(dirname) {
+  try {
+    const stat = fs.statSync(dirname);
+    return stat.isDirectory();
+  } catch (err) {
+    return false;
+  }
 }
 
-function getParentDir(directoryPath: string): string {
-  return nuclideUri.resolve(directoryPath, '..');
+function tryReadFileSync(filename) {
+  try {
+    return fs.readFileSync(filename, 'utf8');
+  } catch (err) {
+    return null;
+  }
 }
-
-module.exports = findHgRepository;
