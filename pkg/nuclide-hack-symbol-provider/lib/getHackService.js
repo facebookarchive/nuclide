@@ -21,11 +21,5 @@ export async function getHackService(
   directory: atom$Directory,
 ): Promise<?HackService> {
   const directoryPath = directory.getPath();
-  const hackEnvironment = await getHackEnvironmentDetails(directoryPath);
-
-  // Note that service being non-null only verifies that the nuclide-server that corresponds to the
-  // directory has the HackService registered: it does not guarantee that the specified
-  // directory is searchable via Hack. As such, we have to perform a second check to make sure
-  // that the specified directory belongs to a Hack project.
-  return hackEnvironment == null ? null : hackEnvironment.hackService;
+  return await getHackEnvironmentDetails(directoryPath);
 }

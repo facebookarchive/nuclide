@@ -68,10 +68,8 @@ class ProjectStore {
 
   @trackTiming('toolbar.isFileHHVMProject')
   async _isFileHHVMProject(fileUri: NuclideUri): Promise<boolean> {
-    const hackEnvironment = await getHackEnvironmentDetails(fileUri);
     return nuclideUri.isRemote(fileUri)
-      && hackEnvironment != null
-      && await hackEnvironment.hackService.isFileInHackProject(fileUri);
+      && (await getHackEnvironmentDetails(fileUri)) != null;
   }
 
   @trackTiming('toolbar.isFileBuckProject')

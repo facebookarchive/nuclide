@@ -26,7 +26,7 @@ import {
   findHackConfigDir,
   setHackCommand,
   setUseIdeConnection,
-  getHackExecOptions,
+  getHackCommand,
 } from './hack-config';
 import {getUseIdeConnection, logger} from './hack-config';
 import {getHackConnectionService} from './HackProcess';
@@ -126,6 +126,17 @@ export type HackDefinition = {
 
 const HH_DIAGNOSTICS_DELAY_MS = 600;
 const HH_CLIENT_MAX_TRIES = 10;
+
+export async function initialize(
+  hackCommand: string,
+  useIdeConnection: boolean,
+  logLevel: LogLevel,
+): Promise<void> {
+  setHackCommand(hackCommand);
+  setUseIdeConnection(useIdeConnection);
+  logger.setLogLevel(logLevel);
+  await getHackCommand();
+}
 
 export async function getDiagnostics(
   file: NuclideUri,
@@ -267,18 +278,6 @@ export async function findReferences(
   return result;
 }
 
-export function getHackEnvironmentDetails(
-  localFile: NuclideUri,
-  hackCommand: string,
-  useIdeConnection: boolean,
-  logLevel: LogLevel,
-): Promise<?{hackRoot: NuclideUri, hackCommand: string}> {
-  setHackCommand(hackCommand);
-  setUseIdeConnection(useIdeConnection);
-  logger.setLogLevel(logLevel);
-  return getHackExecOptions(localFile);
-}
-
 /**
  * Performs a Hack symbol search in the specified directory.
  */
@@ -390,8 +389,8 @@ export async function formatSource(
  *   repositories that contain Hack code.
  */
 export async function isAvailableForDirectoryHack(rootDirectory: NuclideUri): Promise<boolean> {
-  const hackOptions = await getHackExecOptions(rootDirectory);
-  return hackOptions != null;
+  const rootDir = await findHackConfigDir(rootDirectory);
+  return rootDir != null;
 }
 
 /**

@@ -50,21 +50,15 @@ export type HackEnvironment = {
   useIdeConnection: boolean,
 };
 
-export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<?HackEnvironment> {
+export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<?HackService> {
   const hackService = getHackService(fileUri);
   const config = getConfig();
   const useIdeConnection = config.useIdeConnection;
   // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
-  const hackEnvironment = await hackService.getHackEnvironmentDetails(
-    fileUri,
+  await hackService.initialize(
     config.hhClientPath,
     useIdeConnection,
     config.logLevel);
 
-  return hackEnvironment == null ? null : {
-    hackService,
-    hackRoot: hackEnvironment.hackRoot,
-    hackCommand: hackEnvironment.hackCommand,
-    useIdeConnection,
-  };
+  return (await hackService.isFileInHackProject(fileUri)) ? hackService : null;
 }
