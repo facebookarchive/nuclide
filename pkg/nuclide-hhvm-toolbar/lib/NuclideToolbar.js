@@ -10,6 +10,7 @@
  */
 
 import type ProjectStore from './ProjectStore';
+import type {ProjectType} from './types';
 
 import {React} from 'react-for-atom';
 import HhvmToolbar from './HhvmToolbar';
@@ -20,7 +21,7 @@ type Props = {
 
 type State = {
   currentFilePath: string,
-  projectType: string,
+  projectType: ProjectType,
 };
 
 class NuclideToolbar extends React.Component {

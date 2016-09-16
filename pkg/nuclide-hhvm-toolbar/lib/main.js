@@ -76,7 +76,7 @@ class Activation {
   }
 
   consumeToolBar(getToolBar: GetToolBar): IDisposable {
-    const toolBar = getToolBar('nuclide-buck-toolbar');
+    const toolBar = getToolBar('nuclide-hhvm-toolbar');
     const {element} = toolBar.addButton({
       callback: 'nuclide-hhvm-toolbar:toggle',
       tooltip: 'Toggle HHVM Toolbar',

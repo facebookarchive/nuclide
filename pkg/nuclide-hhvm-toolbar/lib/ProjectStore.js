@@ -12,13 +12,11 @@
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
 import {CompositeDisposable, Emitter} from 'atom';
-import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import {trackTiming} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-
-type ProjectType = 'Buck' | 'Hhvm' | 'Other';
+import type {ProjectType} from './types';
 
 class ProjectStore {
   _disposables: CompositeDisposable;
@@ -56,25 +54,14 @@ class ProjectStore {
     }
     this._currentFilePath = fileName;
 
-    this._projectType = 'Other';
-    const isBuckProject = await this._isFileBuckProject(fileName);
-    if (isBuckProject) {
-      this._projectType = 'Buck';
-    } else if (await this._isFileHHVMProject(fileName)) {
-      this._projectType = 'Hhvm';
-    }
+    const newProjectType = await this._isFileHHVMProject(fileName) ? 'Hhvm' : 'Other';
+    this._projectType = newProjectType;
     this._emitter.emit('change');
   }
 
   @trackTiming('toolbar.isFileHHVMProject')
   async _isFileHHVMProject(fileUri: NuclideUri): Promise<boolean> {
     return nuclideUri.isRemote(fileUri) && (await isFileInHackProject(fileUri));
-  }
-
-  @trackTiming('toolbar.isFileBuckProject')
-  async _isFileBuckProject(fileName: string): Promise<boolean> {
-    const buckProject = await getBuckProjectRoot(fileName);
-    return buckProject != null;
   }
 
   getLastScriptCommand(filePath: string): string {
