@@ -384,16 +384,6 @@ export async function formatSource(
 }
 
 /**
- * @return whether this service can perform Hack symbol queries on the
- *   specified directory. Not all directories on a host correspond to
- *   repositories that contain Hack code.
- */
-export async function isAvailableForDirectoryHack(rootDirectory: NuclideUri): Promise<boolean> {
-  const rootDir = await findHackConfigDir(rootDirectory);
-  return rootDir != null;
-}
-
-/**
  * @param fileUri a file path.  It cannot be a directory.
  * @return whether the file represented by fileUri is inside of a Hack project.
  */

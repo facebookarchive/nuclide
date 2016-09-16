@@ -178,9 +178,5 @@ function createDummyHackService(): any {
     ): Promise<Array<HackSearchPosition>> {
       throw new Error('replace with implementation for testing');
     },
-
-    isAvailableForDirectoryHack(rootDirectory: NuclideUri): Promise<boolean> {
-      throw new Error('replace with implementation for testing');
-    },
   };
 }
