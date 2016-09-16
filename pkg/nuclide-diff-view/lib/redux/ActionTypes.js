@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-export const SET_DIFF_OPTION = 'SET_DIFF_OPTION';
-export const ADD_REPOSITORY = 'ADD_REPOSITORY';
 export const ACTIVATE_REPOSITORY = 'ACTIVATE_REPOSITORY';
-export const DEACTIVATE_REPOSITORY = 'ACTIVATE_REPOSITORY';
+export const ADD_REPOSITORY = 'ADD_REPOSITORY';
+export const DEACTIVATE_REPOSITORY = 'DEACTIVATE_REPOSITORY';
 export const DUMMY = 'DUMMY';
+export const SET_COMPARE_ID = 'SET_COMPARE_ID';
+export const SET_DIFF_OPTION = 'SET_DIFF_OPTION';

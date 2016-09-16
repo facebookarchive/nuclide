@@ -208,15 +208,12 @@ class Activation {
     this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
 
     const useReduxStore: boolean = (featureConfig.get('nuclide-diff-view.useReduxStore'): any);
-    if (useReduxStore) {
+    if (useReduxStore || atom.inSpecMode()) {
       this._subscriptions.add(
         // TODO(most): use action creators and consume states.
         states.subscribe(state => getLogger().info('diff-view-state', state)),
         getHgRepositoryStream().subscribe(repository => {
           this._actionCreators.addRepository(repository);
-          // TODO(most): Only activate the repository when the diff view is open
-          // and has that repository selected.
-          this._actionCreators.activateRepository(repository);
         }),
       );
     }
@@ -353,7 +350,7 @@ class Activation {
   _getDiffViewModel(): DiffViewModel {
     let diffViewModel = this._diffViewModel;
     if (diffViewModel == null) {
-      diffViewModel = new DiffViewModel();
+      diffViewModel = new DiffViewModel(this._actionCreators);
       diffViewModel.setUiProviders(this._uiProviders);
       this._subscriptions.add(diffViewModel);
       this._diffViewModel = diffViewModel;

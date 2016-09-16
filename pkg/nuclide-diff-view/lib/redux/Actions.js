@@ -13,9 +13,11 @@ import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
   ActivateRepositoryAction,
   AddRepositoryAction,
+  DeactivateRepositoryAction,
   DiffOptionType,
   DummyAction,
   FileChangeStatusValue,
+  SetCompareIdAction,
   SetDiffOptionAction,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
@@ -26,8 +28,10 @@ import type {
 
 import {
   ACTIVATE_REPOSITORY,
+  DEACTIVATE_REPOSITORY,
   ADD_REPOSITORY,
   DUMMY,
+  SET_COMPARE_ID,
   SET_DIFF_OPTION,
 } from './ActionTypes';
 
@@ -51,6 +55,19 @@ export function setDiffOption(
     payload: {
       repository,
       diffOption,
+    },
+  };
+}
+
+export function setCompareId(
+  repository: HgRepositoryClient,
+  compareId: ?number,
+): SetCompareIdAction {
+  return {
+    type: SET_COMPARE_ID,
+    payload: {
+      repository,
+      compareId,
     },
   };
 }
@@ -79,6 +96,17 @@ export function activateRepository(
 ): ActivateRepositoryAction {
   return {
     type: ACTIVATE_REPOSITORY,
+    payload: {
+      repository,
+    },
+  };
+}
+
+export function deactivateRepository(
+  repository: HgRepositoryClient,
+): DeactivateRepositoryAction {
+  return {
+    type: DEACTIVATE_REPOSITORY,
     payload: {
       repository,
     },

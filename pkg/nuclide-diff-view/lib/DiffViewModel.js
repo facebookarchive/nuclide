@@ -30,6 +30,7 @@ import type {
 } from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-rpc/lib/utils';
+import typeof * as BoundActionCreators from './redux/Actions';
 
 type FileDiffState = {
   revisionInfo: RevisionInfo,
@@ -231,8 +232,10 @@ export default class DiffViewModel {
   _state: State;
   _publishUpdates: Subject<any>;
   _serializedUpdateActiveFileDiff: () => Promise<void>;
+  _actionCreators: BoundActionCreators;
 
-  constructor() {
+  constructor(actionCreators: BoundActionCreators) {
+    this._actionCreators = actionCreators;
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._activeSubscriptions = new CompositeDisposable();
@@ -485,7 +488,10 @@ export default class DiffViewModel {
       viewMode,
     });
     if (this._activeRepositoryStack != null) {
-      this._activeRepositoryStack.setDiffOption(viewModeToDiffOption(this._state.viewMode));
+      const repositoryStack = this._activeRepositoryStack;
+      const diffOption = viewModeToDiffOption(this._state.viewMode);
+      repositoryStack.setDiffOption(diffOption);
+      this._actionCreators.setDiffOption(repositoryStack.getRepository(), diffOption);
     }
     this._updateViewChangedFilesStatus();
     if (loadModeState) {
@@ -687,6 +693,7 @@ export default class DiffViewModel {
       compareRevisionInfo: revision,
     });
     repositoryStack.setCompareRevision(revision).catch(notifyInternalError);
+    this._actionCreators.setCompareId(repositoryStack.getRepository(), revision.id);
   }
 
   getPublishUpdates(): Subject<any> {
@@ -756,7 +763,9 @@ export default class DiffViewModel {
       return;
     }
     this._activeRepositoryStack = repositoryStack;
-    repositoryStack.setDiffOption(viewModeToDiffOption(this._state.viewMode));
+    const diffOption = viewModeToDiffOption(this._state.viewMode);
+    repositoryStack.setDiffOption(diffOption);
+    this._actionCreators.setDiffOption(repositoryStack.getRepository(), diffOption);
     if (!this._isActive) {
       return;
     }
@@ -1355,17 +1364,20 @@ export default class DiffViewModel {
   activate(): void {
     this._updateRepositories();
     this._isActive = true;
-    for (const repositoryStack of this._repositoryStacks.values()) {
+    for (const [repository, repositoryStack] of this._repositoryStacks.entries()) {
       repositoryStack.activate();
+      // TODO(most): Consider activating only the visible repository.
+      this._actionCreators.activateRepository(repository);
     }
   }
 
   deactivate(): void {
     this._isActive = false;
-    if (this._activeRepositoryStack != null) {
-      this._activeRepositoryStack.deactivate();
-      this._activeRepositoryStack = null;
+    for (const [repository, repositoryStack] of this._repositoryStacks.entries()) {
+      repositoryStack.deactivate();
+      this._actionCreators.deactivateRepository(repository);
     }
+    this._activeRepositoryStack = null;
     this._setState({
       ...this._state,
       ...getInitialFileChangeState(),

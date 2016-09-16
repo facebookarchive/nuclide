@@ -152,6 +152,14 @@ export type SetDiffOptionAction = {
   },
 };
 
+export type SetCompareIdAction = {
+  type: 'SET_COMPARE_ID',
+  payload: {
+    repository: HgRepositoryClient,
+    compareId: ?number,
+  },
+};
+
 export type DummyAction = {
   type: 'DUMMY',
 };
@@ -159,6 +167,7 @@ export type DummyAction = {
 export type Action = ActivateRepositoryAction
   | AddRepositoryAction
   | DeactivateRepositoryAction
+  | SetCompareIdAction
   | SetDiffOptionAction
   | DummyAction
 ;
@@ -166,5 +175,6 @@ export type Action = ActivateRepositoryAction
 export type RepositoryAction = ActivateRepositoryAction
   | AddRepositoryAction
   | DeactivateRepositoryAction
+  | SetCompareIdAction
   | SetDiffOptionAction
 ;
