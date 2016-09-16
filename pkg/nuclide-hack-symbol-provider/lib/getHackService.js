@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
+import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {isFileInHackProject, getHackServiceByNuclideUri} from '../../nuclide-hack/lib/HackLanguage';
@@ -19,7 +19,7 @@ import {isFileInHackProject, getHackServiceByNuclideUri} from '../../nuclide-hac
  */
 export async function getHackService(
   directory: atom$Directory,
-): Promise<?HackService> {
+): Promise<?HackLanguageService> {
   const directoryPath = directory.getPath();
   return (await isFileInHackProject(directoryPath))
     ? (await getHackServiceByNuclideUri(directoryPath)) : null;

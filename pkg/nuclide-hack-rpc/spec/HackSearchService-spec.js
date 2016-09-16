@@ -11,10 +11,18 @@
 
 import type {HackSearchPosition} from '../lib/HackService';
 import type {SearchResultTypeValue} from '../../nuclide-hack-common';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 import invariant from 'assert';
-import {queryHack} from '../lib/HackService';
+import {initialize} from '../lib/HackService';
+
+async function queryHack(
+  rootDirectory: NuclideUri,
+  queryString: string,
+): Promise<Array<HackSearchPosition>> {
+  return await (await initialize('', false, 'OFF')).queryHack(rootDirectory, queryString);
+}
 
 describe('queryHack()', () => {
   let getSearchResults: ?((

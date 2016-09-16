@@ -23,14 +23,15 @@ import type {
   HackDefinition,
 } from '../../nuclide-hack-rpc/lib/HackService';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
+import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackCoverageResult} from './TypedRegions';
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {getInitializedHackService} from './utils';
+import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import {Range} from 'atom';
 import {getLogger} from '../../nuclide-logging';
 import {convertTypedRegionsToCoverageResult} from './TypedRegions';
 import invariant from 'assert';
+import {getConfig} from './config';
 
 export type DefinitionResult = {
   path: NuclideUri,
@@ -60,19 +61,19 @@ export type Definition = {
  */
 export class HackLanguage {
 
-  _hackService: HackService;
+  _hackService: HackLanguageService;
 
   /**
    * `basePath` should be the directory where the .hhconfig file is located.
    */
-  constructor(hackService: HackService) {
+  constructor(hackService: HackLanguageService) {
     this._hackService = hackService;
   }
 
   dispose() {
   }
 
-  getHackService(): HackService {
+  getLanguageService(): HackLanguageService {
     return this._hackService;
   }
 
@@ -301,10 +302,20 @@ function processCompletions(
   });
 }
 
+const HACK_SERVICE_NAME = 'HackService';
+
 const connectionToHackLanguage: ConnectionCache<HackLanguage>
   = new ConnectionCache(async connection => {
-    const service = await getInitializedHackService(connection);
-    return new HackLanguage(service);
+    const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
+    const config = getConfig();
+    const useIdeConnection = config.useIdeConnection;
+    // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
+    const languageService = await hackService.initialize(
+      config.hhClientPath,
+      useIdeConnection,
+      config.logLevel);
+
+    return new HackLanguage(languageService);
   });
 
 export async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguage> {
@@ -315,12 +326,14 @@ export function clearHackLanguageCache(): void {
   connectionToHackLanguage.dispose();
 }
 
-export async function getHackServiceByNuclideUri(fileUri: NuclideUri): Promise<?HackService> {
+export async function getHackServiceByNuclideUri(
+  fileUri: NuclideUri,
+): Promise<?HackLanguageService> {
   const language = await getHackLanguageForUri(fileUri);
   if (language == null) {
     return null;
   }
-  return language.getHackService();
+  return language.getLanguageService();
 }
 
 export async function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {

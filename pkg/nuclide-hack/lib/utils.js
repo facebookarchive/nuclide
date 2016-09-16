@@ -9,14 +9,7 @@
  * the root directory of this source tree.
  */
 
-import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
-import type {ServerConnection} from '../../nuclide-remote-connection';
-
-import {getConfig} from './config';
-import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {wordAtPosition} from '../../commons-atom/range';
-
-const HACK_SERVICE_NAME = 'HackService';
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
@@ -32,22 +25,4 @@ export function getIdentifierAndRange(
 export function getIdentifierAtPosition(editor: atom$TextEditor, position: atom$Point): ?string {
   const result = getIdentifierAndRange(editor, position);
   return result == null ? null : result.id;
-}
-
-function initializeService(service: HackService): Promise<void> {
-  const config = getConfig();
-  const useIdeConnection = config.useIdeConnection;
-  // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
-  return service.initialize(
-    config.hhClientPath,
-    useIdeConnection,
-    config.logLevel);
-}
-
-export async function getInitializedHackService(
-  connection: ?ServerConnection,
-): Promise<HackService> {
-  const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
-  await initializeService(hackService);
-  return hackService;
 }
