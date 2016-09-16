@@ -10,7 +10,7 @@
  */
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {getHackEnvironmentDetails} from '../../nuclide-hack/lib/utils';
+import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
 import {CompositeDisposable, Emitter} from 'atom';
 import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import {trackTiming} from '../../nuclide-analytics';
@@ -68,8 +68,7 @@ class ProjectStore {
 
   @trackTiming('toolbar.isFileHHVMProject')
   async _isFileHHVMProject(fileUri: NuclideUri): Promise<boolean> {
-    return nuclideUri.isRemote(fileUri)
-      && (await getHackEnvironmentDetails(fileUri)) != null;
+    return nuclideUri.isRemote(fileUri) && (await isFileInHackProject(fileUri));
   }
 
   @trackTiming('toolbar.isFileBuckProject')

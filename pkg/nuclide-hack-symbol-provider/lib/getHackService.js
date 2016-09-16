@@ -12,7 +12,7 @@
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {getHackEnvironmentDetails} from '../../nuclide-hack/lib/utils';
+import {isFileInHackProject, getHackServiceByNuclideUri} from '../../nuclide-hack/lib/HackLanguage';
 
 /**
  * @return HackService for the specified directory if it is part of a Hack project.
@@ -21,5 +21,6 @@ export async function getHackService(
   directory: atom$Directory,
 ): Promise<?HackService> {
   const directoryPath = directory.getPath();
-  return await getHackEnvironmentDetails(directoryPath);
+  return (await isFileInHackProject(directoryPath))
+    ? (await getHackServiceByNuclideUri(directoryPath)) : null;
 }

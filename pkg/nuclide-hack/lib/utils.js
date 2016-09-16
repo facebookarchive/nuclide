@@ -9,13 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 
 import {getConfig} from './config';
-import {getServiceByNuclideUri, getServiceByConnection} from '../../nuclide-remote-connection';
-import invariant from 'assert';
+import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {wordAtPosition} from '../../commons-atom/range';
 
 const HACK_SERVICE_NAME = 'HackService';
@@ -36,14 +34,6 @@ export function getIdentifierAtPosition(editor: atom$TextEditor, position: atom$
   return result == null ? null : result.id;
 }
 
-// Don't call this directly from outside this package.
-// Call getHackEnvironmentDetails instead.
-function getHackService(filePath: NuclideUri): HackService {
-  const hackRegisteredService = getServiceByNuclideUri(HACK_SERVICE_NAME, filePath);
-  invariant(hackRegisteredService);
-  return hackRegisteredService;
-}
-
 function initializeService(service: HackService): Promise<void> {
   const config = getConfig();
   const useIdeConnection = config.useIdeConnection;
@@ -60,10 +50,4 @@ export async function getInitializedHackService(
   const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
   await initializeService(hackService);
   return hackService;
-}
-
-export async function getHackEnvironmentDetails(fileUri: NuclideUri): Promise<?HackService> {
-  const hackService = getHackService(fileUri);
-  await initializeService(hackService);
-  return (await hackService.isFileInHackProject(fileUri)) ? hackService : null;
 }

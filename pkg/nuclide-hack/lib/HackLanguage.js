@@ -315,10 +315,18 @@ export function clearHackLanguageCache(): void {
   connectionToHackLanguage.dispose();
 }
 
-export async function isFileInHackProject(fileUri: NuclideUri): Promise<?HackService> {
+export async function getHackServiceByNuclideUri(fileUri: NuclideUri): Promise<?HackService> {
   const language = await getHackLanguageForUri(fileUri);
   if (language == null) {
     return null;
   }
-  return (await language.isFileInHackProject(fileUri)) ? language.getHackService() : null;
+  return language.getHackService();
+}
+
+export async function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {
+  const language = await getHackLanguageForUri(fileUri);
+  if (language == null) {
+    return false;
+  }
+  return await language.isFileInHackProject(fileUri);
 }
