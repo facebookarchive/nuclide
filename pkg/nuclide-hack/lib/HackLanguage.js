@@ -25,9 +25,8 @@ import type {
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackCoverageResult} from './TypedRegions';
 
-import {RemoteConnection} from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {getHackEnvironmentDetails} from './utils';
+import {ConnectionCache} from '../../nuclide-remote-connection';
+import {getInitializedHackService} from './utils';
 import {Range} from 'atom';
 import {getLogger} from '../../nuclide-logging';
 import {convertTypedRegionsToCoverageResult} from './TypedRegions';
@@ -294,66 +293,16 @@ function processCompletions(
   });
 }
 
-
-/**
- * This is responsible for managing (creating/disposing) multiple HackLanguage instances,
- * creating the designated HackService instances with the NuclideClient it needs per remote project.
- * Also, it delegates the language feature request to the correct HackLanguage instance.
- */
-const uriToHackLanguage: Map<string, ?HackLanguage> = new Map();
-
-// dummy key into uriToHackLanguage for local projects.
-// Any non-remote NuclideUri will do.
-// TODO: I suspect we should key the local service off of the presence of a .hhconfig file
-// rather than having a single HackLanguage for all local requests. Regardless, we haven't tested
-// local hack services so save that for another day.
-const LOCAL_URI_KEY = 'local-hack-key';
-
-// Returns null if we can't get the key at this time because the RemoteConnection is initializing.
-// This can happen on startup when reloading remote files.
-function getKeyOfUri(uri: NuclideUri): ?string {
-  const remoteConnection = RemoteConnection.getForUri(uri);
-  return remoteConnection == null ?
-    (nuclideUri.isRemote(uri) ? null : LOCAL_URI_KEY) :
-    remoteConnection.getUriForInitialWorkingDirectory();
-}
-
-export function getCachedHackLanguageForUri(uri: NuclideUri): ?HackLanguage {
-  const key = getKeyOfUri(uri);
-  return key == null ? null : uriToHackLanguage.get(uri);
-}
+const connectionToHackLanguage: ConnectionCache<HackLanguage>
+  = new ConnectionCache(async connection => {
+    const service = await getInitializedHackService(connection);
+    return new HackLanguage(service);
+  });
 
 export async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguage> {
-  if (uri == null || uri.length === 0) {
-    return null;
-  }
-  const key = getKeyOfUri(uri);
-  if (key == null) {
-    return null;
-  }
-  return await createHackLanguageIfNotExisting(key, uri);
+  return await connectionToHackLanguage.getForUri(uri);
 }
 
-async function createHackLanguageIfNotExisting(
-  key: string,
-  fileUri: NuclideUri,
-): Promise<?HackLanguage> {
-  if (!uriToHackLanguage.has(key)) {
-    const hackService = await getHackEnvironmentDetails(fileUri);
-    // If multiple calls were done asynchronously, then return the single-created HackLanguage.
-    if (!uriToHackLanguage.has(key)) {
-      const hackLanguage = (hackService == null)
-        ? null
-        : new HackLanguage(hackService);
-      uriToHackLanguage.set(key, hackLanguage);
-    }
-  }
-  return uriToHackLanguage.get(key);
-}
-
-// Must clear the cache when servers go away.
-// TODO: Could be more precise about this and only clear those entries
-// for the closed connection.
-export function clearHackLanguageCache() {
-  uriToHackLanguage.clear();
+export function clearHackLanguageCache(): void {
+  connectionToHackLanguage.dispose();
 }

@@ -26,16 +26,14 @@ import {OutlineViewProvider} from './OutlineViewProvider';
 import {HackDefinitionProvider} from './HackDefinitionProvider';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import AutocompleteProvider from './AutocompleteProvider';
-import {ServerConnection} from '../../nuclide-remote-connection';
-import {clearHackLanguageCache} from './HackLanguage';
 import FindReferencesProvider from './FindReferencesProvider';
 import TypeHintProvider from './TypeHintProvider';
 import {HackEvaluationExpressionProvider} from './HackEvaluationExpressionProvider';
 import HackDiagnosticsProvider from './HackDiagnosticsProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import {getCachedHackLanguageForUri} from './HackLanguage';
 import CodeFormatProvider from './CodeFormatProvider';
+import {clearHackLanguageCache} from './HackLanguage';
 
 
 const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
@@ -50,15 +48,10 @@ let definitionProvider: ?DefinitionProvider = null;
 export function activate() {
   subscriptions = new CompositeDisposable();
   subscriptions.add(onDidRemoveProjectPath(projectPath => {
-    const hackLanguage = getCachedHackLanguageForUri(projectPath);
-    if (hackLanguage) {
-      hackLanguage.dispose();
-    }
     if (hackDiagnosticsProvider) {
       hackDiagnosticsProvider.invalidateProjectPath(projectPath);
     }
   }));
-  subscriptions.add(ServerConnection.onDidCloseServerConnection(clearHackLanguageCache));
   subscriptions.add(new Disposable(clearHackLanguageCache));
 }
 
