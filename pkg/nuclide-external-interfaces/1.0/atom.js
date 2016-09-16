@@ -67,6 +67,8 @@ declare class atom$Package {
   getActivationHooks(): Array<string>,
   onDidDeactivate(cb: () => mixed): IDisposable,
   activateNow(): void,
+  // Undocumented
+  getCanDeferMainModuleRequireStorageKey(): string,
 }
 
 /**
@@ -1112,13 +1114,13 @@ type atom$ContextMenuItem = {
   visible?: boolean,
 };
 
-declare class atom$Deserializer {
+type atom$Deserializer = {
   name: string,
   deserialize: (state: Object) => mixed,
-}
+};
 
 declare class atom$DeserializerManager {
-  add(...deserializers: atom$Deserializer[]): IDisposable,
+  add(...deserializers: Array<atom$Deserializer>): IDisposable,
   deserialize(state: Object, params?: Object): mixed,
 }
 
