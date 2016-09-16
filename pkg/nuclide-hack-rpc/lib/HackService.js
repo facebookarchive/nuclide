@@ -383,6 +383,10 @@ export async function formatSource(
   return (result: any);
 }
 
+export async function getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
+  return findHackConfigDir(fileUri);
+}
+
 /**
  * @param fileUri a file path.  It cannot be a directory.
  * @return whether the file represented by fileUri is inside of a Hack project.

@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type HackDiagnosticsProvider from '../lib/HackDiagnosticsProvider';
+
+import invariant from 'assert';
 import {Range} from 'atom';
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 
@@ -16,27 +19,13 @@ const testPath = 'myPath';
 
 describe('HackDiagnosticsProvider', () => {
 
-  let hackDiagnosticsProvider: any;
-  let fakeHackLanguages: Array<any>;
-
-  function createFakeHackLanguage(uri: string) {
-    return {
-      _uri: uri,
-    };
-  }
+  let hackDiagnosticsProvider: HackDiagnosticsProvider = (null: any);
 
   beforeEach(() => {
-    // Mock 2 hack languages
-    fakeHackLanguages = [];
-    fakeHackLanguages.push(createFakeHackLanguage('/hack/root1'));
-    fakeHackLanguages.push(createFakeHackLanguage('/hack/root2'));
-    spyOn(require('../lib/HackLanguage'), 'getCachedHackLanguageForUri')
-      .andCallFake(uri =>
-      fakeHackLanguages.filter(fakeLanguage => uri.startsWith(fakeLanguage._uri))[0]);
     class FakeProviderBase { }
-    const HackDiagnosticsProvider
+    const HackDiagnosticsProviderClass
       = (uncachedRequire(require, '../lib/HackDiagnosticsProvider'): any);
-    hackDiagnosticsProvider = new HackDiagnosticsProvider(
+    hackDiagnosticsProvider = new HackDiagnosticsProviderClass(
       false,
       (FakeProviderBase: any),
     );
@@ -73,9 +62,13 @@ describe('HackDiagnosticsProvider', () => {
         range: new Range([0, 2], [0, 4]),
       };
 
-      const message = hackDiagnosticsProvider
+      const messageMap = hackDiagnosticsProvider
         ._processDiagnostics(diagnostics, testPath)
-        .filePathToMessages.get(testPath)[0];
+        .filePathToMessages;
+      invariant(messageMap != null);
+      const messages = messageMap.get(testPath);
+      invariant(messages != null);
+      const message = messages[0];
       expect(message).toEqual(expectedOutput);
     });
 
@@ -89,6 +82,7 @@ describe('HackDiagnosticsProvider', () => {
               line: 1,
               start: 3,
               end: 4,
+              code: 1234,
             },
           ],
         },
@@ -97,6 +91,7 @@ describe('HackDiagnosticsProvider', () => {
       const allMessages = hackDiagnosticsProvider
         ._processDiagnostics(diagnostics, testPath)
         .filePathToMessages;
+      invariant(allMessages != null);
       expect(allMessages.size).toBe(1);
       expect(allMessages.has('notMyPath')).toBe(true);
     });
@@ -140,9 +135,13 @@ describe('HackDiagnosticsProvider', () => {
         }],
       };
 
-      const message = hackDiagnosticsProvider
+      const pathToMessages = hackDiagnosticsProvider
         ._processDiagnostics(diagnostics, testPath)
-        .filePathToMessages.get(testPath)[0];
+        .filePathToMessages;
+      invariant(pathToMessages != null);
+      const messages = pathToMessages.get(testPath);
+      invariant(messages != null);
+      const message = messages[0];
       expect(message).toEqual(expectedOutput);
     });
   });
@@ -150,21 +149,21 @@ describe('HackDiagnosticsProvider', () => {
   describe('invalidateProjectPath', () => {
     it('should remove corresponding errors to certain hack language', () => {
       // Mock a diagnostic provider with 2 hack language roots, sharing common file real paths.
-      const hackLanguageToFilePaths = new Map();
+      const projectRootToFilePaths = new Map();
       const root1Paths = ['/hack/root1/file.js', '/hack/common/file.js'];
       const root2Paths = ['/hack/root2/file.js', '/hack/common/file.js'];
-      hackLanguageToFilePaths.set(fakeHackLanguages[0], new Set(root1Paths));
-      hackLanguageToFilePaths.set(fakeHackLanguages[1], new Set(root2Paths));
-      hackDiagnosticsProvider._hackLanguageToFilePaths = hackLanguageToFilePaths;
+      projectRootToFilePaths.set('/hack/root1', new Set(root1Paths));
+      projectRootToFilePaths.set('/hack/root2', new Set(root2Paths));
+      hackDiagnosticsProvider._projectRootToFilePaths = projectRootToFilePaths;
       // Mock the `publishMessageInvalidation` call to capture call arguments.
       const publishHandler = jasmine.createSpy('publish');
-      hackDiagnosticsProvider._providerBase.publishMessageInvalidation = publishHandler;
+      (hackDiagnosticsProvider._providerBase: any).publishMessageInvalidation = publishHandler;
 
       hackDiagnosticsProvider.invalidateProjectPath('/hack/root1');
       expect(publishHandler.callCount).toBe(1);
       expect(publishHandler.argsForCall[0][0]).toEqual({scope: 'file', filePaths: root1Paths});
-      expect(hackDiagnosticsProvider._hackLanguageToFilePaths.size).toBe(1);
-      expect(hackDiagnosticsProvider._hackLanguageToFilePaths.get(fakeHackLanguages[1]))
+      expect(hackDiagnosticsProvider._projectRootToFilePaths.size).toBe(1);
+      expect(hackDiagnosticsProvider._projectRootToFilePaths.get('/hack/root2'))
         .toEqual(new Set(root2Paths));
     });
   });

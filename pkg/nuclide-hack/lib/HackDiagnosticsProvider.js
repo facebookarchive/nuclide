@@ -11,7 +11,6 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import type {HackLanguage} from './HackLanguage';
 import type {
   HackDiagnostic,
   SingleHackMessage,
@@ -23,8 +22,9 @@ import type {
   DiagnosticProviderUpdate,
 } from '../../nuclide-diagnostics-common';
 
+import nuclideUri from '../../commons-node/nuclideUri';
 import {trackTiming} from '../../nuclide-analytics';
-import {getHackLanguageForUri, getCachedHackLanguageForUri} from './HackLanguage';
+import {getHackLanguageForUri} from './HackLanguage';
 import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {Range} from 'atom';
@@ -92,7 +92,7 @@ function hackMessageToDiagnosticMessage(
   return diagnosticMessage;
 }
 
-class HackDiagnosticsProvider {
+export default class HackDiagnosticsProvider {
   _busySignalProvider: BusySignalProviderBase;
   _providerBase: DiagnosticsProviderBase;
   _requestSerializer: RequestSerializer<any>;
@@ -101,7 +101,7 @@ class HackDiagnosticsProvider {
    * Maps hack root to the set of file paths under that root for which we have
    * ever reported diagnostics.
    */
-  _hackLanguageToFilePaths: Map<HackLanguage, Set<NuclideUri>>;
+  _projectRootToFilePaths: Map<NuclideUri, Set<NuclideUri>>;
 
   constructor(
     shouldRunOnTheFly: boolean,
@@ -117,7 +117,7 @@ class HackDiagnosticsProvider {
     };
     this._providerBase = new ProviderBase(utilsOptions);
     this._requestSerializer = new RequestSerializer();
-    this._hackLanguageToFilePaths = new Map();
+    this._projectRootToFilePaths = new Map();
   }
 
   _runDiagnostics(textEditor: atom$TextEditor): void {
@@ -129,8 +129,8 @@ class HackDiagnosticsProvider {
 
   @trackTiming('hack.run-diagnostics')
   async _runDiagnosticsImpl(textEditor: atom$TextEditor): Promise<void> {
-    const filePath = textEditor.getPath();
-    if (!filePath) {
+    let filePath = textEditor.getPath();
+    if (filePath == null) {
       return;
     }
 
@@ -143,16 +143,24 @@ class HackDiagnosticsProvider {
     }
 
     const diagnostics = diagnosisResult.result;
-    const hackLanguage = await getHackLanguageForUri(textEditor.getPath());
-    if (!hackLanguage) {
+    filePath = textEditor.getPath();
+    if (filePath == null) {
+      return;
+    }
+    const hackLanguage = await getHackLanguageForUri(filePath);
+    if (hackLanguage == null) {
+      return;
+    }
+    const projectRoot = await hackLanguage.getProjectRoot(filePath);
+    if (projectRoot == null) {
       return;
     }
 
     this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [filePath]});
-    this._invalidatePathsForHackLanguage(hackLanguage);
+    this._invalidatePathsForProjectRoot(projectRoot);
 
     const pathsForHackLanguage = new Set();
-    this._hackLanguageToFilePaths.set(hackLanguage, pathsForHackLanguage);
+    this._projectRootToFilePaths.set(projectRoot, pathsForHackLanguage);
     for (const diagnostic of diagnostics) {
       /*
        * Each message consists of several different components, each with its
@@ -184,8 +192,8 @@ class HackDiagnosticsProvider {
     return {filePathToMessages};
   }
 
-  _getPathsToInvalidate(hackLanguage: HackLanguage): Array<NuclideUri> {
-    const filePaths = this._hackLanguageToFilePaths.get(hackLanguage);
+  _getPathsToInvalidate(projectRoot: NuclideUri): Array<NuclideUri> {
+    const filePaths = this._projectRootToFilePaths.get(projectRoot);
     if (!filePaths) {
       return [];
     }
@@ -218,20 +226,27 @@ class HackDiagnosticsProvider {
     return this._providerBase.onMessageInvalidation(callback);
   }
 
+  // Called when a directory is removed from the file tree.
   invalidateProjectPath(projectPath: NuclideUri): void {
-    const hackLanguage = getCachedHackLanguageForUri(projectPath);
-    if (!hackLanguage) {
-      return;
-    }
-    this._invalidatePathsForHackLanguage(hackLanguage);
+    Array.from(this._projectRootToFilePaths.keys())
+      // This filter is over broad, the real filter should be
+      // no open dir in the File Tree contains the root.
+      // This will err on the side of removing messages,
+      // which should be fine, as they will come back once a file is reopened
+      // or edited.
+      .filter(rootPath => nuclideUri.contains(projectPath, rootPath)
+        || nuclideUri.contains(rootPath, projectPath))
+      .forEach(removedPath => {
+        this._invalidatePathsForProjectRoot(removedPath);
+      });
   }
 
-  _invalidatePathsForHackLanguage(hackLanguage: HackLanguage): void {
-    const pathsToInvalidate = this._getPathsToInvalidate(hackLanguage);
+  _invalidatePathsForProjectRoot(projectRoot: NuclideUri): void {
+    const pathsToInvalidate = this._getPathsToInvalidate(projectRoot);
     this._providerBase.publishMessageInvalidation(
       {scope: 'file', filePaths: pathsToInvalidate},
     );
-    this._hackLanguageToFilePaths.delete(hackLanguage);
+    this._projectRootToFilePaths.delete(projectRoot);
   }
 
   dispose() {
@@ -253,5 +268,3 @@ async function findDiagnostics(
 
   return await hackLanguage.getDiagnostics(filePath, contents);
 }
-
-module.exports = HackDiagnosticsProvider;

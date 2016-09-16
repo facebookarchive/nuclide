@@ -73,6 +73,10 @@ export class HackLanguage {
   dispose() {
   }
 
+  getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
+    return this._hackService.getProjectRoot(filePath);
+  }
+
   async getCompletions(
     filePath: NuclideUri,
     contents: string,
