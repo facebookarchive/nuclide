@@ -39,12 +39,18 @@ class Activation {
         line: number,
         column: number,
       ): ConnectableObservable<AtomFileEvent> {
-        return Observable.fromPromise(goToLocation(filePath, line, column))
-          .switchMap(editor =>
-            Observable.merge(
-              Observable.of('open'),
-              observeEditorDestroy(editor).map(value => 'close')))
-          .publish();
+        return Observable.fromPromise(
+          goToLocation(filePath, line, column)
+            .then(editor => {
+              atom.applicationDelegate.focusWindow();
+              return editor;
+            }),
+        )
+        .switchMap(editor =>
+          Observable.merge(
+            Observable.of('open'),
+            observeEditorDestroy(editor).map(value => 'close')))
+        .publish();
       },
       async addProject(projectPath: NuclideUri): Promise<void> {
         atom.project.addPath(projectPath);

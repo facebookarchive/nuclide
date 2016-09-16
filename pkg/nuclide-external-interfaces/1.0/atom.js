@@ -333,12 +333,17 @@ type atom$PaneSplitParams = {
 type atom$PaneSplitOrientation = 'horizontal' | 'vertical';
 type atom$PaneSplitSide = 'before' | 'after';
 
+// Undocumented class
+declare class atom$applicationDelegate {
+  focusWindow(): Promise<mixed>,
+}
+
 type atom$PaneParams = {
   activeItem?: Object,
+  applicationDelegate: atom$applicationDelegate,
   focused?: boolean,
   container: Object,
   config: atom$Config,
-  applicationDelegate: Object,
   notificationManager: atom$NotificationManager,
   deserializerManager: atom$DeserializerManager,
   items?: Array<Object>,
@@ -1527,6 +1532,7 @@ type AtomGlobal = {
   commands: atom$CommandRegistry,
   config: atom$Config,
   contextMenu: atom$ContextMenuManager,
+  applicationDelegate: atom$applicationDelegate,
   deserializers: atom$DeserializerManager,
   grammars: atom$GrammarRegistry,
   keymaps: atom$KeymapManager,
