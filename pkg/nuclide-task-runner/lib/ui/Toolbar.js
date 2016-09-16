@@ -38,14 +38,19 @@ export class Toolbar extends React.Component {
       return ExtraUi ? <ExtraUi activeTaskType={this.props.activeTaskId.type} /> : null;
     }
     const runnerCount = this.props.taskRunnerInfo.length;
-    switch (runnerCount) {
-      case 0:
-        return <span>Please install and enable a task runner</span>;
-      case 1:
-        const runnerName = this.props.taskRunnerInfo[0].name;
-        return <span>Waiting for tasks from {runnerName}...</span>;
-      default:
+    if (runnerCount === 0) {
+      return <span>Please install and enable a task runner</span>;
+    } else {
+      const waitingForTasks = !Array.from(this.props.taskLists.values())
+        .some(taskList => taskList.length > 0);
+      if (waitingForTasks) {
+        if (runnerCount === 1) {
+          const runnerName = this.props.taskRunnerInfo[0].name;
+          return <span>Waiting for tasks from {runnerName}...</span>;
+        }
         return <span>Waiting for tasks from {runnerCount} task runners...</span>;
+      }
+      return <span>No available tasks</span>;
     }
   }
 

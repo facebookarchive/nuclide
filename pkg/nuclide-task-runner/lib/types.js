@@ -38,6 +38,9 @@ export type TaskMetadata = {
   type: string,
   label: string,
   description: string,
+  // Is this task applicable? For backwards compat, this isn't (currently) required, but tasks that
+  // have it will be preferred.
+  disabled?: boolean,
   runnable: boolean, // Can the action be run now?
   cancelable?: boolean, // By default, this is true (all tasks are cancelable).
   icon: atom$Octicon,

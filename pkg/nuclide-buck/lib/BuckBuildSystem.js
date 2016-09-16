@@ -113,6 +113,7 @@ export class BuckBuildSystem {
     return TASKS
       .map(task => ({
         ...task,
+        disabled: buckRoot == null,
         runnable: hasBuildTarget && shouldEnableTask(task.type, store),
       }));
   }

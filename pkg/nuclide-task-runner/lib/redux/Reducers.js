@@ -11,7 +11,9 @@
 
 import type {Action, AnnotatedTaskMetadata, AppState} from '../types';
 
+import {arrayEqual} from '../../../commons-node/collection';
 import * as Actions from './Actions';
+import shallowEqual from 'shallowequal';
 
 // Normally there would be more than one reducer. Since we were using a single reducer here before
 // we ported to Redux, we just left it this way.
@@ -101,6 +103,12 @@ export function app(state: AppState, action: Action): AppState {
       const taskRunnerName = taskRunner && taskRunner.name;
       const annotatedTaskList = taskList
         .map(taskMeta => ({...taskMeta, taskRunnerId, taskRunnerName}));
+
+      // If the task list hasn't changed, ignore it.
+      if (arrayEqual(annotatedTaskList, state.taskLists.get(taskRunnerId) || [], shallowEqual)) {
+        return state;
+      }
+
       const newState = {
         ...state,
         taskLists: new Map(state.taskLists).set(taskRunnerId, annotatedTaskList),
@@ -156,6 +164,7 @@ function activeTaskIsValid(state: AppState): boolean {
       if (
         taskMeta.taskRunnerId === activeTaskId.taskRunnerId
         && taskMeta.type === activeTaskId.type
+        && !taskMeta.disabled
       ) {
         return true;
       }
@@ -168,9 +177,17 @@ function getFirstTask(
   taskLists: Map<string,
   Array<AnnotatedTaskMetadata>>,
 ): ?AnnotatedTaskMetadata {
+  let candidate;
   for (const taskList of taskLists.values()) {
     for (const taskMeta of taskList) {
-      return taskMeta;
+      // For backwards compat, we don't (currently) require that the "disabled" property be present,
+      // but we prefer tasks that have it.
+      if (taskMeta.disabled === false) {
+        return taskMeta;
+      } else if (!taskMeta.disabled) {
+        candidate = taskMeta;
+      }
     }
   }
+  return candidate;
 }
