@@ -107,7 +107,9 @@ describe('Buck building via toolbar', () => {
 
     waitsForPromise(async () => {
       // It shouldn't have errored.
-      expect(listGroup.querySelector('.text-error')).toBeNull();
+      const errorMessageEl = listGroup.querySelector('.text-error');
+      const errorText = errorMessageEl == null ? null : errorMessageEl.innerText;
+      expect(errorMessageEl).toBeNull(`Buck failed with the following error: ${errorText || ''}`);
 
       const listElements = listGroup.querySelectorAll('li');
       const targets = Array.from(listElements).map(el => el.textContent);
