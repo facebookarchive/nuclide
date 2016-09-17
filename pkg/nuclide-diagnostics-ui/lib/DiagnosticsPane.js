@@ -11,6 +11,8 @@
 
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 
+import {Cell, ColumnKeys, SortHeaderCell} from './Cells';
+import {sortDiagnostics} from './DiagnosticsSorter';
 import {fileColumnCellDataGetter} from './paneUtils';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
@@ -28,7 +30,7 @@ const ROW_VERTICAL_PADDING = 8;
 const TYPE_COLUMN_WIDTH = 80;
 const PROVIDER_NAME_COLUMN_WIDTH = 175;
 const FILE_PATH_COLUMN_WIDTH = 300;
-const RANGE_COLUMN_WIDTH = 50;
+const RANGE_COLUMN_WIDTH = 70;
 
 // Maximum number of results to render in the table before truncating and displaying a "Max results
 // reached" message.
@@ -39,8 +41,21 @@ const TypeToHighlightClassName = Object.freeze({
   WARNING: 'highlight-warning',
 });
 
+const columnGetters = {
+  [ColumnKeys.TYPE]: diag => typeColumnCellDataGetter('type', diag),
+  [ColumnKeys.PROVIDER]: diag => sourceColumnCellDataGetter('providerName', diag),
+  [ColumnKeys.FILE]: diag => fileColumnCellDataGetter('filePath', diag),
+  [ColumnKeys.RANGE]: diag => rowOfDiagnostic(diag),
+  [ColumnKeys.DESCRIPTION]: diag => messageColumnCellDataGetter('message', diag).text,
+};
+
 function locationColumnCellDataGetter(cellDataKey: 'range', diagnostic: DiagnosticMessage): string {
-  return diagnostic.range ? (diagnostic.range.start.row + 1).toString() : '';
+  const row = rowOfDiagnostic(diagnostic);
+  return row === 0 ? '' : row.toString();
+}
+
+function rowOfDiagnostic(diagnostic: DiagnosticMessage): number {
+  return diagnostic.range ? diagnostic.range.start.row + 1 : 0;
 }
 
 function typeColumnCellDataGetter(cellDataKey: 'type', diagnostic: DiagnosticMessage): string {
@@ -121,25 +136,6 @@ function onRowClick(
   goToLocation(uri, line, column);
 }
 
-type CellProps = {
-  children?: mixed,
-  style?: Object,
-  title?: string,
-};
-
-/*
- * Returns markup similar to that produced by fixed-data-table v0.6.0.
- */
-function Cell(props: CellProps): React.Element<any> {
-  return (
-    <div
-      className="public_fixedDataTableCell_main"
-      style={props.style}
-      title={props.title}>
-      {props.children}
-    </div>
-  );
-}
 
 type DiagnosticsPaneProps = {
   diagnostics: Array<DiagnosticMessage>,
@@ -149,13 +145,17 @@ type DiagnosticsPaneProps = {
 
 class DiagnosticsPane extends React.Component {
   props: DiagnosticsPaneProps;
-  state: {widths: {[key: string]: number}};;
+  state: {
+    widths: {[key: string]: number},
+    columnSortDirections: {[key: string]: string}
+  };;
 
   constructor(props: mixed) {
     super(props);
     (this: any)._rowGetter = this._rowGetter.bind(this);
     (this: any)._rowHeightGetter = this._rowHeightGetter.bind(this);
     (this: any)._getMessageWidth = this._getMessageWidth.bind(this);
+    (this: any)._onSortChange = this._onSortChange.bind(this);
 
     this.state = {
       widths: {
@@ -164,6 +164,7 @@ class DiagnosticsPane extends React.Component {
         filePath: FILE_PATH_COLUMN_WIDTH,
         range: RANGE_COLUMN_WIDTH,
       },
+      columnSortDirections: {},
     };
   }
 
@@ -189,14 +190,29 @@ class DiagnosticsPane extends React.Component {
     return messageMaxLinesOfText * DEFAULT_LINE_TEXT_HEIGHT + ROW_VERTICAL_PADDING;
   }
 
+  _onSortChange(columnKey: string, sortDirection: string) {
+    this.setState({
+      columnSortDirections: {
+        [columnKey]: sortDirection,
+      },
+    });
+  }
+
   render(): React.Element<any> {
     const diagnosticCells = [];
+    const {columnSortDirections} = this.state;
+    const sortedDiagnostics = sortDiagnostics(
+      this.props.diagnostics,
+      columnSortDirections,
+      columnGetters,
+    );
+
     for (
       let index = 0;
-      index < Math.min(MAX_RESULTS_COUNT, this.props.diagnostics.length);
+      index < Math.min(MAX_RESULTS_COUNT, sortedDiagnostics.length);
       index++
     ) {
-      const diag = this.props.diagnostics[index];
+      const diag = sortedDiagnostics[index];
       diagnosticCells.push(
         <div
           className="fixedDataTableCellGroupLayout_cellGroup nuclide-diagnostics-pane__actionable"
@@ -227,7 +243,7 @@ class DiagnosticsPane extends React.Component {
       );
     }
 
-    if (this.props.diagnostics.length > MAX_RESULTS_COUNT) {
+    if (sortedDiagnostics.length > MAX_RESULTS_COUNT) {
       diagnosticCells.push(
         <div className="fixedDataTableCellGroupLayout_cellGroup" key="maxResultsMessage">
           <div className="public_fixedDataTableCell_main">
@@ -243,14 +259,44 @@ class DiagnosticsPane extends React.Component {
         <div className="public_fixedDataTable_main">
           <div className="public_fixedDataTable_header">
             <div className="fixedDataTableCellGroupLayout_cellGroup" style={{height: '30px'}}>
-              <Cell style={{width: `${this.state.widths.type}px`}}>Type</Cell>
-              <Cell style={{width: `${this.state.widths.providerName}px`}}>Source</Cell>
+              <SortHeaderCell
+                columnKey={ColumnKeys.TYPE}
+                sortDirection={columnSortDirections[ColumnKeys.TYPE]}
+                onSortChange={this._onSortChange}
+                style={{width: `${this.state.widths.type}px`}}>
+                Type
+              </SortHeaderCell>
+              <SortHeaderCell
+                columnKey={ColumnKeys.PROVIDER}
+                sortDirection={columnSortDirections[ColumnKeys.PROVIDER]}
+                onSortChange={this._onSortChange}
+                style={{width: `${this.state.widths.providerName}px`}}>
+                Source
+              </SortHeaderCell>
               {this.props.showFileName
-                ? <Cell style={{width: `${this.state.widths.filePath}px`}}>File</Cell>
+                ? <SortHeaderCell
+                    columnKey={ColumnKeys.FILE}
+                    sortDirection={columnSortDirections[ColumnKeys.FILE]}
+                    onSortChange={this._onSortChange}
+                    style={{width: `${this.state.widths.filePath}px`}}>
+                    File
+                  </SortHeaderCell>
                 : null
               }
-              <Cell style={{width: `${this.state.widths.range}px`}}>Line</Cell>
-              <Cell style={{width: `${this._getMessageWidth()}px`}}>Description</Cell>
+              <SortHeaderCell
+                columnKey={ColumnKeys.RANGE}
+                sortDirection={columnSortDirections[ColumnKeys.RANGE]}
+                onSortChange={this._onSortChange}
+                style={{width: `${this.state.widths.range}px`}}>
+                Line
+              </SortHeaderCell>
+              <SortHeaderCell
+                columnKey={ColumnKeys.DESCRIPTION}
+                sortDirection={columnSortDirections[ColumnKeys.DESCRIPTION]}
+                onSortChange={this._onSortChange}
+                style={{width: `${this._getMessageWidth()}px`}}>
+                Description
+              </SortHeaderCell>
             </div>
           </div>
           <PanelComponentScroller flexDirection="column">
