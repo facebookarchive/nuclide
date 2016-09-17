@@ -20,7 +20,7 @@ type Props = {
 };
 
 /**
- * Shows an indefinite, animated LoadingSpinner.
+ * Shows a modal dialog when rendered, using Atom's APIs (atom.workspace.addModalPanel).
  */
 export class Modal extends React.Component {
   props: Props;
