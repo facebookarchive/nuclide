@@ -148,12 +148,14 @@ async function main(argv): Promise<number> {
 async function run() {
   const {argv} = yargs
     .usage('Usage: atom <file>')
-    .demand(1, 'At least one file name is required.')
-    .boolean('w')
-    .alias('wait', 'w')
-    .describe('w', 'Wait for the opened file to be closed in Atom before exiting')
     .help('h')
-    .alias('h', 'help');
+    .alias('h', 'help')
+    .demand(1, 'At least one file name is required.')
+    .option('w', {
+      alias: 'wait',
+      describe: 'Wait for the opened file to be closed in Atom before exiting',
+      type: 'boolean',
+    });
   const exitCode = await main(argv);
   process.exit(exitCode);
 }
