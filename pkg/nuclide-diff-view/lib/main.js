@@ -200,15 +200,16 @@ class Activation {
     );
 
     this._store = createStore(
-     Reducers.app,
-     initialState,
-     applyMiddleware(createEpicMiddleware(rootEpic)),
+      Reducers.app,
+      initialState,
+      applyMiddleware(createEpicMiddleware(rootEpic)),
     );
     const states = Observable.from(this._store);
-    this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
 
     const useReduxStore: boolean = (featureConfig.get('nuclide-diff-view.useReduxStore'): any);
     if (useReduxStore || atom.inSpecMode()) {
+      this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
+
       this._subscriptions.add(
         // TODO(most): use action creators and consume states.
         states.subscribe(state => getLogger().info('diff-view-state', state)),
@@ -216,6 +217,9 @@ class Activation {
           this._actionCreators.addRepository(repository);
         }),
       );
+    } else {
+      // Bypass actions - skipping Reducers and Epics.
+      this._actionCreators = bindActionCreators(Actions, () => {});
     }
 
     this._subscriptions.add(
