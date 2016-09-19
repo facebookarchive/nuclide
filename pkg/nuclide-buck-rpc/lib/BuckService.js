@@ -136,7 +136,9 @@ function getPool(path: string, readOnly: boolean): PromisePool {
   if (pool != null) {
     return pool;
   }
-  pool = new PromisePool(readOnly ? MAX_CONCURRENT_READ_ONLY : 1);
+  // Buck seems to have a classic exists/create race condition when NO_BUCKD is enabled.
+  // TODO(hansonw): Remove this if/when the issue is fixed in Buck.
+  pool = new PromisePool(readOnly && process.env.NO_BUCKD !== '1' ? MAX_CONCURRENT_READ_ONLY : 1);
   pools.set(key, pool);
   return pool;
 }
