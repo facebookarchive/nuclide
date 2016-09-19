@@ -49,6 +49,10 @@
             {
               "label": "Step Out",
               "command": "nuclide-debugger:step-out"
+            },
+            {
+              "label": "Add to Watch",
+              "command": "nuclide-debugger:add-to-watch"
             }
           ]
         }

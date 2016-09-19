@@ -55,6 +55,7 @@ import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
 import {setNotificationService} from '../../nuclide-debugger-base';
 import {NewDebuggerView} from './NewDebuggerView';
 import DebuggerControllerView from './DebuggerControllerView';
+import {wordAtPosition, trimRange} from '../../commons-atom/range';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>,
@@ -230,6 +231,9 @@ class Activation {
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:remove-all-breakpoints': this._deleteAllBreakpoints.bind(this),
       }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:add-to-watch': this._addToWatch.bind(this),
+      }),
 
       // Context Menu Items.
       atom.contextMenu.add({
@@ -247,6 +251,10 @@ class Activation {
               {
                 label: 'Toggle Breakpoint',
                 command: 'nuclide-debugger:toggle-breakpoint',
+              },
+              {
+                label: 'Add to Watch',
+                command: 'nuclide-debugger:add-to-watch',
               },
             ],
           },
@@ -429,6 +437,22 @@ class Activation {
       return panel;
     } else {
       return this._panel;
+    }
+  }
+
+  _addToWatch() {
+    const editor = atom.workspace.getActiveTextEditor();
+    if (!editor) {
+      return;
+    }
+    const selectedText = editor.getTextInBufferRange(
+      trimRange(editor, editor.getSelectedBufferRange()),
+    );
+    const expr = wordAtPosition(editor, editor.getCursorBufferPosition());
+
+    const watchExpression = selectedText || (expr && expr.wordMatch[0]);
+    if (watchExpression) {
+      this._model.getActions().addWatchExpression(watchExpression);
     }
   }
 }
