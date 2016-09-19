@@ -30,12 +30,12 @@ else
 fi
 
 # The user may have overridden $ATOM_HOME.
-DEFAULT_ATOM_HOME="$BASE/${SUDO_USER:-$USER}"
+DEFAULT_ATOM_HOME="$BASE/${SUDO_USER:-$USER}/.atom"
 ATOM_HOME=${ATOM_HOME:-$DEFAULT_ATOM_HOME}
 
 # Use $ATOM_HOME to locate the Nuclide Atom RPC script,
 # which the user may have overridden via $ATOM_RPC.
-ATOM="$ATOM_HOME/.atom/packages/nuclide/pkg/nuclide-remote-atom-rpc/bin/atom"
+ATOM="$ATOM_HOME/packages/nuclide/pkg/nuclide-remote-atom-rpc/bin/atom"
 ATOM=${ATOM_RPC:-$ATOM}
 
 # Try the standard Nuclide RPC script.
