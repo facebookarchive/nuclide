@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [[ -z "$ATOM_WAIT" ]]; then
+  subl "$@"
+else
+  subl -w "$@"
+fi

@@ -1,15 +1,58 @@
-#!/usr/bin/env node
+#!/bin/bash
+#
+# This is a script that is designed to open files in an editor as quickly as
+# possible, preferring the use of Atom, but falling back to another editor if
+# Atom is not already running. Specifically, because Atom can be slow to load or
+# open a new window, it only uses Atom if the Atom Command Service provided by
+# [Nuclide](https://atom.io/packages/nuclide) is running.
+#
+# This script takes a list of files to open (each file argument may contain its
+# own `:line:column` suffix at the end of it if the editor supports it), as well
+# as an optional -w/--wait flag that is only passed on to the Atom Command
+# Service (other editors can check if the $ATOM_WAIT environment variable is set
+# to determine whether it was specified). This tries the following options,
+# in order, for opening the specified files:
+#
+# 1. Attempts Nuclide's Atom Command Service to open the file in a new tab in an
+#    existing Atom window.
+# 2. If $ATOM_BACKUP_EDITOR is set, then it is used to open the files.
+# 3. If $EDITOR is set, then it is used to open the files.
+# 4. If none of the above is an option, `vi` is used to open the files.
+#
+# Note that this script is designed to work locally or remotely. That is, it
+# tries the Atom Command Script first so that the user's local Atom is the first
+# choice even if this script is run from a remote machine using the Nuclide
+# server via the `nuclide` NPM module. If that fails, then a local editor is
+# used.
 
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
+# Try the Atom Command Service with the specified args.
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+"$DIR/atom-rpc" "$@"
+EXIT_CODE=$?
 
-// Set up the on-the-fly transpiler.
-require('../../nuclide-node-transpiler');
+if [ $EXIT_CODE -eq 0 ]; then
+  exit 0
+fi
 
-// Run the ES6+ code now that the transpiler is in place.
-require('./main');
+# Fall back to a local editor, if appropriate.
+if [ $EXIT_CODE -eq 3 ]; then
+  # The user could not connect. Try a local editor instead.
+  # Search for the -w/--wait flag and strip it, if appropriate.
+  ARGS=()
+  export ATOM_WAIT=
+  for var in "$@"; do
+    if [ "$var" == '--wait' ] || [ "$var" == '-w' ]; then
+      export ATOM_WAIT=1
+    elif [ "$var" == '--add' ] || [ "$var" == '-a' ]; then
+      # Ignore the --add/-a argument.
+      :
+    else
+      ARGS+=("$var")
+    fi
+  done
+
+  ${ATOM_BACKUP_EDITOR:-${EDITOR:-vi}} "${ARGS[@]}"
+  exit $?
+else
+ exit $EXIT_CODE
+fi
