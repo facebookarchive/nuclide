@@ -1,5 +1,23 @@
 # Nuclide Changelog
 
+## v0.169.0
+
+### General:
+
+* Columns in the Diagnostics table are now sortable.
+* Dragging the last tab out of a panel will now hide it.
+* Outline View is now rendered as a tab.
+* Improved React Native Packager errors.
+* Task Runner: Unavailable tasks are now marked as disabled in the dropdown.
+
+### Buck:
+
+* Auto-detect the build target of the active file in the targets typeahead.
+
+### Flow:
+
+* Top-level variables are now displayed in Outline View.
+
 ## v0.168.0
 
 ### General:
