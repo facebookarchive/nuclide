@@ -1,5 +1,66 @@
-'use babel';
-/* @flow */
+var formatCode = _asyncToGenerator(function* (options, editor_) {
+  var editor = editor_;
+  editor = editor || atom.workspace.getActiveTextEditor();
+  if (!editor) {
+    logger.info('- format-js: No active text editor');
+    return;
+  }
+
+  (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('format-js-formatCode');
+
+  // Save things
+  var buffer = editor.getBuffer();
+  var oldSource = buffer.getText();
+  var source = oldSource;
+
+  // Reprint transform.
+  if ((_commonsAtomFeatureConfig2 || _commonsAtomFeatureConfig()).default.get('nuclide-format-js.reprint')) {
+    var _require = require('../../nuclide-reprint-js');
+
+    var reprint = _require.reprint;
+
+    // $FlowFixMe(kad) -- this seems to conflate an class instance with an ordinary object.
+    var reprintResult = reprint(source, {
+      maxLineLength: 80,
+      useSpaces: true,
+      tabWidth: 2
+    });
+    source = reprintResult.source;
+  }
+
+  // Auto-require transform.
+  // TODO: Add a limit so the transform is not run on files over a certain size.
+
+  var _require2 = require('../../nuclide-format-js-common');
+
+  var transform = _require2.transform;
+
+  source = transform(source, options);
+
+  // Update the source and position after all transforms are done. Do nothing
+  // if the source did not change at all.
+  if (source === oldSource) {
+    return;
+  }
+
+  var range = buffer.getRange();
+  var position = editor.getCursorBufferPosition();
+  editor.setTextInBufferRange(range, source);
+
+  var _ref = (0, (_nuclideUpdateCursor2 || _nuclideUpdateCursor()).updateCursor)(oldSource, position, source);
+
+  var row = _ref.row;
+  var column = _ref.column;
+
+  editor.setCursorBufferPosition([row, column]);
+
+  // Save the file if that option is specified.
+  if ((_commonsAtomFeatureConfig2 || _commonsAtomFeatureConfig()).default.get('nuclide-format-js.saveAfterRun')) {
+    editor.save();
+  }
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,63 +70,32 @@
  * the root directory of this source tree.
  */
 
-import type {SourceOptions} from '../../nuclide-format-js-common/lib/options/SourceOptions';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import featureConfig from '../../commons-atom/featureConfig';
-import {track} from '../../nuclide-analytics';
-import {updateCursor} from '../../nuclide-update-cursor';
-import {getLogger} from '../../nuclide-logging';
+var _commonsAtomFeatureConfig2;
 
-const logger = getLogger();
-
-async function formatCode(options: SourceOptions, editor_: ?TextEditor): Promise<void> {
-  let editor = editor_;
-  editor = editor || atom.workspace.getActiveTextEditor();
-  if (!editor) {
-    logger.info('- format-js: No active text editor');
-    return;
-  }
-
-  track('format-js-formatCode');
-
-  // Save things
-  const buffer = editor.getBuffer();
-  const oldSource = buffer.getText();
-  let source = oldSource;
-
-  // Reprint transform.
-  if (featureConfig.get('nuclide-format-js.reprint')) {
-    const {reprint} = require('../../nuclide-reprint-js');
-    // $FlowFixMe(kad) -- this seems to conflate an class instance with an ordinary object.
-    const reprintResult = reprint(source, {
-      maxLineLength: 80,
-      useSpaces: true,
-      tabWidth: 2,
-    });
-    source = reprintResult.source;
-  }
-
-  // Auto-require transform.
-  // TODO: Add a limit so the transform is not run on files over a certain size.
-  const {transform} = require('../../nuclide-format-js-common');
-  source = transform(source, options);
-
-  // Update the source and position after all transforms are done. Do nothing
-  // if the source did not change at all.
-  if (source === oldSource) {
-    return;
-  }
-
-  const range = buffer.getRange();
-  const position = editor.getCursorBufferPosition();
-  editor.setTextInBufferRange(range, source);
-  const {row, column} = updateCursor(oldSource, position, source);
-  editor.setCursorBufferPosition([row, column]);
-
-  // Save the file if that option is specified.
-  if (featureConfig.get('nuclide-format-js.saveAfterRun')) {
-    editor.save();
-  }
+function _commonsAtomFeatureConfig() {
+  return _commonsAtomFeatureConfig2 = _interopRequireDefault(require('../../commons-atom/featureConfig'));
 }
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _nuclideUpdateCursor2;
+
+function _nuclideUpdateCursor() {
+  return _nuclideUpdateCursor2 = require('../../nuclide-update-cursor');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
 
 module.exports = formatCode;

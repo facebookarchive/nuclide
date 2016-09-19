@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,4 +12,6 @@
  * the root directory of this source tree.
  */
 
-export {default as ClientCallback} from './ClientCallback';
+var _ClientCallback = require('./ClientCallback');
+
+exports.ClientCallback = _interopRequire(_ClientCallback);

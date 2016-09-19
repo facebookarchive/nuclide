@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.sortDiagnostics = sortDiagnostics;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +11,38 @@
  * the root directory of this source tree.
  */
 
-import {ColumnKeys, SortDirections} from './Cells';
-import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
+var _Cells2;
 
-type ColumnGetter =
-  (d: DiagnosticMessage) => string |
-  (d: DiagnosticMessage) => number;
+function _Cells() {
+  return _Cells2 = require('./Cells');
+}
 
 /*
  * Sorts the diagnostics according to given column and sort direction
  */
-export function sortDiagnostics(
-  diagnostics: Array<DiagnosticMessage>,
-  columnSortDirections: {[column: string]: string},
-  columnGetters: {[column: string]: ColumnGetter},
-) {
-  const columnKeys = Object.keys(columnSortDirections);
+
+function sortDiagnostics(diagnostics, columnSortDirections, columnGetters) {
+  var columnKeys = Object.keys(columnSortDirections);
   if (columnKeys.length === 0) {
     return diagnostics;
   }
 
-  const columnKey = columnKeys[0];
-  const getter = columnGetters[columnKey];
-  const isAsc = columnSortDirections[columnKey] === SortDirections.ASC;
-  const cmp: any = columnKey === ColumnKeys.RANGE ? _cmpNumber : _cmpString;
+  var columnKey = columnKeys[0];
+  var getter = columnGetters[columnKey];
+  var isAsc = columnSortDirections[columnKey] === (_Cells2 || _Cells()).SortDirections.ASC;
+  var cmp = columnKey === (_Cells2 || _Cells()).ColumnKeys.RANGE ? _cmpNumber : _cmpString;
 
-  return Array.from(diagnostics).sort((a, b) => {
+  return Array.from(diagnostics).sort(function (a, b) {
     return cmp(getter(a), getter(b), isAsc);
   });
 }
 
-function _cmpNumber(a: number, b: number, isAsc: boolean): number {
-  const cmp = a - b;
+function _cmpNumber(a, b, isAsc) {
+  var cmp = a - b;
   return isAsc ? cmp : -cmp;
 }
 
-function _cmpString(a: string, b: string, isAsc: boolean): number {
-  const cmp = a.toLowerCase().localeCompare(b.toLowerCase());
+function _cmpString(a, b, isAsc) {
+  var cmp = a.toLowerCase().localeCompare(b.toLowerCase());
   return isAsc ? cmp : -cmp;
 }

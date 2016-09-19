@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,145 +10,177 @@
  * the root directory of this source tree.
  */
 
-import type {SerializedState, TaskSettings, TaskType} from './types';
-import type {Device} from './IosSimulator';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {Emitter} from 'atom';
-import {Dispatcher} from 'flux';
-import BuckToolbarActions from './BuckToolbarActions';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-export default class BuckToolbarStore {
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-  _devices: Array<Device>;
-  _dispatcher: Dispatcher;
-  _emitter: Emitter;
-  _currentProjectRoot: ?string;
-  _currentBuckRoot: ?string;
-  _isLoadingRule: boolean;
-  _buildTarget: string;
-  _buildRuleType: ?string;
-  _simulator: ?string;
-  _isReactNativeServerMode: boolean;
-  _taskSettings: {[key: TaskType]: TaskSettings};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor(dispatcher: Dispatcher, initialState: ?SerializedState) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _flux2;
+
+function _flux() {
+  return _flux2 = require('flux');
+}
+
+var _BuckToolbarActions2;
+
+function _BuckToolbarActions() {
+  return _BuckToolbarActions2 = _interopRequireDefault(require('./BuckToolbarActions'));
+}
+
+var BuckToolbarStore = (function () {
+  function BuckToolbarStore(dispatcher, initialState) {
+    _classCallCheck(this, BuckToolbarStore);
+
     this._dispatcher = dispatcher;
-    this._emitter = new Emitter();
+    this._emitter = new (_atom2 || _atom()).Emitter();
     this._initState(initialState);
     this._setupActions();
   }
 
-  _initState(initialState: ?SerializedState) {
-    this._devices = [];
-    this._isLoadingRule = false;
-    this._buildTarget = initialState && initialState.buildTarget || '';
-    this._buildRuleType = null;
-    this._isReactNativeServerMode = initialState && initialState.isReactNativeServerMode || false;
-    this._taskSettings = initialState && initialState.taskSettings || {};
-    this._simulator = initialState && initialState.simulator || null;
-  }
+  _createClass(BuckToolbarStore, [{
+    key: '_initState',
+    value: function _initState(initialState) {
+      this._devices = [];
+      this._isLoadingRule = false;
+      this._buildTarget = initialState && initialState.buildTarget || '';
+      this._buildRuleType = null;
+      this._isReactNativeServerMode = initialState && initialState.isReactNativeServerMode || false;
+      this._taskSettings = initialState && initialState.taskSettings || {};
+      this._simulator = initialState && initialState.simulator || null;
+    }
+  }, {
+    key: '_setupActions',
+    value: function _setupActions() {
+      var _this = this;
 
-  _setupActions() {
-    this._dispatcher.register(action => {
-      switch (action.actionType) {
-        case BuckToolbarActions.ActionType.UPDATE_BUCK_ROOT:
-          this._currentProjectRoot = action.projectRoot;
-          this._currentBuckRoot = action.buckRoot;
-          break;
-        case BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET:
-          this._buildTarget = action.buildTarget;
-          break;
-        case BuckToolbarActions.ActionType.UPDATE_IS_LOADING_RULE:
-          this._isLoadingRule = action.isLoadingRule;
-          break;
-        case BuckToolbarActions.ActionType.UPDATE_RULE_TYPE:
-          this._buildRuleType = action.ruleType;
-          break;
-        case BuckToolbarActions.ActionType.UPDATE_SIMULATOR:
-          this._simulator = action.simulator;
-          break;
-        case BuckToolbarActions.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE:
-          this._isReactNativeServerMode = action.serverMode;
-          break;
-        case BuckToolbarActions.ActionType.UPDATE_TASK_SETTINGS:
-          this._taskSettings = {
-            ...this._taskSettings,
-            [action.taskType]: action.settings,
-          };
-          break;
-        case BuckToolbarActions.ActionType.UPDATE_DEVICES:
-          this._devices = action.devices;
-          const currentDeviceId = this._simulator;
-          const isInvalidSimulator = currentDeviceId == null
-            || !this._devices.some(device => device.udid === currentDeviceId);
-          if (isInvalidSimulator && this._devices.length) {
-            this._simulator = this._devices[0].udid;
-          }
-          break;
-      }
-      this.emitChange();
-    });
-  }
+      this._dispatcher.register(function (action) {
+        switch (action.actionType) {
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_BUCK_ROOT:
+            _this._currentProjectRoot = action.projectRoot;
+            _this._currentBuckRoot = action.buckRoot;
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_BUILD_TARGET:
+            _this._buildTarget = action.buildTarget;
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_IS_LOADING_RULE:
+            _this._isLoadingRule = action.isLoadingRule;
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_RULE_TYPE:
+            _this._buildRuleType = action.ruleType;
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_SIMULATOR:
+            _this._simulator = action.simulator;
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE:
+            _this._isReactNativeServerMode = action.serverMode;
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_TASK_SETTINGS:
+            _this._taskSettings = _extends({}, _this._taskSettings, _defineProperty({}, action.taskType, action.settings));
+            break;
+          case (_BuckToolbarActions2 || _BuckToolbarActions()).default.ActionType.UPDATE_DEVICES:
+            _this._devices = action.devices;
+            var currentDeviceId = _this._simulator;
+            var isInvalidSimulator = currentDeviceId == null || !_this._devices.some(function (device) {
+              return device.udid === currentDeviceId;
+            });
+            if (isInvalidSimulator && _this._devices.length) {
+              _this._simulator = _this._devices[0].udid;
+            }
+            break;
+        }
+        _this.emitChange();
+      });
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._emitter.dispose();
+    }
+  }, {
+    key: 'subscribe',
+    value: function subscribe(callback) {
+      return this._emitter.on('change', callback);
+    }
+  }, {
+    key: 'emitChange',
+    value: function emitChange() {
+      this._emitter.emit('change');
+    }
+  }, {
+    key: 'getBuildTarget',
+    value: function getBuildTarget() {
+      return this._buildTarget;
+    }
+  }, {
+    key: 'getCurrentProjectRoot',
+    value: function getCurrentProjectRoot() {
+      return this._currentProjectRoot;
+    }
+  }, {
+    key: 'getCurrentBuckRoot',
+    value: function getCurrentBuckRoot() {
+      return this._currentBuckRoot;
+    }
+  }, {
+    key: 'getDevices',
+    value: function getDevices() {
+      return this._devices;
+    }
+  }, {
+    key: 'isLoadingRule',
+    value: function isLoadingRule() {
+      return this._isLoadingRule;
+    }
+  }, {
+    key: 'getRuleType',
+    value: function getRuleType() {
+      return this._buildRuleType;
+    }
+  }, {
+    key: 'canBeReactNativeApp',
+    value: function canBeReactNativeApp() {
+      return this._buildRuleType === 'apple_bundle' || this._buildRuleType === 'android_binary';
+    }
+  }, {
+    key: 'isReactNativeServerMode',
+    value: function isReactNativeServerMode() {
+      return this.canBeReactNativeApp() && this._isReactNativeServerMode;
+    }
+  }, {
+    key: 'isInstallableRule',
+    value: function isInstallableRule() {
+      return this.canBeReactNativeApp() || this._buildRuleType === 'apk_genrule';
+    }
+  }, {
+    key: 'isDebuggableRule',
+    value: function isDebuggableRule() {
+      return this.isInstallableRule() || this._buildRuleType === 'cxx_test' || this._buildRuleType === 'cxx_binary';
+    }
+  }, {
+    key: 'getSimulator',
+    value: function getSimulator() {
+      return this._simulator;
+    }
+  }, {
+    key: 'getTaskSettings',
+    value: function getTaskSettings() {
+      return this._taskSettings;
+    }
+  }]);
 
-  dispose() {
-    this._emitter.dispose();
-  }
+  return BuckToolbarStore;
+})();
 
-  subscribe(callback: () => void): IDisposable {
-    return this._emitter.on('change', callback);
-  }
-
-  emitChange(): void {
-    this._emitter.emit('change');
-  }
-
-  getBuildTarget(): string {
-    return this._buildTarget;
-  }
-
-  getCurrentProjectRoot(): ?string {
-    return this._currentProjectRoot;
-  }
-
-  getCurrentBuckRoot(): ?string {
-    return this._currentBuckRoot;
-  }
-
-  getDevices(): Array<Device> {
-    return this._devices;
-  }
-
-  isLoadingRule(): boolean {
-    return this._isLoadingRule;
-  }
-
-  getRuleType(): ?string {
-    return this._buildRuleType;
-  }
-
-  canBeReactNativeApp(): boolean {
-    return this._buildRuleType === 'apple_bundle' || this._buildRuleType === 'android_binary';
-  }
-
-  isReactNativeServerMode(): boolean {
-    return this.canBeReactNativeApp() && this._isReactNativeServerMode;
-  }
-
-  isInstallableRule(): boolean {
-    return this.canBeReactNativeApp() || this._buildRuleType === 'apk_genrule';
-  }
-
-  isDebuggableRule(): boolean {
-    return this.isInstallableRule() || this._buildRuleType === 'cxx_test' ||
-      this._buildRuleType === 'cxx_binary';
-  }
-
-  getSimulator(): ?string {
-    return this._simulator;
-  }
-
-  getTaskSettings(): {[key: TaskType]: TaskSettings} {
-    return this._taskSettings;
-  }
-
-}
+exports.default = BuckToolbarStore;
+module.exports = exports.default;

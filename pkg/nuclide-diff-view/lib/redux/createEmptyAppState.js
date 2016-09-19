@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +10,30 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from '../types';
+exports.createEmptyAppState = createEmptyAppState;
 
-import {
-  CommitMode,
-  CommitModeState,
-  DiffMode,
-  PublishMode,
-  PublishModeState,
-} from '../constants';
+var _constants2;
 
-export function createEmptyAppState(): AppState {
+function _constants() {
+  return _constants2 = require('../constants');
+}
+
+function createEmptyAppState() {
   return {
     activeRepository: null,
     commitMessage: null,
-    commitMode: CommitMode.COMMIT,
-    commitModeState: CommitModeState.READY,
+    commitMode: (_constants2 || _constants()).CommitMode.COMMIT,
+    commitModeState: (_constants2 || _constants()).CommitModeState.READY,
     filePath: '',
     fromRevisionTitle: 'No file selected',
     newContents: '',
     oldContents: '',
     publishMessage: null,
-    publishMode: PublishMode.CREATE,
-    publishModeState: PublishModeState.READY,
+    publishMode: (_constants2 || _constants()).PublishMode.CREATE,
+    publishModeState: (_constants2 || _constants()).PublishModeState.READY,
     repositoriesStates: new Map(),
     shouldRebaseOnAmend: true,
     toRevisionTitle: 'No file selected',
-    viewMode: DiffMode.BROWSE_MODE,
+    viewMode: (_constants2 || _constants()).DiffMode.BROWSE_MODE
   };
 }

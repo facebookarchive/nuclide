@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,75 +10,108 @@
  * the root directory of this source tree.
  */
 
-import type {PredefinedTransformer} from '../../nuclide-rpc';
+exports.getRemoteNuclideUriMarshalers = getRemoteNuclideUriMarshalers;
+exports.getAtomSideMarshalers = getAtomSideMarshalers;
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {Range as AtomRange, Point as AtomPoint} from 'atom';
-import {Range as ServerRange, Point as ServerPoint} from 'simple-text-buffer';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function getRemoteNuclideUriMarshalers(hostname: string): PredefinedTransformer {
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _simpleTextBuffer2;
+
+function _simpleTextBuffer() {
+  return _simpleTextBuffer2 = require('simple-text-buffer');
+}
+
+function getRemoteNuclideUriMarshalers(hostname) {
   return {
-    typeName: nuclideUri.NUCLIDE_URI_TYPE_NAME,
-    marshaller: remoteUri => nuclideUri.getPath(remoteUri),
-    unmarshaller: path => nuclideUri.createRemoteUri(hostname, path),
+    typeName: (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.NUCLIDE_URI_TYPE_NAME,
+    marshaller: function marshaller(remoteUri) {
+      return (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.getPath(remoteUri);
+    },
+    unmarshaller: function unmarshaller(path) {
+      return (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.createRemoteUri(hostname, path);
+    }
   };
 }
 
-export const localNuclideUriMarshalers: PredefinedTransformer =
-  {
-    typeName: nuclideUri.NUCLIDE_URI_TYPE_NAME,
-    marshaller: uri => uri,
-    unmarshaller: remotePath => remotePath,
-  };
+var localNuclideUriMarshalers = {
+  typeName: (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.NUCLIDE_URI_TYPE_NAME,
+  marshaller: function marshaller(uri) {
+    return uri;
+  },
+  unmarshaller: function unmarshaller(remotePath) {
+    return remotePath;
+  }
+};
 
-const jsonToAtomPoint = json => new AtomPoint(json.row, json.column);
-const jsonToAtomRange = json =>
-  new AtomRange(jsonToAtomPoint(json.start), jsonToAtomPoint(json.end));
+exports.localNuclideUriMarshalers = localNuclideUriMarshalers;
+var jsonToAtomPoint = function jsonToAtomPoint(json) {
+  return new (_atom2 || _atom()).Point(json.row, json.column);
+};
+var jsonToAtomRange = function jsonToAtomRange(json) {
+  return new (_atom2 || _atom()).Range(jsonToAtomPoint(json.start), jsonToAtomPoint(json.end));
+};
 
-export function getAtomSideMarshalers(hostname: string): Array<PredefinedTransformer> {
-  return [
-    getRemoteNuclideUriMarshalers(hostname),
-    {
-      typeName: 'atom$Point',
-      marshaller: point => point,
-      unmarshaller: jsonToAtomPoint,
+function getAtomSideMarshalers(hostname) {
+  return [getRemoteNuclideUriMarshalers(hostname), {
+    typeName: 'atom$Point',
+    marshaller: function marshaller(point) {
+      return point;
     },
-    {
-      typeName: 'atom$Range',
-      marshaller: range => range,
-      unmarshaller: jsonToAtomRange,
+    unmarshaller: jsonToAtomPoint
+  }, {
+    typeName: 'atom$Range',
+    marshaller: function marshaller(range) {
+      return range;
     },
-  ];
+    unmarshaller: jsonToAtomRange
+  }];
 }
 
-export const getAtomSideLoopbackMarshalers: Array<PredefinedTransformer> = [
-  localNuclideUriMarshalers,
-  {
-    typeName: 'atom$Point',
-    marshaller: point => point,
-    unmarshaller: jsonToAtomPoint,
+var getAtomSideLoopbackMarshalers = [localNuclideUriMarshalers, {
+  typeName: 'atom$Point',
+  marshaller: function marshaller(point) {
+    return point;
   },
-  {
-    typeName: 'atom$Range',
-    marshaller: range => range,
-    unmarshaller: jsonToAtomRange,
+  unmarshaller: jsonToAtomPoint
+}, {
+  typeName: 'atom$Range',
+  marshaller: function marshaller(range) {
+    return range;
   },
-];
+  unmarshaller: jsonToAtomRange
+}];
 
-const jsonToServerPoint = json => new ServerPoint(json.row, json.column);
-const jsonToServerRange = json =>
-  new ServerRange(jsonToServerPoint(json.start), jsonToServerPoint(json.end));
+exports.getAtomSideLoopbackMarshalers = getAtomSideLoopbackMarshalers;
+var jsonToServerPoint = function jsonToServerPoint(json) {
+  return new (_simpleTextBuffer2 || _simpleTextBuffer()).Point(json.row, json.column);
+};
+var jsonToServerRange = function jsonToServerRange(json) {
+  return new (_simpleTextBuffer2 || _simpleTextBuffer()).Range(jsonToServerPoint(json.start), jsonToServerPoint(json.end));
+};
 
-export const getServerSideMarshalers: Array<PredefinedTransformer> = [
-  localNuclideUriMarshalers,
-  {
-    typeName: 'atom$Point',
-    marshaller: point => point,
-    unmarshaller: jsonToServerPoint,
+var getServerSideMarshalers = [localNuclideUriMarshalers, {
+  typeName: 'atom$Point',
+  marshaller: function marshaller(point) {
+    return point;
   },
-  {
-    typeName: 'atom$Range',
-    marshaller: range => range,
-    unmarshaller: jsonToServerRange,
+  unmarshaller: jsonToServerPoint
+}, {
+  typeName: 'atom$Range',
+  marshaller: function marshaller(range) {
+    return range;
   },
-];
+  unmarshaller: jsonToServerRange
+}];
+exports.getServerSideMarshalers = getServerSideMarshalers;

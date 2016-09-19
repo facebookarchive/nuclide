@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +8,12 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  get updateCursor() {
-    return require('./updateCursor');
-  },
-};
+module.exports = Object.defineProperties({}, {
+  updateCursor: {
+    get: function get() {
+      return require('./updateCursor');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

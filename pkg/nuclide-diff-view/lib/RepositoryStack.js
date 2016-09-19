@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,39 +10,93 @@
  * the root directory of this source tree.
  */
 
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {
-  DiffOptionType,
-  FileChangeStatusValue,
-  HgDiffState,
-  RevisionsState,
-} from './types';
-import type {
-  RevisionFileChanges,
-  RevisionInfo,
-} from '../../nuclide-hg-rpc/lib/HgService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {Emitter} from 'atom';
-import {HgStatusToFileChangeStatus, FileChangeStatus, DiffOption} from './constants';
-import {serializeAsyncCall} from '../../commons-node/promise';
-import {notifyInternalError} from './notifications';
-import {getLogger} from '../../nuclide-logging';
-import {hgConstants} from '../../nuclide-hg-rpc';
-import invariant from 'assert';
-import {Observable} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+exports.getHeadRevision = getHeadRevision;
+exports.getHeadToForkBaseRevisions = getHeadToForkBaseRevisions;
+exports.getDirtyFileChanges = getDirtyFileChanges;
+exports.getSelectedFileChanges = getSelectedFileChanges;
 
-const UPDATE_SELECTED_FILE_CHANGES_EVENT = 'update-selected-file-changes';
-const UPDATE_DIRTY_FILES_EVENT = 'update-dirty-files';
-const CHANGE_REVISIONS_STATE_EVENT = 'did-change-state-revisions';
-const UPDATE_STATUS_DEBOUNCE_MS = 50;
-const REVISION_STATE_TIMEOUT_MS = 50 * 1000;
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
-export function getHeadRevision(revisions: Array<RevisionInfo>): ?RevisionInfo {
-  const {HEAD_COMMIT_TAG} = hgConstants;
-  return revisions.find(revision => revision.tags.includes(HEAD_COMMIT_TAG));
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _constants2;
+
+function _constants() {
+  return _constants2 = require('./constants');
+}
+
+var _commonsNodePromise2;
+
+function _commonsNodePromise() {
+  return _commonsNodePromise2 = require('../../commons-node/promise');
+}
+
+var _notifications2;
+
+function _notifications() {
+  return _notifications2 = require('./notifications');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _nuclideHgRpc2;
+
+function _nuclideHgRpc() {
+  return _nuclideHgRpc2 = require('../../nuclide-hg-rpc');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _rxjsBundlesRxMinJs2;
+
+function _rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs2 = require('rxjs/bundles/Rx.min.js');
+}
+
+var _commonsNodeUniversalDisposable2;
+
+function _commonsNodeUniversalDisposable() {
+  return _commonsNodeUniversalDisposable2 = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _commonsNodeEvent2;
+
+function _commonsNodeEvent() {
+  return _commonsNodeEvent2 = require('../../commons-node/event');
+}
+
+var UPDATE_SELECTED_FILE_CHANGES_EVENT = 'update-selected-file-changes';
+var UPDATE_DIRTY_FILES_EVENT = 'update-dirty-files';
+var CHANGE_REVISIONS_STATE_EVENT = 'did-change-state-revisions';
+var UPDATE_STATUS_DEBOUNCE_MS = 50;
+var REVISION_STATE_TIMEOUT_MS = 50 * 1000;
+
+function getHeadRevision(revisions) {
+  var HEAD_COMMIT_TAG = (_nuclideHgRpc2 || _nuclideHgRpc()).hgConstants.HEAD_COMMIT_TAG;
+
+  return revisions.find(function (revision) {
+    return revision.tags.includes(HEAD_COMMIT_TAG);
+  });
 }
 
 /**
@@ -49,50 +104,49 @@ export function getHeadRevision(revisions: Array<RevisionInfo>): ?RevisionInfo {
  * the revision changes, where dirty changes and more recent revisions
  * take priority in deciding which status a file is in.
  */
-function mergeFileStatuses(
-  dirtyStatus: Map<NuclideUri, FileChangeStatusValue>,
-  revisionsFileChanges: Array<RevisionFileChanges>,
-): Map<NuclideUri, FileChangeStatusValue> {
-  const mergedStatus = new Map(dirtyStatus);
-  const mergedFilePaths = new Set(mergedStatus.keys());
+function mergeFileStatuses(dirtyStatus, revisionsFileChanges) {
+  var mergedStatus = new Map(dirtyStatus);
+  var mergedFilePaths = new Set(mergedStatus.keys());
 
-  function mergeStatusPaths(
-    filePaths: Array<NuclideUri>,
-    changeStatusValue: FileChangeStatusValue,
-  ) {
-    for (const filePath of filePaths) {
+  function mergeStatusPaths(filePaths, changeStatusValue) {
+    for (var filePath of filePaths) {
       if (!mergedFilePaths.has(filePath)) {
         mergedStatus.set(filePath, changeStatusValue);
         mergedFilePaths.add(filePath);
       }
     }
-
   }
 
   // More recent revision changes takes priority in specifying a files' statuses.
-  const latestToOldestRevisionsChanges = revisionsFileChanges.slice().reverse();
-  for (const revisionFileChanges of latestToOldestRevisionsChanges) {
-    const {added, modified, deleted} = revisionFileChanges;
+  var latestToOldestRevisionsChanges = revisionsFileChanges.slice().reverse();
+  for (var revisionFileChanges of latestToOldestRevisionsChanges) {
+    var added = revisionFileChanges.added;
+    var modified = revisionFileChanges.modified;
+    var deleted = revisionFileChanges.deleted;
 
-    mergeStatusPaths(added, FileChangeStatus.ADDED);
-    mergeStatusPaths(modified, FileChangeStatus.MODIFIED);
-    mergeStatusPaths(deleted, FileChangeStatus.REMOVED);
+    mergeStatusPaths(added, (_constants2 || _constants()).FileChangeStatus.ADDED);
+    mergeStatusPaths(modified, (_constants2 || _constants()).FileChangeStatus.MODIFIED);
+    mergeStatusPaths(deleted, (_constants2 || _constants()).FileChangeStatus.REMOVED);
   }
 
   return mergedStatus;
 }
 
-export function getHeadToForkBaseRevisions(revisions: Array<RevisionInfo>): Array<RevisionInfo> {
+function getHeadToForkBaseRevisions(revisions) {
   // `headToForkBaseRevisions` should have the public commit at the fork base as the first.
   // and the rest of the current `HEAD` stack in order with the `HEAD` being last.
-  const headRevision = getHeadRevision(revisions);
+  var headRevision = getHeadRevision(revisions);
   if (headRevision == null) {
     return [];
   }
-  const {CommitPhase} = hgConstants;
-  const hashToRevisionInfo = new Map(revisions.map(revision => [revision.hash, revision]));
-  const headToForkBaseRevisions = [];
-  let parentRevision = headRevision;
+
+  var CommitPhase = (_nuclideHgRpc2 || _nuclideHgRpc()).hgConstants.CommitPhase;
+
+  var hashToRevisionInfo = new Map(revisions.map(function (revision) {
+    return [revision.hash, revision];
+  }));
+  var headToForkBaseRevisions = [];
+  var parentRevision = headRevision;
   while (parentRevision != null && parentRevision.phase !== CommitPhase.PUBLIC) {
     headToForkBaseRevisions.unshift(parentRevision);
     parentRevision = hashToRevisionInfo.get(parentRevision.parents[0]);
@@ -103,13 +157,11 @@ export function getHeadToForkBaseRevisions(revisions: Array<RevisionInfo>): Arra
   return headToForkBaseRevisions;
 }
 
-export function getDirtyFileChanges(
-  repository: HgRepositoryClient,
-): Map<NuclideUri, FileChangeStatusValue> {
-  const dirtyFileChanges = new Map();
-  const statuses = repository.getAllPathStatuses();
-  for (const filePath in statuses) {
-    const changeStatus = HgStatusToFileChangeStatus[statuses[filePath]];
+function getDirtyFileChanges(repository) {
+  var dirtyFileChanges = new Map();
+  var statuses = repository.getAllPathStatuses();
+  for (var filePath in statuses) {
+    var changeStatus = (_constants2 || _constants()).HgStatusToFileChangeStatus[statuses[filePath]];
     if (changeStatus != null) {
       dirtyFileChanges.set(filePath, changeStatus);
     }
@@ -117,329 +169,296 @@ export function getDirtyFileChanges(
   return dirtyFileChanges;
 }
 
-function fetchFileChangesForRevisions(
-  repository: HgRepositoryClient,
-  revisions: Array<RevisionInfo>,
-): Observable<Array<RevisionFileChanges>> {
+function fetchFileChangesForRevisions(repository, revisions) {
+  var _Observable;
+
   if (revisions.length === 0) {
-    return Observable.of([]);
+    return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of([]);
   }
   // Revision ids are unique and don't change, except when the revision is amended/rebased.
   // Hence, it's cached here to avoid service calls when working on a stack of commits.
   // $FlowFixMe(matthewwithanm) Type this.
-  return Observable.forkJoin(...revisions.map(revision =>
-    repository.fetchFilesChangedAtRevision(`${revision.id}`),
-  ));
+  return (_Observable = (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable).forkJoin.apply(_Observable, _toConsumableArray(revisions.map(function (revision) {
+    return repository.fetchFilesChangedAtRevision('' + revision.id);
+  })));
 }
 
-export function getSelectedFileChanges(
-  repository: HgRepositoryClient,
-  diffOption: DiffOptionType,
-  revisions: Array<RevisionInfo>,
-  compareCommitId: ?number,
-): Observable<Map<NuclideUri, FileChangeStatusValue>> {
-  const dirtyFileChanges = getDirtyFileChanges(repository);
+function getSelectedFileChanges(repository, diffOption, revisions, compareCommitId) {
+  var dirtyFileChanges = getDirtyFileChanges(repository);
 
-  if (diffOption === DiffOption.DIRTY ||
-    (diffOption === DiffOption.COMPARE_COMMIT && compareCommitId == null)
-  ) {
-    return Observable.of(dirtyFileChanges);
+  if (diffOption === (_constants2 || _constants()).DiffOption.DIRTY || diffOption === (_constants2 || _constants()).DiffOption.COMPARE_COMMIT && compareCommitId == null) {
+    return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of(dirtyFileChanges);
   }
-  const headToForkBaseRevisions = getHeadToForkBaseRevisions(revisions);
+  var headToForkBaseRevisions = getHeadToForkBaseRevisions(revisions);
   if (headToForkBaseRevisions.length <= 1) {
-    return Observable.of(dirtyFileChanges);
+    return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of(dirtyFileChanges);
   }
 
-  const beforeCommitId = diffOption === DiffOption.LAST_COMMIT
-    ? headToForkBaseRevisions[headToForkBaseRevisions.length - 2].id
-    : compareCommitId;
+  var beforeCommitId = diffOption === (_constants2 || _constants()).DiffOption.LAST_COMMIT ? headToForkBaseRevisions[headToForkBaseRevisions.length - 2].id : compareCommitId;
 
-  invariant(beforeCommitId != null, 'compareCommitId cannot be null!');
-  return getSelectedFileChangesToCommit(
-    repository,
-    headToForkBaseRevisions,
-    beforeCommitId,
-    dirtyFileChanges,
-  );
+  (0, (_assert2 || _assert()).default)(beforeCommitId != null, 'compareCommitId cannot be null!');
+  return getSelectedFileChangesToCommit(repository, headToForkBaseRevisions, beforeCommitId, dirtyFileChanges);
 }
 
-function getSelectedFileChangesToCommit(
-  repository: HgRepositoryClient,
-  headToForkBaseRevisions: Array<RevisionInfo>,
-  beforeCommitId: number,
-  dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
-): Observable<Map<NuclideUri, FileChangeStatusValue>> {
-  const latestToOldesRevisions = headToForkBaseRevisions.slice().reverse();
-  return fetchFileChangesForRevisions(
-    repository,
-    latestToOldesRevisions.filter(revision => revision.id > beforeCommitId),
-  ).map(revisionChanges => mergeFileStatuses(
-    dirtyFileChanges,
-    revisionChanges,
-  ));
+function getSelectedFileChangesToCommit(repository, headToForkBaseRevisions, beforeCommitId, dirtyFileChanges) {
+  var latestToOldesRevisions = headToForkBaseRevisions.slice().reverse();
+  return fetchFileChangesForRevisions(repository, latestToOldesRevisions.filter(function (revision) {
+    return revision.id > beforeCommitId;
+  })).map(function (revisionChanges) {
+    return mergeFileStatuses(dirtyFileChanges, revisionChanges);
+  });
 }
 
-export default class RepositoryStack {
+var RepositoryStack = (function () {
+  function RepositoryStack(repository, diffOption) {
+    var _this = this;
 
-  _emitter: Emitter;
-  _subscriptions: UniversalDisposable;
-  _activeSubscriptions: ?UniversalDisposable;
-  _dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  _selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>;
-  _repository: HgRepositoryClient;
-  _selectedCompareCommitId: ?number;
-  _serializedUpdateSelectedFileChanges: () => Promise<void>;
-  _diffOption: DiffOptionType;
+    _classCallCheck(this, RepositoryStack);
 
-  constructor(repository: HgRepositoryClient, diffOption: DiffOptionType) {
     this._repository = repository;
-    this._emitter = new Emitter();
+    this._emitter = new (_atom2 || _atom()).Emitter();
     this._dirtyFileChanges = new Map();
     this._selectedFileChanges = new Map();
     this._selectedCompareCommitId = null;
     this._diffOption = diffOption;
 
-    this._serializedUpdateSelectedFileChanges = serializeAsyncCall(
-      () => this._updateSelectedFileChanges(),
-    );
+    this._serializedUpdateSelectedFileChanges = (0, (_commonsNodePromise2 || _commonsNodePromise()).serializeAsyncCall)(function () {
+      return _this._updateSelectedFileChanges();
+    });
     // Get the initial project status, if it's not already there,
     // triggered by another integration, like the file tree.
     repository.getStatuses([repository.getProjectDirectory()]);
-    this._subscriptions = new UniversalDisposable(
-      // Do the lightweight dirty cache update to reflect the changes,
-      // While only commit merge changes consumers wait for its results.
-      repository.onDidChangeStatuses(this._updateDirtyFileChanges.bind(this)),
-    );
+    this._subscriptions = new (_commonsNodeUniversalDisposable2 || _commonsNodeUniversalDisposable()).default(
+    // Do the lightweight dirty cache update to reflect the changes,
+    // While only commit merge changes consumers wait for its results.
+    repository.onDidChangeStatuses(this._updateDirtyFileChanges.bind(this)));
   }
 
-  setDiffOption(diffOption: DiffOptionType): void {
-    if (this._diffOption === diffOption) {
-      return;
+  _createClass(RepositoryStack, [{
+    key: 'setDiffOption',
+    value: function setDiffOption(diffOption) {
+      if (this._diffOption === diffOption) {
+        return;
+      }
+      this._diffOption = diffOption;
+      this._serializedUpdateSelectedFileChanges().catch((_notifications2 || _notifications()).notifyInternalError);
     }
-    this._diffOption = diffOption;
-    this._serializedUpdateSelectedFileChanges().catch(notifyInternalError);
-  }
+  }, {
+    key: 'activate',
+    value: function activate() {
+      var _this2 = this;
 
-  activate(): void {
-    if (this._activeSubscriptions != null) {
-      return;
+      if (this._activeSubscriptions != null) {
+        return;
+      }
+      var revisionChanges = this._repository.observeRevisionChanges();
+      var revisionStatusChanges = this._repository.observeRevisionStatusesChanges();
+      var statusChanges = (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(this._repository.onDidChangeStatuses.bind(this._repository)).debounceTime(UPDATE_STATUS_DEBOUNCE_MS).startWith(null);
+
+      var updateSelectedFiles = (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.merge(revisionChanges, statusChanges).switchMap(function () {
+        return(
+          // Ideally, Observables should have no side effects,
+          // but here, that helps manage async code flows till migration complete to Observables.
+          (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.fromPromise(_this2._serializedUpdateSelectedFileChanges())
+        );
+      }).catch(function (error) {
+        (0, (_notifications2 || _notifications()).notifyInternalError)(error);
+        return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.empty();
+      }).subscribe();
+
+      var updateRevisionsStateSubscription = (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.merge(revisionChanges, revisionStatusChanges).subscribe(function () {
+        _this2._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
+      });
+
+      this._activeSubscriptions = new (_commonsNodeUniversalDisposable2 || _commonsNodeUniversalDisposable()).default(updateSelectedFiles, updateRevisionsStateSubscription);
     }
-    const revisionChanges = this._repository.observeRevisionChanges();
-    const revisionStatusChanges = this._repository.observeRevisionStatusesChanges();
-    const statusChanges = observableFromSubscribeFunction(
-        this._repository.onDidChangeStatuses.bind(this._repository),
-      )
-      .debounceTime(UPDATE_STATUS_DEBOUNCE_MS)
-      .startWith(null);
-
-    const updateSelectedFiles = Observable.merge(revisionChanges, statusChanges)
-      .switchMap(() =>
-        // Ideally, Observables should have no side effects,
-        // but here, that helps manage async code flows till migration complete to Observables.
-        Observable.fromPromise(this._serializedUpdateSelectedFileChanges()),
-      ).catch(error => {
-        notifyInternalError(error);
-        return Observable.empty();
-      })
-      .subscribe();
-
-    const updateRevisionsStateSubscription =
-      Observable.merge(revisionChanges, revisionStatusChanges)
-        .subscribe(() => {
-          this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
-        });
-
-    this._activeSubscriptions = new UniversalDisposable(
-      updateSelectedFiles,
-      updateRevisionsStateSubscription,
-    );
-  }
-
-  deactivate(): void {
-    if (this._activeSubscriptions != null) {
-      this._activeSubscriptions.dispose();
-      this._activeSubscriptions = null;
+  }, {
+    key: 'deactivate',
+    value: function deactivate() {
+      if (this._activeSubscriptions != null) {
+        this._activeSubscriptions.dispose();
+        this._activeSubscriptions = null;
+      }
     }
-  }
-
-  _updateDirtyFileChanges(): void {
-    this._dirtyFileChanges = getDirtyFileChanges(this._repository);
-    this._emitter.emit(UPDATE_DIRTY_FILES_EVENT);
-  }
-
-  _waitForValidRevisionsState(): Promise<void> {
-    return Observable.of(this._repository.getCachedRevisions())
-      .concat(this._repository.observeRevisionChanges())
-      .filter(revisions => getHeadRevision(revisions) != null)
-      .take(1)
-      .timeout(
-        REVISION_STATE_TIMEOUT_MS,
-        new Error('Timed out waiting for a valid revisions state'),
-      ).ignoreElements()
-      .toPromise();
-  }
-
-  /**
-   * Update the file change state comparing the dirty filesystem status
-   * to a selected commit.
-   * That would be a merge of `hg status` with the diff from commits,
-   * and `hg log --rev ${revId}` for every commit.
-   */
-  async _updateSelectedFileChanges(): Promise<void> {
-    const revisionsState = this.getCachedRevisionsState();
-    if (revisionsState == null) {
-      getLogger().warn('Cannot update selected file changes for null revisions state');
-      return;
+  }, {
+    key: '_updateDirtyFileChanges',
+    value: function _updateDirtyFileChanges() {
+      this._dirtyFileChanges = getDirtyFileChanges(this._repository);
+      this._emitter.emit(UPDATE_DIRTY_FILES_EVENT);
     }
-    this._selectedFileChanges = await getSelectedFileChanges(
-      this._repository,
-      this._diffOption,
-      revisionsState.revisions,
-      revisionsState.compareCommitId,
-    ).toPromise();
-    this._emitter.emit(UPDATE_SELECTED_FILE_CHANGES_EVENT);
-  }
-
-  refreshRevisionsState(): void {
-    this._repository.refreshRevisions();
-  }
-
-  getCachedRevisionsState(): ?RevisionsState {
-    return this._createRevisionsState(this._repository.getCachedRevisions());
-  }
-
-  /**
-   * Amend the revisions state with the latest selected valid compare commit id.
-   */
-  _createRevisionsState(revisions: Array<RevisionInfo>): ?RevisionsState {
-    const headRevision = getHeadRevision(revisions);
-    if (headRevision == null) {
-      return null;
-    }
-    // Prioritize the cached compaereCommitId, if it exists.
-    // The user could have selected that from the timeline view.
-    let compareCommitId = this._selectedCompareCommitId;
-    if (!revisions.find(revision => revision.id === compareCommitId)) {
-      // Invalidate if there there is no longer a revision with that id.
-      compareCommitId = null;
-    }
-    const revisionStatuses = this._repository.getCachedRevisionStatuses();
-
-    return {
-      headCommitId: headRevision.id,
-      compareCommitId,
-      revisionStatuses,
-      headToForkBaseRevisions: getHeadToForkBaseRevisions(revisions),
-      revisions,
-    };
-  }
-
-  getDirtyFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
-    return this._dirtyFileChanges;
-  }
-
-  getSelectedFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
-    return this._selectedFileChanges;
-  }
-
-  async fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
-    // During a initialization, rebase or histedit,
-    // the loaded revisions may not have a head revision to be able to diff against.
-    await this._waitForValidRevisionsState();
-
-    const revisionsState = this.getCachedRevisionsState();
-    if (revisionsState == null) {
-      throw new Error('Cannot fetch hg diff while revisions not yet fetched!');
-    }
-    const {headToForkBaseRevisions, headCommitId} = revisionsState;
-    // When `compareCommitId` is null, the `HEAD` commit contents is compared
-    // to the filesystem, otherwise it compares that commit to filesystem.
-    let compareCommitId;
-    switch (this._diffOption) {
-      case DiffOption.DIRTY:
-        compareCommitId = headCommitId;
-        break;
-      case DiffOption.LAST_COMMIT:
-        compareCommitId = headToForkBaseRevisions.length > 1
-          ? headToForkBaseRevisions[headToForkBaseRevisions.length - 2].id
-          : headCommitId;
-        break;
-      case DiffOption.COMPARE_COMMIT:
-        compareCommitId = revisionsState.compareCommitId || headCommitId;
-        break;
-      default:
-        throw new Error(`Invalid Diff Option: ${this._diffOption}`);
+  }, {
+    key: '_waitForValidRevisionsState',
+    value: function _waitForValidRevisionsState() {
+      return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of(this._repository.getCachedRevisions()).concat(this._repository.observeRevisionChanges()).filter(function (revisions) {
+        return getHeadRevision(revisions) != null;
+      }).take(1).timeout(REVISION_STATE_TIMEOUT_MS, new Error('Timed out waiting for a valid revisions state')).ignoreElements().toPromise();
     }
 
-    const revisionInfo = headToForkBaseRevisions.find(
-      revision => revision.id === compareCommitId,
-    );
-    invariant(
-      revisionInfo,
-      `Diff Viw Fetcher: revision with id ${compareCommitId} not found`,
-    );
+    /**
+     * Update the file change state comparing the dirty filesystem status
+     * to a selected commit.
+     * That would be a merge of `hg status` with the diff from commits,
+     * and `hg log --rev ${revId}` for every commit.
+     */
+  }, {
+    key: '_updateSelectedFileChanges',
+    value: _asyncToGenerator(function* () {
+      var revisionsState = this.getCachedRevisionsState();
+      if (revisionsState == null) {
+        (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)().warn('Cannot update selected file changes for null revisions state');
+        return;
+      }
+      this._selectedFileChanges = yield getSelectedFileChanges(this._repository, this._diffOption, revisionsState.revisions, revisionsState.compareCommitId).toPromise();
+      this._emitter.emit(UPDATE_SELECTED_FILE_CHANGES_EVENT);
+    })
+  }, {
+    key: 'refreshRevisionsState',
+    value: function refreshRevisionsState() {
+      this._repository.refreshRevisions();
+    }
+  }, {
+    key: 'getCachedRevisionsState',
+    value: function getCachedRevisionsState() {
+      return this._createRevisionsState(this._repository.getCachedRevisions());
+    }
 
-    const committedContents = await this._repository
-      .fetchFileContentAtRevision(filePath, `${compareCommitId}`)
-      .toPromise()
+    /**
+     * Amend the revisions state with the latest selected valid compare commit id.
+     */
+  }, {
+    key: '_createRevisionsState',
+    value: function _createRevisionsState(revisions) {
+      var headRevision = getHeadRevision(revisions);
+      if (headRevision == null) {
+        return null;
+      }
+      // Prioritize the cached compaereCommitId, if it exists.
+      // The user could have selected that from the timeline view.
+      var compareCommitId = this._selectedCompareCommitId;
+      if (!revisions.find(function (revision) {
+        return revision.id === compareCommitId;
+      })) {
+        // Invalidate if there there is no longer a revision with that id.
+        compareCommitId = null;
+      }
+      var revisionStatuses = this._repository.getCachedRevisionStatuses();
+
+      return {
+        headCommitId: headRevision.id,
+        compareCommitId: compareCommitId,
+        revisionStatuses: revisionStatuses,
+        headToForkBaseRevisions: getHeadToForkBaseRevisions(revisions),
+        revisions: revisions
+      };
+    }
+  }, {
+    key: 'getDirtyFileChanges',
+    value: function getDirtyFileChanges() {
+      return this._dirtyFileChanges;
+    }
+  }, {
+    key: 'getSelectedFileChanges',
+    value: function getSelectedFileChanges() {
+      return this._selectedFileChanges;
+    }
+  }, {
+    key: 'fetchHgDiff',
+    value: _asyncToGenerator(function* (filePath) {
+      // During a initialization, rebase or histedit,
+      // the loaded revisions may not have a head revision to be able to diff against.
+      yield this._waitForValidRevisionsState();
+
+      var revisionsState = this.getCachedRevisionsState();
+      if (revisionsState == null) {
+        throw new Error('Cannot fetch hg diff while revisions not yet fetched!');
+      }
+      var headToForkBaseRevisions = revisionsState.headToForkBaseRevisions;
+      var headCommitId = revisionsState.headCommitId;
+
+      // When `compareCommitId` is null, the `HEAD` commit contents is compared
+      // to the filesystem, otherwise it compares that commit to filesystem.
+      var compareCommitId = undefined;
+      switch (this._diffOption) {
+        case (_constants2 || _constants()).DiffOption.DIRTY:
+          compareCommitId = headCommitId;
+          break;
+        case (_constants2 || _constants()).DiffOption.LAST_COMMIT:
+          compareCommitId = headToForkBaseRevisions.length > 1 ? headToForkBaseRevisions[headToForkBaseRevisions.length - 2].id : headCommitId;
+          break;
+        case (_constants2 || _constants()).DiffOption.COMPARE_COMMIT:
+          compareCommitId = revisionsState.compareCommitId || headCommitId;
+          break;
+        default:
+          throw new Error('Invalid Diff Option: ' + this._diffOption);
+      }
+
+      var revisionInfo = headToForkBaseRevisions.find(function (revision) {
+        return revision.id === compareCommitId;
+      });
+      (0, (_assert2 || _assert()).default)(revisionInfo, 'Diff Viw Fetcher: revision with id ' + compareCommitId + ' not found');
+
+      var committedContents = yield this._repository.fetchFileContentAtRevision(filePath, '' + compareCommitId).toPromise()
       // If the file didn't exist on the previous revision,
       // Return the no such file at revision message.
-      .catch(error => error.message || '');
+      .catch(function (error) {
+        return error.message || '';
+      });
 
-    return {
-      committedContents,
-      revisionInfo,
-    };
-  }
+      return {
+        committedContents: committedContents,
+        revisionInfo: revisionInfo
+      };
+    })
+  }, {
+    key: 'setCompareRevision',
+    value: _asyncToGenerator(function* (revision) {
+      var revisionsState = this.getCachedRevisionsState();
+      if (revisionsState == null) {
+        throw new Error('Cannot set compare revision on a null revisions state');
+      }
+      var headToForkBaseRevisions = revisionsState.headToForkBaseRevisions;
 
-  async setCompareRevision(revision: RevisionInfo): Promise<void> {
-    const revisionsState = this.getCachedRevisionsState();
-    if (revisionsState == null) {
-      throw new Error('Cannot set compare revision on a null revisions state');
+      (0, (_assert2 || _assert()).default)(headToForkBaseRevisions && headToForkBaseRevisions.find(function (check) {
+        return check.id === revision.id;
+      }), 'Diff Viw Timeline: non-applicable selected revision');
+
+      this._selectedCompareCommitId = revision.id;
+      this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
+
+      (0, (_assert2 || _assert()).default)(this._diffOption === (_constants2 || _constants()).DiffOption.COMPARE_COMMIT, 'Invalid Diff Option at setRevision time!');
+      yield this._serializedUpdateSelectedFileChanges().catch((_notifications2 || _notifications()).notifyInternalError);
+    })
+  }, {
+    key: 'onDidUpdateDirtyFileChanges',
+    value: function onDidUpdateDirtyFileChanges(callback) {
+      return this._emitter.on(UPDATE_DIRTY_FILES_EVENT, callback);
     }
-    const {headToForkBaseRevisions} = revisionsState;
+  }, {
+    key: 'onDidUpdateSelectedFileChanges',
+    value: function onDidUpdateSelectedFileChanges(callback) {
+      return this._emitter.on(UPDATE_SELECTED_FILE_CHANGES_EVENT, callback);
+    }
+  }, {
+    key: 'onDidChangeRevisionsState',
+    value: function onDidChangeRevisionsState(callback) {
+      return this._emitter.on(CHANGE_REVISIONS_STATE_EVENT, callback);
+    }
+  }, {
+    key: 'getRepository',
+    value: function getRepository() {
+      return this._repository;
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this.deactivate();
+      this._subscriptions.dispose();
+      this._dirtyFileChanges.clear();
+      this._selectedFileChanges.clear();
+    }
+  }]);
 
-    invariant(
-      headToForkBaseRevisions && headToForkBaseRevisions.find(check => check.id === revision.id),
-      'Diff Viw Timeline: non-applicable selected revision',
-    );
+  return RepositoryStack;
+})();
 
-    this._selectedCompareCommitId = revision.id;
-    this._emitter.emit(CHANGE_REVISIONS_STATE_EVENT);
-
-    invariant(
-      this._diffOption === DiffOption.COMPARE_COMMIT,
-      'Invalid Diff Option at setRevision time!',
-    );
-    await this._serializedUpdateSelectedFileChanges().catch(notifyInternalError);
-  }
-
-  onDidUpdateDirtyFileChanges(
-    callback: () => void,
-  ): IDisposable {
-    return this._emitter.on(UPDATE_DIRTY_FILES_EVENT, callback);
-  }
-
-  onDidUpdateSelectedFileChanges(
-    callback: () => void,
-  ): IDisposable {
-    return this._emitter.on(UPDATE_SELECTED_FILE_CHANGES_EVENT, callback);
-  }
-
-  onDidChangeRevisionsState(
-    callback: () => void,
-  ): IDisposable {
-    return this._emitter.on(CHANGE_REVISIONS_STATE_EVENT, callback);
-  }
-
-  getRepository(): HgRepositoryClient {
-    return this._repository;
-  }
-
-  dispose(): void {
-    this.deactivate();
-    this._subscriptions.dispose();
-    this._dirtyFileChanges.clear();
-    this._selectedFileChanges.clear();
-  }
-}
+exports.default = RepositoryStack;

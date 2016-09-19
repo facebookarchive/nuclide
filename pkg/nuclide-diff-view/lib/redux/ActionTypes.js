@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +10,15 @@
  * the root directory of this source tree.
  */
 
-export const ACTIVATE_REPOSITORY = 'ACTIVATE_REPOSITORY';
-export const ADD_REPOSITORY = 'ADD_REPOSITORY';
-export const DEACTIVATE_REPOSITORY = 'DEACTIVATE_REPOSITORY';
-export const DUMMY = 'DUMMY';
-export const SET_COMPARE_ID = 'SET_COMPARE_ID';
-export const SET_DIFF_OPTION = 'SET_DIFF_OPTION';
+var ACTIVATE_REPOSITORY = 'ACTIVATE_REPOSITORY';
+exports.ACTIVATE_REPOSITORY = ACTIVATE_REPOSITORY;
+var ADD_REPOSITORY = 'ADD_REPOSITORY';
+exports.ADD_REPOSITORY = ADD_REPOSITORY;
+var DEACTIVATE_REPOSITORY = 'DEACTIVATE_REPOSITORY';
+exports.DEACTIVATE_REPOSITORY = DEACTIVATE_REPOSITORY;
+var DUMMY = 'DUMMY';
+exports.DUMMY = DUMMY;
+var SET_COMPARE_ID = 'SET_COMPARE_ID';
+exports.SET_COMPARE_ID = SET_COMPARE_ID;
+var SET_DIFF_OPTION = 'SET_DIFF_OPTION';
+exports.SET_DIFF_OPTION = SET_DIFF_OPTION;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +10,39 @@
  * the root directory of this source tree.
  */
 
-import type {Transport} from '../lib/index';
-import type {Observable} from 'rxjs';
-import {Subject} from 'rxjs';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class LoopbackTransports {
-  serverTransport: Transport;
-  clientTransport: Transport;
+var _rxjsBundlesRxMinJs2;
 
-  constructor() {
-    const serverMessages: Subject<string> = new Subject();
-    const clientMessages: Subject<string> = new Subject();
-
-    this.serverTransport = {
-      send(message: string): void {
-        clientMessages.next(message);
-      },
-      onMessage(): Observable<string> {
-        return serverMessages;
-      },
-      close() {},
-    };
-
-    this.clientTransport = {
-      send(message: string): void {
-        serverMessages.next(message);
-      },
-      onMessage(): Observable<string> {
-        return clientMessages;
-      },
-      close() {},
-    };
-  }
+function _rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs2 = require('rxjs/bundles/Rx.min.js');
 }
+
+var LoopbackTransports = function LoopbackTransports() {
+  _classCallCheck(this, LoopbackTransports);
+
+  var serverMessages = new (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Subject();
+  var clientMessages = new (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Subject();
+
+  this.serverTransport = {
+    send: function send(message) {
+      clientMessages.next(message);
+    },
+    onMessage: function onMessage() {
+      return serverMessages;
+    },
+    close: function close() {}
+  };
+
+  this.clientTransport = {
+    send: function send(message) {
+      serverMessages.next(message);
+    },
+    onMessage: function onMessage() {
+      return clientMessages;
+    },
+    close: function close() {}
+  };
+};
+
+exports.LoopbackTransports = LoopbackTransports;

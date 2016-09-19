@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.buildCommand = buildCommand;
+exports.testCommand = testCommand;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +14,14 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../../commons-atom/featureConfig';
+var _commonsAtomFeatureConfig2;
 
-export function buildCommand(
-  chdir: string,
-  configuration: string,
-  Xcc: string,
-  Xlinker: string,
-  Xswiftc: string,
-  buildPath: string,
-): {
-  command: string,
-  args: Array<string>,
-} {
-  const commandArgs = [
-    'build',
-    '--chdir', chdir,
-    '--configuration', configuration,
-  ];
+function _commonsAtomFeatureConfig() {
+  return _commonsAtomFeatureConfig2 = _interopRequireDefault(require('../../../commons-atom/featureConfig'));
+}
+
+function buildCommand(chdir, configuration, Xcc, Xlinker, Xswiftc, buildPath) {
+  var commandArgs = ['build', '--chdir', chdir, '--configuration', configuration];
   if (Xcc.length > 0) {
     commandArgs.push('-Xcc', Xcc);
   }
@@ -41,34 +36,25 @@ export function buildCommand(
   }
   return {
     command: _swiftPath(),
-    args: commandArgs,
+    args: commandArgs
   };
 }
 
-export function testCommand(
-  chdir: string,
-  buildPath: string,
-): {
-  command: string,
-  args: Array<string>,
-} {
-  const commandArgs = [
-    'test',
-    '--chdir', chdir,
-  ];
+function testCommand(chdir, buildPath) {
+  var commandArgs = ['test', '--chdir', chdir];
   if (buildPath.length > 0) {
     commandArgs.push('--build-path', buildPath);
   }
   return {
     command: _swiftPath(),
-    args: commandArgs,
+    args: commandArgs
   };
 }
 
-function _swiftPath(): string {
-  const path = (featureConfig.get('nuclide-swift.swiftToolchainPath'): any);
+function _swiftPath() {
+  var path = (_commonsAtomFeatureConfig2 || _commonsAtomFeatureConfig()).default.get('nuclide-swift.swiftToolchainPath');
   if (path) {
-    return `${path}/usr/bin/swift`;
+    return path + '/usr/bin/swift';
   }
 
   if (process.platform === 'darwin') {

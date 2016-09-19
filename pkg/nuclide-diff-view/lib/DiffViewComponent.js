@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,591 +10,638 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DiffSection,
-  DiffSectionStatusType,
-  DiffModeType,
-  OffsetMap,
-  UIElement,
-} from './types';
-import type DiffViewModel, {State as DiffViewStateType} from './DiffViewModel';
-import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import invariant from 'assert';
-import {CompositeDisposable, Disposable, TextBuffer} from 'atom';
-import {
-  React,
-  ReactDOM,
-} from 'react-for-atom';
-import DiffViewEditorPane from './DiffViewEditorPane';
-import DiffViewTree from './DiffViewTree';
-import SyncScroll from './SyncScroll';
-import DiffTimelineView from './DiffTimelineView';
-import DiffViewToolbar from './DiffViewToolbar';
-import DiffNavigationBar from './DiffNavigationBar';
-import DiffCommitView from './DiffCommitView';
-import DiffPublishView from './DiffPublishView';
-import {
-  computeDiff,
-  computeDiffSections,
-  getOffsetLineCount,
-} from './diff-utils';
-import createPaneContainer from '../../commons-atom/create-pane-container';
-import {bufferForUri} from '../../commons-atom/text-editor';
-import {
-  DiffMode,
-  DiffSectionStatus,
-} from './constants';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type Props = {
-  diffModel: DiffViewModel,
-  // A bound function that when invoked will try to trigger the Diff View NUX
-  tryTriggerNux: () => void,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-type EditorState = {
-  revisionTitle: string,
-  text: string,
-  offsets: OffsetMap,
-  highlightedLines: {
-    added: Array<number>,
-    removed: Array<number>,
-  },
-  inlineElements: Array<UIElement>,
-};
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-type State = {
-  filePath: NuclideUri,
-  oldEditorState: EditorState,
-  newEditorState: EditorState,
-  diffSections: Array<DiffSection>,
-  // The offset of the scroll line number, being:
-  // `offsetOf(lineNumer(scrollTop + scrollHeight /2))`
-  // That helps derive which diff section are we on, next and previous sections.
-  middleScrollOffsetLineNumber: number,
-  offsetLineCount: number,
-  toolbarVisible: boolean,
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-function initialEditorState(): EditorState {
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _DiffViewEditorPane2;
+
+function _DiffViewEditorPane() {
+  return _DiffViewEditorPane2 = _interopRequireDefault(require('./DiffViewEditorPane'));
+}
+
+var _DiffViewTree2;
+
+function _DiffViewTree() {
+  return _DiffViewTree2 = _interopRequireDefault(require('./DiffViewTree'));
+}
+
+var _SyncScroll2;
+
+function _SyncScroll() {
+  return _SyncScroll2 = _interopRequireDefault(require('./SyncScroll'));
+}
+
+var _DiffTimelineView2;
+
+function _DiffTimelineView() {
+  return _DiffTimelineView2 = _interopRequireDefault(require('./DiffTimelineView'));
+}
+
+var _DiffViewToolbar2;
+
+function _DiffViewToolbar() {
+  return _DiffViewToolbar2 = _interopRequireDefault(require('./DiffViewToolbar'));
+}
+
+var _DiffNavigationBar2;
+
+function _DiffNavigationBar() {
+  return _DiffNavigationBar2 = _interopRequireDefault(require('./DiffNavigationBar'));
+}
+
+var _DiffCommitView2;
+
+function _DiffCommitView() {
+  return _DiffCommitView2 = _interopRequireDefault(require('./DiffCommitView'));
+}
+
+var _DiffPublishView2;
+
+function _DiffPublishView() {
+  return _DiffPublishView2 = _interopRequireDefault(require('./DiffPublishView'));
+}
+
+var _diffUtils2;
+
+function _diffUtils() {
+  return _diffUtils2 = require('./diff-utils');
+}
+
+var _commonsAtomCreatePaneContainer2;
+
+function _commonsAtomCreatePaneContainer() {
+  return _commonsAtomCreatePaneContainer2 = _interopRequireDefault(require('../../commons-atom/create-pane-container'));
+}
+
+var _commonsAtomTextEditor2;
+
+function _commonsAtomTextEditor() {
+  return _commonsAtomTextEditor2 = require('../../commons-atom/text-editor');
+}
+
+var _constants2;
+
+function _constants() {
+  return _constants2 = require('./constants');
+}
+
+function initialEditorState() {
   return {
     revisionTitle: '',
     text: '',
     offsets: new Map(),
     highlightedLines: {
       added: [],
-      removed: [],
+      removed: []
     },
-    inlineElements: [],
+    inlineElements: []
   };
 }
 
-let CachedPublishComponent;
+var CachedPublishComponent = undefined;
 function getPublishComponent() {
   if (CachedPublishComponent == null) {
     // Try requiring private module
     try {
       // $FlowFB
-      const {DiffViewPublishForm} = require('./fb/DiffViewPublishForm');
+
+      var _require = require('./fb/DiffViewPublishForm');
+
+      var DiffViewPublishForm = _require.DiffViewPublishForm;
+
       CachedPublishComponent = DiffViewPublishForm;
     } catch (ex) {
-      CachedPublishComponent = DiffPublishView;
+      CachedPublishComponent = (_DiffPublishView2 || _DiffPublishView()).default;
     }
   }
   return CachedPublishComponent;
 }
 
-let CachedDiffComponent;
+var CachedDiffComponent = undefined;
 function getDiffComponent() {
   if (CachedDiffComponent == null) {
     // Try requiring private module
     try {
       // $FlowFB
-      const {DiffViewCreateForm} = require('./fb/DiffViewCreateForm');
+
+      var _require2 = require('./fb/DiffViewCreateForm');
+
+      var DiffViewCreateForm = _require2.DiffViewCreateForm;
+
       CachedDiffComponent = DiffViewCreateForm;
     } catch (ex) {
-      CachedDiffComponent = DiffCommitView;
+      CachedDiffComponent = (_DiffCommitView2 || _DiffCommitView()).default;
     }
   }
 
   return CachedDiffComponent;
 }
 
-function getInitialState(): State {
+function getInitialState() {
   return {
     diffSections: [],
     filePath: '',
     middleScrollOffsetLineNumber: 0,
-    mode: DiffMode.BROWSE_MODE,
+    mode: (_constants2 || _constants()).DiffMode.BROWSE_MODE,
     newEditorState: initialEditorState(),
     offsetLineCount: 0,
     oldEditorState: initialEditorState(),
-    toolbarVisible: true,
+    toolbarVisible: true
   };
 }
 
-const EMPTY_FUNCTION = () => {};
-const SCROLL_FIRST_CHANGE_DELAY_MS = 100;
+var EMPTY_FUNCTION = function EMPTY_FUNCTION() {};
+var SCROLL_FIRST_CHANGE_DELAY_MS = 100;
 
-export default class DiffViewComponent extends React.Component {
-  props: Props;
-  state: State;
+var DiffViewComponent = (function (_React$Component) {
+  _inherits(DiffViewComponent, _React$Component);
 
-  _subscriptions: CompositeDisposable;
-  _syncScroll: SyncScroll;
-  _oldEditorPane: atom$Pane;
-  _oldEditorComponent: DiffViewEditorPane;
-  _paneContainer: Object;
-  _newEditorPane: atom$Pane;
-  _newEditorComponent: DiffViewEditorPane;
-  _bottomRightPane: atom$Pane;
-  _timelineComponent: ?DiffTimelineView;
-  _treePane: atom$Pane;
-  _treeComponent: React.Component<any, any, any>;
-  _navigationPane: atom$Pane;
-  _navigationComponent: DiffNavigationBar;
-  _publishComponent: ?React.Component<any, any, any>;
-  _readonlyBuffer: atom$TextBuffer;
+  function DiffViewComponent(props) {
+    _classCallCheck(this, DiffViewComponent);
 
-  constructor(props: Props) {
-    super(props);
+    _get(Object.getPrototypeOf(DiffViewComponent.prototype), 'constructor', this).call(this, props);
     this.state = getInitialState();
-    (this: any)._onModelStateChange = this._onModelStateChange.bind(this);
-    (this: any)._updateLineDiffState = this._updateLineDiffState.bind(this);
-    (this: any)._onChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
-    (this: any)._onTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
-    (this: any)._handleNavigateToDiffSection = this._handleNavigateToDiffSection.bind(this);
-    (this: any)._onDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
-    (this: any)._onChangeMode = this._onChangeMode.bind(this);
-    (this: any)._onSwitchToEditor = this._onSwitchToEditor.bind(this);
-    (this: any)._onDidChangeScrollTop = this._onDidChangeScrollTop.bind(this);
-    this._readonlyBuffer = new TextBuffer();
-    this._subscriptions = new CompositeDisposable();
+    this._onModelStateChange = this._onModelStateChange.bind(this);
+    this._updateLineDiffState = this._updateLineDiffState.bind(this);
+    this._onChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
+    this._onTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
+    this._handleNavigateToDiffSection = this._handleNavigateToDiffSection.bind(this);
+    this._onDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
+    this._onChangeMode = this._onChangeMode.bind(this);
+    this._onSwitchToEditor = this._onSwitchToEditor.bind(this);
+    this._onDidChangeScrollTop = this._onDidChangeScrollTop.bind(this);
+    this._readonlyBuffer = new (_atom2 || _atom()).TextBuffer();
+    this._subscriptions = new (_atom2 || _atom()).CompositeDisposable();
   }
 
-  componentDidMount(): void {
-    const {diffModel, tryTriggerNux} = this.props;
-    this._subscriptions.add(diffModel.onDidUpdateState(() => {
+  _createClass(DiffViewComponent, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this = this;
+
+      var _props = this.props;
+      var diffModel = _props.diffModel;
+      var tryTriggerNux = _props.tryTriggerNux;
+
+      this._subscriptions.add(diffModel.onDidUpdateState(function () {
+        _this._updateLineDiffState(diffModel.getState());
+        _this._renderTree();
+      }));
+      this._subscriptions.add(diffModel.onDidUpdateState(this._onModelStateChange));
+      this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem(function (activeItem) {
+        if (activeItem != null && activeItem.tagName === 'NUCLIDE-DIFF-VIEW') {
+          // Re-render on activation.
+          _this._updateLineDiffState(diffModel.getState());
+        }
+      }));
+
+      this._paneContainer = (0, (_commonsAtomCreatePaneContainer2 || _commonsAtomCreatePaneContainer()).default)();
+      // The changed files status tree takes 1/5 of the width and lives on the right most,
+      // while being vertically splt with the revision timeline stack pane.
+      var topPane = this._newEditorPane = this._paneContainer.getActivePane();
+      this._bottomRightPane = topPane.splitDown({
+        flexScale: 0.3
+      });
+      this._treePane = this._bottomRightPane.splitLeft({
+        flexScale: 0.35
+      });
+      this._navigationPane = topPane.splitRight({
+        flexScale: 0.045
+      });
+      this._oldEditorPane = topPane.splitLeft({
+        flexScale: 1
+      });
+
+      this._renderDiffView();
+
+      this._subscriptions.add(this._destroyPaneDisposable(this._oldEditorPane), this._destroyPaneDisposable(this._newEditorPane), this._destroyPaneDisposable(this._navigationPane), this._destroyPaneDisposable(this._treePane), this._destroyPaneDisposable(this._bottomRightPane));
+
+      (_reactForAtom2 || _reactForAtom()).ReactDOM.findDOMNode(this.refs.paneContainer).appendChild(atom.views.getView(this._paneContainer));
+
       this._updateLineDiffState(diffModel.getState());
-      this._renderTree();
-    }));
-    this._subscriptions.add(diffModel.onDidUpdateState(this._onModelStateChange));
-    this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem(activeItem => {
-      if (activeItem != null && (activeItem: any).tagName === 'NUCLIDE-DIFF-VIEW') {
-        // Re-render on activation.
-        this._updateLineDiffState(diffModel.getState());
-      }
-    }));
 
-    this._paneContainer = createPaneContainer();
-    // The changed files status tree takes 1/5 of the width and lives on the right most,
-    // while being vertically splt with the revision timeline stack pane.
-    const topPane = this._newEditorPane = this._paneContainer.getActivePane();
-    this._bottomRightPane = topPane.splitDown({
-      flexScale: 0.3,
-    });
-    this._treePane = this._bottomRightPane.splitLeft({
-      flexScale: 0.35,
-    });
-    this._navigationPane = topPane.splitRight({
-      flexScale: 0.045,
-    });
-    this._oldEditorPane = topPane.splitLeft({
-      flexScale: 1,
-    });
-
-    this._renderDiffView();
-
-    this._subscriptions.add(
-      this._destroyPaneDisposable(this._oldEditorPane),
-      this._destroyPaneDisposable(this._newEditorPane),
-      this._destroyPaneDisposable(this._navigationPane),
-      this._destroyPaneDisposable(this._treePane),
-      this._destroyPaneDisposable(this._bottomRightPane),
-    );
-
-    ReactDOM.findDOMNode(this.refs.paneContainer).appendChild(
-      atom.views.getView(this._paneContainer),
-    );
-
-    this._updateLineDiffState(diffModel.getState());
-
-    tryTriggerNux();
-  }
-
-  _onModelStateChange(): void {
-    this.setState({});
-  }
-
-  _setupSyncScroll(): void {
-    if (this._oldEditorComponent == null || this._newEditorComponent == null) {
-      return;
+      tryTriggerNux();
     }
-    const oldTextEditorElement = this._oldEditorComponent.getEditorDomElement();
-    const newTextEditorElement = this._newEditorComponent.getEditorDomElement();
-    const syncScroll = this._syncScroll;
-    if (syncScroll != null) {
-      syncScroll.dispose();
-      this._subscriptions.remove(syncScroll);
+  }, {
+    key: '_onModelStateChange',
+    value: function _onModelStateChange() {
+      this.setState({});
     }
-    this._syncScroll = new SyncScroll(
-      oldTextEditorElement,
-      newTextEditorElement,
-    );
-    this._subscriptions.add(this._syncScroll);
-  }
-
-  _scrollToFirstHighlightedLine(): void {
-    const {filePath} = this.state;
-    // Schedule scroll to first line after all lines have been rendered.
-    const scrollTimeout = setTimeout(() => {
-      this._subscriptions.remove(clearScrollTimeoutSubscription);
-      const {diffSections} = this.state;
-      if (this.state.filePath !== filePath || diffSections.length === 0) {
+  }, {
+    key: '_setupSyncScroll',
+    value: function _setupSyncScroll() {
+      if (this._oldEditorComponent == null || this._newEditorComponent == null) {
         return;
       }
-
-      const {status, lineNumber} = diffSections[0];
-      this._handleNavigateToDiffSection(status, lineNumber);
-
-    }, SCROLL_FIRST_CHANGE_DELAY_MS);
-    const clearScrollTimeoutSubscription = new Disposable(() => {
-      clearTimeout(scrollTimeout);
-    });
-    this._subscriptions.add(clearScrollTimeoutSubscription);
-  }
-
-  _onChangeMode(mode: DiffModeType): void {
-    this.props.diffModel.setViewMode(mode);
-  }
-
-  _renderDiffView(): void {
-    this._renderTree();
-    this._renderEditors();
-    this._renderNavigation();
-    this._renderBottomRightPane();
-  }
-
-  _renderBottomRightPane(): void {
-    const {viewMode} = this.props.diffModel.getState();
-    switch (viewMode) {
-      case DiffMode.BROWSE_MODE:
-        this._renderTimelineView();
-        this._publishComponent = null;
-        break;
-      case DiffMode.COMMIT_MODE:
-        this._renderCommitView();
-        this._timelineComponent = null;
-        this._publishComponent = null;
-        break;
-      case DiffMode.PUBLISH_MODE:
-        this._renderPublishView();
-        this._timelineComponent = null;
-        break;
-      default:
-        throw new Error(`Invalid Diff Mode: ${viewMode}`);
+      var oldTextEditorElement = this._oldEditorComponent.getEditorDomElement();
+      var newTextEditorElement = this._newEditorComponent.getEditorDomElement();
+      var syncScroll = this._syncScroll;
+      if (syncScroll != null) {
+        syncScroll.dispose();
+        this._subscriptions.remove(syncScroll);
+      }
+      this._syncScroll = new (_SyncScroll2 || _SyncScroll()).default(oldTextEditorElement, newTextEditorElement);
+      this._subscriptions.add(this._syncScroll);
     }
-  }
+  }, {
+    key: '_scrollToFirstHighlightedLine',
+    value: function _scrollToFirstHighlightedLine() {
+      var _this2 = this;
 
-  componentDidUpdate(prevProps: Props, prevState: State): void {
-    this._renderDiffView();
-    if (this.state.filePath !== prevState.filePath) {
-      this._scrollToFirstHighlightedLine();
-      this.props.diffModel.emitActiveBufferChangeModified();
+      var filePath = this.state.filePath;
+
+      // Schedule scroll to first line after all lines have been rendered.
+      var scrollTimeout = setTimeout(function () {
+        _this2._subscriptions.remove(clearScrollTimeoutSubscription);
+        var diffSections = _this2.state.diffSections;
+
+        if (_this2.state.filePath !== filePath || diffSections.length === 0) {
+          return;
+        }
+
+        var _diffSections$0 = diffSections[0];
+        var status = _diffSections$0.status;
+        var lineNumber = _diffSections$0.lineNumber;
+
+        _this2._handleNavigateToDiffSection(status, lineNumber);
+      }, SCROLL_FIRST_CHANGE_DELAY_MS);
+      var clearScrollTimeoutSubscription = new (_atom2 || _atom()).Disposable(function () {
+        clearTimeout(scrollTimeout);
+      });
+      this._subscriptions.add(clearScrollTimeoutSubscription);
     }
-  }
+  }, {
+    key: '_onChangeMode',
+    value: function _onChangeMode(mode) {
+      this.props.diffModel.setViewMode(mode);
+    }
+  }, {
+    key: '_renderDiffView',
+    value: function _renderDiffView() {
+      this._renderTree();
+      this._renderEditors();
+      this._renderNavigation();
+      this._renderBottomRightPane();
+    }
+  }, {
+    key: '_renderBottomRightPane',
+    value: function _renderBottomRightPane() {
+      var _props$diffModel$getState = this.props.diffModel.getState();
 
-  _renderCommitView(): void {
-    const {
-      commitMessage,
-      commitMode,
-      commitModeState,
-      shouldRebaseOnAmend,
-    } = this.props.diffModel.getState();
+      var viewMode = _props$diffModel$getState.viewMode;
 
-    const DiffComponent = getDiffComponent();
-    ReactDOM.render(
-      <DiffComponent
-        commitMessage={commitMessage}
-        commitMode={commitMode}
-        commitModeState={commitModeState}
-        shouldRebaseOnAmend={shouldRebaseOnAmend}
+      switch (viewMode) {
+        case (_constants2 || _constants()).DiffMode.BROWSE_MODE:
+          this._renderTimelineView();
+          this._publishComponent = null;
+          break;
+        case (_constants2 || _constants()).DiffMode.COMMIT_MODE:
+          this._renderCommitView();
+          this._timelineComponent = null;
+          this._publishComponent = null;
+          break;
+        case (_constants2 || _constants()).DiffMode.PUBLISH_MODE:
+          this._renderPublishView();
+          this._timelineComponent = null;
+          break;
+        default:
+          throw new Error('Invalid Diff Mode: ' + viewMode);
+      }
+    }
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate(prevProps, prevState) {
+      this._renderDiffView();
+      if (this.state.filePath !== prevState.filePath) {
+        this._scrollToFirstHighlightedLine();
+        this.props.diffModel.emitActiveBufferChangeModified();
+      }
+    }
+  }, {
+    key: '_renderCommitView',
+    value: function _renderCommitView() {
+      var _props$diffModel$getState2 = this.props.diffModel.getState();
+
+      var commitMessage = _props$diffModel$getState2.commitMessage;
+      var commitMode = _props$diffModel$getState2.commitMode;
+      var commitModeState = _props$diffModel$getState2.commitModeState;
+      var shouldRebaseOnAmend = _props$diffModel$getState2.shouldRebaseOnAmend;
+
+      var DiffComponent = getDiffComponent();
+      (_reactForAtom2 || _reactForAtom()).ReactDOM.render((_reactForAtom2 || _reactForAtom()).React.createElement(DiffComponent, {
+        commitMessage: commitMessage,
+        commitMode: commitMode,
+        commitModeState: commitModeState,
+        shouldRebaseOnAmend: shouldRebaseOnAmend,
         // `diffModel` is acting as the action creator for commit view and needs to be passed so
         // methods can be called on it.
-        diffModel={this.props.diffModel}
-      />,
-      this._getPaneElement(this._bottomRightPane),
-    );
-  }
-
-  _renderPublishView(): void {
-    const {diffModel} = this.props;
-    const {
-      publishMode,
-      publishModeState,
-      publishMessage,
-      headCommitMessage,
-    } = diffModel.getState();
-    const PublishComponent = getPublishComponent();
-    const component = ReactDOM.render(
-      <PublishComponent
-        publishModeState={publishModeState}
-        message={publishMessage}
-        publishMode={publishMode}
-        headCommitMessage={headCommitMessage}
-        diffModel={diffModel}
-      />,
-      this._getPaneElement(this._bottomRightPane),
-    );
-    this._publishComponent = component;
-  }
-
-  _renderTree(): void {
-    const {diffModel} = this.props;
-    const {selectedFileChanges, showNonHgRepos} = diffModel.getState();
-    const {filePath} = diffModel.getState();
-    this._treeComponent = ReactDOM.render(
-      (
-        <div className="nuclide-diff-view-tree padded">
-          <DiffViewTree
-            activeFilePath={filePath}
-            fileChanges={selectedFileChanges}
-            showNonHgRepos={showNonHgRepos}
-            diffModel={diffModel}
-          />
-        </div>
-      ),
-      this._getPaneElement(this._treePane),
-    );
-  }
-
-  _renderEditors(): void {
-    const {filePath, oldEditorState: oldState, newEditorState: newState} = this.state;
-    const oldEditorComponent = ReactDOM.render(
-        <DiffViewEditorPane
-          headerTitle={oldState.revisionTitle}
-          textBuffer={this._readonlyBuffer}
-          filePath={filePath}
-          offsets={oldState.offsets}
-          highlightedLines={oldState.highlightedLines}
-          textContent={oldState.text}
-          inlineElements={oldState.inlineElements}
-          readOnly={true}
-          onChange={EMPTY_FUNCTION}
-          onDidChangeScrollTop={this._onDidChangeScrollTop}
-          onDidUpdateTextEditorElement={EMPTY_FUNCTION}
-        />,
-        this._getPaneElement(this._oldEditorPane),
-    );
-    invariant(oldEditorComponent instanceof DiffViewEditorPane);
-    this._oldEditorComponent = oldEditorComponent;
-    const textBuffer = bufferForUri(filePath);
-    const newEditorComponent = ReactDOM.render(
-        <DiffViewEditorPane
-          headerTitle={newState.revisionTitle}
-          textBuffer={textBuffer}
-          filePath={filePath}
-          offsets={newState.offsets}
-          highlightedLines={newState.highlightedLines}
-          inlineElements={newState.inlineElements}
-          onDidUpdateTextEditorElement={this._onDidUpdateTextEditorElement}
-          readOnly={false}
-          onChange={this._onChangeNewTextEditor}
-        />,
-        this._getPaneElement(this._newEditorPane),
-    );
-    invariant(newEditorComponent instanceof DiffViewEditorPane);
-    this._newEditorComponent = newEditorComponent;
-  }
-
-  _onDidUpdateTextEditorElement(): void {
-    this._setupSyncScroll();
-  }
-
-  _renderTimelineView(): void {
-    const component = ReactDOM.render(
-      <DiffTimelineView
-        diffModel={this.props.diffModel}
-        onSelectionChange={this._onTimelineChangeRevision}
-      />,
-      this._getPaneElement(this._bottomRightPane),
-    );
-    invariant(component instanceof DiffTimelineView);
-    this._timelineComponent = component;
-  }
-
-  _renderNavigation(): void {
-    const {diffSections, offsetLineCount} = this.state;
-    const navigationPaneElement = this._getPaneElement(this._navigationPane);
-    const component = ReactDOM.render(
-      <DiffNavigationBar
-        elementHeight={navigationPaneElement.clientHeight}
-        diffSections={diffSections}
-        offsetLineCount={offsetLineCount}
-        onNavigateToDiffSection={this._handleNavigateToDiffSection}
-      />,
-      navigationPaneElement,
-    );
-    invariant(component instanceof DiffNavigationBar);
-    this._navigationComponent = component;
-  }
-
-  _handleNavigateToDiffSection(
-    diffSectionStatus: DiffSectionStatusType,
-    scrollToLineNumber: number,
-  ): void {
-    const textEditorElement = this._diffSectionStatusToEditorElement(diffSectionStatus);
-    const textEditor = textEditorElement.getModel();
-    const pixelPositionTop = textEditorElement
-      .pixelPositionForBufferPosition([scrollToLineNumber, 0]).top;
-    // Manually calculate the scroll location, instead of using
-    // `textEditor.scrollToBufferPosition([lineNumber, 0], {center: true})`
-    // because that API to wouldn't center the line if it was in the visible screen range.
-    const scrollTop = pixelPositionTop
-      + textEditor.getLineHeightInPixels() / 2
-      - textEditorElement.clientHeight / 2;
-    textEditorElement.setScrollTop(scrollTop);
-  }
-
-  _diffSectionStatusToEditorElement(
-    diffSectionStatus: DiffSectionStatusType,
-  ): atom$TextEditorElement {
-    switch (diffSectionStatus) {
-      case DiffSectionStatus.ADDED:
-      case DiffSectionStatus.CHANGED:
-        return this._newEditorComponent.getEditorDomElement();
-      case DiffSectionStatus.REMOVED:
-        return this._oldEditorComponent.getEditorDomElement();
-      default:
-        throw new Error('Invalid diff section status');
+        diffModel: this.props.diffModel
+      }), this._getPaneElement(this._bottomRightPane));
     }
-  }
+  }, {
+    key: '_renderPublishView',
+    value: function _renderPublishView() {
+      var diffModel = this.props.diffModel;
 
-  _getPaneElement(pane: atom$Pane): HTMLElement {
-    return atom.views.getView(pane).querySelector('.item-views');
-  }
+      var _diffModel$getState = diffModel.getState();
 
-  _destroyPaneDisposable(pane: atom$Pane): IDisposable {
-    return new Disposable(() => {
-      ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(this._getPaneElement(pane)));
-      pane.destroy();
-    });
-  }
+      var publishMode = _diffModel$getState.publishMode;
+      var publishModeState = _diffModel$getState.publishModeState;
+      var publishMessage = _diffModel$getState.publishMessage;
+      var headCommitMessage = _diffModel$getState.headCommitMessage;
 
-  componentWillUnmount(): void {
-    this._subscriptions.dispose();
-  }
+      var PublishComponent = getPublishComponent();
+      var component = (_reactForAtom2 || _reactForAtom()).ReactDOM.render((_reactForAtom2 || _reactForAtom()).React.createElement(PublishComponent, {
+        publishModeState: publishModeState,
+        message: publishMessage,
+        publishMode: publishMode,
+        headCommitMessage: headCommitMessage,
+        diffModel: diffModel
+      }), this._getPaneElement(this._bottomRightPane));
+      this._publishComponent = component;
+    }
+  }, {
+    key: '_renderTree',
+    value: function _renderTree() {
+      var diffModel = this.props.diffModel;
 
-  render(): React.Element<any> {
-    const {
-      diffSections,
-      filePath,
-      middleScrollOffsetLineNumber,
-      newEditorState,
-      oldEditorState,
-    } = this.state;
-    return (
-      <div className="nuclide-diff-view-container">
-        <DiffViewToolbar
-          diffSections={diffSections}
-          filePath={filePath}
-          middleScrollOffsetLineNumber={middleScrollOffsetLineNumber}
-          newRevisionTitle={newEditorState.revisionTitle}
-          oldRevisionTitle={oldEditorState.revisionTitle}
-          onSwitchMode={this._onChangeMode}
-          onSwitchToEditor={this._onSwitchToEditor}
-          onNavigateToDiffSection={this._handleNavigateToDiffSection}
-        />
-        <div className="nuclide-diff-view-component" ref="paneContainer" />
-      </div>
-    );
-  }
+      var _diffModel$getState2 = diffModel.getState();
 
-  _onSwitchToEditor(): void {
-    const diffViewNode = ReactDOM.findDOMNode(this);
-    invariant(diffViewNode, 'Diff View DOM needs to be attached to switch to editor mode');
-    atom.commands.dispatch(diffViewNode, 'nuclide-diff-view:switch-to-editor');
-  }
+      var selectedFileChanges = _diffModel$getState2.selectedFileChanges;
+      var showNonHgRepos = _diffModel$getState2.showNonHgRepos;
 
-  _onChangeNewTextEditor(newContents: string): void {
-    this.props.diffModel.setNewContents(newContents);
-  }
+      var _diffModel$getState3 = diffModel.getState();
 
-  _onTimelineChangeRevision(revision: RevisionInfo): void {
-    this.props.diffModel.setCompareRevision(revision);
-  }
+      var filePath = _diffModel$getState3.filePath;
 
-  _onDidChangeScrollTop(): void {
-    const textEditorElement = this._oldEditorComponent.getEditorDomElement();
-    const textEditor = textEditorElement.getModel();
-    const linePixels = textEditor.getLineHeightInPixels();
-    const middleVerticalScroll = Math.floor(
-      textEditorElement.getScrollTop()
-      + textEditorElement.clientHeight / 2
-      - linePixels / 2,
-    );
-    const middleScrollOffsetLineNumber = middleVerticalScroll / linePixels;
-    this.setState({middleScrollOffsetLineNumber});
-  }
+      this._treeComponent = (_reactForAtom2 || _reactForAtom()).ReactDOM.render((_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-diff-view-tree padded' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement((_DiffViewTree2 || _DiffViewTree()).default, {
+          activeFilePath: filePath,
+          fileChanges: selectedFileChanges,
+          showNonHgRepos: showNonHgRepos,
+          diffModel: diffModel
+        })
+      ), this._getPaneElement(this._treePane));
+    }
+  }, {
+    key: '_renderEditors',
+    value: function _renderEditors() {
+      var _state = this.state;
+      var filePath = _state.filePath;
+      var oldState = _state.oldEditorState;
+      var newState = _state.newEditorState;
 
-  /**
-   * Updates the line diff state on active file state change.
-   */
-  _updateLineDiffState(fileState: DiffViewStateType): void {
-    const {
-      filePath,
-      oldContents,
-      newContents,
-      inlineComponents,
-      fromRevisionTitle,
-      toRevisionTitle,
-    } = fileState;
+      var oldEditorComponent = (_reactForAtom2 || _reactForAtom()).ReactDOM.render((_reactForAtom2 || _reactForAtom()).React.createElement((_DiffViewEditorPane2 || _DiffViewEditorPane()).default, {
+        headerTitle: oldState.revisionTitle,
+        textBuffer: this._readonlyBuffer,
+        filePath: filePath,
+        offsets: oldState.offsets,
+        highlightedLines: oldState.highlightedLines,
+        textContent: oldState.text,
+        inlineElements: oldState.inlineElements,
+        readOnly: true,
+        onChange: EMPTY_FUNCTION,
+        onDidChangeScrollTop: this._onDidChangeScrollTop,
+        onDidUpdateTextEditorElement: EMPTY_FUNCTION
+      }), this._getPaneElement(this._oldEditorPane));
+      (0, (_assert2 || _assert()).default)(oldEditorComponent instanceof (_DiffViewEditorPane2 || _DiffViewEditorPane()).default);
+      this._oldEditorComponent = oldEditorComponent;
+      var textBuffer = (0, (_commonsAtomTextEditor2 || _commonsAtomTextEditor()).bufferForUri)(filePath);
+      var newEditorComponent = (_reactForAtom2 || _reactForAtom()).ReactDOM.render((_reactForAtom2 || _reactForAtom()).React.createElement((_DiffViewEditorPane2 || _DiffViewEditorPane()).default, {
+        headerTitle: newState.revisionTitle,
+        textBuffer: textBuffer,
+        filePath: filePath,
+        offsets: newState.offsets,
+        highlightedLines: newState.highlightedLines,
+        inlineElements: newState.inlineElements,
+        onDidUpdateTextEditorElement: this._onDidUpdateTextEditorElement,
+        readOnly: false,
+        onChange: this._onChangeNewTextEditor
+      }), this._getPaneElement(this._newEditorPane));
+      (0, (_assert2 || _assert()).default)(newEditorComponent instanceof (_DiffViewEditorPane2 || _DiffViewEditorPane()).default);
+      this._newEditorComponent = newEditorComponent;
+    }
+  }, {
+    key: '_onDidUpdateTextEditorElement',
+    value: function _onDidUpdateTextEditorElement() {
+      this._setupSyncScroll();
+    }
+  }, {
+    key: '_renderTimelineView',
+    value: function _renderTimelineView() {
+      var component = (_reactForAtom2 || _reactForAtom()).ReactDOM.render((_reactForAtom2 || _reactForAtom()).React.createElement((_DiffTimelineView2 || _DiffTimelineView()).default, {
+        diffModel: this.props.diffModel,
+        onSelectionChange: this._onTimelineChangeRevision
+      }), this._getPaneElement(this._bottomRightPane));
+      (0, (_assert2 || _assert()).default)(component instanceof (_DiffTimelineView2 || _DiffTimelineView()).default);
+      this._timelineComponent = component;
+    }
+  }, {
+    key: '_renderNavigation',
+    value: function _renderNavigation() {
+      var _state2 = this.state;
+      var diffSections = _state2.diffSections;
+      var offsetLineCount = _state2.offsetLineCount;
 
-    const {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
-      computeDiff(oldContents, newContents);
+      var navigationPaneElement = this._getPaneElement(this._navigationPane);
+      var component = (_reactForAtom2 || _reactForAtom()).ReactDOM.render((_reactForAtom2 || _reactForAtom()).React.createElement((_DiffNavigationBar2 || _DiffNavigationBar()).default, {
+        elementHeight: navigationPaneElement.clientHeight,
+        diffSections: diffSections,
+        offsetLineCount: offsetLineCount,
+        onNavigateToDiffSection: this._handleNavigateToDiffSection
+      }), navigationPaneElement);
+      (0, (_assert2 || _assert()).default)(component instanceof (_DiffNavigationBar2 || _DiffNavigationBar()).default);
+      this._navigationComponent = component;
+    }
+  }, {
+    key: '_handleNavigateToDiffSection',
+    value: function _handleNavigateToDiffSection(diffSectionStatus, scrollToLineNumber) {
+      var textEditorElement = this._diffSectionStatusToEditorElement(diffSectionStatus);
+      var textEditor = textEditorElement.getModel();
+      var pixelPositionTop = textEditorElement.pixelPositionForBufferPosition([scrollToLineNumber, 0]).top;
+      // Manually calculate the scroll location, instead of using
+      // `textEditor.scrollToBufferPosition([lineNumber, 0], {center: true})`
+      // because that API to wouldn't center the line if it was in the visible screen range.
+      var scrollTop = pixelPositionTop + textEditor.getLineHeightInPixels() / 2 - textEditorElement.clientHeight / 2;
+      textEditorElement.setScrollTop(scrollTop);
+    }
+  }, {
+    key: '_diffSectionStatusToEditorElement',
+    value: function _diffSectionStatusToEditorElement(diffSectionStatus) {
+      switch (diffSectionStatus) {
+        case (_constants2 || _constants()).DiffSectionStatus.ADDED:
+        case (_constants2 || _constants()).DiffSectionStatus.CHANGED:
+          return this._newEditorComponent.getEditorDomElement();
+        case (_constants2 || _constants()).DiffSectionStatus.REMOVED:
+          return this._oldEditorComponent.getEditorDomElement();
+        default:
+          throw new Error('Invalid diff section status');
+      }
+    }
+  }, {
+    key: '_getPaneElement',
+    value: function _getPaneElement(pane) {
+      return atom.views.getView(pane).querySelector('.item-views');
+    }
+  }, {
+    key: '_destroyPaneDisposable',
+    value: function _destroyPaneDisposable(pane) {
+      var _this3 = this;
 
-    const oldEditorState = {
-      revisionTitle: fromRevisionTitle,
-      text: oldContents,
-      offsets: oldLineOffsets,
-      highlightedLines: {
-        added: [],
-        removed: removedLines,
-      },
-      inlineElements: inlineComponents || [],
-    };
-    const newEditorState = {
-      revisionTitle: toRevisionTitle,
-      text: newContents,
-      offsets: newLineOffsets,
-      highlightedLines: {
-        added: addedLines,
-        removed: [],
-      },
-      inlineElements: [],
-    };
+      return new (_atom2 || _atom()).Disposable(function () {
+        (_reactForAtom2 || _reactForAtom()).ReactDOM.unmountComponentAtNode((_reactForAtom2 || _reactForAtom()).ReactDOM.findDOMNode(_this3._getPaneElement(pane)));
+        pane.destroy();
+      });
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this._subscriptions.dispose();
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _state3 = this.state;
+      var diffSections = _state3.diffSections;
+      var filePath = _state3.filePath;
+      var middleScrollOffsetLineNumber = _state3.middleScrollOffsetLineNumber;
+      var newEditorState = _state3.newEditorState;
+      var oldEditorState = _state3.oldEditorState;
 
-    const diffSections = computeDiffSections(
-      addedLines,
-      removedLines,
-      oldLineOffsets,
-      newLineOffsets,
-    );
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-diff-view-container' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement((_DiffViewToolbar2 || _DiffViewToolbar()).default, {
+          diffSections: diffSections,
+          filePath: filePath,
+          middleScrollOffsetLineNumber: middleScrollOffsetLineNumber,
+          newRevisionTitle: newEditorState.revisionTitle,
+          oldRevisionTitle: oldEditorState.revisionTitle,
+          onSwitchMode: this._onChangeMode,
+          onSwitchToEditor: this._onSwitchToEditor,
+          onNavigateToDiffSection: this._handleNavigateToDiffSection
+        }),
+        (_reactForAtom2 || _reactForAtom()).React.createElement('div', { className: 'nuclide-diff-view-component', ref: 'paneContainer' })
+      );
+    }
+  }, {
+    key: '_onSwitchToEditor',
+    value: function _onSwitchToEditor() {
+      var diffViewNode = (_reactForAtom2 || _reactForAtom()).ReactDOM.findDOMNode(this);
+      (0, (_assert2 || _assert()).default)(diffViewNode, 'Diff View DOM needs to be attached to switch to editor mode');
+      atom.commands.dispatch(diffViewNode, 'nuclide-diff-view:switch-to-editor');
+    }
+  }, {
+    key: '_onChangeNewTextEditor',
+    value: function _onChangeNewTextEditor(newContents) {
+      this.props.diffModel.setNewContents(newContents);
+    }
+  }, {
+    key: '_onTimelineChangeRevision',
+    value: function _onTimelineChangeRevision(revision) {
+      this.props.diffModel.setCompareRevision(revision);
+    }
+  }, {
+    key: '_onDidChangeScrollTop',
+    value: function _onDidChangeScrollTop() {
+      var textEditorElement = this._oldEditorComponent.getEditorDomElement();
+      var textEditor = textEditorElement.getModel();
+      var linePixels = textEditor.getLineHeightInPixels();
+      var middleVerticalScroll = Math.floor(textEditorElement.getScrollTop() + textEditorElement.clientHeight / 2 - linePixels / 2);
+      var middleScrollOffsetLineNumber = middleVerticalScroll / linePixels;
+      this.setState({ middleScrollOffsetLineNumber: middleScrollOffsetLineNumber });
+    }
 
-    const offsetLineCount = getOffsetLineCount(
-      oldContents,
-      oldLineOffsets,
-      newContents,
-      newLineOffsets,
-    );
+    /**
+     * Updates the line diff state on active file state change.
+     */
+  }, {
+    key: '_updateLineDiffState',
+    value: function _updateLineDiffState(fileState) {
+      var filePath = fileState.filePath;
+      var oldContents = fileState.oldContents;
+      var newContents = fileState.newContents;
+      var inlineComponents = fileState.inlineComponents;
+      var fromRevisionTitle = fileState.fromRevisionTitle;
+      var toRevisionTitle = fileState.toRevisionTitle;
 
-    this.setState({
-      diffSections,
-      filePath,
-      offsetLineCount,
-      newEditorState,
-      oldEditorState,
-    });
-  }
-}
+      var _ref = (0, (_diffUtils2 || _diffUtils()).computeDiff)(oldContents, newContents);
+
+      var addedLines = _ref.addedLines;
+      var removedLines = _ref.removedLines;
+      var oldLineOffsets = _ref.oldLineOffsets;
+      var newLineOffsets = _ref.newLineOffsets;
+
+      var oldEditorState = {
+        revisionTitle: fromRevisionTitle,
+        text: oldContents,
+        offsets: oldLineOffsets,
+        highlightedLines: {
+          added: [],
+          removed: removedLines
+        },
+        inlineElements: inlineComponents || []
+      };
+      var newEditorState = {
+        revisionTitle: toRevisionTitle,
+        text: newContents,
+        offsets: newLineOffsets,
+        highlightedLines: {
+          added: addedLines,
+          removed: []
+        },
+        inlineElements: []
+      };
+
+      var diffSections = (0, (_diffUtils2 || _diffUtils()).computeDiffSections)(addedLines, removedLines, oldLineOffsets, newLineOffsets);
+
+      var offsetLineCount = (0, (_diffUtils2 || _diffUtils()).getOffsetLineCount)(oldContents, oldLineOffsets, newContents, newLineOffsets);
+
+      this.setState({
+        diffSections: diffSections,
+        filePath: filePath,
+        offsetLineCount: offsetLineCount,
+        newEditorState: newEditorState,
+        oldEditorState: oldEditorState
+      });
+    }
+  }]);
+
+  return DiffViewComponent;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
+
+exports.default = DiffViewComponent;
+module.exports = exports.default;
+
+// A bound function that when invoked will try to trigger the Diff View NUX
+
+// The offset of the scroll line number, being:
+// `offsetOf(lineNumer(scrollTop + scrollHeight /2))`
+// That helps derive which diff section are we on, next and previous sections.

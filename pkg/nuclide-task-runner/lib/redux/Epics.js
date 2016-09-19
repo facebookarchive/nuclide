@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,240 +10,254 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AppState, Store, TaskId, TaskMetadata, TaskRunner} from '../types';
-import type {ActionsObservable} from '../../../commons-node/redux-observable';
+exports.registerTaskRunnerEpic = registerTaskRunnerEpic;
+exports.runTaskEpic = runTaskEpic;
+exports.setProjectRootEpic = setProjectRootEpic;
+exports.setToolbarVisibilityEpic = setToolbarVisibilityEpic;
+exports.stopTaskEpic = stopTaskEpic;
+exports.toggleToolbarVisibilityEpic = toggleToolbarVisibilityEpic;
 
-import {observableFromTask} from '../../../commons-node/tasks';
-import {observableFromSubscribeFunction} from '../../../commons-node/event';
-import {getActiveTaskRunner} from '../getActiveTaskRunner';
-import {getTaskMetadata} from '../getTaskMetadata';
-import * as Actions from './Actions';
-import invariant from 'assert';
-import {Observable} from 'rxjs';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function registerTaskRunnerEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.REGISTER_TASK_RUNNER).flatMap(action => {
-    invariant(action.type === Actions.REGISTER_TASK_RUNNER);
-    const {taskRunner} = action.payload;
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+var _commonsNodeTasks2;
+
+function _commonsNodeTasks() {
+  return _commonsNodeTasks2 = require('../../../commons-node/tasks');
+}
+
+var _commonsNodeEvent2;
+
+function _commonsNodeEvent() {
+  return _commonsNodeEvent2 = require('../../../commons-node/event');
+}
+
+var _getActiveTaskRunner2;
+
+function _getActiveTaskRunner() {
+  return _getActiveTaskRunner2 = require('../getActiveTaskRunner');
+}
+
+var _getTaskMetadata2;
+
+function _getTaskMetadata() {
+  return _getTaskMetadata2 = require('../getTaskMetadata');
+}
+
+var _Actions2;
+
+function _Actions() {
+  return _Actions2 = _interopRequireWildcard(require('./Actions'));
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _rxjsBundlesRxMinJs2;
+
+function _rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs2 = require('rxjs/bundles/Rx.min.js');
+}
+
+function registerTaskRunnerEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).REGISTER_TASK_RUNNER).flatMap(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).REGISTER_TASK_RUNNER);
+    var taskRunner = action.payload.taskRunner;
 
     // Set the project root on the new task runner.
-    const {setProjectRoot} = taskRunner;
+    var setProjectRoot = taskRunner.setProjectRoot;
+
     if (typeof setProjectRoot === 'function') {
-      const projectRoot = store.getState().projectRoot;
+      var projectRoot = store.getState().projectRoot;
       setProjectRoot.call(taskRunner, projectRoot);
     }
 
-    const taskListToAction = taskList => ({
-      type: Actions.TASK_LIST_UPDATED,
-      payload: {
-        taskRunnerId: taskRunner.id,
-        taskList,
-      },
+    var taskListToAction = function taskListToAction(taskList) {
+      return {
+        type: (_Actions2 || _Actions()).TASK_LIST_UPDATED,
+        payload: {
+          taskRunnerId: taskRunner.id,
+          taskList: taskList
+        }
+      };
+    };
+    var unregistrationEvents = actions.filter(function (a) {
+      return a.type === (_Actions2 || _Actions()).UNREGISTER_TASK_RUNNER && a.payload.id === taskRunner.id;
     });
-    const unregistrationEvents = actions.filter(a => (
-      a.type === Actions.UNREGISTER_TASK_RUNNER && a.payload.id === taskRunner.id
-    ));
-    return observableFromSubscribeFunction(taskRunner.observeTaskList.bind(taskRunner))
-      .map(taskListToAction)
-      .takeUntil(unregistrationEvents);
+    return (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(taskRunner.observeTaskList.bind(taskRunner)).map(taskListToAction).takeUntil(unregistrationEvents);
   });
 }
 
-export function runTaskEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.RUN_TASK)
-    .switchMap(action => {
-      invariant(action.type === Actions.RUN_TASK);
-      const taskToRun = action.payload.taskId || store.getState().activeTaskId;
+function runTaskEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).RUN_TASK).switchMap(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).RUN_TASK);
+    var taskToRun = action.payload.taskId || store.getState().activeTaskId;
 
-      // Don't do anything if there's no active task.
-      if (taskToRun == null) { return Observable.empty(); }
+    // Don't do anything if there's no active task.
+    if (taskToRun == null) {
+      return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.empty();
+    }
 
-      // Don't do anything if a task is already running.
-      if (store.getState().runningTaskInfo != null) { return Observable.empty(); }
+    // Don't do anything if a task is already running.
+    if (store.getState().runningTaskInfo != null) {
+      return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.empty();
+    }
 
-      return Observable.concat(
-        taskIdsAreEqual(store.getState().activeTaskId, taskToRun)
-          ? Observable.empty()
-          : Observable.of(Actions.selectTask(taskToRun)),
-        store.getState().visible
-          ? Observable.empty()
-          : Observable.of(Actions.setToolbarVisibility(true)),
-        Observable.defer(() => {
-          const state = store.getState();
-          const activeTaskRunner = getActiveTaskRunner(state);
+    return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.concat(taskIdsAreEqual(store.getState().activeTaskId, taskToRun) ? (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.empty() : (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of((_Actions2 || _Actions()).selectTask(taskToRun)), store.getState().visible ? (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.empty() : (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of((_Actions2 || _Actions()).setToolbarVisibility(true)), (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.defer(function () {
+      var state = store.getState();
+      var activeTaskRunner = (0, (_getActiveTaskRunner2 || _getActiveTaskRunner()).getActiveTaskRunner)(state);
 
-          if (activeTaskRunner == null) {
-            return Observable.empty();
-          }
-
-          const taskMeta = getTaskMetadata(taskToRun, state.taskLists);
-          invariant(taskMeta != null);
-
-          if (!taskMeta.runnable) {
-            return Observable.empty();
-          }
-
-          return createTaskObservable(activeTaskRunner, taskMeta, () => store.getState())
-            // Stop listening once the task is done.
-            .takeUntil(
-              actions.ofType(Actions.TASK_COMPLETED, Actions.TASK_ERRORED, Actions.TASK_STOPPED),
-            );
-        }),
-      );
-    });
-}
-
-export function setProjectRootEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.SET_PROJECT_ROOT)
-    .do(action => {
-      invariant(action.type === Actions.SET_PROJECT_ROOT);
-      const {projectRoot} = action.payload;
-
-      // Set the project root on all registered task runners.
-      store.getState().taskRunners.forEach(taskRunner => {
-        if (typeof taskRunner.setProjectRoot === 'function') {
-          taskRunner.setProjectRoot(projectRoot);
-        }
-      });
-    })
-    // This is just for side-effects
-    .ignoreElements();
-}
-
-export function setToolbarVisibilityEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.SET_TOOLBAR_VISIBILITY)
-    .map(action => {
-      invariant(action.type === Actions.SET_TOOLBAR_VISIBILITY);
-      const {visible} = action.payload;
-      return {
-        type: Actions.TOOLBAR_VISIBILITY_UPDATED,
-        payload: {visible},
-      };
-    });
-}
-
-export function stopTaskEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.STOP_TASK)
-    .switchMap(action => {
-      const {runningTaskInfo} = store.getState();
-      const task = runningTaskInfo == null ? null : runningTaskInfo.task;
-      if (task == null) { return Observable.empty(); }
-      return Observable.of({
-        type: Actions.TASK_STOPPED,
-        payload: {task},
-      });
-    });
-}
-
-export function toggleToolbarVisibilityEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.TOGGLE_TOOLBAR_VISIBILITY)
-    .switchMap(action => {
-      invariant(action.type === Actions.TOGGLE_TOOLBAR_VISIBILITY);
-      const state = store.getState();
-      const {taskRunnerId} = action.payload;
-
-      // If no taskRunnerId is provided, just toggle the visibility.
-      if (taskRunnerId == null) {
-        return Observable.of(Actions.setToolbarVisibility(!state.visible));
+      if (activeTaskRunner == null) {
+        return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.empty();
       }
 
-      // If the active task corresponds to the task runner you want to toggle, just toggle the
-      // visibility.
-      const {activeTaskId} = state;
-      if (activeTaskId != null && activeTaskId.taskRunnerId === taskRunnerId) {
-        return Observable.of(Actions.setToolbarVisibility(!state.visible));
+      var taskMeta = (0, (_getTaskMetadata2 || _getTaskMetadata()).getTaskMetadata)(taskToRun, state.taskLists);
+      (0, (_assert2 || _assert()).default)(taskMeta != null);
+
+      if (!taskMeta.runnable) {
+        return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.empty();
       }
 
-      // Choose the first task for that task runner.
-      const taskListForRunner = state.taskLists.get(taskRunnerId) || [];
-      const taskIdToSelect = taskListForRunner.length > 0 ? taskListForRunner[0] : null;
-      if (taskIdToSelect == null) {
-        const taskRunner = state.taskRunners.get(taskRunnerId);
-        invariant(taskRunner != null);
-        atom.notifications.addWarning(`The ${taskRunner.name} task runner doesn't have any tasks!`);
+      return createTaskObservable(activeTaskRunner, taskMeta, function () {
+        return store.getState();
+      })
+      // Stop listening once the task is done.
+      .takeUntil(actions.ofType((_Actions2 || _Actions()).TASK_COMPLETED, (_Actions2 || _Actions()).TASK_ERRORED, (_Actions2 || _Actions()).TASK_STOPPED));
+    }));
+  });
+}
+
+function setProjectRootEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).SET_PROJECT_ROOT).do(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).SET_PROJECT_ROOT);
+    var projectRoot = action.payload.projectRoot;
+
+    // Set the project root on all registered task runners.
+    store.getState().taskRunners.forEach(function (taskRunner) {
+      if (typeof taskRunner.setProjectRoot === 'function') {
+        taskRunner.setProjectRoot(projectRoot);
       }
-
-      return Observable.concat(
-        // Make sure the toolbar is shown.
-        Observable.of(Actions.setToolbarVisibility(true)),
-
-        // Select the task.
-        taskIdToSelect == null
-          ? Observable.empty()
-          : Observable.of(Actions.selectTask(taskIdToSelect)),
-      );
     });
+  })
+  // This is just for side-effects
+  .ignoreElements();
+}
+
+function setToolbarVisibilityEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).SET_TOOLBAR_VISIBILITY).map(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).SET_TOOLBAR_VISIBILITY);
+    var visible = action.payload.visible;
+
+    return {
+      type: (_Actions2 || _Actions()).TOOLBAR_VISIBILITY_UPDATED,
+      payload: { visible: visible }
+    };
+  });
+}
+
+function stopTaskEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).STOP_TASK).switchMap(function (action) {
+    var _store$getState = store.getState();
+
+    var runningTaskInfo = _store$getState.runningTaskInfo;
+
+    var task = runningTaskInfo == null ? null : runningTaskInfo.task;
+    if (task == null) {
+      return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.empty();
+    }
+    return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of({
+      type: (_Actions2 || _Actions()).TASK_STOPPED,
+      payload: { task: task }
+    });
+  });
+}
+
+function toggleToolbarVisibilityEpic(actions, store) {
+  return actions.ofType((_Actions2 || _Actions()).TOGGLE_TOOLBAR_VISIBILITY).switchMap(function (action) {
+    (0, (_assert2 || _assert()).default)(action.type === (_Actions2 || _Actions()).TOGGLE_TOOLBAR_VISIBILITY);
+    var state = store.getState();
+    var taskRunnerId = action.payload.taskRunnerId;
+
+    // If no taskRunnerId is provided, just toggle the visibility.
+    if (taskRunnerId == null) {
+      return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of((_Actions2 || _Actions()).setToolbarVisibility(!state.visible));
+    }
+
+    // If the active task corresponds to the task runner you want to toggle, just toggle the
+    // visibility.
+    var activeTaskId = state.activeTaskId;
+
+    if (activeTaskId != null && activeTaskId.taskRunnerId === taskRunnerId) {
+      return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of((_Actions2 || _Actions()).setToolbarVisibility(!state.visible));
+    }
+
+    // Choose the first task for that task runner.
+    var taskListForRunner = state.taskLists.get(taskRunnerId) || [];
+    var taskIdToSelect = taskListForRunner.length > 0 ? taskListForRunner[0] : null;
+    if (taskIdToSelect == null) {
+      var taskRunner = state.taskRunners.get(taskRunnerId);
+      (0, (_assert2 || _assert()).default)(taskRunner != null);
+      atom.notifications.addWarning('The ' + taskRunner.name + ' task runner doesn\'t have any tasks!');
+    }
+
+    return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.concat(
+    // Make sure the toolbar is shown.
+    (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of((_Actions2 || _Actions()).setToolbarVisibility(true)),
+
+    // Select the task.
+    taskIdToSelect == null ? (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.empty() : (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of((_Actions2 || _Actions()).selectTask(taskIdToSelect)));
+  });
 }
 
 /**
  * Run a task and transform its output into domain-specific actions.
  */
-function createTaskObservable(
-  taskRunner: TaskRunner,
-  taskMeta: TaskMetadata,
-  getState: () => AppState,
-): Observable<Action> {
-  return Observable.defer(() => {
-    const task = taskRunner.runTask(taskMeta.type);
-    const events = observableFromTask(task);
+function createTaskObservable(taskRunner, taskMeta, getState) {
+  return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.defer(function () {
+    var task = taskRunner.runTask(taskMeta.type);
+    var events = (0, (_commonsNodeTasks2 || _commonsNodeTasks()).observableFromTask)(task);
 
-    return Observable
-      .of({
-        type: Actions.TASK_STARTED,
-        payload: {task},
-      })
-      .concat(
-        events
-          .filter(event => event.type === 'progress')
-          .map(event => ({
-            type: Actions.TASK_PROGRESS,
-            payload: {progress: event.progress},
-          })),
-      )
-      .concat(Observable.of({
-        type: Actions.TASK_COMPLETED,
-        payload: {task},
-      }));
-  })
-    .catch(error => {
-      atom.notifications.addError(
-        `The task "${taskMeta.label}" failed`,
-        {
-          detail: error.stack,
-          dismissable: true,
-        },
-      );
-      const {runningTaskInfo} = getState();
-      return Observable.of({
-        type: Actions.TASK_ERRORED,
-        payload: {
-          error,
-          task: runningTaskInfo == null ? null : runningTaskInfo.task,
-        },
-      });
-    })
-    .share();
+    return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of({
+      type: (_Actions2 || _Actions()).TASK_STARTED,
+      payload: { task: task }
+    }).concat(events.filter(function (event) {
+      return event.type === 'progress';
+    }).map(function (event) {
+      return {
+        type: (_Actions2 || _Actions()).TASK_PROGRESS,
+        payload: { progress: event.progress }
+      };
+    })).concat((_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of({
+      type: (_Actions2 || _Actions()).TASK_COMPLETED,
+      payload: { task: task }
+    }));
+  }).catch(function (error) {
+    atom.notifications.addError('The task "' + taskMeta.label + '" failed', {
+      detail: error.stack,
+      dismissable: true
+    });
+
+    var _getState = getState();
+
+    var runningTaskInfo = _getState.runningTaskInfo;
+
+    return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of({
+      type: (_Actions2 || _Actions()).TASK_ERRORED,
+      payload: {
+        error: error,
+        task: runningTaskInfo == null ? null : runningTaskInfo.task
+      }
+    });
+  }).share();
 }
 
-function taskIdsAreEqual(a: ?TaskId, b: ?TaskId): boolean {
-  if (a == null || b == null) { return false; }
+function taskIdsAreEqual(a, b) {
+  if (a == null || b == null) {
+    return false;
+  }
   return a.type === b.type && a.taskRunnerId === b.taskRunnerId;
 }

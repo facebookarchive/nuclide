@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +10,31 @@
  * the root directory of this source tree.
  */
 
-import type {
-  ActionTypeValue,
-  ActiveShortHeadChangeBehaviorValue,
-} from './types';
-
-export const ActionType = Object.freeze({
+var ActionType = Object.freeze({
   ADD_PROJECT_REPOSITORY: 'add-project-repository',
   COMPLETE_RESTORING_REPOSITORY_STATE: 'complete-restoring-repository-state',
   REMOVE_PROJECT_REPOSITORY: 'remove-project-repository',
   RESTORE_PANE_ITEM_STATE: 'restore-pane-item-state',
   START_RESTORING_REPOSITORY_STATE: 'start-restoring-repository-state',
   UPDATE_PANE_ITEM_STATE: 'update-pane-item-state',
-  UPDATE_REPOSITORY_BOOKMARKS: 'update-repository-bookmarks',
+  UPDATE_REPOSITORY_BOOKMARKS: 'update-repository-bookmarks'
 });
 
+exports.ActionType = ActionType;
 // This is to work around flow's missing support of enums.
-(ActionType: { [key: string]: ActionTypeValue });
+ActionType;
 
-export const ActiveShortHeadChangeBehavior = Object.freeze({
+var ActiveShortHeadChangeBehavior = Object.freeze({
   ALWAYS_IGNORE: 'Always Ignore',
   ALWAYS_RESTORE: 'Always Restore',
-  PROMPT_TO_RESTORE: 'Prompt to Restore',
+  PROMPT_TO_RESTORE: 'Prompt to Restore'
 });
 
-(ActiveShortHeadChangeBehavior: { [key: string]: ActiveShortHeadChangeBehaviorValue });
+exports.ActiveShortHeadChangeBehavior = ActiveShortHeadChangeBehavior;
+ActiveShortHeadChangeBehavior;
 
-export const ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG =
-  'nuclide-bookshelf.changeActiveBookmarkBehavior';
+var ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG = 'nuclide-bookshelf.changeActiveBookmarkBehavior';
 
-export const EMPTY_SHORTHEAD = '';
+exports.ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG = ACTIVE_SHORTHEAD_CHANGE_BEHAVIOR_CONFIG;
+var EMPTY_SHORTHEAD = '';
+exports.EMPTY_SHORTHEAD = EMPTY_SHORTHEAD;
