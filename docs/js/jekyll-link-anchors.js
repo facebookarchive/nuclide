@@ -1,3 +1,6 @@
+'use strict';
+/* @noflow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -6,12 +9,14 @@
  * the root directory of this source tree.
  */
 
+/* NON-TRANSPILED FILE */
+/* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
+
 /* eslint-disable no-var */
 /* eslint-disable prefer-arrow-callback */
 
 // Taken and modified from https://gist.github.com/SimplGy/a229d25cdb19d7f21231
 (function() {
-  'use strict';
 
   // Create intra-page links
   // Requires that your headings already have an `id` attribute set (because that's what jekyll
