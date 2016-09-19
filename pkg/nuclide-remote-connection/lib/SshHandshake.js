@@ -181,6 +181,7 @@ export class SshHandshake {
   async connect(config: SshConnectionConfiguration): Promise<void> {
     this._config = config;
     this._passwordRetryCount = 0;
+    this._cancelled = false;
     this._willConnect();
 
     const existingConnection = RemoteConnection
