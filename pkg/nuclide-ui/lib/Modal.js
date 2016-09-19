@@ -10,8 +10,8 @@
  */
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {CompositeDisposable} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
+import {Portal} from './Portal';
+import {React} from 'react-for-atom';
 import {Observable} from 'rxjs';
 
 type Props = {
@@ -41,19 +41,7 @@ export class Modal extends React.Component {
   }
 
   componentWillUnmount(): void {
-    ReactDOM.unmountComponentAtNode(this._container);
     this._panel.destroy();
-  }
-
-  componentDidMount(): void {
-    // Do the initial render.
-    this._render();
-  }
-
-  componentDidUpdate(prevProps: Props): void {
-    if (prevProps.children !== this.props.children) {
-      this._render();
-    }
   }
 
   _handleWindowClick(event: SyntheticMouseEvent): void {
@@ -73,34 +61,26 @@ export class Modal extends React.Component {
     if (el == null) { return; }
 
     el.focus();
-    this._cancelDisposable = new CompositeDisposable(
+    this._cancelDisposable = new UniversalDisposable(
       atom.commands.add(window, 'core:cancel', () => { this.props.onDismiss(); }),
-      new UniversalDisposable(
-        Observable.fromEvent(window, 'click')
-          // Ignore clicks in the current tick. We don't want to capture the click that showed this
-          // modal.
-          .skipUntil(Observable.interval(0).first())
-          .subscribe(this._handleWindowClick),
-      ),
+      Observable.fromEvent(window, 'click')
+        // Ignore clicks in the current tick. We don't want to capture the click that showed this
+        // modal.
+        .skipUntil(Observable.interval(0).first())
+        .subscribe(this._handleWindowClick),
     );
-  }
-
-  _render(): void {
-    // Wrap the children to be sure that we have a single element. (Children can be a string, array,
-    // etc.)
-    const wrappedChildren = (
-      <div
-        tabIndex="0"
-        ref={this._handleContainerInnerElement}>
-        {this.props.children}
-      </div>
-    );
-    ReactDOM.render(wrappedChildren, this._container);
   }
 
   render() {
-    // Don't actually render anything here.
-    return null;
+    return (
+      <Portal container={this._container}>
+        <div
+          tabIndex="0"
+          ref={this._handleContainerInnerElement}>
+          {this.props.children}
+        </div>
+      </Portal>
+    );
   }
 
 }
