@@ -1,5 +1,5 @@
-'use strict';
-/* @noflow */
+'use babel';
+/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -12,10 +12,26 @@
 /**
  * A port of Atom's focused specs.
  * https://github.com/atom/jasmine-focused/blob/c922330/src/jasmine-focused.coffee
- *
- * Flow is disabled because all of this is non-standard.
  */
+
+import invariant from 'assert';
+
 require('jasmine-node');
+
+// These are undocumented APIs. The type of jasmine is redefined here, so that
+// we don't pollute the real lib def with this nonsense.
+const jasmine: {
+  getEnv(): {
+    focusPriority?: number,
+    specFilter?: (spec: any) => boolean,
+  },
+  Env: {
+    prototype: {
+      ddescribe?: () => void,
+      iit?: () => void,
+    }
+  }
+} = global.jasmine;
 
 function setGlobalFocusPriority(priority) {
   const env = jasmine.getEnv();
@@ -31,6 +47,7 @@ function fdescribe(description, specDefinitions, priority_) {
   const priority = priority_ != null ? priority_ : 1;
   setGlobalFocusPriority(priority);
   const suite = describe(description, specDefinitions);
+  invariant(suite != null);
   suite.focusPriority = priority;
   return suite;
 }
@@ -50,6 +67,7 @@ function fit(description, definition, priority_) {
   const priority = priority_ != null ? priority_ : 1;
   setGlobalFocusPriority(priority);
   const spec = it(description, definition);
+  invariant(spec != null);
   spec.focusPriority = priority;
   return spec;
 }
@@ -76,6 +94,7 @@ jasmine.getEnv().specFilter = function(spec) {
   } else if (!parent) {
     return false;
   } else {
+    invariant(typeof env.specFilter === 'function');
     return env.specFilter(parent);
   }
 };
