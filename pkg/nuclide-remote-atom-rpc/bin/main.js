@@ -151,6 +151,12 @@ async function run() {
     .help('h')
     .alias('h', 'help')
     .demand(1, 'At least one file name is required.')
+    .option('a', {
+      alias: 'add',
+      describe: 'Ignored, as --add as always implied. ' +
+        'Included for compatibility with atom CLI.',
+      type: 'boolean',
+    })
     .option('w', {
       alias: 'wait',
       describe: 'Wait for the opened file to be closed in Atom before exiting',
