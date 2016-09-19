@@ -79,6 +79,7 @@ module.exports = {
     'accessor-pairs': 1,
     'array-callback-return': 0,
     'block-scoped-var': 0,
+    'class-methods-use-this': 0,
     'complexity': 0,
     'consistent-return': 0,
     'curly': 1,
@@ -169,6 +170,7 @@ module.exports = {
     'no-process-env': 0,
     'no-process-exit': 0,
     'no-restricted-modules': 0,
+    'no-restricted-properties': 0,
     'no-sync': 0,
 
     // Stylistic Issues (http://eslint.org/docs/rules/#stylistic-issues)
@@ -191,8 +193,10 @@ module.exports = {
     'jsx-quotes': [1, 'prefer-double'],
     'key-spacing': [1, {beforeColon: false, afterColon: true}],
     'keyword-spacing': 1,
+    'line-comment-position': 0,
     'linebreak-style': 1,
     'lines-around-comment': 0,
+    'lines-around-directive': 0,
     'max-depth': 0,
     'max-len': [1, 100, {tabWidth: 2, ignoreUrls: true}],
     'max-lines': 0,
@@ -270,6 +274,7 @@ module.exports = {
     'object-shorthand': 0, // Enforced by babel/object-shorthand
     'prefer-arrow-callback': [1, {allowNamedFunctions: true}],
     'prefer-const': 1,
+    'prefer-numeric-literals': 0,
     'prefer-reflect': 0,
     'prefer-rest-params': 0,
     'prefer-spread': 0,
@@ -277,6 +282,7 @@ module.exports = {
     'require-yield': 0,
     'rest-spread-spacing': 1,
     'sort-imports': 0,
+    'symbol-description': 1,
     'template-curly-spacing': 1,
     'yield-star-spacing': 1,
 
@@ -343,6 +349,7 @@ module.exports = {
     'react/no-set-state': 0,
     'react/no-string-refs': 0,
     'react/no-unknown-property': 1,
+    'react/no-unused-prop-types': 0,
     'react/prefer-es6-class': 0,
     // 'react/prefer-stateless-function': 1,
     'react/prop-types': 1,
@@ -352,6 +359,7 @@ module.exports = {
     'react/self-closing-comp': 1,
     'react/sort-comp': 0,
     'react/sort-prop-types': 0,
+    'react/style-prop-object': 0,
     'react/jsx-boolean-value': 0,
     'react/jsx-closing-bracket-location': [1, {selfClosing: 'tag-aligned', nonEmpty: 'after-props'}],
     'react/jsx-curly-spacing': [1, 'never'],

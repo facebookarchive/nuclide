@@ -112,7 +112,7 @@ class BuckToolbar extends React.Component {
         />;
     }
 
-    let widgets = [];
+    const widgets = [];
     if (status != null) {
       widgets.push(
         <div key="status" className="nuclide-buck-status inline-block text-center">

@@ -15,7 +15,7 @@ import Hasher from './Hasher';
 type CompareFunc = (a: Array<any>, b: Array<any>) => boolean;
 type KeySelector<T, U> = (x: T) => U;
 
-const NOTHING = Symbol();
+const NOTHING = Symbol('nothing');
 
 /**
  * Create a memoized version of the provided function that caches only the latest result. This is
