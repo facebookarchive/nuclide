@@ -98,7 +98,7 @@ describe('Buck building via toolbar', () => {
       'results to appear',
       30000,
       () => {
-        listGroup = combobox.querySelector('.list-group');
+        listGroup = document.body.querySelector('.nuclide-combobox-list-group');
         const hasListItems = listGroup && listGroup.querySelectorAll('li').length > 0;
         const isLoading = listGroup && listGroup.querySelector('.loading-message') != null;
         return hasListItems && !isLoading;

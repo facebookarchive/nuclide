@@ -8,10 +8,10 @@
   flex: 1;
   border-bottom: 1px solid @tool-panel-border-color;
 
-  // Make sure this appears over atom-tabs, including the "selected tab"
-  // indicator of One Light/Dark
-  position: relative;
-  z-index: 4;
+  // Anything you want to overflow (e.g. dropdowns) must be rendered outside of
+  // this element. That way, we can make sure that our normal contents don't
+  // wind up on top of elements they shouldn't.
+  overflow: hidden;
 }
 
 .nuclide-task-runner-progress-bar {

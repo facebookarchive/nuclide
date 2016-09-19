@@ -16,16 +16,15 @@
   }
 }
 
-.select-list.popover-list-subtle > ol.list-group {
+.nuclide-combobox-list-group.list-group {
+  position: absolute;
   background: @base-background-color;
   border: 1px solid @overlay-border-color;
   border-top: none;
   margin-top: 0;
   position: absolute;
   width: 100%;
-  // This needs some z-index or else any absolutely positioned siblings could
-  // be rendered on top of it.
-  z-index: 1;
+  z-index: 999;
 
   strong {
     font-weight: bold;

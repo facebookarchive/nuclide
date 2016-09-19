@@ -15,9 +15,10 @@ type ComboboxOption = {
   matchIndex: number,
 };
 
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Observable} from 'rxjs';
-import {CompositeDisposable} from 'atom';
 import {AtomInput} from './AtomInput';
+import {Portal} from './Portal';
 import {React, ReactDOM} from 'react-for-atom';
 
 type DefaultProps = {
@@ -45,6 +46,11 @@ type State = {
   loadingOptions: boolean,
   options: Array<string>,
   optionsVisible: boolean,
+  optionsRect: ?{
+    top: number,
+    left: number,
+    width: number,
+  },
   selectedIndex: number,
   textInput: string,
 };
@@ -61,8 +67,9 @@ export class Combobox extends React.Component {
   props: Props;
   state: State;
 
+  _optionsElement: HTMLElement;
   _updateSubscription: ?rx$ISubscription;
-  _subscriptions: ?CompositeDisposable;
+  _subscriptions: UniversalDisposable;
 
   static defaultProps: DefaultProps = {
     className: '',
@@ -74,11 +81,13 @@ export class Combobox extends React.Component {
 
   constructor(props: Props) {
     super(props);
+    this._subscriptions = new UniversalDisposable();
     this.state = {
       error: null,
       filteredOptions: [],
       loadingOptions: false,
       options: [],
+      optionsRect: null,
       optionsVisible: false,
       selectedIndex: -1,
       textInput: props.initialTextInput,
@@ -97,8 +106,7 @@ export class Combobox extends React.Component {
 
   componentDidMount() {
     const node = ReactDOM.findDOMNode(this);
-    const _subscriptions = this._subscriptions = new CompositeDisposable();
-    _subscriptions.add(
+    this._subscriptions.add(
       atom.commands.add(node, 'core:move-up', this._handleMoveUp),
       atom.commands.add(node, 'core:move-down', this._handleMoveDown),
       atom.commands.add(node, 'core:cancel', this._handleCancel),
@@ -187,6 +195,17 @@ export class Combobox extends React.Component {
       ).slice(0, this.props.maxOptionCount);
   }
 
+  _getOptionsElement(): HTMLElement {
+    if (this._optionsElement == null) {
+      this._optionsElement = document.createElement('div');
+      document.body.appendChild(this._optionsElement);
+      this._subscriptions.add(
+        () => { this._optionsElement.remove(); },
+      );
+    }
+    return this._optionsElement;
+  }
+
   _getNewSelectedIndex(filteredOptions: Array<ComboboxOption>): number {
     if (filteredOptions.length === 0) {
       // If there aren't any options, don't select anything.
@@ -218,7 +237,15 @@ export class Combobox extends React.Component {
 
   _handleInputFocus(): void {
     this.requestUpdate(this.state.textInput);
-    this.setState({optionsVisible: true});
+    const boundingRect = ReactDOM.findDOMNode(this).getBoundingClientRect();
+    this.setState({
+      optionsVisible: true,
+      optionsRect: {
+        top: boundingRect.bottom,
+        left: boundingRect.left,
+        width: boundingRect.width,
+      },
+    });
   }
 
   _handleInputBlur(): void {
@@ -342,10 +369,16 @@ export class Combobox extends React.Component {
         );
       }
 
+      const rect = this.state.optionsRect || {left: 0, top: 0, width: 300};
+
       optionsContainer = (
-        <ol className="list-group">
-          {options}
-        </ol>
+        <Portal container={this._getOptionsElement()}>
+          <ol
+            style={rect}
+            className="nuclide-combobox-list-group list-group">
+            {options}
+          </ol>
+        </Portal>
       );
     }
 
