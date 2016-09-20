@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-exports.ActionType = Object.freeze({
+export const ActionType = Object.freeze({
   COLLAPSE_NODE: 'COLLAPSE_NODE',
   COLLAPSE_NODE_DEEP: 'COLLAPSE_NODE_DEEP',
   DELETE_SELECTED_NODES: 'DELETE_SELECTED_NODES',
@@ -50,4 +50,4 @@ exports.ActionType = Object.freeze({
   SET_OPEN_FILES_EXPANDED: 'SET_OPEN_FILES_EXPANDED',
 });
 
-exports.EVENT_HANDLER_SELECTOR = '.nuclide-file-tree';
+export const EVENT_HANDLER_SELECTOR = '.nuclide-file-tree';
