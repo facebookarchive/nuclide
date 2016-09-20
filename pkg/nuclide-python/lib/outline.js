@@ -11,7 +11,7 @@
 
 import type {
   OutlineTree,
-} from '../../nuclide-outline-view';
+} from '../../nuclide-outline-view/lib/rpc-types';
 import type {TextToken} from '../../commons-node/tokenizedText-rpc-types';
 import type {
   PythonOutlineItem,

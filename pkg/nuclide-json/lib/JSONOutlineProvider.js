@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Outline} from '../../nuclide-outline-view';
+import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 
 import invariant from 'assert';
 import {parseJSON, babelPosToPoint} from './parsing';

@@ -12,7 +12,7 @@
 import type {
   OutlineTree,
   Outline,
-} from '../../nuclide-outline-view';
+} from '../../nuclide-outline-view/lib/rpc-types';
 import type {FlowOutlineTree} from '../../nuclide-flow-rpc';
 
 import {Point} from 'atom';

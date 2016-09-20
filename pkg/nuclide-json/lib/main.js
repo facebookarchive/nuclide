@@ -10,7 +10,8 @@
  */
 
 import type {HyperclickProvider} from '../../hyperclick/lib/types';
-import type {Outline, OutlineProvider} from '../../nuclide-outline-view';
+import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+import type {OutlineProvider} from '../../nuclide-outline-view';
 
 import {CompositeDisposable} from 'atom';
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Outline, OutlineTree} from '../../nuclide-outline-view';
+import type {Outline, OutlineTree} from '../../nuclide-outline-view/lib/rpc-types';
 import type {
   HackIdeOutline,
   HackIdeOutlineItem,

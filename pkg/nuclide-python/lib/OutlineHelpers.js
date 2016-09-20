@@ -10,7 +10,7 @@
  */
 
 import typeof * as PythonService from '../../nuclide-python-rpc';
-import type {Outline} from '../../nuclide-outline-view';
+import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getShowGlobalVariables} from './config';

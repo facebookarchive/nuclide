@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {Outline, OutlineForUi, OutlineTree, OutlineTreeForUi, OutlineProvider} from '..';
+import type {OutlineForUi, OutlineTreeForUi, OutlineProvider} from '..';
+import type {Outline, OutlineTree} from './rpc-types';
 import type ActiveEditorRegistry, {Result} from
   '../../commons-atom/ActiveEditorRegistry';
 

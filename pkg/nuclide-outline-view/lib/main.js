@@ -25,6 +25,7 @@ import {OutlineViewPanelState} from './OutlineViewPanel';
 import {createOutlines} from './createOutlines';
 
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
+import type {Outline} from './rpc-types';
 
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {RegisterNux} from '../../nuclide-nux/lib/main';
@@ -32,21 +33,6 @@ import type {RegisterNux} from '../../nuclide-nux/lib/main';
 const NUX_OUTLINE_VIEW_TOUR = 'nuclide_outline_view_nux';
 const NUX_OUTLINE_VIEW_ID = 4342;
 const GK_NUX_OUTLINE_VIEW = 'mp_nuclide_outline_view_nux';
-
-export type OutlineTree = {
-  // Must be one or the other. If both are present, tokenizedText is preferred.
-  plainText?: string,
-  tokenizedText?: TokenizedText,
-  representativeName?: string,
-
-  startPosition: atom$Point,
-  endPosition?: atom$Point,
-  children: Array<OutlineTree>,
-};
-
-export type Outline = {
-  outlineTrees: Array<OutlineTree>,
-};
 
 export type OutlineTreeForUi = {
   plainText?: string,
