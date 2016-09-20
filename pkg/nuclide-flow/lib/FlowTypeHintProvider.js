@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from '../../nuclide-type-hint/lib/types';
+import type {TypeHint, HintTree} from '../../nuclide-type-hint/lib/rpc-types';
 
 import invariant from 'assert';
 import {wordAtPosition} from '../../commons-atom/range';
@@ -74,12 +74,6 @@ export class FlowTypeHintProvider {
     }
   }
 }
-
-// TODO Import from type-hints package once it exposes it.
-type HintTree = {
-  value: string,
-  children?: Array<HintTree>,
-};
 
 export function getTypeHintTree(typeHint: ?string): ?HintTree {
   if (!typeHint) {

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from '../../nuclide-type-hint/lib/types';
+import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {MerlinType} from '../../nuclide-ocaml-rpc';
 
 import {Point, Range} from 'atom';

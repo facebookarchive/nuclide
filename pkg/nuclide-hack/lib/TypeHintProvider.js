@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from '../../nuclide-type-hint/lib/types';
+import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
 import {getHackLanguageForUri} from './HackLanguage';
 import {getIdentifierAndRange} from './utils';
