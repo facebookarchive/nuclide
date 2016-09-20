@@ -19,7 +19,7 @@ describe('DiffViewModel', () => {
   let messages = null;
 
   beforeEach(() => {
-    model = new DiffViewModel(({}: any));
+    model = new DiffViewModel(({}: any), false);
     messages = model.getPublishUpdates();
     spyOn(messages, 'next').andCallThrough();
   });

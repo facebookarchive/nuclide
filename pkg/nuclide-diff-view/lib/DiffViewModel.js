@@ -92,7 +92,7 @@ export function formatFileDiffRevisionTitle(revisionInfo: RevisionInfo): string 
   return `${hash}` + (bookmarks.length === 0 ? '' : ` - (${bookmarks.join(', ')})`);
 }
 
-function getAmendMode(shouldRebaseOnAmend: boolean): AmendModeValue {
+export function getAmendMode(shouldRebaseOnAmend: boolean): AmendModeValue {
   if (shouldRebaseOnAmend) {
     return hgConstants.AmendMode.REBASE;
   } else {
@@ -246,9 +246,11 @@ export default class DiffViewModel {
   _publishUpdates: Subject<any>;
   _serializedUpdateActiveFileDiff: () => Promise<void>;
   _actionCreators: BoundActionCreators;
+  _useReduxStore: boolean;
 
-  constructor(actionCreators: BoundActionCreators) {
+  constructor(actionCreators: BoundActionCreators, useReduxStore: boolean) {
     this._actionCreators = actionCreators;
+    this._useReduxStore = useReduxStore;
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._activeSubscriptions = new CompositeDisposable();
@@ -1295,7 +1297,15 @@ export default class DiffViewModel {
 
     const activeStack = this._activeRepositoryStack;
     invariant(activeStack != null, 'No active repository stack');
-    this._actionCreators.commit(activeStack.getRepository(), message);
+
+    if (this._useReduxStore) {
+      // The UI wouldn't update yet with that development config enabled
+      // as it's still wired to the old model state.
+      // TODO(most): Cleanup to use thew redux store.
+      this._actionCreators.commit(activeStack.getRepository(), message);
+      return;
+    }
+
 
     this._setState({
       ...this._state,

@@ -63,6 +63,10 @@ const COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1100;
 const AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY = 1200;
 const PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY = 1300;
 
+function shouldUseReduxStore(): boolean {
+  return (featureConfig.get('nuclide-diff-view.useReduxStore'): any);
+}
+
 function formatDiffViewUrl(diffEntityOptions_?: ?DiffEntityOptions): string {
   let diffEntityOptions = diffEntityOptions_;
   if (diffEntityOptions == null) {
@@ -207,7 +211,7 @@ class Activation {
     );
     const states = Observable.from(this._store);
 
-    const useReduxStore: boolean = (featureConfig.get('nuclide-diff-view.useReduxStore'): any);
+    const useReduxStore = shouldUseReduxStore();
     if (useReduxStore || atom.inSpecMode()) {
       this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
 
@@ -355,7 +359,7 @@ class Activation {
   _getDiffViewModel(): DiffViewModel {
     let diffViewModel = this._diffViewModel;
     if (diffViewModel == null) {
-      diffViewModel = new DiffViewModel(this._actionCreators);
+      diffViewModel = new DiffViewModel(this._actionCreators, shouldUseReduxStore());
       diffViewModel.setUiProviders(this._uiProviders);
       this._subscriptions.add(diffViewModel);
       this._diffViewModel = diffViewModel;
