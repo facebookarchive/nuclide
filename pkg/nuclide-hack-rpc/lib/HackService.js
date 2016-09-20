@@ -17,6 +17,7 @@ import type {
 } from './rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 
+import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
 import {retryLimit} from '../../commons-node/promise';
 import {
@@ -32,6 +33,7 @@ import {
 import {getUseIdeConnection, logger} from './hack-config';
 import {getHackConnectionService} from './HackProcess';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
+import {Point, Range} from 'simple-text-buffer';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -357,19 +359,30 @@ export class HackLanguageService {
     return (result: any);
   }
 
-  async getSourceHighlights(
-    filePath: NuclideUri,
-    contents: string,
-    line: number,
-    column: number,
-  ): Promise<?HackHighlightRefsResult> {
-    const result = await callHHClient(
+  async highlight(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<Array<atom$Range>> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    const contents = buffer.getText();
+
+    const id = getIdentifierAtPosition(buffer, position);
+    if (id == null) {
+      return [];
+    }
+    const line = position.row + 1;
+    const column = position.column;
+
+    const result: ?HackHighlightRefsResult = (await callHHClient(
       /* args */ ['--ide-highlight-refs', formatLineColumn(line, column)],
       /* errorStream */ false,
       /* processInput */ contents,
       /* file */ filePath,
-    );
-    return (result: any);
+    ): any);
+    return result == null
+      ? []
+      : result.map(hackRangeToAtomRange);
   }
 
   async formatSource(
@@ -423,4 +436,34 @@ function formatLineColumn(line: number, column: number): string {
 function markFileForCompletion(contents: string, offset: number): string {
   return contents.substring(0, offset) +
       'AUTO332' + contents.substring(offset, contents.length);
+}
+
+function hackRangeToAtomRange(position: HackRange): atom$Range {
+  return new Range(
+    new Point(
+      position.line - 1,
+      position.char_start - 1),
+    new Point(
+      position.line - 1,
+      position.char_end),
+  );
+}
+
+const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+
+function getIdentifierAndRange(
+  buffer: atom$TextBuffer,
+  position: atom$PointObject,
+): ?{id: string, range: atom$Range} {
+  const matchData = wordAtPositionFromBuffer(buffer, position, HACK_WORD_REGEX);
+  return (matchData == null || matchData.wordMatch.length === 0) ? null
+      : {id: matchData.wordMatch[0], range: matchData.range};
+}
+
+function getIdentifierAtPosition(
+  buffer: atom$TextBuffer,
+  position: atom$PointObject,
+): ?string {
+  const result = getIdentifierAndRange(buffer, position);
+  return result == null ? null : result.id;
 }

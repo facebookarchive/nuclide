@@ -108,17 +108,11 @@ export class HackLanguage {
     return this._hackService.formatSource(fileVersion, range);
   }
 
-  async highlightSource(
-    filePath: NuclideUri,
-    contents: string,
-    line: number,
-    col: number,
+  async highlight(
+    fileVersion: FileVersion,
+    position: atom$Point,
   ): Promise<Array<atom$Range>> {
-    const response = await this._hackService.getSourceHighlights(filePath, contents, line, col);
-    if (response == null) {
-      return [];
-    }
-    return response.map(hackRangeToAtomRange);
+    return this._hackService.highlight(fileVersion, position);
   }
 
   async getDiagnostics(
@@ -211,7 +205,7 @@ export class HackLanguage {
   }
 }
 
-function hackRangeToAtomRange(position: HackRange): atom$Range {
+export function hackRangeToAtomRange(position: HackRange): atom$Range {
   return new Range(
         [position.line - 1, position.char_start - 1],
         [position.line - 1, position.char_end],

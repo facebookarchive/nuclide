@@ -16,7 +16,6 @@ import type {
   HackDiagnosticsResult,
   HackTypedRegion,
   HackTypeAtPosResult,
-  HackHighlightRefsResult,
   HackReferencesResult,
 } from '../../nuclide-hack-rpc/lib/HackService';
 
@@ -45,8 +44,6 @@ describe('HackLanguage', () => {
       'getDefinition',
       'getTypedRegions',
       'getTypeAtPos',
-      'getSourceHighlights',
-      'formatSource',
       'getMethodName',
       'findReferences',
     ]);
@@ -157,34 +154,6 @@ HH\\fclass HackClass {}`, 19, 2, 5);
           replacementPrefix: 'HH\\f',
           type: 'function',
         },
-      ]);
-    });
-  });
-
-  it('highlightSource', () => {
-    waitsForPromise(async () => {
-      const serviceResults: HackHighlightRefsResult = [
-        {
-          filename: filePath,
-          line: 1,
-          char_start: 2,
-          char_end: 2,
-        },
-        {
-          filename: filePath,
-          line: 2,
-          char_start: 4,
-          char_end: 6,
-        },
-      ];
-      mockService.getSourceHighlights.andReturn(serviceResults);
-
-      const result = await hackLanguage.highlightSource(filePath, contents, 4, 6);
-
-      expect(mockService.getSourceHighlights).toHaveBeenCalledWith(filePath, contents, 4, 6);
-      expect(result).toEqual([
-        {start: {row: 0, column: 1}, end: {row: 0, column: 2}},
-        {start: {row: 1, column: 3}, end: {row: 1, column: 6}},
       ]);
     });
   });

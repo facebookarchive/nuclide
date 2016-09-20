@@ -9,36 +9,20 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
 import {getHackLanguageForUri} from './HackLanguage';
-import {getIdentifierAtPosition} from './utils';
+import {getFileVersionOfEditor} from '../../nuclide-open-files';
+import {Range} from 'atom';
 
 export default class CodeHighlightProvider {
-  highlight(editor: atom$TextEditor, position: atom$Point): Promise<Array<atom$Range>> {
-    return codeHighlightFromEditor(editor, position);
-  }
-}
+  async highlight(editor: atom$TextEditor, position: atom$Point): Promise<Array<atom$Range>> {
+    const fileVersion = await getFileVersionOfEditor(editor);
+    const hackLanguage = await getHackLanguageForUri(editor.getPath());
+    if (hackLanguage == null || fileVersion == null) {
+      return [];
+    }
 
-async function codeHighlightFromEditor(
-  editor: atom$TextEditor,
-  position: atom$Point,
-): Promise<Array<atom$Range>> {
-  const filePath = editor.getPath();
-  const hackLanguage = await getHackLanguageForUri(filePath);
-  if (!hackLanguage) {
-    return [];
+    return (await hackLanguage.highlight(
+      fileVersion,
+      position)).map(range => new Range(range.start, range.end));
   }
-  invariant(filePath != null);
-
-  const id = getIdentifierAtPosition(editor, position);
-  if (id == null) {
-    return [];
-  }
-
-  return hackLanguage.highlightSource(
-    filePath,
-    editor.getText(),
-    position.row + 1,
-    position.column,
-  );
 }
