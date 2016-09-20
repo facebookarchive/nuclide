@@ -125,6 +125,7 @@ export type RevisionInfo = {
   description: string,
   hash: string,
   id: number,
+  isHead: boolean,
   remoteBookmarks: Array<string>,
   parents: Array<string>,
   phase: CommitPhaseType,

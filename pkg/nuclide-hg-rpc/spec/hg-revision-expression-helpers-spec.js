@@ -50,6 +50,7 @@ b-1 b-2
 
 tip
 a343fb211111 000000000000
+@
 ${commit1Description}
 ${INFO_REV_END_MARK}
 123
@@ -63,6 +64,7 @@ public
 remote/master
 
 abc123411111 000000000000
+
 ${commit2Description}
 ${INFO_REV_END_MARK}
 `;
@@ -70,6 +72,7 @@ ${INFO_REV_END_MARK}
       expect(parseRevisionInfoOutput(revisionsString)).toEqual([
         {
           id: 124,
+          isHead: true,
           title: "Commit 1 'title'.",
           author: 'Author Name<auth_2_alias@domain.com>',
           hash: 'a343fb3',
@@ -84,6 +87,7 @@ ${INFO_REV_END_MARK}
         },
         {
           id: 123,
+          isHead: false,
           title: "Commit 2 'title'.",
           author: 'Author Name<auth_2_alias@domain.com>',
           hash: 'a343fb2',
