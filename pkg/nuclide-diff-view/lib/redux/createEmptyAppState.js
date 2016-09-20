@@ -70,12 +70,10 @@ export function getEmptyRepositoryState(): RepositoryState {
   return {
     diffOption: DiffOption.COMPARE_COMMIT,
     revisionStatuses: new Map(),
-    dirtyFileChanges: new Map(),
+    dirtyFiles: new Map(),
     headToForkBaseRevisions: [],
-    headRevision: null,
-    revisions: [],
-    selectedCompareId: null,
-    selectedFileChanges: new Map(),
+    compareRevisionId: null,
+    selectedFiles: new Map(),
   };
 }
 

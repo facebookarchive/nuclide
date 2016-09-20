@@ -86,7 +86,7 @@ export function activateRepositoryEpic(
     ).map(a => {
       invariant(a.type === ActionTypes.SET_COMPARE_ID);
       return a.payload.compareId;
-    }).startWith(initialRepositoryState.selectedCompareId);
+    }).startWith(initialRepositoryState.compareRevisionId);
 
     const selectedFileUpdates = Observable.combineLatest(
       revisionChanges, diffOptionChanges, compareIdChanges, statusChanges,

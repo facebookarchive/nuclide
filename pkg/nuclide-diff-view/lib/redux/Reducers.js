@@ -37,6 +37,10 @@ export function activeRepository(
   state: ?HgRepositoryClient,
   action: Action,
 ): ?HgRepositoryClient {
+  switch (action.type) {
+    case ActionTypes.UPDATE_ACTIVE_REPOSITORY:
+      return action.payload.hgRepository;
+  }
   return state || getEmptyActiveRepositoryState();
 }
 
@@ -45,6 +49,10 @@ export function repositories(
   action: Action,
 ): Map<HgRepositoryClient, RepositoryState> {
   switch (action.type) {
+    case ActionTypes.SET_COMPARE_ID:
+    case ActionTypes.UPDATE_DIRTY_FILES:
+    case ActionTypes.UPDATE_SELECTED_FILES:
+    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
     case ActionTypes.SET_DIFF_OPTION: {
       const {repository} = action.payload;
       const oldRepositoryState = state.get(repository);
@@ -57,6 +65,12 @@ export function repositories(
       return new Map(state)
           .set(repository, getEmptyRepositoryState());
     }
+    case ActionTypes.REMOVE_REPOSITORY: {
+      const {repository} = action.payload;
+      const newRepositories = new Map(state);
+      newRepositories.delete(repository);
+      return newRepositories;
+    }
   }
   return state || getEmptyRepositoriesState();
 }
@@ -66,15 +80,33 @@ function reduceRepositoryAction(
   action: RepositoryAction,
 ): RepositoryState {
   switch (action.type) {
-    case ActionTypes.SET_DIFF_OPTION: {
+    case ActionTypes.SET_DIFF_OPTION:
       return {
         ...repositoryState,
         diffOption: action.payload.diffOption,
       };
-    }
-    default: {
+    case ActionTypes.SET_COMPARE_ID:
+      return {
+        ...repositoryState,
+        compareRevisionId: action.payload.compareId,
+      };
+    case ActionTypes.UPDATE_DIRTY_FILES:
+      return {
+        ...repositoryState,
+        dirtyFiles: action.payload.dirtyFiles,
+      };
+    case ActionTypes.UPDATE_SELECTED_FILES:
+      return {
+        ...repositoryState,
+        selectedFiles: action.payload.selectedFiles,
+      };
+    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
+      return {
+        ...repositoryState,
+        headToForkBaseRevisions: action.payload.headToForkBaseRevisions,
+      };
+    default:
       throw new Error('Invalid Repository Action!');
-    }
   }
 }
 

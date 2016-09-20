@@ -91,12 +91,10 @@ export type UIProvider = {
 export type RepositoryState = {
   diffOption: DiffOptionType,
   revisionStatuses: RevisionStatuses,
-  dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
+  dirtyFiles: Map<NuclideUri, FileChangeStatusValue>,
   headToForkBaseRevisions: Array<RevisionInfo>,
-  headRevision: ?RevisionInfo,
-  revisions: Array<RevisionInfo>,
-  selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>,
-  selectedCompareId: ?number,
+  selectedFiles: Map<NuclideUri, FileChangeStatusValue>,
+  compareRevisionId: ?number,
 };
 
 export type CommitState = {
