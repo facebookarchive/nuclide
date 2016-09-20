@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +10,23 @@
  * the root directory of this source tree.
  */
 
-import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
-
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {isFileInHackProject, getHackServiceByNuclideUri} from '../../nuclide-hack/lib/HackLanguage';
-
 /**
  * @return HackService for the specified directory if it is part of a Hack project.
  */
-export async function getHackService(
-  directory: atom$Directory,
-): Promise<?HackLanguageService> {
-  const directoryPath = directory.getPath();
-  return (await isFileInHackProject(directoryPath))
-    ? (await getHackServiceByNuclideUri(directoryPath)) : null;
+
+var getHackService = _asyncToGenerator(function* (directory) {
+  var directoryPath = directory.getPath();
+  return (yield (0, (_nuclideHackLibHackLanguage2 || _nuclideHackLibHackLanguage()).isFileInHackProject)(directoryPath)) ? (yield (0, (_nuclideHackLibHackLanguage2 || _nuclideHackLibHackLanguage()).getHackServiceByNuclideUri)(directoryPath)) : null;
+});
+
+exports.getHackService = getHackService;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+
+var _nuclideHackLibHackLanguage2;
+
+function _nuclideHackLibHackLanguage() {
+  return _nuclideHackLibHackLanguage2 = require('../../nuclide-hack/lib/HackLanguage');
 }

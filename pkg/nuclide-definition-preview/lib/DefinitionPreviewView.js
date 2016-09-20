@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +10,101 @@
  * the root directory of this source tree.
  */
 
-import type {ContextElementProps} from '../../nuclide-context-view/lib/types';
-import type {Definition} from '../../nuclide-definition-service';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {Button, ButtonSizes} from '../../nuclide-ui/lib/Button';
-import {Block} from '../../nuclide-ui/lib/Block';
-import {React} from 'react-for-atom';
-import {goToLocation} from '../../commons-atom/go-to-location';
-import {bufferForUri} from '../../commons-atom/text-editor';
-import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
-import {existingEditorForBuffer} from '../../commons-atom/text-editor';
-import {track} from '../../nuclide-analytics';
-import featureConfig from '../../commons-atom/featureConfig';
-import invariant from 'assert';
-import {TextBuffer} from 'atom';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-const MINIMUM_EDITOR_HEIGHT = 10;
-const EDITOR_HEIGHT_DELTA = 10;
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-type State = {
-  buffer: atom$TextBuffer,
-  oldBuffer: ?atom$TextBuffer,
-  editorHeight: number, // Height in ems to render the AtomTextEditor.
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export class DefinitionPreviewView extends React.Component {
-  props: ContextElementProps;
-  state: State;
-  _settingsChangeDisposable: IDisposable;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  constructor(props: ContextElementProps) {
-    super(props);
-    const buffer = props.definition != null
-      ? bufferForUri(props.definition.path)
-      : new TextBuffer();
-    const heightSetting = ((featureConfig.get('nuclide-definition-preview.editorHeight')): any);
-    let height: number = 50;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _nuclideUiLibButton2;
+
+function _nuclideUiLibButton() {
+  return _nuclideUiLibButton2 = require('../../nuclide-ui/lib/Button');
+}
+
+var _nuclideUiLibBlock2;
+
+function _nuclideUiLibBlock() {
+  return _nuclideUiLibBlock2 = require('../../nuclide-ui/lib/Block');
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _commonsAtomGoToLocation2;
+
+function _commonsAtomGoToLocation() {
+  return _commonsAtomGoToLocation2 = require('../../commons-atom/go-to-location');
+}
+
+var _commonsAtomTextEditor2;
+
+function _commonsAtomTextEditor() {
+  return _commonsAtomTextEditor2 = require('../../commons-atom/text-editor');
+}
+
+var _nuclideUiLibAtomTextEditor2;
+
+function _nuclideUiLibAtomTextEditor() {
+  return _nuclideUiLibAtomTextEditor2 = require('../../nuclide-ui/lib/AtomTextEditor');
+}
+
+var _commonsAtomTextEditor4;
+
+function _commonsAtomTextEditor3() {
+  return _commonsAtomTextEditor4 = require('../../commons-atom/text-editor');
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _commonsAtomFeatureConfig2;
+
+function _commonsAtomFeatureConfig() {
+  return _commonsAtomFeatureConfig2 = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var MINIMUM_EDITOR_HEIGHT = 10;
+var EDITOR_HEIGHT_DELTA = 10;
+
+// Height in ems to render the AtomTextEditor.
+
+var DefinitionPreviewView = (function (_React$Component) {
+  _inherits(DefinitionPreviewView, _React$Component);
+
+  function DefinitionPreviewView(props) {
+    var _this = this;
+
+    _classCallCheck(this, DefinitionPreviewView);
+
+    _get(Object.getPrototypeOf(DefinitionPreviewView.prototype), 'constructor', this).call(this, props);
+    var buffer = props.definition != null ? (0, (_commonsAtomTextEditor2 || _commonsAtomTextEditor()).bufferForUri)(props.definition.path) : new (_atom2 || _atom()).TextBuffer();
+    var heightSetting = (_commonsAtomFeatureConfig2 || _commonsAtomFeatureConfig()).default.get('nuclide-definition-preview.editorHeight');
+    var height = 50;
     if (heightSetting != null) {
       height = heightSetting;
     }
@@ -52,166 +112,204 @@ export class DefinitionPreviewView extends React.Component {
       height = MINIMUM_EDITOR_HEIGHT;
     }
     this.state = {
-      buffer,
+      buffer: buffer,
       oldBuffer: null,
-      editorHeight: height,
+      editorHeight: height
     };
-    this._settingsChangeDisposable = featureConfig.observe(
-      'nuclide-definition-preview.editorHeight',
-      (newHeight: number) => this._setEditorHeight(newHeight),
-    );
-
-    (this: any)._openCurrentDefinitionInMainEditor =
-      this._openCurrentDefinitionInMainEditor.bind(this);
-    (this: any)._increaseEditorHeight = this._increaseEditorHeight.bind(this);
-    (this: any)._decreaseEditorHeight = this._decreaseEditorHeight.bind(this);
-  }
-
-  componentWillReceiveProps(newProps: ContextElementProps): void {
-    if (newProps.definition != null) {
-      const definition = newProps.definition;
-      // The buffer always needs to point to the right file path, so create a new one with
-      // the correct path if the new definition prop has a different path than the
-      // currently loaded buffer.
-      if (definition.path !== this.state.buffer.getPath()) {
-        this.setState({buffer: bufferForUri(definition.path), oldBuffer: this.state.buffer});
-      }
-    } else {
-      // A null definition has no associated file path, so make a new TextBuffer()
-      // that doesn't have an associated file path.
-      const oldBuffer = this.state.buffer;
-      this.setState({buffer: new TextBuffer(), oldBuffer});
-    }
-  }
-
-  // Loads the current buffer in state if it's not already loaded.
-  async _loadBuffer(): Promise<void> {
-    if (!this.state.buffer.loaded) {
-      await this.state.buffer.load();
-    }
-  }
-
-  componentDidUpdate(prevProps: ContextElementProps, prevState: State): void {
-    if (this.props.definition != null) {
-      this._finishRendering(this.props.definition);
-    }
-  }
-
-  componentWillUnmount(): void {
-    this.state.buffer.destroy();
-    if (this.state.oldBuffer != null) {
-      this.state.oldBuffer.destroy();
-    }
-    this._settingsChangeDisposable.dispose();
-  }
-
-  async _finishRendering(definition: Definition): Promise<void> {
-    await this._loadBuffer();
-    this._scrollToRow(definition.position.row);
-
-    const editor = this.getEditor();
-    editor.getDecorations().forEach(decoration => decoration.destroy());
-    invariant(this.props.definition != null);
-    const marker = editor.markBufferPosition(definition.position);
-    editor.decorateMarker(marker, {
-      type: 'line',
-      class: 'nuclide-current-line-highlight',
+    this._settingsChangeDisposable = (_commonsAtomFeatureConfig2 || _commonsAtomFeatureConfig()).default.observe('nuclide-definition-preview.editorHeight', function (newHeight) {
+      return _this._setEditorHeight(newHeight);
     });
-    if (this.state.oldBuffer != null) {
-      // Only destroy oldBuffer if it's not already open in a tab - otherwise it'll
-      // close the tab using oldBuffer
-      if (existingEditorForBuffer(this.state.oldBuffer) == null) {
-        invariant(this.state.oldBuffer != null);
+
+    this._openCurrentDefinitionInMainEditor = this._openCurrentDefinitionInMainEditor.bind(this);
+    this._increaseEditorHeight = this._increaseEditorHeight.bind(this);
+    this._decreaseEditorHeight = this._decreaseEditorHeight.bind(this);
+  }
+
+  _createClass(DefinitionPreviewView, [{
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(newProps) {
+      if (newProps.definition != null) {
+        var definition = newProps.definition;
+        // The buffer always needs to point to the right file path, so create a new one with
+        // the correct path if the new definition prop has a different path than the
+        // currently loaded buffer.
+        if (definition.path !== this.state.buffer.getPath()) {
+          this.setState({ buffer: (0, (_commonsAtomTextEditor2 || _commonsAtomTextEditor()).bufferForUri)(definition.path), oldBuffer: this.state.buffer });
+        }
+      } else {
+        // A null definition has no associated file path, so make a new TextBuffer()
+        // that doesn't have an associated file path.
+        var _oldBuffer = this.state.buffer;
+        this.setState({ buffer: new (_atom2 || _atom()).TextBuffer(), oldBuffer: _oldBuffer });
+      }
+    }
+
+    // Loads the current buffer in state if it's not already loaded.
+  }, {
+    key: '_loadBuffer',
+    value: _asyncToGenerator(function* () {
+      if (!this.state.buffer.loaded) {
+        yield this.state.buffer.load();
+      }
+    })
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate(prevProps, prevState) {
+      if (this.props.definition != null) {
+        this._finishRendering(this.props.definition);
+      }
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this.state.buffer.destroy();
+      if (this.state.oldBuffer != null) {
         this.state.oldBuffer.destroy();
       }
+      this._settingsChangeDisposable.dispose();
     }
-  }
+  }, {
+    key: '_finishRendering',
+    value: _asyncToGenerator(function* (definition) {
+      yield this._loadBuffer();
+      this._scrollToRow(definition.position.row);
 
-  render(): React.Element<any> {
-    const {ContextViewMessage, definition} = this.props;
-    const atMinHeight = (this.state.editorHeight - EDITOR_HEIGHT_DELTA) < MINIMUM_EDITOR_HEIGHT;
-    // Show either a "No definition" message or the definition in an editors
-    return definition == null
-      ? <ContextViewMessage message={ContextViewMessage.NO_DEFINITION} />
-      : <div className="pane-item nuclide-definition-preview">
-          <div className="nuclide-definition-preview-editor"
-            style={{height: `${this.state.editorHeight}em`}}>
-            <AtomTextEditor
-              ref="editor"
-              gutterHidden={true}
-              lineNumberGutterVisible={false}
-              path={definition.path}
-              readOnly={true}
-              textBuffer={this.state.buffer}
-              syncTextContents={false}
-            />
-            <ButtonContainer
-              _openCurrentDefinitionInMainEditor={this._openCurrentDefinitionInMainEditor}
-              _increaseEditorHeight={this._increaseEditorHeight}
-              _decreaseEditorHeight={this._decreaseEditorHeight}
-              atMinHeight={atMinHeight}
-            />
-          </div>
-        </div>;
-  }
+      var editor = this.getEditor();
+      editor.getDecorations().forEach(function (decoration) {
+        return decoration.destroy();
+      });
+      (0, (_assert2 || _assert()).default)(this.props.definition != null);
+      var marker = editor.markBufferPosition(definition.position);
+      editor.decorateMarker(marker, {
+        type: 'line',
+        'class': 'nuclide-current-line-highlight'
+      });
+      if (this.state.oldBuffer != null) {
+        // Only destroy oldBuffer if it's not already open in a tab - otherwise it'll
+        // close the tab using oldBuffer
+        if ((0, (_commonsAtomTextEditor4 || _commonsAtomTextEditor3()).existingEditorForBuffer)(this.state.oldBuffer) == null) {
+          (0, (_assert2 || _assert()).default)(this.state.oldBuffer != null);
+          this.state.oldBuffer.destroy();
+        }
+      }
+    })
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var ContextViewMessage = _props.ContextViewMessage;
+      var definition = _props.definition;
 
-  _openCurrentDefinitionInMainEditor(): void {
-    track('nuclide-definition-preview:openInMainEditor');
-    const def = this.props.definition;
-    if (def != null) {
-      goToLocation(def.path, def.position.row, def.position.column, true);
+      var atMinHeight = this.state.editorHeight - EDITOR_HEIGHT_DELTA < MINIMUM_EDITOR_HEIGHT;
+      // Show either a "No definition" message or the definition in an editors
+      return definition == null ? (_reactForAtom2 || _reactForAtom()).React.createElement(ContextViewMessage, { message: ContextViewMessage.NO_DEFINITION }) : (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'pane-item nuclide-definition-preview' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          { className: 'nuclide-definition-preview-editor',
+            style: { height: this.state.editorHeight + 'em' } },
+          (_reactForAtom2 || _reactForAtom()).React.createElement((_nuclideUiLibAtomTextEditor2 || _nuclideUiLibAtomTextEditor()).AtomTextEditor, {
+            ref: 'editor',
+            gutterHidden: true,
+            lineNumberGutterVisible: false,
+            path: definition.path,
+            readOnly: true,
+            textBuffer: this.state.buffer,
+            syncTextContents: false
+          }),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(ButtonContainer, {
+            _openCurrentDefinitionInMainEditor: this._openCurrentDefinitionInMainEditor,
+            _increaseEditorHeight: this._increaseEditorHeight,
+            _decreaseEditorHeight: this._decreaseEditorHeight,
+            atMinHeight: atMinHeight
+          })
+        )
+      );
     }
-  }
-
-  // Sets the height of the definition preview editor only if it satisfies the minimum height
-  _setEditorHeight(height: number): void {
-    if (height !== this.state.editorHeight && height >= MINIMUM_EDITOR_HEIGHT) {
-      featureConfig.set('nuclide-definition-preview.editorHeight', height);
-      this.setState({editorHeight: height});
+  }, {
+    key: '_openCurrentDefinitionInMainEditor',
+    value: function _openCurrentDefinitionInMainEditor() {
+      (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('nuclide-definition-preview:openInMainEditor');
+      var def = this.props.definition;
+      if (def != null) {
+        (0, (_commonsAtomGoToLocation2 || _commonsAtomGoToLocation()).goToLocation)(def.path, def.position.row, def.position.column, true);
+      }
     }
-  }
 
-  _increaseEditorHeight(): void {
-    this._setEditorHeight(this.state.editorHeight + EDITOR_HEIGHT_DELTA);
-  }
+    // Sets the height of the definition preview editor only if it satisfies the minimum height
+  }, {
+    key: '_setEditorHeight',
+    value: function _setEditorHeight(height) {
+      if (height !== this.state.editorHeight && height >= MINIMUM_EDITOR_HEIGHT) {
+        (_commonsAtomFeatureConfig2 || _commonsAtomFeatureConfig()).default.set('nuclide-definition-preview.editorHeight', height);
+        this.setState({ editorHeight: height });
+      }
+    }
+  }, {
+    key: '_increaseEditorHeight',
+    value: function _increaseEditorHeight() {
+      this._setEditorHeight(this.state.editorHeight + EDITOR_HEIGHT_DELTA);
+    }
+  }, {
+    key: '_decreaseEditorHeight',
+    value: function _decreaseEditorHeight() {
+      this._setEditorHeight(this.state.editorHeight - EDITOR_HEIGHT_DELTA);
+    }
+  }, {
+    key: 'getEditor',
+    value: function getEditor() {
+      return this.refs.editor.getModel();
+    }
+  }, {
+    key: '_scrollToRow',
+    value: function _scrollToRow(row) {
+      this.getEditor().scrollToBufferPosition([row, 0], { center: true });
+    }
+  }]);
 
-  _decreaseEditorHeight(): void {
-    this._setEditorHeight(this.state.editorHeight - EDITOR_HEIGHT_DELTA);
-  }
+  return DefinitionPreviewView;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
 
-  getEditor(): atom$TextEditor {
-    return this.refs.editor.getModel();
-  }
+exports.DefinitionPreviewView = DefinitionPreviewView;
 
-  _scrollToRow(row: number): void {
-    this.getEditor().scrollToBufferPosition([row, 0], {center: true});
-  }
-}
-
-type ButtonContainerProps = {
-  _openCurrentDefinitionInMainEditor: () => void,
-  _increaseEditorHeight: () => void,
-  _decreaseEditorHeight: () => void,
-  atMinHeight: boolean,
-};
-
-const ButtonContainer = (props: ButtonContainerProps) => {
-  return (
-    <Block>
-      <div className="nuclide-definition-preview-buttons">
-        <div className="nuclide-definition-preview-buttons-left">
-          <span style={{paddingRight: '1em'}}>Height:</span>
-          <Button onClick={props._decreaseEditorHeight}
-            size={ButtonSizes.SMALL}
-            disabled={props.atMinHeight}>-</Button>
-          <Button onClick={props._increaseEditorHeight} size={ButtonSizes.SMALL}>+</Button>
-        </div>
-        <div className="nuclide-definition-preview-buttons-right">
-          <Button onClick={props._openCurrentDefinitionInMainEditor} size={ButtonSizes.SMALL}>
-            Open in main editor
-          </Button>
-        </div>
-      </div>
-    </Block>
+var ButtonContainer = function ButtonContainer(props) {
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    (_nuclideUiLibBlock2 || _nuclideUiLibBlock()).Block,
+    null,
+    (_reactForAtom2 || _reactForAtom()).React.createElement(
+      'div',
+      { className: 'nuclide-definition-preview-buttons' },
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-definition-preview-buttons-left' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'span',
+          { style: { paddingRight: '1em' } },
+          'Height:'
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibButton2 || _nuclideUiLibButton()).Button,
+          { onClick: props._decreaseEditorHeight,
+            size: (_nuclideUiLibButton2 || _nuclideUiLibButton()).ButtonSizes.SMALL,
+            disabled: props.atMinHeight },
+          '-'
+        ),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibButton2 || _nuclideUiLibButton()).Button,
+          { onClick: props._increaseEditorHeight, size: (_nuclideUiLibButton2 || _nuclideUiLibButton()).ButtonSizes.SMALL },
+          '+'
+        )
+      ),
+      (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-definition-preview-buttons-right' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          (_nuclideUiLibButton2 || _nuclideUiLibButton()).Button,
+          { onClick: props._openCurrentDefinitionInMainEditor, size: (_nuclideUiLibButton2 || _nuclideUiLibButton()).ButtonSizes.SMALL },
+          'Open in main editor'
+        )
+      )
+    )
   );
 };

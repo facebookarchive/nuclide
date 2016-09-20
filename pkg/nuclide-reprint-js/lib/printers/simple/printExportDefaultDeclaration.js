@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,22 @@
  * the root directory of this source tree.
  */
 
-import type {ExportDefaultDeclaration} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2;
 
-function printExportDefaultDeclaration(
-  print: Print,
-  node: ExportDefaultDeclaration,
-): Lines {
-  return flatten([
-    'export',
-    markers.space,
-    'default',
-    markers.noBreak,
-    markers.space,
-    print(node.declaration),
-    markers.noBreak,
-    ';',
-    markers.hardBreak,
-  ]);
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+function printExportDefaultDeclaration(print, node) {
+  return (0, (_utilsFlatten2 || _utilsFlatten()).default)(['export', (_constantsMarkers2 || _constantsMarkers()).default.space, 'default', (_constantsMarkers2 || _constantsMarkers()).default.noBreak, (_constantsMarkers2 || _constantsMarkers()).default.space, print(node.declaration), (_constantsMarkers2 || _constantsMarkers()).default.noBreak, ';', (_constantsMarkers2 || _constantsMarkers()).default.hardBreak]);
 }
 
 module.exports = printExportDefaultDeclaration;

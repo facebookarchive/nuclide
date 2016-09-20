@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getIdentifierAndRange = getIdentifierAndRange;
+exports.getIdentifierAtPosition = getIdentifierAtPosition;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +12,20 @@
  * the root directory of this source tree.
  */
 
-import {wordAtPosition} from '../../commons-atom/range';
+var _commonsAtomRange2;
 
-const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
-
-export function getIdentifierAndRange(
-  editor: atom$TextEditor,
-  position: atom$Point,
-): ?{id: string, range: atom$Range} {
-  const matchData = wordAtPosition(editor, position, HACK_WORD_REGEX);
-  return (matchData == null || matchData.wordMatch.length === 0) ? null
-      : {id: matchData.wordMatch[0], range: matchData.range};
+function _commonsAtomRange() {
+  return _commonsAtomRange2 = require('../../commons-atom/range');
 }
 
-export function getIdentifierAtPosition(editor: atom$TextEditor, position: atom$Point): ?string {
-  const result = getIdentifierAndRange(editor, position);
+var HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+
+function getIdentifierAndRange(editor, position) {
+  var matchData = (0, (_commonsAtomRange2 || _commonsAtomRange()).wordAtPosition)(editor, position, HACK_WORD_REGEX);
+  return matchData == null || matchData.wordMatch.length === 0 ? null : { id: matchData.wordMatch[0], range: matchData.range };
+}
+
+function getIdentifierAtPosition(editor, position) {
+  var result = getIdentifierAndRange(editor, position);
   return result == null ? null : result.id;
 }

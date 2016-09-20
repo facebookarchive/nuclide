@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +10,13 @@
  * the root directory of this source tree.
  */
 
-import type {
-  AtomRange,
-} from './rpc-types';
+exports.convertRange = convertRange;
 
 // Workaround for flow
-export function convertRange(range: atom$Range): AtomRange {
+
+function convertRange(range) {
   return {
     start: range.start,
-    end: range.end,
+    end: range.end
   };
 }

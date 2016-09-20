@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,127 +10,93 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
-import type {
-  ActivateRepositoryAction,
-  AddRepositoryAction,
-  DeactivateRepositoryAction,
-  DiffOptionType,
-  DummyAction,
-  FileChangeStatusValue,
-  SetCompareIdAction,
-  SetDiffOptionAction,
-} from '../types';
-import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
-import type {RevisionStatuses} from '../../../nuclide-hg-repository-client/lib/HgRepositoryClient';
-import type {
-  RevisionInfo,
-} from '../../../nuclide-hg-rpc/lib/HgService';
+exports.addRepository = addRepository;
+exports.setDiffOption = setDiffOption;
+exports.setCompareId = setCompareId;
+exports.updateDirtyFiles = updateDirtyFiles;
+exports.removeRepository = removeRepository;
+exports.activateRepository = activateRepository;
+exports.deactivateRepository = deactivateRepository;
+exports.updateSelectedFiles = updateSelectedFiles;
+exports.updateHeadToForkBaseRevisionsState = updateHeadToForkBaseRevisionsState;
 
-import {
-  ACTIVATE_REPOSITORY,
-  DEACTIVATE_REPOSITORY,
-  ADD_REPOSITORY,
-  DUMMY,
-  SET_COMPARE_ID,
-  SET_DIFF_OPTION,
-} from './ActionTypes';
+var _ActionTypes2;
 
-export function addRepository(
-  repository: HgRepositoryClient,
-): AddRepositoryAction {
+function _ActionTypes() {
+  return _ActionTypes2 = require('./ActionTypes');
+}
+
+function addRepository(repository) {
   return {
-    type: ADD_REPOSITORY,
+    type: (_ActionTypes2 || _ActionTypes()).ADD_REPOSITORY,
     payload: {
-      repository,
-    },
+      repository: repository
+    }
   };
 }
 
-export function setDiffOption(
-  repository: HgRepositoryClient,
-  diffOption: DiffOptionType,
-): SetDiffOptionAction {
+function setDiffOption(repository, diffOption) {
   return {
-    type: SET_DIFF_OPTION,
+    type: (_ActionTypes2 || _ActionTypes()).SET_DIFF_OPTION,
     payload: {
-      repository,
-      diffOption,
-    },
+      repository: repository,
+      diffOption: diffOption
+    }
   };
 }
 
-export function setCompareId(
-  repository: HgRepositoryClient,
-  compareId: ?number,
-): SetCompareIdAction {
+function setCompareId(repository, compareId) {
   return {
-    type: SET_COMPARE_ID,
+    type: (_ActionTypes2 || _ActionTypes()).SET_COMPARE_ID,
     payload: {
-      repository,
-      compareId,
-    },
+      repository: repository,
+      compareId: compareId
+    }
   };
 }
 
-export function updateDirtyFiles(
-  repository: HgRepositoryClient,
-  dirtyFiles: Map<NuclideUri, FileChangeStatusValue>,
-): DummyAction {
+function updateDirtyFiles(repository, dirtyFiles) {
   // TODO(most): return and handle the real action.
   return {
-    type: DUMMY,
+    type: (_ActionTypes2 || _ActionTypes()).DUMMY
   };
 }
 
-export function removeRepository(
-  repository: HgRepositoryClient,
-): DummyAction {
+function removeRepository(repository) {
   // TODO(most): return and handle the real action.
   return {
-    type: DUMMY,
+    type: (_ActionTypes2 || _ActionTypes()).DUMMY
   };
 }
 
-export function activateRepository(
-  repository: HgRepositoryClient,
-): ActivateRepositoryAction {
+function activateRepository(repository) {
   return {
-    type: ACTIVATE_REPOSITORY,
+    type: (_ActionTypes2 || _ActionTypes()).ACTIVATE_REPOSITORY,
     payload: {
-      repository,
-    },
+      repository: repository
+    }
   };
 }
 
-export function deactivateRepository(
-  repository: HgRepositoryClient,
-): DeactivateRepositoryAction {
+function deactivateRepository(repository) {
   return {
-    type: DEACTIVATE_REPOSITORY,
+    type: (_ActionTypes2 || _ActionTypes()).DEACTIVATE_REPOSITORY,
     payload: {
-      repository,
-    },
+      repository: repository
+    }
   };
 }
 
-export function updateSelectedFiles(
-  repository: HgRepositoryClient,
-  revisionFileChanges: Map<NuclideUri, FileChangeStatusValue>,
-): DummyAction {
+function updateSelectedFiles(repository, revisionFileChanges) {
   // TODO(most): return and handle the real action.
   return {
-    type: DUMMY,
+    type: (_ActionTypes2 || _ActionTypes()).DUMMY
   };
 }
 
-export function updateHeadToForkBaseRevisionsState(
-  repository: HgRepositoryClient,
-  revisions: Array<RevisionInfo>,
-  revisionStatuses: RevisionStatuses,
-): DummyAction {
+function updateHeadToForkBaseRevisionsState(repository, revisions, revisionStatuses) {
   // TODO(most): return and handle the real action.
   return {
-    type: DUMMY,
+    type: (_ActionTypes2 || _ActionTypes()).DUMMY
   };
 }

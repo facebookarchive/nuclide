@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.compress = compress;
+exports.decompress = decompress;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +14,16 @@
  * the root directory of this source tree.
  */
 
-import zlib from 'zlib';
+var _zlib2;
 
-export function compress(data: string): Buffer {
-  return zlib.deflateSync(data);
+function _zlib() {
+  return _zlib2 = _interopRequireDefault(require('zlib'));
 }
 
-export function decompress(data: Buffer): string {
-  return zlib.inflateSync(data).toString('utf-8');
+function compress(data) {
+  return (_zlib2 || _zlib()).default.deflateSync(data);
+}
+
+function decompress(data) {
+  return (_zlib2 || _zlib()).default.inflateSync(data).toString('utf-8');
 }

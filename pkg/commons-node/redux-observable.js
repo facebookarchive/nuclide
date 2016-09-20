@@ -1,5 +1,19 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+exports.combineEpics = combineEpics;
+exports.createEpicMiddleware = createEpicMiddleware;
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -34,73 +48,94 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import {Observable, Subject} from 'rxjs';
+var _rxjsBundlesRxMinJs2;
+
+function _rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs2 = require('rxjs/bundles/Rx.min.js');
+}
 
 // This should be { type: readonly string } when we get readonly props. Because this is used with
 // disjoint unions we can't use `string` here due to mutation concerns. Flow doesn't know that we
 // aren't going to mutate the objects with a random string value so it can't allow us to pass a
 // specific action type into something of type { type: string }
-type Action = {type: any};
-type Store<T: Action, U> = {
-  dispatch(action: T): void,
-  getState(): U,
-};
-type Next<T: Action> = (action: T) => T;
-export type Epic<T: Action, U> =
-  (actions: ActionsObservable<T>, store: Store<T, U>) => Observable<T>;
 
-export function combineEpics<T: Action, U>(...epics: Array<Epic<T, U>>): Epic<T, U> {
-  return (actions: ActionsObservable<T>, store: Store<T, U>) => {
-    const streams: Array<Observable<T>> = epics.map(epic => epic(actions, store));
-    return Observable.merge(...streams);
+function combineEpics() {
+  for (var _len = arguments.length, epics = Array(_len), _key = 0; _key < _len; _key++) {
+    epics[_key] = arguments[_key];
+  }
+
+  return function (actions, store) {
+    var _Observable2;
+
+    var streams = epics.map(function (epic) {
+      return epic(actions, store);
+    });
+    return (_Observable2 = (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable).merge.apply(_Observable2, _toConsumableArray(streams));
   };
 }
 
-export function createEpicMiddleware<T: Action, U>(rootEpic?: Epic<T, U>) {
-  const actions = new Subject();
-  const actionsObs = new ActionsObservable(actions);
+function createEpicMiddleware(rootEpic) {
+  var actions = new (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Subject();
+  var actionsObs = new ActionsObservable(actions);
 
-  return (store: Store<T, U>) => (next: Next<T>) => {
-    if (rootEpic != null) {
-      rootEpic(actionsObs, store).subscribe(store.dispatch);
-    }
-    return (action: T) => {
-      const result = next(action);
-      actions.next(action);
-      return result;
+  return function (store) {
+    return function (next) {
+      if (rootEpic != null) {
+        rootEpic(actionsObs, store).subscribe(store.dispatch);
+      }
+      return function (action) {
+        var result = next(action);
+        actions.next(action);
+        return result;
+      };
     };
   };
 }
 
-export class ActionsObservable<T: Action> extends Observable<T> {
-  source: Observable<any>;
-  operator: any;
+var ActionsObservable = (function (_Observable) {
+  _inherits(ActionsObservable, _Observable);
 
-  constructor(actionsSubject: Observable<any>) {
-    super();
+  function ActionsObservable(actionsSubject) {
+    _classCallCheck(this, ActionsObservable);
+
+    _get(Object.getPrototypeOf(ActionsObservable.prototype), 'constructor', this).call(this);
     this.source = actionsSubject;
   }
 
-  lift(operator: any): Observable<T> {
-    const observable = new ActionsObservable(this);
-    observable.operator = operator;
-    return observable;
-  }
+  _createClass(ActionsObservable, [{
+    key: 'lift',
+    value: function lift(operator) {
+      var observable = new ActionsObservable(this);
+      observable.operator = operator;
+      return observable;
+    }
+  }, {
+    key: 'ofType',
+    value: function ofType() {
+      for (var _len2 = arguments.length, keys = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        keys[_key2] = arguments[_key2];
+      }
 
-  ofType(...keys: Array<any>): ActionsObservable<T> {
-    const result = this.filter(({type}) => {
-      const len = keys.length;
-      if (len === 1) {
-        return type === keys[0];
-      } else {
-        for (let i = 0; i < len; i++) {
-          if (keys[i] === type) {
-            return true;
+      var result = this.filter(function (_ref) {
+        var type = _ref.type;
+
+        var len = keys.length;
+        if (len === 1) {
+          return type === keys[0];
+        } else {
+          for (var i = 0; i < len; i++) {
+            if (keys[i] === type) {
+              return true;
+            }
           }
         }
-      }
-      return false;
-    });
-    return ((result: any): ActionsObservable<T>);
-  }
-}
+        return false;
+      });
+      return result;
+    }
+  }]);
+
+  return ActionsObservable;
+})((_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable);
+
+exports.ActionsObservable = ActionsObservable;

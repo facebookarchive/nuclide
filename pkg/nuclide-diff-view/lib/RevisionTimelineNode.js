@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,140 +10,197 @@
  * the root directory of this source tree.
  */
 
-import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
-import type {
-  RevisionStatusDisplay,
-} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import classnames from 'classnames';
-import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
-import {getCommitAuthorFromAuthorEmail} from '../../nuclide-arcanist-rpc/lib/utils';
-import {React} from 'react-for-atom';
-import {track} from '../../nuclide-analytics';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type RevisionTimelineNodeProps = {
-  revisionStatus: ?RevisionStatusDisplay,
-  index: number,
-  onSelectionChange: (revisionInfo: RevisionInfo) => any,
-  revision: RevisionInfo,
-  revisionsCount: number,
-  selectedIndex: number,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export default class RevisionTimelineNode extends React.Component {
-  props: RevisionTimelineNodeProps;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  constructor(props: RevisionTimelineNodeProps) {
-    super(props);
-    (this: any)._handlePhabricatorRevisionClick = this._handlePhabricatorRevisionClick.bind(this);
-    (this: any)._handleSelectionChange = this._handleSelectionChange.bind(this);
-  }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  _handlePhabricatorRevisionClick(event: SyntheticMouseEvent): void {
-    // Clicking an anchor opens the `href` in the browser. Stop propagation so it doesn't affect
-    // the node selection in the Timeline.
-    event.stopPropagation();
+var _classnames2;
 
-    const revision = getPhabricatorRevisionFromCommitMessage(this.props.revision.description);
-    track('diff-view-phabricator-diff-open', {revision});
-  }
-
-  _handleSelectionChange(): void {
-    this.props.onSelectionChange(this.props.revision);
-  }
-
-  render(): React.Element<any> {
-    const {revisionStatus, index, revision, revisionsCount, selectedIndex} = this.props;
-    const {author, bookmarks, date, description, hash, title} = revision;
-    const revisionClassName = classnames('revision revision--actionable', {
-      'selected-revision-inrange': index < selectedIndex,
-      'selected-revision-end': index === selectedIndex,
-      'selected-revision-last': index === revisionsCount - 1,
-    });
-    const tooltip = `${hash}: ${title}
-  Author: ${author}
-  Date: ${date.toString()}`;
-
-    const commitAuthor = getCommitAuthorFromAuthorEmail(author);
-    let commitAuthorElement;
-    if (commitAuthor != null) {
-      commitAuthorElement = (
-        <span className="inline-block">{commitAuthor}</span>
-      );
-    }
-
-    const phabricatorRevision = getPhabricatorRevisionFromCommitMessage(description);
-    let phabricatorRevisionElement;
-    if (phabricatorRevision != null) {
-      phabricatorRevisionElement = (
-        <a
-          className="inline-block"
-          href={phabricatorRevision.url}
-          onClick={this._handlePhabricatorRevisionClick}>
-          <strong>{phabricatorRevision.name}</strong>
-        </a>
-      );
-    }
-
-    let revisionStatusElement;
-    if (revisionStatus != null) {
-      revisionStatusElement = (
-        <span className={classnames('inline-block', revisionStatus.className)}>
-          {revisionStatus.name}
-        </span>
-      );
-    }
-
-    let associatedExtraElement;
-    try {
-      // $FlowFB
-      const diffUtils = require('../../nuclide-diff-view/lib/fb/utils.js');
-      const taskIds = diffUtils.getFbCommitTaskInfoFromCommitMessage(description);
-      associatedExtraElement = taskIds.map(task => {
-        return (
-          <a key={task.id} className="inline-block" href={task.url}>{task.name}</a>
-        );
-      });
-    } catch (ex) {
-      // There are no extra UI elements to show.
-    }
-
-    const bookmarksToRender = bookmarks.slice();
-    if (index === 0 && revisionsCount > 1 && bookmarks.length === 0) {
-      bookmarksToRender.push('HEAD');
-    }
-    if (index === revisionsCount - 1 && bookmarks.length === 0) {
-      bookmarksToRender.push('BASE');
-    }
-
-    let bookmarksElement;
-    if (bookmarksToRender.length > 0) {
-      bookmarksElement = (
-        <span className="inline-block text-success">
-          {bookmarksToRender.join(' ')}
-        </span>
-      );
-    }
-
-    return (
-      <div
-        className={revisionClassName}
-        onClick={this._handleSelectionChange}
-        title={tooltip}>
-        <div className="revision-bubble" />
-        <div className="revision-label text-monospace">
-          <span className="inline-block">{hash.substr(0, 7)}</span>
-          {commitAuthorElement}
-          {phabricatorRevisionElement}
-          {revisionStatusElement}
-          {associatedExtraElement}
-          {bookmarksElement}
-          <br />
-          <span className="revision-title">
-            {title}
-          </span>
-        </div>
-      </div>
-    );
-  }
+function _classnames() {
+  return _classnames2 = _interopRequireDefault(require('classnames'));
 }
+
+var _nuclideArcanistRpcLibUtils2;
+
+function _nuclideArcanistRpcLibUtils() {
+  return _nuclideArcanistRpcLibUtils2 = require('../../nuclide-arcanist-rpc/lib/utils');
+}
+
+var _nuclideArcanistRpcLibUtils4;
+
+function _nuclideArcanistRpcLibUtils3() {
+  return _nuclideArcanistRpcLibUtils4 = require('../../nuclide-arcanist-rpc/lib/utils');
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var RevisionTimelineNode = (function (_React$Component) {
+  _inherits(RevisionTimelineNode, _React$Component);
+
+  function RevisionTimelineNode(props) {
+    _classCallCheck(this, RevisionTimelineNode);
+
+    _get(Object.getPrototypeOf(RevisionTimelineNode.prototype), 'constructor', this).call(this, props);
+    this._handlePhabricatorRevisionClick = this._handlePhabricatorRevisionClick.bind(this);
+    this._handleSelectionChange = this._handleSelectionChange.bind(this);
+  }
+
+  _createClass(RevisionTimelineNode, [{
+    key: '_handlePhabricatorRevisionClick',
+    value: function _handlePhabricatorRevisionClick(event) {
+      // Clicking an anchor opens the `href` in the browser. Stop propagation so it doesn't affect
+      // the node selection in the Timeline.
+      event.stopPropagation();
+
+      var revision = (0, (_nuclideArcanistRpcLibUtils2 || _nuclideArcanistRpcLibUtils()).getPhabricatorRevisionFromCommitMessage)(this.props.revision.description);
+      (0, (_nuclideAnalytics2 || _nuclideAnalytics()).track)('diff-view-phabricator-diff-open', { revision: revision });
+    }
+  }, {
+    key: '_handleSelectionChange',
+    value: function _handleSelectionChange() {
+      this.props.onSelectionChange(this.props.revision);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var revisionStatus = _props.revisionStatus;
+      var index = _props.index;
+      var revision = _props.revision;
+      var revisionsCount = _props.revisionsCount;
+      var selectedIndex = _props.selectedIndex;
+      var author = revision.author;
+      var bookmarks = revision.bookmarks;
+      var date = revision.date;
+      var description = revision.description;
+      var hash = revision.hash;
+      var title = revision.title;
+
+      var revisionClassName = (0, (_classnames2 || _classnames()).default)('revision revision--actionable', {
+        'selected-revision-inrange': index < selectedIndex,
+        'selected-revision-end': index === selectedIndex,
+        'selected-revision-last': index === revisionsCount - 1
+      });
+      var tooltip = hash + ': ' + title + '\n  Author: ' + author + '\n  Date: ' + date.toString();
+
+      var commitAuthor = (0, (_nuclideArcanistRpcLibUtils4 || _nuclideArcanistRpcLibUtils3()).getCommitAuthorFromAuthorEmail)(author);
+      var commitAuthorElement = undefined;
+      if (commitAuthor != null) {
+        commitAuthorElement = (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'span',
+          { className: 'inline-block' },
+          commitAuthor
+        );
+      }
+
+      var phabricatorRevision = (0, (_nuclideArcanistRpcLibUtils2 || _nuclideArcanistRpcLibUtils()).getPhabricatorRevisionFromCommitMessage)(description);
+      var phabricatorRevisionElement = undefined;
+      if (phabricatorRevision != null) {
+        phabricatorRevisionElement = (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'a',
+          {
+            className: 'inline-block',
+            href: phabricatorRevision.url,
+            onClick: this._handlePhabricatorRevisionClick },
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'strong',
+            null,
+            phabricatorRevision.name
+          )
+        );
+      }
+
+      var revisionStatusElement = undefined;
+      if (revisionStatus != null) {
+        revisionStatusElement = (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'span',
+          { className: (0, (_classnames2 || _classnames()).default)('inline-block', revisionStatus.className) },
+          revisionStatus.name
+        );
+      }
+
+      var associatedExtraElement = undefined;
+      try {
+        // $FlowFB
+        var diffUtils = require('../../nuclide-diff-view/lib/fb/utils.js');
+        var taskIds = diffUtils.getFbCommitTaskInfoFromCommitMessage(description);
+        associatedExtraElement = taskIds.map(function (task) {
+          return (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'a',
+            { key: task.id, className: 'inline-block', href: task.url },
+            task.name
+          );
+        });
+      } catch (ex) {
+        // There are no extra UI elements to show.
+      }
+
+      var bookmarksToRender = bookmarks.slice();
+      if (index === 0 && revisionsCount > 1 && bookmarks.length === 0) {
+        bookmarksToRender.push('HEAD');
+      }
+      if (index === revisionsCount - 1 && bookmarks.length === 0) {
+        bookmarksToRender.push('BASE');
+      }
+
+      var bookmarksElement = undefined;
+      if (bookmarksToRender.length > 0) {
+        bookmarksElement = (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'span',
+          { className: 'inline-block text-success' },
+          bookmarksToRender.join(' ')
+        );
+      }
+
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        {
+          className: revisionClassName,
+          onClick: this._handleSelectionChange,
+          title: tooltip },
+        (_reactForAtom2 || _reactForAtom()).React.createElement('div', { className: 'revision-bubble' }),
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          { className: 'revision-label text-monospace' },
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'span',
+            { className: 'inline-block' },
+            hash.substr(0, 7)
+          ),
+          commitAuthorElement,
+          phabricatorRevisionElement,
+          revisionStatusElement,
+          associatedExtraElement,
+          bookmarksElement,
+          (_reactForAtom2 || _reactForAtom()).React.createElement('br', null),
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'span',
+            { className: 'revision-title' },
+            title
+          )
+        )
+      );
+    }
+  }]);
+
+  return RevisionTimelineNode;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
+
+exports.default = RevisionTimelineNode;
+module.exports = exports.default;

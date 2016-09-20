@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = findHgRepository;
+
+/**
+ * This function returns HgRepositoryDescription filled with a repoPath and
+ * originURL iff it finds that the given directory is within an Hg repository.
+ */
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +18,41 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import ini from 'ini';
-import fs from 'fs';
+var _commonsNodeNuclideUri2;
 
-import type {HgRepositoryDescription} from '..';
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
 
-/**
- * This function returns HgRepositoryDescription filled with a repoPath and
- * originURL iff it finds that the given directory is within an Hg repository.
- */
-export default function findHgRepository(startDirectoryPath: string): ?HgRepositoryDescription {
-  let workingDirectoryPath = startDirectoryPath;
+var _ini2;
+
+function _ini() {
+  return _ini2 = _interopRequireDefault(require('ini'));
+}
+
+var _fs2;
+
+function _fs() {
+  return _fs2 = _interopRequireDefault(require('fs'));
+}
+
+function findHgRepository(startDirectoryPath) {
+  var workingDirectoryPath = startDirectoryPath;
   for (;;) {
-    const repoPath = nuclideUri.join(workingDirectoryPath, '.hg');
+    var repoPath = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(workingDirectoryPath, '.hg');
     if (tryIsDirectorySync(repoPath)) {
-      let originURL = null;
+      var originURL = null;
       // Note that .hg/hgrc will not exist in a local repo created via `hg init`, for example.
-      const hgrc = tryReadFileSync(nuclideUri.join(repoPath, 'hgrc'));
+      var hgrc = tryReadFileSync((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(repoPath, 'hgrc'));
       if (hgrc != null) {
-        const config = ini.parse(hgrc);
+        var config = (_ini2 || _ini()).default.parse(hgrc);
         if (typeof config.paths === 'object' && typeof config.paths.default === 'string') {
           originURL = config.paths.default;
         }
       }
-      return {repoPath, originURL, workingDirectoryPath};
+      return { repoPath: repoPath, originURL: originURL, workingDirectoryPath: workingDirectoryPath };
     }
-    const parentDir = nuclideUri.join(workingDirectoryPath, '..');
+    var parentDir = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(workingDirectoryPath, '..');
     if (parentDir === workingDirectoryPath) {
       return null;
     } else {
@@ -46,7 +63,7 @@ export default function findHgRepository(startDirectoryPath: string): ?HgReposit
 
 function tryIsDirectorySync(dirname) {
   try {
-    const stat = fs.statSync(dirname);
+    var stat = (_fs2 || _fs()).default.statSync(dirname);
     return stat.isDirectory();
   } catch (err) {
     return false;
@@ -55,8 +72,9 @@ function tryIsDirectorySync(dirname) {
 
 function tryReadFileSync(filename) {
   try {
-    return fs.readFileSync(filename, 'utf8');
+    return (_fs2 || _fs()).default.readFileSync(filename, 'utf8');
   } catch (err) {
     return null;
   }
 }
+module.exports = exports.default;

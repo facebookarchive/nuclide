@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +12,10 @@
  * the root directory of this source tree.
  */
 
-export type HgRepositoryDescription = {
-  repoPath: string,
-  originURL: ?string,
-  workingDirectoryPath: string,
-};
+var _hgRepository2;
 
+function _hgRepository() {
+  return _hgRepository2 = _interopRequireDefault(require('./hg-repository'));
+}
 
-import findHgRepository from './hg-repository';
-
-export {findHgRepository};
+exports.findHgRepository = (_hgRepository2 || _hgRepository()).default;

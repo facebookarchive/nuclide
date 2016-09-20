@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +10,27 @@
  * the root directory of this source tree.
  */
 
-import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
-import {FileCache} from './FileCache';
+exports.getBufferAtVersion = getBufferAtVersion;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export const OPEN_FILES_SERVICE = 'OpenFilesService';
+var _FileCache2;
 
-export function getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
-  invariant(
-    fileVersion.notifier instanceof FileCache,
-    'Don\'t call this from the Atom process');
-  return (fileVersion.notifier: FileCache).getBufferAtVersion(fileVersion);
+function _FileCache() {
+  return _FileCache2 = require('./FileCache');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var OPEN_FILES_SERVICE = 'OpenFilesService';
+
+exports.OPEN_FILES_SERVICE = OPEN_FILES_SERVICE;
+
+function getBufferAtVersion(fileVersion) {
+  (0, (_assert2 || _assert()).default)(fileVersion.notifier instanceof (_FileCache2 || _FileCache()).FileCache, 'Don\'t call this from the Atom process');
+  return fileVersion.notifier.getBufferAtVersion(fileVersion);
 }

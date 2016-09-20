@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,25 @@
  * the root directory of this source tree.
  */
 
-import type {LabeledStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import markers from '../../constants/markers';
-import wrapStatement from '../../wrappers/simple/wrapStatement';
+var _constantsMarkers2;
 
-function printLabeledStatement(print: Print, node: LabeledStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-  return wrap([
-    print(node.label),
-    ':',
-    markers.space,
-    print(node.body),
-  ]);
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+var _wrappersSimpleWrapStatement2;
+
+function _wrappersSimpleWrapStatement() {
+  return _wrappersSimpleWrapStatement2 = _interopRequireDefault(require('../../wrappers/simple/wrapStatement'));
+}
+
+function printLabeledStatement(print, node) {
+  var wrap = function wrap(x) {
+    return (0, (_wrappersSimpleWrapStatement2 || _wrappersSimpleWrapStatement()).default)(print, node, x);
+  };
+  return wrap([print(node.label), ':', (_constantsMarkers2 || _constantsMarkers()).default.space, print(node.body)]);
 }
 
 module.exports = printLabeledStatement;
