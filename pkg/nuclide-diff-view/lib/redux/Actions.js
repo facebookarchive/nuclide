@@ -15,10 +15,13 @@ import type {
   AddRepositoryAction,
   DeactivateRepositoryAction,
   DiffOptionType,
-  DummyAction,
   FileChangeStatusValue,
+  RemoveRepositoryAction,
   SetCompareIdAction,
   SetDiffOptionAction,
+  UpdateDirtyFilesAction,
+  UpdateHeadToForkBaseRevisions,
+  UpdateSelectedFilesAction,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 import type {RevisionStatuses} from '../../../nuclide-hg-repository-client/lib/HgRepositoryClient';
@@ -30,9 +33,12 @@ import {
   ACTIVATE_REPOSITORY,
   DEACTIVATE_REPOSITORY,
   ADD_REPOSITORY,
-  DUMMY,
+  REMOVE_REPOSITORY,
   SET_COMPARE_ID,
   SET_DIFF_OPTION,
+  UPDATE_DIRTY_FILES,
+  UPDATE_HEAD_TO_FORKBASE_REVISIONS,
+  UPDATE_SELECTED_FILES,
 } from './ActionTypes';
 
 export function addRepository(
@@ -75,19 +81,24 @@ export function setCompareId(
 export function updateDirtyFiles(
   repository: HgRepositoryClient,
   dirtyFiles: Map<NuclideUri, FileChangeStatusValue>,
-): DummyAction {
-  // TODO(most): return and handle the real action.
+): UpdateDirtyFilesAction {
   return {
-    type: DUMMY,
+    type: UPDATE_DIRTY_FILES,
+    payload: {
+      repository,
+      dirtyFiles,
+    },
   };
 }
 
 export function removeRepository(
   repository: HgRepositoryClient,
-): DummyAction {
-  // TODO(most): return and handle the real action.
+): RemoveRepositoryAction {
   return {
-    type: DUMMY,
+    type: REMOVE_REPOSITORY,
+    payload: {
+      repository,
+    },
   };
 }
 
@@ -115,21 +126,28 @@ export function deactivateRepository(
 
 export function updateSelectedFiles(
   repository: HgRepositoryClient,
-  revisionFileChanges: Map<NuclideUri, FileChangeStatusValue>,
-): DummyAction {
-  // TODO(most): return and handle the real action.
+  selectedFiles: Map<NuclideUri, FileChangeStatusValue>,
+): UpdateSelectedFilesAction {
   return {
-    type: DUMMY,
+    type: UPDATE_SELECTED_FILES,
+    payload: {
+      repository,
+      selectedFiles,
+    },
   };
 }
 
 export function updateHeadToForkBaseRevisionsState(
   repository: HgRepositoryClient,
-  revisions: Array<RevisionInfo>,
+  headToForkBaseRevisions: Array<RevisionInfo>,
   revisionStatuses: RevisionStatuses,
-): DummyAction {
-  // TODO(most): return and handle the real action.
+): UpdateHeadToForkBaseRevisions {
   return {
-    type: DUMMY,
+    type: UPDATE_HEAD_TO_FORKBASE_REVISIONS,
+    payload: {
+      repository,
+      headToForkBaseRevisions,
+      revisionStatuses,
+    },
   };
 }

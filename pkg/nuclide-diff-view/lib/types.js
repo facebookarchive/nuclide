@@ -11,10 +11,8 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
-import type {
-  RevisionStatusDisplay,
-} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+import type {RevisionStatuses} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
 
 import {React} from 'react-for-atom';
 
@@ -46,7 +44,7 @@ export type RevisionsState = {
   headToForkBaseRevisions: Array<RevisionInfo>,
   compareCommitId: ?number,
   headCommitId: number,
-  revisionStatuses: Map<number, RevisionStatusDisplay>,
+  revisionStatuses: RevisionStatuses,
   revisions: Array<RevisionInfo>,
 };
 
@@ -91,7 +89,7 @@ export type UIProvider = {
 
 export type RepositoryState = {
   diffOption: DiffOptionType,
-  revisionStatuses: Map<number, RevisionStatusDisplay>,
+  revisionStatuses: RevisionStatuses,
   dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
   headToForkBaseRevisions: Array<RevisionInfo>,
   headRevision: ?RevisionInfo,
@@ -130,6 +128,14 @@ export type AddRepositoryAction = {
   },
 };
 
+export type RemoveRepositoryAction = {
+  type: 'REMOVE_REPOSITORY',
+  payload: {
+    repository: HgRepositoryClient,
+  },
+};
+
+
 export type ActivateRepositoryAction = {
   type: 'ACTIVATE_REPOSITORY',
   payload: {
@@ -164,17 +170,51 @@ export type DummyAction = {
   type: 'DUMMY',
 };
 
+
+export type UpdateDirtyFilesAction = {
+  type: 'UPDATE_DIRTY_FILES',
+  payload: {
+    repository: HgRepositoryClient,
+    dirtyFiles: Map<NuclideUri, FileChangeStatusValue>,
+  },
+};
+
+export type UpdateHeadToForkBaseRevisions = {
+  type: 'UPDATE_HEAD_TO_FORKBASE_REVISIONS',
+  payload: {
+    repository: HgRepositoryClient,
+    headToForkBaseRevisions: Array<RevisionInfo>,
+    revisionStatuses: RevisionStatuses,
+  }
+};
+
+export type UpdateSelectedFilesAction = {
+  type: 'UPDATE_SELECTED_FILES',
+  payload: {
+    repository: HgRepositoryClient,
+    selectedFiles: Map<NuclideUri, FileChangeStatusValue>,
+  },
+};
+
 export type Action = ActivateRepositoryAction
   | AddRepositoryAction
   | DeactivateRepositoryAction
+  | DummyAction
+  | RemoveRepositoryAction
   | SetCompareIdAction
   | SetDiffOptionAction
-  | DummyAction
+  | UpdateDirtyFilesAction
+  | UpdateHeadToForkBaseRevisions
+  | UpdateSelectedFilesAction
 ;
 
 export type RepositoryAction = ActivateRepositoryAction
   | AddRepositoryAction
   | DeactivateRepositoryAction
+  | RemoveRepositoryAction
   | SetCompareIdAction
   | SetDiffOptionAction
+  | UpdateDirtyFilesAction
+  | UpdateHeadToForkBaseRevisions
+  | UpdateSelectedFilesAction
 ;
