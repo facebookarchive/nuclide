@@ -216,8 +216,9 @@ class Activation {
       this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
 
       this._subscriptions.add(
-        // TODO(most): use action creators and consume states.
-        states.subscribe(state => getLogger().info('diff-view-state', state)),
+        states.subscribe(state => {
+          // TODO(most): use action creators and consume states.
+        }),
         getHgRepositoryStream().subscribe(repository => {
           this._actionCreators.addRepository(repository);
         }),
