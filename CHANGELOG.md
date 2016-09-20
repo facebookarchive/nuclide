@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.170.0
+
+Hotfix release for spurious Diff View errors.
+
 ## v0.169.0
 
 ### General:
