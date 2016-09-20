@@ -235,6 +235,13 @@ export type UpdateFileDiffAction = {
   },
 };
 
+export type SetViewModeAction = {
+  type: 'SET_VIEW_MODE',
+  payload: {
+    viewMode: DiffModeType,
+  },
+};
+
 export type Action = ActivateRepositoryAction
   | AddRepositoryAction
   | DeactivateRepositoryAction
@@ -244,6 +251,7 @@ export type Action = ActivateRepositoryAction
   | SetCompareIdAction
   | SetCwdApiAction
   | SetDiffOptionAction
+  | SetViewModeAction
   | UpdateActiveRepositoryAction
   | UpdateDirtyFilesAction
   | UpdateFileDiffAction

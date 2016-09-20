@@ -15,6 +15,7 @@ import type {
   AddRepositoryAction,
   DeactivateRepositoryAction,
   DiffFileAction,
+  DiffModeType,
   DiffOptionType,
   FileChangeStatusValue,
   FileDiffState,
@@ -22,6 +23,7 @@ import type {
   SetCompareIdAction,
   SetCwdApiAction,
   SetDiffOptionAction,
+  SetViewModeAction,
   UpdateActiveRepositoryAction,
   UpdateDirtyFilesAction,
   UpdateFileDiffAction,
@@ -44,6 +46,7 @@ import {
   SET_COMPARE_ID,
   SET_CWD_API,
   SET_DIFF_OPTION,
+  SET_VIEW_MODE,
   UPDATE_ACTIVE_REPOSITORY,
   UPDATE_DIRTY_FILES,
   UPDATE_FILE_DIFF,
@@ -208,6 +211,17 @@ export function updateFileDiff(
     type: UPDATE_FILE_DIFF,
     payload: {
       fileDiff,
+    },
+  };
+}
+
+export function setViewMode(
+  viewMode: DiffModeType,
+): SetViewModeAction {
+  return {
+    type: SET_VIEW_MODE,
+    payload: {
+      viewMode,
     },
   };
 }

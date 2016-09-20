@@ -482,6 +482,7 @@ export default class DiffViewModel {
   }
 
   setViewMode(viewMode: DiffModeType, loadModeState?: boolean = true): void {
+    this._actionCreators.setViewMode(viewMode);
     if (viewMode === this._state.viewMode) {
       return;
     }

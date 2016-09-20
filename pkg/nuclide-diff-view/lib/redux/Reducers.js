@@ -146,5 +146,9 @@ export function viewMode(
   state: DiffModeType,
   action: Action,
 ): DiffModeType {
+  switch (action.type) {
+    case ActionTypes.SET_VIEW_MODE:
+      return action.payload.viewMode;
+  }
   return state || getEmptyViewModeState();
 }

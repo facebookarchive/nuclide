@@ -28,6 +28,7 @@ import {
 import {
   formatFileDiffRevisionTitle,
 } from '../DiffViewModel';
+import {DiffMode} from '../constants';
 import {repositoryForPath} from '../../../nuclide-hg-git-bridge';
 import {bufferForUri, loadBufferForUri} from '../../../commons-atom/text-editor';
 import {getEmptyFileDiffState} from './createEmptyAppState';
@@ -241,5 +242,33 @@ export function diffFileEpic(
         deselectActiveRepository,
       ))
       .concat(Observable.of(Actions.updateFileDiff(getEmptyFileDiffState())));
+  });
+}
+
+export function setViewModeEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(ActionTypes.SET_VIEW_MODE).switchMap(action => {
+    invariant(action.type === ActionTypes.SET_VIEW_MODE);
+
+    const {viewMode} = action.payload;
+    if (store.getState().viewMode === viewMode) {
+      return Observable.empty();
+    }
+
+    switch (viewMode) {
+      case DiffMode.BROWSE_MODE:
+        // TODO(most) load view mode's needed state.
+        return Observable.empty();
+      case DiffMode.COMMIT_MODE:
+        // TODO(most) load view mode's needed state.
+        return Observable.empty();
+      case DiffMode.PUBLISH_MODE:
+        // TODO(most) load view mode's needed state.
+        return Observable.empty();
+      default:
+        return Observable.throw(new Error(`Invalid Diff View Mode: ${viewMode}`));
+    }
   });
 }
