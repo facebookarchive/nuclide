@@ -254,6 +254,13 @@ export type SetCommitModeAction = {
   },
 };
 
+export type SetShouldReabaseOnAmendAction = {
+  type: 'SET_SHOULD_REBASE_ON_AMEND',
+  payload: {
+    shouldRebaseOnAmend: boolean,
+  },
+};
+
 export type Action = ActivateRepositoryAction
   | AddRepositoryAction
   | DeactivateRepositoryAction
@@ -263,6 +270,7 @@ export type Action = ActivateRepositoryAction
   | SetCommitModeAction
   | SetCompareIdAction
   | SetCwdApiAction
+  | SetShouldReabaseOnAmendAction
   | SetViewModeAction
   | UpdateActiveRepositoryAction
   | UpdateCommitStateAction

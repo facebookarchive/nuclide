@@ -146,6 +146,10 @@ export function shouldRebaseOnAmend(
   state: boolean,
   action: Action,
 ): boolean {
+  switch (action.type) {
+    case ActionTypes.SET_SHOULD_REBASE_ON_AMEND:
+      return action.payload.shouldRebaseOnAmend;
+  }
   return state || getEmptyRebaseOnAmendState();
 }
 

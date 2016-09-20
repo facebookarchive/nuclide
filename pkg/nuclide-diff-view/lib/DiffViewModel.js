@@ -1351,6 +1351,7 @@ export default class DiffViewModel {
   }
 
   setShouldAmendRebase(shouldRebaseOnAmend: boolean): void {
+    this._actionCreators.setShouldRebaseOnAmend(shouldRebaseOnAmend);
     this._setState({
       ...this._state,
       shouldRebaseOnAmend,

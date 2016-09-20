@@ -25,6 +25,7 @@ import type {
   SetCommitModeAction,
   SetCompareIdAction,
   SetCwdApiAction,
+  SetShouldReabaseOnAmendAction,
   SetViewModeAction,
   UpdateActiveRepositoryAction,
   UpdateCommitStateAction,
@@ -50,6 +51,7 @@ import {
   SET_COMMIT_MODE,
   SET_COMPARE_ID,
   SET_CWD_API,
+  SET_SHOULD_REBASE_ON_AMEND,
   SET_VIEW_MODE,
   UPDATE_ACTIVE_REPOSITORY,
   UPDATE_COMMIT_STATE,
@@ -248,6 +250,17 @@ export function updatePublishState(
     type: UPDATE_PUBLISH_STATE,
     payload: {
       publish,
+    },
+  };
+}
+
+export function setShouldRebaseOnAmend(
+  shouldRebaseOnAmend: boolean,
+): SetShouldReabaseOnAmendAction {
+  return {
+    type: SET_SHOULD_REBASE_ON_AMEND,
+    payload: {
+      shouldRebaseOnAmend,
     },
   };
 }
