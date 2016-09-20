@@ -23,7 +23,45 @@ export function getBuiltinProviders(): Array<DistractionFreeModeProvider> {
   if (featureConfig.get('nuclide-distraction-free-mode.hideStatusBar')) {
     providers.push(new StatusBarProvider());
   }
+  if (featureConfig.get('nuclide-distraction-free-mode.hideFindAndReplace')) {
+    providers.push(new FindAndReplaceProvider('find-and-replace'));
+    providers.push(new FindAndReplaceProvider('project-find'));
+  }
+
   return providers;
+}
+
+class FindAndReplaceProvider {
+  name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+  isVisible(): boolean {
+    const paneElem = document.querySelector('.' + this.name);
+    if (paneElem != null) {
+      const paneContainer = paneElem.parentElement;
+      if (paneContainer != null
+        && paneContainer.style != null
+        && paneContainer.style.display != null) {
+        const display = paneContainer.style.display;
+        if (display !== 'none') {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+  toggle(): void {
+    if (!atom.packages.isPackageActive('find-and-replace')) { return; }
+
+    const command = this.isVisible() ? 'toggle' : 'show';
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      this.name + ':' + command,
+    );
+  }
+
 }
 
 const toolBarProvider = {
