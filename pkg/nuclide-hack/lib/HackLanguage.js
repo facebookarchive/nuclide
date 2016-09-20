@@ -17,7 +17,6 @@ import type {
 import type {
   HackDiagnostic,
   HackReference,
-  HackIdeOutlineItem,
   HackIdeOutline,
 } from '../../nuclide-hack-rpc/lib/HackService';
 import type {DefinitionQueryResult} from '../../nuclide-definition-service/lib/rpc-types';
@@ -26,6 +25,7 @@ import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackCoverageResult} from './TypedRegions';
 import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import {getLogger} from '../../nuclide-logging';
@@ -126,7 +126,7 @@ export class HackLanguage {
     return this._hackService.getDefinition(fileVersion, position);
   }
 
-  getDefinitionById(filePath: NuclideUri, id: string): Promise<?HackIdeOutlineItem> {
+  getDefinitionById(filePath: NuclideUri, id: string): Promise<?Definition> {
     return this._hackService.getDefinitionById(filePath, id);
   }
 

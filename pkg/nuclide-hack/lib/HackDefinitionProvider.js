@@ -18,7 +18,6 @@ import type {
 import {getHackLanguageForUri} from './HackLanguage';
 import {HACK_GRAMMARS_SET, HACK_GRAMMARS} from '../../nuclide-hack-common';
 import invariant from 'assert';
-import {Point} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
@@ -51,25 +50,6 @@ export class HackDefinitionProvider {
       return null;
     }
 
-    const definition = await hackLanguage.getDefinitionById(filePath, id);
-    if (definition == null) {
-      return null;
-    }
-
-    const result = {
-      path: definition.position.filename,
-      position: new Point(definition.position.line - 1, definition.position.char_start - 1),
-      name: definition.name,
-      language: 'php',
-      // TODO: range, project root
-    };
-    if (typeof definition.id === 'string') {
-      return {
-        ...result,
-        id: definition.id,
-      };
-    } else {
-      return result;
-    }
+    return await hackLanguage.getDefinitionById(filePath, id);
   }
 }

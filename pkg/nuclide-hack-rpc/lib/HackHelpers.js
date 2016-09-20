@@ -195,11 +195,15 @@ function getSearchType(info: string): SearchResultTypeValue {
 
 export function hackRangeToAtomRange(position: HackRange): atom$Range {
   return new Range(
-    new Point(
-      position.line - 1,
-      position.char_start - 1),
+    atomPointOfHackRangeStart(position),
     new Point(
       position.line - 1,
       position.char_end),
   );
+}
+
+export function atomPointOfHackRangeStart(position: HackRange): atom$Point {
+  return new Point(
+    position.line - 1,
+    position.char_start - 1);
 }

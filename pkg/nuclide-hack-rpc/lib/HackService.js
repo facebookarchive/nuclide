@@ -18,6 +18,7 @@ import type {
 import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
+  Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {HackDefinition} from './Definitions';
@@ -39,7 +40,10 @@ import {getUseIdeConnection, logger} from './hack-config';
 import {getHackConnectionService} from './HackProcess';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {convertDefinitions} from './Definitions';
-import {hackRangeToAtomRange} from './HackHelpers';
+import {
+  hackRangeToAtomRange,
+  atomPointOfHackRangeStart,
+} from './HackHelpers';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -241,14 +245,33 @@ export class HackLanguageService {
   async getDefinitionById(
     file: NuclideUri,
     id: string,
-  ): Promise<?HackIdeOutlineItem> {
-    const result: any = await callHHClient(
+  ): Promise<?Definition> {
+    const definition: ?HackIdeOutlineItem = (await callHHClient(
       /* args */ ['--get-definition-by-id', id],
       /* errorStream */ false,
       /* processInput */ null,
       /* cwd */ file,
-    );
-    return result;
+    ): any);
+    if (definition == null) {
+      return null;
+    }
+
+    const result = {
+      path: definition.position.filename,
+      position: atomPointOfHackRangeStart(definition.position),
+      name: definition.name,
+      language: 'php',
+      // TODO: range
+      projectRoot: (definition: any).hackRoot,
+    };
+    if (typeof definition.id === 'string') {
+      return {
+        ...result,
+        id: definition.id,
+      };
+    } else {
+      return result;
+    }
   }
 
   async findReferences(
