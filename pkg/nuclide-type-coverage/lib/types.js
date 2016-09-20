@@ -9,16 +9,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-
-export type UncoveredRegion = {
-  range: atom$Range,
-  message?: string,
-};
-
-export type CoverageResult = {
-  percentage: number,
-  uncoveredRegions: Array<UncoveredRegion>,
-};
+import type {CoverageResult} from './rpc-types';
 
 export interface CoverageProvider {
   getCoverage(path: NuclideUri): Promise<?CoverageResult>,

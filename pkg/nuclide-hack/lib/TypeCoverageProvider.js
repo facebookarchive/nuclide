@@ -18,7 +18,7 @@ import type {
 import type {
   CoverageResult,
   UncoveredRegion,
-} from '../../nuclide-type-coverage/lib/types';
+} from '../../nuclide-type-coverage/lib/rpc-types';
 
 import {getHackLanguageForUri} from './HackLanguage';
 import {Range} from 'atom';

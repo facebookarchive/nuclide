@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {CoverageResult, CoverageProvider} from './types';
+import type {CoverageProvider} from './types';
+import type {CoverageResult} from './rpc-types';
 import type {ObservableDiagnosticProvider} from '../../nuclide-diagnostics-common';
 
 import {React, ReactDOM} from 'react-for-atom';

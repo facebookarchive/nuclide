@@ -17,7 +17,8 @@ import type {
 } from '../../nuclide-diagnostics-common';
 import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 
-import type {CoverageResult, CoverageProvider} from '../lib/types';
+import type {CoverageProvider} from '../lib/types';
+import type {CoverageResult} from '../lib/rpc-types';
 
 import invariant from 'assert';
 import {Range} from 'atom';

@@ -13,7 +13,8 @@ import type {Observable} from 'rxjs';
 
 import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 
-import type {CoverageResult, CoverageProvider} from './types';
+import type {CoverageProvider} from './types';
+import type {CoverageResult} from './rpc-types';
 
 import invariant from 'assert';
 import {React} from 'react-for-atom';

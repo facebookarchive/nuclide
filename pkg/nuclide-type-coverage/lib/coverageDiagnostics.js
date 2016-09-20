@@ -17,7 +17,8 @@ import type {
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common';
 
-import type {CoverageResult, CoverageProvider, UncoveredRegion} from './types';
+import type {CoverageProvider} from './types';
+import type {CoverageResult, UncoveredRegion} from './rpc-types';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';

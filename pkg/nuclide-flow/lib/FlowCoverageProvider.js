@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/types';
+import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {FlowCoverageResult} from '../../nuclide-flow-rpc';
 
 import invariant from 'assert';
