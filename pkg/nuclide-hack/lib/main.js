@@ -171,7 +171,7 @@ export function provideCoverage(): CoverageProvider {
     priority: 10,
     grammarScopes: HACK_GRAMMARS,
     getCoverage(path) {
-      return getTypeCoverageProvider().getTypeCoverage(path);
+      return getTypeCoverageProvider().getCoverage(path);
     },
   };
 }

@@ -14,7 +14,6 @@ import type {HackLanguage} from '../lib/HackLanguage';
 import type {
   HackCompletionsResult,
   HackDiagnosticsResult,
-  HackTypedRegion,
   HackReferencesResult,
 } from '../../nuclide-hack-rpc/lib/HackService';
 
@@ -180,24 +179,6 @@ HH\\fclass HackClass {}`, 19, 2, 5);
       const result = await hackLanguage.getDiagnostics(filePath, contents);
       expect(mockService.getDiagnostics).toHaveBeenCalledWith(filePath, contents);
       expect(result).toEqual([message]);
-    });
-  });
-
-  it('getTypeCoverage', () => {
-    waitsForPromise(async () => {
-      const serviceResults: Array<HackTypedRegion> = [
-        {color: 'default', text: '123'},
-        {color: 'unchecked', text: '456'},
-      ];
-      mockService.getTypedRegions.andReturn(serviceResults);
-
-      const result = await hackLanguage.getTypeCoverage(filePath);
-
-      expect(mockService.getTypedRegions).toHaveBeenCalledWith(filePath);
-      expect(result).toEqual({
-        percentage: 0,
-        uncoveredRegions: [{type: 'unchecked', line: 1, start: 4, end: 6}],
-      });
     });
   });
 

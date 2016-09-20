@@ -24,6 +24,8 @@ import type {
 import type {HackDefinition} from './Definitions';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {HackIdeOutline, HackIdeOutlineItem} from './OutlineView';
+import type {HackTypedRegion} from './TypedRegions';
+import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -47,6 +49,7 @@ import {
   atomPointOfHackRangeStart,
 } from './HackHelpers';
 import {outlineFromHackIdeOutline} from './OutlineView';
+import {convertCoverage} from './TypedRegions';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -89,11 +92,6 @@ export type HackReference = {
   line: number,
   char_start: number,
   char_end: number,
-};
-
-export type HackTypedRegion = {
-  color: 'default' | 'checked' | 'partial' | 'unchecked',
-  text: string,
 };
 
 export type HackTypeAtPosResult = {
@@ -306,16 +304,17 @@ export class HackLanguageService {
     }
   }
 
-  async getTypedRegions(
+  async getCoverage(
     filePath: NuclideUri,
-  ): Promise<?Array<HackTypedRegion>> {
-    const result = await callHHClient(
+  ): Promise<?CoverageResult> {
+    const result: ?Array<HackTypedRegion> = (await callHHClient(
       /* args */ ['--colour', filePath],
       /* errorStream */ false,
       /* processInput */ null,
       /* file */ filePath,
-    );
-    return (result: any);
+    ): any);
+
+    return convertCoverage(filePath, result);
   }
 
   async getOutline(

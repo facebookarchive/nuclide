@@ -9,11 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {
-  HackTypedRegion,
-} from '../../nuclide-hack-rpc/lib/HackService';
+import type {CoverageResult, UncoveredRegion} from '../../nuclide-type-coverage/lib/rpc-types';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
+import {Range} from 'simple-text-buffer';
+
+export type HackTypedRegion = {
+  color: 'default' | 'checked' | 'partial' | 'unchecked',
+  text: string,
+};
 
 // A region of untyped code.
 // Currently may not span multiple lines. Consider enabling multi-line regions.
@@ -40,13 +45,40 @@ export type HackCoverageResult = {
   uncoveredRegions: Array<TypeCoverageRegion>,
 };
 
-export function convertTypedRegionsToCoverageResult(
+const UNCHECKED_MESSAGE = 'Un-type checked code. Consider adding type annotations.';
+const PARTIAL_MESSAGE = 'Partially type checked code. Consider adding type annotations.';
+
+export function convertCoverage(
+  filePath: NuclideUri,
   regions: ?Array<HackTypedRegion>,
-): ?HackCoverageResult {
+): ?CoverageResult {
   if (regions == null) {
     return null;
   }
+  const hackCoverageResult = convertTypedRegionsToCoverageResult(regions);
+  const uncoveredRegions = hackCoverageResult.uncoveredRegions.map(
+    region => convertHackRegionToCoverageRegion(filePath, region),
+  );
+  return {
+    percentage: hackCoverageResult.percentage,
+    uncoveredRegions,
+  };
+}
 
+function convertHackRegionToCoverageRegion(
+  filePath: NuclideUri,
+  region: TypeCoverageRegion,
+): UncoveredRegion {
+  const line = region.line - 1;
+  return {
+    range: new Range([line, region.start - 1], [line, region.end]),
+    message: region.type === 'partial' ? PARTIAL_MESSAGE : UNCHECKED_MESSAGE,
+  };
+}
+
+export function convertTypedRegionsToCoverageResult(
+  regions: Array<HackTypedRegion>,
+): HackCoverageResult {
   const startColumn = 1;
   let line = 1;
   let column = startColumn;

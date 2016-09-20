@@ -22,14 +22,13 @@ import type {DefinitionQueryResult} from '../../nuclide-definition-service/lib/r
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
-import type {HackCoverageResult} from './TypedRegions';
 import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
+import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import {getLogger} from '../../nuclide-logging';
-import {convertTypedRegionsToCoverageResult} from './TypedRegions';
 import {getConfig} from './config';
 
 /**
@@ -108,11 +107,10 @@ export class HackLanguage {
     }
   }
 
-  async getTypeCoverage(
+  async getCoverage(
     filePath: NuclideUri,
-  ): Promise<?HackCoverageResult> {
-    const regions = await this._hackService.getTypedRegions(filePath);
-    return convertTypedRegionsToCoverageResult(regions);
+  ): Promise<?CoverageResult> {
+    return await this._hackService.getCoverage(filePath);
   }
 
   getOutline(fileVersion: FileVersion): Promise<?Outline> {

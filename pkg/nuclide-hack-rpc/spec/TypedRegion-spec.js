@@ -45,10 +45,6 @@ function runTestWarning(regions, expectedPercentage, ...expected) {
 }
 
 describe('convertTypedRegionsToCoverageRegions', () => {
-  it('null', () => {
-    expect(convertTypedRegionsToCoverageResult(null)).toBeNull();
-  });
-
   it('empty array', () => {
     runTest([], 100);
   });
