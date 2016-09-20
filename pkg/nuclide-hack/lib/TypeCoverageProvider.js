@@ -10,7 +10,6 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import type {
   TypeCoverageRegion,
   HackCoverageResult,
@@ -23,43 +22,21 @@ import type {
 import {getHackLanguageForUri} from './HackLanguage';
 import {Range} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
-import {RequestSerializer} from '../../commons-node/promise';
-import {getLogger} from '../../nuclide-logging';
-
-const logger = getLogger();
 
 // Provides Diagnostics for un-typed regions of Hack code.
 export class TypeCoverageProvider {
-  _requestSerializer: RequestSerializer<?HackCoverageResult>;
-  _busySignalProvider: BusySignalProviderBase;
 
-  constructor(busySignalProvider: BusySignalProviderBase) {
-    this._busySignalProvider = busySignalProvider;
-    this._requestSerializer = new RequestSerializer();
-  }
-
-  getTypeCoverage(path: NuclideUri): Promise<void> {
-    return this._busySignalProvider.reportBusy(
-      'Hack: Waiting for type coverage results',
-      () => this._getTypeCoverage(path),
-    ).catch(async e => { logger.error(e); });
+  constructor() {
   }
 
   @trackTiming('hack:run-type-coverage')
-  async _getTypeCoverage(path: NuclideUri): Promise<?CoverageResult> {
+  async getTypeCoverage(path: NuclideUri): Promise<?CoverageResult> {
     const hackLanguage = await getHackLanguageForUri(path);
     if (hackLanguage == null) {
       return null;
     }
 
-    const result = await this._requestSerializer.run(
-      hackLanguage.getTypeCoverage(path),
-    );
-    if (result.status === 'outdated') {
-      return null;
-    }
-
-    const hackCoverageResult: ?HackCoverageResult = result.result;
+    const hackCoverageResult: ?HackCoverageResult = await hackLanguage.getTypeCoverage(path);
     if (hackCoverageResult == null) {
       return null;
     }

@@ -178,7 +178,7 @@ export function provideCoverage(): CoverageProvider {
 
 function getTypeCoverageProvider(): TypeCoverageProvider {
   if (coverageProvider == null) {
-    coverageProvider = new TypeCoverageProvider(provideBusySignal());
+    coverageProvider = new TypeCoverageProvider();
   }
   return coverageProvider;
 }
