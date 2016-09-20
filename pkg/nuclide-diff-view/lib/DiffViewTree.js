@@ -217,8 +217,8 @@ export default class DiffViewTree extends React.Component {
   }
 
   // TODO(most): move async code out of the React component class.
-  async _rootChildrenFetcher(rootNode: LazyTreeNode): Promise<Immutable.List<LazyTreeNode>> {
-    const noChildrenFetcher = async () => Immutable.List.of();
+  _rootChildrenFetcher(rootNode: LazyTreeNode): Promise<Immutable.List<LazyTreeNode>> {
+    const noChildrenFetcher = () => Promise.resolve(Immutable.List.of());
     const {filePath: rootPath} = rootNode.getItem();
     const childNodes = [];
 
@@ -245,7 +245,7 @@ export default class DiffViewTree extends React.Component {
         }
       }
     }
-    return Immutable.List(childNodes);
+    return Promise.resolve(Immutable.List(childNodes));
   }
 
   componentWillUnmount(): void {

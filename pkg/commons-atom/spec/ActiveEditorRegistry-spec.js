@@ -268,17 +268,15 @@ describe('ActiveEditorRegistry', () => {
     });
 
     it('should immediately query a better provider', () => {
-      waitsForPromise(async () => {
-        const betterProvider = {
-          priority: 20,
-          grammarScopes: ['text.plain.null-grammar'],
-        };
+      const betterProvider = {
+        priority: 20,
+        grammarScopes: ['text.plain.null-grammar'],
+      };
 
-        activeEditors.next(editor1);
-        expect(resultFunction).toHaveBeenCalledWith(provider, editor1);
-        activeEditorRegistry.consumeProvider(betterProvider);
-        expect(resultFunction).toHaveBeenCalledWith(betterProvider, editor1);
-      });
+      activeEditors.next(editor1);
+      expect(resultFunction).toHaveBeenCalledWith(provider, editor1);
+      activeEditorRegistry.consumeProvider(betterProvider);
+      expect(resultFunction).toHaveBeenCalledWith(betterProvider, editor1);
     });
 
   });

@@ -102,9 +102,10 @@ export class RemoteFile {
     });
   }
 
-  async _handleNativeChangeEvent(): Promise<any> {
+  _handleNativeChangeEvent(): Promise<void> {
     // Don't bother checking the file - this can be very expensive.
     this._emitter.emit('did-change');
+    return Promise.resolve();
   }
 
   _handleNativeRenameEvent(newPath: string): void {

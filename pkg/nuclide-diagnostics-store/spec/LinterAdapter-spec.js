@@ -139,26 +139,24 @@ describe('LinterAdapter', () => {
   });
 
   it('should not reorder results', () => {
-    waitsForPromise(async () => {
-      let numMessages = 0;
-      let lastMessage = null;
-      linterAdapter.onMessageUpdate(message => {
-        numMessages++;
-        lastMessage = message;
-      });
-      // Dispatch two linter requests.
-      linterReturn = makePromise([{type: 'Error', filePath: 'bar'}], 50);
-      eventCallback(fakeEditor);
-      linterReturn = makePromise([{type: 'Error', filePath: 'baz'}], 10);
-      eventCallback(fakeEditor);
-      // If we call it once with a larger value, the first promise will resolve
-      // first, even though the timeout is larger
-      window.advanceClock(30);
-      window.advanceClock(30);
-      waitsFor(() => {
-        return numMessages === 1 && lastMessage && lastMessage.filePathToMessages.has('baz');
-      }, 'There should be only the latest message', 100);
+    let numMessages = 0;
+    let lastMessage = null;
+    linterAdapter.onMessageUpdate(message => {
+      numMessages++;
+      lastMessage = message;
     });
+    // Dispatch two linter requests.
+    linterReturn = makePromise([{type: 'Error', filePath: 'bar'}], 50);
+    eventCallback(fakeEditor);
+    linterReturn = makePromise([{type: 'Error', filePath: 'baz'}], 10);
+    eventCallback(fakeEditor);
+    // If we call it once with a larger value, the first promise will resolve
+    // first, even though the timeout is larger
+    window.advanceClock(30);
+    window.advanceClock(30);
+    waitsFor(() => {
+      return numMessages === 1 && lastMessage && lastMessage.filePathToMessages.has('baz');
+    }, 'There should be only the latest message', 100);
   });
 
   it('should delegate dispose', () => {

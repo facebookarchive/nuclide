@@ -52,8 +52,9 @@ class Activation {
             observeEditorDestroy(editor).map(value => 'close')))
         .publish();
       },
-      async addProject(projectPath: NuclideUri): Promise<void> {
+      addProject(projectPath: NuclideUri): Promise<void> {
         atom.project.addPath(projectPath);
+        return Promise.resolve();
       },
       dispose(): void {
       },

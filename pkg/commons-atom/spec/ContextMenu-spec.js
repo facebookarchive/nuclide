@@ -260,25 +260,23 @@ describe('ContextMenu', () => {
   });
 
   it('.isEmpty()', () => {
-    waitsForPromise(async () => {
-      const options = {
-        type: 'root',
-        cssSelector,
-      };
-      menu = new ContextMenu(options);
-      expect(menu.isEmpty()).toBe(true);
+    const options = {
+      type: 'root',
+      cssSelector,
+    };
+    menu = new ContextMenu(options);
+    expect(menu.isEmpty()).toBe(true);
 
-      const submenu = new ContextMenu({
-        type: 'submenu',
-        label: 'sub',
-        parent: menu,
-      });
-      const disposableForSubmenu = menu.addSubmenu(submenu, 20);
-      expect(menu.isEmpty()).toBe(false);
-
-      disposableForSubmenu.dispose();
-      expect(menu.isEmpty()).toBe(true);
+    const submenu = new ContextMenu({
+      type: 'submenu',
+      label: 'sub',
+      parent: menu,
     });
+    const disposableForSubmenu = menu.addSubmenu(submenu, 20);
+    expect(menu.isEmpty()).toBe(false);
+
+    disposableForSubmenu.dispose();
+    expect(menu.isEmpty()).toBe(true);
   });
 
   it('.dispose() removes all items', () => {

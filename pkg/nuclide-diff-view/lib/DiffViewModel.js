@@ -730,14 +730,14 @@ export default class DiffViewModel {
     return buffer.isModified();
   }
 
-  async _updateDiffStateIfChanged(
+  _updateDiffStateIfChanged(
     filePath: NuclideUri,
     committedContents: string,
     filesystemContents: string,
     revisionInfo: RevisionInfo,
   ): Promise<void> {
     if (this._state.filePath !== filePath) {
-      return;
+      return Promise.resolve();
     }
     const updatedDiffState = {
       committedContents,

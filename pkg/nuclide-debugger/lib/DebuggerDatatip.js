@@ -44,7 +44,7 @@ function defaultGetEvaluationExpression(
   });
 }
 
-async function getEvaluationExpression(
+function getEvaluationExpression(
   model: DebuggerModel,
   editor: TextEditor,
   position: atom$Point,

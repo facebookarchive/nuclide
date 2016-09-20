@@ -15,7 +15,7 @@ import {triggerAfterWait} from '../commons-node/promise';
  * Displays a loading notification while waiting for a promise.
  * Waits delayMs before actually showing the notification (to prevent flicker).
  */
-export default async function loadingNotification<T>(
+export default function loadingNotification<T>(
   promise: Promise<T>,
   message: string,
   delayMs: number = 100,

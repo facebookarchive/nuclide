@@ -146,7 +146,7 @@ class ClangFlagsManager {
     return data.flags;
   }
 
-  async _getFlagsForSrcCached(src: string): Promise<?ClangFlags> {
+  _getFlagsForSrcCached(src: string): Promise<?ClangFlags> {
     let cached = this._pathToFlags.get(src);
     if (cached == null) {
       cached = this._getFlagsForSrcImpl(src);

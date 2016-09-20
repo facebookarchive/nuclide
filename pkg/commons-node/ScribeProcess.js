@@ -51,16 +51,17 @@ export default class ScribeProcess {
     });
   }
 
-  async dispose(): Promise<void> {
+  dispose(): Promise<void> {
     if (this._childProcess != null) {
       const child = this._childProcess;
       if (this._childProcessRunning.get(child)) {
         child.kill();
       }
     }
+    return Promise.resolve();
   }
 
-  async join(timeout: number = DEFAULT_JOIN_TIMEOUT): Promise<void> {
+  join(timeout: number = DEFAULT_JOIN_TIMEOUT): Promise<void> {
     if (this._childProcess != null) {
       const child = this._childProcess;
       child.stdin.end();
@@ -68,6 +69,8 @@ export default class ScribeProcess {
         child.on('exit', () => resolve());
         setTimeout(resolve, timeout);
       });
+    } else {
+      return Promise.resolve();
     }
   }
 

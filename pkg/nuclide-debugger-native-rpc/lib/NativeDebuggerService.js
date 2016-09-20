@@ -294,7 +294,7 @@ export class NativeDebuggerService {
     this.dispose();
   }
 
-  async sendCommand(message: string): Promise<void> {
+  sendCommand(message: string): Promise<void> {
     const lldbWebSocket = this._lldbWebSocket;
     if (lldbWebSocket != null) {
       logTrace(`forward client message to lldb: ${message}`);
@@ -302,10 +302,12 @@ export class NativeDebuggerService {
     } else {
       logInfo(`Nuclide sent message to LLDB after socket closed: ${message}`);
     }
+    return Promise.resolve();
   }
 
-  async dispose(): Promise<void> {
+  dispose(): Promise<void> {
     logInfo('NativeDebuggerService disposed');
     this._subscriptions.dispose();
+    return Promise.resolve();
   }
 }

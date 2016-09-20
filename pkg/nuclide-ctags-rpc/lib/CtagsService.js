@@ -36,8 +36,8 @@ export class CtagsService {
     this._tagsPath = tagsPath;
   }
 
-  async getTagsPath(): Promise<NuclideUri> {
-    return this._tagsPath;
+  getTagsPath(): Promise<NuclideUri> {
+    return Promise.resolve(this._tagsPath);
   }
 
   findTags(

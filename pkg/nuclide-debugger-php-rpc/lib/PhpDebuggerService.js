@@ -154,9 +154,10 @@ export class PhpDebuggerService {
     }
   }
 
-  async dispose(): Promise<void> {
+  dispose(): Promise<void> {
     logger.logInfo('Proxy: Ending session');
     clearConfig();
     this._disposables.dispose();
+    return Promise.resolve();
   }
 }

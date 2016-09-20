@@ -51,10 +51,11 @@ class LocalTestContext {
     });
   }
 
-  async setProject(projectPath: string): Promise<void> {
+  setProject(projectPath: string): Promise<void> {
     invariant(this._projectPath == null, 'Call setProject exactly once');
     setLocalProject(projectPath);
     this._projectPath = projectPath;
+    return Promise.resolve();
   }
 
   getProjectRelativePath(relativePath: string): NuclideUri {

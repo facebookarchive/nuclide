@@ -785,16 +785,14 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   });
 
   it('onConnectionError', () => {
-    waitsForPromise(async () => {
-      connectionMultiplexer.listen();
+    connectionMultiplexer.listen();
 
-      const errorMessage = 'error message';
-      onDbgpConnectorError(errorMessage);
+    const errorMessage = 'error message';
+    onDbgpConnectorError(errorMessage);
 
-      expect(clientCallback.sendUserMessage).toHaveBeenCalledWith('notification', {
-        type: 'error',
-        message: errorMessage,
-      });
+    expect(clientCallback.sendUserMessage).toHaveBeenCalledWith('notification', {
+      type: 'error',
+      message: errorMessage,
     });
   });
 });

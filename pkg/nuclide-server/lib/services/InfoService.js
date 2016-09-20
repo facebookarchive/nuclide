@@ -15,14 +15,14 @@ import type {RpcConnection} from '../../../nuclide-rpc';
 import {getVersion} from '../../../nuclide-version';
 import NuclideServer from '../NuclideServer';
 
-export async function getServerVersion(): Promise<string> {
-  return getVersion();
+export function getServerVersion(): Promise<string> {
+  return Promise.resolve(getVersion());
 }
 
 // Mark this as async so the client can wait for an acknowledgement.
 // However, we can't close the connection right away, as otherwise the response never gets sent!
 // Add a small delay to allow the return message to go through.
-export async function closeConnection(shutdownServer: boolean): Promise<void> {
+export function closeConnection(shutdownServer: boolean): Promise<void> {
   const client: RpcConnection<QueuedTransport> = (this: any);
   setTimeout(() => {
     NuclideServer.closeConnection(client);
@@ -30,4 +30,5 @@ export async function closeConnection(shutdownServer: boolean): Promise<void> {
       NuclideServer.shutdown();
     }
   }, 1000);
+  return Promise.resolve();
 }

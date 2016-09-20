@@ -25,11 +25,11 @@ describe('FileWatcherService', () => {
   beforeEach(() => {
     const mockWatchmanClient = {
       hasSubscription: () => false,
-      async watchDirectoryRecursive() {
+      watchDirectoryRecursive() {
         emitter = new Emitter();
         // $FlowIgnore
         emitter.root = TEST_DIR;
-        return emitter;
+        return Promise.resolve(emitter);
       },
     };
 

@@ -601,13 +601,11 @@ describe('HgRepositoryClient', () => {
     });
 
     it('does not update the cache when the path to update is already being updated.', () => {
-      waitsForPromise(async () => {
-        repo._updateDiffInfo([PATH_1]);
-        // This second call should not kick off a second `hg diff` call, because
-        // the first one should be still running.
-        repo._updateDiffInfo([PATH_1]);
-        expect(repo._service.fetchDiffInfo.calls.length).toBe(1);
-      });
+      repo._updateDiffInfo([PATH_1]);
+      // This second call should not kick off a second `hg diff` call, because
+      // the first one should be still running.
+      repo._updateDiffInfo([PATH_1]);
+      expect(repo._service.fetchDiffInfo.calls.length).toBe(1);
     });
 
     it('removes paths that are marked for removal from the cache.', () => {

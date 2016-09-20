@@ -410,7 +410,7 @@ export class HackLanguageService {
     return response.result;
   }
 
-  async getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
+  getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
     return findHackConfigDir(fileUri);
   }
 

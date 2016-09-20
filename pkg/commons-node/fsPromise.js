@@ -156,7 +156,7 @@ async function mkdirp(filePath: string): Promise<boolean> {
 /**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
-async function rmdir(filePath: string): Promise<any> {
+function rmdir(filePath: string): Promise<any> {
   return new Promise((resolve, reject) => {
     rimraf(filePath, err => {
       if (err) {

@@ -387,7 +387,7 @@ class SearchResultManager {
     return query.trim();
   }
 
-  async executeQuery(rawQuery: string): Promise<void> {
+  executeQuery(rawQuery: string): void {
     const query = this.sanitizeQuery(rawQuery);
     for (const globalProvider of this._registeredProviders[GLOBAL_KEY].values()) {
       const startTime = performance.now();

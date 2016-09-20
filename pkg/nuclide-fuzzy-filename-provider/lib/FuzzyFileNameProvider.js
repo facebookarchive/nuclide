@@ -69,7 +69,7 @@ const FuzzyFileNameProvider: Provider = {
       );
     }
 
-    const service = await getFuzzyFileSearchService(directory);
+    const service = getFuzzyFileSearchService(directory);
     if (service == null) {
       return [];
     }

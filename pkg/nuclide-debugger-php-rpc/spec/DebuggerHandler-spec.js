@@ -287,9 +287,7 @@ describe('debugger-php-rpc DebuggerHandler', () => {
   });
 
   it('stopping', () => {
-    waitsForPromise(async () => {
-      expect(connectionMultiplexer.sendContinuationCommand).not.toHaveBeenCalled();
-    });
+    expect(connectionMultiplexer.sendContinuationCommand).not.toHaveBeenCalled();
   });
 
   it('end', () => {

@@ -77,17 +77,17 @@ export default class JediServerManager {
     return await server.getService();
   }
 
-  async getLinkTreePaths(src: string): Promise<Array<string>> {
+  getLinkTreePaths(src: string): Promise<Array<string>> {
     let linkTreePathsPromise = this._cachedLinkTreePaths.get(src);
     if (linkTreePathsPromise == null) {
       linkTreePathsPromise = this._linkTreeManager.getLinkTreePaths(src);
       this._cachedLinkTreePaths.set(src, linkTreePathsPromise);
     }
 
-    return linkTreePathsPromise;
+    return Promise.resolve(linkTreePathsPromise);
   }
 
-  async getTopLevelModulePath(src: string): Promise<?string> {
+  getTopLevelModulePath(src: string): Promise<?string> {
     let topLevelModulePathPromise = this._cachedTopLevelModulePaths.get(src);
     // We don't need to explicitly check undefined since the cached promise
     // itself is not nullable, though its content is.
@@ -102,7 +102,7 @@ export default class JediServerManager {
       this._cachedTopLevelModulePaths.set(src, topLevelModulePathPromise);
     }
 
-    return topLevelModulePathPromise;
+    return Promise.resolve(topLevelModulePathPromise);
   }
 
   async _addLinkTreePaths(src: string, server: JediServer): Promise<void> {

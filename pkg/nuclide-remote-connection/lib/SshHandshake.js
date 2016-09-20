@@ -332,7 +332,7 @@ export class SshHandshake {
         && this._clientKey);
   }
 
-  async _startRemoteServer(): Promise<boolean> {
+  _startRemoteServer(): Promise<boolean> {
     let sftpTimer = null;
     return new Promise((resolve, reject) => {
       let stdOut = '';

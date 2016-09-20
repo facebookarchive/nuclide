@@ -111,7 +111,7 @@ describe('Nav Stack Integration', () => {
     navForward();
     waitsForFilePosition('Foo', 11, 5);
 
-    waitsForPromise(async () => {
+    runs(() => {
       deactivateAllPackages();
     });
   });

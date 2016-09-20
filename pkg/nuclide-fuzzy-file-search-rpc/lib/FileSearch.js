@@ -36,7 +36,7 @@ class FileSearch {
     this._pathSet = pathSet;
   }
 
-  async query(query: string): Promise<Array<FileSearchResult>> {
+  query(query: string): Promise<Array<FileSearchResult>> {
     // Attempt to relativize paths that people might e.g. copy + paste.
     let relQuery = query;
     // If a full path is pasted, make the path relative.
@@ -61,7 +61,8 @@ class FileSearch {
         matchIndexes: matchIndexes || [],
       };
     });
-    return results;
+
+    return Promise.resolve(results);
   }
 }
 

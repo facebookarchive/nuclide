@@ -26,8 +26,8 @@ const getGatekeeper = once(() => {
       isGkEnabled(): ?boolean {
         return null;
       }
-      async asyncIsGkEnabled(): Promise<?boolean> {
-        return null;
+      asyncIsGkEnabled(): Promise<?boolean> {
+        return Promise.resolve();
       }
       onceGkInitialized(callback: () => mixed): IDisposable {
         process.nextTick(() => { callback(); });

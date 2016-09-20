@@ -147,7 +147,7 @@ function getPool(path: string, readOnly: boolean): PromisePool {
  * Given a file path, returns path to the Buck project root i.e. the directory containing
  * '.buckconfig' file.
  */
-export async function getRootForPath(file: NuclideUri): Promise<?NuclideUri> {
+export function getRootForPath(file: NuclideUri): Promise<?NuclideUri> {
   return fsPromise.findNearestFile('.buckconfig', file);
 }
 

@@ -64,10 +64,10 @@ module.exports = {
         .toPromise();
   },
 
-  async getCompletions(editor: atom$TextEditor, prefix: string): Promise<?Array<ClangCompletion>> {
+  getCompletions(editor: atom$TextEditor, prefix: string): Promise<?Array<ClangCompletion>> {
     const src = editor.getPath();
     if (src == null) {
-      return null;
+      return Promise.resolve();
     }
     const cursor = editor.getLastCursor();
 
@@ -95,14 +95,14 @@ module.exports = {
    * If a location can be found for the declaration, it will be available via
    * the 'location' field on the returned object.
    */
-  async getDeclaration(
+  getDeclaration(
     editor: atom$TextEditor,
     line: number,
     column: number,
   ): Promise<?ClangDeclaration> {
     const src = editor.getPath();
     if (src == null) {
-      return null;
+      return Promise.resolve();
     }
     const defaultFlags = getDefaultFlags();
 
@@ -113,10 +113,10 @@ module.exports = {
         .getDeclaration(src, editor.getText(), line, column, defaultFlags);
   },
 
-  async getOutline(editor: atom$TextEditor): Promise<?Array<ClangOutlineTree>> {
+  getOutline(editor: atom$TextEditor): Promise<?Array<ClangOutlineTree>> {
     const src = editor.getPath();
     if (src == null) {
-      return null;
+      return Promise.resolve();
     }
     const defaultFlags = getDefaultFlags();
 

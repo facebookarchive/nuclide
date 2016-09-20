@@ -22,8 +22,9 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     this._launchTarget = launchTarget;
   }
 
-  async debug(): Promise<PhpDebuggerInstance> {
-    return new PhpDebuggerInstance(this, this._launchTarget);
+  debug(): Promise<PhpDebuggerInstance> {
+    const phpDebuggerInstance = new PhpDebuggerInstance(this, this._launchTarget);
+    return Promise.resolve(phpDebuggerInstance);
   }
 
   supportThreads(): boolean {

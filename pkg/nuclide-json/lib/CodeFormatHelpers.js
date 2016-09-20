@@ -14,13 +14,13 @@ import {trackTiming} from '../../nuclide-analytics';
 export default class CodeFormatHelpers {
 
   @trackTiming('json.formatCode')
-  static async formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
+  static formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
     newCursor?: number,
     formatted: string,
   }> {
     const buffer_as_json = JSON.parse(editor.getBuffer().getText());
     const formatted = JSON.stringify(buffer_as_json, null, editor.getTabLength());
-    return {formatted};
+    return Promise.resolve({formatted});
   }
 
 }

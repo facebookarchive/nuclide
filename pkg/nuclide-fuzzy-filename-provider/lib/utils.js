@@ -16,9 +16,9 @@ import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 /**
  * @return FuzzyFileSearchService for the specified directory if it is part of a Hack project.
  */
-export async function getFuzzyFileSearchService(
+export function getFuzzyFileSearchService(
   directory: atom$Directory,
-): Promise<?FuzzyFileSearchService> {
+): ?FuzzyFileSearchService {
   const directoryPath = directory.getPath();
   const service: ?FuzzyFileSearchService = getServiceByNuclideUri(
     'FuzzyFileSearchService',

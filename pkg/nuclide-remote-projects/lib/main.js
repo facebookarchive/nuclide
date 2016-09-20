@@ -324,7 +324,7 @@ async function reloadRemoteProjects(
   }
 }
 
-async function shutdownServersAndRestartNuclide(): Promise<void> {
+function shutdownServersAndRestartNuclide(): void {
   atom.confirm({
     message: 'This will shutdown your Nuclide servers and restart Atom, ' +
       'discarding all unsaved changes. Continue?',

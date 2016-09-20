@@ -342,7 +342,7 @@ export function observeProcess(
  *     Supports the options listed here: http://nodejs.org/api/child_process.html
  *     in addition to the custom options listed in AsyncExecuteOptions.
  */
-export async function asyncExecute(
+export function asyncExecute(
   command: string,
   args: Array<string>,
   options?: AsyncExecuteOptions = {},

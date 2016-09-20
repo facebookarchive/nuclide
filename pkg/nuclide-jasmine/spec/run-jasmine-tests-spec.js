@@ -46,7 +46,7 @@ describe('Jasmine waitsForPromise test suite', () => {
 
   it('test waitsForPromise worked as expected on a customized timeout', () => {
     // This is more than default timeout of 5 seconds.
-    waitsForPromise({shouldReject: false, timeout: 7 * 1000}, async () => {
+    waitsForPromise({shouldReject: false, timeout: 7 * 1000}, () => {
       return new Promise((resolve, reject) => {
         setTimeout(resolve, 6 * 1000);
       });

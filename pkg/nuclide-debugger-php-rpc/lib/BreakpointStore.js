@@ -169,7 +169,7 @@ export class BreakpointStore {
     }
   }
 
-  async _removeBreakpointFromConnections(breakpointId: BreakpointId): Promise<any> {
+  _removeBreakpointFromConnections(breakpointId: BreakpointId): Promise<any> {
     return Promise.all(Array.from(this._connections.entries())
       .map(entry => {
         const [connection, map] = entry;

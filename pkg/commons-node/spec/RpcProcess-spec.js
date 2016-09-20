@@ -37,10 +37,8 @@ describe('RpcProcess', () => {
         preserveFunctionNames: true,
       }]);
 
-    waitsForPromise(async () => {
-      const createProcess = () => safeSpawn('python', [PROCESS_PATH], OPTS);
-      server = new RpcProcess('Dummy IO Server', serviceRegistry, createProcess);
-    });
+    const createProcess = () => safeSpawn('python', [PROCESS_PATH], OPTS);
+    server = new RpcProcess('Dummy IO Server', serviceRegistry, createProcess);
   });
 
   afterEach(() => {

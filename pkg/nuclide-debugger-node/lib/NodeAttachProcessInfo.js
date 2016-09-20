@@ -29,14 +29,15 @@ export class NodeAttachProcessInfo extends DebuggerProcessInfo {
     this._command = command;
   }
 
-  async debug(): Promise<DebuggerInstance> {
+  debug(): Promise<DebuggerInstance> {
     // Enable debugging in the process.
     process.kill(this.pid, 'SIGUSR1');
 
     // This is the port that the V8 debugger usually listens on.
     // TODO(natthu): Provide a way to override this in the UI.
     const debugPort = 5858;
-    return new NodeDebuggerInstance(this, debugPort);
+    const nodeDebuggerInstance = new NodeDebuggerInstance(this, debugPort);
+    return Promise.resolve(nodeDebuggerInstance);
   }
 
   compareDetails(other: DebuggerProcessInfo): number {

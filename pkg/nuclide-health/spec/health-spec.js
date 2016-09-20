@@ -75,16 +75,14 @@ describe('Health', () => {
   });
 
   it('disappears when closed', () => {
-    waitsForPromise(async () => {
-      openHealthPane();
-      const {pane, item} = findHealthPaneAndItem();
-      expect(item).toBeTruthy();
-      if (pane && item) {
-        pane.activateItem(item);
-        atom.commands.dispatch(atom.views.getView(atom.workspace), 'core:close');
-        expect(findHealthPaneAndItem().item).toBeFalsy();
-      }
-    });
+    openHealthPane();
+    const {pane, item} = findHealthPaneAndItem();
+    expect(item).toBeTruthy();
+    if (pane && item) {
+      pane.activateItem(item);
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'core:close');
+      expect(findHealthPaneAndItem().item).toBeFalsy();
+    }
   });
 
 });

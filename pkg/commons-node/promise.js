@@ -142,7 +142,7 @@ export async function triggerAfterWait<T>(
  * Returns a Promise that resolves to the same value as the given promise, or rejects if it takes
  * longer than `milliseconds` milliseconds
  */
-export async function timeoutPromise<T>(
+export function timeoutPromise<T>(
   promise: Promise<T>,
   milliseconds: number,
 ): Promise<T> {

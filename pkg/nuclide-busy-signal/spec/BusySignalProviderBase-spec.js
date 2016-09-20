@@ -25,7 +25,7 @@ describe('BusySignalProviderBase', () => {
 
   it('should record messages before and after a call', () => {
     expect(messages.length).toBe(0);
-    providerBase.reportBusy('foo', async () => 5);
+    providerBase.reportBusy('foo', () => Promise.resolve(5));
     expect(messages.length).toBe(1);
     waitsFor(() => messages.length === 2, 'It should publish a second message', 100);
   });

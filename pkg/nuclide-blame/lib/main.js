@@ -181,7 +181,7 @@ class Activation {
     const contextDisposable = contextMenu.addItemToSourceControlMenu(
       {
         label: 'Toggle Blame',
-        callback: async () => {
+        callback() {
           findBlameableNodes(contextMenu).forEach(async node => {
             const editor = await goToLocation(node.uri);
             atom.commands.dispatch(atom.views.getView(editor), 'nuclide-blame:toggle-blame');

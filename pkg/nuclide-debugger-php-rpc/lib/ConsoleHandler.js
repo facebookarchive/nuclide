@@ -19,7 +19,7 @@ class ConsoleHandler extends Handler {
     super('Console', clientCallback);
   }
 
-  async handleMethod(id: number, method: string, params: ?Object): Promise<any> {
+  handleMethod(id: number, method: string, params: ?Object): Promise<void> {
     switch (method) {
       case 'enable':
       case 'disable':
@@ -34,6 +34,7 @@ class ConsoleHandler extends Handler {
         this.unknownMethod(id, method, params);
         break;
     }
+    return Promise.resolve();
   }
 }
 

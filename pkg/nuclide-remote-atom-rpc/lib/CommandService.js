@@ -14,6 +14,6 @@ import type {AtomCommands} from './rpc-types';
 import {CommandServer} from './CommandServer';
 
 // Called by the server side command line 'atom' command.
-export async function getAtomCommands(): Promise<?AtomCommands> {
-  return CommandServer.getAtomCommands();
+export function getAtomCommands(): Promise<?AtomCommands> {
+  return Promise.resolve(CommandServer.getAtomCommands());
 }
