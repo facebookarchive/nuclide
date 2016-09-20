@@ -54,6 +54,8 @@ export const COMMAND_DETACH = 'detach';
 const DBGP_SOCKET_STATUS_EVENT = 'dbgp-socket-status';
 const DBGP_SOCKET_NOTIFICATION_EVENT = 'dbgp-socket-notification';
 
+const STREAM_MESSAGE_MAX_SIZE = 1024;
+
 export type DbgpContext = {
   name: string,
   id: string,
@@ -263,7 +265,9 @@ export class DbgpSocket {
     const outputText = stream._ != null ? base64Decode(stream._) : '';
     logger.log(`${outputType} message received: ${outputText}`);
     const status = outputType === 'stdout' ? CONNECTION_STATUS.STDOUT : CONNECTION_STATUS.STDERR;
-    this._emitStatus(status, outputText);
+    // TODO: t13439903 -- add a way to fetch the rest of the data.
+    const truncatedOutputText = outputText.slice(0, STREAM_MESSAGE_MAX_SIZE);
+    this._emitStatus(status, truncatedOutputText);
   }
 
   _handleNotification(notify: Object): void {
