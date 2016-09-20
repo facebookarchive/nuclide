@@ -18,7 +18,7 @@ import featureConfig from '../../commons-atom/featureConfig';
 export function getBuiltinProviders(): Array<DistractionFreeModeProvider> {
   const providers = [];
   if (featureConfig.get('nuclide-distraction-free-mode.hideToolBar')) {
-    providers.push(toolBarProvider);
+    providers.push(new ToolBarProvider());
   }
   if (featureConfig.get('nuclide-distraction-free-mode.hideStatusBar')) {
     providers.push(new StatusBarProvider());
@@ -64,15 +64,18 @@ class FindAndReplaceProvider {
 
 }
 
-const toolBarProvider = {
-  name: 'tool-bar',
+class ToolBarProvider {
+  name: string;
+  constructor() {
+    this.name = 'tool-bar';
+  }
   isVisible(): boolean {
     return Boolean(atom.config.get('tool-bar.visible'));
-  },
+  }
   toggle(): void {
     atom.config.set('tool-bar.visible', !this.isVisible());
-  },
-};
+  }
+}
 
 class StatusBarProvider {
   name: string;
