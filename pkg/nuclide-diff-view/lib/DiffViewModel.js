@@ -73,7 +73,7 @@ import {mapUnion, mapFilter} from '../../commons-node/collection';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import nuclideUri from '../../commons-node/nuclideUri';
 import RepositoryStack from './RepositoryStack';
-import {Subject} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {notifyInternalError} from './notifications';
 import {bufferForUri, loadBufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
@@ -147,6 +147,88 @@ export function viewModeToDiffOption(viewMode: DiffModeType): DiffOptionType {
     default:
       throw new Error('Unrecognized view mode!');
   }
+}
+
+// TODO(most): Cleanup to avoid using `.do()` and have side effects:
+// (notifications & publish updates).
+function createPhabricatorRevision(
+  repository: HgRepositoryClient,
+  publishUpdates: Subject<any>,
+  headCommitMessage: string,
+  publishMessage: string,
+  amended: boolean,
+  lintExcuse: ?string,
+): Observable<void> {
+  const filePath = repository.getProjectDirectory();
+  let amendStream = Observable.empty();
+  if (!amended && publishMessage !== headCommitMessage) {
+    getLogger().info('Amending commit with the updated message');
+    // We intentionally amend in clean mode here, because creating the revision
+    // amends the commit message (with the revision url), breaking the stack on top of it.
+    // Consider prompting for `hg amend --fixup` after to rebase the stack when needed.
+    amendStream = repository.amend(publishMessage, hgConstants.AmendMode.CLEAN).do({
+      complete: () => atom.notifications.addSuccess('Commit amended with the updated message'),
+    });
+  }
+
+  return Observable.concat(
+    // Amend head, if needed.
+    amendStream,
+    // Create a new revision.
+    Observable.defer(() => {
+      const stream = getArcanistServiceByNuclideUri(filePath)
+        .createPhabricatorRevision(filePath, lintExcuse)
+        .refCount();
+
+      return processArcanistOutput(stream)
+        .startWith({level: 'log', text: 'Creating new revision...\n'})
+        .do(message => publishUpdates.next(message));
+    }),
+
+    Observable.defer(() =>
+      Observable.fromPromise(repository.async.getHeadCommitMessage())
+        .do(commitMessage => {
+          const phabricatorRevision = getPhabricatorRevisionFromCommitMessage(commitMessage || '');
+          if (phabricatorRevision != null) {
+            notifyRevisionStatus(phabricatorRevision, 'created');
+          }
+        })),
+  ).ignoreElements();
+}
+
+// TODO(most): Cleanup to avoid using `.do()` and have side effects:
+// (notifications & publish updates).
+function updatePhabricatorRevision(
+  repository: HgRepositoryClient,
+  publishUpdates: Subject<any>,
+  headCommitMessage: string,
+  publishMessage: string,
+  allowUntracked: boolean,
+  lintExcuse: ?string,
+): Observable<void> {
+  const filePath = repository.getProjectDirectory();
+
+  const phabricatorRevision = getPhabricatorRevisionFromCommitMessage(headCommitMessage);
+  if (phabricatorRevision == null) {
+    return Observable.throw(new Error('A phabricator revision must exist to update!'));
+  }
+
+  const updateTemplate = getRevisionUpdateMessage(phabricatorRevision).trim();
+  const userUpdateMessage = publishMessage.replace(updateTemplate, '').trim();
+  if (userUpdateMessage.length === 0) {
+    return Observable.throw(new Error('Cannot update revision with empty message'));
+  }
+
+  const stream = getArcanistServiceByNuclideUri(filePath)
+    .updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked, lintExcuse)
+    .refCount();
+
+  return processArcanistOutput(stream)
+    .startWith({level: 'log', text: `Updating revision \`${phabricatorRevision.name}\`...\n`})
+    .do({
+      next: message => publishUpdates.next(message),
+      complete: () => notifyRevisionStatus(phabricatorRevision, 'updated'),
+    }).ignoreElements();
 }
 
 function hgRepositoryForPath(filePath: NuclideUri): HgRepositoryClient {
@@ -810,24 +892,33 @@ export default class DiffViewModel {
     }
     const {amended, allowUntracked} = cleanResult;
     try {
+      const headCommitMessage = await this._getActiveHeadCommitMessage();
+      if (headCommitMessage == null) {
+        throw new Error('Cannot Fetch Head Commit Message!');
+      }
+
       switch (publishMode) {
         case PublishMode.CREATE:
           // Create uses `verbatim` and `n` answer buffer
           // and that implies that untracked files will be ignored.
-          const createdPhabricatorRevision = await this._createPhabricatorRevision(
+          await createPhabricatorRevision(
+            activeStack.getRepository(),
+            this._publishUpdates,
+            headCommitMessage,
             publishMessage,
             amended,
             lintExcuse,
-          );
-          notifyRevisionStatus(createdPhabricatorRevision, 'created');
+          ).toPromise();
           break;
         case PublishMode.UPDATE:
-          const updatedPhabricatorRevision = await this._updatePhabricatorRevision(
+          await updatePhabricatorRevision(
+            activeStack.getRepository(),
+            this._publishUpdates,
+            headCommitMessage,
             publishMessage,
             allowUntracked,
             lintExcuse,
-          );
-          notifyRevisionStatus(updatedPhabricatorRevision, 'updated');
+          ).toPromise();
           break;
         default:
           throw new Error(`Unknown publish mode '${publishMode}'`);
@@ -856,70 +947,6 @@ export default class DiffViewModel {
       filePath = this._activeRepositoryStack.getRepository().getProjectDirectory();
     }
     return filePath;
-  }
-
-  async _createPhabricatorRevision(
-    publishMessage: string,
-    amended: boolean,
-    lintExcuse: ?string,
-  ): Promise<?PhabricatorRevisionInfo> {
-    const filePath = this._getArcanistFilePath();
-    const lastCommitMessage = await this._loadActiveRepositoryLatestCommitMessage();
-    const activeRepositoryStack = this._activeRepositoryStack;
-    invariant(activeRepositoryStack, 'No active repository stack');
-    if (!amended && publishMessage !== lastCommitMessage) {
-      getLogger().info('Amending commit with the updated message');
-      // We intentionally amend in clean mode here, because creating the revision
-      // amends the commit message (with the revision url), breaking the stack on top of it.
-      // Consider prompting for `hg amend --fixup` after to rebase the stack when needed.
-      await activeRepositoryStack
-        .getRepository()
-        .amend(publishMessage, hgConstants.AmendMode.CLEAN)
-        .toArray().toPromise();
-      atom.notifications.addSuccess('Commit amended with the updated message');
-    }
-
-    const stream = getArcanistServiceByNuclideUri(filePath)
-      .createPhabricatorRevision(filePath, lintExcuse)
-      .refCount();
-
-    await processArcanistOutput(stream
-        .startWith({level: 'log', text: 'Creating new revision...\n'}))
-      .do(message => this._publishUpdates.next(message))
-      .toPromise();
-    const asyncHgRepo = activeRepositoryStack.getRepository().async;
-    const headCommitMessagePromise = asyncHgRepo.getHeadCommitMessage();
-    // Refresh revisions state to update the UI with the new commit info.
-    activeRepositoryStack.refreshRevisionsState();
-    const commitMessage = await headCommitMessagePromise;
-    if (commitMessage == null) {
-      return null;
-    }
-    return getPhabricatorRevisionFromCommitMessage(commitMessage);
-  }
-
-  async _updatePhabricatorRevision(
-    publishMessage: string,
-    allowUntracked: boolean,
-    lintExcuse: ?string,
-  ): Promise<PhabricatorRevisionInfo> {
-    const filePath = this._getArcanistFilePath();
-    const {phabricatorRevision} = await this._getActiveHeadCommitDetails();
-    invariant(phabricatorRevision != null, 'A phabricator revision must exist to update!');
-    const updateTemplate = getRevisionUpdateMessage(phabricatorRevision).trim();
-    const userUpdateMessage = publishMessage.replace(updateTemplate, '').trim();
-    if (userUpdateMessage.length === 0) {
-      throw new Error('Cannot update revision with empty message');
-    }
-
-    const stream = getArcanistServiceByNuclideUri(filePath)
-      .updatePhabricatorRevision(filePath, userUpdateMessage, allowUntracked, lintExcuse)
-      .refCount();
-    await processArcanistOutput(stream
-        .startWith({level: 'log', text: `Updating revision \`${phabricatorRevision.name}\`...\n`}))
-      .do(message => this._publishUpdates.next(message))
-      .toPromise();
-    return phabricatorRevision;
   }
 
   async _saveFile(filePath: NuclideUri): Promise<void> {
