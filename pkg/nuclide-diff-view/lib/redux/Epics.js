@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Store, Action} from '../types';
+import type {Action, DiffOptionType, Store} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 
@@ -22,9 +22,15 @@ import {
   getDirtyFileChanges,
   getHeadRevision,
   getHeadToForkBaseRevisions,
+  getHgDiff,
   getSelectedFileChanges,
 } from '../RepositoryStack';
+import {
+  formatFileDiffRevisionTitle,
+} from '../DiffViewModel';
 import {repositoryForPath} from '../../../nuclide-hg-git-bridge';
+import {bufferForUri, loadBufferForUri} from '../../../commons-atom/text-editor';
+import {getEmptyFileDiffState} from './createEmptyAppState';
 
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
 
@@ -35,6 +41,42 @@ function observeStatusChanges(repository: HgRepositoryClient): Observable<null> 
   .debounceTime(UPDATE_STATUS_DEBOUNCE_MS)
   .map(() => null)
   .startWith(null);
+}
+
+function getDiffOptionChanges(
+  actions: ActionsObservable<Action>,
+  store: Store,
+  repository: HgRepositoryClient,
+): Observable<DiffOptionType> {
+  const {repositories} = store.getState();
+  const initialRepositoryState = repositories.get(repository);
+  invariant(initialRepositoryState != null, 'Cannot activate repository before adding it!');
+
+  return actions.filter(a =>
+    a.type === ActionTypes.SET_DIFF_OPTION &&
+      a.payload.repository === repository,
+  ).map(a => {
+    invariant(a.type === ActionTypes.SET_DIFF_OPTION);
+    return a.payload.diffOption;
+  }).startWith(initialRepositoryState.diffOption);
+}
+
+function getCompareIdChanges(
+  actions: ActionsObservable<Action>,
+  store: Store,
+  repository: HgRepositoryClient,
+): Observable<?number> {
+  const {repositories} = store.getState();
+  const initialRepositoryState = repositories.get(repository);
+  invariant(initialRepositoryState != null, 'Cannot activate repository before adding it!');
+
+  return actions.filter(a =>
+    a.type === ActionTypes.SET_COMPARE_ID &&
+      a.payload.repository === repository,
+  ).map(a => {
+    invariant(a.type === ActionTypes.SET_COMPARE_ID);
+    return a.payload.compareId;
+  }).startWith(initialRepositoryState.compareRevisionId);
 }
 
 // An added, but not-activated repository would continue to provide dirty file change updates,
@@ -67,26 +109,8 @@ export function activateRepositoryEpic(
     const statusChanges = observeStatusChanges(repository);
     const revisionChanges = repository.observeRevisionChanges();
     const revisionStatusChanges = repository.observeRevisionStatusesChanges();
-
-    const {repositories} = store.getState();
-    const initialRepositoryState = repositories.get(repository);
-    invariant(initialRepositoryState != null, 'Cannot activate repository before adding it!');
-
-    const diffOptionChanges = actions.filter(a =>
-      a.type === ActionTypes.SET_DIFF_OPTION &&
-        a.payload.repository === repository,
-    ).map(a => {
-      invariant(a.type === ActionTypes.SET_DIFF_OPTION);
-      return a.payload.diffOption;
-    }).startWith(initialRepositoryState.diffOption);
-
-    const compareIdChanges = actions.filter(a =>
-      a.type === ActionTypes.SET_COMPARE_ID &&
-        a.payload.repository === repository,
-    ).map(a => {
-      invariant(a.type === ActionTypes.SET_COMPARE_ID);
-      return a.payload.compareId;
-    }).startWith(initialRepositoryState.compareRevisionId);
+    const diffOptionChanges = getDiffOptionChanges(actions, store, repository);
+    const compareIdChanges = getCompareIdChanges(actions, store, repository);
 
     const selectedFileUpdates = Observable.combineLatest(
       revisionChanges, diffOptionChanges, compareIdChanges, statusChanges,
@@ -172,9 +196,50 @@ export function diffFileEpic(
       );
     }
 
-    return Observable.empty()
-      // TODO(most): listen for revisions, buffers and status changes to trigger fetches
-      // .switchMap(() => getHgDiff())
-      .map(fileDiff => Actions.updateFileDiff(fileDiff));
+    const hgRepository = ((repository: any): HgRepositoryClient);
+
+    const revisionChanges = hgRepository.observeRevisionChanges();
+    const diffOptionChanges = getDiffOptionChanges(actions, store, hgRepository);
+    const compareIdChanges = getCompareIdChanges(actions, store, hgRepository);
+
+    const deactiveRepsitory = actions.filter(a =>
+      a.type === ActionTypes.DEACTIVATE_REPOSITORY && a.payload.repository === hgRepository);
+    const deselectActiveRepository = actions.filter(a =>
+      a.type === ActionTypes.UPDATE_ACTIVE_REPOSITORY && a.payload.hgRepository !== hgRepository);
+
+    const buffer = bufferForUri(filePath);
+    const bufferReloads = observableFromSubscribeFunction(buffer.onDidReload.bind(buffer))
+      .startWith(null);
+
+    const fetchHgDiff = Observable.combineLatest(
+      revisionChanges,
+      diffOptionChanges,
+      compareIdChanges,
+      (revisions, diffOption, compareId) => ({revisions, diffOption, compareId}),
+    ).filter(({revisions}) => getHeadRevision(revisions) != null)
+    .switchMap(({revisions, diffOption, compareId}) => {
+      // TODO(most): Add loading states.
+      const headToForkBaseRevisions = getHeadToForkBaseRevisions(revisions);
+      return getHgDiff(hgRepository, filePath, headToForkBaseRevisions, diffOption, compareId);
+    }).switchMap(hgDiff =>
+      // Load the buffer to use its contents as the new contents.
+      Observable.fromPromise(loadBufferForUri(filePath))
+        .map(() => hgDiff),
+    );
+
+    return Observable.combineLatest(fetchHgDiff, bufferReloads)
+      .map(([{committedContents, revisionInfo}]) => Actions.updateFileDiff({
+        filePath,
+        fromRevisionTitle: formatFileDiffRevisionTitle(revisionInfo),
+        newContents: buffer.getText(),
+        oldContents: committedContents,
+        toRevisionTitle: 'Filesystem / Editor',
+      }))
+      .takeUntil(Observable.merge(
+        observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer)),
+        deactiveRepsitory,
+        deselectActiveRepository,
+      ))
+      .concat(Observable.of(Actions.updateFileDiff(getEmptyFileDiffState())));
   });
 }

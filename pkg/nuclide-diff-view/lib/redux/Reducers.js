@@ -128,6 +128,10 @@ export function fileDiff(
   state: FileDiffState,
   action: Action,
 ): FileDiffState {
+  switch (action.type) {
+    case ActionTypes.UPDATE_FILE_DIFF:
+      return action.payload.fileDiff;
+  }
   return state || getEmptyFileDiffState();
 }
 

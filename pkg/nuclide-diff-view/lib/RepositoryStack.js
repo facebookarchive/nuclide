@@ -179,7 +179,7 @@ function getSelectedFileChangesToCommit(
   ));
 }
 
-function getHgDiff(
+export function getHgDiff(
   repository: HgRepositoryClient,
   filePath: NuclideUri,
   headToForkBaseRevisions: Array<RevisionInfo>,

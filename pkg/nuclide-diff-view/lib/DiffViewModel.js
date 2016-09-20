@@ -87,6 +87,11 @@ import stripAnsi from 'strip-ansi';
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
 
+export function formatFileDiffRevisionTitle(revisionInfo: RevisionInfo): string {
+  const {hash, bookmarks} = revisionInfo;
+  return `${hash}` + (bookmarks.length === 0 ? '' : ` - (${bookmarks.join(', ')})`);
+}
+
 function getRevisionUpdateMessage(phabricatorRevision: PhabricatorRevisionInfo): string {
   return `
 
@@ -720,14 +725,13 @@ export default class DiffViewModel {
       filesystemContents: newContents,
       revisionInfo,
     } = fileDiffState;
-    const {hash, bookmarks} = revisionInfo;
     this._setState({
       ...this._state,
       filePath,
       oldContents,
       newContents,
       compareRevisionInfo: revisionInfo,
-      fromRevisionTitle: `${hash}` + (bookmarks.length === 0 ? '' : ` - (${bookmarks.join(', ')})`),
+      fromRevisionTitle: formatFileDiffRevisionTitle(revisionInfo),
       toRevisionTitle: 'Filesystem / Editor',
     });
     // TODO(most): Fix: this assumes that the editor contents aren't changed while
