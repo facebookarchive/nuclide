@@ -147,3 +147,34 @@ export function setCwdApiEpic(
       }).map(repository => Actions.updateActiveRepository(repository));
   });
 }
+
+export function diffFileEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(ActionTypes.DIFF_FILE).switchMap(action => {
+    invariant(action.type === ActionTypes.DIFF_FILE);
+
+    const {filePath} = action.payload;
+    const repository = repositoryForPath(filePath);
+
+    if (repository == null || repository.getType() !== 'hg') {
+      const repositoryType = repository == null ? 'no repository' : repository.getType();
+      return Observable.throw(
+        new Error(`Diff View only supports Mercurial repositories - found: ${repositoryType}`));
+    }
+
+    const {activeRepository} = store.getState();
+    if (repository !== activeRepository) {
+      return Observable.throw(
+        new Error('Cannot diff file from a non-working directory\n' +
+          'Please switch your working directory from the file tree to be able to diff that file!'),
+      );
+    }
+
+    return Observable.empty()
+      // TODO(most): listen for revisions, buffers and status changes to trigger fetches
+      // .switchMap(() => getHgDiff())
+      .map(fileDiff => Actions.updateFileDiff(fileDiff));
+  });
+}

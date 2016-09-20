@@ -413,6 +413,9 @@ class Activation {
         diffEntityOptions.directory = directory.getPath();
       }
     }
+    if (diffEntityOptions.file) {
+      this._actionCreators.diffFile(diffEntityOptions.file);
+    }
     this._diffViewModel.diffEntity(diffEntityOptions);
   }
 

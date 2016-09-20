@@ -14,14 +14,17 @@ import type {
   ActivateRepositoryAction,
   AddRepositoryAction,
   DeactivateRepositoryAction,
+  DiffFileAction,
   DiffOptionType,
   FileChangeStatusValue,
+  FileDiffState,
   RemoveRepositoryAction,
   SetCompareIdAction,
   SetCwdApiAction,
   SetDiffOptionAction,
   UpdateActiveRepositoryAction,
   UpdateDirtyFilesAction,
+  UpdateFileDiffAction,
   UpdateHeadToForkBaseRevisions,
   UpdateSelectedFilesAction,
 } from '../types';
@@ -34,14 +37,16 @@ import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi
 
 import {
   ACTIVATE_REPOSITORY,
-  DEACTIVATE_REPOSITORY,
   ADD_REPOSITORY,
+  DEACTIVATE_REPOSITORY,
+  DIFF_FILE,
   REMOVE_REPOSITORY,
   SET_COMPARE_ID,
   SET_CWD_API,
   SET_DIFF_OPTION,
   UPDATE_ACTIVE_REPOSITORY,
   UPDATE_DIRTY_FILES,
+  UPDATE_FILE_DIFF,
   UPDATE_HEAD_TO_FORKBASE_REVISIONS,
   UPDATE_SELECTED_FILES,
 } from './ActionTypes';
@@ -181,6 +186,28 @@ export function setCwdApi(
     type: SET_CWD_API,
     payload: {
       cwdApi,
+    },
+  };
+}
+
+export function diffFile(
+  filePath: NuclideUri,
+): DiffFileAction {
+  return {
+    type: DIFF_FILE,
+    payload: {
+      filePath,
+    },
+  };
+}
+
+export function updateFileDiff(
+  fileDiff: FileDiffState,
+): UpdateFileDiffAction {
+  return {
+    type: UPDATE_FILE_DIFF,
+    payload: {
+      fileDiff,
     },
   };
 }

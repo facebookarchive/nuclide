@@ -221,9 +221,24 @@ export type UpdateActiveRepositoryAction = {
   },
 };
 
+export type DiffFileAction = {
+  type: 'DIFF_FILE',
+  payload: {
+    filePath: NuclideUri,
+  },
+};
+
+export type UpdateFileDiffAction = {
+  type: 'UPDATE_FILE_DIFF',
+  payload: {
+    fileDiff: FileDiffState,
+  },
+};
+
 export type Action = ActivateRepositoryAction
   | AddRepositoryAction
   | DeactivateRepositoryAction
+  | DiffFileAction
   | DummyAction
   | RemoveRepositoryAction
   | SetCompareIdAction
@@ -231,6 +246,7 @@ export type Action = ActivateRepositoryAction
   | SetDiffOptionAction
   | UpdateActiveRepositoryAction
   | UpdateDirtyFilesAction
+  | UpdateFileDiffAction
   | UpdateHeadToForkBaseRevisions
   | UpdateSelectedFilesAction
 ;
