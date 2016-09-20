@@ -64,7 +64,7 @@ process.on('message', request => {
       return;
 
     default:
-      let returnValue = [[], [], [], [], []];
+      let returnValue = [[], [], [], 0];
       try {
         if (currentContext != null && typeof currentContext.__fbBatchedBridge === 'object') {
           returnValue =
