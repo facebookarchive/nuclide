@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
+import type {FileTreeAction} from './FileTreeActionTypes';
 
 import {ActionType} from './FileTreeConstants';
 import debounce from '../../commons-node/debounce';
@@ -30,6 +30,10 @@ import type {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
+// If we get types for flux we don't need this.
+type Dispatcher = {
+  dispatch(action: FileTreeAction): void,
+};
 
 let instance: ?Object;
 
@@ -194,6 +198,7 @@ class FileTreeActions {
       const actionType = node.isExpanded ?
         ActionType.COLLAPSE_NODE :
         ActionType.EXPAND_NODE;
+      // $FlowIssue -- Flow gets confused about the way we dynamically choose actionType.
       this._dispatcher.dispatch({
         actionType,
         nodeKey,

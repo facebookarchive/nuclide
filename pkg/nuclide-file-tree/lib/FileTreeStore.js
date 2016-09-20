@@ -28,14 +28,13 @@ import nuclideUri from '../../commons-node/nuclideUri';
 // Used to ensure the version we serialized is the same version we are deserializing.
 const VERSION = 1;
 
+import type {FileTreeAction} from './FileTreeActionTypes';
 import type {Directory} from './FileTreeHelpers';
 import type {Dispatcher} from 'flux';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 
-
-type ActionPayload = Object;
 type ChangeListener = () => mixed;
 
 export type ExportStoreData = {
@@ -279,7 +278,7 @@ export class FileTreeStore {
     this._updateConf(conf => { conf.ignoredPatterns = ignoredPatterns; });
   }
 
-  _onDispatch(payload: ActionPayload): void {
+  _onDispatch(payload: FileTreeAction): void {
     switch (payload.actionType) {
       case ActionType.DELETE_SELECTED_NODES:
         this._deleteSelectedNodes();
