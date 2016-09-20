@@ -222,11 +222,8 @@ export class HackLanguageService {
     const buffer = await getBufferAtVersion(fileVersion);
     const contents = buffer.getText();
 
-    const line = position.row + 1;
-    const column = position.column + 1;
-
     const result: ?Array<HackDefinition> = (await callHHClient(
-      /* args */ ['--ide-get-definition', formatLineColumn(line, column)],
+      /* args */ ['--ide-get-definition', formatAtomLineColumn(position)],
       /* errorStream */ false,
       /* processInput */ contents,
       /* cwd */ filePath,
@@ -343,11 +340,8 @@ export class HackLanguageService {
       return null;
     }
 
-    const line = position.row + 1;
-    const column = position.column + 1;
-
     const result: ?HackTypeAtPosResult = (await callHHClient(
-      /* args */ ['--type-at-pos', formatLineColumn(line, column)],
+      /* args */ ['--type-at-pos', formatAtomLineColumn(position)],
       /* errorStream */ false,
       /* processInput */ contents,
       /* file */ filePath,
@@ -376,11 +370,9 @@ export class HackLanguageService {
     if (id == null) {
       return [];
     }
-    const line = position.row + 1;
-    const column = position.column;
 
     const result: ?HackHighlightRefsResult = (await callHHClient(
-      /* args */ ['--ide-highlight-refs', formatLineColumn(line, column)],
+      /* args */ ['--ide-highlight-refs', formatAtomLineColumn(position)],
       /* errorStream */ false,
       /* processInput */ contents,
       /* file */ filePath,
@@ -430,6 +422,10 @@ export class HackLanguageService {
 
   dispose(): void {
   }
+}
+
+function formatAtomLineColumn(position: atom$Point): string {
+  return formatLineColumn(position.row + 1, position.column + 1);
 }
 
 function formatLineColumn(line: number, column: number): string {
