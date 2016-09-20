@@ -28,7 +28,6 @@ import {
 import {
   formatFileDiffRevisionTitle,
   viewModeToDiffOption,
-  getAmendMode,
   getRevisionUpdateMessage,
 } from '../DiffViewModel';
 import {
@@ -38,6 +37,9 @@ import {
   PublishMode,
   PublishModeState,
 } from '../constants';
+import {
+  getAmendMode,
+} from '../utils';
 import {repositoryForPath} from '../../../nuclide-hg-git-bridge';
 import {bufferForUri, loadBufferForUri} from '../../../commons-atom/text-editor';
 import {

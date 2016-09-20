@@ -11,18 +11,10 @@
 
 import invariant from 'assert';
 
-import DiffViewModel from '../lib/DiffViewModel';
+import {processArcanistOutput} from '../lib/utils';
 import {Observable} from 'rxjs';
 
-describe('DiffViewModel', () => {
-  let model = null;
-  let messages = null;
-
-  beforeEach(() => {
-    model = new DiffViewModel(({}: any), false);
-    messages = model.getPublishUpdates();
-    spyOn(messages, 'next').andCallThrough();
-  });
+describe('Diff View Utils', () => {
 
   function stdoutLine(message: string): {stdout?: string, stderr?: string} {
     return {stdout: JSON.stringify({type: 'phutil:out', message})};
@@ -33,12 +25,8 @@ describe('DiffViewModel', () => {
     expectedOutput: Array<{level: string, text: string}>,
   ): Promise<void> {
     const stream = Observable.from(input);
-    invariant(messages != null);
-    const resultStream = messages.take(expectedOutput.length).toArray().toPromise();
-    invariant(model != null);
-    await model._processArcanistOutput(stream, 'success');
-    const result = await resultStream;
-    expect((messages: any).next.callCount).toEqual(expectedOutput.length);
+    const result = await processArcanistOutput(stream, 'success')
+      .toArray().toPromise();
     while (result.length > 0) {
       expect(result.pop()).toEqual(expectedOutput.pop());
     }
