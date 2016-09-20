@@ -18,7 +18,9 @@ import type {
   FileChangeStatusValue,
   RemoveRepositoryAction,
   SetCompareIdAction,
+  SetCwdApiAction,
   SetDiffOptionAction,
+  UpdateActiveRepositoryAction,
   UpdateDirtyFilesAction,
   UpdateHeadToForkBaseRevisions,
   UpdateSelectedFilesAction,
@@ -28,6 +30,7 @@ import type {RevisionStatuses} from '../../../nuclide-hg-repository-client/lib/H
 import type {
   RevisionInfo,
 } from '../../../nuclide-hg-rpc/lib/HgService';
+import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
 
 import {
   ACTIVATE_REPOSITORY,
@@ -35,7 +38,9 @@ import {
   ADD_REPOSITORY,
   REMOVE_REPOSITORY,
   SET_COMPARE_ID,
+  SET_CWD_API,
   SET_DIFF_OPTION,
+  UPDATE_ACTIVE_REPOSITORY,
   UPDATE_DIRTY_FILES,
   UPDATE_HEAD_TO_FORKBASE_REVISIONS,
   UPDATE_SELECTED_FILES,
@@ -148,6 +153,34 @@ export function updateHeadToForkBaseRevisionsState(
       repository,
       headToForkBaseRevisions,
       revisionStatuses,
+    },
+  };
+}
+
+export function updateActiveRepository(
+  repository: ?atom$Repository,
+): UpdateActiveRepositoryAction {
+  let hgRepository;
+  if (repository == null || repository.getType() !== 'hg') {
+    hgRepository = null;
+  } else {
+    hgRepository = ((repository: any): HgRepositoryClient);
+  }
+  return {
+    type: UPDATE_ACTIVE_REPOSITORY,
+    payload: {
+      hgRepository,
+    },
+  };
+}
+
+export function setCwdApi(
+  cwdApi: ?CwdApi,
+): SetCwdApiAction {
+  return {
+    type: SET_CWD_API,
+    payload: {
+      cwdApi,
     },
   };
 }

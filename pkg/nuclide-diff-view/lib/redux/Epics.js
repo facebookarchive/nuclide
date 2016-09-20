@@ -24,6 +24,7 @@ import {
   getHeadToForkBaseRevisions,
   getSelectedFileChanges,
 } from '../RepositoryStack';
+import {repositoryForPath} from '../../../nuclide-hg-git-bridge';
 
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
 
@@ -121,5 +122,28 @@ export function activateRepositoryEpic(
           a.payload.repository === repository,
       ),
     ));
+  });
+}
+
+export function setCwdApiEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(ActionTypes.SET_CWD_API).switchMap(action => {
+    invariant(action.type === ActionTypes.SET_CWD_API);
+
+    const {cwdApi} = action.payload;
+
+    if (cwdApi == null) {
+      return Observable.of(Actions.updateActiveRepository(null));
+    }
+    return observableFromSubscribeFunction(cwdApi.observeCwd.bind(cwdApi))
+      .map(directory => {
+        if (directory == null) {
+          return null;
+        } else {
+          return repositoryForPath(directory.getPath());
+        }
+      }).map(repository => Actions.updateActiveRepository(repository));
   });
 }

@@ -495,8 +495,16 @@ class Activation {
     return;
   }
 
-  consumeCwdApi(api: CwdApi): void {
+  consumeCwdApi(api: CwdApi): IDisposable {
     this._cwdApi = api;
+    this._actionCreators.setCwdApi(api);
+    let pkg = this;
+    this._subscriptions.add(new Disposable(() => { pkg = null; }));
+    return new Disposable(() => {
+      if (pkg != null) {
+        pkg._actionCreators.setCwdApi(null);
+      }
+    });
   }
 
   addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {

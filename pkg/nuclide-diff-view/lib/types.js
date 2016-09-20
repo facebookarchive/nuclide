@@ -13,6 +13,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {RevisionStatuses} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
 import {React} from 'react-for-atom';
 
@@ -196,13 +197,29 @@ export type UpdateSelectedFilesAction = {
   },
 };
 
+export type SetCwdApiAction = {
+  type: 'SET_CWD_API',
+  payload: {
+    cwdApi: ?CwdApi,
+  },
+};
+
+export type UpdateActiveRepositoryAction = {
+  type: 'UPDATE_ACTIVE_REPOSITORY',
+  payload: {
+    hgRepository: ?HgRepositoryClient,
+  },
+};
+
 export type Action = ActivateRepositoryAction
   | AddRepositoryAction
   | DeactivateRepositoryAction
   | DummyAction
   | RemoveRepositoryAction
   | SetCompareIdAction
+  | SetCwdApiAction
   | SetDiffOptionAction
+  | UpdateActiveRepositoryAction
   | UpdateDirtyFilesAction
   | UpdateHeadToForkBaseRevisions
   | UpdateSelectedFilesAction
