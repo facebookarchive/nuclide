@@ -35,7 +35,7 @@ export function getEmptyCommitState(): CommitState {
   return {
     message: null,
     mode: CommitMode.COMMIT,
-    modeState: CommitModeState.READY,
+    state: CommitModeState.READY,
   };
 }
 
@@ -43,7 +43,7 @@ export function getEmptyPublishState(): PublishState {
   return {
     message: null,
     mode: PublishMode.CREATE,
-    modeState: PublishModeState.READY,
+    state: PublishModeState.READY,
   };
 }
 

@@ -99,13 +99,13 @@ export type RepositoryState = {
 export type CommitState = {
   message: ?string,
   mode: CommitModeType,
-  modeState: CommitModeStateType,
+  state: CommitModeStateType,
 };
 
 export type PublishState = {
   message: ?string,
   mode: PublishModeType,
-  modeState: PublishModeStateType,
+  state: PublishModeStateType,
 };
 
 export type FileDiffState = {
@@ -157,14 +157,6 @@ export type DeactivateRepositoryAction = {
   type: 'DEACTIVATE_REPOSITORY',
   payload: {
     repository: HgRepositoryClient,
-  },
-};
-
-export type SetDiffOptionAction = {
-  type: 'SET_DIFF_OPTION',
-  payload: {
-    repository: HgRepositoryClient,
-    diffOption: DiffOptionType,
   },
 };
 
@@ -241,20 +233,43 @@ export type SetViewModeAction = {
   },
 };
 
+export type UpdateCommitStateAction = {
+  type: 'UPDATE_COMMIT_STATE',
+  payload: {
+    commit: CommitState,
+  },
+};
+
+export type UpdatePublishStateAction = {
+  type: 'UPDATE_PUBLISH_STATE',
+  payload: {
+    publish: PublishState,
+  },
+};
+
+export type SetCommitModeAction = {
+  type: 'SET_COMMIT_MODE',
+  payload: {
+    commitMode: CommitModeType,
+  },
+};
+
 export type Action = ActivateRepositoryAction
   | AddRepositoryAction
   | DeactivateRepositoryAction
   | DiffFileAction
   | DummyAction
   | RemoveRepositoryAction
+  | SetCommitModeAction
   | SetCompareIdAction
   | SetCwdApiAction
-  | SetDiffOptionAction
   | SetViewModeAction
   | UpdateActiveRepositoryAction
+  | UpdateCommitStateAction
   | UpdateDirtyFilesAction
   | UpdateFileDiffAction
   | UpdateHeadToForkBaseRevisions
+  | UpdatePublishStateAction
   | UpdateSelectedFilesAction
 ;
 
@@ -263,7 +278,6 @@ export type RepositoryAction = ActivateRepositoryAction
   | DeactivateRepositoryAction
   | RemoveRepositoryAction
   | SetCompareIdAction
-  | SetDiffOptionAction
   | UpdateDirtyFilesAction
   | UpdateHeadToForkBaseRevisions
   | UpdateSelectedFilesAction

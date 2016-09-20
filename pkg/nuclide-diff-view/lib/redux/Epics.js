@@ -28,11 +28,19 @@ import {
 import {
   formatFileDiffRevisionTitle,
   viewModeToDiffOption,
+  getRevisionUpdateMessage,
 } from '../DiffViewModel';
-import {DiffMode} from '../constants';
+import {
+  CommitMode,
+  CommitModeState,
+  DiffMode,
+  PublishMode,
+  PublishModeState,
+} from '../constants';
 import {repositoryForPath} from '../../../nuclide-hg-git-bridge';
 import {bufferForUri, loadBufferForUri} from '../../../commons-atom/text-editor';
 import {getEmptyFileDiffState} from './createEmptyAppState';
+import {getPhabricatorRevisionFromCommitMessage} from '../../../nuclide-arcanist-rpc/lib/utils';
 
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
 
@@ -75,6 +83,18 @@ function getCompareIdChanges(
     invariant(a.type === ActionTypes.SET_COMPARE_ID);
     return a.payload.compareId;
   }).startWith(initialRepositoryState.compareRevisionId);
+}
+
+function observeActiveRepository(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<?HgRepositoryClient> {
+  return actions.filter(a => a.type === ActionTypes.UPDATE_ACTIVE_REPOSITORY)
+    .map(a => {
+      invariant(a.type === ActionTypes.UPDATE_ACTIVE_REPOSITORY);
+      return a.payload.hgRepository;
+    })
+    .startWith(store.getState().activeRepository);
 }
 
 // An added, but not-activated repository would continue to provide dirty file change updates,
@@ -207,6 +227,7 @@ export function diffFileEpic(
 
     const buffer = bufferForUri(filePath);
     const bufferReloads = observableFromSubscribeFunction(buffer.onDidReload.bind(buffer))
+      .map(() => null)
       .startWith(null);
 
     const fetchHgDiff = Observable.combineLatest(
@@ -250,22 +271,93 @@ export function setViewModeEpic(
     invariant(action.type === ActionTypes.SET_VIEW_MODE);
 
     const {viewMode} = action.payload;
-    if (store.getState().viewMode === viewMode) {
+
+    if (viewMode === DiffMode.BROWSE_MODE) {
       return Observable.empty();
     }
 
-    switch (viewMode) {
-      case DiffMode.BROWSE_MODE:
-        // TODO(most) load view mode's needed state.
+    return observeActiveRepository(actions, store).switchMap(activeRepository => {
+      if (activeRepository == null) {
         return Observable.empty();
-      case DiffMode.COMMIT_MODE:
-        // TODO(most) load view mode's needed state.
-        return Observable.empty();
-      case DiffMode.PUBLISH_MODE:
-        // TODO(most) load view mode's needed state.
-        return Observable.empty();
-      default:
-        return Observable.throw(new Error(`Invalid Diff View Mode: ${viewMode}`));
-    }
+      }
+
+      const headCommitMessageChanges = activeRepository.observeRevisionChanges()
+        .filter(revisions => getHeadRevision(revisions) != null)
+        .map(revisions => {
+          const headRevision = getHeadRevision(revisions);
+          invariant(headRevision != null);
+          return headRevision.description;
+        }).distinctUntilChanged();
+
+      if (viewMode === DiffMode.COMMIT_MODE) {
+        const commitModeChanges = Observable.of(store.getState().commit.mode)
+          .concat(actions.ofType(ActionTypes.SET_COMMIT_MODE).map(a => {
+            invariant(a.type === ActionTypes.SET_COMMIT_MODE);
+            return a.payload.commitMode;
+          }));
+
+        return commitModeChanges.switchMap(commitMode => {
+          switch (commitMode) {
+            case CommitMode.COMMIT: {
+              // TODO(asriram): load commit template in case of `COMMIT`.
+              return Observable.empty();
+            }
+            case CommitMode.AMEND: {
+              return Observable.concat(
+                Observable.of(Actions.updateCommitState({
+                  message: null,
+                  mode: commitMode,
+                  state: CommitModeState.LOADING_COMMIT_MESSAGE,
+                })),
+                headCommitMessageChanges.map(headCommitMessage => Actions.updateCommitState({
+                  message: headCommitMessage,
+                  mode: commitMode,
+                  state: CommitModeState.READY,
+                })),
+              );
+            }
+            default: {
+              return Observable.throw(new Error(`Invalid Commit Mode: ${commitMode}`));
+            }
+          }
+        });
+      }
+
+      // If the latest head has a phabricator revision in the commit message,
+      // then, it's PublishMode.UPDATE mode
+      // Otherwise, it's a new revision with `PublishMode.CREATE` state.
+      if (viewMode === DiffMode.PUBLISH_MODE) {
+        return Observable.concat(
+          Observable.of(Actions.updatePublishState({
+            message: null,
+            mode: store.getState().publish.mode,
+            state: PublishModeState.LOADING_PUBLISH_MESSAGE,
+          })),
+          headCommitMessageChanges.map(headCommitMessage => {
+            const phabricatorRevision = getPhabricatorRevisionFromCommitMessage(headCommitMessage);
+
+            let publishMessage;
+            let publishMode;
+            const existingMessage = store.getState().publish.message;
+
+            if (phabricatorRevision == null) {
+              publishMode = PublishMode.CREATE;
+              publishMessage = headCommitMessage;
+            } else {
+              publishMode = PublishMode.UPDATE;
+              publishMessage = existingMessage || getRevisionUpdateMessage(phabricatorRevision);
+            }
+
+            return Actions.updatePublishState({
+              message: publishMessage,
+              mode: publishMode,
+              state: PublishModeState.READY,
+            });
+          }),
+        );
+      }
+
+      return Observable.throw(new Error(`Invalid Diff View Mode: ${viewMode}`));
+    }).takeUntil(actions.ofType(ActionTypes.DEACTIVATE_REPOSITORY));
   });
 }

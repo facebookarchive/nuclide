@@ -108,6 +108,15 @@ export function commit(
   state: CommitState,
   action: Action,
 ): CommitState {
+  switch (action.type) {
+    case ActionTypes.UPDATE_COMMIT_STATE:
+      return action.payload.commit;
+    case ActionTypes.SET_COMMIT_MODE:
+      return {
+        ...state,
+        mode: action.payload.commitMode,
+      };
+  }
   return state || getEmptyCommitState();
 }
 
@@ -115,6 +124,10 @@ export function publish(
   state: PublishState,
   action: Action,
 ): PublishState {
+  switch (action.type) {
+    case ActionTypes.UPDATE_PUBLISH_STATE:
+      return action.payload.publish;
+  }
   return state || getEmptyPublishState();
 }
 

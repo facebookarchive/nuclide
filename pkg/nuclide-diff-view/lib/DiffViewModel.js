@@ -92,7 +92,7 @@ export function formatFileDiffRevisionTitle(revisionInfo: RevisionInfo): string 
   return `${hash}` + (bookmarks.length === 0 ? '' : ` - (${bookmarks.join(', ')})`);
 }
 
-function getRevisionUpdateMessage(phabricatorRevision: PhabricatorRevisionInfo): string {
+export function getRevisionUpdateMessage(phabricatorRevision: PhabricatorRevisionInfo): string {
   return `
 
 # Updating ${phabricatorRevision.name}
@@ -1332,6 +1332,7 @@ export default class DiffViewModel {
   }
 
   setCommitMode(commitMode: CommitModeType, loadModeState?: boolean = true): void {
+    this._actionCreators.setCommitMode(commitMode);
     if (this._state.commitMode === commitMode) {
       return;
     }

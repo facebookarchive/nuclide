@@ -13,19 +13,25 @@ import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
   ActivateRepositoryAction,
   AddRepositoryAction,
+  CommitModeType,
+  CommitState,
   DeactivateRepositoryAction,
   DiffFileAction,
   DiffModeType,
   FileChangeStatusValue,
   FileDiffState,
+  PublishState,
   RemoveRepositoryAction,
+  SetCommitModeAction,
   SetCompareIdAction,
   SetCwdApiAction,
   SetViewModeAction,
   UpdateActiveRepositoryAction,
+  UpdateCommitStateAction,
   UpdateDirtyFilesAction,
   UpdateFileDiffAction,
   UpdateHeadToForkBaseRevisions,
+  UpdatePublishStateAction,
   UpdateSelectedFilesAction,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
@@ -41,13 +47,16 @@ import {
   DEACTIVATE_REPOSITORY,
   DIFF_FILE,
   REMOVE_REPOSITORY,
+  SET_COMMIT_MODE,
   SET_COMPARE_ID,
   SET_CWD_API,
   SET_VIEW_MODE,
   UPDATE_ACTIVE_REPOSITORY,
+  UPDATE_COMMIT_STATE,
   UPDATE_DIRTY_FILES,
   UPDATE_FILE_DIFF,
   UPDATE_HEAD_TO_FORKBASE_REVISIONS,
+  UPDATE_PUBLISH_STATE,
   UPDATE_SELECTED_FILES,
 } from './ActionTypes';
 
@@ -206,6 +215,39 @@ export function setViewMode(
     type: SET_VIEW_MODE,
     payload: {
       viewMode,
+    },
+  };
+}
+
+export function setCommitMode(
+  commitMode: CommitModeType,
+): SetCommitModeAction {
+  return {
+    type: SET_COMMIT_MODE,
+    payload: {
+      commitMode,
+    },
+  };
+}
+
+export function updateCommitState(
+  commit: CommitState,
+): UpdateCommitStateAction {
+  return {
+    type: UPDATE_COMMIT_STATE,
+    payload: {
+      commit,
+    },
+  };
+}
+
+export function updatePublishState(
+  publish: PublishState,
+): UpdatePublishStateAction {
+  return {
+    type: UPDATE_PUBLISH_STATE,
+    payload: {
+      publish,
     },
   };
 }
