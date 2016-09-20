@@ -1426,7 +1426,7 @@ declare class atom$TextBuffer {
   rangeForRow(row: number, includeNewLine?: boolean): atom$Range,
 
   // Position/Index mapping
-  characterIndexForPosition(position: atom$Point): number,
+  characterIndexForPosition(position: atom$PointLike): number,
   positionForCharacterIndex(index: number): atom$Point,
 
   // Buffer Operations

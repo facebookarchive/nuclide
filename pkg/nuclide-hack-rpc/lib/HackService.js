@@ -15,6 +15,7 @@ import type {
   HackRange,
   HackCompletion,
 } from './rpc-types';
+import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 
 import invariant from 'assert';
 import {retryLimit} from '../../commons-node/promise';
@@ -30,6 +31,7 @@ import {
 } from './hack-config';
 import {getUseIdeConnection, logger} from './hack-config';
 import {getHackConnectionService} from './HackProcess';
+import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -371,18 +373,28 @@ export class HackLanguageService {
   }
 
   async formatSource(
-    filePath: NuclideUri,
-    contents: string,
-    startOffset: number,
-    endOffset: number,
-  ): Promise<?HackFormatSourceResult> {
-    const result = await callHHClient(
+    fileVersion: FileVersion,
+    range: atom$Range,
+  ): Promise<string> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    const contents = buffer.getText();
+    const startOffset = buffer.characterIndexForPosition(range.start) + 1;
+    const endOffset = buffer.characterIndexForPosition(range.end) + 1;
+
+    const response: ?HackFormatSourceResult = (await callHHClient(
       /* args */ ['--format', startOffset, endOffset],
       /* errorStream */ false,
       /* processInput */ contents,
       /* file */ filePath,
-    );
-    return (result: any);
+    ): any);
+
+    if (response == null) {
+      throw new Error('Error formatting hack source.');
+    } else if (response.error_message !== '') {
+      throw new Error(`Error formatting hack source: ${response.error_message}`);
+    }
+    return response.result;
   }
 
   async getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {

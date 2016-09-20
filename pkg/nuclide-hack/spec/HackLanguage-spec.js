@@ -17,7 +17,6 @@ import type {
   HackTypedRegion,
   HackTypeAtPosResult,
   HackHighlightRefsResult,
-  HackFormatSourceResult,
   HackReferencesResult,
 } from '../../nuclide-hack-rpc/lib/HackService';
 
@@ -159,22 +158,6 @@ HH\\fclass HackClass {}`, 19, 2, 5);
           type: 'function',
         },
       ]);
-    });
-  });
-
-  it('formatSource', () => {
-    waitsForPromise(async () => {
-      const serviceResult: HackFormatSourceResult = {
-        error_message: '',
-        result: 'format-result',
-        internal_error: false,
-      };
-      mockService.formatSource.andReturn(serviceResult);
-
-      const result = await hackLanguage.formatSource(filePath, contents, 0, contents.length);
-
-      expect(mockService.formatSource).toHaveBeenCalledWith(filePath, contents, 0, contents.length);
-      expect(result).toEqual(serviceResult.result);
     });
   });
 

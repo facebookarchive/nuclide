@@ -25,6 +25,7 @@ import type {
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackCoverageResult} from './TypedRegions';
+import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import {Range} from 'atom';
@@ -101,19 +102,10 @@ export class HackLanguage {
   }
 
   async formatSource(
-    filePath: NuclideUri,
-    contents: string,
-    startPosition: number,
-    endPosition: number,
+    fileVersion: FileVersion,
+    range: atom$Range,
   ): Promise<string> {
-    const response =
-      await this._hackService.formatSource(filePath, contents, startPosition, endPosition);
-    if (response == null) {
-      throw new Error('Error formatting hack source.');
-    } else if (response.error_message !== '') {
-      throw new Error(`Error formatting hack source: ${response.error_message}`);
-    }
-    return response.result;
+    return this._hackService.formatSource(fileVersion, range);
   }
 
   async highlightSource(

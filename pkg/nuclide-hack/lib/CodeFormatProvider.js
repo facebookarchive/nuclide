@@ -11,26 +11,20 @@
 
 import {trackTiming} from '../../nuclide-analytics';
 import {getHackLanguageForUri} from './HackLanguage';
+import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export default class CodeFormatProvider {
 
   @trackTiming('hack.formatCode')
-  formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
-    return formatSourceFromEditor(editor, range);
+  async formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
+    const fileVersion = await getFileVersionOfEditor(editor);
+    const hackLanguage = await getHackLanguageForUri(editor.getPath());
+    if (hackLanguage == null || fileVersion == null) {
+      return editor.getTextInBufferRange(range);
+    }
+
+    return await hackLanguage.formatSource(
+      fileVersion,
+      range);
   }
-
-}
-
-async function formatSourceFromEditor(editor: atom$TextEditor, range: atom$Range): Promise<string> {
-  const buffer = editor.getBuffer();
-  const filePath = editor.getPath();
-  const hackLanguage = await getHackLanguageForUri(filePath);
-  if (hackLanguage == null || filePath == null) {
-    return buffer.getTextInRange(range);
-  }
-
-  const startPosition = buffer.characterIndexForPosition(range.start);
-  const endPosition = buffer.characterIndexForPosition(range.end);
-  return await hackLanguage.formatSource(
-    filePath, buffer.getText(), startPosition + 1, endPosition + 1);
 }
