@@ -179,6 +179,55 @@ function getSelectedFileChangesToCommit(
   ));
 }
 
+function getHgDiff(
+  repository: HgRepositoryClient,
+  filePath: NuclideUri,
+  headToForkBaseRevisions: Array<RevisionInfo>,
+  diffOption: DiffOptionType,
+  compareId: ?number,
+): Observable<HgDiffState> {
+  // When `compareCommitId` is null, the `HEAD` commit contents is compared
+  // to the filesystem, otherwise it compares that commit to filesystem.
+  const headCommit = getHeadRevision(headToForkBaseRevisions);
+  if (headCommit == null) {
+    throw new Error('Cannot fetch hg diff for revisions without head');
+  }
+  const headCommitId = headCommit.id;
+  let compareCommitId;
+  switch (diffOption) {
+    case DiffOption.DIRTY:
+      compareCommitId = headCommitId;
+      break;
+    case DiffOption.LAST_COMMIT:
+      compareCommitId = headToForkBaseRevisions.length > 1
+        ? headToForkBaseRevisions[headToForkBaseRevisions.length - 2].id
+        : headCommitId;
+      break;
+    case DiffOption.COMPARE_COMMIT:
+      compareCommitId = compareId || headCommitId;
+      break;
+    default:
+      throw new Error(`Invalid Diff Option: ${diffOption}`);
+  }
+
+  const revisionInfo = headToForkBaseRevisions.find(
+    revision => revision.id === compareCommitId,
+  );
+  invariant(
+    revisionInfo,
+    `Diff Viw Fetcher: revision with id ${compareCommitId} not found`,
+  );
+
+  return repository.fetchFileContentAtRevision(filePath, `${compareCommitId}`)
+    // If the file didn't exist on the previous revision,
+    // Return the no such file at revision message.
+    .catch(error => Observable.of((error.message: string) || ''))
+    .map(committedContents => ({
+      committedContents,
+      revisionInfo,
+    }));
+}
+
 export default class RepositoryStack {
 
   _emitter: Emitter;
@@ -351,45 +400,14 @@ export default class RepositoryStack {
     if (revisionsState == null) {
       throw new Error('Cannot fetch hg diff while revisions not yet fetched!');
     }
-    const {headToForkBaseRevisions, headCommitId} = revisionsState;
-    // When `compareCommitId` is null, the `HEAD` commit contents is compared
-    // to the filesystem, otherwise it compares that commit to filesystem.
-    let compareCommitId;
-    switch (this._diffOption) {
-      case DiffOption.DIRTY:
-        compareCommitId = headCommitId;
-        break;
-      case DiffOption.LAST_COMMIT:
-        compareCommitId = headToForkBaseRevisions.length > 1
-          ? headToForkBaseRevisions[headToForkBaseRevisions.length - 2].id
-          : headCommitId;
-        break;
-      case DiffOption.COMPARE_COMMIT:
-        compareCommitId = revisionsState.compareCommitId || headCommitId;
-        break;
-      default:
-        throw new Error(`Invalid Diff Option: ${this._diffOption}`);
-    }
-
-    const revisionInfo = headToForkBaseRevisions.find(
-      revision => revision.id === compareCommitId,
-    );
-    invariant(
-      revisionInfo,
-      `Diff Viw Fetcher: revision with id ${compareCommitId} not found`,
-    );
-
-    const committedContents = await this._repository
-      .fetchFileContentAtRevision(filePath, `${compareCommitId}`)
-      .toPromise()
-      // If the file didn't exist on the previous revision,
-      // Return the no such file at revision message.
-      .catch(error => error.message || '');
-
-    return {
-      committedContents,
-      revisionInfo,
-    };
+    const {headToForkBaseRevisions} = revisionsState;
+    return getHgDiff(
+      this._repository,
+      filePath,
+      headToForkBaseRevisions,
+      this._diffOption,
+      this._selectedCompareCommitId,
+    ).toPromise();
   }
 
   async setCompareRevision(revision: RevisionInfo): Promise<void> {
