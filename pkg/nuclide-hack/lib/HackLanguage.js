@@ -13,15 +13,14 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   HackParameterDetails,
   HackCompletion,
-  HackRange,
 } from '../../nuclide-hack-rpc/lib/rpc-types';
 import type {
   HackDiagnostic,
   HackReference,
   HackIdeOutlineItem,
   HackIdeOutline,
-  HackDefinition,
 } from '../../nuclide-hack-rpc/lib/HackService';
+import type {DefinitionQueryResult} from '../../nuclide-definition-service/lib/rpc-types';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackCoverageResult} from './TypedRegions';
@@ -29,33 +28,9 @@ import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
-import {Range} from 'atom';
 import {getLogger} from '../../nuclide-logging';
 import {convertTypedRegionsToCoverageResult} from './TypedRegions';
-import invariant from 'assert';
 import {getConfig} from './config';
-
-export type DefinitionResult = {
-  path: NuclideUri,
-  line: number,
-  column: number,
-  name: string,
-  length: number,
-  scope: string,
-  additionalInfo: string,
-  searchStartColumn?: number,
-  searchEndColumn?: number,
-};
-
-export type Definition = {
-  name: string,
-  path: NuclideUri,
-  projectRoot: NuclideUri,
-  line: number,
-  column: number,
-  // Range in the input where the symbol reference occurs.
-  queryRange: atom$Range,
-};
 
 /**
  * Serves language requests from HackService.
@@ -147,30 +122,8 @@ export class HackLanguage {
     return this._hackService.getIdeOutline(filePath, contents);
   }
 
-  async getIdeDefinition(
-    filePath: NuclideUri,
-    contents: string,
-    lineNumber: number,
-    column: number,
-  ): Promise<Array<Definition>> {
-    const definitions =
-      await this._hackService.getDefinition(filePath, contents, lineNumber, column);
-    if (definitions == null) {
-      return [];
-    }
-    function convertDefinition(def: HackDefinition): Definition {
-      invariant(def.definition_pos != null);
-      return {
-        name: def.name,
-        path: def.definition_pos.filename,
-        projectRoot: def.projectRoot,
-        line: def.definition_pos.line,
-        column: def.definition_pos.char_start,
-        queryRange: hackRangeToAtomRange(def.pos),
-      };
-    }
-    return definitions.filter(definition => definition.definition_pos != null)
-      .map(convertDefinition);
+  getDefinition(fileVersion: FileVersion, position: atom$Point): Promise<?DefinitionQueryResult> {
+    return this._hackService.getDefinition(fileVersion, position);
   }
 
   getDefinitionById(filePath: NuclideUri, id: string): Promise<?HackIdeOutlineItem> {
@@ -194,13 +147,6 @@ export class HackLanguage {
     }
     return {baseUri: references[0].projectRoot, symbolName: references[0].name, references};
   }
-}
-
-export function hackRangeToAtomRange(position: HackRange): atom$Range {
-  return new Range(
-        [position.line - 1, position.char_start - 1],
-        [position.line - 1, position.char_end],
-      );
 }
 
 function matchTypeOfType(type: string): string {

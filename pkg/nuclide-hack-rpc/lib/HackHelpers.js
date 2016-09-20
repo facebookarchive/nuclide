@@ -10,6 +10,7 @@
  */
 
 import type {HackSearchPosition} from './HackService';
+import type {HackRange} from './rpc-types';
 import type {HackSearchResult, HHSearchPosition} from './types';
 import type {SearchResultTypeValue} from '../../nuclide-hack-common';
 
@@ -18,6 +19,7 @@ import {asyncExecute} from '../../commons-node/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import {SearchResultType} from '../../nuclide-hack-common';
 import {findHackConfigDir, getHackExecOptions} from './hack-config';
+import {Point, Range} from 'simple-text-buffer';
 
 const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
 const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
@@ -189,4 +191,15 @@ function getSearchType(info: string): SearchResultTypeValue {
       return SearchResultType.CLASS;
     }
   }
+}
+
+export function hackRangeToAtomRange(position: HackRange): atom$Range {
+  return new Range(
+    new Point(
+      position.line - 1,
+      position.char_start - 1),
+    new Point(
+      position.line - 1,
+      position.char_end),
+  );
 }

@@ -17,6 +17,10 @@ import type {
 } from './rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+import type {
+  DefinitionQueryResult,
+} from '../../nuclide-definition-service/lib/rpc-types';
+import type {HackDefinition} from './Definitions';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -34,7 +38,8 @@ import {
 import {getUseIdeConnection, logger} from './hack-config';
 import {getHackConnectionService} from './HackProcess';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
-import {Point, Range} from 'simple-text-buffer';
+import {convertDefinitions} from './Definitions';
+import {hackRangeToAtomRange} from './HackHelpers';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -120,13 +125,6 @@ export type HackFormatSourceResult = {
   error_message: string,
   result: string,
   internal_error: boolean,
-};
-
-export type HackDefinition = {
-  definition_pos: ?HackRange,
-  name: string,
-  pos: HackRange,
-  projectRoot: NuclideUri,
 };
 
 const HH_DIAGNOSTICS_DELAY_MS = 600;
@@ -217,40 +215,30 @@ export class HackLanguageService {
   }
 
   async getDefinition(
-    file: NuclideUri,
-    contents: string,
-    line: number,
-    column: number,
-  ): Promise<Array<HackDefinition>> {
-    const result: any = await callHHClient(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?DefinitionQueryResult> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    const contents = buffer.getText();
+
+    const line = position.row + 1;
+    const column = position.column + 1;
+
+    const result: ?Array<HackDefinition> = (await callHHClient(
       /* args */ ['--ide-get-definition', formatLineColumn(line, column)],
       /* errorStream */ false,
       /* processInput */ contents,
-      /* cwd */ file,
-    );
+      /* cwd */ filePath,
+    ): any);
     if (result == null) {
-      return [];
+      return null;
     }
-    const projectRoot = result.hackRoot;
+    const projectRoot = (result: any).hackRoot;
     invariant(typeof projectRoot === 'string');
 
-    function fixupDefinition(definition: HackDefinition): void {
-      invariant(typeof definition.name === 'string');
-      if (definition.definition_pos != null && definition.definition_pos.filename === '') {
-        definition.definition_pos.filename = file;
-      }
-      if (definition.pos.filename === '') {
-        definition.pos.filename = file;
-      }
-      definition.projectRoot = projectRoot;
-    }
-    if (Array.isArray(result)) {
-      result.forEach(fixupDefinition);
-      return result;
-    } else {
-      fixupDefinition(result);
-      return [result];
-    }
+    const hackDefinitions = Array.isArray(result) ? result : [result];
+    return convertDefinitions(hackDefinitions, filePath, projectRoot);
   }
 
   async getDefinitionById(
@@ -453,17 +441,6 @@ function formatLineColumn(line: number, column: number): string {
 function markFileForCompletion(contents: string, offset: number): string {
   return contents.substring(0, offset) +
       'AUTO332' + contents.substring(offset, contents.length);
-}
-
-function hackRangeToAtomRange(position: HackRange): atom$Range {
-  return new Range(
-    new Point(
-      position.line - 1,
-      position.char_start - 1),
-    new Point(
-      position.line - 1,
-      position.char_end),
-  );
 }
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;

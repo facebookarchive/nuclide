@@ -20,6 +20,7 @@ import {HACK_GRAMMARS_SET, HACK_GRAMMARS} from '../../nuclide-hack-common';
 import invariant from 'assert';
 import {Point} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
+import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export class HackDefinitionProvider {
   name: string;
@@ -35,41 +36,12 @@ export class HackDefinitionProvider {
   @trackTiming('hack.get-definition')
   async getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult> {
     invariant(HACK_GRAMMARS_SET.has(editor.getGrammar().scopeName));
-
-    const filePath = editor.getPath();
-    if (filePath == null) {
+    const fileVersion = await getFileVersionOfEditor(editor);
+    const hackLanguage = await getHackLanguageForUri(editor.getPath());
+    if (hackLanguage == null || fileVersion == null) {
       return null;
     }
-
-    const hackLanguage = await getHackLanguageForUri(filePath);
-    if (hackLanguage == null) {
-      return null;
-    }
-
-    const line = position.row;
-    const column = position.column;
-    const contents = editor.getText();
-
-    const definitions =
-      await hackLanguage.getIdeDefinition(filePath, contents, line + 1, column + 1);
-    if (definitions.length === 0) {
-      return null;
-    }
-    function convertDefinition(definition) {
-      return {
-        path: definition.path,
-        position: new Point(definition.line - 1, definition.column - 1),
-        // TODO: range
-        projectRoot: definition.projectRoot,
-        id: definition.name,
-        name: definition.name,
-        language: 'php',
-      };
-    }
-    return {
-      queryRange: definitions[0].queryRange,
-      definitions: definitions.map(convertDefinition),
-    };
+    return await hackLanguage.getDefinition(fileVersion, position);
   }
 
   @trackTiming('hack.get-definition-by-id')
