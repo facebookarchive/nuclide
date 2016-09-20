@@ -504,7 +504,7 @@ declare class atom$Range {
   end: atom$Point,
   isEmpty(): boolean,
   isEqual(otherRange: atom$Range | [[number, number], [number, number]]): boolean,
-  containsPoint(point: atom$Point, exclusive?: boolean): boolean,
+  containsPoint(point: atom$PointLike, exclusive?: boolean): boolean,
   containsRange(other: atom$Range, exclusive?: boolean): boolean,
   serialize(): Array<Array<number>>,
 }
