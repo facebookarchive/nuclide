@@ -12,7 +12,7 @@
 import type {
   HackReference,
 } from '../../nuclide-hack-rpc/lib/HackService';
-import type {FindReferencesReturn} from '../../nuclide-find-references';
+import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
 import {trackOperationTiming} from '../../nuclide-analytics';

@@ -9,17 +9,7 @@
  * the root directory of this source tree.
  */
 
-export type Location = {
-  line: number,
-  column: number,
-};
-
-export type Reference = {
-  uri: string,      // Nuclide URI of the file path
-  name: ?string,    // name of calling method/function/symbol
-  start: Location,
-  end: Location,
-};
+import type {Reference} from './rpc-types';
 
 export type ReferenceGroup = {
   references: Array<Reference>,

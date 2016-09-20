@@ -11,10 +11,12 @@
 
 import type {
   FileReferences,
-  Location,
-  Reference,
   ReferenceGroup,
 } from './types';
+import type {
+  Location,
+  Reference,
+} from './rpc-types';
 
 type FindReferencesOptions = {
   // Lines of context to show around each preview block. Defaults to 1.

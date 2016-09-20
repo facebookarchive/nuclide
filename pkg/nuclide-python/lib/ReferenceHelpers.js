@@ -10,7 +10,7 @@
  */
 
 import typeof * as PythonService from '../../nuclide-python-rpc';
-import type {FindReferencesReturn} from '../../nuclide-find-references';
+import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';

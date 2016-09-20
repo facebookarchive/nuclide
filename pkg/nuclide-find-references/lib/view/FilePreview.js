@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Reference} from '../types';
+import type {Reference} from '../rpc-types';
 
 import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
 import {React} from 'react-for-atom';

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Reference} from './types';
+import type {FindReferencesReturn} from './rpc-types';
 
 import crypto from 'crypto';
 import {CompositeDisposable} from 'atom';
@@ -20,20 +20,6 @@ import {getLogger} from '../../nuclide-logging';
 import FindReferencesModel from './FindReferencesModel';
 
 const logger = getLogger();
-
-export type FindReferencesData = {
-  type: 'data',
-  baseUri: string,
-  referencedSymbolName: string,
-  references: Array<Reference>,
-};
-
-export type FindReferencesError = {
-  type: 'error',
-  message: string,
-};
-
-export type FindReferencesReturn = FindReferencesData | FindReferencesError;
 
 export type FindReferencesProvider = {
   // Return true if your provider supports finding references for the provided TextEditor.

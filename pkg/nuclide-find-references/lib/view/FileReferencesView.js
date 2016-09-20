@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {Reference, ReferenceGroup} from '../types';
+import type {ReferenceGroup} from '../types';
+import type {Reference} from '../rpc-types';
 
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
