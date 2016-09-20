@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Definition} from '../../nuclide-definition-service';
+import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 
 /**
  * Returns true if the 2 definitions are considered equal. They are considered equal if:

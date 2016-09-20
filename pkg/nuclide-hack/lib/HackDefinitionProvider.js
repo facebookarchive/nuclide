@@ -10,7 +10,10 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {Definition, DefinitionQueryResult} from '../../nuclide-definition-service';
+import type {
+  Definition,
+  DefinitionQueryResult,
+} from '../../nuclide-definition-service/lib/rpc-types';
 
 import {getHackLanguageForUri} from './HackLanguage';
 import {HACK_GRAMMARS_SET, HACK_GRAMMARS} from '../../nuclide-hack-common';

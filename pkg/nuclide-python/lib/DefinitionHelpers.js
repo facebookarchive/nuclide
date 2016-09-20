@@ -10,7 +10,10 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {Definition, DefinitionQueryResult} from '../../nuclide-definition-service';
+import type {
+  Definition,
+  DefinitionQueryResult,
+} from '../../nuclide-definition-service/lib/rpc-types';
 import typeof * as PythonService from '../../nuclide-python-rpc';
 
 import invariant from 'assert';
