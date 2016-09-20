@@ -40,7 +40,7 @@ import {createEmptyAppState} from './redux/createEmptyAppState';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import * as Reducers from './redux/Reducers';
-import {applyMiddleware, bindActionCreators, createStore} from 'redux';
+import {applyMiddleware, bindActionCreators, createStore, combineReducers} from 'redux';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import {Observable} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -199,8 +199,9 @@ class Activation {
         })
     );
 
+    const rootReducer = combineReducers(Reducers);
     this._store = createStore(
-      Reducers.app,
+      rootReducer,
       initialState,
       applyMiddleware(createEpicMiddleware(rootEpic)),
     );

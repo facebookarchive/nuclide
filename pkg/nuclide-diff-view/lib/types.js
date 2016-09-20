@@ -99,21 +99,33 @@ export type RepositoryState = {
   selectedCompareId: ?number,
 };
 
-export type AppState = {
-  activeRepository: ?HgRepositoryClient,
-  commitMessage: ?string,
-  commitMode: CommitModeType,
-  commitModeState: CommitModeStateType,
+export type CommitState = {
+  message: ?string,
+  mode: CommitModeType,
+  modeState: CommitModeStateType,
+};
+
+export type PublishState = {
+  message: ?string,
+  mode: PublishModeType,
+  modeState: PublishModeStateType,
+};
+
+export type FileDiffState = {
   filePath: NuclideUri,
   fromRevisionTitle: string,
   newContents: string,
   oldContents: string,
-  publishMessage: ?string,
-  publishMode: PublishModeType,
-  publishModeState: PublishModeStateType,
-  repositoriesStates: Map<HgRepositoryClient, RepositoryState>,
-  shouldRebaseOnAmend: boolean,
   toRevisionTitle: string,
+};
+
+export type AppState = {
+  activeRepository: ?HgRepositoryClient,
+  commit: CommitState,
+  fileDiff: FileDiffState,
+  publish: PublishState,
+  repositories: Map<HgRepositoryClient, RepositoryState>,
+  shouldRebaseOnAmend: boolean,
   viewMode: DiffModeType,
 };
 

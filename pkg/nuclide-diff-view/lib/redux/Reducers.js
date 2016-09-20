@@ -11,57 +11,54 @@
 
 import type {
   Action,
-  AppState,
+  CommitState,
+  DiffModeType,
+  FileDiffState,
+  PublishState,
   RepositoryAction,
   RepositoryState,
 } from '../types';
+import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 
 import * as ActionTypes from './ActionTypes';
 import invariant from 'assert';
 import {
-  DiffOption,
-} from '../constants';
+  getEmptyActiveRepositoryState,
+  getEmptyCommitState,
+  getEmptyFileDiffState,
+  getEmptyPublishState,
+  getEmptyRebaseOnAmendState,
+  getEmptyRepositoriesState,
+  getEmptyRepositoryState,
+  getEmptyViewModeState,
+} from './createEmptyAppState';
 
-export function app(
-  state: AppState,
+export function activeRepository(
+  state: ?HgRepositoryClient,
   action: Action,
-): AppState {
+): ?HgRepositoryClient {
+  return state || getEmptyActiveRepositoryState();
+}
+
+export function repositories(
+  state: Map<HgRepositoryClient, RepositoryState>,
+  action: Action,
+): Map<HgRepositoryClient, RepositoryState> {
   switch (action.type) {
     case ActionTypes.SET_DIFF_OPTION: {
       const {repository} = action.payload;
-      const oldRepositoryState = state.repositoriesStates.get(repository);
+      const oldRepositoryState = state.get(repository);
       invariant(oldRepositoryState != null);
-      return {
-        ...state,
-        repositoriesStates: new Map(state.repositoriesStates)
-          .set(repository, reduceRepositoryAction(oldRepositoryState, action)),
-      };
+      return new Map(state)
+        .set(repository, reduceRepositoryAction(oldRepositoryState, action));
     }
     case ActionTypes.ADD_REPOSITORY: {
       const {repository} = action.payload;
-      return {
-        ...state,
-        repositoriesStates: new Map(state.repositoriesStates)
-          .set(repository, getEmptyRepositoryState()),
-      };
-    }
-    default: {
-      return state;
+      return new Map(state)
+          .set(repository, getEmptyRepositoryState());
     }
   }
-}
-
-function getEmptyRepositoryState(): RepositoryState {
-  return {
-    diffOption: DiffOption.COMPARE_COMMIT,
-    revisionStatuses: new Map(),
-    dirtyFileChanges: new Map(),
-    headToForkBaseRevisions: [],
-    headRevision: null,
-    revisions: [],
-    selectedCompareId: null,
-    selectedFileChanges: new Map(),
-  };
+  return state || getEmptyRepositoriesState();
 }
 
 function reduceRepositoryAction(
@@ -79,4 +76,39 @@ function reduceRepositoryAction(
       throw new Error('Invalid Repository Action!');
     }
   }
+}
+
+export function commit(
+  state: CommitState,
+  action: Action,
+): CommitState {
+  return state || getEmptyCommitState();
+}
+
+export function publish(
+  state: PublishState,
+  action: Action,
+): PublishState {
+  return state || getEmptyPublishState();
+}
+
+export function fileDiff(
+  state: FileDiffState,
+  action: Action,
+): FileDiffState {
+  return state || getEmptyFileDiffState();
+}
+
+export function shouldRebaseOnAmend(
+  state: boolean,
+  action: Action,
+): boolean {
+  return state || getEmptyRebaseOnAmendState();
+}
+
+export function viewMode(
+  state: DiffModeType,
+  action: Action,
+): DiffModeType {
+  return state || getEmptyViewModeState();
 }

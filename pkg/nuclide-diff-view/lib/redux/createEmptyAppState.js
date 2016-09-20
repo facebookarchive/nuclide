@@ -9,32 +9,88 @@
  * the root directory of this source tree.
  */
 
-import type {AppState} from '../types';
+import type {
+  AppState,
+  CommitState,
+  DiffModeType,
+  FileDiffState,
+  PublishState,
+  RepositoryState,
+} from '../types';
 
 import {
   CommitMode,
   CommitModeState,
   DiffMode,
+  DiffOption,
   PublishMode,
   PublishModeState,
 } from '../constants';
 
-export function createEmptyAppState(): AppState {
+
+export function getEmptyActiveRepositoryState() {
+  return null;
+}
+
+export function getEmptyCommitState(): CommitState {
   return {
-    activeRepository: null,
-    commitMessage: null,
-    commitMode: CommitMode.COMMIT,
-    commitModeState: CommitModeState.READY,
+    message: null,
+    mode: CommitMode.COMMIT,
+    modeState: CommitModeState.READY,
+  };
+}
+
+export function getEmptyPublishState(): PublishState {
+  return {
+    message: null,
+    mode: PublishMode.CREATE,
+    modeState: PublishModeState.READY,
+  };
+}
+
+export function getEmptyFileDiffState(): FileDiffState {
+  return {
     filePath: '',
     fromRevisionTitle: 'No file selected',
     newContents: '',
     oldContents: '',
-    publishMessage: null,
-    publishMode: PublishMode.CREATE,
-    publishModeState: PublishModeState.READY,
-    repositoriesStates: new Map(),
-    shouldRebaseOnAmend: true,
     toRevisionTitle: 'No file selected',
-    viewMode: DiffMode.BROWSE_MODE,
+  };
+}
+
+export function getEmptyRebaseOnAmendState() {
+  return true;
+}
+
+export function getEmptyRepositoriesState() {
+  return new Map();
+}
+
+export function getEmptyRepositoryState(): RepositoryState {
+  return {
+    diffOption: DiffOption.COMPARE_COMMIT,
+    revisionStatuses: new Map(),
+    dirtyFileChanges: new Map(),
+    headToForkBaseRevisions: [],
+    headRevision: null,
+    revisions: [],
+    selectedCompareId: null,
+    selectedFileChanges: new Map(),
+  };
+}
+
+export function getEmptyViewModeState(): DiffModeType {
+  return DiffMode.BROWSE_MODE;
+}
+
+export function createEmptyAppState(): AppState {
+  return {
+    activeRepository: getEmptyActiveRepositoryState(),
+    commit: getEmptyCommitState(),
+    fileDiff: getEmptyFileDiffState(),
+    publish: getEmptyPublishState(),
+    repositories: getEmptyRepositoriesState(),
+    shouldRebaseOnAmend: getEmptyRebaseOnAmendState(),
+    viewMode: getEmptyViewModeState(),
   };
 }

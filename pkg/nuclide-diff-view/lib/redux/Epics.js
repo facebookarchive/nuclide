@@ -68,8 +68,8 @@ export function activateRepositoryEpic(
     const revisionChanges = repository.observeRevisionChanges();
     const revisionStatusChanges = repository.observeRevisionStatusesChanges();
 
-    const {repositoriesStates} = store.getState();
-    const initialRepositoryState = repositoriesStates.get(repository);
+    const {repositories} = store.getState();
+    const initialRepositoryState = repositories.get(repository);
     invariant(initialRepositoryState != null, 'Cannot activate repository before adding it!');
 
     const diffOptionChanges = actions.filter(a =>
