@@ -15,7 +15,6 @@ import type {
   HackCompletionsResult,
   HackDiagnosticsResult,
   HackTypedRegion,
-  HackTypeAtPosResult,
   HackReferencesResult,
 } from '../../nuclide-hack-rpc/lib/HackService';
 
@@ -355,26 +354,6 @@ HH\\fclass HackClass {}`, 19, 2, 5);
           },
         },
       ]);
-    });
-  });
-
-  it('getType', () => {
-    waitsForPromise(async () => {
-      const serviceResult: HackTypeAtPosResult = {
-        type: 'hack-type',
-        pos: {
-          filename: filePath,
-          line: 1,
-          char_start: 2,
-          char_end: 2,
-        },
-      };
-      mockService.getTypeAtPos.andReturn(serviceResult);
-
-      const result = await hackLanguage.getType(filePath, contents, '$expr', 1, 2);
-
-      expect(mockService.getTypeAtPos).toHaveBeenCalledWith(filePath, contents, 1, 2);
-      expect(result).toEqual(serviceResult.type);
     });
   });
 

@@ -26,6 +26,7 @@ import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackCoverageResult} from './TypedRegions';
 import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import {Range} from 'atom';
@@ -176,18 +177,8 @@ export class HackLanguage {
     return this._hackService.getDefinitionById(filePath, id);
   }
 
-  async getType(
-    filePath: NuclideUri,
-    contents: string,
-    expression: string,
-    lineNumber: number,
-    column: number,
-  ): Promise<?string> {
-    if (!expression.startsWith('$')) {
-      return null;
-    }
-    const result = await this._hackService.getTypeAtPos(filePath, contents, lineNumber, column);
-    return result == null ? null : result.type;
+  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
+    return this._hackService.typeHint(fileVersion, position);
   }
 
   async findReferences(

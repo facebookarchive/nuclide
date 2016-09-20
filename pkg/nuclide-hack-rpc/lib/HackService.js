@@ -16,6 +16,7 @@ import type {
   HackCompletion,
 } from './rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -344,19 +345,35 @@ export class HackLanguageService {
     return (result: any);
   }
 
-  async getTypeAtPos(
-    filePath: NuclideUri,
-    contents: string,
-    line: number,
-    column: number,
-  ): Promise<?HackTypeAtPosResult> {
-    const result = await callHHClient(
+  async typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    const contents = buffer.getText();
+
+    const match = getIdentifierAndRange(buffer, position);
+    if (match == null) {
+      return null;
+    }
+
+    const line = position.row + 1;
+    const column = position.column + 1;
+
+    const result: ?HackTypeAtPosResult = (await callHHClient(
       /* args */ ['--type-at-pos', formatLineColumn(line, column)],
       /* errorStream */ false,
       /* processInput */ contents,
       /* file */ filePath,
-    );
-    return (result: any);
+    ): any);
+
+    if (result == null || result.type == null || result.type === '_') {
+      return null;
+    } else {
+      return {
+        hint: result.type,
+        // TODO: Use hack range for type hints, not nuclide range.
+        range: match.range,
+      };
+    }
   }
 
   async highlight(

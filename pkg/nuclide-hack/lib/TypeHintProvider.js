@@ -12,43 +12,19 @@
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
 import {getHackLanguageForUri} from './HackLanguage';
-import {getIdentifierAndRange} from './utils';
+import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {trackTiming} from '../../nuclide-analytics';
 
 module.exports = class TypeHintProvider {
 
   @trackTiming('hack.typeHint')
-  typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
-    return typeHintFromEditor(editor, position);
+  async typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
+    const fileVersion = await getFileVersionOfEditor(editor);
+    const hackLanguage = await getHackLanguageForUri(editor.getPath());
+    if (hackLanguage == null || fileVersion == null) {
+      return null;
+    }
+    return await hackLanguage.typeHint(fileVersion, position);
   }
 
 };
-
-async function typeHintFromEditor(
-  editor: atom$TextEditor,
-  position: atom$Point,
-): Promise<?TypeHint> {
-  const filePath = editor.getPath();
-  const hackLanguage = await getHackLanguageForUri(filePath);
-  if (!hackLanguage || !filePath) {
-    return null;
-  }
-
-  const match = getIdentifierAndRange(editor, position);
-  if (match == null) {
-    return null;
-  }
-
-  const contents = editor.getText();
-
-  const type = await hackLanguage.getType(
-    filePath, contents, match.id, position.row + 1, position.column + 1);
-  if (!type || type === '_') {
-    return null;
-  } else {
-    return {
-      hint: type,
-      range: match.range,
-    };
-  }
-}
