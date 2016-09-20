@@ -52,8 +52,7 @@ export function repositories(
     case ActionTypes.SET_COMPARE_ID:
     case ActionTypes.UPDATE_DIRTY_FILES:
     case ActionTypes.UPDATE_SELECTED_FILES:
-    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
-    case ActionTypes.SET_DIFF_OPTION: {
+    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS: {
       const {repository} = action.payload;
       const oldRepositoryState = state.get(repository);
       invariant(oldRepositoryState != null);
@@ -80,11 +79,6 @@ function reduceRepositoryAction(
   action: RepositoryAction,
 ): RepositoryState {
   switch (action.type) {
-    case ActionTypes.SET_DIFF_OPTION:
-      return {
-        ...repositoryState,
-        diffOption: action.payload.diffOption,
-      };
     case ActionTypes.SET_COMPARE_ID:
       return {
         ...repositoryState,

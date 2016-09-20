@@ -27,6 +27,7 @@ import {
 } from '../RepositoryStack';
 import {
   formatFileDiffRevisionTitle,
+  viewModeToDiffOption,
 } from '../DiffViewModel';
 import {DiffMode} from '../constants';
 import {repositoryForPath} from '../../../nuclide-hg-git-bridge';
@@ -49,17 +50,13 @@ function getDiffOptionChanges(
   store: Store,
   repository: HgRepositoryClient,
 ): Observable<DiffOptionType> {
-  const {repositories} = store.getState();
-  const initialRepositoryState = repositories.get(repository);
-  invariant(initialRepositoryState != null, 'Cannot activate repository before adding it!');
+  const {viewMode} = store.getState();
 
-  return actions.filter(a =>
-    a.type === ActionTypes.SET_DIFF_OPTION &&
-      a.payload.repository === repository,
-  ).map(a => {
-    invariant(a.type === ActionTypes.SET_DIFF_OPTION);
-    return a.payload.diffOption;
-  }).startWith(initialRepositoryState.diffOption);
+  return actions.ofType(ActionTypes.SET_VIEW_MODE).map(a => {
+    invariant(a.type === ActionTypes.SET_VIEW_MODE);
+    return viewModeToDiffOption(a.payload.viewMode);
+  }).startWith(viewModeToDiffOption(viewMode))
+  .distinctUntilChanged();
 }
 
 function getCompareIdChanges(

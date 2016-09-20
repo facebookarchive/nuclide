@@ -22,7 +22,6 @@ import {
   CommitMode,
   CommitModeState,
   DiffMode,
-  DiffOption,
   PublishMode,
   PublishModeState,
 } from '../constants';
@@ -68,7 +67,6 @@ export function getEmptyRepositoriesState() {
 
 export function getEmptyRepositoryState(): RepositoryState {
   return {
-    diffOption: DiffOption.COMPARE_COMMIT,
     revisionStatuses: new Map(),
     dirtyFiles: new Map(),
     headToForkBaseRevisions: [],

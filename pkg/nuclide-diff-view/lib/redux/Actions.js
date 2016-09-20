@@ -16,13 +16,11 @@ import type {
   DeactivateRepositoryAction,
   DiffFileAction,
   DiffModeType,
-  DiffOptionType,
   FileChangeStatusValue,
   FileDiffState,
   RemoveRepositoryAction,
   SetCompareIdAction,
   SetCwdApiAction,
-  SetDiffOptionAction,
   SetViewModeAction,
   UpdateActiveRepositoryAction,
   UpdateDirtyFilesAction,
@@ -45,7 +43,6 @@ import {
   REMOVE_REPOSITORY,
   SET_COMPARE_ID,
   SET_CWD_API,
-  SET_DIFF_OPTION,
   SET_VIEW_MODE,
   UPDATE_ACTIVE_REPOSITORY,
   UPDATE_DIRTY_FILES,
@@ -61,19 +58,6 @@ export function addRepository(
     type: ADD_REPOSITORY,
     payload: {
       repository,
-    },
-  };
-}
-
-export function setDiffOption(
-  repository: HgRepositoryClient,
-  diffOption: DiffOptionType,
-): SetDiffOptionAction {
-  return {
-    type: SET_DIFF_OPTION,
-    payload: {
-      repository,
-      diffOption,
     },
   };
 }

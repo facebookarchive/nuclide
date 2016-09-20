@@ -138,7 +138,7 @@ function getInitialState(): State {
   };
 }
 
-function viewModeToDiffOption(viewMode: DiffModeType): DiffOptionType {
+export function viewModeToDiffOption(viewMode: DiffModeType): DiffOptionType {
   switch (viewMode) {
     case DiffMode.COMMIT_MODE:
       return DiffOption.DIRTY;
@@ -497,7 +497,6 @@ export default class DiffViewModel {
       const repositoryStack = this._activeRepositoryStack;
       const diffOption = viewModeToDiffOption(this._state.viewMode);
       repositoryStack.setDiffOption(diffOption);
-      this._actionCreators.setDiffOption(repositoryStack.getRepository(), diffOption);
     }
     this._updateViewChangedFilesStatus();
     if (loadModeState) {
@@ -770,7 +769,6 @@ export default class DiffViewModel {
     this._activeRepositoryStack = repositoryStack;
     const diffOption = viewModeToDiffOption(this._state.viewMode);
     repositoryStack.setDiffOption(diffOption);
-    this._actionCreators.setDiffOption(repositoryStack.getRepository(), diffOption);
     if (!this._isActive) {
       return;
     }

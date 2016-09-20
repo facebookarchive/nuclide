@@ -89,12 +89,11 @@ export type UIProvider = {
 // Redux store types.
 
 export type RepositoryState = {
-  diffOption: DiffOptionType,
-  revisionStatuses: RevisionStatuses,
+  compareRevisionId: ?number,
   dirtyFiles: Map<NuclideUri, FileChangeStatusValue>,
   headToForkBaseRevisions: Array<RevisionInfo>,
+  revisionStatuses: RevisionStatuses,
   selectedFiles: Map<NuclideUri, FileChangeStatusValue>,
-  compareRevisionId: ?number,
 };
 
 export type CommitState = {
