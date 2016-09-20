@@ -40,8 +40,7 @@ const UPDATE_STATUS_DEBOUNCE_MS = 50;
 const REVISION_STATE_TIMEOUT_MS = 50 * 1000;
 
 export function getHeadRevision(revisions: Array<RevisionInfo>): ?RevisionInfo {
-  const {HEAD_COMMIT_TAG} = hgConstants;
-  return revisions.find(revision => revision.tags.includes(HEAD_COMMIT_TAG));
+  return revisions.find(revision => revision.isHead);
 }
 
 /**

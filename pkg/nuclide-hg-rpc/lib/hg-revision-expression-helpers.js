@@ -13,7 +13,7 @@ import type {RevisionInfo} from './HgService';
 import type {ConnectableObservable} from 'rxjs';
 
 import {hgAsyncExecute, hgRunCommand} from './hg-utils';
-import {HEAD_COMMIT_TAG, HEAD_REVISION_EXPRESSION} from './hg-constants';
+import {HEAD_REVISION_EXPRESSION} from './hg-constants';
 import {getLogger} from '../../nuclide-logging';
 import {Observable} from 'rxjs';
 
@@ -33,6 +33,7 @@ export const INFO_REV_END_MARK = '<<NUCLIDE_REV_END_MARK>>';
 // not when a node has one natural parent.
 // Reference: `hg help templates`
 const NO_NODE_HASH = '000000000000';
+const HEAD_MARKER = '@';
 
 const REVISION_INFO_TEMPLATE = `{rev}
 {desc|firstline}
@@ -45,6 +46,7 @@ const REVISION_INFO_TEMPLATE = `{rev}
 {remotenames}
 {tags}
 {p1node|short} {p2node|short}
+{ifcontains(rev, revset('.'), '${HEAD_MARKER}')}
 {desc}
 ${INFO_REV_END_MARK}
 `;
@@ -177,20 +179,11 @@ export async function fetchRevisionInfo(
 export function fetchSmartlogRevisions(
   workingDirectory: string,
 ): ConnectableObservable<Array<RevisionInfo>> {
-  const revisionExpression = 'smartlog(all) + ancestor(smartlog(all))';
-  // $FlowFixMe(matthewwithanm): Type this.
-  return Observable.forkJoin(
-    fetchRevisions(revisionExpression, workingDirectory, {shouldLimit: false}),
-    fetchRevisions('.', workingDirectory),
-  ).map(([smartlogRevisions, [headRevision]]) => {
-    // Add the `HEAD` tag to the head revision.
-    smartlogRevisions.forEach(revision => {
-      if (headRevision.id === revision.id) {
-        revision.tags.push(HEAD_COMMIT_TAG);
-      }
-    });
-    return smartlogRevisions;
-  }).publish();
+  // This will get the `smartlog()` expression revisions
+  // and the head revision commits to the nearest public commit parent.
+  const revisionExpression = 'smartlog(all) + ancestor(smartlog(all)) + last(::. & public())::.';
+  return fetchRevisions(revisionExpression, workingDirectory, {shouldLimit: false})
+    .publish();
 }
 
 /**
@@ -219,7 +212,8 @@ export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<Revi
       tags: splitLine(revisionLines[9]),
       parents: splitLine(revisionLines[10])
         .filter(hash => hash !== NO_NODE_HASH),
-      description: revisionLines.slice(11).join('\n'),
+      isHead: revisionLines[11] === HEAD_MARKER,
+      description: revisionLines.slice(12).join('\n'),
     });
   }
   return revisionInfo;

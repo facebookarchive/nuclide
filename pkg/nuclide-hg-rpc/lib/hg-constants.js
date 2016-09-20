@@ -86,8 +86,6 @@ const AmendMode = Object.freeze({
 // This is to work around flow's missing support of enums.
 (AmendMode: { [key: string]: AmendModeValue });
 
-const HEAD_COMMIT_TAG = 'head';
-
 const CommitPhase = Object.freeze({
   PUBLIC: 'public',
   DRAFT: 'draft',
@@ -102,7 +100,6 @@ const HEAD_REVISION_EXPRESSION = '.';
 module.exports = {
   AmendMode,
   CommitPhase,
-  HEAD_COMMIT_TAG,
   HEAD_REVISION_EXPRESSION,
   HgStatusOption,
   MergeConflictStatus,
