@@ -92,6 +92,14 @@ export function formatFileDiffRevisionTitle(revisionInfo: RevisionInfo): string 
   return `${hash}` + (bookmarks.length === 0 ? '' : ` - (${bookmarks.join(', ')})`);
 }
 
+function getAmendMode(shouldRebaseOnAmend: boolean): AmendModeValue {
+  if (shouldRebaseOnAmend) {
+    return hgConstants.AmendMode.REBASE;
+  } else {
+    return hgConstants.AmendMode.CLEAN;
+  }
+}
+
 export function getRevisionUpdateMessage(phabricatorRevision: PhabricatorRevisionInfo): string {
   return `
 
@@ -930,7 +938,7 @@ export default class DiffViewModel {
     }
     if (shouldAmend) {
       await activeStack.getRepository()
-        .amend(commitMessage, this._getSelectedAmendMode())
+        .amend(commitMessage, getAmendMode(this._state.shouldRebaseOnAmend))
         .toArray().toPromise();
       amended = true;
     }
@@ -1310,7 +1318,7 @@ export default class DiffViewModel {
           break;
         case CommitMode.AMEND:
           await activeStack.getRepository()
-            .amend(message, this._getSelectedAmendMode())
+            .amend(message, getAmendMode(this._state.shouldRebaseOnAmend))
             .toArray().toPromise();
           atom.notifications.addSuccess('Commit amended', {nativeFriendly: true});
           break;
@@ -1361,14 +1369,6 @@ export default class DiffViewModel {
       ...this._state,
       shouldRebaseOnAmend,
     });
-  }
-
-  _getSelectedAmendMode(): AmendModeValue {
-    if (this._state.shouldRebaseOnAmend) {
-      return hgConstants.AmendMode.REBASE;
-    } else {
-      return hgConstants.AmendMode.CLEAN;
-    }
   }
 
   activate(): void {
