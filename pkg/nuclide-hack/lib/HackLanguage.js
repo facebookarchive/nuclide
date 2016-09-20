@@ -14,10 +14,7 @@ import type {
   HackParameterDetails,
   HackCompletion,
 } from '../../nuclide-hack-rpc/lib/rpc-types';
-import type {
-  HackDiagnostic,
-  HackReference,
-} from '../../nuclide-hack-rpc/lib/HackService';
+import type {HackDiagnostic} from '../../nuclide-hack-rpc/lib/HackService';
 import type {DefinitionQueryResult} from '../../nuclide-definition-service/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
@@ -26,6 +23,7 @@ import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
+import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import {getLogger} from '../../nuclide-logging';
@@ -129,18 +127,11 @@ export class HackLanguage {
     return this._hackService.typeHint(fileVersion, position);
   }
 
-  async findReferences(
-    filePath: NuclideUri,
-    contents: string,
-    line: number,
-    column: number,
-  ): Promise<?{baseUri: string, symbolName: string, references: Array<HackReference>}> {
-    const references =
-      await this._hackService.findReferences(filePath, contents, line, column);
-    if (references == null || references.length === 0) {
-      return null;
-    }
-    return {baseUri: references[0].projectRoot, symbolName: references[0].name, references};
+  findReferences(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?FindReferencesReturn> {
+    return this._hackService.findReferences(fileVersion, position);
   }
 }
 

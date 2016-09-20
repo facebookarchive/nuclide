@@ -26,6 +26,8 @@ import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {HackIdeOutline, HackIdeOutlineItem} from './OutlineView';
 import type {HackTypedRegion} from './TypedRegions';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
+import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+import type {HackReferencesResult} from './FindReferences';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -50,6 +52,7 @@ import {
 } from './HackHelpers';
 import {outlineFromHackIdeOutline} from './OutlineView';
 import {convertCoverage} from './TypedRegions';
+import {convertReferences} from './FindReferences';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -73,8 +76,6 @@ export type SingleHackMessage = {
 
 export type HackCompletionsResult = Array<HackCompletion>;
 
-export type HackReferencesResult = Array<HackReference>;
-
 export type HackSearchPosition = {
   path: NuclideUri,
   line: number,
@@ -83,15 +84,6 @@ export type HackSearchPosition = {
   length: number,
   scope: string,
   additionalInfo: string,
-};
-
-export type HackReference = {
-  name: string,
-  filename: NuclideUri,
-  projectRoot: NuclideUri,
-  line: number,
-  char_start: number,
-  char_end: number,
 };
 
 export type HackTypeAtPosResult = {
@@ -251,22 +243,26 @@ export class HackLanguageService {
   }
 
   async findReferences(
-    file: NuclideUri,
-    contents: string,
-    line: number,
-    column: number,
-  ): Promise<?HackReferencesResult> {
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?FindReferencesReturn> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    const contents = buffer.getText();
+
     const result: ?HackReferencesResult = (await callHHClient(
-      /* args */ ['--ide-find-refs', formatLineColumn(line, column)],
+      /* args */ ['--ide-find-refs', formatAtomLineColumn(position)],
       /* errorStream */ false,
       /* processInput */ contents,
-      /* cwd */ file,
+      /* cwd */ filePath,
     ): any);
-    if (result != null) {
-      const projectRoot: NuclideUri = (result: any).hackRoot;
-      result.forEach(reference => { reference.projectRoot = projectRoot; });
+    if (result == null || result.length === 0) {
+      return {type: 'error', message: 'No references found.'};
     }
-    return result;
+
+    const projectRoot: NuclideUri = (result: any).hackRoot;
+
+    return convertReferences(result, projectRoot);
   }
 
   /**

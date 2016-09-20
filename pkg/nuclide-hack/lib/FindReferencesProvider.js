@@ -9,79 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {
-  HackReference,
-} from '../../nuclide-hack-rpc/lib/HackService';
 import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
 import {trackOperationTiming} from '../../nuclide-analytics';
 import {getHackLanguageForUri} from './HackLanguage';
 import loadingNotification from '../../commons-atom/loading-notification';
-
-async function doFindReferences(
-  textEditor: atom$TextEditor,
-  position: atom$Point,
-): Promise<?FindReferencesReturn> {
-  const result = await loadingNotification(
-    findReferences(textEditor, position.row, position.column),
-    'Loading references from Hack server...',
-  );
-  if (!result) {
-    return {type: 'error', message: 'No references found.'};
-  }
-
-  const {baseUri} = result;
-  let {symbolName, references} = result;
-
-  // Process this into the format nuclide-find-references expects.
-  references = references.map(ref => {
-    return {
-      uri: ref.filename,
-      name: null, // TODO(hansonw): Get the caller when it's available
-      start: {
-        line: ref.line,
-        column: ref.char_start,
-      },
-      end: {
-        line: ref.line,
-        column: ref.char_end,
-      },
-    };
-  });
-
-  // Strip off the global namespace indicator.
-  if (symbolName.startsWith('\\')) {
-    symbolName = symbolName.slice(1);
-  }
-
-  return {
-    type: 'data',
-    baseUri,
-    referencedSymbolName: symbolName,
-    references,
-  };
-}
-
-async function findReferences(
-  editor: atom$TextEditor,
-  line: number,
-  column: number,
-): Promise<?{baseUri: string, symbolName: string, references: Array<HackReference>}> {
-  const filePath = editor.getPath();
-  const hackLanguage = await getHackLanguageForUri(filePath);
-  if (!hackLanguage || !filePath) {
-    return null;
-  }
-
-  const contents = editor.getText();
-  return await hackLanguage.findReferences(
-    filePath,
-    contents,
-    line + 1,
-    column + 1,
-  );
-}
+import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 module.exports = {
   async isEditorSupported(textEditor: atom$TextEditor): Promise<boolean> {
@@ -93,6 +27,16 @@ module.exports = {
   },
 
   findReferences(editor: atom$TextEditor, position: atom$Point): Promise<?FindReferencesReturn> {
-    return trackOperationTiming('hack:findReferences', () => doFindReferences(editor, position));
+    return trackOperationTiming('hack:findReferences', async () => {
+      const fileVersion = await getFileVersionOfEditor(editor);
+      const hackLanguage = await getHackLanguageForUri(editor.getPath());
+      if (hackLanguage == null || fileVersion == null) {
+        return null;
+      }
+      return await loadingNotification(
+        hackLanguage.findReferences(fileVersion, position),
+        'Loading references from Hack server...',
+      );
+    });
   },
 };

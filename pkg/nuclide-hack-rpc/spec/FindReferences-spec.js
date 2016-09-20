@@ -1,0 +1,60 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+import {convertReferences} from '../lib/FindReferences';
+import {addMatchers} from '../../nuclide-test-helpers';
+
+const projectRoot = '/test/';
+const file1Path = '/test/file1.php';
+const file2Path = '/test/file2.php';
+
+describe('FindReferences', () => {
+  beforeEach(function() {
+    addMatchers(this);
+  });
+
+  it('convertReferences', () => {
+    expect(convertReferences([
+      {
+        name: '\\TestClass::testFunction',
+        filename: file1Path,
+        line: 13,
+        char_start: 5,
+        char_end: 7,
+      },
+      {
+        name: '\\TestClass::testFunction',
+        filename: file2Path,
+        line: 11,
+        char_start: 1,
+        char_end: 3,
+      },
+    ], projectRoot)).diffJson({
+      type: 'data',
+      baseUri: '/test/',
+      referencedSymbolName: 'TestClass::testFunction',
+      references: [
+        {
+          uri: '/test/file1.php',
+          name: null,
+          start: {line: 13, column: 5},
+          end: {line: 13, column: 7},
+        },
+        {
+          uri: '/test/file2.php',
+          name: null,
+          start: {line: 11, column: 1},
+          end: {line: 11, column: 3},
+        },
+      ],
+    });
+  });
+});

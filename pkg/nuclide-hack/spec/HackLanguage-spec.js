@@ -14,7 +14,6 @@ import type {HackLanguage} from '../lib/HackLanguage';
 import type {
   HackCompletionsResult,
   HackDiagnosticsResult,
-  HackReferencesResult,
 } from '../../nuclide-hack-rpc/lib/HackService';
 
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
@@ -179,56 +178,6 @@ HH\\fclass HackClass {}`, 19, 2, 5);
       const result = await hackLanguage.getDiagnostics(filePath, contents);
       expect(mockService.getDiagnostics).toHaveBeenCalledWith(filePath, contents);
       expect(result).toEqual([message]);
-    });
-  });
-
-  it('findReferences', () => {
-    waitsForPromise(async () => {
-      const findResult: HackReferencesResult = [
-        {
-          name: 'item_name',
-          filename: filePath,
-          projectRoot: basePath,
-          line: 1,
-          char_start: 2,
-          char_end: 3,
-        },
-        {
-          name: 'item_name',
-          filename: filePath,
-          projectRoot: basePath,
-          line: 11,
-          char_start: 4,
-          char_end: 7,
-        },
-      ];
-      mockService.findReferences.andReturn(findResult);
-
-      const result = await hackLanguage.findReferences(filePath, contents, 2, 3);
-      expect(result).toEqual(
-        {
-          baseUri: '/tmp/project',
-          symbolName: 'item_name',
-          references: [
-            {
-              name: 'item_name',
-              filename: filePath,
-              projectRoot: basePath,
-              line: 1,
-              char_start: 2,
-              char_end: 3,
-            },
-            {
-              name: 'item_name',
-              filename: filePath,
-              projectRoot: basePath,
-              line: 11,
-              char_start: 4,
-              char_end: 7,
-            },
-          ],
-        });
-      expect(mockService.findReferences).toHaveBeenCalledWith(filePath, contents, 2, 3);
     });
   });
 
