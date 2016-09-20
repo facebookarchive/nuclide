@@ -64,7 +64,6 @@ export type SerializedState = {
 const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
 const GK_DEBUGGER_LAUNCH_ATTACH_UI = 'nuclide_debugger_launch_attach_ui';
 const GK_DEBUGGER_UI_REVAMP = 'nuclide_debugger_ui_revamp';
-const GK_TIMEOUT = 5000;
 const NUX_NEW_DEBUGGER_UI_ID = 4377;
 const GK_NEW_DEBUGGER_UI_NUX = 'mp_nuclide_new_debugger_ui';
 const NUX_NEW_DEBUGGER_UI_NAME = 'nuclide_new_debugger_ui';
@@ -267,7 +266,7 @@ class Activation {
   }
 
   async _setupView(): Promise<void> {
-    const useRevampedUi = await passesGK(GK_DEBUGGER_UI_REVAMP, GK_TIMEOUT);
+    const useRevampedUi = await passesGK(GK_DEBUGGER_UI_REVAMP);
     this._disposables.add(
       atom.views.addViewProvider(
         DebuggerModel,
