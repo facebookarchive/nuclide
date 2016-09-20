@@ -107,7 +107,7 @@ class CreateConnectionProfileForm extends React.Component<void, Props, void> {
           initialAuthMethod={initialFields.authMethod}
           initialDisplayTitle={initialFields.displayTitle}
           onCancel={emptyFunction}
-          onConfirm={emptyFunction}
+          onConfirm={this._clickSave}
           onDidChange={emptyFunction}
           ref="connection-details"
         />
