@@ -647,12 +647,12 @@ type ChangeCursorPositionEvent = {
   cursor: atom$Cursor,
 };
 
-type MarkerOptions = $Shape<{
+type MarkerOptions = {|
   reversed?: boolean,
   tailed?: boolean,
   invalidate?: 'never' | 'surround' | 'overlap' | 'inside' | 'touch',
   exclusive?: boolean,
-}>;
+|};
 
 declare class atom$TextEditor extends atom$Model {
   id: number,
