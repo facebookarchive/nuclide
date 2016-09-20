@@ -12,6 +12,7 @@
 import type {Action, DiffOptionType, Store} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
+import type {RevisionInfo} from '../../../nuclide-hg-rpc/lib/HgService';
 
 import * as ActionTypes from './ActionTypes';
 import * as Actions from './Actions';
@@ -26,9 +27,11 @@ import {
   getSelectedFileChanges,
 } from '../RepositoryStack';
 import {
+  createPhabricatorRevision,
   formatFileDiffRevisionTitle,
-  viewModeToDiffOption,
   getRevisionUpdateMessage,
+  viewModeToDiffOption,
+  updatePhabricatorRevision,
 } from '../DiffViewModel';
 import {
   CommitMode,
@@ -39,12 +42,14 @@ import {
 } from '../constants';
 import {
   getAmendMode,
+  promptToCleanDirtyChanges,
 } from '../utils';
 import {repositoryForPath} from '../../../nuclide-hg-git-bridge';
 import {bufferForUri, loadBufferForUri} from '../../../commons-atom/text-editor';
 import {
   getEmptyCommitState,
   getEmptyFileDiffState,
+  getEmptyPublishState,
 } from './createEmptyAppState';
 import {getPhabricatorRevisionFromCommitMessage} from '../../../nuclide-arcanist-rpc/lib/utils';
 
@@ -101,6 +106,23 @@ function observeActiveRepository(
       return a.payload.hgRepository;
     })
     .startWith(store.getState().activeRepository);
+}
+
+function observeRepositoryHeadRevision(
+  repository: HgRepositoryClient,
+): Observable<?RevisionInfo> {
+  return repository.observeRevisionChanges()
+    .map(revisions => getHeadRevision(revisions))
+    .distinctUntilChanged((revision1, revision2) => {
+      if (revision1 === revision2) {
+        return true;
+      } else if (revision1 == null || revision2 == null) {
+        return false;
+      } else {
+        invariant(revision1 != null);
+        return revision1.id === revision2.id;
+      }
+    });
 }
 
 // An added, but not-activated repository would continue to provide dirty file change updates,
@@ -287,10 +309,9 @@ export function setViewModeEpic(
         return Observable.empty();
       }
 
-      const headCommitMessageChanges = activeRepository.observeRevisionChanges()
-        .filter(revisions => getHeadRevision(revisions) != null)
-        .map(revisions => {
-          const headRevision = getHeadRevision(revisions);
+      const headCommitMessageChanges = observeRepositoryHeadRevision(activeRepository)
+        .filter(headRevision => headRevision != null)
+        .map(headRevision => {
           invariant(headRevision != null);
           return headRevision.description;
         }).distinctUntilChanged();
@@ -415,7 +436,73 @@ export function publishDiff(
   return actions.ofType(ActionTypes.PUBLISH_DIFF).switchMap(action => {
     invariant(action.type === ActionTypes.PUBLISH_DIFF);
 
-    // TODO(most): do create or update diffs with the payload.
-    return Observable.empty();
+    const {message, repository, lintExcuse, publishUpdates} = action.payload;
+    const {publish: {mode}, shouldRebaseOnAmend} = store.getState();
+
+    const amendCleanupMessage = mode === PublishMode.CREATE ? message : null;
+
+    return Observable.concat(
+      Observable.of(Actions.updatePublishState({
+        mode,
+        message,
+        state: PublishModeState.AWAITING_PUBLISH,
+      })),
+      Observable.fromPromise(promptToCleanDirtyChanges(
+        repository,
+        amendCleanupMessage,
+        shouldRebaseOnAmend,
+      )).switchMap(cleanResult => {
+        if (cleanResult == null) {
+          atom.notifications.addError('Error clearning dirty changes', {
+            dismissable: true,
+            nativeFriendly: true,
+          });
+          return Observable.of(Actions.updatePublishState(getEmptyPublishState()));
+        }
+        const {amended, allowUntracked} = cleanResult;
+        return observeRepositoryHeadRevision(repository)
+          .filter(headRevision => headRevision != null)
+          .first().switchMap(headRevision => {
+            invariant(headRevision != null);
+
+            switch (mode) {
+              case PublishMode.CREATE:
+                return createPhabricatorRevision(
+                  repository,
+                  publishUpdates,
+                  headRevision.description,
+                  message,
+                  amended,
+                  lintExcuse,
+                );
+              case PublishMode.UPDATE:
+                return updatePhabricatorRevision(
+                  repository,
+                  publishUpdates,
+                  headRevision.description,
+                  message,
+                  allowUntracked,
+                  lintExcuse,
+                );
+              default:
+                return Observable.throw(new Error(`Invalid Publish Mode: ${mode}`));
+            }
+          }).ignoreElements()
+          .concat(Observable.of(
+            Actions.updatePublishState(getEmptyPublishState()),
+            Actions.setViewMode(DiffMode.BROWSE_MODE),
+          )).catch(error => {
+            atom.notifications.addError('Couldn\'t Publish to Phabricator', {
+              detail: error.message,
+              nativeFriendly: true,
+            });
+            return Observable.of(Actions.updatePublishState({
+              mode,
+              message,
+              state: PublishModeState.PUBLISH_ERROR,
+            }));
+          });
+      }),
+    );
   });
 }

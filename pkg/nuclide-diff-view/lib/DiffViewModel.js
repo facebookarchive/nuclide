@@ -151,7 +151,7 @@ export function viewModeToDiffOption(viewMode: DiffModeType): DiffOptionType {
 
 // TODO(most): Cleanup to avoid using `.do()` and have side effects:
 // (notifications & publish updates).
-function createPhabricatorRevision(
+export function createPhabricatorRevision(
   repository: HgRepositoryClient,
   publishUpdates: Subject<any>,
   headCommitMessage: string,
@@ -198,7 +198,7 @@ function createPhabricatorRevision(
 
 // TODO(most): Cleanup to avoid using `.do()` and have side effects:
 // (notifications & publish updates).
-function updatePhabricatorRevision(
+export function updatePhabricatorRevision(
   repository: HgRepositoryClient,
   publishUpdates: Subject<any>,
   headCommitMessage: string,
@@ -858,7 +858,20 @@ export default class DiffViewModel {
   ): Promise<void> {
     const activeStack = this._activeRepositoryStack;
     invariant(activeStack != null, 'Cannot publish without an active stack!');
-    this._actionCreators.publishDiff(activeStack.getRepository(), publishMessage, lintExcuse);
+
+    if (this._useReduxStore) {
+      // The UI wouldn't update yet with that development config enabled
+      // as it's still wired to the old model state.
+      // TODO(most): Cleanup to use the redux store.
+      this._actionCreators.publishDiff(
+        activeStack.getRepository(),
+        publishMessage,
+        lintExcuse,
+        this._publishUpdates,
+      );
+      return;
+    }
+
     this._setState({
       ...this._state,
       publishMessage,

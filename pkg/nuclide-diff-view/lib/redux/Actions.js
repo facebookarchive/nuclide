@@ -43,6 +43,7 @@ import type {
   RevisionInfo,
 } from '../../../nuclide-hg-rpc/lib/HgService';
 import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
+import type {Subject} from 'rxjs';
 
 import {
   ACTIVATE_REPOSITORY,
@@ -286,12 +287,14 @@ export function publishDiff(
   repository: HgRepositoryClient,
   message: string,
   lintExcuse: ?string,
+  publishUpdates: Subject<any>,
 ): PublishDiffAction {
   return {
     type: PUBLISH_DIFF,
     payload: {
       lintExcuse,
       message,
+      publishUpdates,
       repository,
     },
   };
