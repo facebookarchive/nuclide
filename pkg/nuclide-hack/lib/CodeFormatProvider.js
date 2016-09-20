@@ -12,7 +12,7 @@
 import {trackTiming} from '../../nuclide-analytics';
 import {getHackLanguageForUri} from './HackLanguage';
 
-class CodeFormatProvider {
+export default class CodeFormatProvider {
 
   @trackTiming('hack.formatCode')
   formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
@@ -34,5 +34,3 @@ async function formatSourceFromEditor(editor: atom$TextEditor, range: atom$Range
   return await hackLanguage.formatSource(
     filePath, buffer.getText(), startPosition + 1, endPosition + 1);
 }
-
-module.exports = CodeFormatProvider;
