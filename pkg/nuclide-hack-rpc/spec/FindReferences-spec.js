@@ -45,14 +45,18 @@ describe('FindReferences', () => {
         {
           uri: '/test/file1.php',
           name: null,
-          start: {line: 13, column: 5},
-          end: {line: 13, column: 7},
+          range: {
+            start: {row: 12, column: 4},
+            end: {row: 12, column: 7},
+          },
         },
         {
           uri: '/test/file2.php',
           name: null,
-          start: {line: 11, column: 1},
-          end: {line: 11, column: 3},
+          range: {
+            start: {row: 10, column: 0},
+            end: {row: 10, column: 3},
+          },
         },
       ],
     });

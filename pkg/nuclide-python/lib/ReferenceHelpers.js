@@ -17,6 +17,7 @@ import {trackTiming} from '../../nuclide-analytics';
 import {getAtomProjectRootPath} from '../../commons-atom/projects';
 import loadingNotification from '../../commons-atom/loading-notification';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {Range, Point} from 'simple-text-buffer';
 
 export default class ReferenceHelpers {
 
@@ -64,14 +65,10 @@ export default class ReferenceHelpers {
       return {
         uri: ref.file,
         name: ref.parentName,
-        start: {
-          line: ref.line + 1,
-          column: ref.column + 1,
-        },
-        end: {
-          line: ref.line + 1,
-          column: ref.column + ref.text.length,
-        },
+        range: new Range(
+          new Point(ref.line, ref.column),
+          new Point(ref.line, ref.column + ref.text.length),
+        ),
       };
     });
 

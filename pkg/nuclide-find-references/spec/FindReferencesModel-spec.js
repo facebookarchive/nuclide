@@ -12,10 +12,14 @@
 import type FindReferencesModelType from '../lib/FindReferencesModel';
 
 import * as NuclideRemoteConnection from '../../nuclide-remote-connection';
+import {Point, Range} from 'atom';
 
 // convenience location creator
-function loc(line, column) {
-  return {line, column};
+function range(startLine, startColumn, endLine, endColumn) {
+  return new Range(
+    new Point(startLine, startColumn),
+    new Point(endLine, endColumn),
+  );
 }
 
 describe('FindReferencesModel', () => {
@@ -45,9 +49,9 @@ describe('FindReferencesModel', () => {
     waitsForPromise(async () => {
       const refs = [
         // These should be sorted in the final output.
-        {uri: '/test/1', name: 'test1', start: loc(9, 1), end: loc(10, 1)},
-        {uri: '/test/1', name: 'test1', start: loc(1, 1), end: loc(1, 1)},
-        {uri: '/test/2', name: 'test2', start: loc(2, 1), end: loc(2, 1)},
+        {uri: '/test/1', name: 'test1', range: range(8, 0, 9, 1)},
+        {uri: '/test/1', name: 'test1', range: range(0, 0, 0, 1)},
+        {uri: '/test/2', name: 'test2', range: range(1, 0, 1, 1)},
       ];
       const model = new FindReferencesModel('/test', 'testFunction', refs);
       expect(model.getReferenceCount()).toEqual(3);
@@ -61,8 +65,8 @@ describe('FindReferencesModel', () => {
           grammar: fakeGrammar,
           previewText: ['1\n2', '8\n9'],
           refGroups: [
-            {references: [refs[1]], startLine: 1, endLine: 2},
-            {references: [refs[0]], startLine: 8, endLine: 9},
+            {references: [refs[1]], startLine: 0, endLine: 1},
+            {references: [refs[0]], startLine: 7, endLine: 8},
           ],
         },
         {
@@ -70,7 +74,7 @@ describe('FindReferencesModel', () => {
           grammar: fakeGrammar,
           previewText: ['1\n2\n3'],
           refGroups: [
-            {references: [refs[2]], startLine: 1, endLine: 3},
+            {references: [refs[2]], startLine: 0, endLine: 2},
           ],
         },
       ];
@@ -87,16 +91,16 @@ describe('FindReferencesModel', () => {
     waitsForPromise(async () => {
       // Adjacent blocks (including context) should get merged into a single group.
       const refs = [
-        {uri: '/test/1', name: 'test1', start: loc(1, 1), end: loc(1, 1)},
-        {uri: '/test/1', name: 'test1', start: loc(2, 1), end: loc(2, 1)},
-        {uri: '/test/1', name: 'test1', start: loc(4, 1), end: loc(4, 1)},
-        {uri: '/test/1', name: 'test1', start: loc(7, 1), end: loc(7, 1)},
-        {uri: '/test/1', name: 'test1', start: loc(8, 1), end: loc(8, 1)},
+        {uri: '/test/1', name: 'test1', range: range(0, 0, 0, 1)},
+        {uri: '/test/1', name: 'test1', range: range(1, 0, 1, 1)},
+        {uri: '/test/1', name: 'test1', range: range(3, 0, 3, 1)},
+        {uri: '/test/1', name: 'test1', range: range(6, 0, 6, 1)},
+        {uri: '/test/1', name: 'test1', range: range(7, 0, 7, 1)},
         // and overlapping ranges
-        {uri: '/test/2', name: 'test2', start: loc(1, 1), end: loc(4, 1)},
-        {uri: '/test/2', name: 'test2', start: loc(2, 1), end: loc(3, 1)},
+        {uri: '/test/2', name: 'test2', range: range(0, 0, 3, 1)},
+        {uri: '/test/2', name: 'test2', range: range(1, 0, 2, 1)},
         // ignore duplicates
-        {uri: '/test/1', name: 'dupe!', start: loc(1, 1), end: loc(1, 1)},
+        {uri: '/test/1', name: 'dupe!', range: range(0, 0, 0, 1)},
       ];
       const model = new FindReferencesModel('/test', 'testFunction', refs);
       expect(model.getReferenceCount()).toEqual(7);
@@ -109,8 +113,8 @@ describe('FindReferencesModel', () => {
           grammar: fakeGrammar,
           previewText: ['1\n2\n3\n4\n5', '6\n7\n8\n9'],
           refGroups: [
-            {references: refs.slice(0, 3), startLine: 1, endLine: 5},
-            {references: refs.slice(3, 5), startLine: 6, endLine: 9},
+            {references: refs.slice(0, 3), startLine: 0, endLine: 4},
+            {references: refs.slice(3, 5), startLine: 5, endLine: 8},
           ],
         },
         {
@@ -118,7 +122,7 @@ describe('FindReferencesModel', () => {
           grammar: fakeGrammar,
           previewText: ['1\n2\n3\n4\n5'],
           refGroups: [
-            {references: refs.slice(5, 7), startLine: 1, endLine: 5},
+            {references: refs.slice(5, 7), startLine: 0, endLine: 4},
           ],
         },
       ]);
@@ -128,8 +132,8 @@ describe('FindReferencesModel', () => {
   it('should hide bad files', () => {
     waitsForPromise(async () => {
       const refs = [
-        {uri: '/test/1', name: 'test1', start: loc(1, 1), end: loc(1, 1)},
-        {uri: 'bad', name: 'bad', start: loc(2, 1), end: loc(2, 1)},
+        {uri: '/test/1', name: 'test1', range: range(0, 0, 0, 1)},
+        {uri: 'bad', name: 'bad', range: range(1, 0, 1, 1)},
       ];
       const model = new FindReferencesModel('/test', 'testFunction', refs);
       expect(model.getReferenceCount()).toEqual(2);
@@ -142,10 +146,9 @@ describe('FindReferencesModel', () => {
           uri: '/test/1',
           grammar: fakeGrammar,
           previewText: ['1\n2'],
-          refGroups: [{references: [refs[0]], startLine: 1, endLine: 2}],
+          refGroups: [{references: [refs[0]], startLine: 0, endLine: 1}],
         },
       ]);
     });
   });
-
 });

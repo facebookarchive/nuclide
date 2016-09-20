@@ -500,6 +500,7 @@ declare class atom$Range {
     copy?: boolean,
   ): atom$Range,
   constructor(pointA: atom$PointLike, pointB: atom$PointLike): void,
+  compare(other: atom$Range): number,
   start: atom$Point,
   end: atom$Point,
   isEmpty(): boolean,

@@ -14,7 +14,6 @@ import type {
   ReferenceGroup,
 } from './types';
 import type {
-  Location,
   Reference,
 } from './rpc-types';
 
@@ -33,16 +32,8 @@ const FRAGMENT_GRAMMARS = {
   'text.html.php': 'source.hackfragment',
 };
 
-function compareLocation(x: Location, y: Location): number {
-  const lineDiff = x.line - y.line;
-  if (lineDiff) {
-    return lineDiff;
-  }
-  return x.column - y.column;
-}
-
 function compareReference(x: Reference, y: Reference): number {
-  return compareLocation(x.start, y.start) || compareLocation(x.end, y.end);
+  return x.range.compare(y.range);
 }
 
 async function readFileContents(uri: string): Promise<?string> {
@@ -155,19 +146,20 @@ class FindReferencesModel {
       let curStartLine = -11;
       let curEndLine = -11;
       for (const ref of entryReferences) {
-        if (ref.start.line <= curEndLine + 1 + this.getPreviewContext()) {
+        const range = ref.range;
+        if (range.start.row <= curEndLine + 1 + this.getPreviewContext()) {
           // Remove references with the same range (happens in C++ with templates)
           if (curGroup.length > 0 && compareReference(curGroup[curGroup.length - 1], ref) !== 0) {
             curGroup.push(ref);
-            curEndLine = Math.max(curEndLine, ref.end.line);
+            curEndLine = Math.max(curEndLine, range.end.row);
           } else {
             this._referenceCount--;
           }
         } else {
           addReferenceGroup(groups, curGroup, curStartLine, curEndLine);
           curGroup = [ref];
-          curStartLine = ref.start.line;
-          curEndLine = ref.end.line;
+          curStartLine = range.start.row;
+          curEndLine = range.end.row;
         }
       }
       addReferenceGroup(groups, curGroup, curStartLine, curEndLine);
@@ -196,17 +188,17 @@ class FindReferencesModel {
       const {references} = group;
       let {startLine, endLine} = group;
       // Expand start/end lines with context.
-      startLine = Math.max(startLine - this.getPreviewContext(), 1);
-      endLine = Math.min(endLine + this.getPreviewContext(), fileLines.length);
+      startLine = Math.max(startLine - this.getPreviewContext(), 0);
+      endLine = Math.min(endLine + this.getPreviewContext(), fileLines.length - 1);
       // However, don't include blank lines.
-      while (startLine < endLine && fileLines[startLine - 1] === '') {
+      while (startLine < endLine && fileLines[startLine] === '') {
         startLine++;
       }
-      while (startLine < endLine && fileLines[endLine - 1] === '') {
+      while (startLine < endLine && fileLines[endLine] === '') {
         endLine--;
       }
 
-      previewText.push(fileLines.slice(startLine - 1, endLine).join('\n'));
+      previewText.push(fileLines.slice(startLine, endLine + 1).join('\n'));
       return {references, startLine, endLine};
     });
     let grammar = atom.grammars.selectGrammar(uri, fileContents);

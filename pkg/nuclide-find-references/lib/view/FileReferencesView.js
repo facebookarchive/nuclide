@@ -16,6 +16,7 @@ import {React} from 'react-for-atom';
 import classnames from 'classnames';
 import FilePreview from './FilePreview';
 import nuclideUri from '../../../commons-node/nuclideUri';
+import {goToLocation} from '../../../commons-atom/go-to-location';
 
 type Props = {
   uri: string,
@@ -45,10 +46,7 @@ export default class FileReferencesView extends React.Component {
   }
 
   _onRefClick(evt: SyntheticEvent, ref: Reference) {
-    atom.workspace.open(this.props.uri, {
-      initialLine: ref.start.line - 1,
-      initialColumn: ref.start.column - 1,
-    });
+    goToLocation(this.props.uri, ref.range.start.row, ref.range.start.column);
     evt.stopPropagation();
   }
 
@@ -60,9 +58,7 @@ export default class FileReferencesView extends React.Component {
   }
 
   _onFileNameClick(evt: SyntheticEvent, line?: number) {
-    atom.workspace.open(this.props.uri, {
-      initialLine: line,
-    });
+    goToLocation(this.props.uri, line);
     evt.stopPropagation();
   }
 
@@ -75,14 +71,15 @@ export default class FileReferencesView extends React.Component {
       if (firstRef.name && firstRef.name === lastRef.name) {
         caller = <span> in <code>{firstRef.name}</code></span>;
       }
-
+      const startRange = firstRef.range.start;
+      const endRange = lastRef.range.end;
       return (
         <li key={group.startLine} className="nuclide-find-references-ref">
           <div
             className="nuclide-find-references-ref-name"
             onClick={evt => this._onRefClick(evt, firstRef)}>
             {'Line '}
-            {firstRef.start.line}:{firstRef.start.column} - {lastRef.end.line}:{lastRef.end.column}
+            {startRange.row + 1}:{startRange.column + 1} - {endRange.row + 1}:{endRange.column + 1}
             {caller}
           </div>
           <FilePreview

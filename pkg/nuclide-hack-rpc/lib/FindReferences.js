@@ -12,6 +12,8 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 
+import {hackRangeToAtomRange} from './HackHelpers';
+
 export type HackReferencesResult = Array<HackReference>;
 
 export type HackReference = {
@@ -38,14 +40,7 @@ export function convertReferences(
     return {
       uri: ref.filename,
       name: null, // TODO(hansonw): Get the caller when it's available
-      start: {
-        line: ref.line,
-        column: ref.char_start,
-      },
-      end: {
-        line: ref.line,
-        column: ref.char_end,
-      },
+      range: hackRangeToAtomRange(ref),
     };
   });
 

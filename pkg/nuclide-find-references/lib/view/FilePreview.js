@@ -36,17 +36,18 @@ export default class FilePreview extends React.Component {
     }
 
     references.forEach((ref: Reference) => {
+      const range = ref.range;
       const marker = editor.markBufferRange([
-        [ref.start.line - startLine, ref.start.column - 1],
-        [ref.end.line - startLine, ref.end.column],
+        [range.start.row - startLine, range.start.column],
+        [range.end.row - startLine, range.end.column],
       ]);
       editor.decorateMarker(marker, {type: 'highlight', class: 'reference'});
     });
 
     // Make sure at least one highlight is visible.
     editor.scrollToBufferPosition([
-      references[0].end.line - startLine,
-      references[0].end.column - 1,
+      references[0].range.end.row - startLine + 1,
+      references[0].range.end.column,
     ]);
   }
 
@@ -57,8 +58,8 @@ export default class FilePreview extends React.Component {
         <div
           key={i}
           className="nuclide-find-references-line-number"
-          onClick={evt => this.props.onLineClick(evt, i - 1)}>
-          {i}
+          onClick={evt => this.props.onLineClick(evt, i)}>
+          {i + 1}
         </div>,
       );
     }

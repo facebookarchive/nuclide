@@ -11,16 +11,10 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-export type Location = {
-  line: number,
-  column: number,
-};
-
 export type Reference = {
   uri: NuclideUri,      // Nuclide URI of the file path
   name: ?string,    // name of calling method/function/symbol
-  start: Location,
-  end: Location,
+  range: atom$Range,
 };
 
 export type FindReferencesData = {
