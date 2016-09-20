@@ -9,9 +9,14 @@
  * the root directory of this source tree.
  */
 
-import {outlineFromHackIdeOutline} from '../lib/OutlineViewProvider';
+import {outlineFromHackIdeOutline} from '../lib/OutlineView';
+import {addMatchers} from '../../nuclide-test-helpers';
 
 describe('outlineFromHackIdeOutline', () => {
+  beforeEach(function() {
+    addMatchers(this);
+  });
+
   it('function', () => {
     const actualOutline = outlineFromHackIdeOutline(
       [
@@ -74,7 +79,7 @@ describe('outlineFromHackIdeOutline', () => {
         },
       ],
     );
-    expect(actualOutline).toEqual(
+    expect(actualOutline).diffJson(
       {
         outlineTrees: [
           {
@@ -276,7 +281,7 @@ describe('outlineFromHackIdeOutline', () => {
         },
       ],
     );
-    expect(actualOutline).toEqual(
+    expect(actualOutline).diffJson(
       {
         outlineTrees: [
           {
@@ -412,7 +417,7 @@ describe('outlineFromHackIdeOutline', () => {
         },
       ],
     );
-    expect(actualOutline).toEqual(
+    expect(actualOutline).diffJson(
       {
         outlineTrees: [
           {
@@ -513,7 +518,7 @@ describe('outlineFromHackIdeOutline', () => {
         },
       ],
     );
-    expect(actualOutline).toEqual(
+    expect(actualOutline).diffJson(
       {
         outlineTrees: [
           {
@@ -590,7 +595,7 @@ describe('outlineFromHackIdeOutline', () => {
         },
       ],
     );
-    expect(actualOutline).toEqual(
+    expect(actualOutline).diffJson(
       {
         outlineTrees: [
           {

@@ -17,9 +17,9 @@ import type {
 import type {
   HackDiagnostic,
   HackReference,
-  HackIdeOutline,
 } from '../../nuclide-hack-rpc/lib/HackService';
 import type {DefinitionQueryResult} from '../../nuclide-definition-service/lib/rpc-types';
+import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackCoverageResult} from './TypedRegions';
@@ -115,11 +115,8 @@ export class HackLanguage {
     return convertTypedRegionsToCoverageResult(regions);
   }
 
-  getIdeOutline(
-    filePath: NuclideUri,
-    contents: string,
-  ): Promise<?HackIdeOutline> {
-    return this._hackService.getIdeOutline(filePath, contents);
+  getOutline(fileVersion: FileVersion): Promise<?Outline> {
+    return this._hackService.getOutline(fileVersion);
   }
 
   getDefinition(fileVersion: FileVersion, position: atom$Point): Promise<?DefinitionQueryResult> {

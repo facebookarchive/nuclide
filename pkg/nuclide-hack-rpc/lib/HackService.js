@@ -22,6 +22,8 @@ import type {
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {HackDefinition} from './Definitions';
+import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+import type {HackIdeOutline, HackIdeOutlineItem} from './OutlineView';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -44,6 +46,7 @@ import {
   hackRangeToAtomRange,
   atomPointOfHackRangeStart,
 } from './HackHelpers';
+import {outlineFromHackIdeOutline} from './OutlineView';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -64,16 +67,6 @@ export type SingleHackMessage = {
   start: number,
   end: number,
 };
-
-// Note that all line/column values are 1-based.
-export type HackSpan = {
-  filename: NuclideUri,
-  line_start: number,
-  char_start: number,
-  line_end: number,
-  char_end: number,
-};
-
 
 export type HackCompletionsResult = Array<HackCompletion>;
 
@@ -102,21 +95,6 @@ export type HackTypedRegion = {
   color: 'default' | 'checked' | 'partial' | 'unchecked',
   text: string,
 };
-
-export type HackIdeOutlineItem = {
-  kind: 'function' | 'class' | 'property' | 'method' | 'const'
-    | 'enum' | 'typeconst' | 'param' | 'trait' | 'interface',
-  name: string,
-  position: HackRange,
-  id?: ?string,
-  span: HackSpan,
-  modifiers: ?Array<string>,
-  children?: Array<HackIdeOutlineItem>,
-  params?: Array<HackIdeOutlineItem>,
-  docblock?: string,
-};
-
-export type HackIdeOutline = Array<HackIdeOutlineItem>;
 
 export type HackTypeAtPosResult = {
   type: ?string,
@@ -340,17 +318,24 @@ export class HackLanguageService {
     return (result: any);
   }
 
-  async getIdeOutline(
-    filePath: NuclideUri,
-    contents: string,
-  ): Promise<?HackIdeOutline> {
-    const result = await callHHClient(
+  async getOutline(
+    fileVersion: FileVersion,
+  ): Promise<?Outline> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    const contents = buffer.getText();
+
+    const result: ?HackIdeOutline = (await callHHClient(
       /* args */ ['--ide-outline'],
       /* errorStream */ false,
       /* processInput */ contents,
       filePath,
-    );
-    return (result: any);
+    ): any);
+    if (result == null) {
+      return null;
+    }
+
+    return outlineFromHackIdeOutline(result);
   }
 
   async typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
