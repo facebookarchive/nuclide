@@ -168,11 +168,6 @@ export type SetCompareIdAction = {
   },
 };
 
-export type DummyAction = {
-  type: 'DUMMY',
-};
-
-
 export type UpdateDirtyFilesAction = {
   type: 'UPDATE_DIRTY_FILES',
   payload: {
@@ -261,11 +256,29 @@ export type SetShouldReabaseOnAmendAction = {
   },
 };
 
+export type CommitAction = {
+  type: 'COMMIT',
+  payload: {
+    message: string,
+    repository: HgRepositoryClient,
+  },
+};
+
+export type PublishDiffAction = {
+  type: 'PUBLISH_DIFF',
+  payload: {
+    lintExcuse: ?string,
+    message: string,
+    repository: HgRepositoryClient,
+  },
+};
+
 export type Action = ActivateRepositoryAction
   | AddRepositoryAction
+  | CommitAction
   | DeactivateRepositoryAction
   | DiffFileAction
-  | DummyAction
+  | PublishDiffAction
   | RemoveRepositoryAction
   | SetCommitModeAction
   | SetCompareIdAction

@@ -361,3 +361,27 @@ export function setViewModeEpic(
     }).takeUntil(actions.ofType(ActionTypes.DEACTIVATE_REPOSITORY));
   });
 }
+
+export function commit(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(ActionTypes.COMMIT).switchMap(action => {
+    invariant(action.type === ActionTypes.COMMIT);
+
+    // TODO(most): do commit or amend with the payload.
+    return Observable.empty();
+  });
+}
+
+export function publishDiff(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(ActionTypes.PUBLISH_DIFF).switchMap(action => {
+    invariant(action.type === ActionTypes.PUBLISH_DIFF);
+
+    // TODO(most): do create or update diffs with the payload.
+    return Observable.empty();
+  });
+}

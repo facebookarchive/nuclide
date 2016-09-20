@@ -13,6 +13,7 @@ import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
   ActivateRepositoryAction,
   AddRepositoryAction,
+  CommitAction,
   CommitModeType,
   CommitState,
   DeactivateRepositoryAction,
@@ -20,6 +21,7 @@ import type {
   DiffModeType,
   FileChangeStatusValue,
   FileDiffState,
+  PublishDiffAction,
   PublishState,
   RemoveRepositoryAction,
   SetCommitModeAction,
@@ -45,8 +47,10 @@ import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi
 import {
   ACTIVATE_REPOSITORY,
   ADD_REPOSITORY,
+  COMMIT,
   DEACTIVATE_REPOSITORY,
   DIFF_FILE,
+  PUBLISH_DIFF,
   REMOVE_REPOSITORY,
   SET_COMMIT_MODE,
   SET_COMPARE_ID,
@@ -233,12 +237,12 @@ export function setCommitMode(
 }
 
 export function updateCommitState(
-  commit: CommitState,
+  commitState: CommitState,
 ): UpdateCommitStateAction {
   return {
     type: UPDATE_COMMIT_STATE,
     payload: {
-      commit,
+      commit: commitState,
     },
   };
 }
@@ -261,6 +265,34 @@ export function setShouldRebaseOnAmend(
     type: SET_SHOULD_REBASE_ON_AMEND,
     payload: {
       shouldRebaseOnAmend,
+    },
+  };
+}
+
+export function commit(
+  repository: HgRepositoryClient,
+  message: string,
+): CommitAction {
+  return {
+    type: COMMIT,
+    payload: {
+      message,
+      repository,
+    },
+  };
+}
+
+export function publishDiff(
+  repository: HgRepositoryClient,
+  message: string,
+  lintExcuse: ?string,
+): PublishDiffAction {
+  return {
+    type: PUBLISH_DIFF,
+    payload: {
+      lintExcuse,
+      message,
+      repository,
     },
   };
 }

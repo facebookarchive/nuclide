@@ -788,6 +788,9 @@ export default class DiffViewModel {
     publishMessage: string,
     lintExcuse: ?string,
   ): Promise<void> {
+    const activeStack = this._activeRepositoryStack;
+    invariant(activeStack != null, 'Cannot publish without an active stack!');
+    this._actionCreators.publishDiff(activeStack.getRepository(), publishMessage, lintExcuse);
     this._setState({
       ...this._state,
       publishMessage,
@@ -1282,6 +1285,10 @@ export default class DiffViewModel {
       return;
     }
 
+    const activeStack = this._activeRepositoryStack;
+    invariant(activeStack != null, 'No active repository stack');
+    this._actionCreators.commit(activeStack.getRepository(), message);
+
     this._setState({
       ...this._state,
       commitMessage: message,
@@ -1293,9 +1300,7 @@ export default class DiffViewModel {
       commitMode,
     });
 
-    const activeStack = this._activeRepositoryStack;
     try {
-      invariant(activeStack, 'No active repository stack');
       switch (commitMode) {
         case CommitMode.COMMIT:
           await activeStack.getRepository()
