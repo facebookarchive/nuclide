@@ -120,14 +120,14 @@ describe('Diff View Commit Mode Integration Test', () => {
     });
 
     waitsFor('repo diff status to update', () => {
-      diffFiles = treeElement.querySelectorAll('.file-change');
+      diffFiles = treeElement.querySelectorAll('.nuclide-file-changes-file-entry');
       return diffFiles.length > 0;
     });
 
     runs(() => {
       // Verify the diff tree reflects the repo status.
       expect(diffFiles.length).toBe(1);
-      const dataPathElement = diffFiles[0].querySelector('[data-path]');
+      const dataPathElement = diffFiles[0];
       expect(dataPathElement).not.toBeNull();
       expect(dataPathElement.getAttribute('data-path')).toBe(filePath);
 

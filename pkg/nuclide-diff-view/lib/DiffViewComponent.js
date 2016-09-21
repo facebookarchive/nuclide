@@ -21,13 +21,13 @@ import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
+import {MultiRootChangedFilesView} from '../../nuclide-ui/lib/MultiRootChangedFilesView';
 import {CompositeDisposable, Disposable, TextBuffer} from 'atom';
 import {
   React,
   ReactDOM,
 } from 'react-for-atom';
 import DiffViewEditorPane from './DiffViewEditorPane';
-import DiffViewTree from './DiffViewTree';
 import SyncScroll from './SyncScroll';
 import DiffTimelineView from './DiffTimelineView';
 import DiffViewToolbar from './DiffViewToolbar';
@@ -45,6 +45,7 @@ import {
   DiffMode,
   DiffSectionStatus,
 } from './constants';
+import {getMultiRootFileChanges} from '../../nuclide-hg-git-bridge/lib/utils';
 
 type Props = {
   diffModel: DiffViewModel,
@@ -351,16 +352,14 @@ export default class DiffViewComponent extends React.Component {
 
   _renderTree(): void {
     const {diffModel} = this.props;
-    const {selectedFileChanges, showNonHgRepos} = diffModel.getState();
-    const {filePath} = diffModel.getState();
+    const {selectedFileChanges} = diffModel.getState();
     this._treeComponent = ReactDOM.render(
       (
         <div className="nuclide-diff-view-tree padded">
-          <DiffViewTree
-            activeFilePath={filePath}
-            fileChanges={selectedFileChanges}
-            showNonHgRepos={showNonHgRepos}
-            diffModel={diffModel}
+          <MultiRootChangedFilesView
+            commandPrefix="nuclide-diff-view"
+            fileChanges={getMultiRootFileChanges(selectedFileChanges)}
+            onFileChosen={(fileUri: NuclideUri) => diffModel.diffEntity({file: fileUri})}
           />
         </div>
       ),

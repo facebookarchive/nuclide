@@ -20,6 +20,7 @@ import {React} from 'react-for-atom';
 type ChangedFilesProps = {
   fileChanges: Map<NuclideUri, FileChangeStatusValue>,
   rootPath: NuclideUri,
+  onFileChosen: (filePath: NuclideUri) => void,
 };
 
 class ChangedFilesView extends React.Component {
@@ -37,7 +38,9 @@ class ChangedFilesView extends React.Component {
           <div
             className="list-item"
             key={this.props.rootPath}>
-            <span className="icon icon-file-directory nuclide-file-changes-root-entry">
+            <span
+              className="icon icon-file-directory nuclide-file-changes-root-entry"
+              data-path={this.props.rootPath}>
               {nuclideUri.basename(this.props.rootPath)}
             </span>
           </div>
@@ -45,10 +48,12 @@ class ChangedFilesView extends React.Component {
             {Array.from(fileChanges.entries()).map(
               ([filePath, fileChangeValue]) =>
                 <li
-                  data-path={filePath}
                   className="list-item"
-                  key={filePath}>
-                  <span className="icon icon-file-text">
+                  key={filePath}
+                  onClick={() => this.props.onFileChosen(filePath)}>
+                  <span
+                    className="icon icon-file-text nuclide-file-changes-file-entry"
+                    data-path={filePath}>
                     {FileChangeStatusToPrefix[fileChangeValue]}{nuclideUri.basename(filePath)}
                   </span>
                 </li>,
@@ -62,6 +67,7 @@ class ChangedFilesView extends React.Component {
 
 type Props = {
   fileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
+  onFileChosen: (filePath: NuclideUri) => void,
 };
 
 export class MultiRootChangedFilesView extends React.Component {
@@ -79,6 +85,7 @@ export class MultiRootChangedFilesView extends React.Component {
             key={root}
             fileChanges={fileChanges}
             rootPath={root}
+            onFileChosen={this.props.onFileChosen}
           />,
         )}
       </div>

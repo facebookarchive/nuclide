@@ -25,8 +25,6 @@ import fs from 'fs';
 import invariant from 'assert';
 import {ReactDOM} from 'react-for-atom';
 import uiTreePath from '../pkg/commons-atom/ui-tree-path';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {NON_MERCURIAL_REPO_DISPLAY_NAME} from '../pkg/nuclide-diff-view/lib/constants';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
 import {generateHgRepo2Fixture, generateFixture} from '../pkg/nuclide-test-helpers';
 
@@ -131,7 +129,7 @@ describe('Diff View Browse Mode Integration Test', () => {
 
     let diffFiles = [];
     waitsFor('remote: file changes to load', () => {
-      diffFiles = treeElement.querySelectorAll('.file-change');
+      diffFiles = treeElement.querySelectorAll('.nuclide-file-changes-file-entry');
       return diffFiles.length > 2;
     });
 
@@ -146,14 +144,10 @@ describe('Diff View Browse Mode Integration Test', () => {
       expect(uiTreePath(({currentTarget: diffFiles[2]}: any))).toBe(
         nuclideUri.join(remoteRepoPath, 'untracked.txt'),
       );
-      const treeRoots = treeElement.querySelectorAll('.root');
-      expect(treeRoots.length).toBe(4);
+      const treeRoots = treeElement.querySelectorAll('.nuclide-file-changes-root-entry');
+      expect(treeRoots.length).toBe(2);
       expect(uiTreePath(({currentTarget: treeRoots[0]}: any))).toBe(localRepoPath);
-      expect(uiTreePath(({currentTarget: treeRoots[1]}: any))).toBe(nonRepoPath);
-      expect(uiTreePath(({currentTarget: treeRoots[2]}: any))).toBe(
-        NON_MERCURIAL_REPO_DISPLAY_NAME,
-      );
-      expect(uiTreePath(({currentTarget: treeRoots[3]}: any))).toBe(remoteRepoPath);
+      expect(uiTreePath(({currentTarget: treeRoots[1]}: any))).toBe(remoteRepoPath);
     });
   });
 });
