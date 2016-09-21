@@ -89,7 +89,10 @@ export class SortHeaderCell extends React.Component {
     const {sortDirection, children, style} = this.props;
     const sortIcon = (
       <span>
-        <Icon icon={sortDirection === SortDirections.DESC ? 'triangle-down' : 'triangle-up'} />
+        <Icon
+          icon={sortDirection === SortDirections.DESC ? 'triangle-down' : 'triangle-up'}
+          className="public_fixedDataTableCell_main_sortable_icon"
+        />
       </span>
     );
 
