@@ -14,11 +14,8 @@ import {FileTreeStore} from '../lib/FileTreeStore';
 import {React, ReactDOM} from 'react-for-atom';
 import {FileTreeEntryComponent} from './FileTreeEntryComponent';
 import {EmptyComponent} from './EmptyComponent';
-import {track} from '../../nuclide-analytics';
-import once from '../../commons-node/once';
 import classnames from 'classnames';
 import {CompositeDisposable, Disposable} from 'atom';
-
 
 import type {OrderedMap} from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
@@ -43,22 +40,6 @@ export class FileTree extends React.Component {
   _disposables: CompositeDisposable;
   _afRequestId: ?number;
 
-  static trackFirstRender = once(() => {
-    const rootKeysLength = FileTreeStore.getInstance().roots.size;
-    // Wait using `setTimeout` and not `process.nextTick` or `setImmediate`
-    // because those queue tasks in the current and next turn of the event loop
-    // respectively. Since `setTimeout` gets preempted by them, it works great
-    // for a more realistic "first render". Note: The scheduler for promises
-    // (`Promise.resolve().then`) runs on the same queue as `process.nextTick`
-    // but with a higher priority.
-    setTimeout(() => {
-      track('filetree-first-render', {
-        'time-to-render': String(process.uptime() * 1000),
-        'root-keys': String(rootKeysLength),
-      });
-    });
-  });
-
   constructor(props: Props) {
     super(props);
     this._store = FileTreeStore.getInstance();
@@ -74,7 +55,6 @@ export class FileTree extends React.Component {
   }
 
   componentDidMount(): void {
-    FileTree.trackFirstRender(this);
     this._scrollToTrackedNodeIfNeeded();
     this._measureHeights();
     window.addEventListener('resize', this._measureHeights);
