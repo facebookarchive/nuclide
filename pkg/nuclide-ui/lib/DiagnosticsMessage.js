@@ -16,7 +16,7 @@ import type {
 
 import invariant from 'assert';
 import {React} from 'react-for-atom';
-import {Button} from './Button';
+import {Button, ButtonTypes} from './Button';
 import {ButtonGroup} from './ButtonGroup';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 import {DiagnosticsTraceItem} from './DiagnosticsTraceItem';
@@ -75,8 +75,10 @@ export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
     const applyFix = () => {
       fixer(message);
     };
+    const speculative = message.fix.speculative === true;
+    const buttonType = speculative ? undefined : ButtonTypes.SUCCESS;
     fixButton = (
-      <Button className="btn-success" size="EXTRA_SMALL" onClick={applyFix}>Fix</Button>
+      <Button buttonType={buttonType} size="EXTRA_SMALL" onClick={applyFix}>Fix</Button>
     );
   }
   const header = (

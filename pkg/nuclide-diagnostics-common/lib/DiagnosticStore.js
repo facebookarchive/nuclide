@@ -328,7 +328,9 @@ class DiagnosticStore {
   }
 
   applyFixesForFile(file: NuclideUri): void {
-    this._applyFixes(file, ...this._getFileMessages(file));
+    const messages = this._getFileMessages(file)
+      .filter(msg => msg.fix != null && msg.fix.speculative !== true);
+    this._applyFixes(file, ...messages);
   }
 
   // Precondition: all messages have the given filePath
