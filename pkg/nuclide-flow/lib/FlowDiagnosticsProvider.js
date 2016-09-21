@@ -17,6 +17,7 @@ import type {
   MessageInvalidationCallback,
   DiagnosticProviderUpdate,
   Trace,
+  Fix,
 } from '../../nuclide-diagnostics-common';
 import type {
   Diagnostics,
@@ -100,6 +101,11 @@ function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
     range: extractRange(flowMessage),
   };
 
+  const fix = flowMessageToFix(diagnostic);
+  if (fix != null) {
+    diagnosticMessage.fix = fix;
+  }
+
   // When the message is an array with multiple elements, the second element
   // onwards comprise the trace for the error.
   if (diagnostic.messageComponents.length > 1) {
@@ -107,6 +113,23 @@ function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
   }
 
   return diagnosticMessage;
+}
+
+function flowMessageToFix(diagnostic: Diagnostic): ?Fix {
+  // Automatically remove unused suppressions:
+  if (diagnostic.messageComponents.length === 2 &&
+      diagnostic.messageComponents[0].descr === 'Error suppressing comment' &&
+      diagnostic.messageComponents[1].descr === 'Unused suppression') {
+    const oldRange = extractRange(diagnostic.messageComponents[0]);
+    invariant(oldRange != null);
+    return {
+      newText: '',
+      oldRange,
+      speculative: true,
+    };
+  }
+
+  return null;
 }
 
 class FlowDiagnosticsProvider {
