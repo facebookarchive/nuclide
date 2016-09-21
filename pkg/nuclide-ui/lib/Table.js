@@ -84,6 +84,10 @@ type Props = {
    * Useful for showing loading spinners and custom messages.
    */
   emptyComponent?: ReactClass<any>,
+  /**
+   * Whether a table row will be collapsed if its content is too large
+   */
+  collapsable?: boolean,
 };
 type State = {
   columnWidthRatios: WidthMap,
@@ -368,6 +372,7 @@ export class Table extends React.Component {
               'nuclide-ui-table-row-selectable': selectable,
               'nuclide-ui-table-row-selected': isSelectedRow,
               'nuclide-ui-table-row-alternate': alternateBackground !== false && i % 2 === 1,
+              'nuclide-ui-table-collapsed-row': this.props.collapsable && !isSelectedRow,
             },
           )}
           key={i}

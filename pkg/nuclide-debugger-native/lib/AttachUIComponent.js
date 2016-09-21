@@ -189,6 +189,7 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
           selectable={true}
           selectedIndex={selectedIndex}
           onSelect={this._handleSelectTableRow}
+          collapsable={true}
         />
         <div className="nuclide-debugger-native-launch-attach-actions">
           <ButtonGroup>

@@ -26,6 +26,7 @@
 
 .nuclide-ui-table-body-cell {
   word-break: break-word;
+  text-overflow:inherit;
 }
 
 .nuclide-ui-table-header-cell {
@@ -72,6 +73,12 @@
   background-color: @background-color-selected;
   color: @text-color-selected;
   font-weight: bold;
+}
+
+.nuclide-ui-table-collapsed-row {
+  word-break: break-word;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nuclide-ui-table-empty-message {
