@@ -196,16 +196,16 @@ export class PanelLocation extends SimpleModel<State> {
   }
 
   /**
-   * Hide the specified item. Currently, the panels are modal (they show one item at a time), so we
-   * just hide the whole thing (iff the provided item is the visible one). In the future, we may
-   * have tabs or configurable behavior and this will change.
+   * Hide the specified item. If the user toggles a visible item, we hide the entire pane.
    */
   hideItem(item: Viewable): void {
-    const activeItem = this._paneContainer.getActivePaneItem();
+    const itemIsVisible = this._paneContainer.getPanes()
+      .some(pane => pane.getActiveItem() === item);
 
-    // Since we're only showing the active item, if a different item is active, we know that this
-    // item's already hidden and we don't have to do anything.
-    if (item !== activeItem) { return; }
+    // If the item's already hidden, we're done.
+    if (!itemIsVisible) {
+      return;
+    }
 
     // Otherwise, hide the panel altogether.
     this.setState({visible: false});
