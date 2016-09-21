@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileChangeStatusValue} from '../../nuclide-hg-git-bridge/lib/constants';
 
+import classnames from 'classnames';
 import {mapEqual} from '../../commons-node/collection';
 import {
  FileChangeStatus,
@@ -30,8 +31,20 @@ type ChangedFilesProps = {
   onFileChosen: (filePath: NuclideUri) => void,
 };
 
+type ChangedFilesState = {
+  isCollapsed: boolean,
+};
+
 class ChangedFilesView extends React.Component {
   props: ChangedFilesProps;
+  state: ChangedFilesState;
+
+  constructor(props: ChangedFilesProps) {
+    super(props);
+    this.state = {
+      isCollapsed: false,
+    };
+  }
 
   shouldComponentUpdate(nextProps: ChangedFilesProps) {
     return mapEqual(this.props.fileChanges, nextProps.fileChanges);
@@ -39,12 +52,17 @@ class ChangedFilesView extends React.Component {
 
   render(): React.Element<any> {
     const {fileChanges} = this.props;
+    const rootClassName = classnames('list-nested-item', {
+      collapsed: this.state.isCollapsed,
+    });
+
     return (
       <ul className="list-tree has-collapsable-children">
-        <li className="list-nested-item">
+        <li className={rootClassName}>
           <div
             className="list-item"
-            key={this.props.rootPath}>
+            key={this.props.rootPath}
+            onClick={() => this.setState({isCollapsed: !this.state.isCollapsed})}>
             <span
               className="icon icon-file-directory nuclide-file-changes-root-entry"
               data-path={this.props.rootPath}>
