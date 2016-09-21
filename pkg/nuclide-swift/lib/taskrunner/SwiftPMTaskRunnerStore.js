@@ -10,14 +10,13 @@
  */
 
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
+import type SwiftPMTaskRunnerDispatcher from './SwiftPMTaskRunnerDispatcher';
 
 import {objectEntries, objectFromMap} from '../../../commons-node/collection';
 import {Emitter} from 'atom';
-import {Dispatcher} from 'flux';
-import SwiftPMTaskRunnerActions from './SwiftPMTaskRunnerActions';
 
 export default class SwiftPMTaskRunnerStore {
-  _dispatcher: Dispatcher;
+  _dispatcher: SwiftPMTaskRunnerDispatcher;
   _emitter: Emitter;
   _chdir: string;
   _configuration: string;
@@ -29,7 +28,7 @@ export default class SwiftPMTaskRunnerStore {
   _testBuildPath: string;
   _compileCommands: Map<string, string>;
 
-  constructor(dispatcher: Dispatcher, initialState: ?SwiftPMTaskRunnerStoreState) {
+  constructor(dispatcher: SwiftPMTaskRunnerDispatcher, initialState: ?SwiftPMTaskRunnerStoreState) {
     this._dispatcher = dispatcher;
     this._emitter = new Emitter();
 
@@ -56,20 +55,20 @@ export default class SwiftPMTaskRunnerStore {
 
     this._dispatcher.register(action => {
       switch (action.actionType) {
-        case SwiftPMTaskRunnerActions.ActionType.UPDATE_CHDIR:
+        case 'UPDATE_CHDIR':
           this._chdir = action.chdir;
           break;
-        case SwiftPMTaskRunnerActions.ActionType.UPDATE_BUILD_SETTINGS:
+        case 'UPDATE_BUILD_SETTINGS':
           this._configuration = action.configuration;
           this._Xcc = action.Xcc;
           this._Xlinker = action.Xlinker;
           this._Xswiftc = action.Xswiftc;
           this._buildPath = action.buildPath;
           break;
-        case SwiftPMTaskRunnerActions.ActionType.UPDATE_TEST_SETTINGS:
+        case 'UPDATE_TEST_SETTINGS':
           this._testBuildPath = action.buildPath;
           break;
-        case SwiftPMTaskRunnerActions.ActionType.UPDATE_COMPILE_COMMANDS:
+        case 'UPDATE_COMPILE_COMMANDS':
           this._compileCommands = action.compileCommands;
           break;
       }
