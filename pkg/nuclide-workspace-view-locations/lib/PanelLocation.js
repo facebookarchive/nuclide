@@ -35,7 +35,6 @@ type State = {
  * Manages views for an Atom panel.
  */
 export class PanelLocation extends SimpleModel<State> {
-  _addPanel: any;
   _disposables: IDisposable;
   _paneContainer: atom$PaneContainer;
   _panes: BehaviorSubject<Set<atom$Pane>>;
@@ -50,6 +49,7 @@ export class PanelLocation extends SimpleModel<State> {
     this._paneContainer = deserializePaneContainer(serializedData.paneContainer);
     this._position = nullthrows(locationsToPosition.get(locationId));
     this._panelRenderer = new PanelRenderer({
+      priority: 101, // Use a value higher than the default (100).
       location: this._position,
       createItem: this._createItem.bind(this),
     });
