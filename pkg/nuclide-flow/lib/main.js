@@ -70,9 +70,6 @@ export function activate() {
 
 /** Provider for autocomplete service. */
 export function createAutocompleteProvider(): atom$AutocompleteProvider {
-  const autocompleteProvider = new AutocompleteProvider();
-  const getSuggestions = autocompleteProvider.getSuggestions.bind(autocompleteProvider);
-
   const excludeLowerPriority = Boolean(featureConfig.get('nuclide-flow.excludeOtherAutocomplete'));
 
   return {
@@ -85,7 +82,9 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
       track('nuclide-flow.autocomplete-chosen');
     },
     excludeLowerPriority,
-    getSuggestions,
+    getSuggestions(request) {
+      return AutocompleteProvider.getSuggestions(request);
+    },
   };
 }
 

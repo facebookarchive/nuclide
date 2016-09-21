@@ -15,9 +15,11 @@ import {trackTiming} from '../../nuclide-analytics';
 
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 
-class FlowAutocompleteProvider {
+export default class FlowAutocompleteProvider {
   @trackTiming('flow.autocomplete')
-  getSuggestions(request: atom$AutocompleteRequest): Promise<?Array<atom$AutocompleteSuggestion>> {
+  static getSuggestions(
+    request: atom$AutocompleteRequest,
+  ): Promise<?Array<atom$AutocompleteSuggestion>> {
     const {editor, prefix, activatedManually} = request;
     const filePath = editor.getPath();
     const contents = editor.getText();
@@ -42,5 +44,3 @@ class FlowAutocompleteProvider {
     );
   }
 }
-
-module.exports = FlowAutocompleteProvider;
