@@ -26,3 +26,9 @@ export const FileChangeStatusToPrefix: {[key: ?FileChangeStatusValue]: string} =
   [FileChangeStatus.REMOVED]: '[D] ',
   [FileChangeStatus.UNTRACKED]: '[?] ',
 });
+
+export const RevertibleStatusCodes = [
+  FileChangeStatus.ADDED,
+  FileChangeStatus.MODIFIED,
+  FileChangeStatus.REMOVED,
+];
