@@ -11,15 +11,14 @@
 
 import type {SerializedState, TaskSettings, TaskType} from './types';
 import type {Device} from './IosSimulator';
+import type BuckToolbarDispatcher from './BuckToolbarDispatcher';
 
 import {Emitter} from 'atom';
-import {Dispatcher} from 'flux';
-import BuckToolbarActions from './BuckToolbarActions';
 
 export default class BuckToolbarStore {
 
   _devices: Array<Device>;
-  _dispatcher: Dispatcher;
+  _dispatcher: BuckToolbarDispatcher;
   _emitter: Emitter;
   _currentProjectRoot: ?string;
   _currentBuckRoot: ?string;
@@ -30,7 +29,7 @@ export default class BuckToolbarStore {
   _isReactNativeServerMode: boolean;
   _taskSettings: {[key: TaskType]: TaskSettings};
 
-  constructor(dispatcher: Dispatcher, initialState: ?SerializedState) {
+  constructor(dispatcher: BuckToolbarDispatcher, initialState: ?SerializedState) {
     this._dispatcher = dispatcher;
     this._emitter = new Emitter();
     this._initState(initialState);
@@ -50,32 +49,32 @@ export default class BuckToolbarStore {
   _setupActions() {
     this._dispatcher.register(action => {
       switch (action.actionType) {
-        case BuckToolbarActions.ActionType.UPDATE_BUCK_ROOT:
+        case 'UPDATE_BUCK_ROOT':
           this._currentProjectRoot = action.projectRoot;
           this._currentBuckRoot = action.buckRoot;
           break;
-        case BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET:
+        case 'UPDATE_BUILD_TARGET':
           this._buildTarget = action.buildTarget;
           break;
-        case BuckToolbarActions.ActionType.UPDATE_IS_LOADING_RULE:
+        case 'UPDATE_IS_LOADING_RULE':
           this._isLoadingRule = action.isLoadingRule;
           break;
-        case BuckToolbarActions.ActionType.UPDATE_RULE_TYPE:
+        case 'UPDATE_RULE_TYPE':
           this._buildRuleType = action.ruleType;
           break;
-        case BuckToolbarActions.ActionType.UPDATE_SIMULATOR:
+        case 'UPDATE_SIMULATOR':
           this._simulator = action.simulator;
           break;
-        case BuckToolbarActions.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE:
+        case 'UPDATE_REACT_NATIVE_SERVER_MODE':
           this._isReactNativeServerMode = action.serverMode;
           break;
-        case BuckToolbarActions.ActionType.UPDATE_TASK_SETTINGS:
+        case 'UPDATE_TASK_SETTINGS':
           this._taskSettings = {
             ...this._taskSettings,
             [action.taskType]: action.settings,
           };
           break;
-        case BuckToolbarActions.ActionType.UPDATE_DEVICES:
+        case 'UPDATE_DEVICES':
           this._devices = action.devices;
           const currentDeviceId = this._simulator;
           const isInvalidSimulator = currentDeviceId == null

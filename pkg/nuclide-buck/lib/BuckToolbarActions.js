@@ -10,35 +10,22 @@
  */
 
 import type BuckToolbarStore from './BuckToolbarStore';
-import type {TaskSettings} from './types';
+import type {TaskSettings, TaskType} from './types';
+import type BuckToolbarDispatcher from './BuckToolbarDispatcher';
 
-import {Dispatcher} from 'flux';
-import {keyMirror} from '../../commons-node/collection';
 import {getBuckProjectRoot, getBuckService} from '../../nuclide-buck-base';
 import * as IosSimulator from './IosSimulator';
 
 export default class BuckToolbarActions {
 
   _devicesSubscription: rx$ISubscription;
-  _dispatcher: Dispatcher;
+  _dispatcher: BuckToolbarDispatcher;
   _store: BuckToolbarStore;
   // TODO(hansonw): Will be obsolete when this is an observable stream.
   _loadingRules: number;
 
-  static ActionType = Object.freeze(keyMirror({
-    UPDATE_BUILD_TARGET: null,
-    UPDATE_IS_LOADING_RULE: null,
-    UPDATE_RULE_TYPE: null,
-    UPDATE_PANEL_VISIBILITY: null,
-    UPDATE_BUCK_ROOT: null,
-    UPDATE_REACT_NATIVE_SERVER_MODE: null,
-    UPDATE_SIMULATOR: null,
-    UPDATE_TASK_SETTINGS: null,
-    UPDATE_DEVICES: null,
-  }));
-
   constructor(
-    dispatcher: Dispatcher,
+    dispatcher: BuckToolbarDispatcher,
     store: BuckToolbarStore,
   ) {
     this._dispatcher = dispatcher;
@@ -49,7 +36,7 @@ export default class BuckToolbarActions {
   async updateProjectRoot(path: ?string): Promise<void> {
     const buckRoot = path == null ? null : await getBuckProjectRoot(path);
     this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_BUCK_ROOT,
+      actionType: 'UPDATE_BUCK_ROOT',
       projectRoot: path,
       buckRoot,
     });
@@ -59,7 +46,7 @@ export default class BuckToolbarActions {
 
   async updateBuildTarget(buildTarget: string): Promise<void> {
     this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET,
+      actionType: 'UPDATE_BUILD_TARGET',
       buildTarget,
     });
 
@@ -68,7 +55,7 @@ export default class BuckToolbarActions {
     if (buckRoot != null) {
       if (this._loadingRules++ === 0) {
         this._dispatcher.dispatch({
-          actionType: BuckToolbarActions.ActionType.UPDATE_IS_LOADING_RULE,
+          actionType: 'UPDATE_IS_LOADING_RULE',
           isLoadingRule: true,
         });
       }
@@ -78,12 +65,12 @@ export default class BuckToolbarActions {
           // Most likely, this is an invalid target, so do nothing.
           .catch(e => null);
       this._dispatcher.dispatch({
-        actionType: BuckToolbarActions.ActionType.UPDATE_RULE_TYPE,
+        actionType: 'UPDATE_RULE_TYPE',
         ruleType: buildRuleType,
       });
       if (--this._loadingRules === 0) {
         this._dispatcher.dispatch({
-          actionType: BuckToolbarActions.ActionType.UPDATE_IS_LOADING_RULE,
+          actionType: 'UPDATE_IS_LOADING_RULE',
           isLoadingRule: false,
         });
       }
@@ -95,12 +82,12 @@ export default class BuckToolbarActions {
       this._devicesSubscription.unsubscribe();
     }
     this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_DEVICES,
+      actionType: 'UPDATE_DEVICES',
       devices: [],
     });
     this._devicesSubscription = IosSimulator.getDevices().subscribe(devices => {
       this._dispatcher.dispatch({
-        actionType: BuckToolbarActions.ActionType.UPDATE_DEVICES,
+        actionType: 'UPDATE_DEVICES',
         devices,
       });
     });
@@ -108,21 +95,21 @@ export default class BuckToolbarActions {
 
   updateSimulator(simulator: string): void {
     this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_SIMULATOR,
+      actionType: 'UPDATE_SIMULATOR',
       simulator,
     });
   }
 
   updateReactNativeServerMode(serverMode: boolean): void {
     this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE,
+      actionType: 'UPDATE_REACT_NATIVE_SERVER_MODE',
       serverMode,
     });
   }
 
-  updateTaskSettings(taskType: string, settings: TaskSettings): void {
+  updateTaskSettings(taskType: TaskType, settings: TaskSettings): void {
     this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.UPDATE_TASK_SETTINGS,
+      actionType: 'UPDATE_TASK_SETTINGS',
       taskType,
       settings,
     });

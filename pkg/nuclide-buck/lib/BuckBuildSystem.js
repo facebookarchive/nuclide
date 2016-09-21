@@ -26,7 +26,6 @@ import type {
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {CompositeDisposable} from 'atom';
-import {Dispatcher} from 'flux';
 import {quote} from 'shell-quote';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -40,6 +39,7 @@ import {startPackager} from '../../nuclide-react-native-base';
 import {BuckIcon} from './ui/BuckIcon';
 import BuckToolbarStore from './BuckToolbarStore';
 import BuckToolbarActions from './BuckToolbarActions';
+import BuckToolbarDispatcher from './BuckToolbarDispatcher';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
 import {
   combineEventStreams,
@@ -170,7 +170,7 @@ export class BuckBuildSystem {
   _getFlux(): Flux {
     if (this._flux == null) {
       // Set up flux stuff.
-      const dispatcher = new Dispatcher();
+      const dispatcher = new BuckToolbarDispatcher();
       const store = new BuckToolbarStore(dispatcher, this._initialState);
       const actions = new BuckToolbarActions(dispatcher, store);
       this._disposables.add(store);
