@@ -17,6 +17,22 @@
             {
               "label": "Fix All in Current File",
               "command": "nuclide-diagnostics-ui:fix-all-in-current-file"
+            },
+            {
+              "label": "Go To First Diagnostic",
+              "command": "nuclide-diagnostics-ui:go-to-first-diagnostic"
+            },
+            {
+              "label": "Go To Last Diagnostic",
+              "command": "nuclide-diagnostics-ui:go-to-last-diagnostic"
+            },
+            {
+              "label": "Go To Next Diagnostic",
+              "command": "nuclide-diagnostics-ui:go-to-next-diagnostic"
+            },
+            {
+              "label": "Go To Previous Diagnostic",
+              "command": "nuclide-diagnostics-ui:go-to-previous-diagnostic"
             }
           ]
         }

@@ -1,6 +1,10 @@
 {
   ".platform-darwin, .platform-linux, .platform-win32": {
     "alt-shift-d": "nuclide-diagnostics-ui:toggle-table",
-    "alt-shift-a": "nuclide-diagnostics-ui:fix-all-in-current-file"
+    "alt-shift-a": "nuclide-diagnostics-ui:fix-all-in-current-file",
+    "alt-ctrl-<": "nuclide-diagnostics-ui:go-to-first-diagnostic",
+    "alt-ctrl->": "nuclide-diagnostics-ui:go-to-last-diagnostic",
+    "alt-<": "nuclide-diagnostics-ui:go-to-previous-diagnostic",
+    "alt->": "nuclide-diagnostics-ui:go-to-next-diagnostic"
   }
 }

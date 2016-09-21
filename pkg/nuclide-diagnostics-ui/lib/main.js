@@ -10,6 +10,7 @@
  */
 
 import type {
+  FileDiagnosticMessage,
   FileMessageUpdate,
   ObservableDiagnosticUpdater,
 } from '../../nuclide-diagnostics-common';
@@ -27,6 +28,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import createDiagnosticsPanel from './createPanel';
 import StatusBarTile from './StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
+import {goToLocation} from '../../commons-atom/go-to-location';
 
 const DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 const DEFAULT_TABLE_HEIGHT = 200;
@@ -236,6 +238,71 @@ function addAtomCommands(diagnosticUpdater: ObservableDiagnosticUpdater): void {
     fixAllInCurrentFile,
   ));
 
+  subscriptions.add(new KeyboardShortcuts(diagnosticUpdater));
+}
+
+// TODO(peterhal): The current index should really live in the DiagnosticStore.
+class KeyboardShortcuts {
+  _subscriptions: UniversalDisposable;
+  _diagnostics: Array<FileDiagnosticMessage>;
+  _index: ?number;
+
+  constructor(diagnosticUpdater: ObservableDiagnosticUpdater) {
+    this._index = null;
+    this._diagnostics = [];
+
+    this._subscriptions = new UniversalDisposable();
+
+    const first = () => this.setIndex(0);
+    const last = () => this.setIndex(this._diagnostics.length - 1);
+    this._subscriptions.add(
+      diagnosticUpdater.allMessageUpdates.subscribe(
+        diagnostics => {
+          this._diagnostics = (diagnostics
+            .filter(diagnostic => diagnostic.scope === 'file'): any);
+          this._index = null;
+        }),
+      atom.commands.add(
+        atom.views.getView(atom.workspace),
+        'nuclide-diagnostics-ui:go-to-first-diagnostic',
+        first,
+      ),
+      atom.commands.add(
+        atom.views.getView(atom.workspace),
+        'nuclide-diagnostics-ui:go-to-last-diagnostic',
+        last,
+      ),
+      atom.commands.add(
+        atom.views.getView(atom.workspace),
+        'nuclide-diagnostics-ui:go-to-next-diagnostic',
+        () => { this._index == null ? first() : this.setIndex(this._index + 1); },
+      ),
+      atom.commands.add(
+        atom.views.getView(atom.workspace),
+        'nuclide-diagnostics-ui:go-to-previous-diagnostic',
+        () => { this._index == null ? last() : this.setIndex(this._index - 1); },
+      ),
+    );
+  }
+
+  setIndex(index: number): void {
+    if (this._diagnostics.length === 0) {
+      this._index = null;
+      return;
+    }
+    this._index = Math.max(0, Math.min(index, this._diagnostics.length - 1));
+    const diagnostic = this._diagnostics[this._index];
+    const range = diagnostic.range;
+    if (range == null) {
+      goToLocation(diagnostic.filePath);
+    } else {
+      goToLocation(diagnostic.filePath, range.start.row, range.start.column);
+    }
+  }
+
+  dispose(): void {
+    this._subscriptions.dispose();
+  }
 }
 
 export function consumeStatusBar(statusBar: atom$StatusBar): void {
