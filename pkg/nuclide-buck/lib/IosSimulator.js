@@ -35,7 +35,7 @@ export function parseDevicesFromSimctlOutput(output: string): Device[] {
   output.split('\n').forEach(line => {
     const section = line.match(/^-- (.+) --$/);
     if (section) {
-      const header = section[1].match(/^iOS (.+)$/);
+      const header = section[1].match(/^iOS (\d(?:[\d\.]+\d)?)$/);
       if (header) {
         currentOS = header[1];
       } else {
