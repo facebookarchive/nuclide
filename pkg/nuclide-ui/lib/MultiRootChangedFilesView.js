@@ -28,6 +28,7 @@ import {addPath, revertPath} from '../../nuclide-hg-repository/lib/actions';
 type ChangedFilesProps = {
   fileChanges: Map<NuclideUri, FileChangeStatusValue>,
   rootPath: NuclideUri,
+  selectedFile: NuclideUri,
   onFileChosen: (filePath: NuclideUri) => void,
 };
 
@@ -48,6 +49,15 @@ class ChangedFilesView extends React.Component {
 
   shouldComponentUpdate(nextProps: ChangedFilesProps) {
     return mapEqual(this.props.fileChanges, nextProps.fileChanges);
+  }
+
+  _getFileClassname(file: NuclideUri): string {
+    const {selectedFile} = this.props;
+    return classnames(
+      'list-item', {
+        selected: file === selectedFile,
+      },
+    );
   }
 
   render(): React.Element<any> {
@@ -73,7 +83,8 @@ class ChangedFilesView extends React.Component {
             {Array.from(fileChanges.entries()).map(
               ([filePath, fileChangeValue]) =>
                 <li
-                  className="list-item"
+                  data-path={filePath}
+                  className={this._getFileClassname(filePath)}
                   key={filePath}
                   onClick={() => this.props.onFileChosen(filePath)}>
                   <span
@@ -97,9 +108,27 @@ type Props = {
   onFileChosen: (filePath: NuclideUri) => void,
 };
 
+type State = {
+  selectedFile: NuclideUri,
+};
+
 export class MultiRootChangedFilesView extends React.Component {
   props: Props;
+  state: State;
   _subscriptions: UniversalDisposable;
+
+  constructor(props: Props) {
+    super(props);
+    (this: any)._onFileChosen = this._onFileChosen.bind(this);
+    this.state = {
+      selectedFile: '',
+    };
+  }
+
+  _onFileChosen(file: NuclideUri): void {
+    this.setState({selectedFile: file});
+    this.props.onFileChosen(file);
+  }
 
   componentDidMount(): void {
     this._subscriptions = new UniversalDisposable();
@@ -216,7 +245,8 @@ export class MultiRootChangedFilesView extends React.Component {
             key={root}
             fileChanges={fileChanges}
             rootPath={root}
-            onFileChosen={this.props.onFileChosen}
+            selectedFile={this.state.selectedFile}
+            onFileChosen={this._onFileChosen}
           />,
         )}
       </div>
