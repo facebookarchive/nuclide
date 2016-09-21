@@ -16,6 +16,7 @@ import type {Directory} from '../../../nuclide-remote-connection';
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 
 import {Observable, Subject} from 'rxjs';
+import {Dispatcher} from 'flux';
 import {CompositeDisposable, Disposable} from 'atom';
 import {React} from 'react-for-atom';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
@@ -24,7 +25,6 @@ import {observeProcess, safeSpawn} from '../../../commons-node/process';
 import {taskFromObservable} from '../../../commons-node/tasks';
 import SwiftPMTaskRunnerStore from './SwiftPMTaskRunnerStore';
 import SwiftPMTaskRunnerActions from './SwiftPMTaskRunnerActions';
-import SwiftPMTaskRunnerDispatcher from './SwiftPMTaskRunnerDispatcher';
 import {buildCommand, testCommand} from './SwiftPMTaskRunnerCommands';
 import {
   SwiftPMTaskRunnerBuildTaskMetadata,
@@ -211,8 +211,8 @@ export class SwiftPMTaskRunner {
   }
 
   _getFlux(): SwiftPMTaskRunnerFlux {
+    const dispatcher = new Dispatcher();
     if (!this._flux) {
-      const dispatcher = new SwiftPMTaskRunnerDispatcher();
       const store = new SwiftPMTaskRunnerStore(dispatcher, this._initialState);
       this._disposables.add(store);
       const actions = new SwiftPMTaskRunnerActions(dispatcher);

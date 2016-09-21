@@ -9,20 +9,27 @@
  * the root directory of this source tree.
  */
 
-import type SwiftPMTaskRunnerDispatcher from './SwiftPMTaskRunnerDispatcher';
-
+import {keyMirror} from '../../../commons-node/collection';
+import {Dispatcher} from 'flux';
 import {llbuildYamlPath, readCompileCommands} from './LlbuildYamlParser';
 
 export default class SwiftPMTaskRunnerActions {
-  _dispatcher: SwiftPMTaskRunnerDispatcher;
+  _dispatcher: Dispatcher;
 
-  constructor(dispatcher: SwiftPMTaskRunnerDispatcher) {
+  static ActionType = Object.freeze(keyMirror({
+    UPDATE_CHDIR: null,
+    UPDATE_BUILD_SETTINGS: null,
+    UPDATE_TEST_SETTINGS: null,
+    UPDATE_COMPILE_COMMANDS: null,
+  }));
+
+  constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
   }
 
   updateChdir(chdir: string): void {
     this._dispatcher.dispatch({
-      actionType: 'UPDATE_CHDIR',
+      actionType: SwiftPMTaskRunnerActions.ActionType.UPDATE_CHDIR,
       chdir,
     });
   }
@@ -35,7 +42,7 @@ export default class SwiftPMTaskRunnerActions {
     buildPath: string,
   ): void {
     this._dispatcher.dispatch({
-      actionType: 'UPDATE_BUILD_SETTINGS',
+      actionType: SwiftPMTaskRunnerActions.ActionType.UPDATE_BUILD_SETTINGS,
       configuration,
       Xcc,
       Xlinker,
@@ -46,7 +53,7 @@ export default class SwiftPMTaskRunnerActions {
 
   updateTestSettings(buildPath: string): void {
     this._dispatcher.dispatch({
-      actionType: 'UPDATE_TEST_SETTINGS',
+      actionType: SwiftPMTaskRunnerActions.ActionType.UPDATE_TEST_SETTINGS,
       buildPath,
     });
   }
@@ -72,7 +79,7 @@ export default class SwiftPMTaskRunnerActions {
     }
     compileCommandsPromise.then(compileCommands => {
       this._dispatcher.dispatch({
-        actionType: 'UPDATE_COMPILE_COMMANDS',
+        actionType: SwiftPMTaskRunnerActions.ActionType.UPDATE_COMPILE_COMMANDS,
         compileCommands,
       });
     });
