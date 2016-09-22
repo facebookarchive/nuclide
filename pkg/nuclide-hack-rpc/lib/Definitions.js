@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {HackRange} from './rpc-types';
+import type {HackSpan} from './OutlineView';
 import type {
   Definition,
   DefinitionQueryResult,
@@ -21,10 +22,12 @@ import {hackRangeToAtomRange} from './HackHelpers';
 import {Point} from 'simple-text-buffer';
 
 export type HackDefinition = {
-  definition_pos: ?HackRange,
   name: string,
+  result_type?: string,
   pos: HackRange,
-  projectRoot: NuclideUri,
+  definition_pos: ?HackRange,
+  definition_span?: HackSpan,
+  definition_id?: string,
 };
 
 export function convertDefinitions(
@@ -39,7 +42,7 @@ export function convertDefinitions(
       position: new Point(
         definition.definition_pos.line - 1,
         definition.definition_pos.char_start - 1),
-      // TODO: range
+      // TODO: range, definition_id
       id: definition.name,
       name: definition.name,
       language: 'php',

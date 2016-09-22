@@ -32,7 +32,6 @@ describe('convertDefinitions', () => {
       char_start: 10,
       char_end: 13,
     },
-    projectRoot,
   };
 
   const def: HackDefinition = {
