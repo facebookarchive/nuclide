@@ -12,88 +12,21 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import type {
-  HackDiagnostic,
-  SingleHackMessage,
-} from '../../nuclide-hack-rpc/lib/HackService';
-import type {
   MessageUpdateCallback,
   MessageInvalidationCallback,
 } from '../../nuclide-diagnostics-common';
-import type {
-  FileDiagnosticMessage,
-  DiagnosticProviderUpdate,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {DiagnosticProviderUpdate} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {trackTiming} from '../../nuclide-analytics';
 import {getHackLanguageForUri} from './HackLanguage';
 import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
-import {Range} from 'atom';
-import invariant from 'assert';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
+import {getLogger} from '../../nuclide-logging';
+import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
-
-/**
- * Currently, a diagnostic from Hack is an object with a "message" property.
- * Each item in the "message" array is an object with the following fields:
- *     - path (string) File that contains the error.
- *     - descr (string) Description of the error.
- *     - line (number) Start line.
- *     - endline (number) End line.
- *     - start (number) Start column.
- *     - end (number) End column.
- *     - code (number) Presumably an error code.
- * The message array may have more than one item. For example, if there is a
- * type incompatibility error, the first item in the message array blames the
- * usage of the wrong type and the second blames the declaration of the type
- * with which the usage disagrees. Note that these could occur in different
- * files.
- */
-function extractRange(message: SingleHackMessage): atom$Range {
-  // It's unclear why the 1-based to 0-based indexing works the way that it
-  // does, but this has the desired effect in the UI, in practice.
-  return new Range(
-    [message.line - 1, message.start - 1],
-    [message.line - 1, message.end],
-  );
-}
-
-// A trace object is very similar to an error object.
-function hackMessageToTrace(traceError: SingleHackMessage): Object {
-  return {
-    type: 'Trace',
-    text: traceError.descr,
-    filePath: traceError.path,
-    range: extractRange(traceError),
-  };
-}
-
-function hackMessageToDiagnosticMessage(
-  hackDiagnostic: {message: HackDiagnostic},
-): FileDiagnosticMessage {
-  const {message: hackMessages} = hackDiagnostic;
-
-  const causeMessage = hackMessages[0];
-  invariant(causeMessage.path != null);
-  const diagnosticMessage: FileDiagnosticMessage = {
-    scope: 'file',
-    providerName: `Hack: ${hackMessages[0].code}`,
-    type: 'Error',
-    text: causeMessage.descr,
-    filePath: causeMessage.path,
-    range: extractRange(causeMessage),
-  };
-
-  // When the message is an array with multiple elements, the second element
-  // onwards comprise the trace for the error.
-  if (hackMessages.length > 1) {
-    diagnosticMessage.trace = hackMessages.slice(1).map(hackMessageToTrace);
-  }
-
-  return diagnosticMessage;
-}
 
 export default class HackDiagnosticsProvider {
   _busySignalProvider: BusySignalProviderBase;
@@ -145,11 +78,14 @@ export default class HackDiagnosticsProvider {
     // So, currently, it would only work if there is no `hh_client` or `.hhconfig` where
     // the `HackWorker` model will diagnose with the updated editor contents.
     const diagnosisResult = await this._requestSerializer.run(findDiagnostics(textEditor));
+    if (diagnosisResult.status === 'success' && diagnosisResult.result == null) {
+      getLogger().error('hh_client could not be reached');
+    }
     if (diagnosisResult.status === 'outdated' || diagnosisResult.result == null) {
       return;
     }
 
-    const diagnostics = diagnosisResult.result;
+    const diagnostics: DiagnosticProviderUpdate = diagnosisResult.result;
     filePath = textEditor.getPath();
     if (filePath == null) {
       return;
@@ -168,35 +104,28 @@ export default class HackDiagnosticsProvider {
 
     const pathsForHackLanguage = new Set();
     this._projectRootToFilePaths.set(projectRoot, pathsForHackLanguage);
-    for (const diagnostic of diagnostics) {
-      /*
-       * Each message consists of several different components, each with its
-       * own text and path.
-       */
-      for (const diagnosticMessage of diagnostic.message) {
-        pathsForHackLanguage.add(diagnosticMessage.path);
+    const addPath = path => {
+      if (path != null) {
+        pathsForHackLanguage.add(path);
       }
+    };
+    if (diagnostics.filePathToMessages != null) {
+      diagnostics.filePathToMessages.forEach(
+        (messages, messagePath) => {
+          addPath(messagePath);
+          messages.forEach(
+            message => {
+              addPath(message.filePath);
+              if (message.trace != null) {
+                message.trace.forEach(trace => {
+                  addPath(trace.filePath);
+                });
+              }
+            });
+        });
     }
 
-    this._providerBase.publishMessageUpdate(this._processDiagnostics(diagnostics));
-  }
-
-  _processDiagnostics(diagnostics: Array<{message: HackDiagnostic}>): DiagnosticProviderUpdate {
-    // Convert array messages to Error Objects with Traces.
-    const fileDiagnostics = diagnostics.map(hackMessageToDiagnosticMessage);
-
-    const filePathToMessages = new Map();
-    for (const diagnostic of fileDiagnostics) {
-      const path = diagnostic.filePath;
-      let diagnosticArray = filePathToMessages.get(path);
-      if (!diagnosticArray) {
-        diagnosticArray = [];
-        filePathToMessages.set(path, diagnosticArray);
-      }
-      diagnosticArray.push(diagnostic);
-    }
-
-    return {filePathToMessages};
+    this._providerBase.publishMessageUpdate(diagnostics);
   }
 
   _getPathsToInvalidate(projectRoot: NuclideUri): Array<NuclideUri> {
@@ -264,15 +193,12 @@ export default class HackDiagnosticsProvider {
 
 async function findDiagnostics(
   editor: atom$TextEditor,
-): Promise<Array<{message: HackDiagnostic}>> {
-  const filePath = editor.getPath();
-  const hackLanguage = await getHackLanguageForUri(filePath);
-  if (!hackLanguage || !filePath) {
-    return [];
+): Promise<?DiagnosticProviderUpdate> {
+  const fileVersion = await getFileVersionOfEditor(editor);
+  const hackLanguage = await getHackLanguageForUri(editor.getPath());
+  if (hackLanguage == null || fileVersion == null) {
+    return null;
   }
 
-  invariant(filePath);
-  const contents = editor.getText();
-
-  return await hackLanguage.getDiagnostics(filePath, contents);
+  return await hackLanguage.getDiagnostics(fileVersion);
 }

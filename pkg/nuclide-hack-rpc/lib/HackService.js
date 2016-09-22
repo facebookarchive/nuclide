@@ -29,7 +29,10 @@ import type {HackTypedRegion} from './TypedRegions';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 import type {HackReferencesResult} from './FindReferences';
-
+import type {
+  DiagnosticProviderUpdate,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {HackDiagnosticsResult} from './Diagnostics';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -56,26 +59,9 @@ import {outlineFromHackIdeOutline} from './OutlineView';
 import {convertCoverage} from './TypedRegions';
 import {convertReferences} from './FindReferences';
 import {hasPrefix, findHackPrefix, convertCompletions} from './Completions';
+import {convertDiagnostics} from './Diagnostics';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
-
-export type HackDiagnosticsResult = Array<{message: HackDiagnostic}>;
-
-/**
- * Each error or warning can consist of any number of different messages from
- * Flow to help explain the problem and point to different locations that may be
- * of interest.
- */
-export type HackDiagnostic = Array<SingleHackMessage>;
-
-export type SingleHackMessage = {
-  path: ?NuclideUri,
-  descr: string,
-  code: number,
-  line: number,
-  start: number,
-  end: number,
-};
 
 export type HackCompletionsResult = Array<HackCompletion>;
 
@@ -119,36 +105,26 @@ export async function initialize(
 
 export class HackLanguageService {
   async getDiagnostics(
-    file: NuclideUri,
-    currentContents?: string,
-  ): Promise<?HackDiagnosticsResult> {
-    const hhResult = await retryLimit(
+    fileVersion: FileVersion,
+  ): Promise<?DiagnosticProviderUpdate> {
+    const filePath = fileVersion.filePath;
+
+    const hhResult: ?HackDiagnosticsResult = (await retryLimit(
       () => callHHClient(
         /* args */ [],
         /* errorStream */ true,
         /* processInput */ null,
-        /* file */ file,
+        /* file */ filePath,
       ),
       result => result != null,
       HH_CLIENT_MAX_TRIES,
       HH_DIAGNOSTICS_DELAY_MS,
-    );
+    ): any);
     if (!hhResult) {
       return null;
     }
 
-    const messages = (
-      (hhResult: any): {errors: Array<{message: HackDiagnostic}>}
-    ).errors;
-
-    // Use a consistent null 'falsy' value for the empty string, undefined, etc.
-    messages.forEach(error => {
-      error.message.forEach(component => {
-        component.path = component.path || null;
-      });
-    });
-
-    return messages;
+    return convertDiagnostics(hhResult);
   }
 
   async getAutocompleteSuggestions(

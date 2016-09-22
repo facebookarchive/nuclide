@@ -10,7 +10,6 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HackDiagnostic} from '../../nuclide-hack-rpc/lib/HackService';
 import type {DefinitionQueryResult} from '../../nuclide-definition-service/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
@@ -20,9 +19,9 @@ import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+import type {DiagnosticProviderUpdate} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
-import {getLogger} from '../../nuclide-logging';
 import {getConfig} from './config';
 
 /**
@@ -78,20 +77,9 @@ export class HackLanguage {
   }
 
   async getDiagnostics(
-    filePath: NuclideUri,
-    contents: string,
-  ): Promise<Array<{message: HackDiagnostic}>> {
-    try {
-      const result = await this._hackService.getDiagnostics(filePath, contents);
-      if (result == null) {
-        getLogger().error('hh_client could not be reached');
-        return [];
-      }
-      return result;
-    } catch (err) {
-      getLogger().error(err);
-      return [];
-    }
+    fileVersion: FileVersion,
+  ): Promise<?DiagnosticProviderUpdate> {
+    return this._hackService.getDiagnostics(fileVersion);
   }
 
   async getCoverage(
