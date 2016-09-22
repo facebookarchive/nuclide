@@ -14,13 +14,10 @@ import type {HighlightedLines, OffsetMap, UIElement} from './types';
 
 import {CompositeDisposable} from 'atom';
 import {arrayEqual, mapEqual} from '../../commons-node/collection';
-import debounce from '../../commons-node/debounce';
 import {React} from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import invariant from 'assert';
-
-const CHANGE_DEBOUNCE_DELAY_MS = 5;
 
 type Props = {
   filePath: NuclideUri,
@@ -33,7 +30,6 @@ type Props = {
   textContent?: string,
   inlineElements: Array<UIElement>,
   readOnly: boolean,
-  onChange: (newContents: string) => any,
   onDidChangeScrollTop?: () => mixed,
   onDidUpdateTextEditorElement: () => mixed,
 };
@@ -66,22 +62,7 @@ export default class DiffViewEditorPane extends React.Component {
     const editorDomElement = this.getEditorDomElement();
     this._diffViewEditor = new DiffViewEditor(editorDomElement);
     const textEditor = this.getEditorModel();
-    const textBuffer = textEditor.getBuffer();
 
-    const debouncedOnChange = debounce(
-      () => {
-        if (!this._isMounted || textBuffer !== this.props.textBuffer) {
-          return;
-        }
-        const textContent = textBuffer.getText();
-        if (this.props.onChange) {
-          this.props.onChange(textContent);
-        }
-      },
-      CHANGE_DEBOUNCE_DELAY_MS,
-      false,
-    );
-    editorSubscriptions.add(textBuffer.onDidChange(debouncedOnChange));
     /*
      * Those should have been synced automatically, but an implementation limitation of creating
      * a <atom-text-editor> element assumes default settings for those.

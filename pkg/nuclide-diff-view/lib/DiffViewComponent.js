@@ -162,7 +162,6 @@ export default class DiffViewComponent extends React.Component {
     this.state = getInitialState();
     (this: any)._onModelStateChange = this._onModelStateChange.bind(this);
     (this: any)._updateLineDiffState = this._updateLineDiffState.bind(this);
-    (this: any)._onChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
     (this: any)._onTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
     (this: any)._handleNavigateToDiffSection = this._handleNavigateToDiffSection.bind(this);
     (this: any)._onDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
@@ -380,7 +379,6 @@ export default class DiffViewComponent extends React.Component {
           textContent={oldState.text}
           inlineElements={oldState.inlineElements}
           readOnly={true}
-          onChange={EMPTY_FUNCTION}
           onDidChangeScrollTop={this._onDidChangeScrollTop}
           onDidUpdateTextEditorElement={EMPTY_FUNCTION}
         />,
@@ -399,7 +397,6 @@ export default class DiffViewComponent extends React.Component {
           inlineElements={newState.inlineElements}
           onDidUpdateTextEditorElement={this._onDidUpdateTextEditorElement}
           readOnly={false}
-          onChange={this._onChangeNewTextEditor}
         />,
         this._getPaneElement(this._newEditorPane),
     );
@@ -514,10 +511,6 @@ export default class DiffViewComponent extends React.Component {
     const diffViewNode = ReactDOM.findDOMNode(this);
     invariant(diffViewNode, 'Diff View DOM needs to be attached to switch to editor mode');
     atom.commands.dispatch(diffViewNode, 'nuclide-diff-view:switch-to-editor');
-  }
-
-  _onChangeNewTextEditor(newContents: string): void {
-    this.props.diffModel.setNewContents(newContents);
   }
 
   _onTimelineChangeRevision(revision: RevisionInfo): void {

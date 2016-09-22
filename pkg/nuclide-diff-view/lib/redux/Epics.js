@@ -52,6 +52,7 @@ import {
 import {getPhabricatorRevisionFromCommitMessage} from '../../../nuclide-arcanist-rpc/lib/utils';
 
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
+const CHANGE_DEBOUNCE_DELAY_MS = 10;
 
 function observeStatusChanges(repository: HgRepositoryClient): Observable<null> {
   return observableFromSubscribeFunction(
@@ -255,6 +256,8 @@ export function diffFileEpic(
     const bufferReloads = observableFromSubscribeFunction(buffer.onDidReload.bind(buffer))
       .map(() => null)
       .startWith(null);
+    const bufferChanges = observableFromSubscribeFunction(buffer.onDidChange.bind(buffer))
+      .debounceTime(CHANGE_DEBOUNCE_DELAY_MS);
 
     const fetchHgDiff = Observable.combineLatest(
       revisionChanges,
@@ -272,7 +275,7 @@ export function diffFileEpic(
         .map(() => hgDiff),
     );
 
-    return Observable.combineLatest(fetchHgDiff, bufferReloads)
+    return Observable.combineLatest(fetchHgDiff, Observable.merge(bufferReloads, bufferChanges))
       .map(([{committedContents, revisionInfo}]) => Actions.updateFileDiff({
         filePath,
         fromRevisionTitle: formatFileDiffRevisionTitle(revisionInfo),

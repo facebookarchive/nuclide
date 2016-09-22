@@ -326,10 +326,6 @@ export default class DiffViewModel {
     return buffer.isModified();
   }
 
-  setNewContents(newContents: string): void {
-    // TODO(most): set new contents.
-  }
-
   setCompareRevision(revision: RevisionInfo): void {
     track('diff-view-set-revision');
     const repository = this._activeRepository;
