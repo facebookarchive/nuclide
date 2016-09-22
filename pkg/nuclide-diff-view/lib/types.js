@@ -132,6 +132,14 @@ export type Store = {
   dispatch(action: Action): void,
 };
 
+export type OpenViewAction = {
+  type: 'OPEN_VIEW',
+};
+
+export type CloseViewAction = {
+  type: 'CLOSE_VIEW',
+};
+
 export type AddRepositoryAction = {
   type: 'ADD_REPOSITORY',
   payload: {
@@ -278,9 +286,11 @@ export type PublishDiffAction = {
 
 export type Action = ActivateRepositoryAction
   | AddRepositoryAction
+  | CloseViewAction
   | CommitAction
   | DeactivateRepositoryAction
   | DiffFileAction
+  | OpenViewAction
   | PublishDiffAction
   | RemoveRepositoryAction
   | SetCommitModeAction

@@ -276,7 +276,8 @@ export default class DiffViewModel {
       const hgRepository = ((repository: any): HgRepositoryClient);
       this._repositories.add(hgRepository);
       if (this._isActive) {
-        this._actionCreators.activateRepository(repository);
+        // TODO(most): cleanup
+        // this._actionCreators.activateRepository(repository);
       }
     }
 
@@ -407,22 +408,19 @@ export default class DiffViewModel {
   }
 
   activate(): void {
+    this._actionCreators.openView();
     this._updateRepositories();
     this._isActive = true;
-    for (const repository of this._repositories) {
-      // TODO(most): Consider activating only the visible repository.
-      this._actionCreators.activateRepository(repository);
-    }
+    // TODO(most): Cleanup.
+    // this._actionCreators.activateRepository(repository);
   }
 
   deactivate(): void {
+    this._actionCreators.closeView();
     if (!this._isActive) {
       return;
     }
     this._isActive = false;
-    for (const repository of this._repositories) {
-      this._actionCreators.deactivateRepository(repository);
-    }
     this._activeRepository = null;
   }
 

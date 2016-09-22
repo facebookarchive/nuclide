@@ -207,14 +207,52 @@ export function setCwdApiEpic(
     if (cwdApi == null) {
       return Observable.of(Actions.updateActiveRepository(null));
     }
-    return observableFromSubscribeFunction(cwdApi.observeCwd.bind(cwdApi))
+
+    const cwdHgRepository = observableFromSubscribeFunction(cwdApi.observeCwd.bind(cwdApi))
       .map(directory => {
         if (directory == null) {
           return null;
         } else {
           return repositoryForPath(directory.getPath());
         }
-      }).map(repository => Actions.updateActiveRepository(repository));
+      }).map(repository => {
+        if (repository == null || repository.getType() !== 'hg') {
+          return null;
+        } else {
+          return ((repository: any): HgRepositoryClient);
+        }
+      }).distinctUntilChanged();
+
+    return cwdHgRepository.map(repository => Actions.updateActiveRepository(repository));
+  });
+}
+
+export function openViewEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(ActionTypes.OPEN_VIEW).switchMap(action => {
+    invariant(action.type === ActionTypes.OPEN_VIEW);
+
+    return actions.ofType(ActionTypes.UPDATE_ACTIVE_REPOSITORY)
+      .map(a => {
+        invariant(a.type === ActionTypes.UPDATE_ACTIVE_REPOSITORY);
+        return a.payload.hgRepository;
+      })
+      .startWith(null, store.getState().activeRepository)
+      // $FlowFixMe(matthewwithanm): Type this.
+      .pairwise()
+      .switchMap(([oldRepository, newRepository]: [?HgRepositoryClient, ?HgRepositoryClient]) => {
+        return Observable.concat(
+          oldRepository != null
+            ? Observable.of(Actions.deactivateRepository(oldRepository))
+            : Observable.empty(),
+
+          newRepository != null
+            ? Observable.of(Actions.activateRepository(newRepository))
+            : Observable.empty(),
+        );
+      }).takeUntil(actions.ofType(ActionTypes.CLOSE_VIEW));
   });
 }
 
@@ -253,8 +291,6 @@ export function diffFileEpic(
 
     const deactiveRepsitory = actions.filter(a =>
       a.type === ActionTypes.DEACTIVATE_REPOSITORY && a.payload.repository === hgRepository);
-    const deselectActiveRepository = actions.filter(a =>
-      a.type === ActionTypes.UPDATE_ACTIVE_REPOSITORY && a.payload.hgRepository !== hgRepository);
 
     const buffer = bufferForUri(filePath);
     const bufferReloads = observableFromSubscribeFunction(buffer.onDidReload.bind(buffer))
@@ -299,7 +335,6 @@ export function diffFileEpic(
         .takeUntil(Observable.merge(
           observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer)),
           deactiveRepsitory,
-          deselectActiveRepository,
         ))
         .concat(Observable.of(Actions.updateFileDiff(getEmptyFileDiffState()))),
     );
@@ -402,7 +437,7 @@ export function setViewModeEpic(
 
       notifyInternalError(new Error(`Invalid Diff View Mode: ${viewMode}`));
       return Observable.empty();
-    }).takeUntil(actions.ofType(ActionTypes.DEACTIVATE_REPOSITORY));
+    }).takeUntil(actions.ofType(ActionTypes.CLOSE_VIEW));
   });
 }
 

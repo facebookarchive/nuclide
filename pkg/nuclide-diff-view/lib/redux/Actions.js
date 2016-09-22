@@ -13,6 +13,7 @@ import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
   ActivateRepositoryAction,
   AddRepositoryAction,
+  CloseViewAction,
   CommitAction,
   CommitModeType,
   CommitState,
@@ -21,6 +22,7 @@ import type {
   DiffModeType,
   FileChangeStatusValue,
   FileDiffState,
+  OpenViewAction,
   PublishDiffAction,
   PublishState,
   RemoveRepositoryAction,
@@ -48,9 +50,11 @@ import type {Subject} from 'rxjs';
 import {
   ACTIVATE_REPOSITORY,
   ADD_REPOSITORY,
+  CLOSE_VIEW,
   COMMIT,
   DEACTIVATE_REPOSITORY,
   DIFF_FILE,
+  OPEN_VIEW,
   PUBLISH_DIFF,
   REMOVE_REPOSITORY,
   SET_COMMIT_MODE,
@@ -66,6 +70,18 @@ import {
   UPDATE_PUBLISH_STATE,
   UPDATE_SELECTED_FILES,
 } from './ActionTypes';
+
+export function openView(): OpenViewAction {
+  return {
+    type: OPEN_VIEW,
+  };
+}
+
+export function closeView(): CloseViewAction {
+  return {
+    type: CLOSE_VIEW,
+  };
+}
 
 export function addRepository(
   repository: HgRepositoryClient,
@@ -166,14 +182,8 @@ export function updateHeadToForkBaseRevisionsState(
 }
 
 export function updateActiveRepository(
-  repository: ?atom$Repository,
+  hgRepository: ?HgRepositoryClient,
 ): UpdateActiveRepositoryAction {
-  let hgRepository;
-  if (repository == null || repository.getType() !== 'hg') {
-    hgRepository = null;
-  } else {
-    hgRepository = ((repository: any): HgRepositoryClient);
-  }
   return {
     type: UPDATE_ACTIVE_REPOSITORY,
     payload: {
