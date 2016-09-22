@@ -20,10 +20,6 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {
-  createPhabricatorRevision,
-  updatePhabricatorRevision,
-} from '../DiffViewModel';
-import {
   CommitMode,
   CommitModeState,
   DiffMode,
@@ -31,6 +27,7 @@ import {
   PublishModeState,
 } from '../constants';
 import {
+  createPhabricatorRevision,
   formatFileDiffRevisionTitle,
   getAmendMode,
   getDirtyFileChanges,
@@ -39,6 +36,7 @@ import {
   getHgDiff,
   getRevisionUpdateMessage,
   getSelectedFileChanges,
+  updatePhabricatorRevision,
   viewModeToDiffOption,
   promptToCleanDirtyChanges,
 } from '../utils';
