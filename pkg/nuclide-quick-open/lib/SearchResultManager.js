@@ -10,11 +10,13 @@
  */
 
 import type {
-  FileResult,
   Provider,
   ProviderResult,
   ProviderSpec,
 } from './types';
+import type {
+  FileResult,
+} from './rpc-types';
 
 import type {Dispatcher} from 'flux';
 

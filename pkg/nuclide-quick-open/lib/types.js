@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {FileResult} from './rpc-types';
 
 import {React} from 'react-for-atom';
 
@@ -45,19 +46,6 @@ export type Provider = {
    * 0 == highest rank, +Infinity == lowest rank. Defaults to Number.POSITIVE_INFINITY.
    */
   getPriority?: () => number,
-};
-
-export type FileResult = {
-  path: NuclideUri,
-  matchIndexes?: Array<number>,
-  score?: number,
-  // The original query that prompted this result, e.g. to highlight it in the UI.
-  query?: string,
-  context?: string,
-  timestamp?: number,
-  // Jump to line/column if provided.
-  line?: number,
-  column?: number,
 };
 
 export type ProviderResult = {

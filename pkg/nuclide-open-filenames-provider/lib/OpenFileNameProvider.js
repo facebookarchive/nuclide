@@ -10,10 +10,12 @@
  */
 
 import type {
-  FileResult,
   Provider,
   ProviderType,
 } from '../../nuclide-quick-open/lib/types';
+import type {
+  FileResult,
+} from '../../nuclide-quick-open/lib/rpc-types';
 
 import {arrayCompact} from '../../commons-node/collection';
 import {Matcher} from '../../nuclide-fuzzy-native';

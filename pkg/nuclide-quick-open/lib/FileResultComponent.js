@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileResult} from './types';
+import type {FileResult} from './rpc-types';
 
 import {React} from 'react-for-atom';
 import fileTypeClass from '../../commons-atom/file-type-class';

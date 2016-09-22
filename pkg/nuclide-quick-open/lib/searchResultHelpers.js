@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {FileResult, GroupedResult} from './types';
+import type {GroupedResult} from './types';
+import type {FileResult} from './rpc-types';
 
 import {isEmpty} from '../../commons-node/collection';
 

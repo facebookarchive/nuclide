@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileResult} from '../../nuclide-quick-open/lib/types';
+import type {FileResult} from '../../nuclide-quick-open/lib/rpc-types';
 import type {CtagsResult, CtagsService} from '../../nuclide-ctags-rpc';
 
 import {React} from 'react-for-atom';
