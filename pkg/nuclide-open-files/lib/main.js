@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';

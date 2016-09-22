@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+import type {FileVersion} from './rpc-types';
 import {FileCache} from './FileCache';
 
 import invariant from 'assert';

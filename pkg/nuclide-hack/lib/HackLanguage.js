@@ -14,7 +14,7 @@ import type {DefinitionQueryResult} from '../../nuclide-definition-service/lib/r
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
-import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';

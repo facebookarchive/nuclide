@@ -15,8 +15,8 @@ import type {
   FileCloseEvent,
   FileEditEvent,
   FileEvent,
+  FileVersion,
 } from './rpc-types';
-import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
 
 import TextBuffer from 'simple-text-buffer';
 import invariant from 'assert';

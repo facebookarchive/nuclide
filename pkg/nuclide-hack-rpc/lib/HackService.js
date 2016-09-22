@@ -16,7 +16,7 @@ import type {
   HackRange,
   HackCompletion,
 } from './rpc-types';
-import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   Definition,

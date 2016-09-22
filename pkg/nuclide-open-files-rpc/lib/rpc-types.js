@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {FileVersion} from '../../nuclide-open-files-common/lib/rpc-types';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export type FileOpenEvent = {
   kind: 'open',
@@ -44,3 +44,9 @@ export interface FileNotifier {
   onEvent(event: FileEvent): Promise<void>,
   dispose(): void,
 }
+
+export type FileVersion = {
+  notifier: FileNotifier,
+  filePath: NuclideUri,
+  version: number,
+};
