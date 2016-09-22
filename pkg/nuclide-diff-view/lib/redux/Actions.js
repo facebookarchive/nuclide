@@ -195,11 +195,13 @@ export function setCwdApi(
 
 export function diffFile(
   filePath: NuclideUri,
+  onChangeModified: () => mixed,
 ): DiffFileAction {
   return {
     type: DIFF_FILE,
     payload: {
       filePath,
+      onChangeModified,
     },
   };
 }

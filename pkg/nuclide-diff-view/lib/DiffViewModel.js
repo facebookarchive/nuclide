@@ -291,7 +291,10 @@ export default class DiffViewModel {
   }
 
   diffFile(filePath: NuclideUri): void {
-    this._actionCreators.diffFile(filePath);
+    this._actionCreators.diffFile(
+      filePath,
+      this.emitActiveBufferChangeModified.bind(this),
+    );
   }
 
   getActiveStackDirtyFileChanges(): Map<NuclideUri, FileChangeStatusValue> {

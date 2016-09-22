@@ -212,6 +212,7 @@ export type DiffFileAction = {
   type: 'DIFF_FILE',
   payload: {
     filePath: NuclideUri,
+    onChangeModified: () => mixed,
   },
 };
 

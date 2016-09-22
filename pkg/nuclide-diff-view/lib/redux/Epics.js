@@ -224,7 +224,7 @@ export function diffFileEpic(
   return actions.ofType(ActionTypes.DIFF_FILE).switchMap(action => {
     invariant(action.type === ActionTypes.DIFF_FILE);
 
-    const {filePath} = action.payload;
+    const {filePath, onChangeModified} = action.payload;
     const repository = repositoryForPath(filePath);
 
     if (repository == null || repository.getType() !== 'hg') {
@@ -259,6 +259,12 @@ export function diffFileEpic(
     const bufferChanges = observableFromSubscribeFunction(buffer.onDidChange.bind(buffer))
       .debounceTime(CHANGE_DEBOUNCE_DELAY_MS);
 
+    const bufferChangeModifed = Observable.merge(
+      observableFromSubscribeFunction(buffer.onDidChangeModified.bind(buffer)),
+      observableFromSubscribeFunction(buffer.onDidStopChanging.bind(buffer)),
+    ).map(onChangeModified)
+    .ignoreElements();
+
     const fetchHgDiff = Observable.combineLatest(
       revisionChanges,
       diffOptionChanges,
@@ -275,20 +281,24 @@ export function diffFileEpic(
         .map(() => hgDiff),
     );
 
-    return Observable.combineLatest(fetchHgDiff, Observable.merge(bufferReloads, bufferChanges))
-      .map(([{committedContents, revisionInfo}]) => Actions.updateFileDiff({
-        filePath,
-        fromRevisionTitle: formatFileDiffRevisionTitle(revisionInfo),
-        newContents: buffer.getText(),
-        oldContents: committedContents,
-        toRevisionTitle: 'Filesystem / Editor',
-      }))
-      .takeUntil(Observable.merge(
-        observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer)),
-        deactiveRepsitory,
-        deselectActiveRepository,
-      ))
-      .concat(Observable.of(Actions.updateFileDiff(getEmptyFileDiffState())));
+    return Observable.merge(
+      bufferChangeModifed,
+
+      Observable.combineLatest(fetchHgDiff, Observable.merge(bufferReloads, bufferChanges))
+        .map(([{committedContents, revisionInfo}]) => Actions.updateFileDiff({
+          filePath,
+          fromRevisionTitle: formatFileDiffRevisionTitle(revisionInfo),
+          newContents: buffer.getText(),
+          oldContents: committedContents,
+          toRevisionTitle: 'Filesystem / Editor',
+        }))
+        .takeUntil(Observable.merge(
+          observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer)),
+          deactiveRepsitory,
+          deselectActiveRepository,
+        ))
+        .concat(Observable.of(Actions.updateFileDiff(getEmptyFileDiffState()))),
+    );
   });
 }
 
