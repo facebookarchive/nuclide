@@ -449,33 +449,42 @@ export function commit(
     const {message, repository} = action.payload;
     const {commit: {mode}, shouldRebaseOnAmend} = store.getState();
 
-    return Observable.of(Actions.updateCommitState({
-      message,
-      mode,
-      state: CommitModeState.AWAITING_COMMIT,
-    })).switchMap(() => {
-      switch (mode) {
-        case CommitMode.COMMIT:
-          return repository.commit(message)
-            .toArray();
-        case CommitMode.AMEND:
-          return repository.amend(message, getAmendMode(shouldRebaseOnAmend))
-            .toArray();
-        default:
-          return Observable.throw(new Error(`Invalid Commit Mode ${mode}`));
-      }
-    }).map(() => {
-      const successMessage = mode === CommitMode.COMMIT ? 'created' : 'amended';
-      atom.notifications.addSuccess(`Commit ${successMessage}`, {nativeFriendly: true});
+    return Observable.concat(
+      Observable.of(Actions.updateCommitState({
+        message,
+        mode,
+        state: CommitModeState.AWAITING_COMMIT,
+      })),
 
-      return Actions.setViewMode(DiffMode.BROWSE_MODE);
-    }).catch(error => {
-      atom.notifications.addError('Error creating commit', {
-        detail: `Details: ${error.message}`,
-        nativeFriendly: true,
-      });
-      return Observable.empty();
-    }).concat(Observable.of(Actions.updateCommitState(getEmptyCommitState())));
+      Observable.defer(() => {
+        switch (mode) {
+          case CommitMode.COMMIT:
+            return repository.commit(message)
+              .toArray();
+          case CommitMode.AMEND:
+            return repository.amend(message, getAmendMode(shouldRebaseOnAmend))
+              .toArray();
+          default:
+            return Observable.throw(new Error(`Invalid Commit Mode ${mode}`));
+        }
+      })
+      .switchMap(processMessages => {
+        const successMessage = mode === CommitMode.COMMIT ? 'created' : 'amended';
+        atom.notifications.addSuccess(`Commit ${successMessage}`, {nativeFriendly: true});
+
+        return Observable.of(
+          Actions.setViewMode(DiffMode.BROWSE_MODE),
+          Actions.updateCommitState(getEmptyCommitState()),
+        );
+      })
+      .catch(error => {
+        atom.notifications.addError('Error creating commit', {
+          detail: `Details: ${error.message}`,
+          nativeFriendly: true,
+        });
+        return Observable.empty();
+      }),
+    );
   });
 }
 
