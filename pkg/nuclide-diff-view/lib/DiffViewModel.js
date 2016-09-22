@@ -47,7 +47,7 @@ export type DiffEntityOptions = {
 };
 
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
-import {CompositeDisposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import {shell} from 'electron';
 import {
   DiffMode,
@@ -85,6 +85,7 @@ function getInitialFileChangeState(): FileChangeState {
 function getInitialState(): State {
   return {
     ...getInitialFileChangeState(),
+    activeRepository: null,
     viewMode: DiffMode.BROWSE_MODE,
     commitMessage: null,
     commitMode: CommitMode.COMMIT,
@@ -205,6 +206,7 @@ function notifyRevisionStatus(
 }
 
 export type State = {
+  activeRepository: ?HgRepositoryClient,
   filePath: NuclideUri,
   oldContents: string,
   newContents: string,
@@ -229,11 +231,7 @@ export type State = {
 export default class DiffViewModel {
 
   _emitter: Emitter;
-  _subscriptions: CompositeDisposable;
-  _activeRepository: ?HgRepositoryClient;
   _uiProviders: Array<UIProvider>;
-  _repositories: Set<HgRepositoryClient>;
-  _isActive: boolean;
   _state: State;
   _publishUpdates: Subject<any>;
   _actionCreators: BoundActionCreators;
@@ -241,54 +239,9 @@ export default class DiffViewModel {
   constructor(actionCreators: BoundActionCreators) {
     this._actionCreators = actionCreators;
     this._emitter = new Emitter();
-    this._subscriptions = new CompositeDisposable();
     this._uiProviders = [];
-    this._repositories = new Set();
-    this._isActive = false;
     this._publishUpdates = new Subject();
     this._state = getInitialState();
-    this._updateRepositories();
-    this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
-  }
-
-  _updateRepositories(): void {
-    const repositories = new Set(
-      atom.project.getRepositories().filter(
-        repository => repository != null && repository.getType() === 'hg',
-      ),
-    );
-    // Dispose removed projects repositories, if any.
-    for (const repository of this._repositories) {
-      if (repositories.has(repository)) {
-        continue;
-      }
-      if (this._activeRepository === repository) {
-        this._activeRepository = null;
-      }
-      this._repositories.delete(repository);
-    }
-
-    // Add the new project repositories, if any.
-    for (const repository of repositories) {
-      if (this._repositories.has(repository)) {
-        continue;
-      }
-      const hgRepository = ((repository: any): HgRepositoryClient);
-      this._repositories.add(hgRepository);
-      if (this._isActive) {
-        // TODO(most): cleanup
-        // this._actionCreators.activateRepository(repository);
-      }
-    }
-
-    // Update active repository stack, if needed.
-    // This will make sure we have a repository stack active whenever we have
-    // a mercurial repository added to the project.
-    if (this._activeRepository == null && this._repositories.size > 0) {
-      this._setActiveRepository(
-        Array.from(this._repositories)[0],
-      );
-    }
   }
 
   diffFile(filePath: NuclideUri): void {
@@ -324,17 +277,12 @@ export default class DiffViewModel {
 
   setCompareRevision(revision: RevisionInfo): void {
     track('diff-view-set-revision');
-    const repository = this._activeRepository;
-    invariant(repository, 'There must be an active repository!');
-    this._actionCreators.setCompareId(repository, revision.id);
+    invariant(this._state.activeRepository, 'There must be an active repository!');
+    this._actionCreators.setCompareId(this._state.activeRepository, revision.id);
   }
 
   getPublishUpdates(): Subject<any> {
     return this._publishUpdates;
-  }
-
-  _setActiveRepository(repository: HgRepositoryClient): void {
-    this._activeRepository = repository;
   }
 
   @trackTiming('diff-view.save-file')
@@ -348,8 +296,9 @@ export default class DiffViewModel {
     publishMessage: string,
     lintExcuse: ?string,
   ): Promise<void> {
-    const activeRepository = this._activeRepository;
+    const activeRepository = this._state.activeRepository;
     invariant(activeRepository != null, 'Cannot publish without an active stack!');
+    track('diff-view-publish');
 
     this._actionCreators.publishDiff(
       activeRepository,
@@ -384,7 +333,7 @@ export default class DiffViewModel {
       atom.notifications.addError('Commit aborted', {detail: 'Commit message empty'});
       return;
     }
-    const activeRepository = this._activeRepository;
+    const activeRepository = this._state.activeRepository;
     invariant(activeRepository != null, 'No active repository stack');
     track('diff-view-commit');
     this._actionCreators.commit(activeRepository, message);
@@ -409,24 +358,13 @@ export default class DiffViewModel {
 
   activate(): void {
     this._actionCreators.openView();
-    this._updateRepositories();
-    this._isActive = true;
-    // TODO(most): Cleanup.
-    // this._actionCreators.activateRepository(repository);
   }
 
   deactivate(): void {
     this._actionCreators.closeView();
-    if (!this._isActive) {
-      return;
-    }
-    this._isActive = false;
-    this._activeRepository = null;
   }
 
   dispose(): void {
     this.deactivate();
-    this._subscriptions.dispose();
-    this._repositories.clear();
   }
 }

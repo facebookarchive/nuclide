@@ -225,6 +225,7 @@ class Activation {
           ? null : headRevision.description;
 
         this._getDiffViewModel().injectState({
+          activeRepository: state.activeRepository,
           fromRevisionTitle: fileDiff.fromRevisionTitle,
           toRevisionTitle: fileDiff.toRevisionTitle,
           filePath: fileDiff.filePath,
