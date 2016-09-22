@@ -13,22 +13,16 @@ import {observeProcess, safeSpawn} from '../../commons-node/process';
 import memoize from 'lodash.memoize';
 import {Observable} from 'rxjs';
 
+export type DeviceState = 'CREATING' | 'BOOTING' | 'SHUTTING_DOWN' | 'SHUT_DOWN' | 'BOOTED';
+
 export type Device = {
   name: string,
   udid: string,
-  state: string,
+  state: ?DeviceState,
   os: string,
 };
 
-const DeviceState = {
-  Creating: 'Creating',
-  Booting: 'Booting',
-  ShuttingDown: 'Shutting Down',
-  Shutdown: 'Shutdown',
-  Booted: 'Booted',
-};
-
-export function parseDevicesFromSimctlOutput(output: string): Device[] {
+export function parseDevicesFromSimctlOutput(output: string): Array<Device> {
   const devices = [];
   let currentOS = null;
 
@@ -48,11 +42,27 @@ export function parseDevicesFromSimctlOutput(output: string): Device[] {
       line.match(/^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/);
     if (device && currentOS) {
       const [, name, udid, state] = device;
-      devices.push({name, udid, state, os: currentOS});
+      devices.push({
+        name,
+        udid,
+        state: validateState(state),
+        os: currentOS,
+      });
     }
   });
 
   return devices;
+}
+
+function validateState(rawState: ?string): ?DeviceState {
+  switch (rawState) {
+    case 'Creating': return 'CREATING';
+    case 'Booting': return 'BOOTING';
+    case 'Shutting Down': return 'SHUTTING_DOWN';
+    case 'Shutdown': return 'SHUT_DOWN';
+    case 'Booted': return 'BOOTED';
+    default: return null;
+  }
 }
 
 export const getDevices = memoize(() => (
@@ -79,10 +89,8 @@ export const getDevices = memoize(() => (
     .share()
 ));
 
-export function getActiveDeviceIndex(devices: Device[]): number {
-  const bootedDeviceIndex = devices.findIndex(
-    device => device.state === DeviceState.Booted,
-  );
+export function getActiveDeviceIndex(devices: Array<Device>): number {
+  const bootedDeviceIndex = devices.findIndex(device => device.state === 'BOOTED');
   if (bootedDeviceIndex > -1) {
     return bootedDeviceIndex;
   }
