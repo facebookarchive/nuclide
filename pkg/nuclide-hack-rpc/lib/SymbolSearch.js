@@ -11,10 +11,8 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {HackSearchPosition} from './HackService';
-import type {HackSearchResult, HHSearchPosition} from './types';
-import type {SearchResultTypeValue} from '../../nuclide-hack-common';
+import type {HHSearchPosition} from './types';
 
-import {SearchResultType} from '../../nuclide-hack-common';
 import {findHackConfigDir} from './hack-config';
 
 import {
@@ -23,81 +21,83 @@ import {
 
 const pendingSearchPromises: Map<string, Promise<any>> = new Map();
 
-export async function executeQuery(
-  rootDirectory: NuclideUri,
+export function parseQueryString(
   queryString_: string,
-): Promise<Array<HackSearchPosition>> {
-  let queryString = queryString_;
+): {searchPostfix: ?string, queryString: string} {
+  let queryString;
   let searchPostfix;
-  switch (queryString[0]) {
+  switch (queryString_[0]) {
     case '@':
       searchPostfix = '-function';
-      queryString = queryString.substring(1);
+      queryString = queryString_.substring(1);
       break;
     case '#':
       searchPostfix = '-class';
-      queryString = queryString.substring(1);
+      queryString = queryString_.substring(1);
       break;
     case '%':
       searchPostfix = '-constant';
-      queryString = queryString.substring(1);
+      queryString = queryString_.substring(1);
+      break;
+    default:
+      searchPostfix = null;
+      queryString = queryString_;
       break;
   }
-  const searchResponse = await getSearchResults(
-    rootDirectory,
+  return {
+    searchPostfix,
     queryString,
-    /* filterTypes */ null,
-    searchPostfix);
-  if (searchResponse == null) {
-    return [];
-  } else {
-    return searchResponse.result;
-  }
+  };
 }
 
-export async function getSearchResults(
-    filePath: string,
-    search: string,
-    filterTypes?: ?Array<SearchResultTypeValue>,
-    searchPostfix?: string,
-  ): Promise<?HackSearchResult> {
-  if (search == null) {
-    return null;
-  }
+export async function executeQuery(
+  filePath: NuclideUri,
+  queryString_: string,
+): Promise<Array<HackSearchPosition>> {
   const hackRoot = await findHackConfigDir(filePath);
   if (hackRoot == null) {
-    return null;
+    return [];
+  }
+
+  const {queryString, searchPostfix} = parseQueryString(queryString_);
+  if (queryString === '') {
+    return [];
   }
 
   // `pendingSearchPromises` is used to temporally cache search result promises.
   // So, when a matching search query is done in parallel, it will wait and resolve
   // with the original search call.
-  let searchPromise = pendingSearchPromises.get(search);
+  let searchPromise = pendingSearchPromises.get(queryString);
   if (!searchPromise) {
     searchPromise = callHHClient(
-        /* args */ ['--search' + (searchPostfix || ''), search],
+        /* args */ ['--search' + (searchPostfix || ''), queryString],
         /* errorStream */ false,
         /* processInput */ null,
         /* file */ filePath,
     );
-    pendingSearchPromises.set(search, searchPromise);
+    pendingSearchPromises.set(queryString, searchPromise);
   }
 
   let searchResponse: ?Array<HHSearchPosition> = null;
   try {
-    searchResponse = (
-      ((await searchPromise): any): ?Array<HHSearchPosition>
-    );
+    searchResponse = ((await searchPromise): any);
   } finally {
-    pendingSearchPromises.delete(search);
+    pendingSearchPromises.delete(queryString);
   }
 
+  return convertSearchResults(hackRoot, searchResponse);
+}
+
+export function convertSearchResults(
+  hackRoot: NuclideUri,
+  searchResponse: ?Array<HHSearchPosition>,
+): Array<HackSearchPosition> {
   if (searchResponse == null) {
-    return null;
+    return [];
   }
 
   const searchResult = searchResponse;
-  let result: Array<HackSearchPosition> = [];
+  const result: Array<HackSearchPosition> = [];
   for (const entry of searchResult) {
     const resultFile = entry.filename;
     if (!resultFile.startsWith(hackRoot)) {
@@ -115,46 +115,5 @@ export async function getSearchResults(
     });
   }
 
-  if (filterTypes) {
-    result = filterSearchResults(result, filterTypes);
-  }
-  return {hackRoot, result};
-}
-
-// Eventually this will happen on the hack side, but for now, this will do.
-function filterSearchResults(
-  results: Array<HackSearchPosition>,
-  filter: Array<SearchResultTypeValue>,
-): Array<HackSearchPosition> {
-  return results.filter(result => {
-    const info = result.additionalInfo;
-    const searchType = getSearchType(info);
-    return filter.indexOf(searchType) !== -1;
-  });
-}
-
-function getSearchType(info: string): SearchResultTypeValue {
-  switch (info) {
-    case 'typedef':
-      return SearchResultType.TYPEDEF;
-    case 'function':
-      return SearchResultType.FUNCTION;
-    case 'constant':
-      return SearchResultType.CONSTANT;
-    case 'trait':
-      return SearchResultType.TRAIT;
-    case 'interface':
-      return SearchResultType.INTERFACE;
-    case 'abstract class':
-      return SearchResultType.ABSTRACT_CLASS;
-    default: {
-      if (info.startsWith('method') || info.startsWith('static method')) {
-        return SearchResultType.METHOD;
-      }
-      if (info.startsWith('class var') || info.startsWith('static class var')) {
-        return SearchResultType.CLASS_VAR;
-      }
-      return SearchResultType.CLASS;
-    }
-  }
+  return result;
 }
