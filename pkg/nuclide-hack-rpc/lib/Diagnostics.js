@@ -17,6 +17,7 @@ import type {
 
 import {Range} from 'simple-text-buffer';
 import invariant from 'assert';
+import {logger} from './hack-config';
 
 export type HackDiagnosticsResult = {
   errors: Array<{
@@ -101,10 +102,17 @@ function hackMessageToDiagnosticMessage(
   return diagnosticMessage;
 }
 
+const DIAGNOSTICS_LIMIT = 10000;
+
 export function convertDiagnostics(
   result: HackDiagnosticsResult,
 ): DiagnosticProviderUpdate {
-  const diagnostics = result.errors;
+  // Prevent too many diagnostics from killing the Atom process.
+  const diagnostics = result.errors.slice(0, DIAGNOSTICS_LIMIT);
+  if (diagnostics.length !== result.errors.length) {
+    logger.logError(`Too many Hack Errors. Found ${result.errors.length}. Truncating.`);
+  }
+
   // Convert array messages to Error Objects with Traces.
   const fileDiagnostics = diagnostics.map(hackMessageToDiagnosticMessage);
 
