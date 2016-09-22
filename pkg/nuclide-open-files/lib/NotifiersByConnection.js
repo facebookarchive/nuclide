@@ -55,6 +55,10 @@ export class NotifiersByConnection {
     return this.getForUri(buffer.getPath());
   }
 
+  getForConnection(connection: ?ServerConnection): Promise<FileNotifier> {
+    return this._notifiers.get(connection);
+  }
+
   // Returns null for a buffer to a file on a closed remote connection
   // or a new buffer which has not been saved.
   getForUri(path: ?NuclideUri): ?Promise<FileNotifier> {

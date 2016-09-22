@@ -10,6 +10,8 @@
  */
 
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {ServerConnection} from '../../nuclide-remote-connection';
+import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -54,6 +56,10 @@ export function reset(): void {
 }
 export function getActivation(): Activation {
   return activation;
+}
+
+export function getNotifierByConnection(connection: ?ServerConnection): Promise<FileNotifier> {
+  return activation.notifiers.getForConnection(connection);
 }
 
 export async function getFileVersionOfBuffer(buffer: atom$TextBuffer): Promise<?FileVersion> {

@@ -21,7 +21,8 @@ async function executeQuery(
   rootDirectory: NuclideUri,
   queryString: string,
 ): Promise<Array<HackSearchPosition>> {
-  return await (await initialize('', false, 'OFF')).executeQuery(rootDirectory, queryString);
+  return await (await initialize('', false, 'OFF', (null: any)))
+    .executeQuery(rootDirectory, queryString);
 }
 
 describe('executeQuery()', () => {

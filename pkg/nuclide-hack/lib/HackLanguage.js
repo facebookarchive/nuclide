@@ -23,6 +23,7 @@ import type {DiagnosticProviderUpdate} from '../../nuclide-diagnostics-common/li
 
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig} from './config';
+import {getNotifierByConnection} from '../../nuclide-open-files';
 
 /**
  * Serves language requests from HackService.
@@ -120,10 +121,12 @@ const connectionToHackLanguage: ConnectionCache<HackLanguage>
     const config = getConfig();
     const useIdeConnection = config.useIdeConnection;
     // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
+    const fileNotifier = await getNotifierByConnection(connection);
     const languageService = await hackService.initialize(
       config.hhClientPath,
       useIdeConnection,
-      config.logLevel);
+      config.logLevel,
+      fileNotifier);
 
     return new HackLanguage(languageService);
   });

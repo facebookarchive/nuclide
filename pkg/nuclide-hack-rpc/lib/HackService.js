@@ -33,6 +33,7 @@ import type {
   DiagnosticProviderUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {HackDiagnosticsResult} from './Diagnostics';
+import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -95,15 +96,22 @@ export async function initialize(
   hackCommand: string,
   useIdeConnection: boolean,
   logLevel: LogLevel,
+  fileNotifier: FileNotifier,
 ): Promise<HackLanguageService> {
   setHackCommand(hackCommand);
   setUseIdeConnection(useIdeConnection);
   logger.setLogLevel(logLevel);
   await getHackCommand();
-  return new HackLanguageService();
+  return new HackLanguageService(fileNotifier);
 }
 
 export class HackLanguageService {
+  _fileNotifier: FileNotifier;
+
+  constructor(fileNotifier: FileNotifier) {
+    this._fileNotifier = fileNotifier;
+  }
+
   async getDiagnostics(
     fileVersion: FileVersion,
   ): Promise<?DiagnosticProviderUpdate> {
