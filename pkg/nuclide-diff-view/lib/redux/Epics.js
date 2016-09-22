@@ -50,6 +50,7 @@ import {
   getEmptyPublishState,
 } from './createEmptyAppState';
 import {getPhabricatorRevisionFromCommitMessage} from '../../../nuclide-arcanist-rpc/lib/utils';
+import {notifyInternalError} from '../notifications';
 
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
 const CHANGE_DEBOUNCE_DELAY_MS = 10;
@@ -229,16 +230,19 @@ export function diffFileEpic(
 
     if (repository == null || repository.getType() !== 'hg') {
       const repositoryType = repository == null ? 'no repository' : repository.getType();
-      return Observable.throw(
-        new Error(`Diff View only supports Mercurial repositories - found: ${repositoryType}`));
+      notifyInternalError(
+        new Error(`Diff View only supports Mercurial repositories - found: ${repositoryType}`),
+      );
+      return Observable.empty();
     }
 
     const {activeRepository} = store.getState();
     if (repository !== activeRepository) {
-      return Observable.throw(
+      notifyInternalError(
         new Error('Cannot diff file from a non-working directory\n' +
           'Please switch your working directory from the file tree to be able to diff that file!'),
       );
+      return Observable.empty();
     }
 
     const hgRepository = ((repository: any): HgRepositoryClient);
@@ -355,7 +359,8 @@ export function setViewModeEpic(
               );
             }
             default: {
-              return Observable.throw(new Error(`Invalid Commit Mode: ${commitMode}`));
+              notifyInternalError(new Error(`Invalid Commit Mode: ${commitMode}`));
+              return Observable.empty();
             }
           }
         });
@@ -395,7 +400,8 @@ export function setViewModeEpic(
         );
       }
 
-      return Observable.throw(new Error(`Invalid Diff View Mode: ${viewMode}`));
+      notifyInternalError(new Error(`Invalid Diff View Mode: ${viewMode}`));
+      return Observable.empty();
     }).takeUntil(actions.ofType(ActionTypes.DEACTIVATE_REPOSITORY));
   });
 }
@@ -496,7 +502,8 @@ export function publishDiff(
                   lintExcuse,
                 );
               default:
-                return Observable.throw(new Error(`Invalid Publish Mode: ${mode}`));
+                notifyInternalError(new Error(`Invalid Publish Mode: ${mode}`));
+                return Observable.empty();
             }
           }).ignoreElements()
           .concat(Observable.of(
