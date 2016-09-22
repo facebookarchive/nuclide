@@ -38,3 +38,20 @@ export type HackCompletion = {
   func_details: ?HackFunctionDetails,
   expected_ty: boolean,
 };
+
+// A remotable version of atom$AutocompleteSuggestion
+export type Completion = {
+  text?: string,
+  snippet?: string,
+  displayText?: string,
+  replacementPrefix?: string,
+  type?: ?string,
+  leftLabel?: ?string,
+  leftLabelHTML?: ?string,
+  rightLabel?: ?string,
+  rightLabelHTML?: ?string,
+  className?: ?string,
+  iconHTML?: ?string,
+  description?: ?string,
+  descriptionMoreURL?: ?string,
+};

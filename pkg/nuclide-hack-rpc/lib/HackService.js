@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {
+  Completion,
   HackRange,
   HackCompletion,
 } from './rpc-types';
@@ -28,6 +29,7 @@ import type {HackTypedRegion} from './TypedRegions';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
 import type {HackReferencesResult} from './FindReferences';
+
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -53,6 +55,7 @@ import {
 import {outlineFromHackIdeOutline} from './OutlineView';
 import {convertCoverage} from './TypedRegions';
 import {convertReferences} from './FindReferences';
+import {hasPrefix, findHackPrefix, convertCompletions} from './Completions';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -148,41 +151,55 @@ export class HackLanguageService {
     return messages;
   }
 
-  async getCompletions(
-    file: NuclideUri,
-    contents: string,
-    offset: number,
-    line: number,
-    column: number,
-  ): Promise<?HackCompletionsResult> {
+  async getAutocompleteSuggestions(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    activatedManually: boolean,
+  ): Promise<Array<Completion>> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    const contents = buffer.getText();
+    const offset = buffer.characterIndexForPosition(position);
+
+    const replacementPrefix = findHackPrefix(buffer, position);
+    if (replacementPrefix === '' && !hasPrefix(buffer, position)) {
+      return [];
+    }
+
     if (getUseIdeConnection()) {
-      logger.logTrace(`Attempting Hack Autocomplete: ${file}, ${line}, ${column}`);
-      const service = await getHackConnectionService(file);
+      const line = position.row + 1;
+      const column = position.column + 1;
+      logger.logTrace(`Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`);
+      const service = await getHackConnectionService(filePath);
       if (service == null) {
-        return null;
+        return [];
       }
 
       logger.logTrace('Got Hack Service');
       // The file notifications are a placeholder until we get
       // full file synchronization implemented.
-      await service.didOpenFile(file);
+      await service.didOpenFile(filePath);
       try {
         const VERSION_PLACEHOLDER = 1;
         await service.didChangeFile(
-          file, VERSION_PLACEHOLDER, [{text: contents}]);
-        return await service.getCompletions(file, {line, column});
+          filePath, VERSION_PLACEHOLDER, [{text: contents}]);
+        return convertCompletions(
+          contents,
+          offset,
+          replacementPrefix,
+          (await service.getCompletions(filePath, {line, column}): ?HackCompletionsResult));
       } finally {
-        await service.didCloseFile(file);
+        await service.didCloseFile(filePath);
       }
     } else {
       const markedContents = markFileForCompletion(contents, offset);
-      const result: any = await callHHClient(
+      const result: ?HackCompletionsResult = (await callHHClient(
         /* args */ ['--auto-complete'],
         /* errorStream */ false,
         /* processInput */ markedContents,
-        /* file */ file,
-      );
-      return result;
+        /* file */ filePath,
+      ): any);
+      return convertCompletions(contents, offset, replacementPrefix, result);
     }
   }
 

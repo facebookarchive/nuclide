@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-import {compareHackCompletions} from '../lib/AutocompleteProvider';
+import type {HackCompletionsResult} from '../lib/HackService';
+
+import {compareHackCompletions, convertCompletions} from '../lib/Completions';
 
 function createCompletion(text: string, prefix: string = ''): atom$AutocompleteSuggestion {
   return {
@@ -28,7 +30,13 @@ const c5:atom$AutocompleteSuggestion = createCompletion('aa_getAaa');
 const c6:atom$AutocompleteSuggestion = createCompletion('_aa_getAaa');
 const c7:atom$AutocompleteSuggestion = createCompletion('zz_getaaaa');
 
-describe('utils', () => {
+const filePath = '/tmp/project/file.hh';
+const contents2 = `<?hh // strict
+fclass HackClass {}`;
+const contents3 = `<?hh // strict
+HH\\fclass HackClass {}`;
+
+describe('Completions', () => {
 
   describe('compareHackCompletions()', () => {
 
@@ -102,6 +110,102 @@ describe('utils', () => {
         createCompletion('_getAab()'),
         createCompletion('_getAbc()'),
         createCompletion('_doOrGetACup()'),
+      ]);
+    });
+  });
+
+  describe('convertCompletions', () => {
+
+    it('normal', () => {
+      const serviceResults: HackCompletionsResult = [
+        {
+          name: 'foo',
+          func_details: {
+            min_arity: 2,
+            return_type: 'string',
+            params: [
+              {
+                name: 'p1',
+                type: 'string',
+                variadic: false,
+              },
+              {
+                name: 'p2',
+                type: 'string',
+                variadic: false,
+              },
+            ],
+          },
+          type: 'foo_type',
+          pos: {
+            filename: filePath,
+            line: 42,
+            char_start: 0,
+            char_end: 10,
+          },
+          expected_ty: false,
+        },
+      ];
+
+      const result = convertCompletions(contents2, 16, '', serviceResults);
+
+      expect(result).toEqual([
+        {
+          snippet: 'foo(${1:p1}, ${2:p2})',
+          displayText: 'foo',
+          description: 'foo_type',
+          rightLabel: '(string p1, string p2)',
+          leftLabel: 'string',
+          replacementPrefix: 'f',
+          type: 'function',
+        },
+      ]);
+    });
+
+    it('getCompletions - escaping', () => {
+      const serviceResults: HackCompletionsResult = [
+        {
+          name: 'HH\\foo',
+          func_details: {
+            min_arity: 2,
+            return_type: 'string',
+            params: [
+              {
+                name: 'p1',
+                type: 'string',
+                variadic: false,
+              },
+              {
+                name: 'p2',
+                type: 'string',
+                variadic: false,
+              },
+            ],
+          },
+          type: 'foo_type',
+          pos: {
+            filename: filePath,
+            line: 42,
+            char_start: 0,
+            char_end: 10,
+          },
+          expected_ty: false,
+        },
+      ];
+
+      const result = convertCompletions(
+        contents3, 19, '', serviceResults);
+
+      expect(result).toEqual([
+        {
+          snippet: 'HH\\\\foo(${1:p1}, ${2:p2})',
+          displayText: 'HH\\foo',
+          description: 'foo_type',
+          rightLabel: '(string p1, string p2)',
+          leftLabel: 'string',
+          replacementPrefix: 'HH\\f',
+          type: 'function',
+        },
       ]);
     });
   });

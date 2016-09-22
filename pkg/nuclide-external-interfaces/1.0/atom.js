@@ -1686,7 +1686,7 @@ type atom$AutocompleteRequest = {
   bufferPosition: atom$Point,
   scopeDescriptor: string,
   prefix: string,
-  activatedManually: boolean,
+  activatedManually?: boolean,
 };
 
 type atom$AutocompleteProvider = {
