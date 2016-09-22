@@ -170,7 +170,6 @@ export default class DiffViewModel {
   ): Promise<void> {
     const activeRepository = this._state.activeRepository;
     invariant(activeRepository != null, 'Cannot publish without an active stack!');
-    track('diff-view-publish');
 
     this._actionCreators.publishDiff(
       activeRepository,
@@ -207,7 +206,6 @@ export default class DiffViewModel {
     }
     const activeRepository = this._state.activeRepository;
     invariant(activeRepository != null, 'No active repository stack');
-    track('diff-view-commit');
     this._actionCreators.commit(activeRepository, message);
   }
 

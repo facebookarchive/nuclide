@@ -49,9 +49,22 @@ import {
 } from './createEmptyAppState';
 import {getPhabricatorRevisionFromCommitMessage} from '../../../nuclide-arcanist-rpc/lib/utils';
 import {notifyInternalError} from '../notifications';
+import {startTracking, track} from '../../../nuclide-analytics';
 
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
 const CHANGE_DEBOUNCE_DELAY_MS = 10;
+
+function trackComplete<T>(eventName: string, operation: Observable<T>): Observable<T> {
+  // Start the timer when the observable is subscribed.
+  return Observable.defer(() => {
+    const tracker = startTracking(eventName);
+    return operation
+      .do({
+        error(err) { tracker.onError(err); },
+        complete() { tracker.onSuccess(); },
+      });
+  });
+}
 
 function observeStatusChanges(repository: HgRepositoryClient): Observable<null> {
   return observableFromSubscribeFunction(
@@ -458,6 +471,7 @@ export function commit(
   return actions.ofType(ActionTypes.COMMIT).switchMap(action => {
     invariant(action.type === ActionTypes.COMMIT);
 
+    track('diff-view-commit');
     const {message, repository} = action.payload;
     const {commit: {mode}, shouldRebaseOnAmend} = store.getState();
 
@@ -468,18 +482,20 @@ export function commit(
         state: CommitModeState.AWAITING_COMMIT,
       })),
 
-      Observable.defer(() => {
+      trackComplete('diff-view-commit', Observable.defer(() => {
         switch (mode) {
           case CommitMode.COMMIT:
+            track('diff-view-commit-commit');
             return repository.commit(message)
               .toArray();
           case CommitMode.AMEND:
+            track('diff-view-commit-amend');
             return repository.amend(message, getAmendMode(shouldRebaseOnAmend))
               .toArray();
           default:
             return Observable.throw(new Error(`Invalid Commit Mode ${mode}`));
         }
-      })
+      }))
       .switchMap(processMessages => {
         const successMessage = mode === CommitMode.COMMIT ? 'created' : 'amended';
         atom.notifications.addSuccess(`Commit ${successMessage}`, {nativeFriendly: true});
@@ -507,6 +523,7 @@ export function publishDiff(
   return actions.ofType(ActionTypes.PUBLISH_DIFF).switchMap(action => {
     invariant(action.type === ActionTypes.PUBLISH_DIFF);
 
+    track('diff-view-publish');
     const {message, repository, lintExcuse, publishUpdates} = action.payload;
     const {publish: {mode}, shouldRebaseOnAmend} = store.getState();
 
@@ -543,23 +560,25 @@ export function publishDiff(
 
             switch (mode) {
               case PublishMode.CREATE:
-                return createPhabricatorRevision(
+                track('diff-view-publish-create');
+                return trackComplete('diff-view.publish-diff', createPhabricatorRevision(
                   repository,
                   publishUpdates,
                   headRevision.description,
                   message,
                   amended,
                   lintExcuse,
-                );
+                ));
               case PublishMode.UPDATE:
-                return updatePhabricatorRevision(
+                track('diff-view-publish-update');
+                return trackComplete('diff-view.publish-diff', updatePhabricatorRevision(
                   repository,
                   publishUpdates,
                   headRevision.description,
                   message,
                   allowUntracked,
                   lintExcuse,
-                );
+                ));
               default:
                 notifyInternalError(new Error(`Invalid Publish Mode: ${mode}`));
                 return Observable.empty();
