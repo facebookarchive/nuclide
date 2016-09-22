@@ -20,6 +20,9 @@ import type {HgRepositoryDescription} from '..';
  * originURL iff it finds that the given directory is within an Hg repository.
  */
 export default function findHgRepository(startDirectoryPath: string): ?HgRepositoryDescription {
+  if (!nuclideUri.isLocal(startDirectoryPath)) {
+    return null;
+  }
   let workingDirectoryPath = startDirectoryPath;
   for (;;) {
     const repoPath = nuclideUri.join(workingDirectoryPath, '.hg');
@@ -35,7 +38,7 @@ export default function findHgRepository(startDirectoryPath: string): ?HgReposit
       }
       return {repoPath, originURL, workingDirectoryPath};
     }
-    const parentDir = nuclideUri.join(workingDirectoryPath, '..');
+    const parentDir = nuclideUri.dirname(workingDirectoryPath);
     if (parentDir === workingDirectoryPath) {
       return null;
     } else {

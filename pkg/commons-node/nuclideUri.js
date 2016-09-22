@@ -71,8 +71,13 @@ function isBrokenDeserializedUri(uri: ?NuclideUri): boolean {
   return uri != null && uri.match(/nuclide:[\\/][^/]/) != null;
 }
 
+function isUri(uri: string): boolean {
+  const parsedUri = url.parse(_escapeSpecialCharacters(uri));
+  return parsedUri.protocol != null;
+}
+
 function isLocal(uri: NuclideUri): boolean {
-  return !isRemote(uri);
+  return !isRemote(uri) && !isUri(uri);
 }
 
 function createRemoteUri(hostname: string, remotePath: string): string {
@@ -98,7 +103,8 @@ function createRemoteUri(hostname: string, remotePath: string): string {
  *         }
  */
 function parse(uri: NuclideUri): ParsedUrl {
-  if (isLocal(uri)) {
+  const parsedUri = url.parse(_escapeSpecialCharacters(uri));
+  if (parsedUri.protocol == null) {
     return {
       auth: null,
       host: null,
@@ -112,8 +118,6 @@ function parse(uri: NuclideUri): ParsedUrl {
       slashes: null,
     };
   }
-
-  const parsedUri = url.parse(_escapeSpecialCharacters(uri));
 
   invariant(
     parsedUri.path,
@@ -192,7 +196,7 @@ function getHostname(remoteUri: NuclideUri): string {
 }
 
 function getHostnameOpt(remoteUri: ?NuclideUri): ?string {
-  if (remoteUri == null || isLocal(remoteUri)) {
+  if (remoteUri == null || !isRemote(remoteUri)) {
     return null;
   }
 
