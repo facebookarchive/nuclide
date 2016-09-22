@@ -153,3 +153,14 @@ export async function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {
   }
   return await language.isFileInHackProject(fileUri);
 }
+
+/**
+ * @return HackService for the specified directory if it is part of a Hack project.
+ */
+export async function getHackServiceForProject(
+  directory: atom$Directory,
+): Promise<?HackLanguageService> {
+  const directoryPath = directory.getPath();
+  return (await isFileInHackProject(directoryPath))
+    ? (await getHackServiceByNuclideUri(directoryPath)) : null;
+}

@@ -17,7 +17,7 @@ import {
   TestUtils,
 } from 'react-for-atom';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import * as hackService from '../../nuclide-hack-symbol-provider/lib/getHackService';
+import * as hackService from '../../nuclide-hack/lib/HackLanguage';
 import QuickOpenHelpers from '../lib/QuickOpenHelpers';
 
 const TEST_DIR = '/test';
@@ -55,7 +55,7 @@ describe('QuickOpenHelpers', () => {
           };
         },
       });
-    spyOn(hackService, 'getHackService').andReturn(null);
+    spyOn(hackService, 'getHackServiceForProject').andReturn(null);
   });
 
   it('it activates for valid directories', () => {

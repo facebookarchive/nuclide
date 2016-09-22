@@ -16,7 +16,9 @@ import type {
 } from '../../nuclide-quick-open/lib/types';
 import type {HackSearchPosition} from '../../nuclide-hack-rpc/lib/HackService';
 
-import {getHackService} from './getHackService';
+import {
+  getHackServiceForProject,
+} from './HackLanguage';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
 
@@ -78,7 +80,7 @@ export const HackSymbolProvider: Provider = {
   },
 
   async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
-    const service = await getHackService(directory);
+    const service = await getHackServiceForProject(directory);
     return service != null;
   },
 
@@ -90,7 +92,7 @@ export const HackSymbolProvider: Provider = {
       return [];
     }
 
-    const service = await getHackService(directory);
+    const service = await getHackServiceForProject(directory);
     if (service == null) {
       return [];
     }

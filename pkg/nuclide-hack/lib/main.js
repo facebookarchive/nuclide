@@ -17,7 +17,9 @@ import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
+import type {Provider} from '../../nuclide-quick-open/lib/types';
 
+import {HackSymbolProvider} from './HackSymbolProvider';
 import CodeHighlightProvider from './CodeHighlightProvider';
 import {CompositeDisposable, Disposable} from 'atom';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
@@ -182,4 +184,8 @@ export function provideDefinitions(): DefinitionProvider {
     definitionProvider = new HackDefinitionProvider();
   }
   return definitionProvider;
+}
+
+export function registerQuickOpenProvider(): Provider {
+  return HackSymbolProvider;
 }

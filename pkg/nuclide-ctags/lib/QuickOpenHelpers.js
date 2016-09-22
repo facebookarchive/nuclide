@@ -15,7 +15,7 @@ import type {CtagsResult, CtagsService} from '../../nuclide-ctags-rpc';
 import {React} from 'react-for-atom';
 import featureConfig from '../../commons-atom/featureConfig';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {getHackService} from '../../nuclide-hack-symbol-provider/lib/getHackService';
+import {getHackServiceForProject} from '../../nuclide-hack/lib/HackLanguage';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {CTAGS_KIND_ICONS, CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
@@ -84,7 +84,7 @@ export default class QuickOpenHelpers {
     // TODO(hansonw): Remove this when quick-open has proper ranking/de-duplication.
     let hack;
     if (featureConfig.get('nuclide-ctags.disableWithHack') !== false) {
-      hack = await getHackService(directory);
+      hack = await getHackServiceForProject(directory);
     }
 
     try {

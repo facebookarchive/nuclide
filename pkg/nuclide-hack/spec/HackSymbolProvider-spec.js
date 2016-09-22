@@ -21,23 +21,23 @@ import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 import invariant from 'assert';
 
 describe('HackSymbolProvider', () => {
-  // These tests are set up so that calls to getHackService() will delegate to this
+  // These tests are set up so that calls to getHackServiceForProject() will delegate to this
   // function, so make sure to define this function at the start of your test to mock out this
   // behavior.
-  let getHackService: ?((directory: atom$Directory) => Promise<mixed>);
+  let getHackServiceForProject: ?((directory: atom$Directory) => Promise<mixed>);
 
   beforeEach(() => {
-    getHackService = null;
-    spyOn(require('../lib/getHackService'), 'getHackService')
+    getHackServiceForProject = null;
+    spyOn(require('../lib/HackLanguage'), 'getHackServiceForProject')
       .andCallFake((directory: atom$Directory) => {
-        invariant(getHackService);
-        return getHackService(directory);
+        invariant(getHackServiceForProject);
+        return getHackServiceForProject(directory);
       });
     uncachedRequire(require, '../lib/HackSymbolProvider');
   });
 
   afterEach(() => {
-    jasmine.unspy(require('../lib/getHackService'), 'getHackService');
+    jasmine.unspy(require('../lib/HackLanguage'), 'getHackServiceForProject');
     clearRequireCache(require, '../lib/HackSymbolProvider');
   });
 
@@ -47,33 +47,33 @@ describe('HackSymbolProvider', () => {
     };
 
     it(
-      'isEligibleForDirectory() should return true when getHackService() returns ' +
+      'isEligibleForDirectory() should return true when getHackServiceForProject() returns ' +
         'an instance of HackService',
       () => {
         const hackService = createDummyHackService();
-        getHackService = jasmine.createSpy('getHackService').andReturn(
+        getHackServiceForProject = jasmine.createSpy('getHackServiceForProject').andReturn(
           hackService);
 
         waitsForPromise(async () => {
           invariant(HackSymbolProvider.isEligibleForDirectory != null);
           const isEligible = await HackSymbolProvider.isEligibleForDirectory((mockDirectory: any));
           expect(isEligible).toBe(true);
-          expect(getHackService).toHaveBeenCalledWith(mockDirectory);
+          expect(getHackServiceForProject).toHaveBeenCalledWith(mockDirectory);
         });
       },
     );
 
     it(
-      'isEligibleForDirectory() should return false when getHackService() returns ' +
+      'isEligibleForDirectory() should return false when getHackServiceForProject() returns ' +
         'null',
       () => {
-        getHackService = jasmine.createSpy('getHackService').andReturn(null);
+        getHackServiceForProject = jasmine.createSpy('getHackServiceForProject').andReturn(null);
 
         waitsForPromise(async () => {
           invariant(HackSymbolProvider.isEligibleForDirectory != null);
           const isEligible = await HackSymbolProvider.isEligibleForDirectory((mockDirectory: any));
           expect(isEligible).toBe(false);
-          expect(getHackService).toHaveBeenCalledWith(mockDirectory);
+          expect(getHackServiceForProject).toHaveBeenCalledWith(mockDirectory);
         });
       },
     );
@@ -101,7 +101,7 @@ describe('HackSymbolProvider', () => {
         ];
         const hackService = createDummyHackService();
         const queryMethod = spyOn(hackService, 'queryHack').andReturn(cannedResults);
-        getHackService = jasmine.createSpy('getHackService').andReturn(
+        getHackServiceForProject = jasmine.createSpy('getHackServiceForProject').andReturn(
           hackService);
 
         const query = 'asdf';
@@ -132,7 +132,7 @@ describe('HackSymbolProvider', () => {
         ];
         const hackService = createDummyHackService();
         const queryMethod = spyOn(hackService, 'queryHack').andReturn(cannedResults);
-        getHackService = jasmine.createSpy('getHackService').andReturn(
+        getHackServiceForProject = jasmine.createSpy('getHackServiceForProject').andReturn(
           hackService);
 
         const query = 'asdf';
