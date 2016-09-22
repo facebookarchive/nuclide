@@ -27,6 +27,14 @@ export const FileChangeStatusToPrefix: {[key: ?FileChangeStatusValue]: string} =
   [FileChangeStatus.UNTRACKED]: '[?] ',
 });
 
+export const FileChangeStatusToTextColor: {[key: ?FileChangeStatusValue]: string} = Object.freeze({
+  [FileChangeStatus.ADDED]: 'text-success',
+  [FileChangeStatus.MODIFIED]: 'text-warning',
+  [FileChangeStatus.MISSING]: 'text-error',
+  [FileChangeStatus.REMOVED]: 'text-error',
+  [FileChangeStatus.UNTRACKED]: 'text-error',
+});
+
 export const RevertibleStatusCodes = [
   FileChangeStatus.ADDED,
   FileChangeStatus.MODIFIED,

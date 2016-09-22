@@ -17,6 +17,7 @@ import {mapEqual} from '../../commons-node/collection';
 import {
  FileChangeStatus,
  FileChangeStatusToPrefix,
+ FileChangeStatusToTextColor,
  RevertibleStatusCodes,
 } from '../../nuclide-hg-git-bridge/lib/constants';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -51,12 +52,13 @@ class ChangedFilesView extends React.Component {
     return mapEqual(this.props.fileChanges, nextProps.fileChanges);
   }
 
-  _getFileClassname(file: NuclideUri): string {
+  _getFileClassname(file: NuclideUri, fileChangeValue: FileChangeStatusValue): string {
     const {selectedFile} = this.props;
     return classnames(
       'list-item', {
         selected: file === selectedFile,
       },
+      FileChangeStatusToTextColor[fileChangeValue],
     );
   }
 
@@ -84,7 +86,7 @@ class ChangedFilesView extends React.Component {
               ([filePath, fileChangeValue]) =>
                 <li
                   data-path={filePath}
-                  className={this._getFileClassname(filePath)}
+                  className={this._getFileClassname(filePath, fileChangeValue)}
                   key={filePath}
                   onClick={() => this.props.onFileChosen(filePath)}>
                   <span
