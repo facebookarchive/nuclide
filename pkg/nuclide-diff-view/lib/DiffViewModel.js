@@ -220,7 +220,7 @@ export default class DiffViewModel {
     return this._state;
   }
 
-  setCommitMode(commitMode: CommitModeType, loadModeState?: boolean = true): void {
+  setCommitMode(commitMode: CommitModeType): void {
     this._actionCreators.setCommitMode(commitMode);
   }
 

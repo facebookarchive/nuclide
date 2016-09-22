@@ -399,17 +399,29 @@ export function setViewModeEpic(
         });
       }
 
+      const isPublishReady = () =>
+        store.getState().publish.state !== PublishModeState.AWAITING_PUBLISH;
+
       // If the latest head has a phabricator revision in the commit message,
       // then, it's PublishMode.UPDATE mode
       // Otherwise, it's a new revision with `PublishMode.CREATE` state.
       if (viewMode === DiffMode.PUBLISH_MODE) {
         return Observable.concat(
-          Observable.of(Actions.updatePublishState({
-            message: null,
-            mode: store.getState().publish.mode,
-            state: PublishModeState.LOADING_PUBLISH_MESSAGE,
-          })),
-          headCommitMessageChanges.map(headCommitMessage => {
+          isPublishReady()
+            ? Observable.of(Actions.updatePublishState({
+              message: null,
+              mode: store.getState().publish.mode,
+              state: PublishModeState.LOADING_PUBLISH_MESSAGE,
+            }))
+            : Observable.empty(),
+
+          headCommitMessageChanges.switchMap(headCommitMessage => {
+            if (!isPublishReady()) {
+              // An amend can come as part of publishing new revisions.
+              // So, skip updating if there's an ongoing publish.
+              return Observable.empty();
+            }
+
             const phabricatorRevision = getPhabricatorRevisionFromCommitMessage(headCommitMessage);
 
             let publishMessage;
@@ -424,11 +436,11 @@ export function setViewModeEpic(
               publishMessage = existingMessage || getRevisionUpdateMessage(phabricatorRevision);
             }
 
-            return Actions.updatePublishState({
+            return Observable.of(Actions.updatePublishState({
               message: publishMessage,
               mode: publishMode,
               state: PublishModeState.READY,
-            });
+            }));
           }),
         );
       }
@@ -512,11 +524,16 @@ export function publishDiff(
         shouldRebaseOnAmend,
       )).switchMap(cleanResult => {
         if (cleanResult == null) {
-          atom.notifications.addError('Error clearning dirty changes', {
+          atom.notifications.addWarning('You have uncommitted changes!', {
             dismissable: true,
             nativeFriendly: true,
           });
-          return Observable.of(Actions.updatePublishState(getEmptyPublishState()));
+          // Keep the message, in case the user wants to apply updates.
+          return Observable.of(Actions.updatePublishState({
+            mode,
+            message,
+            state: PublishModeState.READY,
+          }));
         }
         const {amended, allowUntracked} = cleanResult;
         return observeRepositoryHeadRevision(repository)
