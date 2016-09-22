@@ -40,6 +40,7 @@ import invariant from 'assert';
 import {retryLimit} from '../../commons-node/promise';
 import {
   callHHClient,
+  HACK_WORD_REGEX,
 } from './HackHelpers';
 import {
   findHackConfigDir,
@@ -417,8 +418,6 @@ function markFileForCompletion(contents: string, offset: number): string {
   return contents.substring(0, offset) +
       'AUTO332' + contents.substring(offset, contents.length);
 }
-
-const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
 function getIdentifierAndRange(
   buffer: atom$TextBuffer,

@@ -18,6 +18,7 @@ import type {Completion} from './rpc-types';
 import {Point, Range} from 'simple-text-buffer';
 import invariant from 'assert';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
+import {HACK_WORD_REGEX} from './HackHelpers';
 
 export function convertCompletions(
   contents: string,
@@ -207,7 +208,7 @@ export function findHackPrefix(
 ): string {
   // We use custom wordRegex to adopt php variables starting with $.
   const currentRange = wordAtPositionFromBuffer(
-    buffer, position, /(\$\w*)|\w+/);
+    buffer, position, HACK_WORD_REGEX);
   if (currentRange == null) {
     return '';
   }

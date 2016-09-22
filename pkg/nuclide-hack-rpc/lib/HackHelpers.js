@@ -98,3 +98,5 @@ export function atomPointOfHackRangeStart(position: HackRange): atom$Point {
     position.line - 1,
     position.char_start - 1);
 }
+
+export const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
