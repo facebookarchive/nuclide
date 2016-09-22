@@ -40,9 +40,12 @@ class Activation {
     this._packageDisposables = new CompositeDisposable();
     this._packageDisposables.add(atom.contextMenu.add({
       'atom-text-editor': [{
-        label: 'Toggle Blame',
-        command: 'nuclide-blame:toggle-blame',
-        shouldDisplay: (event: MouseEvent) => (this._canShowBlame() || this._canHideBlame()),
+        label: 'Source Control',
+        submenu: [{
+          label: 'Toggle Blame',
+          command: 'nuclide-blame:toggle-blame',
+          shouldDisplay: (event: MouseEvent) => (this._canShowBlame() || this._canHideBlame()),
+        }],
       }],
     }));
     this._packageDisposables.add(

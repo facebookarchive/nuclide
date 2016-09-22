@@ -28,7 +28,10 @@ describe('Blame context menu integration test', () => {
       atom.project.setPaths([repoPath]);
       // Check that context menu has 'toggle blame'
       const inMenu = atom.contextMenu.itemSets.some(itemSet => itemSet.items.some(
-        item => item.command === 'nuclide-blame:toggle-blame',
+        item => item.label === 'Source Control'
+          // $FlowFixMe properly type this
+          && item.submenu.some(submenuItem =>
+            submenuItem.command === 'nuclide-blame:toggle-blame'),
       ));
       expect(inMenu).toBe(true);
       deactivateAllPackages();
