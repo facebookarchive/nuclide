@@ -261,7 +261,7 @@ export class HackLanguageService {
   /**
    * Performs a Hack symbol search in the specified directory.
    */
-  async queryHack(
+  async executeQuery(
     rootDirectory: NuclideUri,
     queryString_: string,
   ): Promise<Array<HackSearchPosition>> {

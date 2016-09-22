@@ -98,7 +98,7 @@ export const HackSymbolProvider: Provider = {
     }
 
     const directoryPath = directory.getPath();
-    const results: Array<HackSearchPosition> = await service.queryHack(directoryPath, query);
+    const results: Array<HackSearchPosition> = await service.executeQuery(directoryPath, query);
     return ((results: any): Array<FileResult>);
   },
 

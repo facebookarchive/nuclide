@@ -100,7 +100,7 @@ describe('HackSymbolProvider', () => {
           {path: '/some/local/path/asdf.txt', line: 1, column: 42, context: 'aha'},
         ];
         const hackService = createDummyHackService();
-        const queryMethod = spyOn(hackService, 'queryHack').andReturn(cannedResults);
+        const queryMethod = spyOn(hackService, 'executeQuery').andReturn(cannedResults);
         getHackServiceForProject = jasmine.createSpy('getHackServiceForProject').andReturn(
           hackService);
 
@@ -131,7 +131,7 @@ describe('HackSymbolProvider', () => {
           },
         ];
         const hackService = createDummyHackService();
-        const queryMethod = spyOn(hackService, 'queryHack').andReturn(cannedResults);
+        const queryMethod = spyOn(hackService, 'executeQuery').andReturn(cannedResults);
         getHackServiceForProject = jasmine.createSpy('getHackServiceForProject').andReturn(
           hackService);
 
@@ -172,7 +172,7 @@ describe('HackSymbolProvider', () => {
 
 function createDummyHackService(): any {
   return {
-    queryHack(
+    executeQuery(
       rootDirectory: NuclideUri,
       queryString: string,
     ): Promise<Array<HackSearchPosition>> {
