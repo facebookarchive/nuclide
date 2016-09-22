@@ -15,7 +15,7 @@ import type {TaskSettings} from './types';
 import {Dispatcher} from 'flux';
 import {keyMirror} from '../../commons-node/collection';
 import {getBuckProjectRoot, getBuckService} from '../../nuclide-buck-base';
-import * as IosSimulator from './IosSimulator';
+import * as IosSimulator from '../../nuclide-ios-common';
 
 export default class BuckToolbarActions {
 

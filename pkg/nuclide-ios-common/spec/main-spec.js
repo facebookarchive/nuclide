@@ -12,7 +12,7 @@
 import {
   parseDevicesFromSimctlOutput,
   getActiveDeviceIndex,
-} from '../lib/IosSimulator';
+} from '..';
 
 describe('IosSimulator', () => {
 

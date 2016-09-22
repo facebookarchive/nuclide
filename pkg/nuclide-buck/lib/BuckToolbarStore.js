@@ -10,7 +10,7 @@
  */
 
 import type {SerializedState, TaskSettings, TaskType} from './types';
-import type {Device} from './IosSimulator';
+import type {Device} from '../../nuclide-ios-common';
 
 import {Emitter} from 'atom';
 import {Dispatcher} from 'flux';
