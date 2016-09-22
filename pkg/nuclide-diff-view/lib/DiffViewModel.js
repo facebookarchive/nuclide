@@ -20,7 +20,6 @@ import type {
   PublishModeType,
   PublishModeStateType,
   DiffModeType,
-  DiffOptionType,
   UIProvider,
   UIElement,
 } from './types';
@@ -52,7 +51,6 @@ import {CompositeDisposable, Emitter} from 'atom';
 import {shell} from 'electron';
 import {
   DiffMode,
-  DiffOption,
   CommitMode,
   CommitModeState,
   PublishMode,
@@ -67,25 +65,12 @@ import {bufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {
+  getRevisionUpdateMessage,
   processArcanistOutput,
 } from './utils';
 
 const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
 const DID_UPDATE_STATE_EVENT = 'did-update-state';
-
-export function formatFileDiffRevisionTitle(revisionInfo: RevisionInfo): string {
-  const {hash, bookmarks} = revisionInfo;
-  return `${hash}` + (bookmarks.length === 0 ? '' : ` - (${bookmarks.join(', ')})`);
-}
-
-export function getRevisionUpdateMessage(phabricatorRevision: PhabricatorRevisionInfo): string {
-  return `
-
-# Updating ${phabricatorRevision.name}
-#
-# Enter a brief description of the changes included in this update.
-# The first line is used as subject, next lines as comment.`;
-}
 
 function getInitialFileChangeState(): FileChangeState {
   return {
@@ -114,19 +99,6 @@ function getInitialState(): State {
     showNonHgRepos: true,
     revisionsState: null,
   };
-}
-
-export function viewModeToDiffOption(viewMode: DiffModeType): DiffOptionType {
-  switch (viewMode) {
-    case DiffMode.COMMIT_MODE:
-      return DiffOption.DIRTY;
-    case DiffMode.PUBLISH_MODE:
-      return DiffOption.LAST_COMMIT;
-    case DiffMode.BROWSE_MODE:
-      return DiffOption.COMPARE_COMMIT;
-    default:
-      throw new Error('Unrecognized view mode!');
-  }
 }
 
 // TODO(most): Cleanup to avoid using `.do()` and have side effects:

@@ -20,17 +20,7 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {
-  getDirtyFileChanges,
-  getHeadRevision,
-  getHeadToForkBaseRevisions,
-  getHgDiff,
-  getSelectedFileChanges,
-} from '../RepositoryStack';
-import {
   createPhabricatorRevision,
-  formatFileDiffRevisionTitle,
-  getRevisionUpdateMessage,
-  viewModeToDiffOption,
   updatePhabricatorRevision,
 } from '../DiffViewModel';
 import {
@@ -41,7 +31,15 @@ import {
   PublishModeState,
 } from '../constants';
 import {
+  formatFileDiffRevisionTitle,
   getAmendMode,
+  getDirtyFileChanges,
+  getHeadRevision,
+  getHeadToForkBaseRevisions,
+  getHgDiff,
+  getRevisionUpdateMessage,
+  getSelectedFileChanges,
+  viewModeToDiffOption,
   promptToCleanDirtyChanges,
 } from '../utils';
 import {repositoryForPath} from '../../../nuclide-hg-git-bridge';

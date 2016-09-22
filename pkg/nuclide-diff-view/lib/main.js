@@ -29,7 +29,7 @@ import {DiffMode, CommitMode} from './constants';
 import DiffViewElement from './DiffViewElement';
 import DiffViewComponent from './DiffViewComponent';
 import DiffViewModel from './DiffViewModel';
-import {getHeadRevision} from './RepositoryStack';
+import {getHeadRevision} from './utils';
 import {track} from '../../nuclide-analytics';
 import {createDiffViewNux, NUX_DIFF_VIEW_ID} from './diffViewNux';
 
