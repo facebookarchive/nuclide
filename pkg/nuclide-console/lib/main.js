@@ -10,7 +10,7 @@
  */
 
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {Viewable, WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {
   AppState,
   OutputProvider,
@@ -118,6 +118,10 @@ class Activation {
         isInstance: item => item instanceof ConsoleContainer,
       }),
     );
+  }
+
+  deserializeConsoleContainer(): Viewable {
+    return viewableFromReactElement(<ConsoleContainer store={this._getStore()} />);
   }
 
   provideOutputService(): OutputService {

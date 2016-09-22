@@ -216,6 +216,12 @@ export class ConsoleContainer extends React.Component {
     );
   }
 
+  serialize(): mixed {
+    return {
+      deserializer: 'nuclide.ConsoleContainer',
+    };
+  }
+
   _selectSources(selectedSourceIds: Array<string>): void {
     const sourceIds = this.state.sources.map(source => source.id);
     const unselectedSourceIds = sourceIds
