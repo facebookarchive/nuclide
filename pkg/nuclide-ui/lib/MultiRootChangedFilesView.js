@@ -29,7 +29,7 @@ import {addPath, revertPath} from '../../nuclide-hg-repository/lib/actions';
 type ChangedFilesProps = {
   fileChanges: Map<NuclideUri, FileChangeStatusValue>,
   rootPath: NuclideUri,
-  selectedFile: NuclideUri,
+  selectedFile: ?NuclideUri,
   onFileChosen: (filePath: NuclideUri) => void,
 };
 
@@ -107,30 +107,13 @@ class ChangedFilesView extends React.Component {
 type Props = {
   fileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
   commandPrefix: string,
+  selectedFile: ?NuclideUri,
   onFileChosen: (filePath: NuclideUri) => void,
-};
-
-type State = {
-  selectedFile: NuclideUri,
 };
 
 export class MultiRootChangedFilesView extends React.Component {
   props: Props;
-  state: State;
   _subscriptions: UniversalDisposable;
-
-  constructor(props: Props) {
-    super(props);
-    (this: any)._onFileChosen = this._onFileChosen.bind(this);
-    this.state = {
-      selectedFile: '',
-    };
-  }
-
-  _onFileChosen(file: NuclideUri): void {
-    this.setState({selectedFile: file});
-    this.props.onFileChosen(file);
-  }
 
   componentDidMount(): void {
     this._subscriptions = new UniversalDisposable();
@@ -247,8 +230,8 @@ export class MultiRootChangedFilesView extends React.Component {
             key={root}
             fileChanges={fileChanges}
             rootPath={root}
-            selectedFile={this.state.selectedFile}
-            onFileChosen={this._onFileChosen}
+            selectedFile={this.props.selectedFile}
+            onFileChosen={this.props.onFileChosen}
           />,
         )}
       </div>
