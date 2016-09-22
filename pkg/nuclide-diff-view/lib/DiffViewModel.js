@@ -149,7 +149,7 @@ export default class DiffViewModel {
 
   setCompareRevision(revision: RevisionInfo): void {
     track('diff-view-set-revision');
-    invariant(this._state.activeRepository, 'There must be an active repository!');
+    invariant(this._state.activeRepository != null, 'There must be an active repository!');
     this._actionCreators.setCompareId(this._state.activeRepository, revision.id);
   }
 

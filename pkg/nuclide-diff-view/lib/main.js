@@ -32,6 +32,7 @@ import DiffViewModel from './DiffViewModel';
 import {getHeadRevision} from './utils';
 import {track} from '../../nuclide-analytics';
 import {createDiffViewNux, NUX_DIFF_VIEW_ID} from './diffViewNux';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 
 // Redux store
 import type {Store} from './types';
@@ -352,18 +353,19 @@ class Activation {
     const {activeFilePath, viewMode, commitMode} = rawState;
 
     // Wait for the source control providers to be ready:
-    const restorationSubscriptions = new CompositeDisposable(
+    const {serviceHub} = atom.packages;
+    const restorationSubscription = Observable.merge(
       // If it's a local directory, or if "nuclide-hg-repository" was activated
       // after "nuclide-diff-view":
-      atom.packages.serviceHub.consume('atom.repository-provider', '^0.1.0', () => {
-        tryRestoreActiveDiffView();
-      }),
+      observableFromSubscribeFunction(
+        serviceHub.consume.bind(serviceHub, 'atom.repository-provider', '^0.1.0')),
+
       // If it's a remote directory, it should come on a path change event:
-      atom.project.onDidChangePaths(() => {
-        tryRestoreActiveDiffView();
-      }),
-    );
-    this._subscriptions.add(restorationSubscriptions);
+      observableFromSubscribeFunction(atom.project.onDidChangePaths.bind(atom.project)),
+    ).debounceTime(50) // Delay to avoid rushing CPU at startup time.
+    .subscribe(() => tryRestoreActiveDiffView());
+
+    this._subscriptions.add(restorationSubscription);
 
     const tryRestoreActiveDiffView = () => {
       // If there is no repository ready, it may be because it's a remote file,
@@ -374,8 +376,8 @@ class Activation {
           return isPathDiffable(directory.getPath());
         });
       if (canRestoreActiveDiffView) {
-        restorationSubscriptions.dispose();
-        this._subscriptions.remove(restorationSubscriptions);
+        restorationSubscription.unsubscribe();
+        this._subscriptions.remove(restorationSubscription);
         atom.workspace.open(formatDiffViewUrl({
           file: activeFilePath,
           viewMode,
@@ -440,16 +442,17 @@ class Activation {
     if (this._diffViewModel == null) {
       return;
     }
-    if (!diffEntityOptions.file && !diffEntityOptions.directory && this._cwdApi != null) {
-      const directory = this._cwdApi.getCwd();
-      if (directory != null) {
-        diffEntityOptions.directory = directory.getPath();
-      }
-    }
     if (diffEntityOptions.file) {
       this._diffViewModel.diffFile(diffEntityOptions.file);
-    } else {
-      atom.notifications.addError('Diffing Directories is no loner supported');
+    }
+    const {viewMode, commit: {mode: commitMode}} = this._store.getState();
+    if (diffEntityOptions.viewMode != null &&
+        diffEntityOptions.viewMode !== viewMode) {
+      this._actionCreators.setViewMode(diffEntityOptions.viewMode);
+    }
+    if (diffEntityOptions.commitMode != null &&
+        diffEntityOptions.commitMode !== commitMode) {
+      this._actionCreators.setCommitMode(diffEntityOptions.commitMode);
     }
   }
 
@@ -503,7 +506,7 @@ class Activation {
   }
 
   serialize(): SerializedDiffViewState {
-    if (this._activeDiffView == null || this._diffViewModel == null) {
+    if (this._diffViewElement == null || this._diffViewModel == null) {
       return {
         visible: false,
       };
