@@ -10,13 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-
-export type TextEdit = {
-  oldRange: atom$Range,
-  newText: string,
-  // If included, this will be used to verify that the edit still applies cleanly.
-  oldText?: string,
-};
+import type {TextEdit} from './rpc-types';
 
 import invariant from 'assert';
 

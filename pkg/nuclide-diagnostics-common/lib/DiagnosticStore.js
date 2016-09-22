@@ -20,7 +20,7 @@ import type {
 } from '..';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {TextEdit} from '../../nuclide-textedit';
+import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 
 import applyTextEdits from '../../nuclide-textedit';
 import {arrayRemove, MultiMap} from '../../commons-node/collection';
