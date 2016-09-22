@@ -1115,8 +1115,10 @@ export default class DiffViewModel {
   }
 
   _setState(newState: State) {
-    this._state = newState;
-    this._emitter.emit(DID_UPDATE_STATE_EVENT);
+    if (!this._useReduxStore) {
+      this._state = newState;
+      this._emitter.emit(DID_UPDATE_STATE_EVENT);
+    }
   }
 
   @trackTiming('diff-view.commit')
@@ -1179,6 +1181,11 @@ export default class DiffViewModel {
       });
       return;
     }
+  }
+
+  injectState(newState: State): void {
+    this._state = newState;
+    this._emitter.emit(DID_UPDATE_STATE_EVENT);
   }
 
   getState(): State {

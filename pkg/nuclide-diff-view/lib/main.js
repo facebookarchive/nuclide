@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {CommitModeType, DiffModeType, UIProvider} from './types';
+import type {AppState, CommitModeType, DiffModeType, UIProvider} from './types';
 import type {DiffEntityOptions} from './DiffViewModel';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
@@ -29,6 +29,7 @@ import {DiffMode, CommitMode} from './constants';
 import DiffViewElement from './DiffViewElement';
 import DiffViewComponent from './DiffViewComponent';
 import DiffViewModel from './DiffViewModel';
+import {getHeadRevision} from './RepositoryStack';
 import {track} from '../../nuclide-analytics';
 import {createDiffViewNux, NUX_DIFF_VIEW_ID} from './diffViewNux';
 
@@ -36,7 +37,7 @@ import {createDiffViewNux, NUX_DIFF_VIEW_ID} from './diffViewNux';
 import type {Store} from './types';
 import typeof * as BoundActionCreators from './redux/Actions';
 
-import {createEmptyAppState} from './redux/createEmptyAppState';
+import {createEmptyAppState, getEmptyRepositoryState} from './redux/createEmptyAppState';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import * as Reducers from './redux/Reducers';
@@ -216,8 +217,50 @@ class Activation {
       this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
 
       this._subscriptions.add(
-        states.subscribe(state => {
-          // TODO(most): use action creators and consume states.
+        // TODO(most): Remove Diff View model and use stream of props for the views instead.
+        states.subscribe(_state => {
+          getLogger().info('diff-view-state', _state);
+
+          const state: AppState = (_state: any);
+          const {commit, fileDiff, publish} = state;
+
+          let activeRepositoryState;
+          if (state.activeRepository != null) {
+            activeRepositoryState = state.repositories.get(state.activeRepository);
+          }
+          activeRepositoryState = activeRepositoryState || getEmptyRepositoryState();
+
+          const headRevision = getHeadRevision(activeRepositoryState.headToForkBaseRevisions);
+          const headCommitMessage = headRevision == null
+            ? null : headRevision.description;
+
+          this._getDiffViewModel().injectState({
+            fromRevisionTitle: fileDiff.fromRevisionTitle,
+            toRevisionTitle: fileDiff.toRevisionTitle,
+            filePath: fileDiff.filePath,
+            oldContents: fileDiff.oldContents,
+            newContents: fileDiff.newContents,
+            compareRevisionInfo: null,
+            viewMode: state.viewMode,
+            commitMessage: commit.message,
+            commitMode: commit.mode,
+            commitModeState: commit.state,
+            shouldRebaseOnAmend: state.shouldRebaseOnAmend,
+            publishMessage: publish.message,
+            publishMode: publish.mode,
+            publishModeState: publish.state,
+            headCommitMessage,
+            dirtyFileChanges: activeRepositoryState.dirtyFiles,
+            selectedFileChanges: activeRepositoryState.selectedFiles,
+            showNonHgRepos: true,
+            revisionsState: headRevision == null ? null : {
+              compareCommitId: activeRepositoryState.compareRevisionId,
+              revisionStatuses: activeRepositoryState.revisionStatuses,
+              headCommitId: headRevision.id,
+              headToForkBaseRevisions: activeRepositoryState.headToForkBaseRevisions,
+              revisions: [],
+            },
+          });
         }),
         getHgRepositoryStream().subscribe(repository => {
           this._actionCreators.addRepository(repository);
