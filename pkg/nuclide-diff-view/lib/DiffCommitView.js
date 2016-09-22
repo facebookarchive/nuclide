@@ -180,15 +180,6 @@ export default class DiffCommitView extends React.Component {
   }
 
   componentWillUnmount(): void {
-    // Save the latest edited commit message for layout switches.
-    const message = this.__getCommitMessage();
-    const {diffModel} = this.props;
-    // Let the component unmount before propagating the final message change to the model,
-    // So the subsequent change event avoids re-rendering this component.
-    process.nextTick(() => {
-      diffModel.setCommitMessage(message);
-    });
-
     this._subscriptions.dispose();
   }
 }

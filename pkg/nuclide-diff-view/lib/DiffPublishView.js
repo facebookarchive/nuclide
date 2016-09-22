@@ -116,14 +116,6 @@ export default class DiffPublishView extends React.Component {
 
   componentWillUnmount(): void {
     this._subscriptions.dispose();
-    // Save the latest edited publish message for layout switches.
-    const message = this.__getPublishMessage();
-    const {diffModel} = this.props;
-    // Let the component unmount before propagating the final message change to the model,
-    // So the subsequent change event avoids re-rendering this component.
-    process.nextTick(() => {
-      diffModel.setPublishMessage(message);
-    });
   }
 
   __populatePublishText(): void {

@@ -298,14 +298,6 @@ export default class DiffViewModel {
     return this._state.dirtyFileChanges;
   }
 
-  setPublishMessage(publishMessage: ?string): void {
-    // TODO(most) remove API.
-  }
-
-  setCommitMessage(commitMessage: string): void {
-    // TODO(most) remove API.
-  }
-
   setViewMode(viewMode: DiffModeType): void {
     this._actionCreators.setViewMode(viewMode);
   }
