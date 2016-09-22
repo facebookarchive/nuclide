@@ -61,7 +61,6 @@ import {
 import invariant from 'assert';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {hgConstants} from '../../nuclide-hg-rpc';
-import RepositoryStack from './RepositoryStack';
 import {Observable, Subject} from 'rxjs';
 import {notifyInternalError} from './notifications';
 import {bufferForUri} from '../../commons-atom/text-editor';
@@ -259,9 +258,9 @@ export default class DiffViewModel {
 
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
-  _activeRepositoryStack: ?RepositoryStack;
+  _activeRepository: ?HgRepositoryClient;
   _uiProviders: Array<UIProvider>;
-  _repositoryStacks: Map<HgRepositoryClient, RepositoryStack>;
+  _repositories: Set<HgRepositoryClient>;
   _isActive: boolean;
   _state: State;
   _publishUpdates: Subject<any>;
@@ -272,7 +271,7 @@ export default class DiffViewModel {
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._uiProviders = [];
-    this._repositoryStacks = new Map();
+    this._repositories = new Set();
     this._isActive = false;
     this._publishUpdates = new Subject();
     this._state = getInitialState();
@@ -287,46 +286,36 @@ export default class DiffViewModel {
       ),
     );
     // Dispose removed projects repositories, if any.
-    for (const [repository, repositoryStack] of this._repositoryStacks) {
+    for (const repository of this._repositories) {
       if (repositories.has(repository)) {
         continue;
       }
-      if (this._activeRepositoryStack === repositoryStack) {
-        this._activeRepositoryStack = null;
+      if (this._activeRepository === repository) {
+        this._activeRepository = null;
       }
-      repositoryStack.dispose();
-      this._repositoryStacks.delete(repository);
+      this._repositories.delete(repository);
     }
 
     // Add the new project repositories, if any.
     for (const repository of repositories) {
-      if (this._repositoryStacks.has(repository)) {
+      if (this._repositories.has(repository)) {
         continue;
       }
       const hgRepository = ((repository: any): HgRepositoryClient);
-      this._createRepositoryStack(hgRepository);
+      this._repositories.add(hgRepository);
+      if (this._isActive) {
+        this._actionCreators.activateRepository(repository);
+      }
     }
 
     // Update active repository stack, if needed.
     // This will make sure we have a repository stack active whenever we have
     // a mercurial repository added to the project.
-    if (this._activeRepositoryStack == null && this._repositoryStacks.size > 0) {
-      this._setActiveRepositoryStack(
-        Array.from(this._repositoryStacks.values())[0],
+    if (this._activeRepository == null && this._repositories.size > 0) {
+      this._setActiveRepository(
+        Array.from(this._repositories)[0],
       );
     }
-  }
-
-  _createRepositoryStack(repository: HgRepositoryClient): RepositoryStack {
-    const repositoryStack = new RepositoryStack(
-      repository,
-      viewModeToDiffOption(this._state.viewMode),
-    );
-    this._repositoryStacks.set(repository, repositoryStack);
-    if (this._isActive) {
-      repositoryStack.activate();
-    }
-    return repositoryStack;
   }
 
   diffFile(filePath: NuclideUri): void {
@@ -371,17 +360,17 @@ export default class DiffViewModel {
 
   setCompareRevision(revision: RevisionInfo): void {
     track('diff-view-set-revision');
-    const repositoryStack = this._activeRepositoryStack;
-    invariant(repositoryStack, 'There must be an active repository stack!');
-    this._actionCreators.setCompareId(repositoryStack.getRepository(), revision.id);
+    const repository = this._activeRepository;
+    invariant(repository, 'There must be an active repository!');
+    this._actionCreators.setCompareId(repository, revision.id);
   }
 
   getPublishUpdates(): Subject<any> {
     return this._publishUpdates;
   }
 
-  _setActiveRepositoryStack(repositoryStack: RepositoryStack): void {
-    this._activeRepositoryStack = repositoryStack;
+  _setActiveRepository(repository: HgRepositoryClient): void {
+    this._activeRepository = repository;
   }
 
   @trackTiming('diff-view.save-file')
@@ -395,11 +384,11 @@ export default class DiffViewModel {
     publishMessage: string,
     lintExcuse: ?string,
   ): Promise<void> {
-    const activeStack = this._activeRepositoryStack;
-    invariant(activeStack != null, 'Cannot publish without an active stack!');
+    const activeRepository = this._activeRepository;
+    invariant(activeRepository != null, 'Cannot publish without an active stack!');
 
     this._actionCreators.publishDiff(
-      activeStack.getRepository(),
+      activeRepository,
       publishMessage,
       lintExcuse,
       this._publishUpdates,
@@ -431,11 +420,10 @@ export default class DiffViewModel {
       atom.notifications.addError('Commit aborted', {detail: 'Commit message empty'});
       return;
     }
-
-    const activeStack = this._activeRepositoryStack;
-    invariant(activeStack != null, 'No active repository stack');
+    const activeRepository = this._activeRepository;
+    invariant(activeRepository != null, 'No active repository stack');
     track('diff-view-commit');
-    this._actionCreators.commit(activeStack.getRepository(), message);
+    this._actionCreators.commit(activeRepository, message);
   }
 
   injectState(newState: State): void {
@@ -458,27 +446,26 @@ export default class DiffViewModel {
   activate(): void {
     this._updateRepositories();
     this._isActive = true;
-    for (const [repository, repositoryStack] of this._repositoryStacks.entries()) {
-      repositoryStack.activate();
+    for (const repository of this._repositories) {
       // TODO(most): Consider activating only the visible repository.
       this._actionCreators.activateRepository(repository);
     }
   }
 
   deactivate(): void {
+    if (!this._isActive) {
+      return;
+    }
     this._isActive = false;
-    for (const [repository, repositoryStack] of this._repositoryStacks.entries()) {
-      repositoryStack.deactivate();
+    for (const repository of this._repositories) {
       this._actionCreators.deactivateRepository(repository);
     }
-    this._activeRepositoryStack = null;
+    this._activeRepository = null;
   }
 
   dispose(): void {
+    this.deactivate();
     this._subscriptions.dispose();
-    for (const repositoryStack of this._repositoryStacks.values()) {
-      repositoryStack.dispose();
-    }
-    this._repositoryStacks.clear();
+    this._repositories.clear();
   }
 }
