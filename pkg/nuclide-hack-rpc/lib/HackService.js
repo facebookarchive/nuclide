@@ -40,7 +40,6 @@ import invariant from 'assert';
 import {retryLimit} from '../../commons-node/promise';
 import {
   callHHClient,
-  getSearchResults,
 } from './HackHelpers';
 import {
   findHackConfigDir,
@@ -61,6 +60,7 @@ import {convertCoverage} from './TypedRegions';
 import {convertReferences} from './FindReferences';
 import {hasPrefix, findHackPrefix, convertCompletions} from './Completions';
 import {convertDiagnostics} from './Diagnostics';
+import {executeQuery} from './SymbolSearch';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -269,36 +269,11 @@ export class HackLanguageService {
   /**
    * Performs a Hack symbol search in the specified directory.
    */
-  async executeQuery(
+  executeQuery(
     rootDirectory: NuclideUri,
-    queryString_: string,
+    queryString: string,
   ): Promise<Array<HackSearchPosition>> {
-    let queryString = queryString_;
-    let searchPostfix;
-    switch (queryString[0]) {
-      case '@':
-        searchPostfix = '-function';
-        queryString = queryString.substring(1);
-        break;
-      case '#':
-        searchPostfix = '-class';
-        queryString = queryString.substring(1);
-        break;
-      case '%':
-        searchPostfix = '-constant';
-        queryString = queryString.substring(1);
-        break;
-    }
-    const searchResponse = await getSearchResults(
-      rootDirectory,
-      queryString,
-      /* filterTypes */ null,
-      searchPostfix);
-    if (searchResponse == null) {
-      return [];
-    } else {
-      return searchResponse.result;
-    }
+    return executeQuery(rootDirectory, queryString);
   }
 
   async getCoverage(
