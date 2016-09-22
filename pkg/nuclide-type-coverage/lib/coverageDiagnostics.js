@@ -13,9 +13,11 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 import type {
   ObservableDiagnosticProvider,
+} from '../../nuclide-diagnostics-common';
+import type {
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-common';
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import type {CoverageProvider} from './types';
 import type {CoverageResult, UncoveredRegion} from './rpc-types';

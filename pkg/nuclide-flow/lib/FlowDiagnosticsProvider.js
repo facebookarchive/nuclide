@@ -12,13 +12,15 @@
 import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
-  FileDiagnosticMessage,
   MessageUpdateCallback,
   MessageInvalidationCallback,
+} from '../../nuclide-diagnostics-common';
+import type {
+  FileDiagnosticMessage,
   DiagnosticProviderUpdate,
   Trace,
   Fix,
-} from '../../nuclide-diagnostics-common';
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {
   Diagnostics,
   Diagnostic,

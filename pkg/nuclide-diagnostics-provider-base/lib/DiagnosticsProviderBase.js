@@ -10,11 +10,13 @@
  */
 
 import type {
-  DiagnosticProviderUpdate,
-  InvalidationMessage,
   MessageInvalidationCallback,
   MessageUpdateCallback,
 } from '../../nuclide-diagnostics-common';
+import type {
+  DiagnosticProviderUpdate,
+  InvalidationMessage,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import TextEventDispatcher from './TextEventDispatcher';

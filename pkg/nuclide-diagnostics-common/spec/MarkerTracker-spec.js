@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileDiagnosticMessage} from '..';
+import type {FileDiagnosticMessage} from '../lib/rpc-types';
 
 import invariant from 'assert';
 import {Range} from 'atom';

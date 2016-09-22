@@ -10,10 +10,12 @@
  */
 
 import type {
-  FileDiagnosticMessage,
   FileMessageUpdate,
   ObservableDiagnosticUpdater,
 } from '../../nuclide-diagnostics-common';
+import type {
+  FileDiagnosticMessage,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 

@@ -11,7 +11,7 @@
 
 import type {
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-common';
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {React} from 'react-for-atom';

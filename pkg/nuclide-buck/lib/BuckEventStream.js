@@ -11,7 +11,7 @@
 
 import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
 import type {Level} from '../../nuclide-console/lib/types';
-import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common';
+import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {BuckSubcommand} from './types';
 

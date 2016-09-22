@@ -11,10 +11,12 @@
 
 import type {
   ObservableDiagnosticProvider,
+} from '../../nuclide-diagnostics-common';
+import type {
   DiagnosticProviderUpdate,
   InvalidationMessage,
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-common';
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 
 import type {CoverageProvider} from '../lib/types';

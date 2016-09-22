@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {MessageType} from '../../nuclide-diagnostics-common';
+import type {MessageType} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 // Codes that should be displayed as errors. A general guideline is that
 // style-related codes should be classified as warnings, while codes that

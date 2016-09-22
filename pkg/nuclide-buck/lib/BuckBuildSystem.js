@@ -18,10 +18,12 @@ import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type {BuckSubcommand, SerializedState, TaskType} from './types';
 import type {BuckEvent} from './BuckEventStream';
 import type {
-  DiagnosticProviderUpdate,
-  InvalidationMessage,
   ObservableDiagnosticProvider,
 } from '../../nuclide-diagnostics-common';
+import type {
+  DiagnosticProviderUpdate,
+  InvalidationMessage,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';

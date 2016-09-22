@@ -10,14 +10,16 @@
  */
 
 import type {
-  InvalidationMessage,
   DiagnosticMessage,
   DiagnosticProvider,
+  FileMessageUpdate,
+} from '..';
+import type {
+  InvalidationMessage,
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
   ProjectDiagnosticMessage,
-  FileMessageUpdate,
-} from '..';
+} from './rpc-types';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';

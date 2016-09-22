@@ -10,10 +10,12 @@
  */
 
 import type {
-  DiagnosticProviderUpdate,
   MessageUpdateCallback,
   MessageInvalidationCallback,
 } from '../../nuclide-diagnostics-common';
+import type {
+  DiagnosticProviderUpdate,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common';
+import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {Range} from 'atom';
 import {compareMessagesByFile} from '../lib/paneUtils';

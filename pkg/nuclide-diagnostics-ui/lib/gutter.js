@@ -11,8 +11,10 @@
 
 import type {
   FileMessageUpdate,
-  FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common';
+import type {
+  FileDiagnosticMessage,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';

@@ -11,7 +11,7 @@
 
 import type {
   FileDiagnosticMessage,
-} from '..';
+} from './rpc-types';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 

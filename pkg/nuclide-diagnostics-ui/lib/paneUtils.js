@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticMessage, MessageType} from '../../nuclide-diagnostics-common';
+import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
+import type {MessageType} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 function fileOfDiagnosticMessage(diagnostic: DiagnosticMessage): string {
   if (typeof diagnostic.filePath === 'string') {

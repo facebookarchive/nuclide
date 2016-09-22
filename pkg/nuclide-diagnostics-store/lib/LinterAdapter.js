@@ -13,14 +13,16 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import type {
   DiagnosticMessage,
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessage,
   LinterMessage,
   LinterProvider,
-  ProjectDiagnosticMessage,
   MessageUpdateCallback,
   MessageInvalidationCallback,
 } from '../../nuclide-diagnostics-common';
+import type {
+  DiagnosticProviderUpdate,
+  FileDiagnosticMessage,
+  ProjectDiagnosticMessage,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {Range} from 'atom';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';

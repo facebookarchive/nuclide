@@ -16,11 +16,13 @@ import type {
   SingleHackMessage,
 } from '../../nuclide-hack-rpc/lib/HackService';
 import type {
-  FileDiagnosticMessage,
   MessageUpdateCallback,
   MessageInvalidationCallback,
-  DiagnosticProviderUpdate,
 } from '../../nuclide-diagnostics-common';
+import type {
+  FileDiagnosticMessage,
+  DiagnosticProviderUpdate,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {trackTiming} from '../../nuclide-analytics';

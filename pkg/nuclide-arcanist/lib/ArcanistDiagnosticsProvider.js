@@ -14,8 +14,10 @@ import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import type {
   MessageUpdateCallback,
   MessageInvalidationCallback,
-  Fix,
 } from '../../nuclide-diagnostics-common';
+import type {
+  Fix,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import type {ArcDiagnostic} from '../../nuclide-arcanist-rpc';
 
