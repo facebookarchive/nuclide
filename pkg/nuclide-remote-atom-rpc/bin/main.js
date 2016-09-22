@@ -9,8 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+
 import {openFile, addProject} from './CommandClient';
 import fsPromise from '../../commons-node/fsPromise';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {
   CurrentDateFileAppender,
   getServerLogAppenderConfig,
@@ -24,7 +27,6 @@ const logger = getLogger();
 
 const EXIT_CODE_SUCCESS = 0;
 const EXIT_CODE_UNKNOWN_ERROR = 1;
-const EXIT_CODE_CANNOT_RESOLVE_REALPATH = 2;
 const EXIT_CODE_CONNECTION_ERROR = 3;
 
 function setupErrorHandling() {
@@ -93,31 +95,40 @@ function parseLocationParameter(value: string): FileLocation {
   };
 }
 
+
+async function getRealPath(filePath: NuclideUri): Promise<NuclideUri> {
+  if (nuclideUri.isRemote(filePath)) {
+    return filePath;
+  }
+  return nuclideUri.resolve(filePath);
+}
+
+async function getIsDirectory(filePath: NuclideUri): Promise<boolean> {
+  try {
+    if (nuclideUri.isRemote(filePath)) {
+      return false;
+    } else {
+      const stats = await fsPromise.stat(filePath);
+      return stats.isDirectory();
+    }
+  } catch (e) {
+    return false;
+  }
+}
+
 async function main(argv): Promise<number> {
   await setupLogging();
   setupErrorHandling();
 
   logger.debug(`nuclide-remote-atom with arguments: ${argv._}`);
 
-  // TODO(t10180322): Support the --wait argument.
   // TODO(t10180337): Consider a batch API for openFile().
   for (const arg of argv._) {
     const {filePath, line, column} = parseLocationParameter(arg);
-    let realpath;
-    let isDirectory;
-    try {
-      // eslint-disable-next-line babel/no-await-in-loop
-      realpath = await fsPromise.realpath(filePath);
-      // eslint-disable-next-line babel/no-await-in-loop
-      const stats = await fsPromise.stat(filePath);
-      isDirectory = stats.isDirectory();
-    } catch (e) {
-      process.stderr.write(`Error: Cannot find file: ${filePath}\n`);
-      process.stderr.write(e.stack);
-      process.stderr.write('\n');
-      return EXIT_CODE_CANNOT_RESOLVE_REALPATH;
-    }
-
+    // eslint-disable-next-line babel/no-await-in-loop
+    const realpath = await getRealPath(filePath);
+    // eslint-disable-next-line babel/no-await-in-loop
+    const isDirectory = await getIsDirectory(realpath);
     try {
       if (isDirectory) {
         // file/line/wait are ignored on directories
