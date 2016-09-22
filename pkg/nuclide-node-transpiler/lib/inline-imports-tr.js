@@ -107,6 +107,8 @@ module.exports = function inlineImports(babel) {
         replacementNodes.push(...memoizedMember.nodes);
       }
 
+      const inlineImportsData = state.get('inline-imports');
+
       node.specifiers.forEach(specifier => {
         // import * as bar from 'x';
         if (t.isImportNamespaceSpecifier(specifier)) {
@@ -140,13 +142,44 @@ module.exports = function inlineImports(babel) {
             )
           );
         }
+
+        inlineImportsData.imports.push(specifier.local.name);
       });
 
       return replacementNodes;
     },
 
+    ExportNamedDeclaration(node, parent, scope, state) {
+      // flow type
+      if (node.kind === 'type') {
+        return;
+      }
+      // export {…}
+      if (node.source === null) {
+        return;
+      }
+
+      const inlineImportsData = state.get('inline-imports');
+
+      node.specifiers.forEach(specifier => {
+        inlineImportsData.exports.push(specifier.local.name);
+      });
+    },
+
     Program: {
+      enter(node, parent, scope, state) {
+        state.set('inline-imports', {imports: [], exports: []});
+      },
       exit(node, parent, scope, state) {
+        const inlineImportsData = state.get('inline-imports');
+
+        for (const name of inlineImportsData.exports) {
+          if (inlineImportsData.imports.indexOf(name) !== -1) {
+            throw new Error(`importing and exporting "${name}" from the ` +
+              'same file is not supported.');
+          }
+        }
+
         // Remaps must be run before builtin transforms because short-methods
         // may shadow import names. See "short-method-shadow.test".
         state.moduleFormatter.remaps.run();

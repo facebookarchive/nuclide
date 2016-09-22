@@ -31,6 +31,7 @@ const transformer = require('../lib/inline-imports-tr');
   'default-specifier',
   'export-identifier',
   'global-identifier',
+  'import-export',
   'multiple-specifiers',
   'namespace-specifier',
   'no-assign',
