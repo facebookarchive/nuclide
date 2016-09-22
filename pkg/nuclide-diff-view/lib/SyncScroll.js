@@ -11,8 +11,6 @@
 
 import {CompositeDisposable} from 'atom';
 
-const DEFER_SCROLL_SYNC_MS = 10;
-
 export default class SyncScroll {
 
   _subscriptions: CompositeDisposable;
@@ -20,7 +18,6 @@ export default class SyncScroll {
     scrollElement: atom$TextEditorElement,
     scrolling: boolean,
   }>;
-  _scrollSyncTimeout: ?number;
 
   constructor(editor1Element: atom$TextEditorElement, editor2Element: atom$TextEditorElement) {
     // Atom master or >= v1.0.18 have changed the scroll logic to the editor element.
@@ -39,7 +36,6 @@ export default class SyncScroll {
       this._subscriptions.add(scrollElement.onDidChangeScrollTop(updateScrollPosition));
       this._subscriptions.add(scrollElement.onDidChangeScrollLeft(updateScrollPosition));
     });
-    this._scrollSyncTimeout = null;
     this._scrollPositionChanged(1);
   }
 
@@ -56,17 +52,6 @@ export default class SyncScroll {
       return;
     }
     const {scrollElement: thisElement} = thisInfo;
-    if (thisElement.getScrollHeight() !== otherElement.getScrollHeight()) {
-      // One of the editors' dimensions is pending sync.
-      if (this._scrollSyncTimeout != null) {
-        clearTimeout(this._scrollSyncTimeout);
-      }
-      this._scrollSyncTimeout = setTimeout(() => {
-        this._scrollPositionChanged(1);
-        this._scrollSyncTimeout = null;
-      }, DEFER_SCROLL_SYNC_MS);
-      return;
-    }
     otherInfo.scrolling = true;
     otherElement.setScrollTop(thisElement.getScrollTop());
     otherElement.setScrollLeft(thisElement.getScrollLeft());
@@ -75,8 +60,5 @@ export default class SyncScroll {
 
   dispose(): void {
     this._subscriptions.dispose();
-    if (this._scrollSyncTimeout != null) {
-      clearTimeout(this._scrollSyncTimeout);
-    }
   }
 }
