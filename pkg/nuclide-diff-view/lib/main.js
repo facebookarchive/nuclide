@@ -46,7 +46,6 @@ import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-obser
 import {Observable} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {getLogger} from '../../nuclide-logging';
-import featureConfig from '../../commons-atom/featureConfig';
 
 type SerializedDiffViewState = {
   visible: false,
@@ -63,10 +62,6 @@ const DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY = 1000;
 const COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1100;
 const AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY = 1200;
 const PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY = 1300;
-
-function shouldUseReduxStore(): boolean {
-  return (featureConfig.get('nuclide-diff-view.useReduxStore'): any);
-}
 
 function formatDiffViewUrl(diffEntityOptions_?: ?DiffEntityOptions): string {
   let diffEntityOptions = diffEntityOptions_;
@@ -211,67 +206,56 @@ class Activation {
       applyMiddleware(createEpicMiddleware(rootEpic)),
     );
     const states = Observable.from(this._store);
-
-    const useReduxStore = shouldUseReduxStore();
-    if (useReduxStore || atom.inSpecMode()) {
-      this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
-
-      this._subscriptions.add(
-        // TODO(most): Remove Diff View model and use stream of props for the views instead.
-        states.subscribe(_state => {
-          getLogger().info('diff-view-state', _state);
-
-          const state: AppState = (_state: any);
-          const {commit, fileDiff, publish} = state;
-
-          let activeRepositoryState;
-          if (state.activeRepository != null) {
-            activeRepositoryState = state.repositories.get(state.activeRepository);
-          }
-          activeRepositoryState = activeRepositoryState || getEmptyRepositoryState();
-
-          const headRevision = getHeadRevision(activeRepositoryState.headToForkBaseRevisions);
-          const headCommitMessage = headRevision == null
-            ? null : headRevision.description;
-
-          this._getDiffViewModel().injectState({
-            fromRevisionTitle: fileDiff.fromRevisionTitle,
-            toRevisionTitle: fileDiff.toRevisionTitle,
-            filePath: fileDiff.filePath,
-            oldContents: fileDiff.oldContents,
-            newContents: fileDiff.newContents,
-            compareRevisionInfo: null,
-            viewMode: state.viewMode,
-            commitMessage: commit.message,
-            commitMode: commit.mode,
-            commitModeState: commit.state,
-            shouldRebaseOnAmend: state.shouldRebaseOnAmend,
-            publishMessage: publish.message,
-            publishMode: publish.mode,
-            publishModeState: publish.state,
-            headCommitMessage,
-            dirtyFileChanges: activeRepositoryState.dirtyFiles,
-            selectedFileChanges: activeRepositoryState.selectedFiles,
-            showNonHgRepos: true,
-            revisionsState: headRevision == null ? null : {
-              compareCommitId: activeRepositoryState.compareRevisionId,
-              revisionStatuses: activeRepositoryState.revisionStatuses,
-              headCommitId: headRevision.id,
-              headToForkBaseRevisions: activeRepositoryState.headToForkBaseRevisions,
-              revisions: [],
-            },
-          });
-        }),
-        getHgRepositoryStream().subscribe(repository => {
-          this._actionCreators.addRepository(repository);
-        }),
-      );
-    } else {
-      // Bypass actions - skipping Reducers and Epics.
-      this._actionCreators = bindActionCreators(Actions, () => {});
-    }
+    this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
 
     this._subscriptions.add(
+      // TODO(most): Remove Diff View model and use stream of props for the views instead.
+      states.subscribe(_state => {
+        const state: AppState = (_state: any);
+        const {commit, fileDiff, publish} = state;
+
+        let activeRepositoryState;
+        if (state.activeRepository != null) {
+          activeRepositoryState = state.repositories.get(state.activeRepository);
+        }
+        activeRepositoryState = activeRepositoryState || getEmptyRepositoryState();
+
+        const headRevision = getHeadRevision(activeRepositoryState.headToForkBaseRevisions);
+        const headCommitMessage = headRevision == null
+          ? null : headRevision.description;
+
+        this._getDiffViewModel().injectState({
+          fromRevisionTitle: fileDiff.fromRevisionTitle,
+          toRevisionTitle: fileDiff.toRevisionTitle,
+          filePath: fileDiff.filePath,
+          oldContents: fileDiff.oldContents,
+          newContents: fileDiff.newContents,
+          compareRevisionInfo: null,
+          viewMode: state.viewMode,
+          commitMessage: commit.message,
+          commitMode: commit.mode,
+          commitModeState: commit.state,
+          shouldRebaseOnAmend: state.shouldRebaseOnAmend,
+          publishMessage: publish.message,
+          publishMode: publish.mode,
+          publishModeState: publish.state,
+          headCommitMessage,
+          dirtyFileChanges: activeRepositoryState.dirtyFiles,
+          selectedFileChanges: activeRepositoryState.selectedFiles,
+          showNonHgRepos: true,
+          revisionsState: headRevision == null ? null : {
+            compareCommitId: activeRepositoryState.compareRevisionId,
+            revisionStatuses: activeRepositoryState.revisionStatuses,
+            headCommitId: headRevision.id,
+            headToForkBaseRevisions: activeRepositoryState.headToForkBaseRevisions,
+            revisions: [],
+          },
+        });
+      }),
+      getHgRepositoryStream().subscribe(repository => {
+        this._actionCreators.addRepository(repository);
+      }),
+
       // Listen for menu item workspace diff view open command.
       addActivePathCommands('nuclide-diff-view:open'),
       addActivePathCommands('nuclide-diff-view:commit', {
@@ -403,7 +387,7 @@ class Activation {
   _getDiffViewModel(): DiffViewModel {
     let diffViewModel = this._diffViewModel;
     if (diffViewModel == null) {
-      diffViewModel = new DiffViewModel(this._actionCreators, shouldUseReduxStore());
+      diffViewModel = new DiffViewModel(this._actionCreators);
       diffViewModel.setUiProviders(this._uiProviders);
       this._subscriptions.add(diffViewModel);
       this._diffViewModel = diffViewModel;
@@ -462,9 +446,10 @@ class Activation {
       }
     }
     if (diffEntityOptions.file) {
-      this._actionCreators.diffFile(diffEntityOptions.file);
+      this._diffViewModel.diffFile(diffEntityOptions.file);
+    } else {
+      atom.notifications.addError('Diffing Directories is no loner supported');
     }
-    this._diffViewModel.diffEntity(diffEntityOptions);
   }
 
 

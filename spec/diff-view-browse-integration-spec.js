@@ -10,15 +10,11 @@
  */
 
 import type DiffViewComponent from '../pkg/nuclide-diff-view/lib/DiffViewComponent';
-import type {RemoteConnection} from '../pkg/nuclide-remote-connection';
 
 import {
-  addRemoteProject,
   activateAllPackages,
   jasmineIntegrationTestSetup,
   deactivateAllPackages,
-  startNuclideServer,
-  stopNuclideServer,
 } from './utils/integration-test-helpers';
 import {setLocalProject} from '../pkg/commons-atom/testHelpers';
 import fs from 'fs';
@@ -26,15 +22,11 @@ import invariant from 'assert';
 import {ReactDOM} from 'react-for-atom';
 import uiTreePath from '../pkg/commons-atom/ui-tree-path';
 import nuclideUri from '../pkg/commons-node/nuclideUri';
-import {generateHgRepo2Fixture, generateFixture} from '../pkg/nuclide-test-helpers';
+import {generateHgRepo2Fixture} from '../pkg/nuclide-test-helpers';
 
 describe('Diff View Browse Mode Integration Test', () => {
 
   let localRepoPath: string = (null: any);
-  let nonRepoPath: string = (null: any);
-  let remoteRepoLocalPath: string = (null: any);
-  let remoteRepoPath: string = (null: any);
-  let connection: ?RemoteConnection = (null : any);
 
   beforeEach(() => {
     waitsForPromise({timeout: 200000}, async () => {
@@ -44,37 +36,16 @@ describe('Diff View Browse Mode Integration Test', () => {
       // Copy local mercurial project to temporary directory.
       localRepoPath = await generateHgRepo2Fixture();
       fs.writeFileSync(nuclideUri.join(localRepoPath, 'test.txt'), 'dirty changes', 'utf8');
-
-      // Non-Mercurial project.
-      nonRepoPath = await generateFixture('non_repo', new Map([
-        ['.watchmanconfig'], // avoid resolve_projpath errors
-        ['no_repo_file.txt', 'ignored_contents'],
-      ]));
-
+      fs.writeFileSync(nuclideUri.join(localRepoPath, 'untracked.txt'), 'untracked', 'utf8');
       // Add those two local directories as a new project in atom.
-      setLocalProject([localRepoPath, nonRepoPath]);
-
-      // Start the Nuclide server and add a remote mercurial repository project.
-      remoteRepoLocalPath = await generateHgRepo2Fixture();
-      fs.writeFileSync(nuclideUri.join(remoteRepoLocalPath, 'untracked.txt'), 'untracked', 'utf8');
-      await startNuclideServer();
-      connection = await addRemoteProject(remoteRepoLocalPath);
-      invariant(connection != null, 'connection was not established');
-      // Open a remote file in the flow project we copied, and get reference to the editor's HTML.
-      remoteRepoPath = connection.getUriForInitialWorkingDirectory();
+      setLocalProject([localRepoPath]);
       // Open the test.txt file in the repo.
-      await atom.workspace.open(nuclideUri.join(remoteRepoPath, 'test.txt'));
+      await atom.workspace.open(nuclideUri.join(localRepoPath, 'test.txt'));
     });
   });
 
   afterEach(() => {
-    // Clean up -- kill nuclide server and deactivate packages.
-    waitsForPromise(async () => {
-      deactivateAllPackages();
-      if (connection != null) {
-        await stopNuclideServer(connection);
-      }
-    });
+    deactivateAllPackages();
   });
 
   function getDiffViewComponent(): DiffViewComponent {
@@ -115,7 +86,7 @@ describe('Diff View Browse Mode Integration Test', () => {
 
     let revisionLabels = [];
 
-    waitsFor('remote: revisions to load', () => {
+    waitsFor('revisions to load', () => {
       revisionLabels = revisionsTimelineElement.querySelectorAll('.revision-label');
       return revisionLabels.length > 0;
     });
@@ -128,7 +99,7 @@ describe('Diff View Browse Mode Integration Test', () => {
     });
 
     let diffFiles = [];
-    waitsFor('remote: file changes to load', () => {
+    waitsFor('file changes to load', () => {
       diffFiles = treeElement.querySelectorAll('.nuclide-file-changes-file-entry');
       return diffFiles.length > 2;
     });
@@ -136,18 +107,17 @@ describe('Diff View Browse Mode Integration Test', () => {
     runs(() => {
       expect(diffFiles.length).toBe(3);
       expect(uiTreePath(({currentTarget: diffFiles[0]}: any))).toBe(
-        nuclideUri.join(localRepoPath, 'test.txt'),
+        nuclideUri.join(localRepoPath, '.arcconfig'),
       );
       expect(uiTreePath(({currentTarget: diffFiles[1]}: any))).toBe(
-        nuclideUri.join(remoteRepoPath, '.arcconfig'),
+        nuclideUri.join(localRepoPath, 'test.txt'),
       );
       expect(uiTreePath(({currentTarget: diffFiles[2]}: any))).toBe(
-        nuclideUri.join(remoteRepoPath, 'untracked.txt'),
+        nuclideUri.join(localRepoPath, 'untracked.txt'),
       );
       const treeRoots = treeElement.querySelectorAll('.nuclide-file-changes-root-entry');
-      expect(treeRoots.length).toBe(2);
+      expect(treeRoots.length).toBe(1);
       expect(uiTreePath(({currentTarget: treeRoots[0]}: any))).toBe(localRepoPath);
-      expect(uiTreePath(({currentTarget: treeRoots[1]}: any))).toBe(remoteRepoPath);
     });
   });
 });

@@ -360,7 +360,7 @@ export default class DiffViewComponent extends React.Component {
             commandPrefix="nuclide-diff-view"
             fileChanges={getMultiRootFileChanges(selectedFileChanges)}
             selectedFile={filePath}
-            onFileChosen={(fileUri: NuclideUri) => diffModel.diffEntity({file: fileUri})}
+            onFileChosen={diffModel.diffFile.bind(diffModel)}
           />
         </div>
       ),

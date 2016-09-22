@@ -272,6 +272,6 @@ export default class DiffViewTree extends React.Component {
     if (!entry.statusCode || entry.filePath === this.props.activeFilePath) {
       return;
     }
-    this.props.diffModel.diffEntity({file: entry.filePath});
+    this.props.diffModel.diffFile(entry.filePath);
   }
 }
