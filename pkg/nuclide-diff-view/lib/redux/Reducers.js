@@ -98,6 +98,7 @@ function reduceRepositoryAction(
       return {
         ...repositoryState,
         headToForkBaseRevisions: action.payload.headToForkBaseRevisions,
+        revisionStatuses: action.payload.revisionStatuses,
       };
     default:
       throw new Error('Invalid Repository Action!');

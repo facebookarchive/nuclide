@@ -40,6 +40,7 @@ function isEqualRevisions(
     revisions2,
     (revision1, revision2) => {
       return revision1.id === revision2.id &&
+        revision1.isHead === revision2.isHead &&
         arrayEqual(revision1.tags, revision2.tags) &&
         arrayEqual(revision1.bookmarks, revision2.bookmarks);
     },
