@@ -24,7 +24,6 @@ import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {OutlineViewProvider} from './OutlineViewProvider';
 import {HackDefinitionProvider} from './HackDefinitionProvider';
-import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import AutocompleteProvider from './AutocompleteProvider';
 import FindReferencesProvider from './FindReferencesProvider';
 import TypeHintProvider from './TypeHintProvider';
@@ -47,11 +46,6 @@ let definitionProvider: ?DefinitionProvider = null;
 
 export function activate() {
   subscriptions = new CompositeDisposable();
-  subscriptions.add(onDidRemoveProjectPath(projectPath => {
-    if (hackDiagnosticsProvider) {
-      hackDiagnosticsProvider.invalidateProjectPath(projectPath);
-    }
-  }));
   subscriptions.add(new Disposable(clearHackLanguageCache));
 }
 

@@ -29,6 +29,7 @@ import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {Range} from 'atom';
 import invariant from 'assert';
+import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
 
@@ -96,6 +97,7 @@ export default class HackDiagnosticsProvider {
   _busySignalProvider: BusySignalProviderBase;
   _providerBase: DiagnosticsProviderBase;
   _requestSerializer: RequestSerializer<any>;
+  _subscription: IDisposable;
 
   /**
    * Maps hack root to the set of file paths under that root for which we have
@@ -118,6 +120,9 @@ export default class HackDiagnosticsProvider {
     this._providerBase = new ProviderBase(utilsOptions);
     this._requestSerializer = new RequestSerializer();
     this._projectRootToFilePaths = new Map();
+    this._subscription = onDidRemoveProjectPath(projectPath => {
+      this.invalidateProjectPath(projectPath);
+    });
   }
 
   _runDiagnostics(textEditor: atom$TextEditor): void {
@@ -250,6 +255,7 @@ export default class HackDiagnosticsProvider {
   }
 
   dispose() {
+    this._subscription.dispose();
     this._providerBase.dispose();
   }
 }
