@@ -9,30 +9,56 @@
  * the root directory of this source tree.
  */
 
-import xfetch from '../../commons-node/xfetch';
+import type {Store, BoundActionCreators, PartialAppState} from './types';
+
 import {Disposable, CompositeDisposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
 import {React, ReactDOM} from 'react-for-atom';
 import {RequestEditDialog} from './RequestEditDialog';
+import {applyMiddleware, bindActionCreators, createStore} from 'redux';
+import * as Actions from './Actions';
+import * as Epics from './Epics';
+import * as Reducers from './Reducers';
+import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
+import {Observable} from 'rxjs';
+import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
 
 export type HttpRequestSenderApi = {
-  sendRequest: (uri: string, options: Object) => mixed,
+  updateRequestEditDialogDefaults(defaults: PartialAppState): void,
 };
 
 class Activation {
   _disposables: CompositeDisposable;
   _requestEditDialog: ?atom$Panel;
+  _store: Store;
+  _actionCreators: BoundActionCreators;
 
   constructor(): void {
+    const initialState = {
+      uri: 'example.com',
+      method: 'GET',
+      headers: {
+        cookie: '',
+      },
+      body: null,
+    };
+    const epics = Object.keys(Epics)
+      .map(k => Epics[k])
+      .filter(epic => typeof epic === 'function');
+    const rootEpic = combineEpics(...epics);
+    this._store = createStore(
+      Reducers.app,
+      initialState,
+      applyMiddleware(createEpicMiddleware(rootEpic)),
+    );
+    this._actionCreators = bindActionCreators(Actions, this._store.dispatch);
     this._requestEditDialog = null;
     this._disposables = new CompositeDisposable(
       atom.commands.add('atom-workspace', {
-        'nuclide-http-request-sender:send-http-request': () => {
-          xfetch('facebook.com', {});
-        },
         'nuclide-http-request-sender:toggle-http-request-edit-dialog': () => {
           this._toggleRequestEditDialog();
         },
+        'nuclide-http-request-sender:send-http-request': this._actionCreators.sendHttpRequest,
       }),
     );
   }
@@ -50,12 +76,14 @@ class Activation {
     if (this._requestEditDialog != null) {
       return this._requestEditDialog;
     }
+    // $FlowFixMe -- Flow doesn't know about the Observable symbol used by from().
+    const BoundEditDialog = bindObservableAsProps(Observable.from(this._store), RequestEditDialog);
     const container = document.createElement('div');
-    ReactDOM.render(<RequestEditDialog />, container);
     const requestEditDialog = atom.workspace.addModalPanel({
       item: container,
       visible: false,
     });
+    ReactDOM.render(<BoundEditDialog actionCreators={this._actionCreators} />, container);
     this._disposables.add(
       new Disposable(() => {
         requestEditDialog.destroy();
@@ -63,12 +91,13 @@ class Activation {
         ReactDOM.unmountComponentAtNode(container);
       }),
     );
+    this._requestEditDialog = requestEditDialog;
     return requestEditDialog;
   }
 
   provideHttpRequestSender(): HttpRequestSenderApi {
     return {
-      sendRequest: (uri, options) => xfetch(uri, options),
+      updateRequestEditDialogDefaults: this._actionCreators.updateState,
     };
   }
 

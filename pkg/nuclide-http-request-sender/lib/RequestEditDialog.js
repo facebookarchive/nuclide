@@ -9,9 +9,18 @@
  * the root directory of this source tree.
  */
 
+import type {BoundActionCreators} from './types';
+
 import {React} from 'react-for-atom';
 
-type PropsType = {};
+type PropsType = {
+  actionCreators: BoundActionCreators,
+  uri: string,
+  method: string,
+  headers: {[key: string]: string},
+  body: ?string,
+};
+
 
 export class RequestEditDialog extends React.Component<void, PropsType, void> {
   props: PropsType;
