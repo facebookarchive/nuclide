@@ -11,6 +11,7 @@
 
 import type DebuggerInstance from './DebuggerInstance';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
 
 export default class DebuggerProcessInfo {
   _serviceName: string;
@@ -20,7 +21,6 @@ export default class DebuggerProcessInfo {
     this._serviceName = serviceName;
     this._targetUri = targetUri;
   }
-
 
   getServiceName(): string {
     return this._serviceName;
@@ -43,6 +43,10 @@ export default class DebuggerProcessInfo {
 
   singleThreadSteppingEnabled(): boolean {
     return false;
+  }
+
+  customControlButtons(): Array<ControlButtonSpecification> {
+    return [];
   }
 
   async debug(): Promise<DebuggerInstance> {

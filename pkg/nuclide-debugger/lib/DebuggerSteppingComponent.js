@@ -10,7 +10,7 @@
  */
 
 import type DebuggerActions from './DebuggerActions';
-import type {DebuggerModeType} from './types';
+import type {ControlButtonSpecification, DebuggerModeType} from './types';
 
 import {
   React,
@@ -28,6 +28,7 @@ type DebuggerSteppingComponentProps = {
   pauseOnCaughtException: boolean,
   allowSingleThreadStepping: boolean,
   singleThreadStepping: boolean,
+  customControlButtons: Array<ControlButtonSpecification>,
 };
 
 export class DebuggerSteppingComponent extends React.Component {
@@ -45,6 +46,7 @@ export class DebuggerSteppingComponent extends React.Component {
       pauseOnCaughtException,
       allowSingleThreadStepping,
       singleThreadStepping,
+      customControlButtons,
     } = this.props;
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     return (
@@ -58,13 +60,6 @@ export class DebuggerSteppingComponent extends React.Component {
                 actions,
                 ChromeActionRegistryActions.PAUSE, // Toggles paused state
               )
-            }
-          />
-          <Button
-            icon="primitive-square"
-            title="stop debugging"
-            onClick={
-              () => actions.stopDebugging()
             }
           />
           <Button
@@ -88,6 +83,16 @@ export class DebuggerSteppingComponent extends React.Component {
               actions.triggerDebuggerAction.bind(actions, ChromeActionRegistryActions.STEP_OUT)
             }
           />
+          <Button
+            icon="primitive-square"
+            title="stop debugging"
+            onClick={
+              () => actions.stopDebugging()
+            }
+          />
+        </ButtonGroup>
+        <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
+          {customControlButtons.map((specification, i) => <Button {...specification} key={i} />)}
         </ButtonGroup>
         <Checkbox
           className="nuclide-debugger-exception-checkbox"

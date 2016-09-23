@@ -18,7 +18,7 @@ import type {
 } from '../../nuclide-debugger-base';
 import type DebuggerModel from './DebuggerModel';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
-import type {DebuggerModeType} from './types';
+import type {ControlButtonSpecification, DebuggerModeType} from './types';
 
 import {Emitter} from 'atom';
 import Constants from './Constants';
@@ -58,6 +58,7 @@ class DebuggerStore {
   _onLoaderBreakpointResume: () => void;
   _registerExecutor: ?() => IDisposable;
   _consoleDisposable: ?IDisposable;
+  _customControlButtons: Array<ControlButtonSpecification>;
   loaderBreakpointResumePromise: Promise<void>;
 
   constructor(dispatcher: Dispatcher, model: DebuggerModel) {
@@ -77,6 +78,7 @@ class DebuggerStore {
     this._enableSingleThreadStepping = false;
     this._registerExecutor = null;
     this._consoleDisposable = null;
+    this._customControlButtons = [];
     this.loaderBreakpointResumePromise = new Promise(resolve => {
       this._onLoaderBreakpointResume = resolve;
     });
@@ -92,6 +94,10 @@ class DebuggerStore {
 
   loaderBreakpointResumed(): void {
     this._onLoaderBreakpointResume(); // Resolves onLoaderBreakpointResumePromise.
+  }
+
+  getCustomControlButtons(): Array<ControlButtonSpecification> {
+    return this._customControlButtons;
   }
 
   getConsoleExecutorFunction(): ?RegisterExecutorFunction {
@@ -211,6 +217,9 @@ class DebuggerStore {
           this._consoleDisposable.dispose();
           this._consoleDisposable = null;
         }
+        break;
+      case Constants.Actions.ADD_CUSTOM_CONTROL_BUTTONS:
+        this._customControlButtons = payload.data;
         break;
       default:
         return;

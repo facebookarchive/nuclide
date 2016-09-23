@@ -15,6 +15,7 @@ import type {
 } from './WatchExpressionListStore';
 import type {
   Callstack,
+  ControlButtonSpecification,
   DebuggerModeType,
   FileLineBreakpoints,
   ThreadItem,
@@ -51,6 +52,7 @@ export class NewDebuggerView extends React.Component {
     showThreadsWindow: boolean,
     threadList: Array<ThreadItem>,
     selectedThreadId: number,
+    customControlButtons: Array<ControlButtonSpecification>,
   };
   _watchExpressionComponentWrapped: ReactClass<any>;
   _localsComponentWrapped: ReactClass<any>;
@@ -84,6 +86,7 @@ export class NewDebuggerView extends React.Component {
       breakpoints: props.model.getBreakpointStore().getAllBreakpoints(),
       threadList: threadStore.getThreadList(),
       selectedThreadId: threadStore.getSelectedThreadId(),
+      customControlButtons: debuggerStore.getCustomControlButtons(),
     };
   }
 
@@ -102,6 +105,7 @@ export class NewDebuggerView extends React.Component {
           enableSingleThreadStepping: debuggerStore.getEnableSingleThreadStepping(),
           showThreadsWindow: Boolean(debuggerStore.getSettings()
             .get('SupportThreadsWindow')),
+          customControlButtons: debuggerStore.getCustomControlButtons(),
         });
       }),
     );
@@ -165,6 +169,7 @@ export class NewDebuggerView extends React.Component {
               pauseOnCaughtException={this.state.togglePauseOnCaughtException}
               allowSingleThreadStepping={this.state.allowSingleThreadStepping}
               singleThreadStepping={this.state.enableSingleThreadStepping}
+              customControlButtons={this.state.customControlButtons}
             />
           </div>
         </Section>

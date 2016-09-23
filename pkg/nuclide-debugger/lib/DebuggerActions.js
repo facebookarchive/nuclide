@@ -22,6 +22,7 @@ import type {
 } from '../../nuclide-debugger-base';
 import type {
   Callstack,
+  ControlButtonSpecification,
   DebuggerModeType,
   ExpansionResult,
   ExpressionResult,
@@ -90,6 +91,10 @@ class DebuggerActions {
         this._store.getSettings().set('SingleThreadStepping', singleThreadStepping);
         const singleThreadSteppingEnabled = processInfo.singleThreadSteppingEnabled();
         this.toggleSingleThreadStepping(singleThreadSteppingEnabled);
+      }
+      const customControlButtons = processInfo.customControlButtons();
+      if (customControlButtons.length > 0) {
+        this.addControlButtons(customControlButtons);
       }
       await this._waitForChromeConnection(debuggerInstance);
     } catch (err) {
@@ -201,6 +206,13 @@ class DebuggerActions {
     this._dispatcher.dispatch({
       actionType: Constants.Actions.REMOVE_REGISTER_EXECUTOR,
       data: registerExecutor,
+    });
+  }
+
+  addControlButtons(buttons: Array<ControlButtonSpecification>): void {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.ADD_CUSTOM_CONTROL_BUTTONS,
+      data: buttons,
     });
   }
 

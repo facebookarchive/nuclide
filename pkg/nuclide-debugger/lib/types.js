@@ -12,6 +12,12 @@
 
 import type {Observable} from 'rxjs';
 
+export type ControlButtonSpecification = {
+  icon: atom$Octicon,
+  title?: string,
+  onClick: () => mixed,
+};
+
 /* Evaluation & values */
 export type EvaluationResult = {
   type: string,

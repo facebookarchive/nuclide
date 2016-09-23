@@ -13,6 +13,7 @@ import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
   constructor(targetUri: NuclideUri) {
@@ -39,5 +40,9 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
 
   singleThreadSteppingEnabled(): boolean {
     return true;
+  }
+
+  customControlButtons(): Array<ControlButtonSpecification> {
+    return [];
   }
 }
