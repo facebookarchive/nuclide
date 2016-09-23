@@ -27,6 +27,10 @@ function setupTextEditor(props: Props): atom$TextEditor {
     textBuffer.setPath(props.path);
   }
 
+  if (props.onDidTextBufferChange != null) {
+    textBuffer.onDidChange(props.onDidTextBufferChange);
+  }
+
   const textEditorParams = {
     buffer: textBuffer,
     lineNumberGutterVisible: !props.gutterHidden,
@@ -93,6 +97,7 @@ type Props = {
   className?: string,
   gutterHidden: boolean,
   grammar?: ?Object,
+  onDidTextBufferChange?: (event: atom$TextEditEvent) => mixed,
   path?: string,
   placeholderText?: string,
   readOnly: boolean,
