@@ -21,7 +21,9 @@ import {translateMessageFromServer, translateMessageToServer} from './ChromeMess
 import nuclideUri from '../../commons-node/nuclideUri';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {getConfig} from './utils';
-import WS from 'ws';
+import {
+  WebSocketServer,
+} from '../../nuclide-debugger-common/lib/WebSocketServer';
 import {stringifyError} from '../../commons-node/string';
 
 const {log, logInfo, logError} = utils;
@@ -31,7 +33,7 @@ const SESSION_END_EVENT = 'session-end-event';
 export class LldbDebuggerInstance extends DebuggerInstance {
   _rpcService: NativeDebuggerService;
   _attachPromise: ?Promise<NativeDebuggerService>;
-  _chromeWebSocketServer: ?WS.Server;
+  _chromeWebSocketServer: WebSocketServer;
   _chromeWebSocket: ?WebSocket;
   _disposables: atom$CompositeDisposable;
   _emitter: Emitter;
@@ -44,10 +46,12 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     super(processInfo);
     this._rpcService = rpcService;
     this._attachPromise = null;
-    this._chromeWebSocketServer = null;
+
     this._chromeWebSocket = null;
     this._disposables = new CompositeDisposable();
     this._disposables.add(outputDisposable);
+    this._chromeWebSocketServer = new WebSocketServer();
+    this._disposables.add(this._chromeWebSocketServer);
     this._emitter = new Emitter();
     this._registerServerHandlers(rpcService);
   }
@@ -91,37 +95,42 @@ export class LldbDebuggerInstance extends DebuggerInstance {
   _startChromeWebSocketServer(): string {
     // setup web socket
     const wsPort = this._getWebSocketPort();
-    const server = new WS.Server({port: wsPort});
-    this._chromeWebSocketServer = server;
-    server.on('error', error => {
-      let errorMessage = `Server error: ${error}`;
-      if (error.code === 'EADDRINUSE') {
-        errorMessage = `The debug port ${error.port} is in use.
-        Please choose a different port in the debugger config settings.`;
-      }
-      atom.notifications.addError(errorMessage);
-      logError(errorMessage);
-      this.dispose();
-    });
-    server.on('headers', headers => {
-      log('Server headers: ' + headers);
-    });
-    server.on('connection', webSocket => {
-      if (this._chromeWebSocket) {
-        log('Already connected to Chrome WebSocket. Discarding new connection.');
-        return;
-      }
-
-      log('Connecting to Chrome WebSocket client.');
-      this._chromeWebSocket = webSocket;
-      webSocket.on('message', this._onChromeSocketMessage.bind(this));
-      webSocket.on('error', this._onChromeSocketError.bind(this));
-      webSocket.on('close', this._onChromeSocketClose.bind(this));
-    });
-
-    const result = 'ws=localhost:' + String(wsPort) + '/';
+    // WebSocketServer.start() only returns when a client connects to it.
+    // while websocket client(chrome) can't connect to it until _startChromeWebSocketServer()
+    // returns so we can't await here.
+    this._chromeWebSocketServer.start(wsPort)
+      .catch(this._handleWebSocketServerError.bind(this))
+      .then(this._handleWebSocketServerConnection.bind(this));
+    const result = `ws=localhost:${String(wsPort)}/`;
     logInfo('Listening for connection at: ' + result);
     return result;
+  }
+
+  _handleWebSocketServerError(error: Object): void {
+    let errorMessage = `Server error: ${JSON.stringify(error)}`;
+    if (error.code === 'EADDRINUSE') {
+      errorMessage = `The debug port ${error.port} is in use.
+      Please choose a different port in the debugger config settings.`;
+    }
+    atom.notifications.addError(errorMessage);
+    logError(errorMessage);
+    this.dispose();
+  }
+
+  _handleWebSocketServerConnection(webSocket: WebSocket): void {
+    if (this._chromeWebSocket) {
+      log('Already connected to Chrome WebSocket. Discarding new connection.');
+      webSocket.close();
+      return;
+    }
+    log('Connecting to Chrome WebSocket client.');
+    this._chromeWebSocket = webSocket;
+    // $FlowIssue.
+    webSocket.on('message', this._handleChromeSocketMessage.bind(this));
+    // $FlowIssue.
+    webSocket.on('error', this._handleChromeSocketError.bind(this));
+    // $FlowIssue.
+    webSocket.on('close', this._handleChromeSocketClose.bind(this));
   }
 
   _getWebSocketPort(): number {
@@ -152,34 +161,22 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     return message;
   }
 
-  _onChromeSocketMessage(message: string): void {
+  _handleChromeSocketMessage(message: string): void {
     log('Recieved Chrome message: ' + message);
     this._rpcService.sendCommand(translateMessageToServer(message));
   }
 
-  _onChromeSocketError(error: Error): void {
+  _handleChromeSocketError(error: Error): void {
     logError('Chrome webSocket error ' + stringifyError(error));
     this.dispose();
   }
 
-  _onChromeSocketClose(code: number): void {
+  _handleChromeSocketClose(code: number): void {
     log('Chrome webSocket Closed ' + code);
     this.dispose();
   }
 
   dispose() {
     this._disposables.dispose();
-    const webSocket = this._chromeWebSocket;
-    if (webSocket) {
-      logInfo('closing Chrome webSocket');
-      webSocket.close();
-      this._chromeWebSocket = null;
-    }
-    const server = this._chromeWebSocketServer;
-    if (server) {
-      logInfo('closing Chrome server');
-      server.close();
-      this._chromeWebSocketServer = null;
-    }
   }
 }

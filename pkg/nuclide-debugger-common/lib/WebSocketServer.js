@@ -11,11 +11,6 @@
 
 import WS from 'ws';
 import EventEmitter from 'events';
-import {attachEvent} from '../../commons-node/event';
-
-const WEBSOCKETSERVER_EVENT = 'WEBSOCKETSERVER_EVENT';
-export const WEBSOCKETSERVER_STATUS_ERROR = 'WEBSOCKETSERVER_STATUS_ERROR';
-export const WEBSOCKETSERVER_STATUS_HEADERS = 'WEBSOCKETSERVER_STATUS_HEADERS';
 
 export class WebSocketServer {
   _webSocketServer: ?WS.Server;
@@ -26,27 +21,17 @@ export class WebSocketServer {
     this._eventEmitter = new EventEmitter();
   }
 
-  onStatus(callback: (event: string, params: ?Object) => void): IDisposable {
-    return attachEvent(this._eventEmitter, WEBSOCKETSERVER_EVENT, callback);
-  }
-
+  // Promise only resolves when one WebSocket client connect to it.
   start(port: number): Promise<WebSocket> {
-    const server = new WS.Server({port});
-    server.on('error', error => {
-      this._emitStatus(WEBSOCKETSERVER_STATUS_ERROR, error);
-    });
-    server.on('headers', headers => {
-      this._emitStatus(WEBSOCKETSERVER_STATUS_HEADERS, headers);
-    });
     return new Promise((resolve, reject) => {
+      const server = new WS.Server({port});
+      server.on('error', error => {
+        reject(error);
+      });
       server.once('connection', webSocket => {
         resolve(webSocket);
       });
     });
-  }
-
-  _emitStatus(status: string, args: Object): void {
-    this._eventEmitter.emit(WEBSOCKETSERVER_EVENT, status, args);
   }
 
   dispose(): void {
