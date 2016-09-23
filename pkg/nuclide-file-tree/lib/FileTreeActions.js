@@ -532,6 +532,7 @@ class FileTreeActions {
     }
 
     this._subscriptionForRepository = this._subscriptionForRepository.delete(repo);
+    this.setVcsStatuses(nuclideUri.ensureTrailingSeparator(repo.getWorkingDirectory()), {});
     disposable.dispose();
   }
 

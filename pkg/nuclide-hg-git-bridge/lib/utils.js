@@ -29,11 +29,11 @@ export function getMultiRootFileChanges(
         if ((repository == null || repository.getType() !== 'hg')) {
           return null;
         }
-        return rootPath;
+        return nuclideUri.ensureTrailingSeparator(rootPath);
       }),
     );
   } else {
-    roots = rootPaths;
+    roots = rootPaths.map(root => nuclideUri.ensureTrailingSeparator(root));
   }
 
   const sortedFilePaths = Array.from(fileChanges.entries())

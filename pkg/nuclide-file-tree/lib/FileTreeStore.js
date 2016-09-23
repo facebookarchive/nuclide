@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {FileChangeStatusValue} from '../../nuclide-hg-git-bridge/lib/constants';
+
 import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeHgHelpers from './FileTreeHgHelpers';
@@ -16,6 +18,7 @@ import {FileTreeNode} from './FileTreeNode';
 import Immutable from 'immutable';
 import {ActionType} from './FileTreeConstants';
 import {Emitter} from 'atom';
+import {HgStatusToFileChangeStatus} from '../../nuclide-hg-git-bridge/lib/constants';
 import {matchesFilter} from './FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
@@ -57,6 +60,7 @@ export type StoreConfigData = {
     openFilesWorkingSet: WorkingSet,
     reposByRoot: {[rootUri: NuclideUri]: atom$Repository},
     editedWorkingSet: WorkingSet,
+    fileChanges: Immutable.Map<NuclideUri, Immutable.Map<NuclideUri, FileChangeStatusValue>>,
 };
 
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';
@@ -73,6 +77,7 @@ const DEFAULT_CONF = {
   isEditingWorkingSet: false,
   openFilesWorkingSet: new WorkingSet(),
   reposByRoot: {},
+  fileChanges: new Immutable.Map(),
 };
 
 let instance: ?Object;
@@ -326,6 +331,7 @@ export class FileTreeStore {
         this._setIgnoredNames(payload.ignoredNames);
         break;
       case ActionType.SET_VCS_STATUSES:
+        this._setFileChanges(payload.rootKey, payload.vcsStatuses);
         this._setVcsStatuses(payload.rootKey, payload.vcsStatuses);
         break;
       case ActionType.SET_REPOSITORIES:
@@ -592,6 +598,27 @@ export class FileTreeStore {
    */
   isEmpty(): boolean {
     return this.roots.isEmpty();
+  }
+
+  getFileChanges(): Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>> {
+    return this._conf.fileChanges;
+  }
+
+  _setFileChanges(
+    rootKey: NuclideUri,
+    vcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
+  ): void {
+    const fileChanges = new Map();
+    Object.keys(vcsStatuses).forEach(filePath => {
+      const statusCode = vcsStatuses[filePath];
+      fileChanges.set(filePath, HgStatusToFileChangeStatus[statusCode]);
+    });
+
+    this._updateConf(conf => {
+      conf.fileChanges = fileChanges.size > 0
+        ? conf.fileChanges.set(rootKey, fileChanges)
+        : conf.fileChanges.remove(rootKey);
+    });
   }
 
   _setVcsStatuses(

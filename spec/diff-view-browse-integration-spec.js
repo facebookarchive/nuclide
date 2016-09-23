@@ -117,7 +117,8 @@ describe('Diff View Browse Mode Integration Test', () => {
       );
       const treeRoots = treeElement.querySelectorAll('.nuclide-file-changes-root-entry');
       expect(treeRoots.length).toBe(1);
-      expect(uiTreePath(({currentTarget: treeRoots[0]}: any))).toBe(localRepoPath);
+      expect(uiTreePath(({currentTarget: treeRoots[0]}: any)))
+        .toBe(nuclideUri.ensureTrailingSeparator(localRepoPath));
     });
   });
 });

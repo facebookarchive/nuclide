@@ -9,6 +9,16 @@
  * the root directory of this source tree.
  */
 
+import type {
+  StatusCodeNumberValue,
+} from '../../nuclide-hg-rpc/lib/HgService';
+
+import {
+ hgConstants,
+} from '../../nuclide-hg-rpc';
+
+const {StatusCodeNumber: HgStatusCodeNumber} = hgConstants;
+
 export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
 
 export const FileChangeStatus = Object.freeze({
@@ -40,3 +50,13 @@ export const RevertibleStatusCodes = [
   FileChangeStatus.MODIFIED,
   FileChangeStatus.REMOVED,
 ];
+
+export const HgStatusToFileChangeStatus
+  : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = Object.freeze({
+    [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
+    [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
+    [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,
+    [HgStatusCodeNumber.REMOVED]: FileChangeStatus.REMOVED,
+    [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED,
+  },
+);

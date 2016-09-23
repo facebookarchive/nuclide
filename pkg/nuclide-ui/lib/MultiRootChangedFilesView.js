@@ -30,6 +30,7 @@ type ChangedFilesProps = {
   fileChanges: Map<NuclideUri, FileChangeStatusValue>,
   rootPath: NuclideUri,
   selectedFile: ?NuclideUri,
+  hideEmptyFolders: boolean,
   onFileChosen: (filePath: NuclideUri) => void,
 };
 
@@ -62,8 +63,12 @@ class ChangedFilesView extends React.Component {
     );
   }
 
-  render(): React.Element<any> {
+  render(): ?React.Element<any> {
     const {fileChanges} = this.props;
+    if (fileChanges.size === 0 && this.props.hideEmptyFolders) {
+      return null;
+    }
+
     const rootClassName = classnames('list-nested-item', {
       collapsed: this.state.isCollapsed,
     });
@@ -108,6 +113,7 @@ type Props = {
   fileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
   commandPrefix: string,
   selectedFile: ?NuclideUri,
+  hideEmptyFolders?: boolean,
   onFileChosen: (filePath: NuclideUri) => void,
 };
 
@@ -231,6 +237,7 @@ export class MultiRootChangedFilesView extends React.Component {
             fileChanges={fileChanges}
             rootPath={root}
             selectedFile={this.props.selectedFile}
+            hideEmptyFolders={this.props.hideEmptyFolders}
             onFileChosen={this.props.onFileChosen}
           />,
         )}

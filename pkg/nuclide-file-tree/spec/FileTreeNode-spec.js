@@ -17,6 +17,7 @@ import {WorkingSet} from '../../nuclide-working-sets-common';
 
 const CONF = {
   vcsStatuses: new Immutable.Map(),
+  fileChanges: new Immutable.Map(),
   workingSet: new WorkingSet(),
   editedWorkingSet: new WorkingSet(),
   hideIgnoredNames: true,
