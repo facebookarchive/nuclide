@@ -31,6 +31,9 @@ import os from 'os';
 
 const logger = getLogger();
 
+// Tag these Buck calls as coming from Nuclide for analytics purposes.
+const CLIENT_ID_ARGS = ['--config', 'client.id=nuclide'];
+
 export type dontRunOptions = {
   run: false,
 };
@@ -175,14 +178,16 @@ function _runBuckCommandFromProjectRoot(
   rootPath: string,
   args: Array<string>,
   commandOptions?: AsyncExecuteOptions,
+  addClientId?: boolean = true,
   readOnly?: boolean = true,
 ): Promise<{stdout: string, stderr: string, exitCode?: number}> {
   const {pathToBuck, buckCommandOptions: options} =
     _getBuckCommandAndOptions(rootPath, commandOptions);
 
-  logger.debug('Buck command:', pathToBuck, args, options);
+  const newArgs = addClientId ? args.concat(CLIENT_ID_ARGS) : args;
+  logger.debug('Buck command:', pathToBuck, newArgs, options);
   return getPool(rootPath, readOnly).submitFunction(
-    () => checkOutput(pathToBuck, args, options),
+    () => checkOutput(pathToBuck, newArgs, options),
   );
 }
 
@@ -314,6 +319,7 @@ async function _build(
       rootPath,
       args,
       options.commandOptions,
+      false,  // Do not add the client ID, since we already do it in the build args.
       true,   // Build commands are blocking.
     );
   } catch (e) {
@@ -443,7 +449,7 @@ function _translateOptionsToBuckBuildArgs(options: FullBuckBuildOptions): Array<
   const runOptions = baseOptions.runOptions || {run: false};
 
   let args = [test ? 'test' : (doInstall ? 'install' : 'build')];
-  args = args.concat(buildTargets);
+  args = args.concat(buildTargets, CLIENT_ID_ARGS);
 
   args.push('--keep-going');
   if (pathToBuildReport) {
