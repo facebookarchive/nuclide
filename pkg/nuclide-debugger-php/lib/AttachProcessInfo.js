@@ -43,6 +43,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   }
 
   customControlButtons(): Array<ControlButtonSpecification> {
+    try {
+      // $FlowFB
+      return require('./fb/services').customControlButtons;
+    } catch (_) {}
     return [];
   }
 }
