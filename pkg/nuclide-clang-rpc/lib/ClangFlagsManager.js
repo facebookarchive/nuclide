@@ -23,7 +23,7 @@ import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';
 
 const logger = getLogger();
 
-const BUCK_TIMEOUT = 5 * 60 * 1000;
+const BUCK_TIMEOUT = 10 * 60 * 1000;
 
 const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 /**
@@ -278,12 +278,11 @@ class ClangFlagsManager {
       arch = 'default';
     }
     const buildTarget = target + '#compilation-database,' + arch;
-    // Since this is a background process, limit the number of threads to avoid
-    // impacting the user too badly.
-    const maxCpus = Math.ceil(os.cpus().length / 2);
+    // Since this is a background process, avoid stressing the system.
+    const maxLoad = os.cpus().length / 2;
     const buildReport = await BuckService.build(
       buckProjectRoot,
-      [buildTarget, '-j', String(maxCpus)],
+      [buildTarget, '-L', String(maxLoad)],
       {commandOptions: {timeout: BUCK_TIMEOUT}},
     );
     if (!buildReport.success) {
