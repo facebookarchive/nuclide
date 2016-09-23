@@ -16,6 +16,7 @@ import * as Actions from './Actions';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
 import xfetch from '../../commons-node/xfetch';
+import {track} from '../../nuclide-analytics';
 
 export function sendHttpRequest(
   actions: ActionsObservable<Action>,
@@ -29,6 +30,7 @@ export function sendHttpRequest(
       const options = method === 'POST'
         ? {method, credentials, headers, body}
         : {method, credentials, headers};
+      track('nuclide-http-request-sender:http-request', {uri, options});
       xfetch(uri, options);
     })
     // This epic is just for side-effects.

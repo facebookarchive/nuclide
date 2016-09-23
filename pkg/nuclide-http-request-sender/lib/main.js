@@ -22,6 +22,7 @@ import * as Reducers from './Reducers';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import {Observable} from 'rxjs';
 import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
+import {track} from '../../nuclide-analytics';
 
 export type HttpRequestSenderApi = {
   updateRequestEditDialogDefaults(defaults: PartialAppState): void,
@@ -56,9 +57,13 @@ class Activation {
     this._disposables = new CompositeDisposable(
       atom.commands.add('atom-workspace', {
         'nuclide-http-request-sender:toggle-http-request-edit-dialog': () => {
+          track('nuclide-http-request-sender:toggle-http-request-edit-dialog');
           this._toggleRequestEditDialog();
         },
-        'nuclide-http-request-sender:send-http-request': this._actionCreators.sendHttpRequest,
+        'nuclide-http-request-sender:send-http-request': () => {
+          track('nuclide-http-request-sender:send-http-request');
+          this._actionCreators.sendHttpRequest();
+        },
       }),
     );
   }
