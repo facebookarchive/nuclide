@@ -12,6 +12,8 @@ import type {Task} from '../../commons-node/tasks';
 import type {Directory} from '../../nuclide-remote-connection';
 
 export type AppState = {
+  // The explicitly selected task. If we're using a fallback, this will be null. Always use the
+  // `getActiveTaskId` selector to get the value.
   activeTaskId: ?TaskId,
   taskRunners: Map<string, TaskRunner>,
   previousSessionActiveTaskId: ?TaskId,

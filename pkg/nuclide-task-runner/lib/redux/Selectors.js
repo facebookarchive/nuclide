@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {AppState, TaskId, TaskRunner} from '../types';
+import type {AnnotatedTaskMetadata, AppState, TaskId, TaskRunner} from '../types';
 
 export function getActiveTaskId(state: AppState): ?TaskId {
-  return state.activeTaskId;
+  return state.activeTaskId || getFirstTask(state.taskLists);
 }
 
 export function getActiveTaskRunner(state: AppState): ?TaskRunner {
@@ -21,4 +21,22 @@ export function getActiveTaskRunner(state: AppState): ?TaskRunner {
   return activeTaskRunnerId == null
     ? null
     : state.taskRunners.get(activeTaskRunnerId);
+}
+
+function getFirstTask(
+  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
+): ?AnnotatedTaskMetadata {
+  let candidate;
+  for (const taskList of taskLists.values()) {
+    for (const taskMeta of taskList) {
+      // For backwards compat, we don't (currently) require that the "disabled" property be present,
+      // but we prefer tasks that have it.
+      if (taskMeta.disabled === false) {
+        return taskMeta;
+      } else if (!taskMeta.disabled) {
+        candidate = taskMeta;
+      }
+    }
+  }
+  return candidate;
 }

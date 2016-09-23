@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Action, AnnotatedTaskMetadata, AppState} from '../types';
+import type {Action, AppState} from '../types';
 
 import {arrayEqual} from '../../../commons-node/collection';
 import * as Actions from './Actions';
@@ -142,12 +142,9 @@ export function app(state: AppState, action: Action): AppState {
  */
 function validateActiveTask(state: AppState): AppState {
   if (activeTaskIsValid(state)) { return state; }
-  const firstTask = getFirstTask(state.taskLists);
   return {
     ...state,
-    activeTaskId: firstTask == null
-      ? null
-      : {type: firstTask.type, taskRunnerId: firstTask.taskRunnerId},
+    activeTaskId: null,
     // Remember what we really wanted, so we can return to it later.
     previousSessionActiveTaskId: state.previousSessionActiveTaskId || state.activeTaskId,
   };
@@ -171,23 +168,4 @@ function activeTaskIsValid(state: AppState): boolean {
     }
   }
   return false;
-}
-
-function getFirstTask(
-  taskLists: Map<string,
-  Array<AnnotatedTaskMetadata>>,
-): ?AnnotatedTaskMetadata {
-  let candidate;
-  for (const taskList of taskLists.values()) {
-    for (const taskMeta of taskList) {
-      // For backwards compat, we don't (currently) require that the "disabled" property be present,
-      // but we prefer tasks that have it.
-      if (taskMeta.disabled === false) {
-        return taskMeta;
-      } else if (!taskMeta.disabled) {
-        candidate = taskMeta;
-      }
-    }
-  }
-  return candidate;
 }
