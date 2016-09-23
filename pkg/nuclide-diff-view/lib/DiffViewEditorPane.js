@@ -12,12 +12,13 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {HighlightedLines, OffsetMap, UIElement} from './types';
 
-import {CompositeDisposable} from 'atom';
 import {arrayEqual, mapEqual} from '../../commons-node/collection';
 import {React} from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
 import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
 import invariant from 'assert';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {Observable} from 'rxjs';
 
 type Props = {
   filePath: NuclideUri,
@@ -38,15 +39,15 @@ export default class DiffViewEditorPane extends React.Component {
   props: Props;
 
   _diffViewEditor: ?DiffViewEditor;
-  _subscriptions: CompositeDisposable;
-  _editorSubscriptions: ?CompositeDisposable;
+  _subscriptions: UniversalDisposable;
+  _editorSubscriptions: ?UniversalDisposable;
   // TODO(most): move async code out of the view and deprecate the usage of `_isMounted`.
   // All view changes should be pushed from the model/store through subscriptions.
   _isMounted: boolean;
 
   constructor(props: Props) {
     super(props);
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new UniversalDisposable();
     this._isMounted = false;
   }
 
@@ -56,7 +57,7 @@ export default class DiffViewEditorPane extends React.Component {
   }
 
   _setupDiffEditor(): void {
-    const editorSubscriptions = this._editorSubscriptions = new CompositeDisposable();
+    const editorSubscriptions = this._editorSubscriptions = new UniversalDisposable();
     this._subscriptions.add(editorSubscriptions);
 
     const editorDomElement = this.getEditorDomElement();
@@ -81,9 +82,10 @@ export default class DiffViewEditorPane extends React.Component {
       );
     }
 
-    if (this.props.onDidUpdateTextEditorElement) {
-      this.props.onDidUpdateTextEditorElement();
-    }
+    this.props.onDidUpdateTextEditorElement();
+    // TODO(most): Fix by listening to text editor rendering.
+    editorSubscriptions.add(Observable.interval(100).first()
+      .subscribe(() => this._setOffsets(this.props.offsets)));
   }
 
   componentWillUnmount(): void {
