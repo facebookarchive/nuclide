@@ -13,8 +13,8 @@ import type {Store, TaskRunner} from '../types';
 
 import {bindObservableAsProps} from '../../../nuclide-ui/lib/bindObservableAsProps';
 import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
-import {getActiveTaskRunner} from '../getActiveTaskRunner';
 import * as Actions from '../redux/Actions';
+import {getActiveTaskRunner} from '../redux/Selectors';
 import {Toolbar} from './Toolbar';
 import memoize from 'lodash.memoize';
 import {React} from 'react-for-atom';

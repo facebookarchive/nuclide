@@ -14,8 +14,8 @@ import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
 import {observableFromTask} from '../../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
-import {getActiveTaskRunner} from '../getActiveTaskRunner';
 import {getTaskMetadata} from '../getTaskMetadata';
+import {getActiveTaskRunner} from '../redux/Selectors';
 import * as Actions from './Actions';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
