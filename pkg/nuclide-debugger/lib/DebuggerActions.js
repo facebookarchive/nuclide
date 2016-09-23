@@ -52,6 +52,8 @@ const GK_DEBUGGER_REQUEST_WINDOW = 'nuclide_debugger_php_request_window';
 const GK_DEBUGGER_THREADS_WINDOW = 'nuclide_debugger_threads_window';
 const GK_DEBUGGER_CONSOLE_WINDOW = 'nuclide_debugger_console_window';
 const GK_DEBUGGER_SINGLE_THREAD_STEPPING = 'nuclide_debugger_single_thread_stepping';
+const GK_DEBUGGER_REQUEST_SENDER = 'nuclide_debugger_request_sender';
+
 /**
  * Flux style action creator for actions that affect the debugger.
  */
@@ -92,9 +94,11 @@ class DebuggerActions {
         const singleThreadSteppingEnabled = processInfo.singleThreadSteppingEnabled();
         this.toggleSingleThreadStepping(singleThreadSteppingEnabled);
       }
-      const customControlButtons = processInfo.customControlButtons();
-      if (customControlButtons.length > 0) {
-        this.addControlButtons(customControlButtons);
+      if (processInfo.getServiceName() !== 'hhvm' || await passesGK(GK_DEBUGGER_REQUEST_SENDER)) {
+        const customControlButtons = processInfo.customControlButtons();
+        if (customControlButtons.length > 0) {
+          this.addControlButtons(customControlButtons);
+        }
       }
       await this._waitForChromeConnection(debuggerInstance);
     } catch (err) {
