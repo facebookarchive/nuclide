@@ -14,7 +14,7 @@ import type {Store, TaskRunner} from '../types';
 import {bindObservableAsProps} from '../../../nuclide-ui/lib/bindObservableAsProps';
 import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
 import * as Actions from '../redux/Actions';
-import {getActiveTaskRunner} from '../redux/Selectors';
+import {getActiveTaskId, getActiveTaskRunner} from '../redux/Selectors';
 import {Toolbar} from './Toolbar';
 import memoize from 'lodash.memoize';
 import {React} from 'react-for-atom';
@@ -43,7 +43,7 @@ export function createPanelItem(store: Store): Object {
         taskRunnerInfo: Array.from(state.taskRunners.values()),
         getExtraUi: getExtraUiFactory(activeTaskRunner),
         progress: state.runningTaskInfo && state.runningTaskInfo.progress,
-        activeTaskId: state.activeTaskId,
+        activeTaskId: getActiveTaskId(state),
         taskIsRunning: state.runningTaskInfo != null,
         taskLists: state.taskLists,
       };

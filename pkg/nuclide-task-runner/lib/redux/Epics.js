@@ -15,7 +15,7 @@ import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import {observableFromTask} from '../../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {getTaskMetadata} from '../getTaskMetadata';
-import {getActiveTaskRunner} from '../redux/Selectors';
+import {getActiveTaskId, getActiveTaskRunner} from '../redux/Selectors';
 import * as Actions from './Actions';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -58,7 +58,7 @@ export function runTaskEpic(
   return actions.ofType(Actions.RUN_TASK)
     .switchMap(action => {
       invariant(action.type === Actions.RUN_TASK);
-      const taskToRun = action.payload.taskId || store.getState().activeTaskId;
+      const taskToRun = action.payload.taskId || getActiveTaskId(store.getState());
 
       // Don't do anything if there's no active task.
       if (taskToRun == null) { return Observable.empty(); }

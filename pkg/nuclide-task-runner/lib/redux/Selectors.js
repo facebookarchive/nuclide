@@ -9,10 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {AppState, TaskRunner} from '../types';
+import type {AppState, TaskId, TaskRunner} from '../types';
+
+export function getActiveTaskId(state: AppState): ?TaskId {
+  return state.activeTaskId;
+}
 
 export function getActiveTaskRunner(state: AppState): ?TaskRunner {
-  const activeTaskRunnerId = state.activeTaskId && state.activeTaskId.taskRunnerId;
+  const activeTaskId = getActiveTaskId(state);
+  const activeTaskRunnerId = activeTaskId && activeTaskId.taskRunnerId;
   return activeTaskRunnerId == null
     ? null
     : state.taskRunners.get(activeTaskRunnerId);

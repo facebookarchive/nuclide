@@ -35,6 +35,7 @@ import {trackEvent} from '../../nuclide-analytics';
 import {createEmptyAppState} from './createEmptyAppState';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
+import {getActiveTaskId} from './redux/Selectors';
 import * as Reducers from './redux/Reducers';
 import {createPanelItem} from './ui/createPanelItem';
 import invariant from 'assert';
@@ -291,12 +292,13 @@ function trackTaskAction(
     ? task.getTrackingData()
     : {};
   const error = action.type === Actions.TASK_ERRORED ? action.payload.error : null;
+  const activeTaskId = getActiveTaskId(state);
   trackEvent({
     type,
     data: {
       ...taskTrackingData,
-      taskRunnerId: state.activeTaskId && state.activeTaskId.taskRunnerId,
-      taskType: state.activeTaskId && state.activeTaskId.type,
+      taskRunnerId: activeTaskId && activeTaskId.taskRunnerId,
+      taskType: activeTaskId && activeTaskId.type,
       errorMessage: error != null ? error.message : null,
       stackTrace: error != null ? String(error.stack) : null,
     },
