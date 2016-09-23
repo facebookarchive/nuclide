@@ -42,6 +42,7 @@ type Props = {
   size?: 'xs' | 'sm' | 'lg',
   unstyled: boolean,
   width?: ?number,
+  value?: string,
 };
 
 type State = {
@@ -70,8 +71,9 @@ export class AtomInput extends React.Component {
 
   constructor(props: Props) {
     super(props);
+    const value = props.value == null ? props.initialValue : props.value;
     this.state = {
-      value: props.initialValue,
+      value,
     };
   }
 
@@ -121,9 +123,14 @@ export class AtomInput extends React.Component {
     this._updateWidth();
   }
 
-  componentWillReceiveProps(nextProps: Object): void {
+  componentWillReceiveProps(nextProps: Props): void {
     if (nextProps.disabled !== this.props.disabled) {
       this._updateDisabledState(nextProps.disabled);
+    }
+    const {value} = nextProps;
+    if (typeof value === 'string' && value !== this.props.value) {
+      this.setState({value});
+      this.setText(value);
     }
   }
 
