@@ -74,5 +74,9 @@
   {
     "implementation": "../nuclide-debugger-native-rpc/lib/NativeDebuggerService.js",
     "name": "NativeDebuggerService"
+  },
+  {
+    "implementation": "../nuclide-debugger-node-rpc/lib/NodeDebuggerService.js",
+    "name": "NodeDebuggerService"
   }
 ]

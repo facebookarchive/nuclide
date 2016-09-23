@@ -10,7 +10,14 @@
  */
 
 import invariant from 'assert';
+import {ConnectableObservable} from 'rxjs';
+import WS from 'ws';
+import {CompositeDisposable, Disposable} from 'event-kit';
 import {checkOutput} from '../../commons-node/process';
+import utils from './utils';
+const {logInfo} = utils;
+import {ClientCallback} from '../../nuclide-debugger-common';
+import {NodeDebuggerHost} from './NodeDebuggerHost';
 
 export type NodeAttachTargetInfo = {
   pid: number,
@@ -62,4 +69,71 @@ export async function getAttachTargetInfoList(): Promise<Array<NodeAttachTargetI
       commandName,
     };
   });
+}
+
+export class NodeDebuggerService {
+  _subscriptions: CompositeDisposable;
+  _clientCallback: ClientCallback;
+  _debuggerHost: NodeDebuggerHost;
+  _webSocketClientToNode: ?WS;
+
+  constructor() {
+    this._clientCallback = new ClientCallback();
+    this._debuggerHost = new NodeDebuggerHost();
+    this._webSocketClientToNode = null;
+    this._subscriptions = new CompositeDisposable(
+      this._clientCallback,
+      this._debuggerHost,
+    );
+  }
+
+  getServerMessageObservable(): ConnectableObservable<string> {
+    return this._clientCallback.getServerMessageObservable().publish();
+  }
+
+  async sendCommand(message: string): Promise<void> {
+    const nodeWebSocket = this._webSocketClientToNode;
+    if (nodeWebSocket != null) {
+      logInfo(`forward client message to node debugger: ${message}`);
+      nodeWebSocket.send(message);
+    } else {
+      logInfo(`Nuclide sent message to node debugger after socket closed: ${message}`);
+    }
+  }
+
+  async attach(attachInfo: NodeAttachTargetInfo): Promise<void> {
+    // Enable debugging in the process.
+    process.kill(attachInfo.pid, 'SIGUSR1');
+    const serverAddress = this._debuggerHost.start();
+    const websocket = await this._connectWithDebuggerHost(serverAddress);
+    websocket.on('message', this._handleNodeDebuggerMessage.bind(this));
+    websocket.on('close', this._handleNodeDebuggerClose.bind(this));
+    this._webSocketClientToNode = websocket;
+  }
+
+  async _connectWithDebuggerHost(serverAddress: string): Promise<WS> {
+    logInfo(`Connecting debugger host with address: ${serverAddress}`);
+    const ws = new WS(serverAddress);
+    this._subscriptions.add(new Disposable(() => ws.terminate()));
+    return new Promise((resolve, reject) => {
+      ws.on('open', () => {
+        // Successfully connected with debugger host, fulfill the promise.
+        resolve(ws);
+      });
+      ws.on('error', error => reject(error));
+    });
+  }
+
+  _handleNodeDebuggerMessage(message: string): void {
+    logInfo(`Node debugger message: ${message}`);
+    this._clientCallback.sendChromeMessage(message);
+  }
+
+  _handleNodeDebuggerClose(): void {
+    this.dispose();
+  }
+
+  async dispose(): Promise<void> {
+    this._subscriptions.dispose();
+  }
 }
