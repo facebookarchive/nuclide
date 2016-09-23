@@ -432,6 +432,13 @@ class FileTreeActions {
     });
   }
 
+  setUncommittedChangesExpanded(uncommittedChangesExpanded: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_UNCOMMITTED_CHANGES_EXPANDED,
+      uncommittedChangesExpanded,
+    });
+  }
+
   async _repositoryAdded(
     repo: atom$GitRepository | HgRepositoryClient,
     rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,

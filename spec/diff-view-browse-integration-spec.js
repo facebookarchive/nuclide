@@ -116,9 +116,7 @@ describe('Diff View Browse Mode Integration Test', () => {
         nuclideUri.join(localRepoPath, 'untracked.txt'),
       );
       const treeRoots = treeElement.querySelectorAll('.nuclide-file-changes-root-entry');
-      expect(treeRoots.length).toBe(1);
-      expect(uiTreePath(({currentTarget: treeRoots[0]}: any)))
-        .toBe(nuclideUri.ensureTrailingSeparator(localRepoPath));
+      expect(treeRoots.length).toBe(0);
     });
   });
 });

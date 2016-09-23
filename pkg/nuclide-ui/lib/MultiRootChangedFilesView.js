@@ -31,6 +31,7 @@ type ChangedFilesProps = {
   rootPath: NuclideUri,
   selectedFile: ?NuclideUri,
   hideEmptyFolders: boolean,
+  shouldShowFolderName: boolean,
   onFileChosen: (filePath: NuclideUri) => void,
 };
 
@@ -76,16 +77,19 @@ class ChangedFilesView extends React.Component {
     return (
       <ul className="list-tree has-collapsable-children">
         <li className={rootClassName}>
-          <div
-            className="list-item"
-            key={this.props.rootPath}
-            onClick={() => this.setState({isCollapsed: !this.state.isCollapsed})}>
-            <span
-              className="icon icon-file-directory nuclide-file-changes-root-entry"
-              data-path={this.props.rootPath}>
-              {nuclideUri.basename(this.props.rootPath)}
-            </span>
-          </div>
+          {this.props.shouldShowFolderName ?
+            <div
+              className="list-item"
+              key={this.props.rootPath}
+              onClick={() => this.setState({isCollapsed: !this.state.isCollapsed})}>
+              <span
+                className="icon icon-file-directory nuclide-file-changes-root-entry"
+                data-path={this.props.rootPath}>
+                {nuclideUri.basename(this.props.rootPath)}
+              </span>
+            </div> :
+            null
+          }
           <ul className="list-tree has-flat-children">
             {Array.from(fileChanges.entries()).map(
               ([filePath, fileChangeValue]) =>
@@ -238,6 +242,7 @@ export class MultiRootChangedFilesView extends React.Component {
             rootPath={root}
             selectedFile={this.props.selectedFile}
             hideEmptyFolders={this.props.hideEmptyFolders}
+            shouldShowFolderName={this.props.fileChanges.size > 1}
             onFileChosen={this.props.onFileChosen}
           />,
         )}

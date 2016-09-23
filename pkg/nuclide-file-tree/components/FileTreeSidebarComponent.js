@@ -24,9 +24,10 @@ import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {OpenFilesListComponent} from './OpenFilesListComponent';
 import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
-
+import {MultiRootChangedFilesView} from '../../nuclide-ui/lib/MultiRootChangedFilesView';
 import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
 import {toggle} from '../../commons-node/observable';
+import url from 'url';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {Section} from '../../nuclide-ui/lib/Section';
@@ -37,6 +38,7 @@ type State = {
   scrollerHeight: number,
   scrollerScrollTop: number,
   showOpenFiles: boolean,
+  showUncommittedChanges: boolean,
   openFilesUris: Array<NuclideUri>,
   modifiedUris: Array<NuclideUri>,
   activeUri: ?NuclideUri,
@@ -47,6 +49,7 @@ type Props = {
 };
 
 const SHOW_OPEN_FILE_CONFIG_KEY = 'nuclide-file-tree.showOpenFiles';
+const SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY = 'nuclide-file-tree.showUncommittedChanges';
 
 class FileTreeSidebarComponent extends React.Component {
   _actions: FileTreeActions;
@@ -54,6 +57,7 @@ class FileTreeSidebarComponent extends React.Component {
   _disposables: CompositeDisposable;
   _afRequestId: ?number;
   _showOpenConfigValues: Observable<boolean>;
+  _showUncommittedConfigValue: Observable<boolean>;
   _scrollWasTriggeredProgrammatically: boolean;
   state: State;
   props: Props;
@@ -68,11 +72,14 @@ class FileTreeSidebarComponent extends React.Component {
       scrollerHeight: 0,
       scrollerScrollTop: 0,
       showOpenFiles: true,
+      showUncommittedChanges: true,
       openFilesUris: [],
       modifiedUris: [],
       activeUri: null,
     };
     this._showOpenConfigValues = featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY).cache(1);
+    this._showUncommittedConfigValue =
+      featureConfig.observeAsStream(SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY).cache(1);
 
     this._disposables = new CompositeDisposable();
     this._afRequestId = null;
@@ -83,6 +90,8 @@ class FileTreeSidebarComponent extends React.Component {
     (this: any)._scrollToPosition = this._scrollToPosition.bind(this);
     (this: any)._processExternalUpdate = this._processExternalUpdate.bind(this);
     (this: any)._handleOpenFilesExpandedChange = this._handleOpenFilesExpandedChange.bind(this);
+    (this: any)._handleUncommittedFilesExpandedChange =
+      this._handleUncommittedFilesExpandedChange.bind(this);
   }
 
   componentDidMount(): void {
@@ -104,6 +113,9 @@ class FileTreeSidebarComponent extends React.Component {
       this._monitorActiveUri(),
       new UniversalDisposable(
         this._showOpenConfigValues.subscribe(showOpenFiles => this.setState({showOpenFiles})),
+        this._showUncommittedConfigValue.subscribe(
+          showUncommittedChanges => this.setState({showUncommittedChanges}),
+        ),
       ),
       new Disposable(() => {
         window.removeEventListener('resize', this._onViewChange);
@@ -150,9 +162,34 @@ class FileTreeSidebarComponent extends React.Component {
       ];
     }
 
+    let uncommittedChangesSection;
+    const fileChanges = this._store.getFileChanges();
+
+    if (this.state.showUncommittedChanges && fileChanges.size > 0) {
+      const uncommittedChangesList = (
+        <MultiRootChangedFilesView
+          commandPrefix="file-tree-sidebar"
+          fileChanges={this._store.getFileChanges()}
+          selectedFile={this.state.activeUri}
+          hideEmptyFolders={true}
+          onFileChosen={this._onFileChosen}
+        />
+      );
+
+      uncommittedChangesSection =
+        <Section
+          className="nuclide-file-tree-section-caption"
+          collapsable={true}
+          collapsed={!this._store.uncommittedChangesExpanded}
+          headline="UNCOMMITTED CHANGES"
+          onChange={this._handleUncommittedFilesExpandedChange}
+          size="small">
+          {uncommittedChangesList}
+        </Section>;
+    }
+
     let openFilesSection = null;
     let openFilesList = null;
-    let foldersCaption = null;
     if (this.state.showOpenFiles && this.state.openFilesUris.length > 0) {
       if (this._store.openFilesExpanded) {
         openFilesList = (
@@ -173,7 +210,10 @@ class FileTreeSidebarComponent extends React.Component {
           size="small">
           {openFilesList}
         </Section>;
+    }
 
+    let foldersCaption;
+    if (uncommittedChangesSection != null || openFilesSection != null) {
       foldersCaption =
         <Section className="nuclide-file-tree-section-caption" headline="FOLDERS" size="small" />;
     }
@@ -184,6 +224,7 @@ class FileTreeSidebarComponent extends React.Component {
         className="nuclide-file-tree-toolbar-container"
         onFocus={this._handleFocus}
         tabIndex={0}>
+        {uncommittedChangesSection}
         {openFilesSection}
         {toolbar}
         {foldersCaption}
@@ -215,8 +256,25 @@ class FileTreeSidebarComponent extends React.Component {
     }
   }
 
+  _onFileChosen(filePath: NuclideUri): void {
+    const diffEntityOptions = {file: filePath};
+    const formattedUrl = url.format({
+      protocol: 'atom',
+      host: 'nuclide',
+      pathname: 'diff-view',
+      slashes: true,
+      query: diffEntityOptions,
+    });
+
+    atom.workspace.open(formattedUrl);
+  }
+
   _handleOpenFilesExpandedChange(isCollapsed: boolean): void {
     this._actions.setOpenFilesExpanded(!isCollapsed);
+  }
+
+  _handleUncommittedFilesExpandedChange(isCollapsed: boolean): void {
+    this._actions.setUncommittedChangesExpanded(!isCollapsed);
   }
 
   _setModifiedUris(): void {

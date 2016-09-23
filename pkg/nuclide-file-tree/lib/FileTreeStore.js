@@ -47,6 +47,7 @@ export type ExportStoreData = {
   selectedKeysByRoot: { [key: string]: Array<string> },
   version: number,
   openFilesExpanded?: boolean,
+  uncommittedChangesExpanded?: boolean,
 };
 
 export type StoreConfigData = {
@@ -90,6 +91,7 @@ let instance: ?Object;
 export class FileTreeStore {
   roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>;
   openFilesExpanded: boolean;
+  uncommittedChangesExpanded: boolean;
 
   _conf: StoreConfigData; // The configuration for the file-tree. Avoid direct writing.
   _workingSetsStore: ?WorkingSetsStore;
@@ -138,6 +140,7 @@ export class FileTreeStore {
     this._suppressChanges = false;
     this._filter = '';
     this.openFilesExpanded = true;
+    this.uncommittedChangesExpanded = true;
   }
 
   /**
@@ -189,6 +192,7 @@ export class FileTreeStore {
       rootKeys,
       selectedKeysByRoot,
       openFilesExpanded: this.openFilesExpanded,
+      uncommittedChangesExpanded: this.uncommittedChangesExpanded,
     };
   }
 
@@ -233,6 +237,10 @@ export class FileTreeStore {
 
     if (data.openFilesExpanded != null) {
       this.openFilesExpanded = data.openFilesExpanded;
+    }
+
+    if (data.uncommittedChangesExpanded != null) {
+      this.uncommittedChangesExpanded = data.uncommittedChangesExpanded;
     }
 
     const normalizedAtomPaths = atom.project.getPaths().map(nuclideUri.ensureTrailingSeparator);
@@ -397,6 +405,9 @@ export class FileTreeStore {
         break;
       case ActionType.SET_OPEN_FILES_EXPANDED:
         this._setOpenFilesExpanded(payload.openFilesExpanded);
+        break;
+      case ActionType.SET_UNCOMMITTED_CHANGES_EXPANDED:
+        this._setUncommittedChangesExpanded(payload.uncommittedChangesExpanded);
         break;
     }
   }
@@ -1527,6 +1538,11 @@ export class FileTreeStore {
 
   _setOpenFilesExpanded(openFilesExpanded: boolean): void {
     this.openFilesExpanded = openFilesExpanded;
+    this._emitChange();
+  }
+
+  _setUncommittedChangesExpanded(uncommittedChangesExpanded: boolean): void {
+    this.uncommittedChangesExpanded = uncommittedChangesExpanded;
     this._emitChange();
   }
 

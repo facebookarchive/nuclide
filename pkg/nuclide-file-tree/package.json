@@ -60,6 +60,12 @@
         "type": "boolean",
         "default": true,
         "description": "Display a list of currently opened files in the top section of the tree"
+      },
+      "showUncommittedChanges": {
+        "title": "Show uncommitted changes",
+        "type": "boolean",
+        "default": true,
+        "description": "Display a list of uncommitted changes in the top section of the tree"
       }
     },
     "packageType": "Atom",

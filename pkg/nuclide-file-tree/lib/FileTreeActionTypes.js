@@ -174,6 +174,10 @@ export type FileTreeAction =
   {
     actionType: 'SET_OPEN_FILES_EXPANDED',
     openFilesExpanded: boolean,
+  } |
+  {
+    actionType: 'SET_UNCOMMITTED_CHANGES_EXPANDED',
+    uncommittedChangesExpanded: boolean,
   };
 
 import {ActionType} from './FileTreeConstants';
