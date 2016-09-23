@@ -14,6 +14,7 @@ import type {LinterProvider} from '../../nuclide-diagnostics-common';
 import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
+import type {RefactoringProvider} from './refactoring-api';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -24,6 +25,7 @@ import CodeFormatHelpers from './CodeFormatHelpers';
 import HyperclickHelpers from './HyperclickHelpers';
 import OutlineViewHelpers from './OutlineViewHelpers';
 import TypeHintHelpers from './TypeHintHelpers';
+import Refactoring from './Refactoring';
 import ClangLinter from './ClangLinter';
 import {GRAMMAR_SET, PACKAGE_NAME} from './constants';
 import {reset} from './libclang';
@@ -133,6 +135,18 @@ export function provideOutlineView(): OutlineProvider {
     updateOnEdit: false,
     getOutline(editor) {
       return OutlineViewHelpers.getOutline(editor);
+    },
+  };
+}
+
+export function provideRefactoring(): RefactoringProvider {
+  return {
+    grammarScopes: Array.from(GRAMMAR_SET),
+    refactoringsAtPoint(editor, point) {
+      return Refactoring.refactoringsAtPoint(editor, point);
+    },
+    refactor(request) {
+      return Refactoring.refactor(request);
     },
   };
 }

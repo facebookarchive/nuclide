@@ -12,7 +12,9 @@
 import type {
   ClangCompileResult,
   ClangCompletion,
+  ClangCursor,
   ClangDeclaration,
+  ClangLocalReferences,
   ClangOutlineTree,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 import typeof * as ClangService from '../../nuclide-clang-rpc';
@@ -113,6 +115,26 @@ module.exports = {
         .getDeclaration(src, editor.getText(), line, column, defaultFlags);
   },
 
+  getDeclarationInfo(
+    editor: atom$TextEditor,
+    line: number,
+    column: number,
+  ): Promise<?Array<ClangCursor>> {
+    const src = editor.getPath();
+    if (src == null) {
+      return Promise.resolve(null);
+    }
+    const defaultFlags = getDefaultFlags();
+
+    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
+    if (service == null) {
+      return Promise.resolve(null);
+    }
+
+    return service
+        .getDeclarationInfo(src, editor.getText(), line, column, defaultFlags);
+  },
+
   getOutline(editor: atom$TextEditor): Promise<?Array<ClangOutlineTree>> {
     const src = editor.getPath();
     if (src == null) {
@@ -125,6 +147,26 @@ module.exports = {
 
     return service
         .getOutline(src, editor.getText(), defaultFlags);
+  },
+
+  getLocalReferences(
+    editor: atom$TextEditor,
+    line: number,
+    column: number,
+  ): Promise<?ClangLocalReferences> {
+    const src = editor.getPath();
+    if (src == null) {
+      return Promise.resolve(null);
+    }
+    const defaultFlags = getDefaultFlags();
+
+    const service: ?ClangService = getServiceByNuclideUri('ClangService', src);
+    if (service == null) {
+      return Promise.resolve(null);
+    }
+
+    return service
+        .getLocalReferences(src, editor.getText(), line, column, defaultFlags);
   },
 
   async formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{
