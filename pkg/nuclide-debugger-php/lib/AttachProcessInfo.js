@@ -43,10 +43,19 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   }
 
   customControlButtons(): Array<ControlButtonSpecification> {
+    const customControlButtons = [{
+      icon: 'link-external',
+      title: 'Toggle HTTP Request Sender',
+      onClick: () => atom.commands.dispatch(
+        atom.views.getView(atom.workspace),
+        'nuclide-http-request-sender:toggle-http-request-edit-dialog',
+      ),
+    }];
     try {
       // $FlowFB
-      return require('./fb/services').customControlButtons;
-    } catch (_) {}
-    return [];
+      return customControlButtons.concat(require('./fb/services').customControlButtons);
+    } catch (_) {
+      return customControlButtons;
+    }
   }
 }
