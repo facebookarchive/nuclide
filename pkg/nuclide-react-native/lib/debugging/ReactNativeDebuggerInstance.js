@@ -16,7 +16,7 @@ import {DebuggerProxyClient} from './DebuggerProxyClient';
 import {Observable} from 'rxjs';
 import WS from 'ws';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {Session} from '../../../nuclide-debugger-node/lib/Session';
+import {Session} from '../../../nuclide-debugger-node-rpc/lib/Session';
 
 const PORT = 38913;
 
