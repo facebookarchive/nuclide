@@ -27,7 +27,7 @@ describe('findWholeRangeOfSymbol', () => {
     const text = 'name';
     const spelling = 'name';
     const textRangeInSample = new Range([8, 31], [8, 35]);
-    const extent = {start: {line: 8, column: 31}, end: {line: 8, column: 35}};
+    const extent = new Range([8, 31], [8, 35]);
     const ranges = findWholeRangeOfSymbol(editor, text, textRangeInSample, spelling, extent);
     // The range returned should just be the range of the original text.
     expect(ranges).toEqualAtomRanges([textRangeInSample]);
@@ -37,7 +37,7 @@ describe('findWholeRangeOfSymbol', () => {
     const text = 'name';
     const spelling = 'namespace::name';
     const textRangeInSample = new Range([8, 31], [8, 35]);
-    const extent = {start: {line: 8, column: 31}, end: {line: 8, column: 35}};
+    const extent = new Range([8, 31], [8, 35]);
     const ranges = findWholeRangeOfSymbol(editor, text, textRangeInSample, spelling, extent);
     expect(ranges).toEqualAtomRanges([textRangeInSample]);
   });
@@ -46,7 +46,7 @@ describe('findWholeRangeOfSymbol', () => {
     const text = 'cStringUsingEncoding';
     const spelling = 'cStringUsingEncoding:';
     const textRangeInSample = new Range([12, 39], [12, 59]);
-    const extent = {start: {line: 12, column: 35}, end: {line: 12, column: 83}};
+    const extent = new Range([12, 35], [12, 83]);
     const ranges = findWholeRangeOfSymbol(editor, text, textRangeInSample, spelling, extent);
     // The range returned should just be the range of the original text + 1 for the colon.
     const expectedRange = new Range(textRangeInSample.start, [12, 60]);
@@ -66,7 +66,7 @@ describe('findWholeRangeOfSymbol', () => {
     // location of textRangeInSample4 + 1 colon
     const expectedRange4 = new Range([19, 46], [19, 52]);
     const expectedRanges = [expectedRange1, expectedRange2, expectedRange3, expectedRange4];
-    const extent = {start: {line: 17, column: 6}, end: {line: 19, column: 56}};
+    const extent = Range.fromObject({start: {row: 17, column: 6}, end: {row: 19, column: 56}});
 
     const text1 = 'createDirectoryAtPath';
     const textRangeInSample1 = new Range([17, 20], [17, 41]);

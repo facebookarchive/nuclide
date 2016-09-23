@@ -26,10 +26,7 @@ describe('TypeHintHelpers', () => {
     waitsForPromise(async () => {
       mockDeclaration = {
         type: 'test',
-        extent: {
-          start: {line: 0, column: 0},
-          end: {line: 1, column: 1},
-        },
+        extent: new Range([0, 0], [1, 1]),
       };
 
       const hint = await TypeHintHelpers.typeHint(mockEditor, new Point(0, 0));
@@ -44,10 +41,7 @@ describe('TypeHintHelpers', () => {
     waitsForPromise(async () => {
       mockDeclaration = {
         type: 'a'.repeat(512),
-        extent: {
-          start: {line: 0, column: 0},
-          end: {line: 1, column: 1},
-        },
+        extent: new Range([0, 0], [1, 1]),
       };
 
       const hint = await TypeHintHelpers.typeHint(mockEditor, new Point(0, 0));
@@ -62,10 +56,7 @@ describe('TypeHintHelpers', () => {
     waitsForPromise(async () => {
       mockDeclaration = {
         type: null,
-        extent: {
-          start: {line: 0, column: 0},
-          end: {line: 1, column: 1},
-        },
+        extent: {range: new Range([0, 0], [1, 1])},
       };
 
       const hint = await TypeHintHelpers.typeHint(mockEditor, new Point(0, 0));

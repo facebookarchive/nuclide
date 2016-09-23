@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Range} from 'atom';
+import {Point, Range} from 'atom';
 import ClangLinter from '../lib/ClangLinter';
 import * as range from '../../commons-atom/range';
 
@@ -43,8 +43,7 @@ describe('ClangDiagnosticsProvider', () => {
               severity: 2,
               location: {
                 file: '',
-                line: -1,
-                column: -1,
+                point: new Point(-1, -1),
               },
               ranges: null,
               spelling: 'whole file',
@@ -53,8 +52,7 @@ describe('ClangDiagnosticsProvider', () => {
               severity: 1, // severity < 2 is ignored
               location: {
                 file: '',
-                line: 0,
-                column: 0,
+                point: new Point(0, 0),
               },
               ranges: [],
               spelling: 'ignore me',
@@ -63,8 +61,7 @@ describe('ClangDiagnosticsProvider', () => {
               severity: 2,
               location: {
                 file: TEST_PATH2,
-                line: 0,
-                column: 0,
+                point: new Point(0, 0),
               },
               ranges: null, // use the entire line
               spelling: 'other file',
@@ -72,8 +69,8 @@ describe('ClangDiagnosticsProvider', () => {
                 {
                   range: {
                     file: TEST_PATH2,
-                    start: {line: 3, column: 4},
-                    end: {line: 3, column: 4},
+                    // Do not touch fixit ranges.
+                    range: new Range([3, 4], [3, 4]),
                   },
                   value: 'fixit',
                 },
@@ -83,8 +80,7 @@ describe('ClangDiagnosticsProvider', () => {
                   spelling: 'child error',
                   location: {
                     file: TEST_PATH2,
-                    line: 0,
-                    column: 0,
+                    point: new Point(0, 0),
                   },
                   ranges: [],
                 },
@@ -94,8 +90,7 @@ describe('ClangDiagnosticsProvider', () => {
               severity: 2,
               location: {
                 file: TEST_PATH,
-                line: 0,
-                column: 0,
+                point: new Point(0, 0),
               },
               ranges: null,
               spelling: 'test error',
@@ -104,14 +99,12 @@ describe('ClangDiagnosticsProvider', () => {
               severity: 3,
               location: {
                 file: TEST_PATH,
-                line: 0,
-                column: 0,
+                point: new Point(0, 0),
               },
               ranges: [
                 {
                   file: TEST_PATH,
-                  start: {line: 1, column: 0},
-                  end: {line: 1, column: 2},
+                  range: new Range([1, 0], [1, 2]),
                 },
               ],
               spelling: 'test error 2',
@@ -147,7 +140,7 @@ describe('ClangDiagnosticsProvider', () => {
             },
           ],
           fix: {
-            range: new Range([3, 4], [3, 5]),
+            range: new Range([3, 4], [3, 4]),
             newText: 'fixit',
           },
         },

@@ -11,7 +11,6 @@
 
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
-import {Point, Range} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
 import {getDeclaration} from './libclang';
 
@@ -29,7 +28,7 @@ export default class TypeHintHelpers {
     if (decl == null) {
       return null;
     }
-    const {type, extent} = decl;
+    const {type, extent: range} = decl;
     if (type == null || type.trim() === '') {
       return null;
     }
@@ -37,13 +36,7 @@ export default class TypeHintHelpers {
     if (type.length > MAX_LENGTH) {
       hint = type.substr(0, MAX_LENGTH) + '...';
     }
-    return {
-      hint,
-      range: new Range(
-        new Point(extent.start.line, extent.start.column),
-        new Point(extent.end.line, extent.end.column),
-      ),
-    };
+    return {hint, range};
   }
 
 }

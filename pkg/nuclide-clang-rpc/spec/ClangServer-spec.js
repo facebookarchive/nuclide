@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {Range, Point} from 'simple-text-buffer';
 import invariant from 'assert';
 import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -21,20 +22,14 @@ const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
 const EXPECTED_FILE_OUTLINE = [
   {
     name: 'f',
-    extent: {
-      start: {line: 0, column: 0},
-      end: {line: 1, column: 1},
-    },
+    extent: new Range([0, 0], [1, 1]),
     cursor_kind: 'FUNCTION_DECL',
     params: ['x'],
     tparams: [],
   },
   {
     name: 'main',
-    extent: {
-      start: {line: 3, column: 0},
-      end: {line: 7, column: 1},
-    },
+    extent: new Range([3, 0], [7, 1]),
     cursor_kind: 'FUNCTION_DECL',
     params: [],
     tparams: [],
@@ -63,22 +58,19 @@ describe('ClangServer', () => {
             ranges: [
               {
                 file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
-                start: {column: 2, line: 5},
-                end: {column: 6, line: 5},
+                range: new Range([5, 2], [5, 6]),
               },
             ],
             fixits: [],
             location: {
-              column: 2,
-              line: 5,
+              point: new Point(5, 2),
               file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
             },
             spelling: 'no matching function for call to \'main\'',
             children: [
               {
                 location: {
-                  column: 4,
-                  line: 3,
+                  point: new Point(3, 4),
                   file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
                 },
                 ranges: [],
@@ -93,15 +85,13 @@ describe('ClangServer', () => {
               {
                 range: {
                   file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
-                  start: {column: 10, line: 6},
-                  end: {column: 10, line: 6},
+                  range: new Range([6, 10], [6, 10]),
                 },
                 value: ';',
               },
             ],
             location: {
-              column: 10,
-              line: 6,
+              point: new Point(6, 10),
               file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
             },
             spelling: 'expected \';\' after return statement',
@@ -158,9 +148,8 @@ describe('ClangServer', () => {
         2,
       );
       invariant(response);
-      const {line, column, spelling, type} = response;
-      expect(line).toBe(0);
-      expect(column).toBe(5);
+      const {point, spelling, type} = response;
+      expect(point).toEqual(new Point(0, 5));
       expect(spelling).toBe('f');
       expect(type).toBe('void (int)');
 
@@ -237,13 +226,13 @@ describe('ClangServer', () => {
         cursor_name: 'var1',
         cursor_kind: 'PARM_DECL',
         references: [
-          {start: {line: 1, column: 24}, end: {line: 1, column: 27}},
-          {start: {line: 2, column: 13}, end: {line: 2, column: 16}},
-          {start: {line: 2, column: 20}, end: {line: 2, column: 23}},
-          {start: {line: 3, column: 20}, end: {line: 3, column: 23}},
-          {start: {line: 4, column: 2}, end: {line: 4, column: 5}},
-          {start: {line: 9, column: 9}, end: {line: 9, column: 12}},
-          {start: {line: 9, column: 16}, end: {line: 9, column: 19}},
+          {start: {row: 1, column: 24}, end: {row: 1, column: 27}},
+          {start: {row: 2, column: 13}, end: {row: 2, column: 16}},
+          {start: {row: 2, column: 20}, end: {row: 2, column: 23}},
+          {start: {row: 3, column: 20}, end: {row: 3, column: 23}},
+          {start: {row: 4, column: 2}, end: {row: 4, column: 5}},
+          {start: {row: 9, column: 9}, end: {row: 9, column: 12}},
+          {start: {row: 9, column: 16}, end: {row: 9, column: 19}},
         ],
       });
 
@@ -252,8 +241,8 @@ describe('ClangServer', () => {
         cursor_name: 'var2',
         cursor_kind: 'VAR_DECL',
         references: [
-          {start: {line: 2, column: 6}, end: {line: 2, column: 9}},
-          {start: {line: 4, column: 9}, end: {line: 4, column: 12}},
+          {start: {row: 2, column: 6}, end: {row: 2, column: 9}},
+          {start: {row: 4, column: 9}, end: {row: 4, column: 12}},
         ],
       });
 
@@ -262,7 +251,7 @@ describe('ClangServer', () => {
         cursor_name: 'var3',
         cursor_kind: 'VAR_DECL',
         references: [
-          {start: {line: 2, column: 26}, end: {line: 2, column: 29}},
+          {start: {row: 2, column: 26}, end: {row: 2, column: 29}},
         ],
       });
 
@@ -271,10 +260,10 @@ describe('ClangServer', () => {
         cursor_name: 'var1',
         cursor_kind: 'VAR_DECL',
         references: [
-          {start: {line: 6, column: 11}, end: {line: 6, column: 14}},
-          {start: {line: 6, column: 22}, end: {line: 6, column: 25}},
-          {start: {line: 6, column: 33}, end: {line: 6, column: 36}},
-          {start: {line: 7, column: 11}, end: {line: 7, column: 14}},
+          {start: {row: 6, column: 11}, end: {row: 6, column: 14}},
+          {start: {row: 6, column: 22}, end: {row: 6, column: 25}},
+          {start: {row: 6, column: 33}, end: {row: 6, column: 36}},
+          {start: {row: 7, column: 11}, end: {row: 7, column: 14}},
         ],
       });
 

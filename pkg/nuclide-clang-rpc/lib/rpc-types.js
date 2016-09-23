@@ -18,21 +18,14 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 // export type ClangCursorType = $Enum<typeof ClangCursorToDeclarationTypes>;
 export type ClangCursorType = string;
 
-export type ClangCursorExtent = {
-  start: {line: number, column: number},
-  end: {line: number, column: number},
-};
-
 export type ClangLocation = {
-  column: number,
   file: ?NuclideUri,
-  line: number,
+  point: atom$Point,
 };
 
 export type ClangSourceRange = {
   file: NuclideUri,
-  start: {line: number, column: number},
-  end: {line: number, column: number},
+  range: atom$Range,
 };
 
 export type ClangCompileResult = {
@@ -79,11 +72,10 @@ export type ClangCompletion = {
 
 export type ClangDeclaration = {
   file: NuclideUri,
-  line: number,
-  column: number,
+  point: atom$Point,
   spelling: ?string,
   type: ?string,
-  extent: ClangCursorExtent,
+  extent: atom$Range,
 };
 
 export type ClangCursor = {
@@ -91,12 +83,12 @@ export type ClangCursor = {
   type: ClangCursorType,
   cursor_usr: string,
   file: ?NuclideUri,
-  extent: ClangCursorExtent,
+  extent: atom$Range,
 };
 
 export type ClangOutlineTree = {
   name: string,
-  extent: ClangCursorExtent,
+  extent: atom$Range,
   cursor_kind: ClangCursorType,
   // Will be non-null for variables/typedefs only.
   cursor_type?: string,
@@ -112,5 +104,5 @@ export type ClangOutlineTree = {
 export type ClangLocalReferences = {
   cursor_name: string,
   cursor_kind: string,
-  references: Array<ClangCursorExtent>,
+  references: Array<atom$Range>,
 };

@@ -42,15 +42,16 @@ def resolve_file_name(file_name):
 # Converts a Clang `SourceLocation` into a dict.
 def location_dict_relative(location):
     return {
-        'line': location.line - 1,
+        'row': location.line - 1,
         'column': location.column - 1,
     }
 
 
 def location_dict(location):
-    res = location_dict_relative(location)
-    res['file'] = resolve_file(location.file)
-    return res
+    return {
+        'point': location_dict_relative(location),
+        'file': resolve_file(location.file),
+    }
 
 
 # Converts a Clang `SourceRange` into a dict.
@@ -63,6 +64,7 @@ def range_dict_relative(source_range):
 
 
 def range_dict(source_range):
-    res = range_dict_relative(source_range)
-    res['file'] = resolve_file(source_range.start.file)
-    return res
+    return {
+        'range': range_dict_relative(source_range),
+        'file': resolve_file(source_range.start.file),
+    }

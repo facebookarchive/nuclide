@@ -14,7 +14,7 @@ import type {ClangCompileResult} from './rpc-types';
 import type {ClangServerArgs} from './find-clang-server-args';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
+import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import {BehaviorSubject} from 'rxjs';
 
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
@@ -28,7 +28,7 @@ let serviceRegistry: ?ServiceRegistry = null;
 function getServiceRegistry(): ServiceRegistry {
   if (serviceRegistry == null) {
     serviceRegistry = new ServiceRegistry(
-      [localNuclideUriMarshalers],
+      getServerSideMarshalers,
       loadServicesConfig(nuclideUri.join(__dirname, '..')),
     );
   }

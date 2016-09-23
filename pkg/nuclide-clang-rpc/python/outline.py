@@ -154,17 +154,17 @@ def insert_pragma_marks(marks, outline_tree, tree_end=None):
     new_result = []
     for node in outline_tree:
         while len(marks) > 0:
-            if marks[-1]['extent']['start']['line'] > node['extent']['start']['line']:
+            if marks[-1]['extent']['start']['row'] > node['extent']['start']['row']:
                 break
             new_result.append(marks.pop())
         children = node.get('children')
         if children:
-            children[:] = insert_pragma_marks(marks, children, node['extent']['end']['line'])
+            children[:] = insert_pragma_marks(marks, children, node['extent']['end']['row'])
         new_result.append(node)
 
     # Consume all remaining marks included in this subtree.
     while len(marks) > 0:
-        if tree_end is not None and marks[-1]['extent']['start']['line'] > tree_end:
+        if tree_end is not None and marks[-1]['extent']['start']['row'] > tree_end:
             break
         new_result.append(marks.pop())
 
@@ -201,16 +201,16 @@ def get_outline(libclang, translation_unit, contents):
             'name': mark.group(1),
             'cursor_kind': 'PRAGMA_MARK',
             'extent': {
-                'start': {'line': line, 'column': 0},
-                'end': {'line': line + 1, 'column': 0},
+                'start': {'row': line, 'column': 0},
+                'end': {'row': line + 1, 'column': 0},
             },
         })
 
     # Top-level macro instantiations appear out of order.
     result = sorted(result, key=lambda x: (
-        x['extent']['start']['line'],
+        x['extent']['start']['row'],
         x['extent']['start']['column'],
-        x['extent']['end']['line'],
+        x['extent']['end']['row'],
         x['extent']['end']['column'],
     ))
 

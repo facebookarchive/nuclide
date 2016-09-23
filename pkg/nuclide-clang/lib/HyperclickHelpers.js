@@ -37,7 +37,7 @@ export default class HyperclickHelpers {
         findWholeRangeOfSymbol(textEditor, text, range, result.spelling, result.extent);
       return {
         range: wholeRange,
-        callback: () => goToLocation(result.file, result.line, result.column),
+        callback: () => goToLocation(result.file, result.point.row, result.point.column),
       };
     } else {
       return null;

@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {ClangCursorExtent} from '../../nuclide-clang-rpc/lib/rpc-types';
-
 import {Range} from 'atom';
 
 // Matches something like: textA: or textA:textB:
@@ -38,7 +36,7 @@ function findWholeRangeOfSymbol(
     text: string,
     textRange: Range,
     spelling: ?string,
-    extent: ClangCursorExtent,
+    extent: atom$Range,
   ): Array<atom$Range> {
   if (!spelling || text === spelling) {
     return [textRange];
@@ -54,9 +52,6 @@ function findWholeRangeOfSymbol(
     // `[aThing doFoo:[anotherThing withBar:aBar] withBar:aBar]`.
     // TODO (t8131986) Improve this implementation.
     const ranges = [];
-
-    const extentStart = [extent.start.line, extent.start.column];
-    const extentEnd = [extent.end.line, extent.end.column];
 
     const selectorSegments = spelling.split(':');
     const iterator = ({match, matchText, range, stop, replace}) => {
@@ -76,8 +71,8 @@ function findWholeRangeOfSymbol(
       const regex = new RegExp(segmentWithColon);
 
       const rangeOfPreviousSegment = ranges[(ranges.length - 1)];
-      const rangeStart = rangeOfPreviousSegment ? rangeOfPreviousSegment.end : extentStart;
-      const rangeToScan = new Range(rangeStart, extentEnd);
+      const rangeStart = rangeOfPreviousSegment ? rangeOfPreviousSegment.end : extent.start;
+      const rangeToScan = new Range(rangeStart, extent.end);
 
       textEditor.scanInBufferRange(regex, rangeToScan, iterator);
     }

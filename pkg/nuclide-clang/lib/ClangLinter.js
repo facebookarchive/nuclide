@@ -11,7 +11,6 @@
 
 import type {
   ClangCompileResult,
-  ClangSourceRange,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
@@ -21,51 +20,37 @@ import featureConfig from '../../commons-atom/featureConfig';
 import {wordAtPosition} from '../../commons-atom/range';
 import {getLogger} from '../../nuclide-logging';
 import {getDiagnostics} from './libclang';
-import {Point, Range} from 'atom';
 
 const IDENTIFIER_REGEX = /[a-z0-9_]+/gi;
 const DEFAULT_FLAGS_WARNING =
   'Diagnostics are disabled due to lack of compilation flags. ' +
   'Build this file with Buck, or create a compile_commands.json file manually.';
 
-function atomRangeFromSourceRange(
+function fixSourceRange(
   editor: atom$TextEditor,
-  clangRange: ClangSourceRange,
+  clangRange: atom$Range,
 ): atom$Range {
   // Some ranges are unbounded/invalid (end with -1) or empty.
   // Treat these as point diagnostics.
-  if (
-    clangRange.end.line === -1 || (
-      clangRange.start.line === clangRange.end.line &&
-        clangRange.start.column === clangRange.end.column
-    )
-  ) {
-    return atomRangeFromLocation(editor, clangRange.start);
+  if (clangRange.end.row === -1 || clangRange.start.isEqual(clangRange.end)) {
+    return getRangeFromPoint(editor, clangRange.start);
   }
-
-  return new Range(
-    [clangRange.start.line, clangRange.start.column],
-    [clangRange.end.line, clangRange.end.column],
-  );
+  return clangRange;
 }
 
-function atomRangeFromLocation(
+function getRangeFromPoint(
   editor: atom$TextEditor,
-  location: {line: number, column: number},
+  location: atom$Point,
 ): atom$Range {
-  if (location.line < 0) {
+  if (location.row < 0) {
     return editor.getBuffer().rangeForRow(0);
   }
   // Attempt to match a C/C++ identifier at the given location.
-  const word = wordAtPosition(
-    editor,
-    new Point(location.line, location.column),
-    IDENTIFIER_REGEX,
-  );
+  const word = wordAtPosition(editor, location, IDENTIFIER_REGEX);
   if (word != null) {
     return word.range;
   }
-  return editor.getBuffer().rangeForRow(location.line);
+  return editor.getBuffer().rangeForRow(location.row);
 }
 
 export default class ClangLinter {
@@ -114,9 +99,9 @@ export default class ClangLinter {
         let range;
         if (diagnostic.ranges) {
           // Use the first range from the diagnostic as the range for Linter.
-          range = atomRangeFromSourceRange(editor, diagnostic.ranges[0]);
+          range = fixSourceRange(editor, diagnostic.ranges[0].range);
         } else {
-          range = atomRangeFromLocation(editor, diagnostic.location);
+          range = getRangeFromPoint(editor, diagnostic.location.point);
         }
 
         const filePath = diagnostic.location.file || bufferPath;
@@ -128,7 +113,7 @@ export default class ClangLinter {
               type: 'Trace',
               text: child.spelling,
               filePath: child.location.file || bufferPath,
-              range: atomRangeFromLocation(editor, child.location),
+              range: getRangeFromPoint(editor, child.location.point),
             };
           });
         }
@@ -139,7 +124,8 @@ export default class ClangLinter {
           const fixit = diagnostic.fixits[0];
           if (fixit != null) {
             fix = {
-              range: atomRangeFromSourceRange(editor, fixit.range),
+              // Do not use fixSourceRange here, since we need this to be exact.
+              range: fixit.range.range,
               newText: fixit.value,
             };
           }

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Point} from 'atom';
+import {Point, Range} from 'atom';
 import {ClangCursorTypes} from '../../nuclide-clang-rpc';
 import {
   keyword,
@@ -27,10 +27,7 @@ describe('outlineFromClangOutline', () => {
     expect(outlineFromClangOutline([
       {
         name: 'testFunction',
-        extent: {
-          start: {line: 0, column: 1},
-          end: {line: 2, column: 3},
-        },
+        extent: new Range([0, 1], [2, 3]),
         cursor_kind: ClangCursorTypes.FUNCTION_DECL,
         params: ['p1', 'p2'],
         tparams: ['tp1', 'tp2'],
@@ -62,18 +59,12 @@ describe('outlineFromClangOutline', () => {
     expect(outlineFromClangOutline([
       {
         name: 'TestClass',
-        extent: {
-          start: {line: 0, column: 1},
-          end: {line: 2, column: 3},
-        },
+        extent: new Range([0, 1], [2, 3]),
         cursor_kind: ClangCursorTypes.CLASS_DECL,
         children: [
           {
             name: 'testMethod',
-            extent: {
-              start: {line: 1, column: 1},
-              end: {line: 1, column: 2},
-            },
+            extent: new Range([1, 1], [1, 2]),
             cursor_kind: ClangCursorTypes.CXX_METHOD,
             params: [],
           },
@@ -110,10 +101,7 @@ describe('outlineFromClangOutline', () => {
     expect(outlineFromClangOutline([
       {
         name: 'testVariable',
-        extent: {
-          start: {line: 0, column: 1},
-          end: {line: 2, column: 3},
-        },
+        extent: new Range([0, 1], [2, 3]),
         cursor_kind: ClangCursorTypes.VAR_DECL,
         cursor_type: 'std::string',
       },
@@ -136,10 +124,7 @@ describe('outlineFromClangOutline', () => {
     expect(outlineFromClangOutline([
       {
         name: 'testVariable',
-        extent: {
-          start: {line: 0, column: 1},
-          end: {line: 2, column: 3},
-        },
+        extent: new Range([0, 1], [2, 3]),
         cursor_kind: ClangCursorTypes.VAR_DECL,
         cursor_type: 'std::vector<std::vector<std::vector<std::vector<int>>>>',
       },

@@ -13,7 +13,6 @@ import type {Outline, OutlineTree} from '../../nuclide-outline-view/lib/rpc-type
 import type {ClangOutlineTree} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 
-import {Point} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
 import {sleep} from '../../commons-node/promise';
 import {ClangCursorTypes} from '../../nuclide-clang-rpc';
@@ -116,14 +115,8 @@ export function outlineFromClangOutline(outline: Array<ClangOutlineTree>): Array
     return {
       tokenizedText: tokenizeCursor(cursor),
       representativeName: cursor.name,
-      startPosition: new Point(
-        cursor.extent.start.line,
-        cursor.extent.start.column,
-      ),
-      endPosition: new Point(
-        cursor.extent.end.line,
-        cursor.extent.end.column,
-      ),
+      startPosition: cursor.extent.start,
+      endPosition: cursor.extent.end,
       children: cursor.children ? outlineFromClangOutline(cursor.children) : [],
     };
   });

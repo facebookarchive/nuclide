@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from clang.cindex import Cursor, CursorKind
-from utils import location_dict, range_dict, resolve_file_name
+from utils import location_dict, range_dict_relative, resolve_file_name
 import logging
 import os
 import re
@@ -132,14 +132,16 @@ def get_declaration_location_and_spelling(translation_unit, contents, flags,
             # Point location to beginning of the found included file (line 0, column 0)
             location = {
                 'file': filename,
-                'line': 0,
-                'column': 0,
+                'point': {
+                    'row': 0,
+                    'column': 0,
+                },
                 # Show destination file of hyperclick in hover popover
                 'type': filename,
                 'spelling': None,
                 'extent': {
-                    'start': {'line': line - 1, 'column': start_col},
-                    'end': {'line': line - 1, 'column': end_col}
+                    'start': {'row': line - 1, 'column': start_col},
+                    'end': {'row': line - 1, 'column': end_col}
                 }
             }
             return location
@@ -165,5 +167,5 @@ def get_declaration_location_and_spelling(translation_unit, contents, flags,
     location = location_dict(loc)
     location['spelling'] = cursor.spelling
     location['type'] = type
-    location['extent'] = range_dict(extent)
+    location['extent'] = range_dict_relative(extent)
     return location

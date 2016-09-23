@@ -39,11 +39,11 @@ describe('ClangServer', () => {
           extent: {
             start: {
               column: 0,
-              line: 0,
+              row: 0,
             },
             end: {
               column: 14,
-              line: 0,
+              row: 0,
             },
           },
           cursor_kind: 'VAR_DECL',
@@ -56,11 +56,11 @@ describe('ClangServer', () => {
           extent: {
             start: {
               column: 0,
-              line: 2,
+              row: 2,
             },
             end: {
               column: 1,
-              line: 9,
+              row: 9,
             },
           },
           children: [
@@ -70,11 +70,11 @@ describe('ClangServer', () => {
               extent: {
                 start: {
                   column: 0,
-                  line: 3,
+                  row: 3,
                 },
                 end: {
                   column: 1,
-                  line: 8,
+                  row: 8,
                 },
               },
               children: [
@@ -84,11 +84,11 @@ describe('ClangServer', () => {
                   extent: {
                     start: {
                       column: 0,
-                      line: 4,
+                      row: 4,
                     },
                     end: {
                       column: 0,
-                      line: 5,
+                      row: 5,
                     },
                   },
                 },
@@ -98,11 +98,11 @@ describe('ClangServer', () => {
                   extent: {
                     start: {
                       column: 0,
-                      line: 5,
+                      row: 5,
                     },
                     end: {
                       column: 1,
-                      line: 6,
+                      row: 6,
                     },
                   },
                   params: [
@@ -118,11 +118,11 @@ describe('ClangServer', () => {
                   extent: {
                     start: {
                       column: 0,
-                      line: 7,
+                      row: 7,
                     },
                     end: {
                       column: 0,
-                      line: 8,
+                      row: 8,
                     },
                   },
                 },
@@ -136,11 +136,11 @@ describe('ClangServer', () => {
           extent: {
             start: {
               column: 0,
-              line: 11,
+              row: 11,
             },
             end: {
               column: 1,
-              line: 14,
+              row: 14,
             },
           },
           params: [
@@ -156,11 +156,11 @@ describe('ClangServer', () => {
           extent: {
             start: {
               column: 0,
-              line: 16,
+              row: 16,
             },
             end: {
               column: 1,
-              line: 23,
+              row: 23,
             },
           },
           children: [
@@ -170,11 +170,11 @@ describe('ClangServer', () => {
               extent: {
                 start: {
                   column: 2,
-                  line: 17,
+                  row: 17,
                 },
                 end: {
                   column: 3,
-                  line: 19,
+                  row: 19,
                 },
               },
               params: [
@@ -190,11 +190,11 @@ describe('ClangServer', () => {
               extent: {
                 start: {
                   column: 0,
-                  line: 20,
+                  row: 20,
                 },
                 end: {
                   column: 0,
-                  line: 21,
+                  row: 21,
                 },
               },
             },
@@ -204,11 +204,11 @@ describe('ClangServer', () => {
               extent: {
                 start: {
                   column: 2,
-                  line: 21,
+                  row: 21,
                 },
                 end: {
                   column: 22,
-                  line: 21,
+                  row: 21,
                 },
               },
               params: [
@@ -220,11 +220,11 @@ describe('ClangServer', () => {
               extent: {
                 start: {
                   column: 2,
-                  line: 22,
+                  row: 22,
                 },
                 end: {
                   column: 23,
-                  line: 22,
+                  row: 22,
                 },
               },
               cursor_kind: 'VAR_DECL',
@@ -237,11 +237,11 @@ describe('ClangServer', () => {
           extent: {
             start: {
               column: 0,
-              line: 25,
+              row: 25,
             },
             end: {
               column: 25,
-              line: 25,
+              row: 25,
             },
           },
           cursor_kind: 'VAR_DECL',
@@ -254,11 +254,11 @@ describe('ClangServer', () => {
           extent: {
             start: {
               column: 0,
-              line: 27,
+              row: 27,
             },
             end: {
               column: 1,
-              line: 28,
+              row: 28,
             },
           },
           params: [
@@ -272,11 +272,11 @@ describe('ClangServer', () => {
           extent: {
             start: {
               column: 0,
-              line: 29,
+              row: 29,
             },
             end: {
               column: 0,
-              line: 30,
+              row: 30,
             },
           },
         },
@@ -286,11 +286,11 @@ describe('ClangServer', () => {
           extent: {
             start: {
               column: 0,
-              line: 30,
+              row: 30,
             },
             end: {
               column: 1,
-              line: 32,
+              row: 32,
             },
           },
           children: [
@@ -302,11 +302,11 @@ describe('ClangServer', () => {
           extent: {
             start: {
               column: 0,
-              line: 34,
+              row: 34,
             },
             end: {
               column: 1,
-              line: 37,
+              row: 37,
             },
           },
           children: [
@@ -316,11 +316,11 @@ describe('ClangServer', () => {
               extent: {
                 start: {
                   column: 2,
-                  line: 35,
+                  row: 35,
                 },
                 end: {
                   column: 14,
-                  line: 35,
+                  row: 35,
                 },
               },
             },
@@ -330,11 +330,11 @@ describe('ClangServer', () => {
               extent: {
                 start: {
                   column: 2,
-                  line: 36,
+                  row: 36,
                 },
                 end: {
                   column: 14,
-                  line: 36,
+                  row: 36,
                 },
               },
             },
@@ -345,11 +345,11 @@ describe('ClangServer', () => {
           extent: {
             end: {
               column: 16,
-              line: 41,
+              row: 41,
             },
             start: {
               column: 0,
-              line: 41,
+              row: 41,
             },
           },
           name: 'TEST_F',
@@ -364,11 +364,11 @@ describe('ClangServer', () => {
           extent: {
             start: {
               column: 0,
-              line: 43,
+              row: 43,
             },
             end: {
               column: 0,
-              line: 44,
+              row: 44,
             },
           },
         },
