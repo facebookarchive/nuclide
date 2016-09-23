@@ -17,37 +17,34 @@ import {
   DebuggerProcessInfo,
 } from '../../nuclide-debugger-base';
 import {NodeDebuggerInstance} from './NodeDebuggerInstance';
+import type {
+  NodeAttachTargetInfo,
+  NodeDebuggerService,
+} from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getConfig} from './utils';
 
 export class NodeAttachProcessInfo extends DebuggerProcessInfo {
-  pid: number;
-  _command: string;
+  _targetInfo: NodeAttachTargetInfo;
 
-  constructor(pid: number, command: string, targetUri: NuclideUri) {
+  constructor(targetUri: NuclideUri, targetInfo: NodeAttachTargetInfo) {
     super('node', targetUri);
-
-    this.pid = pid;
-    this._command = command;
+    this._targetInfo = targetInfo;
   }
 
-  debug(): Promise<DebuggerInstance> {
-    // Enable debugging in the process.
-    process.kill(this.pid, 'SIGUSR1');
-
-    // This is the port that the V8 debugger usually listens on.
-    // TODO(natthu): Provide a way to override this in the UI.
-    const debugPort = 5858;
-    const nodeDebuggerInstance = new NodeDebuggerInstance(this, debugPort);
-    return Promise.resolve(nodeDebuggerInstance);
+  async debug(): Promise<DebuggerInstance> {
+    const rpcService = this._getRpcService();
+    await rpcService.attach(this._targetInfo);
+    return new NodeDebuggerInstance(this, rpcService);
   }
 
-  compareDetails(other: DebuggerProcessInfo): number {
-    invariant(other instanceof NodeAttachProcessInfo);
-    return this._command === other._command
-        ? (this.pid - other.pid)
-        : (this._command < other._command) ? -1 : 1;
-  }
-
-  displayString(): string {
-    return this._command + '(' + this.pid + ')';
+  _getRpcService(): NodeDebuggerService {
+    const debuggerConfig = {
+      logLevel: getConfig().serverLogLevel,
+    };
+    const service =
+      getServiceByNuclideUri('NodeDebuggerService', this.getTargetUri());
+    invariant(service);
+    return new service.NodeDebuggerService(debuggerConfig);
   }
 }
