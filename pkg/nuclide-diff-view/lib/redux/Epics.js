@@ -180,7 +180,10 @@ export function activateRepositoryEpic(
         diffOption,
         revisions,
         compareId,
-      ),
+      ).catch(error => {
+        notifyInternalError(error);
+        return Observable.empty();
+      }),
     ).map(revisionFileChanges => Actions.updateSelectedFiles(repository, revisionFileChanges));
 
     const revisionStateUpdates = Observable.combineLatest(revisionChanges, revisionStatusChanges)
@@ -325,12 +328,16 @@ export function diffFileEpic(
     .switchMap(({revisions, diffOption, compareId}) => {
       // TODO(most): Add loading states.
       const headToForkBaseRevisions = getHeadToForkBaseRevisions(revisions);
-      return getHgDiff(hgRepository, filePath, headToForkBaseRevisions, diffOption, compareId);
+      return getHgDiff(hgRepository, filePath, headToForkBaseRevisions, diffOption, compareId)
+        .catch(error => {
+          notifyInternalError(error);
+          return Observable.empty();
+        });
     }).switchMap(hgDiff =>
       // Load the buffer to use its contents as the new contents.
       Observable.fromPromise(loadBufferForUri(filePath))
         .map(() => hgDiff),
-    );
+      );
 
     return Observable.merge(
       bufferChangeModifed,
