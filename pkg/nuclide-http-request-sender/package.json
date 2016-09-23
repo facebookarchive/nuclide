@@ -3,11 +3,19 @@
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Send HTTP requests from Nuclide.",
+  "description": "Configure and send HTTP requests from Nuclide via a dedicated UI.",
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
+  },
+  "providedServices": {
+    "nuclide-http-request-sender": {
+      "description": "Register a package to provide http request data.",
+      "versions": {
+        "0.0.0": "provideHttpRequestSender"
+      }
+    }
   },
   "activationCommands": {}
 }

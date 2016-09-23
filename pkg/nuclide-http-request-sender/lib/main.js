@@ -13,6 +13,10 @@ import xfetch from '../../commons-node/xfetch';
 import {CompositeDisposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
 
+export type HttpRequestSenderApi = {
+  sendRequest: (uri: string, options: Object) => mixed,
+};
+
 class Activation {
   _disposables: CompositeDisposable;
 
@@ -24,6 +28,12 @@ class Activation {
         },
       }),
     );
+  }
+
+  provideHttpRequestSender(): HttpRequestSenderApi {
+    return {
+      sendRequest: (uri, options) => xfetch(uri, options),
+    };
   }
 
   dispose(): void {
