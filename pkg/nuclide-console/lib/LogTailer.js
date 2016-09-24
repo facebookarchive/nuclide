@@ -58,13 +58,18 @@ export class LogTailer {
   constructor(options: Options) {
     this._name = options.name;
     this._eventNames = options.trackingEvents;
-    this._ready = options.ready;
+    const messages = options.messages.share();
+    this._ready = options.ready == null
+      ? null
+      // Guard against a never-ending ready stream.
+      // $FlowFixMe: Add `materialize()` to Rx defs
+      : options.ready.takeUntil(messages.materialize().takeLast(1));
     this._runningCallbacks = [];
     this._startCount = 0;
     this._statuses = new BehaviorSubject('stopped');
 
     this._messages = Observable.merge(
-      options.messages,
+      messages,
       this._ready == null ? Observable.empty() : this._ready.ignoreElements(), // For the errors.
     )
       .do({
@@ -77,6 +82,9 @@ export class LogTailer {
           }
         },
         complete: () => {
+          // If the process completed without ever entering the "running" state, invoke the
+          // `onRunning` callback with a cancellation error.
+          this._invokeRunningCallbacks(new ProcessCancelledError(this._name));
           this._stop();
         },
       })

@@ -97,12 +97,10 @@ describe('LogTailer', () => {
   });
 
   it('invokes the running callback with a cancelation error when stopped before ready', () => {
-    const ready = new Subject();
-    const messages = new Subject();
     const logTailer = new LogTailer({
       name: 'test',
-      messages,
-      ready,
+      messages: Observable.never(),
+      ready: Observable.never(),
       trackingEvents: {
         start: 'logtailer-test-start',
         stop: 'logtailer-test-stop',
@@ -116,6 +114,30 @@ describe('LogTailer', () => {
     const err = ((handleRunning.calls[0].args[0]): any);
     expect(err.name).toBe('ProcessCancelledError');
   });
+
+  it(
+    'invokes the running callback with a cancellation error when the source completes before ever'
+    + ' becoming ready',
+    () => {
+      const messages = new Subject();
+      const logTailer = new LogTailer({
+        name: 'test',
+        messages,
+        ready: Observable.never(),
+        trackingEvents: {
+          start: 'logtailer-test-start',
+          stop: 'logtailer-test-stop',
+          restart: 'logtailer-test-restart',
+        },
+      });
+      const handleRunning = jasmine.createSpy();
+      logTailer.start({onRunning: handleRunning});
+      messages.complete();
+      expect(handleRunning).toHaveBeenCalled();
+      const err = ((handleRunning.calls[0].args[0]): any);
+      expect(err.name).toBe('ProcessCancelledError');
+    },
+  );
 
   it("invokes the running callback immediately if it's already running", () => {
     const ready = new Subject();
