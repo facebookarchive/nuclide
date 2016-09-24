@@ -1,7 +1,7 @@
 {
   "name": "nuclide-remote-atom-rpc",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/CommandServer.js",
+  "main": "./lib/CommandService.js",
   "version": "0.0.0",
   "description": "Local command server that is started as part of nuclide-server",
   "nuclide": {
