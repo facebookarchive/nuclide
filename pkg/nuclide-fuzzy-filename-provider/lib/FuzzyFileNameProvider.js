@@ -17,13 +17,14 @@ import type {
   FileResult,
 } from '../../nuclide-quick-open/lib/rpc-types';
 
-import {getFuzzyFileSearchService, getIgnoredNames} from './utils';
 import {
   RemoteDirectory,
+  getFuzzyFileSearchServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 
-const FuzzyFileNameProvider: Provider = {
+import {getIgnoredNames} from './utils';
 
+export default ({
   // Give preference to filename results in OmniSearch.
   getPriority: () => 1,
 
@@ -71,23 +72,21 @@ const FuzzyFileNameProvider: Provider = {
       );
     }
 
-    const service = getFuzzyFileSearchService(directory);
-    if (service == null) {
-      return [];
-    }
-
     const directoryPath = directory.getPath();
-    const result = await service.queryFuzzyFile(directoryPath, query, getIgnoredNames());
+    const service = getFuzzyFileSearchServiceByNuclideUri(directoryPath);
+    const results = await service.queryFuzzyFile(directoryPath, query, getIgnoredNames());
+
     // Take the `nuclide://<host>` prefix into account for matchIndexes of remote files.
     if (RemoteDirectory.isRemoteDirectory(directory)) {
       const remoteDir: RemoteDirectory = (directory: any);
       const indexOffset = directoryPath.length - remoteDir.getLocalPath().length;
-      result.forEach(res => {
-        res.matchIndexes = res.matchIndexes.map(index => index + indexOffset);
-      });
+      for (let i = 0; i < results.length; i++) {
+        for (let j = 0; j < results[i].matchIndexes.length; j++) {
+          results[i].matchIndexes[j] += indexOffset;
+        }
+      }
     }
-    return ((result: any): Array<FileResult>);
-  },
-};
 
-module.exports = FuzzyFileNameProvider;
+    return ((results: any): Array<FileResult>);
+  },
+}: Provider);

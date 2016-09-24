@@ -9,24 +9,12 @@
  * the root directory of this source tree.
  */
 
-import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-rpc';
-
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-
-/**
- * @return FuzzyFileSearchService for the specified directory if it is part of a Hack project.
- */
-export function getFuzzyFileSearchService(
-  directory: atom$Directory,
-): ?FuzzyFileSearchService {
-  const directoryPath = directory.getPath();
-  const service: ?FuzzyFileSearchService = getServiceByNuclideUri(
-    'FuzzyFileSearchService',
-    directoryPath,
-  );
-  return service;
-}
-
 export function getIgnoredNames(): Array<string> {
-  return ((atom.config.get('core.ignoredNames'): any): ?Array<string>) || [];
+  const ignoredNames = atom.config.get('core.ignoredNames');
+  if (Array.isArray(ignoredNames)) {
+    // $FlowIssue: Filter predicates
+    return ignoredNames.filter(x => typeof x === 'string');
+  } else {
+    return [];
+  }
 }
