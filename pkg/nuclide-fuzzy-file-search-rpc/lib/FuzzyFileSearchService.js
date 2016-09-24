@@ -19,6 +19,7 @@ export type FileSearchResult = {
 
 import {
   fileSearchForDirectory,
+  getExistingSearchDirectories,
   disposeSearchForDirectory,
 } from './FileSearchProcess';
 import fsPromise from '../../commons-node/fsPromise';
@@ -33,6 +34,23 @@ export async function queryFuzzyFile(
 ): Promise<Array<FileSearchResult>> {
   const search = await fileSearchForDirectory(rootDirectory, ignoredNames);
   return search.query(queryString);
+}
+
+export async function queryAllExistingFuzzyFile(
+  queryString: string,
+  ignoredNames: Array<string>,
+): Promise<Array<FileSearchResult>> {
+  const directories = getExistingSearchDirectories();
+  const aggregateResults = await Promise.all(
+    directories.map(rootDirectory =>
+      queryFuzzyFile(rootDirectory, queryString, ignoredNames)),
+  );
+  // Optimize for the common case.
+  if (aggregateResults.length === 1) {
+    return aggregateResults[0];
+  } else {
+    return [].concat(...aggregateResults).sort((a, b) => b.score - a.score);
+  }
 }
 
 /**

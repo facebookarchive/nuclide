@@ -53,11 +53,11 @@ class FileSearchProcess {
     });
   }
 
-  getIgnoredNames() {
+  getIgnoredNames(): Array<string> {
     return this._ignoredNames;
   }
 
-  dispose() {
+  dispose(): void {
     if (this._task != null) {
       delete fileSearchForDirectoryUri[this._directoryUri];
       this._task.dispose();
@@ -113,6 +113,10 @@ export async function fileSearchForDirectory(
     });
   fileSearchForDirectoryUri[directoryUri] = promise;
   return promise;
+}
+
+export function getExistingSearchDirectories(): Array<string> {
+  return Object.keys(fileSearchForDirectoryUri);
 }
 
 export async function disposeSearchForDirectory(directoryUri: string): Promise<void> {
