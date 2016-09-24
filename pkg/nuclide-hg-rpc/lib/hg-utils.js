@@ -74,8 +74,9 @@ function logAndThrowHgError(
   stdout: string,
   stderr: string,
 ): void {
-  getLogger().error(`Error executing hg command: ${JSON.stringify(args)} ` +
-    `options: ${JSON.stringify(options)}`);
+  getLogger().error(`Error executing hg command: ${JSON.stringify(args)}\n`
+    + `stderr: ${stderr}\nstdout: ${stdout}\n`
+    + `options: ${JSON.stringify(options)}`);
   if (stderr.length > 0 && stdout.length > 0) {
     throw new Error(`hg error\nstderr: ${stderr}\nstdout: ${stdout}`);
   } else {
