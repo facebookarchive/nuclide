@@ -10,10 +10,11 @@
  */
 
 import invariant from 'assert';
-import {Emitter} from 'event-kit';
-import fs from 'fs';
+import {Subject} from 'rxjs';
+
 import nuclideUri from '../../commons-node/nuclideUri';
 import * as BuckService from '../../nuclide-buck-rpc';
+import * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
 
 describe('ClangFlagsManager', () => {
@@ -241,36 +242,17 @@ describe('ClangFlagsManager', () => {
   it('tracks flag changes', () => {
     waitsForPromise(async () => {
       // Create a mock file watcher.
-      const watcher: any = new Emitter();
-      watcher.close = jasmine.createSpy('watcher.close');
-      let changedCallback = null;
-      const watchSpy = spyOn(fs, 'watch').andCallFake((file, _options, cb) => {
-        changedCallback = cb;
-        return watcher;
-      });
+      const subject = new Subject();
+      spyOn(FileWatcherService, 'watchFile').andReturn(subject.publish());
 
       const testFile = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
       const result = await flagsManager.getFlagsForSrc(testFile);
       invariant(result != null);
 
       expect(flagsManager.getFlagsChanged(testFile)).toBe(false);
-      invariant(changedCallback != null);
 
-      // Ignore changes to other files.
-      changedCallback('change', 'otherfile');
-      expect(flagsManager.getFlagsChanged(testFile)).toBe(false);
-
-      changedCallback('change', 'compile_commands.json');
+      subject.next(null);
       expect(flagsManager.getFlagsChanged(testFile)).toBe(true);
-
-      // Make sure only one file watcher is created.
-      const result2 = await flagsManager.getFlagsForSrc(testFile);
-      invariant(result2 != null);
-      expect(watchSpy.calls.length).toBe(1);
-
-      // File watcher should be destroyed on dispose.
-      flagsManager.reset();
-      expect(watcher.close).toHaveBeenCalled();
     });
   });
 

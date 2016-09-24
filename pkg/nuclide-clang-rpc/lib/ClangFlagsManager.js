@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {WatchResult} from '../../nuclide-filewatcher-rpc';
+
 import invariant from 'assert';
-import fs from 'fs';
 import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {shellParse} from '../../commons-node/string';
@@ -19,6 +20,7 @@ import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 import * as BuckService from '../../nuclide-buck-rpc';
+import {watchFile} from '../../nuclide-filewatcher-rpc';
 import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';
 
 const logger = getLogger();
@@ -58,7 +60,7 @@ export type ClangFlags = {
   },
   // Emits file change events for the underlying flags file.
   // (rename, change)
-  changes: Observable<string>,
+  changes: Observable<WatchResult>,
 };
 
 let _overrideIncludePath = undefined;
@@ -86,15 +88,11 @@ class ClangFlagsManager {
   _flagsChanged: Set<string>;
   _subscriptions: Array<Subscription>;
 
-  // Watch config files (TARGETS/BUCK/compile_commands.json) for changes.
-  _flagFileObservables: Map<string, Observable<string>>;
-
   constructor() {
     this._pathToFlags = new Map();
     this._cachedBuckFlags = new Map();
     this._compilationDatabases = new Set();
     this._realpathCache = {};
-    this._flagFileObservables = new Map();
     this._flagsChanged = new Set();
     this._subscriptions = [];
   }
@@ -104,7 +102,6 @@ class ClangFlagsManager {
     this._cachedBuckFlags.clear();
     this._compilationDatabases.clear();
     this._realpathCache = {};
-    this._flagFileObservables.clear();
     this._flagsChanged.clear();
     this._subscriptions.forEach(s => s.unsubscribe());
     this._subscriptions = [];
@@ -199,7 +196,7 @@ class ClangFlagsManager {
     if (buildFile != null) {
       return {
         rawData: null,
-        changes: this._watchFlagFile(buildFile),
+        changes: watchFile(buildFile).refCount(),
       };
     }
 
@@ -216,7 +213,7 @@ class ClangFlagsManager {
       const contents = await fsPromise.readFile(dbFile);
       const data = JSON.parse(contents);
       invariant(data instanceof Array);
-      const changes = this._watchFlagFile(dbFile);
+      const changes = watchFile(dbFile).refCount();
       await Promise.all(data.map(async entry => {
         const {command, file} = entry;
         const directory = await fsPromise.realpath(entry.directory, this._realpathCache);
@@ -302,7 +299,7 @@ class ClangFlagsManager {
 
     const flags = new Map();
     const buildFile = await BuckService.getBuildFile(buckProjectRoot, target);
-    const changes = buildFile == null ? Observable.empty() : this._watchFlagFile(buildFile);
+    const changes = buildFile == null ? Observable.empty() : watchFile(buildFile).refCount();
     compilationDatabase.forEach(item => {
       const {file} = item;
       const result = {
@@ -317,33 +314,6 @@ class ClangFlagsManager {
       this._pathToFlags.set(file, Promise.resolve(result));
     });
     return flags;
-  }
-
-  _watchFlagFile(flagFile: string): Observable<string> {
-    const existing = this._flagFileObservables.get(flagFile);
-    if (existing != null) {
-      return existing;
-    }
-    const flagFileDir = nuclideUri.dirname(flagFile);
-    const flagFileBase = nuclideUri.basename(flagFile);
-    const observable = Observable.create(obs => {
-      const watcher = fs.watch(flagFileDir, {}, (event, filename) => {
-        if (filename === flagFileBase) {
-          obs.next(event);
-        }
-      });
-      watcher.on('error', err => {
-        logger.error(`Could not watch file ${flagFile}`, err);
-        obs.error(err);
-      });
-      return {
-        unsubscribe() {
-          watcher.close();
-        },
-      };
-    }).share();
-    this._flagFileObservables.set(flagFile, observable);
-    return observable;
   }
 
   // The file may be new. Look for a nearby BUCK or TARGETS file.
