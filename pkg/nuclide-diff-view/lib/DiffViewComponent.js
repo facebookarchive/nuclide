@@ -351,13 +351,14 @@ export default class DiffViewComponent extends React.Component {
 
   _renderTree(): void {
     const {diffModel} = this.props;
-    const {selectedFileChanges, filePath} = diffModel.getState();
+    const {activeRepository, selectedFileChanges, filePath} = diffModel.getState();
+    const rootPaths = activeRepository != null ? [activeRepository.getProjectDirectory()] : [];
     this._treeComponent = ReactDOM.render(
       (
         <div className="nuclide-diff-view-tree padded">
           <MultiRootChangedFilesView
             commandPrefix="nuclide-diff-view"
-            fileChanges={getMultiRootFileChanges(selectedFileChanges)}
+            fileChanges={getMultiRootFileChanges(selectedFileChanges, rootPaths)}
             selectedFile={filePath}
             onFileChosen={diffModel.diffFile.bind(diffModel)}
           />
