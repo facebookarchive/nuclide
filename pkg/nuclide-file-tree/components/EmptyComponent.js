@@ -10,7 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
-import {Button} from '../../nuclide-ui/lib/Button';
+import {Button} from '../../nuclide-ui/Button';
 
 export class EmptyComponent extends React.Component {
 

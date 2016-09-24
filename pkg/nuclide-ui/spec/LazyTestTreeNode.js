@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {LazyTreeNode} from '../lib/LazyTreeNode';
+import {LazyTreeNode} from '../LazyTreeNode';
 
 export class LazyTestTreeNode extends LazyTreeNode {
 

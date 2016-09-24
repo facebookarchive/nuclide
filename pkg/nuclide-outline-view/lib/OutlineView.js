@@ -20,8 +20,8 @@ import classnames from 'classnames';
 import {track} from '../../nuclide-analytics';
 import {goToLocationInEditor} from '../../commons-atom/go-to-location';
 import {getLogger} from '../../nuclide-logging';
-import {LoadingSpinner, LoadingSpinnerSizes} from '../../nuclide-ui/lib/LoadingSpinner';
-import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
+import {LoadingSpinner, LoadingSpinnerSizes} from '../../nuclide-ui/LoadingSpinner';
+import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
 
 const logger = getLogger();
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {LazyTreeNode} from '../lib/LazyTreeNode';
+import type {LazyTreeNode} from '../LazyTreeNode';
 
 import {LazyTestTreeNode} from './LazyTestTreeNode';
 import invariant from 'assert';

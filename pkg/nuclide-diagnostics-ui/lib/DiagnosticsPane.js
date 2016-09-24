@@ -15,7 +15,7 @@ import {Cell, ColumnKeys, SortHeaderCell} from './Cells';
 import {sortDiagnostics} from './DiagnosticsSorter';
 import {fileColumnCellDataGetter} from './paneUtils';
 import {goToLocation} from '../../commons-atom/go-to-location';
-import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
+import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
 import {React} from 'react-for-atom';
 import {track} from '../../nuclide-analytics';
 

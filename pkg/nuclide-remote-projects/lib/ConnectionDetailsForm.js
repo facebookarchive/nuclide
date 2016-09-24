@@ -16,9 +16,9 @@ import type {
 
 import {getOfficialRemoteServerCommand} from './connection-profile-utils';
 
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {CompositeDisposable} from 'atom';
-import RadioGroup from '../../nuclide-ui/lib/RadioGroup';
+import RadioGroup from '../../nuclide-ui/RadioGroup';
 import {React, ReactDOM} from 'react-for-atom';
 import {SshHandshake} from '../../nuclide-remote-connection';
 

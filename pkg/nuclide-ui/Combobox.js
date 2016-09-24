@@ -15,7 +15,7 @@ type ComboboxOption = {
   matchIndex: number,
 };
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from '../commons-node/UniversalDisposable';
 import {Observable} from 'rxjs';
 import {AtomInput} from './AtomInput';
 import {Portal} from './Portal';

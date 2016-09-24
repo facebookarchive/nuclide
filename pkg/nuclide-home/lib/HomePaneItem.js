@@ -19,7 +19,7 @@ import NuclideLogo from './NuclideLogo';
 import createUtmUrl from './createUtmUrl';
 import featureConfig from '../../commons-atom/featureConfig';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {Checkbox} from '../../nuclide-ui/Checkbox';
 
 const NUCLIDE_DOCS_URL = createUtmUrl('http://nuclide.io', 'welcome');
 const DEFAULT_WELCOME = (

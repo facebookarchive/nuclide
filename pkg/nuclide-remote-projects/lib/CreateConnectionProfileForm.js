@@ -15,7 +15,7 @@ import type {
   NuclideRemoteConnectionProfile,
 } from './connection-types';
 
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {
   React,
   ReactDOM,
@@ -27,10 +27,10 @@ import {validateFormInputs} from './form-validation-utils';
 import {
   Button,
   ButtonTypes,
-} from '../../nuclide-ui/lib/Button';
+} from '../../nuclide-ui/Button';
 import {
   ButtonGroup,
-} from '../../nuclide-ui/lib/ButtonGroup';
+} from '../../nuclide-ui/ButtonGroup';
 
 type Props = {
   // A function called when the "Cancel" button is clicked.

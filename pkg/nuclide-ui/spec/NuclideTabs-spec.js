@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import Tabs from '../lib/Tabs';
+import Tabs from '../Tabs';
 import {React, ReactDOM, TestUtils} from 'react-for-atom';
 
 const {

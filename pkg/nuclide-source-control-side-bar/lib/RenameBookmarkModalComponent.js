@@ -11,9 +11,9 @@
 
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
-import {Button} from '../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
+import {Button} from '../../nuclide-ui/Button';
+import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
 

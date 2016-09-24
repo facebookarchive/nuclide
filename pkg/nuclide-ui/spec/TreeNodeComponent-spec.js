@@ -11,7 +11,7 @@
 
 import {LazyTestTreeNode} from './LazyTestTreeNode';
 import {React, ReactDOM, TestUtils} from 'react-for-atom';
-import {TreeNodeComponent} from '../lib/TreeNodeComponent';
+import {TreeNodeComponent} from '../TreeNodeComponent';
 import invariant from 'assert';
 
 describe('TreeNodeComponent', () => {

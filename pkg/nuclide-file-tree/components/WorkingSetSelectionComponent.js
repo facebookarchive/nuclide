@@ -17,9 +17,9 @@ import type {
 import classnames from 'classnames';
 import {CompositeDisposable} from 'atom';
 import {React, ReactDOM} from 'react-for-atom';
-import {Button} from '../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
-import {HR} from '../../nuclide-ui/lib/HR';
+import {Button} from '../../nuclide-ui/Button';
+import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
+import {HR} from '../../nuclide-ui/HR';
 
 type Props = {
   workingSetsStore: WorkingSetsStore,

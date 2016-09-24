@@ -15,7 +15,7 @@ import DebuggerActions from './DebuggerActions';
 import DebuggerInspector from './DebuggerInspector';
 import {DebuggerStore} from './DebuggerStore';
 import Bridge from './Bridge';
-import {Button} from '../../nuclide-ui/lib/Button';
+import {Button} from '../../nuclide-ui/Button';
 
 type Props = {
   actions: DebuggerActions,

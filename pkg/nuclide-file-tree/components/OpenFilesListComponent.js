@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {React} from 'react-for-atom';
 import classnames from 'classnames';
-import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
+import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import {track} from '../../nuclide-analytics';
 

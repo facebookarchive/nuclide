@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {AtomInput} from '../lib/AtomInput';
+import {AtomInput} from '../AtomInput';
 import {React, ReactDOM} from 'react-for-atom';
 
 let reactElement: any;

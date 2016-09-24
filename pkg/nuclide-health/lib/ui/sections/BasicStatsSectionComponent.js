@@ -27,7 +27,7 @@ type Props = {
 import {
   Button,
   ButtonSizes,
-} from '../../../../nuclide-ui/lib/Button';
+} from '../../../../nuclide-ui/Button';
 
 export default class BasicStatsSectionComponent extends React.Component {
   props: Props;

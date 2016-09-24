@@ -12,7 +12,7 @@
 import type {
   FileDiagnosticMessage,
   Trace,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../nuclide-diagnostics-common/lib/rpc-types';
 
 import invariant from 'assert';
 import {React} from 'react-for-atom';
@@ -20,7 +20,7 @@ import {Button, ButtonTypes} from './Button';
 import {ButtonGroup} from './ButtonGroup';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 import {DiagnosticsTraceItem} from './DiagnosticsTraceItem';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from '../commons-node/nuclideUri';
 
 type DiagnosticsMessageProps = {
   message: FileDiagnosticMessage,

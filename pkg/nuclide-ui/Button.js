@@ -11,7 +11,7 @@
 
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
-import {maybeToString} from '../../commons-node/string';
+import {maybeToString} from '../commons-node/string';
 import addTooltip from './add-tooltip';
 
 export type ButtonType = 'PRIMARY' | 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';

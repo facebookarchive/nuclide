@@ -12,7 +12,7 @@
 // TODO @jxg export debugger typedefs from main module. (t11406963)
 import type {
   EvaluationResult,
-} from '../../nuclide-debugger/lib/types';
+} from '../nuclide-debugger/lib/types';
 
 import {React} from 'react-for-atom';
 import {ValueComponentClassNames} from './ValueComponentClassNames';

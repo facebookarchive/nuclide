@@ -13,8 +13,8 @@ import {React} from 'react-for-atom';
 import type {ThreadItem} from './types';
 import type Bridge from './Bridge';
 
-import {Icon} from '../../nuclide-ui/lib/Icon';
-import {Table} from '../../nuclide-ui/lib/Table';
+import {Icon} from '../../nuclide-ui/Icon';
+import {Table} from '../../nuclide-ui/Table';
 
 type DebuggerThreadsComponentProps = {
   bridge: Bridge,

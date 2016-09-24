@@ -11,7 +11,7 @@
 
 import type {SettingsPropsDefault} from './types';
 
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {React} from 'react-for-atom';
 import {
   isDefaultConfigValue,

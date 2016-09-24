@@ -23,7 +23,7 @@ import {DiffMode} from './constants';
 import {
   Button,
   ButtonSizes,
-} from '../../nuclide-ui/lib/Button';
+} from '../../nuclide-ui/Button';
 
 type DiffTimelineViewProps = {
   diffModel: DiffViewModel,

@@ -12,7 +12,7 @@
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
-import {maybeToString} from '../../commons-node/string';
+import {maybeToString} from '../commons-node/string';
 
 type BadgeSize = 'medium' | 'small' | 'large';
 type BadgeColor = 'info' | 'success' | 'warning' | 'error';

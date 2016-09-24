@@ -11,7 +11,7 @@
 
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
-import {Icon} from '../../nuclide-ui/lib/Icon';
+import {Icon} from '../../nuclide-ui/Icon';
 
 
 type CellProps = {

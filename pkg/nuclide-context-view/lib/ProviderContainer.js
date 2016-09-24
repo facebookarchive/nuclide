@@ -10,7 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
-import {Section} from '../../nuclide-ui/lib/Section';
+import {Section} from '../../nuclide-ui/Section';
 import {track} from '../../nuclide-analytics';
 
 type Props = {

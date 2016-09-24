@@ -13,7 +13,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import {CompositeDisposable} from 'atom';
 import classnames from 'classnames';
 import invariant from 'assert';
-import addTooltip from '../../nuclide-ui/lib/add-tooltip';
+import addTooltip from '../../nuclide-ui/add-tooltip';
 import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
 import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
 import {FileTreeStore} from '../lib/FileTreeStore';

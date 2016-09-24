@@ -12,9 +12,9 @@
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 
 import {React} from 'react-for-atom';
-import {Button, ButtonTypes} from '../../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../../nuclide-ui/lib/ButtonGroup';
-import {Checkbox} from '../../../nuclide-ui/lib/Checkbox';
+import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
+import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
+import {Checkbox} from '../../../nuclide-ui/Checkbox';
 
 type Props = {
   targetUri: NuclideUri,

@@ -14,8 +14,8 @@ import type DebuggerActions from './DebuggerActions';
 import {React} from 'react-for-atom';
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
-import {Listview} from '../../nuclide-ui/lib/ListView';
+import {Checkbox} from '../../nuclide-ui/Checkbox';
+import {Listview} from '../../nuclide-ui/ListView';
 import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
 
 type BreakpointListComponentProps = {

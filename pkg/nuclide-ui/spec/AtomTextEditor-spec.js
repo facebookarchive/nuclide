@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {AtomTextEditor} from '../lib/AtomTextEditor';
+import {AtomTextEditor} from '../AtomTextEditor';
 import {React, TestUtils} from 'react-for-atom';
 import invariant from 'assert';
 

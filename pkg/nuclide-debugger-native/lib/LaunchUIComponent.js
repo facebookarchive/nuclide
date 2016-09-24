@@ -15,12 +15,12 @@ import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 
 import {React} from 'react-for-atom';
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {
   Button,
   ButtonTypes,
-} from '../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
+} from '../../nuclide-ui/Button';
+import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 
 type PropsType = {
   store: LaunchAttachStore,

@@ -15,8 +15,8 @@ import type {
 } from './types';
 
 import {React} from 'react-for-atom';
-import {LazyNestedValueComponent} from '../../nuclide-ui/lib/LazyNestedValueComponent';
-import SimpleValueComponent from '../../nuclide-ui/lib/SimpleValueComponent';
+import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
+import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
 
 type DebuggerDatatipComponentProps = {
   expression: string,

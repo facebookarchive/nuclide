@@ -10,8 +10,8 @@
  */
 
 import {React} from 'react-for-atom';
-import {AtomInput} from '../../../../nuclide-ui/lib/AtomInput';
-import {Button, ButtonSizes} from '../../../../nuclide-ui/lib/Button';
+import {AtomInput} from '../../../../nuclide-ui/AtomInput';
+import {Button, ButtonSizes} from '../../../../nuclide-ui/Button';
 import {
   SwiftPMTaskRunnerBuildTaskMetadata,
   SwiftPMTaskRunnerTestTaskMetadata,

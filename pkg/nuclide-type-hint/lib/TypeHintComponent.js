@@ -13,7 +13,7 @@ import type {HintTree} from './rpc-types';
 
 import {TextBuffer} from 'atom';
 import {React} from 'react-for-atom';
-import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
+import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 
 type TypeHintComponentProps = {
   content: string | HintTree,

@@ -24,7 +24,7 @@ import {
   Emitter,
 } from 'atom';
 import {React} from 'react-for-atom';
-import {Icon} from '../../nuclide-ui/lib/Icon';
+import {Icon} from '../../nuclide-ui/Icon';
 import nuclideUri from '../../commons-node/nuclideUri';
 import Constants from './Constants';
 import passesGK from '../../commons-node/passesGK';

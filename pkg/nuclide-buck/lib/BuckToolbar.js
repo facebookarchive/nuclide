@@ -19,11 +19,11 @@ import {React} from 'react-for-atom';
 
 import BuckToolbarSettings from './ui/BuckToolbarSettings';
 import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
-import {Button, ButtonSizes} from '../../nuclide-ui/lib/Button';
-import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
-import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
-import {LoadingSpinner} from '../../nuclide-ui/lib/LoadingSpinner';
-import addTooltip from '../../nuclide-ui/lib/add-tooltip';
+import {Button, ButtonSizes} from '../../nuclide-ui/Button';
+import {Checkbox} from '../../nuclide-ui/Checkbox';
+import {Dropdown} from '../../nuclide-ui/Dropdown';
+import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
+import addTooltip from '../../nuclide-ui/add-tooltip';
 
 type Props = {
   activeTaskType: ?TaskType,

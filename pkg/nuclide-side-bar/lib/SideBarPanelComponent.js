@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {Tab} from '../../nuclide-ui/lib/Tabs';
+import type {Tab} from '../../nuclide-ui/Tabs';
 
 import {React, ReactDOM} from 'react-for-atom';
-import Tabs from '../../nuclide-ui/lib/Tabs';
+import Tabs from '../../nuclide-ui/Tabs';
 
 type Props = {
   children?: React.Element<any>,

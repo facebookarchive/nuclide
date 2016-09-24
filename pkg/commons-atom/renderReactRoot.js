@@ -10,7 +10,7 @@
  */
 
 import {React} from 'react-for-atom';
-import ReactMountRootElement from '../nuclide-ui/lib/ReactMountRootElement';
+import ReactMountRootElement from '../nuclide-ui/ReactMountRootElement';
 
 /**
  * Create a DOM element and mount the React element in it. It will be unmounted when the node is

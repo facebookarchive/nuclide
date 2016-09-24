@@ -11,7 +11,7 @@
 
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
-import {maybeToString} from '../../commons-node/string';
+import {maybeToString} from '../commons-node/string';
 
 type Props = {
   children?: mixed,

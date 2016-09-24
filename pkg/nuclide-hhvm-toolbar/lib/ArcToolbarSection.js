@@ -12,7 +12,7 @@
 import {React} from 'react-for-atom';
 import {Observable} from 'rxjs';
 import {ArcToolbarModel} from './ArcToolbarModel';
-import {Combobox} from '../../nuclide-ui/lib/Combobox';
+import {Combobox} from '../../nuclide-ui/Combobox';
 import {getLogger} from '../../nuclide-logging';
 
 const ARC_BUILD_TARGET_WIDTH_PX = 120;

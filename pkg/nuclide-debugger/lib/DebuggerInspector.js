@@ -17,7 +17,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {
   Button,
   ButtonTypes,
-} from '../../nuclide-ui/lib/Button';
+} from '../../nuclide-ui/Button';
 
 type Props = {
   actions: DebuggerActions,

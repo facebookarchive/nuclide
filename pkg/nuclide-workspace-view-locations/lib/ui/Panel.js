@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {PanelComponent} from '../../../nuclide-ui/lib/PanelComponent';
-import {View} from '../../../nuclide-ui/lib/View';
+import {PanelComponent} from '../../../nuclide-ui/PanelComponent';
+import {View} from '../../../nuclide-ui/View';
 import {React} from 'react-for-atom';
 
 type Props = {

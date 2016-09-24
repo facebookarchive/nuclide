@@ -16,7 +16,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import classnames from 'classnames';
 import fileTypeClass from '../../commons-atom/file-type-class';
 import {filterName} from '../lib/FileTreeFilterHelper';
-import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {Checkbox} from '../../nuclide-ui/Checkbox';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {isValidRename} from '../lib/FileTreeHgHelpers';

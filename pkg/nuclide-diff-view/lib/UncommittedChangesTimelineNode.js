@@ -16,7 +16,7 @@ import {React} from 'react-for-atom';
 import {
   Button,
   ButtonSizes,
-} from '../../nuclide-ui/lib/Button';
+} from '../../nuclide-ui/Button';
 import {DiffMode, CommitMode} from './constants';
 
 type Props = {

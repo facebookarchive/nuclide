@@ -14,7 +14,7 @@ import type {SelectableItem} from './SideBarComponent';
 
 import bookmarkIsEqual from './bookmarkIsEqual';
 import classnames from 'classnames';
-import {HR} from '../../nuclide-ui/lib/HR';
+import {HR} from '../../nuclide-ui/HR';
 import invariant from 'assert';
 import {React} from 'react-for-atom';
 

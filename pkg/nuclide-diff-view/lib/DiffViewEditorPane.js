@@ -15,7 +15,7 @@ import type {HighlightedLines, OffsetMap, UIElement} from './types';
 import {arrayEqual, mapEqual} from '../../commons-node/collection';
 import {React} from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
-import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
+import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import invariant from 'assert';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Observable} from 'rxjs';

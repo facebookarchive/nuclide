@@ -18,7 +18,7 @@ import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {SimpleModel} from '../../commons-node/SimpleModel';
-import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
+import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {observePanes} from './observePanes';
 import {syncPaneItemVisibility} from './syncPaneItemVisibility';
 import * as PanelLocationIds from './PanelLocationIds';

@@ -13,10 +13,10 @@ import type {Level, Record, Executor, OutputProvider} from '../types';
 
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
-import {LazyNestedValueComponent} from '../../../nuclide-ui/lib/LazyNestedValueComponent';
-import SimpleValueComponent from '../../../nuclide-ui/lib/SimpleValueComponent';
+import {LazyNestedValueComponent} from '../../../nuclide-ui/LazyNestedValueComponent';
+import SimpleValueComponent from '../../../nuclide-ui/SimpleValueComponent';
 import shallowEqual from 'shallowequal';
-import {TextRenderer} from '../../../nuclide-ui/lib/TextRenderer';
+import {TextRenderer} from '../../../nuclide-ui/TextRenderer';
 
 type Props = {
   record: Record,

@@ -24,13 +24,13 @@ import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {OpenFilesListComponent} from './OpenFilesListComponent';
 import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
-import {MultiRootChangedFilesView} from '../../nuclide-ui/lib/MultiRootChangedFilesView';
-import {PanelComponentScroller} from '../../nuclide-ui/lib/PanelComponentScroller';
+import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
+import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
 import {toggle} from '../../commons-node/observable';
 import url from 'url';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {Section} from '../../nuclide-ui/lib/Section';
+import {Section} from '../../nuclide-ui/Section';
 import featureConfig from '../../commons-atom/featureConfig';
 
 type State = {

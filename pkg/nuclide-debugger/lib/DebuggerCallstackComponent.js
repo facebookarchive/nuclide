@@ -16,7 +16,7 @@ import type {Callstack} from './types';
 import type DebuggerActions from './DebuggerActions';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import {Listview} from '../../nuclide-ui/lib/ListView';
+import {Listview} from '../../nuclide-ui/ListView';
 import Bridge from './Bridge';
 
 type DebuggerCallstackComponentProps = {

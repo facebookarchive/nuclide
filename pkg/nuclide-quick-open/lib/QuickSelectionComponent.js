@@ -16,7 +16,7 @@ import type {
   ServiceName,
 } from './types';
 
-import type {Tab} from '../../nuclide-ui/lib/Tabs';
+import type {Tab} from '../../nuclide-ui/Tabs';
 
 type ResultContext = {
   nonEmptyResults: GroupedResult,
@@ -34,9 +34,9 @@ type Selection = {
   selectedItemIndex: number,
 };
 
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
-import {Button} from '../../nuclide-ui/lib/Button';
-import Tabs from '../../nuclide-ui/lib/Tabs';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
+import {Button} from '../../nuclide-ui/Button';
+import Tabs from '../../nuclide-ui/Tabs';
 import {CompositeDisposable, Disposable, Emitter} from 'atom';
 import debounce from '../../commons-node/debounce';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';

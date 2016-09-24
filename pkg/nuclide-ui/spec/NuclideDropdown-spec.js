@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Dropdown} from '../lib/Dropdown';
+import {Dropdown} from '../Dropdown';
 import {React, ReactDOM, TestUtils} from 'react-for-atom';
 
 const {

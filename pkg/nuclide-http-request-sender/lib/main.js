@@ -21,7 +21,7 @@ import * as Epics from './Epics';
 import * as Reducers from './Reducers';
 import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
 import {Observable} from 'rxjs';
-import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
+import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {track} from '../../nuclide-analytics';
 
 export type HttpRequestSenderApi = {

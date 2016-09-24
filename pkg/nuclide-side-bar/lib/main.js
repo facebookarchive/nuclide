@@ -16,7 +16,7 @@ import {CompositeDisposable} from 'atom';
 import debounce from '../../commons-node/debounce';
 import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
-import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
+import {PanelComponent} from '../../nuclide-ui/PanelComponent';
 import {React, ReactDOM} from 'react-for-atom';
 import SideBarPanelComponent from './SideBarPanelComponent';
 

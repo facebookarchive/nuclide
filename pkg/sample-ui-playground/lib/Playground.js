@@ -13,21 +13,21 @@ import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
 
-import {Button} from '../../nuclide-ui/lib/Button';
-import {ButtonExamples} from '../../nuclide-ui/lib/Button.example';
-import {ProgressIndicatorExamples} from '../../nuclide-ui/lib/ProgressIndicators.example';
-import {CheckboxExamples} from '../../nuclide-ui/lib/Checkbox.example';
-import {TabExamples} from '../../nuclide-ui/lib/Tabs.example';
-import {RadioGroupExamples} from '../../nuclide-ui/lib/RadioGroup.example';
-import {TextInputExamples} from '../../nuclide-ui/lib/TextInputs.example';
-import {ToolbarExamples} from '../../nuclide-ui/lib/Toolbar.example';
-import {DiagnosticsExamples} from '../../nuclide-ui/lib/Diagnostics.example';
-import {BadgeExamples} from '../../nuclide-ui/lib/Badge.example';
-import {HighlightExamples} from '../../nuclide-ui/lib/Highlight.example';
-import {IconExamples} from '../../nuclide-ui/lib/Icon.example';
-import {TreeExamples} from '../../nuclide-ui/lib/Tree.example';
-import {ListviewExamples} from '../../nuclide-ui/lib/ListView.example';
-import {TableExamples} from '../../nuclide-ui/lib/Table.example';
+import {Button} from '../../nuclide-ui/Button';
+import {ButtonExamples} from '../../nuclide-ui/Button.example';
+import {ProgressIndicatorExamples} from '../../nuclide-ui/ProgressIndicators.example';
+import {CheckboxExamples} from '../../nuclide-ui/Checkbox.example';
+import {TabExamples} from '../../nuclide-ui/Tabs.example';
+import {RadioGroupExamples} from '../../nuclide-ui/RadioGroup.example';
+import {TextInputExamples} from '../../nuclide-ui/TextInputs.example';
+import {ToolbarExamples} from '../../nuclide-ui/Toolbar.example';
+import {DiagnosticsExamples} from '../../nuclide-ui/Diagnostics.example';
+import {BadgeExamples} from '../../nuclide-ui/Badge.example';
+import {HighlightExamples} from '../../nuclide-ui/Highlight.example';
+import {IconExamples} from '../../nuclide-ui/Icon.example';
+import {TreeExamples} from '../../nuclide-ui/Tree.example';
+import {ListviewExamples} from '../../nuclide-ui/ListView.example';
+import {TableExamples} from '../../nuclide-ui/Table.example';
 
 const playgroundComponents = [
   ButtonExamples,

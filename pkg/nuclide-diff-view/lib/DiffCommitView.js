@@ -12,8 +12,8 @@
 import type {CommitModeStateType} from './types';
 import type DiffViewModel from './DiffViewModel';
 
-import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
-import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
+import {Checkbox} from '../../nuclide-ui/Checkbox';
 import classnames from 'classnames';
 import {DiffMode, CommitMode, CommitModeState} from './constants';
 import {CompositeDisposable} from 'atom';
@@ -22,10 +22,10 @@ import {
   Button,
   ButtonSizes,
   ButtonTypes,
-} from '../../nuclide-ui/lib/Button';
-import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
-import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
-import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
+} from '../../nuclide-ui/Button';
+import {Toolbar} from '../../nuclide-ui/Toolbar';
+import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
+import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
 
 type Props = {
   commitMessage: ?string,

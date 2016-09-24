@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import addTooltip from '../../nuclide-ui/lib/add-tooltip';
+import addTooltip from '../../nuclide-ui/add-tooltip';
 import classnames from 'classnames';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
-import {HR} from '../../nuclide-ui/lib/HR';
-import {MutableListSelector} from '../../nuclide-ui/lib/MutableListSelector';
+import {HR} from '../../nuclide-ui/HR';
+import {MutableListSelector} from '../../nuclide-ui/MutableListSelector';
 import {React} from 'react-for-atom';
 
 import type {

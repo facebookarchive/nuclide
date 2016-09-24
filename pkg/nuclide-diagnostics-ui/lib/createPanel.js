@@ -16,7 +16,7 @@ import {React, ReactDOM} from 'react-for-atom';
 import DiagnosticsPanel from './DiagnosticsPanel';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {toggle} from '../../commons-node/observable';
-import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
+import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 const DEFAULT_TABLE_WIDTH = 600;

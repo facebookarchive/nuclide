@@ -10,10 +10,10 @@
  */
 
 import type {AnnotatedTaskMetadata, TaskId, TaskRunnerInfo} from '../types';
-import type {Option} from '../../../nuclide-ui/lib/Dropdown';
+import type {Option} from '../../../nuclide-ui/Dropdown';
 
-import {Button, ButtonSizes} from '../../../nuclide-ui/lib/Button';
-import {SplitButtonDropdown} from '../../../nuclide-ui/lib/SplitButtonDropdown';
+import {Button, ButtonSizes} from '../../../nuclide-ui/Button';
+import {SplitButtonDropdown} from '../../../nuclide-ui/SplitButtonDropdown';
 import {TaskRunnerButton} from './TaskRunnerButton';
 import {React} from 'react-for-atom';
 

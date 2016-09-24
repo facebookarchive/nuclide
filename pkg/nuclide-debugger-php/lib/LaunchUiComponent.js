@@ -10,14 +10,14 @@
  */
 
 import {React} from 'react-for-atom';
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
+import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {
   Button,
   ButtonTypes,
-} from '../../nuclide-ui/lib/Button';
+} from '../../nuclide-ui/Button';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 

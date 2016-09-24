@@ -10,7 +10,7 @@
  */
 
 import Immutable from 'immutable';
-import {LazyTreeNode} from '../../../nuclide-ui/lib/LazyTreeNode';
+import {LazyTreeNode} from '../../../nuclide-ui/LazyTreeNode';
 
 class TestClassTreeNode extends LazyTreeNode {
 

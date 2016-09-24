@@ -13,8 +13,8 @@ import type DiffViewModel from './DiffViewModel';
 import type {PublishModeType, PublishModeStateType} from './types';
 
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
-import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
 import classnames from 'classnames';
 import {DiffMode, PublishMode, PublishModeState} from './constants';
 import {React} from 'react-for-atom';
@@ -22,10 +22,10 @@ import {
   Button,
   ButtonSizes,
   ButtonTypes,
-} from '../../nuclide-ui/lib/Button';
-import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
-import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
-import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
+} from '../../nuclide-ui/Button';
+import {Toolbar} from '../../nuclide-ui/Toolbar';
+import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
+import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
 import {CompositeDisposable, TextBuffer} from 'atom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 

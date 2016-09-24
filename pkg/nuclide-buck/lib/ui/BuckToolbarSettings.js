@@ -15,10 +15,10 @@ import {React} from 'react-for-atom';
 import {quote} from 'shell-quote';
 
 import {shellParse} from '../../../commons-node/string';
-import {AtomInput} from '../../../nuclide-ui/lib/AtomInput';
-import {Button, ButtonTypes} from '../../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../../nuclide-ui/lib/ButtonGroup';
-import {Modal} from '../../../nuclide-ui/lib/Modal';
+import {AtomInput} from '../../../nuclide-ui/AtomInput';
+import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
+import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
+import {Modal} from '../../../nuclide-ui/Modal';
 
 type Props = {
   currentBuckRoot: ?string,

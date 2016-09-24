@@ -25,8 +25,8 @@ import {CompositeDisposable} from 'atom';
 import {
   React,
 } from 'react-for-atom';
-import {Section} from '../../nuclide-ui/lib/Section';
-import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
+import {Section} from '../../nuclide-ui/Section';
+import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {WatchExpressionComponent} from './WatchExpressionComponent';
 import {LocalsComponent} from './LocalsComponent';
 import {BreakpointListComponent} from './BreakpointListComponent';

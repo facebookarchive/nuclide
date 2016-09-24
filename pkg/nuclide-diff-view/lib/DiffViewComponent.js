@@ -21,7 +21,7 @@ import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
-import {MultiRootChangedFilesView} from '../../nuclide-ui/lib/MultiRootChangedFilesView';
+import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {CompositeDisposable, Disposable, TextBuffer} from 'atom';
 import {
   React,

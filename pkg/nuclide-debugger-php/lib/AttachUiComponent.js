@@ -14,8 +14,8 @@ import {AttachProcessInfo} from './AttachProcessInfo';
 import {
   Button,
   ButtonTypes,
-} from '../../nuclide-ui/lib/Button';
-import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
+} from '../../nuclide-ui/Button';
+import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';

@@ -11,7 +11,7 @@
 
 import {React} from 'react-for-atom';
 
-import addTooltip from '../../nuclide-ui/lib/add-tooltip';
+import addTooltip from '../../nuclide-ui/add-tooltip';
 import featureConfig from '../../commons-atom/featureConfig';
 import classnames from 'classnames';
 

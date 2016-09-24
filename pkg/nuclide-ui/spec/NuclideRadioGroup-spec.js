@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import RadioGroup from '../lib/RadioGroup';
+import RadioGroup from '../RadioGroup';
 import {React, ReactDOM, TestUtils} from 'react-for-atom';
 
 const {

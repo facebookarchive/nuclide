@@ -21,8 +21,8 @@ import type {
 import type {RemoteConnection} from '../../nuclide-remote-connection/lib/RemoteConnection';
 
 import AuthenticationPrompt from './AuthenticationPrompt';
-import {Button} from '../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
+import {Button} from '../../nuclide-ui/Button';
+import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
 import invariant from 'assert';

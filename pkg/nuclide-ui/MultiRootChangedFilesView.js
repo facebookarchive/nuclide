@@ -9,22 +9,22 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../../nuclide-hg-git-bridge/lib/constants';
+import type {NuclideUri} from '../commons-node/nuclideUri';
+import type {FileChangeStatusValue} from '../nuclide-hg-git-bridge/lib/constants';
 
 import classnames from 'classnames';
-import {mapEqual} from '../../commons-node/collection';
+import {mapEqual} from '../commons-node/collection';
 import {
  FileChangeStatus,
  FileChangeStatusToPrefix,
  FileChangeStatusToTextColor,
  RevertibleStatusCodes,
-} from '../../nuclide-hg-git-bridge/lib/constants';
-import nuclideUri from '../../commons-node/nuclideUri';
+} from '../nuclide-hg-git-bridge/lib/constants';
+import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from '../commons-node/UniversalDisposable';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {addPath, revertPath} from '../../nuclide-hg-repository/lib/actions';
+import {addPath, revertPath} from '../nuclide-hg-repository/lib/actions';
 
 type ChangedFilesProps = {
   fileChanges: Map<NuclideUri, FileChangeStatusValue>,

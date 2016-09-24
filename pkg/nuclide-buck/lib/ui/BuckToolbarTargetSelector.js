@@ -14,7 +14,7 @@ import {Observable} from 'rxjs';
 import type BuckToolbarActions from '../BuckToolbarActions';
 import type BuckToolbarStore from '../BuckToolbarStore';
 
-import {Combobox} from '../../../nuclide-ui/lib/Combobox';
+import {Combobox} from '../../../nuclide-ui/Combobox';
 
 import nuclideUri from '../../../commons-node/nuclideUri';
 import {concatLatest} from '../../../commons-node/observable';

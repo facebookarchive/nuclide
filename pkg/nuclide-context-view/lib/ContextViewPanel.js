@@ -10,9 +10,9 @@
  */
 
 import {React} from 'react-for-atom';
-import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
-import {Button} from '../../nuclide-ui/lib/Button';
-import {Icon} from '../../nuclide-ui/lib/Icon';
+import {PanelComponent} from '../../nuclide-ui/PanelComponent';
+import {Button} from '../../nuclide-ui/Button';
+import {Icon} from '../../nuclide-ui/Icon';
 
 type Props = {
   initialWidth: number,

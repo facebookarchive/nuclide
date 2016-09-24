@@ -11,11 +11,11 @@
 
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {
   Button,
   ButtonTypes,
-} from '../../nuclide-ui/lib/Button';
+} from '../../nuclide-ui/Button';
 
 type Props = {
   isEditing: boolean,

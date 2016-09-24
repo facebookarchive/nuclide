@@ -10,7 +10,7 @@
  */
 
 import {React, ReactDOM} from 'react-for-atom';
-import ReactMountRootElement from '../nuclide-ui/lib/ReactMountRootElement';
+import ReactMountRootElement from '../nuclide-ui/ReactMountRootElement';
 
 /**
  * Create an object that can be used as an Atom model from a React element. Example:

@@ -10,7 +10,7 @@
  */
 
 import {React, ReactDOM} from 'react-for-atom';
-import {AtomTextEditor} from '../../../nuclide-ui/lib/AtomTextEditor';
+import {AtomTextEditor} from '../../../nuclide-ui/AtomTextEditor';
 import {Observable} from 'rxjs';
 
 type Props = {

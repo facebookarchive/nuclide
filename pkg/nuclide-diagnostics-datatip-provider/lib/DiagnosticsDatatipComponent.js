@@ -15,7 +15,7 @@ import type {
 
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {React} from 'react-for-atom';
-import {DiagnosticsMessage} from '../../nuclide-ui/lib/DiagnosticsMessage';
+import {DiagnosticsMessage} from '../../nuclide-ui/DiagnosticsMessage';
 
 type DiagnosticsDatatipComponentProps = {
   message: FileDiagnosticMessage,

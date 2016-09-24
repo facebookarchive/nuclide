@@ -12,14 +12,14 @@
 import type {DiffModeType, DiffSection, DiffSectionStatusType} from './types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {Button} from '../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
+import {Button} from '../../nuclide-ui/Button';
+import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
-import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
-import {ToolbarCenter} from '../../nuclide-ui/lib/ToolbarCenter';
-import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
-import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
+import {Toolbar} from '../../nuclide-ui/Toolbar';
+import {ToolbarCenter} from '../../nuclide-ui/ToolbarCenter';
+import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
+import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
 
 type Props = {
   diffSections: Array<DiffSection>,

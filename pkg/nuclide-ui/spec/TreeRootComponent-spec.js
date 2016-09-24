@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {LazyTreeNode} from '../lib/LazyTreeNode';
+import type {LazyTreeNode} from '../LazyTreeNode';
 
 import {LazyTestTreeNode} from './LazyTestTreeNode';
 import {React, ReactDOM, TestUtils} from 'react-for-atom';
-import {TreeNodeComponent} from '../lib/TreeNodeComponent';
-import {TreeRootComponent} from '../lib/TreeRootComponent';
+import {TreeNodeComponent} from '../TreeNodeComponent';
+import {TreeRootComponent} from '../TreeRootComponent';
 import invariant from 'assert';
 
 function clickNodeWithLabel(component: TreeRootComponent, label: string): void {

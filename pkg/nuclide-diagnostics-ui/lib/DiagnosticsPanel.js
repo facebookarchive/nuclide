@@ -13,17 +13,17 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 
 import DiagnosticsPane from './DiagnosticsPane';
-import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
-import {PanelComponent} from '../../nuclide-ui/lib/PanelComponent';
-import {Toolbar} from '../../nuclide-ui/lib/Toolbar';
-import {ToolbarCenter} from '../../nuclide-ui/lib/ToolbarCenter';
-import {ToolbarLeft} from '../../nuclide-ui/lib/ToolbarLeft';
-import {ToolbarRight} from '../../nuclide-ui/lib/ToolbarRight';
+import {Checkbox} from '../../nuclide-ui/Checkbox';
+import {PanelComponent} from '../../nuclide-ui/PanelComponent';
+import {Toolbar} from '../../nuclide-ui/Toolbar';
+import {ToolbarCenter} from '../../nuclide-ui/ToolbarCenter';
+import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
+import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
 import {React} from 'react-for-atom';
 import {
   Button,
   ButtonSizes,
-} from '../../nuclide-ui/lib/Button';
+} from '../../nuclide-ui/Button';
 import {track} from '../../nuclide-analytics';
 
 type Props = {

@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {ButtonSize} from '../../../nuclide-ui/lib/Button';
+import type {ButtonSize} from '../../../nuclide-ui/Button';
 
-import {Button} from '../../../nuclide-ui/lib/Button';
-import {Icon} from '../../../nuclide-ui/lib/Icon';
+import {Button} from '../../../nuclide-ui/Button';
+import {Icon} from '../../../nuclide-ui/Icon';
 import {React} from 'react-for-atom';
 
 type Props = {

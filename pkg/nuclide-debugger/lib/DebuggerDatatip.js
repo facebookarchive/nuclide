@@ -17,7 +17,7 @@ import type DebuggerModel from './DebuggerModel';
 import type {EvaluationResult} from './types';
 
 import {wordAtPosition} from '../../commons-atom/range';
-import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
+import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {DebuggerMode} from './DebuggerStore';
 import {DebuggerDatatipComponent} from './DebuggerDatatipComponent';
 import passesGK from '../../commons-node/passesGK';

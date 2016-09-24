@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from '../commons-node/UniversalDisposable';
 import {Portal} from './Portal';
 import {React} from 'react-for-atom';
 import {Observable} from 'rxjs';

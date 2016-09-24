@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Checkbox} from '../lib/Checkbox';
+import {Checkbox} from '../Checkbox';
 import {
   React,
   ReactDOM,

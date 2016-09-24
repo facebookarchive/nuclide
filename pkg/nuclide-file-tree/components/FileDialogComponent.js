@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
-import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
+import {Checkbox} from '../../nuclide-ui/Checkbox';
 import {CompositeDisposable} from 'atom';
 import {
   React,

@@ -11,7 +11,7 @@
 
 import {React} from 'react-for-atom';
 import nuclideUri from '../../../commons-node/nuclideUri';
-import {Webview} from '../../../nuclide-ui/lib/Webview';
+import {Webview} from '../../../nuclide-ui/Webview';
 
 export default class Inspector extends React.Component {
   constructor() {

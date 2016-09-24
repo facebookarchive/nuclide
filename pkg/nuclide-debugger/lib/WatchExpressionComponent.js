@@ -21,10 +21,10 @@ import {
   React,
 } from 'react-for-atom';
 import classnames from 'classnames';
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
-import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
-import {LazyNestedValueComponent} from '../../nuclide-ui/lib/LazyNestedValueComponent';
-import SimpleValueComponent from '../../nuclide-ui/lib/SimpleValueComponent';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
+import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
+import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
 
 type WatchExpressionComponentProps = {
   watchExpressions: EvaluatedExpressionList,

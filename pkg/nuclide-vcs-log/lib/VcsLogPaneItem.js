@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {CustomPaneItemOptions} from '../../nuclide-ui/lib/types';
+import type {CustomPaneItemOptions} from '../../nuclide-ui/types';
 import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {React} from 'react-for-atom';
-import {CustomPaneItem} from '../../nuclide-ui/lib/CustomPaneItem';
+import {CustomPaneItem} from '../../nuclide-ui/CustomPaneItem';
 import VcsLog from './VcsLog';
 
 class VcsLogPaneItem extends CustomPaneItem {

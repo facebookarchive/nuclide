@@ -15,9 +15,9 @@ import type {ControlButtonSpecification, DebuggerModeType} from './types';
 import {
   React,
 } from 'react-for-atom';
-import {Button} from '../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
-import {Checkbox} from '../../nuclide-ui/lib/Checkbox';
+import {Button} from '../../nuclide-ui/Button';
+import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
+import {Checkbox} from '../../nuclide-ui/Checkbox';
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 import {DebuggerMode} from './DebuggerStore';
 

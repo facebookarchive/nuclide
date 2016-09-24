@@ -12,16 +12,16 @@
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import type ProjectStore from './ProjectStore';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common/lib/constants.js';
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
-import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
+import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {React} from 'react-for-atom';
 import {
   Button,
-} from '../../nuclide-ui/lib/Button';
+} from '../../nuclide-ui/Button';
 import {
   ButtonGroup,
   ButtonGroupSizes,
-} from '../../nuclide-ui/lib/ButtonGroup';
+} from '../../nuclide-ui/ButtonGroup';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import nuclideUri from '../../commons-node/nuclideUri';
 

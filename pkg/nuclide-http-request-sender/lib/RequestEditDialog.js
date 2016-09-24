@@ -12,11 +12,11 @@
 import type {BoundActionCreators} from './types';
 
 import {React} from 'react-for-atom';
-import {AtomInput} from '../../nuclide-ui/lib/AtomInput';
-import {Button, ButtonTypes} from '../../nuclide-ui/lib/Button';
-import {ButtonGroup} from '../../nuclide-ui/lib/ButtonGroup';
-import {Dropdown} from '../../nuclide-ui/lib/Dropdown';
-import {AtomTextEditor} from '../../nuclide-ui/lib/AtomTextEditor';
+import {AtomInput} from '../../nuclide-ui/AtomInput';
+import {Button, ButtonTypes} from '../../nuclide-ui/Button';
+import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
+import {Dropdown} from '../../nuclide-ui/Dropdown';
+import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import invariant from 'assert';
 import shallowequal from 'shallowequal';
 

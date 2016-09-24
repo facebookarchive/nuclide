@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {LazyTreeNode} from '../../../nuclide-ui/lib/LazyTreeNode';
+import type {LazyTreeNode} from '../../../nuclide-ui/LazyTreeNode';
 import type TestSuiteModel from '../TestSuiteModel';
 
 import {React} from 'react-for-atom';
-import {PanelComponentScroller} from '../../../nuclide-ui/lib/PanelComponentScroller';
+import {PanelComponentScroller} from '../../../nuclide-ui/PanelComponentScroller';
 import TestClassTreeNode from './TestClassTreeNode';
-import {TreeRootComponent} from '../../../nuclide-ui/lib/TreeRootComponent';
+import {TreeRootComponent} from '../../../nuclide-ui/TreeRootComponent';
 
 function labelClassNameForNode(): string {
   return 'icon icon-code';

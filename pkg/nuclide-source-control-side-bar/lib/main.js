@@ -20,7 +20,7 @@ import type {Observable} from 'rxjs';
 
 import * as ActionType from './ActionType';
 import {applyActionMiddleware} from './applyActionMiddleware';
-import {bindObservableAsProps} from '../../nuclide-ui/lib/bindObservableAsProps';
+import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import bookmarkIsEqual from './bookmarkIsEqual';
 import Commands from './Commands';
 import {CompositeDisposable, Disposable} from 'atom';
