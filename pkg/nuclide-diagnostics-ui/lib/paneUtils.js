@@ -29,10 +29,6 @@ function getProjectRelativePathOfDiagnostic(diagnostic: DiagnosticMessage): stri
   }
 }
 
-function fileColumnCellDataGetter(cellDataKey: 'filePath', diagnostic: DiagnosticMessage): string {
-  return getProjectRelativePathOfDiagnostic(diagnostic);
-}
-
 function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): number {
   // This will sort by:
   //  - errors before warnings
@@ -70,5 +66,4 @@ function compareMessagesByLevel(a: DiagnosticMessage, b: DiagnosticMessage): num
 module.exports = {
   compareMessagesByFile,
   getProjectRelativePathOfDiagnostic,
-  fileColumnCellDataGetter,
 };

@@ -1,15 +1,33 @@
-/*
- * Use double class selector to beat specificity of `.key-binding`.
- */
-.key-binding.key-binding-sm {
-  border: none;
-  line-height: 1;
-  margin-left: 0;
-  padding-bottom: 3px;
-  padding-top: 3px;
+@import "ui-variables";
+.nuclide-diagnostics-ui-table-container {
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+
+  & > div:first-child {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+  }
+
+  .nuclide-ui-table {
+    border-top-width: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+
+    td:last-child,
+    th:last-child {
+      border-right-width: 0;
+    }
+  }
 }
 
-// We have to override Atom's default for <label>.
-.nuclide-diagnostics-label {
-  margin-bottom: 0;
+.nuclide-diagnostics-ui-table-message {
+  text-align: center;
+
+  &.highlight-warning,
+  &.highlight-error {
+    border-radius: 0;
+    padding: (@component-padding / 2) 0 @component-padding 0;
+  }
 }

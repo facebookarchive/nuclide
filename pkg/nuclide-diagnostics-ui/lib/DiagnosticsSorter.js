@@ -9,33 +9,28 @@
  * the root directory of this source tree.
  */
 
-import {ColumnKeys, SortDirections} from './Cells';
-import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
-
-type ColumnGetter =
-  (d: DiagnosticMessage) => string |
-  (d: DiagnosticMessage) => number;
+import type {Row} from '../../nuclide-ui/Table';
+import type {DisplayDiagnostic} from './DiagnosticsPane';
 
 /*
  * Sorts the diagnostics according to given column and sort direction
  */
 export function sortDiagnostics(
-  diagnostics: Array<DiagnosticMessage>,
-  columnSortDirections: {[column: string]: string},
-  columnGetters: {[column: string]: ColumnGetter},
-) {
-  const columnKeys = Object.keys(columnSortDirections);
-  if (columnKeys.length === 0) {
+  diagnostics: Array<Row>,
+  sortedColumnName: ?string,
+  sortDescending: boolean,
+): Array<Row> {
+  if (sortedColumnName == null) {
     return diagnostics;
   }
-
-  const columnKey = columnKeys[0];
-  const getter = columnGetters[columnKey];
-  const isAsc = columnSortDirections[columnKey] === SortDirections.ASC;
-  const cmp: any = columnKey === ColumnKeys.RANGE ? _cmpNumber : _cmpString;
-
-  return Array.from(diagnostics).sort((a, b) => {
-    return cmp(getter(a), getter(b), isAsc);
+  const cmp: any = sortedColumnName === 'range' ? _cmpNumber : _cmpString;
+  const getter = (displayDiagnostic: {data: DisplayDiagnostic}) => (
+    sortedColumnName === 'description'
+      ? displayDiagnostic.data.description.text
+      : displayDiagnostic.data[sortedColumnName]
+    );
+  return [...diagnostics].sort((a, b) => {
+    return cmp(getter(a), getter(b), !sortDescending);
   });
 }
 

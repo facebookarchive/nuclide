@@ -10,83 +10,47 @@
  */
 
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
+import type {Column} from '../../nuclide-ui/Table';
 
-import {Cell, ColumnKeys, SortHeaderCell} from './Cells';
-import {sortDiagnostics} from './DiagnosticsSorter';
-import {fileColumnCellDataGetter} from './paneUtils';
-import {goToLocation} from '../../commons-atom/go-to-location';
-import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
 import {React} from 'react-for-atom';
+import {goToLocation} from '../../commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
+import {Table} from '../../nuclide-ui/Table';
+import {
+  Highlight,
+  HighlightColors,
+} from '../../nuclide-ui/Highlight';
+import {sortDiagnostics} from './DiagnosticsSorter';
+import {getProjectRelativePathOfDiagnostic} from './paneUtils';
 
 type textAndType = {text: string, isPlainText: boolean};
 
-const DEFAULT_LINE_TEXT_HEIGHT = 15;
-const PIXELS_PER_CHAR = 6;
-const MAX_ROW_LINES = 3;
-const ROW_HORIZONTAL_PADDING = 16;
-const ROW_VERTICAL_PADDING = 8;
-
-const TYPE_COLUMN_WIDTH = 80;
-const PROVIDER_NAME_COLUMN_WIDTH = 175;
-const FILE_PATH_COLUMN_WIDTH = 300;
-const RANGE_COLUMN_WIDTH = 70;
+export type DisplayDiagnostic = {
+  type: string,
+  providerName: string,
+  filePath: string,
+  range: number,
+  description: textAndType,
+  diagnostic: DiagnosticMessage,
+};
 
 // Maximum number of results to render in the table before truncating and displaying a "Max results
 // reached" message.
 const MAX_RESULTS_COUNT = 1000;
 
-const TypeToHighlightClassName = Object.freeze({
-  ERROR: 'highlight-error',
-  WARNING: 'highlight-warning',
+const TypeToHighlightColor = Object.freeze({
+  ERROR: HighlightColors.error,
+  WARNING: HighlightColors.warning,
 });
 
-const columnGetters = {
-  [ColumnKeys.TYPE]: diag => typeColumnCellDataGetter('type', diag),
-  [ColumnKeys.PROVIDER]: diag => sourceColumnCellDataGetter('providerName', diag),
-  [ColumnKeys.FILE]: diag => fileColumnCellDataGetter('filePath', diag),
-  [ColumnKeys.RANGE]: diag => rowOfDiagnostic(diag),
-  [ColumnKeys.DESCRIPTION]: diag => messageColumnCellDataGetter('message', diag).text,
-};
-
-function locationColumnCellDataGetter(cellDataKey: 'range', diagnostic: DiagnosticMessage): string {
-  const row = rowOfDiagnostic(diagnostic);
-  return row === 0 ? '' : row.toString();
-}
-
-function rowOfDiagnostic(diagnostic: DiagnosticMessage): number {
-  return diagnostic.range ? diagnostic.range.start.row + 1 : 0;
-}
-
-function typeColumnCellDataGetter(cellDataKey: 'type', diagnostic: DiagnosticMessage): string {
-  return diagnostic.type;
-}
-
-function sourceColumnCellDataGetter(
-  cellDataKey: 'providerName',
-  diagnostic: DiagnosticMessage,
-): string {
-  return diagnostic.providerName;
-}
-
-function plainTextColumnCellRenderer(text: string): React.Element<any> {
-  // For consistency with messageColumnCellDataGetter(), render plaintext in a <span> so that
-  // everything lines up.
-  return <span>{text}</span>;
-}
-
-function typeColumnCellRenderer(text: string): React.Element<any> {
-  const highlightClassName = TypeToHighlightClassName[text.toUpperCase()] || 'highlight';
-  return (
-    <span className={highlightClassName}>
-      {text}
-    </span>
-  );
+function TypeComponent(props: {data: 'Warning' | 'Error'}): React.Element<any> {
+  const text = props.data;
+  const highlightColor = TypeToHighlightColor[text.toUpperCase()];
+  return <Highlight color={highlightColor}>{text}</Highlight>;
 }
 
 /** @return text and a boolean indicating whether it is plaintext or HTML. */
-function messageColumnCellDataGetter(
-  cellDataKey: 'message',
+function getMessageContent(
   diagnostic: DiagnosticMessage,
 ): textAndType {
   let text = '';
@@ -109,19 +73,16 @@ function messageColumnCellDataGetter(
   };
 }
 
-function messageColumnCellRenderer(message: textAndType): React.Element<any> {
+function DescriptionComponent(props: {data: textAndType}): React.Element<any> {
+  const message = props.data;
   if (message.isPlainText) {
-    return plainTextColumnCellRenderer(message.text);
+    return <span>{message.text}</span>;
   } else {
     return <span dangerouslySetInnerHTML={{__html: message.text}} />;
   }
 }
 
-function onRowClick(
-  event: SyntheticMouseEvent,
-  rowIndex: number,
-  rowData: DiagnosticMessage,
-): void {
+function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
   if (rowData.scope !== 'file' || rowData.filePath == null) {
     return;
   }
@@ -143,169 +104,118 @@ type DiagnosticsPaneProps = {
   width: number,
 };
 
-class DiagnosticsPane extends React.Component {
+export default class DiagnosticsPane extends React.Component {
   props: DiagnosticsPaneProps;
   state: {
-    widths: {[key: string]: number},
-    columnSortDirections: {[key: string]: string}
-  };;
+    sortDescending: boolean,
+    sortedColumn: ?string,
+  };
 
   constructor(props: mixed) {
     super(props);
-    (this: any)._rowGetter = this._rowGetter.bind(this);
-    (this: any)._rowHeightGetter = this._rowHeightGetter.bind(this);
-    (this: any)._getMessageWidth = this._getMessageWidth.bind(this);
-    (this: any)._onSortChange = this._onSortChange.bind(this);
-
+    (this: any)._handleSort = this._handleSort.bind(this);
+    (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);
     this.state = {
-      widths: {
-        type: TYPE_COLUMN_WIDTH,
-        providerName: PROVIDER_NAME_COLUMN_WIDTH,
-        filePath: FILE_PATH_COLUMN_WIDTH,
-        range: RANGE_COLUMN_WIDTH,
-      },
-      columnSortDirections: {},
+      sortDescending: false,
+      sortedColumn: null,
     };
   }
 
-  // A home-made flex function so that we can read the message column width easily.
-  _getMessageWidth(): number {
-    return this.props.width
-      - this.state.widths.type
-      - this.state.widths.providerName
-      - (this.props.showFileName ? this.state.widths.filePath : 0)
-      - this.state.widths.range;
-  }
-
-  _rowGetter(rowIndex: number): DiagnosticMessage {
-    return this.props.diagnostics[rowIndex];
-  }
-
-  _rowHeightGetter(rowIndex: number): number {
-    const diagnostic = this._rowGetter(rowIndex);
-    const {text: message} = messageColumnCellDataGetter('message', diagnostic);
-    const messageCharsPerRow = (this._getMessageWidth() - ROW_HORIZONTAL_PADDING) / PIXELS_PER_CHAR;
-    const messageLinesOfText = Math.floor(message.length / messageCharsPerRow) + 1;
-    const messageMaxLinesOfText = Math.min(MAX_ROW_LINES, messageLinesOfText);
-    return messageMaxLinesOfText * DEFAULT_LINE_TEXT_HEIGHT + ROW_VERTICAL_PADDING;
-  }
-
-  _onSortChange(columnKey: string, sortDirection: string) {
+  _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
     this.setState({
-      columnSortDirections: {
-        [columnKey]: sortDirection,
-      },
+      sortedColumn,
+      sortDescending,
     });
   }
 
+  _handleSelectTableRow(item: {diagnostic: DiagnosticMessage}, selectedIndex: number): void {
+    goToDiagnosticLocation(item.diagnostic);
+  }
+
+  _getColumns(): Array<Column> {
+    const {showFileName} = this.props;
+    const filePathColumnWidth = 0.2;
+    const filePathColumn = showFileName
+      ? [{
+        key: 'filePath',
+        title: 'File',
+        width: filePathColumnWidth,
+      }]
+      : [];
+    return [
+      {
+        component: TypeComponent,
+        key: 'type',
+        title: 'Type',
+        width: 0.05,
+      },
+      {
+        key: 'providerName',
+        title: 'Source',
+        width: 0.1,
+      },
+      ...filePathColumn,
+      {
+        key: 'range',
+        title: 'Line',
+        width: 0.05,
+      },
+      {
+        component: DescriptionComponent,
+        key: 'description',
+        title: 'Description',
+        width: showFileName ? 0.6 : 0.6 + filePathColumnWidth,
+      },
+    ];
+  }
+
   render(): React.Element<any> {
-    const diagnosticCells = [];
-    const {columnSortDirections} = this.state;
-    const sortedDiagnostics = sortDiagnostics(
-      this.props.diagnostics,
-      columnSortDirections,
-      columnGetters,
-    );
-
-    for (
-      let index = 0;
-      index < Math.min(MAX_RESULTS_COUNT, sortedDiagnostics.length);
-      index++
-    ) {
-      const diag = sortedDiagnostics[index];
-      diagnosticCells.push(
-        <div
-          className="fixedDataTableCellGroupLayout_cellGroup nuclide-diagnostics-pane__actionable"
-          key={index}
-          onClick={e => { onRowClick(e, index, diag); }}
-          style={{height: this._rowHeightGetter(index)}}>
-          <Cell style={{width: `${this.state.widths.type}px`}}>
-            {typeColumnCellRenderer(typeColumnCellDataGetter('type', diag))}
-          </Cell>
-          <Cell style={{width: `${this.state.widths.providerName}px`}}>
-            {plainTextColumnCellRenderer(sourceColumnCellDataGetter('providerName', diag))}
-          </Cell>
-          {this.props.showFileName
-            ? <Cell
-                style={{width: `${this.state.widths.filePath}px`}}
-                title={fileColumnCellDataGetter('filePath', diag)}>
-                {plainTextColumnCellRenderer(fileColumnCellDataGetter('filePath', diag))}
-              </Cell>
-            : null
-          }
-          <Cell style={{width: `${this.state.widths.range}px`}}>
-            {plainTextColumnCellRenderer(locationColumnCellDataGetter('range', diag))}
-          </Cell>
-          <Cell style={{width: `${this._getMessageWidth()}px`}}>
-            {messageColumnCellRenderer(messageColumnCellDataGetter('message', diag))}
-          </Cell>
-        </div>,
-      );
-    }
-
-    if (sortedDiagnostics.length > MAX_RESULTS_COUNT) {
-      diagnosticCells.push(
-        <div className="fixedDataTableCellGroupLayout_cellGroup" key="maxResultsMessage">
-          <div className="public_fixedDataTableCell_main">
-            <em>Max results ({MAX_RESULTS_COUNT}) reached. Fix diagnostics or show only diagnostics
-            for the current file to view more.</em>
-          </div>
-        </div>,
-      );
-    }
-
-    return (
-      <div className="fixedDataTableLayout_main">
-        <div className="public_fixedDataTable_main">
-          <div className="public_fixedDataTable_header">
-            <div className="fixedDataTableCellGroupLayout_cellGroup" style={{height: '30px'}}>
-              <SortHeaderCell
-                columnKey={ColumnKeys.TYPE}
-                sortDirection={columnSortDirections[ColumnKeys.TYPE]}
-                onSortChange={this._onSortChange}
-                style={{width: `${this.state.widths.type}px`}}>
-                Type
-              </SortHeaderCell>
-              <SortHeaderCell
-                columnKey={ColumnKeys.PROVIDER}
-                sortDirection={columnSortDirections[ColumnKeys.PROVIDER]}
-                onSortChange={this._onSortChange}
-                style={{width: `${this.state.widths.providerName}px`}}>
-                Source
-              </SortHeaderCell>
-              {this.props.showFileName
-                ? <SortHeaderCell
-                    columnKey={ColumnKeys.FILE}
-                    sortDirection={columnSortDirections[ColumnKeys.FILE]}
-                    onSortChange={this._onSortChange}
-                    style={{width: `${this.state.widths.filePath}px`}}>
-                    File
-                  </SortHeaderCell>
-                : null
-              }
-              <SortHeaderCell
-                columnKey={ColumnKeys.RANGE}
-                sortDirection={columnSortDirections[ColumnKeys.RANGE]}
-                onSortChange={this._onSortChange}
-                style={{width: `${this.state.widths.range}px`}}>
-                Line
-              </SortHeaderCell>
-              <SortHeaderCell
-                columnKey={ColumnKeys.DESCRIPTION}
-                sortDirection={columnSortDirections[ColumnKeys.DESCRIPTION]}
-                onSortChange={this._onSortChange}
-                style={{width: `${this._getMessageWidth()}px`}}>
-                Description
-              </SortHeaderCell>
-            </div>
-          </div>
-          <PanelComponentScroller flexDirection="column">
-            {diagnosticCells}
-          </PanelComponentScroller>
+    const {diagnostics} = this.props;
+    const {
+      sortedColumn,
+      sortDescending,
+    } = this.state;
+    const diagnosticRows = diagnostics.map(diagnostic => {
+      const messageContent = getMessageContent(diagnostic);
+      return {
+        data: {
+          type: diagnostic.type,
+          providerName: diagnostic.providerName,
+          filePath: getProjectRelativePathOfDiagnostic(diagnostic),
+          range: diagnostic.range ? diagnostic.range.start.row + 1 : 0,
+          description: messageContent,
+          diagnostic,
+        },
+      };
+    });
+    let sortedRows = sortDiagnostics(diagnosticRows, sortedColumn, sortDescending);
+    let maxResultsMessage;
+    if (sortedRows.length > MAX_RESULTS_COUNT) {
+      sortedRows = sortedRows.slice(0, MAX_RESULTS_COUNT);
+      maxResultsMessage = (
+        <div className="highlight-warning nuclide-diagnostics-ui-table-message">
+          Max results ({MAX_RESULTS_COUNT}) reached.
+          Fix diagnostics or show only diagnostics for the current file to view more.
         </div>
+      );
+    }
+    return (
+      <div className="nuclide-diagnostics-ui-table-container">
+        <Table
+          collapsable={true}
+          columns={this._getColumns()}
+          fixedHeader={true}
+          maxBodyHeight="99999px"
+          rows={sortedRows}
+          sortable={true}
+          onSort={this._handleSort}
+          sortedColumn={sortedColumn}
+          sortDescending={sortDescending}
+          selectable={true}
+          onSelect={this._handleSelectTableRow}
+        />
+        {maxResultsMessage}
       </div>
     );
   }
 }
-
-module.exports = DiagnosticsPane;

@@ -81,5 +81,7 @@ function getStatusBarElement(): ?HTMLElement {
 export function getPanelDiagnosticElements(): Array<HTMLElement> {
   const panelElement = getDiagnosticsPanelElement();
   invariant(panelElement != null);
-  return Array.from(panelElement.querySelectorAll('.nuclide-diagnostics-pane__actionable'));
+  return Array.from(panelElement.querySelectorAll(
+    '.nuclide-diagnostics-ui-table-container .nuclide-ui-table-body tr:last-child',
+  ));
 }

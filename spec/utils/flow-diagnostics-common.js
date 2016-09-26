@@ -58,9 +58,10 @@ export function runTest(context: TestContext) {
       // The text is rendered slightly differently in the gutter and the panel
       const expectedPanelText = 'property `baz` Property not found in Foo';
 
-      const diagnosticElements = getPanelDiagnosticElements();
-      expect(diagnosticElements.length).toBe(1);
-      const diagnosticElement = diagnosticElements[0];
+      const [diagnosticRowElement] = getPanelDiagnosticElements();
+      const diagnosticDescriptionElements = diagnosticRowElement.querySelectorAll('td:last-child');
+      expect(diagnosticDescriptionElements.length).toBe(1);
+      const diagnosticElement = diagnosticDescriptionElements[0];
       expect(diagnosticElement.innerText).toContain(expectedPanelText);
 
       textEditor.setCursorBufferPosition([0, 0]);
@@ -86,7 +87,8 @@ export function runTest(context: TestContext) {
     });
 
     waitsFor(() => {
-      return getPanelDiagnosticElements().length === 0;
+      const [panelElement] = getPanelDiagnosticElements();
+      return panelElement.innerHTML.indexOf('Empty table') !== -1;
     });
   });
 }

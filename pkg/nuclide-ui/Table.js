@@ -31,7 +31,7 @@ export type Column = {
   // The component receives the cell value via `props.data`.
   component?: ReactClass<any>,
 };
-type Row = {
+export type Row = {
   className?: string,
   data: {
     [key: ColumnKey]: ?mixed,
