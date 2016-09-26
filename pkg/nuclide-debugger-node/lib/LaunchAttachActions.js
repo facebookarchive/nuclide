@@ -9,30 +9,29 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
+import type LaunchAttachDispatcher from './LaunchAttachDispatcher';
 import type {
   NodeAttachTargetInfo,
 } from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
-import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
-import {LaunchAttachActionCode} from './Constants';
+import {ActionTypes} from './LaunchAttachDispatcher';
 import {NodeAttachProcessInfo} from './NodeAttachProcessInfo';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getNodeDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000;
 
 export class LaunchAttachActions {
-  _dispatcher: Dispatcher;
+  _dispatcher: LaunchAttachDispatcher;
   _targetUri: NuclideUri;
   _refreshTimerId: ?number;
   _dialogVisible: boolean;
   _subscriptions: atom$CompositeDisposable;
 
-  constructor(dispatcher: Dispatcher, targetUri: NuclideUri) {
+  constructor(dispatcher: LaunchAttachDispatcher, targetUri: NuclideUri) {
     this._dispatcher = dispatcher;
     this._targetUri = targetUri;
     this._refreshTimerId = null;
@@ -89,17 +88,11 @@ export class LaunchAttachActions {
   }
 
   async updateAttachTargetList(): Promise<void> {
-    const rpcService
-      = getServiceByNuclideUri('NodeDebuggerService', this._targetUri);
-    invariant(rpcService);
+    const rpcService = getNodeDebuggerServiceByNuclideUri(this._targetUri);
     const attachTargetList = await rpcService.getAttachTargetInfoList();
-    this._emitNewAction(LaunchAttachActionCode.UPDATE_ATTACH_TARGET_LIST, attachTargetList);
-  }
-
-  _emitNewAction(actionType: string, data: Array<NodeAttachTargetInfo>): void {
     this._dispatcher.dispatch({
-      actionType,
-      data,
+      actionType: ActionTypes.UPDATE_ATTACH_TARGET_LIST,
+      attachTargetInfos: attachTargetList,
     });
   }
 

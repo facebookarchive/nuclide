@@ -12,20 +12,20 @@
 import type {
   NodeAttachTargetInfo,
 } from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
-import type {Dispatcher} from 'flux';
+import type LaunchAttachDispatcher, {LaunchAttachAction} from './LaunchAttachDispatcher';
 
 import {Emitter} from 'atom';
-import {LaunchAttachActionCode} from './Constants';
+import {ActionTypes} from './LaunchAttachDispatcher';
 
 const ATTACH_TARGET_LIST_CHANGE_EVENT = 'ATTACH_TARGET_LIST_CHANGE_EVENT';
 
 export class LaunchAttachStore {
-  _dispatcher: Dispatcher;
-  _dispatcherToken: any;
+  _dispatcher: LaunchAttachDispatcher;
+  _dispatcherToken: string;
   _attachTargetInfos: Array<NodeAttachTargetInfo>;
   _emitter: Emitter;
 
-  constructor(dispatcher: Dispatcher) {
+  constructor(dispatcher: LaunchAttachDispatcher) {
     this._dispatcher = dispatcher;
     this._dispatcherToken = this._dispatcher.register(this._handleActions.bind(this));
     this._emitter = new Emitter();
@@ -40,10 +40,10 @@ export class LaunchAttachStore {
     return this._emitter.on(ATTACH_TARGET_LIST_CHANGE_EVENT, callback);
   }
 
-  _handleActions(args: {actionType: string, data: any}): void {
-    switch (args.actionType) {
-      case LaunchAttachActionCode.UPDATE_ATTACH_TARGET_LIST:
-        this._attachTargetInfos = args.data;
+  _handleActions(action: LaunchAttachAction): void {
+    switch (action.actionType) {
+      case ActionTypes.UPDATE_ATTACH_TARGET_LIST:
+        this._attachTargetInfos = action.attachTargetInfos;
         this._emitter.emit(ATTACH_TARGET_LIST_CHANGE_EVENT);
         break;
     }
