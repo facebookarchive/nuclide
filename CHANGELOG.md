@@ -1,5 +1,26 @@
 # Nuclide Changelog
 
+## v0.171.0
+
+### Highlights
+
+* Debugger support for attaching to local and remote Node processes.
+
+### General
+
+* Autofix can now remove unused Flow suppression comments.
+* Add keyboard shortcuts for navigating the list of diagnostic messages:
+  * Previous: `alt-<`, Next: `alt->`, First: `alt-ctrl-<`, Last: `alt-ctrl->`.
+* Diff View is now only showing the current working directory diff / stack changes.
+* Console position is now preserved across Atom reloads.
+* Distraction Free Mode now also hides "Find and Replace".
+* Fix 100% CPU usage infinite loop when opening `atom://` uris (e.g. preferences).
+
+### Debugger
+
+* Added UI in PHP debugger for editing and sending HTTP requests to a chosen endpoint.
+* Attach Debugger UI now collapses a row if its content is too large.
+
 ## v0.170.0
 
 Hotfix release for spurious Diff View errors.
