@@ -11,12 +11,11 @@
 
 import type {FileChangeStatusValue} from '../../nuclide-hg-git-bridge/lib/constants';
 
-import FileTreeDispatcher from './FileTreeDispatcher';
+import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeNode} from './FileTreeNode';
 import Immutable from 'immutable';
-import {ActionType} from './FileTreeConstants';
 import {Emitter} from 'atom';
 import {HgStatusToFileChangeStatus} from '../../nuclide-hg-git-bridge/lib/constants';
 import {matchesFilter} from './FileTreeFilterHelper';
@@ -31,9 +30,8 @@ import nuclideUri from '../../commons-node/nuclideUri';
 // Used to ensure the version we serialized is the same version we are deserializing.
 const VERSION = 1;
 
-import type {FileTreeAction} from './FileTreeActionTypes';
+import type {FileTreeAction} from './FileTreeDispatcher';
 import type {Directory} from './FileTreeHelpers';
-import type {Dispatcher} from 'flux';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
@@ -99,7 +97,7 @@ export class FileTreeStore {
   _isLoadingMap: Immutable.Map<NuclideUri, Promise<void>>;
   _repositories: Immutable.Set<atom$Repository>;
 
-  _dispatcher: Dispatcher;
+  _dispatcher: FileTreeDispatcher;
   _emitter: Emitter;
   _logger: any;
   _animationFrameRequestId: ?number;
@@ -126,9 +124,7 @@ export class FileTreeStore {
     this.roots = new Immutable.OrderedMap();
     this._dispatcher = FileTreeDispatcher.getInstance();
     this._emitter = new Emitter();
-    this._dispatcher.register(
-      payload => this._onDispatch(payload),
-    );
+    this._dispatcher.register(this._onDispatch.bind(this));
     this._logger = getLogger();
 
     this._usePrefixNav = false;
@@ -293,120 +289,120 @@ export class FileTreeStore {
 
   _onDispatch(payload: FileTreeAction): void {
     switch (payload.actionType) {
-      case ActionType.DELETE_SELECTED_NODES:
+      case ActionTypes.DELETE_SELECTED_NODES:
         this._deleteSelectedNodes();
         break;
-      case ActionType.SET_CWD:
+      case ActionTypes.SET_CWD:
         this._setCwdKey(payload.rootKey);
         break;
-      case ActionType.SET_TRACKED_NODE:
+      case ActionTypes.SET_TRACKED_NODE:
         this._setTrackedNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.CLEAR_TRACKED_NODE:
+      case ActionTypes.CLEAR_TRACKED_NODE:
         this._clearTrackedNode();
         break;
-      case ActionType.MOVE_TO_NODE:
+      case ActionTypes.MOVE_TO_NODE:
         this._moveToNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.SET_ROOT_KEYS:
+      case ActionTypes.SET_ROOT_KEYS:
         this._setRootKeys(payload.rootKeys);
         break;
-      case ActionType.EXPAND_NODE:
+      case ActionTypes.EXPAND_NODE:
         this._expandNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.EXPAND_NODE_DEEP:
+      case ActionTypes.EXPAND_NODE_DEEP:
         this._expandNodeDeep(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.COLLAPSE_NODE:
+      case ActionTypes.COLLAPSE_NODE:
         this._collapseNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.SET_EXCLUDE_VCS_IGNORED_PATHS:
+      case ActionTypes.SET_EXCLUDE_VCS_IGNORED_PATHS:
         this._setExcludeVcsIgnoredPaths(payload.excludeVcsIgnoredPaths);
         break;
-      case ActionType.SET_USE_PREVIEW_TABS:
+      case ActionTypes.SET_USE_PREVIEW_TABS:
         this._setUsePreviewTabs(payload.usePreviewTabs);
         break;
-      case ActionType.SET_USE_PREFIX_NAV:
+      case ActionTypes.SET_USE_PREFIX_NAV:
         this._setUsePrefixNav(payload.usePrefixNav);
         break;
-      case ActionType.COLLAPSE_NODE_DEEP:
+      case ActionTypes.COLLAPSE_NODE_DEEP:
         this._collapseNodeDeep(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.SET_HIDE_IGNORED_NAMES:
+      case ActionTypes.SET_HIDE_IGNORED_NAMES:
         this._setHideIgnoredNames(payload.hideIgnoredNames);
         break;
-      case ActionType.SET_IGNORED_NAMES:
+      case ActionTypes.SET_IGNORED_NAMES:
         this._setIgnoredNames(payload.ignoredNames);
         break;
-      case ActionType.SET_VCS_STATUSES:
+      case ActionTypes.SET_VCS_STATUSES:
         this._setFileChanges(payload.rootKey, payload.vcsStatuses);
         this._setVcsStatuses(payload.rootKey, payload.vcsStatuses);
         break;
-      case ActionType.SET_REPOSITORIES:
+      case ActionTypes.SET_REPOSITORIES:
         this._setRepositories(payload.repositories);
         break;
-      case ActionType.SET_WORKING_SET:
+      case ActionTypes.SET_WORKING_SET:
         this._setWorkingSet(payload.workingSet);
         break;
-      case ActionType.SET_OPEN_FILES_WORKING_SET:
+      case ActionTypes.SET_OPEN_FILES_WORKING_SET:
         this._setOpenFilesWorkingSet(payload.openFilesWorkingSet);
         break;
-      case ActionType.SET_WORKING_SETS_STORE:
+      case ActionTypes.SET_WORKING_SETS_STORE:
         this._setWorkingSetsStore(payload.workingSetsStore);
         break;
-      case ActionType.START_EDITING_WORKING_SET:
+      case ActionTypes.START_EDITING_WORKING_SET:
         this._startEditingWorkingSet(payload.editedWorkingSet);
         break;
-      case ActionType.FINISH_EDITING_WORKING_SET:
+      case ActionTypes.FINISH_EDITING_WORKING_SET:
         this._finishEditingWorkingSet();
         break;
-      case ActionType.CHECK_NODE:
+      case ActionTypes.CHECK_NODE:
         this._checkNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.UNCHECK_NODE:
+      case ActionTypes.UNCHECK_NODE:
         this._uncheckNode(payload.rootKey, payload.nodeKey);
         break;
 
-      case ActionType.SET_DRAG_HOVERED_NODE:
+      case ActionTypes.SET_DRAG_HOVERED_NODE:
         this._setDragHoveredNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.UNHOVER_NODE:
+      case ActionTypes.UNHOVER_NODE:
         this._unhoverNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.SET_SELECTED_NODE:
+      case ActionTypes.SET_SELECTED_NODE:
         this._setSelectedNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.SET_FOCUSED_NODE:
+      case ActionTypes.SET_FOCUSED_NODE:
         this._setFocusedNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.ADD_SELECTED_NODE:
+      case ActionTypes.ADD_SELECTED_NODE:
         this._addSelectedNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.UNSELECT_NODE:
+      case ActionTypes.UNSELECT_NODE:
         this._unselectNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.MOVE_SELECTION_UP:
+      case ActionTypes.MOVE_SELECTION_UP:
         this._moveSelectionUp();
         break;
-      case ActionType.MOVE_SELECTION_DOWN:
+      case ActionTypes.MOVE_SELECTION_DOWN:
         this._moveSelectionDown();
         break;
-      case ActionType.MOVE_SELECTION_TO_TOP:
+      case ActionTypes.MOVE_SELECTION_TO_TOP:
         this._moveSelectionToTop();
         break;
-      case ActionType.MOVE_SELECTION_TO_BOTTOM:
+      case ActionTypes.MOVE_SELECTION_TO_BOTTOM:
         this._moveSelectionToBottom();
         break;
-      case ActionType.ENSURE_CHILD_NODE:
+      case ActionTypes.ENSURE_CHILD_NODE:
         this._ensureChildNode(payload.nodeKey);
         break;
-      case ActionType.CLEAR_FILTER:
+      case ActionTypes.CLEAR_FILTER:
         this.clearFilter();
         break;
-      case ActionType.SET_OPEN_FILES_EXPANDED:
+      case ActionTypes.SET_OPEN_FILES_EXPANDED:
         this._setOpenFilesExpanded(payload.openFilesExpanded);
         break;
-      case ActionType.SET_UNCOMMITTED_CHANGES_EXPANDED:
+      case ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED:
         this._setUncommittedChangesExpanded(payload.uncommittedChangesExpanded);
         break;
     }

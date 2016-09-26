@@ -9,12 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {FileTreeAction} from './FileTreeActionTypes';
-
-import {ActionType} from './FileTreeConstants';
 import debounce from '../../commons-node/debounce';
 import {Disposable, CompositeDisposable} from 'atom';
-import FileTreeDispatcher from './FileTreeDispatcher';
+import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
 import Immutable from 'immutable';
@@ -30,12 +27,7 @@ import type {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-// If we get types for flux we don't need this.
-type Dispatcher = {
-  dispatch(action: FileTreeAction): void,
-};
-
-let instance: ?Object;
+let instance: ?FileTreeActions;
 
 /**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
@@ -43,7 +35,7 @@ let instance: ?Object;
  * dispatcher is a mechanism through which FileTreeActions interfaces with FileTreeStore.
  */
 class FileTreeActions {
-  _dispatcher: Dispatcher;
+  _dispatcher: FileTreeDispatcher;
   _store: FileTreeStore;
   _subscriptionForRepository: Immutable.Map<atom$Repository, Disposable>;
 
@@ -62,7 +54,7 @@ class FileTreeActions {
 
   setCwd(rootKey: ?string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_CWD,
+      actionType: ActionTypes.SET_CWD,
       rootKey,
     });
   }
@@ -72,7 +64,7 @@ class FileTreeActions {
     const addedRootKeys: Immutable.Set<string> =
       new Immutable.Set(rootKeys).subtract(existingRootKeySet);
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_ROOT_KEYS,
+      actionType: ActionTypes.SET_ROOT_KEYS,
       rootKeys,
     });
     for (const rootKey of addedRootKeys) {
@@ -82,13 +74,13 @@ class FileTreeActions {
 
   clearFilter() : void {
     this._dispatcher.dispatch({
-      actionType: ActionType.CLEAR_FILTER,
+      actionType: ActionTypes.CLEAR_FILTER,
     });
   }
 
   expandNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.EXPAND_NODE,
+      actionType: ActionTypes.EXPAND_NODE,
       rootKey,
       nodeKey,
     });
@@ -96,14 +88,14 @@ class FileTreeActions {
 
   expandNodeDeep(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.EXPAND_NODE_DEEP,
+      actionType: ActionTypes.EXPAND_NODE_DEEP,
       rootKey,
       nodeKey,
     });
   }
 
   deleteSelectedNodes(): void {
-    this._dispatcher.dispatch({actionType: ActionType.DELETE_SELECTED_NODES});
+    this._dispatcher.dispatch({actionType: ActionTypes.DELETE_SELECTED_NODES});
   }
 
   // Makes sure a specific child exists for a given node. If it does not exist, temporarily
@@ -111,14 +103,14 @@ class FileTreeActions {
   // in a tree.
   ensureChildNode(nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.ENSURE_CHILD_NODE,
+      actionType: ActionTypes.ENSURE_CHILD_NODE,
       nodeKey,
     });
   }
 
   collapseNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.COLLAPSE_NODE,
+      actionType: ActionTypes.COLLAPSE_NODE,
       rootKey,
       nodeKey,
     });
@@ -126,7 +118,7 @@ class FileTreeActions {
 
   collapseNodeDeep(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.COLLAPSE_NODE_DEEP,
+      actionType: ActionTypes.COLLAPSE_NODE_DEEP,
       rootKey,
       nodeKey,
     });
@@ -134,28 +126,28 @@ class FileTreeActions {
 
   setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_EXCLUDE_VCS_IGNORED_PATHS,
+      actionType: ActionTypes.SET_EXCLUDE_VCS_IGNORED_PATHS,
       excludeVcsIgnoredPaths,
     });
   }
 
   setHideIgnoredNames(hideIgnoredNames: boolean): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_HIDE_IGNORED_NAMES,
+      actionType: ActionTypes.SET_HIDE_IGNORED_NAMES,
       hideIgnoredNames,
     });
   }
 
   setIgnoredNames(ignoredNames: Array<string>): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_IGNORED_NAMES,
+      actionType: ActionTypes.SET_IGNORED_NAMES,
       ignoredNames,
     });
   }
 
   setTrackedNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_TRACKED_NODE,
+      actionType: ActionTypes.SET_TRACKED_NODE,
       nodeKey,
       rootKey,
     });
@@ -163,13 +155,13 @@ class FileTreeActions {
 
   clearTrackedNode(): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.CLEAR_TRACKED_NODE,
+      actionType: ActionTypes.CLEAR_TRACKED_NODE,
     });
   }
 
   moveToNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.MOVE_TO_NODE,
+      actionType: ActionTypes.MOVE_TO_NODE,
       nodeKey,
       rootKey,
     });
@@ -177,14 +169,14 @@ class FileTreeActions {
 
   setUsePreviewTabs(usePreviewTabs: boolean): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_USE_PREVIEW_TABS,
+      actionType: ActionTypes.SET_USE_PREVIEW_TABS,
       usePreviewTabs,
     });
   }
 
   setUsePrefixNav(usePrefixNav: boolean): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_USE_PREFIX_NAV,
+      actionType: ActionTypes.SET_USE_PREFIX_NAV,
       usePrefixNav,
     });
   }
@@ -195,15 +187,19 @@ class FileTreeActions {
       return;
     }
     if (node.isContainer) {
-      const actionType = node.isExpanded ?
-        ActionType.COLLAPSE_NODE :
-        ActionType.EXPAND_NODE;
-      // $FlowIssue -- Flow gets confused about the way we dynamically choose actionType.
-      this._dispatcher.dispatch({
-        actionType,
-        nodeKey,
-        rootKey,
-      });
+      if (node.isExpanded) {
+        this._dispatcher.dispatch({
+          actionType: ActionTypes.COLLAPSE_NODE,
+          nodeKey,
+          rootKey,
+        });
+      } else {
+        this._dispatcher.dispatch({
+          actionType: ActionTypes.EXPAND_NODE,
+          nodeKey,
+          rootKey,
+        });
+      }
     } else {
       let openOptions = {
         activatePane: true,
@@ -246,7 +242,7 @@ class FileTreeActions {
 
   setVcsStatuses(rootKey: string, vcsStatuses: {[path: string]: StatusCodeNumberValue}): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_VCS_STATUSES,
+      actionType: ActionTypes.SET_VCS_STATUSES,
       rootKey,
       vcsStatuses,
     });
@@ -281,7 +277,7 @@ class FileTreeActions {
     const nextRepos: Immutable.Set<atom$Repository> =
       new Immutable.Set(rootKeysForRepository.keys());
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_REPOSITORIES,
+      actionType: ActionTypes.SET_REPOSITORIES,
       repositories: nextRepos,
     });
 
@@ -305,41 +301,41 @@ class FileTreeActions {
 
   updateWorkingSet(workingSet: WorkingSet): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_WORKING_SET,
+      actionType: ActionTypes.SET_WORKING_SET,
       workingSet,
     });
   }
 
   updateOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_OPEN_FILES_WORKING_SET,
+      actionType: ActionTypes.SET_OPEN_FILES_WORKING_SET,
       openFilesWorkingSet,
     });
   }
 
   updateWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_WORKING_SETS_STORE,
+      actionType: ActionTypes.SET_WORKING_SETS_STORE,
       workingSetsStore,
     });
   }
 
   startEditingWorkingSet(editedWorkingSet: WorkingSet): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.START_EDITING_WORKING_SET,
+      actionType: ActionTypes.START_EDITING_WORKING_SET,
       editedWorkingSet,
     });
   }
 
   finishEditingWorkingSet(): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.FINISH_EDITING_WORKING_SET,
+      actionType: ActionTypes.FINISH_EDITING_WORKING_SET,
     });
   }
 
   checkNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.CHECK_NODE,
+      actionType: ActionTypes.CHECK_NODE,
       rootKey,
       nodeKey,
     });
@@ -347,7 +343,7 @@ class FileTreeActions {
 
   uncheckNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.UNCHECK_NODE,
+      actionType: ActionTypes.UNCHECK_NODE,
       rootKey,
       nodeKey,
     });
@@ -355,7 +351,7 @@ class FileTreeActions {
 
   setDragHoveredNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_DRAG_HOVERED_NODE,
+      actionType: ActionTypes.SET_DRAG_HOVERED_NODE,
       rootKey,
       nodeKey,
     });
@@ -363,7 +359,7 @@ class FileTreeActions {
 
   setSelectedNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_SELECTED_NODE,
+      actionType: ActionTypes.SET_SELECTED_NODE,
       rootKey,
       nodeKey,
     });
@@ -371,7 +367,7 @@ class FileTreeActions {
 
   setFocusedNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_FOCUSED_NODE,
+      actionType: ActionTypes.SET_FOCUSED_NODE,
       rootKey,
       nodeKey,
     });
@@ -379,7 +375,7 @@ class FileTreeActions {
 
   addSelectedNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.ADD_SELECTED_NODE,
+      actionType: ActionTypes.ADD_SELECTED_NODE,
       rootKey,
       nodeKey,
     });
@@ -387,7 +383,7 @@ class FileTreeActions {
 
   unselectNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.UNSELECT_NODE,
+      actionType: ActionTypes.UNSELECT_NODE,
       rootKey,
       nodeKey,
     });
@@ -395,7 +391,7 @@ class FileTreeActions {
 
   unhoverNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.UNHOVER_NODE,
+      actionType: ActionTypes.UNHOVER_NODE,
       rootKey,
       nodeKey,
     });
@@ -403,38 +399,38 @@ class FileTreeActions {
 
   moveSelectionUp(): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.MOVE_SELECTION_UP,
+      actionType: ActionTypes.MOVE_SELECTION_UP,
     });
   }
 
   moveSelectionDown(): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.MOVE_SELECTION_DOWN,
+      actionType: ActionTypes.MOVE_SELECTION_DOWN,
     });
   }
 
   moveSelectionToTop(): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.MOVE_SELECTION_TO_TOP,
+      actionType: ActionTypes.MOVE_SELECTION_TO_TOP,
     });
   }
 
   moveSelectionToBottom(): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.MOVE_SELECTION_TO_BOTTOM,
+      actionType: ActionTypes.MOVE_SELECTION_TO_BOTTOM,
     });
   }
 
   setOpenFilesExpanded(openFilesExpanded: boolean): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_OPEN_FILES_EXPANDED,
+      actionType: ActionTypes.SET_OPEN_FILES_EXPANDED,
       openFilesExpanded,
     });
   }
 
   setUncommittedChangesExpanded(uncommittedChangesExpanded: boolean): void {
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_UNCOMMITTED_CHANGES_EXPANDED,
+      actionType: ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED,
       uncommittedChangesExpanded,
     });
   }
