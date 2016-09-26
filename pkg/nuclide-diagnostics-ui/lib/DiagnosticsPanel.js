@@ -29,7 +29,6 @@ import {track} from '../../nuclide-analytics';
 type Props = {
   diagnostics: Array<DiagnosticMessage>,
   height: number,
-  width: number,
   onDismiss: () => mixed,
   pathToActiveTextEditor: ?NuclideUri,
   filterByActiveTextEditor: boolean,
@@ -127,7 +126,6 @@ class DiagnosticsPanel extends React.Component {
           <DiagnosticsPane
             showFileName={!this.props.filterByActiveTextEditor}
             diagnostics={diagnostics}
-            width={this.props.width}
           />
         </div>
       </PanelComponent>

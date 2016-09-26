@@ -19,11 +19,8 @@ import {toggle} from '../../commons-node/observable';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {BehaviorSubject, Observable} from 'rxjs';
 
-const DEFAULT_TABLE_WIDTH = 600;
-
 type PanelProps = {
   diagnostics: Array<DiagnosticMessage>,
-  width: number,
   onDismiss: () => void,
   pathToActiveTextEditor: ?string,
   filterByActiveTextEditor: boolean,
@@ -42,30 +39,10 @@ export default function createDiagnosticsPanel(
   atomPanel: atom$Panel,
   setWarnAboutLinter: (warn: boolean) => void,
  } {
-  const item = document.createElement('div');
-
-  // A FixedDataTable must specify its own width. We always want it to match that of the bottom
-  // panel. Unfortunately, there is no way to register for resize events on a DOM element: it is
-  // only possible to listen for resize events on a window. (MutationObserver does not help here.)
-  //
-  // As such, we employ a hack inspired by http://stackoverflow.com/a/20888342/396304.
-  // We create an invisible iframe with 100% width, so it will match the width of the panel. We
-  // subscribe to its resize events and use that as a proxy for the panel being resized and update
-  // the width of the FixedDataTable accordingly.
-  const iframe = window.document.createElement('iframe');
-  iframe.style.width = '100%';
-  iframe.style.height = '1px';
-  iframe.style.position = 'absolute';
-  iframe.style.visibility = 'hidden';
-  iframe.style.border = 'none';
-
-  // Both the iframe and the host element for the React component are children of the root element
-  // that serves as the item for the panel.
   const rootElement = document.createElement('div');
   rootElement.className = 'nuclide-diagnostics-ui';
-  rootElement.appendChild(iframe);
+  const item = document.createElement('div');
   rootElement.appendChild(item);
-
   const bottomPanel = atom.workspace.addBottomPanel({item: rootElement});
 
   const warnAboutLinterStream = new BehaviorSubject(false);
@@ -85,7 +62,6 @@ export default function createDiagnosticsPanel(
       initialHeight,
       initialfilterByActiveTextEditor,
       disableLinter,
-      iframe.contentWindow,
       onFilterByActiveTextEditorChange,
       () => { bottomPanel.hide(); },
     )
@@ -119,7 +95,6 @@ function getPropsStream(
   initialHeight: number,
   initialfilterByActiveTextEditor: boolean,
   disableLinter: () => void,
-  win: HTMLElement,
   onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
   onDismiss: () => void,
 ): Observable<PanelProps> {
@@ -145,25 +120,20 @@ function getPropsStream(
     onFilterByActiveTextEditorChange(filterByActiveTextEditor);
   };
 
-  const widthStream = Observable.of(DEFAULT_TABLE_WIDTH)
-    .concat(Observable.fromEvent(win, 'resize').map(() => (win: any).innerWidth));
-
   // $FlowFixMe: We haven't typed this function with this many args.
   return Observable.combineLatest(
     activeTextEditorPaths,
     sortedDiagnostics,
     warnAboutLinterStream,
     filterByActiveTextEditorStream,
-    widthStream.first().concat(widthStream.skip(1).debounceTime(50)),
   )
-    .map(([pathToActiveTextEditor, diagnostics, warnAboutLinter, filter, width]) => ({
+    .map(([pathToActiveTextEditor, diagnostics, warnAboutLinter, filter]) => ({
       pathToActiveTextEditor,
       diagnostics,
       warnAboutLinter,
       disableLinter,
       filterByActiveTextEditor: filter,
       onFilterByActiveTextEditorChange: handleFilterByActiveTextEditorChange,
-      width,
       initialHeight,
       onDismiss,
     }));

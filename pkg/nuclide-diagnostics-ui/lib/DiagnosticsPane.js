@@ -108,7 +108,6 @@ function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
 type DiagnosticsPaneProps = {
   diagnostics: Array<DiagnosticMessage>,
   showFileName: ?boolean,
-  width: number,
 };
 
 export default class DiagnosticsPane extends React.Component {
