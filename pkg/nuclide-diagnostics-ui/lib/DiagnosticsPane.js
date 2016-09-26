@@ -12,6 +12,7 @@
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 import type {Column} from '../../nuclide-ui/Table';
 
+import classnames from 'classnames';
 import {React} from 'react-for-atom';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
@@ -37,6 +38,12 @@ export type DisplayDiagnostic = {
 // Maximum number of results to render in the table before truncating and displaying a "Max results
 // reached" message.
 const MAX_RESULTS_COUNT = 1000;
+
+const EmptyComponent = () =>
+  <div className="nuclide-diagnostics-ui-empty-component">
+    No diagnostic messages
+  </div>;
+
 
 const TypeToHighlightColor = Object.freeze({
   ERROR: HighlightColors.error,
@@ -200,10 +207,14 @@ export default class DiagnosticsPane extends React.Component {
       );
     }
     return (
-      <div className="nuclide-diagnostics-ui-table-container">
+      <div className={classnames({
+        'nuclide-diagnostics-ui-table-container': true,
+        'nuclide-diagnostics-ui-table-container-empty': sortedRows.length === 0,
+      })}>
         <Table
           collapsable={true}
           columns={this._getColumns()}
+          emptyComponent={EmptyComponent}
           fixedHeader={true}
           maxBodyHeight="99999px"
           rows={sortedRows}

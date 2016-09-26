@@ -88,7 +88,7 @@ export function runTest(context: TestContext) {
 
     waitsFor(() => {
       const [panelElement] = getPanelDiagnosticElements();
-      return panelElement.innerHTML.indexOf('Empty table') !== -1;
+      return panelElement.innerHTML.indexOf('No diagnostic messages') !== -1;
     });
   });
 }
