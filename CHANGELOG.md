@@ -5,6 +5,7 @@
 ### Highlights
 
 * Debugger support for attaching to local and remote Node processes.
+* Adds a file changes file tree section to quickly browse and diff changes.
 
 ### General
 
