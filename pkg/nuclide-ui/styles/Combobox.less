@@ -16,17 +16,24 @@
   }
 }
 
-.nuclide-combobox-list-group.list-group {
+.nuclide-combobox-options {
   position: absolute;
-  background: @base-background-color;
-  border: 1px solid @overlay-border-color;
-  border-top: none;
-  margin-top: 0;
-  position: absolute;
-  width: 100%;
   z-index: 999;
 
-  strong {
-    font-weight: bold;
+  ol.list-group {
+
+    background: @base-background-color;
+    border: 1px solid @overlay-border-color;
+    border-top: none;
+    margin-top: 0;
+
+    li {
+      padding-left: 0.5em;
+      padding-right: 0.5em;
+    }
+
+    strong {
+      font-weight: bold;
+    }
   }
 }
