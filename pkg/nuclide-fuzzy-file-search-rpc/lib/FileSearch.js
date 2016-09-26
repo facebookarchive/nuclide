@@ -39,6 +39,10 @@ class FileSearch {
   query(query: string): Promise<Array<FileSearchResult>> {
     // Attempt to relativize paths that people might e.g. copy + paste.
     let relQuery = query;
+    // Remove the leading home directory qualifier.
+    if (relQuery.startsWith('~/')) {
+      relQuery = relQuery.substr(2);
+    }
     // If a full path is pasted, make the path relative.
     if (relQuery.startsWith(nuclideUri.ensureTrailingSeparator(this._originalUri))) {
       relQuery = relQuery.substr(this._originalUri.length + 1);
