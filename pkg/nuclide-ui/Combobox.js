@@ -373,11 +373,13 @@ export class Combobox extends React.Component {
 
       optionsContainer = (
         <Portal container={this._getOptionsElement()}>
-          <ol
-            style={rect}
-            className="nuclide-combobox-list-group list-group">
-            {options}
-          </ol>
+          <div className="nuclide-combobox-options" style={rect}>
+            <div className="select-list">
+              <ol className="nuclide-combobox-list-group list-group">
+                {options}
+              </ol>
+            </div>
+          </div>
         </Portal>
       );
     }
