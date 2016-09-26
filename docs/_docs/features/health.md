@@ -16,18 +16,17 @@ statistics.
 
 ## Toggling
 
-The health statistics come up as a tabbed window in the
-[main editor](/docs/editor/basics/#editing-area). To bring up this tab, you have four primary
+To open the **Health** tab in the main [Editing Area](/docs/editor/basics/#editing-area), you have four primary
 options:
 
-- `ctrl-option-shift-H` (`ctrl-alt-shift-H`)
+- The `Ctrl-Option-Shift-H` (macOS) or `Ctrl-Alt-Shift-H` (Linux) keyboard shortcuts
 - The [Nuclide toolbar](/docs/features/toolbar)
-- The [command palette](/docs/editor/basics/#command-palette)
+- The [Command Palette](/docs/editor/basics/#command-palette)
 
 ## Statistics
 
 The following statistics are shown in the Nuclide health monitor. If you have multiple Nuclide
-sessions open, the statistics are per that session, and not a combination of all sessions.
+sessions open, the statistics are per session and not a combination of all sessions.
 
 - **CPU**: How much CPU Nuclide is using.
 - **Memory**: How much memory Nuclide is using.
@@ -40,6 +39,6 @@ The last two statistics are reported by the underlying Atom renderer process and
 processes, handles, and outstanding activities are currently being managed by Node.
 
 Also shown are the processes that have been spawned by Nuclide since it has been running, including
-process id (pid), bytes received, sent and the number of errors from the process.
+process ID (PID), bytes received, sent and the number of errors from the process.
 
 These statistics are provided by Node's [`process`](https://nodejs.org/api/process.html) APIs.
