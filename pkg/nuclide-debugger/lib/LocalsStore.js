@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
+import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {ExpansionResult} from './types';
 
 import {
@@ -17,7 +17,7 @@ import {
   CompositeDisposable,
 } from 'atom';
 import {BehaviorSubject, Observable} from 'rxjs';
-import Constants from './Constants';
+import {ActionTypes} from './DebuggerDispatcher';
 
 export default class LocalsStore {
   _disposables: IDisposable;
@@ -26,7 +26,7 @@ export default class LocalsStore {
    */
   _locals: BehaviorSubject<ExpansionResult>;
 
-  constructor(dispatcher: Dispatcher) {
+  constructor(dispatcher: DebuggerDispatcher) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
     this._disposables = new CompositeDisposable(
       new Disposable(() => {
@@ -36,12 +36,12 @@ export default class LocalsStore {
     this._locals = new BehaviorSubject([]);
   }
 
-  _handlePayload(payload: Object): void {
+  _handlePayload(payload: DebuggerAction): void {
     switch (payload.actionType) {
-      case Constants.Actions.CLEAR_INTERFACE:
+      case ActionTypes.CLEAR_INTERFACE:
         this._handleClearInterface();
         break;
-      case Constants.Actions.UPDATE_LOCALS:
+      case ActionTypes.UPDATE_LOCALS:
         this._handleUpdateLocals(payload.data.locals);
         break;
       default:

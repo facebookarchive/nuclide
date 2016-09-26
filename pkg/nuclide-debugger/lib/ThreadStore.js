@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
 import type {
   ThreadItem,
   NuclideThreadData,
@@ -18,6 +17,7 @@ import type {
   PinnedDatatip,
   DatatipService,
 } from '../../nuclide-datatip/lib/types';
+import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import {
   Disposable,
   CompositeDisposable,
@@ -26,7 +26,7 @@ import {
 import {React} from 'react-for-atom';
 import {Icon} from '../../nuclide-ui/Icon';
 import nuclideUri from '../../commons-node/nuclideUri';
-import Constants from './Constants';
+import {ActionTypes} from './DebuggerDispatcher';
 import passesGK from '../../commons-node/passesGK';
 
 const GK_THREAD_SWITCH_UI = 'nuclide_debugger_thread_switch_ui';
@@ -42,7 +42,7 @@ export default class ThreadStore {
   _stopThreadId: number;
   _threadChangeDatatip: ?PinnedDatatip;
 
-  constructor(dispatcher: Dispatcher) {
+  constructor(dispatcher: DebuggerDispatcher) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
     this._disposables = new CompositeDisposable(
       new Disposable(() => {
@@ -61,25 +61,25 @@ export default class ThreadStore {
     this._datatipService = service;
   }
 
-  _handlePayload(payload: Object): void {
+  _handlePayload(payload: DebuggerAction): void {
     switch (payload.actionType) {
-      case Constants.Actions.CLEAR_INTERFACE:
+      case ActionTypes.CLEAR_INTERFACE:
         this._handleClearInterface();
         this._emitter.emit('change');
         break;
-      case Constants.Actions.UPDATE_THREADS:
+      case ActionTypes.UPDATE_THREADS:
         this._updateThreads(payload.data.threadData);
         this._emitter.emit('change');
         break;
-      case Constants.Actions.UPDATE_THREAD:
+      case ActionTypes.UPDATE_THREAD:
         this._updateThread(payload.data.thread);
         this._emitter.emit('change');
         break;
-      case Constants.Actions.UPDATE_STOP_THREAD:
+      case ActionTypes.UPDATE_STOP_THREAD:
         this._updateStopThread(payload.data.id);
         this._emitter.emit('change');
         break;
-      case Constants.Actions.NOTIFY_THREAD_SWITCH:
+      case ActionTypes.NOTIFY_THREAD_SWITCH:
         this._notifyThreadSwitch(payload.data.sourceURL, payload.data.lineNumber,
           payload.data.message);
         break;

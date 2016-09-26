@@ -15,7 +15,7 @@ import type {
   EvaluatedExpressionList,
 } from './types';
 import type {WatchExpressionStore} from './WatchExpressionStore';
-import type {Dispatcher} from 'flux';
+import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {Observable} from 'rxjs';
 
 import {
@@ -23,7 +23,7 @@ import {
   CompositeDisposable,
 } from 'atom';
 import {BehaviorSubject} from 'rxjs';
-import Constants from './Constants';
+import {ActionTypes} from './DebuggerDispatcher';
 import {DebuggerMode} from './DebuggerStore';
 
 export class WatchExpressionListStore {
@@ -34,7 +34,7 @@ export class WatchExpressionListStore {
    */
   _watchExpressions: BehaviorSubject<EvaluatedExpressionList>;
 
-  constructor(watchExpressionStore: WatchExpressionStore, dispatcher: Dispatcher) {
+  constructor(watchExpressionStore: WatchExpressionStore, dispatcher: DebuggerDispatcher) {
     this._watchExpressionStore = watchExpressionStore;
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
     this._disposables = new CompositeDisposable(
@@ -45,18 +45,18 @@ export class WatchExpressionListStore {
     this._watchExpressions = new BehaviorSubject([]);
   }
 
-  _handlePayload(payload: Object) {
+  _handlePayload(payload: DebuggerAction) {
     switch (payload.actionType) {
-      case Constants.Actions.ADD_WATCH_EXPRESSION:
+      case ActionTypes.ADD_WATCH_EXPRESSION:
         this._addWatchExpression(payload.data.expression);
         break;
-      case Constants.Actions.REMOVE_WATCH_EXPRESSION:
+      case ActionTypes.REMOVE_WATCH_EXPRESSION:
         this._removeWatchExpression(payload.data.index);
         break;
-      case Constants.Actions.UPDATE_WATCH_EXPRESSION:
+      case ActionTypes.UPDATE_WATCH_EXPRESSION:
         this._updateWatchExpression(payload.data.index, payload.data.newExpression);
         break;
-      case Constants.Actions.DEBUGGER_MODE_CHANGE:
+      case ActionTypes.DEBUGGER_MODE_CHANGE:
         if (payload.data === DebuggerMode.STARTING) {
           this._refetchWatchSubscriptions();
         }

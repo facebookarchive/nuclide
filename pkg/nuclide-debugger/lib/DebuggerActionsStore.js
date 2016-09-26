@@ -10,19 +10,19 @@
  */
 
 import type Bridge from './Bridge';
-import type {Dispatcher} from 'flux';
+import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 
 import {
   Disposable,
   CompositeDisposable,
 } from 'atom';
-import Constants from './Constants';
+import {ActionTypes} from './DebuggerDispatcher';
 
 export default class DebuggerActionsStore {
   _bridge: Bridge;
   _disposables: IDisposable;
 
-  constructor(dispatcher: Dispatcher, bridge: Bridge) {
+  constructor(dispatcher: DebuggerDispatcher, bridge: Bridge) {
     this._bridge = bridge;
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
     this._disposables = new CompositeDisposable(
@@ -32,9 +32,9 @@ export default class DebuggerActionsStore {
     );
   }
 
-  _handlePayload(payload: Object) {
+  _handlePayload(payload: DebuggerAction) {
     switch (payload.actionType) {
-      case Constants.Actions.TRIGGER_DEBUGGER_ACTION:
+      case ActionTypes.TRIGGER_DEBUGGER_ACTION:
         this._triggerAction(payload.data.actionId);
         break;
       default:

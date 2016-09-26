@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type {
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type DebuggerActions from './DebuggerActions';
+import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 
 import {CompositeDisposable, Disposable, Emitter} from 'atom';
-import Constants from './Constants';
+import {ActionTypes} from './DebuggerDispatcher';
 
 const CONNECTIONS_UPDATED_EVENT = 'CONNECTIONS_UPDATED_EVENT';
 
@@ -25,14 +25,14 @@ const CONNECTIONS_UPDATED_EVENT = 'CONNECTIONS_UPDATED_EVENT';
  * Flux style store holding all data related to debugger provider.
  */
 export class DebuggerProviderStore {
-  _dispatcher: Dispatcher;
+  _dispatcher: DebuggerDispatcher;
   _disposables: CompositeDisposable;
   _debuggerActions: DebuggerActions;
   _emitter: Emitter;
   _debuggerProviders: Set<NuclideDebuggerProvider>;
   _connections: Array<string>;
 
-  constructor(dispatcher: Dispatcher, debuggerActions: DebuggerActions) {
+  constructor(dispatcher: DebuggerDispatcher, debuggerActions: DebuggerActions) {
     this._dispatcher = dispatcher;
     this._disposables = new CompositeDisposable(
       this._registerDispatcherEvents(),
@@ -85,21 +85,21 @@ export class DebuggerProviderStore {
     return availableLaunchAttachProviders;
   }
 
-  _handlePayload(payload: Object) {
+  _handlePayload(payload: DebuggerAction) {
     switch (payload.actionType) {
-      case Constants.Actions.ADD_DEBUGGER_PROVIDER:
+      case ActionTypes.ADD_DEBUGGER_PROVIDER:
         if (this._debuggerProviders.has(payload.data)) {
           return;
         }
         this._debuggerProviders.add(payload.data);
         break;
-      case Constants.Actions.REMOVE_DEBUGGER_PROVIDER:
+      case ActionTypes.REMOVE_DEBUGGER_PROVIDER:
         if (!this._debuggerProviders.has(payload.data)) {
           return;
         }
         this._debuggerProviders.delete(payload.data);
         break;
-      case Constants.Actions.UPDATE_CONNECTIONS:
+      case ActionTypes.UPDATE_CONNECTIONS:
         this._connections = payload.data;
         this._emitter.emit(CONNECTIONS_UPDATED_EVENT);
         break;

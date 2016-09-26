@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
+import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {
   SerializedBreakpoint,
   FileLineBreakpoint,
@@ -24,7 +24,7 @@ import {
   CompositeDisposable,
 } from 'atom';
 import {Emitter} from 'atom';
-import Constants from './Constants';
+import {ActionTypes} from './DebuggerDispatcher';
 import {DebuggerMode} from './DebuggerStore';
 
 export type LineToBreakpointMap = Map<number, FileLineBreakpoint>;
@@ -49,7 +49,7 @@ class BreakpointStore {
   _breakpointIdSeed: number;
 
   constructor(
-    dispatcher: Dispatcher,
+    dispatcher: DebuggerDispatcher,
     initialBreakpoints: ?Array<SerializedBreakpoint>,
   ) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
@@ -67,35 +67,39 @@ class BreakpointStore {
     }
   }
 
-  _handlePayload(payload: Object): void {
-    const {data} = payload;
+  _handlePayload(payload: DebuggerAction): void {
     switch (payload.actionType) {
-      case Constants.Actions.ADD_BREAKPOINT:
-        this._addBreakpoint(data.path, data.line);
+      case ActionTypes.ADD_BREAKPOINT:
+        this._addBreakpoint(payload.data.path, payload.data.line);
         break;
-      case Constants.Actions.UPDATE_BREAKPOINT_CONDITION:
-        this._updateBreakpointCondition(data.breakpointId, data.condition);
+      case ActionTypes.UPDATE_BREAKPOINT_CONDITION:
+        this._updateBreakpointCondition(payload.data.breakpointId, payload.data.condition);
         break;
-      case Constants.Actions.UPDATE_BREAKPOINT_ENABLED:
-        this._updateBreakpointEnabled(data.breakpointId, data.enabled);
+      case ActionTypes.UPDATE_BREAKPOINT_ENABLED:
+        this._updateBreakpointEnabled(payload.data.breakpointId, payload.data.enabled);
         break;
-      case Constants.Actions.DELETE_BREAKPOINT:
-        this._deleteBreakpoint(data.path, data.line);
+      case ActionTypes.DELETE_BREAKPOINT:
+        this._deleteBreakpoint(payload.data.path, payload.data.line);
         break;
-      case Constants.Actions.DELETE_ALL_BREAKPOINTS:
+      case ActionTypes.DELETE_ALL_BREAKPOINTS:
         this._deleteAllBreakpoints();
         break;
-      case Constants.Actions.TOGGLE_BREAKPOINT:
-        this._toggleBreakpoint(data.path, data.line);
+      case ActionTypes.TOGGLE_BREAKPOINT:
+        this._toggleBreakpoint(payload.data.path, payload.data.line);
         break;
-      case Constants.Actions.DELETE_BREAKPOINT_IPC:
-        this._deleteBreakpoint(data.path, data.line, false);
+      case ActionTypes.DELETE_BREAKPOINT_IPC:
+        this._deleteBreakpoint(payload.data.path, payload.data.line, false);
         break;
-      case Constants.Actions.BIND_BREAKPOINT_IPC:
-        this._bindBreakpoint(data.path, data.line, data.condition, data.enabled);
+      case ActionTypes.BIND_BREAKPOINT_IPC:
+        this._bindBreakpoint(
+          payload.data.path,
+          payload.data.line,
+          payload.data.condition,
+          payload.data.enabled,
+        );
         break;
-      case Constants.Actions.DEBUGGER_MODE_CHANGE:
-        this._handleDebuggerModeChange(data);
+      case ActionTypes.DEBUGGER_MODE_CHANGE:
+        this._handleDebuggerModeChange(payload.data);
         break;
       default:
         return;

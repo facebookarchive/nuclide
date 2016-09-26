@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import {Dispatcher} from 'flux';
 import invariant from 'assert';
 import BreakpointDisplayController from '../lib/BreakpointDisplayController';
 import BreakpointStore from '../lib/BreakpointStore';
 import {DebuggerStore} from '../lib/DebuggerStore';
 import DebuggerActions from '../lib/DebuggerActions';
+import DebuggerDispatcher from '../lib/DebuggerDispatcher';
 import utils from './utils';
 
 const controllerDelegate = {
@@ -50,7 +50,7 @@ describe('BreakpointDisplayController', () => {
       testFilePath = editorPath;
       document.querySelector('#jasmine-content').appendChild(atom.views.getView(editor));
 
-      dispatcher = new Dispatcher();
+      dispatcher = new DebuggerDispatcher();
       store = new BreakpointStore(dispatcher);
       const mockModel = ({}: any);
       debuggerStore = new DebuggerStore(dispatcher, mockModel);

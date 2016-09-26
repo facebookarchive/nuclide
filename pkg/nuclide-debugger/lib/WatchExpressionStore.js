@@ -17,14 +17,14 @@ import type {
   ExpansionResult,
   ObjectGroup,
 } from './types';
-import type Dispatcher from 'flux';
+import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 
 import {
   Disposable,
   CompositeDisposable,
 } from 'atom';
 import {DebuggerMode} from './DebuggerStore';
-import {Actions} from './Constants';
+import {ActionTypes} from './DebuggerDispatcher';
 import {BehaviorSubject, Observable} from 'rxjs';
 import invariant from 'assert';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -43,7 +43,7 @@ export class WatchExpressionStore {
   _isPaused: boolean;
   _evaluationRequestsInFlight: Map<number, Deferred<mixed>>;
 
-  constructor(dispatcher: Dispatcher, bridge: Bridge) {
+  constructor(dispatcher: DebuggerDispatcher, bridge: Bridge) {
     this._evaluationId = 0;
     this._isPaused = false;
     this._bridge = bridge;
@@ -63,13 +63,13 @@ export class WatchExpressionStore {
     );
   }
 
-  _handlePayload(payload: Object) {
+  _handlePayload(payload: DebuggerAction) {
     switch (payload.actionType) {
-      case Actions.CLEAR_INTERFACE: {
+      case ActionTypes.CLEAR_INTERFACE: {
         this._clearEvaluationValues();
         break;
       }
-      case Actions.DEBUGGER_MODE_CHANGE: {
+      case ActionTypes.DEBUGGER_MODE_CHANGE: {
         this._isPaused = false;
         if (payload.data === DebuggerMode.PAUSED) {
           this._isPaused = true;
@@ -80,12 +80,12 @@ export class WatchExpressionStore {
         }
         break;
       }
-      case Actions.RECEIVED_GET_PROPERTIES_RESPONSE: {
+      case ActionTypes.RECEIVED_GET_PROPERTIES_RESPONSE: {
         const {id, response} = payload.data;
         this._handleResponseForPendingRequest(id, response);
         break;
       }
-      case Actions.RECEIVED_EXPRESSION_EVALUATION_RESPONSE: {
+      case ActionTypes.RECEIVED_EXPRESSION_EVALUATION_RESPONSE: {
         const {id, response} = payload.data;
         response.result = normalizeRemoteObjectValue(response.result);
         this._handleResponseForPendingRequest(id, response);

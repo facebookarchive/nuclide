@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Dispatcher} from 'flux';
+import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {Callstack} from './types';
 
 import {
@@ -18,7 +18,7 @@ import {
   Emitter,
 } from 'atom';
 import nuclideUri from '../../commons-node/nuclideUri';
-import Constants from './Constants';
+import {ActionTypes} from './DebuggerDispatcher';
 
 export default class CallstackStore {
   _disposables: IDisposable;
@@ -26,7 +26,7 @@ export default class CallstackStore {
   _callstack: ?Callstack;
   _selectedCallFrameMarker: ?atom$Marker;
 
-  constructor(dispatcher: Dispatcher) {
+  constructor(dispatcher: DebuggerDispatcher) {
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
     this._disposables = new CompositeDisposable(
       new Disposable(() => {
@@ -38,18 +38,18 @@ export default class CallstackStore {
     this._emitter = new Emitter();
   }
 
-  _handlePayload(payload: Object) {
+  _handlePayload(payload: DebuggerAction) {
     switch (payload.actionType) {
-      case Constants.Actions.CLEAR_INTERFACE:
+      case ActionTypes.CLEAR_INTERFACE:
         this._handleClearInterface();
         break;
-      case Constants.Actions.SET_SELECTED_CALLFRAME_LINE:
+      case ActionTypes.SET_SELECTED_CALLFRAME_LINE:
         this._setSelectedCallFrameLine(payload.data.options);
         break;
-      case Constants.Actions.OPEN_SOURCE_LOCATION:
+      case ActionTypes.OPEN_SOURCE_LOCATION:
         this._openSourceLocation(payload.data.sourceURL, payload.data.lineNumber);
         break;
-      case Constants.Actions.UPDATE_CALLSTACK:
+      case ActionTypes.UPDATE_CALLSTACK:
         this._updateCallstack(payload.data.callstack);
         break;
       default:

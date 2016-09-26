@@ -10,7 +10,7 @@
  */
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import type {Dispatcher} from 'flux';
+import type DebuggerDispatcher from './DebuggerDispatcher';
 import type {
   NuclideDebuggerProvider,
   NuclideEvaluationExpressionProvider,
@@ -31,7 +31,7 @@ import type {
   ThreadItem,
 } from './types';
 
-import Constants from './Constants';
+import {ActionTypes} from './DebuggerDispatcher';
 import {CompositeDisposable} from 'atom';
 import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
 import invariant from 'assert';
@@ -59,10 +59,10 @@ const GK_DEBUGGER_REQUEST_SENDER = 'nuclide_debugger_request_sender';
  */
 class DebuggerActions {
   _disposables: CompositeDisposable;
-  _dispatcher: Dispatcher;
+  _dispatcher: DebuggerDispatcher;
   _store: DebuggerStore;
 
-  constructor(dispatcher: Dispatcher, store: DebuggerStore) {
+  constructor(dispatcher: DebuggerDispatcher, store: DebuggerStore) {
     this._disposables = new CompositeDisposable();
     this._dispatcher = dispatcher;
     this._store = store;
@@ -120,7 +120,7 @@ class DebuggerActions {
 
   setDebuggerMode(debuggerMode: DebuggerModeType): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.DEBUGGER_MODE_CHANGE,
+      actionType: ActionTypes.DEBUGGER_MODE_CHANGE,
       data: debuggerMode,
     });
   }
@@ -137,7 +137,7 @@ class DebuggerActions {
     endTimerTracking();
 
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.SET_PROCESS_SOCKET,
+      actionType: ActionTypes.SET_PROCESS_SOCKET,
       data: socketAddr,
     });
     // Debugger finished initializing and entered debug mode.
@@ -149,7 +149,7 @@ class DebuggerActions {
 
   _setDebuggerInstance(debuggerInstance: ?DebuggerInstance): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.SET_DEBUGGER_INSTANCE,
+      actionType: ActionTypes.SET_DEBUGGER_INSTANCE,
       data: debuggerInstance,
     });
   }
@@ -176,7 +176,7 @@ class DebuggerActions {
       this._setDebuggerInstance(null);
     }
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.SET_PROCESS_SOCKET,
+      actionType: ActionTypes.SET_PROCESS_SOCKET,
       data: null,
     });
     this.setDebuggerMode(DebuggerMode.STOPPED);
@@ -189,61 +189,63 @@ class DebuggerActions {
 
   _registerConsole(): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.REGISTER_CONSOLE,
+      actionType: ActionTypes.REGISTER_CONSOLE,
+      data: {},
     });
   }
 
   _unregisterConsole(): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.UNREGISTER_CONSOLE,
+      actionType: ActionTypes.UNREGISTER_CONSOLE,
+      data: {},
     });
   }
 
   addConsoleRegisterFunction(registerExecutor: () => IDisposable): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.ADD_REGISTER_EXECUTOR,
+      actionType: ActionTypes.ADD_REGISTER_EXECUTOR,
       data: registerExecutor,
     });
   }
 
   removeConsoleRegisterFunction(registerExecutor: () => IDisposable): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.REMOVE_REGISTER_EXECUTOR,
+      actionType: ActionTypes.REMOVE_REGISTER_EXECUTOR,
       data: registerExecutor,
     });
   }
 
   addControlButtons(buttons: Array<ControlButtonSpecification>): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.ADD_CUSTOM_CONTROL_BUTTONS,
+      actionType: ActionTypes.ADD_CUSTOM_CONTROL_BUTTONS,
       data: buttons,
     });
   }
 
   addDebuggerProvider(provider: NuclideDebuggerProvider) {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.ADD_DEBUGGER_PROVIDER,
+      actionType: ActionTypes.ADD_DEBUGGER_PROVIDER,
       data: provider,
     });
   }
 
   removeDebuggerProvider(provider: NuclideDebuggerProvider) {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.REMOVE_DEBUGGER_PROVIDER,
+      actionType: ActionTypes.REMOVE_DEBUGGER_PROVIDER,
       data: provider,
     });
   }
 
   addEvaluationExpressionProvider(provider: NuclideEvaluationExpressionProvider) {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.ADD_EVALUATION_EXPRESSION_PROVIDER,
+      actionType: ActionTypes.ADD_EVALUATION_EXPRESSION_PROVIDER,
       data: provider,
     });
   }
 
   removeEvaluationExpressionProvider(provider: NuclideEvaluationExpressionProvider) {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.REMOVE_EVALUATION_EXPRESSION_PROVIDER,
+      actionType: ActionTypes.REMOVE_EVALUATION_EXPRESSION_PROVIDER,
       data: provider,
     });
   }
@@ -253,7 +255,7 @@ class DebuggerActions {
       logger.error(error);
     }
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.SET_ERROR,
+      actionType: ActionTypes.SET_ERROR,
       data: error,
     });
   }
@@ -266,7 +268,7 @@ class DebuggerActions {
    */
   forceProcessSocket(socketAddr: ?string) {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.SET_PROCESS_SOCKET,
+      actionType: ActionTypes.SET_PROCESS_SOCKET,
       data: socketAddr,
     });
   }
@@ -281,7 +283,7 @@ class DebuggerActions {
     // Always have one single local connection.
     connections.push('local');
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.UPDATE_CONNECTIONS,
+      actionType: ActionTypes.UPDATE_CONNECTIONS,
       data: connections,
     });
   }
@@ -303,7 +305,7 @@ class DebuggerActions {
 
   addWatchExpression(expression: string): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.ADD_WATCH_EXPRESSION,
+      actionType: ActionTypes.ADD_WATCH_EXPRESSION,
       data: {
         expression,
       },
@@ -312,7 +314,7 @@ class DebuggerActions {
 
   removeWatchExpression(index: number): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.REMOVE_WATCH_EXPRESSION,
+      actionType: ActionTypes.REMOVE_WATCH_EXPRESSION,
       data: {
         index,
       },
@@ -321,7 +323,7 @@ class DebuggerActions {
 
   updateWatchExpression(index: number, newExpression: string): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.UPDATE_WATCH_EXPRESSION,
+      actionType: ActionTypes.UPDATE_WATCH_EXPRESSION,
       data: {
         newExpression,
         index,
@@ -331,7 +333,7 @@ class DebuggerActions {
 
   openSourceLocation(sourceURL: string, lineNumber: number): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.OPEN_SOURCE_LOCATION,
+      actionType: ActionTypes.OPEN_SOURCE_LOCATION,
       data: {
         sourceURL,
         lineNumber,
@@ -344,7 +346,7 @@ class DebuggerActions {
    */
   triggerDebuggerAction(actionId: string): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.TRIGGER_DEBUGGER_ACTION,
+      actionType: ActionTypes.TRIGGER_DEBUGGER_ACTION,
       data: {
         actionId,
       },
@@ -353,7 +355,7 @@ class DebuggerActions {
 
   updateCallstack(callstack: Callstack): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.UPDATE_CALLSTACK,
+      actionType: ActionTypes.UPDATE_CALLSTACK,
       data: {
         callstack,
       },
@@ -362,7 +364,7 @@ class DebuggerActions {
 
   setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.SET_SELECTED_CALLFRAME_LINE,
+      actionType: ActionTypes.SET_SELECTED_CALLFRAME_LINE,
       data: {
         options,
       },
@@ -371,14 +373,14 @@ class DebuggerActions {
 
   clearInterface(): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.CLEAR_INTERFACE,
+      actionType: ActionTypes.CLEAR_INTERFACE,
       data: {},
     });
   }
 
   addBreakpoint(path: string, line: number): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.ADD_BREAKPOINT,
+      actionType: ActionTypes.ADD_BREAKPOINT,
       data: {
         path,
         line,
@@ -388,7 +390,7 @@ class DebuggerActions {
 
   updateBreakpointEnabled(breakpointId: number, enabled: boolean): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.UPDATE_BREAKPOINT_ENABLED,
+      actionType: ActionTypes.UPDATE_BREAKPOINT_ENABLED,
       data: {
         breakpointId,
         enabled,
@@ -398,7 +400,7 @@ class DebuggerActions {
 
   updateBreakpointCondition(breakpointId: number, condition: string): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.UPDATE_BREAKPOINT_CONDITION,
+      actionType: ActionTypes.UPDATE_BREAKPOINT_CONDITION,
       data: {
         breakpointId,
         condition,
@@ -408,7 +410,7 @@ class DebuggerActions {
 
   deleteBreakpoint(path: string, line: number): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.DELETE_BREAKPOINT,
+      actionType: ActionTypes.DELETE_BREAKPOINT,
       data: {
         path,
         line,
@@ -418,13 +420,14 @@ class DebuggerActions {
 
   deleteAllBreakpoints(): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.DELETE_ALL_BREAKPOINTS,
+      actionType: ActionTypes.DELETE_ALL_BREAKPOINTS,
+      data: {},
     });
   }
 
   toggleBreakpoint(path: string, line: number): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.TOGGLE_BREAKPOINT,
+      actionType: ActionTypes.TOGGLE_BREAKPOINT,
       data: {
         path,
         line,
@@ -434,7 +437,7 @@ class DebuggerActions {
 
   deleteBreakpointIPC(path: string, line: number): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.DELETE_BREAKPOINT_IPC,
+      actionType: ActionTypes.DELETE_BREAKPOINT_IPC,
       data: {
         path,
         line,
@@ -444,7 +447,7 @@ class DebuggerActions {
 
   bindBreakpointIPC(path: string, line: number, condition: string, enabled: boolean): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.BIND_BREAKPOINT_IPC,
+      actionType: ActionTypes.BIND_BREAKPOINT_IPC,
       data: {
         path,
         line,
@@ -456,28 +459,28 @@ class DebuggerActions {
 
   togglePauseOnException(pauseOnException: boolean): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.TOGGLE_PAUSE_ON_EXCEPTION,
+      actionType: ActionTypes.TOGGLE_PAUSE_ON_EXCEPTION,
       data: pauseOnException,
     });
   }
 
   togglePauseOnCaughtException(pauseOnCaughtException: boolean): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION,
+      actionType: ActionTypes.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION,
       data: pauseOnCaughtException,
     });
   }
 
   toggleSingleThreadStepping(singleThreadStepping: boolean): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.TOGGLE_SINGLE_THREAD_STEPPING,
+      actionType: ActionTypes.TOGGLE_SINGLE_THREAD_STEPPING,
       data: singleThreadStepping,
     });
   }
 
   updateLocals(locals: ExpansionResult): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.UPDATE_LOCALS,
+      actionType: ActionTypes.UPDATE_LOCALS,
       data: {
         locals,
       },
@@ -491,7 +494,7 @@ class DebuggerActions {
 
   updateThreads(threadData: NuclideThreadData): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.UPDATE_THREADS,
+      actionType: ActionTypes.UPDATE_THREADS,
       data: {
         threadData,
       },
@@ -500,7 +503,7 @@ class DebuggerActions {
 
   updateThread(thread: ThreadItem): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.UPDATE_THREAD,
+      actionType: ActionTypes.UPDATE_THREAD,
       data: {
         thread,
       },
@@ -509,7 +512,7 @@ class DebuggerActions {
 
   updateStopThread(id: number): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.UPDATE_STOP_THREAD,
+      actionType: ActionTypes.UPDATE_STOP_THREAD,
       data: {
         id,
       },
@@ -518,7 +521,7 @@ class DebuggerActions {
 
   notifyThreadSwitch(sourceURL: string, lineNumber: number, message: string): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.NOTIFY_THREAD_SWITCH,
+      actionType: ActionTypes.NOTIFY_THREAD_SWITCH,
       data: {
         sourceURL,
         lineNumber,
@@ -529,7 +532,7 @@ class DebuggerActions {
 
   receiveExpressionEvaluationResponse(id: number, response: ExpressionResult): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.RECEIVED_EXPRESSION_EVALUATION_RESPONSE,
+      actionType: ActionTypes.RECEIVED_EXPRESSION_EVALUATION_RESPONSE,
       data: {
         id,
         response,
@@ -539,7 +542,7 @@ class DebuggerActions {
 
   receiveGetPropertiesResponse(id: number, response: GetPropertiesResult): void {
     this._dispatcher.dispatch({
-      actionType: Constants.Actions.RECEIVED_GET_PROPERTIES_RESPONSE,
+      actionType: ActionTypes.RECEIVED_GET_PROPERTIES_RESPONSE,
       data: {
         id,
         response,

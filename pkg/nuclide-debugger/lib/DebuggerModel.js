@@ -22,7 +22,7 @@ import {WatchExpressionListStore} from './WatchExpressionListStore';
 import DebuggerActionsStore from './DebuggerActionsStore';
 import Bridge from './Bridge';
 import {CompositeDisposable} from 'atom';
-import {Dispatcher} from 'flux';
+import DebuggerDispatcher from './DebuggerDispatcher';
 import {DebuggerPauseController} from './DebuggerPauseController';
 
 import type {SerializedState} from '..';
@@ -35,7 +35,7 @@ class DebuggerModel {
   _actions: DebuggerActions;
   _breakpointManager: BreakpointManager;
   _breakpointStore: BreakpointStore;
-  _dispatcher: Dispatcher;
+  _dispatcher: DebuggerDispatcher;
   _store: DebuggerStore;
   _watchExpressionStore: WatchExpressionStore;
   _watchExpressionListStore: WatchExpressionListStore;
@@ -48,7 +48,7 @@ class DebuggerModel {
   _debuggerPauseController: DebuggerPauseController;
 
   constructor(state: ?SerializedState) {
-    this._dispatcher = new Dispatcher();
+    this._dispatcher = new DebuggerDispatcher();
     this._store = new DebuggerStore(this._dispatcher, this);
     this._actions = new DebuggerActions(this._dispatcher, this._store);
     this._breakpointStore = new BreakpointStore(

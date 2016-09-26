@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import {Dispatcher} from 'flux';
 import {DebuggerStore} from '../lib/DebuggerStore';
 import DebuggerActions from '../lib/DebuggerActions';
+import DebuggerDispatcher from '../lib/DebuggerDispatcher';
 import BreakpointManager from '../lib/BreakpointManager';
 import BreakpointStore from '../lib/BreakpointStore';
 import {hasBreakpointDecorationInRow} from './utils';
@@ -26,7 +26,7 @@ describe('BreakpointManager', () => {
   let store;
 
   beforeEach(() => {
-    dispatcher = new Dispatcher();
+    dispatcher = new DebuggerDispatcher();
     breakpointStore = new BreakpointStore(dispatcher);
     const mockModel = ({}: any);
     store = new DebuggerStore(dispatcher, mockModel);
