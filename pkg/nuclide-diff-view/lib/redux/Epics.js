@@ -531,7 +531,7 @@ export function publishDiff(
     invariant(action.type === ActionTypes.PUBLISH_DIFF);
 
     track('diff-view-publish');
-    const {message, repository, lintExcuse, publishUpdates} = action.payload;
+    const {message, repository, isPrepareMode, lintExcuse, publishUpdates} = action.payload;
     const {publish: {mode}, shouldRebaseOnAmend} = store.getState();
 
     const amendCleanupMessage = mode === PublishMode.CREATE ? message : null;
@@ -574,6 +574,7 @@ export function publishDiff(
                   headRevision.description,
                   message,
                   amended,
+                  isPrepareMode,
                   lintExcuse,
                 ));
               case PublishMode.UPDATE:

@@ -298,12 +298,14 @@ export function commit(
 export function publishDiff(
   repository: HgRepositoryClient,
   message: string,
+  isPrepareMode: boolean,
   lintExcuse: ?string,
   publishUpdates: Subject<any>,
 ): PublishDiffAction {
   return {
     type: PUBLISH_DIFF,
     payload: {
+      isPrepareMode,
       lintExcuse,
       message,
       publishUpdates,

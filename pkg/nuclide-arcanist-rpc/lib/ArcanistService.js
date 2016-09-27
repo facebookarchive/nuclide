@@ -162,19 +162,28 @@ function _callArcDiff(
     }).share();
 }
 
-function getArcDiffParams(lintExcuse: ?string): Array<string> {
-  if (lintExcuse != null) {
-    return ['--nolint', '--excuse', lintExcuse];
+function getArcDiffParams(
+  lintExcuse: ?string,
+  isPrepareMode?: boolean = false,
+): Array<string> {
+  const args = [];
+  if (isPrepareMode) {
+    args.push('--prepare');
   }
 
-  return [];
+  if (lintExcuse != null) {
+    args.push('--nolint', '--excuse', lintExcuse);
+  }
+
+  return args;
 }
 
 export function createPhabricatorRevision(
   filePath: NuclideUri,
+  isPrepareMode: boolean,
   lintExcuse: ?string,
 ): ConnectableObservable<{stderr?: string, stdout?: string}> {
-  const args = ['--verbatim', ...getArcDiffParams(lintExcuse)];
+  const args = ['--verbatim', ...getArcDiffParams(lintExcuse, isPrepareMode)];
   return _callArcDiff(filePath, args).publish();
 }
 

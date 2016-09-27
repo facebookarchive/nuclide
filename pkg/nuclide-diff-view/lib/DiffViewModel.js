@@ -166,6 +166,7 @@ export default class DiffViewModel {
 
   async publishDiff(
     publishMessage: string,
+    isPrepareMode: boolean,
     lintExcuse: ?string,
   ): Promise<void> {
     const activeRepository = this._state.activeRepository;
@@ -174,6 +175,7 @@ export default class DiffViewModel {
     this._actionCreators.publishDiff(
       activeRepository,
       publishMessage,
+      isPrepareMode,
       lintExcuse,
       this._publishUpdates,
     );

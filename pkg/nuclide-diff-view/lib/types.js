@@ -277,6 +277,7 @@ export type CommitAction = {
 export type PublishDiffAction = {
   type: 'PUBLISH_DIFF',
   payload: {
+    isPrepareMode: boolean,
     lintExcuse: ?string,
     message: string,
     publishUpdates: Subject<any>,

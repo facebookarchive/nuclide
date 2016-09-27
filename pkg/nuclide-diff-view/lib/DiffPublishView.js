@@ -15,6 +15,7 @@ import type {PublishModeType, PublishModeStateType} from './types';
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
+import {Checkbox} from '../../nuclide-ui/Checkbox';
 import classnames from 'classnames';
 import {DiffMode, PublishMode, PublishModeState} from './constants';
 import {React} from 'react-for-atom';
@@ -61,6 +62,7 @@ type Props = {
 
 type State = {
   hasLintError: boolean,
+  isPrepareMode: boolean,
 };
 
 export default class DiffPublishView extends React.Component {
@@ -73,8 +75,10 @@ export default class DiffPublishView extends React.Component {
     super(props);
     (this: any)._onClickBack = this._onClickBack.bind(this);
     (this: any).__onClickPublish = this.__onClickPublish.bind(this);
+    (this: any)._onTogglePrepare = this._onTogglePrepare.bind(this);
     this.state = {
       hasLintError: false,
+      isPrepareMode: false,
     };
   }
 
@@ -128,11 +132,18 @@ export default class DiffPublishView extends React.Component {
   __onClickPublish(): void {
     this._textBuffer.setText('');
     this.setState({hasLintError: false});
+
+    const isPrepareChecked = this.state.isPrepareMode;
+
     let lintExcuse;
     if (this.refs.excuse != null) {
       lintExcuse = this.refs.excuse.getText();
     }
-    this.props.diffModel.publishDiff(this.__getPublishMessage() || '', lintExcuse);
+    this.props.diffModel.publishDiff(
+      this.__getPublishMessage() || '',
+      isPrepareChecked,
+      lintExcuse,
+    );
   }
 
   __getPublishMessage(): ?string {
@@ -255,11 +266,25 @@ export default class DiffPublishView extends React.Component {
       </Button>
     );
 
+    let prepareOptionElement;
+    if (publishMode === PublishMode.CREATE) {
+      prepareOptionElement = (
+        <Checkbox
+          checked={this.state.isPrepareMode}
+          className="padded"
+          label="Prepare"
+          tabIndex="-1"
+          onChange={this._onTogglePrepare}
+        />
+      );
+    }
+
     return (
       <div className="publish-toolbar-wrapper">
         <Toolbar location="bottom">
           <ToolbarLeft className="nuclide-diff-view-publish-toolbar-left">
             {revisionView}
+            {prepareOptionElement}
             {this.__getExcuseInput()}
           </ToolbarLeft>
           <ToolbarRight>
@@ -284,6 +309,10 @@ export default class DiffPublishView extends React.Component {
         {this._getToolbar()}
       </div>
     );
+  }
+
+  _onTogglePrepare(isChecked: boolean): void {
+    this.setState({isPrepareMode: isChecked});
   }
 
   _onClickBack(): void {

@@ -463,6 +463,7 @@ export function createPhabricatorRevision(
   headCommitMessage: string,
   publishMessage: string,
   amended: boolean,
+  isPrepareMode: boolean,
   lintExcuse: ?string,
 ): Observable<void> {
   const filePath = repository.getProjectDirectory();
@@ -483,7 +484,7 @@ export function createPhabricatorRevision(
     // Create a new revision.
     Observable.defer(() => {
       const stream = getArcanistServiceByNuclideUri(filePath)
-        .createPhabricatorRevision(filePath, lintExcuse)
+        .createPhabricatorRevision(filePath, isPrepareMode, lintExcuse)
         .refCount();
 
       return processArcanistOutput(stream)
