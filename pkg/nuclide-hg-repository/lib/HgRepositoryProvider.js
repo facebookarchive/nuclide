@@ -48,7 +48,6 @@ function getRepositoryDescription(
     const repositoryDescription = directory.getHgRepositoryDescription();
     if (repositoryDescription == null
       || repositoryDescription.repoPath == null
-      || repositoryDescription.originURL == null
     ) {
       return null;
     }

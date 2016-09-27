@@ -82,10 +82,6 @@ export async function generateHgRepo1Fixture(): Promise<string> {
   ]));
   const repoPath = await fsPromise.realpath(tempDir);
   await checkOutput('hg', ['init'], {cwd: repoPath});
-  await fsPromise.writeFile(
-    nuclideUri.join(repoPath, '.hg/hgrc'),
-    '[paths]\ndefault = .\n',
-  );
   await checkOutput('hg', ['commit', '-A', '-m', 'first commit'], {cwd: repoPath});
   await fsPromise.writeFile(
     nuclideUri.join(repoPath, 'test.txt'),
