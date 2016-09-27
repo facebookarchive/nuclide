@@ -16,7 +16,9 @@ import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
 import {CompositeDisposable, TextBuffer} from 'atom';
 import {track} from '../../nuclide-analytics';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {countOccurrences} from '../../commons-node/string';
+import loadingNotification from '../../commons-atom/loading-notification';
 
 // Diffing is O(lines^2), so don't bother for files with too many lines.
 const DIFF_LINE_LIMIT = 10000;
@@ -102,7 +104,11 @@ export default class NuclideTextBuffer extends TextBuffer {
       const file = this.file;
       invariant(file, 'Cannot save an null file!');
       this._pendingSaveContents = toSaveContents;
-      await file.write(toSaveContents);
+      await loadingNotification(
+        file.write(toSaveContents),
+        `Saving ${nuclideUri.nuclideUriToDisplayString(filePath)}...`,
+        500, /* delay */
+      );
       this.cachedDiskContents = toSaveContents;
       this._saveID++;
       this.conflict = false;

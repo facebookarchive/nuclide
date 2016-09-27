@@ -20,6 +20,7 @@ import {loadBufferForUri, bufferForUri} from '../../commons-atom/text-editor';
 import {getLogger} from '../../nuclide-logging';
 import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from '../../commons-atom/featureConfig';
+import loadingNotification from '../../commons-atom/loading-notification';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import {
@@ -209,7 +210,11 @@ async function createEditorForNuclide(
   try {
     let buffer;
     try {
-      buffer = await loadBufferForUri(uri);
+      buffer = await loadingNotification(
+        loadBufferForUri(uri),
+        `Opening ${nuclideUri.nuclideUriToDisplayString(uri)}...`,
+        500, /* delay */
+      );
     } catch (err) {
       // Suppress ENOENT errors which occur if the file doesn't exist.
       // This is the same thing Atom does when opening a file (given a URI) that doesn't exist.
