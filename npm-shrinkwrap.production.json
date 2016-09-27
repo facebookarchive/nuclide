@@ -539,11 +539,6 @@
       "from": "finalhandler@0.5.0",
       "resolved": "https://registry.npmjs.org/finalhandler/-/finalhandler-0.5.0.tgz"
     },
-    "flux": {
-      "version": "2.0.3",
-      "from": "flux@2.0.3",
-      "resolved": "https://registry.npmjs.org/flux/-/flux-2.0.3.tgz"
-    },
     "for-in": {
       "version": "0.1.6",
       "from": "for-in@>=0.1.5 <0.2.0",
