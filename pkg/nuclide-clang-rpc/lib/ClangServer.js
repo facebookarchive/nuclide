@@ -63,6 +63,11 @@ function spawnClangProcess(
   return safeSpawn(pythonExecutable, args, options);
 }
 
+export type ClangServerFlags = {
+  flags: Array<string>,
+  usesDefaultFlags: boolean,
+};
+
 export default class ClangServer extends RpcProcess {
 
   static Status: {[key: string]: ClangServerStatus} = Object.freeze({
@@ -77,15 +82,14 @@ export default class ClangServer extends RpcProcess {
   constructor(
     src: string,
     serverArgs: ClangServerArgs,
-    flags: Array<string>,
-    usesDefaultFlags?: boolean = false,
+    flagsData: ClangServerFlags,
   ) {
     super(
       `ClangServer-${src}`,
       getServiceRegistry(),
-      () => spawnClangProcess(src, serverArgs, flags),
+      () => spawnClangProcess(src, serverArgs, flagsData.flags),
     );
-    this._usesDefaultFlags = usesDefaultFlags;
+    this._usesDefaultFlags = flagsData.usesDefaultFlags;
     this._pendingCompileRequests = 0;
     this._serverStatus = new BehaviorSubject(ClangServer.Status.READY);
   }

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {ClangServerFlags} from './ClangServer';
+
 import LRUCache from 'lru-cache';
 import os from 'os';
 
@@ -44,7 +46,7 @@ async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<A
 export default class ClangServerManager {
 
   _flagsManager: ClangFlagsManager;
-  _servers: LRUCache<any, any>;
+  _servers: LRUCache<string, ClangServer>;
   _checkMemoryUsage: () => Promise<void>;
 
   constructor() {
@@ -91,13 +93,12 @@ export default class ClangServerManager {
     if (flagsResult == null) {
       return null;
     }
-    const {flags, usesDefaultFlags} = flagsResult;
     // Another server could have been created while we were waiting.
     server = this._servers.get(src);
     if (server != null) {
       return server;
     }
-    server = new ClangServer(src, serverArgs, flags, usesDefaultFlags);
+    server = new ClangServer(src, serverArgs, flagsResult);
     // Seed with a compile request to ensure fast responses.
     server.compile(contents)
       .then(() => this._checkMemoryUsage());
@@ -110,16 +111,22 @@ export default class ClangServerManager {
   async _getFlags(
     src: string,
     defaultFlags: ?Array<string>,
-  ): Promise<?{flags: Array<string>, usesDefaultFlags: boolean}> {
+  ): Promise<?ClangServerFlags> {
     const trueFlags = await this._flagsManager.getFlagsForSrc(src)
       .catch(e => {
         getLogger().error(`Error getting flags for ${src}:`, e);
         return null;
       });
     if (trueFlags != null) {
-      return {flags: trueFlags, usesDefaultFlags: false};
+      return {
+        flags: trueFlags,
+        usesDefaultFlags: false,
+      };
     } else if (defaultFlags != null) {
-      return {flags: await augmentDefaultFlags(src, defaultFlags), usesDefaultFlags: true};
+      return {
+        flags: await augmentDefaultFlags(src, defaultFlags),
+        usesDefaultFlags: true,
+      };
     } else {
       return null;
     }

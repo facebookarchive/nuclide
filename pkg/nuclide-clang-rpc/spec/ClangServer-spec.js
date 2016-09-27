@@ -38,6 +38,11 @@ const EXPECTED_FILE_OUTLINE = [
 
 describe('ClangServer', () => {
 
+  const serverFlags = {
+    flags: [],
+    usesDefaultFlags: false,
+  };
+
   beforeEach(function() {
     addMatchers(this);
   });
@@ -45,7 +50,7 @@ describe('ClangServer', () => {
   it('can handle requests', () => {
     waitsForPromise(async () => {
       const serverArgs = await findClangServerArgs();
-      const server = new ClangServer(TEST_FILE, serverArgs, []);
+      const server = new ClangServer(TEST_FILE, serverArgs, serverFlags);
       const service = await server.getService();
       let response = await server.compile(
         FILE_CONTENTS,
@@ -176,7 +181,7 @@ describe('ClangServer', () => {
   it('gracefully handles server crashes', () => {
     waitsForPromise(async () => {
       const serverArgs = await findClangServerArgs();
-      const server = new ClangServer(TEST_FILE, serverArgs, []);
+      const server = new ClangServer(TEST_FILE, serverArgs, serverFlags);
       let response = await server.compile(
         FILE_CONTENTS,
       );
@@ -212,7 +217,7 @@ describe('ClangServer', () => {
     waitsForPromise(async () => {
       const file = nuclideUri.join(__dirname, 'fixtures', 'references.cpp');
       const serverArgs = await findClangServerArgs();
-      const server = new ClangServer(file, serverArgs, []);
+      const server = new ClangServer(file, serverArgs, serverFlags);
       const service = await server.getService();
 
       const fileContents = fs.readFileSync(file).toString('utf8');
@@ -276,7 +281,7 @@ describe('ClangServer', () => {
   it('tracks server status', () => {
     waitsForPromise(async () => {
       const serverArgs = await findClangServerArgs();
-      const server = new ClangServer(TEST_FILE, serverArgs, []);
+      const server = new ClangServer(TEST_FILE, serverArgs, serverFlags);
       expect(server.getStatus()).toBe('ready');
       server.compile('');
 
