@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {FileChangeStatusValue} from '../../nuclide-hg-git-bridge/lib/constants';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import {
@@ -42,6 +43,8 @@ type State = {
   openFilesUris: Array<NuclideUri>,
   modifiedUris: Array<NuclideUri>,
   activeUri: ?NuclideUri,
+  hasUncommittedChanges: boolean,
+  uncommittedFileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
 };
 
 type Props = {
@@ -76,6 +79,8 @@ class FileTreeSidebarComponent extends React.Component {
       openFilesUris: [],
       modifiedUris: [],
       activeUri: null,
+      hasUncommittedChanges: false,
+      uncommittedFileChanges: new Map(),
     };
     this._showOpenConfigValues = featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY).cache(1);
     this._showUncommittedConfigValue =
@@ -163,13 +168,11 @@ class FileTreeSidebarComponent extends React.Component {
     }
 
     let uncommittedChangesSection;
-    const fileChanges = this._store.getFileChanges();
-
-    if (this.state.showUncommittedChanges && fileChanges.size > 0) {
+    if (this.state.showUncommittedChanges && this.state.hasUncommittedChanges) {
       const uncommittedChangesList = (
         <MultiRootChangedFilesView
           commandPrefix="file-tree-sidebar"
-          fileChanges={this._store.getFileChanges()}
+          fileChanges={this.state.uncommittedFileChanges}
           selectedFile={this.state.activeUri}
           hideEmptyFolders={true}
           onFileChosen={this._onFileChosen}
@@ -254,6 +257,15 @@ class FileTreeSidebarComponent extends React.Component {
       // Note: It's safe to call forceUpdate here because the change events are de-bounced.
       this.forceUpdate();
     }
+
+    // Since we maintain the list of active directories for sidebar, the only way
+    // to know if the section is empty or not is by checking each directory entry
+    // and checking if they are empty. If all are empty hide the section.
+    const uncommittedFileChanges = this._store.getFileChanges();
+    const hasUncommittedChanges = Array.from(uncommittedFileChanges.values())
+      .some(fileChanges => fileChanges.size > 0);
+
+    this.setState({uncommittedFileChanges, hasUncommittedChanges});
   }
 
   _onFileChosen(filePath: NuclideUri): void {
