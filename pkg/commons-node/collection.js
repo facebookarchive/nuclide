@@ -1,5 +1,28 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+exports.arrayRemove = arrayRemove;
+exports.arrayEqual = arrayEqual;
+exports.arrayCompact = arrayCompact;
+exports.arrayFindLastIndex = arrayFindLastIndex;
+exports.mapUnion = mapUnion;
+exports.mapFilter = mapFilter;
+exports.mapEqual = mapEqual;
+exports.setIntersect = setIntersect;
+exports.setDifference = setDifference;
+exports.isEmpty = isEmpty;
+exports.keyMirror = keyMirror;
+exports.collect = collect;
+exports.objectEntries = objectEntries;
+exports.objectFromMap = objectFromMap;
+exports.concatIterators = concatIterators;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +32,35 @@
  * the root directory of this source tree.
  */
 
-export function arrayRemove<T>(array: Array<T>, element: T): void {
-  const index = array.indexOf(element);
+function arrayRemove(array, element) {
+  var index = array.indexOf(element);
   if (index >= 0) {
     array.splice(index, 1);
   }
 }
 
-export function arrayEqual<T>(
-  array1: Array<T>,
-  array2: Array<T>,
-  equalComparator?: (a: T, b: T) => boolean,
-): boolean {
+function arrayEqual(array1, array2, equalComparator) {
   if (array1.length !== array2.length) {
     return false;
   }
-  const equalFunction = equalComparator || ((a: T, b: T) => a === b);
-  return array1.every((item1, i) => equalFunction(item1, array2[i]));
+  var equalFunction = equalComparator || function (a, b) {
+    return a === b;
+  };
+  return array1.every(function (item1, i) {
+    return equalFunction(item1, array2[i]);
+  });
 }
 
 /**
  * Returns a copy of the input Array with all `null` and `undefined` values filtered out.
  * Allows Flow to typecheck the common `filter(x => x != null)` pattern.
  */
-export function arrayCompact<T>(array: Array<?T>): Array<T> {
-  const result = [];
-  for (const elem of array) {
-    if (elem != null) {
-      result.push(elem);
+
+function arrayCompact(array) {
+  var result = [];
+  for (var _elem of array) {
+    if (_elem != null) {
+      result.push(_elem);
     }
   }
   return result;
@@ -46,12 +70,9 @@ export function arrayCompact<T>(array: Array<?T>): Array<T> {
  * Returns the last index in the input array that matches the predicate.
  * Returns -1 if no match is found.
  */
-export function arrayFindLastIndex<T>(
-  array: Array<T>,
-  predicate: (elem: T, index: number, array: Array<T>) => boolean,
-  thisArg?: any,
-): number {
-  for (let i = array.length - 1; i >= 0; i--) {
+
+function arrayFindLastIndex(array, predicate, thisArg) {
+  for (var i = array.length - 1; i >= 0; i--) {
     if (predicate.call(thisArg, array[i], i, array)) {
       return i;
     }
@@ -63,37 +84,52 @@ export function arrayFindLastIndex<T>(
  * Merges a given arguments of maps into one Map, with the latest maps
  * overriding the values of the prior maps.
  */
-export function mapUnion<T, X>(...maps: Array<Map<T, X>>): Map<T, X> {
-  const unionMap = new Map();
-  for (const map of maps) {
-    for (const [key, value] of map) {
-      unionMap.set(key, value);
+
+function mapUnion() {
+  var unionMap = new Map();
+
+  for (var _len = arguments.length, maps = Array(_len), _key = 0; _key < _len; _key++) {
+    maps[_key] = arguments[_key];
+  }
+
+  for (var map of maps) {
+    for (var _ref3 of map) {
+      var _ref2 = _slicedToArray(_ref3, 2);
+
+      var _key2 = _ref2[0];
+      var _value = _ref2[1];
+
+      unionMap.set(_key2, _value);
     }
   }
   return unionMap;
 }
 
-export function mapFilter<T, X>(
-  map: Map<T, X>,
-  selector: (key: T, value: X) => boolean,
-): Map<T, X> {
-  const selected = new Map();
-  for (const [key, value] of map) {
-    if (selector(key, value)) {
-      selected.set(key, value);
+function mapFilter(map, selector) {
+  var selected = new Map();
+  for (var _ref43 of map) {
+    var _ref42 = _slicedToArray(_ref43, 2);
+
+    var _key3 = _ref42[0];
+    var _value2 = _ref42[1];
+
+    if (selector(_key3, _value2)) {
+      selected.set(_key3, _value2);
     }
   }
   return selected;
 }
 
-export function mapEqual<T, X>(
-  map1: Map<T, X>,
-  map2: Map<T, X>,
-) {
+function mapEqual(map1, map2) {
   if (map1.size !== map2.size) {
     return false;
   }
-  for (const [key1, value1] of map1) {
+  for (var _ref53 of map1) {
+    var _ref52 = _slicedToArray(_ref53, 2);
+
+    var key1 = _ref52[0];
+    var value1 = _ref52[1];
+
     if (map2.get(key1) !== value1) {
       return false;
     }
@@ -101,20 +137,24 @@ export function mapEqual<T, X>(
   return true;
 }
 
-export function setIntersect<T>(a: Set<T>, b: Set<T>): Set<T> {
-  return new Set(Array.from(a).filter(e => b.has(e)));
+function setIntersect(a, b) {
+  return new Set(Array.from(a).filter(function (e) {
+    return b.has(e);
+  }));
 }
 
-export function setDifference<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): Set<T> {
+function setDifference(a, b, hash_) {
   if (a.size === 0) {
     return new Set();
   } else if (b.size === 0) {
     return new Set(a);
   }
-  const result = new Set();
-  const hash = hash_ || (x => x);
-  const bHashes = hash_ == null ? b : new Set(Array.from(b.values()).map(hash));
-  a.forEach(value => {
+  var result = new Set();
+  var hash = hash_ || function (x) {
+    return x;
+  };
+  var bHashes = hash_ == null ? b : new Set(Array.from(b.values()).map(hash));
+  a.forEach(function (value) {
     if (!bHashes.has(hash(value))) {
       result.add(value);
     }
@@ -125,8 +165,9 @@ export function setDifference<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): S
 /**
  * O(1)-check if a given object is empty (has no properties, inherited or not)
  */
-export function isEmpty(obj: Object): boolean {
-  for (const key in obj) {
+
+function isEmpty(obj) {
+  for (var _key4 in obj) {
     return false;
   }
   return true;
@@ -138,9 +179,10 @@ export function isEmpty(obj: Object): boolean {
  *
  * Based off the equivalent function in www.
  */
-export function keyMirror<T: Object>(obj: T): {[key: $Enum<T>]: $Enum<T>} {
-  const ret = {};
-  Object.keys(obj).forEach(key => {
+
+function keyMirror(obj) {
+  var ret = {};
+  Object.keys(obj).forEach(function (key) {
     ret[key] = key;
   });
   return ret;
@@ -150,32 +192,29 @@ export function keyMirror<T: Object>(obj: T): {[key: $Enum<T>]: $Enum<T>} {
  * Given an array of [key, value] pairs, construct a map where the values for
  * each key are collected into an array of values, in order.
  */
-export function collect<K, V>(pairs: Array<[K, V]>): Map<K, Array<V>> {
-  const result = new Map();
-  for (const pair of pairs) {
-    const [k, v] = pair;
-    let list = result.get(k);
+
+function collect(pairs) {
+  var result = new Map();
+  for (var pair of pairs) {
+    var _pair = _slicedToArray(pair, 2);
+
+    var k = _pair[0];
+    var _v = _pair[1];
+
+    var list = result.get(k);
     if (list == null) {
       list = [];
       result.set(k, list);
     }
-    list.push(v);
+    list.push(_v);
   }
   return result;
 }
 
-export class MultiMap<K, V> {
-  // Invariant: no empty sets. They should be removed instead.
-  _map: Map<K, Set<V>>;
+var MultiMap = (function () {
+  function MultiMap() {
+    _classCallCheck(this, MultiMap);
 
-  // TODO may be worth defining a getter but no setter, to mimic Map. But please just behave and
-  // don't mutate this from outside this class.
-  //
-  // Invariant: equal to the sum of the sizes of all the sets contained in this._map
-  /* The total number of key-value bindings contained */
-  size: number;
-
-  constructor() {
     this._map = new Map();
     this.size = 0;
   }
@@ -184,112 +223,155 @@ export class MultiMap<K, V> {
    * Returns the set of values associated with the given key. Do not mutate the given set. Copy it
    * if you need to store it past the next operation on this MultiMap.
    */
-  get(key: K): Set<V> {
-    const set = this._map.get(key);
-    if (set == null) {
-      return new Set();
+
+  _createClass(MultiMap, [{
+    key: 'get',
+    value: function get(key) {
+      var set = this._map.get(key);
+      if (set == null) {
+        return new Set();
+      }
+      return set;
     }
-    return set;
-  }
 
-  /*
-   * Mimics the Map.prototype.set interface. Deliberately did not choose "set" as the name since the
-   * implication is that it removes the previous binding.
-   */
-  add(key: K, value: V): MultiMap<K, V> {
-    let set = this._map.get(key);
-    if (set == null) {
-      set = new Set();
-      this._map.set(key, set);
+    /*
+     * Mimics the Map.prototype.set interface. Deliberately did not choose "set" as the name since the
+     * implication is that it removes the previous binding.
+     */
+  }, {
+    key: 'add',
+    value: function add(key, value) {
+      var set = this._map.get(key);
+      if (set == null) {
+        set = new Set();
+        this._map.set(key, set);
+      }
+      if (!set.has(value)) {
+        set.add(value);
+        this.size++;
+      }
+      return this;
     }
-    if (!set.has(value)) {
-      set.add(value);
-      this.size++;
+
+    /*
+     * Mimics the Map.prototype.set interface. Replaces the previous binding with new values.
+     */
+  }, {
+    key: 'set',
+    value: function set(key, values) {
+      this.deleteAll(key);
+      var newSet = new Set(values);
+      if (newSet.size !== 0) {
+        this._map.set(key, newSet);
+        this.size += newSet.size;
+      }
     }
-    return this;
-  }
 
-  /*
-   * Mimics the Map.prototype.set interface. Replaces the previous binding with new values.
-   */
-  set(key: K, values: Iterable<V>): void {
-    this.deleteAll(key);
-    const newSet = new Set(values);
-    if (newSet.size !== 0) {
-      this._map.set(key, newSet);
-      this.size += newSet.size;
+    /*
+     * Deletes a single binding. Returns true iff the binding existed.
+     */
+  }, {
+    key: 'delete',
+    value: function _delete(key, value) {
+      var set = this.get(key);
+      var didRemove = set.delete(value);
+      if (set.size === 0) {
+        this._map.delete(key);
+      }
+      if (didRemove) {
+        this.size--;
+      }
+      return didRemove;
     }
-  }
 
-  /*
-   * Deletes a single binding. Returns true iff the binding existed.
-   */
-  delete(key: K, value: V): boolean {
-    const set = this.get(key);
-    const didRemove = set.delete(value);
-    if (set.size === 0) {
-      this._map.delete(key);
+    /*
+     * Deletes all bindings associated with the given key. Returns true iff any bindings were deleted.
+     */
+  }, {
+    key: 'deleteAll',
+    value: function deleteAll(key) {
+      var set = this.get(key);
+      this.size -= set.size;
+      return this._map.delete(key);
     }
-    if (didRemove) {
-      this.size--;
+  }, {
+    key: 'clear',
+    value: function clear() {
+      this._map.clear();
+      this.size = 0;
     }
-    return didRemove;
-  }
-
-  /*
-   * Deletes all bindings associated with the given key. Returns true iff any bindings were deleted.
-   */
-  deleteAll(key: K): boolean {
-    const set = this.get(key);
-    this.size -= set.size;
-    return this._map.delete(key);
-  }
-
-  clear(): void {
-    this._map.clear();
-    this.size = 0;
-  }
-
-  has(key: K, value: V): boolean {
-    return this.get(key).has(value);
-  }
-
-  hasAny(key: K): boolean {
-    return this._map.has(key);
-  }
-
-  *values(): Iterable<V> {
-    for (const set of this._map.values()) {
-      yield* set;
+  }, {
+    key: 'has',
+    value: function has(key, value) {
+      return this.get(key).has(value);
     }
-  }
+  }, {
+    key: 'hasAny',
+    value: function hasAny(key) {
+      return this._map.has(key);
+    }
+  }, {
+    key: 'values',
+    value: function* values() {
+      for (var set of this._map.values()) {
+        yield* set;
+      }
+    }
+  }, {
+    key: 'forEach',
+    value: function forEach(callback) {
+      var _this = this;
 
-  forEach(callback: (value: V, key: K, obj: MultiMap<K, V>) => void): void {
-    this._map.forEach((values, key) => values.forEach(value => callback(value, key, this)));
-  }
-}
+      this._map.forEach(function (values, key) {
+        return values.forEach(function (value) {
+          return callback(value, key, _this);
+        });
+      });
+    }
+  }]);
 
-export function objectEntries<T>(obj: {[key: string]: T}): Array<[string, T]> {
-  if (obj == null) { throw new TypeError(); }
-  const entries = [];
-  for (const key in obj) {
-    if (obj.hasOwnProperty(key) && Object.prototype.propertyIsEnumerable.call(obj, key)) {
-      entries.push([key, obj[key]]);
+  return MultiMap;
+})();
+
+exports.MultiMap = MultiMap;
+
+function objectEntries(obj) {
+  if (obj == null) {
+    throw new TypeError();
+  }
+  var entries = [];
+  for (var _key5 in obj) {
+    if (obj.hasOwnProperty(_key5) && Object.prototype.propertyIsEnumerable.call(obj, _key5)) {
+      entries.push([_key5, obj[_key5]]);
     }
   }
   return entries;
 }
 
-export function objectFromMap<T>(map: Map<string, T>): {[key: string]: T} {
-  const obj = {};
-  map.forEach((v, k) => { obj[k] = v; });
+function objectFromMap(map) {
+  var obj = {};
+  map.forEach(function (v, k) {
+    obj[k] = v;
+  });
   return obj;
 }
 
-export function *concatIterators<T>(...iterators: Array<Iterable<T>>): Iterator<T> {
-  for (const iterator of iterators) {
-    for (const element of iterator) {
+function* concatIterators() {
+  for (var _len2 = arguments.length, iterators = Array(_len2), _key6 = 0; _key6 < _len2; _key6++) {
+    iterators[_key6] = arguments[_key6];
+  }
+
+  for (var iterator of iterators) {
+    for (var element of iterator) {
       yield element;
     }
   }
 }
+
+// Invariant: no empty sets. They should be removed instead.
+
+// TODO may be worth defining a getter but no setter, to mimic Map. But please just behave and
+// don't mutate this from outside this class.
+//
+// Invariant: equal to the sum of the sizes of all the sets contained in this._map
+/* The total number of key-value bindings contained */

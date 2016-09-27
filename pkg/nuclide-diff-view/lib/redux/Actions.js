@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,305 +10,223 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
-import type {
-  ActivateRepositoryAction,
-  AddRepositoryAction,
-  CloseViewAction,
-  CommitAction,
-  CommitModeType,
-  CommitState,
-  DeactivateRepositoryAction,
-  DiffFileAction,
-  DiffModeType,
-  FileChangeStatusValue,
-  FileDiffState,
-  OpenViewAction,
-  PublishDiffAction,
-  PublishState,
-  RemoveRepositoryAction,
-  SetCommitModeAction,
-  SetCompareIdAction,
-  SetCwdApiAction,
-  SetShouldReabaseOnAmendAction,
-  SetViewModeAction,
-  UpdateActiveRepositoryAction,
-  UpdateCommitStateAction,
-  UpdateDirtyFilesAction,
-  UpdateFileDiffAction,
-  UpdateHeadToForkBaseRevisions,
-  UpdatePublishStateAction,
-  UpdateSelectedFilesAction,
-} from '../types';
-import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
-import type {RevisionStatuses} from '../../../nuclide-hg-repository-client/lib/HgRepositoryClient';
-import type {
-  RevisionInfo,
-} from '../../../nuclide-hg-rpc/lib/HgService';
-import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
-import type {Subject} from 'rxjs';
+exports.openView = openView;
+exports.closeView = closeView;
+exports.addRepository = addRepository;
+exports.setCompareId = setCompareId;
+exports.updateDirtyFiles = updateDirtyFiles;
+exports.removeRepository = removeRepository;
+exports.activateRepository = activateRepository;
+exports.deactivateRepository = deactivateRepository;
+exports.updateSelectedFiles = updateSelectedFiles;
+exports.updateHeadToForkBaseRevisionsState = updateHeadToForkBaseRevisionsState;
+exports.updateActiveRepository = updateActiveRepository;
+exports.setCwdApi = setCwdApi;
+exports.diffFile = diffFile;
+exports.updateFileDiff = updateFileDiff;
+exports.setViewMode = setViewMode;
+exports.setCommitMode = setCommitMode;
+exports.updateCommitState = updateCommitState;
+exports.updatePublishState = updatePublishState;
+exports.setShouldRebaseOnAmend = setShouldRebaseOnAmend;
+exports.commit = commit;
+exports.publishDiff = publishDiff;
 
-import {
-  ACTIVATE_REPOSITORY,
-  ADD_REPOSITORY,
-  CLOSE_VIEW,
-  COMMIT,
-  DEACTIVATE_REPOSITORY,
-  DIFF_FILE,
-  OPEN_VIEW,
-  PUBLISH_DIFF,
-  REMOVE_REPOSITORY,
-  SET_COMMIT_MODE,
-  SET_COMPARE_ID,
-  SET_CWD_API,
-  SET_SHOULD_REBASE_ON_AMEND,
-  SET_VIEW_MODE,
-  UPDATE_ACTIVE_REPOSITORY,
-  UPDATE_COMMIT_STATE,
-  UPDATE_DIRTY_FILES,
-  UPDATE_FILE_DIFF,
-  UPDATE_HEAD_TO_FORKBASE_REVISIONS,
-  UPDATE_PUBLISH_STATE,
-  UPDATE_SELECTED_FILES,
-} from './ActionTypes';
+var _ActionTypes2;
 
-export function openView(): OpenViewAction {
+function _ActionTypes() {
+  return _ActionTypes2 = require('./ActionTypes');
+}
+
+function openView() {
   return {
-    type: OPEN_VIEW,
+    type: (_ActionTypes2 || _ActionTypes()).OPEN_VIEW
   };
 }
 
-export function closeView(): CloseViewAction {
+function closeView() {
   return {
-    type: CLOSE_VIEW,
+    type: (_ActionTypes2 || _ActionTypes()).CLOSE_VIEW
   };
 }
 
-export function addRepository(
-  repository: HgRepositoryClient,
-): AddRepositoryAction {
+function addRepository(repository) {
   return {
-    type: ADD_REPOSITORY,
+    type: (_ActionTypes2 || _ActionTypes()).ADD_REPOSITORY,
     payload: {
-      repository,
-    },
+      repository: repository
+    }
   };
 }
 
-export function setCompareId(
-  repository: HgRepositoryClient,
-  compareId: ?number,
-): SetCompareIdAction {
+function setCompareId(repository, compareId) {
   return {
-    type: SET_COMPARE_ID,
+    type: (_ActionTypes2 || _ActionTypes()).SET_COMPARE_ID,
     payload: {
-      repository,
-      compareId,
-    },
+      repository: repository,
+      compareId: compareId
+    }
   };
 }
 
-export function updateDirtyFiles(
-  repository: HgRepositoryClient,
-  dirtyFiles: Map<NuclideUri, FileChangeStatusValue>,
-): UpdateDirtyFilesAction {
+function updateDirtyFiles(repository, dirtyFiles) {
   return {
-    type: UPDATE_DIRTY_FILES,
+    type: (_ActionTypes2 || _ActionTypes()).UPDATE_DIRTY_FILES,
     payload: {
-      repository,
-      dirtyFiles,
-    },
+      repository: repository,
+      dirtyFiles: dirtyFiles
+    }
   };
 }
 
-export function removeRepository(
-  repository: HgRepositoryClient,
-): RemoveRepositoryAction {
+function removeRepository(repository) {
   return {
-    type: REMOVE_REPOSITORY,
+    type: (_ActionTypes2 || _ActionTypes()).REMOVE_REPOSITORY,
     payload: {
-      repository,
-    },
+      repository: repository
+    }
   };
 }
 
-export function activateRepository(
-  repository: HgRepositoryClient,
-): ActivateRepositoryAction {
+function activateRepository(repository) {
   return {
-    type: ACTIVATE_REPOSITORY,
+    type: (_ActionTypes2 || _ActionTypes()).ACTIVATE_REPOSITORY,
     payload: {
-      repository,
-    },
+      repository: repository
+    }
   };
 }
 
-export function deactivateRepository(
-  repository: HgRepositoryClient,
-): DeactivateRepositoryAction {
+function deactivateRepository(repository) {
   return {
-    type: DEACTIVATE_REPOSITORY,
+    type: (_ActionTypes2 || _ActionTypes()).DEACTIVATE_REPOSITORY,
     payload: {
-      repository,
-    },
+      repository: repository
+    }
   };
 }
 
-export function updateSelectedFiles(
-  repository: HgRepositoryClient,
-  selectedFiles: Map<NuclideUri, FileChangeStatusValue>,
-): UpdateSelectedFilesAction {
+function updateSelectedFiles(repository, selectedFiles) {
   return {
-    type: UPDATE_SELECTED_FILES,
+    type: (_ActionTypes2 || _ActionTypes()).UPDATE_SELECTED_FILES,
     payload: {
-      repository,
-      selectedFiles,
-    },
+      repository: repository,
+      selectedFiles: selectedFiles
+    }
   };
 }
 
-export function updateHeadToForkBaseRevisionsState(
-  repository: HgRepositoryClient,
-  headToForkBaseRevisions: Array<RevisionInfo>,
-  revisionStatuses: RevisionStatuses,
-): UpdateHeadToForkBaseRevisions {
+function updateHeadToForkBaseRevisionsState(repository, headToForkBaseRevisions, revisionStatuses) {
   return {
-    type: UPDATE_HEAD_TO_FORKBASE_REVISIONS,
+    type: (_ActionTypes2 || _ActionTypes()).UPDATE_HEAD_TO_FORKBASE_REVISIONS,
     payload: {
-      repository,
-      headToForkBaseRevisions,
-      revisionStatuses,
-    },
+      repository: repository,
+      headToForkBaseRevisions: headToForkBaseRevisions,
+      revisionStatuses: revisionStatuses
+    }
   };
 }
 
-export function updateActiveRepository(
-  hgRepository: ?HgRepositoryClient,
-): UpdateActiveRepositoryAction {
+function updateActiveRepository(hgRepository) {
   return {
-    type: UPDATE_ACTIVE_REPOSITORY,
+    type: (_ActionTypes2 || _ActionTypes()).UPDATE_ACTIVE_REPOSITORY,
     payload: {
-      hgRepository,
-    },
+      hgRepository: hgRepository
+    }
   };
 }
 
-export function setCwdApi(
-  cwdApi: ?CwdApi,
-): SetCwdApiAction {
+function setCwdApi(cwdApi) {
   return {
-    type: SET_CWD_API,
+    type: (_ActionTypes2 || _ActionTypes()).SET_CWD_API,
     payload: {
-      cwdApi,
-    },
+      cwdApi: cwdApi
+    }
   };
 }
 
-export function diffFile(
-  filePath: NuclideUri,
-  onChangeModified: () => mixed,
-): DiffFileAction {
+function diffFile(filePath, onChangeModified) {
   return {
-    type: DIFF_FILE,
+    type: (_ActionTypes2 || _ActionTypes()).DIFF_FILE,
     payload: {
-      filePath,
-      onChangeModified,
-    },
+      filePath: filePath,
+      onChangeModified: onChangeModified
+    }
   };
 }
 
-export function updateFileDiff(
-  fileDiff: FileDiffState,
-): UpdateFileDiffAction {
+function updateFileDiff(fileDiff) {
   return {
-    type: UPDATE_FILE_DIFF,
+    type: (_ActionTypes2 || _ActionTypes()).UPDATE_FILE_DIFF,
     payload: {
-      fileDiff,
-    },
+      fileDiff: fileDiff
+    }
   };
 }
 
-export function setViewMode(
-  viewMode: DiffModeType,
-): SetViewModeAction {
+function setViewMode(viewMode) {
   return {
-    type: SET_VIEW_MODE,
+    type: (_ActionTypes2 || _ActionTypes()).SET_VIEW_MODE,
     payload: {
-      viewMode,
-    },
+      viewMode: viewMode
+    }
   };
 }
 
-export function setCommitMode(
-  commitMode: CommitModeType,
-): SetCommitModeAction {
+function setCommitMode(commitMode) {
   return {
-    type: SET_COMMIT_MODE,
+    type: (_ActionTypes2 || _ActionTypes()).SET_COMMIT_MODE,
     payload: {
-      commitMode,
-    },
+      commitMode: commitMode
+    }
   };
 }
 
-export function updateCommitState(
-  commitState: CommitState,
-): UpdateCommitStateAction {
+function updateCommitState(commitState) {
   return {
-    type: UPDATE_COMMIT_STATE,
+    type: (_ActionTypes2 || _ActionTypes()).UPDATE_COMMIT_STATE,
     payload: {
-      commit: commitState,
-    },
+      commit: commitState
+    }
   };
 }
 
-export function updatePublishState(
-  publish: PublishState,
-): UpdatePublishStateAction {
+function updatePublishState(publish) {
   return {
-    type: UPDATE_PUBLISH_STATE,
+    type: (_ActionTypes2 || _ActionTypes()).UPDATE_PUBLISH_STATE,
     payload: {
-      publish,
-    },
+      publish: publish
+    }
   };
 }
 
-export function setShouldRebaseOnAmend(
-  shouldRebaseOnAmend: boolean,
-): SetShouldReabaseOnAmendAction {
+function setShouldRebaseOnAmend(shouldRebaseOnAmend) {
   return {
-    type: SET_SHOULD_REBASE_ON_AMEND,
+    type: (_ActionTypes2 || _ActionTypes()).SET_SHOULD_REBASE_ON_AMEND,
     payload: {
-      shouldRebaseOnAmend,
-    },
+      shouldRebaseOnAmend: shouldRebaseOnAmend
+    }
   };
 }
 
-export function commit(
-  repository: HgRepositoryClient,
-  message: string,
-): CommitAction {
+function commit(repository, message) {
   return {
-    type: COMMIT,
+    type: (_ActionTypes2 || _ActionTypes()).COMMIT,
     payload: {
-      message,
-      repository,
-    },
+      message: message,
+      repository: repository
+    }
   };
 }
 
-export function publishDiff(
-  repository: HgRepositoryClient,
-  message: string,
-  lintExcuse: ?string,
-  publishUpdates: Subject<any>,
-): PublishDiffAction {
+function publishDiff(repository, message, lintExcuse, publishUpdates) {
   return {
-    type: PUBLISH_DIFF,
+    type: (_ActionTypes2 || _ActionTypes()).PUBLISH_DIFF,
     payload: {
-      lintExcuse,
-      message,
-      publishUpdates,
-      repository,
-    },
+      lintExcuse: lintExcuse,
+      message: message,
+      publishUpdates: publishUpdates,
+      repository: repository
+    }
   };
 }

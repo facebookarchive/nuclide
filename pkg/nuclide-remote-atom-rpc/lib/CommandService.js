@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +10,16 @@
  * the root directory of this source tree.
  */
 
-import type {AtomCommands} from './rpc-types';
+exports.getAtomCommands = getAtomCommands;
 
-import {CommandServer} from './CommandServer';
+var _CommandServer2;
+
+function _CommandServer() {
+  return _CommandServer2 = require('./CommandServer');
+}
 
 // Called by the server side command line 'atom' command.
-export function getAtomCommands(): Promise<?AtomCommands> {
-  return Promise.resolve(CommandServer.getAtomCommands());
+
+function getAtomCommands() {
+  return Promise.resolve((_CommandServer2 || _CommandServer()).CommandServer.getAtomCommands());
 }

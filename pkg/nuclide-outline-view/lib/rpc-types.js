@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +10,4 @@
  * the root directory of this source tree.
  */
 
-import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
-
-export type OutlineTree = {
-  // Must be one or the other. If both are present, tokenizedText is preferred.
-  plainText?: string,
-  tokenizedText?: TokenizedText,
-  representativeName?: string,
-
-  startPosition: atom$Point,
-  endPosition?: atom$Point,
-  children: Array<OutlineTree>,
-};
-
-export type Outline = {
-  outlineTrees: Array<OutlineTree>,
-};
+// Must be one or the other. If both are present, tokenizedText is preferred.

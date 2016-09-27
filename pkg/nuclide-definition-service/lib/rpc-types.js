@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,8 +9,6 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 // position is the first char of the definition's identifier, while range
 // includes the entire definition. For example in:
@@ -21,20 +20,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 // name is a string suitable for display to humans.
 // projectRoot is the root directory of the project containing this definition.
 // name is required, and projectRoot is encouraged, when returning multiple results.
-export type Definition = {
-  path: NuclideUri,
-  position: atom$Point,
-  range?: atom$Range,
-  id?: string,
-  name?: string,
-  language: string,
-  projectRoot?: NuclideUri,
-};
 
 // Definition queries supply a point.
 // The returned queryRange is the range within which the returned definition is valid.
 // Typically queryRange spans the containing identifier around the query point.
-export type DefinitionQueryResult = {
-  queryRange: atom$Range,
-  definitions: Array<Definition>,
-};

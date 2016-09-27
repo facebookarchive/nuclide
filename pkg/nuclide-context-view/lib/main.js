@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,105 +10,43 @@
  * the root directory of this source tree.
  */
 
-import type {
-  ContextProvider,
-  NuclideContextView,
-} from './types';
-import type {ContextViewConfig} from './ContextViewManager';
-import type {DefinitionService} from '../../nuclide-definition-service';
-import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-
-import {ContextViewManager} from './ContextViewManager';
-import {Disposable, CompositeDisposable} from 'atom';
-import passesGK from '../../commons-node/passesGK';
-import invariant from 'assert';
-
-const INITIAL_PANEL_WIDTH = 300;
-const INITIAL_PANEL_VISIBILITY = false;
-const CONTEXT_VIEW_GK = 'nuclide_context_view';
-
-let currentService: ?DefinitionService = null;
-let manager: ?ContextViewManager = null;
-let disposables: CompositeDisposable;
-const initialViewState = {};
-
-export function activate(state?: Object = {}): void {
-  initialViewState.width = state.width || INITIAL_PANEL_WIDTH;
-  initialViewState.visible = state.visible || INITIAL_PANEL_VISIBILITY;
-  disposables = new CompositeDisposable();
-  // Toggle
-  disposables.add(
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-context-view:toggle',
-      this.toggleContextView.bind(this),
-    ),
-  );
-
-  // Show
-  disposables.add(
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-context-view:show',
-      this.showContextView.bind(this),
-    ),
-  );
-
-  // Hide
-  disposables.add(
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-context-view:hide',
-      this.hideContextView.bind(this),
-    ),
-  );
-}
-
-export function deactivate(): void {
-  currentService = null;
-  disposables.dispose();
-  if (manager != null) {
-    manager.consumeDefinitionService(null);
-    manager.dispose();
-    manager = null;
-  }
-}
-
-export function serialize(): ?ContextViewConfig {
-  if (manager != null) {
-    return manager.serialize();
-  }
-}
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.serialize = serialize;
 
 /** Returns the singleton ContextViewManager instance of this package, or null
  * if the user doesn't pass the Context View GK check. */
-async function getContextViewManager(): Promise<?ContextViewManager> {
-  if (!await passesGK(CONTEXT_VIEW_GK)) {
+
+var getContextViewManager = _asyncToGenerator(function* () {
+  if (!(yield (0, (_commonsNodePassesGK2 || _commonsNodePassesGK()).default)(CONTEXT_VIEW_GK))) {
     return null;
   }
   if (manager == null) {
-    manager = new ContextViewManager(initialViewState.width, initialViewState.visible);
+    manager = new (_ContextViewManager2 || _ContextViewManager()).ContextViewManager(initialViewState.width, initialViewState.visible);
   }
   return manager;
-}
+});
 
-export async function toggleContextView(): Promise<void> {
-  const contextViewManager = await getContextViewManager();
+var toggleContextView = _asyncToGenerator(function* () {
+  var contextViewManager = yield getContextViewManager();
   if (contextViewManager != null) {
     contextViewManager.toggle();
   }
-}
+});
 
-export async function showContextView(): Promise<void> {
-  const contextViewManager = await getContextViewManager();
+exports.toggleContextView = toggleContextView;
+
+var showContextView = _asyncToGenerator(function* () {
+  var contextViewManager = yield getContextViewManager();
   if (contextViewManager != null) {
     contextViewManager.show();
   }
-}
+});
 
-export async function hideContextView(): Promise<void> {
-  const contextViewManager = await getContextViewManager();
+exports.showContextView = showContextView;
+
+var hideContextView = _asyncToGenerator(function* () {
+  var contextViewManager = yield getContextViewManager();
   if (contextViewManager != null) {
     contextViewManager.hide();
   }
@@ -118,22 +57,129 @@ export async function hideContextView(): Promise<void> {
  * want to provide context for a definition. A context provider must consume the
  * nuclide-context-view service and register themselves as a provider.
  */
-const Service: NuclideContextView = {
-  async registerProvider(provider: ContextProvider): Promise<Disposable> {
-    invariant(provider != null, 'Cannot register null context provider');
-    const contextViewManager = await getContextViewManager();
+);
+
+exports.hideContextView = hideContextView;
+exports.consumeDefinitionService = consumeDefinitionService;
+
+var consumeToolBar = _asyncToGenerator(function* (getToolBar) {
+  var contextViewManager = yield getContextViewManager();
+  if (contextViewManager != null) {
+    var _ret = (function () {
+      var toolBar = getToolBar('nuclide-context-view');
+
+      var _toolBar$addButton = toolBar.addButton({
+        icon: 'info',
+        callback: 'nuclide-context-view:toggle',
+        tooltip: 'Toggle Context View'
+      });
+
+      var element = _toolBar$addButton.element;
+
+      element.classList.add('nuclide-context-view-toolbar-button');
+      var disposable = new (_atom2 || _atom()).Disposable(function () {
+        toolBar.removeItems();
+      });
+      disposables.add(disposable);
+      return {
+        v: disposable
+      };
+    })();
+
+    if (typeof _ret === 'object') return _ret.v;
+  }
+  return new (_atom2 || _atom()).Disposable();
+});
+
+exports.consumeToolBar = consumeToolBar;
+exports.getDistractionFreeModeProvider = getDistractionFreeModeProvider;
+exports.provideNuclideContextView = provideNuclideContextView;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _ContextViewManager2;
+
+function _ContextViewManager() {
+  return _ContextViewManager2 = require('./ContextViewManager');
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _commonsNodePassesGK2;
+
+function _commonsNodePassesGK() {
+  return _commonsNodePassesGK2 = _interopRequireDefault(require('../../commons-node/passesGK'));
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var INITIAL_PANEL_WIDTH = 300;
+var INITIAL_PANEL_VISIBILITY = false;
+var CONTEXT_VIEW_GK = 'nuclide_context_view';
+
+var currentService = null;
+var manager = null;
+var disposables = undefined;
+var initialViewState = {};
+
+function activate() {
+  var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+  initialViewState.width = state.width || INITIAL_PANEL_WIDTH;
+  initialViewState.visible = state.visible || INITIAL_PANEL_VISIBILITY;
+  disposables = new (_atom2 || _atom()).CompositeDisposable();
+  // Toggle
+  disposables.add(atom.commands.add('atom-workspace', 'nuclide-context-view:toggle', this.toggleContextView.bind(this)));
+
+  // Show
+  disposables.add(atom.commands.add('atom-workspace', 'nuclide-context-view:show', this.showContextView.bind(this)));
+
+  // Hide
+  disposables.add(atom.commands.add('atom-workspace', 'nuclide-context-view:hide', this.hideContextView.bind(this)));
+}
+
+function deactivate() {
+  currentService = null;
+  disposables.dispose();
+  if (manager != null) {
+    manager.consumeDefinitionService(null);
+    manager.dispose();
+    manager = null;
+  }
+}
+
+function serialize() {
+  if (manager != null) {
+    return manager.serialize();
+  }
+}
+
+var Service = {
+  registerProvider: _asyncToGenerator(function* (provider) {
+    (0, (_assert2 || _assert()).default)(provider != null, 'Cannot register null context provider');
+    var contextViewManager = yield getContextViewManager();
     if (contextViewManager == null) {
-      return new Disposable();
+      return new (_atom2 || _atom()).Disposable();
     }
     contextViewManager.registerProvider(provider);
-    return new Disposable(() => {
+    return new (_atom2 || _atom()).Disposable(function () {
       contextViewManager.unregisterProvider(provider.id);
     });
-  },
+  })
 };
 
-export function consumeDefinitionService(service: DefinitionService): IDisposable {
-  getContextViewManager().then((contextViewManager: ?ContextViewManager) => {
+function consumeDefinitionService(service) {
+  getContextViewManager().then(function (contextViewManager) {
     if (contextViewManager == null) {
       return;
     }
@@ -142,7 +188,7 @@ export function consumeDefinitionService(service: DefinitionService): IDisposabl
       contextViewManager.consumeDefinitionService(currentService);
     }
   });
-  return new Disposable(() => {
+  return new (_atom2 || _atom()).Disposable(function () {
     currentService = null;
     if (manager != null) {
       manager.consumeDefinitionService(null);
@@ -150,27 +196,10 @@ export function consumeDefinitionService(service: DefinitionService): IDisposabl
   });
 }
 
-export async function consumeToolBar(getToolBar: GetToolBar): Promise<IDisposable> {
-  const contextViewManager = await getContextViewManager();
-  if (contextViewManager != null) {
-    const toolBar = getToolBar('nuclide-context-view');
-    const {element} = toolBar.addButton({
-      icon: 'info',
-      callback: 'nuclide-context-view:toggle',
-      tooltip: 'Toggle Context View',
-    });
-    element.classList.add('nuclide-context-view-toolbar-button');
-    const disposable = new Disposable(() => { toolBar.removeItems(); });
-    disposables.add(disposable);
-    return disposable;
-  }
-  return new Disposable();
-}
-
-export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
+function getDistractionFreeModeProvider() {
   return {
     name: 'nuclide-context-view',
-    isVisible(): boolean {
+    isVisible: function isVisible() {
       // IMPORTANT: The `manager != null && manager._isVisible check is an antipattern.
       // Since distraction free mode requires a *synchronous* isVisible, this
       // checks manager != null rather than using the GK-safe but async getContextViewManager().
@@ -178,15 +207,12 @@ export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
       // you have a really good reason to directly reference `manager`.
       return manager != null && manager._isVisible;
     },
-    toggle(): void {
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-context-view:toggle',
-      );
-    },
+    toggle: function toggle() {
+      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-context-view:toggle');
+    }
   };
 }
 
-export function provideNuclideContextView(): NuclideContextView {
+function provideNuclideContextView() {
   return Service;
 }

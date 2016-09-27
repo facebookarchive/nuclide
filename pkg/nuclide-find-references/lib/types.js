@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +10,5 @@
  * the root directory of this source tree.
  */
 
-import type {Reference} from './rpc-types';
-
-export type ReferenceGroup = {
-  references: Array<Reference>,
-  // Start and end range of the preview text.
-  startLine: number,
-  endLine: number,
-};
-
-export type FileReferences = {
-  uri: string,
-  grammar: Object /* atom$Grammar */,
-  previewText: Array<string>,
-  refGroups: Array<ReferenceGroup>,
-};
+// Start and end range of the preview text.
+/* atom$Grammar */

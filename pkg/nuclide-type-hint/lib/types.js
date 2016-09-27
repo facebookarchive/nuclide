@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +10,5 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from './rpc-types';
-
-export type TypeHintProvider = {
-  typeHint(editor: atom$TextEditor, bufferPosition: atom$Point): Promise<?TypeHint>,
-  inclusionPriority: number,
-  selector: string,
-  // A unique name for the provider to be used for analytics. It is recommended that it be the name
-  // of the provider's package.
-  providerName: string,
-};
+// A unique name for the provider to be used for analytics. It is recommended that it be the name
+// of the provider's package.

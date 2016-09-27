@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,4 @@
  * the root directory of this source tree.
  */
 
-export type TextEdit = {
-  oldRange: atom$Range,
-  newText: string,
-  // If included, this will be used to verify that the edit still applies cleanly.
-  oldText?: string,
-  speculative?: boolean,
-};
+// If included, this will be used to verify that the edit still applies cleanly.

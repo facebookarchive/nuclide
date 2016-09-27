@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +10,23 @@
  * the root directory of this source tree.
  */
 
-import type {AnnotatedTaskMetadata, AppState, TaskId, TaskRunner} from '../types';
+exports.getActiveTaskId = getActiveTaskId;
+exports.getActiveTaskRunner = getActiveTaskRunner;
 
-export function getActiveTaskId(state: AppState): ?TaskId {
+function getActiveTaskId(state) {
   return state.activeTaskId || getFirstTask(state.taskLists);
 }
 
-export function getActiveTaskRunner(state: AppState): ?TaskRunner {
-  const activeTaskId = getActiveTaskId(state);
-  const activeTaskRunnerId = activeTaskId && activeTaskId.taskRunnerId;
-  return activeTaskRunnerId == null
-    ? null
-    : state.taskRunners.get(activeTaskRunnerId);
+function getActiveTaskRunner(state) {
+  var activeTaskId = getActiveTaskId(state);
+  var activeTaskRunnerId = activeTaskId && activeTaskId.taskRunnerId;
+  return activeTaskRunnerId == null ? null : state.taskRunners.get(activeTaskRunnerId);
 }
 
-function getFirstTask(
-  taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
-): ?AnnotatedTaskMetadata {
-  let candidate;
-  for (const taskList of taskLists.values()) {
-    for (const taskMeta of taskList) {
+function getFirstTask(taskLists) {
+  var candidate = undefined;
+  for (var taskList of taskLists.values()) {
+    for (var taskMeta of taskList) {
       // For backwards compat, we don't (currently) require that the "disabled" property be present,
       // but we prefer tasks that have it.
       if (taskMeta.disabled === false) {

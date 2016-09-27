@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = memoizeUntilChanged;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +13,19 @@
  * the root directory of this source tree.
  */
 
-import {arrayEqual} from './collection';
-import Hasher from './Hasher';
+var _collection2;
 
-type CompareFunc = (a: Array<any>, b: Array<any>) => boolean;
-type KeySelector<T, U> = (x: T) => U;
+function _collection() {
+  return _collection2 = require('./collection');
+}
 
-const NOTHING = Symbol('nothing');
+var _Hasher2;
+
+function _Hasher() {
+  return _Hasher2 = _interopRequireDefault(require('./Hasher'));
+}
+
+var NOTHING = Symbol('nothing');
 
 /**
  * Create a memoized version of the provided function that caches only the latest result. This is
@@ -34,17 +44,20 @@ const NOTHING = Symbol('nothing');
  *       }
  *     }
  */
-export default function memoizeUntilChanged<T: Function>(
-  func: T,
-  keySelector_?: KeySelector<T, any>,
-  compareKeys: CompareFunc = arrayEqual,
-): T {
-  let prevArgKeys;
-  let prevResult = NOTHING;
-  const keySelector: KeySelector<T, any> = keySelector_ || createKeySelector();
+
+function memoizeUntilChanged(func, keySelector_) {
+  var compareKeys = arguments.length <= 2 || arguments[2] === undefined ? (_collection2 || _collection()).arrayEqual : arguments[2];
+
+  var prevArgKeys = undefined;
+  var prevResult = NOTHING;
+  var keySelector = keySelector_ || createKeySelector();
   // $FlowIssue: Flow can't express that we want the args to be the same type as the input func's.
-  return function(...args) {
-    const argKeys = args.map(keySelector);
+  return function () {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    var argKeys = args.map(keySelector);
     if (prevResult === NOTHING || !compareKeys(argKeys, prevArgKeys)) {
       prevArgKeys = argKeys;
       prevResult = func.apply(this, args);
@@ -53,7 +66,10 @@ export default function memoizeUntilChanged<T: Function>(
   };
 }
 
-function createKeySelector<T>(): KeySelector<T, any> {
-  const hasher: Hasher<any> = new Hasher();
-  return x => hasher.getHash(x);
+function createKeySelector() {
+  var hasher = new (_Hasher2 || _Hasher()).default();
+  return function (x) {
+    return hasher.getHash(x);
+  };
 }
+module.exports = exports.default;

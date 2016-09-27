@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,38 +10,28 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+exports.convertReferences = convertReferences;
 
-import {hackRangeToAtomRange} from './HackHelpers';
+var _HackHelpers2;
 
-export type HackReferencesResult = Array<HackReference>;
+function _HackHelpers() {
+  return _HackHelpers2 = require('./HackHelpers');
+}
 
-export type HackReference = {
-  name: string,
-  filename: NuclideUri,
-  line: number,
-  char_start: number,
-  char_end: number,
-};
+function convertReferences(hackResult, projectRoot) {
 
-export function convertReferences(
-  hackResult: HackReferencesResult,
-  projectRoot: NuclideUri,
-): FindReferencesReturn {
-
-  let symbolName = hackResult[0].name;
+  var symbolName = hackResult[0].name;
   // Strip off the global namespace indicator.
   if (symbolName.startsWith('\\')) {
     symbolName = symbolName.slice(1);
   }
 
   // Process this into the format nuclide-find-references expects.
-  const references = hackResult.map(ref => {
+  var references = hackResult.map(function (ref) {
     return {
       uri: ref.filename,
       name: null, // TODO(hansonw): Get the caller when it's available
-      range: hackRangeToAtomRange(ref),
+      range: (0, (_HackHelpers2 || _HackHelpers()).hackRangeToAtomRange)(ref)
     };
   });
 
@@ -48,6 +39,6 @@ export function convertReferences(
     type: 'data',
     baseUri: projectRoot,
     referencedSymbolName: symbolName,
-    references,
+    references: references
   };
 }

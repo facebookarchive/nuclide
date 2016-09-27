@@ -1,3 +1,0 @@
-import type two from 'two';
-
-var one: two;

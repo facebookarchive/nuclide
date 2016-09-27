@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.observePanes = observePanes;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +11,17 @@
  * the root directory of this source tree.
  */
 
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {Observable} from 'rxjs';
+var _commonsNodeEvent2;
+
+function _commonsNodeEvent() {
+  return _commonsNodeEvent2 = require('../../commons-node/event');
+}
+
+var _rxjsBundlesRxMinJs2;
+
+function _rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs2 = require('rxjs/bundles/Rx.min.js');
+}
 
 /**
  * Observe all of the panes in the container. This custom logic is required because of a weird Atom
@@ -21,21 +32,17 @@ import {Observable} from 'rxjs';
  * See https://github.com/atom/atom/issues/12654
  *     https://github.com/atom/atom/pull/12674
  */
-export function observePanes(paneContainer: atom$PaneContainer): Observable<Set<atom$Pane>> {
-  return Observable.defer(() => {
-    let panes = new Set(paneContainer.getPanes());
-    return Observable.merge(
-      Observable.of(null),
-      observableFromSubscribeFunction(paneContainer.onDidDestroyPane.bind(paneContainer))
-        .do(event => {
-          panes = new Set(paneContainer.getPanes());
-          panes.delete(event.pane);
-        }),
-      observableFromSubscribeFunction(paneContainer.onDidAddPane.bind(paneContainer))
-        .do(event => {
-          panes = new Set(panes).add(event.pane);
-        }),
-    )
-      .map(() => panes);
+
+function observePanes(paneContainer) {
+  return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.defer(function () {
+    var panes = new Set(paneContainer.getPanes());
+    return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.merge((_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of(null), (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(paneContainer.onDidDestroyPane.bind(paneContainer)).do(function (event) {
+      panes = new Set(paneContainer.getPanes());
+      panes.delete(event.pane);
+    }), (0, (_commonsNodeEvent2 || _commonsNodeEvent()).observableFromSubscribeFunction)(paneContainer.onDidAddPane.bind(paneContainer)).do(function (event) {
+      panes = new Set(panes).add(event.pane);
+    })).map(function () {
+      return panes;
+    });
   });
 }

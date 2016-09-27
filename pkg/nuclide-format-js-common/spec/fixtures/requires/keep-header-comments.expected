@@ -1,8 +1,0 @@
-/* @flow */
-/**
- * Header comment
- */
-
-const one = require('one');
-
-one();

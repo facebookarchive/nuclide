@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +8,15 @@
  * the root directory of this source tree.
  */
 
-import markers from '../constants/markers';
+var _constantsMarkers2;
 
-const SCOPE_MARKER = new Set([
-  markers.openScope,
-  markers.scopeIndent,
-  markers.scopeBreak,
-  markers.scopeSpaceBreak,
-  markers.scopeComma,
-  markers.scopeDedent,
-  markers.closeScope,
-]);
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../constants/markers'));
+}
 
-function isScopeMarker(marker: any): boolean {
+var SCOPE_MARKER = new Set([(_constantsMarkers2 || _constantsMarkers()).default.openScope, (_constantsMarkers2 || _constantsMarkers()).default.scopeIndent, (_constantsMarkers2 || _constantsMarkers()).default.scopeBreak, (_constantsMarkers2 || _constantsMarkers()).default.scopeSpaceBreak, (_constantsMarkers2 || _constantsMarkers()).default.scopeComma, (_constantsMarkers2 || _constantsMarkers()).default.scopeDedent, (_constantsMarkers2 || _constantsMarkers()).default.closeScope]);
+
+function isScopeMarker(marker) {
   return SCOPE_MARKER.has(marker);
 }
 

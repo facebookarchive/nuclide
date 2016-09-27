@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +10,6 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+// The original query that prompted this result, e.g. to highlight it in the UI.
 
-export type FileResult = {
-  path: NuclideUri,
-  matchIndexes?: Array<number>,
-  score?: number,
-  // The original query that prompted this result, e.g. to highlight it in the UI.
-  query?: string,
-  context?: string,
-  timestamp?: number,
-  // Jump to line/column if provided.
-  line?: number,
-  column?: number,
-};
+// Jump to line/column if provided.

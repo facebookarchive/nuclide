@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +10,11 @@
  * the root directory of this source tree.
  */
 
-export type HintTree = {
-  value: string,
-  children?: Array<HintTree>,
-};
+/**
+ * A type hint string to display. One of hint and hintTree must be provided.
+ */
 
-export type TypeHint = {
-  /**
-   * A type hint string to display. One of hint and hintTree must be provided.
-   */
-  hint?: string,
-  /**
-   * A hint tree to display. If specified, overrides hint. The top-level value will be displayed,
-   * and it can be expanded to reveal its children.
-   */
-  hintTree?: HintTree,
-  range: atom$Range,
-};
+/**
+ * A hint tree to display. If specified, overrides hint. The top-level value will be displayed,
+ * and it can be expanded to reveal its children.
+ */

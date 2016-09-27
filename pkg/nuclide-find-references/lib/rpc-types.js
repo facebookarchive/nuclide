@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,5 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-
-export type Reference = {
-  uri: NuclideUri,      // Nuclide URI of the file path
-  name: ?string,    // name of calling method/function/symbol
-  range: atom$Range,
-};
-
-export type FindReferencesData = {
-  type: 'data',
-  baseUri: NuclideUri,
-  referencedSymbolName: string,
-  references: Array<Reference>,
-};
-
-export type FindReferencesError = {
-  type: 'error',
-  message: string,
-};
-
-export type FindReferencesReturn = FindReferencesData | FindReferencesError;
+// Nuclide URI of the file path
+// name of calling method/function/symbol
