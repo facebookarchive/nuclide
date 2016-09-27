@@ -13,13 +13,13 @@ import type {NuclideUri} from '../commons-node/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-hg-git-bridge/lib/constants';
 
 import classnames from 'classnames';
-import {mapEqual} from '../commons-node/collection';
 import {
  FileChangeStatus,
  FileChangeStatusToPrefix,
  FileChangeStatusToTextColor,
  RevertibleStatusCodes,
 } from '../nuclide-hg-git-bridge/lib/constants';
+import invariant from 'invariant';
 import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
@@ -48,10 +48,6 @@ class ChangedFilesView extends React.Component {
     this.state = {
       isCollapsed: false,
     };
-  }
-
-  shouldComponentUpdate(nextProps: ChangedFilesProps) {
-    return mapEqual(this.props.fileChanges, nextProps.fileChanges);
   }
 
   _getFileClassname(file: NuclideUri, fileChangeValue: FileChangeStatusValue): string {
@@ -139,8 +135,9 @@ export class MultiRootChangedFilesView extends React.Component {
             // Hence, use `target` instead.
             const filePath = event.target.getAttribute('data-path');
             const rootPath = event.target.getAttribute('data-root');
-            // $FlowFixMe
-            const statusCode = this.props.fileChanges.get(rootPath).get(filePath);
+            const fileChangesForRoot = this.props.fileChanges.get(rootPath);
+            invariant(fileChangesForRoot, 'Invalid rootpath');
+            const statusCode = fileChangesForRoot.get(filePath);
             return statusCode === FileChangeStatus.UNTRACKED;
           },
         },
@@ -152,8 +149,9 @@ export class MultiRootChangedFilesView extends React.Component {
             // Hence, use `target` instead.
             const filePath = event.target.getAttribute('data-path');
             const rootPath = event.target.getAttribute('data-root');
-            // $FlowFixMe
-            const statusCode = this.props.fileChanges.get(rootPath).get(filePath);
+            const fileChangesForRoot = this.props.fileChanges.get(rootPath);
+            invariant(fileChangesForRoot, 'Invalid rootpath');
+            const statusCode = fileChangesForRoot.get(filePath);
             if (statusCode == null) {
               return false;
             }
