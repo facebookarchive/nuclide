@@ -34,6 +34,7 @@ function setupTextEditor(props: Props): atom$TextEditor {
   const textEditorParams = {
     buffer: textBuffer,
     lineNumberGutterVisible: !props.gutterHidden,
+    autoHeight: props.autoGrow,
   };
   const textEditor: atom$TextEditor = atom.workspace.buildTextEditor(textEditorParams);
 
