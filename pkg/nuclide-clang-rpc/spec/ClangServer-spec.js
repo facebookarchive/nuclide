@@ -12,8 +12,11 @@
 import {Range, Point} from 'simple-text-buffer';
 import invariant from 'assert';
 import fs from 'fs';
+import {Subject} from 'rxjs';
+
 import nuclideUri from '../../commons-node/nuclideUri';
 import {addMatchers} from '../../nuclide-test-helpers';
+import * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import ClangServer from '../lib/ClangServer';
 import findClangServerArgs from '../lib/find-clang-server-args';
 
@@ -41,6 +44,7 @@ describe('ClangServer', () => {
   const serverFlags = {
     flags: [],
     usesDefaultFlags: false,
+    flagsFile: null,
   };
 
   beforeEach(function() {
@@ -103,6 +107,7 @@ describe('ClangServer', () => {
             children: [],
           },
         ],
+        accurateFlags: true,
       });
 
       const mem = await server.getMemoryUsage();
@@ -288,6 +293,23 @@ describe('ClangServer', () => {
       expect(server.getStatus()).toBe('compiling');
       await server.waitForReady();
       expect(server.getStatus()).toBe('ready');
+    });
+  });
+
+  it('listens to flag changes', () => {
+    waitsForPromise(async () => {
+      const subject = new Subject();
+      spyOn(FileWatcherService, 'watchFile').andReturn(subject.publish());
+
+      const serverArgs = await findClangServerArgs();
+      const server = new ClangServer(TEST_FILE, serverArgs, {
+        flags: [],
+        usesDefaultFlags: false,
+        flagsFile: '',
+      });
+
+      subject.next(null);
+      expect(server.getFlagsChanged()).toBe(true);
     });
   });
 

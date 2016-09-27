@@ -114,11 +114,7 @@ export function compile(
     // Note: restarts the server if the flags changed.
     const server = await serverManager.getClangServer(src, contents, defaultFlags, true);
     if (server != null) {
-      return server.compile(contents)
-        .then(result => ({
-          ...result,
-          accurateFlags: !server.usesDefaultFlags(),
-        }));
+      return server.compile(contents);
     }
   };
   return Observable.fromPromise(doCompile()).publish();

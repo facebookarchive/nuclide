@@ -9,13 +9,10 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
 import nullthrows from 'nullthrows';
-import {Subject} from 'rxjs';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import * as BuckService from '../../nuclide-buck-rpc';
-import * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
 
 describe('ClangFlagsManager', () => {
@@ -164,6 +161,9 @@ describe('ClangFlagsManager', () => {
     waitsForPromise(async () => {
       let result = await flagsManager.getFlagsForSrc('test.cpp');
       expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
+      expect(nullthrows(result).flagsFile).toEqual(
+        nuclideUri.join(__dirname, 'fixtures', 'BUCK'),
+      );
 
       // Make sure this is cached (different file, but same target).
       buildSpy.wasCalled = false;
@@ -237,23 +237,6 @@ describe('ClangFlagsManager', () => {
       result = await flagsManager.getFlagsForSrc(testFile);
       expect(BuckService.build).toHaveBeenCalled();
       expect(nullthrows(result).flags).toEqual(null);
-    });
-  });
-
-  it('tracks flag changes', () => {
-    waitsForPromise(async () => {
-      // Create a mock file watcher.
-      const subject = new Subject();
-      spyOn(FileWatcherService, 'watchFile').andReturn(subject.publish());
-
-      const testFile = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
-      const result = await flagsManager.getFlagsForSrc(testFile);
-      invariant(result != null);
-
-      expect(flagsManager.getFlagsChanged(testFile)).toBe(false);
-
-      subject.next(null);
-      expect(flagsManager.getFlagsChanged(testFile)).toBe(true);
     });
   });
 

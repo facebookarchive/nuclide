@@ -31,7 +31,7 @@ describe('ClangServerManager', () => {
   it('falls back to default flags', () => {
     waitsForPromise(async () => {
       const flagsResult = await serverManager._getFlags('test.cpp', ['b']);
-      expect(flagsResult).toEqual({flags: ['b'], usesDefaultFlags: true});
+      expect(flagsResult).toEqual({flags: ['b'], usesDefaultFlags: true, flagsFile: null});
     });
   });
 
@@ -52,7 +52,8 @@ describe('ClangServerManager', () => {
       expect(server).not.toBeNull();
       expect(server2).toBe(server);
 
-      spyOn(serverManager._flagsManager, 'getFlagsChanged').andReturn(true);
+      invariant(server != null);
+      spyOn(server, 'getFlagsChanged').andReturn(true);
       const server3 = await serverManager.getClangServer(TEST_FILE, '', [], true);
       expect(server3).not.toBe(server);
     });

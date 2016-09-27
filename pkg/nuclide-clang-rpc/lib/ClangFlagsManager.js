@@ -9,18 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {WatchResult} from '../../nuclide-filewatcher-rpc';
-
 import invariant from 'assert';
 import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {shellParse} from '../../commons-node/string';
-import {Observable, Subscription} from 'rxjs';
+import {Observable} from 'rxjs';
 import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 import * as BuckService from '../../nuclide-buck-rpc';
-import {watchFile} from '../../nuclide-filewatcher-rpc';
 import {isHeaderFile, isSourceFile, findIncludingSourceFile} from './utils';
 
 const logger = getLogger();
@@ -58,9 +55,7 @@ export type ClangFlags = {
     file: string,
     directory: string,
   },
-  // Emits file change events for the underlying flags file.
-  // (rename, change)
-  changes: Observable<WatchResult>,
+  flagsFile: ?string,
 };
 
 let _overrideIncludePath = undefined;
@@ -80,21 +75,17 @@ function overrideIncludePath(src: string): string {
   return src;
 }
 
-class ClangFlagsManager {
+export default class ClangFlagsManager {
   _cachedBuckFlags: Map<string, Promise<Map<string, ClangFlags>>>;
   _compilationDatabases: Set<string>;
   _realpathCache: Object;
   _pathToFlags: Map<string, Promise<?ClangFlags>>;
-  _flagsChanged: Set<string>;
-  _subscriptions: Array<Subscription>;
 
   constructor() {
     this._pathToFlags = new Map();
     this._cachedBuckFlags = new Map();
     this._compilationDatabases = new Set();
     this._realpathCache = {};
-    this._flagsChanged = new Set();
-    this._subscriptions = [];
   }
 
   reset() {
@@ -102,13 +93,6 @@ class ClangFlagsManager {
     this._cachedBuckFlags.clear();
     this._compilationDatabases.clear();
     this._realpathCache = {};
-    this._flagsChanged.clear();
-    this._subscriptions.forEach(s => s.unsubscribe());
-    this._subscriptions = [];
-  }
-
-  getFlagsChanged(src: string): boolean {
-    return this._flagsChanged.has(src);
   }
 
   /**
@@ -132,13 +116,6 @@ class ClangFlagsManager {
         }
         data.flags = ClangFlagsManager.sanitizeCommand(rawData.file, flags, rawData.directory);
       }
-      // Subscribe to changes.
-      this._subscriptions.push(data.changes.subscribe({
-        next: change => {
-          this._flagsChanged.add(src);
-        },
-        error: () => {},
-      }));
     }
     return data;
   }
@@ -168,7 +145,11 @@ class ClangFlagsManager {
       }
     }
 
-    const buckFlags = await this._loadFlagsFromBuck(src);
+    const buckFlags = await this._loadFlagsFromBuck(src)
+      .catch(err => {
+        logger.error('Error getting flags from Buck', err);
+        return new Map();
+      });
     if (isHeaderFile(src)) {
       // Accept flags from any source file in the target.
       if (buckFlags.size > 0) {
@@ -196,7 +177,7 @@ class ClangFlagsManager {
     if (buildFile != null) {
       return {
         rawData: null,
-        changes: watchFile(buildFile).refCount(),
+        flagsFile: buildFile,
       };
     }
 
@@ -213,7 +194,6 @@ class ClangFlagsManager {
       const contents = await fsPromise.readFile(dbFile);
       const data = JSON.parse(contents);
       invariant(data instanceof Array);
-      const changes = watchFile(dbFile).refCount();
       await Promise.all(data.map(async entry => {
         const {command, file} = entry;
         const directory = await fsPromise.realpath(entry.directory, this._realpathCache);
@@ -226,7 +206,7 @@ class ClangFlagsManager {
               file,
               directory,
             },
-            changes,
+            flagsFile: dbFile,
           };
           flags.set(realpath, result);
           this._pathToFlags.set(realpath, Promise.resolve(result));
@@ -299,7 +279,6 @@ class ClangFlagsManager {
 
     const flags = new Map();
     const buildFile = await BuckService.getBuildFile(buckProjectRoot, target);
-    const changes = buildFile == null ? Observable.empty() : watchFile(buildFile).refCount();
     compilationDatabase.forEach(item => {
       const {file} = item;
       const result = {
@@ -308,7 +287,7 @@ class ClangFlagsManager {
           file,
           directory: buckProjectRoot,
         },
-        changes,
+        flagsFile: buildFile,
       };
       flags.set(file, result);
       this._pathToFlags.set(file, Promise.resolve(result));
@@ -408,5 +387,3 @@ class ClangFlagsManager {
     return basename.replace(/(Internal|-inl)$/, '');
   }
 }
-
-module.exports = ClangFlagsManager;

@@ -31,7 +31,7 @@ describe('ClangServer', () => {
       const server = new ClangServer(TEST_FILE, serverArgs, {
         flags: ['-x', 'c++'],
         usesDefaultFlags: false,
-        changes: null,
+        flagsFile: null,
       });
       const service = await server.getService();
       const response = await service.get_outline(

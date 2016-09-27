@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {Subscription} from 'rxjs';
 import typeof * as ClangProcessService from './ClangProcessService';
 import type {ClangCompileResult} from './rpc-types';
 import type {ClangServerArgs} from './find-clang-server-args';
@@ -20,6 +21,7 @@ import {BehaviorSubject} from 'rxjs';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import RpcProcess from '../../commons-node/RpcProcess';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
+import {watchFile} from '../../nuclide-filewatcher-rpc';
 
 export type ClangServerStatus = 'ready' | 'compiling';
 
@@ -66,6 +68,7 @@ function spawnClangProcess(
 export type ClangServerFlags = {
   flags: Array<string>,
   usesDefaultFlags: boolean,
+  flagsFile: ?string,
 };
 
 export default class ClangServer extends RpcProcess {
@@ -78,6 +81,8 @@ export default class ClangServer extends RpcProcess {
   _usesDefaultFlags: boolean;
   _pendingCompileRequests: number;
   _serverStatus: BehaviorSubject<ClangServerStatus>;
+  _flagsSubscription: ?Subscription;
+  _flagsChanged: boolean;
 
   constructor(
     src: string,
@@ -92,11 +97,25 @@ export default class ClangServer extends RpcProcess {
     this._usesDefaultFlags = flagsData.usesDefaultFlags;
     this._pendingCompileRequests = 0;
     this._serverStatus = new BehaviorSubject(ClangServer.Status.READY);
+    this._flagsChanged = false;
+    if (flagsData.flagsFile != null) {
+      this._flagsSubscription =
+        watchFile(flagsData.flagsFile)
+          .refCount()
+          .take(1)
+          .subscribe(
+            x => { this._flagsChanged = true; },
+            () => {},  // ignore errors
+          );
+    }
   }
 
   dispose() {
     super.dispose();
     this._serverStatus.complete();
+    if (this._flagsSubscription != null) {
+      this._flagsSubscription.unsubscribe();
+    }
   }
 
   getService(): Promise<ClangProcessService> {
@@ -121,8 +140,8 @@ export default class ClangServer extends RpcProcess {
     return parseInt(stdout, 10) * 1024; // ps returns KB
   }
 
-  usesDefaultFlags(): boolean {
-    return this._usesDefaultFlags;
+  getFlagsChanged(): boolean {
+    return this._flagsChanged;
   }
 
   // Call this instead of using the RPC layer directly.
@@ -133,7 +152,11 @@ export default class ClangServer extends RpcProcess {
     }
     try {
       const service = await this.getService();
-      return await service.compile(contents);
+      return await service.compile(contents)
+        .then(result => ({
+          ...result,
+          accurateFlags: !this._usesDefaultFlags,
+        }));
     } finally {
       if (--this._pendingCompileRequests === 0) {
         this._serverStatus.next(ClangServer.Status.READY);

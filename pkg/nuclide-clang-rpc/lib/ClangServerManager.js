@@ -80,7 +80,7 @@ export default class ClangServerManager {
   ): Promise<?ClangServer> {
     let server = this._servers.get(src);
     if (server != null) {
-      if (restartIfChanged && this._flagsManager.getFlagsChanged(src)) {
+      if (restartIfChanged && server.getFlagsChanged()) {
         this.reset(src);
       } else {
         return server;
@@ -121,11 +121,13 @@ export default class ClangServerManager {
       return {
         flags: flagsData.flags,
         usesDefaultFlags: false,
+        flagsFile: flagsData.flagsFile,
       };
     } else if (defaultFlags != null) {
       return {
         flags: await augmentDefaultFlags(src, defaultFlags),
         usesDefaultFlags: true,
+        flagsFile: flagsData != null ? flagsData.flagsFile : null,
       };
     } else {
       return null;
