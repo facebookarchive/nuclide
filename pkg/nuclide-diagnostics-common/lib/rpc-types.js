@@ -44,7 +44,12 @@ export type Trace = {
   range?: atom$Range,
 };
 
-export type Fix = TextEdit;
+export type Fix = TextEdit & {
+  // If true, we will be more conservative about applying the fix (e.g. it will not be automatically
+  // fixed with the "fix all in current file" command, instead an explicit interaction with this fix
+  // will be required).
+  speculative?: boolean,
+};
 
 export type FileDiagnosticMessage = {
   scope: 'file',
