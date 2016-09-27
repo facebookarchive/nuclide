@@ -42,6 +42,8 @@ type Props = {
   size?: 'xs' | 'sm' | 'lg',
   unstyled: boolean,
   width?: ?number,
+  // If the `value` prop is specified, then the component's displayed text is controlled by this
+  // prop.  Otherwise its displayed text must be imperatively set on the instance.
   value?: string,
 };
 
@@ -129,8 +131,13 @@ export class AtomInput extends React.Component {
     }
     const {value} = nextProps;
     if (typeof value === 'string' && value !== this.props.value) {
+      // If the `value` prop is specified, then we must update the input area when there is new
+      // text, and this includes maintaining the correct cursor position.
       this.setState({value});
+      const editor = this.getTextEditor();
+      const cursorPosition = editor.getCursorBufferPosition();
       this.setText(value);
+      editor.setCursorBufferPosition(cursorPosition);
     }
   }
 
