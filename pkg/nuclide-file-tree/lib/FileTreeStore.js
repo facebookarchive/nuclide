@@ -405,6 +405,9 @@ export class FileTreeStore {
       case ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED:
         this._setUncommittedChangesExpanded(payload.uncommittedChangesExpanded);
         break;
+      case ActionTypes.REMOVE_FILE_CHANGES_FOLDER:
+        this._removeFileChangesFolder(payload.rootKey);
+        break;
     }
   }
 
@@ -611,6 +614,12 @@ export class FileTreeStore {
     return this._conf.fileChanges;
   }
 
+  _removeFileChangesFolder(rootKey: NuclideUri): void {
+    this._updateConf(conf => {
+      conf.fileChanges = conf.fileChanges.remove(rootKey);
+    });
+  }
+
   _setFileChanges(
     rootKey: NuclideUri,
     vcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
@@ -622,9 +631,7 @@ export class FileTreeStore {
     });
 
     this._updateConf(conf => {
-      conf.fileChanges = fileChanges.size > 0
-        ? conf.fileChanges.set(rootKey, fileChanges)
-        : conf.fileChanges.remove(rootKey);
+      conf.fileChanges = conf.fileChanges.set(rootKey, fileChanges);
     });
   }
 

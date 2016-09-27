@@ -248,6 +248,13 @@ class FileTreeActions {
     });
   }
 
+  removeFileChangesFolder(rootKey: NuclideUri): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.REMOVE_FILE_CHANGES_FOLDER,
+      rootKey,
+    });
+  }
+
   /**
    * Updates the root repositories to match the provided directories.
    */
@@ -535,7 +542,9 @@ class FileTreeActions {
     }
 
     this._subscriptionForRepository = this._subscriptionForRepository.delete(repo);
-    this.setVcsStatuses(nuclideUri.ensureTrailingSeparator(repo.getWorkingDirectory()), {});
+    this.removeFileChangesFolder(
+      nuclideUri.ensureTrailingSeparator(repo.getWorkingDirectory()), {},
+    );
     disposable.dispose();
   }
 
