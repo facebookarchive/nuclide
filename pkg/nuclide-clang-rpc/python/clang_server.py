@@ -58,8 +58,11 @@ def log_filename(value):
 def set_up_logging(src):
     # Be consistent with the main Nuclide logs.
     log_dir = os.path.join(tempfile.gettempdir(), LOGGING_DIR)
-    if not os.path.exists(log_dir):
+    try:
         os.makedirs(log_dir)
+    except OSError:
+        # Assume the directory already exists.
+        pass
     handler = FileHandler(os.path.join(log_dir, log_filename(src)))
     handler.setFormatter(logging.Formatter(
         'nuclide-clang-py %(asctime)s: [%(name)s] %(message)s'
