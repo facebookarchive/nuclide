@@ -9,21 +9,33 @@
  * the root directory of this source tree.
  */
 
-import {Dispatcher} from 'flux';
+import Dispatcher from '../../commons-node/Dispatcher';
 
-let quickopenDispatcher = null;
-class QuickSelectionDispatcher {
-  static ActionType = Object.freeze({
-    ACTIVE_PROVIDER_CHANGED: 'ACTIVE_PROVIDER_CHANGED',
-    QUERY: 'QUERY',
-  });
+type QuickSelectionAction =
+  {
+    actionType: 'ACTIVE_PROVIDER_CHANGED',
+    providerName: string,
+  } |
+  {
+    actionType: 'QUERY',
+    query: string,
+  };
 
-  static getInstance(): Dispatcher {
-    if (!quickopenDispatcher) {
-      quickopenDispatcher = new Dispatcher();
+export const ActionTypes = Object.freeze({
+  ACTIVE_PROVIDER_CHANGED: 'ACTIVE_PROVIDER_CHANGED',
+  QUERY: 'QUERY',
+});
+
+// Flow hack: Every QuickSelectionAction actionType must be in ActionTypes.
+(('': $PropertyType<QuickSelectionAction, 'actionType'>): $Keys<typeof ActionTypes>);
+
+let instance: ?QuickSelectionDispatcher = null;
+
+export default class QuickSelectionDispatcher extends Dispatcher<QuickSelectionAction> {
+  static getInstance(): QuickSelectionDispatcher {
+    if (!instance) {
+      instance = new QuickSelectionDispatcher();
     }
-    return quickopenDispatcher;
+    return instance;
   }
 }
-
-module.exports = QuickSelectionDispatcher;

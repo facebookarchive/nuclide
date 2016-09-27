@@ -18,8 +18,6 @@ import type {
   FileResult,
 } from './rpc-types';
 
-import type {Dispatcher} from 'flux';
-
 type ResultRenderer =
   (item: FileResult, serviceName: string, dirName: string) => React.Element<any>;
 
@@ -34,7 +32,7 @@ import {
 } from 'atom';
 import {triggerAfterWait} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
-import QuickSelectionDispatcher from './QuickSelectionDispatcher';
+import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
 import QuickSelectionActions from './QuickSelectionActions';
 import FileResultComponent from './FileResultComponent';
 
@@ -90,7 +88,7 @@ class SearchResultManager {
   _dispatcherToken: string;
   RESULTS_CHANGED: string;
   PROVIDERS_CHANGED: string;
-  _dispatcher: Dispatcher;
+  _dispatcher: QuickSelectionDispatcher;
   _providersByDirectory: Map<atom$Directory, Set<Provider>>;
   _directories: Array<atom$Directory>;
   _cachedResults: Object;
@@ -157,10 +155,10 @@ class SearchResultManager {
   _setUpFlux(): void {
     this._dispatcherToken = this._dispatcher.register(action => {
       switch (action.actionType) {
-        case QuickSelectionDispatcher.ActionType.QUERY:
+        case ActionTypes.QUERY:
           this.executeQuery(action.query);
           break;
-        case QuickSelectionDispatcher.ActionType.ACTIVE_PROVIDER_CHANGED:
+        case ActionTypes.ACTIVE_PROVIDER_CHANGED:
           this._activeProviderName = action.providerName;
           this._emitter.emit(PROVIDERS_CHANGED);
           break;

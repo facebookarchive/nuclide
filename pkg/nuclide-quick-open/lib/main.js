@@ -24,7 +24,7 @@ import {track} from '../../nuclide-analytics';
 import debounce from '../../commons-node/debounce';
 import SearchResultManager from './SearchResultManager';
 import QuickSelectionActions from './QuickSelectionActions';
-import QuickSelectionDispatcher from './QuickSelectionDispatcher';
+import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
 
 function getSearchResultManager() {
   return SearchResultManager.getInstance();
@@ -79,7 +79,7 @@ class Activation {
     this._subscriptions = new CompositeDisposable();
     this._currentProvider = getSearchResultManager().getProviderByName(DEFAULT_PROVIDER);
     QuickSelectionDispatcher.getInstance().register(action => {
-      if (action.actionType === QuickSelectionDispatcher.ActionType.ACTIVE_PROVIDER_CHANGED) {
+      if (action.actionType === ActionTypes.ACTIVE_PROVIDER_CHANGED) {
         this._handleActiveProviderChange(action.providerName);
       }
     });
