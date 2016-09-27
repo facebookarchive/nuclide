@@ -287,6 +287,10 @@ export default class DiffPublishView extends React.Component {
   }
 
   _onClickBack(): void {
-    this.props.diffModel.setViewMode(DiffMode.BROWSE_MODE);
+    const {publishModeState} = this.props;
+    const diffMode = publishModeState === PublishModeState.PUBLISH_ERROR
+      ? DiffMode.PUBLISH_MODE
+      : DiffMode.BROWSE_MODE;
+    this.props.diffModel.setViewMode(diffMode);
   }
 }
