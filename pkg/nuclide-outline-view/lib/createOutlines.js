@@ -15,6 +15,7 @@ import type ActiveEditorRegistry, {Result} from
   '../../commons-atom/ActiveEditorRegistry';
 
 import {Observable} from 'rxjs';
+import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 
 import {getCursorPositions} from '../../commons-atom/text-editor';
@@ -65,9 +66,11 @@ function uiOutlinesForResult(result: Result<OutlineProvider, ?Outline>): Observa
 }
 
 function highlightedOutlines(outline: Outline, editor: atom$TextEditor): Observable<OutlineForUi> {
+  const nameOnly = featureConfig.get('nuclide-outline-view.nameOnly');
   const outlineForUi = {
     kind: 'outline',
-    outlineTrees: outline.outlineTrees.map(treeToUiTree),
+    outlineTrees: outline.outlineTrees.map(
+      outlineTree => treeToUiTree(outlineTree, Boolean(nameOnly))),
     editor,
   };
 
@@ -75,14 +78,15 @@ function highlightedOutlines(outline: Outline, editor: atom$TextEditor): Observa
     .map(cursorLocation => highlightCurrentNode(outlineForUi, cursorLocation));
 }
 
-function treeToUiTree(outlineTree: OutlineTree): OutlineTreeForUi {
+function treeToUiTree(outlineTree: OutlineTree, nameOnly: boolean): OutlineTreeForUi {
+  const shortName = nameOnly && outlineTree.representativeName != null;
   return {
-    plainText: outlineTree.plainText,
-    tokenizedText: outlineTree.tokenizedText,
+    plainText: shortName ? outlineTree.representativeName : outlineTree.plainText,
+    tokenizedText: shortName ? undefined : outlineTree.tokenizedText,
     startPosition: outlineTree.startPosition,
     endPosition: outlineTree.endPosition,
     highlighted: false,
-    children: outlineTree.children.map(treeToUiTree),
+    children: outlineTree.children.map(tree => treeToUiTree(tree, nameOnly)),
   };
 }
 
