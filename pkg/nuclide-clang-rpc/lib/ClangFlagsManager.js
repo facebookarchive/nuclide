@@ -116,7 +116,7 @@ class ClangFlagsManager {
    *     about the src file. For example, null will be returned if src is not
    *     under the project root.
    */
-  async getFlagsForSrc(src: string): Promise<?Array<string>> {
+  async getFlagsForSrc(src: string): Promise<?ClangFlags> {
     const data = await this._getFlagsForSrcCached(src);
     if (data == null) {
       return null;
@@ -140,7 +140,7 @@ class ClangFlagsManager {
         error: () => {},
       }));
     }
-    return data.flags;
+    return data;
   }
 
   _getFlagsForSrcCached(src: string): Promise<?ClangFlags> {

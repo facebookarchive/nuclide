@@ -112,14 +112,14 @@ export default class ClangServerManager {
     src: string,
     defaultFlags: ?Array<string>,
   ): Promise<?ClangServerFlags> {
-    const trueFlags = await this._flagsManager.getFlagsForSrc(src)
+    const flagsData = await this._flagsManager.getFlagsForSrc(src)
       .catch(e => {
         getLogger().error(`Error getting flags for ${src}:`, e);
         return null;
       });
-    if (trueFlags != null) {
+    if (flagsData != null && flagsData.flags != null) {
       return {
-        flags: trueFlags,
+        flags: flagsData.flags,
         usesDefaultFlags: false,
       };
     } else if (defaultFlags != null) {

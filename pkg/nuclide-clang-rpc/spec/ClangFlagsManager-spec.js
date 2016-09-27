@@ -10,6 +10,7 @@
  */
 
 import invariant from 'assert';
+import nullthrows from 'nullthrows';
 import {Subject} from 'rxjs';
 
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -162,18 +163,18 @@ describe('ClangFlagsManager', () => {
   it('gets flags for a source file', () => {
     waitsForPromise(async () => {
       let result = await flagsManager.getFlagsForSrc('test.cpp');
-      expect(result).toEqual(['g++', '-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       // Make sure this is cached (different file, but same target).
       buildSpy.wasCalled = false;
       result = await flagsManager.getFlagsForSrc('test.h');
-      expect(result).toEqual(['g++', '-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(BuckService.build).not.toHaveBeenCalled();
 
       // Make sure cache gets reset.
       flagsManager.reset();
       result = await flagsManager.getFlagsForSrc('test.cpp');
-      expect(result).toEqual(['g++', '-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(BuckService.build).toHaveBeenCalled();
     });
   });
@@ -183,11 +184,11 @@ describe('ClangFlagsManager', () => {
       // Unowned projects shouldn't invoke Buck again.
       ownerSpy.andReturn([]);
       let result = await flagsManager.getFlagsForSrc('test');
-      expect(result).toBe(null);
+      expect(nullthrows(result).flags).toBe(null);
 
       ownerSpy.wasCalled = false;
       result = await flagsManager.getFlagsForSrc('test');
-      expect(result).toBe(null);
+      expect(nullthrows(result).flags).toBe(null);
       expect(BuckService.getOwner).not.toHaveBeenCalled();
     });
   });
@@ -195,27 +196,27 @@ describe('ClangFlagsManager', () => {
   it('gets flags for header files', () => {
     waitsForPromise(async () => {
       let result = await flagsManager.getFlagsForSrc('header.h');
-      expect(result).toEqual(['g++', '-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       result = await flagsManager.getFlagsForSrc('header.hpp');
-      expect(result).toEqual(['g++', '-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       // When headers are not properly owned, we should look for source files
       // in the same directory.
       const spy = ownerSpy.andReturn(['//test:__default_headers__']);
       const dir = nuclideUri.join(__dirname, 'fixtures');
       result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'testInternal.h'));
-      expect(result).toEqual(['g++', '-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'test-inl.h'));
-      expect(result).toEqual(['g++', '-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'test2.h'));
-      expect(result).toBeNull();
+      expect(nullthrows(result).flags).toBeNull();
 
       // Make sure we don't try get flags for non-source files.
       result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'compile_commands.h'));
-      expect(result).toBeNull();
+      expect(nullthrows(result).flags).toBeNull();
       expect(spy).not.toHaveBeenCalledWith(nuclideUri.join(dir, 'compile_commands.json'));
     });
   });
@@ -224,18 +225,18 @@ describe('ClangFlagsManager', () => {
     waitsForPromise(async () => {
       let testFile = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
       let result = await flagsManager.getFlagsForSrc(testFile);
-      expect(result).toEqual(['g++', '-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(BuckService.build).not.toHaveBeenCalled();
 
       testFile = nuclideUri.join(__dirname, 'fixtures', 'test.h');
       result = await flagsManager.getFlagsForSrc(testFile);
-      expect(result).toEqual(['g++', '-fPIC', '-O3']);
+      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       // Fall back to Buck if it's not in the compilation DB.
       testFile = nuclideUri.join(__dirname, 'fixtures', 'test2.cpp');
       result = await flagsManager.getFlagsForSrc(testFile);
       expect(BuckService.build).toHaveBeenCalled();
-      expect(result).toEqual(null);
+      expect(nullthrows(result).flags).toEqual(null);
     });
   });
 
