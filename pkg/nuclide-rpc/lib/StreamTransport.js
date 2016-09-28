@@ -19,12 +19,14 @@ export class StreamTransport {
   _output: stream$Writable;
   _messages: Observable<string>;
   _messageLogger: MessageLogger;
+  _isClosed: boolean;
 
   constructor(
     output: stream$Writable,
     input: stream$Readable,
     messageLogger: MessageLogger = (direction, message) => { return; },
   ) {
+    this._isClosed = false;
     this._messageLogger = messageLogger;
     this._output = output;
     this._messages = splitStream(observeStream(input))
@@ -43,5 +45,10 @@ export class StreamTransport {
   }
 
   close(): void {
+    this._isClosed = true;
+  }
+
+  isClosed(): boolean {
+    return this._isClosed;
   }
 }

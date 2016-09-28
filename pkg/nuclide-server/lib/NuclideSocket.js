@@ -261,6 +261,10 @@ export class NuclideSocket {
     this._heartbeat.close();
   }
 
+  isClosed(): boolean {
+    return this._transport == null;
+  }
+
   onHeartbeat(callback: () => mixed): IDisposable {
     return this._heartbeat.onHeartbeat(callback);
   }

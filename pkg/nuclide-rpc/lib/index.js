@@ -44,4 +44,5 @@ export type Transport = {
   send(message: string): void,
   onMessage(): Observable<string>,
   close(): void,
+  isClosed(): boolean,
 };

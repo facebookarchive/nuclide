@@ -22,23 +22,35 @@ export class LoopbackTransports {
     const clientMessages: Subject<string> = new Subject();
 
     this.serverTransport = {
+      _isClosed: false,
       send(message: string): void {
         clientMessages.next(message);
       },
       onMessage(): Observable<string> {
         return serverMessages;
       },
-      close() {},
+      close() {
+        this._isClosed = true;
+      },
+      isClosed(): boolean {
+        return this._isClosed;
+      },
     };
 
     this.clientTransport = {
+      _isClosed: false,
       send(message: string): void {
         serverMessages.next(message);
       },
       onMessage(): Observable<string> {
         return clientMessages;
       },
-      close() {},
+      close() {
+        this._isClosed = true;
+      },
+      isClosed(): boolean {
+        return this._isClosed;
+      },
     };
   }
 }

@@ -31,6 +31,9 @@ export class SocketTransport extends StreamTransport {
     this._emitter = new Emitter();
 
     socket.on('close', () => {
+      if (!this.isClosed()) {
+        this.close();
+      }
       this._emitter.emit('close');
     });
 
@@ -50,6 +53,8 @@ export class SocketTransport extends StreamTransport {
   }
 
   close(): void {
+    super.close();
+
     // Send the FIN packet ...
     this._socket.end();
     // Then hammer it closed

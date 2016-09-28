@@ -313,12 +313,14 @@ export class RpcConnection<TransportType: Transport> {
    */
   async disposeRemoteObject(object: Object): Promise<void> {
     const objectId = await this._objectRegistry.disposeProxy(object);
-    if (objectId != null) {
+    if (objectId == null) {
+      logger.info('Duplicate dispose call on remote proxy');
+    } else if (this._transport.isClosed()) {
+      logger.info('Dispose call on remote proxy after connection closed');
+    } else {
       return await this._sendMessageAndListenForResult(
         createDisposeMessage(this._generateRequestId(), objectId),
         'promise', `Disposing object ${objectId}`);
-    } else {
-      logger.info('Duplicate dispose call on remote proxy');
     }
   }
 

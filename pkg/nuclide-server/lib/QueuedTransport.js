@@ -181,4 +181,8 @@ export class QueuedTransport {
       this._isClosed = true;
     }
   }
+
+  isClosed(): boolean {
+    return this._isClosed;
+  }
 }
