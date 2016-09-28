@@ -19,54 +19,18 @@ import {
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {
-  CurrentDateFileAppender,
-  getServerLogAppenderConfig,
-  updateConfig,
-  initialUpdateConfig,
+  setupErrorHandling,
+  setupLogging,
+  reportErrorAndExit,
+  EXIT_CODE_SUCCESS,
+  EXIT_CODE_APPLICATION_ERROR,
+} from './errors';
+import {
   getLogger,
 } from '../../nuclide-logging';
 import yargs from 'yargs';
 
 const logger = getLogger();
-
-const EXIT_CODE_SUCCESS = 0;
-const EXIT_CODE_UNKNOWN_ERROR = 1;
-const EXIT_CODE_CONNECTION_ERROR = 3;
-
-function setupErrorHandling() {
-  process.on('uncaughtException', event => {
-    logger.error(
-      `Caught unhandled exception: ${event.message}`,
-      event.originalError,
-    );
-    process.stderr.write(`Unhandled exception: ${event.message}\n`);
-    process.exit(EXIT_CODE_UNKNOWN_ERROR);
-  });
-
-  process.on('unhandledRejection', (error, promise) => {
-    logger.error('Caught unhandled rejection', error);
-    process.stderr.write(`Unhandled rejection: ${error.message}\n`);
-    process.exit(EXIT_CODE_UNKNOWN_ERROR);
-  });
-}
-
-async function setupLogging() {
-  // Initialize logging
-  await initialUpdateConfig();
-
-  const config = {
-    appenders: [
-      CurrentDateFileAppender,
-    ],
-  };
-
-  const serverLogAppenderConfig = await getServerLogAppenderConfig();
-  if (serverLogAppenderConfig) {
-    config.appenders.push(serverLogAppenderConfig);
-  }
-
-  updateConfig(config);
-}
 
 type FileLocation = {
   filePath: string,
@@ -158,11 +122,7 @@ async function main(argv): Promise<number> {
         }
       }
     } catch (e) {
-      process.stderr.write('Error: Unable to connect to Nuclide server process.\n');
-      process.stderr.write('Do you have Atom with Nuclide open?\n');
-      process.stderr.write(e.stack);
-      process.stderr.write('\n');
-      return EXIT_CODE_CONNECTION_ERROR;
+      reportErrorAndExit(e, EXIT_CODE_APPLICATION_ERROR);
     }
   }
 

@@ -19,6 +19,8 @@ import net from 'net';
 import {loadServicesConfig, RpcConnection, SocketTransport} from '../../nuclide-rpc';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
+import {reportConnectionErrorAndExit} from './errors';
+import invariant from 'assert';
 
 function convertStringFamilyToNumberFamily(family: string): number {
   switch (family) {
@@ -32,8 +34,9 @@ async function getCommands(): Promise<AtomCommands> {
   // Get the RPC connection info for the filesystem.
   const serverInfo = await getServer();
   if (serverInfo == null) {
-    throw new Error('Could not find a nuclide-server with a connected Atom');
+    reportConnectionErrorAndExit('Could not find a nuclide-server with a connected Atom');
   }
+  invariant(serverInfo != null);
   const {commandPort, family} = serverInfo;
 
   // Setup the RPC connection to the NuclideServer process.
@@ -43,15 +46,23 @@ async function getCommands(): Promise<AtomCommands> {
     family: convertStringFamilyToNumberFamily(family),
   });
   const transport = new SocketTransport(socket);
-  await transport.onConnected();
+  try {
+    await transport.onConnected();
+  } catch (e) {
+    // This is usually ECONNREFUSED ...
+    // ... indicating that there was a nuclide-server but it is now shutdown.
+    reportConnectionErrorAndExit('Could not find a nuclide-server with a connected Atom');
+  }
   const connection = RpcConnection.createLocal(transport, [localNuclideUriMarshalers], services);
 
   // Get the command interface
   const service: CommandService = connection.getService('CommandService');
   const commands = await service.getAtomCommands();
   if (commands == null) {
-    throw new Error('Nuclide server is running but no Atom process with Nuclide is connected.');
+    reportConnectionErrorAndExit(
+      'Nuclide server is running but no Atom process with Nuclide is connected.');
   }
+  invariant(commands != null);
   return commands;
 }
 

@@ -23,6 +23,7 @@ import {goToLocation} from '../../commons-atom/go-to-location';
 import createPackage from '../../commons-atom/createPackage';
 import {observeEditorDestroy} from '../../commons-atom/text-editor';
 import {Observable} from 'rxjs';
+import {ServerConnection} from '../../nuclide-remote-connection';
 
 // Use dummy 0 port for local connections.
 const DUMMY_LOCAL_PORT = 0;
@@ -57,6 +58,10 @@ class Activation {
         line: number,
         column: number,
       ): ConnectableObservable<AtomFileEvent> {
+        if (ServerConnection.getForUri(uri) == null) {
+          return Observable.throw(new Error(`Atom is not connected to host for ${uri}`))
+            .publish();
+        }
         return Observable.fromPromise(
           goToLocation(uri, line, column)
             .then(editor => {
