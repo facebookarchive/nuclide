@@ -16,10 +16,12 @@ import type {
 
 import {arrayEqual} from '../../commons-node/collection';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {getLogger} from '../../nuclide-logging';
 
 const FETCH_REVISIONS_DEBOUNCE_MS = 100;
 // The request timeout is 60 seconds anyways.
 const FETCH_REVISIONS_TIMEOUT_MS = 50 * 1000;
+const FETCH_REVISIONS_RETRY_COUNT = 2;
 
 // The revisions haven't changed if the revisions' ids are the same.
 // That's because commit ids are unique and incremental.
@@ -62,15 +64,22 @@ export default class RevisionsCache {
     this._lazyRevisionFetcher = this._fetchRevisionsRequests
       .startWith(null) // Initially, no refresh requests applied.
       .debounceTime(FETCH_REVISIONS_DEBOUNCE_MS)
-      .switchMap(() => this._fetchSmartlogRevisions())
+      .switchMap(() =>
+        // Using `defer` will guarantee a fresh subscription / execution on retries,
+        // even though `_fetchSmartlogRevisions` returns a `refCount`ed shared Observable.
+        Observable.defer(() => this._fetchSmartlogRevisions())
+          .retry(FETCH_REVISIONS_RETRY_COUNT)
+          .catch(error => {
+            getLogger().error('RevisionsCache Error:', error);
+            return Observable.empty();
+          }),
+      )
       .distinctUntilChanged(isEqualRevisions)
       .do(revisions => this._revisions.next(revisions))
       .share();
   }
 
   _fetchSmartlogRevisions(): Observable<Array<RevisionInfo>> {
-    // TODO(most): change the service to return cancelable Observable
-    // to exit when no longer needed
     return this._hgService.fetchSmartlogRevisions()
       .refCount()
       .timeout(

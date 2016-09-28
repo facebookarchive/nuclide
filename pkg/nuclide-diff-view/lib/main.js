@@ -194,8 +194,8 @@ class Activation {
     const rootEpic = (actions, store) => (
       combineEpics(...epics)(actions, store)
         // Log errors and continue.
-        .catch((err, stream) => {
-          getLogger().error(err);
+        .catch((error, stream) => {
+          getLogger().error('Diff View Epics Error:', error);
           return stream;
         })
     );
