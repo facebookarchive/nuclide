@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {FileSearchResult} from './rpc-types';
+
 import urlJoin from 'url-join';
 import nuclideUri from '../../commons-node/nuclideUri';
 
@@ -20,12 +22,6 @@ import {getPaths} from './PathSetFactory';
 import PathSetUpdater from './PathSetUpdater';
 
 const logger = getLogger();
-
-export type FileSearchResult = {
-  score: number,
-  path: string,
-  matchIndexes: Array<number>,
-};
 
 class FileSearch {
   _originalUri: string;

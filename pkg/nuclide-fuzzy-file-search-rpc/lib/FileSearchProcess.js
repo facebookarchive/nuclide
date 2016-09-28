@@ -9,14 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {FileSearchResult as FileSearchResultType} from './FileSearch';
+import type {FileSearchResult} from './rpc-types';
 
 import {getLogger} from '../../nuclide-logging';
 import {arrayEqual} from '../../commons-node/collection';
 import fsPromise from '../../commons-node/fsPromise';
 import Task from '../../nuclide-task';
-
-export type FileSearchResult = FileSearchResultType;
 
 type DirectoryUri = string;
 

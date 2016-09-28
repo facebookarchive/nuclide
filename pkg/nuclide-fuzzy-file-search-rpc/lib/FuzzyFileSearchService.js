@@ -10,12 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-
-export type FileSearchResult = {
-  path: NuclideUri,
-  score: number,
-  matchIndexes: Array<number>,
-};
+import type {FileSearchResult} from './rpc-types';
 
 import {
   fileSearchForDirectory,
