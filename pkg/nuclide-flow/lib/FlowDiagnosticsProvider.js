@@ -19,7 +19,6 @@ import type {
   FileDiagnosticMessage,
   DiagnosticProviderUpdate,
   Trace,
-  Fix,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {
   Diagnostics,
@@ -34,6 +33,7 @@ import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import invariant from 'assert';
 import {JS_GRAMMARS} from './constants';
 import {extractRange} from './flowDiagnosticsCommon';
+import flowMessageToFix from './flowMessageToFix';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -98,23 +98,6 @@ function flowMessageToDiagnosticMessage(diagnostic: Diagnostic) {
   }
 
   return diagnosticMessage;
-}
-
-function flowMessageToFix(diagnostic: Diagnostic): ?Fix {
-  // Automatically remove unused suppressions:
-  if (diagnostic.messageComponents.length === 2 &&
-      diagnostic.messageComponents[0].descr === 'Error suppressing comment' &&
-      diagnostic.messageComponents[1].descr === 'Unused suppression') {
-    const oldRange = extractRange(diagnostic.messageComponents[0]);
-    invariant(oldRange != null);
-    return {
-      newText: '',
-      oldRange,
-      speculative: true,
-    };
-  }
-
-  return null;
 }
 
 class FlowDiagnosticsProvider {
