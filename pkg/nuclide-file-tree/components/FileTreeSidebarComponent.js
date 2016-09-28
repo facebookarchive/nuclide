@@ -170,13 +170,15 @@ class FileTreeSidebarComponent extends React.Component {
     let uncommittedChangesSection;
     if (this.state.showUncommittedChanges && this.state.hasUncommittedChanges) {
       const uncommittedChangesList = (
-        <MultiRootChangedFilesView
-          commandPrefix="file-tree-sidebar"
-          fileChanges={this.state.uncommittedFileChanges}
-          selectedFile={this.state.activeUri}
-          hideEmptyFolders={true}
-          onFileChosen={this._onFileChosen}
-        />
+        <div className="nuclide-file-tree-sidebar-uncommitted-changes">
+          <MultiRootChangedFilesView
+            commandPrefix="file-tree-sidebar"
+            fileChanges={this.state.uncommittedFileChanges}
+            selectedFile={this.state.activeUri}
+            hideEmptyFolders={true}
+            onFileChosen={this._onFileChosen}
+          />
+        </div>
       );
 
       uncommittedChangesSection =

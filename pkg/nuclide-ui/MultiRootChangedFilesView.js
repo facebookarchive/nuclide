@@ -21,6 +21,7 @@ import {
 } from '../nuclide-hg-git-bridge/lib/constants';
 import invariant from 'invariant';
 import nuclideUri from '../commons-node/nuclideUri';
+import {PanelComponentScroller} from './PanelComponentScroller';
 import {React} from 'react-for-atom';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
@@ -232,7 +233,7 @@ export class MultiRootChangedFilesView extends React.Component {
     }
 
     return (
-      <div>
+      <PanelComponentScroller>
         {Array.from(this.props.fileChanges.entries()).map(([root, fileChanges]) =>
           <ChangedFilesView
             key={root}
@@ -244,7 +245,7 @@ export class MultiRootChangedFilesView extends React.Component {
             onFileChosen={this.props.onFileChosen}
           />,
         )}
-      </div>
+      </PanelComponentScroller>
     );
   }
 
