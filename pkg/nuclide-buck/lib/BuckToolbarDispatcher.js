@@ -61,4 +61,7 @@ export const ActionTypes = Object.freeze({
   UPDATE_TASK_SETTINGS: 'UPDATE_TASK_SETTINGS',
 });
 
+// Flow hack: Every BuckToolbarAction actionType must be in ActionTypes.
+(('': $PropertyType<BuckToolbarAction, 'actionType'>): $Keys<typeof ActionTypes>);
+
 export default class BuckToolbarDispatcher extends Dispatcher<BuckToolbarAction> {}
