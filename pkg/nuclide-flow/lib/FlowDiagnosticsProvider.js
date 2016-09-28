@@ -31,9 +31,9 @@ import {trackTiming} from '../../nuclide-analytics';
 import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
 import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
-import {Range} from 'atom';
 import invariant from 'assert';
 import {JS_GRAMMARS} from './constants';
+import {extractRange} from './flowDiagnosticsCommon';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -54,23 +54,6 @@ const logger = getLogger();
  * with which the usage disagrees. Note that these could occur in different
  * files.
  */
-
-// Use `atom$Range | void` rather than `?atom$Range` to exclude `null`, so that the type is
-// compatible with the `range` property, which is an optional property rather than a nullable
-// property.
-function extractRange(message: MessageComponent): atom$Range | void {
-  // It's unclear why the 1-based to 0-based indexing works the way that it
-  // does, but this has the desired effect in the UI, in practice.
-  const range = message.range;
-  if (range == null) {
-    return undefined;
-  } else {
-    return new Range(
-      [range.start.line - 1, range.start.column - 1],
-      [range.end.line - 1, range.end.column],
-    );
-  }
-}
 
 function extractPath(message: MessageComponent): NuclideUri | void {
   return message.range == null ? undefined : message.range.file;
