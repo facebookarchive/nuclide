@@ -25,8 +25,6 @@ import FileTreeController from './FileTreeController';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
-import semver from 'semver';
-
 /**
  * Minimum interval (in ms) between onChangeActivePaneItem events before revealing the active pane
  * item in the file tree.
@@ -52,7 +50,6 @@ class Activation {
     const hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
     const ignoredNamesSetting = 'core.ignoredNames';
     const prefixKeyNavSetting = 'nuclide-file-tree.allowKeyboardPrefixNavigation';
-    const usePreviewTabs = 'tabs.usePreviewTabs';
     const allowPendingPaneItems = 'core.allowPendingPaneItems';
 
     this._subscriptions.add(
@@ -64,19 +61,8 @@ class Activation {
         excludeVcsIgnoredPathsSetting,
         this._setExcludeVcsIgnoredPaths.bind(this),
       ),
+      atom.config.observe(allowPendingPaneItems, this._setUsePreviewTabs.bind(this)),
     );
-
-    // The use preview tabs setting was removed from 'tabs' package in atom 1.6 and moved to core
-    // instead. Until Atoms <1.6.0 are supported we need to be ready for both
-    if (semver.gte(atom.getVersion(), '1.6.0')) {
-      this._subscriptions.add(
-        atom.config.observe(allowPendingPaneItems, this._setUsePreviewTabs.bind(this)),
-      );
-    } else {
-      this._subscriptions.add(
-        atom.config.observe(usePreviewTabs, this._setUsePreviewTabs.bind(this)),
-      );
-    }
   }
 
   consumeCwdApi(cwdApi: CwdApi): IDisposable {

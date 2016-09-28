@@ -15,7 +15,6 @@ import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
 import Immutable from 'immutable';
-import semver from 'semver';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import {getLogger} from '../../nuclide-logging';
@@ -201,30 +200,18 @@ class FileTreeActions {
         });
       }
     } else {
-      let openOptions = {
+      atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), {
         activatePane: true,
         searchAllPanes: true,
-      };
-      // TODO: Make the following the default once Nuclide only supports Atom v1.6.0+
-      if (semver.gte(atom.getVersion(), '1.6.0')) {
-        openOptions = {...openOptions, pending: true};
-      }
-      atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), openOptions);
+        pending: true,
+      });
     }
   }
 
   keepPreviewTab() {
-    // TODO: Make the following the default once Nuclide only supports Atom v1.6.0+
-    if (semver.gte(atom.getVersion(), '1.6.0')) {
-      const activePane = atom.workspace.getActivePane();
-      if (activePane != null) {
-        activePane.clearPendingItem();
-      }
-    } else {
-      const activePaneItem = atom.workspace.getActivePaneItem();
-      if (activePaneItem != null) {
-        atom.commands.dispatch(atom.views.getView(activePaneItem), 'tabs:keep-preview-tab');
-      }
+    const activePane = atom.workspace.getActivePane();
+    if (activePane != null) {
+      activePane.clearPendingItem();
     }
   }
 
