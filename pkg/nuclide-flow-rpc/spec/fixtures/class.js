@@ -16,4 +16,6 @@ export class Foo {
   }
 
   baz = (arg: Type): RetType => {};
+
+  foo(arg: Foo = new Foo()) { }
 }

@@ -34,7 +34,7 @@ const expectedClassOutline = [
       column: 0,
     },
     endPosition: {
-      line: 18,
+      line: 20,
       column: 1,
     },
     children: [
@@ -88,6 +88,24 @@ const expectedClassOutline = [
         endPosition: {
           line: 17,
           column: 35,
+        },
+        children: [],
+      },
+      {
+        tokenizedText: [
+          {value: 'foo', kind: 'method'},
+          {value: '(', kind: 'plain'},
+          {value: 'arg', kind: 'param'},
+          {value: ')', kind: 'plain'},
+        ],
+        representativeName: 'foo',
+        startPosition: {
+          line: 19,
+          column: 2,
+        },
+        endPosition: {
+          line: 19,
+          column: 31,
         },
         children: [],
       },
