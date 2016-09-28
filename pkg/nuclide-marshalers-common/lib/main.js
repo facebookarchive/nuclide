@@ -26,8 +26,14 @@ export function getRemoteNuclideUriMarshalers(hostname: string): PredefinedTrans
 export const localNuclideUriMarshalers: PredefinedTransformer =
   {
     typeName: nuclideUri.NUCLIDE_URI_TYPE_NAME,
-    marshaller: uri => uri,
-    unmarshaller: remotePath => remotePath,
+    marshaller: uri => {
+      nuclideUri.validate(uri, false);
+      return uri;
+    },
+    unmarshaller: remotePath => {
+      nuclideUri.validate(remotePath, false);
+      return remotePath;
+    },
   };
 
 const jsonToAtomPoint = json => new AtomPoint(json.row, json.column);

@@ -81,6 +81,7 @@ function isLocal(uri: NuclideUri): boolean {
 }
 
 function createRemoteUri(hostname: string, remotePath: string): string {
+  invariant(remotePath != null && remotePath !== '', 'NuclideUri must include a path.');
   return `nuclide://${hostname}${remotePath}`;
 }
 
@@ -609,6 +610,21 @@ function _escapeSpecialCharacters(uri: NuclideUri): NuclideUri {
 
 const NUCLIDE_URI_TYPE_NAME = 'NuclideUri';
 
+// If mustBeRemote is present then remote-ness must match, otherwise remote-ness
+// is ignored.
+function validate(uri: NuclideUri, mustBeRemote?: boolean): void {
+  // Be a little extra paranoid to catch places where the type system may be weak.
+  invariant(uri != null, 'Unexpected null NuclideUri');
+  invariant(typeof uri === 'string', `Unexpected NuclideUri type: ${String(uri)}`);
+
+  if (isRemote(uri)) {
+    parse(uri);
+    invariant(mustBeRemote !== false, 'Expected remote NuclideUri');
+  } else {
+    invariant(uri !== '', 'NuclideUri must contain a non-empty path');
+    invariant(mustBeRemote !== true, 'Expected local NuclideUri');
+  }
+}
 
 export default {
   basename,
@@ -621,6 +637,7 @@ export default {
   createRemoteUri,
   parse,
   parseRemoteUri,
+  validate,
   getPath,
   getHostname,
   getHostnameOpt,
