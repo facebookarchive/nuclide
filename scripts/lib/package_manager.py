@@ -6,8 +6,6 @@
 
 import logging
 import os
-import fnmatch
-import re
 
 import utils
 
@@ -16,13 +14,9 @@ PACKAGES_PATH = os.path.join(NUCLIDE_PATH, 'pkg')
 
 
 class PackageManager(object):
-    EXCLUDE_DIRS = ['node_modules', 'VendorLib']
-
     def __init__(self):
         # Keys are names of packages and values are the corresponding configs.
         self._package_map = load_package_configs()
-        self._all_files = self._find_all_files()
-        self._eslintable_files = None
 
     def get_configs(self):
         sorted_packages = sorted(self._package_map.items(),
@@ -39,46 +33,6 @@ class PackageManager(object):
 
     def get_package_map(self):
         return self._package_map
-
-    def _find_all_files(self):
-        """Finds all of the files that are of usual interest.
-
-        That is, any file in the Nuclide directory that is not in `node_modules`
-        or `VendorLib`.
-        """
-        found = []
-        for root, dirs, files in os.walk(NUCLIDE_PATH):
-            dirs[:] = [d for d in dirs if d not in self.EXCLUDE_DIRS]
-            found += [os.path.join(root, f) for f in files]
-        return found
-
-    def get_eslintable_files(self):
-        """Gets all of the files that are lintable by eslint.
-
-        Patterns used in `.eslintignore` must be kept compatible with `fnmatch`.
-        otherwise you'll get different results when running the eslint bin.
-        Asking eslint directly for the files it can lint is the correct way to
-        do this, but it is really slow.
-        """
-        if self._eslintable_files is None:
-            eslintrc = os.path.join(NUCLIDE_PATH, '.eslintrc.js')
-            eslintignore = os.path.join(NUCLIDE_PATH, '.eslintignore')
-            with open(eslintignore, 'r') as read_f:
-                eslint_ignore_text = read_f.read()
-            eslint_ignore_rules = [
-                fnmatch.translate(rule)
-                for rule in eslint_ignore_text.split('\n')
-                if rule and not rule.startswith('#')
-            ]
-            ignore = re.compile(r'|'.join(eslint_ignore_rules))
-            self._eslintable_files = [
-                f
-                for f in self._all_files
-                if f.endswith('.js') and not ignore.match(f)
-            ]
-            # eslint ignores it's own config
-            self._eslintable_files.remove(eslintrc)
-        return self._eslintable_files
 
 
 def load_package_configs():
