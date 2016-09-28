@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-// To lint this file, run:
-// ./node_modules/.bin/eslint .eslintrc.js --no-ignore
+/* eslint-disable max-len */
 
 module.exports = {
   parser: 'babel-eslint',
