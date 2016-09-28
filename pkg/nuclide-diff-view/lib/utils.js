@@ -39,7 +39,6 @@ import {getLogger} from '../../nuclide-logging';
 import {Observable, Subject} from 'rxjs';
 import stripAnsi from 'strip-ansi';
 import {shell} from 'electron';
-import invariant from 'assert';
 
 const MAX_DIALOG_FILE_STATUS_COUNT = 20;
 
@@ -95,7 +94,7 @@ export function processArcanistOutput(
           messages.push({level: 'error', text: stripAnsi(decodedJSON.message)});
           break;
         case 'error':
-          throw new Error(`Arc Error: ${decodedJSON.message}`);
+          return Observable.throw(new Error(`Arc Error: ${decodedJSON.message}`));
         default:
           getLogger().info(
             'Unhandled message type:',
@@ -346,7 +345,9 @@ export function getSelectedFileChanges(
     ? headToForkBaseRevisions[headToForkBaseRevisions.length - 2].id
     : compareCommitId;
 
-  invariant(beforeCommitId != null, 'compareCommitId cannot be null!');
+  if (beforeCommitId == null) {
+    return Observable.throw(new Error('compareCommitId cannot be null!'));
+  }
   return getSelectedFileChangesToCommit(
     repository,
     headToForkBaseRevisions,
@@ -382,7 +383,7 @@ export function getHgDiff(
   // to the filesystem, otherwise it compares that commit to filesystem.
   const headCommit = getHeadRevision(headToForkBaseRevisions);
   if (headCommit == null) {
-    throw new Error('Cannot fetch hg diff for revisions without head');
+    return Observable.throw(new Error('Cannot fetch hg diff for revisions without head'));
   }
   const headCommitId = headCommit.id;
   let compareCommitId;
@@ -399,16 +400,17 @@ export function getHgDiff(
       compareCommitId = compareId || headCommitId;
       break;
     default:
-      throw new Error(`Invalid Diff Option: ${diffOption}`);
+      return Observable.throw(new Error(`Invalid Diff Option: ${diffOption}`));
   }
 
   const revisionInfo = headToForkBaseRevisions.find(
     revision => revision.id === compareCommitId,
   );
-  invariant(
-    revisionInfo,
-    `Diff Viw Fetcher: revision with id ${compareCommitId} not found`,
-  );
+  if (revisionInfo == null) {
+    return Observable.throw(
+      new Error(`Diff Viw Fetcher: revision with id ${compareCommitId} not found`),
+    );
+  }
 
   return repository.fetchFileContentAtRevision(filePath, `${compareCommitId}`)
     // If the file didn't exist on the previous revision,
@@ -451,7 +453,8 @@ export function viewModeToDiffOption(viewMode: DiffModeType): DiffOptionType {
     case DiffMode.BROWSE_MODE:
       return DiffOption.COMPARE_COMMIT;
     default:
-      throw new Error('Unrecognized view mode!');
+      getLogger().error(`Unrecognized diff view mode: ${viewMode}`);
+      return DiffOption.DIRTY;
   }
 }
 
