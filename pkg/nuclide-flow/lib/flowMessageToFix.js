@@ -28,6 +28,7 @@ export default function flowMessageToFix(diagnostic: Diagnostic): ?Fix {
 
 const fixExtractionFunctions: Array<(diagnostic: Diagnostic) => ?Fix> = [
   unusedSuppressionFix,
+  namedImportTypo,
 ];
 
 function unusedSuppressionFix(diagnostic: Diagnostic): ?Fix {
@@ -45,4 +46,34 @@ function unusedSuppressionFix(diagnostic: Diagnostic): ?Fix {
   }
 
   return null;
+}
+
+function namedImportTypo(diagnostic: Diagnostic): ?Fix {
+  if (diagnostic.messageComponents.length !== 2) {
+    return null;
+  }
+
+  const firstComponent = diagnostic.messageComponents[0];
+  const secondComponent = diagnostic.messageComponents[1];
+  if (!/^Named import from module `[^`]*`$/.test(firstComponent.descr)) {
+    return null;
+  }
+
+  const regex = /^This module has no named export called `([^`]*)`. Did you mean `([^`]*)`\?$/;
+  const match = regex.exec(secondComponent.descr);
+  if (match == null) {
+    return null;
+  }
+
+  const oldText = match[1];
+  const newText = match[2];
+  const oldRange = extractRange(diagnostic.messageComponents[0]);
+  invariant(oldRange != null);
+
+  return {
+    oldText,
+    newText,
+    oldRange,
+    speculative: true,
+  };
 }

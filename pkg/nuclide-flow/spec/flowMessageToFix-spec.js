@@ -47,4 +47,37 @@ describe('flowMessageToFix', () => {
       speculative: true,
     });
   });
+
+  it('should provide a fix for named import typos', () => {
+    const diagnostic: Diagnostic = {
+      level: 'error',
+      messageComponents: [
+        {
+          descr: 'Named import from module `./foo`',
+          range: {
+            file: 'foo',
+            start: {
+              line: 3,
+              column: 9,
+            },
+            end: {
+              line: 3,
+              column: 16,
+            },
+          },
+        },
+        {
+          descr: 'This module has no named export called `FooBrBaaaaz`. Did you mean `foobar`?',
+          range: null,
+        },
+      ],
+    };
+    const fix = flowMessageToFix(diagnostic);
+    expect(fix).toEqual({
+      oldRange: new Range([2, 8], [2, 16]),
+      oldText: 'FooBrBaaaaz',
+      newText: 'foobar',
+      speculative: true,
+    });
+  });
 });
