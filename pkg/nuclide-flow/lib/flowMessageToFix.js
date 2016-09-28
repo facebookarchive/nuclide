@@ -16,6 +16,21 @@ import invariant from 'assert';
 import {extractRange} from './flowDiagnosticsCommon';
 
 export default function flowMessageToFix(diagnostic: Diagnostic): ?Fix {
+  for (const extractionFunction of fixExtractionFunctions) {
+    const fix = extractionFunction(diagnostic);
+    if (fix != null) {
+      return fix;
+    }
+  }
+
+  return null;
+}
+
+const fixExtractionFunctions: Array<(diagnostic: Diagnostic) => ?Fix> = [
+  unusedSuppressionFix,
+];
+
+function unusedSuppressionFix(diagnostic: Diagnostic): ?Fix {
   // Automatically remove unused suppressions:
   if (diagnostic.messageComponents.length === 2 &&
       diagnostic.messageComponents[0].descr === 'Error suppressing comment' &&
