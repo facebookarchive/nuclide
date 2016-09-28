@@ -11,7 +11,11 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-import {openFile, addProject} from './CommandClient';
+import {
+  openFile,
+  openRemoteFile,
+  addProject,
+} from './CommandClient';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {
@@ -130,7 +134,16 @@ async function main(argv): Promise<number> {
     // eslint-disable-next-line babel/no-await-in-loop
     const isDirectory = await getIsDirectory(realpath);
     try {
-      if (isDirectory) {
+      if (nuclideUri.isRemote(realpath)) {
+        const result = openRemoteFile(realpath, line, column);
+        if (argv.wait) {
+          // eslint-disable-next-line babel/no-await-in-loop
+          await result.toPromise();
+        } else {
+          // eslint-disable-next-line babel/no-await-in-loop
+          await result.take(1).toPromise();
+        }
+      } else if (isDirectory) {
         // file/line/wait are ignored on directories
         // eslint-disable-next-line babel/no-await-in-loop
         await addProject(realpath);

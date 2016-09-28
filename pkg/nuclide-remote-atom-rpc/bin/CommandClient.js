@@ -68,6 +68,19 @@ export function openFile(
     });
 }
 
+// Connects to the local NuclideServer process, opens the file in the connected
+// Atom process.
+export function openRemoteFile(
+  filePath: NuclideUri,
+  line: number,
+  column: number,
+): Observable<AtomFileEvent> {
+  return Observable.fromPromise(getCommands())
+    .flatMap(commands => {
+      return commands.openRemoteFile(filePath, line, column).refCount();
+    });
+}
+
 export async function addProject(projectPath: NuclideUri): Promise<void> {
   const commands: AtomCommands = await getCommands();
   await commands.addProject(projectPath);

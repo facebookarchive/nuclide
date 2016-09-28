@@ -52,6 +52,24 @@ class Activation {
             observeEditorDestroy(editor).map(value => 'close')))
         .publish();
       },
+      openRemoteFile(
+        uri: string,
+        line: number,
+        column: number,
+      ): ConnectableObservable<AtomFileEvent> {
+        return Observable.fromPromise(
+          goToLocation(uri, line, column)
+            .then(editor => {
+              atom.applicationDelegate.focusWindow();
+              return editor;
+            }),
+        )
+        .switchMap(editor =>
+          Observable.merge(
+            Observable.of('open'),
+            observeEditorDestroy(editor).map(value => 'close')))
+        .publish();
+      },
       addProject(projectPath: NuclideUri): Promise<void> {
         atom.project.addPath(projectPath);
         return Promise.resolve();
