@@ -20,7 +20,7 @@ import typeof * as NativeDebuggerService
   from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerService';
 
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -34,7 +34,7 @@ export class LaunchAttachActions {
   _targetUri: NuclideUri;
   _refreshTimerId: ?number;
   _dialogVisible: boolean;
-  _subscriptions: atom$CompositeDisposable;
+  _subscriptions: IDisposable;
 
   constructor(dispatcher: LaunchAttachDispatcher, targetUri: NuclideUri) {
     this._dispatcher = dispatcher;
@@ -43,10 +43,18 @@ export class LaunchAttachActions {
     this._dialogVisible = true; // visible by default.
     (this: any).updateAttachTargetList = this.updateAttachTargetList.bind(this);
     (this: any)._handleLaunchAttachDialogToggle = this._handleLaunchAttachDialogToggle.bind(this);
-    this._subscriptions = new CompositeDisposable(atom.commands.add('atom-workspace', {
-      // eslint-disable-next-line nuclide-internal/command-menu-items
-      'nuclide-debugger:toggle-launch-attach': this._handleLaunchAttachDialogToggle,
-    }));
+    this._subscriptions = new UniversalDisposable(
+      atom.commands.add('atom-workspace', {
+        // eslint-disable-next-line nuclide-internal/command-menu-items
+        'nuclide-debugger:toggle-launch-attach': this._handleLaunchAttachDialogToggle,
+      }),
+      () => {
+        if (this._refreshTimerId != null) {
+          clearTimeout(this._refreshTimerId);
+          this._refreshTimerId = null;
+        }
+      },
+    );
     this._setTimerEnabledState(true);
   }
 
