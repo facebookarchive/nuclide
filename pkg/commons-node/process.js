@@ -151,6 +151,7 @@ export function safeSpawn(
   child.on('error', error => {
     logError('error with command:', command, args, options, 'error:', error);
   });
+  writeToStdin(child, options);
   return child;
 }
 
@@ -382,18 +383,25 @@ export function asyncExecute(
         });
       },
     );
-    if (typeof options.stdin === 'string' && process.stdin != null) {
-      // Note that the Node docs have this scary warning about stdin.end() on
-      // http://nodejs.org/api/child_process.html#child_process_child_stdin:
-      //
-      // "A Writable Stream that represents the child process's stdin. Closing
-      // this stream via end() often causes the child process to terminate."
-      //
-      // In practice, this has not appeared to cause any issues thus far.
-      process.stdin.write(options.stdin);
-      process.stdin.end();
-    }
+    writeToStdin(process, options);
   });
+}
+
+function writeToStdin(
+  childProcess: child_process$ChildProcess,
+  options: Object,
+): void {
+  if (typeof options.stdin === 'string' && childProcess.stdin != null) {
+    // Note that the Node docs have this scary warning about stdin.end() on
+    // http://nodejs.org/api/child_process.html#child_process_child_stdin:
+    //
+    // "A Writable Stream that represents the child process's stdin. Closing
+    // this stream via end() often causes the child process to terminate."
+    //
+    // In practice, this has not appeared to cause any issues thus far.
+    childProcess.stdin.write(options.stdin);
+    childProcess.stdin.end();
+  }
 }
 
 /**
