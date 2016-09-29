@@ -229,9 +229,12 @@ export function scriptSafeSpawnAndObserveOutput(
 /**
  * Creates an observable with the following properties:
  *
- * 1. It contains a process that's created using the provided factory upon subscription.
+ * 1. It contains a process that's created using the provided factory when you subscribe.
  * 2. It doesn't complete until the process exits (or errors).
- * 3. The process is killed when there are no more subscribers.
+ * 3. The process is killed when you unsubscribe.
+ *
+ * This means that a single observable instance can be used to spawn multiple processes. Indeed, if
+ * you subscribe multiple times, multiple processes *will* be spawned.
  *
  * IMPORTANT: The exit event does NOT mean that all stdout and stderr events have been received.
  */
