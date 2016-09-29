@@ -58,14 +58,14 @@
         "2.0.0": "createAutocompleteProvider"
       }
     },
-    "hyperclick.provider": {
-      "versions": {
-        "0.0.0": "getHyperclickProvider"
-      }
-    },
     "nuclide-code-format.provider": {
       "versions": {
         "0.0.0": "provideCodeFormat"
+      }
+    },
+    "nuclide-definition-provider": {
+      "versions": {
+        "0.0.0": "provideDefinitions"
       }
     },
     "linter": {

@@ -9,12 +9,13 @@
  * the root directory of this source tree.
  */
 
-export const GRAMMAR_SET = new Set([
+export const GRAMMARS = [
   'source.c',
   'source.cpp',
   'source.objc',
   'source.objcpp',
-]);
+];
+export const GRAMMAR_SET = new Set(GRAMMARS);
 
 export const PACKAGE_NAME = 'nuclide-clang';
 

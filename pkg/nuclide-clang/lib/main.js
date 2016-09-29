@@ -9,12 +9,17 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
-import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
 import type {RefactorProvider} from '../../nuclide-refactorizer';
+import type {DefinitionProvider} from '../../nuclide-definition-service';
+import type {
+  Definition,
+  DefinitionQueryResult,
+} from '../../nuclide-definition-service/lib/rpc-types';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -22,12 +27,12 @@ import {CompositeDisposable} from 'atom';
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import CodeFormatHelpers from './CodeFormatHelpers';
-import HyperclickHelpers from './HyperclickHelpers';
+import DefinitionHelpers from './DefinitionHelpers';
 import OutlineViewHelpers from './OutlineViewHelpers';
 import TypeHintHelpers from './TypeHintHelpers';
 import Refactoring from './Refactoring';
 import ClangLinter from './ClangLinter';
-import {GRAMMAR_SET, PACKAGE_NAME} from './constants';
+import {GRAMMARS, GRAMMAR_SET, PACKAGE_NAME} from './constants';
 import {reset} from './libclang';
 
 let busySignalProvider: ?BusySignalProviderBase = null;
@@ -78,16 +83,16 @@ export function createTypeHintProvider(): TypeHintProvider {
   };
 }
 
-export function getHyperclickProvider(): HyperclickProvider {
-  const IDENTIFIER_REGEXP = /([a-zA-Z_][a-zA-Z0-9_]*)/g;
+export function provideDefinitions(): DefinitionProvider {
   return {
-    // It is important that this has a lower priority than the handler from
-    // fb-diffs-and-tasks.
-    priority: 10,
-    providerName: PACKAGE_NAME,
-    wordRegExp: IDENTIFIER_REGEXP,
-    getSuggestionForWord(editor, text, range) {
-      return HyperclickHelpers.getSuggestionForWord(editor, text, range);
+    name: PACKAGE_NAME,
+    priority: 20,
+    grammarScopes: GRAMMARS,
+    getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult> {
+      return DefinitionHelpers.getDefinition(editor, position);
+    },
+    getDefinitionById(filePath: NuclideUri, id: string): Promise<?Definition> {
+      return DefinitionHelpers.getDefinitionById(filePath, id);
     },
   };
 }
