@@ -135,6 +135,8 @@ function paramReducer(
       textElements.push(...paramsTokenizedText(p.elements));
       textElements.push(plain(']'));
       break;
+    case 'AssignmentPattern':
+      return paramReducer(textElements, p.left, index, params);
     default:
       throw new Error(`encountered unexpected argument type ${p.type}`);
   }

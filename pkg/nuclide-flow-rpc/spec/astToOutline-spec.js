@@ -13,7 +13,8 @@ import type {FlowOutlineTree} from '..';
 
 import {astToOutline} from '../lib/astToOutline';
 
-import classAST from './fixtures/class-ast';
+import classASTOld from './fixtures/class-ast-old';
+import classAST33 from './fixtures/class-ast-v0.33';
 import jasmineAST from './fixtures/jasmine-ast';
 import toplevelAST from './fixtures/toplevel-ast';
 import exportsAST from './fixtures/exports-ast';
@@ -532,7 +533,10 @@ const expectedTypesOutline = [
 
 describe('astToOutline', () => {
   it('should provide a class outline', () => {
-    expect(astToOutline(classAST)).toEqual(expectedClassOutline);
+    // Old version
+    expect(astToOutline(classASTOld)).toEqual(expectedClassOutline);
+    // Newer, introduced AssignmentPattern for default function args
+    expect(astToOutline(classAST33)).toEqual(expectedClassOutline);
   });
 
   it('should provide an outline for miscellaneous top-level statements', () => {
