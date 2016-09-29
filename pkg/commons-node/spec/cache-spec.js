@@ -14,6 +14,7 @@ import {Cache} from '../cache';
 
 describe('Cache', () => {
   const key1 = 'key1';
+  const key2 = 'key2';
   const value = 'value';
 
   it('creates values on demand', () => {
@@ -77,5 +78,31 @@ describe('Cache', () => {
     cache.get(key1);
     cache.dispose();
     expect(dispose).toHaveBeenCalledWith(value);
+  });
+
+  it('observeValues sees existing and new values', () => {
+    waitsForPromise(async () => {
+      const factory = jasmine.createSpy('factory').andCallFake(key => key);
+      const cache: Cache<string, string> = new Cache(factory);
+
+      cache.get(key1);
+      const values = cache.observeValues().toArray().toPromise();
+      cache.get(key2);
+      cache.dispose();
+      expect(await values).toEqual([key1, key2]);
+    });
+  });
+
+  it('observeKeys sees existing and new keys', () => {
+    waitsForPromise(async () => {
+      const factory = jasmine.createSpy('factory').andCallFake(key => value);
+      const cache: Cache<string, string> = new Cache(factory);
+
+      cache.get(key1);
+      const values = cache.observeKeys().toArray().toPromise();
+      cache.get(key2);
+      cache.dispose();
+      expect(await values).toEqual([key1, key2]);
+    });
   });
 });

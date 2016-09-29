@@ -9,12 +9,14 @@
  * the root directory of this source tree.
  */
 
+import {Observable, Subject} from 'rxjs';
 
 // A Cache mapping keys to values which creates entries as they are requested.
 export class Cache<KeyType, ValueType> {
   _values: Map<KeyType, ValueType>;
   _factory: (key: KeyType) => ValueType;
   _disposeValue: (value: ValueType) => mixed;
+  _entriesSubject: Subject<[KeyType, ValueType]>;
 
   constructor(
     factory: (key: KeyType) => ValueType,
@@ -23,6 +25,7 @@ export class Cache<KeyType, ValueType> {
     this._values = new Map();
     this._factory = factory;
     this._disposeValue = disposeValue;
+    this._entriesSubject = new Subject();
   }
 
   has(key: KeyType): boolean {
@@ -33,6 +36,7 @@ export class Cache<KeyType, ValueType> {
     if (!this._values.has(key)) {
       const newValue = this._factory(key);
       this._values.set(key, newValue);
+      this._entriesSubject.next([key, newValue]);
       return newValue;
     } else {
       // Cannot use invariant as ValueType may include null/undefined.
@@ -42,6 +46,20 @@ export class Cache<KeyType, ValueType> {
 
   values(): Iterator<ValueType> {
     return this._values.values();
+  }
+
+  observeValues(): Observable<ValueType> {
+    return this.observeEntries().map(entry => entry[1]);
+  }
+
+  observeEntries(): Observable<[KeyType, ValueType]> {
+    return Observable.concat(
+      Observable.from(this._values.entries()),
+      this._entriesSubject);
+  }
+
+  observeKeys(): Observable<KeyType> {
+    return this.observeEntries().map(entry => entry[0]);
   }
 
   delete(key: KeyType): boolean {
@@ -66,6 +84,7 @@ export class Cache<KeyType, ValueType> {
 
   dispose(): void {
     this.clear();
+    this._entriesSubject.complete();
   }
 }
 
