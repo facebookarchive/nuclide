@@ -60,7 +60,7 @@ export function convertDefinitions(
     .map(convertDefinition);
 
   return {
-    queryRange: hackRangeToAtomRange(filteredDefinitions[0].pos),
+    queryRange: [hackRangeToAtomRange(filteredDefinitions[0].pos)],
     definitions,
   };
 }

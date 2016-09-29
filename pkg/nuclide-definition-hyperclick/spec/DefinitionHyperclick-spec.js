@@ -62,7 +62,7 @@ describe('DefinitionHyperclick', () => {
   it('definition - single', () => {
     waitsForPromise(async () => {
       const definition = {
-        queryRange: new Range(new Point(1, 1), new Point(1, 5)),
+        queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
         definitions: [{
           path: 'path1',
           position: new Point(1, 2),
@@ -94,7 +94,7 @@ describe('DefinitionHyperclick', () => {
   it('definition - multiple', () => {
     waitsForPromise(async () => {
       const defs = {
-        queryRange: new Range(new Point(1, 1), new Point(1, 5)),
+        queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
         definitions: [
           {
             path: '/a/b/path1',

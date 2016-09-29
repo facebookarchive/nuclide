@@ -47,7 +47,7 @@ describe('DefinitionService', () => {
   it('getDefinition - success', () => {
     waitsForPromise(async () => {
       const result = {
-        queryRange: new Range(new Point(1, 1), new Point(1, 5)),
+        queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
         definitions: [{
           path: 'path',
           position: new Point(42, 43),

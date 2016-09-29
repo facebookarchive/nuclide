@@ -76,7 +76,7 @@ export default class DefinitionHelpers {
     }));
 
     return {
-      queryRange: range,
+      queryRange: [range],
       definitions,
     };
   }

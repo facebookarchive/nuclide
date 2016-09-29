@@ -81,10 +81,10 @@ describe('convertDefinitions', () => {
   it('valid definition', () => {
     expect(convertDefinitions([filteredDef, def], filePath, projectRoot))
       .diffJson({
-        queryRange: {
+        queryRange: [{
           start: {row: 0, column: 9},
           end: {row: 0, column: 13},
-        },
+        }],
         definitions: [
           {
             path: defPath,
@@ -104,10 +104,10 @@ describe('convertDefinitions', () => {
   it('default name definition', () => {
     expect(convertDefinitions([defaultName], filePath, projectRoot))
       .diffJson({
-        queryRange: {
+        queryRange: [{
           start: {row: 0, column: 9},
           end: {row: 0, column: 13},
-        },
+        }],
         definitions: [
           {
             path: filePath,

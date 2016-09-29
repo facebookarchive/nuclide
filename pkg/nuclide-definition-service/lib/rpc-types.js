@@ -35,6 +35,6 @@ export type Definition = {
 // The returned queryRange is the range within which the returned definition is valid.
 // Typically queryRange spans the containing identifier around the query point.
 export type DefinitionQueryResult = {
-  queryRange: atom$Range,
+  queryRange: Array<atom$Range>,
   definitions: Array<Definition>,
 };
