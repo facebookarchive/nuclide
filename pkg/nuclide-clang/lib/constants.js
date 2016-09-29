@@ -17,3 +17,5 @@ export const GRAMMAR_SET = new Set([
 ]);
 
 export const PACKAGE_NAME = 'nuclide-clang';
+
+export const IDENTIFIER_REGEXP = /([a-zA-Z_][a-zA-Z0-9_]*)/g;
