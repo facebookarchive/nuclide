@@ -68,9 +68,9 @@
       "resolved": "https://registry.npmjs.org/array-unique/-/array-unique-0.2.1.tgz"
     },
     "asap": {
-      "version": "2.0.4",
+      "version": "2.0.5",
       "from": "asap@>=2.0.3 <2.1.0",
-      "resolved": "https://registry.npmjs.org/asap/-/asap-2.0.4.tgz"
+      "resolved": "https://registry.npmjs.org/asap/-/asap-2.0.5.tgz"
     },
     "asn1": {
       "version": "0.2.3",
@@ -232,14 +232,7 @@
     "bcrypt-pbkdf": {
       "version": "1.0.0",
       "from": "bcrypt-pbkdf@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/bcrypt-pbkdf/-/bcrypt-pbkdf-1.0.0.tgz",
-      "dependencies": {
-        "tweetnacl": {
-          "version": "0.14.3",
-          "from": "tweetnacl@>=0.14.3 <0.15.0",
-          "resolved": "https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.3.tgz"
-        }
-      }
+      "resolved": "https://registry.npmjs.org/bcrypt-pbkdf/-/bcrypt-pbkdf-1.0.0.tgz"
     },
     "bl": {
       "version": "1.1.2",
@@ -520,9 +513,9 @@
       "resolved": "https://registry.npmjs.org/fb-watchman/-/fb-watchman-1.9.0.tgz"
     },
     "fbjs": {
-      "version": "0.8.4",
+      "version": "0.8.5",
       "from": "fbjs@>=0.8.4 <0.9.0",
-      "resolved": "https://registry.npmjs.org/fbjs/-/fbjs-0.8.4.tgz"
+      "resolved": "https://registry.npmjs.org/fbjs/-/fbjs-0.8.5.tgz"
     },
     "filename-regex": {
       "version": "2.0.0",
@@ -565,9 +558,9 @@
           "resolved": "https://registry.npmjs.org/async/-/async-2.0.1.tgz"
         },
         "lodash": {
-          "version": "4.16.0",
+          "version": "4.16.2",
           "from": "lodash@>=4.8.0 <5.0.0",
-          "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.0.tgz"
+          "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.2.tgz"
         }
       }
     },
@@ -651,9 +644,9 @@
       "resolved": "https://registry.npmjs.org/globals/-/globals-6.4.1.tgz"
     },
     "graceful-fs": {
-      "version": "4.1.6",
+      "version": "4.1.9",
       "from": "graceful-fs@>=4.1.4 <5.0.0",
-      "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.1.6.tgz"
+      "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.1.9.tgz"
     },
     "graceful-readlink": {
       "version": "1.0.1",
@@ -945,9 +938,9 @@
       "resolved": "https://registry.npmjs.org/lodash/-/lodash-3.10.1.tgz"
     },
     "lodash-es": {
-      "version": "4.16.0",
+      "version": "4.16.2",
       "from": "lodash-es@>=4.2.1 <5.0.0",
-      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.0.tgz"
+      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.2.tgz"
     },
     "lodash._getnative": {
       "version": "3.9.1",
@@ -1345,9 +1338,9 @@
       "resolved": "https://registry.npmjs.org/redux/-/redux-3.6.0.tgz",
       "dependencies": {
         "lodash": {
-          "version": "4.16.0",
+          "version": "4.16.2",
           "from": "lodash@>=4.2.1 <5.0.0",
-          "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.0.tgz"
+          "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.2.tgz"
         }
       }
     },
@@ -1444,9 +1437,9 @@
       "resolved": "https://registry.npmjs.org/sb-callsite/-/sb-callsite-1.1.2.tgz"
     },
     "sb-exec": {
-      "version": "3.0.3",
+      "version": "3.1.0",
       "from": "sb-exec@>=3.0.1 <4.0.0",
-      "resolved": "https://registry.npmjs.org/sb-exec/-/sb-exec-3.0.3.tgz"
+      "resolved": "https://registry.npmjs.org/sb-exec/-/sb-exec-3.1.0.tgz"
     },
     "sb-memoize": {
       "version": "1.0.2",
@@ -1546,14 +1539,14 @@
       "resolved": "https://registry.npmjs.org/ssh2/-/ssh2-0.5.1.tgz"
     },
     "ssh2-streams": {
-      "version": "0.1.9",
+      "version": "0.1.10",
       "from": "ssh2-streams@>=0.1.0 <0.2.0",
-      "resolved": "https://registry.npmjs.org/ssh2-streams/-/ssh2-streams-0.1.9.tgz"
+      "resolved": "https://registry.npmjs.org/ssh2-streams/-/ssh2-streams-0.1.10.tgz"
     },
     "sshpk": {
-      "version": "1.10.0",
+      "version": "1.10.1",
       "from": "sshpk@>=1.7.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/sshpk/-/sshpk-1.10.0.tgz",
+      "resolved": "https://registry.npmjs.org/sshpk/-/sshpk-1.10.1.tgz",
       "dependencies": {
         "assert-plus": {
           "version": "1.0.0",
@@ -1665,9 +1658,9 @@
       "resolved": "https://registry.npmjs.org/tunnel-agent/-/tunnel-agent-0.4.3.tgz"
     },
     "tweetnacl": {
-      "version": "0.13.3",
-      "from": "tweetnacl@>=0.13.0 <0.14.0",
-      "resolved": "https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.13.3.tgz"
+      "version": "0.14.3",
+      "from": "tweetnacl@>=0.14.0 <0.15.0",
+      "resolved": "https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.3.tgz"
     },
     "ua-parser-js": {
       "version": "0.7.10",
@@ -1765,9 +1758,9 @@
       "resolved": "https://registry.npmjs.org/xml2js/-/xml2js-0.4.17.tgz",
       "dependencies": {
         "lodash": {
-          "version": "4.16.0",
+          "version": "4.16.2",
           "from": "lodash@>=4.0.0 <5.0.0",
-          "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.0.tgz"
+          "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.2.tgz"
         },
         "xmlbuilder": {
           "version": "4.2.1",
