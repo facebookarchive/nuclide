@@ -15,7 +15,12 @@ import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import {asyncExecute, createArgsForScriptCommand} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
 import fsPromise from '../../commons-node/fsPromise';
-import {observeProcess, safeSpawn, runCommand} from '../../commons-node/process';
+import {
+  getOriginalEnvironment,
+  observeProcess,
+  safeSpawn,
+  runCommand,
+} from '../../commons-node/process';
 
 
 // Mercurial (as of v3.7.2) [strips lines][1] matching the following prefix when a commit message is
@@ -93,11 +98,8 @@ function getHgExecParams(
   const options = {...options_};
   if (!options.NO_HGPLAIN) {
     // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
-    if (options.env) {
-      options.env = {...options.env, HGPLAIN: 1};
-    } else {
-      options.env = {...process.env || {}, HGPLAIN: 1};
-    }
+    // TODO(most): flow-type `options_` to not include `env`.
+    options.env = {...getOriginalEnvironment(), HGPLAIN: 1};
   }
 
   let command;
