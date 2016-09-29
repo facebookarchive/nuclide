@@ -28,10 +28,7 @@ def local_references(libclang, translation_unit, path, line, column):
     references = []
 
     def visitor(_context, cursor, source_range):
-        range_dict = range_dict_relative(source_range)
-        # The end location is non-inclusive.
-        range_dict['end']['column'] -= 1
-        references.append(range_dict)
+        references.append(range_dict_relative(source_range))
         return 1  # continue
 
     visitor_obj = CXCursorAndRangeVisitor()

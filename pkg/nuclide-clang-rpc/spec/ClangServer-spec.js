@@ -236,13 +236,13 @@ describe('ClangServer', () => {
         cursor_name: 'var1',
         cursor_kind: 'PARM_DECL',
         references: [
-          {start: {row: 1, column: 24}, end: {row: 1, column: 27}},
-          {start: {row: 2, column: 13}, end: {row: 2, column: 16}},
-          {start: {row: 2, column: 20}, end: {row: 2, column: 23}},
-          {start: {row: 3, column: 20}, end: {row: 3, column: 23}},
-          {start: {row: 4, column: 2}, end: {row: 4, column: 5}},
-          {start: {row: 9, column: 9}, end: {row: 9, column: 12}},
-          {start: {row: 9, column: 16}, end: {row: 9, column: 19}},
+          {start: {row: 1, column: 24}, end: {row: 1, column: 28}},
+          {start: {row: 2, column: 13}, end: {row: 2, column: 17}},
+          {start: {row: 2, column: 20}, end: {row: 2, column: 24}},
+          {start: {row: 3, column: 20}, end: {row: 3, column: 24}},
+          {start: {row: 4, column: 2}, end: {row: 4, column: 6}},
+          {start: {row: 9, column: 9}, end: {row: 9, column: 13}},
+          {start: {row: 9, column: 16}, end: {row: 9, column: 20}},
         ],
       });
 
@@ -251,8 +251,8 @@ describe('ClangServer', () => {
         cursor_name: 'var2',
         cursor_kind: 'VAR_DECL',
         references: [
-          {start: {row: 2, column: 6}, end: {row: 2, column: 9}},
-          {start: {row: 4, column: 9}, end: {row: 4, column: 12}},
+          {start: {row: 2, column: 6}, end: {row: 2, column: 10}},
+          {start: {row: 4, column: 9}, end: {row: 4, column: 13}},
         ],
       });
 
@@ -261,7 +261,7 @@ describe('ClangServer', () => {
         cursor_name: 'var3',
         cursor_kind: 'VAR_DECL',
         references: [
-          {start: {row: 2, column: 26}, end: {row: 2, column: 29}},
+          {start: {row: 2, column: 26}, end: {row: 2, column: 30}},
         ],
       });
 
@@ -270,10 +270,10 @@ describe('ClangServer', () => {
         cursor_name: 'var1',
         cursor_kind: 'VAR_DECL',
         references: [
-          {start: {row: 6, column: 11}, end: {row: 6, column: 14}},
-          {start: {row: 6, column: 22}, end: {row: 6, column: 25}},
-          {start: {row: 6, column: 33}, end: {row: 6, column: 36}},
-          {start: {row: 7, column: 11}, end: {row: 7, column: 14}},
+          {start: {row: 6, column: 11}, end: {row: 6, column: 15}},
+          {start: {row: 6, column: 22}, end: {row: 6, column: 26}},
+          {start: {row: 6, column: 33}, end: {row: 6, column: 37}},
+          {start: {row: 7, column: 11}, end: {row: 7, column: 15}},
         ],
       });
 

@@ -70,13 +70,13 @@ describe('Refactoring', () => {
           [
             {
               // param declaration
-              oldRange: new Range([1, 25], [1, 28]),
+              oldRange: new Range([1, 25], [1, 29]),
               oldText: 'var1',
               newText: 'new_var',
             },
             {
               // int var2 = var1
-              oldRange: new Range([2, 13], [2, 16]),
+              oldRange: new Range([2, 13], [2, 17]),
               oldText: 'var1',
               newText: 'new_var',
             },
