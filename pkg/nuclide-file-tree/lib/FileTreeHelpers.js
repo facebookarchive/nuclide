@@ -122,6 +122,8 @@ function getDisplayTitle(key: string): ?string {
 }
 
 // Sometimes remote directories are instantiated as local directories but with invalid paths.
+// Also, until https://github.com/atom/atom/issues/10297 is fixed in 1.12,
+// Atom sometimes creates phantom "atom:" directories when opening atom:// URIs.
 function isValidDirectory(directory: Directory): boolean {
   if (!isLocalEntry((directory: any))) {
     return true;

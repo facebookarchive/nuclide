@@ -61,8 +61,12 @@ export class CwdApi {
   }
 
   _getDefaultCwdPath(): ?string {
-    const directory = atom.project.getDirectories()[0];
-    return directory == null ? null : directory.getPath();
+    for (const directory of atom.project.getDirectories()) {
+      if (isValidDirectory(directory)) {
+        return directory.getPath();
+      }
+    }
+    return null;
   }
 
   getCwd(): ?Directory {
@@ -76,6 +80,9 @@ function getDirectory(path: ?string): ?Directory {
     return null;
   }
   for (const directory of atom.project.getDirectories()) {
+    if (!isValidDirectory(directory)) {
+      continue;
+    }
     const dirPath = directory.getPath();
     if (nuclideUri.contains(dirPath, path)) {
       const relative = nuclideUri.relative(dirPath, path);
