@@ -10,10 +10,10 @@
  */
 
 import type {
-  RefactoringsResponse,
-  RefactorRequest,
   RefactorResponse,
-} from './refactoring-api';
+  RefactorRequest,
+  AvailableRefactoring,
+} from '../../nuclide-refactorizer';
 
 import invariant from 'assert';
 import {trackTiming} from '../../nuclide-analytics';
@@ -37,7 +37,7 @@ export default class RefactoringHelpers {
   static async refactoringsAtPoint(
     editor: atom$TextEditor,
     point: atom$Point,
-  ): Promise<Array<RefactoringsResponse>> {
+  ): Promise<Array<AvailableRefactoring>> {
     const path = editor.getPath();
     if (path == null || !(await checkDiagnostics(editor))) {
       return [];
@@ -52,7 +52,7 @@ export default class RefactoringHelpers {
     return [{
       kind: 'rename',
       symbolAtPoint: {
-        name: declInfo[0].name,
+        text: declInfo[0].name,
         range: declInfo[0].extent,
       },
     }];
@@ -62,14 +62,16 @@ export default class RefactoringHelpers {
   @trackTiming('nuclide-clang:refactor')
   static async refactor(request: RefactorRequest): Promise<?RefactorResponse> {
     invariant(request.kind === 'rename');
-    const {editor, point, newName} = request;
+    const {editor, symbolAtPoint, newName} = request;
     const path = editor.getPath();
     if (path == null || !(await checkDiagnostics(editor))) {
       return null;
     }
 
+    const startPoint = symbolAtPoint.range.start;
+
     // TODO(hansonw): We should disallow renames that conflict with an existing variable.
-    const refs = await getLocalReferences(editor, point.row, point.column);
+    const refs = await getLocalReferences(editor, startPoint.row, startPoint.column);
     if (refs == null) {
       return null;
     }

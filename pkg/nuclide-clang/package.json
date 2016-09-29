@@ -87,6 +87,11 @@
       "versions": {
         "0.0.0": "provideOutlineView"
       }
+    },
+    "nuclide-refactor": {
+      "versions": {
+        "0.0.0": "provideRefactoring"
+      }
     }
   }
 }

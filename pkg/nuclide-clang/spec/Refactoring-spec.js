@@ -36,7 +36,7 @@ describe('Refactoring', () => {
           {
             kind: 'rename',
             symbolAtPoint: {
-              name: 'var2',
+              text: 'var2',
               range: new Range([2, 2], [2, 17]),
             },
           },
@@ -62,6 +62,10 @@ describe('Refactoring', () => {
           editor: fakeEditor,
           kind: 'rename',
           newName: 'new_var',
+          symbolAtPoint: {
+            range: new Range([1, 25], [1, 28]),
+            text: 'var1',
+          },
           point: new Point(1, 25),
         });
         invariant(response != null, 'Expected edits');

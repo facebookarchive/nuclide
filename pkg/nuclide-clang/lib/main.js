@@ -14,7 +14,7 @@ import type {LinterProvider} from '../../nuclide-diagnostics-common';
 import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
-import type {RefactoringProvider} from './refactoring-api';
+import type {RefactorProvider} from '../../nuclide-refactorizer';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -139,9 +139,10 @@ export function provideOutlineView(): OutlineProvider {
   };
 }
 
-export function provideRefactoring(): RefactoringProvider {
+export function provideRefactoring(): RefactorProvider {
   return {
     grammarScopes: Array.from(GRAMMAR_SET),
+    priority: 1,
     refactoringsAtPoint(editor, point) {
       return Refactoring.refactoringsAtPoint(editor, point);
     },
