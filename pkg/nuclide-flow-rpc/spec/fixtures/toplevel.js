@@ -13,7 +13,7 @@ function baz(arg: ?Type, a: any): RetType {
   return {};
 }
 
-function foo({bar, y}, [b]): void {
+function foo({bar, y}, [b], ...bars): void {
   baz();
 }
 

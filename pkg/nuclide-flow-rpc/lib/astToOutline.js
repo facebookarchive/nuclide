@@ -137,6 +137,9 @@ function paramReducer(
       break;
     case 'AssignmentPattern':
       return paramReducer(textElements, p.left, index, params);
+    case 'RestElement':
+      textElements.push(plain('...'));
+      return paramReducer(textElements, p.argument, index, params);
     default:
       throw new Error(`encountered unexpected argument type ${p.type}`);
   }
