@@ -381,6 +381,8 @@ export class HackLanguageService {
 
     if (response == null) {
       throw new Error('Error formatting hack source.');
+    } else if (response.internal_error) {
+      throw new Error('Internal error formatting hack source.');
     } else if (response.error_message !== '') {
       throw new Error(`Error formatting hack source: ${response.error_message}`);
     }
