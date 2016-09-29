@@ -14,27 +14,26 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {ServerConnection} from './ServerConnection';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {Cache} from '../../commons-node/cache';
+
 
 // A cache of values by ServerConnection.
 // Will lazily create the values when requested for each connection.
 // Note that an entry is added for local with connection == null.
-export class ConnectionCache<T: IDisposable> {
-  _values: Map<?ServerConnection, Promise<T>>;
-  _factory: (connection: ?ServerConnection) => Promise<T>;
+export class ConnectionCache<T: IDisposable> extends Cache<?ServerConnection, Promise<T>> {
   _subscriptions: UniversalDisposable;
 
   // If lazy is true, then entries will only be created when get() is called.
   // Otherwise, entries will be created as soon as ServerConnection's are
   // established.
   constructor(factory: (connection: ?ServerConnection) => Promise<T>, lazy: bool = false) {
-    this._values = new Map();
-    this._factory = factory;
+    super(factory, valuePromise => valuePromise.then(value => value.dispose()));
     this._subscriptions = new UniversalDisposable();
     this._subscriptions.add(
       ServerConnection.onDidCloseServerConnection(async connection => {
-        const value = this._values.get(connection);
+        const value = this.get(connection);
         if (value != null) {
-          this._values.delete(connection);
+          this.delete(connection);
           (await value).dispose();
         }
       }));
@@ -44,17 +43,6 @@ export class ConnectionCache<T: IDisposable> {
       this._subscriptions.add(
         ServerConnection.observeConnections(connection => { this.get(connection); }));
     }
-  }
-
-  get(connection: ?ServerConnection): Promise<T> {
-    const existingValue = this._values.get(connection);
-    if (existingValue != null) {
-      return existingValue;
-    }
-
-    const newValue = this._factory(connection);
-    this._values.set(connection, newValue);
-    return newValue;
   }
 
   getForUri(filePath: ?NuclideUri): ?Promise<T> {
@@ -72,9 +60,7 @@ export class ConnectionCache<T: IDisposable> {
   }
 
   dispose(): void {
+    super.dispose();
     this._subscriptions.dispose();
-    Array.from(this._values.values())
-      .forEach(valuePromise => valuePromise.then(value => value.dispose()));
-    this._values.clear();
   }
 }
