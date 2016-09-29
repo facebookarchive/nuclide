@@ -115,33 +115,38 @@ function itemToTree(item: any): ?FlowOutlineTree {
   }
 }
 
-function paramsTokenizedText(params: Array<any>): TokenizedText {
-  const textElements = [];
-  params.forEach((p, index) => {
-    switch (p.type) {
-      case 'Identifier':
-        textElements.push(param(p.name));
-        break;
-      case 'ObjectPattern':
-        textElements.push(plain('{'));
-        textElements.push(...paramsTokenizedText(p.properties.map(obj => obj.key)));
-        textElements.push(plain('}'));
-        break;
-      case 'ArrayPattern':
-        textElements.push(plain('['));
-        textElements.push(...paramsTokenizedText(p.elements));
-        textElements.push(plain(']'));
-        break;
-      default:
-        throw new Error(`encountered unexpected argument type ${p.type}`);
-    }
-    if (index < params.length - 1) {
-      textElements.push(plain(','));
-      textElements.push(whitespace(' '));
-    }
-  });
-
+function paramReducer(
+  textElements: TokenizedText,
+  p: any,
+  index: number,
+  params: Array<any>,
+): TokenizedText {
+  switch (p.type) {
+    case 'Identifier':
+      textElements.push(param(p.name));
+      break;
+    case 'ObjectPattern':
+      textElements.push(plain('{'));
+      textElements.push(...paramsTokenizedText(p.properties.map(obj => obj.key)));
+      textElements.push(plain('}'));
+      break;
+    case 'ArrayPattern':
+      textElements.push(plain('['));
+      textElements.push(...paramsTokenizedText(p.elements));
+      textElements.push(plain(']'));
+      break;
+    default:
+      throw new Error(`encountered unexpected argument type ${p.type}`);
+  }
+  if (index < params.length - 1) {
+    textElements.push(plain(','));
+    textElements.push(whitespace(' '));
+  }
   return textElements;
+}
+
+function paramsTokenizedText(params: Array<any>): TokenizedText {
+  return params.reduce(paramReducer, []);
 }
 
 function getExtent(item: any): Extent {
