@@ -62,7 +62,6 @@ export type SerializedState = {
 };
 
 const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
-const GK_DEBUGGER_LAUNCH_ATTACH_UI = 'nuclide_debugger_launch_attach_ui';
 const GK_DEBUGGER_UI_REVAMP = 'nuclide_debugger_ui_revamp';
 const NUX_NEW_DEBUGGER_UI_ID = 4377;
 const GK_NEW_DEBUGGER_UI_NUX = 'mp_nuclide_new_debugger_ui';
@@ -198,7 +197,7 @@ class Activation {
 
       // Commands.
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:toggle': this._toggle.bind(this),
+        'nuclide-debugger:toggle': this._toggleLaunchAttachDialog.bind(this),
       }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:show': this._show.bind(this),
@@ -306,20 +305,6 @@ class Activation {
   tryTriggerNux(id: number): void {
     if (this._tryTriggerNux != null) {
       this._tryTriggerNux(id);
-    }
-  }
-
-  async _toggle() {
-    const passedNewUIGK = await passesGK(GK_DEBUGGER_LAUNCH_ATTACH_UI, 0);
-    if (passedNewUIGK) {
-      this._toggleLaunchAttachDialog();
-    } else {
-      const panel = this._getPanel();
-      if (panel.isVisible()) {
-        panel.hide();
-      } else {
-        panel.show();
-      }
     }
   }
 
