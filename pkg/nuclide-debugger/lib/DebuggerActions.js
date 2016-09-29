@@ -50,7 +50,6 @@ const AnalyticsEvents = Object.freeze({
 
 const GK_DEBUGGER_REQUEST_WINDOW = 'nuclide_debugger_php_request_window';
 const GK_DEBUGGER_THREADS_WINDOW = 'nuclide_debugger_threads_window';
-const GK_DEBUGGER_CONSOLE_WINDOW = 'nuclide_debugger_console_window';
 const GK_DEBUGGER_SINGLE_THREAD_STEPPING = 'nuclide_debugger_single_thread_stepping';
 const GK_DEBUGGER_REQUEST_SENDER = 'nuclide_debugger_request_sender';
 
@@ -81,9 +80,7 @@ class DebuggerActions {
     try {
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
       const debuggerInstance = await processInfo.debug();
-      if (await passesGK(GK_DEBUGGER_CONSOLE_WINDOW)) {
-        this._registerConsole();
-      }
+      this._registerConsole();
       const supportThreadsWindow = processInfo.supportThreads()
         && await passesGK(GK_DEBUGGER_THREADS_WINDOW) &&
         await this._allowThreadsForPhp(processInfo);
