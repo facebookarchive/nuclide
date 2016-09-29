@@ -169,23 +169,12 @@ export function combineEventStreams(
   let mergedEvents = Observable.merge(
     finiteSocketEvents,
 
-    // Accumulate regular log messages. We normally want to ignore these, but if we haven't
-    // received any messages from the socket by the time the process exits, flush them.
-    // This typically happens if you provide a totally invalid build target / arguments.
+    // Take all process output until the first socket message.
+    // There's a slight risk of output duplication if the socket message is late,
+    // but this is pretty rare.
     processEvents
-      .takeUntil(finiteSocketEvents) // Optimization: stop on the first socket message.
-      .takeWhile(isRegularLogMessage)
-      .reduce((acc, value) => acc.concat([value]), [])
-      .combineLatest(
-        // This observable emits a value only if the socket emits nothing
-        // by the time we get the first error/info log.
-        finiteSocketEvents
-          .takeUntil(processEvents.filter(e => !isRegularLogMessage(e)))
-          .first()
-          .ignoreElements()
-          .catch(() => Observable.of(null)),
-      )
-      .switchMap(([events]) => Observable.from(events)),
+      .takeUntil(finiteSocketEvents)
+      .takeWhile(isRegularLogMessage),
 
     // Error/info logs from the process represent exit/error conditions, so always take them.
     // We ensure that error/info logs will not duplicate messages from the websocket.

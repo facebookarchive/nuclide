@@ -67,13 +67,14 @@ describe('combineEventStreams', () => {
       const combinedStream = combineEventStreams('test', socketSubject, processSubject);
       const promise = combinedStream.toArray().toPromise();
 
-      processSubject.next({type: 'log', message: 'skip', level: 'log'});
+      processSubject.next({type: 'log', message: 'take', level: 'log'});
       socketSubject.next({type: 'progress', progress: 1});
       processSubject.next({type: 'log', message: 'take', level: 'log'});
       processSubject.complete();
 
       const result = await promise;
       expect(result).toEqual([
+        {type: 'log', message: 'take', level: 'log'},
         {type: 'progress', progress: null},
         {type: 'log', message: 'take', level: 'log'},
       ]);

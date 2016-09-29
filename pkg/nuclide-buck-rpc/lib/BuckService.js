@@ -27,7 +27,6 @@ import {Observable} from 'rxjs';
 import createBuckWebSocket from './createBuckWebSocket';
 import {getLogger} from '../../nuclide-logging';
 import ini from 'ini';
-import os from 'os';
 
 const logger = getLogger();
 
@@ -129,8 +128,11 @@ type BuckCommandAndOptions = {
  * must be executed serially.
  *
  * Still, we try to make sure we don't slow down the user's computer.
+ *
+ * TODO(hansonw): Buck seems to have some race conditions that prevent us
+ * from running things in parallel :(
  */
-const MAX_CONCURRENT_READ_ONLY = Math.max(1, os.cpus().length - 1);
+const MAX_CONCURRENT_READ_ONLY = 1; // Math.max(1, os.cpus().length - 1);
 const pools = new Map();
 
 function getPool(path: string, readOnly: boolean): PromisePool {
@@ -139,9 +141,7 @@ function getPool(path: string, readOnly: boolean): PromisePool {
   if (pool != null) {
     return pool;
   }
-  // Buck seems to have a classic exists/create race condition when NO_BUCKD is enabled.
-  // TODO(hansonw): Remove this if/when the issue is fixed in Buck.
-  pool = new PromisePool(readOnly && process.env.NO_BUCKD !== '1' ? MAX_CONCURRENT_READ_ONLY : 1);
+  pool = new PromisePool(readOnly ? MAX_CONCURRENT_READ_ONLY : 1);
   pools.set(key, pool);
   return pool;
 }
