@@ -12,6 +12,7 @@
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {HgExecOptions} from './hg-exec-types';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
@@ -248,11 +249,11 @@ export class HgService {
   }
 
   // Wrapper to help mocking during tests.
-  _hgAsyncExecute(args: Array<string>, options: Object): Promise<any> {
+  _hgAsyncExecute(args: Array<string>, options: HgExecOptions): Promise<any> {
     return hgAsyncExecute(args, options);
   }
 
-  _hgObserveExecution(args: Array<string>, options: Object): Observable<ProcessMessage> {
+  _hgObserveExecution(args: Array<string>, options: HgExecOptions): Observable<ProcessMessage> {
     return hgObserveExecution(args, options);
   }
 
@@ -773,10 +774,8 @@ export class HgService {
   async _runSimpleInWorkingDirectory(
     action: string,
     args: Array<string>,
-    opts: child_process$spawnOpts = {},
   ): Promise<void> {
     const options = {
-      ...opts,
       cwd: this._workingDirectory,
     };
     const cmd = [action].concat(args);
@@ -890,7 +889,7 @@ export class HgService {
     ];
     const execOptions = {
       cwd: this._workingDirectory,
-      env: {...process.env, HGEDITOR: ''},
+      HGEDITOR: '',
     };
     try {
       const {stdout} = await this._hgAsyncExecute(args, execOptions);

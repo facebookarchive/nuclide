@@ -11,6 +11,7 @@
 
 import type {Observable} from 'rxjs';
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
+import type {HgExecOptions} from './hg-exec-types';
 
 import {asyncExecute, createArgsForScriptCommand} from '../../commons-node/process';
 import {getLogger} from '../../nuclide-logging';
@@ -38,7 +39,7 @@ const COMMIT_MESSAGE_STRIP_LINE = /^HG:.*(\n|$)/gm;
  *   - NO_HGPLAIN set if the $HGPLAIN environment variable should not be used.
  *   - TTY_OUTPUT set if the command should be run as if it were attached to a tty.
  */
-export async function hgAsyncExecute(args_: Array<string>, options_: Object): Promise<any> {
+export async function hgAsyncExecute(args_: Array<string>, options_: HgExecOptions): Promise<any> {
   const {command, args, options} = getHgExecParams(args_, options_);
   const result = await asyncExecute(command, args, options);
   if (result.exitCode === 0) {
@@ -53,7 +54,7 @@ export async function hgAsyncExecute(args_: Array<string>, options_: Object): Pr
  */
 export function hgObserveExecution(
   args_: Array<string>,
-  options_: Object,
+  options_: HgExecOptions,
 ): Observable<ProcessMessage> {
   const {command, args, options} = getHgExecParams(args_, options_);
   return observeProcess(
@@ -67,7 +68,7 @@ export function hgObserveExecution(
  */
 export function hgRunCommand(
   args_: Array<string>,
-  options_: Object,
+  options_: HgExecOptions,
 ): Observable<string> {
   const {command, args, options} = getHgExecParams(args_, options_);
   return runCommand(command, args, options);
@@ -92,14 +93,19 @@ function logAndThrowHgError(
 
 function getHgExecParams(
   args_: Array<string>,
-  options_: Object,
+  options_: HgExecOptions,
 ): {command: string, args: Array<string>, options: Object} {
   let args = args_;
-  const options = {...options_};
+  const options = {
+    ...options_,
+    env: {...getOriginalEnvironment()},
+  };
   if (!options.NO_HGPLAIN) {
     // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
-    // TODO(most): flow-type `options_` to not include `env`.
-    options.env = {...getOriginalEnvironment(), HGPLAIN: 1};
+    options.env.HGPLAIN = 1;
+  }
+  if (options.HGEDITOR != null) {
+    options.env.HGEDITOR = options.HGEDITOR;
   }
 
   let command;
