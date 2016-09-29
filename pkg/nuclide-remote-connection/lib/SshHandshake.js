@@ -58,14 +58,14 @@ const ErrorType = Object.freeze({
   SSH_AUTHENTICATION: 'SSH_AUTHENTICATION',
   DIRECTORY_NOT_FOUND: 'DIRECTORY_NOT_FOUND',
   SERVER_START_FAILED: 'SERVER_START_FAILED',
-  SERVER_VERSION_MISMATCH: 'SERVER_VERSION_MISMATCH',
+  SERVER_CANNOT_CONNECT: 'SERVER_CANNOT_CONNECT',
   SFTP_TIMEOUT: 'SFTP_TIMEOUT',
   USER_CANCELLED: 'USER_CANCELLED',
 });
 
 export type SshHandshakeErrorType = 'UNKNOWN' | 'HOST_NOT_FOUND' | 'CANT_READ_PRIVATE_KEY' |
   'SSH_CONNECT_TIMEOUT' | 'SSH_CONNECT_FAILED' | 'SSH_AUTHENTICATION' | 'DIRECTORY_NOT_FOUND' |
-  'SERVER_START_FAILED' | 'SERVER_VERSION_MISMATCH' | 'SFTP_TIMEOUT' | 'USER_CANCELLED';
+  'SERVER_START_FAILED' | 'SERVER_CANNOT_CONNECT' | 'SFTP_TIMEOUT' | 'USER_CANCELLED';
 
 type SshConnectionErrorLevel = 'client-timeout' | 'client-socket' | 'protocal' |
   'client-authentication' | 'agent' | 'client-dns';
@@ -464,7 +464,7 @@ export class SshHandshake {
       } catch (e) {
         this._error(
           'Connection check failed',
-          SshHandshake.ErrorType.SERVER_VERSION_MISMATCH,
+          SshHandshake.ErrorType.SERVER_CANNOT_CONNECT,
           e,
         );
       }

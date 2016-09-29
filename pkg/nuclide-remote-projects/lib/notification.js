@@ -122,9 +122,10 @@ export function notifySshHandshakeError(
         `  3. If none of above works, ssh to ${config.host} and kill existing nuclide-server` +
         ' by running "killall node", and reconnect.';
       break;
-    case SshHandshake.ErrorType.SERVER_VERSION_MISMATCH:
-      message = 'Server version is different than client version';
-      detail = originalErrorDetail;
+    case SshHandshake.ErrorType.SERVER_CANNOT_CONNECT:
+      message = 'Unable to connect to server';
+      detail = 'The server successfully started, but we were unable to connect.\n\n' +
+        originalErrorDetail;
       break;
     default:
       message = `Unexpected error occurred: ${error.message}.`;
