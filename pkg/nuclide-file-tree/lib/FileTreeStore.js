@@ -417,8 +417,8 @@ export class FileTreeStore {
       case ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED:
         this._setUncommittedChangesExpanded(payload.uncommittedChangesExpanded);
         break;
-      case ActionTypes.REMOVE_FILE_CHANGES_FOLDER:
-        this._removeFileChangesFolder(payload.rootKey);
+      case ActionTypes.INVALIDATE_REMOVED_FOLDER:
+        this._invalidateRemovedFolder();
         break;
     }
   }
@@ -640,9 +640,15 @@ export class FileTreeStore {
     return this._conf.fileChanges;
   }
 
-  _removeFileChangesFolder(rootKey: NuclideUri): void {
+  _invalidateRemovedFolder(): void {
+    const updatedFileChanges = new Map();
+    atom.project.getPaths().forEach(projectPath => {
+      const standardizedPath = nuclideUri.ensureTrailingSeparator(projectPath);
+      updatedFileChanges.set(standardizedPath, this._conf.fileChanges.get(standardizedPath));
+    });
+
     this._updateConf(conf => {
-      conf.fileChanges = conf.fileChanges.remove(rootKey);
+      conf.fileChanges = updatedFileChanges;
     });
   }
 

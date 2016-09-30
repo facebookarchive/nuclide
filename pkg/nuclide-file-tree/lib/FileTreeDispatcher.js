@@ -193,8 +193,7 @@ export type FileTreeAction =
     uncommittedChangesExpanded: boolean,
   } |
   {
-    actionType: 'REMOVE_FILE_CHANGES_FOLDER',
-    rootKey: NuclideUri,
+    actionType: 'INVALIDATE_REMOVED_FOLDER',
   };
 
 export const ActionTypes = Object.freeze({
@@ -240,7 +239,7 @@ export const ActionTypes = Object.freeze({
   CLEAR_FILTER: 'CLEAR_FILTER',
   SET_OPEN_FILES_EXPANDED: 'SET_OPEN_FILES_EXPANDED',
   SET_UNCOMMITTED_CHANGES_EXPANDED: 'SET_UNCOMMITTED_CHANGES_EXPANDED',
-  REMOVE_FILE_CHANGES_FOLDER: 'REMOVE_FILE_CHANGES_FOLDER',
+  INVALIDATE_REMOVED_FOLDER: 'INVALIDATE_REMOVED_FOLDER',
 });
 
 // Flow hack: Every FileTreeAction actionType must be in ActionTypes.
