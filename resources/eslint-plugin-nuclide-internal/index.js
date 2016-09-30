@@ -21,6 +21,7 @@ module.exports = {
     'no-cross-atom-imports': require('./no-cross-atom-imports'),
     'no-re-export-type': require('./no-re-export-type'),
     'prefer-nuclide-uri': require('./prefer-nuclide-uri'),
+    'prefer-types-only-header': require('./prefer-types-only-header'),
     'type-alias-semi': require('./type-alias-semi'),
   },
   rulesConfig: {
@@ -31,6 +32,7 @@ module.exports = {
     'no-cross-atom-imports': 0,
     'no-re-export-type': 0,
     'prefer-nuclide-uri': 0,
+    'prefer-types-only-header': 0,
     'type-alias-semi': 0,
   },
 };

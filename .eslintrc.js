@@ -326,6 +326,7 @@ module.exports = {
     'nuclide-internal/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
     'nuclide-internal/no-re-export-type': 1,
     'nuclide-internal/prefer-nuclide-uri': 1,
+    'nuclide-internal/prefer-types-only-header': 1,
     'nuclide-internal/type-alias-semi': 1,
 
     // prefer-object-spread (https://github.com/bryanrsmith/eslint-plugin-prefer-object-spread)
