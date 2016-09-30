@@ -12,12 +12,15 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RevisionFileChanges} from '../../nuclide-hg-rpc/lib/HgService';
 import type {ConnectableObservable} from 'rxjs';
+import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {
   checkOutput,
+  observeProcess,
+  safeSpawn,
   scriptSafeSpawnAndObserveOutput,
 } from '../../commons-node/process';
 import fsPromise from '../../commons-node/fsPromise';
@@ -198,6 +201,24 @@ export function updatePhabricatorRevision(
     args.push('--allow-untracked');
   }
   return _callArcDiff(filePath, args).publish();
+}
+
+export function execArcPull(
+  cwd: string,
+  fetchLatest: boolean,
+  allowDirtyChanges: boolean,
+): ConnectableObservable<ProcessMessage> {
+  const args = ['pull'];
+  if (fetchLatest) {
+    args.push('--latest');
+  }
+
+  if (allowDirtyChanges) {
+    args.push('--allow-dirty');
+  }
+
+  const options = {cwd};
+  return observeProcess(() => safeSpawn('arc', args, options)).publish();
 }
 
 async function execArcLint(
