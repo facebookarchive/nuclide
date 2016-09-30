@@ -29,6 +29,7 @@ import {addPath, revertPath} from '../nuclide-hg-repository/lib/actions';
 type ChangedFilesProps = {
   fileChanges: Map<NuclideUri, FileChangeStatusValue>,
   rootPath: NuclideUri,
+  commandPrefix: string,
   selectedFile: ?NuclideUri,
   hideEmptyFolders: boolean,
   shouldShowFolderName: boolean,
@@ -61,7 +62,7 @@ class ChangedFilesView extends React.Component {
   }
 
   render(): ?React.Element<any> {
-    const {fileChanges} = this.props;
+    const {fileChanges, commandPrefix} = this.props;
     if (fileChanges.size === 0 && this.props.hideEmptyFolders) {
       return null;
     }
@@ -69,6 +70,13 @@ class ChangedFilesView extends React.Component {
     const rootClassName = classnames('list-nested-item', {
       collapsed: this.state.isCollapsed,
     });
+
+    const fileClassName = classnames(
+      'icon',
+      'icon-file-directory',
+      'nuclide-file-changes-file-entry',
+      `${commandPrefix}-file-entry`,
+    );
 
     return (
       <ul className="list-tree has-collapsable-children">
@@ -95,7 +103,7 @@ class ChangedFilesView extends React.Component {
                   key={filePath}
                   onClick={() => this.props.onFileChosen(filePath)}>
                   <span
-                    className="icon icon-file-text nuclide-file-changes-file-entry"
+                    className={fileClassName}
                     data-path={filePath}
                     data-root={this.props.rootPath}>
                     {FileChangeStatusToPrefix[fileChangeValue]}{nuclideUri.basename(filePath)}
@@ -125,7 +133,7 @@ export class MultiRootChangedFilesView extends React.Component {
     this._subscriptions = new UniversalDisposable();
     const {commandPrefix} = this.props;
     this._subscriptions.add(atom.contextMenu.add({
-      '.nuclide-file-changes-file-entry': [
+      [`.${commandPrefix}-file-entry`]: [
         {type: 'separator'},
         {
           label: 'Add to Mercurial',
@@ -175,7 +183,7 @@ export class MultiRootChangedFilesView extends React.Component {
     }));
 
     this._subscriptions.add(atom.commands.add(
-      '.nuclide-file-changes-file-entry',
+      `.${commandPrefix}-file-entry`,
       `${commandPrefix}:goto-file`,
       event => {
         const filePath = this._getFilePathFromEvent(event);
@@ -186,21 +194,21 @@ export class MultiRootChangedFilesView extends React.Component {
     ));
 
     this._subscriptions.add(atom.commands.add(
-      '.nuclide-file-changes-file-entry',
+      `.${commandPrefix}-file-entry`,
       `${commandPrefix}:copy-full-path`,
       event => {
         atom.clipboard.write(nuclideUri.getPath(this._getFilePathFromEvent(event) || ''));
       },
     ));
     this._subscriptions.add(atom.commands.add(
-      '.nuclide-file-changes-file-entry',
+      `.${commandPrefix}-file-entry`,
       `${commandPrefix}:copy-file-name`,
       event => {
         atom.clipboard.write(nuclideUri.basename(this._getFilePathFromEvent(event) || ''));
       },
     ));
     this._subscriptions.add(atom.commands.add(
-      '.nuclide-file-changes-file-entry',
+      `.${commandPrefix}-file-entry`,
       `${commandPrefix}:add`,
       event => {
         const filePath = this._getFilePathFromEvent(event);
@@ -210,7 +218,7 @@ export class MultiRootChangedFilesView extends React.Component {
       },
     ));
     this._subscriptions.add(atom.commands.add(
-      '.nuclide-file-changes-file-entry',
+      `.${commandPrefix}-file-entry`,
       `${commandPrefix}:revert`,
       event => {
         const filePath = this._getFilePathFromEvent(event);
@@ -238,6 +246,7 @@ export class MultiRootChangedFilesView extends React.Component {
             key={root}
             fileChanges={fileChanges}
             rootPath={root}
+            commandPrefix={this.props.commandPrefix}
             selectedFile={this.props.selectedFile}
             hideEmptyFolders={this.props.hideEmptyFolders}
             shouldShowFolderName={this.props.fileChanges.size > 1}
