@@ -43,6 +43,10 @@ export type TaskMetadata = {
   // Is this task applicable? For backwards compat, this isn't (currently) required, but tasks that
   // have it will be preferred.
   disabled?: boolean,
+  // When multiple task runners are applicable, the priority determines the task selected by
+  // default. Higher priorities will be taken first; the default is 0.
+  // Tasks that do not set `disabled` will have a default priority of -1.
+  priority?: number,
   runnable: boolean, // Can the action be run now?
   cancelable?: boolean, // By default, this is true (all tasks are cancelable).
   icon: atom$Octicon,

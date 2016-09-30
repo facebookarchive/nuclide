@@ -23,18 +23,23 @@ export function getActiveTaskRunner(state: AppState): ?TaskRunner {
     : state.taskRunners.get(activeTaskRunnerId);
 }
 
-function getFirstTask(
+export function getFirstTask(
   taskLists: Map<string, Array<AnnotatedTaskMetadata>>,
 ): ?AnnotatedTaskMetadata {
   let candidate;
+  let candidatePriority;
   for (const taskList of taskLists.values()) {
     for (const taskMeta of taskList) {
-      // For backwards compat, we don't (currently) require that the "disabled" property be present,
-      // but we prefer tasks that have it.
-      if (taskMeta.disabled === false) {
-        return taskMeta;
-      } else if (!taskMeta.disabled) {
-        candidate = taskMeta;
+      if (taskMeta.disabled !== true) {
+        const {priority} = taskMeta;
+        // Tasks get a default priority of 0.
+        // For backwards compat, we don't (currently) require the "disabled" property.
+        // However, tasks that don't set it get an even lower default priority (-1).
+        const taskPriority = priority != null ? priority : (taskMeta.disabled == null ? -1 : 0);
+        if (candidatePriority == null || taskPriority > candidatePriority) {
+          candidate = taskMeta;
+          candidatePriority = taskPriority;
+        }
       }
     }
   }
