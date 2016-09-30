@@ -28,6 +28,7 @@ import {IconExamples} from '../../nuclide-ui/Icon.example';
 import {TreeExamples} from '../../nuclide-ui/Tree.example';
 import {ListviewExamples} from '../../nuclide-ui/ListView.example';
 import {TableExamples} from '../../nuclide-ui/Table.example';
+import {RelativeDateExamples} from '../../nuclide-ui/RelativeDate.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -44,6 +45,7 @@ const playgroundComponents = [
   TreeExamples,
   ListviewExamples,
   TableExamples,
+  RelativeDateExamples,
 ];
 
 type ComponentSpec = {
