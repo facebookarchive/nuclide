@@ -383,6 +383,26 @@ class FileTreeActions {
     });
   }
 
+  rangeSelectToNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.RANGE_SELECT_TO_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
+  rangeSelectUp(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.RANGE_SELECT_UP,
+    });
+  }
+
+  rangeSelectDown(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.RANGE_SELECT_DOWN,
+    });
+  }
+
   unhoverNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.UNHOVER_NODE,

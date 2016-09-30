@@ -21,16 +21,11 @@ import nuclideUri from '../../commons-node/nuclideUri';
 
 import {denodeify} from '../../commons-node/promise';
 
+import {buildTempDirTree} from './helpers/buildTempDirTree';
+
 import tempModule from 'temp';
 tempModule.track();
-const tempMkDir = denodeify(tempModule.mkdir);
 const tempCleanup = denodeify(tempModule.cleanup);
-
-import {makeTree} from 'fs-plus';
-const mkdir = denodeify(makeTree);
-
-import touchModule from 'touch';
-const touch = denodeify(touchModule);
 
 import invariant from 'assert';
 
@@ -41,46 +36,6 @@ class MockRepository {
   isPathIgnored() {
     return true;
   }
-}
-
-/**
- * Builds a temporary folder tree structure. Receives a variargs array of leaf node names
- * and creates the structure in a temporary folder.
- * To create an empty directory as leaf pass a name with '/' suffix. E.g. '/dir1/dir2/'
- * Returns a map that maps between the node names (without the '/' suffixes) and the actual
- * paths on the file system.
- * For a deep node passed such as 'dir1/dir2/foo.txt' each of the intermediate
- * nodes 'dir1', 'dir1/dir2', 'dir1/dir2' and 'dir1/dir2/foo.txt' entries will be
- * present in the returned map
- */
-async function buildTempDirTree(...paths: Array<string>): Promise<Map<string, string>> {
-  const rootPath = await tempMkDir('/');
-  const fileMap = new Map();
-
-  for (let i = 0; i < paths.length; i++) {
-    const pathItem = paths[i];
-    const arrPathItemParts = nuclideUri.split(pathItem);
-    const itemGlobalDirPath = nuclideUri.join(rootPath, ...arrPathItemParts.slice(0, -1));
-    const itemLocalFileName = arrPathItemParts[arrPathItemParts.length - 1];
-
-    // eslint-disable-next-line babel/no-await-in-loop
-    await mkdir(itemGlobalDirPath);
-    if (itemLocalFileName) {
-      // eslint-disable-next-line babel/no-await-in-loop
-      await touch(nuclideUri.join(itemGlobalDirPath, itemLocalFileName));
-    }
-
-    arrPathItemParts.forEach((val, j) => {
-      let prefixNodePath = nuclideUri.join(rootPath, ...arrPathItemParts.slice(0, j + 1));
-      if (j < arrPathItemParts.length - 1 || nuclideUri.endsWithSeparator(val)) {
-        prefixNodePath = nuclideUri.ensureTrailingSeparator(prefixNodePath);
-      }
-
-      fileMap.set(nuclideUri.join(...arrPathItemParts.slice(0, j + 1)), prefixNodePath);
-    });
-  }
-
-  return fileMap;
 }
 
 describe('FileTreeStore', () => {

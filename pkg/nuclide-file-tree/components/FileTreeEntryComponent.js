@@ -29,6 +29,8 @@ type Props = {
   node: FileTreeNode,
 };
 
+type SelectionMode = 'single-select' | 'multi-select' | 'range-select' | 'invalid-select';
+
 const INDENT_LEVEL = 17;
 
 export class FileTreeEntryComponent extends React.Component {
@@ -175,14 +177,28 @@ export class FileTreeEntryComponent extends React.Component {
     );
   }
 
+  _isToggleNodeExpand(event: SyntheticMouseEvent) {
+    const node = this.props.node;
+    return node.isContainer
+      && ReactDOM.findDOMNode(this.refs.arrowContainer).contains(event.target)
+      && event.clientX < ReactDOM.findDOMNode(this.refs.pathContainer)
+          .getBoundingClientRect().left;
+  }
+
   _onMouseDown(event: SyntheticMouseEvent) {
     event.stopPropagation();
+    if (this._isToggleNodeExpand(event)) {
+      return;
+    }
+
     const node = this.props.node;
 
-    const modifySelection = shouldModifySelection(event);
-    if (modifySelection && !node.isSelected) {
+    const selectionMode = getSelectionMode(event);
+    if (selectionMode === 'multi-select' && !node.isSelected) {
       getActions().addSelectedNode(node.rootUri, node.uri);
-    } else if (!node.isSelected) {
+    } else if (selectionMode === 'range-select') {
+      getActions().rangeSelectToNode(node.rootUri, node.uri);
+    } else if (selectionMode === 'single-select' && !node.isSelected) {
       getActions().setSelectedNode(node.rootUri, node.uri);
     }
   }
@@ -192,19 +208,18 @@ export class FileTreeEntryComponent extends React.Component {
     const node = this.props.node;
 
     const deep = event.altKey;
-    if (
-      node.isContainer &&
-      ReactDOM.findDOMNode(this.refs.arrowContainer).contains(event.target) &&
-      event.clientX < ReactDOM.findDOMNode(
-        this.refs.pathContainer,
-      ).getBoundingClientRect().left
-    ) {
+    if (this._isToggleNodeExpand(event)) {
       this._toggleNodeExpanded(deep);
       return;
     }
 
-    const modifySelection = shouldModifySelection(event);
-    if (modifySelection) {
+    const selectionMode = getSelectionMode(event);
+
+    if (selectionMode === 'range-select' || selectionMode === 'invalid-select') {
+      return;
+    }
+
+    if (selectionMode === 'multi-select') {
       if (node.isFocused) {
         getActions().unselectNode(node.rootUri, node.uri);
         // If this node was just unselected, immediately return and skip
@@ -332,10 +347,17 @@ export class FileTreeEntryComponent extends React.Component {
   }
 }
 
-function shouldModifySelection(event: SyntheticMouseEvent): boolean {
-  if (os.platform() === 'darwin') {
-    return event.metaKey;
-  } else {
-    return event.ctrlKey;
+function getSelectionMode(event: SyntheticMouseEvent): SelectionMode {
+
+  if (os.platform() === 'darwin' && event.metaKey && event.button === 0
+    || os.platform() !== 'darwin' && event.ctrlKey && event.button === 0) {
+    return 'multi-select';
   }
+  if (event.shiftKey && event.button === 0) {
+    return 'range-select';
+  }
+  if (!event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    return 'single-select';
+  }
+  return 'invalid-select';
 }

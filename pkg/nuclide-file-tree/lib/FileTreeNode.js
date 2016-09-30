@@ -588,6 +588,21 @@ export class FileTreeNode {
     return depth;
   }
 
+  /**
+   * Calculate the index of current Node w.r.t the top of the tree.
+   * The index is zero based.
+   * If the node is not shown, the index is for the previous shown node.
+   */
+  calculateVisualIndex(): number {
+    let index = this.shouldBeShown ? 1 : 0;
+    let prev = this.findPrevShownSibling();
+    while (prev != null) {
+      index += prev.shownChildrenBelow;
+      prev = prev.findPrevShownSibling();
+    }
+    return index + (this.parent == null ? 0 : this.parent.calculateVisualIndex());
+  }
+
   _propsAreTheSame(props: Object): boolean {
     if (props.isSelected !== undefined && this.isSelected !== props.isSelected) {
       return false;

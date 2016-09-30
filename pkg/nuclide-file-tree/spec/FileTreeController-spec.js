@@ -13,6 +13,7 @@ import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeController from '../lib/FileTreeController';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import type {FileTreeNode} from '../lib/FileTreeNode';
+import {WorkingSet} from '../../nuclide-working-sets-common';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
@@ -38,6 +39,10 @@ describe('FileTreeController', () => {
     return getNode(rootKey, nodeKey).isExpanded;
   }
 
+  function numSelected(): number {
+    return store.getSelectedNodes().size;
+  }
+
   beforeEach(() => {
     workspaceElement = atom.views.getView(atom.workspace);
     // Attach the workspace to the DOM so focus can be determined in tests below.
@@ -57,11 +62,13 @@ describe('FileTreeController', () => {
 
   afterEach(() => {
     controller.destroy();
+    actions.updateWorkingSet(new WorkingSet([]));
     store.reset();
   });
 
   describe('navigating with the keyboard', () => {
     const rootKey = nuclideUri.join(__dirname, 'fixtures') + '/';
+    const dir0key = nuclideUri.join(__dirname, 'fixtures/dir0') + '/';
     const dir1Key = nuclideUri.join(__dirname, 'fixtures/dir1') + '/';
     const fooTxtKey = nuclideUri.join(__dirname, 'fixtures/dir1/foo.txt');
     const dir2Key = nuclideUri.join(__dirname, 'fixtures/dir2') + '/';
@@ -141,7 +148,7 @@ describe('FileTreeController', () => {
           controller._moveDown();
 
           // dir1 is the first child, should get selected
-          expect(isSelected(rootKey, dir1Key)).toEqual(true);
+          expect(isSelected(rootKey, dir0key)).toEqual(true);
         });
 
         it('selects the next sibling when one exists', () => {
@@ -169,8 +176,8 @@ describe('FileTreeController', () => {
         });
 
         it('selects parent if first child is selected', () => {
-          actions.setSelectedNode(rootKey, dir1Key);
-          expect(isSelected(rootKey, dir1Key)).toEqual(true);
+          actions.setSelectedNode(rootKey, dir0key);
+          expect(isSelected(rootKey, dir0key)).toEqual(true);
           controller._moveUp();
 
           // dir1 is the first child, parent (root) should get selected
@@ -325,5 +332,218 @@ describe('FileTreeController', () => {
         });
       });
     });
+  });
+
+  describe('multi-selection and range-selection', () => {
+
+    const rootKey = nuclideUri.join(__dirname, 'fixtures') + '/';
+    const dir0 = nuclideUri.join(__dirname, 'fixtures/dir0') + '/';
+    const bar = nuclideUri.join(__dirname, 'fixtures/dir0/bar') + '/';
+    const bar1 = nuclideUri.join(__dirname, 'fixtures/dir0/bar/bar1');
+    const bar2 = nuclideUri.join(__dirname, 'fixtures/dir0/bar/bar2');
+    const bar3 = nuclideUri.join(__dirname, 'fixtures/dir0/bar/bar3');
+    const foo = nuclideUri.join(__dirname, 'fixtures/dir0/foo') + '/';
+    const foo1 = nuclideUri.join(__dirname, 'fixtures/dir0/foo/foo1');
+    const foo2 = nuclideUri.join(__dirname, 'fixtures/dir0/foo/foo2');
+    const foo3 = nuclideUri.join(__dirname, 'fixtures/dir0/foo/foo3');
+    const afile = nuclideUri.join(__dirname, 'fixtures/dir0/afile');
+    const bfile = nuclideUri.join(__dirname, 'fixtures/dir0/bfile');
+    const zfile = nuclideUri.join(__dirname, 'fixtures/dir0/zfile');
+
+    beforeEach(() => {
+      waitsForPromise(async () => {
+        // Await **internal-only** API because the public `expandNodeDeep` API does not
+        // return the promise that can be awaited on
+        await store._expandNodeDeep(rootKey, rootKey);
+      });
+    });
+
+    it('selects multiple items', () => {
+      actions.addSelectedNode(rootKey, rootKey);
+      actions.addSelectedNode(rootKey, dir0);
+      actions.addSelectedNode(rootKey, bar1);
+      expect(isSelected(rootKey, rootKey)).toBe(true);
+      expect(isSelected(rootKey, dir0)).toBe(true);
+      expect(isSelected(rootKey, bar1)).toBe(true);
+      expect(numSelected()).toBe(3);
+      actions.setSelectedNode(rootKey, bar);
+      expect(isSelected(rootKey, bar)).toBe(true);
+      expect(numSelected()).toBe(1);
+    });
+
+    it('selects a range of items', () => {
+      actions.setSelectedNode(rootKey, foo1);
+      actions.rangeSelectToNode(rootKey, bar2);
+      expect(isSelected(rootKey, bar2)).toBe(true);
+      expect(isSelected(rootKey, bar3)).toBe(true);
+      expect(isSelected(rootKey, foo)).toBe(true);
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(numSelected()).toBe(4);
+    });
+
+    it('selects multiple range of items', () => {
+      actions.setSelectedNode(rootKey, foo1);
+      actions.rangeSelectToNode(rootKey, bar2);
+      actions.addSelectedNode(rootKey, foo3);
+      actions.rangeSelectToNode(rootKey, afile);
+      expect(isSelected(rootKey, bar2)).toBe(true);
+      expect(isSelected(rootKey, bar3)).toBe(true);
+      expect(isSelected(rootKey, foo)).toBe(true);
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(isSelected(rootKey, foo3)).toBe(true);
+      expect(isSelected(rootKey, afile)).toBe(true);
+      expect(numSelected()).toBe(6);
+    });
+
+    it('selects range in opposite directions', () => {
+      actions.setSelectedNode(rootKey, foo1);
+      actions.rangeSelectToNode(rootKey, bar2);
+      expect(isSelected(rootKey, bar2)).toBe(true);
+      expect(isSelected(rootKey, bar3)).toBe(true);
+      expect(isSelected(rootKey, foo)).toBe(true);
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(numSelected()).toBe(4);
+      actions.rangeSelectToNode(rootKey, afile);
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(isSelected(rootKey, foo2)).toBe(true);
+      expect(isSelected(rootKey, foo3)).toBe(true);
+      expect(isSelected(rootKey, afile)).toBe(true);
+      expect(numSelected()).toBe(4);
+    });
+
+
+    it('handles overlap ranges', () => {
+      actions.setSelectedNode(rootKey, foo1);
+      actions.rangeSelectToNode(rootKey, bar2);
+      actions.addSelectedNode(rootKey, bar1);
+      actions.rangeSelectToNode(rootKey, afile);
+      expect(isSelected(rootKey, bar1)).toBe(true);
+      expect(isSelected(rootKey, bar2)).toBe(true);
+      expect(isSelected(rootKey, bar3)).toBe(true);
+      expect(isSelected(rootKey, foo)).toBe(true);
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(isSelected(rootKey, foo2)).toBe(true);
+      expect(isSelected(rootKey, foo3)).toBe(true);
+      expect(isSelected(rootKey, afile)).toBe(true);
+      expect(numSelected()).toBe(8);
+    });
+
+    it('support shift up and shift down', () => {
+      actions.setSelectedNode(rootKey, foo1);
+      controller._rangeSelectUp();
+      expect(isSelected(rootKey, foo)).toBe(true);
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(numSelected()).toBe(2);
+      controller._rangeSelectDown();
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(numSelected()).toBe(1);
+      controller._rangeSelectDown();
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(isSelected(rootKey, foo2)).toBe(true);
+      expect(numSelected()).toBe(2);
+      controller._rangeSelectDown();
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(isSelected(rootKey, foo2)).toBe(true);
+      expect(isSelected(rootKey, foo3)).toBe(true);
+      expect(numSelected()).toBe(3);
+    });
+
+    it('merges range for shift up and down', () => {
+      actions.setSelectedNode(rootKey, bar2);
+      actions.rangeSelectToNode(rootKey, bar3);
+      actions.addSelectedNode(rootKey, foo1);
+      controller._rangeSelectUp();
+      controller._rangeSelectUp();
+      expect(isSelected(rootKey, bar1)).toBe(true);
+      expect(isSelected(rootKey, bar2)).toBe(true);
+      expect(isSelected(rootKey, bar3)).toBe(true);
+      expect(isSelected(rootKey, foo)).toBe(true);
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(numSelected()).toBe(5);
+    });
+
+    it('handles unselected anchor', () => {
+      actions.setSelectedNode(rootKey, foo1);
+      actions.rangeSelectToNode(rootKey, bar2);
+      actions.unselectNode(rootKey, foo1);
+      actions.rangeSelectToNode(rootKey, bar1);
+      expect(isSelected(rootKey, bar1)).toBe(true);
+      expect(isSelected(rootKey, bar2)).toBe(true);
+      expect(isSelected(rootKey, bar3)).toBe(true);
+      expect(isSelected(rootKey, foo)).toBe(true);
+      expect(numSelected()).toBe(4);
+    });
+
+    it('handles unselected range', () => {
+      actions.setSelectedNode(rootKey, foo1);
+      actions.rangeSelectToNode(rootKey, bar2);
+      actions.unselectNode(rootKey, bar2);
+      actions.rangeSelectToNode(rootKey, bar1);
+      expect(isSelected(rootKey, bar1)).toBe(true);
+      expect(isSelected(rootKey, bar2)).toBe(true);
+      expect(isSelected(rootKey, bar3)).toBe(true);
+      expect(isSelected(rootKey, foo)).toBe(true);
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(numSelected()).toBe(5);
+      actions.rangeSelectDown();
+      expect(isSelected(rootKey, bar1)).toBe(false);
+      expect(numSelected()).toBe(4);
+    });
+
+    it('handles unselected node within the range', () => {
+      actions.setSelectedNode(rootKey, foo1);
+      actions.rangeSelectToNode(rootKey, bar2);
+      actions.unselectNode(rootKey, bar3);
+      actions.rangeSelectToNode(rootKey, bar1);
+      expect(isSelected(rootKey, bar1)).toBe(true);
+      expect(isSelected(rootKey, bar2)).toBe(true);
+      expect(isSelected(rootKey, bar3)).toBe(false);
+      expect(isSelected(rootKey, foo)).toBe(true);
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(numSelected()).toBe(4);
+      actions.rangeSelectToNode(rootKey, foo2);
+      expect(isSelected(rootKey, foo1)).toBe(true);
+      expect(isSelected(rootKey, foo2)).toBe(true);
+      expect(numSelected()).toBe(2);
+    });
+
+    it('does nothing when all nodes are unselected', () => {
+      actions.setSelectedNode(rootKey, foo1);
+      actions.rangeSelectToNode(rootKey, bar2);
+      actions.unselectNode(rootKey, bar2);
+      actions.unselectNode(rootKey, bar3);
+      actions.unselectNode(rootKey, foo);
+      actions.unselectNode(rootKey, foo1);
+      actions.rangeSelectToNode(rootKey, bar1);
+      expect(numSelected()).toBe(0);
+    });
+
+    it('can handle part of the selected range been collaped', () => {
+      actions.setSelectedNode(rootKey, foo1);
+      actions.rangeSelectToNode(rootKey, bar2);
+      actions.collapseNode(rootKey, foo);
+      expect(isSelected(rootKey, bar2)).toBe(true);
+      expect(isSelected(rootKey, bar3)).toBe(true);
+      expect(isSelected(rootKey, foo)).toBe(true);
+      expect(numSelected()).toBe(3);
+      actions.rangeSelectToNode(rootKey, bfile);
+      expect(isSelected(rootKey, foo)).toBe(true);
+      expect(isSelected(rootKey, afile)).toBe(true);
+      expect(isSelected(rootKey, bfile)).toBe(true);
+      expect(numSelected()).toBe(3);
+    });
+
+    it('supports workingset', () => {
+      actions.updateWorkingSet(new WorkingSet([bar2, foo, zfile]));
+      actions.setSelectedNode(rootKey, foo3);
+      actions.rangeSelectToNode(rootKey, zfile);
+      expect(isSelected(rootKey, foo3)).toBe(true);
+      expect(isSelected(rootKey, zfile)).toBe(true);
+      expect(numSelected()).toBe(2);
+      controller._rangeSelectUp();
+      expect(isSelected(rootKey, foo3)).toBe(true);
+      expect(numSelected()).toBe(1);
+    });
+
   });
 });

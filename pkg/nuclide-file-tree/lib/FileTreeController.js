@@ -111,6 +111,8 @@ class FileTreeController {
         'core:move-up': this._moveUp.bind(this),
         'core:move-to-top': this._moveToTop.bind(this),
         'core:move-to-bottom': this._moveToBottom.bind(this),
+        'core:select-up': this._rangeSelectUp.bind(this),
+        'core:select-down': this._rangeSelectDown.bind(this),
         'nuclide-file-tree:add-file': () => {
           FileSystemActions.openAddFileDialog(this._openAndRevealFilePath.bind(this));
         },
@@ -171,6 +173,14 @@ class FileTreeController {
 
   _moveToBottom(): void {
     this._actions.moveSelectionToBottom();
+  }
+
+  _rangeSelectUp(): void {
+    this._actions.rangeSelectUp();
+  }
+
+  _rangeSelectDown(): void {
+    this._actions.rangeSelectDown();
   }
 
   getContextMenu(): FileTreeContextMenu {

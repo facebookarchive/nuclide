@@ -26,6 +26,7 @@ import {getLogger} from '../../nuclide-logging';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {RangeKey, SelectionRange, RangeUtil} from './FileTreeSelectionRange';
 
 // Used to ensure the version we serialized is the same version we are deserializing.
 const VERSION = 1;
@@ -65,7 +66,7 @@ export type StoreConfigData = {
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';
 
 
-const DEFAULT_CONF = {
+export const DEFAULT_CONF = {
   vcsStatuses: new Immutable.Map(),
   workingSet: new WorkingSet(),
   editedWorkingSet: new WorkingSet(),
@@ -104,6 +105,7 @@ export class FileTreeStore {
   _suppressChanges: boolean;
   _cwdKey: ?NuclideUri;
   _filter: string;
+  _selectionRange: ?SelectionRange;
 
   static getInstance(): FileTreeStore {
     if (!instance) {
@@ -137,6 +139,7 @@ export class FileTreeStore {
     this._filter = '';
     this.openFilesExpanded = true;
     this.uncommittedChangesExpanded = true;
+    this._selectionRange = null;
   }
 
   /**
@@ -384,6 +387,15 @@ export class FileTreeStore {
       case ActionTypes.MOVE_SELECTION_UP:
         this._moveSelectionUp();
         break;
+      case ActionTypes.RANGE_SELECT_TO_NODE:
+        this._rangeSelectToNode(payload.rootKey, payload.nodeKey);
+        break;
+      case ActionTypes.RANGE_SELECT_UP:
+        this._rangeSelectUp();
+        break;
+      case ActionTypes.RANGE_SELECT_DOWN:
+        this._rangeSelectDown();
+        break;
       case ActionTypes.MOVE_SELECTION_DOWN:
         this._moveSelectionDown();
         break;
@@ -437,7 +449,21 @@ export class FileTreeStore {
     }
 
     const roots = this.roots.set(rootKey, this._bubbleUp(node, predicate(node)));
+
     this._setRoots(roots);
+  }
+
+  /**
+   * Update a node by calling the predicate, returns the new node.
+   */
+  _updateNode(
+    node: FileTreeNode,
+    predicate: (node: FileTreeNode) => FileTreeNode,
+  ): FileTreeNode {
+    const newNode = predicate(node);
+    const roots = this.roots.set(node.rootUri, this._bubbleUp(node, newNode));
+    this._setRoots(roots);
+    return newNode;
   }
 
   /**
@@ -1050,6 +1076,7 @@ export class FileTreeStore {
     const selectedNodes = this.getSelectedNodes();
     try {
       await FileTreeHgHelpers.deleteNodes(selectedNodes.toJS());
+      this._selectionRange = null;
     } catch (e) {
       atom.notifications.addError('Failed to delete entries: ' + e.message);
     }
@@ -1159,6 +1186,7 @@ export class FileTreeStore {
     this._clearSelection(rootKey, nodeKey);
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
     this._setTrackedNode(rootKey, nodeKey);
+    this._selectionRange = SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey));
   }
 
   /**
@@ -1177,16 +1205,207 @@ export class FileTreeStore {
       node.set({isSelected: true, isFocused: true}),
     );
     this._setTrackedNode(rootKey, nodeKey);
+    this._selectionRange = SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey));
   }
 
   _addSelectedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
+    this._selectionRange = SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey));
   }
 
   _unselectNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._updateNodeAtRoot(rootKey, nodeKey, node =>
       node.set({isSelected: false, isFocused: false}),
     );
+  }
+
+  _setSelectionRange(selectionRange: SelectionRange): void {
+    this._selectionRange = selectionRange;
+  }
+
+  _clearSelectionRange(): void {
+    this._selectionRange = null;
+  }
+
+  /**
+   * Refresh the selection range data.
+   * invalidate the data
+   * - if anchor node or range node is deleted.
+   * - if these two nodes are not selected, and there is no nearby node to fall back to.
+   * When this function returns, the selection range always contains valid data.
+   */
+  _refreshSelectionRange(): ?{
+    selectionRange: SelectionRange,
+    anchorNode: FileTreeNode,
+    rangeNode: FileTreeNode,
+    anchorIndex: number,
+    rangeIndex: number,
+    direction: 'up' | 'down' | 'none'} {
+
+    const invalidate = () => {
+      this._selectionRange = null;
+      return null;
+    };
+
+    let selectionRange = this._selectionRange;
+    if (selectionRange == null) {
+      return invalidate();
+    }
+    const anchor = selectionRange.anchor();
+    const range = selectionRange.range();
+    let anchorNode = this.getNode(anchor.rootKey(), anchor.nodeKey());
+    let rangeNode = this.getNode(range.rootKey(), range.nodeKey());
+    if (anchorNode == null || rangeNode == null) {
+      return invalidate();
+    }
+
+    anchorNode = RangeUtil.findSelectedNode(anchorNode);
+    rangeNode = RangeUtil.findSelectedNode(rangeNode);
+    if (anchorNode == null || rangeNode == null) {
+      return invalidate();
+    }
+    const anchorIndex = anchorNode.calculateVisualIndex();
+    const rangeIndex = rangeNode.calculateVisualIndex();
+    const direction =
+      rangeIndex > anchorIndex ? 'down' : (rangeIndex === anchorIndex ? 'none' : 'up');
+
+    selectionRange = new SelectionRange(RangeKey.of(anchorNode), RangeKey.of(rangeNode));
+    this._setSelectionRange(selectionRange);
+    return {selectionRange, anchorNode, rangeNode, anchorIndex, rangeIndex, direction};
+  }
+
+  /**
+   * Bulk selection based on the range.
+   */
+  _rangeSelectToNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    const data = this._refreshSelectionRange();
+    if (data == null) {
+      return;
+    }
+    const {selectionRange, anchorIndex, rangeIndex} = data;
+
+    let nextRangeNode = this.getNode(rootKey, nodeKey);
+    if (nextRangeNode == null) {
+      return;
+    }
+    const nextRangeIndex = nextRangeNode.calculateVisualIndex();
+    if (nextRangeIndex === rangeIndex) {
+      return;
+    }
+
+    const modMinIndex = Math.min(anchorIndex, rangeIndex, nextRangeIndex);
+    const modMaxIndex = Math.max(anchorIndex, rangeIndex, nextRangeIndex);
+
+    let beginIndex = 1;
+
+    // traversing the tree, flip the isSelected flag when applicable.
+    const roots = this.roots.map(
+      (rootNode: FileTreeNode): FileTreeNode => rootNode.setRecursive(
+        // keep traversing the sub-tree,
+        // - if the node is shown, has children, and in the applicable range.
+        (node: FileTreeNode): ?FileTreeNode => {
+          if (!node.shouldBeShown) {
+            return node;
+          }
+          if (node.shownChildrenBelow === 1) {
+            beginIndex++;
+            return node;
+          }
+          const endIndex = beginIndex + node.shownChildrenBelow - 1;
+          if (beginIndex <= modMaxIndex && modMinIndex <= endIndex) {
+            beginIndex++;
+            return null;
+          }
+          beginIndex += node.shownChildrenBelow;
+          return node;
+        },
+        // flip the isSelected flag accordingly, based on previous and current range.
+        (node: FileTreeNode): FileTreeNode => {
+          if (!node.shouldBeShown) {
+            return node;
+          }
+          const curIndex = beginIndex - node.shownChildrenBelow;
+          const inOldRange = Math.sign(curIndex - anchorIndex)
+                           * Math.sign(curIndex - rangeIndex) !== 1;
+          const inNewRange = Math.sign(curIndex - anchorIndex)
+                           * Math.sign(curIndex - nextRangeIndex) !== 1;
+          if (inOldRange && inNewRange || !inOldRange && !inNewRange) {
+            return node;
+          } else if (inOldRange && !inNewRange) {
+            return node.set({isSelected: false, isFocused: false});
+          } else {
+            return node.set({isSelected: true, isFocused: true});
+          }
+        },
+      ),
+    );
+    this._setRoots(roots);
+
+    // expand the range to merge existing selected nodes.
+    const getNextNode =
+      (cur: FileTreeNode) => (nextRangeIndex < rangeIndex ? cur.findPrevious() : cur.findNext());
+    let probe = getNextNode(nextRangeNode);
+    while (probe != null && probe.isSelected) {
+      nextRangeNode = probe;
+      probe = getNextNode(nextRangeNode);
+    }
+    this._setSelectionRange(selectionRange.withNewRange(RangeKey.of(nextRangeNode)));
+  }
+
+  /**
+   * Move the range of selections by one step.
+   */
+  _rangeSelectMove(move: 'up' | 'down'): void {
+    const data = this._refreshSelectionRange();
+    if (data == null) {
+      return;
+    }
+    const {selectionRange, anchorNode, rangeNode, direction} = data;
+    const getNextNode =
+      (cur: FileTreeNode) => (move === 'up' ? cur.findPrevious() : cur.findNext());
+
+    const isExpanding = direction === move || direction === 'none';
+
+    if (isExpanding) {
+      let nextNode = getNextNode(rangeNode);
+      while (nextNode != null && nextNode.isSelected) {
+        nextNode = getNextNode(nextNode);
+      }
+      if (nextNode == null) {
+        return;
+      }
+      nextNode = this._updateNode(nextNode, n => n.set({isSelected: true, isFocused: true}));
+      let probe = getNextNode(nextNode);
+      while (probe != null && probe.isSelected) {
+        nextNode = probe;
+        probe = getNextNode(nextNode);
+      }
+      this._selectionRange = selectionRange.withNewRange(RangeKey.of(nextNode));
+      this._setTrackedNode(nextNode.rootUri, nextNode.uri);
+    } else {
+      let nextNode = rangeNode;
+      while (nextNode != null && nextNode !== anchorNode && nextNode.isSelected === false) {
+        nextNode = getNextNode(nextNode);
+      }
+      if (nextNode == null) {
+        return;
+      }
+      if (nextNode === anchorNode) {
+        this._selectionRange = selectionRange.withNewRange(RangeKey.of(nextNode));
+        return;
+      }
+      nextNode = this._updateNode(nextNode, n => n.set({isSelected: false, isFocused: false}));
+      this._selectionRange = selectionRange.withNewRange(RangeKey.of(nextNode));
+      this._setTrackedNode(nextNode.rootUri, nextNode.uri);
+    }
+  }
+
+  _rangeSelectUp(): void {
+    this._rangeSelectMove('up');
+  }
+
+  _rangeSelectDown(): void {
+    this._rangeSelectMove('down');
   }
 
   _selectFirstFilter(): void {
@@ -1306,6 +1525,7 @@ export class FileTreeStore {
         },
       );
     });
+    this._selectionRange = null;
   }
 
   _setRootKeys(rootKeys: Array<NuclideUri>): void {

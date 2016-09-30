@@ -155,6 +155,17 @@ export type FileTreeAction =
     nodeKey: NuclideUri,
   } |
   {
+    actionType: 'RANGE_SELECT_TO_NODE',
+    rootKey: NuclideUri,
+    nodeKey: NuclideUri,
+  } |
+  {
+    actionType: 'RANGE_SELECT_UP',
+  } |
+  {
+    actionType: 'RANGE_SELECT_DOWN',
+  } |
+  {
     actionType: 'MOVE_SELECTION_UP',
   } |
   {
@@ -218,6 +229,9 @@ export const ActionTypes = Object.freeze({
   SET_FOCUSED_NODE: 'SET_FOCUSED_NODE',
   ADD_SELECTED_NODE: 'ADD_SELECTED_NODE',
   UNSELECT_NODE: 'UNSELECT_NODE',
+  RANGE_SELECT_TO_NODE: 'RANGE_SELECT_TO_NODE',
+  RANGE_SELECT_UP: 'RANGE_SELECT_UP',
+  RANGE_SELECT_DOWN: 'RANGE_SELECT_DOWN',
   MOVE_SELECTION_UP: 'MOVE_SELECTION_UP',
   MOVE_SELECTION_DOWN: 'MOVE_SELECTION_DOWN',
   MOVE_SELECTION_TO_TOP: 'MOVE_SELECTION_TO_TOP',
