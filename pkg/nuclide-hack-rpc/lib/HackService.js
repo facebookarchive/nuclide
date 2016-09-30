@@ -47,10 +47,9 @@ import {
 import {
   findHackConfigDir,
   setHackCommand,
-  setUseIdeConnection,
   getHackCommand,
+  logger,
 } from './hack-config';
-import {getUseIdeConnection, logger} from './hack-config';
 import {getHackConnectionService, observeConnections} from './HackProcess';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {convertDefinitions} from './Definitions';
@@ -106,16 +105,17 @@ export async function initialize(
   fileNotifier: FileNotifier,
 ): Promise<HackLanguageService> {
   setHackCommand(hackCommand);
-  setUseIdeConnection(useIdeConnection);
   logger.setLogLevel(logLevel);
   await getHackCommand();
-  return new HackLanguageService(fileNotifier);
+  return new HackLanguageService(useIdeConnection, fileNotifier);
 }
 
 export class HackLanguageService {
+  _useIdeConnection: boolean;
   _fileCache: FileCache;
 
-  constructor(fileNotifier: FileNotifier) {
+  constructor(useIdeConnection: boolean, fileNotifier: FileNotifier) {
+    this._useIdeConnection = useIdeConnection;
     invariant(fileNotifier instanceof FileCache);
     this._fileCache = fileNotifier;
   }
@@ -144,14 +144,17 @@ export class HackLanguageService {
   }
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
-    invariant(getUseIdeConnection());
+    logger.logTrace('observeDiagnostics');
+    invariant(this._useIdeConnection);
     return observeConnections(this._fileCache)
-      .mergeMap(connection =>
-        connection.notifyDiagnostics().refCount().map(diagnostics => ({
+      .mergeMap(connection => {
+        logger.logTrace('notifyDiagnostics');
+        return connection.notifyDiagnostics().refCount().map(diagnostics => ({
           filePath: diagnostics.filename,
           messages: diagnostics.errors.map(diagnostic =>
             hackMessageToDiagnosticMessage(diagnostic.message)),
-        })))
+        }));
+      })
       .publish();
   }
 
@@ -170,7 +173,7 @@ export class HackLanguageService {
       return [];
     }
 
-    if (getUseIdeConnection()) {
+    if (this._useIdeConnection) {
       const line = position.row + 1;
       const column = position.column + 1;
       logger.logTrace(`Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`);

@@ -26,8 +26,6 @@ const PATH_TO_HH_CLIENT = 'hh_client';
 const DEFAULT_HACK_COMMAND: Promise<string> = findHackCommand();
 let hackCommand = DEFAULT_HACK_COMMAND;
 
-let useConnection = false;
-
 /**
 * If this returns null, then it is not safe to run hack.
 */
@@ -66,12 +64,4 @@ export async function getHackExecOptions(
   } else {
     return null;
   }
-}
-
-export function setUseIdeConnection(useIdeConnection: boolean): void {
-  useConnection = useIdeConnection;
-}
-
-export function getUseIdeConnection(): boolean {
-  return useConnection;
 }
