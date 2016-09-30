@@ -10,19 +10,16 @@
  */
 
 import {asyncExecute} from './process';
-import nuclideUri from './nuclideUri';
 
 type VcsInfo = {
   vcs: string,
   root: string,
 };
 
-const vcsInfoCache: {[src: string]: VcsInfo} = {};
+const vcsInfoCache: {[dir: string]: VcsInfo} = {};
 
-async function findVcsHelper(src: string): Promise<VcsInfo> {
-  const options = {
-    cwd: nuclideUri.dirname(src),
-  };
+async function findVcsHelper(dir: string): Promise<VcsInfo> {
+  const options = {cwd: dir};
   const hgResult = await asyncExecute('hg', ['root'], options);
   if (hgResult.exitCode === 0) {
     return {
@@ -39,20 +36,20 @@ async function findVcsHelper(src: string): Promise<VcsInfo> {
     };
   }
 
-  throw new Error('Could not find VCS for: ' + src);
+  throw new Error('Could not find VCS for: ' + dir);
 }
 
 /**
  * For the given source file, find the type of vcs that is managing it as well
  * as the root directory for the VCS.
  */
-export async function findVcs(src: string): Promise<VcsInfo> {
-  let vcsInfo = vcsInfoCache[src];
+export async function findVcs(dir: string): Promise<VcsInfo> {
+  let vcsInfo = vcsInfoCache[dir];
   if (vcsInfo) {
     return vcsInfo;
   }
 
-  vcsInfo = await findVcsHelper(src);
-  vcsInfoCache[src] = vcsInfo;
+  vcsInfo = await findVcsHelper(dir);
+  vcsInfoCache[dir] = vcsInfo;
   return vcsInfo;
 }
