@@ -11,16 +11,21 @@
 
 import type {FileVersion} from './rpc-types';
 import {FileCache} from './FileCache';
+import {FileVersionNotifier} from './FileVersionNotifier';
 
-export {FileCache};
+export {FileCache, FileVersionNotifier};
 
 import invariant from 'assert';
 
 export const OPEN_FILES_SERVICE = 'OpenFilesService';
 
-export function getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
+export async function getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
   invariant(
     fileVersion.notifier instanceof FileCache,
     'Don\'t call this from the Atom process');
-  return (fileVersion.notifier: FileCache).getBufferAtVersion(fileVersion);
+  const buffer = await (fileVersion.notifier: FileCache).getBufferAtVersion(fileVersion);
+  if (buffer.changeCount !== fileVersion.version) {
+    throw new Error('File sync error. File modifier past requested change.');
+  }
+  return buffer;
 }

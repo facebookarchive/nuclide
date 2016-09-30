@@ -600,25 +600,26 @@ describe('FileCache', () => {
         },
         contents: 'contents1',
       });
+      expect(await result1).toBe('contents1');
       cache.onEvent({
         kind: 'close',
         fileVersion: {
           notifier: cache,
           filePath: 'f1',
-          version: 3,
+          version: 4,
         },
       });
-      const result2 = getFileContentsByVersion('f1', 3);
+
+      const result2 = getFileContentsByVersion('f1', 4);
       cache.onEvent({
         kind: 'open',
         fileVersion: {
           notifier: cache,
           filePath: 'f1',
-          version: 3,
+          version: 4,
         },
         contents: 'contents-reopened',
       });
-      expect(await result1).toBe('contents1');
       expect(await result2).toBe('contents-reopened');
     });
   });

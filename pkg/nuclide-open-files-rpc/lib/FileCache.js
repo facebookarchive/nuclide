@@ -20,21 +20,26 @@ import type {
 
 import TextBuffer from 'simple-text-buffer';
 import invariant from 'assert';
-import {Deferred} from '../../commons-node/promise';
-import {MultiMap} from '../../commons-node/collection';
 import {Subject, Observable} from 'rxjs';
+import {FileVersionNotifier} from './FileVersionNotifier';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 export type LocalFileEvent = FileOpenEvent | FileCloseEvent | FileEditEvent;
 
 export class FileCache {
   _buffers: Map<NuclideUri, atom$TextBuffer>;
-  _requests: MultiMap<NuclideUri, Request>;
+  _requests: FileVersionNotifier;
   _events: Subject<LocalFileEvent>;
+  _resources: UniversalDisposable;
 
   constructor() {
     this._buffers = new Map();
-    this._requests = new MultiMap();
     this._events = new Subject();
+    this._requests = new FileVersionNotifier();
+
+    this._resources = new UniversalDisposable();
+    this._resources.add(this._requests);
+    this._resources.add(this._events.subscribe(event => { this._requests.onEvent(event); }));
   }
 
   // If any out of sync state is detected then an Error is thrown.
@@ -72,7 +77,6 @@ export class FileCache {
       default:
         throw new Error(`Unexpected FileEvent.kind: ${event.kind}`);
     }
-    this._checkRequests(filePath);
     return Promise.resolve(undefined);
   }
 
@@ -111,15 +115,12 @@ export class FileCache {
   }
 
   dispose(): void {
-    for (const filePath of this._buffers.keys()) {
-      const buffer = this._buffers.get(filePath);
-      invariant(buffer != null);
+    for (const [filePath, buffer] of this._buffers.entries()) {
       this._emitClose(filePath, buffer);
       buffer.destroy();
     }
-    for (const request of this._requests.values()) {
-      request.reject(createRejectError());
-    }
+    this._buffers.clear();
+    this._resources.dispose();
     this._events.complete();
   }
 
@@ -127,34 +128,16 @@ export class FileCache {
     return this._buffers.get(filePath);
   }
 
-  getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
-    const filePath = fileVersion.filePath;
-    const version = fileVersion.version;
-    const currentBuffer = this._buffers.get(filePath);
-    if (currentBuffer != null && currentBuffer.changeCount === version) {
-      return Promise.resolve(currentBuffer);
-    } else if (currentBuffer != null && currentBuffer.changeCount > version) {
-      return Promise.reject(createRejectError());
-    }
-    const request = new Request(filePath, version);
-    this._requests.add(filePath, request);
-    return request.promise;
-  }
+  async getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
+    await this._requests.waitForBufferAtVersion(fileVersion);
 
-  _checkRequests(filePath: NuclideUri): void {
-    const buffer = this._buffers.get(filePath);
+    const buffer = this._buffers.get(fileVersion.filePath);
     if (buffer == null) {
-      return;
+      throw new Error('File closed at requested revision');
+    } if (buffer.changeCount !== fileVersion.version) {
+      throw new Error('Sync error. File at unexpected version');
     }
-    const requests = Array.from(this._requests.get(filePath));
-
-    const resolves = requests.filter(request => request.changeCount === buffer.changeCount);
-    const rejects = requests.filter(request => request.changeCount < buffer.changeCount);
-    const remaining = requests.filter(request => request.changeCount > buffer.changeCount);
-    this._requests.set(filePath, remaining);
-
-    resolves.forEach(request => request.resolve(buffer));
-    rejects.forEach(request => request.reject(createRejectError()));
+    return buffer;
   }
 
   observeFileEvents(): Observable<LocalFileEvent> {
@@ -219,20 +202,4 @@ function createEditEvent(
     newRange,
     newText,
   };
-}
-
-function createRejectError(): Error {
-  return new Error('File modified past requested change');
-}
-
-class Request extends Deferred<atom$TextBuffer> {
-  filePath: NuclideUri;
-  changeCount: number;
-
-  constructor(filePath: NuclideUri, changeCount: number) {
-    super();
-
-    this.filePath = filePath;
-    this.changeCount = changeCount;
-  }
 }
