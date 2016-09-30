@@ -20,7 +20,7 @@
     "react-native",
     "watchman"
   ],
-  "homepage": "http://nuclide.io/",
+  "homepage": "https://nuclide.io/",
   "license": "SEE LICENSE IN LICENSE",
   "main": "./lib/pre-main.js",
   "bin": {
