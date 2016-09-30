@@ -122,6 +122,10 @@ export class FileCache {
     }
   }
 
+  getBuffer(filePath: NuclideUri): ?atom$TextBuffer {
+    return this._buffers.get(filePath);
+  }
+
   getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
     const filePath = fileVersion.filePath;
     const version = fileVersion.version;

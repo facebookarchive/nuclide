@@ -12,6 +12,8 @@
 import type {FileVersion} from './rpc-types';
 import {FileCache} from './FileCache';
 
+export {FileCache};
+
 import invariant from 'assert';
 
 export const OPEN_FILES_SERVICE = 'OpenFilesService';

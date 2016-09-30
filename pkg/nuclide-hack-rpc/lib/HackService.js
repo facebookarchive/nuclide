@@ -62,6 +62,7 @@ import {convertReferences} from './FindReferences';
 import {hasPrefix, findHackPrefix, convertCompletions} from './Completions';
 import {convertDiagnostics} from './Diagnostics';
 import {executeQuery} from './SymbolSearch';
+import {FileCache} from '../../nuclide-open-files-rpc';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -107,10 +108,11 @@ export async function initialize(
 }
 
 export class HackLanguageService {
-  _fileNotifier: FileNotifier;
+  _fileCache: FileCache;
 
   constructor(fileNotifier: FileNotifier) {
-    this._fileNotifier = fileNotifier;
+    invariant(fileNotifier instanceof FileCache);
+    this._fileCache = fileNotifier;
   }
 
   async getDiagnostics(
@@ -155,27 +157,17 @@ export class HackLanguageService {
       const line = position.row + 1;
       const column = position.column + 1;
       logger.logTrace(`Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`);
-      const service = await getHackConnectionService(filePath);
+      const service = await getHackConnectionService(this._fileCache, filePath);
       if (service == null) {
         return [];
       }
 
       logger.logTrace('Got Hack Service');
-      // The file notifications are a placeholder until we get
-      // full file synchronization implemented.
-      await service.didOpenFile(filePath);
-      try {
-        const VERSION_PLACEHOLDER = 1;
-        await service.didChangeFile(
-          filePath, VERSION_PLACEHOLDER, [{text: contents}]);
-        return convertCompletions(
-          contents,
-          offset,
-          replacementPrefix,
-          (await service.getCompletions(filePath, {line, column}): ?HackCompletionsResult));
-      } finally {
-        await service.didCloseFile(filePath);
-      }
+      return convertCompletions(
+        contents,
+        offset,
+        replacementPrefix,
+        (await service.getCompletions(filePath, {line, column}): ?HackCompletionsResult));
     } else {
       const markedContents = markFileForCompletion(contents, offset);
       const result: ?HackCompletionsResult = (await callHHClient(
