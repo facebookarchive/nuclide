@@ -88,3 +88,6 @@ const argv = yargs
     .argv;
 
 main(argv);
+
+// Make it clear that this is not a types module by adding an empty export.
+export {};
