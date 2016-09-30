@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Subscription} from 'rxjs';
+import type {Subscription, Observable} from 'rxjs';
 import type {ServiceRegistry, MessageLogger} from '../nuclide-rpc';
 import type {ProcessMessage} from './process-rpc-types';
 
@@ -17,6 +17,7 @@ import {StreamTransport, RpcConnection} from '../nuclide-rpc';
 import {getOutputStream} from './process';
 import {getLogger} from '../nuclide-logging';
 import invariant from 'assert';
+import {Subject} from 'rxjs';
 
 export type ProcessMaker = () => child_process$ChildProcess;
 
@@ -44,6 +45,7 @@ export default class RpcProcess {
   _subscription: ?Subscription;
   _serviceRegistry: ServiceRegistry;
   _rpcConnection: ?RpcConnection<StreamTransport>;
+  _exitCode: Subject<number>;
 
   /**
    * @param name           a name for this server, used to tag log entries
@@ -62,6 +64,7 @@ export default class RpcProcess {
     this._serviceRegistry = serviceRegistry;
     this._rpcConnection = null;
     this._disposed = false;
+    this._exitCode = new Subject();
   }
 
   getName(): string {
@@ -82,6 +85,10 @@ export default class RpcProcess {
     this._ensureProcess();
     invariant(this._rpcConnection != null);
     return this._rpcConnection.getService(serviceName);
+  }
+
+  observeExitCode(): Observable<number> {
+    return this._exitCode.asObservable();
   }
 
   /**
@@ -131,6 +138,8 @@ export default class RpcProcess {
         }
         // Don't attempt to kill the process if it already exited.
         this._cleanup(false);
+        this._exitCode.next(message.exitCode);
+        this._exitCode.complete();
         break;
       case 'error':
         logger.error(`${this._name} - error received: `, message.error.message);
