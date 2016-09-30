@@ -23,7 +23,7 @@ import {getHackCommand, findHackConfigDir} from './hack-config';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import invariant from 'assert';
-import {FileCache} from '../../nuclide-open-files-rpc';
+import {FileCache, FileVersionNotifier} from '../../nuclide-open-files-rpc';
 import {Cache, DISPOSE_VALUE} from '../../commons-node/cache';
 import {Observable} from 'rxjs';
 
@@ -61,6 +61,7 @@ class HackProcess extends RpcProcess {
   _hhconfigPath: string;
   _fileCache: FileCache;
   _fileSubscription: rx$ISubscription;
+  _fileVersionNotifier: FileVersionNotifier;
 
   constructor(
     fileCache: FileCache,
@@ -70,6 +71,7 @@ class HackProcess extends RpcProcess {
   ) {
     super(name, getServiceRegistry(), createProcess, logMessage);
     this._fileCache = fileCache;
+    this._fileVersionNotifier = new FileVersionNotifier();
     this._hhconfigPath = hhconfigPath;
 
     const service = this.getConnectionService();
@@ -104,6 +106,7 @@ class HackProcess extends RpcProcess {
           default:
             throw new Error(`Unexpected FileEvent kind: ${JSON.stringify(fileEvent)}`);
         }
+        this._fileVersionNotifier.onEvent(fileEvent);
       });
     this.observeExitCode().finally(() => { this.dispose(); });
   }
@@ -122,6 +125,7 @@ class HackProcess extends RpcProcess {
       // Atempt to send disconnect message before shutting down connection
       this.getConnectionService().disconnect();
       super.dispose();
+      this._fileVersionNotifier.dispose();
       this._fileSubscription.unsubscribe();
       if (processes.has(this._fileCache)) {
         processes.get(this._fileCache).delete(this._hhconfigPath);
