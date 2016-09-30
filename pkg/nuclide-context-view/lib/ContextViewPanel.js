@@ -37,8 +37,7 @@ export const ContextViewPanel = (props: Props) => {
         <Header onHide={props.onHide} locked={props.locked} />
         <div className="nuclide-context-view-content">
           <p>
-            Place your cursor over a function, class, variable, or method in
-            <code>www</code> to see more information about it.
+            Place your cursor over a symbol to see more information about it.
           </p>
           {props.children}
         </div>
