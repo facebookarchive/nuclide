@@ -19,11 +19,15 @@ import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
-import type {DiagnosticProviderUpdate} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {
+  DiagnosticProviderUpdate,
+  FileDiagnosticUpdate,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig} from './config';
 import {getNotifierByConnection} from '../../nuclide-open-files';
+import {Observable} from 'rxjs';
 
 /**
  * Serves language requests from HackService.
@@ -81,6 +85,10 @@ export class HackLanguage {
     fileVersion: FileVersion,
   ): Promise<?DiagnosticProviderUpdate> {
     return this._hackService.getDiagnostics(fileVersion);
+  }
+
+  observeDiagnostics(): Observable<FileDiagnosticUpdate> {
+    return this._hackService.observeDiagnostics().refCount();
   }
 
   async getCoverage(

@@ -33,6 +33,11 @@ export type DiagnosticProviderUpdate = {
   projectMessages?: Array<ProjectDiagnosticMessage>,
 };
 
+export type FileDiagnosticUpdate = {
+  filePath: NuclideUri,
+  messages: Array<FileDiagnosticMessage>,
+};
+
 export type MessageType = 'Error' | 'Warning';
 
 export type Trace = {

@@ -10,7 +10,8 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HackCompletion} from './rpc-types';
+import type {HackCompletion, HackDiagnostic} from './rpc-types';
+import type {ConnectableObservable} from 'rxjs';
 
 // Note that all line/column values are 1-based.
 export type Position = {
@@ -88,6 +89,18 @@ export function getCompletions(
   filename: NuclideUri,
   position: Position,
 ): Promise<Array<HackCompletion>> {
+  throw new Error('RPC stub');
+}
+
+export type HackDiagnosticsMessage = {
+  filename: NuclideUri,
+  errors: Array<{
+    message: HackDiagnostic,
+  }>,
+};
+
+export function notifyDiagnostics(
+): ConnectableObservable<HackDiagnosticsMessage> {
   throw new Error('RPC stub');
 }
 

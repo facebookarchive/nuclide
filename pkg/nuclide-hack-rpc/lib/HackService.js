@@ -15,6 +15,7 @@ import type {
   Completion,
   HackRange,
   HackCompletion,
+  HackDiagnosticsResult,
 } from './rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -31,9 +32,10 @@ import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-t
 import type {HackReferencesResult} from './FindReferences';
 import type {
   DiagnosticProviderUpdate,
+  FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {HackDiagnosticsResult} from './Diagnostics';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {ConnectableObservable} from 'rxjs';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -49,7 +51,7 @@ import {
   getHackCommand,
 } from './hack-config';
 import {getUseIdeConnection, logger} from './hack-config';
-import {getHackConnectionService} from './HackProcess';
+import {getHackConnectionService, observeConnections} from './HackProcess';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {convertDefinitions} from './Definitions';
 import {
@@ -60,7 +62,10 @@ import {outlineFromHackIdeOutline} from './OutlineView';
 import {convertCoverage} from './TypedRegions';
 import {convertReferences} from './FindReferences';
 import {hasPrefix, findHackPrefix, convertCompletions} from './Completions';
-import {convertDiagnostics} from './Diagnostics';
+import {
+  hackMessageToDiagnosticMessage,
+  convertDiagnostics,
+} from './Diagnostics';
 import {executeQuery} from './SymbolSearch';
 import {FileCache} from '../../nuclide-open-files-rpc';
 
@@ -136,6 +141,18 @@ export class HackLanguageService {
     }
 
     return convertDiagnostics(hhResult);
+  }
+
+  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+    invariant(getUseIdeConnection());
+    return observeConnections(this._fileCache)
+      .mergeMap(connection =>
+        connection.notifyDiagnostics().refCount().map(diagnostics => ({
+          filePath: diagnostics.filename,
+          messages: diagnostics.errors.map(diagnostic =>
+            hackMessageToDiagnosticMessage(diagnostic.message)),
+        })))
+      .publish();
   }
 
   async getAutocompleteSuggestions(

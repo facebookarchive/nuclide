@@ -9,38 +9,19 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
   FileDiagnosticMessage,
   DiagnosticProviderUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {
+  SingleHackMessage,
+  HackDiagnostic,
+  HackDiagnosticsResult,
+} from './rpc-types';
 
 import {Range} from 'simple-text-buffer';
 import invariant from 'assert';
 import {logger} from './hack-config';
-
-export type HackDiagnosticsResult = {
-  errors: Array<{
-    message: HackDiagnostic,
-  }>,
-};
-
-/**
- * Each error or warning can consist of any number of different messages from
- * Flow to help explain the problem and point to different locations that may be
- * of interest.
- */
-export type HackDiagnostic = Array<SingleHackMessage>;
-
-export type SingleHackMessage = {
-  path: ?NuclideUri,
-  descr: string,
-  code: number,
-  line: number,
-  start: number,
-  end: number,
-};
-
 
 /**
  * Currently, a diagnostic from Hack is an object with a "message" property.
@@ -77,11 +58,9 @@ function hackMessageToTrace(traceError: SingleHackMessage): Object {
   };
 }
 
-function hackMessageToDiagnosticMessage(
-  hackDiagnostic: {message: HackDiagnostic},
+export function hackMessageToDiagnosticMessage(
+  hackMessages: HackDiagnostic,
 ): FileDiagnosticMessage {
-  const {message: hackMessages} = hackDiagnostic;
-
   const causeMessage = hackMessages[0];
   invariant(causeMessage.path != null);
   const diagnosticMessage: FileDiagnosticMessage = {
@@ -114,7 +93,8 @@ export function convertDiagnostics(
   }
 
   // Convert array messages to Error Objects with Traces.
-  const fileDiagnostics = diagnostics.map(hackMessageToDiagnosticMessage);
+  const fileDiagnostics = diagnostics.map(
+    diagnostic => hackMessageToDiagnosticMessage(diagnostic.message));
 
   const filePathToMessages = new Map();
   for (const diagnostic of fileDiagnostics) {

@@ -25,6 +25,7 @@ import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import invariant from 'assert';
 import {FileCache} from '../../nuclide-open-files-rpc';
 import {Cache, DISPOSE_VALUE} from '../../commons-node/cache';
+import {Observable} from 'rxjs';
 
 // From https://reviews.facebook.net/diffusion/HHVM/browse/master/hphp/hack/src/utils/exit_status.ml
 const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
@@ -73,6 +74,7 @@ class HackProcess extends RpcProcess {
 
     const service = this.getConnectionService();
     this._fileSubscription = fileCache.observeFileEvents()
+      // TODO: Filter on hhconfigPath
       .filter(fileEvent => {
         const fileExtension = nuclideUri.extname(fileEvent.fileVersion.filePath);
         return HACK_FILE_EXTENSIONS.indexOf(fileExtension) !== -1;
@@ -103,6 +105,7 @@ class HackProcess extends RpcProcess {
             throw new Error(`Unexpected FileEvent kind: ${JSON.stringify(fileEvent)}`);
         }
       });
+    this.observeExitCode().finally(() => { this.dispose(); });
   }
 
   getRoot(): string {
@@ -212,4 +215,14 @@ function editToHackEdit(editEvent: FileEditEvent): TextEdit {
     },
     text: editEvent.newText,
   };
+}
+
+export function observeConnections(fileCache: FileCache): Observable<HackConnectionService> {
+  return processes.get(fileCache).observeValues()
+    .switchMap(process => Observable.fromPromise(process))
+    .filter(process => process != null)
+    .map(process => {
+      invariant(process != null);
+      return process.getConnectionService();
+    });
 }

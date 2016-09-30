@@ -54,3 +54,25 @@ export type Completion = {
   description?: ?string,
   descriptionMoreURL?: ?string,
 };
+
+export type HackDiagnosticsResult = {
+  errors: Array<{
+    message: HackDiagnostic,
+  }>,
+};
+
+/**
+ * Each error or warning can consist of any number of different messages from
+ * Flow to help explain the problem and point to different locations that may be
+ * of interest.
+ */
+export type HackDiagnostic = Array<SingleHackMessage>;
+
+export type SingleHackMessage = {
+  path: ?NuclideUri,
+  descr: string,
+  code: number,
+  line: number,
+  start: number,
+  end: number,
+};
