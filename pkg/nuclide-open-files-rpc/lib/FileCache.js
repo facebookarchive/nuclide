@@ -120,6 +120,7 @@ export class FileCache {
     for (const request of this._requests.values()) {
       request.reject(createRejectError());
     }
+    this._events.complete();
   }
 
   getBuffer(filePath: NuclideUri): ?atom$TextBuffer {

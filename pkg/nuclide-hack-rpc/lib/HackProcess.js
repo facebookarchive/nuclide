@@ -13,6 +13,7 @@ import typeof * as HackConnectionService from './HackConnectionService';
 import type {ProcessMaker} from '../../commons-node/RpcProcess';
 import type {FileEditEvent} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from './HackConnectionService';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
@@ -23,6 +24,7 @@ import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import invariant from 'assert';
 import {FileCache} from '../../nuclide-open-files-rpc';
+import {Cache, DISPOSE_VALUE} from '../../commons-node/cache';
 
 // From https://reviews.facebook.net/diffusion/HHVM/browse/master/hphp/hack/src/utils/exit_status.ml
 const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
@@ -113,60 +115,70 @@ class HackProcess extends RpcProcess {
   }
 
   dispose(): void {
-    this._fileSubscription.unsubscribe();
-    this._dispose();
-  }
-
-  async _dispose(): Promise<void> {
-    processes.delete(this._hhconfigPath);
-    // Atempt to send disconnect message
-    try {
-      (await this.getConnectionService()).disconnect();
-    } catch (e) {
-      logger.logError('Error disconnecting from Hack connection.');
+    if (!this.isDisposed()) {
+      // Atempt to send disconnect message before shutting down connection
+      this.getConnectionService().disconnect();
+      super.dispose();
+      this._fileSubscription.unsubscribe();
+      if (processes.has(this._fileCache)) {
+        processes.get(this._fileCache).delete(this._hhconfigPath);
+      }
     }
-    super.dispose();
   }
 }
 
-// Maps hack config dir to HackProcess
-const processes: Map<string, Promise<?HackProcess>> = new Map();
+// Maps FileCache => hack config dir => HackProcess
+const processes: Cache<FileCache, Cache<NuclideUri, Promise<?HackProcess>>>
+  = new Cache(
+    fileCache => new Cache(
+      hackRoot => createHackProcess(fileCache, hackRoot),
+      value => {
+        value.then(process => {
+          if (process != null) {
+            process.dispose();
+          }
+        });
+      }),
+    DISPOSE_VALUE);
+
+// TODO: Is there any situation where these can be disposed before the
+//       remote connection is terminated?
+// Remove fileCache when the remote connection shuts down
+processes.observeKeys().subscribe(
+  fileCache => {
+    fileCache.observeFileEvents().ignoreElements().subscribe(
+      undefined, // next
+      undefined, // error
+      () => { processes.delete(fileCache); },
+    );
+  });
 
 async function getHackProcess(fileCache: FileCache, filePath: string): Promise<?HackProcess> {
-  const command = await getHackCommand();
-  if (command === '') {
-    return null;
-  }
-
   const configDir = await findHackConfigDir(filePath);
   if (configDir == null) {
     return null;
   }
 
-  let hackProcess = processes.get(configDir);
-  if (hackProcess == null) {
-    hackProcess = createHackProcess(fileCache, command, configDir);
-    processes.set(configDir, hackProcess);
-    hackProcess.then(result => {
-      // If we fail to connect to hack, then retry on next request.
-      if (result == null) {
-        processes.delete(configDir);
-      }
-    });
-  }
-  const result: ?HackProcess = await hackProcess;
-  if (result != null) {
-    // TODO(peterhal): Add better error handling ...
-    invariant(result._fileCache === fileCache, 'Multiple Atom windows opening same hack project');
-  }
-  return result;
+  const processCache = processes.get(fileCache);
+  const hackProcess = processCache.get(configDir);
+  hackProcess.then(result => {
+    // If we fail to connect to hack, then retry on next request.
+    if (result == null) {
+      processCache.delete(configDir);
+    }
+  });
+  return await hackProcess;
 }
 
 async function createHackProcess(
   fileCache: FileCache,
-  command: string,
   configDir: string,
 ): Promise<?HackProcess> {
+  const command = await getHackCommand();
+  if (command === '') {
+    return null;
+  }
+
   logger.logInfo(`Creating new hack connection for ${configDir}: ${command}`);
   logger.logInfo(`Current PATH: ${maybeToString(process.env.PATH)}`);
   const startServerResult = await asyncExecute(command, ['start', configDir]);
