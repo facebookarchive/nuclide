@@ -175,3 +175,8 @@ export async function getHackServiceForProject(
   return (await isFileInHackProject(directoryPath))
     ? (await getHackServiceByNuclideUri(directoryPath)) : null;
 }
+
+export function observeHackLanguages(): Observable<HackLanguage> {
+  return connectionToHackLanguage.observeValues()
+    .switchMap(hackLanguage => Observable.fromPromise(hackLanguage));
+}

@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type HackDiagnosticsProvider from '../lib/HackDiagnosticsProvider';
+import typeof * as HackDiagnosticsProviderFile from '../lib/HackDiagnosticsProvider';
+import type {HackDiagnosticsProvider} from '../lib/HackDiagnosticsProvider';
 
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 
@@ -19,9 +20,9 @@ describe('HackDiagnosticsProvider', () => {
 
   beforeEach(() => {
     class FakeProviderBase { }
-    const HackDiagnosticsProviderClass
+    const file: HackDiagnosticsProviderFile
       = (uncachedRequire(require, '../lib/HackDiagnosticsProvider'): any);
-    hackDiagnosticsProvider = new HackDiagnosticsProviderClass(
+    hackDiagnosticsProvider = new file.HackDiagnosticsProvider(
       false,
       (FakeProviderBase: any),
     );

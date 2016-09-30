@@ -15,20 +15,29 @@ import type {
   MessageUpdateCallback,
   MessageInvalidationCallback,
 } from '../../nuclide-diagnostics-common';
-import type {DiagnosticProviderUpdate} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {
+  DiagnosticProviderUpdate,
+  InvalidationMessage,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {trackTiming} from '../../nuclide-analytics';
-import {getHackLanguageForUri} from './HackLanguage';
+import {
+  getHackLanguageForUri,
+  observeHackLanguages,
+} from './HackLanguage';
 import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import {getLogger} from '../../nuclide-logging';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
+import {Observable} from 'rxjs';
+import {ServerConnection} from '../../nuclide-remote-connection';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 
 import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
 
-export default class HackDiagnosticsProvider {
+export class HackDiagnosticsProvider {
   _busySignalProvider: BusySignalProviderBase;
   _providerBase: DiagnosticsProviderBase;
   _requestSerializer: RequestSerializer<any>;
@@ -201,4 +210,27 @@ async function findDiagnostics(
   }
 
   return await hackLanguage.getDiagnostics(fileVersion);
+}
+
+export class ObservableDiagnosticProvider {
+  updates: Observable<DiagnosticProviderUpdate>;
+  invalidations: Observable<InvalidationMessage>;
+
+  constructor() {
+    this.updates = observeHackLanguages()
+      .mergeMap(language => language.observeDiagnostics())
+      .map(({filePath, messages}) => ({
+        filePathToMessages: new Map([[filePath, messages]]),
+      }));
+
+    // TODO: Per file invalidations?
+    this.invalidations = observableFromSubscribeFunction(
+     ServerConnection.onDidCloseServerConnection)
+     .map(connection => ({
+       scope: 'file',
+       // TODO: Does this work for invalidating an entire ServerConnection?
+       // TODO: What about windows?
+       filePaths: [connection.getUriOfRemotePath('/')],
+     }));
+  }
 }

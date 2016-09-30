@@ -30,7 +30,7 @@ import AutocompleteProvider from './AutocompleteProvider';
 import FindReferencesProvider from './FindReferencesProvider';
 import TypeHintProvider from './TypeHintProvider';
 import {HackEvaluationExpressionProvider} from './HackEvaluationExpressionProvider';
-import HackDiagnosticsProvider from './HackDiagnosticsProvider';
+import {HackDiagnosticsProvider} from './HackDiagnosticsProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import CodeFormatProvider from './CodeFormatProvider';
