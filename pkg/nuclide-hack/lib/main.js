@@ -30,11 +30,15 @@ import AutocompleteProvider from './AutocompleteProvider';
 import FindReferencesProvider from './FindReferencesProvider';
 import TypeHintProvider from './TypeHintProvider';
 import {HackEvaluationExpressionProvider} from './HackEvaluationExpressionProvider';
-import {HackDiagnosticsProvider} from './HackDiagnosticsProvider';
+import {
+  HackDiagnosticsProvider,
+  ObservableDiagnosticProvider,
+} from './HackDiagnosticsProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import CodeFormatProvider from './CodeFormatProvider';
 import {clearHackLanguageCache} from './HackLanguage';
+import {getConfig} from './config';
 
 
 const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
@@ -42,13 +46,26 @@ const PACKAGE_NAME = 'nuclide-hack';
 
 let subscriptions: ?CompositeDisposable = null;
 let hackDiagnosticsProvider;
+let observableDiagnosticsProvider;
 let busySignalProvider;
 let coverageProvider = null;
 let definitionProvider: ?DefinitionProvider = null;
 
+const diagnosticService = 'nuclide-diagnostics-provider';
+
 export function activate() {
   subscriptions = new CompositeDisposable();
   subscriptions.add(new Disposable(clearHackLanguageCache));
+
+  if (getConfig().useIdeConnection) {
+    subscriptions.add(
+      atom.packages.serviceHub.provide(
+        diagnosticService, '0.2.0', provideObservableDiagnostics()));
+  } else {
+    subscriptions.add(
+      atom.packages.serviceHub.provide(
+        diagnosticService, '0.1.0', provideDiagnostics()));
+  }
 }
 
 /** Provider for autocomplete service. */
@@ -125,12 +142,19 @@ export function createEvaluationExpressionProvider(): NuclideEvaluationExpressio
   };
 }
 
-export function provideDiagnostics() {
+function provideDiagnostics() {
   if (!hackDiagnosticsProvider) {
     const busyProvider = provideBusySignal();
     hackDiagnosticsProvider = new HackDiagnosticsProvider(false, busyProvider);
   }
   return hackDiagnosticsProvider;
+}
+
+function provideObservableDiagnostics() {
+  if (observableDiagnosticsProvider == null) {
+    observableDiagnosticsProvider = new ObservableDiagnosticProvider();
+  }
+  return observableDiagnosticsProvider;
 }
 
 export function deactivate(): void {

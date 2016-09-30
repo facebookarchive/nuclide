@@ -178,5 +178,7 @@ export async function getHackServiceForProject(
 
 export function observeHackLanguages(): Observable<HackLanguage> {
   return connectionToHackLanguage.observeValues()
-    .switchMap(hackLanguage => Observable.fromPromise(hackLanguage));
+    .switchMap(hackLanguage => {
+      return Observable.fromPromise(hackLanguage);
+    });
 }

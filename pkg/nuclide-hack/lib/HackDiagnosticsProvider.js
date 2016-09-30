@@ -225,12 +225,14 @@ export class ObservableDiagnosticProvider {
 
     // TODO: Per file invalidations?
     this.invalidations = observableFromSubscribeFunction(
-     ServerConnection.onDidCloseServerConnection)
-     .map(connection => ({
-       scope: 'file',
-       // TODO: Does this work for invalidating an entire ServerConnection?
-       // TODO: What about windows?
-       filePaths: [connection.getUriOfRemotePath('/')],
-     }));
+      ServerConnection.onDidCloseServerConnection)
+        .map(connection => {
+          return {
+            scope: 'file',
+            // TODO: Does this work for invalidating an entire ServerConnection?
+            // TODO: What about windows?
+            filePaths: [connection.getUriOfRemotePath('/')],
+          };
+        });
   }
 }

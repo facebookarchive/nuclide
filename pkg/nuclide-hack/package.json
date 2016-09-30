@@ -61,11 +61,6 @@
         "0.0.0": "provideDefinitions"
       }
     },
-    "nuclide-diagnostics-provider": {
-      "versions": {
-        "0.1.0": "provideDiagnostics"
-      }
-    },
     "nuclide-code-format.provider": {
       "versions": {
         "0.0.0": "createCodeFormatProvider"

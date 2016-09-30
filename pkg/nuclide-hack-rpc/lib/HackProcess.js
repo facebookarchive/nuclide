@@ -218,11 +218,13 @@ function editToHackEdit(editEvent: FileEditEvent): TextEdit {
 }
 
 export function observeConnections(fileCache: FileCache): Observable<HackConnectionService> {
+  logger.logInfo('observing connections');
   return processes.get(fileCache).observeValues()
     .switchMap(process => Observable.fromPromise(process))
     .filter(process => process != null)
     .map(process => {
       invariant(process != null);
+      logger.logInfo(`Observing process ${process._hhconfigPath}`);
       return process.getConnectionService();
     });
 }
