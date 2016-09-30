@@ -8,7 +8,6 @@
  * @flow
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export type HackParameterDetails = {
   name: string,
@@ -24,7 +23,7 @@ export type HackFunctionDetails = {
 
 // Note that all line/column values are 1-based.
 export type HackRange = {
-  filename: NuclideUri,
+  filename: string,
   line: number,
   char_start: number,
   char_end: number,
@@ -37,6 +36,8 @@ export type HackCompletion = {
   func_details: ?HackFunctionDetails,
   expected_ty: boolean,
 };
+
+export type HackCompletionsResult = Array<HackCompletion>;
 
 // A remotable version of atom$AutocompleteSuggestion
 export type Completion = {
@@ -69,7 +70,7 @@ export type HackDiagnosticsResult = {
 export type HackDiagnostic = Array<SingleHackMessage>;
 
 export type SingleHackMessage = {
-  path: ?NuclideUri,
+  path: ?string,
   descr: string,
   code: number,
   line: number,

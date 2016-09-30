@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HackCompletionsResult} from '../lib/HackService';
+import type {HackCompletionsResult} from '../lib/rpc-types';
 
 import {compareHackCompletions, convertCompletions} from '../lib/Completions';
 

@@ -14,7 +14,7 @@ import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {
   Completion,
   HackRange,
-  HackCompletion,
+  HackCompletionsResult,
   HackDiagnosticsResult,
 } from './rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
@@ -50,7 +50,7 @@ import {
   getHackCommand,
   logger,
 } from './hack-config';
-import {getHackConnectionService, observeConnections} from './HackProcess';
+import {getHackProcess, observeConnections} from './HackProcess';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {convertDefinitions} from './Definitions';
 import {
@@ -69,8 +69,6 @@ import {executeQuery} from './SymbolSearch';
 import {FileCache} from '../../nuclide-open-files-rpc';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
-
-export type HackCompletionsResult = Array<HackCompletion>;
 
 export type HackSearchPosition = {
   path: NuclideUri,
@@ -163,32 +161,24 @@ export class HackLanguageService {
     position: atom$Point,
     activatedManually: boolean,
   ): Promise<Array<Completion>> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
-    const contents = buffer.getText();
-    const offset = buffer.characterIndexForPosition(position);
-
-    const replacementPrefix = findHackPrefix(buffer, position);
-    if (replacementPrefix === '' && !hasPrefix(buffer, position)) {
-      return [];
-    }
-
     if (this._useIdeConnection) {
-      const line = position.row + 1;
-      const column = position.column + 1;
-      logger.logTrace(`Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`);
-      const service = await getHackConnectionService(this._fileCache, filePath);
-      if (service == null) {
+      const process = await getHackProcess(this._fileCache, fileVersion.filePath);
+      if (process == null) {
+        return [];
+      } else {
+        return process.getAutocompleteSuggestions(fileVersion, position, activatedManually);
+      }
+    } else {
+      const filePath = fileVersion.filePath;
+      const buffer = await getBufferAtVersion(fileVersion);
+      const contents = buffer.getText();
+      const offset = buffer.characterIndexForPosition(position);
+
+      const replacementPrefix = findHackPrefix(buffer, position);
+      if (replacementPrefix === '' && !hasPrefix(buffer, position)) {
         return [];
       }
 
-      logger.logTrace('Got Hack Service');
-      return convertCompletions(
-        contents,
-        offset,
-        replacementPrefix,
-        (await service.getCompletions(filePath, {line, column}): ?HackCompletionsResult));
-    } else {
       const markedContents = markFileForCompletion(contents, offset);
       const result: ?HackCompletionsResult = (await callHHClient(
         /* args */ ['--auto-complete'],

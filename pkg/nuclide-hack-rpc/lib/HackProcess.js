@@ -14,6 +14,11 @@ import type {ProcessMaker} from '../../commons-node/RpcProcess';
 import type {FileEditEvent} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from './HackConnectionService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {
+  Completion,
+  HackCompletionsResult,
+} from './rpc-types';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
@@ -26,6 +31,8 @@ import invariant from 'assert';
 import {FileCache, FileVersionNotifier} from '../../nuclide-open-files-rpc';
 import {Cache, DISPOSE_VALUE} from '../../commons-node/cache';
 import {Observable} from 'rxjs';
+import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
+import {hasPrefix, findHackPrefix, convertCompletions} from './Completions';
 
 // From https://reviews.facebook.net/diffusion/HHVM/browse/master/hphp/hack/src/utils/exit_status.ml
 const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
@@ -120,6 +127,44 @@ class HackProcess extends RpcProcess {
     return this.getService('HackConnectionService');
   }
 
+  async getBufferAtVersion(fileVersion: FileVersion): Promise<atom$TextBuffer> {
+    const buffer = await getBufferAtVersion(fileVersion);
+    // Must also wait for edits to be sent to Hack
+    await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion);
+    invariant(buffer.changeCount === fileVersion.version,
+      'File changed waiting for edits to be sent to Hack');
+    return buffer;
+  }
+
+  async getAutocompleteSuggestions(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    activatedManually: boolean,
+  ): Promise<Array<Completion>> {
+    const filePath = fileVersion.filePath;
+    logger.logTrace(`Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`);
+    const buffer = await this.getBufferAtVersion(fileVersion);
+    const contents = buffer.getText();
+    const offset = buffer.characterIndexForPosition(position);
+
+    const replacementPrefix = findHackPrefix(buffer, position);
+    if (replacementPrefix === '' && !hasPrefix(buffer, position)) {
+      return [];
+    }
+
+    const line = position.row + 1;
+    const column = position.column + 1;
+    const service = this.getConnectionService();
+
+    logger.logTrace('Got Hack Service');
+    return convertCompletions(
+      contents,
+      offset,
+      replacementPrefix,
+      // TODO: Include version number to ensure agreement on file version.
+      (await service.getCompletions(filePath, {line, column}): ?HackCompletionsResult));
+  }
+
   dispose(): void {
     if (!this.isDisposed()) {
       // Atempt to send disconnect message before shutting down connection
@@ -160,7 +205,10 @@ processes.observeKeys().subscribe(
     );
   });
 
-async function getHackProcess(fileCache: FileCache, filePath: string): Promise<?HackProcess> {
+export async function getHackProcess(
+  fileCache: FileCache,
+  filePath: string,
+): Promise<?HackProcess> {
   const configDir = await findHackConfigDir(filePath);
   if (configDir == null) {
     return null;
@@ -197,17 +245,6 @@ async function createHackProcess(
   }
   const createProcess = () => safeSpawn(command, ['ide', configDir]);
   return new HackProcess(fileCache, `HackProcess-${configDir}`, createProcess, configDir);
-}
-
-export async function getHackConnectionService(
-  fileCache: FileCache,
-  filePath: string,
-): Promise<?HackConnectionService> {
-  const process = await getHackProcess(fileCache, filePath);
-  if (process == null) {
-    return null;
-  }
-  return process.getConnectionService();
 }
 
 function editToHackEdit(editEvent: FileEditEvent): TextEdit {
