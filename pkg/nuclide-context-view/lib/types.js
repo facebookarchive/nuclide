@@ -32,5 +32,5 @@ export type ContextProvider = {
 };
 
 export type NuclideContextView = {
-  registerProvider: (provider: ContextProvider) => Promise<IDisposable>,
+  registerProvider: (provider: ContextProvider) => IDisposable,
 };

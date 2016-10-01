@@ -80,32 +80,23 @@ export function serialize(): ?ContextViewConfig {
 
 /** Returns the singleton ContextViewManager instance of this package, or null
  * if the user doesn't pass the Context View GK check. */
-async function getContextViewManager(): Promise<?ContextViewManager> {
+function getContextViewManager(): ContextViewManager {
   if (manager == null) {
     manager = new ContextViewManager(initialViewState.width, initialViewState.visible);
   }
   return manager;
 }
 
-export async function toggleContextView(): Promise<void> {
-  const contextViewManager = await getContextViewManager();
-  if (contextViewManager != null) {
-    contextViewManager.toggle();
-  }
+export function toggleContextView(): void {
+  getContextViewManager().toggle();
 }
 
-export async function showContextView(): Promise<void> {
-  const contextViewManager = await getContextViewManager();
-  if (contextViewManager != null) {
-    contextViewManager.show();
-  }
+export function showContextView(): void {
+  getContextViewManager().show();
 }
 
-export async function hideContextView(): Promise<void> {
-  const contextViewManager = await getContextViewManager();
-  if (contextViewManager != null) {
-    contextViewManager.hide();
-  }
+export function hideContextView(): void {
+  getContextViewManager().hide();
 }
 
 /**
@@ -114,12 +105,9 @@ export async function hideContextView(): Promise<void> {
  * nuclide-context-view service and register themselves as a provider.
  */
 const Service: NuclideContextView = {
-  async registerProvider(provider: ContextProvider): Promise<Disposable> {
+  registerProvider(provider: ContextProvider): Disposable {
     invariant(provider != null, 'Cannot register null context provider');
-    const contextViewManager = await getContextViewManager();
-    if (contextViewManager == null) {
-      return new Disposable();
-    }
+    const contextViewManager = getContextViewManager();
     contextViewManager.registerProvider(provider);
     return new Disposable(() => {
       contextViewManager.unregisterProvider(provider.id);
@@ -128,15 +116,10 @@ const Service: NuclideContextView = {
 };
 
 export function consumeDefinitionService(service: DefinitionService): IDisposable {
-  getContextViewManager().then((contextViewManager: ?ContextViewManager) => {
-    if (contextViewManager == null) {
-      return;
-    }
-    if (service !== currentService) {
-      currentService = service;
-      contextViewManager.consumeDefinitionService(currentService);
-    }
-  });
+  if (service !== currentService) {
+    currentService = service;
+    getContextViewManager().consumeDefinitionService(currentService);
+  }
   return new Disposable(() => {
     currentService = null;
     if (manager != null) {
@@ -145,32 +128,23 @@ export function consumeDefinitionService(service: DefinitionService): IDisposabl
   });
 }
 
-export async function consumeToolBar(getToolBar: GetToolBar): Promise<IDisposable> {
-  const contextViewManager = await getContextViewManager();
-  if (contextViewManager != null) {
-    const toolBar = getToolBar('nuclide-context-view');
-    const {element} = toolBar.addButton({
-      icon: 'info',
-      callback: 'nuclide-context-view:toggle',
-      tooltip: 'Toggle Context View',
-    });
-    element.classList.add('nuclide-context-view-toolbar-button');
-    const disposable = new Disposable(() => { toolBar.removeItems(); });
-    disposables.add(disposable);
-    return disposable;
-  }
-  return new Disposable();
+export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  const toolBar = getToolBar('nuclide-context-view');
+  const {element} = toolBar.addButton({
+    icon: 'info',
+    callback: 'nuclide-context-view:toggle',
+    tooltip: 'Toggle Context View',
+  });
+  element.classList.add('nuclide-context-view-toolbar-button');
+  const disposable = new Disposable(() => { toolBar.removeItems(); });
+  disposables.add(disposable);
+  return disposable;
 }
 
 export function getDistractionFreeModeProvider(): DistractionFreeModeProvider {
   return {
     name: 'nuclide-context-view',
     isVisible(): boolean {
-      // IMPORTANT: The `manager != null && manager._isVisible check is an antipattern.
-      // Since distraction free mode requires a *synchronous* isVisible, this
-      // checks manager != null rather than using the GK-safe but async getContextViewManager().
-      // If you're modifying nuclide-context-view, use async getContextViewManager() unless
-      // you have a really good reason to directly reference `manager`.
       return manager != null && manager._isVisible;
     },
     toggle(): void {
