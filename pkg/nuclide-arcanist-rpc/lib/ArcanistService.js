@@ -204,7 +204,7 @@ export function updatePhabricatorRevision(
 }
 
 export function execArcPull(
-  cwd: string,
+  cwd: NuclideUri,
   fetchLatest: boolean,
   allowDirtyChanges: boolean,
 ): ConnectableObservable<ProcessMessage> {
