@@ -11,11 +11,14 @@
 
 import type DebuggerActions from './DebuggerActions';
 
-import {React} from 'react-for-atom';
 import invariant from 'assert';
+import {React} from 'react-for-atom';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
-import {Listview} from '../../nuclide-ui/ListView';
+import {
+  ListView,
+  ListViewItem,
+} from '../../nuclide-ui/ListView';
 import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
 
 type BreakpointListComponentProps = {
@@ -36,13 +39,15 @@ export class BreakpointListComponent extends React.Component {
     this.props.actions.updateBreakpointEnabled(breakpoint.id, enabled);
   }
 
-  _handleBreakpointClick(breakpointIndex: number, event: SyntheticMouseEvent): void {
-    const {breakpoints} = this.props;
-    invariant(breakpoints != null);
+  _handleBreakpointClick(
+    breakpointIndex: number,
+    breakpoint: ?FileLineBreakpoint,
+  ): void {
+    invariant(breakpoint != null);
     const {
       path,
       line,
-    } = breakpoints[breakpointIndex];
+    } = breakpoint;
     this.props.actions.openSourceLocation(nuclideUri.nuclideUriToUri(path), line);
   }
 
@@ -51,7 +56,7 @@ export class BreakpointListComponent extends React.Component {
     if (breakpoints == null || breakpoints.length === 0) {
       return <span>(no breakpoints)</span>;
     }
-    const renderedBreakpoints = breakpoints
+    const items = breakpoints
       .map(breakpoint => ({
         ...breakpoint,
         // Calculate the basename exactly once for each breakpoint
@@ -70,7 +75,7 @@ export class BreakpointListComponent extends React.Component {
           resolved,
         } = breakpoint;
         const label = `${basename}:${line + 1}`;
-        return (
+        const content = (
           <div className="nuclide-debugger-breakpoint" key={i}>
             <Checkbox
               label={label}
@@ -82,14 +87,15 @@ export class BreakpointListComponent extends React.Component {
             />
           </div>
         );
+        return <ListViewItem key={label} value={breakpoint}>{content}</ListViewItem>;
       });
     return (
-      <Listview
+      <ListView
         alternateBackground={true}
         onSelect={this._handleBreakpointClick}
         selectable={true}>
-        {renderedBreakpoints}
-      </Listview>
+        {items}
+      </ListView>
     );
   }
 }

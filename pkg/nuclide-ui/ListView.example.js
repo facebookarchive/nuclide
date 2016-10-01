@@ -11,7 +11,10 @@
 
 import {React} from 'react-for-atom';
 import {Block} from './Block';
-import {Listview} from './ListView';
+import {
+  ListView,
+  ListViewItem,
+} from './ListView';
 import {Checkbox} from './Checkbox';
 import {MultiSelectList} from './MultiSelectList';
 
@@ -19,49 +22,59 @@ const NOOP = () => {};
 
 const ListviewExample1 = (): React.Element<any> => (
   <Block>
-    <Listview alternateBackground={true}>
-      <div>test</div>
-      <div>test</div>
-      <div>test</div>
-      <div>test</div>
-      <div>test</div>
-    </Listview>
+    <ListView alternateBackground={true}>
+      <ListViewItem value={{id: 1}}>test1</ListViewItem>
+      <ListViewItem value={{id: 2}}>test2</ListViewItem>
+      <ListViewItem value={{id: 3}}>test3</ListViewItem>
+      <ListViewItem value={{id: 4}}>test4</ListViewItem>
+      <ListViewItem value={{id: 5}}>test5</ListViewItem>
+    </ListView>
   </Block>
 );
 const ListviewExample2 = (): React.Element<any> => (
   <Block>
-    <Listview alternateBackground={true}>
-      <Checkbox
-        checked={true}
-        onClick={NOOP}
-        onChange={NOOP}
-        label="A Checkbox."
-      />
-      <Checkbox
-        checked={true}
-        onClick={NOOP}
-        onChange={NOOP}
-        label="A Checkbox."
-      />
-      <Checkbox
-        checked={true}
-        onClick={NOOP}
-        onChange={NOOP}
-        label="A Checkbox."
-      />
-      <Checkbox
-        checked={false}
-        onClick={NOOP}
-        onChange={NOOP}
-        label="A Checkbox."
-      />
-      <Checkbox
-        checked={false}
-        onClick={NOOP}
-        onChange={NOOP}
-        label="A Checkbox."
-      />
-    </Listview>
+    <ListView alternateBackground={true}>
+      <ListViewItem>
+        <Checkbox
+          checked={true}
+          onClick={NOOP}
+          onChange={NOOP}
+          label="A Checkbox."
+        />
+      </ListViewItem>
+      <ListViewItem>
+        <Checkbox
+          checked={true}
+          onClick={NOOP}
+          onChange={NOOP}
+          label="A Checkbox."
+        />
+      </ListViewItem>
+      <ListViewItem>
+        <Checkbox
+          checked={true}
+          onClick={NOOP}
+          onChange={NOOP}
+          label="A Checkbox."
+        />
+      </ListViewItem>
+      <ListViewItem>
+        <Checkbox
+          checked={false}
+          onClick={NOOP}
+          onChange={NOOP}
+          label="A Checkbox."
+        />
+      </ListViewItem>
+      <ListViewItem>
+        <Checkbox
+          checked={false}
+          onClick={NOOP}
+          onChange={NOOP}
+          label="A Checkbox."
+        />
+      </ListViewItem>
+    </ListView>
   </Block>
 );
 
@@ -90,11 +103,11 @@ class MultiSelectListExample extends React.Component {
 }
 
 export const ListviewExamples = {
-  sectionName: 'Listview',
+  sectionName: 'ListView',
   description: '',
   examples: [
     {
-      title: 'Simple Listview',
+      title: 'Simple ListView',
       component: ListviewExample1,
     },
     {

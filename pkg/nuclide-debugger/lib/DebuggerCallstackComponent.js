@@ -12,11 +12,17 @@
 import {
   React,
 } from 'react-for-atom';
-import type {Callstack} from './types';
+import type {
+  Callstack,
+  CallstackItem,
+} from './types';
 import type DebuggerActions from './DebuggerActions';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import {Listview} from '../../nuclide-ui/ListView';
+import {
+  ListView,
+  ListViewItem,
+} from '../../nuclide-ui/ListView';
 import Bridge from './Bridge';
 
 type DebuggerCallstackComponentProps = {
@@ -33,21 +39,24 @@ export class DebuggerCallstackComponent extends React.Component {
     (this: any)._handleCallframeClick = this._handleCallframeClick.bind(this);
   }
 
-  _handleCallframeClick(callFrameIndex: number, event: SyntheticMouseEvent): void {
+  _handleCallframeClick(
+    callFrameIndex: number,
+    clickedCallframe: ?CallstackItem,
+  ): void {
     this.props.bridge.setSelectedCallFrameIndex(callFrameIndex);
   }
 
   render(): ?React.Element<any> {
     const {callstack} = this.props;
-    const renderedCallstack = callstack == null
-      ? '(callstack unavailable)'
+    const items = callstack == null
+      ? []
       : callstack.map((callstackItem, i) => {
         const {
           name,
           location,
         } = callstackItem;
         const path = nuclideUri.basename(location.path);
-        return (
+        const content = (
           <div className="nuclide-debugger-callstack-item" key={i}>
             <div className="nuclide-debugger-callstack-name">
               {name}
@@ -57,14 +66,15 @@ export class DebuggerCallstackComponent extends React.Component {
             </div>
           </div>
         );
+        return <ListViewItem key={i} value={callstackItem}>{content}</ListViewItem>;
       });
-    return (
-      <Listview
-        alternateBackground={true}
-        selectable={true}
-        onSelect={this._handleCallframeClick}>
-        {renderedCallstack}
-      </Listview>
-    );
+    return callstack == null
+      ? <span>(callstack unavailable)</span>
+      : <ListView
+          alternateBackground={true}
+          selectable={true}
+          onSelect={this._handleCallframeClick}>
+          {items}
+        </ListView>;
   }
 }

@@ -10,10 +10,45 @@
  */
 
 import classnames from 'classnames';
-import invariant from 'assert';
 import {React} from 'react-for-atom';
 
-type Props = {
+type ListViewItemProps = {
+  index: number,
+  value?: ?Object,
+  children?: ?React.Element<any>,
+  onSelect: (value: ?Object, index: number) => void,
+};
+
+/**
+ * Use ListViewItem in conjunction with ListView.
+ */
+export class ListViewItem extends React.Component {
+  // $FlowIssue `index` and `onSelect` are injected by the surrounding `ListView` component.
+  props: ListViewItemProps;
+
+  _select(value: ?Object, index: number, event: SyntheticMouseEvent): void {
+    this.props.onSelect(value, index);
+  }
+
+  render(): React.Element<any> {
+    const {
+      children,
+      index,
+      value,
+      ...remainingProps,
+    } = this.props;
+    return (
+      <div
+        className="nuclide-ui-listview-item"
+        {...remainingProps}
+        onClick={this._select.bind(this, value, index)}>
+        {children}
+      </div>
+    );
+  }
+}
+
+type ListViewProps = {
   /**
    * Whether to shade even and odd items differently.
    */
@@ -27,43 +62,39 @@ type Props = {
   /**
    * Handler to be called upon selection. Called iff `selectable` is `true`.
    */
-  onSelect?: (selectedIndex: number, event: SyntheticMouseEvent) => mixed,
+  onSelect?: (selectedIndex: number, selectedData: ?Object) => mixed,
 };
 
-/**
- *
- */
-export class Listview extends React.Component {
-  props: Props;
+export class ListView extends React.Component {
+  props: ListViewProps;
+
+  constructor(props: ListViewProps) {
+    super(props);
+    (this: any)._handleSelect = this._handleSelect.bind(this);
+  }
+
+  _handleSelect(value: ?Object, index: number, event: SyntheticMouseEvent): void {
+    if (this.props.selectable && this.props.onSelect != null) {
+      this.props.onSelect(index, value);
+    }
+  }
 
   render(): React.Element<any> {
     const {
       children,
       alternateBackground,
       selectable,
-      onSelect,
     } = this.props;
-    const wrappedChildren = React.Children.map(
+    const renderedItems = React.Children.map(
       children,
-      (
-        child: React.Element<any>,
-        index: number,
-      ) => {
-        const dynamicProps = {};
-        if (selectable) {
-          invariant(onSelect != null);
-          dynamicProps.onClick = onSelect.bind(this, index);
-        }
-        return (
-          <div
-            key={index}
-            className="nuclide-ui-listview-item"
-            {...dynamicProps}>
-            {child}
-          </div>
-        );
-      },
-    );
+      (child: React.Element<any>, index: number) =>
+        React.cloneElement(
+          child,
+          {
+            index,
+            onSelect: this._handleSelect,
+          },
+        ));
     const className = classnames({
       'nuclide-ui-listview': true,
       'nuclide-ui-listview-highlight-odd': alternateBackground,
@@ -71,7 +102,7 @@ export class Listview extends React.Component {
     });
     return (
       <div className={className}>
-        {wrappedChildren}
+        {renderedItems}
       </div>
     );
   }

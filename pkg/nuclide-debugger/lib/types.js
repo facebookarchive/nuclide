@@ -83,7 +83,7 @@ export type SerializedBreakpoint = {
 };
 
 /* Callstack */
-type CallstackItem = {
+export type CallstackItem = {
   name: string,
   location: {
     path: string,
