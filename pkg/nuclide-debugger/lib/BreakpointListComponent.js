@@ -52,17 +52,24 @@ export class BreakpointListComponent extends React.Component {
       return <span>(no breakpoints)</span>;
     }
     const renderedBreakpoints = breakpoints
-      // Show resolved breakpoints at the top of the list
+      .map(breakpoint => ({
+        ...breakpoint,
+        // Calculate the basename exactly once for each breakpoint
+        basename: nuclideUri.basename(breakpoint.path),
+      }))
+      // Show resolved breakpoints at the top of the list, then order by filename & line number.
       .sort((breakpointA, breakpointB) =>
-        Number(breakpointB.resolved) - Number(breakpointA.resolved))
+        100 * (Number(breakpointB.resolved) - Number(breakpointA.resolved)) +
+         10 * breakpointA.basename.localeCompare(breakpointB.basename) +
+              Math.sign(breakpointA.line - breakpointB.line))
       .map((breakpoint, i) => {
         const {
-          path,
+          basename,
           line,
           enabled,
           resolved,
         } = breakpoint;
-        const label = `${nuclideUri.basename(path)}:${line + 1}`;
+        const label = `${basename}:${line + 1}`;
         return (
           <div className="nuclide-debugger-breakpoint" key={i}>
             <Checkbox
