@@ -4,6 +4,11 @@
   margin-bottom: 0; // This is to override a default in bootstrap.
 }
 
+@disabled-opacity: 0.65;
+.nuclide-ui-checkbox-disabled {
+  opacity: @disabled-opacity;
+}
+
 /*
  * Checkbox styles originally copied from Atom's ['settings-view'][1] package.
  *
@@ -28,7 +33,7 @@
   background-color: @text-color-subtle;
 
   &[disabled] {
-    opacity: 0.65;
+    opacity: @disabled-opacity;
   }
 
   &:focus {

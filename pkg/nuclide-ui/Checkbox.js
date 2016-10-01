@@ -76,12 +76,16 @@ export class Checkbox extends React.PureComponent {
       checked,
       className,
       disabled,
+      // eslint-disable-next-line no-unused-vars
+      indeterminate, // exclude `indeterminate` from `remainingProps`
       label,
       onClick,
     } = this.props;
     return (
       <label
-        className={classnames(className, 'nuclide-ui-checkbox-label')}
+        className={classnames(className, 'nuclide-ui-checkbox-label', {
+          'nuclide-ui-checkbox-disabled': disabled,
+        })}
         onClick={onClick}>
         <input
           checked={checked}
