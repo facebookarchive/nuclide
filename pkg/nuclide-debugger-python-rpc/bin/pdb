@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+// Note that this file is not transpiled, so it can use features that are native
+// to Node 6, which is most things except async/await and trailing comma dangles.
+require('../../nuclide-node-transpiler');
+
+/* eslint-disable no-console */
+process.on('unhandledRejection', (reason, p) => {
+  console.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
+});
+
+process.on('uncaughtException', err => {
+  console.error(`Uncaught exception: ${err}\n${err.stack}`);
+});
+/* eslint-enable no-console */
+
+const main = require('../pdb/pdb');
+main(process.argv.slice(2));
