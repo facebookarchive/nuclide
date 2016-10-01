@@ -16,7 +16,7 @@ import type {PackagerEvent} from './types';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {LogTailer} from '../../../nuclide-console/lib/LogTailer';
 import {getCommandInfo} from '../../../nuclide-react-native-base';
-import {observeProcess, safeSpawn} from '../../../commons-node/process';
+import {observeProcess, safeSpawn, exitEventToMessage} from '../../../commons-node/process';
 import {parseMessages} from './parseMessages';
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
@@ -110,16 +110,16 @@ class NoReactNativeProjectError extends Error {
 }
 
 class PackagerError extends Error {
-  exitCode: number;
+  exitMessage: string;
   stderr: string;
-  constructor(exitCode: number, stderr: string) {
+  constructor(exitMessage: string, stderr: string) {
     // TODO: Remove `captureStackTrace()` call and `this.message` assignment when we remove our
     // class transform and switch to native classes.
     const message = 'An error occurred while running the packager';
     super(message);
     this.name = 'PackagerError';
     this.message = message;
-    this.exitCode = exitCode;
+    this.exitMessage = exitMessage;
     this.stderr = stderr;
     Error.captureStackTrace(this, this.constructor);
   }
@@ -158,7 +158,7 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
           return Observable.of(event.data);
         case 'exit':
           if (event.exitCode !== 0) {
-            return Observable.throw(new PackagerError(event.exitCode, stderr));
+            return Observable.throw(new PackagerError(exitEventToMessage(event), stderr));
           }
           return Observable.empty();
         case 'stderr':
@@ -181,7 +181,7 @@ function getPackagerObservable(projectRootPath: ?string): Observable<PackagerEve
           return Observable.empty();
         case 'PackagerError':
           atom.notifications.addError(
-            `Packager exited with non-zero exit code (${err.exitCode})`, {
+            `Packager exited with non-zero ${err.exitMessage}`, {
               dismissable: true,
               detail: err.stderr.trim() === '' ? undefined : err.stderr,
             },

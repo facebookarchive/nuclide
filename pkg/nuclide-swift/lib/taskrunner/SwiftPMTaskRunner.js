@@ -20,7 +20,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import {React} from 'react-for-atom';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import fsPromise from '../../../commons-node/fsPromise';
-import {observeProcess, safeSpawn} from '../../../commons-node/process';
+import {observeProcess, safeSpawn, exitEventToMessage} from '../../../commons-node/process';
 import {taskFromObservable} from '../../../commons-node/tasks';
 import SwiftPMTaskRunnerStore from './SwiftPMTaskRunnerStore';
 import SwiftPMTaskRunnerActions from './SwiftPMTaskRunnerActions';
@@ -164,7 +164,7 @@ export class SwiftPMTaskRunner {
             );
           } else {
             this._logOutput(
-              `${command.command} failed with exit code ${message.exitCode}`,
+              `${command.command} failed with ${exitEventToMessage(message)}`,
               'error',
             );
           }

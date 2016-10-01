@@ -12,6 +12,7 @@
 import type {Subscription, Observable} from 'rxjs';
 import type {ServiceRegistry, MessageLogger} from '../nuclide-rpc';
 import type {ProcessMessage} from './process-rpc-types';
+import type {ProcessExitMessage} from './process-rpc-types';
 
 import {StreamTransport, RpcConnection} from '../nuclide-rpc';
 import {getOutputStream} from './process';
@@ -45,7 +46,7 @@ export default class RpcProcess {
   _subscription: ?Subscription;
   _serviceRegistry: ServiceRegistry;
   _rpcConnection: ?RpcConnection<StreamTransport>;
-  _exitCode: Subject<number>;
+  _exitCode: Subject<ProcessExitMessage>;
 
   /**
    * @param name           a name for this server, used to tag log entries
@@ -87,7 +88,7 @@ export default class RpcProcess {
     return this._rpcConnection.getService(serviceName);
   }
 
-  observeExitCode(): Observable<number> {
+  observeExitCode(): Observable<ProcessExitMessage> {
     return this._exitCode.asObservable();
   }
 
@@ -138,7 +139,7 @@ export default class RpcProcess {
         }
         // Don't attempt to kill the process if it already exited.
         this._cleanup(false);
-        this._exitCode.next(message.exitCode);
+        this._exitCode.next(message);
         this._exitCode.complete();
         break;
       case 'error':

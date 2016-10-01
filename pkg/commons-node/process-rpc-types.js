@@ -8,6 +8,14 @@
  * @flow
  */
 
+// Exactly one of exitCode and signal will be non-null.
+// Killing a process will result in a null exitCode but a non-null signal.
+export type ProcessExitMessage = {
+  kind: 'exit',
+  exitCode: ?number,
+  signal: ?string,
+};
+
 // Separated out for RPC usage.
 export type ProcessMessage = {
   kind: 'stdout',
@@ -15,10 +23,7 @@ export type ProcessMessage = {
 } | {
   kind: 'stderr',
   data: string,
-} | {
-  kind: 'exit',
-  exitCode: number,
-} | {
+} | ProcessExitMessage | {
   kind: 'error',
   error: Object,
 };

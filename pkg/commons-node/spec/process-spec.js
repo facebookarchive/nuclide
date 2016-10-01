@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {ProcessExitMessage} from '../process-rpc-types';
+
 import child_process from 'child_process';
 import invariant from 'assert';
 import mockSpawn from 'mock-spawn';
@@ -24,6 +26,7 @@ import {
   runCommand,
   safeSpawn,
   scriptSafeSpawn,
+  exitEventToMessage,
 } from '../process';
 
 describe('commons-node/process', () => {
@@ -122,8 +125,17 @@ describe('commons-node/process', () => {
     it('exitCode', () => {
       waitsForPromise(async () => {
         const child = () => safeSpawn(process.execPath, ['-e', 'process.exit(1)']);
-        const exitCode = await observeProcessExit(child).toPromise();
-        expect(exitCode).toBe(1);
+        const exitMessage = await observeProcessExit(child).toPromise();
+        expect(exitMessage).toEqual(makeExitMessage(1));
+      });
+    });
+
+    it('exit via signal', () => {
+      waitsForPromise(async () => {
+        const child =
+          () => safeSpawn(process.execPath, ['-e', 'process.kill(process.pid, "SIGTERM")']);
+        const exitMessage = await observeProcessExit(child).toPromise();
+        expect(exitMessage).toEqual({kind: 'exit', exitCode: null, signal: 'SIGTERM'});
       });
     });
 
@@ -138,7 +150,7 @@ describe('commons-node/process', () => {
           {kind: 'stdout', data: '\n'},
           {kind: 'stdout', data: '\n'},
           {kind: 'stdout', data: '\n'},
-          {kind: 'exit', exitCode: 1}]);
+          {kind: 'exit', exitCode: 1, signal: null}]);
       });
     });
 
@@ -148,7 +160,7 @@ describe('commons-node/process', () => {
           ['-e', 'console.error("stderr"); process.exit(42);']);
         const results = await observeProcess(child).toArray().toPromise();
         expect(results).toEqual([{kind: 'stderr', data: 'stderr\n'},
-          {kind: 'exit', exitCode: 42}]);
+          {kind: 'exit', exitCode: 42, signal: null}]);
       });
     });
 
@@ -160,7 +172,7 @@ describe('commons-node/process', () => {
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},
-          {kind: 'exit', exitCode: 42},
+          {kind: 'exit', exitCode: 42, signal: null},
         ]);
       });
     });
@@ -176,7 +188,7 @@ describe('commons-node/process', () => {
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},
-          {kind: 'exit', exitCode: 42},
+          {kind: 'exit', exitCode: 42, signal: null},
         ]);
       });
     });
@@ -189,7 +201,7 @@ describe('commons-node/process', () => {
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},
-          {kind: 'exit', exitCode: 42},
+          {kind: 'exit', exitCode: 42, signal: null},
         ]);
       });
     });
@@ -390,6 +402,7 @@ describe('commons-node/process', () => {
         invariant(error != null);
         expect(error.name).toBe('ProcessExitError');
         expect(error.code).toBe(1);
+        expect(error.exitMessage).toEqual(makeExitMessage(1));
       });
     });
 
@@ -427,4 +440,23 @@ describe('commons-node/process', () => {
 
   });
 
+  describe('exitEventToMessage', () => {
+    it('exitCode', () => {
+      expect(exitEventToMessage(makeExitMessage(1))).toBe('exit code 1');
+    });
+
+    it('signal', () => {
+      expect(exitEventToMessage({kind: 'exit', exitCode: null, signal: 'SIGTERM'}))
+        .toBe('signal SIGTERM');
+    });
+  });
+
 });
+
+function makeExitMessage(exitCode: number): ProcessExitMessage {
+  return {
+    kind: 'exit',
+    exitCode,
+    signal: null,
+  };
+}

@@ -19,6 +19,7 @@ import {Observable} from 'rxjs';
 import stripAnsi from 'strip-ansi';
 import {getLogger} from '../../nuclide-logging';
 import getDiagnostics from './getDiagnostics';
+import {exitEventToMessage} from '../../commons-node/process';
 
 const PROGRESS_OUTPUT_INTERVAL = 5 * 1000;
 const BUILD_FAILED_MESSAGE = 'BUILD FAILED:';
@@ -126,7 +127,7 @@ export function getEventsFromProcess(
         case 'exit':
           return {
             type: 'log',
-            message: `Buck exited with code ${message.exitCode}.`,
+            message: `Buck exited with ${exitEventToMessage(message)}.`,
             level: message.exitCode === 0 ? 'success' : 'error',
           };
         case 'stderr':

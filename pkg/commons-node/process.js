@@ -10,7 +10,7 @@
  */
 
 import type {Observer} from 'rxjs';
-import type {ProcessMessage} from './process-rpc-types';
+import type {ProcessExitMessage, ProcessMessage} from './process-rpc-types';
 
 import child_process from 'child_process';
 import {splitStream, takeWhileInclusive} from './observable';
@@ -69,7 +69,7 @@ type ProcessExitErrorOptions = {
   command: string,
   args: Array<string>,
   options: Object,
-  code: number,
+  exitMessage: ProcessExitMessage,
   stdout: string,
   stderr: string,
 };
@@ -78,21 +78,24 @@ export class ProcessExitError extends Error {
   command: string;
   args: Array<string>;
   options: Object;
-  code: number;
+  code: ?number;
+  exitMessage: ProcessExitMessage;
   stdout: string;
   stderr: string;
 
   constructor(opts: ProcessExitErrorOptions) {
     // TODO: Remove `captureStackTrace()` call and `this.message` assignment when we remove our
     // class transform and switch to native classes.
-    const message = `"${opts.command}" failed with code ${opts.code}\n\n${opts.stderr}`;
+    const message =
+      `"${opts.command}" failed with ${exitEventToMessage(opts.exitMessage)}\n\n${opts.stderr}`;
     super(message);
     this.name = 'ProcessExitError';
     this.message = message;
     this.command = opts.command;
     this.args = opts.args;
     this.options = opts.options;
-    this.code = opts.code;
+    this.exitMessage = opts.exitMessage;
+    this.code = opts.exitMessage.exitCode;
     this.stdout = opts.stdout;
     this.stderr = opts.stderr;
     Error.captureStackTrace(this, this.constructor);
@@ -259,9 +262,7 @@ function _createProcessStream(
     );
 
     const errors = Observable.fromEvent(process, 'error');
-    const exit = Observable.fromEvent(process, 'exit', (code, signal) => signal)
-      // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
-      .filter(signal => signal !== 'SIGUSR1');
+    const exit = observeProcessExitMessage(process);
 
     return Observable.of(process)
       // Don't complete until we say so!
@@ -287,15 +288,27 @@ export function createProcessStream(
   return _createProcessStream(createProcess, true);
 }
 
+function observeProcessExitMessage(
+  process: child_process$ChildProcess,
+): Observable<ProcessExitMessage> {
+  return Observable.fromEvent(
+      process,
+      'exit',
+      (exitCode: ?number, signal: ?string) => ({kind: 'exit', exitCode, signal}))
+    // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
+    .filter(message => message.signal !== 'SIGUSR1')
+    .take(1);
+}
+
 /**
  * Observe the stdout, stderr and exit code of a process.
  * stdout and stderr are split by newlines.
  */
 export function observeProcessExit(
   createProcess: () => child_process$ChildProcess,
-): Observable<number> {
+): Observable<ProcessExitMessage> {
   return _createProcessStream(createProcess, false)
-    .flatMap(process => Observable.fromEvent(process, 'exit').take(1));
+    .flatMap(observeProcessExitMessage);
 }
 
 export function getOutputStream(
@@ -304,10 +317,7 @@ export function getOutputStream(
   return Observable.defer(() => {
     // We need to start listening for the exit event immediately, but defer emitting it until the
     // output streams end.
-    const exit = Observable.fromEvent(process, 'exit')
-      .take(1)
-      .map(exitCode => ({kind: 'exit', exitCode}))
-      .publishReplay();
+    const exit = observeProcessExit(() => process).publishReplay();
     const exitSub = exit.connect();
 
     const error = Observable.fromEvent(process, 'error')
@@ -450,12 +460,17 @@ export function runCommand(
             acc.error = event.error;
             break;
           case 'exit':
-            acc.exitCode = event.exitCode;
+            acc.exitMessage = event;
             break;
         }
         return acc;
       },
-      {error: ((null: any): Object), stdout: '', stderr: '', exitCode: ((null: any): ?number)},
+    {
+      error: ((null: any): Object),
+      stdout: '',
+      stderr: '',
+      exitMessage: ((null: any): ?ProcessExitMessage),
+    },
     )
     .map(acc => {
       if (acc.error != null) {
@@ -467,12 +482,12 @@ export function runCommand(
           originalError: acc.error, // Just in case.
         });
       }
-      if (acc.exitCode != null && acc.exitCode !== 0) {
+      if (acc.exitMessage != null && acc.exitMessage.exitCode !== 0) {
         throw new ProcessExitError({
           command,
           args,
           options,
-          code: acc.exitCode,
+          exitMessage: acc.exitMessage,
           stdout: acc.stdout,
           stderr: acc.stderr,
         });
@@ -506,4 +521,14 @@ export function getOriginalEnvironment(): Object {
     cachedOriginalEnvironment = process.env;
   }
   return cachedOriginalEnvironment;
+}
+
+// Returns a string suitable for including in displayed error messages.
+export function exitEventToMessage(event: ProcessExitMessage): string {
+  if (event.exitCode != null) {
+    return `exit code ${event.exitCode}`;
+  } else {
+    invariant(event.signal != null);
+    return `signal ${event.signal}`;
+  }
 }
