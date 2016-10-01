@@ -20,12 +20,10 @@ import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import {ContextViewManager} from './ContextViewManager';
 import {Disposable, CompositeDisposable} from 'atom';
-import passesGK from '../../commons-node/passesGK';
 import invariant from 'assert';
 
 const INITIAL_PANEL_WIDTH = 300;
 const INITIAL_PANEL_VISIBILITY = false;
-const CONTEXT_VIEW_GK = 'nuclide_context_view';
 
 let currentService: ?DefinitionService = null;
 let manager: ?ContextViewManager = null;
@@ -83,9 +81,6 @@ export function serialize(): ?ContextViewConfig {
 /** Returns the singleton ContextViewManager instance of this package, or null
  * if the user doesn't pass the Context View GK check. */
 async function getContextViewManager(): Promise<?ContextViewManager> {
-  if (!await passesGK(CONTEXT_VIEW_GK)) {
-    return null;
-  }
   if (manager == null) {
     manager = new ContextViewManager(initialViewState.width, initialViewState.visible);
   }
