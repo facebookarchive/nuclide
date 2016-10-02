@@ -13,9 +13,8 @@ import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {OutputService} from '../../nuclide-console/lib/types';
 
+import createPackage from '../../commons-atom/createPackage';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {Disposable} from 'atom';
-import invariant from 'assert';
 import HhvmBuildSystem from './HhvmBuildSystem';
 
 class Activation {
@@ -48,6 +47,19 @@ class Activation {
     );
   }
 
+  consumeCwdApi(api: CwdApi): IDisposable {
+    this.setCwdApi(api);
+
+    // Avoid retaining a reference to `this` after disposal.
+    let pkg = this;
+    this._disposables.add(() => { pkg = null; });
+    return new UniversalDisposable(() => {
+      if (pkg != null) {
+        pkg.setCwdApi(null);
+      }
+    });
+  }
+
   _getBuildSystem(): HhvmBuildSystem {
     if (this._buildSystem == null) {
       const buildSystem = new HhvmBuildSystem();
@@ -66,37 +78,4 @@ class Activation {
 
 }
 
-let activation: ?Activation = null;
-
-export function activate(state: ?Object) {
-  if (!activation) {
-    activation = new Activation(state);
-  }
-}
-
-export function consumeBuildSystemRegistry(registry: TaskRunnerServiceApi): void {
-  invariant(activation);
-  activation.consumeBuildSystemRegistry(registry);
-}
-
-export function consumeCwdApi(api: CwdApi): IDisposable {
-  invariant(activation);
-  activation.setCwdApi(api);
-  return new Disposable(() => {
-    if (activation != null) {
-      activation.setCwdApi(null);
-    }
-  });
-}
-
-export function consumeOutputService(api: OutputService): void {
-  invariant(activation != null);
-  activation.consumeOutputService(api);
-}
-
-export function deactivate() {
-  if (activation != null) {
-    activation.dispose();
-    activation = null;
-  }
-}
+export default createPackage(Activation);
