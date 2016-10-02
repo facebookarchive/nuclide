@@ -102,6 +102,22 @@ class ProjectStore {
     this._emitter.emit('change');
   }
 
+  getDebugTarget(): string {
+    const filePath = this._currentFilePath;
+    if (this._debugMode === 'script') {
+      const localPath = nuclideUri.getPath(filePath);
+      const lastScriptCommand = this.getLastScriptCommand(localPath);
+      return lastScriptCommand === '' ? localPath : lastScriptCommand;
+    }
+    // getHostname throws for non-remote paths.
+    // Technically this shouldn't be visible for non-remote paths, but the UI
+    // can sometimes display the toolbar anyway.
+    if (nuclideUri.isRemote(filePath)) {
+      return nuclideUri.getHostname(filePath);
+    }
+    return '';
+  }
+
   dispose() {
     this._disposables.dispose();
   }

@@ -17,8 +17,10 @@ import {Observable} from 'rxjs';
 import HhvmIcon from '../../commons-atom/HhvmIcon';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {taskFromObservable} from '../../commons-node/tasks';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 
+import {debug} from './HhvmDebug';
 import HhvmToolbar from './HhvmToolbar';
 import ProjectStore from './ProjectStore';
 
@@ -75,6 +77,7 @@ export default class HhvmBuildSystem {
         disabled,
         priority: 1,  // Take precedence over the Arcanist build toolbar.
         runnable: !disabled,
+        cancelable: false,
         icon: 'plug',
       },
     ];
@@ -85,22 +88,14 @@ export default class HhvmBuildSystem {
   }
 
   runTask(taskName: string): Task {
-    // TODO
-    return {
-      start() {},
-      cancel() {},
-      onDidComplete(callback: () => mixed) {
-        callback();
-        return {
-          dispose() {},
-        };
-      },
-      onDidError(callback: (err: Error) => mixed) {
-        return {
-          dispose() {},
-        };
-      },
-    };
+    return taskFromObservable(
+      Observable.fromPromise(debug(
+        this._projectStore.getDebugMode(),
+        this._projectStore.getCurrentFilePath(),
+        this._projectStore.getDebugTarget(),
+      ))
+        .ignoreElements(),
+    );
   }
 
   setProjectRoot(projectRoot: ?Directory): void {
