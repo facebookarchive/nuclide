@@ -32,8 +32,8 @@ import {LaunchProcessInfo} from '../../nuclide-debugger-php/lib/LaunchProcessInf
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {AttachProcessInfo} from '../../nuclide-debugger-php/lib/AttachProcessInfo';
 
-const WEB_SERVER_OPTION = {label: 'WebServer', value: 'webserver'};
-const SCRIPT_OPTION = {label: 'Script', value: 'script'};
+const WEB_SERVER_OPTION = {label: 'Attach to WebServer', value: 'webserver'};
+const SCRIPT_OPTION = {label: 'Launch Script', value: 'script'};
 
 const DEBUG_OPTIONS = [
   WEB_SERVER_OPTION,
@@ -115,7 +115,7 @@ class HhvmToolbar extends React.Component {
     const debugTarget = this._getDebugTarget(store.getDebugMode(), store.getCurrentFilePath());
     const isDebugScript = store.getDebugMode() === 'script';
     return (
-      <div className="hhvm-toolbar block padded">
+      <div className="hhvm-toolbar block">
         <Dropdown
           className="inline-block"
           options={this._getMenuItems()}
@@ -151,7 +151,13 @@ class HhvmToolbar extends React.Component {
       }
       return lastScriptCommand;
     }
-    return nuclideUri.getHostname(targetFilePath);
+    // getHostname throws for non-remote paths.
+    // Technically this shouldn't be visible for non-remote paths, but the UI
+    // can sometimes display the toolbar anyway.
+    if (nuclideUri.isRemote(targetFilePath)) {
+      return nuclideUri.getHostname(targetFilePath);
+    }
+    return '';
   }
 
   _handleDropdownChange(value: DebugMode) {

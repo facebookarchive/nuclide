@@ -17,7 +17,9 @@ import {Observable} from 'rxjs';
 import HhvmIcon from '../../commons-atom/HhvmIcon';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 
+import HhvmToolbar from './HhvmToolbar';
 import ProjectStore from './ProjectStore';
 
 export default class HhvmBuildSystem {
@@ -45,6 +47,22 @@ export default class HhvmBuildSystem {
       )
         .subscribe(callback),
     );
+  }
+
+  getExtraUi(): ReactClass<any> {
+    if (this._extraUi == null) {
+      const projectStore = this._projectStore;
+      const subscription = observableFromSubscribeFunction(
+        projectStore.onChange.bind(projectStore),
+      );
+      this._extraUi = bindObservableAsProps(
+        subscription
+          .startWith(null)
+          .mapTo({projectStore}),
+        HhvmToolbar,
+      );
+    }
+    return this._extraUi;
   }
 
   getTaskList(): Array<TaskMetadata> {
