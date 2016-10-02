@@ -69,7 +69,7 @@ export class ArcToolbarModel {
   }
 
   getName(): string {
-    return 'HHVM';
+    return 'Arcanist';
   }
 
   getTaskList(): Array<TaskMetadata> {

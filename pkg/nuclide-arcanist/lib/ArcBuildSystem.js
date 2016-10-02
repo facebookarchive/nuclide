@@ -23,7 +23,7 @@ import HhvmIcon from './ui/HhvmIcon';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
 import {Observable, Subject} from 'rxjs';
 
-export default class HhvmBuildSystem {
+export default class ArcBuildSystem {
   _model: ArcToolbarModelType;
   _extraUi: ?ReactClass<any>;
   id: string;
@@ -34,7 +34,7 @@ export default class HhvmBuildSystem {
   _disposables: CompositeDisposable;
 
   constructor() {
-    this.id = 'hhvm';
+    this.id = 'arcanist';
     this._outputMessages = new Subject();
     this._model = this._getModel();
     this.name = this._model.getName();
