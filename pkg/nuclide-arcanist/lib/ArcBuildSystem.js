@@ -19,7 +19,7 @@ import {CompositeDisposable} from 'atom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import HhvmIcon from './ui/HhvmIcon';
+import HhvmIcon from '../../commons-atom/HhvmIcon';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
 import {Observable, Subject} from 'rxjs';
 

@@ -53,6 +53,7 @@ class ProjectStore {
       return;
     }
     this._currentFilePath = fileName;
+    this._emitter.emit('change');
 
     const newProjectType = await this._isFileHHVMProject(fileName) ? 'Hhvm' : 'Other';
     this._projectType = newProjectType;
