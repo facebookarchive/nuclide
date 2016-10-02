@@ -9,3 +9,5 @@
  */
 
 export type ProjectType = 'Hhvm' | 'Other';
+
+export type DebugMode = 'webserver' | 'script';

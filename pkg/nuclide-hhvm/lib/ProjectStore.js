@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {DebugMode} from './types';
+
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
 import {CompositeDisposable, Emitter} from 'atom';
@@ -23,6 +25,7 @@ class ProjectStore {
   _emitter: Emitter;
   _currentFilePath: string;
   _projectType: ProjectType;
+  _debugMode: DebugMode;
   _filePathsToScriptCommand: Map<string, string>;
 
   constructor() {
@@ -30,6 +33,7 @@ class ProjectStore {
     this._emitter = new Emitter();
     this._currentFilePath = '';
     this._projectType = 'Other';
+    this._debugMode = 'webserver';
     this._filePathsToScriptCommand = new Map();
     this._monitorActiveEditorChange();
   }
@@ -87,6 +91,15 @@ class ProjectStore {
 
   getProjectType(): ProjectType {
     return this._projectType;
+  }
+
+  getDebugMode(): DebugMode {
+    return this._debugMode;
+  }
+
+  setDebugMode(debugMode: DebugMode): void {
+    this._debugMode = debugMode;
+    this._emitter.emit('change');
   }
 
   dispose() {

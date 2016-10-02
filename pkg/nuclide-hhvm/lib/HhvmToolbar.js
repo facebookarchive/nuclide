@@ -11,6 +11,8 @@
 
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import type ProjectStore from './ProjectStore';
+import type {DebugMode} from './types';
+
 import {HACK_GRAMMARS} from '../../nuclide-hack-common/lib/constants.js';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
@@ -30,9 +32,8 @@ import {LaunchProcessInfo} from '../../nuclide-debugger-php/lib/LaunchProcessInf
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {AttachProcessInfo} from '../../nuclide-debugger-php/lib/AttachProcessInfo';
 
-const WEB_SERVER_OPTION = {label: 'WebServer', value: 0};
-const SCRIPT_OPTION = {label: 'Script', value: 1};
-const DEFAULT_OPTION_INDEX = WEB_SERVER_OPTION.value;
+const WEB_SERVER_OPTION = {label: 'WebServer', value: 'webserver'};
+const SCRIPT_OPTION = {label: 'Script', value: 'script'};
 
 const DEBUG_OPTIONS = [
   WEB_SERVER_OPTION,
@@ -51,23 +52,14 @@ async function callDebugService(processInfo: DebuggerProcessInfo): Promise<any> 
 }
 
 type Props = {
-  targetFilePath: string,
   projectStore: ProjectStore,
-};
-
-type State = {
-  selectedIndex: number,
 };
 
 class HhvmToolbar extends React.Component {
   props: Props;
-  state: State;
 
   constructor(props: Props) {
     super(props);
-    this.state = {
-      selectedIndex: DEFAULT_OPTION_INDEX,
-    };
     (this: any)._debug = this._debug.bind(this);
     (this: any)._handleDropdownChange = this._handleDropdownChange.bind(this);
     (this: any)._updateLastScriptCommand = this._updateLastScriptCommand.bind(this);
@@ -75,7 +67,7 @@ class HhvmToolbar extends React.Component {
   }
 
   _updateLastScriptCommand(command: string): void {
-    if (this._isDebugScript(this.state.selectedIndex)) {
+    if (this.props.projectStore.getDebugMode() === 'script') {
       this.props.projectStore.updateLastScriptCommand(command);
     }
   }
@@ -84,8 +76,8 @@ class HhvmToolbar extends React.Component {
     return this.props.projectStore.getLastScriptCommand(filePath);
   }
 
-  _getMenuItems(): Array<{label: string, value: number}> {
-    return this._isTargetLaunchable(this.props.targetFilePath)
+  _getMenuItems(): Array<{label: string, value: DebugMode}> {
+    return this._isTargetLaunchable(this.props.projectStore.getCurrentFilePath())
       ? DEBUG_OPTIONS
       : NO_LAUNCH_DEBUG_OPTIONS;
   }
@@ -105,25 +97,29 @@ class HhvmToolbar extends React.Component {
   }
 
   componentWillReceiveProps(nextProps: Object) {
-    let selectedIndex = this.state.selectedIndex;
-    // Reset selected item to DEFAULT_OPTION_INDEX if target is not launchable anymore.
+    // Reset selected item to webserver if target is not launchable anymore.
     // TODO[jeffreytan]: this is ugly, refactor to make it more elegant.
-    if (!this._isTargetLaunchable(nextProps.targetFilePath)) {
-      selectedIndex = DEFAULT_OPTION_INDEX;
-      this.setState({selectedIndex});
+    const store = this.props.projectStore;
+    if (store.getDebugMode() === 'script' &&
+        !this._isTargetLaunchable(store.getCurrentFilePath())) {
+      store.setDebugMode('webserver');
     }
-    this.refs.debugTarget.setText(this._getDebugTarget(selectedIndex, nextProps.targetFilePath));
+    this.refs.debugTarget.setText(this._getDebugTarget(
+      store.getDebugMode(),
+      store.getCurrentFilePath(),
+    ));
   }
 
   render(): React.Element<any> {
-    const debugTarget = this._getDebugTarget(this.state.selectedIndex, this.props.targetFilePath);
-    const isDebugScript = this._isDebugScript(this.state.selectedIndex);
+    const store = this.props.projectStore;
+    const debugTarget = this._getDebugTarget(store.getDebugMode(), store.getCurrentFilePath());
+    const isDebugScript = store.getDebugMode() === 'script';
     return (
       <div className="hhvm-toolbar block padded">
         <Dropdown
           className="inline-block"
           options={this._getMenuItems()}
-          value={this.state.selectedIndex}
+          value={store.getDebugMode()}
           onChange={this._handleDropdownChange}
           ref="dropdown"
           size="sm"
@@ -146,12 +142,8 @@ class HhvmToolbar extends React.Component {
     );
   }
 
-  _isDebugScript(index: number): bool {
-    return index === SCRIPT_OPTION.value;
-  }
-
-  _getDebugTarget(index: number, targetFilePath: string): string {
-    if (this._isDebugScript(index)) {
+  _getDebugTarget(debugMode: DebugMode, targetFilePath: string): string {
+    if (debugMode === 'script') {
       const targetPath = nuclideUri.getPath(targetFilePath);
       const lastScriptCommand = this._getLastScriptCommand(targetPath);
       if (lastScriptCommand === '') {
@@ -162,25 +154,21 @@ class HhvmToolbar extends React.Component {
     return nuclideUri.getHostname(targetFilePath);
   }
 
-  _handleDropdownChange(newIndex: number) {
-    const debugTarget = this._getDebugTarget(newIndex, this.props.targetFilePath);
-    if (this.refs.debugTarget) {
-      this.refs.debugTarget.setText(debugTarget);
-    }
-    this.setState({selectedIndex: newIndex});
+  _handleDropdownChange(value: DebugMode) {
+    this.props.projectStore.setDebugMode(value);
   }
 
   /**
    * Use void here to explictly disallow async function in react component.
    */
   _debug(): void {
-    // TODO: is this.props.targetFilePath best one for targetUri?
+    const store = this.props.projectStore;
     let processInfo = null;
-    if (this._isDebugScript(this.state.selectedIndex)) {
+    if (store.getDebugMode() === 'script') {
       const scriptTarget = this.refs.debugTarget.getText();
-      processInfo = new LaunchProcessInfo(this.props.targetFilePath, scriptTarget);
+      processInfo = new LaunchProcessInfo(store.getCurrentFilePath(), scriptTarget);
     } else {
-      processInfo = new AttachProcessInfo(this.props.targetFilePath);
+      processInfo = new AttachProcessInfo(store.getCurrentFilePath());
     }
     callDebugService(processInfo);
   }
