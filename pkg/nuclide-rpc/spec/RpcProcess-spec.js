@@ -11,10 +11,10 @@
 
 import typeof * as DummyService from './fixtures/dummy-service/DummyService';
 
-import nuclideUri from '../nuclideUri';
+import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
-import {safeSpawn} from '../process';
-import RpcProcess from '../RpcProcess';
+import {safeSpawn} from '../../commons-node/process';
+import {RpcProcess} from '../lib/RpcProcess';
 import {ServiceRegistry} from '../../nuclide-rpc';
 
 describe('RpcProcess', () => {

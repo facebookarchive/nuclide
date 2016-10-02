@@ -10,12 +10,12 @@
  */
 
 import typeof * as JediService from './JediService';
-import type {ProcessMaker} from '../../commons-node/RpcProcess';
+import type {ProcessMaker} from '../../nuclide-rpc/lib/RpcProcess';
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {safeSpawn} from '../../commons-node/process';
-import RpcProcess from '../../commons-node/RpcProcess';
+import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 

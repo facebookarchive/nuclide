@@ -10,7 +10,6 @@
  */
 
 import typeof * as HackConnectionService from './HackConnectionService';
-import type {ProcessMaker} from '../../commons-node/RpcProcess';
 import type {FileEditEvent} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from './HackConnectionService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -19,11 +18,12 @@ import type {
   Completion,
   HackCompletionsResult,
 } from './rpc-types';
+import type {ProcessMaker} from '../../nuclide-rpc/lib/RpcProcess';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
 import {maybeToString} from '../../commons-node/string';
-import RpcProcess from '../../commons-node/RpcProcess';
+import {RpcProcess} from '../../nuclide-rpc';
 import {getHackCommand, findHackConfigDir} from './hack-config';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';

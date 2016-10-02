@@ -10,13 +10,12 @@
  */
 
 import type {Subscription, Observable} from 'rxjs';
-import type {ServiceRegistry, MessageLogger} from '../nuclide-rpc';
-import type {ProcessMessage} from './process-rpc-types';
-import type {ProcessExitMessage} from './process-rpc-types';
+import type {ServiceRegistry, MessageLogger} from '..';
+import type {ProcessMessage, ProcessExitMessage} from '../../commons-node/process-rpc-types';
 
-import {StreamTransport, RpcConnection} from '../nuclide-rpc';
-import {getOutputStream} from './process';
-import {getLogger} from '../nuclide-logging';
+import {StreamTransport, RpcConnection} from '..';
+import {getOutputStream} from '../../commons-node/process';
+import {getLogger} from '../../nuclide-logging';
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 
@@ -37,7 +36,7 @@ const logger = getLogger();
  * - Note that stdin, stdout, and stderr must be piped, done by node by default.
  *   Don't override the stdio to close off any of these streams in the constructor opts.
  */
-export default class RpcProcess {
+export class RpcProcess {
   _createProcess: ProcessMaker;
   _messageLogger: MessageLogger;
   _name: string;

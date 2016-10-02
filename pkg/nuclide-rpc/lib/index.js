@@ -18,6 +18,7 @@ export {LoopbackTransports} from './LoopbackTransports';
 export {StreamTransport} from './StreamTransport';
 export {SocketTransport} from './SocketTransport';
 export {SocketServer} from './SocketServer';
+export {RpcProcess} from './RpcProcess';
 
 import loadServicesConfig from './loadServicesConfig';
 export {loadServicesConfig};

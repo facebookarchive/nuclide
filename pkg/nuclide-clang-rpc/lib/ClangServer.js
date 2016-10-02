@@ -19,7 +19,7 @@ import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import {BehaviorSubject} from 'rxjs';
 
 import {asyncExecute, safeSpawn} from '../../commons-node/process';
-import RpcProcess from '../../commons-node/RpcProcess';
+import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {watchFile} from '../../nuclide-filewatcher-rpc';
 
