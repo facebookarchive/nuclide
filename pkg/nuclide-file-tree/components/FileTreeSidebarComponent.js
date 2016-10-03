@@ -28,7 +28,6 @@ import {FileTreeStore} from '../lib/FileTreeStore';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
 import {toggle} from '../../commons-node/observable';
-import url from 'url';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {Section} from '../../nuclide-ui/Section';
@@ -271,16 +270,7 @@ class FileTreeSidebarComponent extends React.Component {
   }
 
   _onFileChosen(filePath: NuclideUri): void {
-    const diffEntityOptions = {file: filePath};
-    const formattedUrl = url.format({
-      protocol: 'atom',
-      host: 'nuclide',
-      pathname: 'diff-view',
-      slashes: true,
-      query: diffEntityOptions,
-    });
-
-    atom.workspace.open(formattedUrl);
+    atom.workspace.open(filePath);
   }
 
   _handleOpenFilesExpandedChange(isCollapsed: boolean): void {
