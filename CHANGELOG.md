@@ -1,5 +1,45 @@
 # Nuclide Changelog
 
+## v0.172.0
+
+### Highlights
+
+* Enabled context view for C family languages.
+* Task runner is now displayed by default.
+
+### Hack
+
+* Added rudimentary hack typedecl and generics syntax highlighting support.
+* HHVM toolbar has been moved into the Task Runner.
+
+### Ui
+
+* Updated diagnostics table UI: Consistent look & feel, resizable columns, more content per pixel.
+* Improved Breakpoint list UI in the debugger.
+* File-tree now supports range selection with shift-click and shift-arrow keys. (thanks Li Li!)
+* Ensure that Buck loading messages are displayed in the console.
+* Display a loading notification for slow remote file saves/loads.
+* Outline view now has an option to display only the short symbol name (thanks Pankaj Kakkar!)
+* Clicking on file in uncommitted changes section opens file in editor instead of diff view.
+
+### Flow
+
+* Autofix certain Flow errors caused by slight misspellings.
+
+### OSS
+
+* New console debugger REPL is now available for OSS.
+* OSS Nuclide now has access to the new Debugger Selection UI.
+* Context view is now available for the OSS.
+* PHP debugger supports "Single Request Stepping".
+
+### Fixes
+
+* Fixed uncommitted changes section breaking when there are too many uncommitted files.
+* Fix blame error on remote repositories when it needs to pull info from hg server.
+* Fixed setInterval timer leak under certain circumstances in debugger's entry point code.
+* Fixed remote mercurial repository detection.
+
 ## v0.171.0
 
 ### Highlights
