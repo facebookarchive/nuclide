@@ -14,30 +14,38 @@ import parseLogcatMetadata from '../lib/parseLogcatMetadata';
 
 describe('parseLogcatMetadata', () => {
 
-  const getParsed = () => {
-    const parsed = parseLogcatMetadata('[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]');
-    invariant(parsed);
-    return parsed;
-  };
+  const formats = [
+    '[ 01-14 17:15:01.003   640:  654 I/ProcessStatsService ]',
+    // Older versions use hex for the tid.
+    '[ 01-14 17:15:01.003   640:0x28e I/ProcessStatsService ]',
+  ];
 
-  it('parses the date and time', () => {
-    expect(getParsed().time).toBe('01-14 17:15:01.003');
-  });
+  formats.forEach(raw => {
+    describe(raw, () => {
+      const parsed = parseLogcatMetadata(raw);
+      invariant(parsed != null);
 
-  it('parses the pid', () => {
-    expect(getParsed().pid).toBe(640);
-  });
+      it('parses the date and time', () => {
+        expect(parsed.time).toBe('01-14 17:15:01.003');
+      });
 
-  it('parses the tid', () => {
-    expect(getParsed().tid).toBe(654);
-  });
+      it('parses the pid', () => {
+        expect(parsed.pid).toBe(640);
+      });
 
-  it('parses the priority', () => {
-    expect(getParsed().priority).toBe('I');
-  });
+      it('parses the tid', () => {
+        expect(parsed.tid).toBe(654);
+      });
 
-  it('parses the tag', () => {
-    expect(getParsed().tag).toBe('ProcessStatsService');
+      it('parses the priority', () => {
+        expect(parsed.priority).toBe('I');
+      });
+
+      it('parses the tag', () => {
+        expect(parsed.tag).toBe('ProcessStatsService');
+      });
+
+    });
   });
 
   it('parses weird tags', () => {

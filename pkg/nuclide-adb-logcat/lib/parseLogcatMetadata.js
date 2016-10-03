@@ -12,8 +12,8 @@
 import type {Metadata, Priority} from './types';
 
 // Example: [ 01-14 17:14:44.285   640:  656 E/KernelUidCpuTimeReader ]
-const METADATA_REGEX =
-  /^\[ (\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\s+(\d+):\s+(\d+)\s+(V|D|I|W|E|F|S)\/(.+) \]$/;
+// eslint-disable-next-line max-len
+const METADATA_REGEX = /^\[ (\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\s+(\d+):(?:(0x[a-f0-9]+)|\s+(\d+))\s+(V|D|I|W|E|F|S)\/(.+) \]$/;
 
 export default function parseLogcatMetadata(line: string): ?Metadata {
   const match = line.match(METADATA_REGEX);
@@ -22,12 +22,12 @@ export default function parseLogcatMetadata(line: string): ?Metadata {
     return null;
   }
 
-  const [, time, pid, tid, priority, tag] = match;
+  const [, time, pid, hexTid, decTid, priority, tag] = match;
 
   return {
     time,
     pid: parseInt(pid, 10),
-    tid: parseInt(tid, 10),
+    tid: hexTid == null ? parseInt(decTid, 10) : parseInt(hexTid, 16),
     priority: ((priority: any): Priority),
     tag,
   };
