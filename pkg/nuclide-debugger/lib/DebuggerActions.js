@@ -50,7 +50,6 @@ const AnalyticsEvents = Object.freeze({
 
 const GK_DEBUGGER_REQUEST_WINDOW = 'nuclide_debugger_php_request_window';
 const GK_DEBUGGER_THREADS_WINDOW = 'nuclide_debugger_threads_window';
-const GK_DEBUGGER_SINGLE_THREAD_STEPPING = 'nuclide_debugger_single_thread_stepping';
 const GK_DEBUGGER_REQUEST_SENDER = 'nuclide_debugger_request_sender';
 
 /**
@@ -86,7 +85,7 @@ class DebuggerActions {
         await this._allowThreadsForPhp(processInfo);
       this._store.getSettings().set('SupportThreadsWindow', supportThreadsWindow);
       const singleThreadStepping = processInfo.supportSingleThreadStepping();
-      if (singleThreadStepping && await passesGK(GK_DEBUGGER_SINGLE_THREAD_STEPPING)) {
+      if (singleThreadStepping) {
         this._store.getSettings().set('SingleThreadStepping', singleThreadStepping);
         const singleThreadSteppingEnabled = processInfo.singleThreadSteppingEnabled();
         this.toggleSingleThreadStepping(singleThreadSteppingEnabled);
