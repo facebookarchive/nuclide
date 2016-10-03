@@ -17,6 +17,7 @@ import {Observable} from 'rxjs';
 export function createProcessStream(): Observable<string> {
   return compact(
     observeProcess(spawnAdbLogcat)
+      .skipUntil(Observable.interval(1000).take(1))
       // Forward the event, but add the last line of std err too. We can use this later if the
       // process exits to provide more information.
       .scan(
@@ -59,7 +60,7 @@ export function createProcessStream(): Observable<string> {
 function spawnAdbLogcat(): child_process$ChildProcess {
   return safeSpawn(
     ((featureConfig.get('nuclide-adb-logcat.pathToAdb'): any): string),
-    ['logcat', '-v', 'long', '-T', '1'],
+    ['logcat', '-v', 'long'],
   );
 }
 
