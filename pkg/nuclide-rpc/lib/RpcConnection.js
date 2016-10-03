@@ -363,7 +363,9 @@ export class RpcConnection<TransportType: Transport> {
           this._transport.send(JSON.stringify(message));
         };
         const sendUnsubscribe = () => {
-          this._transport.send(JSON.stringify(createUnsubscribeMessage(id)));
+          if (!this._transport.isClosed()) {
+            this._transport.send(JSON.stringify(createUnsubscribeMessage(id)));
+          }
         };
         let hadSubscription = false;
         const observable = Observable.create(observer => {
