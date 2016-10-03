@@ -15,7 +15,14 @@ import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
-import type {BuckSubcommand, SerializedState, TaskSettings, TaskType} from './types';
+import type {
+  BuckBuilderBuildOptions,
+  BuckSubcommand,
+  BuildArtifactTask,
+  SerializedState,
+  TaskSettings,
+  TaskType,
+} from './types';
 import type {BuckEvent} from './BuckEventStream';
 import type {
   ObservableDiagnosticProvider,
@@ -32,6 +39,7 @@ import {quote} from 'shell-quote';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {compact} from '../../commons-node/observable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {getBuckService} from '../../nuclide-buck-base';
@@ -211,6 +219,63 @@ export class BuckBuildSystem {
           buildTarget: store.getBuildTarget(),
           taskSettings: store.getTaskSettings(),
         };
+      },
+    };
+  }
+
+  /**
+   * Builds the specified target and notifies the caller of the artifact. This isn't part of the
+   * TaskRunner API.
+   */
+  buildArtifact(opts: BuckBuilderBuildOptions): BuildArtifactTask {
+    const {root, target} = opts;
+    let pathToArtifact = null;
+    const buckService = getBuckService(root);
+    invariant(buckService != null, 'Buck service is not available');
+
+    const task = taskFromObservable(
+      Observable.concat(
+        this._runTaskType(
+          'build',
+          root,
+          target,
+          {},
+          false,
+          false,
+          null,
+        ),
+
+        // Don't complete until we've determined the artifact path.
+        Observable.defer(
+          () => Observable.fromPromise(buckService.showOutput(root, target)),
+        )
+          .do(output => {
+            let outputPath;
+            if (
+              output == null
+              || output[0] == null
+              || output[0]['buck.outputPath'] == null
+              || (outputPath = output[0]['buck.outputPath'].trim()) === ''
+            ) {
+              throw new Error("Couldn't determine binary path from Buck output!");
+            }
+            invariant(outputPath != null);
+            pathToArtifact = nuclideUri.join(root, outputPath);
+          })
+          .ignoreElements(),
+      ),
+    );
+    return {
+      ...task,
+      cancel: () => {
+        this._logOutput('Build cancelled.', 'warning');
+        task.cancel();
+      },
+      getPathToBuildArtifact(): string {
+        if (pathToArtifact == null) {
+          throw new Error('No build artifact!');
+        }
+        return pathToArtifact;
       },
     };
   }

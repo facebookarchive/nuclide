@@ -51,6 +51,11 @@
       "versions": {
         "0.2.0": "provideObservableDiagnosticUpdates"
       }
+    },
+    "nuclide.buck-builder": {
+      "versions": {
+        "0.0.0": "provideBuckBuilder"
+      }
     }
   },
   "activationCommands": {}

@@ -8,6 +8,9 @@
  * @flow
  */
 
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {Task} from '../../commons-node/tasks';
+
 export type TaskType = 'build' | 'test' | 'run' | 'debug';
 
 export type BuckSubcommand = 'build' | 'install' | 'test';
@@ -22,4 +25,17 @@ export type SerializedState = {
   isReactNativeServerMode: boolean,
   taskSettings?: {[key: TaskType]: TaskSettings},
   simulator: ?string,
+};
+
+export type BuildArtifactTask = Task & {
+  getPathToBuildArtifact(): NuclideUri,
+};
+
+export type BuckBuilder = {
+  build(opts: BuckBuilderBuildOptions): BuildArtifactTask,
+};
+
+export type BuckBuilderBuildOptions = {
+  root: NuclideUri,
+  target: string,
 };
