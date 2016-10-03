@@ -15,7 +15,7 @@ import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Level, Message} from '../../nuclide-console/lib/types';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
-import type {BuckSubcommand, SerializedState, TaskType} from './types';
+import type {BuckSubcommand, SerializedState, TaskSettings, TaskType} from './types';
 import type {BuckEvent} from './BuckEventStream';
 import type {
   ObservableDiagnosticProvider,
@@ -72,14 +72,14 @@ function shouldEnableTask(taskType: TaskType, store: BuckToolbarStore): boolean 
   }
 }
 
-function getSubcommand(taskType: TaskType, store: BuckToolbarStore): BuckSubcommand {
+function getSubcommand(taskType: TaskType, isInstallableRule: boolean): BuckSubcommand {
   switch (taskType) {
     case 'run':
       return 'install';
     case 'debug':
       // For mobile builds, install the build on the device.
       // Otherwise, run a regular build and invoke the debugger on the output.
-      return store.isInstallableRule() ? 'install' : 'build';
+      return isInstallableRule ? 'install' : 'build';
     default:
       return taskType;
   }
@@ -188,7 +188,16 @@ export class BuckBuildSystem {
       'Invalid task type',
     );
 
-    const resultStream = this._runTaskType(taskType);
+    const {store} = this._getFlux();
+    const resultStream = this._runTaskType(
+      taskType,
+      store.getCurrentBuckRoot(),
+      store.getBuildTarget(),
+      store.getTaskSettings()[taskType] || {},
+      store.isInstallableRule(),
+      store.isReactNativeServerMode(),
+      store.getSimulator(),
+    );
     const task = taskFromObservable(resultStream);
     return {
       ...task,
@@ -197,7 +206,6 @@ export class BuckBuildSystem {
         task.cancel();
       },
       getTrackingData: () => {
-        const {store} = this._getFlux();
         return {
           buckRoot: store.getCurrentBuckRoot(),
           buildTarget: store.getBuildTarget(),
@@ -225,13 +233,18 @@ export class BuckBuildSystem {
     };
   }
 
-  _runTaskType(taskType: TaskType): Observable<TaskEvent> {
+  _runTaskType(
+    taskType: TaskType,
+    buckRoot: ?string,
+    buildTarget: string,
+    settings: TaskSettings,
+    isInstallableRule: boolean,
+    isReactNativeServerMode: boolean,
+    simulator: ?string,
+  ): Observable<TaskEvent> {
     // Clear Buck diagnostics every time we run build.
     this._diagnosticInvalidations.next({scope: 'all'});
 
-    const {store} = this._getFlux();
-    const buckRoot = store.getCurrentBuckRoot();
-    const buildTarget = store.getBuildTarget();
     if (buckRoot == null || buildTarget == null) {
       // All tasks should have been disabled.
       return Observable.empty();
@@ -242,9 +255,8 @@ export class BuckBuildSystem {
       'nuclide-console:toggle',
       {visible: true},
     );
-    const settings = store.getTaskSettings()[taskType] || {};
 
-    const subcommand = getSubcommand(taskType, store);
+    const subcommand = getSubcommand(taskType, isInstallableRule);
     let argString = '';
     if (settings.arguments != null && settings.arguments.length > 0) {
       argString = ' ' + quote(settings.arguments);
@@ -270,13 +282,15 @@ export class BuckBuildSystem {
         }
 
         const isDebug = taskType === 'debug';
-        const processMessages = this._runBuckCommand(
+        const processMessages = runBuckCommand(
           buckService,
           buckRoot,
           buildTarget,
           subcommand,
           settings.arguments || [],
           isDebug,
+          isReactNativeServerMode,
+          simulator,
         ).share();
         const processEvents = getEventsFromProcess(processMessages).share();
 
@@ -366,63 +380,6 @@ export class BuckBuildSystem {
     );
   }
 
-  _runBuckCommand(
-    buckService: BuckService,
-    buckRoot: string,
-    buildTarget: string,
-    subcommand: BuckSubcommand,
-    args: Array<string>,
-    debug: boolean,
-  ): Observable<ProcessMessage> {
-    const {store} = this._getFlux();
-
-    if (debug) {
-      // Stop any existing debugging sessions, as install hangs if an existing
-      // app that's being overwritten is being debugged.
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-debugger:stop-debugging');
-    }
-
-    if (subcommand === 'install') {
-      let rnObservable = Observable.empty();
-      const isReactNativeServerMode = store.isReactNativeServerMode();
-      if (isReactNativeServerMode) {
-        rnObservable = Observable.concat(
-          Observable.fromPromise(startPackager()),
-          Observable.defer(() => {
-            atom.commands.dispatch(
-              atom.views.getView(atom.workspace),
-              'nuclide-react-native:start-debugging',
-            );
-            return Observable.empty();
-          }),
-        )
-          .ignoreElements();
-      }
-      return rnObservable.concat(
-        buckService.installWithOutput(
-          buckRoot,
-          [buildTarget],
-          args.concat(
-            isReactNativeServerMode ? ['--', '-executor-override', 'RCTWebSocketExecutor'] : [],
-          ),
-          store.getSimulator(),
-          {
-            run: true,
-            debug,
-          },
-        ).refCount(),
-      );
-    } else if (subcommand === 'build') {
-      return buckService.buildWithOutput(buckRoot, [buildTarget], args).refCount();
-    } else if (subcommand === 'test') {
-      return buckService.testWithOutput(buckRoot, [buildTarget], args).refCount();
-    } else {
-      throw Error(`Unknown subcommand: ${subcommand}`);
-    }
-  }
-
 }
 
 // Make sure that TaskType reflects the types listed below.
@@ -456,3 +413,60 @@ const TASKS = [
     icon: 'plug',
   },
 ];
+
+function runBuckCommand(
+  buckService: BuckService,
+  buckRoot: string,
+  buildTarget: string,
+  subcommand: BuckSubcommand,
+  args: Array<string>,
+  debug: boolean,
+  isReactNativeServerMode: boolean,
+  simulator: ?string,
+): Observable<ProcessMessage> {
+
+  if (debug) {
+    // Stop any existing debugging sessions, as install hangs if an existing
+    // app that's being overwritten is being debugged.
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-debugger:stop-debugging');
+  }
+
+  if (subcommand === 'install') {
+    let rnObservable = Observable.empty();
+    if (isReactNativeServerMode) {
+      rnObservable = Observable.concat(
+        Observable.fromPromise(startPackager()),
+        Observable.defer(() => {
+          atom.commands.dispatch(
+            atom.views.getView(atom.workspace),
+            'nuclide-react-native:start-debugging',
+          );
+          return Observable.empty();
+        }),
+      )
+        .ignoreElements();
+    }
+    return rnObservable.concat(
+      buckService.installWithOutput(
+        buckRoot,
+        [buildTarget],
+        args.concat(
+          isReactNativeServerMode ? ['--', '-executor-override', 'RCTWebSocketExecutor'] : [],
+        ),
+        simulator,
+        {
+          run: true,
+          debug,
+        },
+      ).refCount(),
+    );
+  } else if (subcommand === 'build') {
+    return buckService.buildWithOutput(buckRoot, [buildTarget], args).refCount();
+  } else if (subcommand === 'test') {
+    return buckService.testWithOutput(buckRoot, [buildTarget], args).refCount();
+  } else {
+    throw Error(`Unknown subcommand: ${subcommand}`);
+  }
+}
