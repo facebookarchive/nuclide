@@ -27,7 +27,7 @@ export function createProcessStream(): Observable<string> {
     })
     .filter(event => event.kind === 'stdout')
     .map(event => {
-      invariant(event.data != null);
+      invariant(typeof event.data === 'string');
       return event.data;
     })
     .reduce((acc, next) => acc + next, '')

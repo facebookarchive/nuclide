@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import {maybeToString} from '../../commons-node/string';
+
 /**
  * We choose a length that should be long enough to uniquely identify a ChangeSet with an Hg repo,
  * while also being compact enough to display efficiently in a UI.
@@ -43,7 +45,7 @@ function parseHgBlameOutput(output: string): Map<string, string> {
     if (changeSetId != null) {
       changeSetId = changeSetId.substring(0, CHANGE_SET_ID_PREFIX_LENGTH);
     }
-    results.set(index.toString(), `${lineDescription.user} ${changeSetId}`);
+    results.set(index.toString(), `${lineDescription.user} ${maybeToString(changeSetId)}`);
   });
 
   return results;

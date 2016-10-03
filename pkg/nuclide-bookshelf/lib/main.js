@@ -75,7 +75,6 @@ class Activation {
     const commands = new Commands(dispatch, () => states.getValue());
 
     const addedRepoSubscription = getHgRepositoryStream().subscribe(repository => {
-      // $FlowFixMe: why isn't HgRepositoryClient considered atom$Repository?
       commands.addProjectRepository(repository);
     });
 

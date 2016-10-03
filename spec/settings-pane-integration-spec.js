@@ -59,8 +59,8 @@ describe('Settings View Integration Test', () => {
 
       // Input (string)
       const timeoutKeyPath = 'nuclide-health.analyticsTimeout';
-      const timeoutValue =
-        featureConfig.get(timeoutKeyPath) || getDefaultConfigValue(timeoutKeyPath);
+      const timeoutValue: number =
+        (featureConfig.get(timeoutKeyPath) || getDefaultConfigValue(timeoutKeyPath): any);
       const tmpTimeoutValue = timeoutValue + 1;
       testSettingsInput(timeoutKeyPath, timeoutValue, tmpTimeoutValue);
 

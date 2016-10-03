@@ -1037,9 +1037,9 @@
       "dev": true
     },
     "flow-bin": {
-      "version": "0.32.0",
-      "from": "flow-bin@0.32.0",
-      "resolved": "https://registry.npmjs.org/flow-bin/-/flow-bin-0.32.0.tgz",
+      "version": "0.33.0",
+      "from": "flow-bin@0.33.0",
+      "resolved": "https://registry.npmjs.org/flow-bin/-/flow-bin-0.33.0.tgz",
       "dev": true
     },
     "for-in": {
