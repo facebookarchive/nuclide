@@ -210,6 +210,32 @@
         ]
       }
     ]
+  'generics': 
+    'patterns': [
+      {
+        'begin': '(<)'
+        'beginCaptures':
+          '1':
+            'name': 'punctuation.definition.generics.php'
+        'end': '(>)'
+        'endCaptures':
+          '1':
+            'name': 'punctuation.definition.generics.php'
+        'name': 'meta.generics.php'
+        'patterns': [
+          {
+            'include': '#comments'
+          }
+          {
+            'include': '#generics'
+          }
+          {
+            'match': '([-+])?([A-Za-z_][A-Za-z0-9_]*)(?:\\s+(as|super)\\s+([A-Za-z_][A-Za-z0-9_]*))?'
+            'name': 'storage.type.php'
+          }
+        ]
+      }
+    ]
   'constants':
     'patterns': [
       {
@@ -628,6 +654,34 @@
         'name': 'variable.other.php'
     'match': '(?i)(\\$+)([a-z_][a-z_0-9]*)(?=\\s*\\()'
     'name': 'meta.function-call.invoke.php'
+  'interface':
+    'begin': '^(?i)\\b(interface)\\b'
+    'beginCaptures':
+      '1':
+        'name': 'storage.type.interface.php'
+    'name': 'meta.interface.php'
+    'end': '(?=[;{])'
+    'patterns': [
+      {
+        'include': '#comments'
+      }
+      {
+        'match': '\\b(extends)\\b'
+        'captures':
+          '1':
+            'name': 'storage.modifier.extends.php'
+      }
+      {
+        'include': '#generics'
+      }
+      {
+        'include': '#namespace'
+      }
+      {
+        'match': '(?i)[a-z0-9_]+'
+        'name': 'entity.name.type.class.php'
+      }
+    ]
   'language':
     'patterns': [
       {
@@ -637,22 +691,35 @@
         'include': '#xhp'
       }
       {
-        'begin': '(?i)^\\s*(interface)\\s+([a-z0-9_]+)\\s*(extends)?\\s*'
+        'include': '#interface'
+      }
+      {
+        'begin': '''(?xi)
+          ^\\s*
+          (type)
+          \\s+
+          ([a-z0-9_]+)
+        '''
         'beginCaptures':
           '1':
-            'name': 'storage.type.interface.php'
+            'name': 'storage.type.typedecl.php'
           '2':
-            'name': 'entity.name.type.interface.php'
-          '3':
-            'name': 'storage.modifier.extends.php'
-        'end': '([a-zA-Z0-9_]+)?\\s*(?:(?=\\{)|$)'
+            'name': 'entity.name.type.typedecl.php'
+        'end': '(;)'
         'endCaptures':
           '1':
-            'name': 'entity.other.inherited-class.php'
-        'name': 'meta.interface.php'
+            'name': 'punctuation.termination.expression.php'
+        'name': 'meta.typedecl.php'
         'patterns': [
           {
-            'include': '#namespace'
+            'include': '#comments'
+          }
+          {
+            'include': '#generics'
+          }
+          {
+            'match': '(=)',
+            'name': 'keyword.operator.assignment.php'
           }
         ]
       }
@@ -668,6 +735,9 @@
         'patterns': [
           {
             'include': '#comments'
+          }
+          {
+            'include': '#generics'
           }
         ]
       }
@@ -746,6 +816,9 @@
         'patterns': [
           {
             'include': '#comments'
+          }
+          {
+            'include': '#generics'
           }
           {
             'begin': '(?i)(extends)\\s+'
@@ -928,7 +1001,6 @@
             |
             ([a-zA-Z0-9_]+)
           )
-          \\s*(?=\\()
           '''
         'beginCaptures':
           '1':
@@ -946,9 +1018,14 @@
             'name': 'support.function.magic.php'
           '5':
             'name': 'entity.name.function.php'
+          '6':
+            'name': 'meta.function.generics.php'
         'end': '(?=[{;])'
         'name': 'meta.function.php'
         'patterns': [
+          {
+            'include': '#generics'
+          }
           {
             'begin': '(\\()'
             'beginCaptures':

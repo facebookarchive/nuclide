@@ -1496,5 +1496,7 @@ describe('PHP grammar', () => {
   });
 
   grammarTest(nuclideUri.join(__dirname, 'fixtures/syntax_test_hack_typing.php'));
+  grammarTest(nuclideUri.join(__dirname, 'fixtures/syntax_test_hack_typedecl.php'));
+  grammarTest(nuclideUri.join(__dirname, 'fixtures/syntax_test_hack_generics.php'));
   grammarTest(nuclideUri.join(__dirname, 'fixtures/syntax_test_xhp.php'));
 });
