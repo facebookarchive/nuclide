@@ -29,6 +29,7 @@ export type AppState = {
 export type SerializedAppState = {
   previousSessionActiveTaskId: ?TaskId,
   visible: boolean,
+  version?: number,
 };
 
 export type TaskId = {

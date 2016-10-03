@@ -44,6 +44,10 @@ import nullthrows from 'nullthrows';
 import {applyMiddleware, bindActionCreators, createStore} from 'redux';
 import {Observable} from 'rxjs';
 
+// TODO: use a more general versioning mechanism.
+// Perhaps Atom should provide packages with some way of doing this.
+const SERIALIZED_VERSION = 2;
+
 class Activation {
   _disposables: UniversalDisposable;
   _actionCreators: BoundActionCreators;
@@ -51,9 +55,14 @@ class Activation {
   _store: Store;
 
   constructor(rawState: ?SerializedAppState): void {
+    let serializedState = rawState;
+    if (serializedState == null || serializedState.version !== SERIALIZED_VERSION) {
+      serializedState = {};
+    }
+
     const initialState = {
       ...createEmptyAppState(),
-      ...(rawState || {}),
+      ...serializedState,
     };
 
     const epics = Object.keys(Epics)
@@ -254,6 +263,7 @@ class Activation {
     return {
       previousSessionActiveTaskId: state.activeTaskId || state.previousSessionActiveTaskId,
       visible: state.visible,
+      version: SERIALIZED_VERSION,
     };
   }
 
