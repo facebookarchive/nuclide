@@ -73,7 +73,7 @@ class ChangedFilesView extends React.Component {
 
     const fileClassName = classnames(
       'icon',
-      'icon-file-directory',
+      'icon-file-text',
       'nuclide-file-changes-file-entry',
       `${commandPrefix}-file-entry`,
     );
