@@ -33,7 +33,7 @@ declare module 'electron' {
   // Renderer process:
   declare var desktopCapturer: ?electron$desktopCapturer;
   declare var ipcRenderer: ?electron$IpcRenderer;
-  declare var remote: ?electron$remote;
+  declare var remote: electron$remote;
   declare var webFrame: ?electron$webFrame;
 
   // Both:
@@ -342,7 +342,68 @@ type electron$contentTracing = {};
  * https://github.com/electron/electron/blob/master/docs/api/dialog.md
  */
 
-type electron$dialog = {};
+type electron$dialog = {
+
+  showOpenDialog(
+    browserWindow?: electron$BrowserWindow,
+    options: electron$dialogOpenOptions,
+    callback?: Function,
+  ): Array<string>,
+  showSaveDialog(
+    browserWindow?: electron$BrowserWindow,
+    options: electron$dialogSaveOptions,
+    callback?: Function,
+  ): string,
+  showMessageBox(
+    browserWindow?: electron$BrowserWindow,
+    options: electron$dialogMessageBoxOptions,
+    callback?: Function,
+  ): number,
+  showErrorBox(title: string, content: string): void,
+
+};
+
+/**
+ * https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ * See `dialog.showOpenDialog()`
+ */
+
+type electron$dialogOpenOptions = {
+  title?: string,
+  defaultPath?: string,
+  buttonLabel?: string,
+  filters?: Array<string>,
+  properties?: Array<string>,
+};
+
+/**
+ * https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ * See `dialog.showSaveDialog()`
+ */
+
+type electron$dialogSaveOptions = {
+  title?: string,
+  defaultPath?: string,
+  buttonLabel?: string,
+  filters?: Array<string>,
+};
+
+/**
+ * https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ * See `dialog.showMessageBox()`
+ */
+
+type electron$dialogMessageBoxOptions = {
+  type?: string,
+  buttons?: Array<string>,
+  defaultId?: number,
+  title?: string,
+  message?: string,
+  detail?: string,
+  icon?: electron$NativeImage,
+  cancelId?: number,
+  noLink?: boolean,
+};
 
 /**
  * https://github.com/electron/electron/blob/master/docs/api/global-shortcut.md

@@ -28,6 +28,7 @@ import IndeterminateProgressBar from './IndeterminateProgressBar';
 import invariant from 'assert';
 import {notifySshHandshakeError} from './notification';
 import {React, ReactDOM} from 'react-for-atom';
+import electron from 'electron';
 import {
   SshHandshake,
   decorateSshConnectionDelegateWithTracking,
@@ -213,6 +214,10 @@ export default class ConnectionDialog extends React.Component {
     this.setState({isDirty: false});
   }
 
+  _validateInitialDirectory(path: string): bool {
+    return path !== '/';
+  }
+
   render(): React.Element<any> {
     const mode = this.state.mode;
     let content;
@@ -334,6 +339,14 @@ export default class ConnectionDialog extends React.Component {
         displayTitle,
       } = connectionDetailsForm.getFormFields();
 
+      if (!this._validateInitialDirectory(cwd)) {
+        electron.remote.dialog.showErrorBox(
+          'Invalid initial path',
+          'Please specify a non-root directory.',
+        );
+        return;
+      }
+
       if (username && server && cwd && remoteServerCommand) {
         this.setState({
           isDirty: false,
@@ -351,7 +364,10 @@ export default class ConnectionDialog extends React.Component {
           displayTitle,
         });
       } else {
-        // TODO(mbolin): Tell user to fill out all of the fields.
+        electron.remote.dialog.showErrorBox(
+          'Missing information',
+          "Please make sure you've filled out all the form fields.",
+        );
       }
     } else if (mode === REQUEST_AUTHENTICATION_DETAILS) {
       const authenticationPrompt = this.refs.content;
