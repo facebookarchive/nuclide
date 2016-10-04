@@ -19,6 +19,9 @@ import {existingEditorForUri} from '../../commons-atom/text-editor';
 /**
  * Attempts to apply the given patches to the given file.
  *
+ * For best results, the edits should be non-overlapping and in order. That is, for every edit
+ * provided, the start of its range should be after the end of the previous edit's range.
+ *
  * The file must be currently open in Atom, and the changes will be applied to the buffer but not
  * saved.
  *
@@ -32,7 +35,10 @@ export default function applyTextEdits(path: NuclideUri, ...edits: Array<TextEdi
   const buffer = editor.getBuffer();
   const checkpoint = buffer.createCheckpoint();
 
-  for (const edit of edits) {
+  // Iterate through in reverse order. Edits earlier in the file can move around text later in the
+  // file, so to avoid conflicts edits should be applied last first.
+  for (let i = edits.length - 1; i >= 0; i--) {
+    const edit = edits[i];
     const success = applyToBuffer(buffer, edit);
     if (!success) {
       buffer.revertToCheckpoint(checkpoint);

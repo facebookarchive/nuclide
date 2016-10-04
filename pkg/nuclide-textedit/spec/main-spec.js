@@ -77,4 +77,21 @@ describe('applyTextEdits', () => {
     expect(applyTextEdits(fakeFile, textedit)).toBeTruthy();
     expect(editor.getText()).toEqual('foo\nbar;\nbaz\n');
   });
+
+  it('should correctly apply edits on the same line', () => {
+    const edits = [
+      {
+        oldRange: new Range([0, 0], [0, 1]),
+        oldText: 'f',
+        newText: 'FFF',
+      },
+      {
+        oldRange: new Range([0, 2], [0, 3]),
+        oldText: 'o',
+        newText: 'OOO',
+      },
+    ];
+    expect(applyTextEdits(fakeFile, ...edits)).toBeTruthy();
+    expect(editor.getText()).toEqual('FFFoOOO\nbar\nbaz\n');
+  });
 });
