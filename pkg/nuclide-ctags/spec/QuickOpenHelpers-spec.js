@@ -55,7 +55,7 @@ describe('QuickOpenHelpers', () => {
           };
         },
       });
-    spyOn(hackService, 'getHackServiceForProject').andReturn(null);
+    spyOn(hackService, 'isFileInHackProject').andReturn(false);
   });
 
   it('it activates for valid directories', () => {

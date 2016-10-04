@@ -53,17 +53,6 @@ export async function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {
   return await language.isFileInProject(fileUri);
 }
 
-/**
- * @return HackService for the specified directory if it is part of a Hack project.
- */
-export async function getHackServiceForProject(
-  directory: atom$Directory,
-): Promise<?LanguageService> {
-  const directoryPath = directory.getPath();
-  return (await isFileInHackProject(directoryPath))
-    ? (await getHackLanguageForUri(directoryPath)) : null;
-}
-
 export function observeHackLanguages(): Observable<LanguageService> {
   return connectionToHackLanguage.observeValues()
     .switchMap(hackLanguage => {

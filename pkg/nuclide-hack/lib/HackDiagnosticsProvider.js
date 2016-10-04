@@ -22,10 +22,7 @@ import type {
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {trackTiming} from '../../nuclide-analytics';
-import {
-  getHackLanguageForUri,
-  observeHackLanguages,
-} from './HackLanguage';
+import {getHackLanguageForUri, observeHackLanguages} from './HackLanguage';
 import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';

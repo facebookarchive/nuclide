@@ -21,44 +21,51 @@ import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 import invariant from 'assert';
 
 describe('HackSymbolProvider', () => {
-  // These tests are set up so that calls to getHackServiceForProject() will delegate to this
+  // These tests are set up so that calls to getHackLanguageForUri() will delegate to this
   // function, so make sure to define this function at the start of your test to mock out this
   // behavior.
-  let getHackServiceForProject: ?((directory: atom$Directory) => Promise<mixed>);
+  let getHackLanguageForUri: ?((directory: NuclideUri) => Promise<mixed>);
+  let isFileInProject: ?((directory: NuclideUri) => Promise<boolean>);
 
   beforeEach(() => {
-    getHackServiceForProject = null;
-    spyOn(require('../lib/HackLanguage'), 'getHackServiceForProject')
-      .andCallFake((directory: atom$Directory) => {
-        invariant(getHackServiceForProject);
-        return getHackServiceForProject(directory);
+    getHackLanguageForUri = null;
+    isFileInProject = null;
+    spyOn(require('../lib/HackLanguage'), 'getHackLanguageForUri')
+      .andCallFake((directory: NuclideUri) => {
+        invariant(getHackLanguageForUri);
+        return getHackLanguageForUri(directory);
+      });
+    spyOn(require('../lib/HackLanguage'), 'isFileInHackProject')
+      .andCallFake((directory: NuclideUri) => {
+        invariant(isFileInProject);
+        return isFileInProject(directory);
       });
     uncachedRequire(require, '../lib/HackSymbolProvider');
   });
 
   afterEach(() => {
-    jasmine.unspy(require('../lib/HackLanguage'), 'getHackServiceForProject');
+    jasmine.unspy(require('../lib/HackLanguage'), 'isFileInHackProject');
+    jasmine.unspy(require('../lib/HackLanguage'), 'getHackLanguageForUri');
     clearRequireCache(require, '../lib/HackSymbolProvider');
   });
+  const path = '/some/local/path';
 
   describe('isEligibleForDirectory()', () => {
     const mockDirectory = {
-      getPath() { return '/some/local/path'; },
+      getPath() { return path; },
     };
 
     it(
       'isEligibleForDirectory() should return true when getHackServiceForProject() returns ' +
         'an instance of HackService',
       () => {
-        const hackService = createDummyHackService();
-        getHackServiceForProject = jasmine.createSpy('getHackServiceForProject').andReturn(
-          hackService);
+        isFileInProject = jasmine.createSpy('isFileInProject').andReturn(true);
 
         waitsForPromise(async () => {
           invariant(HackSymbolProvider.isEligibleForDirectory != null);
           const isEligible = await HackSymbolProvider.isEligibleForDirectory((mockDirectory: any));
           expect(isEligible).toBe(true);
-          expect(getHackServiceForProject).toHaveBeenCalledWith(mockDirectory);
+          expect(isFileInProject).toHaveBeenCalledWith(path);
         });
       },
     );
@@ -67,13 +74,13 @@ describe('HackSymbolProvider', () => {
       'isEligibleForDirectory() should return false when getHackServiceForProject() returns ' +
         'null',
       () => {
-        getHackServiceForProject = jasmine.createSpy('getHackServiceForProject').andReturn(null);
+        isFileInProject = jasmine.createSpy('isFileInProject').andReturn(false);
 
         waitsForPromise(async () => {
           invariant(HackSymbolProvider.isEligibleForDirectory != null);
           const isEligible = await HackSymbolProvider.isEligibleForDirectory((mockDirectory: any));
           expect(isEligible).toBe(false);
-          expect(getHackServiceForProject).toHaveBeenCalledWith(mockDirectory);
+          expect(isFileInProject).toHaveBeenCalledWith(path);
         });
       },
     );
@@ -101,7 +108,7 @@ describe('HackSymbolProvider', () => {
         ];
         const hackService = createDummyHackService();
         const queryMethod = spyOn(hackService, 'executeQuery').andReturn(cannedResults);
-        getHackServiceForProject = jasmine.createSpy('getHackServiceForProject').andReturn(
+        getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andReturn(
           hackService);
 
         const query = 'asdf';
@@ -132,7 +139,7 @@ describe('HackSymbolProvider', () => {
         ];
         const hackService = createDummyHackService();
         const queryMethod = spyOn(hackService, 'executeQuery').andReturn(cannedResults);
-        getHackServiceForProject = jasmine.createSpy('getHackServiceForProject').andReturn(
+        getHackLanguageForUri = jasmine.createSpy('getHackLanguageForUri').andReturn(
           hackService);
 
         const query = 'asdf';

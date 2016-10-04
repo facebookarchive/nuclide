@@ -15,7 +15,7 @@ import type {CtagsResult, CtagsService} from '../../nuclide-ctags-rpc';
 import {React} from 'react-for-atom';
 import featureConfig from '../../commons-atom/featureConfig';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {getHackServiceForProject} from '../../nuclide-hack/lib/HackLanguage';
+import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {CTAGS_KIND_ICONS, CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
@@ -82,9 +82,9 @@ export default class QuickOpenHelpers {
     // HACK: Ctags results typically just duplicate Hack results when they're present.
     // Filter out results from PHP files when the Hack service is available.
     // TODO(hansonw): Remove this when quick-open has proper ranking/de-duplication.
-    let hack;
+    let isHackProject;
     if (featureConfig.get('nuclide-ctags.disableWithHack') !== false) {
-      hack = await getHackServiceForProject(directory);
+      isHackProject = await isFileInHackProject(directory.getPath());
     }
 
     try {
@@ -95,7 +95,7 @@ export default class QuickOpenHelpers {
       });
 
       return await Promise.all(results
-        .filter(tag => hack == null || !tag.file.endsWith('.php'))
+        .filter(tag => !isHackProject || !tag.file.endsWith('.php'))
         .map(async tag => {
           const line = await getLineNumberForTag(tag);
           return {

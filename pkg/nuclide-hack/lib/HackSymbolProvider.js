@@ -18,9 +18,7 @@ import type {
 } from '../../nuclide-quick-open/lib/rpc-types';
 import type {HackSearchPosition} from '../../nuclide-hack-rpc/lib/HackService';
 
-import {
-  getHackServiceForProject,
-} from './HackLanguage';
+import {isFileInHackProject, getHackLanguageForUri} from './HackLanguage';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
 
@@ -81,9 +79,8 @@ export const HackSymbolProvider: Provider = {
     return 'Hack Symbols';
   },
 
-  async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
-    const service = await getHackServiceForProject(directory);
-    return service != null;
+  isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
+    return isFileInHackProject(directory.getPath());
   },
 
   async executeQuery(
@@ -94,7 +91,7 @@ export const HackSymbolProvider: Provider = {
       return [];
     }
 
-    const service = await getHackServiceForProject(directory);
+    const service = await getHackLanguageForUri(directory.getPath());
     if (service == null) {
       return [];
     }
