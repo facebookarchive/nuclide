@@ -36,6 +36,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
+import type {LanguageService} from './LanguageService';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -101,14 +102,14 @@ export async function initialize(
   useIdeConnection: boolean,
   logLevel: LogLevel,
   fileNotifier: FileNotifier,
-): Promise<HackLanguageService> {
+): Promise<LanguageService> {
   setHackCommand(hackCommand);
   logger.setLogLevel(logLevel);
   await getHackCommand();
   return new HackLanguageService(useIdeConnection, fileNotifier);
 }
 
-export class HackLanguageService {
+class HackLanguageService {
   _useIdeConnection: boolean;
   _fileCache: FileCache;
 
@@ -399,7 +400,7 @@ export class HackLanguageService {
    * @param fileUri a file path.  It cannot be a directory.
    * @return whether the file represented by fileUri is inside of a Hack project.
    */
-  async isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
+  async isFileInProject(fileUri: NuclideUri): Promise<boolean> {
     const hhconfigPath = await findHackConfigDir(fileUri);
     return hhconfigPath != null;
   }

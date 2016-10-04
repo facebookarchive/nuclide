@@ -13,7 +13,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {DefinitionQueryResult} from '../../nuclide-definition-service/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
-import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
+import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
@@ -35,19 +35,19 @@ import {Observable} from 'rxjs';
  */
 export class HackLanguage {
 
-  _hackService: HackLanguageService;
+  _hackService: LanguageService;
 
   /**
    * `basePath` should be the directory where the .hhconfig file is located.
    */
-  constructor(hackService: HackLanguageService) {
+  constructor(hackService: LanguageService) {
     this._hackService = hackService;
   }
 
   dispose() {
   }
 
-  getLanguageService(): HackLanguageService {
+  getLanguageService(): LanguageService {
     return this._hackService;
   }
 
@@ -55,8 +55,8 @@ export class HackLanguage {
     return this._hackService.getProjectRoot(filePath);
   }
 
-  isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
-    return this._hackService.isFileInHackProject(fileUri);
+  isFileInProject(fileUri: NuclideUri): Promise<boolean> {
+    return this._hackService.isFileInProject(fileUri);
   }
 
   getAutocompleteSuggestions(
@@ -149,7 +149,7 @@ export function clearHackLanguageCache(): void {
 
 export async function getHackServiceByNuclideUri(
   fileUri: NuclideUri,
-): Promise<?HackLanguageService> {
+): Promise<?LanguageService> {
   const language = await getHackLanguageForUri(fileUri);
   if (language == null) {
     return null;
@@ -162,7 +162,7 @@ export async function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {
   if (language == null) {
     return false;
   }
-  return await language.isFileInHackProject(fileUri);
+  return await language.isFileInProject(fileUri);
 }
 
 /**
@@ -170,7 +170,7 @@ export async function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {
  */
 export async function getHackServiceForProject(
   directory: atom$Directory,
-): Promise<?HackLanguageService> {
+): Promise<?LanguageService> {
   const directoryPath = directory.getPath();
   return (await isFileInHackProject(directoryPath))
     ? (await getHackServiceByNuclideUri(directoryPath)) : null;
