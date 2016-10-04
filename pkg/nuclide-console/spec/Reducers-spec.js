@@ -23,6 +23,7 @@ const emptyAppState = {
   providerStatuses: new Map(),
   providerSubscriptions: new Map(),
   records: [],
+  history: [],
 };
 
 describe('createStateStream', () => {

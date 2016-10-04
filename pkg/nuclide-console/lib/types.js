@@ -38,6 +38,7 @@ export type AppState = {
   executors: Map<string, Executor>,
   maxMessageCount: number,
   records: Array<Record>,
+  history: Array<string>,
   providers: Map<string, RecordProvider>,
   providerStatuses: Map<string, OutputProviderStatus>,
 };

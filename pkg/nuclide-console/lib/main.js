@@ -177,6 +177,7 @@ function deserializeAppState(rawState: ?Object): AppState {
     currentExecutorId: null,
     // For performance reasons, we won't restore records until we've figured out windowing.
     records: [],
+    history: [],
     providers: new Map(),
     providerStatuses: new Map(),
 

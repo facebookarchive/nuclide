@@ -46,6 +46,7 @@ type State = {
   providerStatuses: Map<string, OutputProviderStatus>,
   ready: boolean,
   records: Array<Record>,
+  history: Array<string>,
   sources: Array<Source>,
   executors: Map<string, Executor>,
 
@@ -87,6 +88,7 @@ export class ConsoleContainer extends React.Component {
       providerStatuses: new Map(),
       executors: new Map(),
       records: [],
+      history: [],
       sources: [],
       filterText: initialFilterText == null ? '' : initialFilterText,
       enableRegExpFilter: Boolean(initialEnableRegExpFilter),
@@ -142,6 +144,7 @@ export class ConsoleContainer extends React.Component {
           providers: state.providers,
           providerStatuses: state.providerStatuses,
           records: state.records,
+          history: state.history,
           sources: getSources(state),
         });
       });
@@ -205,6 +208,7 @@ export class ConsoleContainer extends React.Component {
         filterText={this.state.filterText}
         enableRegExpFilter={this.state.enableRegExpFilter}
         records={records}
+        history={this.state.history}
         sources={this.state.sources}
         selectedSourceIds={selectedSourceIds}
         selectSources={this._selectSources}

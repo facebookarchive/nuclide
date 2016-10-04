@@ -23,6 +23,7 @@ import shallowEqual from 'shallowequal';
 
 type Props = {
   records: Array<Record>,
+  history: Array<string>,
   clearRecords: () => void,
   execute: (code: string) => void,
   currentExecutor: ?Executor,
@@ -173,6 +174,7 @@ export default class Console extends React.Component {
         <InputArea
           scopeName={currentExecutor.scopeName}
           onSubmit={this.props.execute}
+          history={this.props.history}
         />
       </div>
     );

@@ -82,6 +82,13 @@ export default function accumulateState(state: AppState, action: Action): AppSta
         providerStatuses: new Map(state.providerStatuses).set(providerId, status),
       };
     }
+    case Actions.EXECUTE: {
+      const command = action.payload.code;
+      return {
+        ...state,
+        history: state.history.concat(command).slice(-1000),
+      };
+    }
   }
 
   return state;

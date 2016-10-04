@@ -16,12 +16,21 @@ import {Observable} from 'rxjs';
 type Props = {
   onSubmit: (value: string) => mixed,
   scopeName: ?string,
+  history: Array<string>,
+};
+
+type State = {
+  historyIndex: number,
+  draft: string,
 };
 
 const ENTER_KEY_CODE = 13;
+const UP_KEY_CODE = 38;
+const DOWN_KEY_CODE = 40;
 
 export default class OutputTable extends React.Component {
   props: Props;
+  state: State;
 
   _keySubscription: ?rx$ISubscription;
   _textEditorModel: ?atom$TextEditor;
@@ -30,6 +39,10 @@ export default class OutputTable extends React.Component {
     super(props);
     (this: any)._handleTextEditor = this._handleTextEditor.bind(this);
     (this: any)._handleKeyDown = this._handleKeyDown.bind(this);
+    this.state = {
+      historyIndex: -1,
+      draft: '',
+    };
   }
 
   _handleTextEditor(component: ?AtomTextEditor): void {
@@ -67,6 +80,34 @@ export default class OutputTable extends React.Component {
 
       editor.setText(''); // Clear the text field.
       this.props.onSubmit(text);
+      this.setState({historyIndex: -1});
+    } else if (event.which === UP_KEY_CODE) {
+      if (this.props.history.length === 0) {
+        return;
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const historyIndex = Math.min(this.state.historyIndex + 1,
+                                    this.props.history.length - 1);
+      if (this.state.historyIndex === -1) {
+        this.setState({historyIndex, draft: editor.getText()});
+      } else {
+        this.setState({historyIndex});
+      }
+      editor.setText(this.props.history[this.props.history.length - historyIndex - 1]);
+    } else if (event.which === DOWN_KEY_CODE) {
+      if (this.props.history.length === 0) {
+        return;
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const historyIndex = Math.max(this.state.historyIndex - 1, -1);
+      this.setState({historyIndex});
+      if (historyIndex === -1) {
+        editor.setText(this.state.draft);
+      } else {
+        editor.setText(this.props.history[this.props.history.length - historyIndex - 1]);
+      }
     }
   }
 

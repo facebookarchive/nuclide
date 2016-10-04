@@ -23,6 +23,7 @@ const baseAppState = {
   providers: new Map(),
   providerStatuses: new Map(),
   records: [],
+  history: [],
 };
 
 describe('getCurrentExecutorId', () => {
