@@ -108,7 +108,7 @@ export function getGrepServiceByNuclideUri(uri: NuclideUri): GrepService {
   return nullthrows(getServiceByNuclideUri('GrepService', uri));
 }
 
-export function getHackServiceByNuclideUri(uri: NuclideUri): HackService {
+export function getHackLanguageForUri(uri: NuclideUri): HackService {
   return nullthrows(getServiceByNuclideUri('HackService', uri));
 }
 
