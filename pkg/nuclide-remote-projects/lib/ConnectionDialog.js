@@ -37,6 +37,8 @@ import {validateFormInputs} from './form-validation-utils';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
+const {remote} = electron;
+invariant(remote != null);
 
 type DefaultProps = {
   indexOfInitiallySelectedConnectionProfile: number,
@@ -340,7 +342,7 @@ export default class ConnectionDialog extends React.Component {
       } = connectionDetailsForm.getFormFields();
 
       if (!this._validateInitialDirectory(cwd)) {
-        electron.remote.dialog.showErrorBox(
+        remote.dialog.showErrorBox(
           'Invalid initial path',
           'Please specify a non-root directory.',
         );
@@ -364,7 +366,7 @@ export default class ConnectionDialog extends React.Component {
           displayTitle,
         });
       } else {
-        electron.remote.dialog.showErrorBox(
+        remote.dialog.showErrorBox(
           'Missing information',
           "Please make sure you've filled out all the form fields.",
         );

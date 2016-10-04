@@ -33,7 +33,7 @@ declare module 'electron' {
   // Renderer process:
   declare var desktopCapturer: ?electron$desktopCapturer;
   declare var ipcRenderer: ?electron$IpcRenderer;
-  declare var remote: electron$remote;
+  declare var remote: ?electron$remote;
   declare var webFrame: ?electron$webFrame;
 
   // Both:
@@ -343,7 +343,6 @@ type electron$contentTracing = {};
  */
 
 type electron$dialog = {
-
   showOpenDialog(
     browserWindow?: electron$BrowserWindow,
     options: electron$dialogOpenOptions,
@@ -360,7 +359,6 @@ type electron$dialog = {
     callback?: Function,
   ): number,
   showErrorBox(title: string, content: string): void,
-
 };
 
 /**
