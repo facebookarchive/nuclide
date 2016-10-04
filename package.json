@@ -123,6 +123,7 @@
     "language-swift",
     "language-thrift",
     "merge-conflicts",
+    "nuclide-format-js",
     "sort-lines"
   ]
 }
