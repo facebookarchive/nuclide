@@ -83,7 +83,7 @@ export type UIElement = {
 };
 
 export type UIProvider = {
-  composeUiElements: (filePath: string) => Promise<Array<UIElement>>,
+  composeUiElements: (directoryPath: NuclideUri, filePath: NuclideUri) => Promise<Array<UIElement>>,
 };
 
 // Redux store types.
