@@ -1,5 +1,0 @@
-{
-  "atom-text-editor": {
-    "cmd-shift-i": "nuclide-format-js:format"
-  }
-}
