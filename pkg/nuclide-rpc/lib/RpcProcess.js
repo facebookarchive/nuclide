@@ -71,12 +71,6 @@ export class RpcProcess {
     return this._name;
   }
 
-  dispose(): void {
-    logger.info(`${this._name} - disposing connection.`);
-    this._disposed = true;
-    this._cleanup();
-  }
-
   isDisposed(): boolean {
     return this._disposed;
   }
@@ -134,16 +128,15 @@ export class RpcProcess {
       case 'exit':
         // Log exit code if process exited not as a result of being disposed.
         if (!this._disposed) {
-          logger.error(`${this._name} - exited: `, message.exitCode);
+          logger.error(`${this._name} - exited before dispose: `, message.exitCode);
         }
-        // Don't attempt to kill the process if it already exited.
-        this._cleanup(false);
+        this.dispose();
         this._exitCode.next(message);
         this._exitCode.complete();
         break;
       case 'error':
         logger.error(`${this._name} - error received: `, message.error.message);
-        this._cleanup();
+        this.dispose();
         break;
       default:
         // This case should never be reached.
@@ -155,17 +148,18 @@ export class RpcProcess {
    * Cleans up in case of disposal or failure, clearing all pending calls,
    * and killing the child process if necessary.
    */
-  _cleanup(shouldKill: boolean = true): void {
+  dispose(): void {
+    logger.info(`${this._name} - disposing connection.`);
+    this._disposed = true;
+
     if (this._subscription != null) {
+      // Note that this will kill the process if it is still live.
       this._subscription.unsubscribe();
       this._subscription = null;
     }
     if (this._rpcConnection != null) {
       this._rpcConnection.dispose();
       this._rpcConnection = null;
-    }
-    if (this._process != null && shouldKill) {
-      this._process.kill();
     }
     // If shouldKill is false, i.e. the process exited outside of this
     // object's control or disposal, the process still needs to be nulled out

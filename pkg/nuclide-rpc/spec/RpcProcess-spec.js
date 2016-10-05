@@ -13,7 +13,7 @@ import typeof * as DummyService from './fixtures/dummy-service/DummyService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import invariant from 'assert';
-import {safeSpawn} from '../../commons-node/process';
+import {safeSpawn, observeProcessExit} from '../../commons-node/process';
 import {RpcProcess} from '../lib/RpcProcess';
 import {ServiceRegistry} from '../../nuclide-rpc';
 
@@ -117,6 +117,21 @@ describe('RpcProcess', () => {
       const response = await (await getService()).polarbears();
       expect(response).toEqual({
         hello: 'Hello World',
+      });
+    });
+  });
+
+  it('dispose should kill the process', () => {
+    waitsForPromise(async () => {
+      await getService();
+      const process = server._process;
+      invariant(process != null);
+      const exitPromise = observeProcessExit(() => process).toPromise();
+      server.dispose();
+      expect(await exitPromise).toEqual({
+        kind: 'exit',
+        exitCode: null,
+        signal: 'SIGTERM',
       });
     });
   });

@@ -276,6 +276,7 @@ function _createProcessStream(
       })
       .finally(() => {
         if (!finished) {
+          logError(`Ending process stream. Killing process ${process.pid}`);
           process.kill();
         }
       });
