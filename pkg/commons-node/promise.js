@@ -110,6 +110,10 @@ export function sleep(milliSeconds: number): Promise<void> {
   return new Promise(resolve => { setTimeout(resolve, milliSeconds); });
 }
 
+export function nextTick(): Promise<void> {
+  return new Promise(resolve => { process.nextTick(resolve); });
+}
+
 /**
  * Executes a provided callback only if a promise takes longer than
  * `milliSeconds` milliseconds to resolve.
