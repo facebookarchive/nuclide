@@ -32,6 +32,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {Section} from '../../nuclide-ui/Section';
 import featureConfig from '../../commons-atom/featureConfig';
+import {track} from '../../nuclide-analytics';
 
 type State = {
   shouldRenderToolbar: boolean,
@@ -270,6 +271,7 @@ class FileTreeSidebarComponent extends React.Component {
   }
 
   _onFileChosen(filePath: NuclideUri): void {
+    track('filetree-uncommitted-file-changes-file-open');
     atom.workspace.open(filePath);
   }
 
@@ -278,6 +280,7 @@ class FileTreeSidebarComponent extends React.Component {
   }
 
   _handleUncommittedFilesExpandedChange(isCollapsed: boolean): void {
+    track('filetree-uncommitted-file-changes-toggle');
     this._actions.setUncommittedChangesExpanded(!isCollapsed);
   }
 
