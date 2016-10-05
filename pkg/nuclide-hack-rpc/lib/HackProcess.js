@@ -168,7 +168,14 @@ class HackProcess extends RpcProcess {
   dispose(): void {
     if (!this.isDisposed()) {
       // Atempt to send disconnect message before shutting down connection
-      this.getConnectionService().disconnect();
+      try {
+        logger.logTrace('Attempting to disconnect cleanly from HackProcess');
+        this.getConnectionService().disconnect();
+      } catch (e) {
+        // Failing to send the shutdown is not fatal...
+        // ... continue with shutdown.
+        logger.logError('Hack Process died before disconnect() could be sent.');
+      }
       super.dispose();
       this._fileVersionNotifier.dispose();
       this._fileSubscription.unsubscribe();
