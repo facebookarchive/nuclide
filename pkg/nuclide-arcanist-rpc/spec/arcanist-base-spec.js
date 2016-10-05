@@ -145,7 +145,7 @@ describe('nuclide-arcanist-rpc', () => {
     beforeEach(() => {
       setResult({});
       execArgs = [];
-      spyOn(require('../../commons-node/process'), 'checkOutput')
+      spyOn(require('../../commons-node/nice'), 'niceCheckOutput')
         .andCallFake((command, args, options) => {
           execArgs.push(args);
           return arcResult;

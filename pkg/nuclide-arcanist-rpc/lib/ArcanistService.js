@@ -18,11 +18,11 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {
-  checkOutput,
   observeProcess,
   safeSpawn,
   scriptSafeSpawnAndObserveOutput,
 } from '../../commons-node/process';
+import {niceCheckOutput} from '../../commons-node/nice';
 import fsPromise from '../../commons-node/fsPromise';
 import {
   fetchFilesChangedAtRevision,
@@ -231,7 +231,7 @@ async function execArcLint(
     args.push('--skip', skip.join(','));
   }
   const options = {cwd};
-  const result = await checkOutput('arc', args, options);
+  const result = await niceCheckOutput('arc', args, options);
 
   const output: Map<string, Array<Object>> = new Map();
   // Arc lint outputs multiple JSON objects on mutliple lines. Split them, then merge the
