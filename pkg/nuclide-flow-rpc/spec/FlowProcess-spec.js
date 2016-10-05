@@ -19,7 +19,7 @@ import os from 'os';
 import {FLOW_RETURN_CODES} from '../lib/FlowProcess';
 import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
 
-import {uncachedRequire, spyOnDefault} from '../../nuclide-test-helpers';
+import {uncachedRequire} from '../../nuclide-test-helpers';
 
 const flowProcessPath = '../lib/FlowProcess';
 
@@ -56,7 +56,7 @@ describe('FlowProcess', () => {
       kill() {},
     };
 
-    niceSpy = spyOnDefault(require.resolve('../../commons-node/nice')).andCallFake(() => {
+    niceSpy = spyOn(require('../../commons-node/nice'), 'nice').andCallFake(() => {
       return childSpy;
     });
     // we have to create another flow service here since we've mocked modules

@@ -19,7 +19,7 @@ import which from './which';
 const NICE_COMMAND = 'nice';
 const IONICE_COMMAND = 'ionice';
 
-export default async function nice(
+export async function nice(
   command: string,
   args: Array<string>,
   execOptions?: Object,

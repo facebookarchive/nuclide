@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import typeof niceType from '../nice';
+import typeof {nice as niceType} from '../nice';
 
 import {uncachedRequire, spyOnDefault} from '../../nuclide-test-helpers';
 
@@ -37,7 +37,7 @@ describe('nice', () => {
       }
     });
     safeSpawnSpy = spyOn(require('../process'), 'safeSpawn').andReturn(fakeSafeSpawnReturn);
-    nice = (uncachedRequire(require, '../nice'): any);
+    nice = (uncachedRequire(require, '../nice'): any).nice;
   });
 
   it('should spawn `nice` and return whatever safeSpawn returns', () => {

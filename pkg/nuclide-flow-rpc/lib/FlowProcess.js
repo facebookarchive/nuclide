@@ -28,7 +28,7 @@ import {
   asyncExecute,
 } from '../../commons-node/process';
 
-import nice from '../../commons-node/nice';
+import {nice} from '../../commons-node/nice';
 
 import {
   getStopFlowOnExit,
