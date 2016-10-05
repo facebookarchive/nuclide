@@ -879,20 +879,9 @@ export class HgRepositoryClient {
     return false;
   }
 
-  // TODO This is a stub.
-  checkoutReference(reference: string, create: boolean): boolean {
-    return false;
-  }
-
-  /**
-   * @deprecated Use {#async.checkoutReference} instead
-   *
-   * This is the async version of what checkoutReference() is meant to do.
-   */
-  checkoutRevision(reference: string, create: boolean): Promise<void> {
+  checkoutReference(reference: string, create: boolean): Promise<void> {
     return this.async.checkoutReference(reference, create);
   }
-
 
   /**
    *

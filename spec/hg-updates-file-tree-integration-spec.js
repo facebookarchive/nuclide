@@ -174,7 +174,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       await hgRepositoryAsync.createBookmark('new', laterRevision.hash);
       await hgRepositoryAsync.createBookmark('other', firstRevision.hash);
       // update to that bookmark
-      await hgRepository.checkoutRevision('other', false);
+      await hgRepository.checkoutReference('other', false);
 
       await waitsForRepositoryReady(repoRemotePath);
     });
@@ -195,7 +195,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       await hgRepository.addAll([repoPath]);
       await hgRepository.commit('add other.txt').toArray().toPromise();
       // Update to 'new' bookmark to see if file tree updates list of files
-      await hgRepository.checkoutRevision('new', false);
+      await hgRepository.checkoutReference('new', false);
 
       await waitsForRepositoryReady(repoRemotePath);
     });

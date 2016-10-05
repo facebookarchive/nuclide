@@ -60,7 +60,7 @@ function watchProjectRepository(
 ): Observable<Action> {
 
   const {repository} = action.payload;
-  const repositoryAsync: HgRepositoryClientAsync = (repository.async: any);
+  const repositoryAsync: HgRepositoryClientAsync = (repository: any).async;
   // Type was checked with `getType`. Downcast to safely access members with Flow.
   return Observable.merge(
     observableFromSubscribeFunction(

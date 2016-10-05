@@ -1603,8 +1603,6 @@ type RepositoryLineDiff = {
 //
 // [1]: https://github.com/atom/atom/blob/v1.7.3/src/git-repository.coffee
 declare class atom$Repository {
-  async: atom$RepositoryAsync,
-
   // Event Subscription
   onDidChangeStatus: (callback: RepositoryDidChangeStatusCallback) => IDisposable,
   onDidChangeStatuses: (callback: () => mixed) => IDisposable,
@@ -1633,21 +1631,11 @@ declare class atom$Repository {
 
   // Checking Out
   checkoutHead: (aPath: string) => boolean,
-  checkoutReference: (reference: string, create: boolean) => boolean,
+  checkoutReference: (reference: string, create: boolean) => Promise<void>,
 
   // Event Subscription
   onDidDestroy(callback: () => mixed): IDisposable,
   isDestroyed(): boolean,
-}
-
-// TODO(most) remove `async` - it's no longer a thing.
-// Taken from the interface of [`GitRepositoryAsync`][1], which is also implemented by Nuclide's
-// `HgRepositoryClientAsync`. This is an asynchronous version of `atom$Repository` with methods that
-// return Promises where possible rather than return values synchronously.
-// [1]: https://github.com/atom/atom/blob/v1.7.3/src/git-repository-async.js
-declare class atom$RepositoryAsync {
-  // Checking Out
-  checkoutReference: (reference: string, create: boolean) => Promise<void>,
 }
 
 declare class atom$GitRepositoryInternal {

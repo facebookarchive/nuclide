@@ -84,7 +84,7 @@ describe('BookShelf applyActionMiddleware', () => {
       input.next(addRepositoryAction);
       input.complete();
 
-      const fakeRepositoryAsync: HgRepositoryClientAsync = (fakeRepository.async: any);
+      const fakeRepositoryAsync: HgRepositoryClientAsync = (fakeRepository: any).async;
 
       waitsFor(() => resultActions.length === 1);
 

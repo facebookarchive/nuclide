@@ -14,8 +14,7 @@ import type {AppState} from '..';
 import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
 import * as ActionType from './ActionType';
-import {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';
-import invariant from 'assert';
+import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import {track} from '../../nuclide-analytics';
 
 type dispatchType = (action: Action) => void;
@@ -41,9 +40,8 @@ export default class Commands {
       return;
     }
 
-    const repositoryAsync = repository.async;
     // Type was checked with `getType`. Downcast to safely access members with Flow.
-    invariant(repositoryAsync instanceof HgRepositoryClientAsync);
+    const repositoryAsync = ((repository: any): HgRepositoryClient).async;
 
     track('scsidebar-create-bookmark');
     repositoryAsync.createBookmark(name);

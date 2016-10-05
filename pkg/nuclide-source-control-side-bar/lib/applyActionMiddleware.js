@@ -13,7 +13,7 @@ import type {Action} from './types';
 import type {AppState} from '..';
 
 import * as ActionType from './ActionType';
-import {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';
+import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import invariant from 'assert';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {repositoryForPath} from '../../nuclide-hg-git-bridge';
@@ -54,10 +54,9 @@ export function applyActionMiddleware(
           });
 
           if (repository.getType() === 'hg') {
-            const repositoryAsync = repository.async;
-
             // Type was checked with `getType`. Downcast to safely access members with Flow.
-            invariant(repositoryAsync instanceof HgRepositoryClientAsync);
+            invariant(repository instanceof HgRepositoryClient);
+            const repositoryAsync = repository.async;
 
             observable = observable.concat(
               Observable.merge(
@@ -76,11 +75,12 @@ export function applyActionMiddleware(
                 return Observable.fromPromise(repositoryAsync.getBookmarks());
               })
               .map(bookmarks => ({
+                type: ActionType.SET_REPOSITORY_BOOKMARKS,
                 payload: {
                   bookmarks,
-                  repository,
+                  // TODO(most): figure out flow type incompatability.
+                  repository: (repository: any),
                 },
-                type: ActionType.SET_REPOSITORY_BOOKMARKS,
               })),
             );
           }
@@ -96,7 +96,7 @@ export function applyActionMiddleware(
 
         const {bookmark, repository} = action.payload;
         return Observable
-          .fromPromise(repository.async.checkoutReference(bookmark.bookmark, false))
+          .fromPromise(repository.checkoutReference(bookmark.bookmark, false))
           .ignoreElements()
           .catch(error => {
             atom.notifications.addWarning('Failed Updating to Bookmark', {
@@ -120,23 +120,19 @@ export function applyActionMiddleware(
           // Action was filtered, invariant check to downcast in Flow.
           invariant(action.type === ActionType.RENAME_BOOKMARK);
           const {repository} = action.payload;
-          const repositoryAsync = repository.async;
 
-          if (!(repositoryAsync instanceof HgRepositoryClientAsync)) {
+          if (!(repository instanceof HgRepositoryClient)) {
             atom.notifications.addWarning('Failed Renaming Bookmark', {
               detail: `Expected repository type 'hg' but found ${repository.getType()}`,
               dismissable: true,
             });
             return Observable.empty();
           }
-
+          const repositoryAsync = repository.async;
           const {
             bookmark,
             nextName,
           } = action.payload;
-
-          // Type was checked. Downcast to safely access members with Flow.
-          invariant(repositoryAsync instanceof HgRepositoryClientAsync);
 
           return Observable.of({
             payload: {
@@ -177,20 +173,16 @@ export function applyActionMiddleware(
           // Action was filtered, invariant check to downcast in Flow.
           invariant(action.type === ActionType.DELETE_BOOKMARK);
           const {repository} = action.payload;
-          const repositoryAsync = repository.async;
 
-          if (!(repositoryAsync instanceof HgRepositoryClientAsync)) {
+          if (!(repository instanceof HgRepositoryClient)) {
             atom.notifications.addWarning('Failed Deleting Bookmark', {
               detail: `Expected repository type 'hg' but found ${repository.getType()}`,
               dismissable: true,
             });
             return Observable.empty();
           }
-
           const {bookmark} = action.payload;
-
-          // Type was checked with `getType`. Downcast to safely access members with Flow.
-          invariant(repositoryAsync instanceof HgRepositoryClientAsync);
+          const repositoryAsync = repository.async;
 
           return Observable.of({
             payload: {
