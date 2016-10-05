@@ -453,11 +453,10 @@ class FileTreeActions {
     rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
   ): Promise<void> {
     // We support HgRepositoryClient and GitRepositoryAsync objects.
-    if ((repo.getType() !== 'hg' && repo.getType() !== 'git') || repo.async == null) {
+    if ((repo.getType() !== 'hg' && repo.getType() !== 'git') || repo.isDestroyed()) {
       return;
     }
-    const asyncRepo = repo.async;
-    await asyncRepo.refreshStatus();
+    await repo.refreshStatus();
     const statusCodeForPath = this._getCachedPathStatuses(repo);
 
     for (const rootKeyForRepo of rootKeysForRepository.get(repo)) {
@@ -474,8 +473,8 @@ class FileTreeActions {
     // Hence, the need to debounce and listen to both change types.
     const changeStatusesSubscriptions = new CompositeDisposable();
     changeStatusesSubscriptions.add(
-      asyncRepo.onDidChangeStatuses(debouncedChangeStatuses),
-      asyncRepo.onDidChangeStatus(debouncedChangeStatuses),
+      repo.onDidChangeStatuses(debouncedChangeStatuses),
+      repo.onDidChangeStatus(debouncedChangeStatuses),
     );
     this._subscriptionForRepository = this._subscriptionForRepository.set(
       repo,
@@ -490,28 +489,30 @@ class FileTreeActions {
   _getCachedPathStatuses(
     repo: atom$GitRepository | HgRepositoryClient,
   ): {[filePath: NuclideUri]: StatusCodeNumberValue} {
-    const asyncRepo = repo.async;
-    const statuses = asyncRepo.getCachedPathStatuses();
     let relativeCodePaths;
-    if (asyncRepo.getType() === 'hg') {
+    if (repo.getType() === 'hg') {
+      const hgRepo: HgRepositoryClient = (repo: any);
       // `hg` already comes from `HgRepositoryClient` in `StatusCodeNumber` format.
-      relativeCodePaths = statuses;
-    } else {
+      relativeCodePaths = hgRepo.getCachedPathStatuses();
+    } else if (repo.getType() === 'git') {
+      const gitRepo: atom$GitRepository = (repo: any);
+      const {statuses} = gitRepo;
+      const internalGitRepo = gitRepo.getRepo();
       relativeCodePaths = {};
       // Transform `git` bit numbers to `StatusCodeNumber` format.
       const {StatusCodeNumber} = hgConstants;
       for (const relativePath in statuses) {
         const gitStatusNumber = statuses[relativePath];
         let statusCode;
-        if (asyncRepo.isStatusNew(gitStatusNumber)) {
+        if (internalGitRepo.isStatusNew(gitStatusNumber)) {
           statusCode = StatusCodeNumber.UNTRACKED;
-        } else if (asyncRepo.isStatusStaged(gitStatusNumber)) {
+        } else if (internalGitRepo.isStatusStaged(gitStatusNumber)) {
           statusCode = StatusCodeNumber.ADDED;
-        } else if (asyncRepo.isStatusModified(gitStatusNumber)) {
+        } else if (internalGitRepo.isStatusModified(gitStatusNumber)) {
           statusCode = StatusCodeNumber.MODIFIED;
-        } else if (asyncRepo.isStatusIgnored(gitStatusNumber)) {
+        } else if (internalGitRepo.isStatusIgnored(gitStatusNumber)) {
           statusCode = StatusCodeNumber.IGNORED;
-        } else if (asyncRepo.isStatusDeleted(gitStatusNumber)) {
+        } else if (internalGitRepo.isStatusDeleted(gitStatusNumber)) {
           statusCode = StatusCodeNumber.REMOVED;
         } else {
           getLogger().warn(`Unrecognized git status number ${gitStatusNumber}`);
@@ -519,6 +520,8 @@ class FileTreeActions {
         }
         relativeCodePaths[relativePath] = statusCode;
       }
+    } else {
+      throw new Error(`Unsupported repository type: ${repo.getType()}`);
     }
     const repoRoot = repo.getWorkingDirectory();
     const absoluteCodePaths = {};

@@ -148,6 +148,7 @@ export class HgRepositoryClient {
   _activeBookmark: ?string;
   _serializedRefreshStatusesCache: () => ?Promise<void>;
   _isInConflict: boolean;
+  _isDestroyed: boolean;
   async: HgRepositoryClientAsync;
 
   constructor(repoPath: string, hgService: HgService, options: HgRepositoryOptions) {
@@ -159,6 +160,7 @@ export class HgRepositoryClient {
     this._originURL = options.originURL;
     this._service = hgService;
     this._isInConflict = false;
+    this._isDestroyed = false;
     this._revisionsCache = new RevisionsCache(hgService);
     this._revisionStatusCache = getRevisionStatusCache(
       this._revisionsCache,
@@ -271,6 +273,10 @@ export class HgRepositoryClient {
   }
 
   destroy() {
+    if (this._isDestroyed) {
+      return;
+    }
+    this._isDestroyed = true;
     for (const editorSubsciption of this._editorSubscriptions.values()) {
       editorSubsciption.dispose();
     }
@@ -279,6 +285,10 @@ export class HgRepositoryClient {
     this._subscriptions.dispose();
     this._revisionIdToFileChanges.reset();
     this._fileContentsAtRevisionIds.reset();
+  }
+
+  isDestroyed(): boolean {
+    return this._isDestroyed;
   }
 
   _conflictStateChanged(isInConflict: boolean): void {
@@ -1001,6 +1011,15 @@ export class HgRepositoryClient {
     // TODO(t12228275) This is a stopgap hack, fix it.
     return this._service.getTemplateCommitMessage();
   }
+
+  refreshStatus(): Promise<void> {
+    return this.async.refreshStatus();
+  }
+
+  getCachedPathStatuses() {
+    return this.async.getCachedPathStatuses();
+  }
+
 
   getConfigValueAsync(key: string, path: ?string): Promise<?string> {
     return this._service.getConfigValueAsync(key);

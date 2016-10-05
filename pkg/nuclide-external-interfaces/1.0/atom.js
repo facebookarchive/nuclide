@@ -1199,7 +1199,12 @@ declare class atom$File {
   writeSync(text: string): void,
 }
 
-declare class atom$GitRepository extends atom$Repository {}
+declare class atom$GitRepository extends atom$Repository {
+  // Unofficial API.
+  statuses: {[filePath: string]: number},
+  // Return the `git-utils` async repo.
+  getRepo(): atom$GitRepositoryInternal,
+}
 
 declare class atom$Grammar {
   name: string,
@@ -1620,6 +1625,7 @@ declare class atom$Repository {
   getCachedPathStatus: (aPath: string) => ?number,
   isStatusModified: (status: number) => boolean,
   isStatusNew: (status: number) => boolean,
+  refreshStatus: () => Promise<void>,
 
   // Retrieving Diffs
   getDiffStats: (filePath: string) => {added: number, deleted: number},
@@ -1631,36 +1637,26 @@ declare class atom$Repository {
 
   // Event Subscription
   onDidDestroy(callback: () => mixed): IDisposable,
+  isDestroyed(): boolean,
 }
 
+// TODO(most) remove `async` - it's no longer a thing.
 // Taken from the interface of [`GitRepositoryAsync`][1], which is also implemented by Nuclide's
 // `HgRepositoryClientAsync`. This is an asynchronous version of `atom$Repository` with methods that
 // return Promises where possible rather than return values synchronously.
-//
 // [1]: https://github.com/atom/atom/blob/v1.7.3/src/git-repository-async.js
 declare class atom$RepositoryAsync {
-  // Event Subscription
-  onDidChangeStatus: (callback: RepositoryDidChangeStatusCallback) => IDisposable,
-  onDidChangeStatuses: (callback: () => mixed) => IDisposable,
+  // Checking Out
+  checkoutReference: (reference: string, create: boolean) => Promise<void>,
+}
 
-  // Repository Details
-  getType: () => string,
-
+declare class atom$GitRepositoryInternal {
   // Reading Status
   isStatusModified: (status: number) => boolean,
   isStatusNew: (status: number) => boolean,
-
-  getCachedPathStatuses: () => {[filePath: string]: number},
-  refreshStatus: () => Promise<void>,
   isStatusIgnored: (status: number) => boolean,
   isStatusStaged: (status: number) => boolean,
   isStatusDeleted: (status: number) => boolean,
-
-  // Checking Out
-  checkoutReference: (reference: string, create: boolean) => Promise<void>,
-
-  // Event Subscription
-  onDidDestroy(callback: () => mixed): IDisposable,
 }
 
 // One of text or snippet is required.

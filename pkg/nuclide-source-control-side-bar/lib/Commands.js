@@ -37,11 +37,11 @@ export default class Commands {
   }
 
   createBookmark(name: string, repository: atom$Repository): void {
-    const repositoryAsync = repository.async;
-    if (repositoryAsync.getType() !== 'hg') {
+    if (repository.getType() !== 'hg') {
       return;
     }
 
+    const repositoryAsync = repository.async;
     // Type was checked with `getType`. Downcast to safely access members with Flow.
     invariant(repositoryAsync instanceof HgRepositoryClientAsync);
 
