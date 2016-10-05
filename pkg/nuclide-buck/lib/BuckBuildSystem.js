@@ -43,7 +43,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {compact} from '../../commons-node/observable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {getBuckService} from '../../nuclide-buck-base';
-import * as featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from '../../commons-atom/featureConfig';
 import {getLogger} from '../../nuclide-logging';
 import {startPackager} from '../../nuclide-react-native-base';
 import {BuckIcon} from './ui/BuckIcon';
