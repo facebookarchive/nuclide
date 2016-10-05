@@ -15,7 +15,6 @@ import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {Message} from '../../nuclide-console/lib/types';
 
-import {CompositeDisposable} from 'atom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -31,16 +30,14 @@ export default class ArcBuildSystem {
   _tasks: ?Observable<Array<TaskMetadata>>;
   _cwdApi: ?CwdApi;
   _outputMessages: Subject<Message>;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
 
   constructor() {
     this.id = 'arcanist';
     this._outputMessages = new Subject();
     this._model = this._getModel();
     this.name = this._model.getName();
-    this._disposables = new CompositeDisposable(
-      new UniversalDisposable(this._outputMessages),
-    );
+    this._disposables = new UniversalDisposable(this._outputMessages);
   }
 
   setCwdApi(cwdApi: ?CwdApi): void {
