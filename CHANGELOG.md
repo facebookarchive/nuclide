@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.173.0
+
+Hotfix for rare cases of uncommitted changes view throwing exception when folder is removed.
+
 ## v0.172.0
 
 ### Highlights
