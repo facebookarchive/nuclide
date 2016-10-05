@@ -18,8 +18,8 @@ import type {Message} from '../../nuclide-console/lib/types';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
-import HhvmIcon from '../../commons-atom/HhvmIcon';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
+import {React} from 'react-for-atom';
 import {Observable, Subject} from 'rxjs';
 
 export default class ArcBuildSystem {
@@ -77,7 +77,7 @@ export default class ArcBuildSystem {
   }
 
   getIcon(): ReactClass<any> {
-    return HhvmIcon;
+    return ArcIcon;
   }
 
   getOutputMessages(): Observable<Message> {
@@ -109,3 +109,5 @@ function getTaskRunFunction(
       throw new Error(`Invalid task type: ${taskType}`);
   }
 }
+
+const ArcIcon = () => <span>arc</span>;

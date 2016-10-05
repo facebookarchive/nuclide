@@ -14,11 +14,11 @@ import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 
 import {Observable} from 'rxjs';
-import HhvmIcon from '../../commons-atom/HhvmIcon';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import HhvmIcon from './HhvmIcon';
 
 import {debug} from './HhvmDebug';
 import HhvmToolbar from './HhvmToolbar';
