@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import typeof {nice as niceType} from '../nice';
+import typeof {niceSafeSpawn as niceType} from '../nice';
 
 import {uncachedRequire, spyOnDefault} from '../../nuclide-test-helpers';
 
 describe('nice', () => {
-  let nice: niceType = (null: any);
+  let niceSafeSpawn: niceType = (null: any);
   let whichSpy: JasmineSpy = (null: any);
   let safeSpawnSpy: JasmineSpy = (null: any);
   let shouldFindNiceCommand: boolean = (null: any);
@@ -37,13 +37,13 @@ describe('nice', () => {
       }
     });
     safeSpawnSpy = spyOn(require('../process'), 'safeSpawn').andReturn(fakeSafeSpawnReturn);
-    nice = (uncachedRequire(require, '../nice'): any).nice;
+    niceSafeSpawn = (uncachedRequire(require, '../nice'): any).niceSafeSpawn;
   });
 
   it('should spawn `nice` and return whatever safeSpawn returns', () => {
     waitsForPromise(async () => {
       const execOptions = {};
-      const result = await nice('echo', ['hi'], execOptions);
+      const result = await niceSafeSpawn('echo', ['hi'], execOptions);
       expect(safeSpawnSpy).toHaveBeenCalledWith(
         'ionice', ['-n', '7', 'nice', 'echo', 'hi'], execOptions,
       );
@@ -56,7 +56,7 @@ describe('nice', () => {
       shouldFindNiceCommand = false;
       shouldFindIoniceCommand = false;
       const execOptions = {};
-      const result = await nice('echo', ['hi'], execOptions);
+      const result = await niceSafeSpawn('echo', ['hi'], execOptions);
       expect(safeSpawnSpy).toHaveBeenCalledWith('echo', ['hi'], execOptions);
       expect(result).toBe(fakeSafeSpawnReturn);
     });
@@ -66,7 +66,7 @@ describe('nice', () => {
     waitsForPromise(async () => {
       shouldFindIoniceCommand = false;
       const execOptions = {};
-      const result = await nice('echo', ['hi'], execOptions);
+      const result = await niceSafeSpawn('echo', ['hi'], execOptions);
       expect(safeSpawnSpy).toHaveBeenCalledWith('nice', ['echo', 'hi'], execOptions);
       expect(result).toBe(fakeSafeSpawnReturn);
     });
@@ -77,7 +77,7 @@ describe('nice', () => {
       // I don't know when we would have ionice but not nice, but we may as well support this case.
       shouldFindNiceCommand = false;
       const execOptions = {};
-      const result = await nice('echo', ['hi'], execOptions);
+      const result = await niceSafeSpawn('echo', ['hi'], execOptions);
       expect(safeSpawnSpy).toHaveBeenCalledWith('ionice', ['-n', '7', 'echo', 'hi'], execOptions);
       expect(result).toBe(fakeSafeSpawnReturn);
     });
@@ -85,8 +85,8 @@ describe('nice', () => {
 
   it('should call which only once per command and cache the result', () => {
     waitsForPromise(async () => {
-      await nice('echo', []);
-      await nice('echo', []);
+      await niceSafeSpawn('echo', []);
+      await niceSafeSpawn('echo', []);
       expect(whichSpy).toHaveBeenCalledWith('nice');
       expect(whichSpy).toHaveBeenCalledWith('ionice');
       expect(whichSpy.callCount).toBe(2);

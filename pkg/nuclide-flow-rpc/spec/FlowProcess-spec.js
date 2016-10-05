@@ -56,7 +56,7 @@ describe('FlowProcess', () => {
       kill() {},
     };
 
-    niceSpy = spyOn(require('../../commons-node/nice'), 'nice').andCallFake(() => {
+    niceSpy = spyOn(require('../../commons-node/nice'), 'niceSafeSpawn').andCallFake(() => {
       return childSpy;
     });
     // we have to create another flow service here since we've mocked modules
