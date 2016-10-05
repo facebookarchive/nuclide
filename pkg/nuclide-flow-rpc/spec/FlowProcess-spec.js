@@ -152,7 +152,7 @@ describe('FlowProcess', () => {
 
   describe('server state updates', () => {
     let currentStatus: string = (null: any);
-    let subscription: rx$ISubscription = (null: any);
+    let subscription: rxjs$ISubscription = (null: any);
     let statusUpdates: Observable<ServerStatusType> = (null: any);
 
     beforeEach(() => {

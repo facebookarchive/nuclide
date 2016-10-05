@@ -67,7 +67,7 @@ const HACK_FILE_EXTENSIONS: Array<string> = [
 class HackProcess extends RpcProcess {
   _hhconfigPath: string;
   _fileCache: FileCache;
-  _fileSubscription: rx$ISubscription;
+  _fileSubscription: rxjs$ISubscription;
   _fileVersionNotifier: FileVersionNotifier;
 
   constructor(

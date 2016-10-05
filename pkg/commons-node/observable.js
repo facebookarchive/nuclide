@@ -108,7 +108,6 @@ export function diffSets<T>(sets: Observable<Set<T>>, hash?: (v: T) => any): Obs
       Observable.of(new Set()), // Always start with no items with an empty set
       sets,
     )
-    // $FlowFixMe(matthewwithanm): Type this.
     .pairwise()
     .map(([previous, next]) => ({
       added: setDifference(next, previous, hash),

@@ -32,7 +32,7 @@ export class RemoteDirectory {
     return directory[MARKER_PROPERTY_FOR_REMOTE_DIRECTORY] === true;
   }
 
-  _watchSubscription: ?rx$ISubscription;
+  _watchSubscription: ?rxjs$ISubscription;
   _server: ServerConnection;
   _uri: string;
   _emitter: atom$Emitter;

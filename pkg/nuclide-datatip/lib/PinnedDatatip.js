@@ -54,7 +54,7 @@ export class PinnedDatatip {
   _hostElement: HTMLElement;
   _marker: ?atom$Marker;
   _rangeDecoration: ?atom$Decoration;
-  _mouseSubscription: ?rx$ISubscription;
+  _mouseSubscription: ?rxjs$ISubscription;
   _subscriptions: atom$CompositeDisposable;
   _range: atom$Range;
   _component: ReactClass<any>;

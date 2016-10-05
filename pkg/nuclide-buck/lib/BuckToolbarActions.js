@@ -19,7 +19,7 @@ import * as IosSimulator from '../../nuclide-ios-common';
 
 export default class BuckToolbarActions {
 
-  _devicesSubscription: rx$ISubscription;
+  _devicesSubscription: rxjs$ISubscription;
   _dispatcher: BuckToolbarDispatcher;
   _store: BuckToolbarStore;
   // TODO(hansonw): Will be obsolete when this is an observable stream.

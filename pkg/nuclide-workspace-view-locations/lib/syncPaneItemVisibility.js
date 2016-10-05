@@ -42,7 +42,6 @@ export function syncPaneItemVisibility(
       }),
 
     // When an item becomes inactive: if it's still in the container, `setItemVisibility(false)`
-    // $FlowFixMe: Add `pairwise()` to Flow defs
     activeItemsStream
       .pairwise()
       .withLatestFrom(panesStream)

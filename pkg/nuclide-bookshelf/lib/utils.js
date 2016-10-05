@@ -154,7 +154,6 @@ export function getShortHeadChangesFromStateStream(
   states: Observable<BookShelfState>,
 ): Observable<RepositoryShortHeadChange> {
   return states
-    // $FlowFixMe(matthewwithanm): Type this.
     .pairwise()
     .flatMap(([oldBookShelfState, newBookShelfState]: [BookShelfState, BookShelfState]) => {
       const {repositoryPathToState: oldRepositoryPathToState} = oldBookShelfState;

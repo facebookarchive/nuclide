@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-type AnyTeardown = (() => mixed) | rx$ISubscription | IDisposable;
+type AnyTeardown = (() => mixed) | rxjs$ISubscription | IDisposable;
 
 /**
  * Like a CompositeDisposable, but in addition to Disposable instances it can

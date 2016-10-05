@@ -254,7 +254,6 @@ export function openViewEpic(
         return a.payload.hgRepository;
       })
       .startWith(null, store.getState().activeRepository)
-      // $FlowFixMe(matthewwithanm): Type this.
       .pairwise()
       .switchMap(([oldRepository, newRepository]: [?HgRepositoryClient, ?HgRepositoryClient]) => {
         return Observable.concat(

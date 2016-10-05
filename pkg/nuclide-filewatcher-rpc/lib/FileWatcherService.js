@@ -33,7 +33,7 @@ const entityObservable: Map<string, Observable<WatchResult>> = new Map();
 
 // In addition, expose the observer behind each observable so we can
 // dispatch events from the root subscription.
-const entityObserver: Map<string, rx$IObserver<WatchEvent>> = new Map();
+const entityObserver: Map<string, rxjs$IObserver<WatchEvent>> = new Map();
 
 let watchmanClient: ?WatchmanClient = null;
 function getWatchmanClient(): WatchmanClient {

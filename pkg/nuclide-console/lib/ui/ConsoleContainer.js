@@ -71,7 +71,7 @@ export class ConsoleContainer extends React.Component {
   state: State;
 
   _actionCreators: BoundActionCreators;
-  _statesSubscription: rx$ISubscription;
+  _statesSubscription: rxjs$ISubscription;
   _stateChanges: Subject<void>;
   _titleChanges: Observable<string>;
 

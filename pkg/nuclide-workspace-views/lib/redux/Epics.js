@@ -130,7 +130,6 @@ export function toggleItemVisibilityEpic(
   const toggleActions = actions
     .filter(action => action.type === Actions.TOGGLE_ITEM_VISIBILITY && !action.payload.immediate);
   const nextTick = Observable.create(observer => { process.nextTick(() => { observer.next(); }); });
-  // $FlowFixMe: Add `concatAll()` to flow-typed
   const missedActions = toggleActions.buffer(nextTick).take(1).concatAll();
   return Observable.concat(missedActions, toggleActions)
     .map(action => {

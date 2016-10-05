@@ -50,7 +50,7 @@ export class ContextViewManager {
 
   _atomPanel: ?atom$Panel;
   _contextProviders: Array<ContextProvider>;
-  _defServiceSubscription: ?rx$ISubscription;
+  _defServiceSubscription: ?rxjs$ISubscription;
   // Subscriptions to all changes in registered context providers' `priority` setting.
   //    Key: ID of the context provider
   //    Value: Disposable for the change event subscription on its priority setting

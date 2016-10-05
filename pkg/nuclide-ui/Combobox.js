@@ -68,7 +68,7 @@ export class Combobox extends React.Component {
   state: State;
 
   _optionsElement: HTMLElement;
-  _updateSubscription: ?rx$ISubscription;
+  _updateSubscription: ?rxjs$ISubscription;
   _subscriptions: UniversalDisposable;
 
   static defaultProps: DefaultProps = {

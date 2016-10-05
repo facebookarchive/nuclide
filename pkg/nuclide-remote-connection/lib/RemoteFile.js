@@ -34,7 +34,7 @@ export class RemoteFile {
   _realpath: ?string;
   _server: ServerConnection;
   _subscriptionCount: number;
-  _watchSubscription: ?rx$ISubscription;
+  _watchSubscription: ?rxjs$ISubscription;
   _digest: ?string;
   _symlink: boolean;
 

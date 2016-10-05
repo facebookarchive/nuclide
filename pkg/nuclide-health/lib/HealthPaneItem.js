@@ -23,7 +23,7 @@ export default class HealthPaneItem extends React.Component {
   props: Props;
   state: PaneItemState;
 
-  _stateSubscription: rx$ISubscription;
+  _stateSubscription: rxjs$ISubscription;
 
   constructor(props: Props) {
     super(props);

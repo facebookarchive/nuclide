@@ -29,7 +29,7 @@ const PORT = 38913;
  * 2. Debugging the node process.
  */
 export class ReactNativeDebuggerInstance extends DebuggerInstance {
-  _subscriptions: rx$ISubscription;
+  _subscriptions: rxjs$ISubscription;
   _connected: Promise<void>;
 
   constructor(processInfo: DebuggerProcessInfo, debugPort: number) {

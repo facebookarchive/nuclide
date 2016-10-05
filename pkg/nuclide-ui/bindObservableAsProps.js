@@ -28,7 +28,7 @@ export function bindObservableAsProps<T : ReactClass<any>, U : T>(
 ): U {
   // $FlowIssue The return type is guaranteed to be the same as the type of ComposedComponent.
   return class extends React.Component {
-    _subscription: ?rx$ISubscription;
+    _subscription: ?rxjs$ISubscription;
     state: {[key: string]: any};
     _resolved: boolean;
 

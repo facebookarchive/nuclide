@@ -32,7 +32,7 @@ export default class OutputTable extends React.Component {
   props: Props;
   state: State;
 
-  _keySubscription: ?rx$ISubscription;
+  _keySubscription: ?rxjs$ISubscription;
   _textEditorModel: ?atom$TextEditor;
 
   constructor(props: Props) {

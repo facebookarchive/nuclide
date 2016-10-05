@@ -30,7 +30,7 @@ export class ObservingComponent<T> extends React.Component<void, Props<T>, State
   state: State<T>;
   props: Props<T>;
 
-  subscription: ?rx$ISubscription;
+  subscription: ?rxjs$ISubscription;
 
   constructor(props: Props<T>) {
     super(props);

@@ -49,7 +49,7 @@ export class OutlineView extends React.Component {
   state: State;
   props: Props;
 
-  subscription: ?rx$ISubscription;
+  subscription: ?rxjs$ISubscription;
 
   constructor(props: Props) {
     super(props);

@@ -48,7 +48,7 @@ type StartOptions = {
 export class LogTailer {
   _name: string;
   _eventNames: TrackingEventNames;
-  _subscription: ?rx$ISubscription;
+  _subscription: ?rxjs$ISubscription;
   _messages: ConnectableObservable<Message>;
   _ready: ?Observable<void>;
   _runningCallbacks: Array<(err?: Error) => mixed>;

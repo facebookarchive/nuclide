@@ -64,7 +64,7 @@ describe('cacheWhileSubscribed', () => {
   let input: Subject<number> = (null: any);
   let output: Observable<number> = (null: any);
 
-  function subscribeArray(arr: Array<number>): rx$ISubscription {
+  function subscribeArray(arr: Array<number>): rxjs$ISubscription {
     return output.subscribe(x => arr.push(x));
   }
   beforeEach(() => {

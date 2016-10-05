@@ -41,7 +41,7 @@ export class ObjectRegistry {
   _registrationsById: Map<number, ObjectRegistration>;
   _registrationsByObject: Map<RemoteObject, ObjectRegistration>;
   _nextObjectId: number;
-  _subscriptions: Map<number, rx$ISubscription>;
+  _subscriptions: Map<number, rxjs$ISubscription>;
   _delta: number;
   // These members handle remote objects.
   _proxiesById: Map<number, Object>;
@@ -174,11 +174,11 @@ export class ObjectRegistry {
     return objectId;
   }
 
-  addSubscription(id: number, subscription: rx$ISubscription): void {
+  addSubscription(id: number, subscription: rxjs$ISubscription): void {
     this._subscriptions.set(id, subscription);
   }
 
-  removeSubscription(id: number): ?rx$ISubscription {
+  removeSubscription(id: number): ?rxjs$ISubscription {
     const subscription = this._subscriptions.get(id);
     if (subscription != null) {
       this._subscriptions.delete(id);

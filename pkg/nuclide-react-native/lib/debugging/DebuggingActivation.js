@@ -21,7 +21,7 @@ import {Observable} from 'rxjs';
  */
 export class DebuggingActivation {
   _disposables: IDisposable;
-  _startDebuggingSubscription: ?rx$ISubscription;
+  _startDebuggingSubscription: ?rxjs$ISubscription;
 
   constructor() {
     this._disposables = new CompositeDisposable(
