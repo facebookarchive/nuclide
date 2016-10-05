@@ -11,9 +11,19 @@
 
 import type {LRUCache} from 'lru-cache';
 
+import type {
+  AsyncExecuteOptions,
+  AsyncExecuteReturn,
+} from './process';
+
 import LRU from 'lru-cache';
 
-import {safeSpawn} from './process';
+import {
+  safeSpawn,
+  asyncExecute,
+  checkOutput,
+} from './process';
+
 import which from './which';
 
 const NICE_COMMAND = 'nice';
@@ -26,6 +36,24 @@ export async function niceSafeSpawn(
 ): Promise<child_process$ChildProcess> {
   const nicified = await nicifyCommand(command, args);
   return safeSpawn(nicified.command, nicified.args, execOptions);
+}
+
+export async function niceCheckOutput(
+  command: string,
+  args: Array<string>,
+  execOptions?: AsyncExecuteOptions,
+): Promise<AsyncExecuteReturn> {
+  const nicified = await nicifyCommand(command, args);
+  return await checkOutput(nicified.command, nicified.args, execOptions);
+}
+
+export async function niceAsyncExecute(
+  command: string,
+  args: Array<string>,
+  execOptions?: AsyncExecuteOptions,
+): Promise<AsyncExecuteReturn> {
+  const nicified = await nicifyCommand(command, args);
+  return await asyncExecute(nicified.command, nicified.args, execOptions);
 }
 
 async function nicifyCommand(

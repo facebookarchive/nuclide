@@ -9,19 +9,32 @@
  * the root directory of this source tree.
  */
 
-import typeof {niceSafeSpawn as niceType} from '../nice';
+import typeof {
+  niceSafeSpawn as niceSafeSpawnType,
+  niceCheckOutput as niceCheckOutputType,
+  niceAsyncExecute as niceAsyncExecuteType,
+} from '../nice';
+
+import type {AsyncExecuteReturn} from '../process';
 
 import {uncachedRequire, spyOnDefault} from '../../nuclide-test-helpers';
 
 describe('nice', () => {
-  let niceSafeSpawn: niceType = (null: any);
+  let niceSafeSpawn: niceSafeSpawnType = (null: any);
+  let niceCheckOutput: niceCheckOutputType = (null: any);
+  let niceAsyncExecute: niceAsyncExecuteType = (null: any);
+
   let whichSpy: JasmineSpy = (null: any);
   let safeSpawnSpy: JasmineSpy = (null: any);
+  let checkOutputSpy: JasmineSpy = (null: any);
+  let asyncExecuteSpy: JasmineSpy = (null: any);
   let shouldFindNiceCommand: boolean = (null: any);
   let shouldFindIoniceCommand: boolean = (null: any);
   // All we need here is a unique value to make sure that `nice` returns whatever `safeSpawn`
   // returns
   const fakeSafeSpawnReturn: child_process$ChildProcess = ({}: any);
+  const fakeCheckOutputReturn: AsyncExecuteReturn = ({}: any);
+  const fakeAsyncExecuteReturn: AsyncExecuteReturn = ({}: any);
 
   beforeEach(() => {
     shouldFindNiceCommand = true;
@@ -37,7 +50,11 @@ describe('nice', () => {
       }
     });
     safeSpawnSpy = spyOn(require('../process'), 'safeSpawn').andReturn(fakeSafeSpawnReturn);
-    niceSafeSpawn = (uncachedRequire(require, '../nice'): any).niceSafeSpawn;
+    checkOutputSpy = spyOn(require('../process'), 'checkOutput').andReturn(fakeCheckOutputReturn);
+    asyncExecuteSpy =
+      spyOn(require('../process'), 'asyncExecute').andReturn(fakeAsyncExecuteReturn);
+    ({niceSafeSpawn, niceAsyncExecute, niceCheckOutput} =
+      (uncachedRequire(require, '../nice'): any));
   });
 
   it('should spawn `nice` and return whatever safeSpawn returns', () => {
@@ -90,6 +107,28 @@ describe('nice', () => {
       expect(whichSpy).toHaveBeenCalledWith('nice');
       expect(whichSpy).toHaveBeenCalledWith('ionice');
       expect(whichSpy.callCount).toBe(2);
+    });
+  });
+
+  it('should call checkOutput when the niceCheckOutput variant is used', () => {
+    waitsForPromise(async () => {
+      const execOptions = {};
+      const result = await niceCheckOutput('echo', ['hi'], execOptions);
+      expect(checkOutputSpy).toHaveBeenCalledWith(
+        'ionice', ['-n', '7', 'nice', 'echo', 'hi'], execOptions,
+      );
+      expect(result).toBe(fakeCheckOutputReturn);
+    });
+  });
+
+  it('should call asyncExecute when the niceAsyncExecute variant is used', () => {
+    waitsForPromise(async () => {
+      const execOptions = {};
+      const result = await niceAsyncExecute('echo', ['hi'], execOptions);
+      expect(asyncExecuteSpy).toHaveBeenCalledWith(
+        'ionice', ['-n', '7', 'nice', 'echo', 'hi'], execOptions,
+      );
+      expect(result).toBe(fakeAsyncExecuteReturn);
     });
   });
 });
