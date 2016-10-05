@@ -50,7 +50,6 @@ import {
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
-import passesGK from '../../commons-node/passesGK';
 import {PanelComponent} from '../../nuclide-ui/PanelComponent';
 import {setNotificationService} from '../../nuclide-debugger-base';
 import {NewDebuggerView} from './NewDebuggerView';
@@ -62,14 +61,12 @@ export type SerializedState = {
 };
 
 const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
-const GK_DEBUGGER_UI_REVAMP = 'nuclide_debugger_ui_revamp';
 const NUX_NEW_DEBUGGER_UI_ID = 4377;
 const GK_NEW_DEBUGGER_UI_NUX = 'mp_nuclide_new_debugger_ui';
 const NUX_NEW_DEBUGGER_UI_NAME = 'nuclide_new_debugger_ui';
 
 type Props = {
   model: DebuggerModel,
-  useRevampedUi: boolean,
 };
 type State = {
   showOldView: boolean,
@@ -82,7 +79,7 @@ class DebuggerView extends React.Component {
   constructor(props: Props) {
     super(props);
     this.state = {
-      showOldView: !props.useRevampedUi,
+      showOldView: false,
     };
     (this: any)._toggleOldView = this._toggleOldView.bind(this);
   }
@@ -154,13 +151,12 @@ class DebuggerView extends React.Component {
   }
 }
 
-function createDebuggerView(model: DebuggerModel, useRevampedUi: boolean): HTMLElement {
+function createDebuggerView(model: DebuggerModel): HTMLElement {
   const elem = document.createElement('div');
   elem.className = 'nuclide-debugger-container';
   ReactDOM.render(
     <DebuggerView
       model={model}
-      useRevampedUi={useRevampedUi}
     />,
     elem,
   );
@@ -264,12 +260,11 @@ class Activation {
     this._setupView();
   }
 
-  async _setupView(): Promise<void> {
-    const useRevampedUi = await passesGK(GK_DEBUGGER_UI_REVAMP);
+  _setupView(): void {
     this._disposables.add(
       atom.views.addViewProvider(
         DebuggerModel,
-        (model: DebuggerModel) => createDebuggerView(model, useRevampedUi),
+        (model: DebuggerModel) => createDebuggerView(model),
       ),
     );
   }
