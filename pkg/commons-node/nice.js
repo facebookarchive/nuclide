@@ -24,6 +24,14 @@ export async function nice(
   args: Array<string>,
   execOptions?: Object,
 ): Promise<child_process$ChildProcess> {
+  const nicified = await nicifyCommand(command, args);
+  return safeSpawn(nicified.command, nicified.args, execOptions);
+}
+
+async function nicifyCommand(
+  command: string,
+  args: Array<string>,
+): Promise<{command: string, args: Array<string>}> {
   const fullArgs = [command, ...args];
   if (await hasNiceCommand()) {
     fullArgs.unshift(NICE_COMMAND);
@@ -41,7 +49,10 @@ export async function nice(
     // think we can assume that it uses this interface if it exists.
     fullArgs.unshift(IONICE_COMMAND, '-n', '7');
   }
-  return safeSpawn(fullArgs[0], fullArgs.slice(1), execOptions);
+  return {
+    command: fullArgs[0],
+    args: fullArgs.slice(1),
+  };
 }
 
 const commandAvailabilityCache: LRUCache<string, boolean> = LRU({
