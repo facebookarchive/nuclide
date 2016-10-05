@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +8,55 @@
  * the root directory of this source tree.
  */
 
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
-import {trackOperationTiming} from '../../nuclide-analytics';
-import {getHackLanguageForUri} from './HackLanguage';
-import loadingNotification from '../../commons-atom/loading-notification';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
+var _nuclideHackCommon2;
+
+function _nuclideHackCommon() {
+  return _nuclideHackCommon2 = require('../../nuclide-hack-common');
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _HackLanguage2;
+
+function _HackLanguage() {
+  return _HackLanguage2 = require('./HackLanguage');
+}
+
+var _commonsAtomLoadingNotification2;
+
+function _commonsAtomLoadingNotification() {
+  return _commonsAtomLoadingNotification2 = _interopRequireDefault(require('../../commons-atom/loading-notification'));
+}
+
+var _nuclideOpenFiles2;
+
+function _nuclideOpenFiles() {
+  return _nuclideOpenFiles2 = require('../../nuclide-open-files');
+}
 
 module.exports = {
-  async isEditorSupported(textEditor: atom$TextEditor): Promise<boolean> {
-    const fileUri = textEditor.getPath();
-    if (!fileUri || !HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
+  isEditorSupported: _asyncToGenerator(function* (textEditor) {
+    var fileUri = textEditor.getPath();
+    if (!fileUri || !(_nuclideHackCommon2 || _nuclideHackCommon()).HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
       return false;
     }
     return true;
-  },
+  }),
 
-  findReferences(editor: atom$TextEditor, position: atom$Point): Promise<?FindReferencesReturn> {
-    return trackOperationTiming('hack:findReferences', async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const hackLanguage = await getHackLanguageForUri(editor.getPath());
+  findReferences: function findReferences(editor, position) {
+    return (0, (_nuclideAnalytics2 || _nuclideAnalytics()).trackOperationTiming)('hack:findReferences', _asyncToGenerator(function* () {
+      var fileVersion = yield (0, (_nuclideOpenFiles2 || _nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      var hackLanguage = yield (0, (_HackLanguage2 || _HackLanguage()).getHackLanguageForUri)(editor.getPath());
       if (hackLanguage == null || fileVersion == null) {
         return null;
       }
-      return await loadingNotification(
-        hackLanguage.findReferences(fileVersion, position),
-        'Loading references from Hack server...',
-      );
-    });
-  },
+      return yield (0, (_commonsAtomLoadingNotification2 || _commonsAtomLoadingNotification()).default)(hackLanguage.findReferences(fileVersion, position), 'Loading references from Hack server...');
+    }));
+  }
 };

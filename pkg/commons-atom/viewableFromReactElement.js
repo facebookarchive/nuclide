@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.viewableFromReactElement = viewableFromReactElement;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +13,17 @@
  * the root directory of this source tree.
  */
 
-import {React, ReactDOM} from 'react-for-atom';
-import ReactMountRootElement from '../nuclide-ui/ReactMountRootElement';
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _nuclideUiReactMountRootElement2;
+
+function _nuclideUiReactMountRootElement() {
+  return _nuclideUiReactMountRootElement2 = _interopRequireDefault(require('../nuclide-ui/ReactMountRootElement'));
+}
 
 /**
  * Create an object that can be used as an Atom model from a React element. Example:
@@ -32,28 +45,25 @@ import ReactMountRootElement from '../nuclide-ui/ReactMountRootElement';
  *    const item = viewableFromReactElement(<UsageStats />);
  *    atom.workspace.getPanes()[0].addItem(item); // Or anywhere else Atom uses model "items."
  */
-export function viewableFromReactElement(reactElement: React.Element<any>): Object {
-  const container = new ReactMountRootElement();
-  const item = ReactDOM.render(reactElement, container);
+
+function viewableFromReactElement(reactElement) {
+  var container = new (_nuclideUiReactMountRootElement2 || _nuclideUiReactMountRootElement()).default();
+  var item = (_reactForAtom2 || _reactForAtom()).ReactDOM.render(reactElement, container);
 
   // Add the a reference to the container to the item. This will allow Atom's view registry to
   // associate the item with the HTML element.
   if (item.element != null) {
-    throw new Error(
-      "Component cannot have an `element` property. That's added by viewableFromReactElement",
-    );
+    throw new Error("Component cannot have an `element` property. That's added by viewableFromReactElement");
   }
-  (item: any).element = container;
+  item.element = container;
 
   // Add a destroy method to the item that will unmount the component. There's no need for users to
   // implement this themselves because they have `componentWillUnmount()`.
   if (item.destroy != null) {
-    throw new Error(
-      "Component cannot implement `destroy()`. That's added by `viewableFromReactElement`",
-    );
+    throw new Error("Component cannot implement `destroy()`. That's added by `viewableFromReactElement`");
   }
-  (item: any).destroy = () => {
-    ReactDOM.unmountComponentAtNode(container);
+  item.destroy = function () {
+    (_reactForAtom2 || _reactForAtom()).ReactDOM.unmountComponentAtNode(container);
   };
 
   return item;

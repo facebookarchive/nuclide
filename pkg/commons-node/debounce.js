@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = debounce;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,33 +13,31 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
+var _assert2;
 
-export default function debounce<
-  A, B, C, D, E, F, G,
-  TReturn,
-  TFunc:(a: A, b: B, c: C, d: D, e: E, f: F, g: G) => TReturn,
->(
-  func: TFunc,
-  wait: number,
-  immediate?: boolean = false,
-): (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => (TReturn | void) {
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+function debounce(func, wait) {
+  var immediate = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+
   // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
-  let timeout: ?number;
-  let args: ?[A, B, C, D, E, F, G];
-  let context: any;
-  let timestamp = 0;
-  let result: (TReturn | void);
+  var timeout = undefined;
+  var args = undefined;
+  var context = undefined;
+  var timestamp = 0;
+  var result = undefined;
 
-  const later = function() {
-    const last = Date.now() - timestamp;
+  var later = function later() {
+    var last = Date.now() - timestamp;
 
     if (last < wait && last >= 0) {
       timeout = setTimeout(later, wait - last);
     } else {
       timeout = null;
       if (!immediate) {
-        invariant(args != null);
+        (0, (_assert2 || _assert()).default)(args != null);
         result = func.apply(context, args);
         if (!timeout) {
           context = args = null;
@@ -44,11 +46,11 @@ export default function debounce<
     }
   };
 
-  return function(): (TReturn | void) {
+  return function () {
     context = this;
-    args = (arguments: [A, B, C, D, E, F, G]);
+    args = arguments;
     timestamp = Date.now();
-    const callNow = immediate && !timeout;
+    var callNow = immediate && !timeout;
     if (!timeout) {
       timeout = setTimeout(later, wait);
     }
@@ -60,3 +62,5 @@ export default function debounce<
     return result;
   };
 }
+
+module.exports = exports.default;

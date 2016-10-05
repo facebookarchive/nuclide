@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,12 +10,21 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {TextEdit} from './rpc-types';
+exports.default = applyTextEdits;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {existingEditorForUri} from '../../commons-atom/text-editor';
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsAtomTextEditor2;
+
+function _commonsAtomTextEditor() {
+  return _commonsAtomTextEditor2 = require('../../commons-atom/text-editor');
+}
 
 /**
  * Attempts to apply the given patches to the given file.
@@ -25,15 +35,20 @@ import {existingEditorForUri} from '../../commons-atom/text-editor';
  * Returns true if the application was successful, otherwise false (e.g. if the oldText did not
  * match).
  */
-export default function applyTextEdits(path: NuclideUri, ...edits: Array<TextEdit>): boolean {
-  const editor = existingEditorForUri(path);
-  invariant(editor != null);
 
-  const buffer = editor.getBuffer();
-  const checkpoint = buffer.createCheckpoint();
+function applyTextEdits(path) {
+  var editor = (0, (_commonsAtomTextEditor2 || _commonsAtomTextEditor()).existingEditorForUri)(path);
+  (0, (_assert2 || _assert()).default)(editor != null);
 
-  for (const edit of edits) {
-    const success = applyToBuffer(buffer, edit);
+  var buffer = editor.getBuffer();
+  var checkpoint = buffer.createCheckpoint();
+
+  for (var _len = arguments.length, edits = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    edits[_key - 1] = arguments[_key];
+  }
+
+  for (var edit of edits) {
+    var success = applyToBuffer(buffer, edit);
     if (!success) {
       buffer.revertToCheckpoint(checkpoint);
       return false;
@@ -44,18 +59,18 @@ export default function applyTextEdits(path: NuclideUri, ...edits: Array<TextEdi
   return true;
 }
 
-function applyToBuffer(buffer: atom$TextBuffer, edit: TextEdit): boolean {
+function applyToBuffer(buffer, edit) {
   if (edit.oldRange.start.row === edit.oldRange.end.row) {
     // A little extra validation when the old range spans only one line. In particular, this helps
     // when the old range is empty so there is no old text for us to compare against. We can at
     // least abort if the line isn't long enough.
-    const lineLength = buffer.lineLengthForRow(edit.oldRange.start.row);
+    var lineLength = buffer.lineLengthForRow(edit.oldRange.start.row);
     if (edit.oldRange.end.column > lineLength) {
       return false;
     }
   }
   if (edit.oldText != null) {
-    const currentText = buffer.getTextInRange(edit.oldRange);
+    var currentText = buffer.getTextInRange(edit.oldRange);
     if (currentText !== edit.oldText) {
       return false;
     }
@@ -63,3 +78,4 @@ function applyToBuffer(buffer: atom$TextBuffer, edit: TextEdit): boolean {
   buffer.setTextInRange(edit.oldRange, edit.newText);
   return true;
 }
+module.exports = exports.default;

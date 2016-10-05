@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +16,47 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+var _classnames2;
 
-type HighlightColor = 'info' | 'success' | 'warning' | 'error';
+function _classnames() {
+  return _classnames2 = _interopRequireDefault(require('classnames'));
+}
 
-type Props = {
-  className?: string,
-  color?: HighlightColor,
-  children?: ?React.Element<any>,
-};
+var _reactForAtom2;
 
-export const HighlightColors = Object.freeze({
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var HighlightColors = Object.freeze({
   info: 'info',
   success: 'success',
   warning: 'warning',
-  error: 'error',
+  error: 'error'
 });
 
-const HighlightColorClassNames = Object.freeze({
-  default: 'highlight',
+exports.HighlightColors = HighlightColors;
+var HighlightColorClassNames = Object.freeze({
+  'default': 'highlight',
   info: 'highlight-info',
   success: 'highlight-success',
   warning: 'highlight-warning',
-  error: 'highlight-error',
+  error: 'highlight-error'
 });
 
-export const Highlight = (props: Props) => {
-  const {
-    className,
-    color,
-    children,
-    ...remainingProps,
-  } = props;
-  const colorClassName = color == null ? 'highlight' : HighlightColorClassNames[color];
-  const newClassName = classnames(colorClassName, className);
-  return <span className={newClassName} {...remainingProps}>{children}</span>;
+var Highlight = function Highlight(props) {
+  var className = props.className;
+  var color = props.color;
+  var children = props.children;
+
+  var remainingProps = _objectWithoutProperties(props, ['className', 'color', 'children']);
+
+  var colorClassName = color == null ? 'highlight' : HighlightColorClassNames[color];
+  var newClassName = (0, (_classnames2 || _classnames()).default)(colorClassName, className);
+  return (_reactForAtom2 || _reactForAtom()).React.createElement(
+    'span',
+    _extends({ className: newClassName }, remainingProps),
+    children
+  );
 };
+exports.Highlight = Highlight;

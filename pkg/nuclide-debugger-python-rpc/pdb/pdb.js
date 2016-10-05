@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,42 +10,55 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
-import type {DebuggerEvent} from '../debugger/types';
+exports.default = main;
 
-import {DebuggerCommander} from '../debugger/DebuggerCommander';
-import {launchDebugger} from '../debugger/debugger';
-import readline from 'readline';
-import yargs from 'yargs';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export default function main(args: Array<string>) {
-  const argv = yargs
-    .usage('Python command-line debugger in JavaScript.\nUsage: $0 <file-to-run.py> <arg1> <arg2>')
-    .help('help')
-    .alias('h', 'help')
-    .demand(1, 'Must specify a Python file')
-    .parse(args);
+var _debuggerDebuggerCommander2;
 
-  const commander = new DebuggerCommander();
-  const observable = launchDebugger(
-    commander.asObservable(),
-    /* initialBreakpoints */ [],
-    /* pathToPythonExecutable */ 'python',
-    /* pythonArgs */ argv._,
-  );
+function _debuggerDebuggerCommander() {
+  return _debuggerDebuggerCommander2 = require('../debugger/DebuggerCommander');
+}
+
+var _debuggerDebugger2;
+
+function _debuggerDebugger() {
+  return _debuggerDebugger2 = require('../debugger/debugger');
+}
+
+var _readline2;
+
+function _readline() {
+  return _readline2 = _interopRequireDefault(require('readline'));
+}
+
+var _yargs2;
+
+function _yargs() {
+  return _yargs2 = _interopRequireDefault(require('yargs'));
+}
+
+function main(args) {
+  var argv = (_yargs2 || _yargs()).default.usage('Python command-line debugger in JavaScript.\nUsage: $0 <file-to-run.py> <arg1> <arg2>').help('help').alias('h', 'help').demand(1, 'Must specify a Python file').parse(args);
+
+  var commander = new (_debuggerDebuggerCommander2 || _debuggerDebuggerCommander()).DebuggerCommander();
+  var observable = (0, (_debuggerDebugger2 || _debuggerDebugger()).launchDebugger)(commander.asObservable(),
+  /* initialBreakpoints */[],
+  /* pathToPythonExecutable */'python',
+  /* pythonArgs */argv._);
 
   interact(observable, commander);
 }
 
 /* eslint-disable no-console */
-function interact(observable: Observable<DebuggerEvent>, commander: DebuggerCommander) {
-  const rl = readline.createInterface({
+function interact(observable, commander) {
+  var rl = (_readline2 || _readline()).default.createInterface({
     input: process.stdin,
-    output: process.stdout,
+    output: process.stdout
   });
 
   function ask() {
-    rl.question('> ', answer => {
+    rl.question('> ', function (answer) {
       // See https://docs.python.org/2/library/pdb.html for the full set of pdb commands.
       // TODO(mbolin): Support break, clear, and jump, all of which take arguments.
       switch (answer) {
@@ -75,30 +89,33 @@ function interact(observable: Observable<DebuggerEvent>, commander: DebuggerComm
           commander.step();
           break;
         default:
-          console.error(`Unrecognized command: ${answer}`);
+          console.error('Unrecognized command: ' + answer);
           ask();
       }
     });
   }
 
   observable.subscribe({
-    next(message) {
+    next: function next(message) {
       if (message.event === 'start') {
         // Give the user a chance to set breakpoints before starting the program.
         console.log('Program started. Type \'c\' to continue or \'s\' to start stepping.');
         ask();
       } else if (message.event === 'stop') {
-        const {file, line} = message;
-        console.log(`Stopped at: ${file}:${line}`);
+        var file = message.file;
+        var line = message.line;
+
+        console.log('Stopped at: ' + file + ':' + line);
         ask();
       }
     },
-    error(error) {
-      console.error('ERROR:', error);
+    error: function error(_error) {
+      console.error('ERROR:', _error);
     },
-    complete() {
+    complete: function complete() {
       rl.close();
-    },
+    }
   });
 }
 /* eslint-enable no-console */
+module.exports = exports.default;

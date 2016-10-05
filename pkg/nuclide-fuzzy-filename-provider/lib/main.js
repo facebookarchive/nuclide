@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,101 +10,162 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from '../../nuclide-quick-open/lib/types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable} from 'atom';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import createPackage from '../../commons-atom/createPackage';
-import scheduleIdleCallback from '../../commons-atom/scheduleIdleCallback';
-import {getFuzzyFileSearchServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {getLogger} from '../../nuclide-logging';
-import FuzzyFileNameProvider from './FuzzyFileNameProvider';
-import {getIgnoredNames} from './utils';
 
-const logger = getLogger();
+var _nuclideBusySignal2;
 
-class Activation {
-  _busySignalProvider: BusySignalProviderBase;
-  _disposables: CompositeDisposable;
-  _projectRoots: Set<string>;
+function _nuclideBusySignal() {
+  return _nuclideBusySignal2 = require('../../nuclide-busy-signal');
+}
 
-  constructor() {
-    this._busySignalProvider = new BusySignalProviderBase();
-    this._disposables = new CompositeDisposable();
+var _commonsAtomCreatePackage2;
+
+function _commonsAtomCreatePackage() {
+  return _commonsAtomCreatePackage2 = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _commonsAtomScheduleIdleCallback2;
+
+function _commonsAtomScheduleIdleCallback() {
+  return _commonsAtomScheduleIdleCallback2 = _interopRequireDefault(require('../../commons-atom/scheduleIdleCallback'));
+}
+
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../../nuclide-remote-connection');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _FuzzyFileNameProvider2;
+
+function _FuzzyFileNameProvider() {
+  return _FuzzyFileNameProvider2 = _interopRequireDefault(require('./FuzzyFileNameProvider'));
+}
+
+var _utils2;
+
+function _utils() {
+  return _utils2 = require('./utils');
+}
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
+
+var Activation = (function () {
+  function Activation() {
+    _classCallCheck(this, Activation);
+
+    this._busySignalProvider = new (_nuclideBusySignal2 || _nuclideBusySignal()).BusySignalProviderBase();
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
     this._projectRoots = new Set();
-    (this: any)._readySearch = this._readySearch.bind(this);
+    this._readySearch = this._readySearch.bind(this);
 
     // Do search preprocessing for all existing and future root directories.
     this._readySearch(atom.project.getPaths());
-    this._disposables.add(
-      atom.project.onDidChangePaths(this._readySearch),
-    );
+    this._disposables.add(atom.project.onDidChangePaths(this._readySearch));
   }
 
-  _readySearch(projectPaths: Array<string>): void {
-    const newProjectPaths = new Set(projectPaths);
-    // Add new project roots.
-    for (const newProjectPath of newProjectPaths) {
-      if (!this._projectRoots.has(newProjectPath)) {
-        this._projectRoots.add(newProjectPath);
-        // Wait a bit before starting the initial search, since it's a heavy op.
-        const disposable = scheduleIdleCallback(() => {
-          this._disposables.remove(disposable);
-          this._busySignalProvider.reportBusy(
-            `File search: indexing files for project ${newProjectPath}`,
-            () => this._initialSearch(newProjectPath),
-          ).catch(err => {
-            logger.error(`Error starting fuzzy filename search for ${newProjectPath}`, err);
-            this._disposeSearch(newProjectPath);
-          });
-        });
-        this._disposables.add(disposable);
+  _createClass(Activation, [{
+    key: '_readySearch',
+    value: function _readySearch(projectPaths) {
+      var _this = this;
+
+      var newProjectPaths = new Set(projectPaths);
+      // Add new project roots.
+
+      var _loop = function (newProjectPath) {
+        if (!_this._projectRoots.has(newProjectPath)) {
+          (function () {
+            _this._projectRoots.add(newProjectPath);
+            // Wait a bit before starting the initial search, since it's a heavy op.
+            var disposable = (0, (_commonsAtomScheduleIdleCallback2 || _commonsAtomScheduleIdleCallback()).default)(function () {
+              _this._disposables.remove(disposable);
+              _this._busySignalProvider.reportBusy('File search: indexing files for project ' + newProjectPath, function () {
+                return _this._initialSearch(newProjectPath);
+              }).catch(function (err) {
+                logger.error('Error starting fuzzy filename search for ' + newProjectPath, err);
+                _this._disposeSearch(newProjectPath);
+              });
+            });
+            _this._disposables.add(disposable);
+          })();
+        }
+      };
+
+      for (var newProjectPath of newProjectPaths) {
+        _loop(newProjectPath);
+      }
+      // Clean up removed project roots.
+      for (var existingProjectPath of this._projectRoots) {
+        if (!newProjectPaths.has(existingProjectPath)) {
+          this._disposeSearch(existingProjectPath);
+        }
       }
     }
-    // Clean up removed project roots.
-    for (const existingProjectPath of this._projectRoots) {
-      if (!newProjectPaths.has(existingProjectPath)) {
-        this._disposeSearch(existingProjectPath);
+  }, {
+    key: '_initialSearch',
+    value: _asyncToGenerator(function* (projectPath) {
+      var service = (0, (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).getFuzzyFileSearchServiceByNuclideUri)(projectPath);
+      var isAvailable = yield service.isFuzzySearchAvailableFor(projectPath);
+      if (isAvailable) {
+        // It doesn't matter what the search term is. Empirically, doing an initial
+        // search speeds up the next search much more than simply doing the setup
+        // kicked off by 'fileSearchForDirectory'.
+        yield service.queryFuzzyFile(projectPath, 'a', (0, (_utils2 || _utils()).getIgnoredNames)());
+      } else {
+        throw new Error('Nonexistent directory');
+      }
+    })
+  }, {
+    key: '_disposeSearch',
+    value: function _disposeSearch(projectPath) {
+      try {
+        var service = (0, (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).getFuzzyFileSearchServiceByNuclideUri)(projectPath);
+        service.disposeFuzzySearch(projectPath);
+      } catch (err) {
+        logger.error('Error disposing fuzzy filename service for ' + projectPath, err);
+      } finally {
+        this._projectRoots.delete(projectPath);
       }
     }
-  }
-
-  async _initialSearch(projectPath: string): Promise<void> {
-    const service = getFuzzyFileSearchServiceByNuclideUri(projectPath);
-    const isAvailable = await service.isFuzzySearchAvailableFor(projectPath);
-    if (isAvailable) {
-      // It doesn't matter what the search term is. Empirically, doing an initial
-      // search speeds up the next search much more than simply doing the setup
-      // kicked off by 'fileSearchForDirectory'.
-      await service.queryFuzzyFile(projectPath, 'a', getIgnoredNames());
-    } else {
-      throw new Error('Nonexistent directory');
+  }, {
+    key: 'registerProvider',
+    value: function registerProvider() {
+      return (_FuzzyFileNameProvider2 || _FuzzyFileNameProvider()).default;
     }
-  }
-
-  _disposeSearch(projectPath: string): void {
-    try {
-      const service = getFuzzyFileSearchServiceByNuclideUri(projectPath);
-      service.disposeFuzzySearch(projectPath);
-    } catch (err) {
-      logger.error(`Error disposing fuzzy filename service for ${projectPath}`, err);
-    } finally {
-      this._projectRoots.delete(projectPath);
+  }, {
+    key: 'provideBusySignal',
+    value: function provideBusySignal() {
+      return this._busySignalProvider;
     }
-  }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
 
-  registerProvider(): Provider {
-    return FuzzyFileNameProvider;
-  }
+  return Activation;
+})();
 
-  provideBusySignal(): BusySignalProviderBase {
-    return this._busySignalProvider;
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
-  }
-}
-
-export default createPackage(Activation);
+exports.default = (0, (_commonsAtomCreatePackage2 || _commonsAtomCreatePackage()).default)(Activation);
+module.exports = exports.default;

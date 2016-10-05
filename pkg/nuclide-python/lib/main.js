@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,117 +10,172 @@
  * the root directory of this source tree.
  */
 
-import type {OutlineProvider} from '../../nuclide-outline-view';
-import type {DefinitionProvider} from '../../nuclide-definition-service';
-import type {FindReferencesProvider} from '../../nuclide-find-references';
-import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
-import type {LinterProvider} from '../../nuclide-diagnostics-common';
+exports.activate = activate;
+exports.createAutocompleteProvider = createAutocompleteProvider;
+exports.provideOutlines = provideOutlines;
+exports.provideDefinitions = provideDefinitions;
+exports.provideReferences = provideReferences;
+exports.provideCodeFormat = provideCodeFormat;
+exports.provideLint = provideLint;
+exports.provideBusySignal = provideBusySignal;
+exports.deactivate = deactivate;
 
-import invariant from 'assert';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
-import {GRAMMAR_SET} from './constants';
-import {getLintOnFly} from './config';
-import AutocompleteHelpers from './AutocompleteHelpers';
-import DefinitionHelpers from './DefinitionHelpers';
-import OutlineHelpers from './OutlineHelpers';
-import ReferenceHelpers from './ReferenceHelpers';
-import CodeFormatHelpers from './CodeFormatHelpers';
-import LintHelpers from './LintHelpers';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-let busySignalProvider: ?DedupedBusySignalProviderBase = null;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function activate() {
-  busySignalProvider = new DedupedBusySignalProviderBase();
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
 }
 
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+
+var _nuclideBusySignal2;
+
+function _nuclideBusySignal() {
+  return _nuclideBusySignal2 = require('../../nuclide-busy-signal');
+}
+
+var _constants2;
+
+function _constants() {
+  return _constants2 = require('./constants');
+}
+
+var _config2;
+
+function _config() {
+  return _config2 = require('./config');
+}
+
+var _AutocompleteHelpers2;
+
+function _AutocompleteHelpers() {
+  return _AutocompleteHelpers2 = _interopRequireDefault(require('./AutocompleteHelpers'));
+}
+
+var _DefinitionHelpers2;
+
+function _DefinitionHelpers() {
+  return _DefinitionHelpers2 = _interopRequireDefault(require('./DefinitionHelpers'));
+}
+
+var _OutlineHelpers2;
+
+function _OutlineHelpers() {
+  return _OutlineHelpers2 = _interopRequireDefault(require('./OutlineHelpers'));
+}
+
+var _ReferenceHelpers2;
+
+function _ReferenceHelpers() {
+  return _ReferenceHelpers2 = _interopRequireDefault(require('./ReferenceHelpers'));
+}
+
+var _CodeFormatHelpers2;
+
+function _CodeFormatHelpers() {
+  return _CodeFormatHelpers2 = _interopRequireDefault(require('./CodeFormatHelpers'));
+}
+
+var _LintHelpers2;
+
+function _LintHelpers() {
+  return _LintHelpers2 = _interopRequireDefault(require('./LintHelpers'));
+}
+
+var busySignalProvider = null;
+
+function activate() {
+  busySignalProvider = new (_nuclideBusySignal2 || _nuclideBusySignal()).DedupedBusySignalProviderBase();
+}
+
+function createAutocompleteProvider() {
   return {
     selector: '.source.python',
     disableForSelector: '.source.python .comment, .source.python .string',
     inclusionPriority: 5,
-    suggestionPriority: 5,  // Higher than the snippets provider.
-    getSuggestions(request) {
-      return AutocompleteHelpers.getAutocompleteSuggestions(request);
-    },
+    suggestionPriority: 5, // Higher than the snippets provider.
+    getSuggestions: function getSuggestions(request) {
+      return (_AutocompleteHelpers2 || _AutocompleteHelpers()).default.getAutocompleteSuggestions(request);
+    }
   };
 }
 
-export function provideOutlines(): OutlineProvider {
+function provideOutlines() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants2 || _constants()).GRAMMAR_SET),
     priority: 1,
     name: 'Python',
-    getOutline(editor) {
-      return OutlineHelpers.getOutline(editor);
-    },
+    getOutline: function getOutline(editor) {
+      return (_OutlineHelpers2 || _OutlineHelpers()).default.getOutline(editor);
+    }
   };
 }
 
-export function provideDefinitions(): DefinitionProvider {
+function provideDefinitions() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants2 || _constants()).GRAMMAR_SET),
     priority: 20,
     name: 'PythonDefinitionProvider',
-    getDefinition(editor, position) {
-      return DefinitionHelpers.getDefinition(editor, position);
+    getDefinition: function getDefinition(editor, position) {
+      return (_DefinitionHelpers2 || _DefinitionHelpers()).default.getDefinition(editor, position);
     },
-    getDefinitionById(filePath, id) {
-      return DefinitionHelpers.getDefinitionById(filePath, id);
-    },
+    getDefinitionById: function getDefinitionById(filePath, id) {
+      return (_DefinitionHelpers2 || _DefinitionHelpers()).default.getDefinitionById(filePath, id);
+    }
   };
 }
 
-export function provideReferences(): FindReferencesProvider {
+function provideReferences() {
   return {
-    async isEditorSupported(textEditor) {
-      const fileUri = textEditor.getPath();
-      if (!fileUri || !GRAMMAR_SET.has(textEditor.getGrammar().scopeName)) {
+    isEditorSupported: _asyncToGenerator(function* (textEditor) {
+      var fileUri = textEditor.getPath();
+      if (!fileUri || !(_constants2 || _constants()).GRAMMAR_SET.has(textEditor.getGrammar().scopeName)) {
         return false;
       }
       return true;
-    },
-    findReferences(editor, position) {
-      return ReferenceHelpers.getReferences(editor, position);
-    },
+    }),
+    findReferences: function findReferences(editor, position) {
+      return (_ReferenceHelpers2 || _ReferenceHelpers()).default.getReferences(editor, position);
+    }
   };
 }
 
-export function provideCodeFormat(): CodeFormatProvider {
+function provideCodeFormat() {
   return {
     selector: 'source.python',
     inclusionPriority: 1,
-    formatEntireFile(editor, range) {
-      invariant(busySignalProvider);
-      return busySignalProvider.reportBusy(
-        `Python: formatting \`${editor.getTitle()}\``,
-        () => CodeFormatHelpers.formatEntireFile(editor, range),
-      );
-    },
+    formatEntireFile: function formatEntireFile(editor, range) {
+      (0, (_assert2 || _assert()).default)(busySignalProvider);
+      return busySignalProvider.reportBusy('Python: formatting `' + editor.getTitle() + '`', function () {
+        return (_CodeFormatHelpers2 || _CodeFormatHelpers()).default.formatEntireFile(editor, range);
+      });
+    }
   };
 }
 
-export function provideLint(): LinterProvider {
+function provideLint() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants2 || _constants()).GRAMMAR_SET),
     scope: 'file',
-    lintOnFly: getLintOnFly(),
+    lintOnFly: (0, (_config2 || _config()).getLintOnFly)(),
     name: 'nuclide-python',
     invalidateOnClose: true,
-    lint(editor) {
-      invariant(busySignalProvider);
-      return busySignalProvider.reportBusy(
-        `Python: Waiting for flake8 lint results for \`${editor.getTitle()}\``,
-        () => LintHelpers.lint(editor),
-      );
-    },
+    lint: function lint(editor) {
+      (0, (_assert2 || _assert()).default)(busySignalProvider);
+      return busySignalProvider.reportBusy('Python: Waiting for flake8 lint results for `' + editor.getTitle() + '`', function () {
+        return (_LintHelpers2 || _LintHelpers()).default.lint(editor);
+      });
+    }
   };
 }
 
-export function provideBusySignal(): DedupedBusySignalProviderBase {
-  invariant(busySignalProvider);
+function provideBusySignal() {
+  (0, (_assert2 || _assert()).default)(busySignalProvider);
   return busySignalProvider;
 }
 
-export function deactivate() {
-}
+function deactivate() {}

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +10,23 @@
  * the root directory of this source tree.
  */
 
-import type {TaskMetadata} from '../../../nuclide-task-runner/lib/types';
-
-export const SwiftPMTaskRunnerBuildTaskMetadata: TaskMetadata = {
+var SwiftPMTaskRunnerBuildTaskMetadata = {
   type: 'build',
   label: 'Build',
   description: 'Build a Swift package',
   runnable: true,
-  icon: 'tools',
+  icon: 'tools'
 };
 
-export const SwiftPMTaskRunnerTestTaskMetadata: TaskMetadata = {
+exports.SwiftPMTaskRunnerBuildTaskMetadata = SwiftPMTaskRunnerBuildTaskMetadata;
+var SwiftPMTaskRunnerTestTaskMetadata = {
   type: 'test',
   label: 'Test',
   description: 'Run a Swift package\'s tests',
   runnable: true,
-  icon: 'checklist',
+  icon: 'checklist'
 };
 
-export const SwiftPMTaskRunnerTaskMetadata: Array<TaskMetadata> = [
-  SwiftPMTaskRunnerBuildTaskMetadata,
-  SwiftPMTaskRunnerTestTaskMetadata,
-];
+exports.SwiftPMTaskRunnerTestTaskMetadata = SwiftPMTaskRunnerTestTaskMetadata;
+var SwiftPMTaskRunnerTaskMetadata = [SwiftPMTaskRunnerBuildTaskMetadata, SwiftPMTaskRunnerTestTaskMetadata];
+exports.SwiftPMTaskRunnerTaskMetadata = SwiftPMTaskRunnerTaskMetadata;

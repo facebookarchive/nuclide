@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,155 +10,216 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
-import type {LinterProvider} from '../../nuclide-diagnostics-common';
-import type {OutlineProvider} from '../../nuclide-outline-view';
-import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
-import type {RefactorProvider} from '../../nuclide-refactorizer';
-import type {DefinitionProvider} from '../../nuclide-definition-service';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
+exports.activate = activate;
+exports.createAutocompleteProvider = createAutocompleteProvider;
+exports.createTypeHintProvider = createTypeHintProvider;
+exports.provideDefinitions = provideDefinitions;
+exports.provideBusySignal = provideBusySignal;
+exports.provideCodeFormat = provideCodeFormat;
+exports.provideLinter = provideLinter;
+exports.provideOutlineView = provideOutlineView;
+exports.provideRefactoring = provideRefactoring;
+exports.deactivate = deactivate;
 
-import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import AutocompleteHelpers from './AutocompleteHelpers';
-import CodeFormatHelpers from './CodeFormatHelpers';
-import DefinitionHelpers from './DefinitionHelpers';
-import OutlineViewHelpers from './OutlineViewHelpers';
-import TypeHintHelpers from './TypeHintHelpers';
-import Refactoring from './Refactoring';
-import ClangLinter from './ClangLinter';
-import {GRAMMARS, GRAMMAR_SET, PACKAGE_NAME} from './constants';
-import {reset} from './libclang';
 
-let busySignalProvider: ?BusySignalProviderBase = null;
-let subscriptions: ?CompositeDisposable = null;
+var _nuclideBusySignal2;
 
-export function activate() {
-  subscriptions = new CompositeDisposable();
+function _nuclideBusySignal() {
+  return _nuclideBusySignal2 = require('../../nuclide-busy-signal');
+}
+
+var _AutocompleteHelpers2;
+
+function _AutocompleteHelpers() {
+  return _AutocompleteHelpers2 = _interopRequireDefault(require('./AutocompleteHelpers'));
+}
+
+var _CodeFormatHelpers2;
+
+function _CodeFormatHelpers() {
+  return _CodeFormatHelpers2 = _interopRequireDefault(require('./CodeFormatHelpers'));
+}
+
+var _DefinitionHelpers2;
+
+function _DefinitionHelpers() {
+  return _DefinitionHelpers2 = _interopRequireDefault(require('./DefinitionHelpers'));
+}
+
+var _OutlineViewHelpers2;
+
+function _OutlineViewHelpers() {
+  return _OutlineViewHelpers2 = _interopRequireDefault(require('./OutlineViewHelpers'));
+}
+
+var _TypeHintHelpers2;
+
+function _TypeHintHelpers() {
+  return _TypeHintHelpers2 = _interopRequireDefault(require('./TypeHintHelpers'));
+}
+
+var _Refactoring2;
+
+function _Refactoring() {
+  return _Refactoring2 = _interopRequireDefault(require('./Refactoring'));
+}
+
+var _ClangLinter2;
+
+function _ClangLinter() {
+  return _ClangLinter2 = _interopRequireDefault(require('./ClangLinter'));
+}
+
+var _constants2;
+
+function _constants() {
+  return _constants2 = require('./constants');
+}
+
+var _libclang2;
+
+function _libclang() {
+  return _libclang2 = require('./libclang');
+}
+
+var busySignalProvider = null;
+var subscriptions = null;
+
+function activate() {
+  subscriptions = new (_atom2 || _atom()).CompositeDisposable();
   // Provide a 'Clean and rebuild' command to restart the Clang server for the current file
   // and reset all compilation flags. Useful when BUCK targets or headers change,
   // since those are heavily cached for performance. Also great for testing!
-  subscriptions.add(
-    atom.commands.add('atom-workspace', 'nuclide-clang:clean-and-rebuild', async () => {
-      const editor = atom.workspace.getActiveTextEditor();
-      if (editor == null) {
-        return;
-      }
-      const path = editor.getPath();
-      if (path == null) {
-        return;
-      }
-      await reset(editor);
-    }),
-  );
+  subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-clang:clean-and-rebuild', _asyncToGenerator(function* () {
+    var editor = atom.workspace.getActiveTextEditor();
+    if (editor == null) {
+      return;
+    }
+    var path = editor.getPath();
+    if (path == null) {
+      return;
+    }
+    yield (0, (_libclang2 || _libclang()).reset)(editor);
+  })));
 
-  busySignalProvider = new BusySignalProviderBase();
+  busySignalProvider = new (_nuclideBusySignal2 || _nuclideBusySignal()).BusySignalProviderBase();
 }
 
 /** Provider for autocomplete service. */
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
+
+function createAutocompleteProvider() {
   return {
     selector: '.source.objc, .source.objcpp, .source.cpp, .source.c',
     inclusionPriority: 1,
-    suggestionPriority: 5,  // Higher than the snippets provider.
-    getSuggestions(request) {
-      return AutocompleteHelpers.getAutocompleteSuggestions(request);
-    },
+    suggestionPriority: 5, // Higher than the snippets provider.
+    getSuggestions: function getSuggestions(request) {
+      return (_AutocompleteHelpers2 || _AutocompleteHelpers()).default.getAutocompleteSuggestions(request);
+    }
   };
 }
 
-export function createTypeHintProvider(): TypeHintProvider {
+function createTypeHintProvider() {
   return {
     inclusionPriority: 1,
-    providerName: PACKAGE_NAME,
-    selector: Array.from(GRAMMAR_SET).join(', '),
-    typeHint(editor, position) {
-      return TypeHintHelpers.typeHint(editor, position);
-    },
+    providerName: (_constants2 || _constants()).PACKAGE_NAME,
+    selector: Array.from((_constants2 || _constants()).GRAMMAR_SET).join(', '),
+    typeHint: function typeHint(editor, position) {
+      return (_TypeHintHelpers2 || _TypeHintHelpers()).default.typeHint(editor, position);
+    }
   };
 }
 
-export function provideDefinitions(): DefinitionProvider {
+function provideDefinitions() {
   return {
-    name: PACKAGE_NAME,
+    name: (_constants2 || _constants()).PACKAGE_NAME,
     priority: 20,
-    grammarScopes: GRAMMARS,
-    getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult> {
-      return DefinitionHelpers.getDefinition(editor, position);
+    grammarScopes: (_constants2 || _constants()).GRAMMARS,
+    getDefinition: function getDefinition(editor, position) {
+      return (_DefinitionHelpers2 || _DefinitionHelpers()).default.getDefinition(editor, position);
     },
-    getDefinitionById(filePath: NuclideUri, id: string): Promise<?Definition> {
-      return DefinitionHelpers.getDefinitionById(filePath, id);
-    },
+    getDefinitionById: function getDefinitionById(filePath, id) {
+      return (_DefinitionHelpers2 || _DefinitionHelpers()).default.getDefinitionById(filePath, id);
+    }
   };
 }
 
-export function provideBusySignal(): BusySignalProviderBase {
-  invariant(busySignalProvider);
+function provideBusySignal() {
+  (0, (_assert2 || _assert()).default)(busySignalProvider);
   return busySignalProvider;
 }
 
-export function provideCodeFormat(): CodeFormatProvider {
+function provideCodeFormat() {
   return {
-    selector: Array.from(GRAMMAR_SET).join(', '),
+    selector: Array.from((_constants2 || _constants()).GRAMMAR_SET).join(', '),
     inclusionPriority: 1,
-    formatEntireFile(editor, range) {
-      return CodeFormatHelpers.formatEntireFile(editor, range);
-    },
+    formatEntireFile: function formatEntireFile(editor, range) {
+      return (_CodeFormatHelpers2 || _CodeFormatHelpers()).default.formatEntireFile(editor, range);
+    }
   };
 }
 
-export function provideLinter(): LinterProvider {
+function provideLinter() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants2 || _constants()).GRAMMAR_SET),
     scope: 'file',
     lintOnFly: false,
     name: 'Clang',
     invalidateOnClose: true,
-    lint(editor) {
-      const getResult = () => ClangLinter.lint(editor);
+    lint: function lint(editor) {
+      var getResult = function getResult() {
+        return (_ClangLinter2 || _ClangLinter()).default.lint(editor);
+      };
       if (busySignalProvider) {
-        return busySignalProvider.reportBusy(
-          `Clang: compiling \`${editor.getTitle()}\``,
-          getResult,
-        );
+        return busySignalProvider.reportBusy('Clang: compiling `' + editor.getTitle() + '`', getResult);
       }
       return getResult();
-    },
+    }
   };
 }
 
-export function provideOutlineView(): OutlineProvider {
+function provideOutlineView() {
   return {
-    name: PACKAGE_NAME,
+    name: (_constants2 || _constants()).PACKAGE_NAME,
     priority: 10,
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants2 || _constants()).GRAMMAR_SET),
     updateOnEdit: false,
-    getOutline(editor) {
-      return OutlineViewHelpers.getOutline(editor);
-    },
+    getOutline: function getOutline(editor) {
+      return (_OutlineViewHelpers2 || _OutlineViewHelpers()).default.getOutline(editor);
+    }
   };
 }
 
-export function provideRefactoring(): RefactorProvider {
+function provideRefactoring() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants2 || _constants()).GRAMMAR_SET),
     priority: 1,
-    refactoringsAtPoint(editor, point) {
-      return Refactoring.refactoringsAtPoint(editor, point);
+    refactoringsAtPoint: function refactoringsAtPoint(editor, point) {
+      return (_Refactoring2 || _Refactoring()).default.refactoringsAtPoint(editor, point);
     },
-    refactor(request) {
-      return Refactoring.refactor(request);
-    },
+    refactor: function refactor(request) {
+      return (_Refactoring2 || _Refactoring()).default.refactor(request);
+    }
   };
 }
 
-export function deactivate() {
+function deactivate() {
   if (subscriptions != null) {
     subscriptions.dispose();
     subscriptions = null;

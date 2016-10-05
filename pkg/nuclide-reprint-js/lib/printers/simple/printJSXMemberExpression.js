@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +8,24 @@
  * the root directory of this source tree.
  */
 
-import type {JSXMemberExpression} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+var _utilsFlatten2;
 
-function printJSXMemberExpression(
-  print: Print,
-  node: JSXMemberExpression,
-): Lines {
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+function printJSXMemberExpression(print, node) {
   // JSXMemberExpressions can only contain identifiers so we do not allow any
   // sort of breaking between accesses unlike in a standard member expression.
-  return flatten([
-    print(node.object),
-    markers.noBreak,
-    '.',
-    markers.noBreak,
-    print(node.property),
-  ]);
+  return (0, (_utilsFlatten2 || _utilsFlatten()).default)([print(node.object), (_constantsMarkers2 || _constantsMarkers()).default.noBreak, '.', (_constantsMarkers2 || _constantsMarkers()).default.noBreak, print(node.property)]);
 }
 
 module.exports = printJSXMemberExpression;

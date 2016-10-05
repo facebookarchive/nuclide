@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,69 +10,108 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import {FileTreeNode} from './FileTreeNode';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-export class RangeKey {
-  _rootKey: NuclideUri;
-  _nodeKey: NuclideUri;
-  constructor(rootKey: NuclideUri, nodeKey: NuclideUri) {
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _FileTreeNode2;
+
+function _FileTreeNode() {
+  return _FileTreeNode2 = require('./FileTreeNode');
+}
+
+var RangeKey = (function () {
+  function RangeKey(rootKey, nodeKey) {
+    _classCallCheck(this, RangeKey);
+
     this._rootKey = rootKey;
     this._nodeKey = nodeKey;
   }
-  static of(node: FileTreeNode): RangeKey {
-    return new RangeKey(node.rootUri, node.uri);
-  }
-  rootKey(): NuclideUri {
-    return this._rootKey;
-  }
-  nodeKey(): NuclideUri {
-    return this._nodeKey;
-  }
-  equals(other: RangeKey): boolean {
-    return this._rootKey === other._rootKey && this._nodeKey === other._nodeKey;
-  }
-}
 
-export class SelectionRange {
-  _anchor: RangeKey;
-  _range: RangeKey;
-  constructor(anchor: RangeKey, range: RangeKey) {
+  _createClass(RangeKey, [{
+    key: 'rootKey',
+    value: function rootKey() {
+      return this._rootKey;
+    }
+  }, {
+    key: 'nodeKey',
+    value: function nodeKey() {
+      return this._nodeKey;
+    }
+  }, {
+    key: 'equals',
+    value: function equals(other) {
+      return this._rootKey === other._rootKey && this._nodeKey === other._nodeKey;
+    }
+  }], [{
+    key: 'of',
+    value: function of(node) {
+      return new RangeKey(node.rootUri, node.uri);
+    }
+  }]);
+
+  return RangeKey;
+})();
+
+exports.RangeKey = RangeKey;
+
+var SelectionRange = (function () {
+  function SelectionRange(anchor, range) {
+    _classCallCheck(this, SelectionRange);
+
     this._anchor = anchor;
     this._range = range;
   }
-  anchor(): RangeKey {
-    return this._anchor;
-  }
-  range(): RangeKey {
-    return this._range;
-  }
-  static ofSingleItem(anchor: RangeKey): SelectionRange {
-    return new SelectionRange(anchor, anchor);
-  }
-  withNewRange(range: RangeKey): SelectionRange {
-    return new SelectionRange(this._anchor, range);
-  }
-  withNewAnchor(anchor: RangeKey): SelectionRange {
-    return new SelectionRange(anchor, this._range);
-  }
-  equals(other: SelectionRange): boolean {
-    return this._anchor.equals(other._anchor) && this._range.equals(other._range);
-  }
-}
 
-/**
- * Returns the current node if it is shown.
- * Otherwise, returns a nearby node that is shown.
- */
-function findShownNode(node: FileTreeNode): ?FileTreeNode {
+  /**
+   * Returns the current node if it is shown.
+   * Otherwise, returns a nearby node that is shown.
+   */
+
+  _createClass(SelectionRange, [{
+    key: 'anchor',
+    value: function anchor() {
+      return this._anchor;
+    }
+  }, {
+    key: 'range',
+    value: function range() {
+      return this._range;
+    }
+  }, {
+    key: 'withNewRange',
+    value: function withNewRange(range) {
+      return new SelectionRange(this._anchor, range);
+    }
+  }, {
+    key: 'withNewAnchor',
+    value: function withNewAnchor(anchor) {
+      return new SelectionRange(anchor, this._range);
+    }
+  }, {
+    key: 'equals',
+    value: function equals(other) {
+      return this._anchor.equals(other._anchor) && this._range.equals(other._range);
+    }
+  }], [{
+    key: 'ofSingleItem',
+    value: function ofSingleItem(anchor) {
+      return new SelectionRange(anchor, anchor);
+    }
+  }]);
+
+  return SelectionRange;
+})();
+
+exports.SelectionRange = SelectionRange;
+function findShownNode(node) {
   if (node.shouldBeShown) {
     return node;
   }
 
-  let shown = node;
+  var shown = node;
   while (shown != null) {
-    const next = shown.findNextShownSibling();
+    var next = shown.findNextShownSibling();
     if (next != null) {
       return next;
     }
@@ -80,7 +120,7 @@ function findShownNode(node: FileTreeNode): ?FileTreeNode {
 
   shown = node;
   while (shown != null) {
-    const next = shown.findPrevShownSibling();
+    var next = shown.findPrevShownSibling();
     if (next != null) {
       return next;
     }
@@ -89,31 +129,42 @@ function findShownNode(node: FileTreeNode): ?FileTreeNode {
   return null;
 }
 
-export class RangeUtil {
+var RangeUtil = (function () {
+  function RangeUtil() {
+    _classCallCheck(this, RangeUtil);
+  }
 
-  /**
-   * Returns the current node if it is shown and selected
-   * Otherwise, returns a nearby selected node.
-   */
-  static findSelectedNode(node: FileTreeNode): ?FileTreeNode {
-    const shown = findShownNode(node);
-    if (shown == null) {
-      return shown;
-    }
-    if (shown.isSelected) {
-      return shown;
-    }
-    let selected = shown;
-    while (selected != null && !selected.isSelected) {
-      selected = selected.findNext();
-    }
-    if (selected != null) {
+  _createClass(RangeUtil, null, [{
+    key: 'findSelectedNode',
+
+    /**
+     * Returns the current node if it is shown and selected
+     * Otherwise, returns a nearby selected node.
+     */
+    value: function findSelectedNode(node) {
+      var shown = findShownNode(node);
+      if (shown == null) {
+        return shown;
+      }
+      if (shown.isSelected) {
+        return shown;
+      }
+      var selected = shown;
+      while (selected != null && !selected.isSelected) {
+        selected = selected.findNext();
+      }
+      if (selected != null) {
+        return selected;
+      }
+      selected = shown;
+      while (selected != null && !selected.isSelected) {
+        selected = selected.findPrevious();
+      }
       return selected;
     }
-    selected = shown;
-    while (selected != null && !selected.isSelected) {
-      selected = selected.findPrevious();
-    }
-    return selected;
-  }
-}
+  }]);
+
+  return RangeUtil;
+})();
+
+exports.RangeUtil = RangeUtil;

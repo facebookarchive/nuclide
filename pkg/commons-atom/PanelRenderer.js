@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,59 +10,58 @@
  * the root directory of this source tree.
  */
 
-type PanelLocation = 'top' | 'right' | 'bottom' | 'left';
-type Options = {
-  location: PanelLocation,
-  createItem: () => Object,
-  priority?: number,
-};
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /**
  * A class that gives us an idempotent API for rendering panels, creating them lazily.
  */
-export default class PanelRenderer {
-  _createItem: () => Object;
-  _item: ?Object;
-  _location: PanelLocation;
-  _panel: ?atom$Panel;
-  _priority: ?number;
 
-  constructor(options: Options) {
+var PanelRenderer = (function () {
+  function PanelRenderer(options) {
+    _classCallCheck(this, PanelRenderer);
+
     this._createItem = options.createItem;
     this._location = options.location;
     this._priority = options.priority;
   }
 
-  render(props: {visible: boolean}): void {
-    if (props.visible) {
-      if (this._panel == null) {
-        const item = this._item == null
-          ? this._item = this._createItem()
-          : this._item;
-        this._panel = addPanel(this._location, {
-          item,
-          priority: this._priority == null ? undefined : this._priority,
-        });
-      } else {
-        this._panel.show();
+  _createClass(PanelRenderer, [{
+    key: 'render',
+    value: function render(props) {
+      if (props.visible) {
+        if (this._panel == null) {
+          var item = this._item == null ? this._item = this._createItem() : this._item;
+          this._panel = addPanel(this._location, {
+            item: item,
+            priority: this._priority == null ? undefined : this._priority
+          });
+        } else {
+          this._panel.show();
+        }
+      } else if (this._panel != null) {
+        this._panel.hide();
       }
-    } else if (this._panel != null) {
-      this._panel.hide();
     }
-  }
-
-  dispose(): void {
-    if (this._item != null && typeof this._item.destroy === 'function') {
-      this._item.destroy();
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      if (this._item != null && typeof this._item.destroy === 'function') {
+        this._item.destroy();
+      }
+      if (this._panel != null) {
+        this._panel.destroy();
+      }
     }
-    if (this._panel != null) {
-      this._panel.destroy();
-    }
-  }
+  }]);
 
-}
+  return PanelRenderer;
+})();
 
-function addPanel(location: PanelLocation, options: atom$WorkspaceAddPanelOptions): atom$Panel {
+exports.default = PanelRenderer;
+
+function addPanel(location, options) {
   switch (location) {
     case 'top':
       return atom.workspace.addTopPanel(options);
@@ -72,6 +72,7 @@ function addPanel(location: PanelLocation, options: atom$WorkspaceAddPanelOption
     case 'left':
       return atom.workspace.addLeftPanel(options);
     default:
-      throw new Error(`Invalid location: ${location}`);
+      throw new Error('Invalid location: ' + location);
   }
 }
+module.exports = exports.default;

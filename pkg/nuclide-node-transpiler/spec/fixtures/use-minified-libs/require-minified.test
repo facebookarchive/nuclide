@@ -1,4 +1,0 @@
-const Rx = require('rxjs');
-const {Observable} = require('rxjs');
-
-assert(Rx.Observable === Observable);

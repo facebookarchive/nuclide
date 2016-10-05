@@ -1,8 +1,0 @@
-var _math2;
-
-function _math() {
-  return _math2 = require('math');
-}
-
-(0, (_math2 || _math()).Math)();
-(_math2 || _math()).Math.add();

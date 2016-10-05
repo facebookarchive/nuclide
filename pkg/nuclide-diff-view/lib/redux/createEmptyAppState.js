@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,77 +10,75 @@
  * the root directory of this source tree.
  */
 
-import type {
-  AppState,
-  CommitState,
-  DiffModeType,
-  FileDiffState,
-  PublishState,
-  RepositoryState,
-} from '../types';
+exports.getEmptyActiveRepositoryState = getEmptyActiveRepositoryState;
+exports.getEmptyCommitState = getEmptyCommitState;
+exports.getEmptyPublishState = getEmptyPublishState;
+exports.getEmptyFileDiffState = getEmptyFileDiffState;
+exports.getEmptyRebaseOnAmendState = getEmptyRebaseOnAmendState;
+exports.getEmptyRepositoriesState = getEmptyRepositoriesState;
+exports.getEmptyRepositoryState = getEmptyRepositoryState;
+exports.getEmptyViewModeState = getEmptyViewModeState;
+exports.createEmptyAppState = createEmptyAppState;
 
-import {
-  CommitMode,
-  CommitModeState,
-  DiffMode,
-  PublishMode,
-  PublishModeState,
-} from '../constants';
+var _constants2;
 
+function _constants() {
+  return _constants2 = require('../constants');
+}
 
-export function getEmptyActiveRepositoryState() {
+function getEmptyActiveRepositoryState() {
   return null;
 }
 
-export function getEmptyCommitState(): CommitState {
+function getEmptyCommitState() {
   return {
     message: null,
-    mode: CommitMode.COMMIT,
-    state: CommitModeState.READY,
+    mode: (_constants2 || _constants()).CommitMode.COMMIT,
+    state: (_constants2 || _constants()).CommitModeState.READY
   };
 }
 
-export function getEmptyPublishState(): PublishState {
+function getEmptyPublishState() {
   return {
     message: null,
-    mode: PublishMode.CREATE,
-    state: PublishModeState.READY,
+    mode: (_constants2 || _constants()).PublishMode.CREATE,
+    state: (_constants2 || _constants()).PublishModeState.READY
   };
 }
 
-export function getEmptyFileDiffState(): FileDiffState {
+function getEmptyFileDiffState() {
   return {
     filePath: '',
     fromRevisionTitle: 'No file selected',
     newContents: '',
     oldContents: '',
-    toRevisionTitle: 'No file selected',
+    toRevisionTitle: 'No file selected'
   };
 }
 
-export function getEmptyRebaseOnAmendState() {
+function getEmptyRebaseOnAmendState() {
   return true;
 }
 
-export function getEmptyRepositoriesState() {
+function getEmptyRepositoriesState() {
   return new Map();
 }
 
-export function getEmptyRepositoryState(): RepositoryState {
+function getEmptyRepositoryState() {
   return {
     revisionStatuses: new Map(),
     dirtyFiles: new Map(),
     headToForkBaseRevisions: [],
     compareRevisionId: null,
-    selectedFiles: new Map(),
+    selectedFiles: new Map()
   };
 }
 
-export function getEmptyViewModeState(): DiffModeType {
-  return DiffMode.BROWSE_MODE;
+function getEmptyViewModeState() {
+  return (_constants2 || _constants()).DiffMode.BROWSE_MODE;
 }
 
-export function createEmptyAppState(): AppState {
+function createEmptyAppState() {
   return {
     activeRepository: getEmptyActiveRepositoryState(),
     commit: getEmptyCommitState(),
@@ -87,6 +86,6 @@ export function createEmptyAppState(): AppState {
     publish: getEmptyPublishState(),
     repositories: getEmptyRepositoriesState(),
     shouldRebaseOnAmend: getEmptyRebaseOnAmendState(),
-    viewMode: getEmptyViewModeState(),
+    viewMode: getEmptyViewModeState()
   };
 }

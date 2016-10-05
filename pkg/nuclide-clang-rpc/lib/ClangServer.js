@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,172 +10,214 @@
  * the root directory of this source tree.
  */
 
-import type {Subscription} from 'rxjs';
-import typeof * as ClangProcessService from './ClangProcessService';
-import type {ClangCompileResult} from './rpc-types';
-import type {ClangServerArgs} from './find-clang-server-args';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
-import {BehaviorSubject} from 'rxjs';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {asyncExecute, safeSpawn} from '../../commons-node/process';
-import {RpcProcess} from '../../nuclide-rpc';
-import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
-import {watchFile} from '../../nuclide-filewatcher-rpc';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-export type ClangServerStatus = 'ready' | 'compiling';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-let serviceRegistry: ?ServiceRegistry = null;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-function getServiceRegistry(): ServiceRegistry {
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _nuclideMarshalersCommon2;
+
+function _nuclideMarshalersCommon() {
+  return _nuclideMarshalersCommon2 = require('../../nuclide-marshalers-common');
+}
+
+var _rxjsBundlesRxMinJs2;
+
+function _rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs2 = require('rxjs/bundles/Rx.min.js');
+}
+
+var _commonsNodeProcess2;
+
+function _commonsNodeProcess() {
+  return _commonsNodeProcess2 = require('../../commons-node/process');
+}
+
+var _nuclideRpc2;
+
+function _nuclideRpc() {
+  return _nuclideRpc2 = require('../../nuclide-rpc');
+}
+
+var _nuclideRpc4;
+
+function _nuclideRpc3() {
+  return _nuclideRpc4 = require('../../nuclide-rpc');
+}
+
+var _nuclideFilewatcherRpc2;
+
+function _nuclideFilewatcherRpc() {
+  return _nuclideFilewatcherRpc2 = require('../../nuclide-filewatcher-rpc');
+}
+
+var serviceRegistry = null;
+
+function getServiceRegistry() {
   if (serviceRegistry == null) {
-    serviceRegistry = new ServiceRegistry(
-      getServerSideMarshalers,
-      loadServicesConfig(nuclideUri.join(__dirname, '..')),
-    );
+    serviceRegistry = new (_nuclideRpc4 || _nuclideRpc3()).ServiceRegistry((_nuclideMarshalersCommon2 || _nuclideMarshalersCommon()).getServerSideMarshalers, (0, (_nuclideRpc4 || _nuclideRpc3()).loadServicesConfig)((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(__dirname, '..')));
   }
   return serviceRegistry;
 }
 
-function spawnClangProcess(
-  src: string,
-  serverArgs: ClangServerArgs,
-  flags: Array<string>,
-): child_process$ChildProcess {
-  const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = serverArgs;
-  const pathToLibClangServer = nuclideUri.join(__dirname, '../python/clang_server.py');
-  const args = [pathToLibClangServer];
+function spawnClangProcess(src, serverArgs, flags) {
+  var libClangLibraryFile = serverArgs.libClangLibraryFile;
+  var pythonPathEnv = serverArgs.pythonPathEnv;
+  var pythonExecutable = serverArgs.pythonExecutable;
+
+  var pathToLibClangServer = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(__dirname, '../python/clang_server.py');
+  var args = [pathToLibClangServer];
   if (libClangLibraryFile != null) {
     args.push('--libclang-file', libClangLibraryFile);
   }
   args.push('--', src);
-  args.push(...flags);
-  const options = {
-    cwd: nuclideUri.dirname(pathToLibClangServer),
+  args.push.apply(args, flags);
+  var options = {
+    cwd: (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.dirname(pathToLibClangServer),
     stdio: 'pipe',
     detached: false, // When Atom is killed, clang_server.py should be killed, too.
     env: {
-      PYTHONPATH: pythonPathEnv,
-    },
+      PYTHONPATH: pythonPathEnv
+    }
   };
 
   // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
   // options.env is undefined (which is not the case here). This will only be an issue if the
   // system cannot find `pythonExecutable`.
-  return safeSpawn(pythonExecutable, args, options);
+  return (0, (_commonsNodeProcess2 || _commonsNodeProcess()).safeSpawn)(pythonExecutable, args, options);
 }
 
-export type ClangServerFlags = {
-  flags: Array<string>,
-  usesDefaultFlags: boolean,
-  flagsFile: ?string,
-};
+var ClangServer = (function (_RpcProcess) {
+  _inherits(ClangServer, _RpcProcess);
 
-export default class ClangServer extends RpcProcess {
+  _createClass(ClangServer, null, [{
+    key: 'Status',
+    value: Object.freeze({
+      READY: 'ready',
+      COMPILING: 'compiling'
+    }),
+    enumerable: true
+  }]);
 
-  static Status: {[key: string]: ClangServerStatus} = Object.freeze({
-    READY: 'ready',
-    COMPILING: 'compiling',
-  });
+  function ClangServer(src, serverArgs, flagsData) {
+    var _this = this;
 
-  _usesDefaultFlags: boolean;
-  _pendingCompileRequests: number;
-  _serverStatus: BehaviorSubject<ClangServerStatus>;
-  _flagsSubscription: ?Subscription;
-  _flagsChanged: boolean;
+    _classCallCheck(this, ClangServer);
 
-  constructor(
-    src: string,
-    serverArgs: ClangServerArgs,
-    flagsData: ClangServerFlags,
-  ) {
-    super(
-      `ClangServer-${src}`,
-      getServiceRegistry(),
-      () => spawnClangProcess(src, serverArgs, flagsData.flags),
-    );
+    _get(Object.getPrototypeOf(ClangServer.prototype), 'constructor', this).call(this, 'ClangServer-' + src, getServiceRegistry(), function () {
+      return spawnClangProcess(src, serverArgs, flagsData.flags);
+    });
     this._usesDefaultFlags = flagsData.usesDefaultFlags;
     this._pendingCompileRequests = 0;
-    this._serverStatus = new BehaviorSubject(ClangServer.Status.READY);
+    this._serverStatus = new (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).BehaviorSubject(ClangServer.Status.READY);
     this._flagsChanged = false;
     if (flagsData.flagsFile != null) {
-      this._flagsSubscription =
-        watchFile(flagsData.flagsFile)
-          .refCount()
-          .take(1)
-          .subscribe(
-            x => { this._flagsChanged = true; },
-            () => {},  // ignore errors
-          );
+      this._flagsSubscription = (0, (_nuclideFilewatcherRpc2 || _nuclideFilewatcherRpc()).watchFile)(flagsData.flagsFile).refCount().take(1).subscribe(function (x) {
+        _this._flagsChanged = true;
+      }, function () {});
     }
   }
 
-  dispose() {
-    super.dispose();
-    this._serverStatus.complete();
-    if (this._flagsSubscription != null) {
-      this._flagsSubscription.unsubscribe();
-    }
-  }
-
-  getService(): Promise<ClangProcessService> {
-    return super.getService('ClangProcessService');
-  }
-
-  /**
-   * Returns RSS of the child process in bytes.
-   * Works on Unix and Mac OS X.
-   */
-  async getMemoryUsage(): Promise<number> {
-    if (this._process == null) {
-      return 0;
-    }
-    const {exitCode, stdout} = await asyncExecute(
-      'ps',
-      ['-p', this._process.pid.toString(), '-o', 'rss='],
-    );
-    if (exitCode !== 0) {
-      return 0;
-    }
-    return parseInt(stdout, 10) * 1024; // ps returns KB
-  }
-
-  getFlagsChanged(): boolean {
-    return this._flagsChanged;
-  }
-
-  // Call this instead of using the RPC layer directly.
-  // This way, we can track when the server is busy compiling.
-  async compile(contents: string): Promise<?ClangCompileResult> {
-    if (this._pendingCompileRequests++ === 0) {
-      this._serverStatus.next(ClangServer.Status.COMPILING);
-    }
-    try {
-      const service = await this.getService();
-      return await service.compile(contents)
-        .then(result => ({
-          ...result,
-          accurateFlags: !this._usesDefaultFlags,
-        }));
-    } finally {
-      if (--this._pendingCompileRequests === 0) {
-        this._serverStatus.next(ClangServer.Status.READY);
+  _createClass(ClangServer, [{
+    key: 'dispose',
+    // ignore errors
+    value: function dispose() {
+      _get(Object.getPrototypeOf(ClangServer.prototype), 'dispose', this).call(this);
+      this._serverStatus.complete();
+      if (this._flagsSubscription != null) {
+        this._flagsSubscription.unsubscribe();
       }
     }
-  }
-
-  getStatus(): ClangServerStatus {
-    return this._serverStatus.getValue();
-  }
-
-  waitForReady(): Promise<mixed> {
-    if (this.getStatus() === ClangServer.Status.READY) {
-      return Promise.resolve();
+  }, {
+    key: 'getService',
+    value: function getService() {
+      return _get(Object.getPrototypeOf(ClangServer.prototype), 'getService', this).call(this, 'ClangProcessService');
     }
-    return this._serverStatus
-      .takeWhile(x => x !== ClangServer.Status.READY)
-      .toPromise();
-  }
 
-}
+    /**
+     * Returns RSS of the child process in bytes.
+     * Works on Unix and Mac OS X.
+     */
+  }, {
+    key: 'getMemoryUsage',
+    value: _asyncToGenerator(function* () {
+      if (this._process == null) {
+        return 0;
+      }
+
+      var _ref = yield (0, (_commonsNodeProcess2 || _commonsNodeProcess()).asyncExecute)('ps', ['-p', this._process.pid.toString(), '-o', 'rss=']);
+
+      var exitCode = _ref.exitCode;
+      var stdout = _ref.stdout;
+
+      if (exitCode !== 0) {
+        return 0;
+      }
+      return parseInt(stdout, 10) * 1024; // ps returns KB
+    })
+  }, {
+    key: 'getFlagsChanged',
+    value: function getFlagsChanged() {
+      return this._flagsChanged;
+    }
+
+    // Call this instead of using the RPC layer directly.
+    // This way, we can track when the server is busy compiling.
+  }, {
+    key: 'compile',
+    value: _asyncToGenerator(function* (contents) {
+      var _this2 = this;
+
+      if (this._pendingCompileRequests++ === 0) {
+        this._serverStatus.next(ClangServer.Status.COMPILING);
+      }
+      try {
+        var service = yield this.getService();
+        return yield service.compile(contents).then(function (result) {
+          return _extends({}, result, {
+            accurateFlags: !_this2._usesDefaultFlags
+          });
+        });
+      } finally {
+        if (--this._pendingCompileRequests === 0) {
+          this._serverStatus.next(ClangServer.Status.READY);
+        }
+      }
+    })
+  }, {
+    key: 'getStatus',
+    value: function getStatus() {
+      return this._serverStatus.getValue();
+    }
+  }, {
+    key: 'waitForReady',
+    value: function waitForReady() {
+      if (this.getStatus() === ClangServer.Status.READY) {
+        return Promise.resolve();
+      }
+      return this._serverStatus.takeWhile(function (x) {
+        return x !== ClangServer.Status.READY;
+      }).toPromise();
+    }
+  }]);
+
+  return ClangServer;
+})((_nuclideRpc2 || _nuclideRpc()).RpcProcess);
+
+exports.default = ClangServer;
+module.exports = exports.default;
