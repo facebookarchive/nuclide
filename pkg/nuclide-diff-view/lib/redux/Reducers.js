@@ -151,7 +151,10 @@ export function shouldRebaseOnAmend(
     case ActionTypes.SET_SHOULD_REBASE_ON_AMEND:
       return action.payload.shouldRebaseOnAmend;
   }
-  return state || getEmptyRebaseOnAmendState();
+  if (state === undefined) {
+    return getEmptyRebaseOnAmendState();
+  }
+  return state;
 }
 
 export function viewMode(
