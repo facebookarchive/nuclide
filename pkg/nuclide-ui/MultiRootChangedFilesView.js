@@ -19,7 +19,7 @@ import {
  FileChangeStatusToTextColor,
  RevertibleStatusCodes,
 } from '../nuclide-hg-git-bridge/lib/constants';
-import invariant from 'invariant';
+import invariant from 'assert';
 import nuclideUri from '../commons-node/nuclideUri';
 import {React} from 'react-for-atom';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
