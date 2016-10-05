@@ -644,7 +644,14 @@ export class FileTreeStore {
     const updatedFileChanges = new Map();
     atom.project.getPaths().forEach(projectPath => {
       const standardizedPath = nuclideUri.ensureTrailingSeparator(projectPath);
-      updatedFileChanges.set(standardizedPath, this._conf.fileChanges.get(standardizedPath));
+      // Atom sometimes tells you a repo exists briefly even after it has been removed
+      // This causes the map to first flush out the repo and then again try to add the
+      // repo but the files now don't exist causing an undefined value to be added.
+      // Adding check to prevent this from happening.
+      const fileChangesForPath = this._conf.fileChanges.get(standardizedPath);
+      if (fileChangesForPath != null) {
+        updatedFileChanges.set(standardizedPath, fileChangesForPath);
+      }
     });
 
     this._updateConf(conf => {
