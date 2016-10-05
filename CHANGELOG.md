@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.174.0
+
+Hotfix for the exception thrown by requiring the `'invariant'` module in production.
+
 ## v0.173.0
 
 Hotfix for rare cases of uncommitted changes view throwing exception when folder is removed.
