@@ -41,7 +41,7 @@ export default class CodeHighlightManager {
   }
 
   async _onCursorMove(editor: atom$TextEditor, position: atom$Point): Promise<void> {
-    if (this._isPositionInHighlightedRanges(position)) {
+    if (editor.isDestroyed() || this._isPositionInHighlightedRanges(position)) {
       return;
     }
 

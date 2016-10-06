@@ -165,7 +165,12 @@ function gutterConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticU
     }
 
     const callback = (update: FileMessageUpdate) => {
-      applyUpdateToEditor(editor, update, fixer);
+      // Although the subscription below should be cleaned up on editor destroy,
+      // the very act of destroying the editor can trigger diagnostic updates.
+      // Thus this callback can still be triggered after the editor is destroyed.
+      if (!editor.isDestroyed()) {
+        applyUpdateToEditor(editor, update, fixer);
+      }
     };
     const disposable = new UniversalDisposable(
       diagnosticUpdater.getFileMessageUpdates(filePath).subscribe(callback),

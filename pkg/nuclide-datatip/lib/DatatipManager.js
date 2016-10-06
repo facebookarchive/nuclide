@@ -199,6 +199,10 @@ export class DatatipManager {
       this.hideDatatip();
     }
 
+    if (editor.isDestroyed()) {
+      return;
+    }
+
     const {scopeName} = editor.getGrammar();
     const providers = this._getMatchingProvidersForScopeName(scopeName);
     if (providers.length === 0) {
