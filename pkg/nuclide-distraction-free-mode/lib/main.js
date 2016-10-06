@@ -74,7 +74,7 @@ class Activation {
     toolBar.addButton({
       icon: 'eye',
       callback: 'nuclide-distraction-free-mode:toggle',
-      tooltip: 'Toggle distraction-free mode',
+      tooltip: 'Toggle Distraction-Free Mode',
       priority: 901,
     });
     const disposable = new Disposable(() => { toolBar.removeItems(); });
