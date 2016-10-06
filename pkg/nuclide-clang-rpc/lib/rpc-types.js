@@ -24,7 +24,7 @@ export type ClangLocation = {
 };
 
 export type ClangSourceRange = {
-  file: NuclideUri,
+  file: ?NuclideUri,
   range: atom$Range,
 };
 
