@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +8,44 @@
  * the root directory of this source tree.
  */
 
-import type {DebugMode} from './types';
-
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
-import {CompositeDisposable, Emitter} from 'atom';
-import {trackTiming} from '../../nuclide-analytics';
-import nuclideUri from '../../commons-node/nuclideUri';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ProjectType} from './types';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-class ProjectStore {
-  _disposables: CompositeDisposable;
-  _emitter: Emitter;
-  _currentFilePath: string;
-  _projectType: ProjectType;
-  _debugMode: DebugMode;
-  _filePathsToScriptCommand: Map<string, string>;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor() {
-    this._disposables = new CompositeDisposable();
-    this._emitter = new Emitter();
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _nuclideHackLibHackLanguage2;
+
+function _nuclideHackLibHackLanguage() {
+  return _nuclideHackLibHackLanguage2 = require('../../nuclide-hack/lib/HackLanguage');
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _nuclideAnalytics2;
+
+function _nuclideAnalytics() {
+  return _nuclideAnalytics2 = require('../../nuclide-analytics');
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var ProjectStore = (function () {
+  function ProjectStore() {
+    _classCallCheck(this, ProjectStore);
+
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
+    this._emitter = new (_atom2 || _atom()).Emitter();
     this._currentFilePath = '';
     this._projectType = 'Other';
     this._debugMode = 'webserver';
@@ -38,89 +53,105 @@ class ProjectStore {
     this._monitorActiveEditorChange();
   }
 
-  _monitorActiveEditorChange() {
-    // For the current active editor, and any update to the active editor,
-    // decide whether the toolbar should be displayed.
-    const callback = this._onDidChangeActivePaneItem.bind(this);
-    this._disposables.add(atom.workspace.onDidStopChangingActivePaneItem(callback));
-    callback();
-  }
-
-  async _onDidChangeActivePaneItem(): Promise<any> {
-    const activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (!activeTextEditor) {
-      return;
+  _createDecoratedClass(ProjectStore, [{
+    key: '_monitorActiveEditorChange',
+    value: function _monitorActiveEditorChange() {
+      // For the current active editor, and any update to the active editor,
+      // decide whether the toolbar should be displayed.
+      var callback = this._onDidChangeActivePaneItem.bind(this);
+      this._disposables.add(atom.workspace.onDidStopChangingActivePaneItem(callback));
+      callback();
     }
+  }, {
+    key: '_onDidChangeActivePaneItem',
+    value: _asyncToGenerator(function* () {
+      var activeTextEditor = atom.workspace.getActiveTextEditor();
+      if (!activeTextEditor) {
+        return;
+      }
 
-    const fileName = activeTextEditor.getPath();
-    if (!fileName) {
-      return;
+      var fileName = activeTextEditor.getPath();
+      if (!fileName) {
+        return;
+      }
+      this._currentFilePath = fileName;
+      this._emitter.emit('change');
+
+      var newProjectType = (yield this._isFileHHVMProject(fileName)) ? 'Hhvm' : 'Other';
+      this._projectType = newProjectType;
+      this._emitter.emit('change');
+    })
+  }, {
+    key: '_isFileHHVMProject',
+    decorators: [(0, (_nuclideAnalytics2 || _nuclideAnalytics()).trackTiming)('toolbar.isFileHHVMProject')],
+    value: _asyncToGenerator(function* (fileUri) {
+      return (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.isRemote(fileUri) && (yield (0, (_nuclideHackLibHackLanguage2 || _nuclideHackLibHackLanguage()).isFileInHackProject)(fileUri));
+    })
+  }, {
+    key: 'getLastScriptCommand',
+    value: function getLastScriptCommand(filePath) {
+      var command = this._filePathsToScriptCommand.get(filePath);
+      if (command != null) {
+        return command;
+      }
+      return '';
     }
-    this._currentFilePath = fileName;
-    this._emitter.emit('change');
-
-    const newProjectType = await this._isFileHHVMProject(fileName) ? 'Hhvm' : 'Other';
-    this._projectType = newProjectType;
-    this._emitter.emit('change');
-  }
-
-  @trackTiming('toolbar.isFileHHVMProject')
-  async _isFileHHVMProject(fileUri: NuclideUri): Promise<boolean> {
-    return nuclideUri.isRemote(fileUri) && (await isFileInHackProject(fileUri));
-  }
-
-  getLastScriptCommand(filePath: string): string {
-    const command = this._filePathsToScriptCommand.get(filePath);
-    if (command != null) {
-      return command;
+  }, {
+    key: 'updateLastScriptCommand',
+    value: function updateLastScriptCommand(command) {
+      this._filePathsToScriptCommand.set((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.getPath(this._currentFilePath), command);
     }
-    return '';
-  }
-
-  updateLastScriptCommand(command: string): void {
-    this._filePathsToScriptCommand.set(nuclideUri.getPath(this._currentFilePath), command);
-  }
-
-  onChange(callback: () => void): IDisposable {
-    return this._emitter.on('change', callback);
-  }
-
-  getCurrentFilePath(): string {
-    return this._currentFilePath;
-  }
-
-  getProjectType(): ProjectType {
-    return this._projectType;
-  }
-
-  getDebugMode(): DebugMode {
-    return this._debugMode;
-  }
-
-  setDebugMode(debugMode: DebugMode): void {
-    this._debugMode = debugMode;
-    this._emitter.emit('change');
-  }
-
-  getDebugTarget(): string {
-    const filePath = this._currentFilePath;
-    if (this._debugMode === 'script') {
-      const localPath = nuclideUri.getPath(filePath);
-      const lastScriptCommand = this.getLastScriptCommand(localPath);
-      return lastScriptCommand === '' ? localPath : lastScriptCommand;
+  }, {
+    key: 'onChange',
+    value: function onChange(callback) {
+      return this._emitter.on('change', callback);
     }
-    // getHostname throws for non-remote paths.
-    // Technically this shouldn't be visible for non-remote paths, but the UI
-    // can sometimes display the toolbar anyway.
-    if (nuclideUri.isRemote(filePath)) {
-      return nuclideUri.getHostname(filePath);
+  }, {
+    key: 'getCurrentFilePath',
+    value: function getCurrentFilePath() {
+      return this._currentFilePath;
     }
-    return '';
-  }
+  }, {
+    key: 'getProjectType',
+    value: function getProjectType() {
+      return this._projectType;
+    }
+  }, {
+    key: 'getDebugMode',
+    value: function getDebugMode() {
+      return this._debugMode;
+    }
+  }, {
+    key: 'setDebugMode',
+    value: function setDebugMode(debugMode) {
+      this._debugMode = debugMode;
+      this._emitter.emit('change');
+    }
+  }, {
+    key: 'getDebugTarget',
+    value: function getDebugTarget() {
+      var filePath = this._currentFilePath;
+      if (this._debugMode === 'script') {
+        var localPath = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.getPath(filePath);
+        var lastScriptCommand = this.getLastScriptCommand(localPath);
+        return lastScriptCommand === '' ? localPath : lastScriptCommand;
+      }
+      // getHostname throws for non-remote paths.
+      // Technically this shouldn't be visible for non-remote paths, but the UI
+      // can sometimes display the toolbar anyway.
+      if ((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.isRemote(filePath)) {
+        return (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.getHostname(filePath);
+      }
+      return '';
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
 
-  dispose() {
-    this._disposables.dispose();
-  }
-}
+  return ProjectStore;
+})();
 
 module.exports = ProjectStore;

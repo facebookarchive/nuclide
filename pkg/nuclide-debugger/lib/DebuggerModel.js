@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+/**
+ * Atom ViewProvider compatible model object.
+ */
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,128 +16,177 @@
  * the root directory of this source tree.
  */
 
-import {DebuggerProviderStore} from './DebuggerProviderStore';
-import BreakpointManager from './BreakpointManager';
-import BreakpointStore from './BreakpointStore';
-import DebuggerActions from './DebuggerActions';
-import {DebuggerStore} from './DebuggerStore';
-import {WatchExpressionStore} from './WatchExpressionStore';
-import CallstackStore from './CallstackStore';
-import LocalsStore from './LocalsStore';
-import ThreadStore from './ThreadStore';
-import {WatchExpressionListStore} from './WatchExpressionListStore';
-import DebuggerActionsStore from './DebuggerActionsStore';
-import Bridge from './Bridge';
-import {CompositeDisposable} from 'atom';
-import DebuggerDispatcher from './DebuggerDispatcher';
-import {DebuggerPauseController} from './DebuggerPauseController';
+var _DebuggerProviderStore2;
 
-import type {SerializedState} from '..';
-
-/**
- * Atom ViewProvider compatible model object.
- */
-class DebuggerModel {
-  _disposables: CompositeDisposable;
-  _actions: DebuggerActions;
-  _breakpointManager: BreakpointManager;
-  _breakpointStore: BreakpointStore;
-  _dispatcher: DebuggerDispatcher;
-  _store: DebuggerStore;
-  _watchExpressionStore: WatchExpressionStore;
-  _watchExpressionListStore: WatchExpressionListStore;
-  _debuggerProviderStore: DebuggerProviderStore;
-  _debuggerActionStore: DebuggerActionsStore;
-  _callstackStore: CallstackStore;
-  _localsStore: LocalsStore;
-  _threadStore: ThreadStore;
-  _bridge: Bridge;
-  _debuggerPauseController: DebuggerPauseController;
-
-  constructor(state: ?SerializedState) {
-    this._dispatcher = new DebuggerDispatcher();
-    this._store = new DebuggerStore(this._dispatcher, this);
-    this._actions = new DebuggerActions(this._dispatcher, this._store);
-    this._breakpointStore = new BreakpointStore(
-      this._dispatcher,
-      state ? state.breakpoints : null, //serialized breakpoints
-    );
-    this._breakpointManager = new BreakpointManager(
-      this._breakpointStore,
-      this._actions,
-    );
-    this._bridge = new Bridge(this);
-    this._debuggerProviderStore = new DebuggerProviderStore(this._dispatcher, this._actions);
-    this._watchExpressionStore = new WatchExpressionStore(this._dispatcher, this._bridge);
-    this._watchExpressionListStore = new WatchExpressionListStore(
-      this._watchExpressionStore,
-      this._dispatcher,
-    );
-    this._debuggerActionStore = new DebuggerActionsStore(this._dispatcher, this._bridge);
-    this._callstackStore = new CallstackStore(this._dispatcher);
-    this._localsStore = new LocalsStore(this._dispatcher);
-    this._threadStore = new ThreadStore(this._dispatcher);
-    this._debuggerPauseController = new DebuggerPauseController(this._store);
-
-    this._disposables = new CompositeDisposable(
-      this._store,
-      this._actions,
-      this._breakpointStore,
-      this._breakpointManager,
-      this._bridge,
-      this._debuggerProviderStore,
-      this._watchExpressionStore,
-      this._debuggerActionStore,
-      this._callstackStore,
-      this._localsStore,
-      this._threadStore,
-      this._debuggerPauseController,
-    );
-  }
-
-  dispose() {
-    this._disposables.dispose();
-  }
-
-  getActions(): DebuggerActions {
-    return this._actions;
-  }
-
-  getStore(): DebuggerStore {
-    return this._store;
-  }
-
-  getWatchExpressionStore(): WatchExpressionStore {
-    return this._watchExpressionStore;
-  }
-
-  getWatchExpressionListStore(): WatchExpressionListStore {
-    return this._watchExpressionListStore;
-  }
-
-  getDebuggerProviderStore(): DebuggerProviderStore {
-    return this._debuggerProviderStore;
-  }
-
-  getBreakpointStore(): BreakpointStore {
-    return this._breakpointStore;
-  }
-
-  getCallstackStore(): CallstackStore {
-    return this._callstackStore;
-  }
-
-  getLocalsStore(): LocalsStore {
-    return this._localsStore;
-  }
-
-  getThreadStore(): ThreadStore {
-    return this._threadStore;
-  }
-
-  getBridge(): Bridge {
-    return this._bridge;
-  }
+function _DebuggerProviderStore() {
+  return _DebuggerProviderStore2 = require('./DebuggerProviderStore');
 }
+
+var _BreakpointManager2;
+
+function _BreakpointManager() {
+  return _BreakpointManager2 = _interopRequireDefault(require('./BreakpointManager'));
+}
+
+var _BreakpointStore2;
+
+function _BreakpointStore() {
+  return _BreakpointStore2 = _interopRequireDefault(require('./BreakpointStore'));
+}
+
+var _DebuggerActions2;
+
+function _DebuggerActions() {
+  return _DebuggerActions2 = _interopRequireDefault(require('./DebuggerActions'));
+}
+
+var _DebuggerStore2;
+
+function _DebuggerStore() {
+  return _DebuggerStore2 = require('./DebuggerStore');
+}
+
+var _WatchExpressionStore2;
+
+function _WatchExpressionStore() {
+  return _WatchExpressionStore2 = require('./WatchExpressionStore');
+}
+
+var _CallstackStore2;
+
+function _CallstackStore() {
+  return _CallstackStore2 = _interopRequireDefault(require('./CallstackStore'));
+}
+
+var _LocalsStore2;
+
+function _LocalsStore() {
+  return _LocalsStore2 = _interopRequireDefault(require('./LocalsStore'));
+}
+
+var _ThreadStore2;
+
+function _ThreadStore() {
+  return _ThreadStore2 = _interopRequireDefault(require('./ThreadStore'));
+}
+
+var _WatchExpressionListStore2;
+
+function _WatchExpressionListStore() {
+  return _WatchExpressionListStore2 = require('./WatchExpressionListStore');
+}
+
+var _DebuggerActionsStore2;
+
+function _DebuggerActionsStore() {
+  return _DebuggerActionsStore2 = _interopRequireDefault(require('./DebuggerActionsStore'));
+}
+
+var _Bridge2;
+
+function _Bridge() {
+  return _Bridge2 = _interopRequireDefault(require('./Bridge'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _DebuggerDispatcher2;
+
+function _DebuggerDispatcher() {
+  return _DebuggerDispatcher2 = _interopRequireDefault(require('./DebuggerDispatcher'));
+}
+
+var _DebuggerPauseController2;
+
+function _DebuggerPauseController() {
+  return _DebuggerPauseController2 = require('./DebuggerPauseController');
+}
+
+var DebuggerModel = (function () {
+  function DebuggerModel(state) {
+    _classCallCheck(this, DebuggerModel);
+
+    this._dispatcher = new (_DebuggerDispatcher2 || _DebuggerDispatcher()).default();
+    this._store = new (_DebuggerStore2 || _DebuggerStore()).DebuggerStore(this._dispatcher, this);
+    this._actions = new (_DebuggerActions2 || _DebuggerActions()).default(this._dispatcher, this._store);
+    this._breakpointStore = new (_BreakpointStore2 || _BreakpointStore()).default(this._dispatcher, state ? state.breakpoints : null);
+    //serialized breakpoints
+    this._breakpointManager = new (_BreakpointManager2 || _BreakpointManager()).default(this._breakpointStore, this._actions);
+    this._bridge = new (_Bridge2 || _Bridge()).default(this);
+    this._debuggerProviderStore = new (_DebuggerProviderStore2 || _DebuggerProviderStore()).DebuggerProviderStore(this._dispatcher, this._actions);
+    this._watchExpressionStore = new (_WatchExpressionStore2 || _WatchExpressionStore()).WatchExpressionStore(this._dispatcher, this._bridge);
+    this._watchExpressionListStore = new (_WatchExpressionListStore2 || _WatchExpressionListStore()).WatchExpressionListStore(this._watchExpressionStore, this._dispatcher);
+    this._debuggerActionStore = new (_DebuggerActionsStore2 || _DebuggerActionsStore()).default(this._dispatcher, this._bridge);
+    this._callstackStore = new (_CallstackStore2 || _CallstackStore()).default(this._dispatcher);
+    this._localsStore = new (_LocalsStore2 || _LocalsStore()).default(this._dispatcher);
+    this._threadStore = new (_ThreadStore2 || _ThreadStore()).default(this._dispatcher);
+    this._debuggerPauseController = new (_DebuggerPauseController2 || _DebuggerPauseController()).DebuggerPauseController(this._store);
+
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable(this._store, this._actions, this._breakpointStore, this._breakpointManager, this._bridge, this._debuggerProviderStore, this._watchExpressionStore, this._debuggerActionStore, this._callstackStore, this._localsStore, this._threadStore, this._debuggerPauseController);
+  }
+
+  _createClass(DebuggerModel, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'getActions',
+    value: function getActions() {
+      return this._actions;
+    }
+  }, {
+    key: 'getStore',
+    value: function getStore() {
+      return this._store;
+    }
+  }, {
+    key: 'getWatchExpressionStore',
+    value: function getWatchExpressionStore() {
+      return this._watchExpressionStore;
+    }
+  }, {
+    key: 'getWatchExpressionListStore',
+    value: function getWatchExpressionListStore() {
+      return this._watchExpressionListStore;
+    }
+  }, {
+    key: 'getDebuggerProviderStore',
+    value: function getDebuggerProviderStore() {
+      return this._debuggerProviderStore;
+    }
+  }, {
+    key: 'getBreakpointStore',
+    value: function getBreakpointStore() {
+      return this._breakpointStore;
+    }
+  }, {
+    key: 'getCallstackStore',
+    value: function getCallstackStore() {
+      return this._callstackStore;
+    }
+  }, {
+    key: 'getLocalsStore',
+    value: function getLocalsStore() {
+      return this._localsStore;
+    }
+  }, {
+    key: 'getThreadStore',
+    value: function getThreadStore() {
+      return this._threadStore;
+    }
+  }, {
+    key: 'getBridge',
+    value: function getBridge() {
+      return this._bridge;
+    }
+  }]);
+
+  return DebuggerModel;
+})();
 
 module.exports = DebuggerModel;

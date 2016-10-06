@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +8,29 @@
  * the root directory of this source tree.
  */
 
-import type {FunctionTypeAnnotation} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
-import printCommaSeparatedNodes from '../common/printCommaSeparatedNodes';
+var _utilsFlatten2;
 
-function printFunctionTypeAnnotation(
-  print: Print,
-  node: FunctionTypeAnnotation,
-): Lines {
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
+
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+var _commonPrintCommaSeparatedNodes2;
+
+function _commonPrintCommaSeparatedNodes() {
+  return _commonPrintCommaSeparatedNodes2 = _interopRequireDefault(require('../common/printCommaSeparatedNodes'));
+}
+
+function printFunctionTypeAnnotation(print, node) {
   // TODO: node.rest
-  return flatten([
-    '(',
-    printCommaSeparatedNodes(print, node.params),
-    ') =>',
-    markers.noBreak,
-    markers.space,
-    print(node.returnType),
-  ]);
+  return (0, (_utilsFlatten2 || _utilsFlatten()).default)(['(', (0, (_commonPrintCommaSeparatedNodes2 || _commonPrintCommaSeparatedNodes()).default)(print, node.params), ') =>', (_constantsMarkers2 || _constantsMarkers()).default.noBreak, (_constantsMarkers2 || _constantsMarkers()).default.space, print(node.returnType)]);
 }
 
 module.exports = printFunctionTypeAnnotation;

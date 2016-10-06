@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.startPackager = startPackager;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -12,20 +14,17 @@
 /**
  * Wraps the calling of the start-packager command in a little more friendly way.
  */
-export function startPackager(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-react-native:start-packager',
-      {
-        onRunning: err => {
-          if (err != null) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        },
-      },
-    );
+
+function startPackager() {
+  return new Promise(function (resolve, reject) {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-react-native:start-packager', {
+      onRunning: function onRunning(err) {
+        if (err != null) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      }
+    });
   });
 }

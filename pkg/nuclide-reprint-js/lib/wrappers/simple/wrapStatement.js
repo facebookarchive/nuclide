@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,20 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
+var _utilsFlatten2;
 
-import flatten from '../../utils/flatten';
-import markers from '../../constants/markers';
+function _utilsFlatten() {
+  return _utilsFlatten2 = _interopRequireDefault(require('../../utils/flatten'));
+}
 
-function wrapStatement(print: Print, node: any, lines: Lines): Lines {
-  return flatten([
-    lines,
-    markers.hardBreak,
-  ]);
+var _constantsMarkers2;
+
+function _constantsMarkers() {
+  return _constantsMarkers2 = _interopRequireDefault(require('../../constants/markers'));
+}
+
+function wrapStatement(print, node, lines) {
+  return (0, (_utilsFlatten2 || _utilsFlatten()).default)([lines, (_constantsMarkers2 || _constantsMarkers()).default.hardBreak]);
 }
 
 module.exports = wrapStatement;

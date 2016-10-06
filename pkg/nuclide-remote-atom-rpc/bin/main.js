@@ -1,5 +1,91 @@
-'use babel';
-/* @flow */
+var getRealPath = _asyncToGenerator(function* (filePath) {
+  if ((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.isRemote(filePath)) {
+    return filePath;
+  }
+  return (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.resolve(filePath);
+});
+
+var getIsDirectory = _asyncToGenerator(function* (filePath) {
+  try {
+    if ((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.isRemote(filePath)) {
+      return false;
+    } else {
+      var stats = yield (_commonsNodeFsPromise2 || _commonsNodeFsPromise()).default.stat(filePath);
+      return stats.isDirectory();
+    }
+  } catch (e) {
+    return false;
+  }
+});
+
+var main = _asyncToGenerator(function* (argv) {
+  yield (0, (_errors2 || _errors()).setupLogging)();
+  (0, (_errors2 || _errors()).setupErrorHandling)();
+
+  logger.debug('nuclide-remote-atom with arguments: ' + argv._);
+
+  // TODO(t10180337): Consider a batch API for openFile().
+  for (var arg of argv._) {
+    var _parseLocationParameter = parseLocationParameter(arg);
+
+    var _filePath = _parseLocationParameter.filePath;
+    var _line = _parseLocationParameter.line;
+    var _column = _parseLocationParameter.column;
+
+    // eslint-disable-next-line babel/no-await-in-loop
+    var realpath = yield getRealPath(_filePath);
+    // eslint-disable-next-line babel/no-await-in-loop
+    var isDirectory = yield getIsDirectory(realpath);
+    try {
+      if ((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.isRemote(realpath)) {
+        var result = (0, (_CommandClient2 || _CommandClient()).openRemoteFile)(realpath, _line, _column);
+        if (argv.wait) {
+          // eslint-disable-next-line babel/no-await-in-loop
+          yield result.toPromise();
+        } else {
+          // eslint-disable-next-line babel/no-await-in-loop
+          yield result.take(1).toPromise();
+        }
+      } else if (isDirectory) {
+        // file/line/wait are ignored on directories
+        // eslint-disable-next-line babel/no-await-in-loop
+        yield (0, (_CommandClient2 || _CommandClient()).addProject)(realpath);
+      } else {
+        var result = (0, (_CommandClient2 || _CommandClient()).openFile)(realpath, _line, _column);
+        if (argv.wait) {
+          // eslint-disable-next-line babel/no-await-in-loop
+          yield result.toPromise();
+        } else {
+          // eslint-disable-next-line babel/no-await-in-loop
+          yield result.take(1).toPromise();
+        }
+      }
+    } catch (e) {
+      (0, (_errors2 || _errors()).reportErrorAndExit)(e, (_errors2 || _errors()).EXIT_CODE_APPLICATION_ERROR);
+    }
+  }
+
+  return (_errors2 || _errors()).EXIT_CODE_SUCCESS;
+});
+
+var run = _asyncToGenerator(function* () {
+  var _default$usage$help$alias$demand$option$option = (_yargs2 || _yargs()).default.usage('Usage: atom <file>').help('h').alias('h', 'help').demand(1, 'At least one file name is required.').option('a', {
+    alias: 'add',
+    describe: 'Ignored, as --add as always implied. ' + 'Included for compatibility with atom CLI.',
+    type: 'boolean'
+  }).option('w', {
+    alias: 'wait',
+    describe: 'Wait for the opened file to be closed in Atom before exiting',
+    type: 'boolean'
+  });
+
+  var argv = _default$usage$help$alias$demand$option$option.argv;
+
+  var exitCode = yield main(argv);
+  process.exit(exitCode);
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,44 +95,55 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import {
-  openFile,
-  openRemoteFile,
-  addProject,
-} from './CommandClient';
-import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {
-  setupErrorHandling,
-  setupLogging,
-  reportErrorAndExit,
-  EXIT_CODE_SUCCESS,
-  EXIT_CODE_APPLICATION_ERROR,
-} from './errors';
-import {
-  getLogger,
-} from '../../nuclide-logging';
-import yargs from 'yargs';
+var _CommandClient2;
 
-const logger = getLogger();
+function _CommandClient() {
+  return _CommandClient2 = require('./CommandClient');
+}
 
-type FileLocation = {
-  filePath: string,
-  line: number,
-  column: number,
-};
+var _commonsNodeFsPromise2;
 
-const LocationSuffixRegExp = /(:\d+)(:\d+)?$/;
+function _commonsNodeFsPromise() {
+  return _commonsNodeFsPromise2 = _interopRequireDefault(require('../../commons-node/fsPromise'));
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _errors2;
+
+function _errors() {
+  return _errors2 = require('./errors');
+}
+
+var _nuclideLogging2;
+
+function _nuclideLogging() {
+  return _nuclideLogging2 = require('../../nuclide-logging');
+}
+
+var _yargs2;
+
+function _yargs() {
+  return _yargs2 = _interopRequireDefault(require('yargs'));
+}
+
+var logger = (0, (_nuclideLogging2 || _nuclideLogging()).getLogger)();
+
+var LocationSuffixRegExp = /(:\d+)(:\d+)?$/;
 
 // This code is coped from Atom: src/main-process/atom-application.coffee
-function parseLocationParameter(value: string): FileLocation {
-  let filePath: string = value.replace(/[:\s]+$/, '');
-  const match = filePath.match(LocationSuffixRegExp);
+function parseLocationParameter(value) {
+  var filePath = value.replace(/[:\s]+$/, '');
+  var match = filePath.match(LocationSuffixRegExp);
 
-  let line: number = 0;
-  let column: number = 0;
+  var line = 0;
+  var column = 0;
   if (match) {
     filePath = filePath.slice(0, -match[0].length);
     if (match[1]) {
@@ -57,97 +154,10 @@ function parseLocationParameter(value: string): FileLocation {
     }
   }
   return {
-    filePath,
-    line,
-    column,
+    filePath: filePath,
+    line: line,
+    column: column
   };
-}
-
-
-async function getRealPath(filePath: NuclideUri): Promise<NuclideUri> {
-  if (nuclideUri.isRemote(filePath)) {
-    return filePath;
-  }
-  return nuclideUri.resolve(filePath);
-}
-
-async function getIsDirectory(filePath: NuclideUri): Promise<boolean> {
-  try {
-    if (nuclideUri.isRemote(filePath)) {
-      return false;
-    } else {
-      const stats = await fsPromise.stat(filePath);
-      return stats.isDirectory();
-    }
-  } catch (e) {
-    return false;
-  }
-}
-
-async function main(argv): Promise<number> {
-  await setupLogging();
-  setupErrorHandling();
-
-  logger.debug(`nuclide-remote-atom with arguments: ${argv._}`);
-
-  // TODO(t10180337): Consider a batch API for openFile().
-  for (const arg of argv._) {
-    const {filePath, line, column} = parseLocationParameter(arg);
-    // eslint-disable-next-line babel/no-await-in-loop
-    const realpath = await getRealPath(filePath);
-    // eslint-disable-next-line babel/no-await-in-loop
-    const isDirectory = await getIsDirectory(realpath);
-    try {
-      if (nuclideUri.isRemote(realpath)) {
-        const result = openRemoteFile(realpath, line, column);
-        if (argv.wait) {
-          // eslint-disable-next-line babel/no-await-in-loop
-          await result.toPromise();
-        } else {
-          // eslint-disable-next-line babel/no-await-in-loop
-          await result.take(1).toPromise();
-        }
-      } else if (isDirectory) {
-        // file/line/wait are ignored on directories
-        // eslint-disable-next-line babel/no-await-in-loop
-        await addProject(realpath);
-      } else {
-        const result = openFile(realpath, line, column);
-        if (argv.wait) {
-          // eslint-disable-next-line babel/no-await-in-loop
-          await result.toPromise();
-        } else {
-          // eslint-disable-next-line babel/no-await-in-loop
-          await result.take(1).toPromise();
-        }
-      }
-    } catch (e) {
-      reportErrorAndExit(e, EXIT_CODE_APPLICATION_ERROR);
-    }
-  }
-
-  return EXIT_CODE_SUCCESS;
-}
-
-async function run() {
-  const {argv} = yargs
-    .usage('Usage: atom <file>')
-    .help('h')
-    .alias('h', 'help')
-    .demand(1, 'At least one file name is required.')
-    .option('a', {
-      alias: 'add',
-      describe: 'Ignored, as --add as always implied. ' +
-        'Included for compatibility with atom CLI.',
-      type: 'boolean',
-    })
-    .option('w', {
-      alias: 'wait',
-      describe: 'Wait for the opened file to be closed in Atom before exiting',
-      type: 'boolean',
-    });
-  const exitCode = await main(argv);
-  process.exit(exitCode);
 }
 
 run();

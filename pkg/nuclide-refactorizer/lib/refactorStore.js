@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +10,36 @@
  * the root directory of this source tree.
  */
 
-import type {
-  RefactorProvider,
-} from '..';
+exports.getStore = getStore;
 
-import type {Store} from './types';
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
-import {createStore, applyMiddleware} from 'redux';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import type ProviderRegistry from '../../commons-atom/ProviderRegistry';
-import {createEpicMiddleware, combineEpics} from '../../commons-node/redux-observable';
+var _redux2;
 
-import refactorReducers from './refactorReducers';
-import {getEpics} from './refactorEpics';
+function _redux() {
+  return _redux2 = require('redux');
+}
 
-export function getStore(
-  providers: ProviderRegistry<RefactorProvider>,
-): Store {
-  return createStore(
-    refactorReducers,
-    applyMiddleware(createEpicMiddleware(combineEpics(...getEpics(providers)))),
-  );
+var _commonsNodeReduxObservable2;
+
+function _commonsNodeReduxObservable() {
+  return _commonsNodeReduxObservable2 = require('../../commons-node/redux-observable');
+}
+
+var _refactorReducers2;
+
+function _refactorReducers() {
+  return _refactorReducers2 = _interopRequireDefault(require('./refactorReducers'));
+}
+
+var _refactorEpics2;
+
+function _refactorEpics() {
+  return _refactorEpics2 = require('./refactorEpics');
+}
+
+function getStore(providers) {
+  return (0, (_redux2 || _redux()).createStore)((_refactorReducers2 || _refactorReducers()).default, (0, (_redux2 || _redux()).applyMiddleware)((0, (_commonsNodeReduxObservable2 || _commonsNodeReduxObservable()).createEpicMiddleware)((0, (_commonsNodeReduxObservable2 || _commonsNodeReduxObservable()).combineEpics).apply(undefined, _toConsumableArray((0, (_refactorEpics2 || _refactorEpics()).getEpics)(providers))))));
 }

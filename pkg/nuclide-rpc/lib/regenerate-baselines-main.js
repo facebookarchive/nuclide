@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,50 +10,66 @@
 
 // Regenerates the .proxy baseline files in the spec/fixtures directory.
 
-import {parseServiceDefinition} from './service-parser';
-import {generateProxy} from './proxy-generator';
-import {stripLocationsFileName} from './location';
-import fs from 'fs';
-import nuclideUri from '../../commons-node/nuclideUri';
+var _serviceParser2;
 
-const dir = nuclideUri.join(__dirname, '../spec/fixtures');
-for (const file of fs.readdirSync(dir)) {
+function _serviceParser() {
+  return _serviceParser2 = require('./service-parser');
+}
+
+var _proxyGenerator2;
+
+function _proxyGenerator() {
+  return _proxyGenerator2 = require('./proxy-generator');
+}
+
+var _location2;
+
+function _location() {
+  return _location2 = require('./location');
+}
+
+var _fs2;
+
+function _fs() {
+  return _fs2 = _interopRequireDefault(require('fs'));
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var dir = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(__dirname, '../spec/fixtures');
+for (var file of (_fs2 || _fs()).default.readdirSync(dir)) {
   if (file.endsWith('.def')) {
-    const serviceName = nuclideUri.basename(file, '.def');
-    const preserveFunctionNames = false;
-    const definitionPath = nuclideUri.join(dir, file);
+    var serviceName = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.basename(file, '.def');
+    var preserveFunctionNames = false;
+    var definitionPath = (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(dir, file);
 
-    const definitionSource = fs.readFileSync(definitionPath, 'utf8');
-    const definitions = parseServiceDefinition(
-      definitionPath,
-      definitionSource,
-      [],
-    );
+    var definitionSource = (_fs2 || _fs()).default.readFileSync(definitionPath, 'utf8');
+    var definitions = (0, (_serviceParser2 || _serviceParser()).parseServiceDefinition)(definitionPath, definitionSource, []);
 
-    stripLocationsFileName(definitions);
+    (0, (_location2 || _location()).stripLocationsFileName)(definitions);
 
-    const json = mapDefinitions(definitions);
-    fs.writeFileSync(
-      definitionPath.replace('.def', '.def.json'),
-      JSON.stringify(json, null, 4),
-      'utf8',
-    );
+    var json = mapDefinitions(definitions);
+    (_fs2 || _fs()).default.writeFileSync(definitionPath.replace('.def', '.def.json'), JSON.stringify(json, null, 4), 'utf8');
 
-    const code = generateProxy(serviceName, preserveFunctionNames, definitions);
-    fs.writeFileSync(definitionPath.replace('.def', '.proxy'), code, 'utf8');
+    var code = (0, (_proxyGenerator2 || _proxyGenerator()).generateProxy)(serviceName, preserveFunctionNames, definitions);
+    (_fs2 || _fs()).default.writeFileSync(definitionPath.replace('.def', '.proxy'), code, 'utf8');
   }
 }
 
 function mapDefinitions(map) {
-  const obj = {};
-  for (const it of map.values()) {
-    let value;
+  var obj = {};
+  for (var it of map.values()) {
+    var value = undefined;
     switch (it.kind) {
       case 'interface':
         value = {
           constructorArgs: it.constructorArgs,
           instanceMethods: mapToJSON(it.instanceMethods),
-          staticMethods: mapToJSON(it.staticMethods),
+          staticMethods: mapToJSON(it.staticMethods)
         };
         break;
       default:
@@ -67,8 +82,8 @@ function mapDefinitions(map) {
 }
 
 function mapToJSON(map) {
-  const result = {};
-  for (const it of map.entries()) {
+  var result = {};
+  for (var it of map.entries()) {
     result[it[0]] = it[1];
   }
   return result;

@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.normalizeIdentifier = normalizeIdentifier;
+exports.isDefaultConfigValue = isDefaultConfigValue;
+exports.getDefaultConfigValue = getDefaultConfigValue;
+exports.getDefaultConfigValueString = getDefaultConfigValueString;
+exports.parseValue = parseValue;
+exports.valueToString = valueToString;
+exports.strip = strip;
+exports.matchesFilter = matchesFilter;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +20,24 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
+var _commonsAtomFeatureConfig2;
 
-function getConfigValueString(keyPath: string): string {
-  const value = featureConfig.get(keyPath);
+function _commonsAtomFeatureConfig() {
+  return _commonsAtomFeatureConfig2 = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
+
+function getConfigValueString(keyPath) {
+  var value = (_commonsAtomFeatureConfig2 || _commonsAtomFeatureConfig()).default.get(keyPath);
   return valueToString(value);
 }
 
-export function normalizeIdentifier(id: string): string {
+function normalizeIdentifier(id) {
   return id.replace(/[^A-Za-z0-9_-]/g, '_');
 }
 
-export function isDefaultConfigValue(keyPath: string, value_: ?any): boolean {
-  let value = value_;
-  const defaultValue = getDefaultConfigValueString(keyPath);
+function isDefaultConfigValue(keyPath, value_) {
+  var value = value_;
+  var defaultValue = getDefaultConfigValueString(keyPath);
   if (value) {
     value = valueToString(value);
   } else {
@@ -31,32 +46,36 @@ export function isDefaultConfigValue(keyPath: string, value_: ?any): boolean {
   return !value || defaultValue === value;
 }
 
-export function getDefaultConfigValue(keyPath: string): mixed {
-  const params = {excludeSources: [atom.config.getUserConfigPath()]};
-  return featureConfig.get(keyPath, params);
+function getDefaultConfigValue(keyPath) {
+  var params = { excludeSources: [atom.config.getUserConfigPath()] };
+  return (_commonsAtomFeatureConfig2 || _commonsAtomFeatureConfig()).default.get(keyPath, params);
 }
 
-export function getDefaultConfigValueString(keyPath: string): string {
+function getDefaultConfigValueString(keyPath) {
   return valueToString(getDefaultConfigValue(keyPath));
 }
 
-export function parseValue(type: string, value: any): any {
-  let result = value;
+function parseValue(type, value) {
+  var result = value;
   if (value === '') {
     result = undefined;
   } else if (type === 'number') {
-    const floatValue = parseFloat(value);
+    var floatValue = parseFloat(value);
     if (!isNaN(floatValue)) {
       result = floatValue;
     }
   } else if (type === 'array') {
-    const arrayValue = (value ? value : '').split(',');
-    result = arrayValue.filter(item => Boolean(item)).map(item => item.trim());
+    var arrayValue = (value ? value : '').split(',');
+    result = arrayValue.filter(function (item) {
+      return Boolean(item);
+    }).map(function (item) {
+      return item.trim();
+    });
   }
   return result;
 }
 
-export function valueToString(value: any): string {
+function valueToString(value) {
   if (Array.isArray(value)) {
     return value.join(', ');
   } else {
@@ -65,16 +84,18 @@ export function valueToString(value: any): string {
 }
 
 // Remove spaces and hypens
-export function strip(str: string): string {
+
+function strip(str) {
   return str.replace(/\s+/g, '').replace(/\-+/g, '');
 }
 
 /** Returns true if filter matches search string. Return true if filter is empty. */
-export function matchesFilter(filter: string, searchString: string): boolean {
+
+function matchesFilter(filter, searchString) {
   if (filter.length === 0) {
     return true;
   }
-  const needle = strip(filter.toLowerCase());
-  const hay = strip(searchString.toLowerCase());
+  var needle = strip(filter.toLowerCase());
+  var hay = strip(searchString.toLowerCase());
   return hay.indexOf(needle) !== -1;
 }

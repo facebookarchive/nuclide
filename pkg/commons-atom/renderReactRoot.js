@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.renderReactRoot = renderReactRoot;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +13,25 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import ReactMountRootElement from '../nuclide-ui/ReactMountRootElement';
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _nuclideUiReactMountRootElement2;
+
+function _nuclideUiReactMountRootElement() {
+  return _nuclideUiReactMountRootElement2 = _interopRequireDefault(require('../nuclide-ui/ReactMountRootElement'));
+}
 
 /**
  * Create a DOM element and mount the React element in it. It will be unmounted when the node is
  * detached.
  */
-export function renderReactRoot(reactElement: React.Element<any>): HTMLElement {
-  const element = new ReactMountRootElement();
+
+function renderReactRoot(reactElement) {
+  var element = new (_nuclideUiReactMountRootElement2 || _nuclideUiReactMountRootElement()).default();
   element.setReactElement(reactElement);
   return element;
 }

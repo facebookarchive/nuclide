@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +10,25 @@
  * the root directory of this source tree.
  */
 
-import type {EditorLocation, Location} from './Location';
-import type {Observable} from 'rxjs';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import invariant from 'assert';
-import {Subject} from 'rxjs';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const MAX_STACK_DEPTH = 100;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _rxjsBundlesRxMinJs2;
+
+function _rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs2 = require('rxjs/bundles/Rx.min.js');
+}
+
+var MAX_STACK_DEPTH = 100;
 
 // Provides a navigation stack abstraction, useful for going forward/backwards
 // while browsing code.
@@ -42,168 +55,206 @@ const MAX_STACK_DEPTH = 100;
 //
 // filter can be used to remove entries from the stack. This is done when
 // closing unnamed editors and when closing remote directories.
-export class NavigationStack {
-  _elements: Array<Location>;
-  _index: number;
-  _changes: Subject<NavigationStack>;
 
-  constructor() {
+var NavigationStack = (function () {
+  function NavigationStack() {
+    _classCallCheck(this, NavigationStack);
+
     this._elements = [];
     this._index = -1;
-    this._changes = new Subject();
+    this._changes = new (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Subject();
   }
 
-  observeChanges(): Observable<NavigationStack> {
-    return this._changes;
-  }
-
-  isEmpty(): boolean {
-    return this._elements.length === 0;
-  }
-
-  hasCurrent(): boolean {
-    return !this.isEmpty();
-  }
-
-  getCurrent(): Location {
-    invariant(this._index >= 0 && this._index < this._elements.length);
-    return this._elements[this._index];
-  }
-
-  getCurrentEditor(): ?atom$TextEditor {
-    if (!this.hasCurrent()) {
-      return null;
+  _createClass(NavigationStack, [{
+    key: 'observeChanges',
+    value: function observeChanges() {
+      return this._changes;
     }
-    const location = this.getCurrent();
-    return location.type === 'editor' ? location.editor : null;
-  }
-
-  // Removes any elements below current, then pushes newTop onto the stack.
-  push(newTop: EditorLocation): void {
-    this._elements.splice(this._index + 1);
-    this._elements.push(newTop);
-
-    if (this._elements.length > MAX_STACK_DEPTH) {
-      this._elements.splice(0, 1);
+  }, {
+    key: 'isEmpty',
+    value: function isEmpty() {
+      return this._elements.length === 0;
     }
-    invariant(this._elements.length <= MAX_STACK_DEPTH);
-
-    this._index = this._elements.length - 1;
-    this._hasChanged();
-  }
-
-  // Updates the current location if the editors match.
-  // If the editors don't match then push a new top.
-  attemptUpdate(newTop: EditorLocation): void {
-    if (this.getCurrentEditor() === newTop.editor) {
-      const current = this.getCurrent();
-      current.bufferPosition = newTop.bufferPosition;
-      current.scrollTop = newTop.scrollTop;
-    } else {
-      this.push(newTop);
+  }, {
+    key: 'hasCurrent',
+    value: function hasCurrent() {
+      return !this.isEmpty();
     }
-  }
+  }, {
+    key: 'getCurrent',
+    value: function getCurrent() {
+      (0, (_assert2 || _assert()).default)(this._index >= 0 && this._index < this._elements.length);
+      return this._elements[this._index];
+    }
+  }, {
+    key: 'getCurrentEditor',
+    value: function getCurrentEditor() {
+      if (!this.hasCurrent()) {
+        return null;
+      }
+      var location = this.getCurrent();
+      return location.type === 'editor' ? location.editor : null;
+    }
 
-  hasNext(): boolean {
-    return (this._index + 1) < this._elements.length;
-  }
+    // Removes any elements below current, then pushes newTop onto the stack.
+  }, {
+    key: 'push',
+    value: function push(newTop) {
+      this._elements.splice(this._index + 1);
+      this._elements.push(newTop);
 
-  hasPrevious(): boolean {
-    return this._index > 0;
-  }
+      if (this._elements.length > MAX_STACK_DEPTH) {
+        this._elements.splice(0, 1);
+      }
+      (0, (_assert2 || _assert()).default)(this._elements.length <= MAX_STACK_DEPTH);
 
-  // Moves current to the previous entry.
-  // Returns null if there is no previous entry.
-  previous(): ?Location {
-    if (this.hasPrevious()) {
-      this._index -= 1;
-      const result = this.getCurrent();
+      this._index = this._elements.length - 1;
+      this._hasChanged();
+    }
+
+    // Updates the current location if the editors match.
+    // If the editors don't match then push a new top.
+  }, {
+    key: 'attemptUpdate',
+    value: function attemptUpdate(newTop) {
+      if (this.getCurrentEditor() === newTop.editor) {
+        var current = this.getCurrent();
+        current.bufferPosition = newTop.bufferPosition;
+        current.scrollTop = newTop.scrollTop;
+      } else {
+        this.push(newTop);
+      }
+    }
+  }, {
+    key: 'hasNext',
+    value: function hasNext() {
+      return this._index + 1 < this._elements.length;
+    }
+  }, {
+    key: 'hasPrevious',
+    value: function hasPrevious() {
+      return this._index > 0;
+    }
+
+    // Moves current to the previous entry.
+    // Returns null if there is no previous entry.
+  }, {
+    key: 'previous',
+    value: function previous() {
+      if (this.hasPrevious()) {
+        this._index -= 1;
+        var result = this.getCurrent();
+        this._hasChanged();
+        return result;
+      } else {
+        return null;
+      }
+    }
+
+    // Moves to the next entry.
+    // Returns null if already at the last entry.
+  }, {
+    key: 'next',
+    value: function next() {
+      if (!this.hasNext()) {
+        return null;
+      }
+
+      this._index += 1;
+      var result = this.getCurrent();
       this._hasChanged();
       return result;
-    } else {
-      return null;
-    }
-  }
-
-  // Moves to the next entry.
-  // Returns null if already at the last entry.
-  next(): ?Location {
-    if (!this.hasNext()) {
-      return null;
     }
 
-    this._index += 1;
-    const result = this.getCurrent();
-    this._hasChanged();
-    return result;
-  }
+    // When opening a new editor, convert all Uri locations on the stack to editor
+    // locations.
+  }, {
+    key: 'editorOpened',
+    value: function editorOpened(editor) {
+      var _this = this;
 
-  // When opening a new editor, convert all Uri locations on the stack to editor
-  // locations.
-  editorOpened(editor: atom$TextEditor): void {
-    const uri = editor.getPath();
-    if (uri == null) {
-      return;
-    }
-
-    this._elements.forEach((location, index) => {
-      if (location.type === 'uri' && location.uri === uri) {
-        this._elements[index] = {
-          type: 'editor',
-          editor,
-          scrollTop: location.scrollTop,
-          bufferPosition: location.bufferPosition,
-        };
+      var uri = editor.getPath();
+      if (uri == null) {
+        return;
       }
-    });
-  }
 
-  // When closing editors, convert all locations for that editor to URI locations.
-  editorClosed(editor: atom$TextEditor): void {
-    const uri = editor.getPath();
-    if (uri === '' || uri == null) {
-      this.filter(location => location.type !== 'editor' || editor !== location.editor);
-    } else {
-      this._elements.forEach((location, index) => {
-        if (location.type === 'editor' && editor === location.editor) {
-          this._elements[index] = {
-            type: 'uri',
-            uri,
+      this._elements.forEach(function (location, index) {
+        if (location.type === 'uri' && location.uri === uri) {
+          _this._elements[index] = {
+            type: 'editor',
+            editor: editor,
             scrollTop: location.scrollTop,
-            bufferPosition: location.bufferPosition,
+            bufferPosition: location.bufferPosition
           };
         }
       });
     }
-  }
 
-  // Removes all entries which do not match the predicate.
-  filter(predicate: (location: Location) => boolean): void {
-    const originalSize = this._elements.length;
-    let newIndex = this._index;
-    this._elements = this._elements.filter((location, index) => {
-      const result = predicate(location);
-      if (!result && index <= this._index) {
-        newIndex -= 1;
+    // When closing editors, convert all locations for that editor to URI locations.
+  }, {
+    key: 'editorClosed',
+    value: function editorClosed(editor) {
+      var _this2 = this;
+
+      var uri = editor.getPath();
+      if (uri === '' || uri == null) {
+        this.filter(function (location) {
+          return location.type !== 'editor' || editor !== location.editor;
+        });
+      } else {
+        this._elements.forEach(function (location, index) {
+          if (location.type === 'editor' && editor === location.editor) {
+            _this2._elements[index] = {
+              type: 'uri',
+              uri: uri,
+              scrollTop: location.scrollTop,
+              bufferPosition: location.bufferPosition
+            };
+          }
+        });
       }
-      return result;
-    });
-    this._index = Math.min(Math.max(newIndex, 0), this._elements.length - 1);
-    if (originalSize !== this._elements.length) {
-      this._hasChanged();
     }
-  }
 
-  _hasChanged(): void {
-    this._changes.next(this);
-  }
+    // Removes all entries which do not match the predicate.
+  }, {
+    key: 'filter',
+    value: function filter(predicate) {
+      var _this3 = this;
 
-  // For testing ...
-  getLocations(): Array<Location> {
-    return this._elements;
-  }
+      var originalSize = this._elements.length;
+      var newIndex = this._index;
+      this._elements = this._elements.filter(function (location, index) {
+        var result = predicate(location);
+        if (!result && index <= _this3._index) {
+          newIndex -= 1;
+        }
+        return result;
+      });
+      this._index = Math.min(Math.max(newIndex, 0), this._elements.length - 1);
+      if (originalSize !== this._elements.length) {
+        this._hasChanged();
+      }
+    }
+  }, {
+    key: '_hasChanged',
+    value: function _hasChanged() {
+      this._changes.next(this);
+    }
 
-  getIndex(): number {
-    return this._index;
-  }
-}
+    // For testing ...
+  }, {
+    key: 'getLocations',
+    value: function getLocations() {
+      return this._elements;
+    }
+  }, {
+    key: 'getIndex',
+    value: function getIndex() {
+      return this._index;
+    }
+  }]);
+
+  return NavigationStack;
+})();
+
+exports.NavigationStack = NavigationStack;

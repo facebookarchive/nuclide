@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +10,30 @@
  * the root directory of this source tree.
  */
 
-import type {Message} from '../../../nuclide-console/lib/types';
+exports.parseRegularLine = parseRegularLine;
 
-const TIMESTAMP_FORMATS = [
-  '\\d{1,2}:\\d{2}:\\d{2} (?:A|P)M',
-  '\\d{1,2}/\\d{1,2}/\\d{4}, \\d{1,2}:\\d{2}:\\d{2} (?:A|P)M',
-  '\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d+',
-];
-const TIMESTAMP = TIMESTAMP_FORMATS.map(str => `(?:\\[?${str}\\]?)`).join('|');
-const NORMAL_LINE = new RegExp(`^\\s*(?:${TIMESTAMP})\\s*(.*?)\\s*$`);
-const ERROR_LINE = /^\s*ERROR\s*(.*?)\s*$/;
+var TIMESTAMP_FORMATS = ['\\d{1,2}:\\d{2}:\\d{2} (?:A|P)M', '\\d{1,2}/\\d{1,2}/\\d{4}, \\d{1,2}:\\d{2}:\\d{2} (?:A|P)M', '\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d+'];
+var TIMESTAMP = TIMESTAMP_FORMATS.map(function (str) {
+  return '(?:\\[?' + str + '\\]?)';
+}).join('|');
+var NORMAL_LINE = new RegExp('^\\s*(?:' + TIMESTAMP + ')\\s*(.*?)\\s*$');
+var ERROR_LINE = /^\s*ERROR\s*(.*?)\s*$/;
 
-export function parseRegularLine(line: string): Message {
-  const normalMatch = line.match(NORMAL_LINE);
+function parseRegularLine(line) {
+  var normalMatch = line.match(NORMAL_LINE);
   if (normalMatch != null) {
     // TODO (matthewwithanm): Add support for showing timestamps and include that in the message.
     return {
       level: 'log',
-      text: normalMatch[1],
+      text: normalMatch[1]
     };
   }
 
-  const errorMatch = line.match(ERROR_LINE);
+  var errorMatch = line.match(ERROR_LINE);
   if (errorMatch != null) {
     return {
       level: 'error',
-      text: errorMatch[1],
+      text: errorMatch[1]
     };
   }
 
@@ -43,6 +42,6 @@ export function parseRegularLine(line: string): Message {
   // /hot", "React packager ready.").
   return {
     level: 'log',
-    text: line,
+    text: line
   };
 }

@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,17 +20,19 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {relativeDate} from '../commons-node/string';
+var _reactForAtom2;
 
-type DefaultProps = {
-  delay: number,
-};
-type Props = DefaultProps & {
-  date: Date,
-  delay?: number,
-};
-const DEFAULT_RERENDER_DELAY = 10000; // ms
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _commonsNodeString2;
+
+function _commonsNodeString() {
+  return _commonsNodeString2 = require('../commons-node/string');
+}
+
+var DEFAULT_RERENDER_DELAY = 10000; // ms
 
 /**
  * Renders a relative date that forces a re-render every `delay` ms,
@@ -27,33 +40,58 @@ const DEFAULT_RERENDER_DELAY = 10000; // ms
  *
  * Does not respond to changes to the initial `delay` for simplicity's sake.
  */
-export default class Revision extends React.Component {
-  props: Props;
-  _interval: ?number;
 
-  static defaultProps: DefaultProps = {
-    delay: DEFAULT_RERENDER_DELAY,
+var Revision = (function (_React$Component) {
+  _inherits(Revision, _React$Component);
+
+  function Revision() {
+    _classCallCheck(this, Revision);
+
+    _get(Object.getPrototypeOf(Revision.prototype), 'constructor', this).apply(this, arguments);
   }
 
-  componentDidMount(): void {
-    const {delay} = this.props;
-    this._interval = setInterval(
-      () => this.forceUpdate(),
-      delay,
-    );
-  }
+  _createClass(Revision, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this = this;
 
-  componentWillUnmount(): void {
-    if (this._interval != null) {
-      clearInterval(this._interval);
+      var delay = this.props.delay;
+
+      this._interval = setInterval(function () {
+        return _this.forceUpdate();
+      }, delay);
     }
-  }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      if (this._interval != null) {
+        clearInterval(this._interval);
+      }
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props = this.props;
+      var date = _props.date;
 
-  render(): React.Element<any> {
-    const {
-      date,
-      ...remainingProps,
-    } = this.props;
-    return <span {...remainingProps}>{relativeDate(date)}</span>;
-  }
-}
+      var remainingProps = _objectWithoutProperties(_props, ['date']);
+
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'span',
+        remainingProps,
+        (0, (_commonsNodeString2 || _commonsNodeString()).relativeDate)(date)
+      );
+    }
+  }], [{
+    key: 'defaultProps',
+    value: {
+      delay: DEFAULT_RERENDER_DELAY
+    },
+    enumerable: true
+  }]);
+
+  return Revision;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
+
+exports.default = Revision;
+module.exports = exports.default;

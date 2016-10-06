@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -14,27 +13,20 @@
  * https://github.com/atom/jasmine-focused/blob/c922330/src/jasmine-focused.coffee
  */
 
-import invariant from 'assert';
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
 
 require('jasmine-node');
 
 // These are undocumented APIs. The type of jasmine is redefined here, so that
 // we don't pollute the real lib def with this nonsense.
-const jasmine: {
-  getEnv(): {
-    focusPriority?: number,
-    specFilter?: (spec: any) => boolean,
-  },
-  Env: {
-    prototype: {
-      ddescribe?: () => void,
-      iit?: () => void,
-    }
-  }
-} = global.jasmine;
+var jasmine = global.jasmine;
 
 function setGlobalFocusPriority(priority) {
-  const env = jasmine.getEnv();
+  var env = jasmine.getEnv();
   if (!env.focusPriority) {
     env.focusPriority = 1;
   }
@@ -44,10 +36,10 @@ function setGlobalFocusPriority(priority) {
 }
 
 function fdescribe(description, specDefinitions, priority_) {
-  const priority = priority_ != null ? priority_ : 1;
+  var priority = priority_ != null ? priority_ : 1;
   setGlobalFocusPriority(priority);
-  const suite = describe(description, specDefinitions);
-  invariant(suite != null);
+  var suite = describe(description, specDefinitions);
+  (0, (_assert2 || _assert()).default)(suite != null);
   suite.focusPriority = priority;
   return suite;
 }
@@ -64,10 +56,10 @@ function fffdescribe(description, specDefinitions) {
 global.fffdescribe = fffdescribe;
 
 function fit(description, definition, priority_) {
-  const priority = priority_ != null ? priority_ : 1;
+  var priority = priority_ != null ? priority_ : 1;
   setGlobalFocusPriority(priority);
-  const spec = it(description, definition);
-  invariant(spec != null);
+  var spec = it(description, definition);
+  (0, (_assert2 || _assert()).default)(spec != null);
   spec.focusPriority = priority;
   return spec;
 }
@@ -83,10 +75,10 @@ function fffit(description, specDefinitions) {
 }
 global.fffit = fffit;
 
-jasmine.getEnv().specFilter = function(spec) {
-  const env = jasmine.getEnv();
-  const globalFocusPriority = env.focusPriority;
-  const parent = spec.parentSuite != null ? spec.parentSuite : spec.suite;
+jasmine.getEnv().specFilter = function (spec) {
+  var env = jasmine.getEnv();
+  var globalFocusPriority = env.focusPriority;
+  var parent = spec.parentSuite != null ? spec.parentSuite : spec.suite;
   if (!globalFocusPriority) {
     return true;
   } else if (spec.focusPriority >= globalFocusPriority) {
@@ -94,7 +86,7 @@ jasmine.getEnv().specFilter = function(spec) {
   } else if (!parent) {
     return false;
   } else {
-    invariant(typeof env.specFilter === 'function');
+    (0, (_assert2 || _assert()).default)(typeof env.specFilter === 'function');
     return env.specFilter(parent);
   }
 };

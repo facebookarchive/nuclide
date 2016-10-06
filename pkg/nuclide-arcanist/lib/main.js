@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,91 +10,131 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProvider} from '../../nuclide-busy-signal/lib/types';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {OutputService} from '../../nuclide-console/lib/types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable, Disposable} from 'atom';
-import createPackage from '../../commons-atom/createPackage';
-import registerGrammar from '../../commons-atom/register-grammar';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
-import {ArcanistDiagnosticsProvider} from './ArcanistDiagnosticsProvider';
-import ArcBuildSystem from './ArcBuildSystem';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class Activation {
-  _disposables: CompositeDisposable;
-  _busySignalProvider: BusySignalProviderBase;
-  _buildSystem: ?ArcBuildSystem;
-  _cwdApi: ?CwdApi;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
-    this._busySignalProvider = new DedupedBusySignalProviderBase();
-    registerGrammar('source.json', '.arcconfig');
-  }
+var _atom2;
 
-  dispose(): void {
-    this._disposables.dispose();
-  }
-
-  setCwdApi(cwdApi: ?CwdApi) {
-    this._cwdApi = cwdApi;
-    if (this._buildSystem != null) {
-      this._buildSystem.setCwdApi(cwdApi);
-    }
-  }
-
-  provideBusySignal(): BusySignalProvider {
-    return this._busySignalProvider;
-  }
-
-  provideDiagnostics() {
-    const provider = new ArcanistDiagnosticsProvider(this._busySignalProvider);
-    this._disposables.add(provider);
-    return provider;
-  }
-
-  consumeBuildSystemRegistry(registry: TaskRunnerServiceApi): void {
-    this._disposables.add(registry.register(this._getBuildSystem()));
-  }
-
-  consumeOutputService(api: OutputService): void {
-    this._disposables.add(
-      api.registerOutputProvider({
-        id: 'Arc Build',
-        messages: this._getBuildSystem().getOutputMessages(),
-      }),
-    );
-  }
-
-  consumeCwdApi(api: CwdApi): IDisposable {
-    this.setCwdApi(api);
-
-    let pkg = this;
-    this._disposables.add({
-      dispose() { pkg = null; },
-    });
-    return new Disposable(() => {
-      if (pkg != null) {
-        pkg.setCwdApi(null);
-      }
-    });
-  }
-
-  _getBuildSystem(): ArcBuildSystem {
-    if (this._buildSystem == null) {
-      const buildSystem = new ArcBuildSystem();
-      if (this._cwdApi != null) {
-        buildSystem.setCwdApi(this._cwdApi);
-      }
-      this._disposables.add(buildSystem);
-      this._buildSystem = buildSystem;
-    }
-    return this._buildSystem;
-  }
+function _atom() {
+  return _atom2 = require('atom');
 }
 
-export default createPackage(Activation);
+var _commonsAtomCreatePackage2;
+
+function _commonsAtomCreatePackage() {
+  return _commonsAtomCreatePackage2 = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _commonsAtomRegisterGrammar2;
+
+function _commonsAtomRegisterGrammar() {
+  return _commonsAtomRegisterGrammar2 = _interopRequireDefault(require('../../commons-atom/register-grammar'));
+}
+
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+
+var _nuclideBusySignal2;
+
+function _nuclideBusySignal() {
+  return _nuclideBusySignal2 = require('../../nuclide-busy-signal');
+}
+
+var _ArcanistDiagnosticsProvider2;
+
+function _ArcanistDiagnosticsProvider() {
+  return _ArcanistDiagnosticsProvider2 = require('./ArcanistDiagnosticsProvider');
+}
+
+var _ArcBuildSystem2;
+
+function _ArcBuildSystem() {
+  return _ArcBuildSystem2 = _interopRequireDefault(require('./ArcBuildSystem'));
+}
+
+var Activation = (function () {
+  function Activation(state) {
+    _classCallCheck(this, Activation);
+
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable();
+    this._busySignalProvider = new (_nuclideBusySignal2 || _nuclideBusySignal()).DedupedBusySignalProviderBase();
+    (0, (_commonsAtomRegisterGrammar2 || _commonsAtomRegisterGrammar()).default)('source.json', '.arcconfig');
+  }
+
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'setCwdApi',
+    value: function setCwdApi(cwdApi) {
+      this._cwdApi = cwdApi;
+      if (this._buildSystem != null) {
+        this._buildSystem.setCwdApi(cwdApi);
+      }
+    }
+  }, {
+    key: 'provideBusySignal',
+    value: function provideBusySignal() {
+      return this._busySignalProvider;
+    }
+  }, {
+    key: 'provideDiagnostics',
+    value: function provideDiagnostics() {
+      var provider = new (_ArcanistDiagnosticsProvider2 || _ArcanistDiagnosticsProvider()).ArcanistDiagnosticsProvider(this._busySignalProvider);
+      this._disposables.add(provider);
+      return provider;
+    }
+  }, {
+    key: 'consumeBuildSystemRegistry',
+    value: function consumeBuildSystemRegistry(registry) {
+      this._disposables.add(registry.register(this._getBuildSystem()));
+    }
+  }, {
+    key: 'consumeOutputService',
+    value: function consumeOutputService(api) {
+      this._disposables.add(api.registerOutputProvider({
+        id: 'Arc Build',
+        messages: this._getBuildSystem().getOutputMessages()
+      }));
+    }
+  }, {
+    key: 'consumeCwdApi',
+    value: function consumeCwdApi(api) {
+      this.setCwdApi(api);
+
+      var pkg = this;
+      this._disposables.add({
+        dispose: function dispose() {
+          pkg = null;
+        }
+      });
+      return new (_atom2 || _atom()).Disposable(function () {
+        if (pkg != null) {
+          pkg.setCwdApi(null);
+        }
+      });
+    }
+  }, {
+    key: '_getBuildSystem',
+    value: function _getBuildSystem() {
+      if (this._buildSystem == null) {
+        var buildSystem = new (_ArcBuildSystem2 || _ArcBuildSystem()).default();
+        if (this._cwdApi != null) {
+          buildSystem.setCwdApi(this._cwdApi);
+        }
+        this._disposables.add(buildSystem);
+        this._buildSystem = buildSystem;
+      }
+      return this._buildSystem;
+    }
+  }]);
+
+  return Activation;
+})();
+
+exports.default = (0, (_commonsAtomCreatePackage2 || _commonsAtomCreatePackage()).default)(Activation);
+module.exports = exports.default;

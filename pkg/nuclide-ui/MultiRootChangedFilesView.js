@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,255 +10,294 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
-import type {FileChangeStatusValue} from '../nuclide-hg-git-bridge/lib/constants';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import classnames from 'classnames';
-import {
- FileChangeStatus,
- FileChangeStatusToPrefix,
- FileChangeStatusToTextColor,
- RevertibleStatusCodes,
-} from '../nuclide-hg-git-bridge/lib/constants';
-import invariant from 'assert';
-import nuclideUri from '../commons-node/nuclideUri';
-import {React} from 'react-for-atom';
-import UniversalDisposable from '../commons-node/UniversalDisposable';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _classnames2;
+
+function _classnames() {
+  return _classnames2 = _interopRequireDefault(require('classnames'));
+}
+
+var _nuclideHgGitBridgeLibConstants2;
+
+function _nuclideHgGitBridgeLibConstants() {
+  return _nuclideHgGitBridgeLibConstants2 = require('../nuclide-hg-git-bridge/lib/constants');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+var _reactForAtom2;
+
+function _reactForAtom() {
+  return _reactForAtom2 = require('react-for-atom');
+}
+
+var _commonsNodeUniversalDisposable2;
+
+function _commonsNodeUniversalDisposable() {
+  return _commonsNodeUniversalDisposable2 = _interopRequireDefault(require('../commons-node/UniversalDisposable'));
+}
+
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {addPath, revertPath} from '../nuclide-hg-repository/lib/actions';
 
-type ChangedFilesProps = {
-  fileChanges: Map<NuclideUri, FileChangeStatusValue>,
-  rootPath: NuclideUri,
-  commandPrefix: string,
-  selectedFile: ?NuclideUri,
-  hideEmptyFolders: boolean,
-  shouldShowFolderName: boolean,
-  onFileChosen: (filePath: NuclideUri) => void,
-};
+var _nuclideHgRepositoryLibActions2;
 
-type ChangedFilesState = {
-  isCollapsed: boolean,
-};
+function _nuclideHgRepositoryLibActions() {
+  return _nuclideHgRepositoryLibActions2 = require('../nuclide-hg-repository/lib/actions');
+}
 
-class ChangedFilesView extends React.Component {
-  props: ChangedFilesProps;
-  state: ChangedFilesState;
+var ChangedFilesView = (function (_React$Component) {
+  _inherits(ChangedFilesView, _React$Component);
 
-  constructor(props: ChangedFilesProps) {
-    super(props);
+  function ChangedFilesView(props) {
+    _classCallCheck(this, ChangedFilesView);
+
+    _get(Object.getPrototypeOf(ChangedFilesView.prototype), 'constructor', this).call(this, props);
     this.state = {
-      isCollapsed: false,
+      isCollapsed: false
     };
   }
 
-  _getFileClassname(file: NuclideUri, fileChangeValue: FileChangeStatusValue): string {
-    const {selectedFile} = this.props;
-    return classnames(
-      'list-item', {
-        selected: file === selectedFile,
-      },
-      FileChangeStatusToTextColor[fileChangeValue],
-    );
-  }
+  _createClass(ChangedFilesView, [{
+    key: '_getFileClassname',
+    value: function _getFileClassname(file, fileChangeValue) {
+      var selectedFile = this.props.selectedFile;
 
-  render(): ?React.Element<any> {
-    const {fileChanges, commandPrefix} = this.props;
-    if (fileChanges.size === 0 && this.props.hideEmptyFolders) {
-      return null;
+      return (0, (_classnames2 || _classnames()).default)('list-item', {
+        selected: file === selectedFile
+      }, (_nuclideHgGitBridgeLibConstants2 || _nuclideHgGitBridgeLibConstants()).FileChangeStatusToTextColor[fileChangeValue]);
     }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this = this;
 
-    const rootClassName = classnames('list-nested-item', {
-      collapsed: this.state.isCollapsed,
-    });
+      var _props = this.props;
+      var fileChanges = _props.fileChanges;
+      var commandPrefix = _props.commandPrefix;
 
-    const fileClassName = classnames(
-      'icon',
-      'icon-file-text',
-      'nuclide-file-changes-file-entry',
-      `${commandPrefix}-file-entry`,
-    );
+      if (fileChanges.size === 0 && this.props.hideEmptyFolders) {
+        return null;
+      }
 
-    return (
-      <ul className="list-tree has-collapsable-children">
-        <li className={rootClassName}>
-          {this.props.shouldShowFolderName ?
-            <div
-              className="list-item"
-              key={this.props.rootPath}
-              onClick={() => this.setState({isCollapsed: !this.state.isCollapsed})}>
-              <span
-                className="icon icon-file-directory nuclide-file-changes-root-entry"
-                data-path={this.props.rootPath}>
-                {nuclideUri.basename(this.props.rootPath)}
-              </span>
-            </div> :
-            null
-          }
-          <ul className="list-tree has-flat-children">
-            {Array.from(fileChanges.entries()).map(
-              ([filePath, fileChangeValue]) =>
-                <li
-                  data-path={filePath}
-                  className={this._getFileClassname(filePath, fileChangeValue)}
-                  key={filePath}
-                  onClick={() => this.props.onFileChosen(filePath)}>
-                  <span
-                    className={fileClassName}
-                    data-path={filePath}
-                    data-root={this.props.rootPath}>
-                    {FileChangeStatusToPrefix[fileChangeValue]}{nuclideUri.basename(filePath)}
-                  </span>
-                </li>,
-            )}
-          </ul>
-        </li>
-      </ul>
-    );
+      var rootClassName = (0, (_classnames2 || _classnames()).default)('list-nested-item', {
+        collapsed: this.state.isCollapsed
+      });
+
+      var fileClassName = (0, (_classnames2 || _classnames()).default)('icon', 'icon-file-text', 'nuclide-file-changes-file-entry', commandPrefix + '-file-entry');
+
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'ul',
+        { className: 'list-tree has-collapsable-children' },
+        (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'li',
+          { className: rootClassName },
+          this.props.shouldShowFolderName ? (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'div',
+            {
+              className: 'list-item',
+              key: this.props.rootPath,
+              onClick: function () {
+                return _this.setState({ isCollapsed: !_this.state.isCollapsed });
+              } },
+            (_reactForAtom2 || _reactForAtom()).React.createElement(
+              'span',
+              {
+                className: 'icon icon-file-directory nuclide-file-changes-root-entry',
+                'data-path': this.props.rootPath },
+              (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.basename(this.props.rootPath)
+            )
+          ) : null,
+          (_reactForAtom2 || _reactForAtom()).React.createElement(
+            'ul',
+            { className: 'list-tree has-flat-children' },
+            Array.from(fileChanges.entries()).map(function (_ref) {
+              var _ref2 = _slicedToArray(_ref, 2);
+
+              var filePath = _ref2[0];
+              var fileChangeValue = _ref2[1];
+              return (_reactForAtom2 || _reactForAtom()).React.createElement(
+                'li',
+                {
+                  'data-path': filePath,
+                  className: _this._getFileClassname(filePath, fileChangeValue),
+                  key: filePath,
+                  onClick: function () {
+                    return _this.props.onFileChosen(filePath);
+                  } },
+                (_reactForAtom2 || _reactForAtom()).React.createElement(
+                  'span',
+                  {
+                    className: fileClassName,
+                    'data-path': filePath,
+                    'data-root': _this.props.rootPath },
+                  (_nuclideHgGitBridgeLibConstants2 || _nuclideHgGitBridgeLibConstants()).FileChangeStatusToPrefix[fileChangeValue],
+                  (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.basename(filePath)
+                )
+              );
+            })
+          )
+        )
+      );
+    }
+  }]);
+
+  return ChangedFilesView;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
+
+var MultiRootChangedFilesView = (function (_React$Component2) {
+  _inherits(MultiRootChangedFilesView, _React$Component2);
+
+  function MultiRootChangedFilesView() {
+    _classCallCheck(this, MultiRootChangedFilesView);
+
+    _get(Object.getPrototypeOf(MultiRootChangedFilesView.prototype), 'constructor', this).apply(this, arguments);
   }
-}
 
-type Props = {
-  fileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
-  commandPrefix: string,
-  selectedFile: ?NuclideUri,
-  hideEmptyFolders?: boolean,
-  onFileChosen: (filePath: NuclideUri) => void,
-};
+  _createClass(MultiRootChangedFilesView, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this2 = this;
 
-export class MultiRootChangedFilesView extends React.Component {
-  props: Props;
-  _subscriptions: UniversalDisposable;
+      this._subscriptions = new (_commonsNodeUniversalDisposable2 || _commonsNodeUniversalDisposable()).default();
+      var commandPrefix = this.props.commandPrefix;
 
-  componentDidMount(): void {
-    this._subscriptions = new UniversalDisposable();
-    const {commandPrefix} = this.props;
-    this._subscriptions.add(atom.contextMenu.add({
-      [`.${commandPrefix}-file-entry`]: [
-        {type: 'separator'},
-        {
-          label: 'Add to Mercurial',
-          command: `${commandPrefix}:add`,
-          shouldDisplay: event => {
-            // The context menu has the `currentTarget` set to `document`.
-            // Hence, use `target` instead.
-            const filePath = event.target.getAttribute('data-path');
-            const rootPath = event.target.getAttribute('data-root');
-            const fileChangesForRoot = this.props.fileChanges.get(rootPath);
-            invariant(fileChangesForRoot, 'Invalid rootpath');
-            const statusCode = fileChangesForRoot.get(filePath);
-            return statusCode === FileChangeStatus.UNTRACKED;
-          },
-        },
-        {
-          label: 'Revert',
-          command: `${commandPrefix}:revert`,
-          shouldDisplay: event => {
-            // The context menu has the `currentTarget` set to `document`.
-            // Hence, use `target` instead.
-            const filePath = event.target.getAttribute('data-path');
-            const rootPath = event.target.getAttribute('data-root');
-            const fileChangesForRoot = this.props.fileChanges.get(rootPath);
-            invariant(fileChangesForRoot, 'Invalid rootpath');
-            const statusCode = fileChangesForRoot.get(filePath);
-            if (statusCode == null) {
-              return false;
-            }
-            return RevertibleStatusCodes.includes(statusCode);
-          },
-        },
-        {
-          label: 'Goto File',
-          command: `${commandPrefix}:goto-file`,
-        },
-        {
-          label: 'Copy File Name',
-          command: `${commandPrefix}:copy-file-name`,
-        },
-        {
-          label: 'Copy Full Path',
-          command: `${commandPrefix}:copy-full-path`,
-        },
-        {type: 'separator'},
-      ],
-    }));
+      this._subscriptions.add(atom.contextMenu.add(_defineProperty({}, '.' + commandPrefix + '-file-entry', [{ type: 'separator' }, {
+        label: 'Add to Mercurial',
+        command: commandPrefix + ':add',
+        shouldDisplay: function shouldDisplay(event) {
+          // The context menu has the `currentTarget` set to `document`.
+          // Hence, use `target` instead.
+          var filePath = event.target.getAttribute('data-path');
+          var rootPath = event.target.getAttribute('data-root');
+          var fileChangesForRoot = _this2.props.fileChanges.get(rootPath);
+          (0, (_assert2 || _assert()).default)(fileChangesForRoot, 'Invalid rootpath');
+          var statusCode = fileChangesForRoot.get(filePath);
+          return statusCode === (_nuclideHgGitBridgeLibConstants2 || _nuclideHgGitBridgeLibConstants()).FileChangeStatus.UNTRACKED;
+        }
+      }, {
+        label: 'Revert',
+        command: commandPrefix + ':revert',
+        shouldDisplay: function shouldDisplay(event) {
+          // The context menu has the `currentTarget` set to `document`.
+          // Hence, use `target` instead.
+          var filePath = event.target.getAttribute('data-path');
+          var rootPath = event.target.getAttribute('data-root');
+          var fileChangesForRoot = _this2.props.fileChanges.get(rootPath);
+          (0, (_assert2 || _assert()).default)(fileChangesForRoot, 'Invalid rootpath');
+          var statusCode = fileChangesForRoot.get(filePath);
+          if (statusCode == null) {
+            return false;
+          }
+          return (_nuclideHgGitBridgeLibConstants2 || _nuclideHgGitBridgeLibConstants()).RevertibleStatusCodes.includes(statusCode);
+        }
+      }, {
+        label: 'Goto File',
+        command: commandPrefix + ':goto-file'
+      }, {
+        label: 'Copy File Name',
+        command: commandPrefix + ':copy-file-name'
+      }, {
+        label: 'Copy Full Path',
+        command: commandPrefix + ':copy-full-path'
+      }, { type: 'separator' }])));
 
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:goto-file`,
-      event => {
-        const filePath = this._getFilePathFromEvent(event);
+      this._subscriptions.add(atom.commands.add('.' + commandPrefix + '-file-entry', commandPrefix + ':goto-file', function (event) {
+        var filePath = _this2._getFilePathFromEvent(event);
         if (filePath != null && filePath.length) {
           atom.workspace.open(filePath);
         }
-      },
-    ));
+      }));
 
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:copy-full-path`,
-      event => {
-        atom.clipboard.write(nuclideUri.getPath(this._getFilePathFromEvent(event) || ''));
-      },
-    ));
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:copy-file-name`,
-      event => {
-        atom.clipboard.write(nuclideUri.basename(this._getFilePathFromEvent(event) || ''));
-      },
-    ));
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:add`,
-      event => {
-        const filePath = this._getFilePathFromEvent(event);
+      this._subscriptions.add(atom.commands.add('.' + commandPrefix + '-file-entry', commandPrefix + ':copy-full-path', function (event) {
+        atom.clipboard.write((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.getPath(_this2._getFilePathFromEvent(event) || ''));
+      }));
+      this._subscriptions.add(atom.commands.add('.' + commandPrefix + '-file-entry', commandPrefix + ':copy-file-name', function (event) {
+        atom.clipboard.write((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.basename(_this2._getFilePathFromEvent(event) || ''));
+      }));
+      this._subscriptions.add(atom.commands.add('.' + commandPrefix + '-file-entry', commandPrefix + ':add', function (event) {
+        var filePath = _this2._getFilePathFromEvent(event);
         if (filePath != null && filePath.length) {
-          addPath(filePath);
+          (0, (_nuclideHgRepositoryLibActions2 || _nuclideHgRepositoryLibActions()).addPath)(filePath);
         }
-      },
-    ));
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:revert`,
-      event => {
-        const filePath = this._getFilePathFromEvent(event);
+      }));
+      this._subscriptions.add(atom.commands.add('.' + commandPrefix + '-file-entry', commandPrefix + ':revert', function (event) {
+        var filePath = _this2._getFilePathFromEvent(event);
         if (filePath != null && filePath.length) {
-          revertPath(filePath);
+          (0, (_nuclideHgRepositoryLibActions2 || _nuclideHgRepositoryLibActions()).revertPath)(filePath);
         }
-      },
-    ));
-  }
-
-  _getFilePathFromEvent(event: Event): NuclideUri {
-    const eventTarget: HTMLElement = (event.currentTarget: any);
-    return eventTarget.getAttribute('data-path');
-  }
-
-  render(): React.Element<any> {
-    if (this.props.fileChanges.size === 0) {
-      return <div>No changes</div>;
+      }));
     }
+  }, {
+    key: '_getFilePathFromEvent',
+    value: function _getFilePathFromEvent(event) {
+      var eventTarget = event.currentTarget;
+      return eventTarget.getAttribute('data-path');
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this3 = this;
 
-    return (
-      <div className="nuclide-ui-multi-root-file-tree-container">
-        {Array.from(this.props.fileChanges.entries()).map(([root, fileChanges]) =>
-          <ChangedFilesView
-            key={root}
-            fileChanges={fileChanges}
-            rootPath={root}
-            commandPrefix={this.props.commandPrefix}
-            selectedFile={this.props.selectedFile}
-            hideEmptyFolders={this.props.hideEmptyFolders}
-            shouldShowFolderName={this.props.fileChanges.size > 1}
-            onFileChosen={this.props.onFileChosen}
-          />,
-        )}
-      </div>
-    );
-  }
+      if (this.props.fileChanges.size === 0) {
+        return (_reactForAtom2 || _reactForAtom()).React.createElement(
+          'div',
+          null,
+          'No changes'
+        );
+      }
 
-  componentWillUnmount(): void {
-    this._subscriptions.dispose();
-  }
-}
+      return (_reactForAtom2 || _reactForAtom()).React.createElement(
+        'div',
+        { className: 'nuclide-ui-multi-root-file-tree-container' },
+        Array.from(this.props.fileChanges.entries()).map(function (_ref3) {
+          var _ref32 = _slicedToArray(_ref3, 2);
+
+          var root = _ref32[0];
+          var fileChanges = _ref32[1];
+          return (_reactForAtom2 || _reactForAtom()).React.createElement(ChangedFilesView, {
+            key: root,
+            fileChanges: fileChanges,
+            rootPath: root,
+            commandPrefix: _this3.props.commandPrefix,
+            selectedFile: _this3.props.selectedFile,
+            hideEmptyFolders: _this3.props.hideEmptyFolders,
+            shouldShowFolderName: _this3.props.fileChanges.size > 1,
+            onFileChosen: _this3.props.onFileChosen
+          });
+        })
+      );
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this._subscriptions.dispose();
+    }
+  }]);
+
+  return MultiRootChangedFilesView;
+})((_reactForAtom2 || _reactForAtom()).React.Component);
+
+exports.MultiRootChangedFilesView = MultiRootChangedFilesView;

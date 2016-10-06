@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getIgnoredNames = getIgnoredNames;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +11,13 @@
  * the root directory of this source tree.
  */
 
-export function getIgnoredNames(): Array<string> {
-  const ignoredNames = atom.config.get('core.ignoredNames');
+function getIgnoredNames() {
+  var ignoredNames = atom.config.get('core.ignoredNames');
   if (Array.isArray(ignoredNames)) {
     // $FlowIssue: Filter predicates
-    return ignoredNames.filter(x => typeof x === 'string');
+    return ignoredNames.filter(function (x) {
+      return typeof x === 'string';
+    });
   } else {
     return [];
   }
