@@ -12,6 +12,15 @@
           "command": "nuclide-home:toggle"
         }
       ]
+    },
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Home",
+          "command": "nuclide-home:toggle"
+        }
+      ]
     }
   ]
 }

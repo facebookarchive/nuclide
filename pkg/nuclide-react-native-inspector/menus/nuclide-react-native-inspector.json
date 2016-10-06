@@ -1,0 +1,18 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "React Native",
+          "submenu": [
+            {
+              "label": "Toggle Inspector",
+              "command": "nuclide-react-native-inspector:toggle"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

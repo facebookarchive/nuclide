@@ -1,0 +1,13 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Health",
+          "command": "nuclide-health:toggle"
+        }
+      ]
+    }
+  ]
+}
