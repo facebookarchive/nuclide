@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,94 +10,122 @@
  * the root directory of this source tree.
  */
 
-import type {HackRange} from './rpc-types';
+/**
+ * Executes hh_client with proper arguments returning the result string or json object.
+ */
 
-import invariant from 'assert';
-import {asyncExecute} from '../../commons-node/process';
-import {PromiseQueue} from '../../commons-node/promise-executors';
-import {getHackExecOptions} from './hack-config';
-import {Point, Range} from 'simple-text-buffer';
-
-const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
-const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
-import {logger} from './hack-config';
-
-let hhPromiseQueue: ?PromiseQueue = null;
-
- /**
-  * Executes hh_client with proper arguments returning the result string or json object.
-  */
-export async function callHHClient(
-  args: Array<any>,
-  errorStream: boolean,
-  processInput: ?string,
-  filePath: string): Promise<?(string | Object)> {
+var callHHClient = _asyncToGenerator(function* (args, errorStream, processInput, filePath) {
 
   if (!hhPromiseQueue) {
-    hhPromiseQueue = new PromiseQueue();
+    hhPromiseQueue = new (_commonsNodePromiseExecutors2 || _commonsNodePromiseExecutors()).PromiseQueue();
   }
 
-  const hackExecOptions = await getHackExecOptions(filePath);
+  var hackExecOptions = yield (0, (_hackConfig2 || _hackConfig()).getHackExecOptions)(filePath);
   if (!hackExecOptions) {
     return null;
   }
-  const {hackRoot, hackCommand} = hackExecOptions;
+  var hackRoot = hackExecOptions.hackRoot;
+  var hackCommand = hackExecOptions.hackCommand;
 
-  invariant(hhPromiseQueue);
-  return hhPromiseQueue.submit(async (resolve, reject) => {
+  (0, (_assert2 || _assert()).default)(hhPromiseQueue);
+  return hhPromiseQueue.submit(_asyncToGenerator(function* (resolve, reject) {
     // Append args on the end of our commands.
-    const defaults = ['--json', '--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
+    var defaults = ['--json', '--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
 
-    const allArgs = defaults.concat(args);
+    var allArgs = defaults.concat(args);
     allArgs.push(hackRoot);
 
-    let execResult = null;
+    var execResult = null;
     try {
-      logger.logTrace(`Calling Hack: ${hackCommand} with ${allArgs.toString()}`);
-      execResult = await asyncExecute(hackCommand, allArgs, {stdin: processInput});
+      (_hackConfig4 || _hackConfig3()).logger.logTrace('Calling Hack: ' + hackCommand + ' with ' + allArgs.toString());
+      execResult = yield (0, (_commonsNodeProcess2 || _commonsNodeProcess()).asyncExecute)(hackCommand, allArgs, { stdin: processInput });
     } catch (err) {
       reject(err);
       return;
     }
-    const {stdout, stderr} = execResult;
+    var _execResult = execResult;
+    var stdout = _execResult.stdout;
+    var stderr = _execResult.stderr;
+
     if (stderr.indexOf(HH_SERVER_INIT_MESSAGE) !== -1) {
-      reject(new Error(`${HH_SERVER_INIT_MESSAGE}: try: \`arc build\` or try again later!`));
+      reject(new Error(HH_SERVER_INIT_MESSAGE + ': try: `arc build` or try again later!'));
       return;
     } else if (stderr.startsWith(HH_SERVER_BUSY_MESSAGE)) {
-      reject(new Error(`${HH_SERVER_BUSY_MESSAGE}: try: \`arc build\` or try again later!`));
+      reject(new Error(HH_SERVER_BUSY_MESSAGE + ': try: `arc build` or try again later!'));
       return;
     }
 
-    const output = errorStream ? stderr : stdout;
-    logger.logTrace(`Hack output for ${allArgs.toString()}: ${output}`);
+    var output = errorStream ? stderr : stdout;
+    (_hackConfig4 || _hackConfig3()).logger.logTrace('Hack output for ' + allArgs.toString() + ': ' + output);
     try {
-      const result = JSON.parse(output);
-      invariant(result.hackRoot === undefined);
+      var result = JSON.parse(output);
+      (0, (_assert2 || _assert()).default)(result.hackRoot === undefined);
       // result may be an array, so don't return a new object.
       result.hackRoot = hackRoot;
       resolve(result);
     } catch (err) {
-      const errorMessage = `hh_client error, args: [${args.join(',')}]
-stdout: ${stdout}, stderr: ${stderr}`;
-      logger.logError(errorMessage);
+      var errorMessage = 'hh_client error, args: [' + args.join(',') + ']\nstdout: ' + stdout + ', stderr: ' + stderr;
+      (_hackConfig4 || _hackConfig3()).logger.logError(errorMessage);
       reject(new Error(errorMessage));
     }
-  });
+  }));
+});
+
+exports.callHHClient = callHHClient;
+exports.hackRangeToAtomRange = hackRangeToAtomRange;
+exports.atomPointOfHackRangeStart = atomPointOfHackRangeStart;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
 }
 
-export function hackRangeToAtomRange(position: HackRange): atom$Range {
-  return new Range(
-    atomPointOfHackRangeStart(position),
-    new Point(
-      position.line - 1,
-      position.char_end),
-  );
+var _commonsNodeProcess2;
+
+function _commonsNodeProcess() {
+  return _commonsNodeProcess2 = require('../../commons-node/process');
 }
 
-export function atomPointOfHackRangeStart(position: HackRange): atom$Point {
-  return new Point(
-    position.line - 1,
-    position.char_start - 1);
+var _commonsNodePromiseExecutors2;
+
+function _commonsNodePromiseExecutors() {
+  return _commonsNodePromiseExecutors2 = require('../../commons-node/promise-executors');
 }
 
-export const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+var _hackConfig2;
+
+function _hackConfig() {
+  return _hackConfig2 = require('./hack-config');
+}
+
+var _simpleTextBuffer2;
+
+function _simpleTextBuffer() {
+  return _simpleTextBuffer2 = require('simple-text-buffer');
+}
+
+var HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
+var HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
+
+var _hackConfig4;
+
+function _hackConfig3() {
+  return _hackConfig4 = require('./hack-config');
+}
+
+var hhPromiseQueue = null;
+function hackRangeToAtomRange(position) {
+  return new (_simpleTextBuffer2 || _simpleTextBuffer()).Range(atomPointOfHackRangeStart(position), new (_simpleTextBuffer2 || _simpleTextBuffer()).Point(position.line - 1, position.char_end));
+}
+
+function atomPointOfHackRangeStart(position) {
+  return new (_simpleTextBuffer2 || _simpleTextBuffer()).Point(position.line - 1, position.char_start - 1);
+}
+
+var HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+exports.HACK_WORD_REGEX = HACK_WORD_REGEX;

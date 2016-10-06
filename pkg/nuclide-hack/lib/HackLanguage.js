@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,176 +10,192 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {DefinitionQueryResult} from '../../nuclide-definition-service/lib/rpc-types';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
-import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
-import type {
-  DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
-import {getConfig} from './config';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {Observable} from 'rxjs';
+var getHackLanguageForUri = _asyncToGenerator(function* (uri) {
+  return yield connectionToHackLanguage.getForUri(uri);
+});
 
-/**
- * Serves language requests from HackService.
- * Note that all line/column values are 1 based.
- */
-export class HackLanguage {
+exports.getHackLanguageForUri = getHackLanguageForUri;
+exports.clearHackLanguageCache = clearHackLanguageCache;
 
-  _hackService: HackLanguageService;
-
-  /**
-   * `basePath` should be the directory where the .hhconfig file is located.
-   */
-  constructor(hackService: HackLanguageService) {
-    this._hackService = hackService;
-  }
-
-  dispose() {
-  }
-
-  getLanguageService(): HackLanguageService {
-    return this._hackService;
-  }
-
-  getProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
-    return this._hackService.getProjectRoot(filePath);
-  }
-
-  isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
-    return this._hackService.isFileInHackProject(fileUri);
-  }
-
-  getAutocompleteSuggestions(
-    fileVersion: FileVersion,
-    position: atom$Point,
-    activatedManually: boolean,
-  ): Promise<Array<atom$AutocompleteSuggestion>> {
-    return this._hackService.getAutocompleteSuggestions(fileVersion, position, activatedManually);
-  }
-
-  async formatSource(
-    fileVersion: FileVersion,
-    range: atom$Range,
-  ): Promise<string> {
-    return this._hackService.formatSource(fileVersion, range);
-  }
-
-  async highlight(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<Array<atom$Range>> {
-    return this._hackService.highlight(fileVersion, position);
-  }
-
-  async getDiagnostics(
-    fileVersion: FileVersion,
-  ): Promise<?DiagnosticProviderUpdate> {
-    return this._hackService.getDiagnostics(fileVersion);
-  }
-
-  observeDiagnostics(): Observable<FileDiagnosticUpdate> {
-    return this._hackService.observeDiagnostics().refCount();
-  }
-
-  async getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
-    return await this._hackService.getCoverage(filePath);
-  }
-
-  getOutline(fileVersion: FileVersion): Promise<?Outline> {
-    return this._hackService.getOutline(fileVersion);
-  }
-
-  getDefinition(fileVersion: FileVersion, position: atom$Point): Promise<?DefinitionQueryResult> {
-    return this._hackService.getDefinition(fileVersion, position);
-  }
-
-  getDefinitionById(filePath: NuclideUri, id: string): Promise<?Definition> {
-    return this._hackService.getDefinitionById(filePath, id);
-  }
-
-  typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
-    return this._hackService.typeHint(fileVersion, position);
-  }
-
-  findReferences(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    return this._hackService.findReferences(fileVersion, position);
-  }
-}
-
-const HACK_SERVICE_NAME = 'HackService';
-
-const connectionToHackLanguage: ConnectionCache<HackLanguage>
-  = new ConnectionCache(async connection => {
-    const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
-    const config = getConfig();
-    const useIdeConnection = config.useIdeConnection;
-    // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
-    const fileNotifier = await getNotifierByConnection(connection);
-    const languageService = await hackService.initialize(
-      config.hhClientPath,
-      useIdeConnection,
-      config.logLevel,
-      fileNotifier);
-
-    return new HackLanguage(languageService);
-  });
-
-export async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguage> {
-  return await connectionToHackLanguage.getForUri(uri);
-}
-
-export function clearHackLanguageCache(): void {
-  connectionToHackLanguage.dispose();
-}
-
-export async function getHackServiceByNuclideUri(
-  fileUri: NuclideUri,
-): Promise<?HackLanguageService> {
-  const language = await getHackLanguageForUri(fileUri);
+var getHackServiceByNuclideUri = _asyncToGenerator(function* (fileUri) {
+  var language = yield getHackLanguageForUri(fileUri);
   if (language == null) {
     return null;
   }
   return language.getLanguageService();
-}
+});
 
-export async function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {
-  const language = await getHackLanguageForUri(fileUri);
+exports.getHackServiceByNuclideUri = getHackServiceByNuclideUri;
+
+var isFileInHackProject = _asyncToGenerator(function* (fileUri) {
+  var language = yield getHackLanguageForUri(fileUri);
   if (language == null) {
     return false;
   }
-  return await language.isFileInHackProject(fileUri);
+  return yield language.isFileInHackProject(fileUri);
 }
 
 /**
  * @return HackService for the specified directory if it is part of a Hack project.
  */
-export async function getHackServiceForProject(
-  directory: atom$Directory,
-): Promise<?HackLanguageService> {
-  const directoryPath = directory.getPath();
-  return (await isFileInHackProject(directoryPath))
-    ? (await getHackServiceByNuclideUri(directoryPath)) : null;
+);
+
+exports.isFileInHackProject = isFileInHackProject;
+
+var getHackServiceForProject = _asyncToGenerator(function* (directory) {
+  var directoryPath = directory.getPath();
+  return (yield isFileInHackProject(directoryPath)) ? (yield getHackServiceByNuclideUri(directoryPath)) : null;
+});
+
+exports.getHackServiceForProject = getHackServiceForProject;
+exports.observeHackLanguages = observeHackLanguages;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _nuclideRemoteConnection2;
+
+function _nuclideRemoteConnection() {
+  return _nuclideRemoteConnection2 = require('../../nuclide-remote-connection');
 }
 
-export function observeHackLanguages(): Observable<HackLanguage> {
-  return connectionToHackLanguage.observeValues()
-    .switchMap(hackLanguage => {
-      return Observable.fromPromise(hackLanguage);
-    });
+var _config2;
+
+function _config() {
+  return _config2 = require('./config');
+}
+
+var _nuclideOpenFiles2;
+
+function _nuclideOpenFiles() {
+  return _nuclideOpenFiles2 = require('../../nuclide-open-files');
+}
+
+var _rxjsBundlesRxMinJs2;
+
+function _rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs2 = require('rxjs/bundles/Rx.min.js');
+}
+
+/**
+ * Serves language requests from HackService.
+ * Note that all line/column values are 1 based.
+ */
+
+var HackLanguage = (function () {
+
+  /**
+   * `basePath` should be the directory where the .hhconfig file is located.
+   */
+
+  function HackLanguage(hackService) {
+    _classCallCheck(this, HackLanguage);
+
+    this._hackService = hackService;
+  }
+
+  _createClass(HackLanguage, [{
+    key: 'dispose',
+    value: function dispose() {}
+  }, {
+    key: 'getLanguageService',
+    value: function getLanguageService() {
+      return this._hackService;
+    }
+  }, {
+    key: 'getProjectRoot',
+    value: function getProjectRoot(filePath) {
+      return this._hackService.getProjectRoot(filePath);
+    }
+  }, {
+    key: 'isFileInHackProject',
+    value: function isFileInHackProject(fileUri) {
+      return this._hackService.isFileInHackProject(fileUri);
+    }
+  }, {
+    key: 'getAutocompleteSuggestions',
+    value: function getAutocompleteSuggestions(fileVersion, position, activatedManually) {
+      return this._hackService.getAutocompleteSuggestions(fileVersion, position, activatedManually);
+    }
+  }, {
+    key: 'formatSource',
+    value: _asyncToGenerator(function* (fileVersion, range) {
+      return this._hackService.formatSource(fileVersion, range);
+    })
+  }, {
+    key: 'highlight',
+    value: _asyncToGenerator(function* (fileVersion, position) {
+      return this._hackService.highlight(fileVersion, position);
+    })
+  }, {
+    key: 'getDiagnostics',
+    value: _asyncToGenerator(function* (fileVersion) {
+      return this._hackService.getDiagnostics(fileVersion);
+    })
+  }, {
+    key: 'observeDiagnostics',
+    value: function observeDiagnostics() {
+      return this._hackService.observeDiagnostics().refCount();
+    }
+  }, {
+    key: 'getCoverage',
+    value: _asyncToGenerator(function* (filePath) {
+      return yield this._hackService.getCoverage(filePath);
+    })
+  }, {
+    key: 'getOutline',
+    value: function getOutline(fileVersion) {
+      return this._hackService.getOutline(fileVersion);
+    }
+  }, {
+    key: 'getDefinition',
+    value: function getDefinition(fileVersion, position) {
+      return this._hackService.getDefinition(fileVersion, position);
+    }
+  }, {
+    key: 'getDefinitionById',
+    value: function getDefinitionById(filePath, id) {
+      return this._hackService.getDefinitionById(filePath, id);
+    }
+  }, {
+    key: 'typeHint',
+    value: function typeHint(fileVersion, position) {
+      return this._hackService.typeHint(fileVersion, position);
+    }
+  }, {
+    key: 'findReferences',
+    value: function findReferences(fileVersion, position) {
+      return this._hackService.findReferences(fileVersion, position);
+    }
+  }]);
+
+  return HackLanguage;
+})();
+
+exports.HackLanguage = HackLanguage;
+
+var HACK_SERVICE_NAME = 'HackService';
+
+var connectionToHackLanguage = new (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).ConnectionCache(_asyncToGenerator(function* (connection) {
+  var hackService = (0, (_nuclideRemoteConnection2 || _nuclideRemoteConnection()).getServiceByConnection)(HACK_SERVICE_NAME, connection);
+  var config = (0, (_config2 || _config()).getConfig)();
+  var useIdeConnection = config.useIdeConnection;
+  // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
+  var fileNotifier = yield (0, (_nuclideOpenFiles2 || _nuclideOpenFiles()).getNotifierByConnection)(connection);
+  var languageService = yield hackService.initialize(config.hhClientPath, useIdeConnection, config.logLevel, fileNotifier);
+
+  return new HackLanguage(languageService);
+}));
+
+function clearHackLanguageCache() {
+  connectionToHackLanguage.dispose();
+}
+
+function observeHackLanguages() {
+  return connectionToHackLanguage.observeValues().switchMap(function (hackLanguage) {
+    return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.fromPromise(hackLanguage);
+  });
 }

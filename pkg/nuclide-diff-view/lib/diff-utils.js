@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,46 +10,53 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DiffSection,
-  DiffSectionStatusType,
-  OffsetMap,
-  TextDiff,
-} from './types';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import {diffLines} from 'diff';
-import {DiffSectionStatus} from './constants';
-import {concatIterators} from '../../commons-node/collection';
+exports.computeDiff = computeDiff;
+exports.computeDiffSections = computeDiffSections;
+exports.getOffsetLineCount = getOffsetLineCount;
 
-type ChunkPiece = {
-  added: number,
-  removed: number,
-  value: string,
-  count: number,
-  offset: number,
-};
+var _diff2;
 
-type DiffChunk = {
-  addedLines: Array<number>,
-  removedLines: Array<number>,
-  chunks: Array<ChunkPiece>,
-};
+function _diff() {
+  return _diff2 = require('diff');
+}
 
-export function computeDiff(oldText: string, newText: string): TextDiff {
-  const {addedLines, removedLines, chunks} = _computeDiffChunks(oldText, newText);
-  const {oldLineOffsets, newLineOffsets} = _computeOffsets(chunks);
+var _constants2;
+
+function _constants() {
+  return _constants2 = require('./constants');
+}
+
+var _commonsNodeCollection2;
+
+function _commonsNodeCollection() {
+  return _commonsNodeCollection2 = require('../../commons-node/collection');
+}
+
+function computeDiff(oldText, newText) {
+  var _computeDiffChunks2 = _computeDiffChunks(oldText, newText);
+
+  var addedLines = _computeDiffChunks2.addedLines;
+  var removedLines = _computeDiffChunks2.removedLines;
+  var chunks = _computeDiffChunks2.chunks;
+
+  var _computeOffsets2 = _computeOffsets(chunks);
+
+  var oldLineOffsets = _computeOffsets2.oldLineOffsets;
+  var newLineOffsets = _computeOffsets2.newLineOffsets;
 
   return {
-    addedLines,
-    removedLines,
-    oldLineOffsets,
-    newLineOffsets,
+    addedLines: addedLines,
+    removedLines: removedLines,
+    oldLineOffsets: oldLineOffsets,
+    newLineOffsets: newLineOffsets
   };
 }
 
-function _computeDiffChunks(oldText_: string, newText_: string): DiffChunk {
-  let oldText = oldText_;
-  let newText = newText_;
+function _computeDiffChunks(oldText_, newText_) {
+  var oldText = oldText_;
+  var newText = newText_;
 
   // If the last line has changes, JsDiff doesn't return that.
   // Generally, content with new line ending are easier to calculate offsets for.
@@ -57,93 +65,104 @@ function _computeDiffChunks(oldText_: string, newText_: string): DiffChunk {
     newText += '\n';
   }
 
-  const lineDiff = diffLines(oldText, newText);
-  const chunks = [];
+  var lineDiff = (0, (_diff2 || _diff()).diffLines)(oldText, newText);
+  var chunks = [];
 
-  let addedCount = 0;
-  let removedCount = 0;
-  let nextOffset = 0;
-  let offset = 0;
+  var addedCount = 0;
+  var removedCount = 0;
+  var nextOffset = 0;
+  var offset = 0;
 
-  const addedLines = [];
-  const removedLines = [];
-  lineDiff.forEach(part => {
-    const {added, removed, value} = part;
-    const count = value.split('\n').length - 1;
+  var addedLines = [];
+  var removedLines = [];
+  lineDiff.forEach(function (part) {
+    var added = part.added;
+    var removed = part.removed;
+    var value = part.value;
+
+    var count = value.split('\n').length - 1;
     if (!added && !removed) {
       addedCount += count;
       removedCount += count;
       offset = nextOffset;
       nextOffset = 0;
     } else if (added) {
-      for (let i = 0; i < count; i++) {
+      for (var i = 0; i < count; i++) {
         addedLines.push(addedCount + i);
       }
       addedCount += count;
       nextOffset += count;
     } else {
-      for (let i = 0; i < count; i++) {
+      for (var i = 0; i < count; i++) {
         removedLines.push(removedCount + i);
       }
       removedCount += count;
       nextOffset -= count;
     }
-    chunks.push({added, removed, value, count, offset});
+    chunks.push({ added: added, removed: removed, value: value, count: count, offset: offset });
     offset = 0;
   });
   if (nextOffset !== 0) {
     // Add a trailing offset block at the end of the shorter file.
-    chunks.push({added: 0, removed: 0, value: '', count: 0, offset: nextOffset});
+    chunks.push({ added: 0, removed: 0, value: '', count: 0, offset: nextOffset });
   }
-  return {addedLines, removedLines, chunks};
+  return { addedLines: addedLines, removedLines: removedLines, chunks: chunks };
 }
 
-function _computeOffsets(
-  diffChunks: Array<ChunkPiece>,
-): {oldLineOffsets: OffsetMap, newLineOffsets: OffsetMap} {
-  const newLineOffsets = new Map();
-  const oldLineOffsets = new Map();
+function _computeOffsets(diffChunks) {
+  var newLineOffsets = new Map();
+  var oldLineOffsets = new Map();
 
-  let oldLineCount = 0;
-  let newLineCount = 0;
+  var oldLineCount = 0;
+  var newLineCount = 0;
 
-  for (const chunk of diffChunks) {
-    const {added, removed, offset, count} = chunk;
-    if (added) {
-      newLineCount += count;
-    } else if (removed) {
-      oldLineCount += count;
+  for (var chunk of diffChunks) {
+    var _added = chunk.added;
+    var _removed = chunk.removed;
+    var _offset = chunk.offset;
+    var _count = chunk.count;
+
+    if (_added) {
+      newLineCount += _count;
+    } else if (_removed) {
+      oldLineCount += _count;
     } else {
-      if (offset < 0) {
+      if (_offset < 0) {
         // Non zero offset implies this block is neither a removal or an addition,
         // and is thus equal in both versions of the document.
         // Sign of offset indicates which version of document requires the offset
         // (negative -> old version, positive -> new version).
         // Magnitude of offset indicates the number of offset lines required for version.
-        newLineOffsets.set(newLineCount, offset * -1);
-      } else if (offset > 0) {
-        oldLineOffsets.set(oldLineCount, offset);
+        newLineOffsets.set(newLineCount, _offset * -1);
+      } else if (_offset > 0) {
+        oldLineOffsets.set(oldLineCount, _offset);
       }
-      newLineCount += count;
-      oldLineCount += count;
+      newLineCount += _count;
+      oldLineCount += _count;
     }
   }
 
   return {
-    oldLineOffsets,
-    newLineOffsets,
+    oldLineOffsets: oldLineOffsets,
+    newLineOffsets: newLineOffsets
   };
 }
 
-function getLineCountWithOffsets(contents: string, offsets: OffsetMap): number {
-  const linesCount = contents.split(/\r\n|\n/).length;
-  return Array.from(offsets.values())
-    .reduce((count, offsetLines) => count + offsetLines, linesCount);
+function getLineCountWithOffsets(contents, offsets) {
+  var linesCount = contents.split(/\r\n|\n/).length;
+  return Array.from(offsets.values()).reduce(function (count, offsetLines) {
+    return count + offsetLines;
+  }, linesCount);
 }
 
-function getOffsetLineNumber(lineNumber: number, offsets: OffsetMap): number {
-  let offsetLineNumber = lineNumber;
-  for (const [offsetLine, offsetLineNumbers] of offsets) {
+function getOffsetLineNumber(lineNumber, offsets) {
+  var offsetLineNumber = lineNumber;
+  for (var _ref3 of offsets) {
+    var _ref2 = _slicedToArray(_ref3, 2);
+
+    var offsetLine = _ref2[0];
+    var offsetLineNumbers = _ref2[1];
+
     if (lineNumber > offsetLine) {
       offsetLineNumber += offsetLineNumbers;
     }
@@ -151,29 +170,29 @@ function getOffsetLineNumber(lineNumber: number, offsets: OffsetMap): number {
   return offsetLineNumber;
 }
 
-export function computeDiffSections(
-  addedLines: Array<number>,
-  removedLines: Array<number>,
-  oldLineOffsets: OffsetMap,
-  newLineOffsets: OffsetMap,
-): Array<DiffSection> {
+function computeDiffSections(addedLines, removedLines, oldLineOffsets, newLineOffsets) {
   // The old and new text editor contents use offsets to create a global line number identifier
   // being the line number with offset.
 
   // Here is the mapping between the offset line numbers to the original line number.
-  const addedLinesWithOffsets = new Map();
-  for (const addedLine of addedLines) {
+  var addedLinesWithOffsets = new Map();
+  for (var addedLine of addedLines) {
     addedLinesWithOffsets.set(getOffsetLineNumber(addedLine, newLineOffsets), addedLine);
   }
 
-  const removedLinesWithOffsets = new Map();
-  for (const removedLine of removedLines) {
+  var removedLinesWithOffsets = new Map();
+  for (var removedLine of removedLines) {
     removedLinesWithOffsets.set(getOffsetLineNumber(removedLine, oldLineOffsets), removedLine);
   }
 
   // Intersect the added and removed lines maps, taking the values of the added lines.
-  const changedLinesWithOffsets: Map<number, number> = new Map();
-  for (const [addedLinesOffset, addedLineNumber] of addedLinesWithOffsets.entries()) {
+  var changedLinesWithOffsets = new Map();
+  for (var _ref43 of addedLinesWithOffsets.entries()) {
+    var _ref42 = _slicedToArray(_ref43, 2);
+
+    var addedLinesOffset = _ref42[0];
+    var addedLineNumber = _ref42[1];
+
     if (removedLinesWithOffsets.has(addedLinesOffset)) {
       removedLinesWithOffsets.delete(addedLinesOffset);
       addedLinesWithOffsets.delete(addedLinesOffset);
@@ -181,26 +200,19 @@ export function computeDiffSections(
     }
   }
 
-  const lineSections = Array.from(concatIterators(
-    getLineSectionsWithStatus(addedLinesWithOffsets.entries(), DiffSectionStatus.ADDED),
-    getLineSectionsWithStatus(changedLinesWithOffsets.entries(), DiffSectionStatus.CHANGED),
-    getLineSectionsWithStatus(removedLinesWithOffsets.entries(), DiffSectionStatus.REMOVED),
-  ));
+  var lineSections = Array.from((0, (_commonsNodeCollection2 || _commonsNodeCollection()).concatIterators)(getLineSectionsWithStatus(addedLinesWithOffsets.entries(), (_constants2 || _constants()).DiffSectionStatus.ADDED), getLineSectionsWithStatus(changedLinesWithOffsets.entries(), (_constants2 || _constants()).DiffSectionStatus.CHANGED), getLineSectionsWithStatus(removedLinesWithOffsets.entries(), (_constants2 || _constants()).DiffSectionStatus.REMOVED)));
 
-  lineSections.sort((diffSection1, diffSection2) => {
+  lineSections.sort(function (diffSection1, diffSection2) {
     return diffSection1.offsetLineNumber - diffSection2.offsetLineNumber;
   });
 
   // Merge line sections into region sections.
-  const diffSections = lineSections.length === 0 ? [] : [lineSections[0]];
+  var diffSections = lineSections.length === 0 ? [] : [lineSections[0]];
 
-  for (let i = 1; i < lineSections.length; i++) {
-    const lastSection = diffSections[diffSections.length - 1];
-    const lineSection = lineSections[i];
-    if (
-      lastSection.status === lineSection.status &&
-      lastSection.lineNumber + lastSection.lineCount === lineSection.lineNumber
-    ) {
+  for (var i = 1; i < lineSections.length; i++) {
+    var lastSection = diffSections[diffSections.length - 1];
+    var lineSection = lineSections[i];
+    if (lastSection.status === lineSection.status && lastSection.lineNumber + lastSection.lineCount === lineSection.lineNumber) {
       lastSection.lineCount += 1;
     } else {
       diffSections.push(lineSection);
@@ -210,33 +222,31 @@ export function computeDiffSections(
   return diffSections;
 }
 
-function *getLineSectionsWithStatus(
-  lineWithOffsets: Iterator<[number, number]>,
-  status: DiffSectionStatusType,
-): Iterator<DiffSection> {
-  for (const [offsetLineNumber, lineNumber] of lineWithOffsets) {
+function* getLineSectionsWithStatus(lineWithOffsets, status) {
+  for (var _ref53 of lineWithOffsets) {
+    var _ref52 = _slicedToArray(_ref53, 2);
+
+    var offsetLineNumber = _ref52[0];
+    var lineNumber = _ref52[1];
+
     yield {
       lineCount: 1,
-      lineNumber,
-      offsetLineNumber,
-      status,
+      lineNumber: lineNumber,
+      offsetLineNumber: offsetLineNumber,
+      status: status
     };
   }
 }
 
-export function getOffsetLineCount(
-  oldContents: string,
-  oldLineOffsets: OffsetMap,
-  newContents: string,
-  newLineOffsets: OffsetMap,
-): number {
-  const newLinesCount = getLineCountWithOffsets(newContents, newLineOffsets);
-  const oldLinesCount = getLineCountWithOffsets(oldContents, oldLineOffsets);
-  const offsetLineCount = Math.max(newLinesCount, oldLinesCount);
+function getOffsetLineCount(oldContents, oldLineOffsets, newContents, newLineOffsets) {
+  var newLinesCount = getLineCountWithOffsets(newContents, newLineOffsets);
+  var oldLinesCount = getLineCountWithOffsets(oldContents, oldLineOffsets);
+  var offsetLineCount = Math.max(newLinesCount, oldLinesCount);
   return offsetLineCount;
 }
 
-export const __TEST__ = {
-  getOffsetLineNumber,
-  getLineCountWithOffsets,
+var __TEST__ = {
+  getOffsetLineNumber: getOffsetLineNumber,
+  getLineCountWithOffsets: getLineCountWithOffsets
 };
+exports.__TEST__ = __TEST__;

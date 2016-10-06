@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +10,61 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {EditorLocation, Location} from './Location';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {
-  setPositionAndScroll,
-} from '../../commons-atom/text-editor';
-import {maybeToString} from '../../commons-node/string';
-import {NavigationStack} from './NavigationStack';
-import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {getPathOfLocation, getLocationOfEditor, editorOfLocation} from './Location';
-import {Observable} from 'rxjs';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function log(message: string): void {
-  // Uncomment this to debug
-  // console.log(message);
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _commonsAtomTextEditor2;
+
+function _commonsAtomTextEditor() {
+  return _commonsAtomTextEditor2 = require('../../commons-atom/text-editor');
 }
+
+var _commonsNodeString2;
+
+function _commonsNodeString() {
+  return _commonsNodeString2 = require('../../commons-node/string');
+}
+
+var _NavigationStack2;
+
+function _NavigationStack() {
+  return _NavigationStack2 = require('./NavigationStack');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _Location2;
+
+function _Location() {
+  return _Location2 = require('./Location');
+}
+
+var _rxjsBundlesRxMinJs2;
+
+function _rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs2 = require('rxjs/bundles/Rx.min.js');
+}
+
+function log(message) {}
+// Uncomment this to debug
+// console.log(message);
 
 // Handles the state machine that responds to various atom events.
 //
@@ -65,158 +104,183 @@ function log(message: string): void {
 // and the top matches the newly opened editor, then we have the last case
 // of 'open within the current file'. So, we restore the current top to its
 // previous location before pushing a new top.
-export class NavigationStackController {
-  _navigationStack: NavigationStack;
-  // Indicates that we're processing a forward/backwards navigation in the stack.
-  // While processing a navigation stack move we don't update the nav stack.
-  _isNavigating: boolean;
-  // Indicates that we are in the middle of a activate/onDidStopChangingActivePaneItem
-  // pair of events.
-  _inActivate: boolean;
-  // The last location update we've seen. See discussion below on event order.
-  _lastLocation: ?EditorLocation;
 
-  constructor() {
-    this._navigationStack = new NavigationStack();
+var NavigationStackController = (function () {
+  function NavigationStackController() {
+    _classCallCheck(this, NavigationStackController);
+
+    this._navigationStack = new (_NavigationStack2 || _NavigationStack()).NavigationStack();
     this._isNavigating = false;
     this._inActivate = false;
     this._lastLocation = null;
   }
 
-  _updateStackLocation(editor: atom$TextEditor): void {
-    if (this._isNavigating) {
-      return;
+  _createClass(NavigationStackController, [{
+    key: '_updateStackLocation',
+    value: function _updateStackLocation(editor) {
+      if (this._isNavigating) {
+        return;
+      }
+
+      // See discussion below on event order ...
+      var previousEditor = this._navigationStack.getCurrentEditor();
+      if (previousEditor === editor) {
+        var previousLocation = this._navigationStack.getCurrent();
+        (0, (_assert2 || _assert()).default)(previousLocation != null && previousLocation.type === 'editor');
+        this._lastLocation = _extends({}, previousLocation);
+      }
+      this._navigationStack.attemptUpdate((0, (_Location2 || _Location()).getLocationOfEditor)(editor));
     }
+  }, {
+    key: 'updatePosition',
+    value: function updatePosition(editor, newBufferPosition) {
+      log('updatePosition ' + newBufferPosition.row + ', ' + (newBufferPosition.column + ' ' + (0, (_commonsNodeString2 || _commonsNodeString()).maybeToString)(editor.getPath())));
 
-    // See discussion below on event order ...
-    const previousEditor = this._navigationStack.getCurrentEditor();
-    if (previousEditor === editor) {
-      const previousLocation = this._navigationStack.getCurrent();
-      invariant(previousLocation != null && previousLocation.type === 'editor');
-      this._lastLocation = {...previousLocation};
-    }
-    this._navigationStack.attemptUpdate(getLocationOfEditor(editor));
-  }
-
-  updatePosition(editor: atom$TextEditor, newBufferPosition: atom$Point): void {
-    log(
-      `updatePosition ${newBufferPosition.row}, ` +
-      `${newBufferPosition.column} ${maybeToString(editor.getPath())}`);
-
-    this._updateStackLocation(editor);
-  }
-
-  // scrollTop is in Pixels
-  updateScroll(editor: atom$TextEditor, scrollTop: number): void {
-    log(`updateScroll ${scrollTop} ${maybeToString(editor.getPath())}`);
-
-    this._updateStackLocation(editor);
-  }
-
-  onCreate(editor: atom$TextEditor): void {
-    log(`onCreate ${maybeToString(editor.getPath())}`);
-
-    this._navigationStack.editorOpened(editor);
-    this._updateStackLocation(editor);
-  }
-
-  onDestroy(editor: atom$TextEditor): void {
-    log(`onDestroy ${maybeToString(editor.getPath())}`);
-
-    this._navigationStack.editorClosed(editor);
-  }
-
-  // Open is always preceded by activate, unless opening the current file
-  onOpen(editor: atom$TextEditor): void {
-    log(`onOpen ${maybeToString(editor.getPath())}`);
-
-    // Hack alert, an atom.workspace.open of a location in the current editor,
-    // we get the location update before the onDidOpen event, and we don't get
-    // an activate/onDidStopChangingActivePaneItem pair. So here,
-    // we restore top of the stack to the previous location before pushing a new
-    // nav stack entry.
-    if (!this._inActivate && this._lastLocation != null
-      && this._lastLocation.editor === editor
-      && this._navigationStack.getCurrentEditor() === editor) {
-      this._navigationStack.attemptUpdate(this._lastLocation);
-      this._navigationStack.push(getLocationOfEditor(editor));
-    } else {
       this._updateStackLocation(editor);
     }
-    this._lastLocation = null;
-  }
 
-  onActivate(editor: atom$TextEditor): void {
-    log(`onActivate ${maybeToString(editor.getPath())}`);
-    this._inActivate = true;
-    this._updateStackLocation(editor);
-  }
+    // scrollTop is in Pixels
+  }, {
+    key: 'updateScroll',
+    value: function updateScroll(editor, scrollTop) {
+      log('updateScroll ' + scrollTop + ' ' + (0, (_commonsNodeString2 || _commonsNodeString()).maybeToString)(editor.getPath()));
 
-  onActiveStopChanging(editor: atom$TextEditor): void {
-    log(`onActivePaneStopChanging ${maybeToString(editor.getPath())}`);
-    this._inActivate = false;
-  }
+      this._updateStackLocation(editor);
+    }
+  }, {
+    key: 'onCreate',
+    value: function onCreate(editor) {
+      log('onCreate ' + (0, (_commonsNodeString2 || _commonsNodeString()).maybeToString)(editor.getPath()));
 
-  onOptInNavigation(editor: atom$TextEditor): void {
-    log(`onOptInNavigation ${maybeToString(editor.getPath())}`);
-    // Opt-in navigation is handled in the same way as a file open with no preceeding activation
-    this.onOpen(editor);
-  }
+      this._navigationStack.editorOpened(editor);
+      this._updateStackLocation(editor);
+    }
+  }, {
+    key: 'onDestroy',
+    value: function onDestroy(editor) {
+      log('onDestroy ' + (0, (_commonsNodeString2 || _commonsNodeString()).maybeToString)(editor.getPath()));
 
-  // When closing a project path, we remove all stack entries contained in that
-  // path which are not also contained in a project path which is remaining open.
-  removePath(removedPath: NuclideUri, remainingDirectories: Array<NuclideUri>): void {
-    log(`Removing path ${removedPath} remaining: ${JSON.stringify(remainingDirectories)}`);
-    this._navigationStack.filter(location => {
-      const uri = getPathOfLocation(location);
-      return uri == null || !nuclideUri.contains(removedPath, uri)
-        || remainingDirectories.find(directory => nuclideUri.contains(directory, uri)) != null;
-    });
-  }
-
-  async _navigateTo(location: ?Location): Promise<void> {
-    invariant(!this._isNavigating);
-    if (location == null) {
-      return;
+      this._navigationStack.editorClosed(editor);
     }
 
-    this._isNavigating = true;
-    try {
-      const editor = await editorOfLocation(location);
-      // Note that this will not actually update the scroll position
-      // The scroll position update will happen on the next tick.
-      log(`navigating to: ${location.scrollTop} ${JSON.stringify(location.bufferPosition)}`);
-      setPositionAndScroll(editor, location.bufferPosition, location.scrollTop);
-    } finally {
-      this._isNavigating = false;
+    // Open is always preceded by activate, unless opening the current file
+  }, {
+    key: 'onOpen',
+    value: function onOpen(editor) {
+      log('onOpen ' + (0, (_commonsNodeString2 || _commonsNodeString()).maybeToString)(editor.getPath()));
+
+      // Hack alert, an atom.workspace.open of a location in the current editor,
+      // we get the location update before the onDidOpen event, and we don't get
+      // an activate/onDidStopChangingActivePaneItem pair. So here,
+      // we restore top of the stack to the previous location before pushing a new
+      // nav stack entry.
+      if (!this._inActivate && this._lastLocation != null && this._lastLocation.editor === editor && this._navigationStack.getCurrentEditor() === editor) {
+        this._navigationStack.attemptUpdate(this._lastLocation);
+        this._navigationStack.push((0, (_Location2 || _Location()).getLocationOfEditor)(editor));
+      } else {
+        this._updateStackLocation(editor);
+      }
+      this._lastLocation = null;
     }
-  }
-
-  async navigateForwards(): Promise<void> {
-    log('navigateForwards');
-    if (!this._isNavigating) {
-      await this._navigateTo(this._navigationStack.next());
+  }, {
+    key: 'onActivate',
+    value: function onActivate(editor) {
+      log('onActivate ' + (0, (_commonsNodeString2 || _commonsNodeString()).maybeToString)(editor.getPath()));
+      this._inActivate = true;
+      this._updateStackLocation(editor);
     }
-  }
-
-  async navigateBackwards(): Promise<void> {
-    log('navigateBackwards');
-    if (!this._isNavigating) {
-      await this._navigateTo(this._navigationStack.previous());
+  }, {
+    key: 'onActiveStopChanging',
+    value: function onActiveStopChanging(editor) {
+      log('onActivePaneStopChanging ' + (0, (_commonsNodeString2 || _commonsNodeString()).maybeToString)(editor.getPath()));
+      this._inActivate = false;
     }
-  }
+  }, {
+    key: 'onOptInNavigation',
+    value: function onOptInNavigation(editor) {
+      log('onOptInNavigation ' + (0, (_commonsNodeString2 || _commonsNodeString()).maybeToString)(editor.getPath()));
+      // Opt-in navigation is handled in the same way as a file open with no preceeding activation
+      this.onOpen(editor);
+    }
 
-  observeStackChanges(): Observable<NavigationStack> {
-    return Observable.of(this._navigationStack).concat(this._navigationStack.observeChanges());
-  }
+    // When closing a project path, we remove all stack entries contained in that
+    // path which are not also contained in a project path which is remaining open.
+  }, {
+    key: 'removePath',
+    value: function removePath(removedPath, remainingDirectories) {
+      log('Removing path ' + removedPath + ' remaining: ' + JSON.stringify(remainingDirectories));
+      this._navigationStack.filter(function (location) {
+        var uri = (0, (_Location2 || _Location()).getPathOfLocation)(location);
+        return uri == null || !(_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.contains(removedPath, uri) || remainingDirectories.find(function (directory) {
+          return (_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.contains(directory, uri);
+        }) != null;
+      });
+    }
+  }, {
+    key: '_navigateTo',
+    value: _asyncToGenerator(function* (location) {
+      (0, (_assert2 || _assert()).default)(!this._isNavigating);
+      if (location == null) {
+        return;
+      }
 
-  // For Testing.
-  getLocations(): Array<Location> {
-    return this._navigationStack.getLocations();
-  }
+      this._isNavigating = true;
+      try {
+        var editor = yield (0, (_Location2 || _Location()).editorOfLocation)(location);
+        // Note that this will not actually update the scroll position
+        // The scroll position update will happen on the next tick.
+        log('navigating to: ' + location.scrollTop + ' ' + JSON.stringify(location.bufferPosition));
+        (0, (_commonsAtomTextEditor2 || _commonsAtomTextEditor()).setPositionAndScroll)(editor, location.bufferPosition, location.scrollTop);
+      } finally {
+        this._isNavigating = false;
+      }
+    })
+  }, {
+    key: 'navigateForwards',
+    value: _asyncToGenerator(function* () {
+      log('navigateForwards');
+      if (!this._isNavigating) {
+        yield this._navigateTo(this._navigationStack.next());
+      }
+    })
+  }, {
+    key: 'navigateBackwards',
+    value: _asyncToGenerator(function* () {
+      log('navigateBackwards');
+      if (!this._isNavigating) {
+        yield this._navigateTo(this._navigationStack.previous());
+      }
+    })
+  }, {
+    key: 'observeStackChanges',
+    value: function observeStackChanges() {
+      return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.of(this._navigationStack).concat(this._navigationStack.observeChanges());
+    }
 
-  // For Testing.
-  getIndex(): number {
-    return this._navigationStack.getIndex();
-  }
-}
+    // For Testing.
+  }, {
+    key: 'getLocations',
+    value: function getLocations() {
+      return this._navigationStack.getLocations();
+    }
+
+    // For Testing.
+  }, {
+    key: 'getIndex',
+    value: function getIndex() {
+      return this._navigationStack.getIndex();
+    }
+  }]);
+
+  return NavigationStackController;
+})();
+
+exports.NavigationStackController = NavigationStackController;
+
+// Indicates that we're processing a forward/backwards navigation in the stack.
+// While processing a navigation stack move we don't update the nav stack.
+
+// Indicates that we are in the middle of a activate/onDidStopChangingActivePaneItem
+// pair of events.
+
+// The last location update we've seen. See discussion below on event order.

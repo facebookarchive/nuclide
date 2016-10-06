@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+// Handles all 'Page.*' Chrome dev tools messages
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,32 +18,41 @@
  * the root directory of this source tree.
  */
 
+var _helpers2;
 
-import {DUMMY_FRAME_ID} from './helpers';
-import Handler from './Handler';
+function _helpers() {
+  return _helpers2 = require('./helpers');
+}
 
-import type {ClientCallback} from './ClientCallback';
+var _Handler2;
 
-// Handles all 'Page.*' Chrome dev tools messages
-class PageHandler extends Handler {
-  constructor(
-    clientCallback: ClientCallback,
-  ) {
-    super('Page', clientCallback);
+function _Handler() {
+  return _Handler2 = _interopRequireDefault(require('./Handler'));
+}
+
+var PageHandler = (function (_default) {
+  _inherits(PageHandler, _default);
+
+  function PageHandler(clientCallback) {
+    _classCallCheck(this, PageHandler);
+
+    _get(Object.getPrototypeOf(PageHandler.prototype), 'constructor', this).call(this, 'Page', clientCallback);
   }
 
-  handleMethod(id: number, method: string, params: ?Object): Promise<void> {
-    switch (method) {
-      case 'canScreencast':
-        this.replyToCommand(id, {result: false});
-        break;
+  _createClass(PageHandler, [{
+    key: 'handleMethod',
+    value: function handleMethod(id, method, params) {
+      switch (method) {
+        case 'canScreencast':
+          this.replyToCommand(id, { result: false });
+          break;
 
-      case 'enable':
-        this.replyToCommand(id, {});
-        break;
+        case 'enable':
+          this.replyToCommand(id, {});
+          break;
 
-      case 'getResourceTree':
-        this.replyToCommand(id,
+        case 'getResourceTree':
+          this.replyToCommand(id,
           // For now, return a dummy resource tree so various initializations in
           // client happens.
           {
@@ -42,23 +60,26 @@ class PageHandler extends Handler {
               childFrames: [],
               resources: [],
               frame: {
-                id: DUMMY_FRAME_ID,
+                id: (_helpers2 || _helpers()).DUMMY_FRAME_ID,
                 loaderId: 'Loader.0',
                 mimeType: '',
                 name: 'HHVM',
                 securityOrigin: '',
-                url: 'hhvm:///',
-              },
-            },
+                url: 'hhvm:///'
+              }
+            }
           });
-        break;
+          break;
 
-      default:
-        this.unknownMethod(id, method, params);
-        break;
+        default:
+          this.unknownMethod(id, method, params);
+          break;
+      }
+      return Promise.resolve();
     }
-    return Promise.resolve();
-  }
-}
+  }]);
+
+  return PageHandler;
+})((_Handler2 || _Handler()).default);
 
 module.exports = PageHandler;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,90 +10,130 @@
  * the root directory of this source tree.
  */
 
-import typeof * as CommandService from '../lib/CommandService';
-import type {AtomCommands, AtomFileEvent} from '../lib/rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-
-import {Observable} from 'rxjs';
-import {getServer} from '../shared/ConfigDirectory';
-import net from 'net';
-import {loadServicesConfig, RpcConnection, SocketTransport} from '../../nuclide-rpc';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
-import {reportConnectionErrorAndExit} from './errors';
-import invariant from 'assert';
-
-function convertStringFamilyToNumberFamily(family: string): number {
-  switch (family) {
-    case 'IPv4': return 4;
-    case 'IPv6': return 6;
-    default: throw new Error(`Unrecognized network address family ${family}`);
-  }
-}
-
-async function getCommands(): Promise<AtomCommands> {
+var getCommands = _asyncToGenerator(function* () {
   // Get the RPC connection info for the filesystem.
-  const serverInfo = await getServer();
+  var serverInfo = yield (0, (_sharedConfigDirectory2 || _sharedConfigDirectory()).getServer)();
   if (serverInfo == null) {
-    reportConnectionErrorAndExit('Could not find a nuclide-server with a connected Atom');
+    (0, (_errors2 || _errors()).reportConnectionErrorAndExit)('Could not find a nuclide-server with a connected Atom');
   }
-  invariant(serverInfo != null);
-  const {commandPort, family} = serverInfo;
+  (0, (_assert2 || _assert()).default)(serverInfo != null);
+  var commandPort = serverInfo.commandPort;
+  var family = serverInfo.family;
 
   // Setup the RPC connection to the NuclideServer process.
-  const services = loadServicesConfig(nuclideUri.join(__dirname, '..'));
-  const socket = net.connect({
+  var services = (0, (_nuclideRpc2 || _nuclideRpc()).loadServicesConfig)((_commonsNodeNuclideUri2 || _commonsNodeNuclideUri()).default.join(__dirname, '..'));
+  var socket = (_net2 || _net()).default.connect({
     port: commandPort,
-    family: convertStringFamilyToNumberFamily(family),
+    family: convertStringFamilyToNumberFamily(family)
   });
-  const transport = new SocketTransport(socket);
+  var transport = new (_nuclideRpc2 || _nuclideRpc()).SocketTransport(socket);
   try {
-    await transport.onConnected();
+    yield transport.onConnected();
   } catch (e) {
     // This is usually ECONNREFUSED ...
     // ... indicating that there was a nuclide-server but it is now shutdown.
-    reportConnectionErrorAndExit('Could not find a nuclide-server with a connected Atom');
+    (0, (_errors2 || _errors()).reportConnectionErrorAndExit)('Could not find a nuclide-server with a connected Atom');
   }
-  const connection = RpcConnection.createLocal(transport, [localNuclideUriMarshalers], services);
+  var connection = (_nuclideRpc2 || _nuclideRpc()).RpcConnection.createLocal(transport, [(_nuclideMarshalersCommon2 || _nuclideMarshalersCommon()).localNuclideUriMarshalers], services);
 
   // Get the command interface
-  const service: CommandService = connection.getService('CommandService');
-  const commands = await service.getAtomCommands();
+  var service = connection.getService('CommandService');
+  var commands = yield service.getAtomCommands();
   if (commands == null) {
-    reportConnectionErrorAndExit(
-      'Nuclide server is running but no Atom process with Nuclide is connected.');
+    (0, (_errors2 || _errors()).reportConnectionErrorAndExit)('Nuclide server is running but no Atom process with Nuclide is connected.');
   }
-  invariant(commands != null);
+  (0, (_assert2 || _assert()).default)(commands != null);
   return commands;
 }
 
 // Connects to the local NuclideServer process, opens the file in the connected
 // Atom process.
-export function openFile(
-  filePath: NuclideUri,
-  line: number,
-  column: number,
-): Observable<AtomFileEvent> {
-  return Observable.fromPromise(getCommands())
-    .flatMap(commands => {
-      return commands.openFile(filePath, line, column).refCount();
-    });
+);
+
+exports.openFile = openFile;
+exports.openRemoteFile = openRemoteFile;
+
+var addProject = _asyncToGenerator(function* (projectPath) {
+  var commands = yield getCommands();
+  yield commands.addProject(projectPath);
+});
+
+exports.addProject = addProject;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _rxjsBundlesRxMinJs2;
+
+function _rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs2 = require('rxjs/bundles/Rx.min.js');
+}
+
+var _sharedConfigDirectory2;
+
+function _sharedConfigDirectory() {
+  return _sharedConfigDirectory2 = require('../shared/ConfigDirectory');
+}
+
+var _net2;
+
+function _net() {
+  return _net2 = _interopRequireDefault(require('net'));
+}
+
+var _nuclideRpc2;
+
+function _nuclideRpc() {
+  return _nuclideRpc2 = require('../../nuclide-rpc');
+}
+
+var _commonsNodeNuclideUri2;
+
+function _commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri2 = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _nuclideMarshalersCommon2;
+
+function _nuclideMarshalersCommon() {
+  return _nuclideMarshalersCommon2 = require('../../nuclide-marshalers-common');
+}
+
+var _errors2;
+
+function _errors() {
+  return _errors2 = require('./errors');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+function convertStringFamilyToNumberFamily(family) {
+  switch (family) {
+    case 'IPv4':
+      return 4;
+    case 'IPv6':
+      return 6;
+    default:
+      throw new Error('Unrecognized network address family ' + family);
+  }
+}
+
+function openFile(filePath, line, column) {
+  return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.fromPromise(getCommands()).flatMap(function (commands) {
+    return commands.openFile(filePath, line, column).refCount();
+  });
 }
 
 // Connects to the local NuclideServer process, opens the file in the connected
 // Atom process.
-export function openRemoteFile(
-  filePath: NuclideUri,
-  line: number,
-  column: number,
-): Observable<AtomFileEvent> {
-  return Observable.fromPromise(getCommands())
-    .flatMap(commands => {
-      return commands.openRemoteFile(filePath, line, column).refCount();
-    });
-}
 
-export async function addProject(projectPath: NuclideUri): Promise<void> {
-  const commands: AtomCommands = await getCommands();
-  await commands.addProject(projectPath);
+function openRemoteFile(filePath, line, column) {
+  return (_rxjsBundlesRxMinJs2 || _rxjsBundlesRxMinJs()).Observable.fromPromise(getCommands()).flatMap(function (commands) {
+    return commands.openRemoteFile(filePath, line, column).refCount();
+  });
 }

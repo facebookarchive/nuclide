@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,41 @@
  * the root directory of this source tree.
  */
 
-import type ModuleMap from './state/ModuleMap';
-import type {ModuleMapOptions} from './options/ModuleMapOptions';
+module.exports = Object.defineProperties({
 
-module.exports = {
-  get transform() {
-    return require('./transform');
-  },
-
-  createModuleMap(options: ModuleMapOptions): ModuleMap {
-    const ModuleMapClass = require('./state/ModuleMap');
+  createModuleMap: function createModuleMap(options) {
+    var ModuleMapClass = require('./state/ModuleMap');
     return new ModuleMapClass(options);
-  },
+  }
 
-  // Some easy to use defaults to construct ModuleMapOptions with.
-  get defaultBuiltIns() {
-    return require('./constants/builtIns');
+}, {
+  transform: {
+    get: function get() {
+      return require('./transform');
+    },
+    configurable: true,
+    enumerable: true
   },
-  get defaultBuiltInTypes() {
-    return require('./constants/builtInTypes');
+  defaultBuiltIns: { // Some easy to use defaults to construct ModuleMapOptions with.
+
+    get: function get() {
+      return require('./constants/builtIns');
+    },
+    configurable: true,
+    enumerable: true
   },
-  get defaultAliases() {
-    return require('./constants/commonAliases');
+  defaultBuiltInTypes: {
+    get: function get() {
+      return require('./constants/builtInTypes');
+    },
+    configurable: true,
+    enumerable: true
   },
-};
+  defaultAliases: {
+    get: function get() {
+      return require('./constants/commonAliases');
+    },
+    configurable: true,
+    enumerable: true
+  }
+});

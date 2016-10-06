@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,54 +10,35 @@
  * the root directory of this source tree.
  */
 
-import type {
-  StatusCodeNumberValue,
-} from '../../nuclide-hg-rpc/lib/HgService';
+var _Object$freeze, _Object$freeze2, _Object$freeze3;
 
-import {
- hgConstants,
-} from '../../nuclide-hg-rpc';
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-const {StatusCodeNumber: HgStatusCodeNumber} = hgConstants;
+var _nuclideHgRpc2;
 
-export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
+function _nuclideHgRpc() {
+  return _nuclideHgRpc2 = require('../../nuclide-hg-rpc');
+}
 
-export const FileChangeStatus = Object.freeze({
+var HgStatusCodeNumber = (_nuclideHgRpc2 || _nuclideHgRpc()).hgConstants.StatusCodeNumber;
+
+var FileChangeStatus = Object.freeze({
   ADDED: 1,
   MODIFIED: 2,
   MISSING: 3,
   REMOVED: 4,
-  UNTRACKED: 5,
+  UNTRACKED: 5
 });
 
-export const FileChangeStatusToPrefix: {[key: ?FileChangeStatusValue]: string} = Object.freeze({
-  [FileChangeStatus.ADDED]: '[A] ',
-  [FileChangeStatus.MODIFIED]: '[M] ',
-  [FileChangeStatus.MISSING]: '[!] ',
-  [FileChangeStatus.REMOVED]: '[D] ',
-  [FileChangeStatus.UNTRACKED]: '[?] ',
-});
+exports.FileChangeStatus = FileChangeStatus;
+var FileChangeStatusToPrefix = Object.freeze((_Object$freeze = {}, _defineProperty(_Object$freeze, FileChangeStatus.ADDED, '[A] '), _defineProperty(_Object$freeze, FileChangeStatus.MODIFIED, '[M] '), _defineProperty(_Object$freeze, FileChangeStatus.MISSING, '[!] '), _defineProperty(_Object$freeze, FileChangeStatus.REMOVED, '[D] '), _defineProperty(_Object$freeze, FileChangeStatus.UNTRACKED, '[?] '), _Object$freeze));
 
-export const FileChangeStatusToTextColor: {[key: ?FileChangeStatusValue]: string} = Object.freeze({
-  [FileChangeStatus.ADDED]: 'text-success',
-  [FileChangeStatus.MODIFIED]: 'text-warning',
-  [FileChangeStatus.MISSING]: 'text-error',
-  [FileChangeStatus.REMOVED]: 'text-error',
-  [FileChangeStatus.UNTRACKED]: 'text-error',
-});
+exports.FileChangeStatusToPrefix = FileChangeStatusToPrefix;
+var FileChangeStatusToTextColor = Object.freeze((_Object$freeze2 = {}, _defineProperty(_Object$freeze2, FileChangeStatus.ADDED, 'text-success'), _defineProperty(_Object$freeze2, FileChangeStatus.MODIFIED, 'text-warning'), _defineProperty(_Object$freeze2, FileChangeStatus.MISSING, 'text-error'), _defineProperty(_Object$freeze2, FileChangeStatus.REMOVED, 'text-error'), _defineProperty(_Object$freeze2, FileChangeStatus.UNTRACKED, 'text-error'), _Object$freeze2));
 
-export const RevertibleStatusCodes = [
-  FileChangeStatus.ADDED,
-  FileChangeStatus.MODIFIED,
-  FileChangeStatus.REMOVED,
-];
+exports.FileChangeStatusToTextColor = FileChangeStatusToTextColor;
+var RevertibleStatusCodes = [FileChangeStatus.ADDED, FileChangeStatus.MODIFIED, FileChangeStatus.REMOVED];
 
-export const HgStatusToFileChangeStatus
-  : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = Object.freeze({
-    [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
-    [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
-    [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,
-    [HgStatusCodeNumber.REMOVED]: FileChangeStatus.REMOVED,
-    [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED,
-  },
-);
+exports.RevertibleStatusCodes = RevertibleStatusCodes;
+var HgStatusToFileChangeStatus = Object.freeze((_Object$freeze3 = {}, _defineProperty(_Object$freeze3, HgStatusCodeNumber.ADDED, FileChangeStatus.ADDED), _defineProperty(_Object$freeze3, HgStatusCodeNumber.MODIFIED, FileChangeStatus.MODIFIED), _defineProperty(_Object$freeze3, HgStatusCodeNumber.MISSING, FileChangeStatus.MISSING), _defineProperty(_Object$freeze3, HgStatusCodeNumber.REMOVED, FileChangeStatus.REMOVED), _defineProperty(_Object$freeze3, HgStatusCodeNumber.UNTRACKED, FileChangeStatus.UNTRACKED), _Object$freeze3));
+exports.HgStatusToFileChangeStatus = HgStatusToFileChangeStatus;

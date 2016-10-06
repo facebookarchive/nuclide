@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,46 +10,73 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
-import {splitStream} from '../../commons-node/observable';
-import {observeStream} from '../../commons-node/stream';
-import invariant from 'assert';
-import type {MessageLogger} from './index';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-export class StreamTransport {
-  _output: stream$Writable;
-  _messages: Observable<string>;
-  _messageLogger: MessageLogger;
-  _isClosed: boolean;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  constructor(
-    output: stream$Writable,
-    input: stream$Readable,
-    messageLogger: MessageLogger = (direction, message) => { return; },
-  ) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _commonsNodeObservable2;
+
+function _commonsNodeObservable() {
+  return _commonsNodeObservable2 = require('../../commons-node/observable');
+}
+
+var _commonsNodeStream2;
+
+function _commonsNodeStream() {
+  return _commonsNodeStream2 = require('../../commons-node/stream');
+}
+
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var StreamTransport = (function () {
+  function StreamTransport(output, input) {
+    var _this = this;
+
+    var messageLogger = arguments.length <= 2 || arguments[2] === undefined ? function (direction, message) {
+      return;
+    } : arguments[2];
+
+    _classCallCheck(this, StreamTransport);
+
     this._isClosed = false;
     this._messageLogger = messageLogger;
     this._output = output;
-    this._messages = splitStream(observeStream(input))
-      .do(message => { this._messageLogger('receive', message); });
+    this._messages = (0, (_commonsNodeObservable2 || _commonsNodeObservable()).splitStream)((0, (_commonsNodeStream2 || _commonsNodeStream()).observeStream)(input)).do(function (message) {
+      _this._messageLogger('receive', message);
+    });
   }
 
-  send(message: string): void {
-    this._messageLogger('send', message);
-    invariant(message.indexOf('\n') === -1,
-      'StreamTransport.send - unexpected newline in JSON message');
-    this._output.write(message + '\n');
-  }
+  _createClass(StreamTransport, [{
+    key: 'send',
+    value: function send(message) {
+      this._messageLogger('send', message);
+      (0, (_assert2 || _assert()).default)(message.indexOf('\n') === -1, 'StreamTransport.send - unexpected newline in JSON message');
+      this._output.write(message + '\n');
+    }
+  }, {
+    key: 'onMessage',
+    value: function onMessage() {
+      return this._messages;
+    }
+  }, {
+    key: 'close',
+    value: function close() {
+      this._isClosed = true;
+    }
+  }, {
+    key: 'isClosed',
+    value: function isClosed() {
+      return this._isClosed;
+    }
+  }]);
 
-  onMessage(): Observable<string> {
-    return this._messages;
-  }
+  return StreamTransport;
+})();
 
-  close(): void {
-    this._isClosed = true;
-  }
-
-  isClosed(): boolean {
-    return this._isClosed;
-  }
-}
+exports.StreamTransport = StreamTransport;

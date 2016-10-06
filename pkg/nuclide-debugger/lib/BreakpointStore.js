@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +10,49 @@
  * the root directory of this source tree.
  */
 
-import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
-import type {
-  SerializedBreakpoint,
-  FileLineBreakpoint,
-  FileLineBreakpoints,
-  BreakpointUserChangeArgType,
-  DebuggerModeType,
-} from './types';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import invariant from 'assert';
-import {
-  Disposable,
-  CompositeDisposable,
-} from 'atom';
-import {Emitter} from 'atom';
-import {ActionTypes} from './DebuggerDispatcher';
-import {DebuggerMode} from './DebuggerStore';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-export type LineToBreakpointMap = Map<number, FileLineBreakpoint>;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-const BREAKPOINT_NEED_UI_UPDATE = 'BREAKPOINT_NEED_UI_UPDATE';
-const BREAKPOINT_USER_CHANGED = 'breakpoint_user_changed';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const ADDBREAKPOINT_ACTION = 'AddBreakpoint';
-const DELETEBREAKPOINT_ACTION = 'DeleteBreakpoint';
+var _assert2;
+
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
+}
+
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _atom4;
+
+function _atom3() {
+  return _atom4 = require('atom');
+}
+
+var _DebuggerDispatcher2;
+
+function _DebuggerDispatcher() {
+  return _DebuggerDispatcher2 = require('./DebuggerDispatcher');
+}
+
+var _DebuggerStore2;
+
+function _DebuggerStore() {
+  return _DebuggerStore2 = require('./DebuggerStore');
+}
+
+var BREAKPOINT_NEED_UI_UPDATE = 'BREAKPOINT_NEED_UI_UPDATE';
+var BREAKPOINT_USER_CHANGED = 'breakpoint_user_changed';
+
+var ADDBREAKPOINT_ACTION = 'AddBreakpoint';
+var DELETEBREAKPOINT_ACTION = 'DeleteBreakpoint';
 
 /**
  * Stores the currently set breakpoints as (path, line) pairs.
@@ -41,271 +60,286 @@ const DELETEBREAKPOINT_ACTION = 'DeleteBreakpoint';
  * Mutations to this object fires off high level events to listeners such as UI
  * controllers, giving them a chance to update.
  */
-class BreakpointStore {
-  _disposables: IDisposable;
-  _breakpoints: Map<string, LineToBreakpointMap>;
-  _idToBreakpointMap: Map<number, FileLineBreakpoint>;
-  _emitter: atom$Emitter;
-  _breakpointIdSeed: number;
 
-  constructor(
-    dispatcher: DebuggerDispatcher,
-    initialBreakpoints: ?Array<SerializedBreakpoint>,
-  ) {
-    const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => {
-        dispatcher.unregister(dispatcherToken);
-      }),
-    );
+var BreakpointStore = (function () {
+  function BreakpointStore(dispatcher, initialBreakpoints) {
+    _classCallCheck(this, BreakpointStore);
+
+    var dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
+    this._disposables = new (_atom2 || _atom()).CompositeDisposable(new (_atom2 || _atom()).Disposable(function () {
+      dispatcher.unregister(dispatcherToken);
+    }));
     this._breakpointIdSeed = 0;
     this._breakpoints = new Map();
     this._idToBreakpointMap = new Map();
-    this._emitter = new Emitter();
+    this._emitter = new (_atom4 || _atom3()).Emitter();
     if (initialBreakpoints) {
       this._deserializeBreakpoints(initialBreakpoints);
     }
   }
 
-  _handlePayload(payload: DebuggerAction): void {
-    switch (payload.actionType) {
-      case ActionTypes.ADD_BREAKPOINT:
-        this._addBreakpoint(payload.data.path, payload.data.line);
-        break;
-      case ActionTypes.UPDATE_BREAKPOINT_CONDITION:
-        this._updateBreakpointCondition(payload.data.breakpointId, payload.data.condition);
-        break;
-      case ActionTypes.UPDATE_BREAKPOINT_ENABLED:
-        this._updateBreakpointEnabled(payload.data.breakpointId, payload.data.enabled);
-        break;
-      case ActionTypes.DELETE_BREAKPOINT:
-        this._deleteBreakpoint(payload.data.path, payload.data.line);
-        break;
-      case ActionTypes.DELETE_ALL_BREAKPOINTS:
-        this._deleteAllBreakpoints();
-        break;
-      case ActionTypes.TOGGLE_BREAKPOINT:
-        this._toggleBreakpoint(payload.data.path, payload.data.line);
-        break;
-      case ActionTypes.DELETE_BREAKPOINT_IPC:
-        this._deleteBreakpoint(payload.data.path, payload.data.line, false);
-        break;
-      case ActionTypes.BIND_BREAKPOINT_IPC:
-        this._bindBreakpoint(
-          payload.data.path,
-          payload.data.line,
-          payload.data.condition,
-          payload.data.enabled,
-        );
-        break;
-      case ActionTypes.DEBUGGER_MODE_CHANGE:
-        this._handleDebuggerModeChange(payload.data);
-        break;
-      default:
-        return;
-    }
-  }
-
-  _addBreakpoint(
-    path: string,
-    line: number,
-    condition: string = '',
-    resolved: boolean = false,
-    userAction: boolean = true,
-    enabled: boolean = true,
-  ): void {
-    this._breakpointIdSeed++;
-    const breakpoint = {
-      id: this._breakpointIdSeed,
-      path,
-      line,
-      condition,
-      enabled,
-      resolved,
-    };
-    this._idToBreakpointMap.set(breakpoint.id, breakpoint);
-    if (!this._breakpoints.has(path)) {
-      this._breakpoints.set(path, new Map());
-    }
-    const lineMap = this._breakpoints.get(path);
-    invariant(lineMap != null);
-    lineMap.set(line, breakpoint);
-    this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
-    if (userAction) {
-      this._emitter.emit(BREAKPOINT_USER_CHANGED, {
-        action: ADDBREAKPOINT_ACTION,
-        breakpoint,
-      });
-    }
-  }
-
-  _updateBreakpointEnabled(breakpointId: number, enabled: boolean): void {
-    const breakpoint = this._idToBreakpointMap.get(breakpointId);
-    if (breakpoint == null) {
-      return;
-    }
-    breakpoint.enabled = enabled;
-    this._updateBreakpoint(breakpoint);
-  }
-
-  _updateBreakpointCondition(breakpointId: number, condition: string): void {
-    const breakpoint = this._idToBreakpointMap.get(breakpointId);
-    if (breakpoint == null) {
-      return;
-    }
-    breakpoint.condition = condition;
-    this._updateBreakpoint(breakpoint);
-  }
-
-  _updateBreakpoint(breakpoint: FileLineBreakpoint): void {
-    this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
-    this._emitter.emit(BREAKPOINT_USER_CHANGED, {
-      action: 'UpdateBreakpoint',
-      breakpoint,
-    });
-  }
-
-  _deleteAllBreakpoints(): void {
-    for (const path of this._breakpoints.keys()) {
-      const lineMap = this._breakpoints.get(path);
-      invariant(lineMap != null);
-      for (const line of lineMap.keys()) {
-        this._deleteBreakpoint(path, line);
+  _createClass(BreakpointStore, [{
+    key: '_handlePayload',
+    value: function _handlePayload(payload) {
+      switch (payload.actionType) {
+        case (_DebuggerDispatcher2 || _DebuggerDispatcher()).ActionTypes.ADD_BREAKPOINT:
+          this._addBreakpoint(payload.data.path, payload.data.line);
+          break;
+        case (_DebuggerDispatcher2 || _DebuggerDispatcher()).ActionTypes.UPDATE_BREAKPOINT_CONDITION:
+          this._updateBreakpointCondition(payload.data.breakpointId, payload.data.condition);
+          break;
+        case (_DebuggerDispatcher2 || _DebuggerDispatcher()).ActionTypes.UPDATE_BREAKPOINT_ENABLED:
+          this._updateBreakpointEnabled(payload.data.breakpointId, payload.data.enabled);
+          break;
+        case (_DebuggerDispatcher2 || _DebuggerDispatcher()).ActionTypes.DELETE_BREAKPOINT:
+          this._deleteBreakpoint(payload.data.path, payload.data.line);
+          break;
+        case (_DebuggerDispatcher2 || _DebuggerDispatcher()).ActionTypes.DELETE_ALL_BREAKPOINTS:
+          this._deleteAllBreakpoints();
+          break;
+        case (_DebuggerDispatcher2 || _DebuggerDispatcher()).ActionTypes.TOGGLE_BREAKPOINT:
+          this._toggleBreakpoint(payload.data.path, payload.data.line);
+          break;
+        case (_DebuggerDispatcher2 || _DebuggerDispatcher()).ActionTypes.DELETE_BREAKPOINT_IPC:
+          this._deleteBreakpoint(payload.data.path, payload.data.line, false);
+          break;
+        case (_DebuggerDispatcher2 || _DebuggerDispatcher()).ActionTypes.BIND_BREAKPOINT_IPC:
+          this._bindBreakpoint(payload.data.path, payload.data.line, payload.data.condition, payload.data.enabled);
+          break;
+        case (_DebuggerDispatcher2 || _DebuggerDispatcher()).ActionTypes.DEBUGGER_MODE_CHANGE:
+          this._handleDebuggerModeChange(payload.data);
+          break;
+        default:
+          return;
       }
     }
-  }
+  }, {
+    key: '_addBreakpoint',
+    value: function _addBreakpoint(path, line) {
+      var condition = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
+      var resolved = arguments.length <= 3 || arguments[3] === undefined ? false : arguments[3];
+      var userAction = arguments.length <= 4 || arguments[4] === undefined ? true : arguments[4];
+      var enabled = arguments.length <= 5 || arguments[5] === undefined ? true : arguments[5];
 
-  _deleteBreakpoint(
-    path: string,
-    line: number,
-    userAction: boolean = true,
-  ): void {
-    const lineMap = this._breakpoints.get(path);
-    invariant(lineMap != null);
-    const breakpoint = lineMap.get(line);
-    if (lineMap.delete(line)) {
-      invariant(breakpoint);
-      this._idToBreakpointMap.delete(breakpoint.id);
+      this._breakpointIdSeed++;
+      var breakpoint = {
+        id: this._breakpointIdSeed,
+        path: path,
+        line: line,
+        condition: condition,
+        enabled: enabled,
+        resolved: resolved
+      };
+      this._idToBreakpointMap.set(breakpoint.id, breakpoint);
+      if (!this._breakpoints.has(path)) {
+        this._breakpoints.set(path, new Map());
+      }
+      var lineMap = this._breakpoints.get(path);
+      (0, (_assert2 || _assert()).default)(lineMap != null);
+      lineMap.set(line, breakpoint);
       this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
       if (userAction) {
         this._emitter.emit(BREAKPOINT_USER_CHANGED, {
-          action: DELETEBREAKPOINT_ACTION,
-          breakpoint,
+          action: ADDBREAKPOINT_ACTION,
+          breakpoint: breakpoint
         });
       }
     }
-  }
-
-  _toggleBreakpoint(path: string, line: number): void {
-    if (!this._breakpoints.has(path)) {
-      this._breakpoints.set(path, new Map());
+  }, {
+    key: '_updateBreakpointEnabled',
+    value: function _updateBreakpointEnabled(breakpointId, enabled) {
+      var breakpoint = this._idToBreakpointMap.get(breakpointId);
+      if (breakpoint == null) {
+        return;
+      }
+      breakpoint.enabled = enabled;
+      this._updateBreakpoint(breakpoint);
     }
-    const lineMap = this._breakpoints.get(path);
-    invariant(lineMap != null);
-    if (lineMap.has(line)) {
-      this._deleteBreakpoint(path, line);
-    } else {
-      this._addBreakpoint(path, line, '');
+  }, {
+    key: '_updateBreakpointCondition',
+    value: function _updateBreakpointCondition(breakpointId, condition) {
+      var breakpoint = this._idToBreakpointMap.get(breakpointId);
+      if (breakpoint == null) {
+        return;
+      }
+      breakpoint.condition = condition;
+      this._updateBreakpoint(breakpoint);
     }
-  }
-
-  _bindBreakpoint(path: string, line: number, condition: string, enabled: boolean): void {
-    this._addBreakpoint(
-      path,
-      line,
-      condition,
-      true,   // resolved
-      false,  // userAction
-      enabled,
-    );
-  }
-
-  _handleDebuggerModeChange(newMode: DebuggerModeType): void {
-    if (newMode === DebuggerMode.STOPPED) {
-      // All breakpoints should be unresolved after stop debugging.
-      this._resetBreakpointUnresolved();
+  }, {
+    key: '_updateBreakpoint',
+    value: function _updateBreakpoint(breakpoint) {
+      this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
+      this._emitter.emit(BREAKPOINT_USER_CHANGED, {
+        action: 'UpdateBreakpoint',
+        breakpoint: breakpoint
+      });
     }
-  }
-
-  _resetBreakpointUnresolved(): void {
-    for (const breakpoint of this.getAllBreakpoints()) {
-      breakpoint.resolved = false;
-    }
-  }
-
-  getBreakpointsForPath(path: string): LineToBreakpointMap {
-    if (!this._breakpoints.has(path)) {
-      this._breakpoints.set(path, new Map());
-    }
-    const ret = this._breakpoints.get(path);
-    invariant(ret);
-    return ret;
-  }
-
-  getBreakpointLinesForPath(path: string): Set<number> {
-    const lineMap = this._breakpoints.get(path);
-    return lineMap != null ? new Set(lineMap.keys()) : new Set();
-  }
-
-  getBreakpointAtLine(path: string, line: number): ?FileLineBreakpoint {
-    const lineMap = this._breakpoints.get(path);
-    if (lineMap == null) {
-      return;
-    }
-    return lineMap.get(line);
-  }
-
-  getAllBreakpoints(): FileLineBreakpoints {
-    const breakpoints: FileLineBreakpoints = [];
-    for (const [, lineMap] of this._breakpoints) {
-      for (const breakpoint of lineMap.values()) {
-        breakpoints.push(breakpoint);
+  }, {
+    key: '_deleteAllBreakpoints',
+    value: function _deleteAllBreakpoints() {
+      for (var _path of this._breakpoints.keys()) {
+        var lineMap = this._breakpoints.get(_path);
+        (0, (_assert2 || _assert()).default)(lineMap != null);
+        for (var line of lineMap.keys()) {
+          this._deleteBreakpoint(_path, line);
+        }
       }
     }
-    return breakpoints;
-  }
+  }, {
+    key: '_deleteBreakpoint',
+    value: function _deleteBreakpoint(path, line) {
+      var userAction = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
 
-  getSerializedBreakpoints(): Array<SerializedBreakpoint> {
-    const breakpoints = [];
-    for (const [path, lineMap] of this._breakpoints) {
-      for (const line of lineMap.keys()) {
-        // TODO: serialize condition and enabled states.
-        breakpoints.push({
-          line,
-          sourceURL: path,
-        });
+      var lineMap = this._breakpoints.get(path);
+      (0, (_assert2 || _assert()).default)(lineMap != null);
+      var breakpoint = lineMap.get(line);
+      if (lineMap.delete(line)) {
+        (0, (_assert2 || _assert()).default)(breakpoint);
+        this._idToBreakpointMap.delete(breakpoint.id);
+        this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, path);
+        if (userAction) {
+          this._emitter.emit(BREAKPOINT_USER_CHANGED, {
+            action: DELETEBREAKPOINT_ACTION,
+            breakpoint: breakpoint
+          });
+        }
       }
     }
-    return breakpoints;
-  }
-
-  _deserializeBreakpoints(breakpoints: Array<SerializedBreakpoint>): void {
-    for (const breakpoint of breakpoints) {
-      const {line, sourceURL} = breakpoint;
-      this._addBreakpoint(sourceURL, line);
+  }, {
+    key: '_toggleBreakpoint',
+    value: function _toggleBreakpoint(path, line) {
+      if (!this._breakpoints.has(path)) {
+        this._breakpoints.set(path, new Map());
+      }
+      var lineMap = this._breakpoints.get(path);
+      (0, (_assert2 || _assert()).default)(lineMap != null);
+      if (lineMap.has(line)) {
+        this._deleteBreakpoint(path, line);
+      } else {
+        this._addBreakpoint(path, line, '');
+      }
     }
-  }
+  }, {
+    key: '_bindBreakpoint',
+    value: function _bindBreakpoint(path, line, condition, enabled) {
+      this._addBreakpoint(path, line, condition, true, // resolved
+      false, // userAction
+      enabled);
+    }
+  }, {
+    key: '_handleDebuggerModeChange',
+    value: function _handleDebuggerModeChange(newMode) {
+      if (newMode === (_DebuggerStore2 || _DebuggerStore()).DebuggerMode.STOPPED) {
+        // All breakpoints should be unresolved after stop debugging.
+        this._resetBreakpointUnresolved();
+      }
+    }
+  }, {
+    key: '_resetBreakpointUnresolved',
+    value: function _resetBreakpointUnresolved() {
+      for (var breakpoint of this.getAllBreakpoints()) {
+        breakpoint.resolved = false;
+      }
+    }
+  }, {
+    key: 'getBreakpointsForPath',
+    value: function getBreakpointsForPath(path) {
+      if (!this._breakpoints.has(path)) {
+        this._breakpoints.set(path, new Map());
+      }
+      var ret = this._breakpoints.get(path);
+      (0, (_assert2 || _assert()).default)(ret);
+      return ret;
+    }
+  }, {
+    key: 'getBreakpointLinesForPath',
+    value: function getBreakpointLinesForPath(path) {
+      var lineMap = this._breakpoints.get(path);
+      return lineMap != null ? new Set(lineMap.keys()) : new Set();
+    }
+  }, {
+    key: 'getBreakpointAtLine',
+    value: function getBreakpointAtLine(path, line) {
+      var lineMap = this._breakpoints.get(path);
+      if (lineMap == null) {
+        return;
+      }
+      return lineMap.get(line);
+    }
+  }, {
+    key: 'getAllBreakpoints',
+    value: function getAllBreakpoints() {
+      var breakpoints = [];
+      for (var _ref3 of this._breakpoints) {
+        var _ref2 = _slicedToArray(_ref3, 2);
 
-  /**
-   * Register a change handler that is invoked when the breakpoints UI
-   * needs to be updated for a file.
-   */
-  onNeedUIUpdate(callback: (path: string) => void): IDisposable {
-    return this._emitter.on(BREAKPOINT_NEED_UI_UPDATE, callback);
-  }
+        var lineMap = _ref2[1];
 
-  /**
-   * Register a change handler that is invoked when a breakpoint is changed
-   * by user action, like user explicitly added, deleted a breakpoint.
-   */
-  onUserChange(callback: (params: BreakpointUserChangeArgType) => void): IDisposable {
-    return this._emitter.on(BREAKPOINT_USER_CHANGED, callback);
-  }
+        for (var breakpoint of lineMap.values()) {
+          breakpoints.push(breakpoint);
+        }
+      }
+      return breakpoints;
+    }
+  }, {
+    key: 'getSerializedBreakpoints',
+    value: function getSerializedBreakpoints() {
+      var breakpoints = [];
+      for (var _ref43 of this._breakpoints) {
+        var _ref42 = _slicedToArray(_ref43, 2);
 
-  dispose(): void {
-    this._emitter.dispose();
-    this._disposables.dispose();
-  }
-}
+        var _path2 = _ref42[0];
+        var lineMap = _ref42[1];
+
+        for (var line of lineMap.keys()) {
+          // TODO: serialize condition and enabled states.
+          breakpoints.push({
+            line: line,
+            sourceURL: _path2
+          });
+        }
+      }
+      return breakpoints;
+    }
+  }, {
+    key: '_deserializeBreakpoints',
+    value: function _deserializeBreakpoints(breakpoints) {
+      for (var breakpoint of breakpoints) {
+        var line = breakpoint.line;
+        var sourceURL = breakpoint.sourceURL;
+
+        this._addBreakpoint(sourceURL, line);
+      }
+    }
+
+    /**
+     * Register a change handler that is invoked when the breakpoints UI
+     * needs to be updated for a file.
+     */
+  }, {
+    key: 'onNeedUIUpdate',
+    value: function onNeedUIUpdate(callback) {
+      return this._emitter.on(BREAKPOINT_NEED_UI_UPDATE, callback);
+    }
+
+    /**
+     * Register a change handler that is invoked when a breakpoint is changed
+     * by user action, like user explicitly added, deleted a breakpoint.
+     */
+  }, {
+    key: 'onUserChange',
+    value: function onUserChange(callback) {
+      return this._emitter.on(BREAKPOINT_USER_CHANGED, callback);
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._emitter.dispose();
+      this._disposables.dispose();
+    }
+  }]);
+
+  return BreakpointStore;
+})();
 
 module.exports = BreakpointStore;

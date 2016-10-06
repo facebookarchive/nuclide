@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,72 +10,87 @@
  * the root directory of this source tree.
  */
 
-import type {OutputService} from '../../nuclide-console/lib/types';
-import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
-import type {SwiftPMTaskRunner as SwiftPMTaskRunnerType} from './taskrunner/SwiftPMTaskRunner';
-import type {SwiftPMTaskRunnerStoreState} from './taskrunner/SwiftPMTaskRunnerStoreState';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeTaskRunnerServiceApi = consumeTaskRunnerServiceApi;
+exports.consumeOutputService = consumeOutputService;
+exports.serialize = serialize;
+exports.createAutocompleteProvider = createAutocompleteProvider;
 
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
-import {SwiftPMTaskRunner} from './taskrunner/SwiftPMTaskRunner';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let _disposables: ?CompositeDisposable = null;
-let _taskRunner: ?SwiftPMTaskRunnerType = null;
-let _initialState: ?Object = null;
+var _assert2;
 
-export function activate(rawState: ?Object): void {
-  invariant(_disposables == null);
-  _initialState = rawState;
-  _disposables = new CompositeDisposable(
-    new Disposable(() => { _taskRunner = null; }),
-    new Disposable(() => { _initialState = null; }),
-  );
+function _assert() {
+  return _assert2 = _interopRequireDefault(require('assert'));
 }
 
-export function deactivate(): void {
-  invariant(_disposables != null);
+var _atom2;
+
+function _atom() {
+  return _atom2 = require('atom');
+}
+
+var _taskrunnerSwiftPMTaskRunner2;
+
+function _taskrunnerSwiftPMTaskRunner() {
+  return _taskrunnerSwiftPMTaskRunner2 = require('./taskrunner/SwiftPMTaskRunner');
+}
+
+var _disposables = null;
+var _taskRunner = null;
+var _initialState = null;
+
+function activate(rawState) {
+  (0, (_assert2 || _assert()).default)(_disposables == null);
+  _initialState = rawState;
+  _disposables = new (_atom2 || _atom()).CompositeDisposable(new (_atom2 || _atom()).Disposable(function () {
+    _taskRunner = null;
+  }), new (_atom2 || _atom()).Disposable(function () {
+    _initialState = null;
+  }));
+}
+
+function deactivate() {
+  (0, (_assert2 || _assert()).default)(_disposables != null);
   _disposables.dispose();
   _disposables = null;
 }
 
-export function consumeTaskRunnerServiceApi(
-  serviceApi: TaskRunnerServiceApi,
-): void {
-  invariant(_disposables != null);
+function consumeTaskRunnerServiceApi(serviceApi) {
+  (0, (_assert2 || _assert()).default)(_disposables != null);
   _disposables.add(serviceApi.register(_getTaskRunner()));
 }
 
-export function consumeOutputService(service: OutputService): void {
-  invariant(_disposables != null);
+function consumeOutputService(service) {
+  (0, (_assert2 || _assert()).default)(_disposables != null);
   _disposables.add(service.registerOutputProvider({
     messages: _getTaskRunner().getOutputMessages(),
-    id: 'swift',
+    id: 'swift'
   }));
 }
 
-export function serialize(): ?SwiftPMTaskRunnerStoreState {
+function serialize() {
   if (_taskRunner != null) {
     return _taskRunner.serialize();
   }
 }
 
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
+function createAutocompleteProvider() {
   return {
     selector: '.source.swift',
     inclusionPriority: 1,
     disableForSelector: '.source.swift .comment',
-    getSuggestions(
-      request: atom$AutocompleteRequest,
-    ): Promise<?Array<atom$AutocompleteSuggestion>> {
+    getSuggestions: function getSuggestions(request) {
       return _getTaskRunner().getAutocompletionProvider().getAutocompleteSuggestions(request);
-    },
+    }
   };
 }
 
-function _getTaskRunner(): SwiftPMTaskRunner {
+function _getTaskRunner() {
   if (_taskRunner == null) {
-    invariant(_disposables != null);
-    _taskRunner = new SwiftPMTaskRunner(_initialState);
+    (0, (_assert2 || _assert()).default)(_disposables != null);
+    _taskRunner = new (_taskrunnerSwiftPMTaskRunner2 || _taskrunnerSwiftPMTaskRunner()).SwiftPMTaskRunner(_initialState);
     _disposables.add(_taskRunner);
   }
   return _taskRunner;
