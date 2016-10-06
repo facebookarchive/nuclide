@@ -56,7 +56,7 @@ export class ArcToolbarModel {
     return new Disposable(() => {});
   }
 
-  async updateBuildTarget(value: string): Promise<void> {
+  setActiveBuildTarget(value: string): void {
     throw new Error('arc build targets not supported');
   }
 
@@ -80,7 +80,24 @@ export class ArcToolbarModel {
     throw new Error('arc build not supported');
   }
 
-  async loadBuildTargets(): Promise<Array<string>> {
+  getBuildTargets(): ?Array<string> {
     throw new Error('arc build not supported');
   }
+
+  updateBuildTargets(): void {
+    throw new Error('arc build not supported');
+  }
+
+  getBuildTargetsError(): ?Error {
+    throw new Error('arc build not supported');
+  }
+
+  viewActivated(): void {
+    throw new Error('arc build not supported');
+  }
+
+  viewDeactivated(): void {
+    throw new Error('arc build not supported');
+  }
+
 }
