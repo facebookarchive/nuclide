@@ -29,9 +29,9 @@
       }
     },
     "ajv": {
-      "version": "4.7.6",
+      "version": "4.7.7",
       "from": "ajv@>=4.7.0 <5.0.0",
-      "resolved": "https://registry.npmjs.org/ajv/-/ajv-4.7.6.tgz",
+      "resolved": "https://registry.npmjs.org/ajv/-/ajv-4.7.7.tgz",
       "dev": true
     },
     "ajv-keywords": {
@@ -1201,6 +1201,11 @@
       "from": "graceful-readlink@>=1.0.0",
       "resolved": "https://registry.npmjs.org/graceful-readlink/-/graceful-readlink-1.0.1.tgz"
     },
+    "graphql": {
+      "version": "0.7.1",
+      "from": "graphql@0.7.1",
+      "resolved": "https://registry.npmjs.org/graphql/-/graphql-0.7.1.tgz"
+    },
     "growl": {
       "version": "1.7.0",
       "from": "growl@>=1.7.0 <1.8.0",
@@ -1384,6 +1389,11 @@
       "from": "isstream@>=0.1.2 <0.2.0",
       "resolved": "https://registry.npmjs.org/isstream/-/isstream-0.1.2.tgz"
     },
+    "iterall": {
+      "version": "1.0.2",
+      "from": "iterall@1.0.2",
+      "resolved": "https://registry.npmjs.org/iterall/-/iterall-1.0.2.tgz"
+    },
     "jasmine-growl-reporter": {
       "version": "0.0.3",
       "from": "jasmine-growl-reporter@>=0.0.2 <0.1.0",
@@ -1531,14 +1541,14 @@
       "dev": true
     },
     "lodash": {
-      "version": "4.16.3",
+      "version": "4.16.4",
       "from": "lodash@>=4.2.1 <5.0.0",
-      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.3.tgz"
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.4.tgz"
     },
     "lodash-es": {
-      "version": "4.16.3",
+      "version": "4.16.4",
       "from": "lodash-es@>=4.2.1 <5.0.0",
-      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.3.tgz"
+      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.4.tgz"
     },
     "lodash._getnative": {
       "version": "3.9.1",
@@ -2367,15 +2377,15 @@
       "from": "streamsearch@>=0.1.2 <0.2.0",
       "resolved": "https://registry.npmjs.org/streamsearch/-/streamsearch-0.1.2.tgz"
     },
-    "string-width": {
-      "version": "1.0.2",
-      "from": "string-width@>=1.0.1 <2.0.0",
-      "resolved": "https://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz"
-    },
     "string_decoder": {
       "version": "0.10.31",
       "from": "string_decoder@>=0.10.0 <0.11.0",
       "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-0.10.31.tgz"
+    },
+    "string-width": {
+      "version": "1.0.2",
+      "from": "string-width@>=1.0.1 <2.0.0",
+      "resolved": "https://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz"
     },
     "stringmap": {
       "version": "0.2.2",

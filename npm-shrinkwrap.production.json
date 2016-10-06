@@ -421,6 +421,11 @@
       "from": "graceful-readlink@>=1.0.0",
       "resolved": "https://registry.npmjs.org/graceful-readlink/-/graceful-readlink-1.0.1.tgz"
     },
+    "graphql": {
+      "version": "0.7.1",
+      "from": "graphql@0.7.1",
+      "resolved": "https://registry.npmjs.org/graphql/-/graphql-0.7.1.tgz"
+    },
     "har-validator": {
       "version": "2.0.6",
       "from": "har-validator@>=2.0.6 <2.1.0",
@@ -526,6 +531,11 @@
       "from": "isstream@>=0.1.2 <0.2.0",
       "resolved": "https://registry.npmjs.org/isstream/-/isstream-0.1.2.tgz"
     },
+    "iterall": {
+      "version": "1.0.2",
+      "from": "iterall@1.0.2",
+      "resolved": "https://registry.npmjs.org/iterall/-/iterall-1.0.2.tgz"
+    },
     "jodid25519": {
       "version": "1.0.2",
       "from": "jodid25519@>=1.0.0 <2.0.0",
@@ -579,14 +589,14 @@
       "resolved": "https://registry.npmjs.org/lcid/-/lcid-1.0.0.tgz"
     },
     "lodash": {
-      "version": "4.16.3",
+      "version": "4.16.4",
       "from": "lodash@>=4.2.1 <5.0.0",
-      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.3.tgz"
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.16.4.tgz"
     },
     "lodash-es": {
-      "version": "4.16.3",
+      "version": "4.16.4",
       "from": "lodash-es@>=4.2.1 <5.0.0",
-      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.3.tgz"
+      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.16.4.tgz"
     },
     "lodash._getnative": {
       "version": "3.9.1",
@@ -1079,15 +1089,15 @@
       "from": "streamsearch@>=0.1.2 <0.2.0",
       "resolved": "https://registry.npmjs.org/streamsearch/-/streamsearch-0.1.2.tgz"
     },
-    "string-width": {
-      "version": "1.0.2",
-      "from": "string-width@>=1.0.1 <2.0.0",
-      "resolved": "https://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz"
-    },
     "string_decoder": {
       "version": "0.10.31",
       "from": "string_decoder@>=0.10.0 <0.11.0",
       "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-0.10.31.tgz"
+    },
+    "string-width": {
+      "version": "1.0.2",
+      "from": "string-width@>=1.0.1 <2.0.0",
+      "resolved": "https://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz"
     },
     "stringstream": {
       "version": "0.0.5",
