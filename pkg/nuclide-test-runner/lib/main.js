@@ -153,7 +153,7 @@ class Activation {
       icon: 'checklist',
       callback: 'nuclide-test-runner:toggle-panel',
       tooltip: 'Toggle Test Runner',
-      priority: 400,
+      priority: 600,
     });
     const disposable = new Disposable(() => { toolBar.removeItems(); });
     this._disposables.add(disposable);

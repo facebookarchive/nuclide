@@ -170,7 +170,7 @@ class Activation {
       icon: 'list-unordered',
       callback: 'nuclide-outline-view:toggle',
       tooltip: 'Toggle Outline View',
-      priority: 350, // Between diff view and test runner
+      priority: 200,
     });
     // Class added is not defined elsewhere, and is just used to mark the toolbar button
     element.classList.add('nuclide-outline-view-toolbar-button');

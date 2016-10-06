@@ -453,11 +453,14 @@ class Activation {
 
   consumeToolBar(getToolBar: GetToolBar): IDisposable {
     const toolBar = getToolBar('nuclide-diff-view');
+    toolBar.addSpacer({
+      priority: 800,
+    });
     const button = toolBar.addButton({
       icon: 'git-branch',
       callback: 'nuclide-diff-view:open',
       tooltip: 'Open Diff View',
-      priority: 300,
+      priority: 801,
     }).element;
     button.classList.add('diff-view-count');
 

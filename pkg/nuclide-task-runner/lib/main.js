@@ -204,12 +204,15 @@ class Activation {
 
   consumeToolBar(getToolBar: GetToolBar): IDisposable {
     const toolBar = getToolBar('nuclide-task-runner');
+    toolBar.addSpacer({
+      priority: 400,
+    });
     const {element} = toolBar.addButton({
       callback: 'nuclide-task-runner:toggle-toolbar-visibility',
       tooltip: 'Toggle Task Runner Toolbar',
       iconset: 'ion',
       icon: 'play',
-      priority: 499.5,
+      priority: 401,
     });
     element.className += ' nuclide-task-runner-tool-bar-button';
 

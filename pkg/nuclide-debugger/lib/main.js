@@ -557,7 +557,7 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
     icon: 'plug',
     callback: 'nuclide-debugger:toggle',
     tooltip: 'Toggle Debugger',
-    priority: 100,
+    priority: 500,
   });
   const disposable = new Disposable(() => { toolBar.removeItems(); });
   invariant(activation);

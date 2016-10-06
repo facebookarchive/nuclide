@@ -317,7 +317,7 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
     icon: 'law',
     callback: 'nuclide-diagnostics-ui:toggle-table',
     tooltip: 'Toggle Diagnostics Table',
-    priority: 200,
+    priority: 100,
   });
   const disposable = new Disposable(() => { toolBar.removeItems(); });
   invariant(subscriptions != null);

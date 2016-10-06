@@ -97,9 +97,7 @@ class Activation {
       icon: 'terminal',
       callback: 'nuclide-console:toggle',
       tooltip: 'Toggle Console',
-      // Chosen to appear beneath the task runner button, given the priorities that are currently
-      // used. /:
-      priority: 499.75,
+      priority: 700,
     });
     this._disposables.add(
       new Disposable(() => { toolBar.removeItems(); }),

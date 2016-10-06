@@ -134,6 +134,7 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
     icon: 'info',
     callback: 'nuclide-context-view:toggle',
     tooltip: 'Toggle Context View',
+    priority: 300,
   });
   element.classList.add('nuclide-context-view-toolbar-button');
   const disposable = new Disposable(() => { toolBar.removeItems(); });

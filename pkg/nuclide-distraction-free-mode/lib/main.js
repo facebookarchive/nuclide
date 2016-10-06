@@ -68,11 +68,14 @@ class Activation {
 
   consumeToolBar(getToolBar: GetToolBar): IDisposable {
     const toolBar = getToolBar('nuclide-distraction-free-mode');
+    toolBar.addSpacer({
+      priority: 900,
+    });
     toolBar.addButton({
       icon: 'eye',
       callback: 'nuclide-distraction-free-mode:toggle',
       tooltip: 'Toggle distraction-free mode',
-      priority: 600,
+      priority: 901,
     });
     const disposable = new Disposable(() => { toolBar.removeItems(); });
     this._disposables.add(disposable);
