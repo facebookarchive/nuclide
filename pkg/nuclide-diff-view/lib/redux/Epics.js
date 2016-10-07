@@ -229,18 +229,26 @@ export function updateActiveRepositoryEpic(
       revisionChanges, diffOptionChanges, compareIdChanges, statusChanges,
       (revisions, diffOption, compareId) => ({revisions, diffOption, compareId}),
     ).filter(({revisions}) => getHeadRevision(revisions) != null)
-    .switchMap(({revisions, compareId, diffOption}) =>
+    .switchMap(({revisions, compareId, diffOption}) => {
       // TODO(most): Add loading states.
-      getSelectedFileChanges(
-        repository,
-        diffOption,
-        revisions,
-        compareId,
-      ).catch(error => {
-        notifyInternalError(error);
-        return Observable.empty();
-      }),
-    ).map(revisionFileChanges => Actions.updateSelectedFiles(repository, revisionFileChanges));
+      return Observable.concat(
+        compareId != null && revisions.find(rev => rev.id === compareId) == null
+          ? Observable.of(Actions.setCompareId(repository, null))
+          : Observable.empty(),
+
+        getSelectedFileChanges(
+          repository,
+          diffOption,
+          revisions,
+          compareId,
+        ).catch(error => {
+          notifyInternalError(error);
+          return Observable.empty();
+        }).map(revisionFileChanges =>
+          Actions.updateSelectedFiles(repository, revisionFileChanges),
+        ),
+      );
+    });
 
     const revisionStateUpdates = Observable.combineLatest(revisionChanges, revisionStatusChanges)
       .filter(([revisions]) => getHeadRevision(revisions) != null)

@@ -348,6 +348,9 @@ export function getSelectedFileChanges(
   if (beforeCommitId == null) {
     return Observable.throw(new Error('compareCommitId cannot be null!'));
   }
+  if (headToForkBaseRevisions.find(rev => rev.id === beforeCommitId) == null) {
+    return Observable.of(dirtyFileChanges);
+  }
   return getSelectedFileChangesToCommit(
     repository,
     headToForkBaseRevisions,
