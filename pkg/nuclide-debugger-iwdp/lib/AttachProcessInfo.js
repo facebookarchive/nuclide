@@ -11,8 +11,11 @@
 
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {IwdpDebuggerInstance} from './IwdpDebuggerInstance';
+import invariant from 'assert';
+import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {IwdpDebuggerService} from '../../nuclide-debugger-iwdp-rpc/lib/IwdpDebuggerService';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
   constructor(targetUri: NuclideUri) {
@@ -20,6 +23,14 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   }
 
   async debug(): Promise<IwdpDebuggerInstance> {
-    return new IwdpDebuggerInstance(this);
+    const rpcService = this._getRpcService();
+    await rpcService.attach();
+    return new IwdpDebuggerInstance(this, rpcService);
+  }
+
+  _getRpcService(): IwdpDebuggerService {
+    const service = getServiceByNuclideUri('IwdpDebuggerService', this.getTargetUri());
+    invariant(service != null);
+    return new service.IwdpDebuggerService();
   }
 }

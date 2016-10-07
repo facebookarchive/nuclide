@@ -22,7 +22,7 @@ export class WebSocketServer {
   }
 
   // Promise only resolves when one WebSocket client connect to it.
-  start(port: number): Promise<WebSocket> {
+  start(port: number): Promise<WS> {
     return new Promise((resolve, reject) => {
       const server = new WS.Server({port});
       server.on('error', error => {

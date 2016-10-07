@@ -44,7 +44,7 @@ export class IwdpDebuggerService {
     return this._clientCallback.getServerMessageObservable().publish();
   }
 
-  async debug(): Promise<string> {
+  async attach(): Promise<string> {
     // TODO
     // 1. start ios-webkit-debug-proxy
     // 2. see what devices there are
