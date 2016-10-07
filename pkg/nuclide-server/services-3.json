@@ -78,5 +78,9 @@
   {
     "implementation": "./lib/services/SourceControlService.js",
     "name": "SourceControlService"
+  },
+  {
+    "implementation": "../nuclide-debugger-iwdp-rpc/lib/IwdpDebuggerService.js",
+    "name": "IwdpDebuggerService"
   }
 ]
