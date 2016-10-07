@@ -46,6 +46,10 @@ import {
   DiffSectionStatus,
 } from './constants';
 import {getMultiRootFileChanges} from '../../nuclide-hg-git-bridge/lib/utils';
+import {
+  LoadingSpinner,
+  LoadingSpinnerSizes,
+} from '../../nuclide-ui/LoadingSpinner';
 
 type Props = {
   diffModel: DiffViewModel,
@@ -351,11 +355,33 @@ export default class DiffViewComponent extends React.Component {
 
   _renderTree(): void {
     const {diffModel} = this.props;
-    const {activeRepository, selectedFileChanges, filePath} = diffModel.getState();
+    const {
+      activeRepository,
+      filePath,
+      isLoadingSelectedFiles,
+      selectedFileChanges,
+    } = diffModel.getState();
     const rootPaths = activeRepository != null ? [activeRepository.getProjectDirectory()] : [];
+
+    let spinnerElement = null;
+    if (isLoadingSelectedFiles) {
+      spinnerElement = (
+        <div className="nuclide-diff-view-loading inline-block">
+          <LoadingSpinner
+            className="inline-block"
+            size={LoadingSpinnerSizes.EXTRA_SMALL}
+          />
+          <div className="inline-block">
+            Refreshing Selected Files …
+          </div>
+        </div>
+      );
+    }
+
     this._treeComponent = ReactDOM.render(
       (
         <div className="nuclide-diff-view-tree padded">
+          {spinnerElement}
           <MultiRootChangedFilesView
             commandPrefix="nuclide-diff-view"
             fileChanges={getMultiRootFileChanges(selectedFileChanges, rootPaths)}

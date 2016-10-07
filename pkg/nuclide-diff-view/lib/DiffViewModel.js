@@ -72,6 +72,7 @@ function getInitialState(): State {
     headCommitMessage: null,
     dirtyFileChanges: new Map(),
     selectedFileChanges: new Map(),
+    isLoadingSelectedFiles: false,
     showNonHgRepos: true,
     revisionsState: null,
   };
@@ -96,6 +97,7 @@ export type State = {
   headCommitMessage: ?string,
   dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>,
   selectedFileChanges: Map<NuclideUri, FileChangeStatusValue>,
+  isLoadingSelectedFiles: boolean,
   showNonHgRepos: boolean,
   revisionsState: ?RevisionsState,
 };

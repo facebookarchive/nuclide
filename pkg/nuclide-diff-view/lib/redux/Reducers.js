@@ -53,7 +53,8 @@ export function repositories(
     case ActionTypes.SET_COMPARE_ID:
     case ActionTypes.UPDATE_DIRTY_FILES:
     case ActionTypes.UPDATE_SELECTED_FILES:
-    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS: {
+    case ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS:
+    case ActionTypes.UPDATE_LOADING_SELECTED_FILES: {
       const {repository} = action.payload;
       const oldRepositoryState = state.get(repository);
       invariant(oldRepositoryState != null);
@@ -100,6 +101,11 @@ function reduceRepositoryAction(
         ...repositoryState,
         headToForkBaseRevisions: action.payload.headToForkBaseRevisions,
         revisionStatuses: action.payload.revisionStatuses,
+      };
+    case ActionTypes.UPDATE_LOADING_SELECTED_FILES:
+      return {
+        ...repositoryState,
+        isLoadingSelectedFiles: action.payload.isLoading,
       };
     default:
       throw new Error('Invalid Repository Action!');

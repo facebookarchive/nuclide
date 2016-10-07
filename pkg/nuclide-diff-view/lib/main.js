@@ -244,6 +244,7 @@ class Activation {
           headCommitMessage,
           dirtyFileChanges: activeRepositoryState.dirtyFiles,
           selectedFileChanges: activeRepositoryState.selectedFiles,
+          isLoadingSelectedFiles: activeRepositoryState.isLoadingSelectedFiles,
           showNonHgRepos: true,
           revisionsState: headRevision == null ? null : {
             compareCommitId: activeRepositoryState.compareRevisionId,

@@ -236,6 +236,7 @@ export function updateActiveRepositoryEpic(
           ? Observable.of(Actions.setCompareId(repository, null))
           : Observable.empty(),
 
+        Observable.of(Actions.updateLoadingSelectedFiles(repository, true)),
         getSelectedFileChanges(
           repository,
           diffOption,
@@ -247,6 +248,7 @@ export function updateActiveRepositoryEpic(
         }).map(revisionFileChanges =>
           Actions.updateSelectedFiles(repository, revisionFileChanges),
         ),
+        Observable.of(Actions.updateLoadingSelectedFiles(repository, false)),
       );
     });
 

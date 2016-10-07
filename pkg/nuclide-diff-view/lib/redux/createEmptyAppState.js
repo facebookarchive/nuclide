@@ -70,6 +70,7 @@ export function getEmptyRepositoryState(): RepositoryState {
     revisionStatuses: new Map(),
     dirtyFiles: new Map(),
     headToForkBaseRevisions: [],
+    isLoadingSelectedFiles: false,
     compareRevisionId: null,
     selectedFiles: new Map(),
   };

@@ -34,6 +34,7 @@ import type {
   UpdateDirtyFilesAction,
   UpdateFileDiffAction,
   UpdateHeadToForkBaseRevisions,
+  UpadateLoadingSelectedFilesAction,
   UpdatePublishStateAction,
   UpdateSelectedFilesAction,
 } from '../types';
@@ -63,6 +64,7 @@ import {
   UPDATE_DIRTY_FILES,
   UPDATE_FILE_DIFF,
   UPDATE_HEAD_TO_FORKBASE_REVISIONS,
+  UPDATE_LOADING_SELECTED_FILES,
   UPDATE_PUBLISH_STATE,
   UPDATE_SELECTED_FILES,
 } from './ActionTypes';
@@ -136,6 +138,19 @@ export function updateSelectedFiles(
     payload: {
       repository,
       selectedFiles,
+    },
+  };
+}
+
+export function updateLoadingSelectedFiles(
+  repository: HgRepositoryClient,
+  isLoading: boolean,
+): UpadateLoadingSelectedFilesAction {
+  return {
+    type: UPDATE_LOADING_SELECTED_FILES,
+    payload: {
+      repository,
+      isLoading,
     },
   };
 }

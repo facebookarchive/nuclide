@@ -94,6 +94,7 @@ export type RepositoryState = {
   headToForkBaseRevisions: Array<RevisionInfo>,
   revisionStatuses: RevisionStatuses,
   selectedFiles: Map<NuclideUri, FileChangeStatusValue>,
+  isLoadingSelectedFiles: boolean,
 };
 
 export type CommitState = {
@@ -184,6 +185,14 @@ export type UpdateSelectedFilesAction = {
   payload: {
     repository: HgRepositoryClient,
     selectedFiles: Map<NuclideUri, FileChangeStatusValue>,
+  },
+};
+
+export type UpadateLoadingSelectedFilesAction = {
+  type: 'UPDATE_LOADING_SELECTED_FILES',
+  payload: {
+    repository: HgRepositoryClient,
+    isLoading: boolean,
   },
 };
 
@@ -287,6 +296,7 @@ export type Action = AddRepositoryAction
   | UpdateDirtyFilesAction
   | UpdateFileDiffAction
   | UpdateHeadToForkBaseRevisions
+  | UpadateLoadingSelectedFilesAction
   | UpdatePublishStateAction
   | UpdateSelectedFilesAction
 ;
@@ -297,5 +307,6 @@ export type RepositoryAction =
   | SetCompareIdAction
   | UpdateDirtyFilesAction
   | UpdateHeadToForkBaseRevisions
+  | UpadateLoadingSelectedFilesAction
   | UpdateSelectedFilesAction
 ;
