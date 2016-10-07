@@ -283,7 +283,7 @@ export class FlowProcess {
   async _pingServer(tries?: number = 5): Promise<void> {
     const fromState = this._serverStatus.getValue();
     let stateChanged = false;
-    this._serverStatus.filter(newState => newState !== fromState).first().subscribe(() => {
+    this._serverStatus.filter(newState => newState !== fromState).take(1).subscribe(() => {
       stateChanged = true;
     });
     for (let i = 0; !stateChanged && i < tries; i++) {
