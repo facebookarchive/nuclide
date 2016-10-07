@@ -496,7 +496,7 @@ export function createPhabricatorRevision(
     }),
 
     Observable.defer(() =>
-      Observable.fromPromise(repository.async.getHeadCommitMessage())
+      Observable.fromPromise(repository.getHeadCommitMessage())
         .do(commitMessage => {
           const phabricatorRevision = getPhabricatorRevisionFromCommitMessage(commitMessage || '');
           if (phabricatorRevision != null) {

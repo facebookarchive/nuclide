@@ -29,7 +29,6 @@ import type {LRUCache} from 'lru-cache';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import RevisionsCache from './RevisionsCache';
-import HgRepositoryClientAsync from './HgRepositoryClientAsync';
 import {
   StatusCodeId,
   StatusCodeIdToNumber,
@@ -150,11 +149,8 @@ export class HgRepositoryClient {
   _serializedRefreshStatusesCache: () => ?Promise<void>;
   _isInConflict: boolean;
   _isDestroyed: boolean;
-  async: HgRepositoryClientAsync;
 
   constructor(repoPath: string, hgService: HgService, options: HgRepositoryOptions) {
-    this.async = new HgRepositoryClientAsync(this);
-
     this._path = repoPath;
     this._workingDirectory = options.workingDirectory;
     this._projectDirectory = options.projectRootDirectory;
@@ -566,23 +562,33 @@ export class HgRepositoryClient {
   }
 
   isStatusModified(status: ?number): boolean {
-    return this.async.isStatusModified(status);
+    return status === StatusCodeNumber.MODIFIED;
+  }
+
+  isStatusDeleted(status: ?number): boolean {
+    return (
+      status === StatusCodeNumber.MISSING ||
+      status === StatusCodeNumber.REMOVED
+    );
   }
 
   isStatusNew(status: ?number): boolean {
-    return this.async.isStatusNew(status);
+    return (
+      status === StatusCodeNumber.ADDED ||
+      status === StatusCodeNumber.UNTRACKED
+    );
   }
 
   isStatusAdded(status: ?number): boolean {
-    return this.async.isStatusAdded(status);
+    return status === StatusCodeNumber.ADDED;
   }
 
   isStatusUntracked(status: ?number): boolean {
-    return this.async.isStatusUntracked(status);
+    return status === StatusCodeNumber.UNTRACKED;
   }
 
   isStatusIgnored(status: ?number): boolean {
-    return this.async.isStatusIgnored(status);
+    return status === StatusCodeNumber.IGNORED;
   }
 
 
@@ -1054,12 +1060,30 @@ export class HgRepositoryClient {
     return this._service.getTemplateCommitMessage();
   }
 
-  refreshStatus(): Promise<void> {
-    return this.async.refreshStatus();
+  getHeadCommitMessage(): Promise<?string> {
+    return this._service.getHeadCommitMessage();
   }
 
-  getCachedPathStatuses() {
-    return this.async.getCachedPathStatuses();
+  async refreshStatus(): Promise<void> {
+    const repoRoot = this.getWorkingDirectory();
+    const repoProjects = atom.project.getPaths().filter(projPath => projPath.startsWith(repoRoot));
+    await this.getStatuses(repoProjects, {
+      hgStatusOption: HgStatusOption.ONLY_NON_IGNORED,
+    });
+  }
+
+  /**
+   * Return relative paths to status code number values object.
+   * matching `GitRepositoryAsync` implementation.
+   */
+  getCachedPathStatuses(): {[filePath: string]: StatusCodeNumberValue} {
+    const absoluteCodePaths = this.getAllPathStatuses();
+    const relativeCodePaths = {};
+    for (const absolutePath in absoluteCodePaths) {
+      const relativePath = this.relativize(absolutePath);
+      relativeCodePaths[relativePath] = absoluteCodePaths[absolutePath];
+    }
+    return relativeCodePaths;
   }
 
 
