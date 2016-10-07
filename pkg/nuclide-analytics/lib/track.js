@@ -15,10 +15,9 @@ export type TrackEvent = {
 };
 
 // This extra module enables adding spies during testing.
-export let track;
 try {
   // $FlowFB
-  track = require('../fb/analytics').track;
+  module.exports = require('../fb/analytics');
 } catch (e) {
-  track = require('./analytics').track;
+  module.exports = require('./analytics');
 }

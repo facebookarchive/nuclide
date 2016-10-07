@@ -11,7 +11,6 @@
 
 import type {Observable} from 'rxjs';
 
-import invariant from 'assert';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {isPromise} from '../../commons-node/promise';
 import {maybeToString} from '../../commons-node/string';
@@ -24,26 +23,34 @@ export type TrackingEvent = {
   data?: Object,
 };
 
-export function track(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {
-  invariant(rawTrack);
-  return rawTrack(eventName, values || {});
+/**
+ * Track a set of values against a named event.
+ * Analytics will be batched and processed asynchronously in the background.
+ *
+ * @param eventName Name of the event to be tracked.
+ * @param values The object containing the data to track.
+ */
+export function track(eventName: string, values?: {[key: string]: mixed}): void {
+  rawTrack(eventName, values || {});
 }
 
 /**
- * Track an analytics event and send it off immediately.
+ * Same as `track`, except this is guaranteed to send immediately.
  * The returned promise will resolve when the request completes (or reject on failure).
  */
-export function trackImmediate(eventName: string, values?: {[key: string]: mixed}): Promise<mixed> {
-  invariant(rawTrack);
-  return rawTrack(eventName, values || {}, true);
+export function trackImmediate(
+  eventName: string,
+  values?: {[key: string]: mixed},
+): Promise<mixed> {
+  return rawTrack(eventName, values || {}, true) || Promise.resolve();
 }
 
 /**
  * An alternative interface for `track` that accepts a single event object. This is particularly
  * useful when dealing with streams (Observables).
  */
-export function trackEvent(event: TrackingEvent): Promise<mixed> {
-  return track(event.type, event.data);
+export function trackEvent(event: TrackingEvent): void {
+  track(event.type, event.data);
 }
 
 /**
@@ -129,16 +136,16 @@ export class TimingTracker {
     this._startTime = getTimestamp();
   }
 
-  onError(error: Error): Promise<any> {
-    return this._trackTimingEvent(error);
+  onError(error: Error): void {
+    this._trackTimingEvent(error);
   }
 
-  onSuccess(): Promise<any> {
-    return this._trackTimingEvent(/* error */ null);
+  onSuccess(): void {
+    this._trackTimingEvent(/* error */ null);
   }
 
-  _trackTimingEvent(exception: ?Error): Promise<any> {
-    return track(PERFORMANCE_EVENT, {
+  _trackTimingEvent(exception: ?Error): void {
+    track(PERFORMANCE_EVENT, {
       duration: (getTimestamp() - this._startTime).toString(),
       eventName: this._eventName,
       error: exception ? '1' : '0',
