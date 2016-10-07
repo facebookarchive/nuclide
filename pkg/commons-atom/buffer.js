@@ -51,7 +51,7 @@ export type CloseBufferEvent = {
 
 // Fires a single event when the buffer is destroyed or renamed.
 // Note that on a rename the buffer path will not be the same as the openedPath.
-export function observeBufferClose(buffer: atom$TextBuffer): Observable<CloseBufferEvent> {
+export function observeBufferCloseOrRename(buffer: atom$TextBuffer): Observable<CloseBufferEvent> {
   const openedPath: ?NuclideUri = buffer.getPath();
   const end = observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer));
   const rename = observableFromSubscribeFunction(buffer.onDidChangePath.bind(buffer));

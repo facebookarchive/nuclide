@@ -76,21 +76,9 @@ export class BufferSubscription {
         newText: event.newText,
       });
     }));
-    subscriptions.add(buffer.onDidChangePath(() => {
-      this.sendClose();
-      this.onChangePath();
-    }));
-    subscriptions.add(buffer.onDidDestroy(() => {
-      this.sendClose();
-      this.dispose();
-    }));
 
     this._subscriptions = subscriptions;
 
-    this.onChangePath();
-  }
-
-  onChangePath(): void {
     this._oldPath = this._buffer.getPath();
     this._notifier = this._notifiers.get(this._buffer);
     this.sendOpen();
@@ -213,6 +201,7 @@ export class BufferSubscription {
   }
 
   dispose() {
+    this.sendClose();
     this._notifier = null;
     this._subscriptions.dispose();
   }

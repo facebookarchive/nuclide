@@ -14,29 +14,30 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
-import {observeBuffers} from '../../commons-atom/buffer';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observeBufferOpen, observeBufferCloseOrRename} from '../../commons-atom/buffer';
 import {NotifiersByConnection} from './NotifiersByConnection';
 import {BufferSubscription} from './BufferSubscription';
 
 export class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   notifiers: NotifiersByConnection;
 
   constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
 
     const notifiers = new NotifiersByConnection();
     this.notifiers = notifiers;
     this._disposables.add(notifiers);
 
-    this._disposables.add(observeBuffers(buffer => {
-      const subscriptions = new CompositeDisposable();
+    this._disposables.add(observeBufferOpen().subscribe(buffer => {
+      const subscriptions = new UniversalDisposable();
       subscriptions.add(new BufferSubscription(notifiers, buffer));
-      subscriptions.add(buffer.onDidDestroy(() => {
-        this._disposables.remove(subscriptions);
-        subscriptions.dispose();
-      }));
+      subscriptions.add(observeBufferCloseOrRename(buffer)
+        .subscribe(closeEvent => {
+          this._disposables.remove(subscriptions);
+          subscriptions.dispose();
+        }));
       this._disposables.add(subscriptions);
     }));
   }
