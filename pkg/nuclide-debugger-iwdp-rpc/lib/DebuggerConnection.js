@@ -24,8 +24,10 @@ export class DebuggerConnection {
   _webSocket: WS;
   _disposables: UniversalDisposable;
   _fileCache: FileCache;
+  _sendMessageToClient: (message: string) => void;
 
   constructor(iosDeviceInfo: IosDeviceInfo, sendMessageToClient: (message: string) => void) {
+    this._sendMessageToClient = sendMessageToClient;
     this._fileCache = new FileCache();
     const {webSocketDebuggerUrl} = iosDeviceInfo;
     const webSocket = new WS(webSocketDebuggerUrl);
@@ -54,26 +56,43 @@ export class DebuggerConnection {
           return Observable.of(message);
         }
       })
-      .map(obj => {
-        const message = JSON.stringify(obj);
-        log(`Sending to client: ${message.substring(0, 5000)}`);
-        return message;
-      });
+      .map(JSON.stringify);
   }
 
   _translateMessageForServer(message: string): string {
     const obj = JSON.parse(message);
-    if (obj.method === 'Debugger.setBreakpointByUrl') {
-      const updatedObj = this._fileCache.handleSetBreakpointByUrl(obj);
-      const updatedMessage = JSON.stringify(updatedObj);
-      log(`Sending message to proxy: ${updatedMessage}`);
-      return updatedMessage;
-    } else {
-      return message;
+    switch (obj.method) {
+      case 'Debugger.setBreakpointByUrl': {
+        const updatedObj = this._fileCache.handleSetBreakpointByUrl(obj);
+        const updatedMessage = JSON.stringify(updatedObj);
+        log(`Sending message to proxy: ${updatedMessage}`);
+        return updatedMessage;
+      }
+      case 'Debugger.enable': {
+        // Nuclide's debugger will auto-resume the first pause event, so we send a dummy pause
+        // when the debugger initially attaches.
+        this._sendFakeLoaderBreakpointPause();
+        return message;
+      }
+      default: {
+        return message;
+      }
     }
   }
 
-  async dispose(): Promise<void> {
+  _sendFakeLoaderBreakpointPause(): void {
+    const debuggerPausedMessage = {
+      method: 'Debugger.paused',
+      params: {
+        callFrames: [],
+        reason: 'breakpoint',
+        data: {},
+      },
+    };
+    this._sendMessageToClient(JSON.stringify(debuggerPausedMessage));
+  }
+
+  dispose(): void {
     this._disposables.dispose();
   }
 }

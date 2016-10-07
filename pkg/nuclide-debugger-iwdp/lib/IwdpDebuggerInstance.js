@@ -80,7 +80,9 @@ export class IwdpDebuggerInstance extends DebuggerInstance {
   }
 
   _sendServerMessageToChromeUi(message: string): void {
-    log(`Sending message to client: ${message}`);
+    // Some messages are so big they aren't helpful to log, such as the source map URL, which can
+    // be many thousands of bytes.  So we substring for logs, since most messages smaller than 5000.
+    log(`Sending message to client: ${message.substring(0, 5000)}`);
     const webSocket = this._webSocket;
     if (webSocket != null) {
       webSocket.send(message);
