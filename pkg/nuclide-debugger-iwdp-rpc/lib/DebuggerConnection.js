@@ -11,11 +11,10 @@
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import WS from 'ws';
-import xfetch from '../../commons-node/xfetch';
-import fsPromise from '../../commons-node/fsPromise';
 import {Observable} from 'rxjs';
 import {createWebSocketListener} from './createWebSocketListener';
 import {logger} from './logger';
+import {FileCache} from './FileCache';
 
 import type {IosDeviceInfo} from './types';
 
@@ -24,11 +23,10 @@ const {log} = logger;
 export class DebuggerConnection {
   _webSocket: WS;
   _disposables: UniversalDisposable;
-  // TODO implement file cache to manage this.
-  _package: ?string;
+  _fileCache: FileCache;
 
   constructor(iosDeviceInfo: IosDeviceInfo, sendMessageToClient: (message: string) => void) {
-    this._package = null;
+    this._fileCache = new FileCache();
     const {webSocketDebuggerUrl} = iosDeviceInfo;
     const webSocket = new WS(webSocketDebuggerUrl);
     this._webSocket = webSocket;
@@ -37,6 +35,7 @@ export class DebuggerConnection {
     this._disposables = new UniversalDisposable(
       translatedMessages.subscribe(sendMessageToClient),
       () => webSocket.close(),
+      this._fileCache,
     );
     log(`DebuggerConnection created with device info: ${JSON.stringify(iosDeviceInfo)}`);
   }
@@ -46,53 +45,29 @@ export class DebuggerConnection {
   }
 
   _translateMessagesForClient(socketMessages: Observable<string>): Observable<string> {
-    return socketMessages.mergeMap(message => {
-      const obj = JSON.parse(message);
-      if (obj.method === 'Debugger.scriptParsed') {
-        const {params} = obj;
-        if (params == null) {
+    return socketMessages
+      .map(JSON.parse)
+      .mergeMap((message: {method: string}) => {
+        if (message.method === 'Debugger.scriptParsed') {
+          return Observable.fromPromise(this._fileCache.handleScriptParsed(message));
+        } else {
           return Observable.of(message);
         }
-        const {url} = params;
-        if (url == null || !url.startsWith('http:')) {
-          return Observable.of(message);
-        }
-        // The file is being served by the webserver hosted by the target, so we should download it.
-        // TODO Move this logic to a File cache.
-        return Observable.fromPromise((async () => {
-          log(`Got url: ${url}`);
-          this._package = url;
-          const response = await xfetch(url, {});
-          const text = await response.text();
-          const tempPath = await fsPromise.tempfile({prefix: 'jsfile', suffix: '.js'});
-          await fsPromise.writeFile(tempPath, text);
-          obj.params.url = `file://${tempPath}`;
-
-          // Also source maps
-          const SOURCE_MAP_REGEX = /\/\/# sourceMappingURL=(.+)$/;
-          const matches = SOURCE_MAP_REGEX.exec(text);
-          const sourceMapUrl = `http://localhost:8081${matches[1]}`;
-
-          const response2 = await xfetch(sourceMapUrl, {});
-          const text2 = await response2.text();
-          const base64Text = new Buffer(text2).toString('base64');
-          obj.params.sourceMapURL = `data:application/json;base64,${base64Text}`;
-          const newMessage = JSON.stringify(obj);
-          log(`Sending: ${newMessage.substring(0, 5000)}`);
-          return newMessage;
-        })());
-      }
-      return Observable.of(message);
-    });
+      })
+      .map(obj => {
+        const message = JSON.stringify(obj);
+        log(`Sending to client: ${message.substring(0, 5000)}`);
+        return message;
+      });
   }
 
   _translateMessageForServer(message: string): string {
     const obj = JSON.parse(message);
     if (obj.method === 'Debugger.setBreakpointByUrl') {
-      obj.params.url = this._package;
-      const newMessage = JSON.stringify(obj);
-      log(`Sending message to proxy: ${newMessage}`);
-      return newMessage;
+      const updatedObj = this._fileCache.handleSetBreakpointByUrl(obj);
+      const updatedMessage = JSON.stringify(updatedObj);
+      log(`Sending message to proxy: ${updatedMessage}`);
+      return updatedMessage;
     } else {
       return message;
     }
