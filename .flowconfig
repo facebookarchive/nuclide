@@ -2,22 +2,21 @@
 
 [ignore]
 ; ignore module source to prefer declaration
-.*/node_modules/classnames/.*
-.*/node_modules/fuzzaldrin/.*
-.*/node_modules/lru-cache/.*
-.*/node_modules/react/react.js
-.*/node_modules/rxjs/.*
-.*/node_modules/semver/.*
+<PROJECT_ROOT>/node_modules/classnames/.*
+<PROJECT_ROOT>/node_modules/fuzzaldrin/.*
+<PROJECT_ROOT>/node_modules/lru-cache/.*
+<PROJECT_ROOT>/node_modules/react/.*
+<PROJECT_ROOT>/node_modules/rxjs/.*
+<PROJECT_ROOT>/node_modules/semver/.*
 ; annotated with `@flow` but have errors
-.*/node_modules/babel-types/.*
-.*/node_modules/fbjs/lib/.*
-.*/node_modules/sabor/.*
-.*/nuclide-node-transpiler/spec/fixtures/.*
-; issues with JSON
-.*/node_modules/json5/.*json
+<PROJECT_ROOT>/node_modules/fbjs/lib/.*
+<PROJECT_ROOT>/pkg/nuclide-node-transpiler/spec/fixtures/.*
+; large dirs that are not imported
+<PROJECT_ROOT>/docs/.*
+<PROJECT_ROOT>/pkg/nuclide-debugger/VendorLib/devtools/.*
 
 [libs]
-./pkg/nuclide-external-interfaces/1.0/
+pkg/nuclide-external-interfaces/1.0/
 
 [options]
 esproposal.decorators=ignore
