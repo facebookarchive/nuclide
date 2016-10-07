@@ -15,7 +15,7 @@ import BatchProcessedQueue from '../../commons-node/BatchProcessedQueue';
 
 const REPORTING_PERIOD = 1000;
 
-type TrackCallback = (events: Array<TrackEvent>) => Promise<void>;
+type TrackCallback = (events: Array<TrackEvent>) => mixed;
 
 export class AnalyticsBatcher {
   _queue: BatchProcessedQueue<TrackEvent>;
