@@ -119,6 +119,7 @@ export type FileDiffState = {
 export type AppState = {
   activeRepository: ?HgRepositoryClient,
   commit: CommitState,
+  cwdApi: ?CwdApi,
   fileDiff: FileDiffState,
   publish: PublishState,
   repositories: Map<HgRepositoryClient, RepositoryState>,

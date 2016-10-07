@@ -19,6 +19,7 @@ import type {
   RepositoryState,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
+import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
 
 import * as ActionTypes from './ActionTypes';
 import invariant from 'assert';
@@ -166,4 +167,15 @@ export function viewMode(
       return action.payload.viewMode;
   }
   return state || getEmptyViewModeState();
+}
+
+export function cwdApi(
+  state: ?CwdApi,
+  action: Action,
+): ?CwdApi {
+  switch (action.type) {
+    case ActionTypes.SET_CWD_API:
+      return action.payload.cwdApi;
+  }
+  return state || null;
 }

@@ -11,13 +11,15 @@
 
 import type {Action, DiffOptionType, Store} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
+import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 import type {RevisionInfo} from '../../../nuclide-hg-rpc/lib/HgService';
+import type {NuclideUri} from '../../../commons-node/nuclideUri';
 
 import * as ActionTypes from './ActionTypes';
 import * as Actions from './Actions';
 import invariant from 'assert';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {
   CommitMode,
@@ -50,6 +52,7 @@ import {
 import {getPhabricatorRevisionFromCommitMessage} from '../../../nuclide-arcanist-rpc/lib/utils';
 import {notifyInternalError} from '../notifications';
 import {startTracking, track} from '../../../nuclide-analytics';
+import nuclideUri from '../../../commons-node/nuclideUri';
 
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
 const CHANGE_DEBOUNCE_DELAY_MS = 10;
@@ -64,6 +67,43 @@ function trackComplete<T>(eventName: string, operation: Observable<T>): Observab
         complete() { tracker.onSuccess(); },
       });
   });
+}
+
+function notifyCwdMismatch(
+  newRepository: HgRepositoryClient,
+  cwdApi: CwdApi,
+  filePath: NuclideUri,
+  onChangeModified: () => mixed,
+): Observable<Action> {
+  const newDirectoryPath = newRepository.getProjectDirectory();
+  const actionSubject = new Subject();
+  const notification = atom.notifications.addWarning(
+    'Cannot show diff for a non-working directory\n'
+      + 'Would you like to switch your working directory to '
+      + `\`${nuclideUri.basename(newDirectoryPath)}\` to be able to diff that file?`,
+    {
+      buttons: [{
+        text: 'Switch & Show Diff',
+        className: 'icon icon-git-branch',
+        onDidClick: () => {
+          cwdApi.setCwd(newDirectoryPath);
+          actionSubject.next(Actions.diffFile(filePath, onChangeModified));
+          notification.dismiss();
+        },
+      }, {
+        text: 'Dismiss',
+        onDidClick: () => {
+          notification.dismiss();
+        },
+      }],
+      detail: 'You can always switch your working directory\n'
+        + 'from the file tree.',
+      dismissable: true,
+    },
+  );
+  return actionSubject.asObservable().takeUntil(
+    observableFromSubscribeFunction(notification.onDidDismiss.bind(notification)),
+  );
 }
 
 function observeStatusChanges(repository: HgRepositoryClient): Observable<null> {
@@ -287,16 +327,21 @@ export function diffFileEpic(
       return Observable.empty();
     }
 
-    const {activeRepository} = store.getState();
-    if (repository !== activeRepository) {
-      notifyInternalError(
-        new Error('Cannot diff file from a non-working directory\n' +
-          'Please switch your working directory from the file tree to be able to diff that file!'),
-      );
-      return Observable.empty();
-    }
-
     const hgRepository = ((repository: any): HgRepositoryClient);
+    const {activeRepository} = store.getState();
+
+    if (repository !== activeRepository) {
+      const {cwdApi} = store.getState();
+      if (cwdApi == null) {
+        return Observable.throw('Cannot have a null CwdApi');
+      }
+      return notifyCwdMismatch(
+        hgRepository,
+        cwdApi,
+        filePath,
+        onChangeModified,
+      );
+    }
 
     const revisionChanges = hgRepository.observeRevisionChanges();
     const diffOptionChanges = getDiffOptionChanges(actions, store, hgRepository);
