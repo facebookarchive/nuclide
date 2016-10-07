@@ -11,6 +11,7 @@
 
 import type {
   AmendModeValue,
+  BookmarkInfo,
   HgService,
   DiffInfo,
   HgStatusCommandOptions,
@@ -372,7 +373,7 @@ export class HgRepositoryClient {
   getShortHead(filePath: NuclideUri): string {
     if (!this._activeBookmark) {
       // Kick off a fetch to get the current bookmark. This is async.
-      this.async.getShortHead();
+      this._getShortHeadAsync();
       return '';
     }
     return this._activeBookmark;
@@ -857,7 +858,7 @@ export class HgRepositoryClient {
    * @deprecated Use {#async.getShortHead} instead
    */
   fetchActiveBookmark(): Promise<string> {
-    return this.async.getShortHead();
+    return this._getShortHeadAsync();
   }
 
   fetchMergeConflicts(): Promise<Array<MergeConflict>> {
@@ -874,13 +875,65 @@ export class HgRepositoryClient {
    *
    */
 
-  // TODO This is a stub.
-  checkoutHead(path: string): boolean {
-    return false;
+   /**
+    * That extends the `GitRepository` implementation which takes a single file path.
+    * Here, it's possible to pass an array of file paths to revert/checkout-head.
+    */
+  checkoutHead(filePathsArg: NuclideUri | Array<NuclideUri>): Promise<void> {
+    const filePaths = Array.isArray(filePathsArg) ? filePathsArg : [filePathsArg];
+    return this._service.revert(filePaths);
   }
 
   checkoutReference(reference: string, create: boolean): Promise<void> {
-    return this.async.checkoutReference(reference, create);
+    return this._service.checkout(reference, create);
+  }
+
+  /**
+   *
+   * Section: Bookmarks
+   *
+   */
+  createBookmark(name: string, revision: ?string): Promise<void> {
+    return this._service.createBookmark(name, revision);
+  }
+
+  deleteBookmark(name: string): Promise<void> {
+    return this._service.deleteBookmark(name);
+  }
+
+  renameBookmark(name: string, nextName: string): Promise<void> {
+    return this._service.renameBookmark(name, nextName);
+  }
+
+  getBookmarks(): Promise<Array<BookmarkInfo>> {
+    return this._service.fetchBookmarks();
+  }
+
+  onDidChangeBookmarks(callback: () => mixed): IDisposable {
+    return this._emitter.on('did-change-bookmarks', callback);
+  }
+
+  async _getShortHeadAsync(): Promise<string> {
+    let newlyFetchedBookmark = '';
+    try {
+      newlyFetchedBookmark = await this._service.fetchActiveBookmark();
+    } catch (e) {
+      // Suppress the error. There are legitimate times when there may be no
+      // current bookmark, such as during a rebase. In this case, we just want
+      // to return an empty string if there is no current bookmark.
+    }
+    if (newlyFetchedBookmark !== this._activeBookmark) {
+      this._activeBookmark = newlyFetchedBookmark;
+      // The Atom status-bar uses this as a signal to refresh the 'shortHead'.
+      // There is currently no dedicated 'shortHeadDidChange' event.
+      this._emitter.emit('did-change-statuses');
+      this._emitter.emit('did-change-short-head');
+    }
+    return this._activeBookmark || '';
+  }
+
+  onDidChangeShortHead(callback: () => mixed): IDisposable {
+    return this._emitter.on('did-change-short-head', callback);
   }
 
   /**

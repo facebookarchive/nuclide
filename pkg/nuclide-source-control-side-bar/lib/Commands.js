@@ -41,10 +41,10 @@ export default class Commands {
     }
 
     // Type was checked with `getType`. Downcast to safely access members with Flow.
-    const repositoryAsync = ((repository: any): HgRepositoryClient).async;
+    const hgRepository: HgRepositoryClient = (repository: any);
 
     track('scsidebar-create-bookmark');
-    repositoryAsync.createBookmark(name);
+    hgRepository.createBookmark(name);
   }
 
   deleteBookmark(bookmark: BookmarkInfo, repository: atom$Repository): void {

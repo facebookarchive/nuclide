@@ -11,7 +11,6 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {
-  BookmarkInfo,
   LineDiff,
   StatusCodeNumberValue,
 } from '../../nuclide-hg-rpc/lib/HgService';
@@ -39,54 +38,6 @@ export default class HgRepositoryClientAsync {
 
   getWorkingDirectory(): string {
     return this._client.getWorkingDirectory();
-  }
-
-  /**
-   * That extends the `GitRepositoryAsync` implementation which takes a single file path.
-   * Here, it's possible to pass an array of file paths to revert/checkout-head.
-   */
-  checkoutHead(filePathsArg: NuclideUri | Array<NuclideUri>): Promise<void> {
-    const filePaths = Array.isArray(filePathsArg) ? filePathsArg : [filePathsArg];
-    return this._client._service.revert(filePaths);
-  }
-
-  checkoutReference(reference: string, create: boolean): Promise<void> {
-    return this._client._service.checkout(reference, create);
-  }
-
-  createBookmark(name: string, revision: ?string): Promise<void> {
-    return this._client._service.createBookmark(name, revision);
-  }
-
-  deleteBookmark(name: string): Promise<void> {
-    return this._client._service.deleteBookmark(name);
-  }
-
-  renameBookmark(name: string, nextName: string): Promise<void> {
-    return this._client._service.renameBookmark(name, nextName);
-  }
-
-  getBookmarks(): Promise<Array<BookmarkInfo>> {
-    return this._client._service.fetchBookmarks();
-  }
-
-  async getShortHead(): Promise<string> {
-    let newlyFetchedBookmark = '';
-    try {
-      newlyFetchedBookmark = await this._client._service.fetchActiveBookmark();
-    } catch (e) {
-      // Suppress the error. There are legitimate times when there may be no
-      // current bookmark, such as during a rebase. In this case, we just want
-      // to return an empty string if there is no current bookmark.
-    }
-    if (newlyFetchedBookmark !== this._client._activeBookmark) {
-      this._client._activeBookmark = newlyFetchedBookmark;
-      // The Atom status-bar uses this as a signal to refresh the 'shortHead'.
-      // There is currently no dedicated 'shortHeadDidChange' event.
-      this._client._emitter.emit('did-change-statuses');
-      this._client._emitter.emit('did-change-short-head');
-    }
-    return this._client._activeBookmark || '';
   }
 
   getCachedPathStatus(filePath: ?NuclideUri): Promise<StatusCodeNumberValue> {
@@ -143,10 +94,6 @@ export default class HgRepositoryClientAsync {
     return Promise.resolve(this._client.isPathIgnored(filePath));
   }
 
-  isStatusStaged(status: ?number): boolean {
-    return false;
-  }
-
   isStatusIgnored(status: ?number): boolean {
     return status === StatusCodeNumber.IGNORED;
   }
@@ -175,32 +122,6 @@ export default class HgRepositoryClientAsync {
 
   isStatusUntracked(status: ?number): boolean {
     return status === StatusCodeNumber.UNTRACKED;
-  }
-
-  onDidChangeBookmarks(callback: () => mixed): IDisposable {
-    return this._client._emitter.on('did-change-bookmarks', callback);
-  }
-
-  onDidChangeShortHead(callback: () => mixed): IDisposable {
-    return this._client._emitter.on('did-change-short-head', callback);
-  }
-
-  onDidChangeStatus(
-    callback: (event: {path: string, pathStatus: StatusCodeNumberValue}) => mixed,
-  ): IDisposable {
-    return this._client.onDidChangeStatus(callback);
-  }
-
-  onDidChangeStatuses(callback: () => mixed): IDisposable {
-    return this._client.onDidChangeStatuses(callback);
-  }
-
-  addAll(filePaths: Array<NuclideUri>): Promise<void> {
-    return this._client.addAll(filePaths);
-  }
-
-  onDidDestroy(callback: () => mixed): IDisposable {
-    return this._client.onDidDestroy(callback);
   }
 
 }

@@ -16,7 +16,7 @@ import type {
   BookShelfState,
   RestorePaneItemStateAction,
 } from './types';
-import type {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';
+import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 
 import {ActionType, EMPTY_SHORTHEAD} from './constants';
 import {getRepoPathToEditors} from './utils';
@@ -60,21 +60,21 @@ function watchProjectRepository(
 ): Observable<Action> {
 
   const {repository} = action.payload;
-  const repositoryAsync: HgRepositoryClientAsync = (repository: any).async;
+  const hgRepository: HgRepositoryClient = (repository: any);
   // Type was checked with `getType`. Downcast to safely access members with Flow.
   return Observable.merge(
     observableFromSubscribeFunction(
       // Re-fetch when the list of bookmarks changes.
-      repositoryAsync.onDidChangeBookmarks.bind(repositoryAsync),
+      hgRepository.onDidChangeBookmarks.bind(hgRepository),
     ),
     observableFromSubscribeFunction(
       // Re-fetch when the active bookmark changes (called "short head" to match
       // Atom's Git API).
-      repositoryAsync.onDidChangeShortHead.bind(repositoryAsync),
+      hgRepository.onDidChangeShortHead.bind(hgRepository),
     ),
   )
   .startWith(null) // Kick it off the first time
-  .switchMap(() => Observable.fromPromise(repositoryAsync.getBookmarks()))
+  .switchMap(() => Observable.fromPromise(hgRepository.getBookmarks()))
   .map(bookmarks => {
     const bookmarkNames = new Set(
       bookmarks.map(bookmark => bookmark.bookmark).concat([EMPTY_SHORTHEAD]),

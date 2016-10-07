@@ -14,7 +14,7 @@ import type {
   AddProjectRepositoryAction,
   BookShelfState,
 } from '../lib/types';
-import type {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';
+import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 
 import {applyActionMiddleware} from '../lib/applyActionMiddleware';
 import {ActionType, EMPTY_SHORTHEAD} from '../lib/constants';
@@ -64,7 +64,6 @@ describe('BookShelf applyActionMiddleware', () => {
         {bookmark: SHOTHEAD_1_2, active: true},
       ])),
     }: any);
-    fakeRepository.async = fakeRepository;
 
     oneRepoState = getDummyBookShelfState();
   });
@@ -84,14 +83,14 @@ describe('BookShelf applyActionMiddleware', () => {
       input.next(addRepositoryAction);
       input.complete();
 
-      const fakeRepositoryAsync: HgRepositoryClientAsync = (fakeRepository: any).async;
+      const fakeHgRepository: HgRepositoryClient = (fakeRepository: any);
 
       waitsFor(() => resultActions.length === 1);
 
       runs(() => {
-        expect(fakeRepositoryAsync.getBookmarks).toHaveBeenCalled();
-        expect(fakeRepositoryAsync.onDidChangeBookmarks).toHaveBeenCalled();
-        expect(fakeRepositoryAsync.onDidChangeShortHead).toHaveBeenCalled();
+        expect(fakeHgRepository.getBookmarks).toHaveBeenCalled();
+        expect(fakeHgRepository.onDidChangeBookmarks).toHaveBeenCalled();
+        expect(fakeHgRepository.onDidChangeShortHead).toHaveBeenCalled();
         expect(shortHeadChangeCallback).toBeDefined();
         expect(bookmarksChangeCallback).toBeDefined();
         expect(destroyCallback).toBeDefined();
@@ -111,9 +110,9 @@ describe('BookShelf applyActionMiddleware', () => {
 
       runs(() => {
         // The listeners aren't called again, but another fetch of bookmark is done.
-        expect(((fakeRepositoryAsync.onDidChangeBookmarks: any): JasmineSpy).callCount).toBe(1);
-        expect(((fakeRepositoryAsync.onDidChangeShortHead: any): JasmineSpy).callCount).toBe(1);
-        expect(((fakeRepositoryAsync.getBookmarks: any): JasmineSpy).callCount).toBe(2);
+        expect(((fakeHgRepository.onDidChangeBookmarks: any): JasmineSpy).callCount).toBe(1);
+        expect(((fakeHgRepository.onDidChangeShortHead: any): JasmineSpy).callCount).toBe(1);
+        expect(((fakeHgRepository.getBookmarks: any): JasmineSpy).callCount).toBe(2);
 
         const secondAction = resultActions[1];
         expect(secondAction.type).toBe(ActionType.UPDATE_REPOSITORY_BOOKMARKS);

@@ -56,23 +56,21 @@ export function applyActionMiddleware(
           if (repository.getType() === 'hg') {
             // Type was checked with `getType`. Downcast to safely access members with Flow.
             invariant(repository instanceof HgRepositoryClient);
-            const repositoryAsync = repository.async;
-
             observable = observable.concat(
               Observable.merge(
                 observableFromSubscribeFunction(
                   // Re-fetch when the list of bookmarks changes.
-                  repositoryAsync.onDidChangeBookmarks.bind(repositoryAsync),
+                  repository.onDidChangeBookmarks.bind(repository),
                 ),
                 observableFromSubscribeFunction(
                   // Re-fetch when the active bookmark changes (called "short head" to match
                   // Atom's Git API).
-                  repositoryAsync.onDidChangeShortHead.bind(repositoryAsync),
+                  repository.onDidChangeShortHead.bind(repository),
                 ),
               )
               .startWith(null) // Kick it off the first time
               .switchMap(() => {
-                return Observable.fromPromise(repositoryAsync.getBookmarks());
+                return Observable.fromPromise(repository.getBookmarks());
               })
               .map(bookmarks => ({
                 type: ActionType.SET_REPOSITORY_BOOKMARKS,
@@ -128,7 +126,6 @@ export function applyActionMiddleware(
             });
             return Observable.empty();
           }
-          const repositoryAsync = repository.async;
           const {
             bookmark,
             nextName,
@@ -142,7 +139,7 @@ export function applyActionMiddleware(
             type: ActionType.SET_BOOKMARK_IS_LOADING,
           }).concat(
             Observable
-              .fromPromise(repositoryAsync.renameBookmark(bookmark.bookmark, nextName))
+              .fromPromise(repository.renameBookmark(bookmark.bookmark, nextName))
               .ignoreElements()
               .catch(error => {
                 atom.notifications.addWarning('Failed Renaming Bookmark', {
@@ -182,7 +179,6 @@ export function applyActionMiddleware(
             return Observable.empty();
           }
           const {bookmark} = action.payload;
-          const repositoryAsync = repository.async;
 
           return Observable.of({
             payload: {
@@ -192,7 +188,7 @@ export function applyActionMiddleware(
             type: ActionType.SET_BOOKMARK_IS_LOADING,
           }).concat(
             Observable
-              .fromPromise(repositoryAsync.deleteBookmark(bookmark.bookmark))
+              .fromPromise(repository.deleteBookmark(bookmark.bookmark))
               .ignoreElements()
               .catch(error => {
                 atom.notifications.addWarning('Failed Deleting Bookmark', {

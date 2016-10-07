@@ -10,7 +10,7 @@
  */
 
 
-import type {HgRepositoryClientAsync} from '../../nuclide-hg-repository-client';
+import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
@@ -22,10 +22,10 @@ export function addPath(nodePath: ?NuclideUri): Promise<void> {
     nodePath,
     'add',
     'Added',
-    async (hgRepositoryAsync: HgRepositoryClientAsync) => {
+    async (hgRepository: HgRepositoryClient) => {
       invariant(nodePath);
       track('hg-repository-add', {nodePath});
-      await hgRepositoryAsync.addAll([nodePath]);
+      await hgRepository.addAll([nodePath]);
     },
   );
 }
@@ -35,10 +35,10 @@ export function revertPath(nodePath: ?NuclideUri): Promise<void> {
     nodePath,
     'revert',
     'Reverted',
-    async (hgRepositoryAsync: HgRepositoryClientAsync) => {
+    async (hgRepository: HgRepositoryClient) => {
       invariant(nodePath);
       track('hg-repository-revert', {nodePath});
-      await hgRepositoryAsync.checkoutHead(nodePath);
+      await hgRepository.checkoutHead(nodePath);
     },
   );
 }
@@ -47,7 +47,7 @@ async function hgActionToPath(
   nodePath: ?NuclideUri,
   actionName: string,
   actionDoneMessage: string,
-  action: (hgRepositoryAsync: HgRepositoryClientAsync) => Promise<void>,
+  action: (hgRepository: HgRepositoryClient) => Promise<void>,
 ): Promise<void> {
   if (nodePath == null || nodePath.length === 0) {
     atom.notifications.addError(`Cannot ${actionName} an empty path!`);
@@ -58,9 +58,9 @@ async function hgActionToPath(
     atom.notifications.addError(`Cannot ${actionName} a non-mercurial repository path`);
     return;
   }
-  const hgRepositoryAsync: HgRepositoryClientAsync = (repository : any).async;
+  const hgRepository: HgRepositoryClient = (repository : any);
   try {
-    await action(hgRepositoryAsync);
+    await action(hgRepository);
     atom.notifications.addSuccess(
       `${actionDoneMessage} \`${repository.relativize(nodePath)}\` successfully.`,
     );

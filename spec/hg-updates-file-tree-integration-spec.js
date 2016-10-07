@@ -11,7 +11,6 @@
 
 import type {
   HgRepositoryClient,
-  HgRepositoryClientAsync,
 } from '../pkg/nuclide-hg-repository-client';
 import type {RevisionInfo} from '../pkg/nuclide-hg-rpc/lib/HgService';
 import type {TestContext} from './utils/remotable-tests';
@@ -170,9 +169,8 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       const laterRevision = await hgRepository.getBaseRevision();
 
       // Make 'new' bookmark at laterRevision and 'other' bookmark at firstRevision
-      const hgRepositoryAsync: HgRepositoryClientAsync = hgRepository.async;
-      await hgRepositoryAsync.createBookmark('new', laterRevision.hash);
-      await hgRepositoryAsync.createBookmark('other', firstRevision.hash);
+      await hgRepository.createBookmark('new', laterRevision.hash);
+      await hgRepository.createBookmark('other', firstRevision.hash);
       // update to that bookmark
       await hgRepository.checkoutReference('other', false);
 
