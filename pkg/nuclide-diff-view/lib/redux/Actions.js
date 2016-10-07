@@ -46,38 +46,17 @@ import type {
 import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
 import type {Subject} from 'rxjs';
 
-import {
-  ADD_REPOSITORY,
-  CLOSE_VIEW,
-  COMMIT,
-  DIFF_FILE,
-  OPEN_VIEW,
-  PUBLISH_DIFF,
-  REMOVE_REPOSITORY,
-  SET_COMMIT_MODE,
-  SET_COMPARE_ID,
-  SET_CWD_API,
-  SET_SHOULD_REBASE_ON_AMEND,
-  SET_VIEW_MODE,
-  UPDATE_ACTIVE_REPOSITORY,
-  UPDATE_COMMIT_STATE,
-  UPDATE_DIRTY_FILES,
-  UPDATE_FILE_DIFF,
-  UPDATE_HEAD_TO_FORKBASE_REVISIONS,
-  UPDATE_LOADING_SELECTED_FILES,
-  UPDATE_PUBLISH_STATE,
-  UPDATE_SELECTED_FILES,
-} from './ActionTypes';
+import * as ActionTypes from './ActionTypes';
 
 export function openView(): OpenViewAction {
   return {
-    type: OPEN_VIEW,
+    type: ActionTypes.OPEN_VIEW,
   };
 }
 
 export function closeView(): CloseViewAction {
   return {
-    type: CLOSE_VIEW,
+    type: ActionTypes.CLOSE_VIEW,
   };
 }
 
@@ -85,7 +64,7 @@ export function addRepository(
   repository: HgRepositoryClient,
 ): AddRepositoryAction {
   return {
-    type: ADD_REPOSITORY,
+    type: ActionTypes.ADD_REPOSITORY,
     payload: {
       repository,
     },
@@ -97,7 +76,7 @@ export function setCompareId(
   compareId: ?number,
 ): SetCompareIdAction {
   return {
-    type: SET_COMPARE_ID,
+    type: ActionTypes.SET_COMPARE_ID,
     payload: {
       repository,
       compareId,
@@ -110,7 +89,7 @@ export function updateDirtyFiles(
   dirtyFiles: Map<NuclideUri, FileChangeStatusValue>,
 ): UpdateDirtyFilesAction {
   return {
-    type: UPDATE_DIRTY_FILES,
+    type: ActionTypes.UPDATE_DIRTY_FILES,
     payload: {
       repository,
       dirtyFiles,
@@ -122,7 +101,7 @@ export function removeRepository(
   repository: HgRepositoryClient,
 ): RemoveRepositoryAction {
   return {
-    type: REMOVE_REPOSITORY,
+    type: ActionTypes.REMOVE_REPOSITORY,
     payload: {
       repository,
     },
@@ -134,7 +113,7 @@ export function updateSelectedFiles(
   selectedFiles: Map<NuclideUri, FileChangeStatusValue>,
 ): UpdateSelectedFilesAction {
   return {
-    type: UPDATE_SELECTED_FILES,
+    type: ActionTypes.UPDATE_SELECTED_FILES,
     payload: {
       repository,
       selectedFiles,
@@ -147,7 +126,7 @@ export function updateLoadingSelectedFiles(
   isLoading: boolean,
 ): UpadateLoadingSelectedFilesAction {
   return {
-    type: UPDATE_LOADING_SELECTED_FILES,
+    type: ActionTypes.UPDATE_LOADING_SELECTED_FILES,
     payload: {
       repository,
       isLoading,
@@ -161,7 +140,7 @@ export function updateHeadToForkBaseRevisionsState(
   revisionStatuses: RevisionStatuses,
 ): UpdateHeadToForkBaseRevisions {
   return {
-    type: UPDATE_HEAD_TO_FORKBASE_REVISIONS,
+    type: ActionTypes.UPDATE_HEAD_TO_FORKBASE_REVISIONS,
     payload: {
       repository,
       headToForkBaseRevisions,
@@ -174,7 +153,7 @@ export function updateActiveRepository(
   hgRepository: ?HgRepositoryClient,
 ): UpdateActiveRepositoryAction {
   return {
-    type: UPDATE_ACTIVE_REPOSITORY,
+    type: ActionTypes.UPDATE_ACTIVE_REPOSITORY,
     payload: {
       hgRepository,
     },
@@ -185,7 +164,7 @@ export function setCwdApi(
   cwdApi: ?CwdApi,
 ): SetCwdApiAction {
   return {
-    type: SET_CWD_API,
+    type: ActionTypes.SET_CWD_API,
     payload: {
       cwdApi,
     },
@@ -197,7 +176,7 @@ export function diffFile(
   onChangeModified: () => mixed,
 ): DiffFileAction {
   return {
-    type: DIFF_FILE,
+    type: ActionTypes.DIFF_FILE,
     payload: {
       filePath,
       onChangeModified,
@@ -209,7 +188,7 @@ export function updateFileDiff(
   fileDiff: FileDiffState,
 ): UpdateFileDiffAction {
   return {
-    type: UPDATE_FILE_DIFF,
+    type: ActionTypes.UPDATE_FILE_DIFF,
     payload: {
       fileDiff,
     },
@@ -220,7 +199,7 @@ export function setViewMode(
   viewMode: DiffModeType,
 ): SetViewModeAction {
   return {
-    type: SET_VIEW_MODE,
+    type: ActionTypes.SET_VIEW_MODE,
     payload: {
       viewMode,
     },
@@ -231,7 +210,7 @@ export function setCommitMode(
   commitMode: CommitModeType,
 ): SetCommitModeAction {
   return {
-    type: SET_COMMIT_MODE,
+    type: ActionTypes.SET_COMMIT_MODE,
     payload: {
       commitMode,
     },
@@ -242,7 +221,7 @@ export function updateCommitState(
   commitState: CommitState,
 ): UpdateCommitStateAction {
   return {
-    type: UPDATE_COMMIT_STATE,
+    type: ActionTypes.UPDATE_COMMIT_STATE,
     payload: {
       commit: commitState,
     },
@@ -253,7 +232,7 @@ export function updatePublishState(
   publish: PublishState,
 ): UpdatePublishStateAction {
   return {
-    type: UPDATE_PUBLISH_STATE,
+    type: ActionTypes.UPDATE_PUBLISH_STATE,
     payload: {
       publish,
     },
@@ -264,7 +243,7 @@ export function setShouldRebaseOnAmend(
   shouldRebaseOnAmend: boolean,
 ): SetShouldReabaseOnAmendAction {
   return {
-    type: SET_SHOULD_REBASE_ON_AMEND,
+    type: ActionTypes.SET_SHOULD_REBASE_ON_AMEND,
     payload: {
       shouldRebaseOnAmend,
     },
@@ -276,7 +255,7 @@ export function commit(
   message: string,
 ): CommitAction {
   return {
-    type: COMMIT,
+    type: ActionTypes.COMMIT,
     payload: {
       message,
       repository,
@@ -292,7 +271,7 @@ export function publishDiff(
   publishUpdates: Subject<any>,
 ): PublishDiffAction {
   return {
-    type: PUBLISH_DIFF,
+    type: ActionTypes.PUBLISH_DIFF,
     payload: {
       isPrepareMode,
       lintExcuse,
