@@ -29,6 +29,12 @@ export default function refactorReducers(
     state = {type: 'closed'};
   }
 
+  if (action.error) {
+    // We handle errors in epics, display an appropriate message, and then send an ordinary action
+    // to update the state appropriately.
+    return state;
+  }
+
   switch (action.type) {
     case 'open':
       return open(state, action);

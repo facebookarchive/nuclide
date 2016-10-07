@@ -31,13 +31,20 @@ export function getEpics(
         .ofType('open')
         .switchMap(async () => {
           const editor = atom.workspace.getActiveTextEditor();
-          // TODO maybe include the editor in the open action, or just don't open if there isn't an
-          // editor.
-          invariant(editor != null);
+          if (editor == null) {
+            return {
+              type: 'got-refactorings',
+              error: true,
+            };
+          }
           const cursor = editor.getLastCursor();
           const provider = providers.getProviderForEditor(editor);
-          // TODO do something sane if there is no provider
-          invariant(provider != null);
+          if (provider == null) {
+            return {
+              type: 'got-refactorings',
+              error: true,
+            };
+          }
           const availableRefactorings =
             await provider.refactoringsAtPoint(editor, cursor.getBufferPosition());
           return {
@@ -70,6 +77,21 @@ export function getEpics(
           const fileEdits = response.edits.get(path);
           invariant(fileEdits != null);
           applyTextEdits(path, ...fileEdits);
+          return {
+            type: 'close',
+          };
+        });
+    },
+
+    function handleErrors(
+      actions: ActionsObservable<RefactorAction>,
+    ): Observable<RefactorAction> {
+      return actions
+        // This is weird but Flow won't accept `action.error` or even `Boolean(action.error)`
+        .filter(action => (action.error ? true : false))
+        // TODO provide some feedback to the user that an error has occurred
+        .map(action => {
+          invariant(action.error);
           return {
             type: 'close',
           };
