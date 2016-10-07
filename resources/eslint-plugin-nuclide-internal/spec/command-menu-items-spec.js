@@ -35,6 +35,14 @@ ruleTester.run('command-menu-items', rule, {
       code: 'atom.commands.add("atom-workspace", "good_command2", null)',
       filename: path.join(__dirname, 'test.js'),
     },
+    {
+      code: 'api.registerFactory({toggleCommand: "good_command"})',
+      filename: path.join(__dirname, 'test.js'),
+    },
+    {
+      code: 'registerFactory({toggleCommand: "bad_command"})',
+      filename: path.join(__dirname, 'test.js'),
+    },
   ],
   invalid: [
     {
@@ -77,6 +85,14 @@ ruleTester.run('command-menu-items', rule, {
       filename: path.join(__dirname, 'test.js'),
       errors: [{
         error: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command2)',
+        type: 'Literal',
+      }],
+    },
+    {
+      code: 'api.registerFactory({toggleCommand: "bad_command"})',
+      filename: path.join(__dirname, 'test.js'),
+      errors: [{
+        error: rule.MISSING_MENU_ITEM_ERROR + ' (bad_command)',
         type: 'Literal',
       }],
     },
