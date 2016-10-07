@@ -25,6 +25,7 @@ export class WebSocketServer {
   start(port: number): Promise<WS> {
     return new Promise((resolve, reject) => {
       const server = new WS.Server({port});
+      this._webSocketServer = server;
       server.on('error', error => {
         reject(error);
       });

@@ -34,11 +34,12 @@ export class IwdpDebuggerInstance extends DebuggerInstance {
     this._rpcService = rpcService;
     this._disposables = new UniversalDisposable(
       this._server,
-      this._rpcService.getServerMessageObservable().refCount().subscribe(
+      rpcService.getServerMessageObservable().refCount().subscribe(
         this._sendServerMessageToChromeUi.bind(this),
         this._onServerError.bind(this),
         this._onServerEnd.bind(this),
       ),
+      rpcService,
     );
   }
 
@@ -46,8 +47,8 @@ export class IwdpDebuggerInstance extends DebuggerInstance {
     const wsPort = 2000;
     this._server
       .start(wsPort)
-      .catch(() => logError('Server encountered error'))
-      .then(webSocket => this._handleWebSocketServerConnection(webSocket));
+      .then(webSocket => this._handleWebSocketServerConnection(webSocket))
+      .catch(error => logError(`Server encountered error: ${error}`));
     const result = 'ws=localhost:' + String(wsPort) + '/';
     log('Listening for connection at: ' + result);
     return result;
@@ -62,7 +63,7 @@ export class IwdpDebuggerInstance extends DebuggerInstance {
   }
 
   _onSocketMessage(message: string): void {
-    log('Recieved webSocket message: ' + message);
+    log(`Received webSocket message: ${message}`);
     const rpcService = this._rpcService;
     if (rpcService != null) {
       rpcService.sendCommand(message);
@@ -79,6 +80,7 @@ export class IwdpDebuggerInstance extends DebuggerInstance {
   }
 
   _sendServerMessageToChromeUi(message: string): void {
+    log(`Sending message to client: ${message}`);
     const webSocket = this._webSocket;
     if (webSocket != null) {
       webSocket.send(message);
