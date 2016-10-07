@@ -193,15 +193,31 @@ export function addRepositoryEpic(
   });
 }
 
+function observeViewOpen(
+  actions: ActionsObservable<Action>,
+): Observable<boolean> {
+  return Observable.merge(
+    actions.ofType(ActionTypes.OPEN_VIEW).map(() => true),
+    actions.ofType(ActionTypes.CLOSE_VIEW).map(() => false),
+  ).startWith(false).cache(1);
+}
+
 // A repository is considered activated only when the Diff View is open.
 // This allows to not bother with loading revision info and changes when not needed.
-export function activateRepositoryEpic(
+export function updateActiveRepositoryEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(ActionTypes.ACTIVATE_REPOSITORY).flatMap(action => {
-    invariant(action.type === ActionTypes.ACTIVATE_REPOSITORY);
-    const {repository} = action.payload;
+  return Observable.combineLatest(
+    actions.ofType(ActionTypes.UPDATE_ACTIVE_REPOSITORY),
+    observeViewOpen(actions),
+  ).switchMap(([action, isViewOpen]) => {
+    invariant(action.type === ActionTypes.UPDATE_ACTIVE_REPOSITORY);
+    const {hgRepository: repository} = action.payload;
+
+    if (!isViewOpen || repository == null) {
+      return Observable.empty();
+    }
 
     const statusChanges = observeStatusChanges(repository);
     const revisionChanges = repository.observeRevisionChanges();
@@ -239,13 +255,7 @@ export function activateRepositoryEpic(
     return Observable.merge(
       selectedFileUpdates,
       revisionStateUpdates,
-    ).takeUntil(Observable.merge(
-      observableFromSubscribeFunction(repository.onDidDestroy.bind(repository)),
-      actions.filter(a =>
-        a.type === ActionTypes.DEACTIVATE_REPOSITORY &&
-          a.payload.repository === repository,
-      ),
-    ));
+    );
   });
 }
 
@@ -281,40 +291,15 @@ export function setCwdApiEpic(
   });
 }
 
-export function openViewEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(ActionTypes.OPEN_VIEW).switchMap(action => {
-    invariant(action.type === ActionTypes.OPEN_VIEW);
-
-    return actions.ofType(ActionTypes.UPDATE_ACTIVE_REPOSITORY)
-      .map(a => {
-        invariant(a.type === ActionTypes.UPDATE_ACTIVE_REPOSITORY);
-        return a.payload.hgRepository;
-      })
-      .startWith(null, store.getState().activeRepository)
-      .pairwise()
-      .switchMap(([oldRepository, newRepository]: [?HgRepositoryClient, ?HgRepositoryClient]) => {
-        return Observable.concat(
-          oldRepository != null
-            ? Observable.of(Actions.deactivateRepository(oldRepository))
-            : Observable.empty(),
-
-          newRepository != null
-            ? Observable.of(Actions.activateRepository(newRepository))
-            : Observable.empty(),
-        );
-      }).takeUntil(actions.ofType(ActionTypes.CLOSE_VIEW));
-  });
-}
-
 export function diffFileEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
   return actions.ofType(ActionTypes.DIFF_FILE).switchMap(action => {
     invariant(action.type === ActionTypes.DIFF_FILE);
+
+    const clearActiveDiffObservable =
+      Observable.of(Actions.updateFileDiff(getEmptyFileDiffState()));
 
     const {filePath, onChangeModified} = action.payload;
     const repository = repositoryForPath(filePath);
@@ -324,7 +309,7 @@ export function diffFileEpic(
       notifyInternalError(
         new Error(`Diff View only supports Mercurial repositories - found: ${repositoryType}`),
       );
-      return Observable.empty();
+      return clearActiveDiffObservable;
     }
 
     const hgRepository = ((repository: any): HgRepositoryClient);
@@ -335,12 +320,12 @@ export function diffFileEpic(
       if (cwdApi == null) {
         return Observable.throw('Cannot have a null CwdApi');
       }
-      return notifyCwdMismatch(
+      return clearActiveDiffObservable.concat(notifyCwdMismatch(
         hgRepository,
         cwdApi,
         filePath,
         onChangeModified,
-      );
+      ));
     }
 
     const revisionChanges = hgRepository.observeRevisionChanges();
@@ -348,7 +333,7 @@ export function diffFileEpic(
     const compareIdChanges = getCompareIdChanges(actions, store, hgRepository);
 
     const deactiveRepsitory = actions.filter(a =>
-      a.type === ActionTypes.DEACTIVATE_REPOSITORY && a.payload.repository === hgRepository);
+      a.type === ActionTypes.UPDATE_ACTIVE_REPOSITORY && a.payload.hgRepository === hgRepository);
 
     const buffer = bufferForUri(filePath);
     const bufferReloads = observableFromSubscribeFunction(buffer.onDidReload.bind(buffer))
@@ -398,7 +383,7 @@ export function diffFileEpic(
           observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer)),
           deactiveRepsitory,
         ))
-        .concat(Observable.of(Actions.updateFileDiff(getEmptyFileDiffState()))),
+        .concat(clearActiveDiffObservable),
     );
   });
 }

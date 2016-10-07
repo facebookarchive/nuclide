@@ -154,21 +154,6 @@ export type RemoveRepositoryAction = {
   },
 };
 
-
-export type ActivateRepositoryAction = {
-  type: 'ACTIVATE_REPOSITORY',
-  payload: {
-    repository: HgRepositoryClient,
-  },
-};
-
-export type DeactivateRepositoryAction = {
-  type: 'DEACTIVATE_REPOSITORY',
-  payload: {
-    repository: HgRepositoryClient,
-  },
-};
-
 export type SetCompareIdAction = {
   type: 'SET_COMPARE_ID',
   payload: {
@@ -285,11 +270,9 @@ export type PublishDiffAction = {
   },
 };
 
-export type Action = ActivateRepositoryAction
-  | AddRepositoryAction
+export type Action = AddRepositoryAction
   | CloseViewAction
   | CommitAction
-  | DeactivateRepositoryAction
   | DiffFileAction
   | OpenViewAction
   | PublishDiffAction
@@ -308,9 +291,8 @@ export type Action = ActivateRepositoryAction
   | UpdateSelectedFilesAction
 ;
 
-export type RepositoryAction = ActivateRepositoryAction
+export type RepositoryAction =
   | AddRepositoryAction
-  | DeactivateRepositoryAction
   | RemoveRepositoryAction
   | SetCompareIdAction
   | UpdateDirtyFilesAction

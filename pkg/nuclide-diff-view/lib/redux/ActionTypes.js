@@ -9,11 +9,9 @@
  * the root directory of this source tree.
  */
 
-export const ACTIVATE_REPOSITORY = 'ACTIVATE_REPOSITORY';
 export const ADD_REPOSITORY = 'ADD_REPOSITORY';
 export const CLOSE_VIEW = 'CLOSE_VIEW';
 export const COMMIT = 'COMMIT';
-export const DEACTIVATE_REPOSITORY = 'DEACTIVATE_REPOSITORY';
 export const DIFF_FILE = 'DIFF_FILE';
 export const OPEN_VIEW = 'OPEN_VIEW';
 export const PUBLISH_DIFF = 'PUBLISH_DIFF';

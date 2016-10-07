@@ -11,13 +11,11 @@
 
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
-  ActivateRepositoryAction,
   AddRepositoryAction,
   CloseViewAction,
   CommitAction,
   CommitModeType,
   CommitState,
-  DeactivateRepositoryAction,
   DiffFileAction,
   DiffModeType,
   FileChangeStatusValue,
@@ -48,11 +46,9 @@ import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi
 import type {Subject} from 'rxjs';
 
 import {
-  ACTIVATE_REPOSITORY,
   ADD_REPOSITORY,
   CLOSE_VIEW,
   COMMIT,
-  DEACTIVATE_REPOSITORY,
   DIFF_FILE,
   OPEN_VIEW,
   PUBLISH_DIFF,
@@ -125,28 +121,6 @@ export function removeRepository(
 ): RemoveRepositoryAction {
   return {
     type: REMOVE_REPOSITORY,
-    payload: {
-      repository,
-    },
-  };
-}
-
-export function activateRepository(
-  repository: HgRepositoryClient,
-): ActivateRepositoryAction {
-  return {
-    type: ACTIVATE_REPOSITORY,
-    payload: {
-      repository,
-    },
-  };
-}
-
-export function deactivateRepository(
-  repository: HgRepositoryClient,
-): DeactivateRepositoryAction {
-  return {
-    type: DEACTIVATE_REPOSITORY,
     payload: {
       repository,
     },
