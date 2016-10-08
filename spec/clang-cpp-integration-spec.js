@@ -122,6 +122,8 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
     });
 
     runs(() => {
+      atom.views.getView(textEditor).focus();
+
       expect(names.length).toBe(4);
       expect(getOutlineData(names[0])).toEqual({
         name: 'TestClass<T>',

@@ -25,9 +25,10 @@ import * as PanelLocationIds from './PanelLocationIds';
 import {Panel} from './ui/Panel';
 import nullthrows from 'nullthrows';
 import {React} from 'react-for-atom';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Scheduler} from 'rxjs';
 
 type State = {
+  showDropAreas: boolean,
   visible: boolean,
 };
 
@@ -35,9 +36,10 @@ type State = {
  * Manages views for an Atom panel.
  */
 export class PanelLocation extends SimpleModel<State> {
-  _disposables: IDisposable;
+  _disposables: UniversalDisposable;
   _paneContainer: atom$PaneContainer;
   _panes: BehaviorSubject<Set<atom$Pane>>;
+  _panel: atom$Panel;
   _panelRenderer: PanelRenderer;
   _position: 'top' | 'right' | 'bottom' | 'left';
   _size: ?number;
@@ -56,6 +58,7 @@ export class PanelLocation extends SimpleModel<State> {
     this._panes = new BehaviorSubject(new Set());
     this._size = serializedData.size || null;
     this.state = {
+      showDropAreas: false,
       visible: serializedData.visible === true,
     };
   }
@@ -82,7 +85,8 @@ export class PanelLocation extends SimpleModel<State> {
           )
         ));
         return Observable.merge(...itemChanges);
-      });
+      })
+      .share();
 
     this._disposables = new UniversalDisposable(
       this._panelRenderer,
@@ -110,14 +114,44 @@ export class PanelLocation extends SimpleModel<State> {
         paneElement.insertBefore(tabBarView, paneElement.firstChild);
       }),
 
-      // Render whenever the state changes. Note that state is shared between this instance and the
-      // pane container, so we have to watch it as well.
-      Observable.merge(
-        paneItemChanges,
+      // If you add an item to a panel (e.g. by drag & drop), make the panel visible.
+      paneItemChanges
+        .startWith(null)
+        .map(() => this._paneContainer.getPaneItems().length)
+        .pairwise()
+        .subscribe(([prev, next]) => {
+          // If there are more items now than there were before, show the panel.
+          if (next > prev) {
+            this.setState({visible: true});
+          }
+        }),
+
+      // Show the drop areas while dragging.
+      Observable.fromEvent(document, 'dragstart')
+        .filter(event => isTab(event.target))
+        .switchMap(() => (
+          Observable.concat(
+            Observable.of(true),
+            Observable.merge(
+              // Use the capturing phase in case the event propagation is stopped.
+              Observable.fromEvent(document, 'dragend', {capture: true}),
+              Observable.fromEvent(document, 'drop', {capture: true}),
+            )
+              .take(1)
+              .mapTo(false),
+          )
+        ))
+        // Manipulating the DOM in the dragstart handler will fire the dragend event so we defer it.
+        // See https://groups.google.com/a/chromium.org/forum/?fromgroups=#!msg/chromium-bugs/YHs3orFC8Dc/ryT25b7J-NwJ
+        .observeOn(Scheduler.async)
+        .subscribe(showDropAreas => { this.setState({showDropAreas}); }),
+
+        // Render whenever the state changes. Note that state is shared between this instance and
+        // the pane container, so we have to watch it as well.
         // $FlowIssue: We need to teach flow about Symbol.observable.
-        Observable.from(this).map(state => state.visible).distinctUntilChanged(),
-      )
-        .subscribe(() => { this._render(); }),
+        Observable.merge(paneItemChanges, Observable.from(this)).subscribe(() => {
+          this._render();
+        }),
 
     );
   }
@@ -125,7 +159,9 @@ export class PanelLocation extends SimpleModel<State> {
   _render() {
     // Only show the panel if it's supposed to be visible *and* there are items to show in it
     // (even if `core.destroyEmptyPanes` is `false`).
-    const shouldBeVisible = this.state.visible && this._paneContainer.getPaneItems().length > 0;
+    const shouldBeVisible =
+      this.state.showDropAreas
+      || (this.state.visible && this._paneContainer.getPaneItems().length > 0);
     this._panelRenderer.render({visible: shouldBeVisible});
   }
 
@@ -245,3 +281,12 @@ const locationsToPosition = new Map([
   [PanelLocationIds.BOTTOM_PANEL, 'bottom'],
   [PanelLocationIds.LEFT_PANEL, 'left'],
 ]);
+
+function isTab(element: HTMLElement): boolean {
+  let el = element;
+  while (el != null) {
+    if (el.getAttribute('is') === 'tabs-tab') { return true; }
+    el = el.parentElement;
+  }
+  return false;
+}

@@ -113,6 +113,8 @@ describe('Clang Integration Test (objc)', () => {
     });
 
     runs(() => {
+      atom.views.getView(textEditor).focus();
+
       function getData(node) {
         return {
           name: node.innerText,
