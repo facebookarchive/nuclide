@@ -172,7 +172,7 @@ export class PanelLocation extends SimpleModel<State> {
     // $FlowIssue: We need to teach flow about Symbol.observable.
     const props = Observable.from(this).map(state => ({
       initialSize: this._size,
-      item: this._paneContainer,
+      paneContainer: this._paneContainer,
       position: this._position,
       onResize: this._handlePanelResize,
     }));

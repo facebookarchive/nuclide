@@ -13,10 +13,12 @@ import {PanelComponent} from '../../../nuclide-ui/PanelComponent';
 import {View} from '../../../nuclide-ui/View';
 import {React} from 'react-for-atom';
 
+type Position = 'top' | 'right' | 'bottom' | 'left';
+
 type Props = {
   initialSize: ?number,
-  item: ?Object,
-  position: 'top' | 'right' | 'bottom' | 'left',
+  paneContainer: atom$PaneContainer,
+  position: Position,
   onResize: (size: number) => void,
 };
 
@@ -28,35 +30,40 @@ export class Panel extends React.Component {
       return this.props.initialSize;
     }
 
-    const {item} = this.props;
-    if (item == null) { return null; }
-    switch (this.props.position) {
-      case 'top':
-      case 'bottom':
-        return typeof item.getPreferredInitialHeight === 'function'
-          ? item.getPreferredInitialHeight()
-          : null;
-      case 'left':
-      case 'right':
-        return typeof item.getPreferredInitialWidth === 'function'
-          ? item.getPreferredInitialWidth()
-          : null;
-      default:
-        throw new Error(`Invalid position: ${this.props.position}`);
+    const activePaneItem = this.props.paneContainer.getActivePaneItem();
+    if (activePaneItem != null) {
+      return getPreferredInitialSize(activePaneItem, this.props.position);
     }
   }
 
   render(): ?React.Element<any> {
-    if (this.props.item == null) { return null; }
+    if (this.props.paneContainer == null) { return null; }
     return (
       <PanelComponent
         initialLength={this._getInitialSize() || undefined}
         noScroll={true}
         onResize={this.props.onResize}
         dock={this.props.position}>
-        <View item={this.props.item} />
+        <View item={this.props.paneContainer} />
       </PanelComponent>
     );
   }
 
+}
+
+function getPreferredInitialSize(item: Object, position: Position): ?number {
+  switch (position) {
+    case 'top':
+    case 'bottom':
+      return typeof item.getPreferredInitialHeight === 'function'
+        ? item.getPreferredInitialHeight()
+        : null;
+    case 'left':
+    case 'right':
+      return typeof item.getPreferredInitialWidth === 'function'
+        ? item.getPreferredInitialWidth()
+        : null;
+    default:
+      throw new Error(`Invalid position: ${position}`);
+  }
 }
