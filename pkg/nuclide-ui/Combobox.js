@@ -192,6 +192,16 @@ export class Combobox extends React.Component {
         },
       ).filter(
         option => option.matchIndex !== -1,
+      ).sort(
+        (a, b) => {
+          // We prefer lower match indices
+          const indexDiff = a.matchIndex - b.matchIndex;
+          if (indexDiff !== 0) {
+            return indexDiff;
+          }
+          // Then we prefer smaller options, thus close to the input
+          return a.value.length - b.value.length;
+        },
       ).slice(0, this.props.maxOptionCount);
   }
 
