@@ -1147,6 +1147,10 @@ export class HgRepositoryClient {
     return this._service.abortRebase();
   }
 
+  rebase(destination: string, source?: string): Observable<ProcessMessage> {
+    return this._service.rebase(destination, source).refCount();
+  }
+
   _getStatusOption(options: ?HgStatusCommandOptions): ?HgStatusOptionValue {
     if (options == null) {
       return null;

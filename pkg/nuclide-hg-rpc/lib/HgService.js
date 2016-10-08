@@ -22,6 +22,7 @@ import {
   HgStatusOption,
   MergeConflictStatus,
   StatusCodeId,
+  HEAD_REVISION_EXPRESSION,
 } from './hg-constants';
 import {Subject} from 'rxjs';
 import {parseHgBlameOutput} from './hg-blame-output-parser';
@@ -1006,6 +1007,18 @@ export class HgService {
 
   abortRebase(): Promise<void> {
     return this._runSimpleInWorkingDirectory('rebase', ['--abort']);
+  }
+
+  rebase(
+    destination: string,
+    source?: string = HEAD_REVISION_EXPRESSION,
+  ): ConnectableObservable<ProcessMessage> {
+    const args = ['rebase', '-s', source, '-d', destination];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+
+    return hgObserveExecution(args, execOptions).publish();
   }
 
   /**
