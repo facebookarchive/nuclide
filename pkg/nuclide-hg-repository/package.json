@@ -6,6 +6,20 @@
   "description": "Provides support for Mercurial source control repositories",
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
+    "configMetadata": {
+      "pathComponents": [
+        "Source Control",
+        "Mercurial"
+      ]
+    },
+    "config": {
+      "enableDiffStats": {
+        "title": "Enables `git-diff` and `status-bar` diff stats to display added, changed or removed lines in the editor gutter and status bar",
+        "type": "boolean",
+        "default": false,
+        "description": "Comes at the cost of more calls to the repository, potentially slowing things down in a large repository."
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

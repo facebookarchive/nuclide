@@ -27,7 +27,7 @@ import type {
 import type {ProcessMessage} from '../../commons-node/process-rpc-types';
 import type {LRUCache} from 'lru-cache';
 
-import {CompositeDisposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import RevisionsCache from './RevisionsCache';
 import {
   StatusCodeId,
@@ -41,6 +41,8 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
 import {Observable} from 'rxjs';
 import LRU from 'lru-cache';
+import featureConfig from '../../commons-atom/featureConfig';
+import {observeBufferOpen, observeBufferCloseOrRename} from '../../commons-atom/buffer';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
 
@@ -122,6 +124,8 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
+import invariant from 'assert';
 
 export class HgRepositoryClient {
   _path: string;
@@ -131,8 +135,6 @@ export class HgRepositoryClient {
   _originURL: ?string;
   _service: HgService;
   _emitter: Emitter;
-  // A map from a key (in most cases, a file path), to a related Disposable.
-  _editorSubscriptions: Map<NuclideUri, IDisposable>;
   _subscriptions: UniversalDisposable;
   _hgStatusCache: {[filePath: NuclideUri]: StatusCodeIdValue};
   // Map of directory path to the number of modified files within that directory.
@@ -167,7 +169,6 @@ export class HgRepositoryClient {
     this._fileContentsAtRevisionIds = new LRU({max: 20});
 
     this._emitter = new Emitter();
-    this._editorSubscriptions = new Map();
     this._subscriptions = new UniversalDisposable(
       this._emitter,
       this._service,
@@ -185,44 +186,38 @@ export class HgRepositoryClient {
       STATUS_DEBOUNCE_DELAY_MS,
     );
 
-    this._subscriptions.add(atom.workspace.observeTextEditors(editor => {
-      const filePath = editor.getPath();
-      if (!filePath) {
-        // TODO: observe for when this editor's path changes.
-        return;
-      }
-      if (!this._isPathRelevant(filePath)) {
-        return;
-      }
-      // If this editor has been previously active, we will have already
-      // initialized diff info and registered listeners on it.
-      if (this._editorSubscriptions.has(filePath)) {
-        return;
-      }
-      // TODO (t8227570) Get initial diff stats for this editor, and refresh
-      // this information whenever the content of the editor changes.
-      const editorSubscriptions = new CompositeDisposable();
-      this._editorSubscriptions.set(filePath, editorSubscriptions);
-      editorSubscriptions.add(editor.onDidSave(event => {
-        this._updateDiffInfo([event.path]);
-      }));
-      // Remove the file from the diff stats cache when the editor is closed.
-      // This isn't strictly necessary, but keeps the cache as small as possible.
-      // There are cases where this removal may result in removing information
-      // that is still relevant: e.g.
-      //   * if the user very quickly closes and reopens a file; or
-      //   * if the file is open in multiple editors, and one of those is closed.
-      // These are probably edge cases, though, and the information will be
-      // refetched the next time the file is edited.
-      editorSubscriptions.add(editor.onDidDestroy(() => {
-        this._hgDiffCacheFilesToClear.add(filePath);
-        const editorSubsciption = this._editorSubscriptions.get(filePath);
-        if (editorSubsciption != null) {
-          editorSubsciption.dispose();
-          this._editorSubscriptions.delete(filePath);
+    const diffStatsSubscription = featureConfig
+      .observeAsStream('nuclide-hg-repository.enableDiffStats')
+      .switchMap((enableDiffStats: boolean) => {
+        if (!enableDiffStats) {
+          // TODO(most): rewrite fetching structures avoiding side effects
+          this._hgDiffCache = {};
+          this._emitter.emit('did-change-statuses');
+          return Observable.empty();
         }
-      }));
-    }));
+
+        return observeBufferOpen().filter(buffer => {
+          const filePath = buffer.getPath();
+          return filePath != null && filePath.length !== 0 && this._isPathRelevant(filePath);
+        })
+        .flatMap(buffer => {
+          const filePath = buffer.getPath();
+          invariant(filePath, 'already filtered empty and non-relevant file paths');
+          return observableFromSubscribeFunction(buffer.onDidSave.bind(buffer))
+            .map(() => filePath)
+            .startWith(filePath)
+            .takeUntil(
+              observeBufferCloseOrRename(buffer)
+              .do(() => {
+                // TODO(most): rewrite to be simpler and avoid side effects.
+                // Remove the file from the diff stats cache when the buffer is closed.
+                this._hgDiffCacheFilesToClear.add(filePath);
+              }),
+            );
+        });
+      }).subscribe(filePath => this._updateDiffInfo([filePath]));
+
+    this._subscriptions.add(diffStatsSubscription);
 
     // Regardless of how frequently the service sends file change updates,
     // Only one batched status update can be running at any point of time.
@@ -274,10 +269,6 @@ export class HgRepositoryClient {
       return;
     }
     this._isDestroyed = true;
-    for (const editorSubsciption of this._editorSubscriptions.values()) {
-      editorSubsciption.dispose();
-    }
-    this._editorSubscriptions.clear();
     this._emitter.emit('did-destroy');
     this._subscriptions.dispose();
     this._revisionIdToFileChanges.reset();

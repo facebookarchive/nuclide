@@ -510,6 +510,7 @@ describe('HgRepositoryClient', () => {
       // to it. Thus, the path returned from editor.getPath() (which is what is
       // used in HgRepository) would fail a real 'contains' method. So we override
       // this to the expected path.
+      atom.config.set('nuclide.nuclide-hg-repository.enableDiffStats', true);
       const workingDirectoryClone = new Directory(tempDir);
       spyOn(workingDirectory, 'contains').andCallFake(filePath => {
         const prefix = '/private';
