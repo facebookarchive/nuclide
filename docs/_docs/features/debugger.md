@@ -6,7 +6,7 @@ permalink: /docs/features/debugger/
 ---
 
 One of the key features of Nuclide is its multiple-language debugging support. The Nuclide Debugger
-is provided within the familiar [Chrome DevTools](https://developer.chrome.com/devtools) interface.
+is provided with the familiar [Chrome DevTools](https://developer.chrome.com/devtools) interface.
 
 The Nuclide Debugger provides many capabilities allowing you to have a productive debug loop,
 including inspection, watches, setting breakpoints, step in/over/out, etc.
@@ -16,38 +16,34 @@ including inspection, watches, setting breakpoints, step in/over/out, etc.
 
 ## Instantiation
 
-In general, the Debugger is instantiated via `Cmd-Shift-Y` (`Ctrl-Shift-Y` on Linux). You can also
+In general, the Debugger is instantiated via `Cmd-Shift-A` (`Ctrl-Shift-A` on Linux). You can also
 toggle the Debugger through the [Command Palette](/docs/editor/basics/#command-palette) and the
-Nuclide toolbar.
+[Nuclide toolbar](/docs/features/toolbar/#buttons)'s **Toggle Debugger** icon.
 
 ## Basics
 
 Nuclide supports debugging for multiple [languages](#language-specific-debugging) and
-[platforms](#platform-specific-debugging).
-However, there are some basic debugging concepts that apply across all languages. Debugging a Node
+[platforms](#platform-specific-debugging). However, there are some basic debugging concepts that apply across all languages. Debugging a Node
 project will be used to help illustrate the points described here.
 
 ### Debuggable Target
 
 Specific details are provided for each [language](#language-specific-debugging) or
-[platform](#platform-specific-debugging), but, in general, to begin debugging code in Nuclide, you
+[platform](#platform-specific-debugging), but in general, to begin debugging code in Nuclide, you
 need to either launch a debug process from within Nuclide (e.g., iOS from the Buck toolbar) or
 attach to a currently running process (e.g., `node`) for debugging.
 
 ***Example***
 
 If you have a Node project running (e.g, via `npm start` or `node yourfile.js`), press
-`Cmd-Shift-Y` (`Ctrl-Shift-Y` on Linux) to toggle the Debugger. Then, attach Nuclide to the
-relevant `node` process. The number in "()" is the Process ID (PID).
+`Cmd-Shift-A` (`Ctrl-Shift-A` on Linux) to toggle the Debugger; this opens the Debugger Selection window. Then, attach Nuclide to the
+relevant `node` process.
 
-![](/static/images/docs/feature-debugger-basics-target-process.png)
+![](/static/images/docs/feature-debugger-basics-attach-target-process.png)
 
 > If you have multiple processes running with the same name, you can use something similar to
-> `ps aux | grep <process-name>` or Apple's Activity Monitor to find the PID that
-> matches with the process in the process list in Nuclide.
-
-> If you stop your process and restart it again, make sure you click the **Refresh List** button since
-> the PID will have changed.
+> `ps aux | grep <process-name>` or Apple's Activity Monitor to find the Process ID (PID) that
+> matches with the process in the list in Nuclide's Debugger Selection window.
 
 Once you attach to a process, you will see a confirmation of the attachment in the command-line for
 that process.
@@ -58,12 +54,9 @@ Starting debugger agent.
 Debugger listening on port 5858
 ```
 
-After attaching to the process by clicking **Attach**, you should see the Debugger UI showing you
-both the main debugger tab, titled **Sources**, and the **Console** tab.
+After attaching to the process by clicking **Attach**, you should see the Debugger Controls to the right of the [Editing Area](/docs/editor/basics/#editing-area).
 
-> Although the main debugging tab is currently titled **Sources**, this is a misnomer since we don't display source code in this tab. We may retitle this to **Debugger** in the future.  
-
-![](/static/images/docs/feature-debugger-basics-target-after-attach.png)
+![](/static/images/docs/feature-debugger-basics-after-attaching.png)
 
 ### Breakpoints
 
@@ -81,29 +74,19 @@ are able to perform debugging tasks such as [step](#basics__stepping) and
 
 Here we have breakpoints on lines 13 and 18 of `read.js`.
 
-![](/static/images/docs/feature-debugger-basics-breakpoints-gutter.png)
+![](/static/images/docs/feature-debugger-basics-breakpoints-set.png)
 
 In the [main debugging](#basics__debugger) tab of the Debugger, you will see what
 breakpoints are set as well.
 
-![](/static/images/docs/feature-debugger-basics-breakpoints-main-debugging-tab.png)
+![](/static/images/docs/feature-debugger-basics-breakpoints-debugger-controls.png)
 
 ### Debugger
 
-The main debugging tab is the information control center for the Nuclide Debugger.
+The Debugger Controls are the information control center for the Nuclide Debugger.
 
-![](/static/images/docs/feature-debugger-basics-main-debugging-tab.png)
-
-In additions to specialized areas described below, it also provides mouse-clickable execution,
+In addition to the specialized areas described below, it also provides mouse-clickable execution,
 [stepping](#basics__stepping), and breakpoint options.
-
-***Watches***
-
-The **Watch** area is for you to keep track of the values of global and local variables. Press **+** to
-add a variable. Right-clicking in the area will give you context-aware menu options to add and delete
-Watch expressions.
-
-![](/static/images/docs/feature-debugger-basics-debugger-watch-menu.png)
 
 ***Call Stack***
 
@@ -112,18 +95,12 @@ top function is where you currently are, the function below the top is the one t
 current function, and so on. Clicking on any function in the call stack will change the scope
 information so that it is relevant to that function.
 
-***Scope***
-
-The **Scope** area shows you scope information based upon the current point in the running of the
-code. For example, local scope will show you the name and values of local variables.
-
 ***Breakpoints***
 
 The **Breakpoints** area shows you all the places in your project where you have breakpoints set. If
-any are highlighted, that means that you have now hit that breakpoint while running the code. Right-clicking in the area will give you context-aware menu options to add, remove, activate, and deactivate
-breakpoints.
+any are highlighted, that means that you have now hit that breakpoint while running the code. Clicking on a breakpoint in this list will move your cursor to its line of code in the Editing Area.  You can deactivate/reactive breakpoints using the green checkmarks next to each one.  Right-clicking in the area will give you the option to quickly remove all breakpoints at once.
 
-![](/static/images/docs/feature-debugger-basics-debugger-breakpoint-menu.png)
+<img src="/static/images/docs/feature-debugger-basics-breakpoint-menu.png" align="middle" style="width: 250px" />
 
 ***Unresolved Breakpoints***
 
@@ -131,18 +108,26 @@ These are breakpoints that cannot be resolved by the debugger. The most likely c
 unresolved breakpoint is putting a breakpoint on code that is not part of the project on which the
 debugger process is attached.
 
+***Locals***
+
+The **Locals** area shows you information about local variables based upon the current point in the running of the code.
+
+***Watch Expressions***
+
+The **Watch Expressions** area is for you to keep track of the values of global and local variables. To add a new value to track, enter it in the `add new watch expression` text box. To remove a watched variable, click the `x` icon of the variable you wish to delete.
+
 ***Detaching***
 
-![](/static/images/docs/feature-debugger-basics-debugger-detach.png)
+![](/static/images/docs/feature-debugger-basics-detach.png)
 
-You can detach the debugger from the current process by clicking on the red "X" in the upper-right corner.
+You can detach the debugger from the current process by clicking the white "X" with the red background in the upper-right corner.
 This will stop the entire debugging session for that process.
 
 ***Web Inspector***
 
-![](/static/images/docs/feature-debugger-basics-debugger-web-inspector.png)
+![](/static/images/docs/feature-debugger-basics-webinspector.png)
 
-You can open the Web Inspector by clicking on the Settings icon (i.e., gear symbol). This will bring up
+You can open the Web Inspector by clicking on the Web Inspector icon (i.e., gear symbol). This will bring up
 a [Chrome Developer Tools window](https://developers.google.com/web/tools/chrome-devtools/) for the
 current debugging frame.
 
@@ -151,7 +136,15 @@ current debugging frame.
 Here we have breakpoints set on line 10 of `read.js` and line 3 of `math.js`. We set watches on two global variables (`num1` and `num2`) in the `read.js` file. The call stack shows that we are
 currently in the `processSum` method and started from the `onData` method.
 
-![](/static/images/docs/feature-debugger-basics-debugger-example.png)
+![](/static/images/docs/feature-debugger-basics-debugger-ex.png)
+
+***Debugger UI Toggle***
+
+![](/static/images/docs/feature-debugger-basics-ui-toggle.png)
+
+The Debugger UI Toggle allows you to switch between the new Debugger Controls and the old Debugger UI.
+
+![](/static/images/docs/feature-debugger-basics-main-debugging-tab.png)
 
 ### Stepping
 
@@ -159,27 +152,27 @@ It is essential for any debugger to have a mechanism to step into, over, and out
 Nuclide Debugger provides stepping functionality with shortcuts within the Debugger itself and
 via the [keyboard](/docs/editor/keyboard-shortcuts/#debugger).
 
-![](/static/images/docs/feature-debugger-basics-stepping-icons.png)
+<img src="/static/images/docs/feature-debuggin-basics-stepping-controls.png" align="middle" style="width: 400px" />
 
 ***Example***
 
 Assume we have a breakpoint set at line 22 of `read.js` (before the call to `processSum()`).
 
-![](/static/images/docs/feature-debugger-basics-stepping-example-start.png)
+![](/static/images/docs/feature-debugger-basics-stepping-line22.png)
 
 The following shows what happens when you step into the function. The code execution steps into the actual
 `processSum()` function itself.
 
-![](/static/images/docs/feature-debugger-basics-stepping-example-step-in.png)
+![](/static/images/docs/feature-debugger-basics-stepping-stepin-ex.png)
 
 The following shows what happens when you step over the function. `processSum()` is fully executed,
 and we move on to closing the `readline` object.
 
-![](/static/images/docs/feature-debugger-basics-stepping-example-step-over.png)
+![](/static/images/docs/feature-debugger-basics-stepping-stepover-ex.png)
 
 You can even step into a function that exists in another module.
 
-![](/static/images/docs/feature-debugger-basics-stepping-example-start-other-module.png)
+![](/static/images/docs/feature-debugger-basics-stepping-other-module-ex.png)
 
 ### Evaluation
 
@@ -202,7 +195,7 @@ Here we have a breakpoint before printing out the sum of the two global variable
 This shows printing out the values of the global and local variables, writing simple expressions,
 calling a function in another module (`math.add()`), and inspecting objects.
 
-![](/static/images/docs/feature-debugger-basics-evaluation-example.png)
+![](/static/images/docs/feature-debugger-basics-evaluation-ex.png)
 
 ## Language Specific Debugging
 
