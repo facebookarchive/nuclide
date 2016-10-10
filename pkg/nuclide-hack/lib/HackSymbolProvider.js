@@ -16,7 +16,10 @@ import type {
 import type {
   FileResult,
 } from '../../nuclide-quick-open/lib/rpc-types';
-import type {HackSearchPosition} from '../../nuclide-hack-rpc/lib/HackService';
+import type {
+  HackSearchPosition,
+  HackLanguageService,
+} from '../../nuclide-hack-rpc/lib/HackService';
 
 import {isFileInHackProject, getHackLanguageForUri} from './HackLanguage';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -91,7 +94,7 @@ export const HackSymbolProvider: Provider = {
       return [];
     }
 
-    const service = await getHackLanguageForUri(directory.getPath());
+    const service: ?HackLanguageService = await getHackLanguageForUri(directory.getPath());
     if (service == null) {
       return [];
     }

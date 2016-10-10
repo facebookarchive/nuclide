@@ -20,15 +20,15 @@ export type CodeHighlightConfig = {
   priority: number,
 };
 
-export class CodeHighlightProvider {
+export class CodeHighlightProvider<T: LanguageService> {
   selector: string;
   inclusionPriority: number;
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     selector: string,
     priority: number,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.selector = selector;
     this.inclusionPriority = priority;
@@ -50,7 +50,7 @@ export class CodeHighlightProvider {
   static register(
     selector: string,
     config: CodeHighlightConfig,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
       'nuclide-code-highlight.provider',

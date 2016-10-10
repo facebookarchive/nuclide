@@ -21,15 +21,15 @@ export type FindReferencesConfig = {
   version: string,
 };
 
-export class FindReferencesProvider {
+export class FindReferencesProvider<T: LanguageService> {
   grammarScopes: Array<string>;
   name: string;
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     grammarScopes: Array<string>,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
     this.grammarScopes = grammarScopes;
@@ -40,7 +40,7 @@ export class FindReferencesProvider {
     name: string,
     grammarScopes: Array<string>,
     config: FindReferencesConfig,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
       'nuclide-find-references.provider',

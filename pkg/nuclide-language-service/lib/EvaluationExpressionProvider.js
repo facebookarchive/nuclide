@@ -19,17 +19,17 @@ export type EvaluationExpressionConfig = {
   version: string,
 };
 
-export class EvaluationExpressionProvider {
+export class EvaluationExpressionProvider<T: LanguageService> {
   selector: string;
   name: string;
   identifierRegexp: RegExp;
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     selector: string,
     identifierRegexp: RegExp,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
     this.selector = selector;
@@ -42,7 +42,7 @@ export class EvaluationExpressionProvider {
     selector: string,
     identifierRegexp: RegExp,
     config: EvaluationExpressionConfig,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
       'nuclide-evaluation-expression.provider',

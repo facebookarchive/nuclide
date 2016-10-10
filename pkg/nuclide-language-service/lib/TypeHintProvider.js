@@ -21,17 +21,17 @@ export type TypeHintConfig = {
   priority: number,
 };
 
-export class TypeHintProvider {
+export class TypeHintProvider<T: LanguageService> {
   providerName: string;
   selector: string;
   inclusionPriority: number;
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     selector: string,
     priority: number,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.providerName = name;
     this.selector = selector;
@@ -43,7 +43,7 @@ export class TypeHintProvider {
     name: string,
     selector: string,
     config: TypeHintConfig,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
       'nuclide-type-hint.provider',

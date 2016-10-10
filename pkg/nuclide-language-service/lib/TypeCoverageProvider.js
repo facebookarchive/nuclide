@@ -22,17 +22,17 @@ export type TypeCoverageConfig = {
 };
 
 // Provides Diagnostics for un-typed regions of Hack code.
-export class TypeCoverageProvider {
+export class TypeCoverageProvider<T: LanguageService> {
   displayName: string
   priority: number;
   grammarScopes: string
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     selector: string,
     priority: number,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.displayName = name;
     this.priority = priority;
@@ -44,7 +44,7 @@ export class TypeCoverageProvider {
     name: string,
     selector: string,
     config: TypeCoverageConfig,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
       'nuclide-type-coverage',

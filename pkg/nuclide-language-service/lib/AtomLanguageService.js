@@ -38,7 +38,6 @@ import {AutocompleteProvider} from './AutocompleteProvider';
 import {registerDiagnostics} from './DiagnosticsProvider';
 
 export type AtomLanguageServiceConfig = {
-  languageServiceFactory: (connection: ?ServerConnection) => Promise<LanguageService>,
   name: string,
   grammars: Array<string>,
   identifierRegexp: RegExp,
@@ -54,15 +53,18 @@ export type AtomLanguageServiceConfig = {
   diagnostics?: DiagnosticsConfig,
 };
 
-export class AtomLanguageService {
+export class AtomLanguageService<T: LanguageService> {
   _config: AtomLanguageServiceConfig;
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
   _subscriptions: UniversalDisposable;
 
-  constructor(config: AtomLanguageServiceConfig) {
+  constructor(
+    languageServiceFactory: (connection: ?ServerConnection) => Promise<T>,
+    config: AtomLanguageServiceConfig,
+  ) {
     this._config = config;
     this._subscriptions = new UniversalDisposable();
-    this._connectionToLanguageService = new ConnectionCache(config.languageServiceFactory);
+    this._connectionToLanguageService = new ConnectionCache(languageServiceFactory);
     this._subscriptions.add(this._connectionToLanguageService);
   }
 
@@ -147,7 +149,7 @@ export class AtomLanguageService {
     }
   }
 
-  async getLanguageServiceForUri(fileUri: ?NuclideUri): Promise<?LanguageService> {
+  async getLanguageServiceForUri(fileUri: ?NuclideUri): Promise<?T> {
     const result = this._connectionToLanguageService.getForUri(fileUri);
     return (result == null) ? null : await result;
   }
@@ -157,7 +159,7 @@ export class AtomLanguageService {
     return (languageService != null) && await languageService.isFileInProject(fileUri);
   }
 
-  observeLanguageServices(): Observable<LanguageService> {
+  observeLanguageServices(): Observable<T> {
     return this._connectionToLanguageService.observeValues()
       .switchMap(languageService => {
         return Observable.fromPromise(languageService);

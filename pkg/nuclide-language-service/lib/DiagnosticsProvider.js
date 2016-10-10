@@ -48,11 +48,11 @@ export type ObservableDiagnosticsConfig = {
 
 const diagnosticService = 'nuclide-diagnostics-provider';
 
-export function registerDiagnostics(
+export function registerDiagnostics<T: LanguageService>(
   name: string,
   grammars: Array<string>,
   config: DiagnosticsConfig,
-  connectionToLanguageService: ConnectionCache<LanguageService>,
+  connectionToLanguageService: ConnectionCache<T>,
 ): IDisposable {
   const result = new UniversalDisposable();
   let provider;
@@ -81,7 +81,7 @@ export function registerDiagnostics(
   return result;
 }
 
-export class FileDiagnosticsProvider {
+export class FileDiagnosticsProvider<T: LanguageService> {
   name: string;
   _busySignalProvider: BusySignalProviderBase;
   _providerBase: DiagnosticsProviderBase;
@@ -93,13 +93,13 @@ export class FileDiagnosticsProvider {
    * ever reported diagnostics.
    */
   _projectRootToFilePaths: Map<NuclideUri, Set<NuclideUri>>;
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     grammars: Array<string>,
     shouldRunOnTheFly: boolean,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
     busySignalProvider: BusySignalProviderBase = new BusySignalProviderBase(),
     ProviderBase: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
   ) {
@@ -271,12 +271,12 @@ export class FileDiagnosticsProvider {
   }
 }
 
-export class ObservableDiagnosticProvider {
+export class ObservableDiagnosticProvider<T: LanguageService> {
   updates: Observable<DiagnosticProviderUpdate>;
   invalidations: Observable<InvalidationMessage>;
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
 
-  constructor(connectionToLanguageService: ConnectionCache<LanguageService>) {
+  constructor(connectionToLanguageService: ConnectionCache<T>) {
     this._connectionToLanguageService = connectionToLanguageService;
     this.updates = this._connectionToLanguageService.observeValues()
       .switchMap(languageService => {

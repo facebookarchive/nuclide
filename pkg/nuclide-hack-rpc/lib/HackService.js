@@ -36,7 +36,6 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
-import type {LanguageService} from './LanguageService';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -102,14 +101,14 @@ export async function initialize(
   useIdeConnection: boolean,
   logLevel: LogLevel,
   fileNotifier: FileNotifier,
-): Promise<LanguageService> {
+): Promise<HackLanguageService> {
   setHackCommand(hackCommand);
   logger.setLogLevel(logLevel);
   await getHackCommand();
   return new HackLanguageService(useIdeConnection, fileNotifier);
 }
 
-class HackLanguageService {
+export class HackLanguageService {
   _useIdeConnection: boolean;
   _fileCache: FileCache;
 

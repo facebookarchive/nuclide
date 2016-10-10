@@ -25,17 +25,17 @@ export type DefinitionConfig = {
   priority: number,
 };
 
-export class DefinitionProvider {
+export class DefinitionProvider<T: LanguageService> {
   name: string;
   priority: number;
   grammarScopes: Array<string>;
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     grammars: Array<string>,
     priority: number,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name + 'DefinitionProvider';
     this.priority = priority;
@@ -47,7 +47,7 @@ export class DefinitionProvider {
     name: string,
     grammars: Array<string>,
     config: DefinitionConfig,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
       'nuclide-definition-provider',

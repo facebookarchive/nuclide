@@ -10,7 +10,6 @@
 
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HackSearchPosition} from './HackService';
 import type {Completion} from './rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -55,11 +54,6 @@ export interface LanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?FindReferencesReturn>,
-
-  executeQuery(
-    rootDirectory: NuclideUri,
-    queryString: string,
-  ): Promise<Array<HackSearchPosition>>,
 
   getCoverage(
     filePath: NuclideUri,

@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
-import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
+import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
@@ -25,7 +25,9 @@ import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 
 const HACK_SERVICE_NAME = 'HackService';
 
-async function connectionToHackService(connection: ?ServerConnection): Promise<LanguageService> {
+async function connectionToHackService(
+  connection: ?ServerConnection,
+): Promise<HackLanguageService> {
   const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
   const config = getConfig();
   const useIdeConnection = config.useIdeConnection;
@@ -50,7 +52,6 @@ const diagnosticsConfig = getConfig().useIdeConnection
   };
 
 const atomConfig: AtomLanguageServiceConfig = {
-  languageServiceFactory: connectionToHackService,
   name: 'Hack',
   grammars: HACK_GRAMMARS,
   identifierRegexp: /\$\w+/gi,
@@ -95,16 +96,17 @@ const atomConfig: AtomLanguageServiceConfig = {
 };
 
 // This needs to be initialized eagerly for Hack Symbol search and the HHVM Toolbar.
-export let hackLanguageService = new AtomLanguageService(atomConfig);
+export let hackLanguageService: AtomLanguageService<HackLanguageService>
+  = new AtomLanguageService(connectionToHackService, atomConfig);
 
 export function resetHackLanguageService(): void {
   hackLanguageService.dispose();
   // Reset to an unactivated LanguageService when the Hack package is deactivated.
   // TODO: Sort out the dependencies between the HHVM toolbar, quick-open and Hack.
-  hackLanguageService = new AtomLanguageService(atomConfig);
+  hackLanguageService = new AtomLanguageService(connectionToHackService, atomConfig);
 }
 
-export function getHackLanguageForUri(uri: ?NuclideUri): Promise<?LanguageService> {
+export function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguageService> {
   return hackLanguageService.getLanguageServiceForUri(uri);
 }
 

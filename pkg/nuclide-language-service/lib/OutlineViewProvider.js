@@ -20,17 +20,17 @@ export type OutlineViewConfig = {
   priority: number,
 };
 
-export class OutlineViewProvider {
+export class OutlineViewProvider<T: LanguageService> {
   grammarScopes: string;
   priority: number;
   name: string;
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     selector: string,
     priority: number,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
     this.grammarScopes = selector;
@@ -42,7 +42,7 @@ export class OutlineViewProvider {
     name: string,
     selector: string,
     config: OutlineViewConfig,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
       'nuclide-outline-view',

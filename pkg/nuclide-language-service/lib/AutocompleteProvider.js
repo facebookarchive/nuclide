@@ -22,19 +22,19 @@ export type AutocompleteConfig = {
   version: string,
 };
 
-export class AutocompleteProvider {
+export class AutocompleteProvider<T: LanguageService> {
   selector: string;
   inclusionPriority: number;
   suggestionPriority: number;
   excludeLowerPriority: boolean;
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     selector: string,
     inclusionPriority: number,
     suggestionPriority: number,
     excludeLowerPriority: boolean,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.selector = selector;
     this.inclusionPriority = inclusionPriority;
@@ -46,7 +46,7 @@ export class AutocompleteProvider {
   static register(
     grammars: Array<string>,
     config: AutocompleteConfig,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
       'autocomplete.provider',

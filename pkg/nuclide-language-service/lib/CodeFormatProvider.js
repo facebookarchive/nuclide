@@ -20,17 +20,17 @@ export type CodeFormatConfig = {
   priority: number,
 };
 
-export class CodeFormatProvider {
+export class CodeFormatProvider<T: LanguageService> {
   name: string;
   selector: string;
   inclusionPriority: number;
-  _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     selector: string,
     priority: number,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
     this.selector = selector;
@@ -42,7 +42,7 @@ export class CodeFormatProvider {
     name: string,
     selector: string,
     config: CodeFormatConfig,
-    connectionToLanguageService: ConnectionCache<LanguageService>,
+    connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
       'nuclide-code-format.provider',

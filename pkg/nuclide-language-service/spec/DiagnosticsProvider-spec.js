@@ -11,12 +11,13 @@
 
 import typeof * as DiagnosticsProviderFile from '../lib/DiagnosticsProvider';
 import type {FileDiagnosticsProvider} from '../lib/DiagnosticsProvider';
+import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
 
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 
 describe('DiagnosticsProvider', () => {
 
-  let diagnosticsProvider: FileDiagnosticsProvider = (null: any);
+  let diagnosticsProvider: FileDiagnosticsProvider<LanguageService> = (null: any);
 
   beforeEach(() => {
     class FakeProviderBase { }
