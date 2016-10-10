@@ -56,11 +56,6 @@
         "0.1.0": "provideBusySignal"
       }
     },
-    "nuclide-code-format.provider": {
-      "versions": {
-        "0.0.0": "createCodeFormatProvider"
-      }
-    },
     "nuclide-find-references.provider": {
       "versions": {
         "0.0.0": "createFindReferencesProvider"

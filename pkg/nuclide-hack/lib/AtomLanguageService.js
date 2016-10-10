@@ -17,6 +17,7 @@ import type {OutlineViewConfig} from './OutlineViewProvider';
 import type {TypeCoverageConfig} from './TypeCoverageProvider';
 import type {DefinitionConfig} from './DefinitionProvider';
 import type {TypeHintConfig} from './TypeHintProvider';
+import type {CodeFormatConfig} from './CodeFormatProvider';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
@@ -26,6 +27,7 @@ import {OutlineViewProvider} from './OutlineViewProvider';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {DefinitionProvider} from './DefinitionProvider';
 import {TypeHintProvider} from './TypeHintProvider';
+import {CodeFormatProvider} from './CodeFormatProvider';
 
 export type AtomLanguageServiceConfig = {
   languageServiceFactory: (connection: ?ServerConnection) => Promise<LanguageService>,
@@ -36,6 +38,7 @@ export type AtomLanguageServiceConfig = {
   coverage?: TypeCoverageConfig,
   definition?: DefinitionConfig,
   typeHint?: TypeHintConfig,
+  codeFormat?: CodeFormatConfig,
 };
 
 export class AtomLanguageService {
@@ -86,6 +89,12 @@ export class AtomLanguageService {
     if (typeHintConfig != null) {
       this._subscriptions.add(TypeHintProvider.register(
         this._config.name, this._selector(), typeHintConfig, this._connectionToLanguageService));
+    }
+
+    const codeFormatConfig = this._config.codeFormat;
+    if (codeFormatConfig != null) {
+      this._subscriptions.add(CodeFormatProvider.register(
+        this._config.name, this._selector(), codeFormatConfig, this._connectionToLanguageService));
     }
   }
 

@@ -27,7 +27,6 @@ import {
 } from './HackDiagnosticsProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import CodeFormatProvider from './CodeFormatProvider';
 import {hackLanguageService, resetHackLanguageService} from './HackLanguage';
 import {getConfig} from './config';
 
@@ -72,20 +71,6 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
       request: atom$AutocompleteRequest,
     ): Promise<?Array<atom$AutocompleteSuggestion>> {
       return autocompleteProvider.getAutocompleteSuggestions(request);
-    },
-  };
-}
-
-/** Provider for code format service. */
-export function createCodeFormatProvider(): any {
-  const codeFormatProvider = new CodeFormatProvider();
-
-  return {
-    selector: HACK_GRAMMARS_STRING,
-    inclusionPriority: 1,
-
-    formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
-      return codeFormatProvider.formatCode(editor, range);
     },
   };
 }
