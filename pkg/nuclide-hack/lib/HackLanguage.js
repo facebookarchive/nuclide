@@ -13,12 +13,14 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {AtomLanguageServiceConfig} from './AtomLanguageService';
+import type {
+  AtomLanguageServiceConfig,
+} from '../../nuclide-language-service/lib/AtomLanguageService';
 
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig} from './config';
 import {getNotifierByConnection} from '../../nuclide-open-files';
-import {AtomLanguageService} from './AtomLanguageService';
+import {AtomLanguageService} from '../../nuclide-language-service';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 
 const HACK_SERVICE_NAME = 'HackService';
