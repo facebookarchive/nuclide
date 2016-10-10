@@ -10,7 +10,7 @@
  */
 
 import type {Observer} from 'rxjs';
-import type {ProcessExitMessage, ProcessMessage} from './process-rpc-types';
+import type {ProcessExitMessage, ProcessMessage, ProcessInfo} from './process-rpc-types';
 
 import child_process from 'child_process';
 import {splitStream, takeWhileInclusive} from './observable';
@@ -198,6 +198,7 @@ export function scriptSafeSpawnAndObserveOutput(
   command: string,
   args?: Array<string> = [],
   options?: Object = {},
+  killTreeOnComplete?: boolean = false,
 ): Observable<{stderr?: string, stdout?: string}> {
   return Observable.create((observer: Observer<any>) => {
     let childProcess = scriptSafeSpawn(command, args, options);
@@ -223,7 +224,7 @@ export function scriptSafeSpawnAndObserveOutput(
 
     return () => {
       if (childProcess) {
-        childProcess.kill();
+        killProcess(childProcess, killTreeOnComplete);
       }
     };
   });
@@ -244,6 +245,7 @@ export function scriptSafeSpawnAndObserveOutput(
 function _createProcessStream(
   createProcess: () => child_process$ChildProcess,
   throwOnError: boolean,
+  killTreeOnComplete: boolean,
 ): Observable<child_process$ChildProcess> {
   return Observable.defer(() => {
     const process = createProcess();
@@ -276,17 +278,65 @@ function _createProcessStream(
       })
       .finally(() => {
         if (!finished) {
-          logError(`Ending process stream. Killing process ${process.pid}`);
-          process.kill();
+          killProcess(process, killTreeOnComplete);
         }
       });
   });
 }
 
+export function killProcess(
+  childProcess: child_process$ChildProcess,
+  killTree: boolean,
+): void {
+  logError(`Ending process stream. Killing process ${childProcess.pid}`);
+  _killProcess(childProcess, killTree).then(
+    () => {},
+    error => {
+      logError(`Killing process ${childProcess.pid} failed`, error);
+    },
+  );
+}
+
+async function _killProcess(
+  childProcess: child_process$ChildProcess,
+  killTree: boolean,
+): Promise<void> {
+  if (!killTree) {
+    childProcess.kill();
+    return;
+  }
+  if (/^win/.test(process.platform)) {
+    await killWindowsProcessTree(childProcess.pid);
+  } else {
+    await killUnixProcessTree(childProcess);
+  }
+}
+
+function killWindowsProcessTree(pid: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    child_process.exec(`taskkill /pid ${pid} /T /F`, error => {
+      if (error == null) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+async function killUnixProcessTree(childProcess: child_process$ChildProcess): Promise<void> {
+  const children = await getChildrenOfProcess(childProcess.pid);
+  for (const child of children) {
+    process.kill(child.pid, 'SIGTERM');
+  }
+  childProcess.kill();
+}
+
 export function createProcessStream(
   createProcess: () => child_process$ChildProcess,
+  killTreeOnComplete?: boolean = false,
 ): Observable<child_process$ChildProcess> {
-  return _createProcessStream(createProcess, true);
+  return _createProcessStream(createProcess, true, killTreeOnComplete);
 }
 
 function observeProcessExitMessage(
@@ -307,18 +357,20 @@ function observeProcessExitMessage(
  */
 export function observeProcessExit(
   createProcess: () => child_process$ChildProcess,
+  killTreeOnComplete?: boolean = false,
 ): Observable<ProcessExitMessage> {
-  return _createProcessStream(createProcess, false)
+  return _createProcessStream(createProcess, false, killTreeOnComplete)
     .flatMap(observeProcessExitMessage);
 }
 
 export function getOutputStream(
   process: child_process$ChildProcess,
+  killTreeOnComplete?: boolean = false,
 ): Observable<ProcessMessage> {
   return Observable.defer(() => {
     // We need to start listening for the exit event immediately, but defer emitting it until the
     // output streams end.
-    const exit = observeProcessExit(() => process).publishReplay();
+    const exit = observeProcessExit(() => process, killTreeOnComplete).publishReplay();
     const exitSub = exit.connect();
 
     const error = Observable.fromEvent(process, 'error')
@@ -344,8 +396,9 @@ export function getOutputStream(
  */
 export function observeProcess(
   createProcess: () => child_process$ChildProcess,
+  killTreeOnComplete?: boolean = false,
 ): Observable<ProcessMessage> {
-  return _createProcessStream(createProcess, false).flatMap(getOutputStream);
+  return _createProcessStream(createProcess, false, killTreeOnComplete).flatMap(getOutputStream);
 }
 
 /**
@@ -446,8 +499,9 @@ export function runCommand(
   command: string,
   args?: Array<string> = [],
   options?: Object = {},
+  killTreeOnComplete?: boolean = false,
 ): Observable<string> {
-  return observeProcess(() => safeSpawn(command, args, options))
+  return observeProcess(() => safeSpawn(command, args, options), killTreeOnComplete)
     .reduce(
       (acc, event) => {
         switch (event.kind) {
@@ -532,4 +586,47 @@ export function exitEventToMessage(event: ProcessExitMessage): string {
     invariant(event.signal != null);
     return `signal ${event.signal}`;
   }
+}
+
+export async function getChildrenOfProcess(
+  processId: number,
+): Promise<Array<ProcessInfo>> {
+  const processes = await psTree();
+
+  return processes.filter(processInfo =>
+    processInfo.parentPid === processId);
+}
+
+export async function psTree(): Promise<Array<ProcessInfo>> {
+  let psPromise;
+  const isWindows = /^win/.test(process.platform);
+  if (isWindows) {
+    // See also: https://github.com/nodejs/node-v0.x-archive/issues/2318
+    psPromise = checkOutput('wmic.exe',
+      ['PROCESS', 'GET', 'ParentProcessId,ProcessId,Name']);
+  } else {
+    psPromise = checkOutput('ps',
+      ['-A', '-o', 'ppid,pid,comm']);
+  }
+  const {stdout} = await psPromise;
+  return parsePsOutput(stdout);
+}
+
+export function parsePsOutput(
+  psOutput: string,
+): Array<ProcessInfo> {
+  // Remove the first header line.
+  const lines = psOutput.split(/\n|\r\n/).slice(1);
+
+  return lines.map(line => {
+    const columns = line.trim().split(/\s+/);
+    const [parentPid, pid] = columns;
+    const command = columns.slice(2).join(' ');
+
+    return {
+      command,
+      parentPid: parseInt(parentPid, 10),
+      pid: parseInt(pid, 10),
+    };
+  });
 }

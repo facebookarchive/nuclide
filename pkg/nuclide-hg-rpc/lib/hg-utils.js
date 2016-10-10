@@ -59,6 +59,7 @@ export function hgObserveExecution(
   const {command, args, options} = getHgExecParams(args_, options_);
   return observeProcess(
     () => safeSpawn(command, args, options),
+    true, // kill process tree on complete.
   );
 }
 
@@ -71,7 +72,7 @@ export function hgRunCommand(
   options_: HgExecOptions,
 ): Observable<string> {
   const {command, args, options} = getHgExecParams(args_, options_);
-  return runCommand(command, args, options);
+  return runCommand(command, args, options, true /* kill process tree on complete */);
 }
 
 function logAndThrowHgError(

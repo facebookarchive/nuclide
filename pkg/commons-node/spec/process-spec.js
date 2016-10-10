@@ -21,8 +21,10 @@ import {
   checkOutput,
   createProcessStream,
   getOutputStream,
+  killProcess,
   observeProcess,
   observeProcessExit,
+  parsePsOutput,
   runCommand,
   safeSpawn,
   scriptSafeSpawn,
@@ -118,6 +120,58 @@ describe('commons-node/process', () => {
         expect(child).not.toBe(null);
         expect(child.listeners('error').length).toBeGreaterThan(0);
       });
+    });
+  });
+
+  describe('process.killProcess', () => {
+    it('should only kill the process when `killTree` is false', () => {
+      waitsForPromise(async () => {
+        const proc = {
+          kill: jasmine.createSpy(),
+        };
+        spyOn(console, 'error'); // suppress error printing
+        await killProcess((proc: any), false);
+        expect(proc.kill).toHaveBeenCalled();
+      });
+    });
+
+    it('should kill the process tree on windows when `killTree` is true', () => {
+      waitsForPromise(async () => {
+        const proc = {
+          pid: 123,
+        };
+        spyOn(console, 'error'); // suppress error printing
+        Object.defineProperty(process, 'platform', {value: 'win32'});
+        spyOn(child_process, 'exec');
+        await killProcess((proc: any), true);
+        expect(child_process.exec.calls.length).toBe(1);
+        expect(child_process.exec.calls[0].args[0]).toBe(`taskkill /pid ${proc.pid} /T /F`);
+      });
+    });
+  });
+
+  describe('process.parsePsOutput', () => {
+    it('parse `ps` unix output', () => {
+      const unixPsOut = ' PPID   PID COMM\n'
+        + '    0     1  /sbin/launchd\n'
+        + '    1    42  command with spaces';
+      const processList = parsePsOutput(unixPsOut);
+      expect(processList).toEqual([
+        {command: '/sbin/launchd', pid: 1, parentPid: 0},
+        {command: 'command with spaces', pid: 42, parentPid: 1},
+      ]);
+    });
+
+    it('parse `ps` windows output', () => {
+      const windowsProcessOut = 'ParentProcessId   ProcessId   Name\r\n'
+        + '           0                4     System Process\r\n'
+        + '           4                228   smss.exe';
+
+      const processList = parsePsOutput(windowsProcessOut);
+      expect(processList).toEqual([
+        {command: 'System Process', pid: 4, parentPid: 0},
+        {command: 'smss.exe', pid: 228, parentPid: 4},
+      ]);
     });
   });
 

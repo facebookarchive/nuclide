@@ -27,3 +27,9 @@ export type ProcessMessage = {
   kind: 'error',
   error: Object,
 };
+
+export type ProcessInfo = {
+  parentPid: number,
+  pid: number,
+  command: string,
+};
