@@ -12,19 +12,41 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
+import type {CodeHighlightConfig} from './CodeHighlightProvider';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {CodeHighlightProvider} from './CodeHighlightProvider';
+
+export type AtomLanguageServiceConfig = {
+  languageServiceFactory: (connection: ?ServerConnection) => Promise<LanguageService>,
+  grammars: Array<string>,
+  highlights?: CodeHighlightConfig,
+};
 
 export class AtomLanguageService {
+  _config: AtomLanguageServiceConfig;
   _connectionToLanguageService: ConnectionCache<LanguageService>;
   _subscriptions: UniversalDisposable;
 
-  constructor(languageServiceFactory: (connection: ?ServerConnection) => Promise<LanguageService>) {
+  constructor(config: AtomLanguageServiceConfig) {
+    this._config = config;
     this._subscriptions = new UniversalDisposable();
-    this._connectionToLanguageService = new ConnectionCache(languageServiceFactory);
+    this._connectionToLanguageService = new ConnectionCache(config.languageServiceFactory);
     this._subscriptions.add(this._connectionToLanguageService);
+  }
+
+  _selector(): string {
+    return this._config.grammars.join(', ');
+  }
+
+  activate(): void {
+    const highlightsConfig = this._config.highlights;
+    if (highlightsConfig != null) {
+      this._subscriptions.add(CodeHighlightProvider.register(
+        this._selector(), highlightsConfig, this._connectionToLanguageService));
+    }
   }
 
   async getLanguageServiceForUri(fileUri: ?NuclideUri): Promise<?LanguageService> {

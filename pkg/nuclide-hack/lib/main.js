@@ -20,7 +20,6 @@ import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
 import type {Provider} from '../../nuclide-quick-open/lib/types';
 
 import {HackSymbolProvider} from './HackSymbolProvider';
-import CodeHighlightProvider from './CodeHighlightProvider';
 import {CompositeDisposable} from 'atom';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
@@ -37,7 +36,7 @@ import {
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import CodeFormatProvider from './CodeFormatProvider';
-import {hackLanguageService} from './HackLanguage';
+import {hackLanguageService, resetHackLanguageService} from './HackLanguage';
 import {getConfig} from './config';
 
 
@@ -55,7 +54,7 @@ const diagnosticService = 'nuclide-diagnostics-provider';
 
 export function activate() {
   subscriptions = new CompositeDisposable();
-  subscriptions.add(hackLanguageService);
+  hackLanguageService.activate();
 
   if (getConfig().useIdeConnection) {
     subscriptions.add(
@@ -119,18 +118,6 @@ export function createTypeHintProvider(): any {
   };
 }
 
-export function createCodeHighlightProvider(): any {
-  const codeHighlightProvider = new CodeHighlightProvider();
-
-  return {
-    selector: HACK_GRAMMARS_STRING,
-    inclusionPriority: 1,
-    highlight(editor: atom$TextEditor, position: atom$Point): Promise<Array<atom$Range>> {
-      return codeHighlightProvider.highlight(editor, position);
-    },
-  };
-}
-
 export function createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
   const evaluationExpressionProvider = new HackEvaluationExpressionProvider();
   const getEvaluationExpression =
@@ -166,6 +153,7 @@ export function deactivate(): void {
     hackDiagnosticsProvider.dispose();
     hackDiagnosticsProvider = null;
   }
+  resetHackLanguageService();
 }
 
 export function provideOutlines(): OutlineProvider {

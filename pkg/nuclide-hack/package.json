@@ -81,11 +81,6 @@
         "0.0.0": "createEvaluationExpressionProvider"
       }
     },
-    "nuclide-code-highlight.provider": {
-      "versions": {
-        "0.0.0": "createCodeHighlightProvider"
-      }
-    },
     "nuclide-outline-view": {
       "versions": {
         "0.0.0": "provideOutlines"
