@@ -21,7 +21,7 @@ import type {Provider} from '../../nuclide-quick-open/lib/types';
 
 import {HackSymbolProvider} from './HackSymbolProvider';
 import CodeHighlightProvider from './CodeHighlightProvider';
-import {CompositeDisposable, Disposable} from 'atom';
+import {CompositeDisposable} from 'atom';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {OutlineViewProvider} from './OutlineViewProvider';
@@ -37,7 +37,7 @@ import {
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import CodeFormatProvider from './CodeFormatProvider';
-import {clearHackLanguageCache} from './HackLanguage';
+import {hackLanguageService} from './HackLanguage';
 import {getConfig} from './config';
 
 
@@ -55,7 +55,7 @@ const diagnosticService = 'nuclide-diagnostics-provider';
 
 export function activate() {
   subscriptions = new CompositeDisposable();
-  subscriptions.add(new Disposable(clearHackLanguageCache));
+  subscriptions.add(hackLanguageService);
 
   if (getConfig().useIdeConnection) {
     subscriptions.add(

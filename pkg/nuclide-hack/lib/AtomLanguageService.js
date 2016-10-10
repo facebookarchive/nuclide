@@ -15,12 +15,16 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 export class AtomLanguageService {
   _connectionToLanguageService: ConnectionCache<LanguageService>;
+  _subscriptions: UniversalDisposable;
 
   constructor(languageServiceFactory: (connection: ?ServerConnection) => Promise<LanguageService>) {
+    this._subscriptions = new UniversalDisposable();
     this._connectionToLanguageService = new ConnectionCache(languageServiceFactory);
+    this._subscriptions.add(this._connectionToLanguageService);
   }
 
   async getLanguageServiceForUri(fileUri: ?NuclideUri): Promise<?LanguageService> {
@@ -40,7 +44,7 @@ export class AtomLanguageService {
       });
   }
 
-  reset(): void {
-    this._connectionToLanguageService.dispose();
+  dispose(): void {
+    this._subscriptions.dispose();
   }
 }

@@ -37,14 +37,10 @@ async function connectionToHackService(connection: ?ServerConnection): Promise<L
   return languageService;
 }
 
-const hackLanguageService = new AtomLanguageService(connectionToHackService);
+export const hackLanguageService = new AtomLanguageService(connectionToHackService);
 
 export function getHackLanguageForUri(uri: ?NuclideUri): Promise<?LanguageService> {
   return hackLanguageService.getLanguageServiceForUri(uri);
-}
-
-export function clearHackLanguageCache(): void {
-  return hackLanguageService.reset();
 }
 
 export function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {
