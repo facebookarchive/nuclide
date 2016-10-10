@@ -4,18 +4,18 @@ Object.defineProperty(exports, '__esModule', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _foo2;
+var _foo;
 
-function _foo() {
-  return _foo2 = _interopRequireDefault(require('./foo'));
+function _load_foo() {
+  return _foo = _interopRequireDefault(require('./foo'));
 }
 
-var _bar2;
+var _bar;
 
-function _bar() {
-  return _bar2 = require('./bar');
+function _load_bar() {
+  return _bar = require('./bar');
 }
 
-exports.foo = (_foo2 || _foo()).default;
-exports.Foo = (_foo2 || _foo()).default;
-exports.Bar = (_bar2 || _bar()).Bar;
+exports.foo = (_foo || _load_foo()).default;
+exports.Foo = (_foo || _load_foo()).default;
+exports.Bar = (_bar || _load_bar()).Bar;

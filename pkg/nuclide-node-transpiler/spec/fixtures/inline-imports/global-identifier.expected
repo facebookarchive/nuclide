@@ -1,8 +1,8 @@
-var _math2;
+var _math;
 
-function _math() {
-  return _math2 = require('math');
+function _load_math() {
+  return _math = require('math');
 }
 
-(0, (_math2 || _math()).Math)();
-(_math2 || _math()).Math.add();
+(0, (_math || _load_math()).Math)();
+(_math || _load_math()).Math.add();

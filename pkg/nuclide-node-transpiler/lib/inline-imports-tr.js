@@ -21,8 +21,8 @@ module.exports = function inlineImports(babel) {
   }
 
   function memoizeExpression(scope, node, expression) {
-    const memoizedFunction = scope.generateUidIdentifierBasedOnNode(node);
     const memoizedID = scope.generateUidIdentifierBasedOnNode(node);
+    const memoizedFunction = scope.generateUidIdentifier('load' + memoizedID.name);
     return {
       nodes: [
         // var memoizedID;

@@ -1,7 +1,7 @@
-var _Foo2;
+var _Foo;
 
-function _Foo() {
-  return _Foo2 = require('Foo');
+function _load_Foo() {
+  return _Foo = require('Foo');
 }
 
 function test() {

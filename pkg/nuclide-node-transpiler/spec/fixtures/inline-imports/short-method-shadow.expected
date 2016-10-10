@@ -4,16 +4,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _foo2;
+var _foo;
 
-function _foo() {
-  return _foo2 = _interopRequireDefault(require('foo'));
+function _load_foo() {
+  return _foo = _interopRequireDefault(require('foo'));
 }
 
 var Obj = {
   Foo: function Foo() {
-    (0, (_foo2 || _foo()).default)();
-    return (_foo2 || _foo()).default;
+    (0, (_foo || _load_foo()).default)();
+    return (_foo || _load_foo()).default;
   }
 };
 
@@ -25,8 +25,8 @@ var Cls = (function () {
   _createClass(Cls, [{
     key: 'Foo',
     value: function Foo() {
-      (0, (_foo2 || _foo()).default)();
-      return (_foo2 || _foo()).default;
+      (0, (_foo || _load_foo()).default)();
+      return (_foo || _load_foo()).default;
     }
   }]);
 
