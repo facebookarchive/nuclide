@@ -10,11 +10,9 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-
 import {
-  openFile,
-  openRemoteFile,
-  addProject,
+  getCommands,
+  startCommands,
 } from './CommandClient';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -24,6 +22,7 @@ import {
   reportErrorAndExit,
   EXIT_CODE_SUCCESS,
   EXIT_CODE_APPLICATION_ERROR,
+  EXIT_CODE_INVALID_ARGUMENTS,
 } from './errors';
 import {
   getLogger,
@@ -91,41 +90,47 @@ async function main(argv): Promise<number> {
   logger.debug(`nuclide-remote-atom with arguments: ${argv._}`);
 
   // TODO(t10180337): Consider a batch API for openFile().
-  for (const arg of argv._) {
-    const {filePath, line, column} = parseLocationParameter(arg);
-    // eslint-disable-next-line babel/no-await-in-loop
-    const realpath = await getRealPath(filePath);
-    // eslint-disable-next-line babel/no-await-in-loop
-    const isDirectory = await getIsDirectory(realpath);
-    try {
-      if (nuclideUri.isRemote(realpath)) {
-        const result = openRemoteFile(realpath, line, column, Boolean(argv.wait));
-        if (argv.wait) {
+  if (argv._ != null && argv._.length > 0) {
+    const commands = argv.port != null
+      ? await startCommands(argv.port, argv.family)
+      : await getCommands();
+
+    for (const arg of argv._) {
+      const {filePath, line, column} = parseLocationParameter(arg);
+      // eslint-disable-next-line babel/no-await-in-loop
+      const realpath = await getRealPath(filePath);
+      // eslint-disable-next-line babel/no-await-in-loop
+      const isDirectory = await getIsDirectory(realpath);
+      try {
+        if (nuclideUri.isRemote(realpath)) {
+          const result =
+            commands.openRemoteFile(realpath, line, column, Boolean(argv.wait)).refCount();
+          if (argv.wait) {
+            // eslint-disable-next-line babel/no-await-in-loop
+            await result.toPromise();
+          } else {
+            // eslint-disable-next-line babel/no-await-in-loop
+            await result.take(1).toPromise();
+          }
+        } else if (isDirectory) {
+          // file/line/wait are ignored on directories
           // eslint-disable-next-line babel/no-await-in-loop
-          await result.toPromise();
+          await commands.addProject(realpath);
         } else {
-          // eslint-disable-next-line babel/no-await-in-loop
-          await result.take(1).toPromise();
+          const result = commands.openFile(realpath, line, column, Boolean(argv.wait)).refCount();
+          if (argv.wait) {
+            // eslint-disable-next-line babel/no-await-in-loop
+            await result.toPromise();
+          } else {
+            // eslint-disable-next-line babel/no-await-in-loop
+            await result.take(1).toPromise();
+          }
         }
-      } else if (isDirectory) {
-        // file/line/wait are ignored on directories
-        // eslint-disable-next-line babel/no-await-in-loop
-        await addProject(realpath);
-      } else {
-        const result = openFile(realpath, line, column, Boolean(argv.wait));
-        if (argv.wait) {
-          // eslint-disable-next-line babel/no-await-in-loop
-          await result.toPromise();
-        } else {
-          // eslint-disable-next-line babel/no-await-in-loop
-          await result.take(1).toPromise();
-        }
+      } catch (e) {
+        reportErrorAndExit(e, EXIT_CODE_APPLICATION_ERROR);
       }
-    } catch (e) {
-      reportErrorAndExit(e, EXIT_CODE_APPLICATION_ERROR);
     }
   }
-
   return EXIT_CODE_SUCCESS;
 }
 
@@ -145,7 +150,21 @@ async function run() {
       alias: 'wait',
       describe: 'Wait for the opened file to be closed in Atom before exiting',
       type: 'boolean',
+    })
+    .option('p', {
+      alias: 'port',
+      describe: 'Port for connecting to nuclide',
+      type: 'number',
+    })
+    .option('f', {
+      alias: 'family',
+      describe: 'Address family for connecting to nuclide. Either "IPv4" or "IPv6".',
+      type: 'string',
     });
+  if ((argv.port == null) !== (argv.family == null)) {
+    process.stderr.write('Invalid options. Both port and family must be specified.\n');
+    process.exit(EXIT_CODE_INVALID_ARGUMENTS);
+  }
   const exitCode = await main(argv);
   process.exit(exitCode);
 }

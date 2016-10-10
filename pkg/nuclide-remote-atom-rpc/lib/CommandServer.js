@@ -17,6 +17,15 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {createNewEntry} from '../shared/ConfigDirectory';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 
+export type ConnectionDetails = {
+  port: number,
+  family: string,
+};
+
+export async function getConnectionDetails(): Promise<?ConnectionDetails> {
+  return CommandServer._server == null ? null : (await CommandServer._server._server.getAddress());
+}
+
 // Ties the AtomCommands registered via RemoteCommandService to
 // the server side CommandService.
 export class CommandServer {

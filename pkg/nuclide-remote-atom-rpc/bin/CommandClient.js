@@ -10,10 +10,8 @@
  */
 
 import typeof * as CommandService from '../lib/CommandService';
-import type {AtomCommands, AtomFileEvent} from '../lib/rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {AtomCommands} from '../lib/rpc-types';
 
-import {Observable} from 'rxjs';
 import {getServer} from '../shared/ConfigDirectory';
 import net from 'net';
 import {loadServicesConfig, RpcConnection, SocketTransport} from '../../nuclide-rpc';
@@ -30,7 +28,7 @@ function convertStringFamilyToNumberFamily(family: string): number {
   }
 }
 
-async function getCommands(): Promise<AtomCommands> {
+export async function getCommands(): Promise<AtomCommands> {
   // Get the RPC connection info for the filesystem.
   const serverInfo = await getServer();
   if (serverInfo == null) {
@@ -38,7 +36,10 @@ async function getCommands(): Promise<AtomCommands> {
   }
   invariant(serverInfo != null);
   const {commandPort, family} = serverInfo;
+  return startCommands(commandPort, family);
+}
 
+export async function startCommands(commandPort: number, family: string): Promise<AtomCommands> {
   // Setup the RPC connection to the NuclideServer process.
   const services = loadServicesConfig(nuclideUri.join(__dirname, '..'));
   const socket = net.connect({
@@ -64,37 +65,4 @@ async function getCommands(): Promise<AtomCommands> {
   }
   invariant(commands != null);
   return commands;
-}
-
-// Connects to the local NuclideServer process, opens the file in the connected
-// Atom process.
-export function openFile(
-  filePath: NuclideUri,
-  line: number,
-  column: number,
-  isWaiting: boolean,
-): Observable<AtomFileEvent> {
-  return Observable.fromPromise(getCommands())
-    .flatMap(commands => {
-      return commands.openFile(filePath, line, column, isWaiting).refCount();
-    });
-}
-
-// Connects to the local NuclideServer process, opens the file in the connected
-// Atom process.
-export function openRemoteFile(
-  filePath: NuclideUri,
-  line: number,
-  column: number,
-  isWaiting: boolean,
-): Observable<AtomFileEvent> {
-  return Observable.fromPromise(getCommands())
-    .flatMap(commands => {
-      return commands.openRemoteFile(filePath, line, column, isWaiting).refCount();
-    });
-}
-
-export async function addProject(projectPath: NuclideUri): Promise<void> {
-  const commands: AtomCommands = await getCommands();
-  await commands.addProject(projectPath);
 }

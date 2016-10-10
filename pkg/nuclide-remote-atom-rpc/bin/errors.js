@@ -23,6 +23,7 @@ export const EXIT_CODE_SUCCESS = 0;
 export const EXIT_CODE_UNKNOWN_ERROR = 1;
 export const EXIT_CODE_APPLICATION_ERROR = 2;
 export const EXIT_CODE_CONNECTION_ERROR = 3;
+export const EXIT_CODE_INVALID_ARGUMENTS = 4;
 
 export function setupErrorHandling() {
   process.on('uncaughtException', event => {
