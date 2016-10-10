@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
+import type {ServerConnection} from '../../nuclide-remote-connection';
 
 import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig} from './config';
@@ -21,20 +22,22 @@ import {Observable} from 'rxjs';
 const HACK_SERVICE_NAME = 'HackService';
 
 const connectionToHackLanguage: ConnectionCache<LanguageService>
-  = new ConnectionCache(async connection => {
-    const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
-    const config = getConfig();
-    const useIdeConnection = config.useIdeConnection;
-    // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
-    const fileNotifier = await getNotifierByConnection(connection);
-    const languageService = await hackService.initialize(
-      config.hhClientPath,
-      useIdeConnection,
-      config.logLevel,
-      fileNotifier);
+  = new ConnectionCache(connectionToHackService);
 
-    return languageService;
-  });
+async function connectionToHackService(connection: ?ServerConnection): Promise<LanguageService> {
+  const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
+  const config = getConfig();
+  const useIdeConnection = config.useIdeConnection;
+  // TODO:     || (await passesGK('nuclide_hack_use_persistent_connection'));
+  const fileNotifier = await getNotifierByConnection(connection);
+  const languageService = await hackService.initialize(
+    config.hhClientPath,
+    useIdeConnection,
+    config.logLevel,
+    fileNotifier);
+
+  return languageService;
+}
 
 export async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?LanguageService> {
   const result = connectionToHackLanguage.getForUri(uri);
