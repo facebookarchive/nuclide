@@ -93,12 +93,7 @@ class HackProcess extends RpcProcess {
         const version = fileEvent.fileVersion.version;
         switch (fileEvent.kind) {
           case 'open':
-            service.didOpenFile(filePath);
-            service.didChangeFile(
-              filePath,
-              version,
-              [{text: fileEvent.contents}],
-            );
+            service.didOpenFile(filePath, version, fileEvent.contents);
             break;
           case 'close':
             service.didCloseFile(filePath);

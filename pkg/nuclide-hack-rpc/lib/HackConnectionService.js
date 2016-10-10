@@ -38,7 +38,7 @@ export type TextEdit = {
 // Inidicates that the file has been opened by the IDE.
 // Hack should get its source of truth for the file from
 // didChangeFile notifications until didCloseFile is seen.
-export function didOpenFile(filename: NuclideUri): void {
+export function didOpenFile(filename: NuclideUri, version: number, contents: string): void {
   throw new Error('RPC stub');
 }
 
