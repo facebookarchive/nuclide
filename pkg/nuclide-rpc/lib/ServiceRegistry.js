@@ -72,7 +72,6 @@ export class ServiceRegistry {
   addService(service: ConfigEntry): void {
     const preserveFunctionNames = service.preserveFunctionNames != null
       && service.preserveFunctionNames;
-    logger.debug(`Registering 3.0 service ${service.name}...`);
     try {
       const factory = createProxyFactory(
         service.name,
@@ -92,7 +91,6 @@ export class ServiceRegistry {
         const name = definition.name;
         switch (definition.kind) {
           case 'alias':
-            logger.debug(`Registering type alias ${name}...`);
             if (definition.definition != null) {
               this._typeRegistry.registerAlias(
                 name, definition.location, (definition.definition: Type));
@@ -106,7 +104,6 @@ export class ServiceRegistry {
             break;
           case 'interface':
             // Register interfaces.
-            logger.debug(`Registering interface ${name}...`);
             this._classesByName.set(name, {
               localImplementation: localImpl[name],
               definition,
@@ -134,7 +131,6 @@ export class ServiceRegistry {
   }
 
   _registerFunction(name: string, localImpl: Function, type: FunctionType): void {
-    logger.debug(`Registering function ${name}...`);
     if (this._functionsByName.has(name)) {
       throw new Error(`Duplicate RPC function: ${name}`);
     }
