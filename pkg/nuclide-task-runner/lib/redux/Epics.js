@@ -14,6 +14,7 @@ import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
 import {observableFromTask} from '../../../commons-node/tasks';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
+import {getLogger} from '../../../nuclide-logging';
 import {getTaskMetadata} from '../getTaskMetadata';
 import {getActiveTaskId, getActiveTaskRunner} from '../redux/Selectors';
 import * as Actions from './Actions';
@@ -226,10 +227,11 @@ function createTaskObservable(
       atom.notifications.addError(
         `The task "${taskMeta.label}" failed`,
         {
-          detail: error.stack,
+          description: error.message,
           dismissable: true,
         },
       );
+      getLogger().error('Error running task:', taskMeta, error);
       const {runningTaskInfo} = getState();
       return Observable.of({
         type: Actions.TASK_ERRORED,
