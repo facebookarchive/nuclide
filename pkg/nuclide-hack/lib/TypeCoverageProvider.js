@@ -11,23 +11,60 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
+import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
 
-import {getHackLanguageForUri} from './HackLanguage';
+import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
+
+export type TypeCoverageConfig = {
+  version: string,
+  priority: number,
+};
 
 // Provides Diagnostics for un-typed regions of Hack code.
 export class TypeCoverageProvider {
+  displayName: string
+  priority: number;
+  grammarScopes: string
+  _connectionToLanguageService: ConnectionCache<LanguageService>;
 
-  constructor() {
+  constructor(
+    name: string,
+    selector: string,
+    priority: number,
+    connectionToLanguageService: ConnectionCache<LanguageService>,
+  ) {
+    this.displayName = name;
+    this.priority = priority;
+    this.grammarScopes = selector;
+    this._connectionToLanguageService = connectionToLanguageService;
   }
 
+  static register(
+    name: string,
+    selector: string,
+    config: TypeCoverageConfig,
+    connectionToLanguageService: ConnectionCache<LanguageService>,
+  ): IDisposable {
+    return atom.packages.serviceHub.provide(
+      'nuclide-type-coverage',
+      config.version,
+      new TypeCoverageProvider(
+        name,
+        selector,
+        config.priority,
+        connectionToLanguageService,
+      ));
+  }
+
+  // TODO: Fix up the track timing.
   @trackTiming('hack:run-type-coverage')
   async getCoverage(path: NuclideUri): Promise<?CoverageResult> {
-    const hackLanguage = await getHackLanguageForUri(path);
-    if (hackLanguage == null) {
+    const languageService = this._connectionToLanguageService.getForUri(path);
+    if (languageService == null) {
       return null;
     }
 
-    return await hackLanguage.getCoverage(path);
+    return await (await languageService).getCoverage(path);
   }
 }

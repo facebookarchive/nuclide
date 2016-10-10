@@ -81,11 +81,6 @@
         "0.0.0": "createEvaluationExpressionProvider"
       }
     },
-    "nuclide-type-coverage": {
-      "versions": {
-        "0.0.0": "provideCoverage"
-      }
-    },
     "nuclide-quick-open-register-provider": {
       "description": "Register ourselves with the quick-open package",
       "versions": {
