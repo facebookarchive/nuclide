@@ -14,15 +14,13 @@ import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 
-import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
+import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig} from './config';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {Observable} from 'rxjs';
+import {AtomLanguageService} from './AtomLanguageService';
 
 const HACK_SERVICE_NAME = 'HackService';
-
-const connectionToHackLanguage: ConnectionCache<LanguageService>
-  = new ConnectionCache(connectionToHackService);
 
 async function connectionToHackService(connection: ?ServerConnection): Promise<LanguageService> {
   const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
@@ -39,26 +37,20 @@ async function connectionToHackService(connection: ?ServerConnection): Promise<L
   return languageService;
 }
 
-export async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?LanguageService> {
-  const result = connectionToHackLanguage.getForUri(uri);
-  return (result == null) ? null : await result;
+const hackLanguageService = new AtomLanguageService(connectionToHackService);
+
+export function getHackLanguageForUri(uri: ?NuclideUri): Promise<?LanguageService> {
+  return hackLanguageService.getLanguageServiceForUri(uri);
 }
 
 export function clearHackLanguageCache(): void {
-  connectionToHackLanguage.dispose();
+  return hackLanguageService.reset();
 }
 
-export async function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {
-  const language = await getHackLanguageForUri(fileUri);
-  if (language == null) {
-    return false;
-  }
-  return await language.isFileInProject(fileUri);
+export function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {
+  return hackLanguageService.isFileInProject(fileUri);
 }
 
 export function observeHackLanguages(): Observable<LanguageService> {
-  return connectionToHackLanguage.observeValues()
-    .switchMap(hackLanguage => {
-      return Observable.fromPromise(hackLanguage);
-    });
+  return hackLanguageService.observeLanguageServices();
 }
