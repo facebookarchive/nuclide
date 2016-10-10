@@ -15,6 +15,7 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {CodeHighlightConfig} from './CodeHighlightProvider';
 import type {OutlineViewConfig} from './OutlineViewProvider';
 import type {TypeCoverageConfig} from './TypeCoverageProvider';
+import type {DefinitionConfig} from './DefinitionProvider';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
@@ -22,6 +23,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {CodeHighlightProvider} from './CodeHighlightProvider';
 import {OutlineViewProvider} from './OutlineViewProvider';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
+import {DefinitionProvider} from './DefinitionProvider';
 
 export type AtomLanguageServiceConfig = {
   languageServiceFactory: (connection: ?ServerConnection) => Promise<LanguageService>,
@@ -30,6 +32,7 @@ export type AtomLanguageServiceConfig = {
   highlights?: CodeHighlightConfig,
   outlines?: OutlineViewConfig,
   coverage?: TypeCoverageConfig,
+  definition?: DefinitionConfig,
 };
 
 export class AtomLanguageService {
@@ -65,6 +68,15 @@ export class AtomLanguageService {
     if (coverageConfig != null) {
       this._subscriptions.add(TypeCoverageProvider.register(
         this._config.name, this._selector(), coverageConfig, this._connectionToLanguageService));
+    }
+
+    const definitionConfig = this._config.definition;
+    if (definitionConfig != null) {
+      this._subscriptions.add(DefinitionProvider.register(
+        this._config.name,
+        this._config.grammars,
+        definitionConfig,
+        this._connectionToLanguageService));
     }
   }
 

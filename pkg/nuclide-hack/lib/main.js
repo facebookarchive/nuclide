@@ -14,13 +14,11 @@ import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
-import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {Provider} from '../../nuclide-quick-open/lib/types';
 
 import {HackSymbolProvider} from './HackSymbolProvider';
 import {CompositeDisposable} from 'atom';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
-import {HackDefinitionProvider} from './HackDefinitionProvider';
 import AutocompleteProvider from './AutocompleteProvider';
 import FindReferencesProvider from './FindReferencesProvider';
 import TypeHintProvider from './TypeHintProvider';
@@ -43,7 +41,6 @@ let subscriptions: ?CompositeDisposable = null;
 let hackDiagnosticsProvider;
 let observableDiagnosticsProvider;
 let busySignalProvider;
-let definitionProvider: ?DefinitionProvider = null;
 
 const diagnosticService = 'nuclide-diagnostics-provider';
 
@@ -156,13 +153,6 @@ function provideBusySignal(): BusySignalProviderBaseType {
     busySignalProvider = new BusySignalProviderBase();
   }
   return busySignalProvider;
-}
-
-export function provideDefinitions(): DefinitionProvider {
-  if (definitionProvider == null) {
-    definitionProvider = new HackDefinitionProvider();
-  }
-  return definitionProvider;
 }
 
 export function registerQuickOpenProvider(): Provider {
