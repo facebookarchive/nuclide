@@ -13,7 +13,6 @@ import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
-import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {CoverageProvider} from '../../nuclide-type-coverage/lib/types';
@@ -23,7 +22,6 @@ import {HackSymbolProvider} from './HackSymbolProvider';
 import {CompositeDisposable} from 'atom';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 import {TypeCoverageProvider} from './TypeCoverageProvider';
-import {OutlineViewProvider} from './OutlineViewProvider';
 import {HackDefinitionProvider} from './HackDefinitionProvider';
 import AutocompleteProvider from './AutocompleteProvider';
 import FindReferencesProvider from './FindReferencesProvider';
@@ -154,16 +152,6 @@ export function deactivate(): void {
     hackDiagnosticsProvider = null;
   }
   resetHackLanguageService();
-}
-
-export function provideOutlines(): OutlineProvider {
-  const provider = new OutlineViewProvider();
-  return {
-    grammarScopes: HACK_GRAMMARS,
-    priority: 1,
-    name: 'Hack',
-    getOutline: provider.getOutline.bind(provider),
-  };
 }
 
 function provideBusySignal(): BusySignalProviderBaseType {

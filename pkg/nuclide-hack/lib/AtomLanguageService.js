@@ -13,16 +13,20 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {CodeHighlightConfig} from './CodeHighlightProvider';
+import type {OutlineViewConfig} from './OutlineViewProvider';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {CodeHighlightProvider} from './CodeHighlightProvider';
+import {OutlineViewProvider} from './OutlineViewProvider';
 
 export type AtomLanguageServiceConfig = {
   languageServiceFactory: (connection: ?ServerConnection) => Promise<LanguageService>,
+  name: string,
   grammars: Array<string>,
   highlights?: CodeHighlightConfig,
+  outlines?: OutlineViewConfig,
 };
 
 export class AtomLanguageService {
@@ -46,6 +50,12 @@ export class AtomLanguageService {
     if (highlightsConfig != null) {
       this._subscriptions.add(CodeHighlightProvider.register(
         this._selector(), highlightsConfig, this._connectionToLanguageService));
+    }
+
+    const outlinesConfig = this._config.outlines;
+    if (outlinesConfig != null) {
+      this._subscriptions.add(OutlineViewProvider.register(
+        this._config.name, this._selector(), outlinesConfig, this._connectionToLanguageService));
     }
   }
 

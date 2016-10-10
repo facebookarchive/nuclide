@@ -41,8 +41,13 @@ async function connectionToHackService(connection: ?ServerConnection): Promise<L
 
 const atomConfig: AtomLanguageServiceConfig = {
   languageServiceFactory: connectionToHackService,
+  name: 'Hack',
   grammars: HACK_GRAMMARS,
   highlights: {
+    version: '0.0.0',
+    priority: 1,
+  },
+  outlines: {
     version: '0.0.0',
     priority: 1,
   },
