@@ -20,6 +20,7 @@ import type {TypeHintConfig} from './TypeHintProvider';
 import type {CodeFormatConfig} from './CodeFormatProvider';
 import type {FindReferencesConfig} from './FindReferencesProvider';
 import type {EvaluationExpressionConfig} from './EvaluationExpressionProvider';
+import type {AutocompleteConfig} from './AutocompleteProvider';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
@@ -32,6 +33,7 @@ import {TypeHintProvider} from './TypeHintProvider';
 import {CodeFormatProvider} from './CodeFormatProvider';
 import {FindReferencesProvider} from './FindReferencesProvider';
 import {EvaluationExpressionProvider} from './EvaluationExpressionProvider';
+import {AutocompleteProvider} from './AutocompleteProvider';
 
 export type AtomLanguageServiceConfig = {
   languageServiceFactory: (connection: ?ServerConnection) => Promise<LanguageService>,
@@ -46,6 +48,7 @@ export type AtomLanguageServiceConfig = {
   codeFormat?: CodeFormatConfig,
   findReferences?: FindReferencesConfig,
   evaluationExpression?: EvaluationExpressionConfig,
+  autocomplete?: AutocompleteConfig,
 };
 
 export class AtomLanguageService {
@@ -120,6 +123,14 @@ export class AtomLanguageService {
         this._selector(),
         this._config.identifierRegexp,
         evaluationExpressionConfig,
+        this._connectionToLanguageService));
+    }
+
+    const autocompleteConfig = this._config.autocomplete;
+    if (autocompleteConfig != null) {
+      this._subscriptions.add(AutocompleteProvider.register(
+        this._config.grammars,
+        autocompleteConfig,
         this._connectionToLanguageService));
     }
   }

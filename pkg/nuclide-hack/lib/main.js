@@ -16,8 +16,6 @@ import type {Provider} from '../../nuclide-quick-open/lib/types';
 
 import {HackSymbolProvider} from './HackSymbolProvider';
 import {CompositeDisposable} from 'atom';
-import {HACK_GRAMMARS} from '../../nuclide-hack-common';
-import AutocompleteProvider from './AutocompleteProvider';
 import {
   HackDiagnosticsProvider,
   ObservableDiagnosticProvider,
@@ -48,25 +46,6 @@ export function activate() {
       atom.packages.serviceHub.provide(
         diagnosticService, '0.1.0', provideDiagnostics()));
   }
-}
-
-/** Provider for autocomplete service. */
-export function createAutocompleteProvider(): atom$AutocompleteProvider {
-  const autocompleteProvider = new AutocompleteProvider();
-
-  return {
-    selector: HACK_GRAMMARS.map(grammar => '.' + grammar).join(', '),
-    inclusionPriority: 1,
-    // The context-sensitive hack autocompletions are more relevant than snippets.
-    suggestionPriority: 3,
-    excludeLowerPriority: false,
-
-    getSuggestions(
-      request: atom$AutocompleteRequest,
-    ): Promise<?Array<atom$AutocompleteSuggestion>> {
-      return autocompleteProvider.getAutocompleteSuggestions(request);
-    },
-  };
 }
 
 function provideDiagnostics() {

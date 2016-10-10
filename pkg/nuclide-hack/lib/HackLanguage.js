@@ -74,6 +74,13 @@ const atomConfig: AtomLanguageServiceConfig = {
   evaluationExpression: {
     version: '0.0.0',
   },
+  autocomplete: {
+    version: '2.0.0',
+    inclusionPriority: 1,
+    // The context-sensitive hack autocompletions are more relevant than snippets.
+    suggestionPriority: 3,
+    excludeLowerPriority: false,
+  },
 };
 
 // This needs to be initialized eagerly for Hack Symbol search and the HHVM Toolbar.

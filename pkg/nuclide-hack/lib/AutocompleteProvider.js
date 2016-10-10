@@ -9,25 +9,71 @@
  * the root directory of this source tree.
  */
 
+import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
+
+import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
-import {getHackLanguageForUri} from './HackLanguage';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
-export default class AutocompleteProvider {
+export type AutocompleteConfig = {
+  inclusionPriority: number,
+  suggestionPriority: number,
+  excludeLowerPriority: boolean,
+  version: string,
+};
 
+export class AutocompleteProvider {
+  selector: string;
+  inclusionPriority: number;
+  suggestionPriority: number;
+  excludeLowerPriority: boolean;
+  _connectionToLanguageService: ConnectionCache<LanguageService>;
+
+  constructor(
+    selector: string,
+    inclusionPriority: number,
+    suggestionPriority: number,
+    excludeLowerPriority: boolean,
+    connectionToLanguageService: ConnectionCache<LanguageService>,
+  ) {
+    this.selector = selector;
+    this.inclusionPriority = inclusionPriority;
+    this.suggestionPriority = suggestionPriority;
+    this.excludeLowerPriority = excludeLowerPriority;
+    this._connectionToLanguageService = connectionToLanguageService;
+  }
+
+  static register(
+    grammars: Array<string>,
+    config: AutocompleteConfig,
+    connectionToLanguageService: ConnectionCache<LanguageService>,
+  ): IDisposable {
+    return atom.packages.serviceHub.provide(
+      'autocomplete.provider',
+      config.version,
+      new AutocompleteProvider(
+        grammars.map(grammar => '.' + grammar).join(', '),
+        config.inclusionPriority,
+        config.suggestionPriority,
+        config.excludeLowerPriority,
+        connectionToLanguageService,
+      ));
+  }
+
+  // TODO: Fix tracking ids
   @trackTiming('hack.getAutocompleteSuggestions')
-  async getAutocompleteSuggestions(
+  async getSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<?Array<atom$AutocompleteSuggestion>> {
     const {editor, activatedManually} = request;
     const fileVersion = await getFileVersionOfEditor(editor);
-    const hackLanguage = await getHackLanguageForUri(editor.getPath());
-    if (hackLanguage == null || fileVersion == null) {
+    const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+    if (languageService == null || fileVersion == null) {
       return [];
     }
     const position = editor.getLastCursor().getBufferPosition();
 
-    return await hackLanguage.getAutocompleteSuggestions(
+    return await (await languageService).getAutocompleteSuggestions(
       fileVersion, position, activatedManually == null ? false : activatedManually);
   }
 }

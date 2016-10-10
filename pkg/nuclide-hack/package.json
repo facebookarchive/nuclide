@@ -46,11 +46,6 @@
     "testRunner": "apm"
   },
   "providedServices": {
-    "autocomplete.provider": {
-      "versions": {
-        "2.0.0": "createAutocompleteProvider"
-      }
-    },
     "nuclide-busy-signal": {
       "versions": {
         "0.1.0": "provideBusySignal"
