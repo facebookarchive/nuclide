@@ -18,6 +18,7 @@ import type {TypeCoverageConfig} from './TypeCoverageProvider';
 import type {DefinitionConfig} from './DefinitionProvider';
 import type {TypeHintConfig} from './TypeHintProvider';
 import type {CodeFormatConfig} from './CodeFormatProvider';
+import type {FindReferencesConfig} from './FindReferencesProvider';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
@@ -28,6 +29,7 @@ import {TypeCoverageProvider} from './TypeCoverageProvider';
 import {DefinitionProvider} from './DefinitionProvider';
 import {TypeHintProvider} from './TypeHintProvider';
 import {CodeFormatProvider} from './CodeFormatProvider';
+import {FindReferencesProvider} from './FindReferencesProvider';
 
 export type AtomLanguageServiceConfig = {
   languageServiceFactory: (connection: ?ServerConnection) => Promise<LanguageService>,
@@ -39,6 +41,7 @@ export type AtomLanguageServiceConfig = {
   definition?: DefinitionConfig,
   typeHint?: TypeHintConfig,
   codeFormat?: CodeFormatConfig,
+  findReferences?: FindReferencesConfig,
 };
 
 export class AtomLanguageService {
@@ -95,6 +98,15 @@ export class AtomLanguageService {
     if (codeFormatConfig != null) {
       this._subscriptions.add(CodeFormatProvider.register(
         this._config.name, this._selector(), codeFormatConfig, this._connectionToLanguageService));
+    }
+
+    const findReferencesConfig = this._config.findReferences;
+    if (findReferencesConfig != null) {
+      this._subscriptions.add(FindReferencesProvider.register(
+        this._config.name,
+        this._config.grammars,
+        findReferencesConfig,
+        this._connectionToLanguageService));
     }
   }
 

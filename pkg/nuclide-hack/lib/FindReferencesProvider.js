@@ -10,33 +10,65 @@
  */
 
 import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
 
-import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
+import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackOperationTiming} from '../../nuclide-analytics';
-import {getHackLanguageForUri} from './HackLanguage';
 import loadingNotification from '../../commons-atom/loading-notification';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
-module.exports = {
+export type FindReferencesConfig = {
+  version: string,
+};
+
+export class FindReferencesProvider {
+  grammarScopes: Array<string>;
+  name: string;
+  _connectionToLanguageService: ConnectionCache<LanguageService>;
+
+  constructor(
+    name: string,
+    grammarScopes: Array<string>,
+    connectionToLanguageService: ConnectionCache<LanguageService>,
+  ) {
+    this.name = name;
+    this.grammarScopes = grammarScopes;
+    this._connectionToLanguageService = connectionToLanguageService;
+  }
+
+  static register(
+    name: string,
+    grammarScopes: Array<string>,
+    config: FindReferencesConfig,
+    connectionToLanguageService: ConnectionCache<LanguageService>,
+  ): IDisposable {
+    return atom.packages.serviceHub.provide(
+      'nuclide-find-references.provider',
+      config.version,
+      new FindReferencesProvider(
+        name,
+        grammarScopes,
+        connectionToLanguageService,
+      ));
+  }
+
   async isEditorSupported(textEditor: atom$TextEditor): Promise<boolean> {
-    const fileUri = textEditor.getPath();
-    if (!fileUri || !HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
-      return false;
-    }
-    return true;
-  },
+    return textEditor.getPath() != null
+      && this.grammarScopes.includes(textEditor.getGrammar().scopeName);
+  }
 
   findReferences(editor: atom$TextEditor, position: atom$Point): Promise<?FindReferencesReturn> {
-    return trackOperationTiming('hack:findReferences', async () => {
+    return trackOperationTiming(`${this.name.toLowerCase()}:findReferences`, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
-      const hackLanguage = await getHackLanguageForUri(editor.getPath());
-      if (hackLanguage == null || fileVersion == null) {
+      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+      if (languageService == null || fileVersion == null) {
         return null;
       }
+
       return await loadingNotification(
-        hackLanguage.findReferences(fileVersion, position),
-        'Loading references from Hack server...',
+        (await languageService).findReferences(fileVersion, position),
+        `Loading references from ${this.name} server...`,
       );
     });
-  },
-};
+  }
+}

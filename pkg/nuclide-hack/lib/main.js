@@ -19,7 +19,6 @@ import {HackSymbolProvider} from './HackSymbolProvider';
 import {CompositeDisposable} from 'atom';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 import AutocompleteProvider from './AutocompleteProvider';
-import FindReferencesProvider from './FindReferencesProvider';
 import {HackEvaluationExpressionProvider} from './HackEvaluationExpressionProvider';
 import {
   HackDiagnosticsProvider,
@@ -73,10 +72,6 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
       return autocompleteProvider.getAutocompleteSuggestions(request);
     },
   };
-}
-
-export function createFindReferencesProvider(): any {
-  return FindReferencesProvider;
 }
 
 export function createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
