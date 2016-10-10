@@ -12,14 +12,12 @@
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
-import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import type {Provider} from '../../nuclide-quick-open/lib/types';
 
 import {HackSymbolProvider} from './HackSymbolProvider';
 import {CompositeDisposable} from 'atom';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 import AutocompleteProvider from './AutocompleteProvider';
-import {HackEvaluationExpressionProvider} from './HackEvaluationExpressionProvider';
 import {
   HackDiagnosticsProvider,
   ObservableDiagnosticProvider,
@@ -29,9 +27,6 @@ import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import {hackLanguageService, resetHackLanguageService} from './HackLanguage';
 import {getConfig} from './config';
 
-
-const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
-const PACKAGE_NAME = 'nuclide-hack';
 
 let subscriptions: ?CompositeDisposable = null;
 let hackDiagnosticsProvider;
@@ -71,17 +66,6 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
     ): Promise<?Array<atom$AutocompleteSuggestion>> {
       return autocompleteProvider.getAutocompleteSuggestions(request);
     },
-  };
-}
-
-export function createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
-  const evaluationExpressionProvider = new HackEvaluationExpressionProvider();
-  const getEvaluationExpression =
-    evaluationExpressionProvider.getEvaluationExpression.bind(evaluationExpressionProvider);
-  return {
-    selector: HACK_GRAMMARS_STRING,
-    name: PACKAGE_NAME,
-    getEvaluationExpression,
   };
 }
 

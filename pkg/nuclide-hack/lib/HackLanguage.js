@@ -43,6 +43,7 @@ const atomConfig: AtomLanguageServiceConfig = {
   languageServiceFactory: connectionToHackService,
   name: 'Hack',
   grammars: HACK_GRAMMARS,
+  identifierRegexp: /\$\w+/gi,
   highlights: {
     version: '0.0.0',
     priority: 1,
@@ -68,6 +69,9 @@ const atomConfig: AtomLanguageServiceConfig = {
     priority: 1,
   },
   findReferences: {
+    version: '0.0.0',
+  },
+  evaluationExpression: {
     version: '0.0.0',
   },
 };

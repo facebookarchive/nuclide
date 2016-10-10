@@ -56,11 +56,6 @@
         "0.1.0": "provideBusySignal"
       }
     },
-    "nuclide-evaluation-expression.provider": {
-      "versions": {
-        "0.0.0": "createEvaluationExpressionProvider"
-      }
-    },
     "nuclide-quick-open-register-provider": {
       "description": "Register ourselves with the quick-open package",
       "versions": {

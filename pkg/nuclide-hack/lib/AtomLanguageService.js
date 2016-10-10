@@ -19,6 +19,7 @@ import type {DefinitionConfig} from './DefinitionProvider';
 import type {TypeHintConfig} from './TypeHintProvider';
 import type {CodeFormatConfig} from './CodeFormatProvider';
 import type {FindReferencesConfig} from './FindReferencesProvider';
+import type {EvaluationExpressionConfig} from './EvaluationExpressionProvider';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
@@ -30,11 +31,13 @@ import {DefinitionProvider} from './DefinitionProvider';
 import {TypeHintProvider} from './TypeHintProvider';
 import {CodeFormatProvider} from './CodeFormatProvider';
 import {FindReferencesProvider} from './FindReferencesProvider';
+import {EvaluationExpressionProvider} from './EvaluationExpressionProvider';
 
 export type AtomLanguageServiceConfig = {
   languageServiceFactory: (connection: ?ServerConnection) => Promise<LanguageService>,
   name: string,
   grammars: Array<string>,
+  identifierRegexp: RegExp,
   highlights?: CodeHighlightConfig,
   outlines?: OutlineViewConfig,
   coverage?: TypeCoverageConfig,
@@ -42,6 +45,7 @@ export type AtomLanguageServiceConfig = {
   typeHint?: TypeHintConfig,
   codeFormat?: CodeFormatConfig,
   findReferences?: FindReferencesConfig,
+  evaluationExpression?: EvaluationExpressionConfig,
 };
 
 export class AtomLanguageService {
@@ -106,6 +110,16 @@ export class AtomLanguageService {
         this._config.name,
         this._config.grammars,
         findReferencesConfig,
+        this._connectionToLanguageService));
+    }
+
+    const evaluationExpressionConfig = this._config.evaluationExpression;
+    if (evaluationExpressionConfig != null) {
+      this._subscriptions.add(EvaluationExpressionProvider.register(
+        this._config.name,
+        this._selector(),
+        this._config.identifierRegexp,
+        evaluationExpressionConfig,
         this._connectionToLanguageService));
     }
   }
