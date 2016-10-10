@@ -1,5 +1,34 @@
 # Nuclide Changelog
 
+## v0.175.0
+
+### Highlights
+
+* The number of Mercurial calls made on save has been reduced by 50%.
+* An option has been added to enable/disable the editor gutter and status-bar line diff info display.
+* Added a new debugger for the [iOS Webkit Debug Proxy](https://github.com/google/ios-webkit-debug-proxy) which targets the JS runtime JavaScriptCore on iOS targets.
+
+### General
+
+* The tool-bar button order has been reworked to group items that are used at a similar point in the development lifecycle (writing code, running/building, committing).
+* Fixed missing Clang diagnostics in certain cases.
+* Buck build errors now trigger an error notification.
+* Arrow keys now scroll through history in Nuclide Console.
+* The format-js package is no longer bundled with Nuclide.
+* `arc lint` is run with lower CPU and IO scheduling priority.
+* Arc build steps are now displayed in a dropdown instead of a Combobox.
+
+### Android Logging
+
+* Fixed the error when running logcat on older devices.
+* Fixed parsing for older versions of logcat.
+
+### Source Control
+
+* A loading indicator has been added to the Diff View "selected files" section.
+* Fixed git repository changes highlighting in the file tree.
+* Fixed a rare CPU usage issue with the Diff View.
+
 ## v0.174.0
 
 Hotfix for the exception thrown by requiring the `'invariant'` module in production.
