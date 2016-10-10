@@ -10,21 +10,61 @@
  */
 
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
+import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
 
-import {getHackLanguageForUri} from './HackLanguage';
+import {ConnectionCache} from '../../nuclide-remote-connection';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {trackTiming} from '../../nuclide-analytics';
 
-module.exports = class TypeHintProvider {
+export type TypeHintConfig = {
+  version: string,
+  priority: number,
+};
 
+export class TypeHintProvider {
+  providerName: string;
+  selector: string;
+  inclusionPriority: number;
+  _connectionToLanguageService: ConnectionCache<LanguageService>;
+
+  constructor(
+    name: string,
+    selector: string,
+    priority: number,
+    connectionToLanguageService: ConnectionCache<LanguageService>,
+  ) {
+    this.providerName = name;
+    this.selector = selector;
+    this.inclusionPriority = priority;
+    this._connectionToLanguageService = connectionToLanguageService;
+  }
+
+  static register(
+    name: string,
+    selector: string,
+    config: TypeHintConfig,
+    connectionToLanguageService: ConnectionCache<LanguageService>,
+  ): IDisposable {
+    return atom.packages.serviceHub.provide(
+      'nuclide-type-hint.provider',
+      config.version,
+      new TypeHintProvider(
+        name,
+        selector,
+        config.priority,
+        connectionToLanguageService,
+      ));
+  }
+
+  // TODO: Fix up tracking names
   @trackTiming('hack.typeHint')
   async typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
     const fileVersion = await getFileVersionOfEditor(editor);
-    const hackLanguage = await getHackLanguageForUri(editor.getPath());
-    if (hackLanguage == null || fileVersion == null) {
+    const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+    if (languageService == null || fileVersion == null) {
       return null;
     }
-    return await hackLanguage.typeHint(fileVersion, position);
-  }
 
-};
+    return await (await languageService).typeHint(fileVersion, position);
+  }
+}

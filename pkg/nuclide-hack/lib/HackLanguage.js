@@ -59,6 +59,10 @@ const atomConfig: AtomLanguageServiceConfig = {
     version: '0.0.0',
     priority: 20,
   },
+  typeHint: {
+    version: '0.0.0',
+    priority: 1,
+  },
 };
 
 // This needs to be initialized eagerly for Hack Symbol search and the HHVM Toolbar.

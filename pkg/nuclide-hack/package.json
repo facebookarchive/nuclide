@@ -66,11 +66,6 @@
         "0.0.0": "createFindReferencesProvider"
       }
     },
-    "nuclide-type-hint.provider": {
-      "versions": {
-        "0.0.0": "createTypeHintProvider"
-      }
-    },
     "nuclide-evaluation-expression.provider": {
       "versions": {
         "0.0.0": "createEvaluationExpressionProvider"

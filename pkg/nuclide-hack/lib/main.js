@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../nuclide-busy-signal';
@@ -21,7 +20,6 @@ import {CompositeDisposable} from 'atom';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 import AutocompleteProvider from './AutocompleteProvider';
 import FindReferencesProvider from './FindReferencesProvider';
-import TypeHintProvider from './TypeHintProvider';
 import {HackEvaluationExpressionProvider} from './HackEvaluationExpressionProvider';
 import {
   HackDiagnosticsProvider,
@@ -94,20 +92,6 @@ export function createCodeFormatProvider(): any {
 
 export function createFindReferencesProvider(): any {
   return FindReferencesProvider;
-}
-
-export function createTypeHintProvider(): any {
-  const typeHintProvider = new TypeHintProvider();
-
-  return {
-    selector: HACK_GRAMMARS_STRING,
-    inclusionPriority: 1,
-    providerName: PACKAGE_NAME,
-
-    typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
-      return typeHintProvider.typeHint(editor, position);
-    },
-  };
 }
 
 export function createEvaluationExpressionProvider(): NuclideEvaluationExpressionProvider {
