@@ -32,6 +32,9 @@ export type BuckEvent = {
   message: string,
   level: Level,
 } | {
+  type: 'error',
+  message: string,
+} | {
   type: 'diagnostics',
   diagnostics: Array<FileDiagnosticMessage>,
 } | {
@@ -120,15 +123,21 @@ export function getEventsFromProcess(
       switch (message.kind) {
         case 'error':
           return {
-            type: 'log',
+            type: 'error',
             message: `Buck failed: ${message.error.message}`,
-            level: 'error',
           };
         case 'exit':
+          const logMessage = `Buck exited with ${exitEventToMessage(message)}.`;
+          if (message.exitCode === 0) {
+            return {
+              type: 'log',
+              message: logMessage,
+              level: 'success',
+            };
+          }
           return {
-            type: 'log',
-            message: `Buck exited with ${exitEventToMessage(message)}.`,
-            level: message.exitCode === 0 ? 'success' : 'error',
+            type: 'error',
+            message: logMessage,
           };
         case 'stderr':
         case 'stdout':

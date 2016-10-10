@@ -408,29 +408,41 @@ export class BuckBuildSystem {
     // TODO: the Diagnostics API does not allow emitting one message at a time.
     // We have to accumulate messages per-file and emit them all.
     const fileDiagnostics = new Map();
+    // Save error messages until the end so diagnostics have a chance to finish.
+    // Real exceptions will not be handled by this, of course.
+    let errorMessage = null;
     return compact(
       events
-        .do(event => {
-          // Side effects: emit console output and diagnostics
-          if (event.type === 'log') {
-            this._logOutput(event.message, event.level);
-          } else if (event.type === 'diagnostics') {
-            const {diagnostics} = event;
-            // Update only the files that changed in this message.
-            // Since emitting messages for a file invalidates it, we have to
-            // be careful to emit all previous messages for it as well.
-            const changedFiles = new Map();
-            diagnostics.forEach(diagnostic => {
-              let messages = fileDiagnostics.get(diagnostic.filePath);
-              if (messages == null) {
-                messages = [];
-                fileDiagnostics.set(diagnostic.filePath, messages);
-              }
-              messages.push(diagnostic);
-              changedFiles.set(diagnostic.filePath, messages);
-            });
-            this._diagnosticUpdates.next({filePathToMessages: changedFiles});
-          }
+        .do({
+          next: event => {
+            // Side effects: emit console output and diagnostics
+            if (event.type === 'log') {
+              this._logOutput(event.message, event.level);
+            } else if (event.type === 'diagnostics') {
+              const {diagnostics} = event;
+              // Update only the files that changed in this message.
+              // Since emitting messages for a file invalidates it, we have to
+              // be careful to emit all previous messages for it as well.
+              const changedFiles = new Map();
+              diagnostics.forEach(diagnostic => {
+                let messages = fileDiagnostics.get(diagnostic.filePath);
+                if (messages == null) {
+                  messages = [];
+                  fileDiagnostics.set(diagnostic.filePath, messages);
+                }
+                messages.push(diagnostic);
+                changedFiles.set(diagnostic.filePath, messages);
+              });
+              this._diagnosticUpdates.next({filePathToMessages: changedFiles});
+            } else if (event.type === 'error') {
+              errorMessage = event.message;
+            }
+          },
+          complete: () => {
+            if (errorMessage != null) {
+              throw Error(errorMessage);
+            }
+          },
         })
         // Let progress events flow through to the task runner.
         .map(event => (event.type === 'progress' ? event : null))
