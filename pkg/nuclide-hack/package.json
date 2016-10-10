@@ -46,11 +46,6 @@
     "testRunner": "apm"
   },
   "providedServices": {
-    "nuclide-busy-signal": {
-      "versions": {
-        "0.1.0": "provideBusySignal"
-      }
-    },
     "nuclide-quick-open-register-provider": {
       "description": "Register ourselves with the quick-open package",
       "versions": {

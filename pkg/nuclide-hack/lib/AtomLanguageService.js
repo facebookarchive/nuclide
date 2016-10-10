@@ -21,6 +21,7 @@ import type {CodeFormatConfig} from './CodeFormatProvider';
 import type {FindReferencesConfig} from './FindReferencesProvider';
 import type {EvaluationExpressionConfig} from './EvaluationExpressionProvider';
 import type {AutocompleteConfig} from './AutocompleteProvider';
+import type {DiagnosticsConfig} from './DiagnosticsProvider';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
@@ -34,6 +35,7 @@ import {CodeFormatProvider} from './CodeFormatProvider';
 import {FindReferencesProvider} from './FindReferencesProvider';
 import {EvaluationExpressionProvider} from './EvaluationExpressionProvider';
 import {AutocompleteProvider} from './AutocompleteProvider';
+import {registerDiagnostics} from './DiagnosticsProvider';
 
 export type AtomLanguageServiceConfig = {
   languageServiceFactory: (connection: ?ServerConnection) => Promise<LanguageService>,
@@ -49,6 +51,7 @@ export type AtomLanguageServiceConfig = {
   findReferences?: FindReferencesConfig,
   evaluationExpression?: EvaluationExpressionConfig,
   autocomplete?: AutocompleteConfig,
+  diagnostics?: DiagnosticsConfig,
 };
 
 export class AtomLanguageService {
@@ -131,6 +134,15 @@ export class AtomLanguageService {
       this._subscriptions.add(AutocompleteProvider.register(
         this._config.grammars,
         autocompleteConfig,
+        this._connectionToLanguageService));
+    }
+
+    const diagnosticsConfig = this._config.diagnostics;
+    if (diagnosticsConfig != null) {
+      this._subscriptions.add(registerDiagnostics(
+        this._config.name,
+        this._config.grammars,
+        diagnosticsConfig,
         this._connectionToLanguageService));
     }
   }

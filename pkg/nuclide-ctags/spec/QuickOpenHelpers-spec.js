@@ -28,6 +28,13 @@ describe('QuickOpenHelpers', () => {
   }: any);
 
   beforeEach(() => {
+    // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+    spyOn(require('../../nuclide-hack/lib/config'), 'getConfig')
+      .andReturn({
+        hhClientPath: 'hh_client',
+        useIdeConnection: false,
+        logLevel: 'OFF',
+      });
     spyOn(require('../../nuclide-remote-connection'), 'getServiceByNuclideUri')
       .andReturn({
         async getCtagsService() {

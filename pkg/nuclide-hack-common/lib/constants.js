@@ -13,7 +13,6 @@
  * Constants here represent enums with the same values got from hh_client.
  */
 export const HACK_GRAMMARS = ['text.html.hack', 'text.html.php'];
-export const HACK_GRAMMARS_SET = new Set(HACK_GRAMMARS);
 
 export type SearchResultTypeValue = 0| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export const SearchResultType = Object.freeze({

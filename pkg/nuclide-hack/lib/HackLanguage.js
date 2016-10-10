@@ -18,7 +18,6 @@ import type {AtomLanguageServiceConfig} from './AtomLanguageService';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig} from './config';
 import {getNotifierByConnection} from '../../nuclide-open-files';
-import {Observable} from 'rxjs';
 import {AtomLanguageService} from './AtomLanguageService';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 
@@ -38,6 +37,15 @@ async function connectionToHackService(connection: ?ServerConnection): Promise<L
 
   return languageService;
 }
+
+const diagnosticsConfig = getConfig().useIdeConnection
+  ? {
+    version: '0.2.0',
+  }
+  : {
+    version: '0.1.0',
+    shouldRunOnTheFly: false,
+  };
 
 const atomConfig: AtomLanguageServiceConfig = {
   languageServiceFactory: connectionToHackService,
@@ -81,6 +89,7 @@ const atomConfig: AtomLanguageServiceConfig = {
     suggestionPriority: 3,
     excludeLowerPriority: false,
   },
+  diagnostics: diagnosticsConfig,
 };
 
 // This needs to be initialized eagerly for Hack Symbol search and the HHVM Toolbar.
@@ -99,8 +108,4 @@ export function getHackLanguageForUri(uri: ?NuclideUri): Promise<?LanguageServic
 
 export function isFileInHackProject(fileUri: NuclideUri): Promise<bool> {
   return hackLanguageService.isFileInProject(fileUri);
-}
-
-export function observeHackLanguages(): Observable<LanguageService> {
-  return hackLanguageService.observeLanguageServices();
 }

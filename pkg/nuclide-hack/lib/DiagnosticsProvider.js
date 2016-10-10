@@ -10,7 +10,6 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import type {
   MessageUpdateCallback,
   MessageInvalidationCallback,
@@ -19,10 +18,11 @@ import type {
   DiagnosticProviderUpdate,
   InvalidationMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
 
+import {ConnectionCache} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {trackTiming} from '../../nuclide-analytics';
-import {getHackLanguageForUri, observeHackLanguages} from './HackLanguage';
 import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
@@ -31,29 +31,83 @@ import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {Observable} from 'rxjs';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+import {BusySignalProviderBase} from '../../nuclide-busy-signal';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
-import {HACK_GRAMMARS_SET} from '../../nuclide-hack-common';
+export type DiagnosticsConfig = FileDiagnosticsConfig | ObservableDiagnosticsConfig;
 
-export class HackDiagnosticsProvider {
+export type FileDiagnosticsConfig = {
+  version: '0.1.0',
+  shouldRunOnTheFly: boolean,
+};
+
+export type ObservableDiagnosticsConfig = {
+  version: '0.2.0',
+};
+
+const diagnosticService = 'nuclide-diagnostics-provider';
+
+export function registerDiagnostics(
+  name: string,
+  grammars: Array<string>,
+  config: DiagnosticsConfig,
+  connectionToLanguageService: ConnectionCache<LanguageService>,
+): IDisposable {
+  const result = new UniversalDisposable();
+  let provider;
+  switch (config.version) {
+    case '0.1.0':
+      provider = new FileDiagnosticsProvider(
+        name,
+        grammars,
+        config.shouldRunOnTheFly,
+        connectionToLanguageService,
+      );
+      result.add(provider);
+      break;
+    case '0.2.0':
+      provider = new ObservableDiagnosticProvider(
+        connectionToLanguageService,
+      );
+      break;
+    default:
+      throw new Error('Unexpected diagnostics version');
+  }
+  result.add(atom.packages.serviceHub.provide(
+    diagnosticService,
+    config.version,
+    provider));
+  return result;
+}
+
+export class FileDiagnosticsProvider {
+  name: string;
   _busySignalProvider: BusySignalProviderBase;
   _providerBase: DiagnosticsProviderBase;
   _requestSerializer: RequestSerializer<any>;
-  _subscription: IDisposable;
+  _subscriptions: UniversalDisposable;
 
   /**
    * Maps hack root to the set of file paths under that root for which we have
    * ever reported diagnostics.
    */
   _projectRootToFilePaths: Map<NuclideUri, Set<NuclideUri>>;
+  _connectionToLanguageService: ConnectionCache<LanguageService>;
 
   constructor(
+    name: string,
+    grammars: Array<string>,
     shouldRunOnTheFly: boolean,
-    busySignalProvider: BusySignalProviderBase,
+    connectionToLanguageService: ConnectionCache<LanguageService>,
+    busySignalProvider: BusySignalProviderBase = new BusySignalProviderBase(),
     ProviderBase: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
   ) {
+    this.name = name;
     this._busySignalProvider = busySignalProvider;
+    this._connectionToLanguageService = connectionToLanguageService;
     const utilsOptions = {
-      grammarScopes: HACK_GRAMMARS_SET,
+      grammarScopes: new Set(grammars),
       shouldRunOnTheFly,
       onTextEditorEvent: editor => this._runDiagnostics(editor),
       onNewUpdateSubscriber: callback => this._receivedNewUpdateSubscriber(callback),
@@ -61,18 +115,27 @@ export class HackDiagnosticsProvider {
     this._providerBase = new ProviderBase(utilsOptions);
     this._requestSerializer = new RequestSerializer();
     this._projectRootToFilePaths = new Map();
-    this._subscription = onDidRemoveProjectPath(projectPath => {
-      this.invalidateProjectPath(projectPath);
-    });
+    this._subscriptions = new UniversalDisposable();
+    this._subscriptions.add(
+      onDidRemoveProjectPath(projectPath => {
+        this.invalidateProjectPath(projectPath);
+      }),
+      this._providerBase,
+      atom.packages.serviceHub.provide(
+        'nuclide-busy-signal',
+        '0.1.0',
+        busySignalProvider,
+      ));
   }
 
   _runDiagnostics(textEditor: atom$TextEditor): void {
     this._busySignalProvider.reportBusy(
-      'Hack: Waiting for diagnostics',
+      `${this.name}: Waiting for diagnostics`,
       () => this._runDiagnosticsImpl(textEditor),
     );
   }
 
+  // TODO: tracking ids
   @trackTiming('hack.run-diagnostics')
   async _runDiagnosticsImpl(textEditor: atom$TextEditor): Promise<void> {
     let filePath = textEditor.getPath();
@@ -83,7 +146,7 @@ export class HackDiagnosticsProvider {
     // `hh_client` doesn't currently support `onTheFly` diagnosis.
     // So, currently, it would only work if there is no `hh_client` or `.hhconfig` where
     // the `HackWorker` model will diagnose with the updated editor contents.
-    const diagnosisResult = await this._requestSerializer.run(findDiagnostics(textEditor));
+    const diagnosisResult = await this._requestSerializer.run(this.findDiagnostics(textEditor));
     if (diagnosisResult.status === 'success' && diagnosisResult.result == null) {
       getLogger().error('hh_client could not be reached');
     }
@@ -96,11 +159,11 @@ export class HackDiagnosticsProvider {
     if (filePath == null) {
       return;
     }
-    const hackLanguage = await getHackLanguageForUri(filePath);
-    if (hackLanguage == null) {
+    const languageService = this._connectionToLanguageService.getForUri(filePath);
+    if (languageService == null) {
       return;
     }
-    const projectRoot = await hackLanguage.getProjectRoot(filePath);
+    const projectRoot = await (await languageService).getProjectRoot(filePath);
     if (projectRoot == null) {
       return;
     }
@@ -150,7 +213,7 @@ export class HackDiagnosticsProvider {
     // probably remove the activeTextEditor parameter.
     const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (activeTextEditor) {
-      if (HACK_GRAMMARS_SET.has(activeTextEditor.getGrammar().scopeName)) {
+      if (this._providerBase.getGrammarScopes().has(activeTextEditor.getGrammar().scopeName)) {
         this._runDiagnostics(activeTextEditor);
       }
     }
@@ -192,30 +255,34 @@ export class HackDiagnosticsProvider {
   }
 
   dispose() {
-    this._subscription.dispose();
-    this._providerBase.dispose();
-  }
-}
-
-async function findDiagnostics(
-  editor: atom$TextEditor,
-): Promise<?DiagnosticProviderUpdate> {
-  const fileVersion = await getFileVersionOfEditor(editor);
-  const hackLanguage = await getHackLanguageForUri(editor.getPath());
-  if (hackLanguage == null || fileVersion == null) {
-    return null;
+    this._subscriptions.dispose();
   }
 
-  return await hackLanguage.getDiagnostics(fileVersion);
+  async findDiagnostics(
+    editor: atom$TextEditor,
+  ): Promise<?DiagnosticProviderUpdate> {
+    const fileVersion = await getFileVersionOfEditor(editor);
+    const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+    if (languageService == null || fileVersion == null) {
+      return null;
+    }
+
+    return await (await languageService).getDiagnostics(fileVersion);
+  }
 }
 
 export class ObservableDiagnosticProvider {
   updates: Observable<DiagnosticProviderUpdate>;
   invalidations: Observable<InvalidationMessage>;
+  _connectionToLanguageService: ConnectionCache<LanguageService>;
 
-  constructor() {
-    this.updates = observeHackLanguages()
-      .mergeMap(language => language.observeDiagnostics())
+  constructor(connectionToLanguageService: ConnectionCache<LanguageService>) {
+    this._connectionToLanguageService = connectionToLanguageService;
+    this.updates = this._connectionToLanguageService.observeValues()
+      .switchMap(languageService => {
+        return Observable.fromPromise(languageService);
+      })
+      .mergeMap(language => language.observeDiagnostics().refCount())
       .map(({filePath, messages}) => ({
         filePathToMessages: new Map([[filePath, messages]]),
       }));

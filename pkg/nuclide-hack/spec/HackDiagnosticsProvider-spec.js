@@ -9,27 +9,31 @@
  * the root directory of this source tree.
  */
 
-import typeof * as HackDiagnosticsProviderFile from '../lib/HackDiagnosticsProvider';
-import type {HackDiagnosticsProvider} from '../lib/HackDiagnosticsProvider';
+import typeof * as DiagnosticsProviderFile from '../lib/DiagnosticsProvider';
+import type {FileDiagnosticsProvider} from '../lib/DiagnosticsProvider';
 
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 
-describe('HackDiagnosticsProvider', () => {
+describe('DiagnosticsProvider', () => {
 
-  let hackDiagnosticsProvider: HackDiagnosticsProvider = (null: any);
+  let diagnosticsProvider: FileDiagnosticsProvider = (null: any);
 
   beforeEach(() => {
     class FakeProviderBase { }
-    const file: HackDiagnosticsProviderFile
-      = (uncachedRequire(require, '../lib/HackDiagnosticsProvider'): any);
-    hackDiagnosticsProvider = new file.HackDiagnosticsProvider(
+    const file: DiagnosticsProviderFile
+      = (uncachedRequire(require, '../lib/DiagnosticsProvider'): any);
+    diagnosticsProvider = new file.FileDiagnosticsProvider(
+      'Hack',
+      ['text.html.hack', 'text.html.php'],
       false,
+      (null: any), // connectionToLanguageService
+      undefined, // busySignalProvider
       (FakeProviderBase: any),
     );
   });
 
   afterEach(() => {
-    clearRequireCache(require, '../lib/HackDiagnosticsProvider');
+    clearRequireCache(require, '../lib/DiagnosticsProvider');
   });
 
   describe('invalidateProjectPath', () => {
@@ -40,16 +44,16 @@ describe('HackDiagnosticsProvider', () => {
       const root2Paths = ['/hack/root2/file.js', '/hack/common/file.js'];
       projectRootToFilePaths.set('/hack/root1', new Set(root1Paths));
       projectRootToFilePaths.set('/hack/root2', new Set(root2Paths));
-      hackDiagnosticsProvider._projectRootToFilePaths = projectRootToFilePaths;
+      diagnosticsProvider._projectRootToFilePaths = projectRootToFilePaths;
       // Mock the `publishMessageInvalidation` call to capture call arguments.
       const publishHandler = jasmine.createSpy('publish');
-      (hackDiagnosticsProvider._providerBase: any).publishMessageInvalidation = publishHandler;
+      (diagnosticsProvider._providerBase: any).publishMessageInvalidation = publishHandler;
 
-      hackDiagnosticsProvider.invalidateProjectPath('/hack/root1');
+      diagnosticsProvider.invalidateProjectPath('/hack/root1');
       expect(publishHandler.callCount).toBe(1);
       expect(publishHandler.argsForCall[0][0]).toEqual({scope: 'file', filePaths: root1Paths});
-      expect(hackDiagnosticsProvider._projectRootToFilePaths.size).toBe(1);
-      expect(hackDiagnosticsProvider._projectRootToFilePaths.get('/hack/root2'))
+      expect(diagnosticsProvider._projectRootToFilePaths.size).toBe(1);
+      expect(diagnosticsProvider._projectRootToFilePaths.get('/hack/root2'))
         .toEqual(new Set(root2Paths));
     });
   });

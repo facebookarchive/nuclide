@@ -138,6 +138,10 @@ export class DiagnosticsProviderBase {
     }
   }
 
+  getGrammarScopes(): Set<string> {
+    return this._grammarScopes;
+  }
+
   /**
    * Clients can call these methods to publish messages
    */
