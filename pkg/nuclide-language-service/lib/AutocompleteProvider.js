@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
+import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';

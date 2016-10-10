@@ -13,7 +13,7 @@ import type {
   HackCompletion,
   HackParameterDetails,
 } from './rpc-types';
-import type {Completion} from './rpc-types';
+import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 
 import {Point, Range} from 'simple-text-buffer';
 import invariant from 'assert';

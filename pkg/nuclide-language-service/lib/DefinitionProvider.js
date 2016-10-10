@@ -14,7 +14,7 @@ import type {
   Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
-import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
+import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';

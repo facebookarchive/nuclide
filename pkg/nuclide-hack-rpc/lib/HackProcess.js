@@ -14,11 +14,9 @@ import type {FileEditEvent} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from './HackConnectionService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {
-  Completion,
-  HackCompletionsResult,
-} from './rpc-types';
+import type {HackCompletionsResult} from './rpc-types';
 import type {ProcessMaker} from '../../nuclide-rpc/lib/RpcProcess';
+import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {asyncExecute, safeSpawn} from '../../commons-node/process';

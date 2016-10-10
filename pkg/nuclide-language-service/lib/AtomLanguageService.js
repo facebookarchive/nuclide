@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
+import type {LanguageService} from './LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {CodeHighlightConfig} from './CodeHighlightProvider';
 import type {OutlineViewConfig} from './OutlineViewProvider';

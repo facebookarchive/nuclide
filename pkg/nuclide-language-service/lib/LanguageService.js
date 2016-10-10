@@ -10,7 +10,6 @@
 
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {Completion} from './rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
@@ -25,6 +24,23 @@ import type {
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
+
+// A remotable version of atom$AutocompleteSuggestion
+export type Completion = {
+  text?: string,
+  snippet?: string,
+  displayText?: string,
+  replacementPrefix?: string,
+  type?: ?string,
+  leftLabel?: ?string,
+  leftLabelHTML?: ?string,
+  rightLabel?: ?string,
+  rightLabelHTML?: ?string,
+  className?: ?string,
+  iconHTML?: ?string,
+  description?: ?string,
+  descriptionMoreURL?: ?string,
+};
 
 export interface LanguageService {
 

@@ -10,7 +10,7 @@
  */
 
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/service';
-import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
+import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {wordAtPosition} from '../../commons-atom/range';

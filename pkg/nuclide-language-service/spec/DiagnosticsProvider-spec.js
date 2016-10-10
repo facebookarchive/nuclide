@@ -11,7 +11,7 @@
 
 import typeof * as DiagnosticsProviderFile from '../lib/DiagnosticsProvider';
 import type {FileDiagnosticsProvider} from '../lib/DiagnosticsProvider';
-import type {LanguageService} from '../../nuclide-hack-rpc/lib/LanguageService';
+import type {LanguageService} from '../lib/LanguageService';
 
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 

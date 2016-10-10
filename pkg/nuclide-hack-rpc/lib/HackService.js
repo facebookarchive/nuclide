@@ -12,7 +12,6 @@
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {
-  Completion,
   HackRange,
   HackCompletionsResult,
   HackDiagnosticsResult,
@@ -36,6 +35,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
+import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
