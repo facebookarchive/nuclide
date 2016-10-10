@@ -27,6 +27,7 @@ describe('DiagnosticsProvider', () => {
       'Hack',
       ['text.html.hack', 'text.html.php'],
       false,
+      'hack.diagnostics',
       (null: any), // connectionToLanguageService
       undefined, // busySignalProvider
       (FakeProviderBase: any),

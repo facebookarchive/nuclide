@@ -76,7 +76,10 @@ export class AtomLanguageService<T: LanguageService> {
     const highlightsConfig = this._config.highlights;
     if (highlightsConfig != null) {
       this._subscriptions.add(CodeHighlightProvider.register(
-        this._selector(), highlightsConfig, this._connectionToLanguageService));
+        this._config.name,
+        this._selector(),
+        highlightsConfig,
+        this._connectionToLanguageService));
     }
 
     const outlinesConfig = this._config.outlines;
@@ -134,6 +137,7 @@ export class AtomLanguageService<T: LanguageService> {
     const autocompleteConfig = this._config.autocomplete;
     if (autocompleteConfig != null) {
       this._subscriptions.add(AutocompleteProvider.register(
+        this._config.name,
         this._config.grammars,
         autocompleteConfig,
         this._connectionToLanguageService));

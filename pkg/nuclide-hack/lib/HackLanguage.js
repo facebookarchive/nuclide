@@ -45,10 +45,12 @@ async function connectionToHackService(
 const diagnosticsConfig = getConfig().useIdeConnection
   ? {
     version: '0.2.0',
+    analyticsEventName: 'hack.observe-diagnostics',
   }
   : {
     version: '0.1.0',
     shouldRunOnTheFly: false,
+    analyticsEventName: 'hack.run-diagnostics',
   };
 
 const atomConfig: AtomLanguageServiceConfig = {
@@ -58,32 +60,41 @@ const atomConfig: AtomLanguageServiceConfig = {
   highlights: {
     version: '0.0.0',
     priority: 1,
+    analyticsEventName: 'hack.codehighlight',
   },
   outlines: {
     version: '0.0.0',
     priority: 1,
+    analyticsEventName: 'hack.outline',
   },
   coverage: {
     version: '0.0.0',
     priority: 10,
+    analyticsEventName: 'hack:run-type-coverage',
   },
   definition: {
     version: '0.0.0',
     priority: 20,
+    definitionEventName: 'hack.get-definition',
+    definitionByIdEventName: 'hack.get-definition-by-id',
   },
   typeHint: {
     version: '0.0.0',
     priority: 1,
+    analyticsEventName: 'hack.typeHint',
   },
   codeFormat: {
     version: '0.0.0',
     priority: 1,
+    analyticsEventName: 'hack.formatCode',
   },
   findReferences: {
     version: '0.0.0',
+    analyticsEventName: 'hack:findReferences',
   },
   evaluationExpression: {
     version: '0.0.0',
+    analyticsEventName: 'hack.evaluationExpression',
   },
   autocomplete: {
     version: '2.0.0',
@@ -91,6 +102,7 @@ const atomConfig: AtomLanguageServiceConfig = {
     // The context-sensitive hack autocompletions are more relevant than snippets.
     suggestionPriority: 3,
     excludeLowerPriority: false,
+    analyticsEventName: 'hack.getAutocompleteSuggestions',
   },
   diagnostics: diagnosticsConfig,
 };

@@ -19,20 +19,24 @@ import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type FindReferencesConfig = {
   version: string,
+  analyticsEventName: string,
 };
 
 export class FindReferencesProvider<T: LanguageService> {
   grammarScopes: Array<string>;
   name: string;
+  _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     grammarScopes: Array<string>,
+    analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
     this.grammarScopes = grammarScopes;
+    this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
@@ -48,6 +52,7 @@ export class FindReferencesProvider<T: LanguageService> {
       new FindReferencesProvider(
         name,
         grammarScopes,
+        config.analyticsEventName,
         connectionToLanguageService,
       ));
   }
@@ -58,7 +63,7 @@ export class FindReferencesProvider<T: LanguageService> {
   }
 
   findReferences(editor: atom$TextEditor, position: atom$Point): Promise<?FindReferencesReturn> {
-    return trackOperationTiming(`${this.name.toLowerCase()}:findReferences`, async () => {
+    return trackOperationTiming(this._analyticsEventName, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
       const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {

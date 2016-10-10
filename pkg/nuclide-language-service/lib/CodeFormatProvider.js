@@ -12,24 +12,27 @@
 import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackOperationTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type CodeFormatConfig = {
   version: string,
   priority: number,
+  analyticsEventName: string,
 };
 
 export class CodeFormatProvider<T: LanguageService> {
   name: string;
   selector: string;
   inclusionPriority: number;
+  _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     selector: string,
     priority: number,
+    analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
@@ -51,19 +54,20 @@ export class CodeFormatProvider<T: LanguageService> {
         name,
         selector,
         config.priority,
+        config.analyticsEventName,
         connectionToLanguageService,
       ));
   }
 
-  // TODO: Fixup tracking ids
-  @trackTiming('hack.formatCode')
-  async formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
-    const fileVersion = await getFileVersionOfEditor(editor);
-    const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
-    if (languageService == null || fileVersion == null) {
-      return editor.getTextInBufferRange(range);
-    }
+  formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
+    return trackOperationTiming(this._analyticsEventName, async () => {
+      const fileVersion = await getFileVersionOfEditor(editor);
+      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+      if (languageService == null || fileVersion == null) {
+        return editor.getTextInBufferRange(range);
+      }
 
-    return await (await languageService).formatSource(fileVersion, range);
+      return await (await languageService).formatSource(fileVersion, range);
+    });
   }
 }

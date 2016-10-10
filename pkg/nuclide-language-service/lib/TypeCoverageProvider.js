@@ -14,11 +14,12 @@ import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackOperationTiming} from '../../nuclide-analytics';
 
 export type TypeCoverageConfig = {
   version: string,
   priority: number,
+  analyticsEventName: string,
 };
 
 // Provides Diagnostics for un-typed regions of Hack code.
@@ -26,17 +27,20 @@ export class TypeCoverageProvider<T: LanguageService> {
   displayName: string
   priority: number;
   grammarScopes: string
+  _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     selector: string,
     priority: number,
+    analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.displayName = name;
     this.priority = priority;
     this.grammarScopes = selector;
+    this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
@@ -53,18 +57,19 @@ export class TypeCoverageProvider<T: LanguageService> {
         name,
         selector,
         config.priority,
+        config.analyticsEventName,
         connectionToLanguageService,
       ));
   }
 
-  // TODO: Fix up the track timing.
-  @trackTiming('hack:run-type-coverage')
   async getCoverage(path: NuclideUri): Promise<?CoverageResult> {
-    const languageService = this._connectionToLanguageService.getForUri(path);
-    if (languageService == null) {
-      return null;
-    }
+    return trackOperationTiming(this._analyticsEventName, async () => {
+      const languageService = this._connectionToLanguageService.getForUri(path);
+      if (languageService == null) {
+        return null;
+      }
 
-    return await (await languageService).getCoverage(path);
+      return await (await languageService).getCoverage(path);
+    });
   }
 }

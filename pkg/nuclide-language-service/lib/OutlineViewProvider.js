@@ -14,27 +14,32 @@ import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
+import {trackOperationTiming} from '../../nuclide-analytics';
 
 export type OutlineViewConfig = {
   version: string,
   priority: number,
+  analyticsEventName: string,
 };
 
 export class OutlineViewProvider<T: LanguageService> {
   grammarScopes: string;
   priority: number;
   name: string;
+  _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     selector: string,
     priority: number,
+    analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
     this.grammarScopes = selector;
     this.priority = priority;
+    this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
@@ -51,17 +56,20 @@ export class OutlineViewProvider<T: LanguageService> {
         name,
         selector,
         config.priority,
+        config.analyticsEventName,
         connectionToLanguageService,
       ));
   }
 
-  async getOutline(editor: atom$TextEditor): Promise<?Outline> {
-    const fileVersion = await getFileVersionOfEditor(editor);
-    const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
-    if (languageService == null || fileVersion == null) {
-      return null;
-    }
+  getOutline(editor: atom$TextEditor): Promise<?Outline> {
+    return trackOperationTiming(this._analyticsEventName, async() => {
+      const fileVersion = await getFileVersionOfEditor(editor);
+      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+      if (languageService == null || fileVersion == null) {
+        return null;
+      }
 
-    return await (await languageService).getOutline(fileVersion);
+      return await (await languageService).getOutline(fileVersion);
+    });
   }
 }

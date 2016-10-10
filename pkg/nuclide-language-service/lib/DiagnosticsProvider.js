@@ -22,7 +22,7 @@ import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {trackTiming} from '../../nuclide-analytics';
+import {track, trackOperationTiming} from '../../nuclide-analytics';
 import {RequestSerializer} from '../../commons-node/promise';
 import {DiagnosticsProviderBase} from '../../nuclide-diagnostics-provider-base';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
@@ -40,10 +40,12 @@ export type DiagnosticsConfig = FileDiagnosticsConfig | ObservableDiagnosticsCon
 export type FileDiagnosticsConfig = {
   version: '0.1.0',
   shouldRunOnTheFly: boolean,
+  analyticsEventName: string,
 };
 
 export type ObservableDiagnosticsConfig = {
   version: '0.2.0',
+  analyticsEventName: string,
 };
 
 const diagnosticService = 'nuclide-diagnostics-provider';
@@ -62,12 +64,14 @@ export function registerDiagnostics<T: LanguageService>(
         name,
         grammars,
         config.shouldRunOnTheFly,
+        config.analyticsEventName,
         connectionToLanguageService,
       );
       result.add(provider);
       break;
     case '0.2.0':
       provider = new ObservableDiagnosticProvider(
+        config.analyticsEventName,
         connectionToLanguageService,
       );
       break;
@@ -93,17 +97,20 @@ export class FileDiagnosticsProvider<T: LanguageService> {
    * ever reported diagnostics.
    */
   _projectRootToFilePaths: Map<NuclideUri, Set<NuclideUri>>;
+  _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     grammars: Array<string>,
     shouldRunOnTheFly: boolean,
+    analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
     busySignalProvider: BusySignalProviderBase = new BusySignalProviderBase(),
     ProviderBase: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
   ) {
     this.name = name;
+    this._analyticsEventName = analyticsEventName;
     this._busySignalProvider = busySignalProvider;
     this._connectionToLanguageService = connectionToLanguageService;
     const utilsOptions = {
@@ -135,66 +142,66 @@ export class FileDiagnosticsProvider<T: LanguageService> {
     );
   }
 
-  // TODO: tracking ids
-  @trackTiming('hack.run-diagnostics')
-  async _runDiagnosticsImpl(textEditor: atom$TextEditor): Promise<void> {
-    let filePath = textEditor.getPath();
-    if (filePath == null) {
-      return;
-    }
-
-    // `hh_client` doesn't currently support `onTheFly` diagnosis.
-    // So, currently, it would only work if there is no `hh_client` or `.hhconfig` where
-    // the `HackWorker` model will diagnose with the updated editor contents.
-    const diagnosisResult = await this._requestSerializer.run(this.findDiagnostics(textEditor));
-    if (diagnosisResult.status === 'success' && diagnosisResult.result == null) {
-      getLogger().error('hh_client could not be reached');
-    }
-    if (diagnosisResult.status === 'outdated' || diagnosisResult.result == null) {
-      return;
-    }
-
-    const diagnostics: DiagnosticProviderUpdate = diagnosisResult.result;
-    filePath = textEditor.getPath();
-    if (filePath == null) {
-      return;
-    }
-    const languageService = this._connectionToLanguageService.getForUri(filePath);
-    if (languageService == null) {
-      return;
-    }
-    const projectRoot = await (await languageService).getProjectRoot(filePath);
-    if (projectRoot == null) {
-      return;
-    }
-
-    this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [filePath]});
-    this._invalidatePathsForProjectRoot(projectRoot);
-
-    const pathsForHackLanguage = new Set();
-    this._projectRootToFilePaths.set(projectRoot, pathsForHackLanguage);
-    const addPath = path => {
-      if (path != null) {
-        pathsForHackLanguage.add(path);
+  _runDiagnosticsImpl(textEditor: atom$TextEditor): Promise<void> {
+    return trackOperationTiming(this._analyticsEventName, async () => {
+      let filePath = textEditor.getPath();
+      if (filePath == null) {
+        return;
       }
-    };
-    if (diagnostics.filePathToMessages != null) {
-      diagnostics.filePathToMessages.forEach(
-        (messages, messagePath) => {
-          addPath(messagePath);
-          messages.forEach(
-            message => {
-              addPath(message.filePath);
-              if (message.trace != null) {
-                message.trace.forEach(trace => {
-                  addPath(trace.filePath);
-                });
-              }
-            });
-        });
-    }
 
-    this._providerBase.publishMessageUpdate(diagnostics);
+      // `hh_client` doesn't currently support `onTheFly` diagnosis.
+      // So, currently, it would only work if there is no `hh_client` or `.hhconfig` where
+      // the `HackWorker` model will diagnose with the updated editor contents.
+      const diagnosisResult = await this._requestSerializer.run(this.findDiagnostics(textEditor));
+      if (diagnosisResult.status === 'success' && diagnosisResult.result == null) {
+        getLogger().error('hh_client could not be reached');
+      }
+      if (diagnosisResult.status === 'outdated' || diagnosisResult.result == null) {
+        return;
+      }
+
+      const diagnostics: DiagnosticProviderUpdate = diagnosisResult.result;
+      filePath = textEditor.getPath();
+      if (filePath == null) {
+        return;
+      }
+      const languageService = this._connectionToLanguageService.getForUri(filePath);
+      if (languageService == null) {
+        return;
+      }
+      const projectRoot = await (await languageService).getProjectRoot(filePath);
+      if (projectRoot == null) {
+        return;
+      }
+
+      this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [filePath]});
+      this._invalidatePathsForProjectRoot(projectRoot);
+
+      const pathsForHackLanguage = new Set();
+      this._projectRootToFilePaths.set(projectRoot, pathsForHackLanguage);
+      const addPath = path => {
+        if (path != null) {
+          pathsForHackLanguage.add(path);
+        }
+      };
+      if (diagnostics.filePathToMessages != null) {
+        diagnostics.filePathToMessages.forEach(
+          (messages, messagePath) => {
+            addPath(messagePath);
+            messages.forEach(
+              message => {
+                addPath(message.filePath);
+                if (message.trace != null) {
+                  message.trace.forEach(trace => {
+                    addPath(trace.filePath);
+                  });
+                }
+              });
+          });
+      }
+
+      this._providerBase.publishMessageUpdate(diagnostics);
+    });
   }
 
   _getPathsToInvalidate(projectRoot: NuclideUri): Array<NuclideUri> {
@@ -274,18 +281,26 @@ export class FileDiagnosticsProvider<T: LanguageService> {
 export class ObservableDiagnosticProvider<T: LanguageService> {
   updates: Observable<DiagnosticProviderUpdate>;
   invalidations: Observable<InvalidationMessage>;
+  _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
-  constructor(connectionToLanguageService: ConnectionCache<T>) {
+  constructor(
+    analyticsEventName: string,
+    connectionToLanguageService: ConnectionCache<T>,
+  ) {
+    this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
     this.updates = this._connectionToLanguageService.observeValues()
       .switchMap(languageService => {
         return Observable.fromPromise(languageService);
       })
       .mergeMap(language => language.observeDiagnostics().refCount())
-      .map(({filePath, messages}) => ({
-        filePathToMessages: new Map([[filePath, messages]]),
-      }));
+      .map(({filePath, messages}) => {
+        track(this._analyticsEventName);
+        return {
+          filePathToMessages: new Map([[filePath, messages]]),
+        };
+      });
 
     // TODO: Per file invalidations?
     this.invalidations = observableFromSubscribeFunction(

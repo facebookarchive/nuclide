@@ -12,7 +12,7 @@
 import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
+import {trackOperationTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type AutocompleteConfig = {
@@ -20,30 +20,38 @@ export type AutocompleteConfig = {
   suggestionPriority: number,
   excludeLowerPriority: boolean,
   version: string,
+  analyticsEventName: string,
 };
 
 export class AutocompleteProvider<T: LanguageService> {
+  name: string;
   selector: string;
   inclusionPriority: number;
   suggestionPriority: number;
   excludeLowerPriority: boolean;
+  _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
+    name: string,
     selector: string,
     inclusionPriority: number,
     suggestionPriority: number,
     excludeLowerPriority: boolean,
+    analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
+    this.name = name;
     this.selector = selector;
     this.inclusionPriority = inclusionPriority;
     this.suggestionPriority = suggestionPriority;
     this.excludeLowerPriority = excludeLowerPriority;
+    this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
   static register(
+    name: string,
     grammars: Array<string>,
     config: AutocompleteConfig,
     connectionToLanguageService: ConnectionCache<T>,
@@ -52,28 +60,32 @@ export class AutocompleteProvider<T: LanguageService> {
       'autocomplete.provider',
       config.version,
       new AutocompleteProvider(
+        name,
         grammars.map(grammar => '.' + grammar).join(', '),
         config.inclusionPriority,
         config.suggestionPriority,
         config.excludeLowerPriority,
+        config.analyticsEventName,
         connectionToLanguageService,
       ));
   }
 
-  // TODO: Fix tracking ids
-  @trackTiming('hack.getAutocompleteSuggestions')
-  async getSuggestions(
+  getSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<?Array<atom$AutocompleteSuggestion>> {
-    const {editor, activatedManually} = request;
-    const fileVersion = await getFileVersionOfEditor(editor);
-    const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
-    if (languageService == null || fileVersion == null) {
-      return [];
-    }
-    const position = editor.getLastCursor().getBufferPosition();
+    return trackOperationTiming(
+      this._analyticsEventName,
+      async () => {
+        const {editor, activatedManually} = request;
+        const fileVersion = await getFileVersionOfEditor(editor);
+        const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+        if (languageService == null || fileVersion == null) {
+          return [];
+        }
+        const position = editor.getLastCursor().getBufferPosition();
 
-    return await (await languageService).getAutocompleteSuggestions(
-      fileVersion, position, activatedManually == null ? false : activatedManually);
+        return await (await languageService).getAutocompleteSuggestions(
+          fileVersion, position, activatedManually == null ? false : activatedManually);
+      });
   }
 }
