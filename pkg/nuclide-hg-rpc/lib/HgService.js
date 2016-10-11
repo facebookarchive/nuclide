@@ -22,7 +22,6 @@ import {
   HgStatusOption,
   MergeConflictStatus,
   StatusCodeId,
-  HEAD_REVISION_EXPRESSION,
 } from './hg-constants';
 import {Subject} from 'rxjs';
 import {parseHgBlameOutput} from './hg-blame-output-parser';
@@ -1023,9 +1022,12 @@ export class HgService {
 
   rebase(
     destination: string,
-    source?: string = HEAD_REVISION_EXPRESSION,
+    source?: string,
   ): ConnectableObservable<ProcessMessage> {
-    const args = ['rebase', '-s', source, '-d', destination];
+    const args = ['rebase', '-d', destination];
+    if (source != null) {
+      args.push('-s', source);
+    }
     const execOptions = {
       cwd: this._workingDirectory,
     };
