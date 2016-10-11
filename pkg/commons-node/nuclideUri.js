@@ -59,6 +59,7 @@ import url from 'url';
 import {maybeToString} from './string';
 
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
+const URI_PREFIX_REGEX = /^[A-Za-z0-9_\-]+:\/\/.*/;
 
 function isRemote(uri: NuclideUri): boolean {
   return uri.startsWith(REMOTE_PATH_URI_PREFIX);
@@ -72,8 +73,7 @@ function isBrokenDeserializedUri(uri: ?NuclideUri): boolean {
 }
 
 function isUri(uri: string): boolean {
-  const parsedUri = url.parse(_escapeSpecialCharacters(uri));
-  return parsedUri.protocol != null;
+  return URI_PREFIX_REGEX.test(uri);
 }
 
 function isLocal(uri: NuclideUri): boolean {

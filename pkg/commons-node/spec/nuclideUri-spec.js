@@ -28,6 +28,7 @@ describe('nuclide-uri', () => {
   it('isLocal', () => {
     expect(nuclideUri.isLocal('/')).toBe(true);
     expect(nuclideUri.isLocal(remoteUri)).toBe(false);
+    expect(nuclideUri.isLocal('C:\\abc')).toBe(true);
   });
 
   it('createRemoteUri', () => {
