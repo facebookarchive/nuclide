@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {AtomCommands} from './rpc-types';
+import type {AtomCommands, ConnectionDetails} from './rpc-types';
 
 import invariant from 'assert';
 import {loadServicesConfig, ServiceRegistry, SocketServer} from '../../nuclide-rpc';
@@ -17,19 +17,16 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {createNewEntry} from '../shared/ConfigDirectory';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 
-export type ConnectionDetails = {
-  port: number,
-  family: string,
-};
-
-export async function getConnectionDetails(): Promise<?ConnectionDetails> {
-  return CommandServer._server == null ? null : (await CommandServer._server._server.getAddress());
-}
-
 // Ties the AtomCommands registered via RemoteCommandService to
 // the server side CommandService.
 export class CommandServer {
   static _server: ?CommandServer = null;
+
+  static async getConnectionDetails(): Promise<?ConnectionDetails> {
+    return CommandServer._server == null
+      ? null
+      : (await CommandServer._server._server.getAddress());
+  }
 
   _server: SocketServer;
   _nuclidePort: number;

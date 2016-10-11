@@ -40,11 +40,13 @@ import {
 } from './hg-revision-state-helpers';
 import {
   createCommmitMessageTempFile,
+  getEditMergeConfigs,
   hgAsyncExecute,
   hgObserveExecution,
 } from './hg-utils';
 import fsPromise from '../../commons-node/fsPromise';
 import debounce from '../../commons-node/debounce';
+import invariant from 'assert';
 
 import {fetchActiveBookmark} from './hg-bookmark-helpers';
 import {readArcConfig} from '../../nuclide-arcanist-rpc';
@@ -715,8 +717,10 @@ export class HgService {
     args: Array<string>,
   ): Observable<ProcessMessage> {
     let tempFile = null;
+    let editMergeConfigs;
 
     return Observable.fromPromise((async () => {
+      editMergeConfigs = await getEditMergeConfigs();
       if (message == null) {
         return args;
       } else {
@@ -724,10 +728,18 @@ export class HgService {
         return [...args, '-l', tempFile];
       }
     })()).switchMap(argumentsWithCommitFile => {
+      invariant(editMergeConfigs != null, 'editMergeConfigs cannot be null');
       const execOptions = {
         cwd: this._workingDirectory,
+        HGEDITOR: editMergeConfigs.hgEditor,
       };
-      return this._hgObserveExecution(argumentsWithCommitFile, execOptions);
+      return this._hgObserveExecution(
+        [
+          ...editMergeConfigs.args,
+          ...argumentsWithCommitFile,
+        ],
+        execOptions,
+      );
     }).finally(() => {
       if (tempFile != null) {
         fsPromise.unlink(tempFile);

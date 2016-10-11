@@ -9,11 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {AtomCommands} from './rpc-types';
+import type {AtomCommands, ConnectionDetails} from './rpc-types';
 
 import {CommandServer} from './CommandServer';
 
 // Called by the server side command line 'atom' command.
 export function getAtomCommands(): Promise<?AtomCommands> {
   return Promise.resolve(CommandServer.getAtomCommands());
+}
+
+export function getConnectionDetails(): Promise<?ConnectionDetails> {
+  return CommandServer.getConnectionDetails();
 }

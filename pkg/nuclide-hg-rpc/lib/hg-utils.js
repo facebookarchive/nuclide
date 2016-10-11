@@ -22,7 +22,7 @@ import {
   safeSpawn,
   runCommand,
 } from '../../commons-node/process';
-
+import {getConnectionDetails} from '../../nuclide-remote-atom-rpc';
 
 // Mercurial (as of v3.7.2) [strips lines][1] matching the following prefix when a commit message is
 // created by an editor invoked by Mercurial. Because Nuclide is not invoked by Mercurial, Nuclide
@@ -124,4 +124,36 @@ export async function createCommmitMessageTempFile(commitMessage: string): Promi
   const strippedMessage = commitMessage.replace(COMMIT_MESSAGE_STRIP_LINE, '');
   await fsPromise.writeFile(tempFile, strippedMessage);
   return tempFile;
+}
+
+export async function getEditMergeConfigs(): Promise<{args: Array<string>, hgEditor: string}> {
+  const connectionDetails = await getConnectionDetails();
+  if (connectionDetails == null) {
+    throw new Error('CommandServer not initialized!');
+  }
+  // Atom RPC needs to agree with the Atom process / nuclide server on the address and port.
+  const hgEditor = `ATOM_BACKUP_EDITOR=false "${getAtomRpcScriptPath()}"`
+    + ` -f ${connectionDetails.family} -p ${connectionDetails.port} --wait`;
+  return {
+    args: [
+      '--config',
+      'merge-tools.editmerge.check=conflicts',
+      '--config',
+      'ui.merge=editmerge',
+    ],
+    hgEditor,
+  };
+}
+
+let atomRpcEditorPath;
+
+function getAtomRpcScriptPath(): string {
+  if (atomRpcEditorPath == null) {
+    try {
+      atomRpcEditorPath = require.resolve('../../nuclide-remote-atom-rpc/bin/fb-atom');
+    } catch (error) {
+      atomRpcEditorPath = require.resolve('../../nuclide-remote-atom-rpc/bin/atom');
+    }
+  }
+  return atomRpcEditorPath;
 }

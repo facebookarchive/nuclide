@@ -28,3 +28,8 @@ export interface AtomCommands {
   addProject(projectPath: NuclideUri): Promise<void>,
   dispose(): void,
 }
+
+export type ConnectionDetails = {
+  port: number,
+  family: string,
+};

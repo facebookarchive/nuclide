@@ -20,6 +20,7 @@ import {
 import invariant from 'assert';
 import fsPromise from '../../commons-node/fsPromise';
 import {Observable} from 'rxjs';
+import {CommandServer} from '../../nuclide-remote-atom-rpc/lib/CommandServer';
 
 class TestHgService extends HgService {
   // These tests target the non-watchman-dependent features of LocalHgService.
@@ -336,11 +337,11 @@ describe('HgService', () => {
         tempFileRemoved = true;
       });
       spyOn(fsPromise, 'writeFile').andCallFake(async (filePath, contents) => {
-        expect(contents).toBe(commitMessage);
         tempFileWritten = true;
       });
       committedToHg = false;
-      spyOn(hgService, '_hgObserveExecution').andCallFake((args, options) => {
+      spyOn(hgService, '_hgObserveExecution').andCallFake((_args, options) => {
+        const args = _args.slice(4);
         expect(expectedArgs).not.toBeNull();
         invariant(expectedArgs !== null);
         expect(args.length).toBe(
@@ -358,6 +359,11 @@ describe('HgService', () => {
         committedToHg = true;
         return Observable.of(null);
       });
+      CommandServer._server = ({
+        _server: {
+          getAddress: () => ({family: 'f', port: 12345}),
+        },
+      }: any);
     });
 
     describe('::commit', () => {

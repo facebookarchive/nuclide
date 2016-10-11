@@ -99,7 +99,13 @@ export function watchDirectoryRecursive(
     return Observable.of('EXISTING').publish();
   }
   return Observable.fromPromise(
-    client.watchDirectoryRecursive(directoryPath),
+    client.watchDirectoryRecursive(
+      directoryPath,
+      `filewatcher-${directoryPath}`,
+      // Reloading with file changes should happen
+      // during source control operations to reflect the file contents / tree state.
+      {defer_vcs: false},
+    ),
   ).flatMap(watcher => {
     // Listen for watcher changes to route them to watched files and directories.
     watcher.on('change', entries => {
