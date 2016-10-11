@@ -15,9 +15,7 @@ import invariant from 'assert';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getDiagnosticRange} from './diagnostic-range';
-import nuclideUri from '../../commons-node/nuclideUri';
 import {getEnableLinting} from './config';
-import {NO_LINT_EXTENSIONS} from './constants';
 
 export default class LintHelpers {
 
@@ -25,15 +23,6 @@ export default class LintHelpers {
   static async lint(editor: TextEditor): Promise<Array<LinterMessage>> {
     const src = editor.getPath();
     if (src == null || !getEnableLinting()) {
-      return [];
-    }
-
-    const extname = nuclideUri.extname(src);
-    // Strip the dot if extname exists, otherwise use the basename as extension.
-    // This matches the extension matching of grammar registration.
-    const ext = extname.length > 0 ? extname.slice(1) : nuclideUri.basename(src);
-
-    if (NO_LINT_EXTENSIONS.has(ext)) {
       return [];
     }
 

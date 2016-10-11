@@ -11,15 +11,6 @@
 
 export const GRAMMAR_SET = new Set(['source.python']);
 export const PACKAGE_NAME = 'nuclide-python';
-export const NO_LINT_EXTENSIONS = new Set([
-  'BUCK',
-  'TARGETS',
-  'cconf',
-  'cinc',
-  'ctw',
-  'mcconf',
-  'tw',
-]);
 // Type mappings between Jedi types and autocomplete-plus types used for styling.
 export const TYPES = {
   module: 'import',
