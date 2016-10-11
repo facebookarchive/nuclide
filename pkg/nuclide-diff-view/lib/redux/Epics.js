@@ -392,6 +392,7 @@ export function diffFileEpic(
         .takeUntil(Observable.merge(
           observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer)),
           deactiveRepsitory,
+          actions.ofType(ActionTypes.CLOSE_VIEW),
         ))
         .concat(clearActiveDiffObservable),
     );
