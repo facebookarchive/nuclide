@@ -19,7 +19,7 @@ import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
 import {React, ReactDOM} from 'react-for-atom';
 import url from 'url';
@@ -116,57 +116,55 @@ function addFileTreeCommands(
   commandName: string,
   diffOptions?: Object,
 ): IDisposable {
-  const subscriptions = new CompositeDisposable();
-  subscriptions.add(atom.commands.add(
-    '.tree-view .entry.file.list-item',
-    commandName,
-    event => {
-      const filePath = uiTreePath(event);
-      atom.workspace.open(formatDiffViewUrl({
-        file: filePath || '',
-        ...diffOptions,
-      }));
-    },
-  ));
-
-  subscriptions.add(atom.commands.add(
-    '.tree-view .entry.directory.list-nested-item > .list-item',
-    commandName,
-    event => {
-      const directoryPath = uiTreePath(event);
-      atom.workspace.open(formatDiffViewUrl({
-        directory: directoryPath || '',
-        ...diffOptions,
-      }));
-    },
-  ));
-  return subscriptions;
+  return new UniversalDisposable(
+    atom.commands.add(
+      '.tree-view .entry.file.list-item',
+      commandName,
+      event => {
+        const filePath = uiTreePath(event);
+        atom.workspace.open(formatDiffViewUrl({
+          file: filePath || '',
+          ...diffOptions,
+        }));
+      },
+    ),
+    atom.commands.add(
+      '.tree-view .entry.directory.list-nested-item > .list-item',
+      commandName,
+      event => {
+        const directoryPath = uiTreePath(event);
+        atom.workspace.open(formatDiffViewUrl({
+          directory: directoryPath || '',
+          ...diffOptions,
+        }));
+      },
+    ),
+  );
 }
 
 function addActivePathCommands(
   commandName: string,
   diffOptions?: Object,
 ): IDisposable {
-  const subscriptions = new CompositeDisposable();
-
   function onTargetCommand(event: Event) {
     event.preventDefault();
     event.stopPropagation();
     diffActivePath(diffOptions);
   }
 
-  subscriptions.add(atom.commands.add(
-    'atom-workspace',
-    commandName,
-    onTargetCommand,
-  ));
-  // Listen for in-editor context menu item diff view open command.
-  subscriptions.add(atom.commands.add(
-    'atom-text-editor',
-    commandName,
-    onTargetCommand,
-  ));
-  return subscriptions;
+  return new UniversalDisposable(
+    atom.commands.add(
+      'atom-workspace',
+      commandName,
+      onTargetCommand,
+    ),
+    // Listen for in-editor context menu item diff view open command.
+    atom.commands.add(
+      'atom-text-editor',
+      commandName,
+      onTargetCommand,
+    ),
+  );
 }
 
 class Activation {
@@ -478,9 +476,9 @@ class Activation {
     };
     updateToolbarCount();
 
-    const toolBarSubscriptions = new CompositeDisposable(
+    const toolBarSubscriptions = new UniversalDisposable(
       diffModel.onDidUpdateState(() => { updateToolbarCount(); }),
-      new Disposable(() => { toolBar.removeItems(); }),
+      () => { toolBar.removeItems(); },
     );
     this._subscriptions.add(toolBarSubscriptions);
     return toolBarSubscriptions;
@@ -538,7 +536,7 @@ class Activation {
     this._cwdApi = api;
     this._actionCreators.setCwdApi(api);
     let pkg = this;
-    this._subscriptions.add(new Disposable(() => { pkg = null; }));
+    this._subscriptions.add(() => { pkg = null; });
     return new Disposable(() => {
       if (pkg != null) {
         pkg._actionCreators.setCwdApi(null);
@@ -547,47 +545,48 @@ class Activation {
   }
 
   addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
-    const menuItemDescriptions = new CompositeDisposable();
-    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
-      {
-        label: 'Open in Diff View',
-        command: 'nuclide-diff-view:open-context',
-        shouldDisplay() {
-          return shouldDisplayDiffTreeItem(contextMenu);
+    const menuItemDescriptions = new UniversalDisposable(
+      contextMenu.addItemToSourceControlMenu(
+        {
+          label: 'Open in Diff View',
+          command: 'nuclide-diff-view:open-context',
+          shouldDisplay() {
+            return shouldDisplayDiffTreeItem(contextMenu);
+          },
         },
-      },
-      DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY,
-    ));
-    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
-      {
-        label: 'Commit',
-        command: 'nuclide-diff-view:commit-context',
-        shouldDisplay() {
-          return shouldDisplayDiffTreeItem(contextMenu);
+        DIFF_VIEW_FILE_TREE_CONTEXT_MENU_PRIORITY,
+      ),
+      contextMenu.addItemToSourceControlMenu(
+        {
+          label: 'Commit',
+          command: 'nuclide-diff-view:commit-context',
+          shouldDisplay() {
+            return shouldDisplayDiffTreeItem(contextMenu);
+          },
         },
-      },
-      COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY,
-    ));
-    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
-      {
-        label: 'Amend',
-        command: 'nuclide-diff-view:amend-context',
-        shouldDisplay() {
-          return shouldDisplayDiffTreeItem(contextMenu);
+        COMMIT_FILE_TREE_CONTEXT_MENU_PRIORITY,
+      ),
+      contextMenu.addItemToSourceControlMenu(
+        {
+          label: 'Amend',
+          command: 'nuclide-diff-view:amend-context',
+          shouldDisplay() {
+            return shouldDisplayDiffTreeItem(contextMenu);
+          },
         },
-      },
-      AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY,
-    ));
-    menuItemDescriptions.add(contextMenu.addItemToSourceControlMenu(
-      {
-        label: 'Publish to Phabricator',
-        command: 'nuclide-diff-view:publish-context',
-        shouldDisplay() {
-          return shouldDisplayDiffTreeItem(contextMenu);
+        AMEND_FILE_TREE_CONTEXT_MENU_PRIORITY,
+      ),
+      contextMenu.addItemToSourceControlMenu(
+        {
+          label: 'Publish to Phabricator',
+          command: 'nuclide-diff-view:publish-context',
+          shouldDisplay() {
+            return shouldDisplayDiffTreeItem(contextMenu);
+          },
         },
-      },
-      PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY,
-    ));
+        PUBLISH_FILE_TREE_CONTEXT_MENU_PRIORITY,
+      ),
+    );
 
     this._subscriptions.add(menuItemDescriptions);
 

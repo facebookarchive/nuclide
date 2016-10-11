@@ -23,7 +23,7 @@ import {applyActionMiddleware} from './applyActionMiddleware';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import bookmarkIsEqual from './bookmarkIsEqual';
 import Commands from './Commands';
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {BehaviorSubject, Subject} from 'rxjs';
@@ -56,7 +56,7 @@ function getInitialState() {
 }
 
 let commands: Commands;
-let disposables: CompositeDisposable;
+let disposables: UniversalDisposable;
 let states: BehaviorSubject<AppState>;
 
 export function activate(rawState: Object): void {
@@ -78,9 +78,7 @@ export function activate(rawState: Object): void {
       commands.fetchProjectDirectories();
     });
 
-  disposables = new CompositeDisposable(
-    new UniversalDisposable(subscription),
-  );
+  disposables = new UniversalDisposable(subscription);
 }
 
 export function consumeNuclideSideBar(sideBar: NuclideSideBarService): IDisposable {

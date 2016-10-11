@@ -35,7 +35,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Subject} from 'rxjs';
 import invariant from 'assert';
 import classnames from 'classnames';
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 import {
   track,
   trackTiming,
@@ -164,7 +164,7 @@ function createDebuggerView(model: DebuggerModel): HTMLElement {
 }
 
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _model: DebuggerModel;
   _panel: ?Object;
   _launchAttachDialog: ?atom$Panel;
@@ -174,7 +174,7 @@ class Activation {
     this._model = new DebuggerModel(state);
     this._panel = null;
     this._launchAttachDialog = null;
-    this._disposables = new CompositeDisposable(
+    this._disposables = new UniversalDisposable(
       this._model,
       // Listen for removed connections and kill the debugger if it is using that connection.
       ServerConnection.onDidCloseServerConnection(connection => {
@@ -383,12 +383,12 @@ class Activation {
       });
 
       this._disposables.add(
-        new Disposable(() => {
+        () => {
           if (this._launchAttachDialog != null) {
             this._launchAttachDialog.destroy();
             this._launchAttachDialog = null;
           }
-        }),
+        },
         atom.commands.add(
           'atom-workspace',
           'core:cancel',
@@ -485,17 +485,17 @@ function registerConsoleExecutor(
   watchExpressionStore: WatchExpressionStore,
   registerExecutor: RegisterExecutorFunction,
 ): IDisposable {
-  const disposables = new CompositeDisposable();
+  const disposables = new UniversalDisposable();
   const rawOutput: Subject<?EvaluationResult> = new Subject();
   const send = expression => {
-    disposables.add(new UniversalDisposable(
+    disposables.add(
       // We filter here because the first value in the BehaviorSubject is null no matter what, and
       // we want the console to unsubscribe the stream after the first non-null value.
       watchExpressionStore.evaluateConsoleExpression(expression)
         .filter(result => result != null)
         .first()
         .subscribe(result => rawOutput.next(result)),
-    ));
+    );
     watchExpressionStore._triggerReevaluation();
   };
   const output: Observable<{result?: EvaluationResult}> = rawOutput

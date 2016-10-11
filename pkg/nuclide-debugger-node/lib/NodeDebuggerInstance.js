@@ -16,7 +16,7 @@ import type {
 
 import utils from './utils';
 import {DebuggerInstance} from '../../nuclide-debugger-base';
-import {CompositeDisposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -31,7 +31,7 @@ const SESSION_END_EVENT = 'session-end-event';
 
 export class NodeDebuggerInstance extends DebuggerInstance {
   _rpcService: NodeDebuggerService;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _chromeWebSocketServer: WebSocketServer;
   _chromeWebSocket: ?WebSocket;
   _emitter: Emitter;
@@ -39,7 +39,7 @@ export class NodeDebuggerInstance extends DebuggerInstance {
   constructor(processInfo: DebuggerProcessInfo, rpcService: NodeDebuggerService) {
     super(processInfo);
     this._rpcService = rpcService;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._disposables.add(rpcService);
     this._chromeWebSocketServer = new WebSocketServer();
     this._chromeWebSocket = null;
@@ -49,12 +49,13 @@ export class NodeDebuggerInstance extends DebuggerInstance {
   }
 
   _registerServerHandlers(): void {
-    this._disposables.add(new UniversalDisposable(
+    this._disposables.add(
       this._rpcService.getServerMessageObservable().refCount().subscribe(
         this._handleServerMessage.bind(this),
         this._handleServerError.bind(this),
         this._handleSessionEnd.bind(this),
-    )));
+      ),
+    );
   }
 
   getWebsocketAddress(): Promise<string> {

@@ -17,7 +17,6 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import {Observable} from 'rxjs';
-import {CompositeDisposable, Disposable} from 'atom';
 
 import {FileTree} from './FileTree';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
@@ -57,7 +56,7 @@ const SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY = 'nuclide-file-tree.showUncommittedCh
 class FileTreeSidebarComponent extends React.Component {
   _actions: FileTreeActions;
   _store: FileTreeStore;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _afRequestId: ?number;
   _showOpenConfigValues: Observable<boolean>;
   _showUncommittedConfigValue: Observable<boolean>;
@@ -86,7 +85,7 @@ class FileTreeSidebarComponent extends React.Component {
     this._showUncommittedConfigValue =
       featureConfig.observeAsStream(SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY).cache(1);
 
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._afRequestId = null;
     this._scrollWasTriggeredProgrammatically = false;
     (this: any)._handleFocus = this._handleFocus.bind(this);
@@ -111,23 +110,19 @@ class FileTreeSidebarComponent extends React.Component {
     this._disposables.add(
       this._store.subscribe(this._processExternalUpdate),
       atom.project.onDidChangePaths(this._processExternalUpdate),
-      new UniversalDisposable(
-        toggle(observeAllModifiedStatusChanges(), this._showOpenConfigValues)
-          .subscribe(() => this._setModifiedUris()),
-      ),
+      toggle(observeAllModifiedStatusChanges(), this._showOpenConfigValues)
+        .subscribe(() => this._setModifiedUris()),
       this._monitorActiveUri(),
-      new UniversalDisposable(
-        this._showOpenConfigValues.subscribe(showOpenFiles => this.setState({showOpenFiles})),
-        this._showUncommittedConfigValue.subscribe(
-          showUncommittedChanges => this.setState({showUncommittedChanges}),
-        ),
+      this._showOpenConfigValues.subscribe(showOpenFiles => this.setState({showOpenFiles})),
+      this._showUncommittedConfigValue.subscribe(
+        showUncommittedChanges => this.setState({showUncommittedChanges}),
       ),
-      new Disposable(() => {
+      () => {
         window.removeEventListener('resize', this._onViewChange);
         if (this._afRequestId != null) {
           window.cancelAnimationFrame(this._afRequestId);
         }
-      }),
+      },
     );
   }
 

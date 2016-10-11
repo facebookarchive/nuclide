@@ -10,7 +10,6 @@
  */
 
 import Rx from 'rxjs';
-import {CompositeDisposable} from 'event-kit';
 import {
   WebSocketServer,
 } from '../../nuclide-debugger-common/lib/WebSocketServer';
@@ -23,12 +22,12 @@ const {log} = utils;
  * Responsible for bootstrap and host node inspector backend.
  */
 export class NodeDebuggerHost {
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
   _nodeSocketServer: WebSocketServer;
   _close$: Rx.Subject<mixed>;
 
   constructor() {
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new UniversalDisposable();
     this._nodeSocketServer = new WebSocketServer();
     this._subscriptions.add(this._nodeSocketServer);
     this._close$ = new Rx.Subject();

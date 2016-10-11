@@ -23,7 +23,6 @@ import {
 import {applyActionMiddleware} from './applyActionMiddleware';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {Commands} from './Commands';
-import {Disposable, CompositeDisposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
 import {
   deserializeBookShelfState,
@@ -52,7 +51,7 @@ function createStateStream(
 }
 
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _states: BehaviorSubject<BookShelfState>;
   _commands: Commands;
 
@@ -119,11 +118,11 @@ class Activation {
         }
       }).subscribe();
 
-    this._disposables = new CompositeDisposable(
-      new Disposable(actions.complete.bind(actions)),
-      new UniversalDisposable(addedRepoSubscription),
-      new UniversalDisposable(paneStateChangeSubscription),
-      new UniversalDisposable(shortHeadChangeSubscription),
+    this._disposables = new UniversalDisposable(
+      actions.complete.bind(actions),
+      addedRepoSubscription,
+      paneStateChangeSubscription,
+      shortHeadChangeSubscription,
     );
   }
 

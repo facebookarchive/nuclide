@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import {getViewOfEditor} from '../../commons-atom/text-editor';
 import {NavigationStackController} from './NavigationStackController';
@@ -22,10 +21,10 @@ import {consumeStatusBar} from './StatusBar';
 const controller = new NavigationStackController();
 
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
 
   constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
 
     const subscribeEditor = (editor: atom$TextEditor) => {
       const cursorSubscription = editor.onDidChangeCursorPosition(
@@ -54,46 +53,41 @@ class Activation {
     };
 
     atom.workspace.getTextEditors().forEach(subscribeEditor);
-    this._disposables.add(atom.workspace.onDidAddTextEditor(addEditor));
-    this._disposables.add(atom.workspace.onDidOpen((event: OnDidOpenEvent) => {
-      if (atom.workspace.isTextEditor(event.item)) {
-        controller.onOpen((event.item: any));
-      }
-    }));
-    this._disposables.add(atom.workspace.observeActivePaneItem(item => {
-      if (atom.workspace.isTextEditor(item)) {
-        controller.onActivate((item: any));
-      }
-    }));
-    this._disposables.add(atom.workspace.onDidStopChangingActivePaneItem(item => {
-      if (atom.workspace.isTextEditor(item)) {
-        controller.onActiveStopChanging((item: any));
-      }
-    }));
-    this._disposables.add(onDidRemoveProjectPath(path => {
-      controller.removePath(
-        path, atom.project.getDirectories().map(directory => directory.getPath()));
-    }));
     this._disposables.add(
-      new UniversalDisposable(
-        observeNavigatingEditors().subscribe(editor => {
-          controller.onOptInNavigation(editor);
-        }),
-      ),
-    );
-
-    this._disposables.add(
+      atom.workspace.onDidAddTextEditor(addEditor),
+      atom.workspace.onDidOpen((event: OnDidOpenEvent) => {
+        if (atom.workspace.isTextEditor(event.item)) {
+          controller.onOpen((event.item: any));
+        }
+      }),
+      atom.workspace.observeActivePaneItem(item => {
+        if (atom.workspace.isTextEditor(item)) {
+          controller.onActivate((item: any));
+        }
+      }),
+      atom.workspace.onDidStopChangingActivePaneItem(item => {
+        if (atom.workspace.isTextEditor(item)) {
+          controller.onActiveStopChanging((item: any));
+        }
+      }),
+      onDidRemoveProjectPath(path => {
+        controller.removePath(
+          path, atom.project.getDirectories().map(directory => directory.getPath()));
+      }),
+      observeNavigatingEditors().subscribe(editor => {
+        controller.onOptInNavigation(editor);
+      }),
       atom.commands.add('atom-workspace',
       'nuclide-navigation-stack:navigate-forwards', () => {
         trackOperationTiming(
           'nuclide-navigation-stack:forwards', () => controller.navigateForwards());
-      }));
-    this._disposables.add(
+      }),
       atom.commands.add('atom-workspace',
       'nuclide-navigation-stack:navigate-backwards', () => {
         trackOperationTiming(
           'nuclide-navigation-stack:backwards', () => controller.navigateBackwards());
-      }));
+      }),
+    );
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): IDisposable {

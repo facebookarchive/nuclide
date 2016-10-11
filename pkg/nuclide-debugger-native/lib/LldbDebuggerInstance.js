@@ -16,7 +16,7 @@ import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
 import utils from './utils';
 import {DebuggerInstance} from '../../nuclide-debugger-base';
-import {CompositeDisposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
 import nuclideUri from '../../commons-node/nuclideUri';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -35,7 +35,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
   _attachPromise: ?Promise<NativeDebuggerService>;
   _chromeWebSocketServer: WebSocketServer;
   _chromeWebSocket: ?WebSocket;
-  _disposables: atom$CompositeDisposable;
+  _disposables: UniversalDisposable;
   _emitter: Emitter;
 
   constructor(
@@ -48,7 +48,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
     this._attachPromise = null;
 
     this._chromeWebSocket = null;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._disposables.add(outputDisposable);
     this._chromeWebSocketServer = new WebSocketServer();
     this._disposables.add(this._chromeWebSocketServer);
@@ -58,12 +58,13 @@ export class LldbDebuggerInstance extends DebuggerInstance {
 
   _registerServerHandlers(rpcService: NativeDebuggerService): void {
     this._disposables.add(rpcService);
-    this._disposables.add(new UniversalDisposable(
+    this._disposables.add(
       rpcService.getServerMessageObservable().refCount().subscribe(
         this._handleServerMessage.bind(this),
         this._handleServerError.bind(this),
         this._handleSessionEnd.bind(this),
-    )));
+      ),
+    );
   }
 
   _handleServerMessage(message_: string): void {

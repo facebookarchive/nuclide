@@ -34,7 +34,6 @@ import type {
 
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
-import {CompositeDisposable} from 'atom';
 import {quote} from 'shell-quote';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -95,7 +94,7 @@ function getSubcommand(taskType: TaskType, isInstallableRule: boolean): BuckSubc
 
 export class BuckBuildSystem {
   _flux: ?Flux;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _extraUi: ?ReactClass<any>;
   id: string;
   name: string;
@@ -109,11 +108,11 @@ export class BuckBuildSystem {
     this.id = 'buck';
     this.name = 'Buck';
     this._initialState = initialState;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._outputMessages = new Subject();
     this._diagnosticUpdates = new Subject();
     this._diagnosticInvalidations = new Subject();
-    this._disposables.add(new UniversalDisposable(this._outputMessages));
+    this._disposables.add(this._outputMessages);
   }
 
   getTaskList() {

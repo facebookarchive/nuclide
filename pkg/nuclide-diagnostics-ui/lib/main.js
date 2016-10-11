@@ -20,7 +20,7 @@ import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-m
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 
 import {track} from '../../nuclide-analytics';
 
@@ -37,7 +37,7 @@ const DEFAULT_TABLE_HEIGHT = 200;
 const DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
 const LINTER_PACKAGE = 'linter';
 
-let subscriptions: ?CompositeDisposable = null;
+let subscriptions: ?UniversalDisposable = null;
 let bottomPanel: ?atom$Panel = null;
 let statusBarTile: ?StatusBarTile;
 
@@ -70,7 +70,7 @@ function createPanel(diagnosticUpdater: ObservableDiagnosticUpdater): IDisposabl
   logPanelIsDisplayed();
   bottomPanel = panel;
 
-  return new CompositeDisposable(
+  return new UniversalDisposable(
     panel.onDidChangeVisible((visible: boolean) => {
       invariant(activationState);
       activationState.hideDiagnosticsPanel = !visible;
@@ -87,7 +87,7 @@ function watchForLinter(setWarnAboutLinter: (warn: boolean) => void): IDisposabl
   if (atom.packages.isPackageActive(LINTER_PACKAGE)) {
     setWarnAboutLinter(true);
   }
-  return new CompositeDisposable(
+  return new UniversalDisposable(
     atom.packages.onDidActivatePackage(pkg => {
       if (pkg.name === LINTER_PACKAGE) {
         setWarnAboutLinter(true);
@@ -120,7 +120,7 @@ export function activate(state_: ?Object): void {
   if (subscriptions) {
     return;
   }
-  subscriptions = new CompositeDisposable();
+  subscriptions = new UniversalDisposable();
 
   // Ensure the integrity of the ActivationState created from state.
   if (!state) {

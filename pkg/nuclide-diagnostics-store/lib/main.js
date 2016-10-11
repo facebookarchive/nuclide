@@ -17,7 +17,6 @@ import type {
   ObservableDiagnosticUpdater,
 } from '../../nuclide-diagnostics-common';
 
-import {Disposable, CompositeDisposable} from 'atom';
 import featureConfig from '../../commons-atom/featureConfig';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -87,7 +86,7 @@ const allLinterAdapters = new Set();
 
 export function activate(state: ?Object): void {
   if (!disposables) {
-    disposables = new CompositeDisposable();
+    disposables = new UniversalDisposable();
   }
 
   // Returns mixed so a cast is necessary.
@@ -111,18 +110,17 @@ export function consumeLinterProvider(
   provider: LinterProvider | Array<LinterProvider>,
 ): IDisposable {
   const newAdapters = createAdapters(provider);
-  const adapterDisposables = new CompositeDisposable();
+  const adapterDisposables = new UniversalDisposable();
   for (const adapter of newAdapters) {
     adapter.setEnabled(consumeLegacyLinters);
     adapter.setLintOnFly(lintOnTheFly);
     allLinterAdapters.add(adapter);
     const diagnosticDisposable = consumeDiagnosticsProviderV1(adapter);
-    const adapterDisposable = new Disposable(() => {
+    adapterDisposables.add(() => {
       diagnosticDisposable.dispose();
       adapter.dispose();
       allLinterAdapters.delete(adapter);
     });
-    adapterDisposables.add(adapterDisposable);
     addDisposable(adapter);
   }
   return adapterDisposables;
@@ -140,24 +138,18 @@ export function consumeDiagnosticsProviderV1(provider: CallbackDiagnosticProvide
 }
 
 export function consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): IDisposable {
-  const compositeDisposable = new CompositeDisposable();
+  const compositeDisposable = new UniversalDisposable();
   const store = getDiagnosticStore();
 
   compositeDisposable.add(
-    new UniversalDisposable(
-      provider.updates.subscribe(update => store.updateMessages(provider, update)),
+    provider.updates.subscribe(update => store.updateMessages(provider, update)),
+    provider.invalidations.subscribe(
+      invalidation => store.invalidateMessages(provider, invalidation),
     ),
+    () => {
+      store.invalidateMessages(provider, {scope: 'all'});
+    },
   );
-  compositeDisposable.add(
-    new UniversalDisposable(
-      provider.invalidations.subscribe(
-        invalidation => store.invalidateMessages(provider, invalidation),
-      ),
-    ),
-  );
-  compositeDisposable.add(new Disposable(() => {
-    store.invalidateMessages(provider, {scope: 'all'});
-  }));
 
   return compositeDisposable;
 }

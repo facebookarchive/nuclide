@@ -15,7 +15,7 @@ import type {ObservableDiagnosticProvider} from '../../nuclide-diagnostics-commo
 
 import {React, ReactDOM} from 'react-for-atom';
 
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
@@ -41,7 +41,7 @@ async function resultFunction(
 }
 
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _activeEditorRegistry: ActiveEditorRegistry<CoverageProvider, ?CoverageResult>;
   _toggleEvents: Subject<void>;
   _shouldRenderDiagnostics: Observable<boolean>;
@@ -50,7 +50,7 @@ class Activation {
     this._toggleEvents = new Subject();
     this._shouldRenderDiagnostics = this._toggleEvents.scan(prev => !prev, false);
 
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._activeEditorRegistry = new ActiveEditorRegistry(
       resultFunction,
       {updateOnEdit: false},
@@ -64,9 +64,8 @@ class Activation {
       ),
     );
 
-    this._disposables.add(new UniversalDisposable(
-        this._toggleEvents.subscribe(() => track('nuclide-type-coverage:toggle')),
-      ),
+    this._disposables.add(
+      this._toggleEvents.subscribe(() => track('nuclide-type-coverage:toggle')),
     );
   }
 

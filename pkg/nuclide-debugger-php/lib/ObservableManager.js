@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
 import {getOutputService} from '../../nuclide-debugger-base';
 import utils from './utils';
 const {log, logError} = utils;
@@ -39,7 +38,7 @@ export class ObservableManager {
   _outputWindowMessages: Observable<Object>;
   _sendServerMessageToChromeUi: (message: string) => void;
   _onSessionEnd: ?() => mixed;
-  _disposables: atom$CompositeDisposable;
+  _disposables: UniversalDisposable;
 
   constructor(
     notifications: Observable<NotificationMessage>,
@@ -53,23 +52,23 @@ export class ObservableManager {
     this._outputWindowMessages = outputWindowMessages;
     this._sendServerMessageToChromeUi = sendServerMessageToChromeUi;
     this._onSessionEnd = onSessionEnd;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._subscribe();
   }
 
   _subscribe(): void {
     const sharedNotifications = this._notifications.share();
-    this._disposables.add(new UniversalDisposable(sharedNotifications.subscribe(
+    this._disposables.add(sharedNotifications.subscribe(
       this._handleNotificationMessage.bind(this),
       this._handleNotificationError.bind(this),
       this._handleNotificationEnd.bind(this),
-    )));
+    ));
     const sharedServerMessages = this._serverMessages.share();
-    this._disposables.add(new UniversalDisposable(sharedServerMessages.subscribe(
+    this._disposables.add(sharedServerMessages.subscribe(
       this._handleServerMessage.bind(this),
       this._handleServerError.bind(this),
       this._handleServerEnd.bind(this),
-    )));
+    ));
     const sharedOutputWindow = this._outputWindowMessages.share();
     this._registerOutputWindowLogging(sharedOutputWindow);
     Observable
@@ -90,13 +89,15 @@ export class ObservableManager {
             text: messageObj.params.message.text,
           };
         });
-      this._disposables.add(new UniversalDisposable(sharedOutputWindowMessages.subscribe({
-        complete: this._handleOutputWindowEnd.bind(this),
-      })));
-      this._disposables.add(api.registerOutputProvider({
-        id: 'hhvm debugger',
-        messages,
-      }));
+      this._disposables.add(
+        sharedOutputWindowMessages.subscribe({
+          complete: this._handleOutputWindowEnd.bind(this),
+        }),
+        api.registerOutputProvider({
+          id: 'hhvm debugger',
+          messages,
+        }),
+      );
     } else {
       logError('Cannot get output window service.');
     }

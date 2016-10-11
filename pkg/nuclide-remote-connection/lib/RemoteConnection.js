@@ -21,7 +21,7 @@ import type {RemoteDirectory} from './RemoteDirectory';
 import invariant from 'assert';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {ServerConnection} from './ServerConnection';
-import {CompositeDisposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {getConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {getLogger} from '../../nuclide-logging';
@@ -49,7 +49,7 @@ export type RemoteConnectionConfiguration = {
 // And there needn't be a 1:1 relationship between RemoteConnections and hg repos.
 export class RemoteConnection {
   _cwd: string; // Path to remote directory user should start in upon connection.
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
   _hgRepositoryDescription: ?HgRepositoryDescription;
   _connection: ServerConnection;
   _displayTitle: string;
@@ -65,7 +65,7 @@ export class RemoteConnection {
   // Do NOT call this directly. Use findOrCreate instead.
   constructor(connection: ServerConnection, cwd: string, displayTitle: string) {
     this._cwd = cwd;
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new UniversalDisposable();
     this._hgRepositoryDescription = null;
     this._connection = connection;
     this._displayTitle = displayTitle;
@@ -220,7 +220,7 @@ export class RemoteConnection {
       // Nothing needs to be done if the root directory watch has ended.
       logger.info(`Watcher Features Ended for project: ${rootDirectoryUri}`);
     });
-    this._subscriptions.add(new UniversalDisposable(subscription));
+    this._subscriptions.add(subscription);
   }
 
   async close(shutdownIfLast: boolean): Promise<void> {

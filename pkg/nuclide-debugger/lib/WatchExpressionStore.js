@@ -19,10 +19,6 @@ import type {
 } from './types';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 
-import {
-  Disposable,
-  CompositeDisposable,
-} from 'atom';
 import {DebuggerMode} from './DebuggerStore';
 import {ActionTypes} from './DebuggerDispatcher';
 import {BehaviorSubject, Observable} from 'rxjs';
@@ -36,9 +32,9 @@ type Expression = string;
 
 export class WatchExpressionStore {
   _bridge: Bridge;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _watchExpressions: Map<Expression, BehaviorSubject<?EvaluationResult>>;
-  _previousEvaluationSubscriptions: CompositeDisposable;
+  _previousEvaluationSubscriptions: UniversalDisposable;
   _evaluationId: number;
   _isPaused: boolean;
   _evaluationRequestsInFlight: Map<number, Deferred<mixed>>;
@@ -47,20 +43,18 @@ export class WatchExpressionStore {
     this._evaluationId = 0;
     this._isPaused = false;
     this._bridge = bridge;
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._watchExpressions = new Map();
     this._evaluationRequestsInFlight = new Map();
-    this._disposables.add(new Disposable(() => this._watchExpressions.clear()));
+    this._disposables.add(() => this._watchExpressions.clear());
     // `this._previousEvaluationSubscriptions` can change at any time and are a distinct subset of
     // `this._disposables`.
-    this._previousEvaluationSubscriptions = new CompositeDisposable();
+    this._previousEvaluationSubscriptions = new UniversalDisposable();
     this._disposables.add(this._previousEvaluationSubscriptions);
     const _dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
-    this._disposables.add(
-      new Disposable(() => {
-        dispatcher.unregister(_dispatcherToken);
-      }),
-    );
+    this._disposables.add(() => {
+      dispatcher.unregister(_dispatcherToken);
+    });
   }
 
   _handlePayload(payload: DebuggerAction) {
@@ -111,7 +105,7 @@ export class WatchExpressionStore {
 
   _cancelRequestsToBridge(): void {
     this._previousEvaluationSubscriptions.dispose();
-    this._previousEvaluationSubscriptions = new CompositeDisposable();
+    this._previousEvaluationSubscriptions = new UniversalDisposable();
   }
 
   // Resets all values to N/A, for examples when the debugger resumes or stops.

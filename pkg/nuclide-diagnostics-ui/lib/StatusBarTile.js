@@ -15,7 +15,6 @@ import type {
 } from '../../nuclide-diagnostics-common';
 
 import classnames from 'classnames';
-import {CompositeDisposable} from 'atom';
 import {
   React,
   ReactDOM,
@@ -36,7 +35,7 @@ class StatusBarTile {
 
   _diagnosticUpdaters: Map<ObservableDiagnosticUpdater, DiagnosticCount>;
   _totalDiagnosticCount: DiagnosticCount;
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
   _tile: ?atom$StatusBarTile;
   _item: ?HTMLElement;
 
@@ -46,7 +45,7 @@ class StatusBarTile {
       errorCount: 0,
       warningCount: 0,
     };
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new UniversalDisposable();
   }
 
   consumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
@@ -60,9 +59,9 @@ class StatusBarTile {
     };
     this._diagnosticUpdaters.set(diagnosticUpdater, diagnosticCount);
     this._subscriptions.add(
-      new UniversalDisposable(diagnosticUpdater.allMessageUpdates.subscribe(
+      diagnosticUpdater.allMessageUpdates.subscribe(
         this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater),
-      )),
+      ),
     );
   }
 

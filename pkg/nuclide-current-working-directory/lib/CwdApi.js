@@ -17,13 +17,12 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import nuclideUri from '../../commons-node/nuclideUri';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
-import {CompositeDisposable} from 'atom';
 import {BehaviorSubject} from 'rxjs';
 
 export class CwdApi {
   _cwd$: Observable<?Directory>;
   _cwdPath$: BehaviorSubject<?string>;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
 
   constructor(initialCwdPath: ?string) {
     this._cwdPath$ = new BehaviorSubject(initialCwdPath);
@@ -38,7 +37,7 @@ export class CwdApi {
       .map(directory => (isValidDirectory(directory) ? directory : null))
       .distinctUntilChanged();
 
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
   }
 
   setCwd(path: string): void {

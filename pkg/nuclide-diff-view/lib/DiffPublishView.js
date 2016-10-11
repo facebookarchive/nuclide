@@ -27,7 +27,7 @@ import {
 import {Toolbar} from '../../nuclide-ui/Toolbar';
 import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
-import {CompositeDisposable, TextBuffer} from 'atom';
+import {TextBuffer} from 'atom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 type DiffRevisionViewProps = {
@@ -69,7 +69,7 @@ export default class DiffPublishView extends React.Component {
   props: Props;
   state: State;
   _textBuffer: TextBuffer;
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
@@ -84,14 +84,10 @@ export default class DiffPublishView extends React.Component {
 
   componentDidMount(): void {
     this._textBuffer = new TextBuffer();
-    this._subscriptions = new CompositeDisposable();
-
-    this._subscriptions.add(
-      new UniversalDisposable(
-        this.props.diffModel
-          .getPublishUpdates()
-          .subscribe(this._onPublishUpdate.bind(this)),
-      ),
+    this._subscriptions = new UniversalDisposable(
+      this.props.diffModel
+        .getPublishUpdates()
+        .subscribe(this._onPublishUpdate.bind(this)),
     );
     this.__populatePublishText();
   }

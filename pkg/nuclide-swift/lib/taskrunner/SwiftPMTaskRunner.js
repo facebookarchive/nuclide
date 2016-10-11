@@ -16,7 +16,7 @@ import type {Directory} from '../../../nuclide-remote-connection';
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 
 import {Observable, Subject} from 'rxjs';
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 import {React} from 'react-for-atom';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import fsPromise from '../../../commons-node/fsPromise';
@@ -59,7 +59,7 @@ type SwiftPMTaskRunnerFlux = {
 export class SwiftPMTaskRunner {
   id: string;
   name: string;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _initialState: ?SwiftPMTaskRunnerStoreState;
   _flux: ?SwiftPMTaskRunnerFlux;
   _taskList: Observable<Array<TaskMetadata>>;
@@ -70,9 +70,8 @@ export class SwiftPMTaskRunner {
     this.id = 'swiftpm';
     this.name = 'Swift';
     this._initialState = initialState;
-    this._disposables = new CompositeDisposable();
     this._outputMessages = new Subject();
-    this._disposables.add(new UniversalDisposable(this._outputMessages));
+    this._disposables = new UniversalDisposable(this._outputMessages);
   }
 
   dispose(): void {

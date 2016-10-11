@@ -21,17 +21,17 @@ import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import * as Reducers from './redux/Reducers';
 import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 import {applyMiddleware, combineReducers, createStore} from 'redux';
 import {Observable} from 'rxjs';
 
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _store: Store;
   _rawState: ?Object;
 
   constructor(rawState: ?Object) {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     this._rawState = rawState;
   }
 
@@ -55,7 +55,7 @@ class Activation {
 
   provideWorkspaceViewsService(): WorkspaceViewsService {
     let pkg = this; // eslint-disable-line consistent-this
-    this._disposables.add(new Disposable(() => { pkg = null; }));
+    this._disposables.add(() => { pkg = null; });
 
     return {
       registerFactory: viewableFactory => {
@@ -122,7 +122,7 @@ function createPackageStore(rawState: Object): {store: Store, disposables: IDisp
 
   // Add a toggle command for every viewable provider. We avoid debouncing here so that commands
   // will immediately be available to packages after they register themselves.
-  const disposables = new CompositeDisposable(
+  const disposables = new UniversalDisposable(
     syncAtomCommands(
       states
         .map(state => state.viewableFactories)

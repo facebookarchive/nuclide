@@ -12,7 +12,6 @@
 import UniversalDisposable from './UniversalDisposable';
 import invariant from 'assert';
 import {setDifference} from './collection';
-import {CompositeDisposable, Disposable} from 'event-kit';
 import {Observable, ReplaySubject} from 'rxjs';
 
 /**
@@ -138,17 +137,15 @@ export function reconcileSetDiffs<T>(
     itemsToDisposables.clear();
   };
 
-  return new CompositeDisposable(
-    new UniversalDisposable(
-      diffs.subscribe(diff => {
-        // For every item that got added, perform the add action.
-        diff.added.forEach(item => { itemsToDisposables.set(hash(item), addAction(item)); });
+  return new UniversalDisposable(
+    diffs.subscribe(diff => {
+      // For every item that got added, perform the add action.
+      diff.added.forEach(item => { itemsToDisposables.set(hash(item), addAction(item)); });
 
-        // "Undo" the add action for each item that got removed.
-        diff.removed.forEach(disposeItem);
-      }),
-    ),
-    new Disposable(disposeAll),
+      // "Undo" the add action for each item that got removed.
+      diff.removed.forEach(disposeItem);
+    }),
+    disposeAll,
   );
 }
 

@@ -15,7 +15,7 @@ import type {HealthStats, PaneItemState} from './types';
 
 // Imports from non-Nuclide modules.
 import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 import {React} from 'react-for-atom';
 import {Observable} from 'rxjs';
 
@@ -33,7 +33,7 @@ import getStats from './getStats';
 
 class Activation {
   _paneItemStates: Observable<PaneItemState>;
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
 
   _healthButton: ?HTMLElement;
 
@@ -79,20 +79,16 @@ class Activation {
       }),
     );
 
-    this._subscriptions = new CompositeDisposable(
+    this._subscriptions = new UniversalDisposable(
       // Keep the toolbar jewel up-to-date.
-      new UniversalDisposable(
-        packageStates
-          .map(formatToolbarJewelLabel)
-          .subscribe(this._updateToolbarJewel),
-      ),
+      packageStates
+        .map(formatToolbarJewelLabel)
+        .subscribe(this._updateToolbarJewel),
 
       // Buffer the stats and send analytics periodically.
-      new UniversalDisposable(
-        statsStream
-          .buffer(analyticsTimeouts.switchMap(Observable.interval))
-          .subscribe(this._updateAnalytics),
-      ),
+      statsStream
+        .buffer(analyticsTimeouts.switchMap(Observable.interval))
+        .subscribe(this._updateAnalytics),
     );
   }
 

@@ -247,7 +247,7 @@ class Activation {
 
   provideTaskRunnerServiceApi(): TaskRunnerServiceApi {
     let pkg = this;
-    this._disposables.add(new Disposable(() => { pkg = null; }));
+    this._disposables.add(() => { pkg = null; });
     return {
       register: (taskRunner: TaskRunner) => {
         invariant(pkg != null, 'Task runner service API used after deactivation');
@@ -272,7 +272,7 @@ class Activation {
 
   getDistractionFreeModeProvider(): DistractionFreeModeProvider {
     let pkg = this;
-    this._disposables.add(new Disposable(() => { pkg = null; }));
+    this._disposables.add(() => { pkg = null; });
     return {
       name: 'nuclide-task-runner',
       isVisible() {

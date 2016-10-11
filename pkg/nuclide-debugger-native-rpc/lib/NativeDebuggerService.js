@@ -12,7 +12,6 @@
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
-import {CompositeDisposable, Disposable} from 'event-kit';
 import child_process from 'child_process';
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -119,13 +118,13 @@ export class NativeDebuggerService {
   _clientCallback: ClientCallback;
   _lldbWebSocket: ?WS;
   _config: DebuggerConfig;
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
 
   constructor(config: DebuggerConfig) {
     this._clientCallback = new ClientCallback();
     this._config = config;
     setLogLevel(config.logLevel);
-    this._subscriptions = new CompositeDisposable(this._clientCallback);
+    this._subscriptions = new UniversalDisposable(this._clientCallback);
   }
 
   getOutputWindowObservable(): ConnectableObservable<string> {
@@ -166,7 +165,7 @@ export class NativeDebuggerService {
     this._sendArgumentsToPythonBackend(lldbProcess, inferiorArguments);
     const lldbWebSocket = await this._connectWithLLDB(lldbProcess);
     this._lldbWebSocket = lldbWebSocket;
-    this._subscriptions.add(new Disposable(() => lldbWebSocket.terminate()));
+    this._subscriptions.add(() => lldbWebSocket.terminate());
     lldbWebSocket.on('message', this._handleLLDBMessage.bind(this));
   }
 
@@ -174,11 +173,12 @@ export class NativeDebuggerService {
     const IPC_CHANNEL_FD = 4;
     /* $FlowFixMe - update Flow defs for ChildProcess */
     const ipcStream = lldbProcess.stdio[IPC_CHANNEL_FD];
-    this._subscriptions.add(new UniversalDisposable(
+    this._subscriptions.add(
       splitStream(observeStream(ipcStream)).subscribe(
         this._handleIpcMessage.bind(this, ipcStream),
         error => logError(`ipcStream error: ${JSON.stringify(error)}`),
-    )));
+      ),
+    );
   }
 
   _handleIpcMessage(ipcStream: Object, message: string): void {
@@ -213,7 +213,7 @@ export class NativeDebuggerService {
       python_args,
       options,
     );
-    this._subscriptions.add(new Disposable(() => lldbProcess.kill()));
+    this._subscriptions.add(() => lldbProcess.kill());
     return lldbProcess;
   }
 
@@ -227,7 +227,7 @@ export class NativeDebuggerService {
     // Make sure the bidirectional communication channel is set up before
     // sending data.
     argumentsStream.write('init\n');
-    this._subscriptions.add(new UniversalDisposable(
+    this._subscriptions.add(
       observeStream(argumentsStream).first().subscribe(
         text => {
           if (text.startsWith('ready')) {
@@ -240,7 +240,8 @@ export class NativeDebuggerService {
           }
         },
         error => logError(`argumentsStream error: ${JSON.stringify(error)}`),
-    )));
+      ),
+    );
   }
 
   _connectWithLLDB(lldbProcess: child_process$ChildProcess): Promise<WS> {
