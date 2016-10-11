@@ -73,7 +73,11 @@ declare class WebviewElement extends HTMLElement {
 
   executeJavaScript(code: string, userGesture: ?boolean): void,
   getTitle(): string,
-  getUrl(): string,
+  // This used to be `getUrl`, but the old version was dropped in the electron bundled with Atom
+  // 1.12, and the new version exists at least in Atom 1.10.2 onward.
+  getURL(): string,
+  // Not sure when this was introduced
+  stop?: () => void,
   insertCSS(code: string): void,
   send(): void,
   openDevTools(): void,
