@@ -91,13 +91,15 @@ function createHookedPrepareStackTrace(
 function structuredStackTraceHook(error: Error, frames: Array<CallSite>): void {
   // $FlowFixMe
   error.stackTrace = frames.map(frame => {
+    const scriptNameOrUrl = frame.getScriptNameOrSourceURL();
+    const evalOrigin = scriptNameOrUrl == null ? null : frame.getEvalOrigin();
     return {
       functionName: frame.getFunctionName(),
       methodName: frame.getMethodName(),
       fileName: frame.getFileName(),
       lineNumber: frame.getLineNumber(),
       columnNumber: frame.getColumnNumber(),
-      evalOrigin: frame.getEvalOrigin(),
+      evalOrigin,
       isTopLevel: frame.isToplevel(),
       isEval: frame.isEval(),
       isNative: frame.isNative(),
