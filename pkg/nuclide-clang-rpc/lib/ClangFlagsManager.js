@@ -225,7 +225,7 @@ export default class ClangFlagsManager {
       return new Map();
     }
 
-    const target = (await BuckService.getOwner(buckRoot, src))
+    const target = (await BuckService.getOwners(buckRoot, src))
       .find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
 
     if (target == null) {

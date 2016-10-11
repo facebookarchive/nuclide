@@ -25,7 +25,7 @@ describe('ClangFlagsManager', () => {
     spyOn(BuckService, 'getRootForPath').andReturn(
       nuclideUri.join(__dirname, 'fixtures'),
     );
-    ownerSpy = spyOn(BuckService, 'getOwner').andReturn(
+    ownerSpy = spyOn(BuckService, 'getOwners').andReturn(
       // Default header targets should be ignored
       ['//test:__default_headers__', '//test'],
     );
@@ -189,7 +189,7 @@ describe('ClangFlagsManager', () => {
       ownerSpy.wasCalled = false;
       result = await flagsManager.getFlagsForSrc('test');
       expect(nullthrows(result).flags).toBe(null);
-      expect(BuckService.getOwner).not.toHaveBeenCalled();
+      expect(BuckService.getOwners).not.toHaveBeenCalled();
     });
   });
 

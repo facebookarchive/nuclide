@@ -164,10 +164,19 @@ describe('BuckService (buck-query-project)', () => {
     });
   });
 
-  describe('getBuildFile()', () => {
-    it('gets the build file', () => {
+  describe('getOwner()', () => {
+    it('gets the owner', () => {
       // First expensive buck operation gets a large timeout.
       waitsForPromise({timeout: 15000}, async () => {
+        const owners = await BuckService.getOwners(buckRoot, 'examples/one.java');
+        expect(owners).toEqual(['//examples:one']);
+      });
+    });
+  });
+
+  describe('getBuildFile()', () => {
+    it('gets the build file', () => {
+      waitsForPromise(async () => {
         const file = await BuckService.getBuildFile(buckRoot, '//examples:one');
         expect(file).toBe(nuclideUri.join(buckRoot, 'examples', 'BUCK'));
       });

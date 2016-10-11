@@ -32,7 +32,7 @@ describe('LinkTreeManager', () => {
 
   it('correctly builds a link tree path given a source file path (mocked project)', () => {
     waitsForPromise(async () => {
-      spyOn(BuckService, 'getOwner').andReturn(['//test', '//test2']);
+      spyOn(BuckService, 'getOwners').andReturn(['//test', '//test2']);
       const spy = spyOn(BuckService, 'query').andReturn(['//testbin', '//testbin2']);
       const srcPath = nuclideUri.join(projectDir, 'test1/test1.py');
       const expectedPaths = [
@@ -55,7 +55,7 @@ describe('LinkTreeManager', () => {
 
   it('queries for python_unittest targets if no python_binary was found', () => {
     waitsForPromise(async () => {
-      spyOn(BuckService, 'getOwner').andReturn(['//test', '//test2']);
+      spyOn(BuckService, 'getOwners').andReturn(['//test', '//test2']);
       // Return an empty array for results, in which case the manager should try
       // querying for python_unittest targets too.
       const spy = spyOn(BuckService, 'query').andReturn([]);

@@ -27,6 +27,7 @@ import {Observable} from 'rxjs';
 import createBuckWebSocket from './createBuckWebSocket';
 import {getLogger} from '../../nuclide-logging';
 import ini from 'ini';
+import {quote} from 'shell-quote';
 
 const logger = getLogger();
 
@@ -214,19 +215,16 @@ function _getBuckCommandAndOptions(
 /**
  * Returns an array of strings (that are build targets) by running:
  *
- *     buck audit owner <path>
+ *     buck query owner(<path>)
  *
  * @param filePath absolute path or a local or a remote file.
  * @return Promise that resolves to an array of build targets.
  */
-export async function getOwner(rootPath: NuclideUri, filePath: NuclideUri): Promise<Array<string>> {
-  const args = ['audit', 'owner', filePath];
-  const result = await _runBuckCommandFromProjectRoot(rootPath, args);
-  const stdout = result.stdout.trim();
-  if (stdout === '') {
-    return [];
-  }
-  return stdout.split('\n');
+export async function getOwners(
+  rootPath: NuclideUri,
+  filePath: NuclideUri,
+): Promise<Array<string>> {
+  return query(rootPath, `owner(${quote([filePath])})`);
 }
 
 /**

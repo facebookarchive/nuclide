@@ -83,7 +83,7 @@ export default class BuckToolbarTargetSelector extends React.Component {
     }
     const buckService = getBuckService(buckRoot);
     this._cachedOwners = buckService == null ? Promise.resolve([]) :
-      buckService.getOwner(buckRoot, path)
+      buckService.getOwners(buckRoot, path)
         .then(
           // Strip off the optional leading "//" to match typical user input.
           owners => owners.map(owner => (owner.startsWith('//') ? owner.substring(2) : owner)),
