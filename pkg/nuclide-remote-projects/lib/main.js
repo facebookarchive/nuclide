@@ -213,7 +213,7 @@ async function createEditorForNuclide(
       buffer = await loadingNotification(
         loadBufferForUri(uri),
         `Opening ${nuclideUri.nuclideUriToDisplayString(uri)}...`,
-        500, /* delay */
+        1000, /* delay */
       );
     } catch (err) {
       // Suppress ENOENT errors which occur if the file doesn't exist.
