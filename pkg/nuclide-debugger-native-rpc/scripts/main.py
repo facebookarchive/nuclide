@@ -117,7 +117,7 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
     listener = lldb.SBListener('Chrome Dev Tools Listener')
     error = lldb.SBError()
     if getattr(arguments, 'executable_path', None):
-        argument_list = map(str, arguments.launch_arguments) \
+        argument_list = map(os.path.expanduser, map(str, arguments.launch_arguments)) \
             if arguments.launch_arguments else None
         environment_variables = [six.binary_type(arg) for arg in
                                  arguments.launch_environment_variables] \
