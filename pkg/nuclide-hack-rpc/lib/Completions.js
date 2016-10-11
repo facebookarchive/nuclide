@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,46 +10,64 @@
  * the root directory of this source tree.
  */
 
-import type {
-  HackCompletion,
-  HackParameterDetails,
-} from './rpc-types';
-import type {Completion} from './rpc-types';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import {Point, Range} from 'simple-text-buffer';
-import invariant from 'assert';
-import {wordAtPositionFromBuffer} from '../../commons-node/range';
-import {HACK_WORD_REGEX} from './HackHelpers';
+exports.convertCompletions = convertCompletions;
+exports.compareHackCompletions = compareHackCompletions;
+exports.hasPrefix = hasPrefix;
+exports.findHackPrefix = findHackPrefix;
 
-export function convertCompletions(
-  contents: string,
-  offset: number,
-  prefix: string,
-  hackCompletions: ?Array<HackCompletion>,
-): Array<Completion> {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _commonsNodeRange;
+
+function _load_commonsNodeRange() {
+  return _commonsNodeRange = require('../../commons-node/range');
+}
+
+var _HackHelpers;
+
+function _load_HackHelpers() {
+  return _HackHelpers = require('./HackHelpers');
+}
+
+function convertCompletions(contents, offset, prefix, hackCompletions) {
   if (hackCompletions == null) {
     return [];
   }
 
   // Filter out the completions that do not contain the prefix as a token in the match text case
   // insentively.
-  const tokenLowerCase = prefix.toLowerCase();
+  var tokenLowerCase = prefix.toLowerCase();
 
-  const hackCompletionsComparator = compareHackCompletions(prefix);
+  var hackCompletionsComparator = compareHackCompletions(prefix);
   return processCompletions(hackCompletions, contents, offset, prefix)
-    // The returned completions may have unrelated results, even though the offset
-    // is set on the end of the prefix.
-    .filter(completion => {
-      invariant(completion.displayText != null);
-      return completion.displayText.toLowerCase().indexOf(tokenLowerCase) >= 0;
-    })
-    // Sort the auto-completions based on a scoring function considering:
-    // case sensitivity, position in the completion, private functions and alphabetical order.
-    .sort((completion1, completion2) =>
-      hackCompletionsComparator(completion1, completion2));
+  // The returned completions may have unrelated results, even though the offset
+  // is set on the end of the prefix.
+  .filter(function (completion) {
+    (0, (_assert || _load_assert()).default)(completion.displayText != null);
+    return completion.displayText.toLowerCase().indexOf(tokenLowerCase) >= 0;
+  })
+  // Sort the auto-completions based on a scoring function considering:
+  // case sensitivity, position in the completion, private functions and alphabetical order.
+  .sort(function (completion1, completion2) {
+    return hackCompletionsComparator(completion1, completion2);
+  });
 }
 
-function matchTypeOfType(type: string): string {
+function matchTypeOfType(type) {
   // strip parens if present
   if (type[0] === '(' && type[type.length - 1] === ')') {
     return type.substring(1, type.length - 1);
@@ -56,22 +75,25 @@ function matchTypeOfType(type: string): string {
   return type;
 }
 
-function escapeName(name: string): string {
+function escapeName(name) {
   return name.replace(/\\/g, '\\\\');
 }
 
-function paramSignature(params: Array<HackParameterDetails>): ?string {
-  const paramStrings = params.map(param => `${param.type} ${param.name}`);
-  return `(${paramStrings.join(', ')})`;
+function paramSignature(params) {
+  var paramStrings = params.map(function (param) {
+    return param.type + ' ' + param.name;
+  });
+  return '(' + paramStrings.join(', ') + ')';
 }
 
-function matchSnippet(name: string, params: ?Array<HackParameterDetails>): string {
-  const escapedName = escapeName(name);
+function matchSnippet(name, params) {
+  var escapedName = escapeName(name);
   if (params != null) {
     // Construct the snippet: e.g. myFunction(${1:$arg1}, ${2:$arg2});
-    const paramsString = params.map(
-      (param, index) => `\${${index + 1}:${param.name}}`).join(', ');
-    return `${escapedName}(${paramsString})`;
+    var paramsString = params.map(function (param, index) {
+      return '${' + (index + 1) + ':' + param.name + '}';
+    }).join(', ');
+    return escapedName + '(' + paramsString + ')';
   } else {
     return escapedName;
   }
@@ -79,9 +101,9 @@ function matchSnippet(name: string, params: ?Array<HackParameterDetails>): strin
 
 // Returns the length of the largest match between a suffix of contents
 // and a prefix of match.
-function matchLength(contents: string, match: string): number {
-  for (let i = match.length; i > 0; i--) {
-    const toMatch = match.substring(0, i);
+function matchLength(contents, match) {
+  for (var i = match.length; i > 0; i--) {
+    var toMatch = match.substring(0, i);
     if (contents.endsWith(toMatch)) {
       return i;
     }
@@ -89,69 +111,58 @@ function matchLength(contents: string, match: string): number {
   return 0;
 }
 
-function processCompletions(
-  completionsResponse: Array<HackCompletion>,
-  contents: string,
-  offset: number,
-  defaultPrefix: string,
-): Array<Completion> {
-  const contentsLine = contents.substring(
-    contents.lastIndexOf('\n', offset - 1) + 1,
-    offset).toLowerCase();
-  return completionsResponse.map((completion: HackCompletion) => {
-    const {name, type, func_details} = completion;
-    const resultPrefix = contents.substring(
-      offset - matchLength(contentsLine, name.toLowerCase()),
-      offset);
-    const commonResult = {
+function processCompletions(completionsResponse, contents, offset, defaultPrefix) {
+  var contentsLine = contents.substring(contents.lastIndexOf('\n', offset - 1) + 1, offset).toLowerCase();
+  return completionsResponse.map(function (completion) {
+    var name = completion.name;
+    var type = completion.type;
+    var func_details = completion.func_details;
+
+    var resultPrefix = contents.substring(offset - matchLength(contentsLine, name.toLowerCase()), offset);
+    var commonResult = {
       displayText: name,
       replacementPrefix: resultPrefix === '' ? defaultPrefix : resultPrefix,
-      description: matchTypeOfType(type),
+      description: matchTypeOfType(type)
     };
     if (func_details != null) {
-      return {
-        ...commonResult,
+      return _extends({}, commonResult, {
         snippet: matchSnippet(name, func_details.params),
         leftLabel: func_details.return_type,
         rightLabel: paramSignature(func_details.params),
-        type: 'function',
-      };
+        type: 'function'
+      });
     } else {
-      return {
-        ...commonResult,
+      return _extends({}, commonResult, {
         snippet: matchSnippet(name),
-        rightLabel: matchTypeOfType(type),
-      };
+        rightLabel: matchTypeOfType(type)
+      });
     }
   });
 }
 
-const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
-const MATCH_PREFIX_CASE_INSENSITIVE_SCORE = 4;
-const MATCH_TOKEN_CASE_SENSITIVE_SCORE = 2;
-const MATCH_TOKEN_CASE_INSENSITIVE_SCORE = 0;
-const MATCH_PRIVATE_FUNCTION_PENALTY = -4;
-const MATCH_APLHABETICAL_SCORE = 1;
+var MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
+var MATCH_PREFIX_CASE_INSENSITIVE_SCORE = 4;
+var MATCH_TOKEN_CASE_SENSITIVE_SCORE = 2;
+var MATCH_TOKEN_CASE_INSENSITIVE_SCORE = 0;
+var MATCH_PRIVATE_FUNCTION_PENALTY = -4;
+var MATCH_APLHABETICAL_SCORE = 1;
 
-export function compareHackCompletions(
-  token: string,
-): (completion1: Completion, completion2: Completion) => number {
-  const tokenLowerCase = token.toLowerCase();
+function compareHackCompletions(token) {
+  var tokenLowerCase = token.toLowerCase();
 
-  return (completion1: Completion, completion2: Completion) => {
+  return function (completion1, completion2) {
     // Prefer completions with larger prefixes.
-    invariant(completion1.replacementPrefix != null);
-    invariant(completion2.replacementPrefix != null);
-    const prefixComparison =
-      completion2.replacementPrefix.length - completion1.replacementPrefix.length;
+    (0, (_assert || _load_assert()).default)(completion1.replacementPrefix != null);
+    (0, (_assert || _load_assert()).default)(completion2.replacementPrefix != null);
+    var prefixComparison = completion2.replacementPrefix.length - completion1.replacementPrefix.length;
     if (prefixComparison !== 0) {
       return prefixComparison;
     }
 
-    invariant(completion1.displayText != null);
-    invariant(completion2.displayText != null);
-    const texts: Array<string> = [completion1.displayText, completion2.displayText];
-    const scores = texts.map((text, i) => {
+    (0, (_assert || _load_assert()).default)(completion1.displayText != null);
+    (0, (_assert || _load_assert()).default)(completion2.displayText != null);
+    var texts = [completion1.displayText, completion2.displayText];
+    var scores = texts.map(function (text, i) {
       if (text.startsWith(token)) {
         // Matches starting with the prefix gets the highest score.
         return MATCH_PREFIX_CASE_SENSITIVE_SCORE;
@@ -160,7 +171,7 @@ export function compareHackCompletions(
         return MATCH_PREFIX_CASE_INSENSITIVE_SCORE;
       }
 
-      let score;
+      var score = undefined;
       if (text.indexOf(token) !== -1) {
         // Small score for a match that contains the token case-sensitive.
         score = MATCH_TOKEN_CASE_SENSITIVE_SCORE;
@@ -185,36 +196,31 @@ export function compareHackCompletions(
   };
 }
 
-const FIELD_ACCESSORS = ['->', '::'];
-const PREFIX_LOOKBACK = Math.max.apply(null, FIELD_ACCESSORS.map(prefix => prefix.length));
+var FIELD_ACCESSORS = ['->', '::'];
+var PREFIX_LOOKBACK = Math.max.apply(null, FIELD_ACCESSORS.map(function (prefix) {
+  return prefix.length;
+}));
 
 /**
  * Returns true if `bufferPosition` is prefixed with any of the passed `checkPrefixes`.
  */
-export function hasPrefix(
-    buffer: atom$TextBuffer,
-    bufferPosition: atom$Point,
-  ): boolean {
-  const priorChars = buffer.getTextInRange(new Range(
-    new Point(bufferPosition.row, bufferPosition.column - PREFIX_LOOKBACK),
-    bufferPosition,
-  ));
-  return FIELD_ACCESSORS.some(prefix => priorChars.endsWith(prefix));
+
+function hasPrefix(buffer, bufferPosition) {
+  var priorChars = buffer.getTextInRange(new (_simpleTextBuffer || _load_simpleTextBuffer()).Range(new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(bufferPosition.row, bufferPosition.column - PREFIX_LOOKBACK), bufferPosition));
+  return FIELD_ACCESSORS.some(function (prefix) {
+    return priorChars.endsWith(prefix);
+  });
 }
 
-export function findHackPrefix(
-  buffer: atom$TextBuffer,
-  position: atom$Point,
-): string {
+function findHackPrefix(buffer, position) {
   // We use custom wordRegex to adopt php variables starting with $.
-  const currentRange = wordAtPositionFromBuffer(
-    buffer, position, HACK_WORD_REGEX);
+  var currentRange = (0, (_commonsNodeRange || _load_commonsNodeRange()).wordAtPositionFromBuffer)(buffer, position, (_HackHelpers || _load_HackHelpers()).HACK_WORD_REGEX);
   if (currentRange == null) {
     return '';
   }
   // Current word might go beyond the cursor, so we cut it.
-  const range = new Range(currentRange.range.start, position);
-  const prefix = buffer.getTextInRange(range).trim();
+  var range = new (_simpleTextBuffer || _load_simpleTextBuffer()).Range(currentRange.range.start, position);
+  var prefix = buffer.getTextInRange(range).trim();
   // Prefix could just be $ or ends with string literal.
   if (prefix === '$' || !/[\W]$/.test(prefix)) {
     return prefix;

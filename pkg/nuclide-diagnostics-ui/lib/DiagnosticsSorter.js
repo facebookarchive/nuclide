@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,37 +10,31 @@
  * the root directory of this source tree.
  */
 
-import type {Row} from '../../nuclide-ui/Table';
-import type {DisplayDiagnostic} from './DiagnosticsPane';
+exports.sortDiagnostics = sortDiagnostics;
 
 /*
  * Sorts the diagnostics according to given column and sort direction
  */
-export function sortDiagnostics(
-  diagnostics: Array<Row>,
-  sortedColumnName: ?string,
-  sortDescending: boolean,
-): Array<Row> {
+
+function sortDiagnostics(diagnostics, sortedColumnName, sortDescending) {
   if (sortedColumnName == null) {
     return diagnostics;
   }
-  const cmp: any = sortedColumnName === 'range' ? _cmpNumber : _cmpString;
-  const getter = (displayDiagnostic: {data: DisplayDiagnostic}) => (
-    sortedColumnName === 'description'
-      ? displayDiagnostic.data.description.text
-      : displayDiagnostic.data[sortedColumnName]
-    );
-  return [...diagnostics].sort((a, b) => {
+  var cmp = sortedColumnName === 'range' ? _cmpNumber : _cmpString;
+  var getter = function getter(displayDiagnostic) {
+    return sortedColumnName === 'description' ? displayDiagnostic.data.description.text : displayDiagnostic.data[sortedColumnName];
+  };
+  return [].concat(diagnostics).sort(function (a, b) {
     return cmp(getter(a), getter(b), !sortDescending);
   });
 }
 
-function _cmpNumber(a: number, b: number, isAsc: boolean): number {
-  const cmp = a - b;
+function _cmpNumber(a, b, isAsc) {
+  var cmp = a - b;
   return isAsc ? cmp : -cmp;
 }
 
-function _cmpString(a: string, b: string, isAsc: boolean): number {
-  const cmp = a.toLowerCase().localeCompare(b.toLowerCase());
+function _cmpString(a, b, isAsc) {
+  var cmp = a.toLowerCase().localeCompare(b.toLowerCase());
   return isAsc ? cmp : -cmp;
 }

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,35 +10,21 @@
  * the root directory of this source tree.
  */
 
-import typeof * as BuckService from '../../nuclide-buck-rpc';
-
-import nuclideUri from '../../commons-node/nuclideUri';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-
-const buckProjectDirectoryByPath: Map<string, string> = new Map();
-
-export function isBuckFile(filePath: string): boolean {
-  // TODO(mbolin): Buck does have an option where the user can customize the
-  // name of the build file: https://github.com/facebook/buck/issues/238.
-  // This function will not work for those who use that option.
-  return nuclideUri.basename(filePath) === 'BUCK';
-}
-
-export function getBuckService(filePath: string): ?BuckService {
-  return getServiceByNuclideUri('BuckService', filePath);
-}
+exports.isBuckFile = isBuckFile;
+exports.getBuckService = getBuckService;
 
 /**
  * Cached, service-aware version of BuckProject.getRootForPath.
  */
-export async function getBuckProjectRoot(filePath: string): Promise<?string> {
-  let directory = buckProjectDirectoryByPath.get(filePath);
+
+var getBuckProjectRoot = _asyncToGenerator(function* (filePath) {
+  var directory = buckProjectDirectoryByPath.get(filePath);
   if (!directory) {
-    const service = getBuckService(filePath);
+    var service = getBuckService(filePath);
     if (service == null) {
       return null;
     }
-    directory = await service.getRootForPath(filePath);
+    directory = yield service.getRootForPath(filePath);
     if (directory == null) {
       return null;
     } else {
@@ -45,4 +32,35 @@ export async function getBuckProjectRoot(filePath: string): Promise<?string> {
     }
   }
   return directory;
+});
+
+exports.getBuckProjectRoot = getBuckProjectRoot;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var buckProjectDirectoryByPath = new Map();
+
+function isBuckFile(filePath) {
+  // TODO(mbolin): Buck does have an option where the user can customize the
+  // name of the build file: https://github.com/facebook/buck/issues/238.
+  // This function will not work for those who use that option.
+  return (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.basename(filePath) === 'BUCK';
+}
+
+function getBuckService(filePath) {
+  return (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('BuckService', filePath);
 }

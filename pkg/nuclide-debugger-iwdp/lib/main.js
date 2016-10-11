@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +10,31 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideDebuggerProvider} from '../../nuclide-debugger-interfaces/service';
+exports.createDebuggerProvider = createDebuggerProvider;
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {IwdpLaunchAttachProvider} from './IwdpLaunchAttachProvider';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function createDebuggerProvider(): NuclideDebuggerProvider {
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _IwdpLaunchAttachProvider;
+
+function _load_IwdpLaunchAttachProvider() {
+  return _IwdpLaunchAttachProvider = require('./IwdpLaunchAttachProvider');
+}
+
+function createDebuggerProvider() {
   return {
     name: 'IWDP',
-    getLaunchAttachProvider: connection => {
-      if (nuclideUri.isLocal(connection)) {
-        return new IwdpLaunchAttachProvider('iOS Webkit Debug Proxy', connection);
+    getLaunchAttachProvider: function getLaunchAttachProvider(connection) {
+      if ((_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.isLocal(connection)) {
+        return new (_IwdpLaunchAttachProvider || _load_IwdpLaunchAttachProvider()).IwdpLaunchAttachProvider('iOS Webkit Debug Proxy', connection);
       } else {
         return null;
       }
-    },
+    }
   };
 }

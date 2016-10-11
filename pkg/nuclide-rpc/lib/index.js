@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,41 +10,77 @@
  * the root directory of this source tree.
  */
 
-import type {Observable} from 'rxjs';
-import type {ObjectRegistry} from './ObjectRegistry';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export {ServiceRegistry} from './ServiceRegistry';
-export {RpcConnection} from './RpcConnection';
-export {LoopbackTransports} from './LoopbackTransports';
-export {StreamTransport} from './StreamTransport';
-export {SocketTransport} from './SocketTransport';
-export {SocketServer} from './SocketServer';
-export {RpcProcess} from './RpcProcess';
+var _ServiceRegistry = require('./ServiceRegistry');
 
-import loadServicesConfig from './loadServicesConfig';
-export {loadServicesConfig};
+Object.defineProperty(exports, 'ServiceRegistry', {
+  enumerable: true,
+  get: function get() {
+    return _ServiceRegistry.ServiceRegistry;
+  }
+});
 
-export type MessageLogger = (direction: 'send' | 'receive', message: string) => void;
+var _RpcConnection = require('./RpcConnection');
 
-export type ConfigEntry = {
-  name: string,
-  definition:string,
-  implementation: string,
-  // When true, doesn't mangle in the service name into the method names for functions.
-  preserveFunctionNames?: boolean,
-};
+Object.defineProperty(exports, 'RpcConnection', {
+  enumerable: true,
+  get: function get() {
+    return _RpcConnection.RpcConnection;
+  }
+});
 
-export type NamedTransformer = (value: any, context: ObjectRegistry) => (any | Promise<any>);
+var _LoopbackTransports = require('./LoopbackTransports');
 
-export type PredefinedTransformer = {
-  typeName: string,
-  marshaller: NamedTransformer,
-  unmarshaller: NamedTransformer,
-};
+Object.defineProperty(exports, 'LoopbackTransports', {
+  enumerable: true,
+  get: function get() {
+    return _LoopbackTransports.LoopbackTransports;
+  }
+});
 
-export type Transport = {
-  send(message: string): void,
-  onMessage(): Observable<string>,
-  close(): void,
-  isClosed(): boolean,
-};
+var _StreamTransport = require('./StreamTransport');
+
+Object.defineProperty(exports, 'StreamTransport', {
+  enumerable: true,
+  get: function get() {
+    return _StreamTransport.StreamTransport;
+  }
+});
+
+var _SocketTransport = require('./SocketTransport');
+
+Object.defineProperty(exports, 'SocketTransport', {
+  enumerable: true,
+  get: function get() {
+    return _SocketTransport.SocketTransport;
+  }
+});
+
+var _SocketServer = require('./SocketServer');
+
+Object.defineProperty(exports, 'SocketServer', {
+  enumerable: true,
+  get: function get() {
+    return _SocketServer.SocketServer;
+  }
+});
+
+var _RpcProcess = require('./RpcProcess');
+
+Object.defineProperty(exports, 'RpcProcess', {
+  enumerable: true,
+  get: function get() {
+    return _RpcProcess.RpcProcess;
+  }
+});
+
+var _loadServicesConfig;
+
+function _load_loadServicesConfig() {
+  return _loadServicesConfig = _interopRequireDefault(require('./loadServicesConfig'));
+}
+
+exports.loadServicesConfig = (_loadServicesConfig || _load_loadServicesConfig()).default;
+
+// When true, doesn't mangle in the service name into the method names for functions.

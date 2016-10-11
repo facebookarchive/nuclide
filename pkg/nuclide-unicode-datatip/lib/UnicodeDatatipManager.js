@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,45 +10,65 @@
  * the root directory of this source tree.
  */
 
-import type {
-  DatatipProvider,
-  DatatipService,
-} from '../../nuclide-datatip/lib/types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {
-  CompositeDisposable,
-  Disposable,
-} from 'atom';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-import unescapedUnicodeDatatip from './UnescapedUnicodeDatatip';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export default class UnicodeDatatipManager {
-  _disposables: CompositeDisposable;
-  datatipService: ?DatatipService;
+var _atom;
 
-  constructor() {
-    this._disposables = new CompositeDisposable();
-  }
-
-  dispose(): void {
-    this._disposables.dispose();
-  }
-
-  consumeDatatipService(service: DatatipService): IDisposable {
-    const datatipProvider: DatatipProvider = {
-      datatip: (editor, position) => unescapedUnicodeDatatip(editor, position),
-      validForScope: (scope: string) => true,
-      providerName: 'nuclide-unicode-escapes',
-      inclusionPriority: 1,
-    };
-
-    service.addProvider(datatipProvider);
-    this.datatipService = service;
-    const disposable = new Disposable(() => {
-      service.removeProvider(datatipProvider);
-      this.datatipService = null;
-    });
-    this._disposables.add(disposable);
-    return disposable;
-  }
+function _load_atom() {
+  return _atom = require('atom');
 }
+
+var _UnescapedUnicodeDatatip;
+
+function _load_UnescapedUnicodeDatatip() {
+  return _UnescapedUnicodeDatatip = _interopRequireDefault(require('./UnescapedUnicodeDatatip'));
+}
+
+var UnicodeDatatipManager = (function () {
+  function UnicodeDatatipManager() {
+    _classCallCheck(this, UnicodeDatatipManager);
+
+    this._disposables = new (_atom || _load_atom()).CompositeDisposable();
+  }
+
+  _createClass(UnicodeDatatipManager, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: 'consumeDatatipService',
+    value: function consumeDatatipService(service) {
+      var _this = this;
+
+      var datatipProvider = {
+        datatip: function datatip(editor, position) {
+          return (0, (_UnescapedUnicodeDatatip || _load_UnescapedUnicodeDatatip()).default)(editor, position);
+        },
+        validForScope: function validForScope(scope) {
+          return true;
+        },
+        providerName: 'nuclide-unicode-escapes',
+        inclusionPriority: 1
+      };
+
+      service.addProvider(datatipProvider);
+      this.datatipService = service;
+      var disposable = new (_atom || _load_atom()).Disposable(function () {
+        service.removeProvider(datatipProvider);
+        _this.datatipService = null;
+      });
+      this._disposables.add(disposable);
+      return disposable;
+    }
+  }]);
+
+  return UnicodeDatatipManager;
+})();
+
+exports.default = UnicodeDatatipManager;
+module.exports = exports.default;

@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.flushLogsAndExit = flushLogsAndExit;
+exports.flushLogsAndAbort = flushLogsAndAbort;
+exports.updateConfig = updateConfig;
+exports.initialUpdateConfig = initialUpdateConfig;
+exports.getLogger = getLogger;
+exports.getCategoryLogger = getCategoryLogger;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -16,43 +27,61 @@
  * To make sure we only have one instance of log4js logger initialized globally, we save the logger
  * to `global` object.
  */
-import addPrepareStackTraceHook from './stacktrace';
-import invariant from 'assert';
-import singleton from '../../commons-node/singleton';
-import {
-  getDefaultConfig,
-  getPathToLogFileForToday,
-  CurrentDateFileAppender,
-  getServerLogAppenderConfig,
-} from './config';
-import log4js from 'log4js';
 
-import type {LogLevel} from './rpc-types';
-import type {Logger} from './types';
+var _stacktrace;
 
-export {
-  getDefaultConfig,
-  getPathToLogFileForToday,
-  CurrentDateFileAppender,
-  getServerLogAppenderConfig,
-};
+function _load_stacktrace() {
+  return _stacktrace = _interopRequireDefault(require('./stacktrace'));
+}
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _commonsNodeSingleton;
+
+function _load_commonsNodeSingleton() {
+  return _commonsNodeSingleton = _interopRequireDefault(require('../../commons-node/singleton'));
+}
+
+var _config;
+
+function _load_config() {
+  return _config = require('./config');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = _interopRequireDefault(require('log4js'));
+}
+
+exports.getDefaultConfig = (_config || _load_config()).getDefaultConfig;
+exports.getPathToLogFileForToday = (_config || _load_config()).getPathToLogFileForToday;
+exports.CurrentDateFileAppender = (_config || _load_config()).CurrentDateFileAppender;
+exports.getServerLogAppenderConfig = (_config || _load_config()).getServerLogAppenderConfig;
 
 /* Listed in order of severity. */
-type Level = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
-const DEFAULT_LOGGER_CATEGORY = 'nuclide';
-const INITIAL_UPDATE_CONFIG_KEY = '_initial_update_config_key_';
+var DEFAULT_LOGGER_CATEGORY = 'nuclide';
+var INITIAL_UPDATE_CONFIG_KEY = '_initial_update_config_key_';
 
-function getCategory(category: ?string): string {
+function getCategory(category) {
   return category ? category : DEFAULT_LOGGER_CATEGORY;
 }
 
-export function flushLogsAndExit(exitCode: number): void {
-  log4js.shutdown(() => process.exit(exitCode));
+function flushLogsAndExit(exitCode) {
+  (_log4js || _load_log4js()).default.shutdown(function () {
+    return process.exit(exitCode);
+  });
 }
 
-export function flushLogsAndAbort(): void {
-  log4js.shutdown(() => process.abort());
+function flushLogsAndAbort() {
+  (_log4js || _load_log4js()).default.shutdown(function () {
+    return process.abort();
+  });
 }
 
 /**
@@ -60,36 +89,41 @@ export function flushLogsAndAbort(): void {
  * log4js.getLogger() API internally should already provide singleton per category guarantee
  * see https://github.com/nomiddlename/log4js-node/blob/master/lib/log4js.js#L120 for details.
  */
-function getLog4jsLogger(category: string): Object {
-  return log4js.getLogger(category);
+function getLog4jsLogger(category) {
+  return (_log4js || _load_log4js()).default.getLogger(category);
 }
 
-export function updateConfig(config: any, options: any): void {
+function updateConfig(config, options) {
   // update config takes affect global to all existing and future loggers.
-  log4js.configure(config, options);
+  (_log4js || _load_log4js()).default.configure(config, options);
 }
 
 // Create a lazy logger that will not initialize the underlying log4js logger until
 // `lazyLogger.$level(...)` is called. This way, another package could require nuclide-logging
 // during activation without worrying about introducing a significant startup cost.
-function createLazyLogger(category: string): Logger {
-  function createLazyLoggerMethod(level: Level): (...args: Array<any>) => mixed {
-    return function(...args: Array<any>) {
-      const logger = getLog4jsLogger(category);
-      invariant(logger);
+function createLazyLogger(category) {
+  function createLazyLoggerMethod(level) {
+    return function () {
+      var logger = getLog4jsLogger(category);
+      (0, (_assert || _load_assert()).default)(logger);
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
       logger[level].apply(logger, args);
     };
   }
 
-  function setLoggerLevelHelper(level: string): void {
-    const logger = getLog4jsLogger(category);
-    invariant(logger);
+  function setLoggerLevelHelper(level) {
+    var logger = getLog4jsLogger(category);
+    (0, (_assert || _load_assert()).default)(logger);
     logger.setLevel(level);
   }
 
-  function isLevelEnabledHelper(level: string): void {
-    const logger = getLog4jsLogger(category);
-    invariant(logger);
+  function isLevelEnabledHelper(level) {
+    var logger = getLog4jsLogger(category);
+    (0, (_assert || _load_assert()).default)(logger);
     return logger.isLevelEnabled(level);
   }
 
@@ -101,7 +135,7 @@ function createLazyLogger(category: string): Logger {
     trace: createLazyLoggerMethod('trace'),
     warn: createLazyLoggerMethod('warn'),
     isLevelEnabled: isLevelEnabledHelper,
-    setLevel: setLoggerLevelHelper,
+    setLevel: setLoggerLevelHelper
   };
 }
 
@@ -109,46 +143,35 @@ function createLazyLogger(category: string): Logger {
  * Push initial default config to log4js.
  * Execute only once.
  */
-export function initialUpdateConfig(): Promise<void> {
-  return singleton.get(
-    INITIAL_UPDATE_CONFIG_KEY,
-    async () => {
-      const defaultConfig = await getDefaultConfig();
-      updateConfig(defaultConfig);
-    });
+
+function initialUpdateConfig() {
+  return (_commonsNodeSingleton || _load_commonsNodeSingleton()).default.get(INITIAL_UPDATE_CONFIG_KEY, _asyncToGenerator(function* () {
+    var defaultConfig = yield (0, (_config || _load_config()).getDefaultConfig)();
+    updateConfig(defaultConfig);
+  }));
 }
 
 // Get Logger instance which is singleton per logger category.
-export function getLogger(category: ?string): Logger {
-  addPrepareStackTraceHook();
+
+function getLogger(category) {
+  (0, (_stacktrace || _load_stacktrace()).default)();
   initialUpdateConfig();
 
-  const loggerCategory = getCategory(category);
-  return singleton.get(
-    loggerCategory,
-    () => {
-      return createLazyLogger(loggerCategory);
-    },
-  );
+  var loggerCategory = getCategory(category);
+  return (_commonsNodeSingleton || _load_commonsNodeSingleton()).default.get(loggerCategory, function () {
+    return createLazyLogger(loggerCategory);
+  });
 }
 
-export type CategoryLogger = {
-  log(message: string): void,
-  logTrace(message: string): void,
-  logInfo(message: string): void,
-  logError(message: string): void,
-  logErrorAndThrow(message: string): void,
-  setLogLevel(level: LogLevel): void,
-};
-
 // Utility function that returns a wrapper logger for input category.
-export function getCategoryLogger(category: string): CategoryLogger {
-  function setLogLevel(level: LogLevel): void {
+
+function getCategoryLogger(category) {
+  function setLogLevel(level) {
     getLogger(category).setLevel(level);
   }
 
-  function logHelper(level: string, message: string): void {
-    const logger = getLogger(category);
+  function logHelper(level, message) {
+    var logger = getLogger(category);
     // isLevelEnabled() is required to reduce the amount of logging to
     // log4js which greatly improves performance.
     if (logger.isLevelEnabled(level)) {
@@ -156,34 +179,34 @@ export function getCategoryLogger(category: string): CategoryLogger {
     }
   }
 
-  function logTrace(message: string): void {
+  function logTrace(message) {
     logHelper('trace', message);
   }
 
-  function log(message: string): void {
+  function log(message) {
     logHelper('debug', message);
   }
 
-  function logInfo(message: string): void {
+  function logInfo(message) {
     logHelper('info', message);
   }
 
-  function logError(message: string): void {
+  function logError(message) {
     logHelper('error', message);
   }
 
-  function logErrorAndThrow(message: string): void {
+  function logErrorAndThrow(message) {
     logError(message);
     logError(new Error().stack);
     throw new Error(message);
   }
 
   return {
-    log,
-    logTrace,
-    logInfo,
-    logError,
-    logErrorAndThrow,
-    setLogLevel,
+    log: log,
+    logTrace: logTrace,
+    logInfo: logInfo,
+    logError: logError,
+    logErrorAndThrow: logErrorAndThrow,
+    setLogLevel: setLogLevel
   };
 }

@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,69 +20,83 @@
  * the root directory of this source tree.
  */
 
-import ConnectionState from './ConnectionState';
-import {
-  notifyLocalDiskFile,
-  notifyConnectedRemoteFile,
-  notifyDisconnectedRemoteFile,
-} from './notification';
-import {React} from 'react-for-atom';
+var _ConnectionState;
 
-type Props = {
-  connectionState: number,
-  fileUri?: string,
-};
-
-export default class StatusBarTile extends React.Component {
-  props: Props;
-
-  constructor(props: Props) {
-    super(props);
-    (this: any)._onStatusBarTileClicked = this._onStatusBarTileClicked.bind(this);
-  }
-
-  render(): ?React.Element<any> {
-    let iconName = null;
-    switch (this.props.connectionState) {
-      case ConnectionState.NONE:
-        break;
-      case ConnectionState.LOCAL:
-        iconName = 'device-desktop';
-        break;
-      case ConnectionState.CONNECTED:
-        iconName = 'cloud-upload';
-        break;
-      case ConnectionState.DISCONNECTED:
-        iconName = 'alert';
-        break;
-    }
-    // When the active pane isn't a text editor, e.g. diff view, preferences, ..etc.,
-    // We don't show a connection status bar.
-    if (!iconName) {
-      return null;
-    }
-    return (
-      <span
-        className={`icon icon-${iconName} nuclide-remote-projects-status-icon`}
-        onClick={this._onStatusBarTileClicked}
-      />
-    );
-  }
-
-  _onStatusBarTileClicked(): void {
-    if (!this.props.fileUri) {
-      return;
-    }
-    switch (this.props.connectionState) {
-      case ConnectionState.LOCAL:
-        notifyLocalDiskFile(this.props.fileUri);
-        break;
-      case ConnectionState.CONNECTED:
-        notifyConnectedRemoteFile(this.props.fileUri);
-        break;
-      case ConnectionState.DISCONNECTED:
-        notifyDisconnectedRemoteFile(this.props.fileUri);
-        break;
-    }
-  }
+function _load_ConnectionState() {
+  return _ConnectionState = _interopRequireDefault(require('./ConnectionState'));
 }
+
+var _notification;
+
+function _load_notification() {
+  return _notification = require('./notification');
+}
+
+var _reactForAtom;
+
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
+}
+
+var StatusBarTile = (function (_React$Component) {
+  _inherits(StatusBarTile, _React$Component);
+
+  function StatusBarTile(props) {
+    _classCallCheck(this, StatusBarTile);
+
+    _get(Object.getPrototypeOf(StatusBarTile.prototype), 'constructor', this).call(this, props);
+    this._onStatusBarTileClicked = this._onStatusBarTileClicked.bind(this);
+  }
+
+  _createClass(StatusBarTile, [{
+    key: 'render',
+    value: function render() {
+      var iconName = null;
+      switch (this.props.connectionState) {
+        case (_ConnectionState || _load_ConnectionState()).default.NONE:
+          break;
+        case (_ConnectionState || _load_ConnectionState()).default.LOCAL:
+          iconName = 'device-desktop';
+          break;
+        case (_ConnectionState || _load_ConnectionState()).default.CONNECTED:
+          iconName = 'cloud-upload';
+          break;
+        case (_ConnectionState || _load_ConnectionState()).default.DISCONNECTED:
+          iconName = 'alert';
+          break;
+      }
+      // When the active pane isn't a text editor, e.g. diff view, preferences, ..etc.,
+      // We don't show a connection status bar.
+      if (!iconName) {
+        return null;
+      }
+      return (_reactForAtom || _load_reactForAtom()).React.createElement('span', {
+        className: 'icon icon-' + iconName + ' nuclide-remote-projects-status-icon',
+        onClick: this._onStatusBarTileClicked
+      });
+    }
+  }, {
+    key: '_onStatusBarTileClicked',
+    value: function _onStatusBarTileClicked() {
+      if (!this.props.fileUri) {
+        return;
+      }
+      switch (this.props.connectionState) {
+        case (_ConnectionState || _load_ConnectionState()).default.LOCAL:
+          (0, (_notification || _load_notification()).notifyLocalDiskFile)(this.props.fileUri);
+          break;
+        case (_ConnectionState || _load_ConnectionState()).default.CONNECTED:
+          (0, (_notification || _load_notification()).notifyConnectedRemoteFile)(this.props.fileUri);
+          break;
+        case (_ConnectionState || _load_ConnectionState()).default.DISCONNECTED:
+          (0, (_notification || _load_notification()).notifyDisconnectedRemoteFile)(this.props.fileUri);
+          break;
+      }
+    }
+  }]);
+
+  return StatusBarTile;
+})((_reactForAtom || _load_reactForAtom()).React.Component);
+
+exports.default = StatusBarTile;
+module.exports = exports.default;

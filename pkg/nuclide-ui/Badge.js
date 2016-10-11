@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,72 +14,72 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+var _classnames;
 
-import {maybeToString} from '../commons-node/string';
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-type BadgeSize = 'medium' | 'small' | 'large';
-type BadgeColor = 'info' | 'success' | 'warning' | 'error';
+var _reactForAtom;
 
-type Props = {
-  className?: string,
-  color?: BadgeColor,
-  /** Octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon?: atom$Octicon,
-  size?: BadgeSize,
-  /** The value displayed inside the badge. */
-  value: number,
-};
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
+}
 
-export const BadgeSizes = Object.freeze({
+var _commonsNodeString;
+
+function _load_commonsNodeString() {
+  return _commonsNodeString = require('../commons-node/string');
+}
+
+var BadgeSizes = Object.freeze({
   medium: 'medium',
   small: 'small',
-  large: 'large',
+  large: 'large'
 });
 
-export const BadgeColors = Object.freeze({
+exports.BadgeSizes = BadgeSizes;
+var BadgeColors = Object.freeze({
   info: 'info',
   success: 'success',
   warning: 'warning',
-  error: 'error',
+  error: 'error'
 });
 
-const BadgeSizeClassNames = Object.freeze({
+exports.BadgeColors = BadgeColors;
+var BadgeSizeClassNames = Object.freeze({
   small: 'badge-small',
   medium: 'badge-medium',
-  large: 'badge-large',
+  large: 'badge-large'
 });
 
-const BadgeColorClassNames = Object.freeze({
+var BadgeColorClassNames = Object.freeze({
   info: 'badge-info',
   success: 'badge-success',
   warning: 'badge-warning',
-  error: 'badge-error',
+  error: 'badge-error'
 });
 
-export const Badge = (props: Props) => {
-  const {
-    className,
-    color,
-    icon,
-    size,
-    value,
-  } = props;
-  const sizeClassName = size == null ? '' : BadgeSizeClassNames[size] || '';
-  const colorClassName = color == null ? '' : BadgeColorClassNames[color] || '';
-  const newClassName = classnames(
-    className,
-    'badge',
-    {
-      [sizeClassName]: size != null,
-      [colorClassName]: color != null,
-      [`icon icon-${maybeToString(icon)}`]: icon != null,
-    },
-  );
-  return (
-    <span className={newClassName}>
-      {value}
-    </span>
+var Badge = function Badge(props) {
+  var _ref;
+
+  var className = props.className;
+  var color = props.color;
+  var icon = props.icon;
+  var size = props.size;
+  var value = props.value;
+
+  var sizeClassName = size == null ? '' : BadgeSizeClassNames[size] || '';
+  var colorClassName = color == null ? '' : BadgeColorClassNames[color] || '';
+  var newClassName = (0, (_classnames || _load_classnames()).default)(className, 'badge', (_ref = {}, _defineProperty(_ref, sizeClassName, size != null), _defineProperty(_ref, colorClassName, color != null), _defineProperty(_ref, 'icon icon-' + (0, (_commonsNodeString || _load_commonsNodeString()).maybeToString)(icon), icon != null), _ref));
+  return (_reactForAtom || _load_reactForAtom()).React.createElement(
+    'span',
+    { className: newClassName },
+    value
   );
 };
+exports.Badge = Badge;
+
+/** Octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
+
+/** The value displayed inside the badge. */

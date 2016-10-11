@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,75 +10,104 @@
  * the root directory of this source tree.
  */
 
-import type {Observer} from 'rxjs';
-import type {DebuggerEvent, Message} from './types';
+exports.launchDebugger = launchDebugger;
 
-import {Observable} from 'rxjs';
-import child_process from 'child_process';
-import net from 'net';
-import pathUtil from '../../commons-node/nuclideUri';
-import split from 'split';
-import uuid from 'uuid';
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-const METHOD_CONNECT = 'connect';
-const METHOD_EXIT = 'exit';
-const METHOD_INIT = 'init';
-const METHOD_START = 'start';
-const METHOD_STOP = 'stop';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-const PARAM_BREAKPOINTS = 'breakpoints';
-const PARAM_METHOD = 'method';
+var _rxjsBundlesRxMinJs;
 
-export function launchDebugger(
-  commander: Observable<Message>,
-  initialBreakpoints: Array<Object>,
-  pathToPythonExecutable: string,
-  pythonArgs: Array<string>,
-): Observable<DebuggerEvent> {
-  return Observable.create((observer: Observer<DebuggerEvent>) => {
-    function log(message: string) {
-      observer.next({event: 'log', message});
+function _load_rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+}
+
+var _child_process;
+
+function _load_child_process() {
+  return _child_process = _interopRequireDefault(require('child_process'));
+}
+
+var _net;
+
+function _load_net() {
+  return _net = _interopRequireDefault(require('net'));
+}
+
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _split;
+
+function _load_split() {
+  return _split = _interopRequireDefault(require('split'));
+}
+
+var _uuid;
+
+function _load_uuid() {
+  return _uuid = _interopRequireDefault(require('uuid'));
+}
+
+var METHOD_CONNECT = 'connect';
+var METHOD_EXIT = 'exit';
+var METHOD_INIT = 'init';
+var METHOD_START = 'start';
+var METHOD_STOP = 'stop';
+
+var PARAM_BREAKPOINTS = 'breakpoints';
+var PARAM_METHOD = 'method';
+
+function launchDebugger(commander, initialBreakpoints, pathToPythonExecutable, pythonArgs) {
+  return (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.create(function (observer) {
+    function log(message) {
+      observer.next({ event: 'log', message: message });
     }
 
-    const server = net.createServer((connection: net$Socket) => {
+    var server = (_net || _load_net()).default.createServer(function (connection) {
       // For simplicity, we use newline-delimited-JSON as our wire protocol.
-      function write(dict: mixed) {
+      function write(dict) {
         connection.write(JSON.stringify(dict) + '\n');
       }
 
       // Listen to events broadcast from the Python debugger.
-      connection
-        .pipe(split(JSON.parse, /* mapper */ null, {trailing: false}))
-        .on('data', (args: Object) => {
-          const method = args[PARAM_METHOD];
-          if (method === METHOD_CONNECT) {
-            // On initial connection, we should send the breakpoints over.
-            write({[PARAM_METHOD]: METHOD_INIT, [PARAM_BREAKPOINTS]: initialBreakpoints});
-            observer.next({event: 'connected'});
-          } else if (method === METHOD_STOP) {
-            const {file, line} = args;
-            observer.next({event: 'stop', file, line});
-          } else if (method === METHOD_EXIT) {
-            observer.next({event: 'exit'});
-            connection.end();
-          } else if (method === METHOD_START) {
-            observer.next({event: 'start'});
-          } else {
-            const error = new Error(`Unrecognized message: ${JSON.stringify(args)}`);
-            observer.error(error);
-          }
-        });
+      connection.pipe((0, (_split || _load_split()).default)(JSON.parse, /* mapper */null, { trailing: false })).on('data', function (args) {
+        var method = args[PARAM_METHOD];
+        if (method === METHOD_CONNECT) {
+          var _write;
+
+          // On initial connection, we should send the breakpoints over.
+          write((_write = {}, _defineProperty(_write, PARAM_METHOD, METHOD_INIT), _defineProperty(_write, PARAM_BREAKPOINTS, initialBreakpoints), _write));
+          observer.next({ event: 'connected' });
+        } else if (method === METHOD_STOP) {
+          var file = args.file;
+          var line = args.line;
+
+          observer.next({ event: 'stop', file: file, line: line });
+        } else if (method === METHOD_EXIT) {
+          observer.next({ event: 'exit' });
+          connection.end();
+        } else if (method === METHOD_START) {
+          observer.next({ event: 'start' });
+        } else {
+          var error = new Error('Unrecognized message: ' + JSON.stringify(args));
+          observer.error(error);
+        }
+      });
 
       // Take requests from the input commander and pass them through to the Python debugger.
       // TODO(mbolin): If a `quit` message comes in, we should tear down everything from here
       // because the Python code may be locked up such that it won't get the message.
-      commander.subscribe(
-        write,
-        (error: Error) => log(`Unexpected error from commander: ${String(error)}`),
-        () => log('Apparently the commander is done.'),
-      );
+      commander.subscribe(write, function (error) {
+        return log('Unexpected error from commander: ' + String(error));
+      }, function () {
+        return log('Apparently the commander is done.');
+      });
 
-      connection.on('end', () => {
+      connection.on('end', function () {
         // In the current design, we only expect there to be one connection ever, so when it
         // disconnects, we can shut down the server.
         server.close();
@@ -85,30 +115,34 @@ export function launchDebugger(
       });
     });
 
-    server.on('error', err => {
+    server.on('error', function (err) {
       observer.error(err);
       throw err;
     });
 
-    const socketPath = createSocketPath();
-    server.listen({path: socketPath}, () => {
-      log(`listening for connections on ${socketPath}. About to run python.`);
+    var socketPath = createSocketPath();
+    server.listen({ path: socketPath }, function () {
+      log('listening for connections on ' + socketPath + '. About to run python.');
 
       // The connection is set up, so now we can launch our Python program.
-      const pythonDebugger = pathUtil.join(__dirname, 'main.py');
-      const args = [pythonDebugger, socketPath].concat(pythonArgs);
-      const python = child_process.spawn(pathToPythonExecutable, args);
+      var pythonDebugger = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.join(__dirname, 'main.py');
+      var args = [pythonDebugger, socketPath].concat(pythonArgs);
+      var python = (_child_process || _load_child_process()).default.spawn(pathToPythonExecutable, args);
 
       /* eslint-disable no-console */
       // TODO(mbolin): These do not seem to be fired until the debugger finishes.
       // Probably need to handle things differently in debugger.py.
-      python.stdout.on('data', data => console.log(`python stdout: ${data}`));
-      python.stderr.on('data', data => console.log(`python stderr: ${data}`));
+      python.stdout.on('data', function (data) {
+        return console.log('python stdout: ' + data);
+      });
+      python.stderr.on('data', function (data) {
+        return console.log('python stderr: ' + data);
+      });
       /* eslint-enable no-console */
     });
   });
 }
 
-function createSocketPath(): string {
-  return pathUtil.join(require('os').tmpdir(), `${uuid.v4()}.sock`);
+function createSocketPath() {
+  return (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.join(require('os').tmpdir(), (_uuid || _load_uuid()).default.v4() + '.sock');
 }

@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,41 +12,53 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import electron from 'electron';
+var _assert;
 
-const {remote} = electron;
-invariant(remote != null);
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
 
-export default {
-  getCookies(domain: string): Promise<{[key: string]: string}> {
-    return new Promise((resolve, reject) => {
+var _electron;
+
+function _load_electron() {
+  return _electron = _interopRequireDefault(require('electron'));
+}
+
+var remote = (_electron || _load_electron()).default.remote;
+
+(0, (_assert || _load_assert()).default)(remote != null);
+
+exports.default = {
+  getCookies: function getCookies(domain) {
+    return new Promise(function (resolve, reject) {
       // $FlowFixMe: Add types for electron$WebContents
       remote.getCurrentWindow().webContents.session.cookies.get({
-        domain,
-      }, (error, cookies) => {
+        domain: domain
+      }, function (error, cookies) {
         if (error) {
           reject(error);
         } else {
-          const cookieMap = {};
-          cookies.forEach(cookie => {
-            cookieMap[cookie.name] = cookie.value;
-          });
-          resolve(cookieMap);
+          (function () {
+            var cookieMap = {};
+            cookies.forEach(function (cookie) {
+              cookieMap[cookie.name] = cookie.value;
+            });
+            resolve(cookieMap);
+          })();
         }
       });
     });
   },
 
-  setCookie(url: string, domain: string, name: string, value: string): Promise<void> {
-    return new Promise((resolve, reject) => {
+  setCookie: function setCookie(url, domain, name, value) {
+    return new Promise(function (resolve, reject) {
       // $FlowFixMe: Add types for electron$WebContents
       remote.getCurrentWindow().webContents.session.cookies.set({
-        url,
-        domain,
-        name,
-        value,
-      }, error => {
+        url: url,
+        domain: domain,
+        name: name,
+        value: value
+      }, function (error) {
         if (error) {
           reject(error);
         } else {
@@ -51,5 +66,6 @@ export default {
         }
       });
     });
-  },
+  }
 };
+module.exports = exports.default;

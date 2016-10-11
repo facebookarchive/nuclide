@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,20 @@
  * the root directory of this source tree.
  */
 
-import type {
-  RefactorState,
-  RefactorAction,
-  OpenAction,
-  PickedRefactorAction,
-  GotRefactoringsAction,
-  ExecuteAction,
-} from './types';
+exports.default = refactorReducers;
 
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export default function refactorReducers(
-  state_: ?RefactorState,
-  action: RefactorAction,
-): RefactorState {
-  let state = state_;
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+function refactorReducers(state_, action) {
+  var state = state_;
   if (state == null) {
-    state = {type: 'closed'};
+    state = { type: 'closed' };
   }
 
   if (action.error) {
@@ -51,64 +48,65 @@ export default function refactorReducers(
   }
 }
 
-function open(state: RefactorState, action: OpenAction): RefactorState {
-  invariant(state.type === 'closed');
+function open(state, action) {
+  (0, (_assert || _load_assert()).default)(state.type === 'closed');
 
   return {
     type: 'open',
     phase: {
-      type: 'get-refactorings',
-    },
+      type: 'get-refactorings'
+    }
   };
 }
 
-function gotRefactorings(state: RefactorState, action: GotRefactoringsAction): RefactorState {
-  invariant(state.type === 'open');
-  invariant(state.phase.type === 'get-refactorings');
+function gotRefactorings(state, action) {
+  (0, (_assert || _load_assert()).default)(state.type === 'open');
+  (0, (_assert || _load_assert()).default)(state.phase.type === 'get-refactorings');
 
-  const editor = action.payload.editor;
+  var editor = action.payload.editor;
 
   return {
     type: 'open',
     phase: {
       type: 'pick',
       provider: action.payload.provider,
-      editor,
-      availableRefactorings: action.payload.availableRefactorings,
-    },
+      editor: editor,
+      availableRefactorings: action.payload.availableRefactorings
+    }
   };
 }
 
-function close(state: RefactorState): RefactorState {
-  invariant(state.type === 'open');
+function close(state) {
+  (0, (_assert || _load_assert()).default)(state.type === 'open');
   return {
-    type: 'closed',
+    type: 'closed'
   };
 }
 
-function pickedRefactor(state: RefactorState, action: PickedRefactorAction): RefactorState {
-  invariant(state.type === 'open');
-  invariant(state.phase.type === 'pick');
+function pickedRefactor(state, action) {
+  (0, (_assert || _load_assert()).default)(state.type === 'open');
+  (0, (_assert || _load_assert()).default)(state.phase.type === 'pick');
 
-  const refactoring = action.payload.refactoring;
-  const editor = state.phase.editor;
+  var refactoring = action.payload.refactoring;
+  var editor = state.phase.editor;
   return {
     type: 'open',
     phase: {
       type: 'rename',
       provider: state.phase.provider,
       symbolAtPoint: refactoring.symbolAtPoint,
-      editor,
-    },
+      editor: editor
+    }
   };
 }
 
-function executeRefactor(state: RefactorState, action: ExecuteAction): RefactorState {
-  invariant(state.type === 'open');
+function executeRefactor(state, action) {
+  (0, (_assert || _load_assert()).default)(state.type === 'open');
   return {
     type: 'open',
     phase: {
-      type: 'execute',
-    },
+      type: 'execute'
+    }
   };
 }
+module.exports = exports.default;

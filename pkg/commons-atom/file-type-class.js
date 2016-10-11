@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = fileTypeClass;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +13,31 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs-plus';
-import nuclideUri from '../commons-node/nuclideUri';
+var _fsPlus;
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+function _load_fsPlus() {
+  return _fsPlus = _interopRequireDefault(require('fs-plus'));
+}
 
-export default function fileTypeClass(filename: NuclideUri): string {
-  let typeClass;
-  const ext = nuclideUri.extname(filename);
+var _commonsNodeNuclideUri;
 
-  if (fs.isReadmePath(filename)) {
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+function fileTypeClass(filename) {
+  var typeClass = undefined;
+  var ext = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.extname(filename);
+
+  if ((_fsPlus || _load_fsPlus()).default.isReadmePath(filename)) {
     typeClass = 'icon-book';
-  } else if (fs.isCompressedExtension(ext)) {
+  } else if ((_fsPlus || _load_fsPlus()).default.isCompressedExtension(ext)) {
     typeClass = 'icon-file-zip';
-  } else if (fs.isImageExtension(ext)) {
+  } else if ((_fsPlus || _load_fsPlus()).default.isImageExtension(ext)) {
     typeClass = 'icon-file-media';
-  } else if (fs.isPdfExtension(ext)) {
+  } else if ((_fsPlus || _load_fsPlus()).default.isPdfExtension(ext)) {
     typeClass = 'icon-file-pdf';
-  } else if (fs.isBinaryExtension(ext)) {
+  } else if ((_fsPlus || _load_fsPlus()).default.isBinaryExtension(ext)) {
     typeClass = 'icon-file-binary';
   } else {
     typeClass = 'icon-file-text';
@@ -34,3 +45,5 @@ export default function fileTypeClass(filename: NuclideUri): string {
 
   return typeClass;
 }
+
+module.exports = exports.default;

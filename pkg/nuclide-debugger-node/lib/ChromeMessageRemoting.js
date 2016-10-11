@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +8,45 @@
  * the root directory of this source tree.
  */
 
+var _url;
 
-import url from 'url';
-import nuclideUri from '../../commons-node/nuclideUri';
-import logger from './utils';
-import invariant from 'assert';
-
-const {log} = logger;
-
-function translateMessageFromServer(hostname: string, message: string): string {
-  return translateMessage(message, uri => translateUriFromServer(hostname, uri));
+function _load_url() {
+  return _url = _interopRequireDefault(require('url'));
 }
 
-function translateMessageToServer(message: string): string {
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var log = (_utils || _load_utils()).default.log;
+
+function translateMessageFromServer(hostname, message) {
+  return translateMessage(message, function (uri) {
+    return translateUriFromServer(hostname, uri);
+  });
+}
+
+function translateMessageToServer(message) {
   return translateMessage(message, translateUriToServer);
 }
 
-function translateMessage(message: string, translateUri: (uri: string) => string): string {
-  const obj = JSON.parse(message);
-  let result;
+function translateMessage(message, translateUri) {
+  var obj = JSON.parse(message);
+  var result = undefined;
   switch (obj.method) {
     case 'Debugger.scriptParsed':
       result = translateField(obj, 'params.url', translateUri);
@@ -45,9 +64,9 @@ function translateMessage(message: string, translateUri: (uri: string) => string
   return JSON.stringify(result);
 }
 
-function translateField(obj: Object, field: string, translateUri: (uri: string) => string): mixed {
-  const fields = field.split('.');
-  const fieldName = fields[0];
+function translateField(obj, field, translateUri) {
+  var fields = field.split('.');
+  var fieldName = fields[0];
   if (fields.length === 1) {
     obj[fieldName] = translateUri(obj[fieldName]);
   } else {
@@ -56,26 +75,26 @@ function translateField(obj: Object, field: string, translateUri: (uri: string) 
   return obj;
 }
 
-function translateUriFromServer(hostname: string, uri: string): string {
-  const components = url.parse(uri);
+function translateUriFromServer(hostname, uri) {
+  var components = (_url || _load_url()).default.parse(uri);
   if (components.protocol === 'file:') {
-    invariant(components.pathname);
-    const result = nuclideUri.createRemoteUri(hostname, decodeURI(components.pathname));
-    log(`Translated URI from ${uri} to ${result}`);
+    (0, (_assert || _load_assert()).default)(components.pathname);
+    var result = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.createRemoteUri(hostname, decodeURI(components.pathname));
+    log('Translated URI from ' + uri + ' to ' + result);
     return result;
   } else {
     return uri;
   }
 }
 
-function translateUriToServer(uri: string): string {
-  if (nuclideUri.isRemote(uri)) {
-    const result = url.format({
+function translateUriToServer(uri) {
+  if ((_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.isRemote(uri)) {
+    var result = (_url || _load_url()).default.format({
       protocol: 'file',
       slashes: true,
-      pathname: nuclideUri.getPath(uri),
+      pathname: (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.getPath(uri)
     });
-    log(`Translated URI from ${uri} to ${result}`);
+    log('Translated URI from ' + uri + ' to ' + result);
     return result;
   } else {
     return uri;
@@ -83,6 +102,6 @@ function translateUriToServer(uri: string): string {
 }
 
 module.exports = {
-  translateMessageFromServer,
-  translateMessageToServer,
+  translateMessageFromServer: translateMessageFromServer,
+  translateMessageToServer: translateMessageToServer
 };

@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,279 +20,339 @@
  * the root directory of this source tree.
  */
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import watchman from 'fb-watchman';
-import {serializeAsyncCall, sleep} from '../../commons-node/promise';
-import {maybeToString} from '../../commons-node/string';
-import {getWatchmanBinaryPath} from './path';
-import WatchmanSubscription from './WatchmanSubscription';
-import {getLogger} from '../../nuclide-logging';
+var _commonsNodeNuclideUri;
 
-const logger = getLogger();
-const WATCHMAN_SETTLE_TIME_MS = 2500;
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
 
-import type {WatchmanSubscriptionOptions} from './WatchmanSubscription';
+var _fbWatchman;
 
-type WatchmanSubscriptionResponse = {
-  root: string,
-  subscription: string,
-  files?: Array<FileChange>,
-  'state-enter'?: string,
-  'state-leave'?: string,
-  metadata?: Object,
-  canceled?: boolean,
-};
+function _load_fbWatchman() {
+  return _fbWatchman = _interopRequireDefault(require('fb-watchman'));
+}
 
-export type FileChange = {
-  name: string,
-  new: boolean,
-  exists: boolean,
-  mode: number,
-};
+var _commonsNodePromise;
 
-class WatchmanClient {
-  _subscriptions: Map<string, WatchmanSubscription>;
-  _clientPromise: Promise<watchman.Client>;
-  _watchmanVersionPromise: Promise<string>;
-  _serializedReconnect: () => Promise<void>;
+function _load_commonsNodePromise() {
+  return _commonsNodePromise = require('../../commons-node/promise');
+}
 
-  constructor() {
+var _commonsNodeString;
+
+function _load_commonsNodeString() {
+  return _commonsNodeString = require('../../commons-node/string');
+}
+
+var _path;
+
+function _load_path() {
+  return _path = require('./path');
+}
+
+var _WatchmanSubscription;
+
+function _load_WatchmanSubscription() {
+  return _WatchmanSubscription = _interopRequireDefault(require('./WatchmanSubscription'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
+var WATCHMAN_SETTLE_TIME_MS = 2500;
+
+var WatchmanClient = (function () {
+  function WatchmanClient() {
+    var _this = this;
+
+    _classCallCheck(this, WatchmanClient);
+
     this._initWatchmanClient();
-    this._serializedReconnect = serializeAsyncCall(() => this._reconnectClient());
+    this._serializedReconnect = (0, (_commonsNodePromise || _load_commonsNodePromise()).serializeAsyncCall)(function () {
+      return _this._reconnectClient();
+    });
     this._subscriptions = new Map();
     this._watchmanVersionPromise = this.version();
   }
 
-  async dispose(): Promise<void> {
-    const client = await this._clientPromise;
-    client.removeAllListeners(); // disable reconnection
-    client.end();
-  }
-
-  async _initWatchmanClient(): Promise<void> {
-    this._clientPromise = this._createClientPromise();
-
-    const client = await this._clientPromise;
-    client.on('end', () => {
-      client.removeAllListeners();
-      this._serializedReconnect();
-    });
-    client.on('error', error => {
-      logger.error('Error while talking to watchman: ', error);
-      // If Watchman encounters an error in the middle of a command, it may never finish!
-      // The client must be immediately killed here so that the command fails and
-      // `serializeAsyncCall` can be unblocked. Otherwise, we end up in a deadlock.
-      client.removeAllListeners();
+  _createClass(WatchmanClient, [{
+    key: 'dispose',
+    value: _asyncToGenerator(function* () {
+      var client = yield this._clientPromise;
+      client.removeAllListeners(); // disable reconnection
       client.end();
-      // Those are errors in deserializing a stream of changes.
-      // The only possible recovery here is reconnecting a new client,
-      // but the failed to serialize events will be missed.
-      // t9353878
-      this._serializedReconnect();
-    });
-    client.on('subscription', this._onSubscriptionResult.bind(this));
-  }
+    })
+  }, {
+    key: '_initWatchmanClient',
+    value: _asyncToGenerator(function* () {
+      var _this2 = this;
 
-  async _createClientPromise(): Promise<watchman.Client> {
-    return new watchman.Client({
-      watchmanBinaryPath: await getWatchmanBinaryPath(),
-    });
-  }
+      this._clientPromise = this._createClientPromise();
 
-  async _reconnectClient(): Promise<void> {
-    logger.error('Watchman client disconnected, reconnecting a new client!');
-    await this._initWatchmanClient();
-    await this._restoreSubscriptions();
-  }
+      var client = yield this._clientPromise;
+      client.on('end', function () {
+        client.removeAllListeners();
+        _this2._serializedReconnect();
+      });
+      client.on('error', function (error) {
+        logger.error('Error while talking to watchman: ', error);
+        // If Watchman encounters an error in the middle of a command, it may never finish!
+        // The client must be immediately killed here so that the command fails and
+        // `serializeAsyncCall` can be unblocked. Otherwise, we end up in a deadlock.
+        client.removeAllListeners();
+        client.end();
+        // Those are errors in deserializing a stream of changes.
+        // The only possible recovery here is reconnecting a new client,
+        // but the failed to serialize events will be missed.
+        // t9353878
+        _this2._serializedReconnect();
+      });
+      client.on('subscription', this._onSubscriptionResult.bind(this));
+    })
+  }, {
+    key: '_createClientPromise',
+    value: _asyncToGenerator(function* () {
+      return new (_fbWatchman || _load_fbWatchman()).default.Client({
+        watchmanBinaryPath: yield (0, (_path || _load_path()).getWatchmanBinaryPath)()
+      });
+    })
+  }, {
+    key: '_reconnectClient',
+    value: _asyncToGenerator(function* () {
+      logger.error('Watchman client disconnected, reconnecting a new client!');
+      yield this._initWatchmanClient();
+      yield this._restoreSubscriptions();
+    })
+  }, {
+    key: '_restoreSubscriptions',
+    value: _asyncToGenerator(function* () {
+      var _this3 = this;
 
-  async _restoreSubscriptions(): Promise<void> {
-    const watchSubscriptions = Array.from(this._subscriptions.values());
-    await Promise.all(watchSubscriptions.map(async (subscription: WatchmanSubscription) => {
-      await this._watchProject(subscription.path);
-      // We have already missed the change events from the disconnect time,
-      // watchman could have died, so the last clock result is not valid.
-      await sleep(WATCHMAN_SETTLE_TIME_MS);
-      // Register the subscriptions after the filesystem settles.
-      subscription.options.since = await this._clock(subscription.root);
-      await this._subscribe(subscription.root, subscription.name, subscription.options);
-    }));
-  }
-
-  _getSubscription(entryPath: string): ?WatchmanSubscription {
-    return this._subscriptions.get(nuclideUri.normalize(entryPath));
-  }
-
-  _setSubscription(entryPath: string, subscription: WatchmanSubscription): void {
-    this._subscriptions.set(nuclideUri.normalize(entryPath), subscription);
-  }
-
-  _deleteSubscription(entryPath: string): void {
-    this._subscriptions.delete(nuclideUri.normalize(entryPath));
-  }
-
-  _onSubscriptionResult(response: WatchmanSubscriptionResponse): void {
-    const subscription = this._getSubscription(response.subscription);
-    if (subscription == null) {
-      logger.error('Subscription not found for response:!', response);
-      return;
+      var watchSubscriptions = Array.from(this._subscriptions.values());
+      yield Promise.all(watchSubscriptions.map(_asyncToGenerator(function* (subscription) {
+        yield _this3._watchProject(subscription.path);
+        // We have already missed the change events from the disconnect time,
+        // watchman could have died, so the last clock result is not valid.
+        yield (0, (_commonsNodePromise || _load_commonsNodePromise()).sleep)(WATCHMAN_SETTLE_TIME_MS);
+        // Register the subscriptions after the filesystem settles.
+        subscription.options.since = yield _this3._clock(subscription.root);
+        yield _this3._subscribe(subscription.root, subscription.name, subscription.options);
+      })));
+    })
+  }, {
+    key: '_getSubscription',
+    value: function _getSubscription(entryPath) {
+      return this._subscriptions.get((_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.normalize(entryPath));
     }
-    if (!Array.isArray(response.files)) {
-      if (response.canceled === true) {
-        logger.info(`Watch for ${response.root} was deleted.`);
-        // Ending the client will trigger a reconnect.
-        this._clientPromise.then(client => client.end());
+  }, {
+    key: '_setSubscription',
+    value: function _setSubscription(entryPath, subscription) {
+      this._subscriptions.set((_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.normalize(entryPath), subscription);
+    }
+  }, {
+    key: '_deleteSubscription',
+    value: function _deleteSubscription(entryPath) {
+      this._subscriptions.delete((_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.normalize(entryPath));
+    }
+  }, {
+    key: '_onSubscriptionResult',
+    value: function _onSubscriptionResult(response) {
+      var subscription = this._getSubscription(response.subscription);
+      if (subscription == null) {
+        logger.error('Subscription not found for response:!', response);
         return;
       }
-      // TODO(most): use state messages to decide on when to send updates.
-      const stateEnter = response['state-enter'];
-      const stateLeave = response['state-leave'];
-      const stateMessage = stateEnter != null
-        ? `Entering ${stateEnter}`
-        : `Leaving ${maybeToString(stateLeave)}`
-      ;
-      logger.info(`Subscription state: ${stateMessage}`);
-      return;
-    }
-    subscription.emit('change', response.files);
-  }
-
-  async watchDirectoryRecursive(
-    localDirectoryPath: string,
-    subscriptionName?: string = localDirectoryPath,
-    subscriptionOptions?: WatchmanSubscriptionOptions,
-  ): Promise<WatchmanSubscription> {
-    const existingSubscription = this._getSubscription(subscriptionName);
-    if (existingSubscription) {
-      existingSubscription.subscriptionCount++;
-      return existingSubscription;
-    } else {
-      const {
-        watch: watchRoot,
-        relative_path: relativePath,
-      } = await this._watchProject(localDirectoryPath);
-      const clock = await this._clock(watchRoot);
-      const options: WatchmanSubscriptionOptions = {
-        ...subscriptionOptions,
-        fields: ['name', 'new', 'exists', 'mode'],
-        since: clock,
-      };
-      if (relativePath && !options.expression) {
-        // Passing an 'undefined' expression causes an exception in fb-watchman.
-        options.expression = ['dirname', relativePath];
+      if (!Array.isArray(response.files)) {
+        if (response.canceled === true) {
+          logger.info('Watch for ' + response.root + ' was deleted.');
+          // Ending the client will trigger a reconnect.
+          this._clientPromise.then(function (client) {
+            return client.end();
+          });
+          return;
+        }
+        // TODO(most): use state messages to decide on when to send updates.
+        var stateEnter = response['state-enter'];
+        var stateLeave = response['state-leave'];
+        var stateMessage = stateEnter != null ? 'Entering ' + stateEnter : 'Leaving ' + (0, (_commonsNodeString || _load_commonsNodeString()).maybeToString)(stateLeave);
+        logger.info('Subscription state: ' + stateMessage);
+        return;
       }
-      // relativePath is undefined if watchRoot is the same as directoryPath.
-      const subscription = new WatchmanSubscription(
-        /* subscriptionRoot */ watchRoot,
-        /* pathFromSubscriptionRootToSubscriptionPath */ relativePath,
-        /* subscriptionPath */ localDirectoryPath,
-        /* subscriptionName */ subscriptionName,
-        /* subscriptionCount */ 1,
-        /* subscriptionOptions */ options,
-      );
-      this._setSubscription(subscriptionName, subscription);
-      await this._subscribe(watchRoot, subscriptionName, options);
-      return subscription;
+      subscription.emit('change', response.files);
     }
-  }
+  }, {
+    key: 'watchDirectoryRecursive',
+    value: _asyncToGenerator(function* (localDirectoryPath, subscriptionName, subscriptionOptions) {
+      if (subscriptionName === undefined) subscriptionName = localDirectoryPath;
+      return yield* (function* () {
+        var existingSubscription = this._getSubscription(subscriptionName);
+        if (existingSubscription) {
+          existingSubscription.subscriptionCount++;
+          return existingSubscription;
+        } else {
+          var _ref = yield this._watchProject(localDirectoryPath);
 
-  hasSubscription(entryPath: string): boolean {
-    return Boolean(this._getSubscription(entryPath));
-  }
+          var watchRoot = _ref.watch;
+          var relativePath = _ref.relative_path;
 
-  async unwatch(entryPath: string): Promise<void> {
-    const subscription = this._getSubscription(entryPath);
-
-    if (subscription == null) {
-      logger.error('No watcher entity found with path:', entryPath);
-      return;
+          var clock = yield this._clock(watchRoot);
+          var options = _extends({}, subscriptionOptions, {
+            fields: ['name', 'new', 'exists', 'mode'],
+            since: clock
+          });
+          if (relativePath && !options.expression) {
+            // Passing an 'undefined' expression causes an exception in fb-watchman.
+            options.expression = ['dirname', relativePath];
+          }
+          // relativePath is undefined if watchRoot is the same as directoryPath.
+          var _subscription = new (_WatchmanSubscription || _load_WatchmanSubscription()).default(
+          /* subscriptionRoot */watchRoot,
+          /* pathFromSubscriptionRootToSubscriptionPath */relativePath,
+          /* subscriptionPath */localDirectoryPath,
+          /* subscriptionName */subscriptionName,
+          /* subscriptionCount */1,
+          /* subscriptionOptions */options);
+          this._setSubscription(subscriptionName, _subscription);
+          yield this._subscribe(watchRoot, subscriptionName, options);
+          return _subscription;
+        }
+      }).apply(this, arguments);
+    })
+  }, {
+    key: 'hasSubscription',
+    value: function hasSubscription(entryPath) {
+      return Boolean(this._getSubscription(entryPath));
     }
+  }, {
+    key: 'unwatch',
+    value: _asyncToGenerator(function* (entryPath) {
+      var subscription = this._getSubscription(entryPath);
 
-    if (--subscription.subscriptionCount === 0) {
-      await this._unsubscribe(subscription.path, subscription.name);
-      // Don't delete the watcher if there are other users for it.
-      if (!subscription.pathFromSubscriptionRootToSubscriptionPath) {
-        await this._deleteWatcher(entryPath);
+      if (subscription == null) {
+        logger.error('No watcher entity found with path:', entryPath);
+        return;
       }
-      this._deleteSubscription(entryPath);
+
+      if (--subscription.subscriptionCount === 0) {
+        yield this._unsubscribe(subscription.path, subscription.name);
+        // Don't delete the watcher if there are other users for it.
+        if (!subscription.pathFromSubscriptionRootToSubscriptionPath) {
+          yield this._deleteWatcher(entryPath);
+        }
+        this._deleteSubscription(entryPath);
+      }
+    })
+
+    /**
+     * List all (watched) files in the given directory.
+     * Paths will be relative.
+     */
+  }, {
+    key: 'listFiles',
+    value: _asyncToGenerator(function* (entryPath) {
+      var _ref2 = yield this._watchProject(entryPath);
+
+      var watch = _ref2.watch;
+      var relative_path = _ref2.relative_path;
+
+      var result = yield this._command('query', watch, {
+        expression: ['type', 'f'], // all files
+        fields: ['name'], // names only
+        relative_root: relative_path
+      });
+      return result.files;
+    })
+  }, {
+    key: '_watchList',
+    value: _asyncToGenerator(function* () {
+      var _ref3 = yield this._command('watch-list');
+
+      var roots = _ref3.roots;
+
+      return roots;
+    })
+  }, {
+    key: '_deleteWatcher',
+    value: function _deleteWatcher(entryPath) {
+      return this._command('watch-del', entryPath);
     }
-  }
-
-  /**
-   * List all (watched) files in the given directory.
-   * Paths will be relative.
-   */
-  async listFiles(entryPath: string): Promise<Array<string>> {
-    const {watch, relative_path} = await this._watchProject(entryPath);
-    const result = await this._command('query', watch, {
-      expression: ['type', 'f'], // all files
-      fields: ['name'],          // names only
-      relative_root: relative_path,
-    });
-    return result.files;
-  }
-
-  async _watchList(): Promise<Array<string>> {
-    const {roots} = await this._command('watch-list');
-    return roots;
-  }
-
-  _deleteWatcher(entryPath: string): Promise<any> {
-    return this._command('watch-del', entryPath);
-  }
-
-  _unsubscribe(subscriptionPath: string, subscriptionName: string): Promise<any> {
-    return this._command('unsubscribe', subscriptionPath, subscriptionName);
-  }
-
-  async _watch(directoryPath: string): Promise<any> {
-    const response = await this._command('watch', directoryPath);
-    if (response.warning) {
-      logger.error('watchman warning: ', response.warning);
+  }, {
+    key: '_unsubscribe',
+    value: function _unsubscribe(subscriptionPath, subscriptionName) {
+      return this._command('unsubscribe', subscriptionPath, subscriptionName);
     }
-  }
+  }, {
+    key: '_watch',
+    value: _asyncToGenerator(function* (directoryPath) {
+      var response = yield this._command('watch', directoryPath);
+      if (response.warning) {
+        logger.error('watchman warning: ', response.warning);
+      }
+    })
+  }, {
+    key: '_watchProject',
+    value: _asyncToGenerator(function* (directoryPath) {
+      var watchmanVersion = yield this._watchmanVersionPromise;
+      if (!watchmanVersion || watchmanVersion < '3.1.0') {
+        throw new Error('Watchman version: ' + watchmanVersion + ' does not support watch-project');
+      }
+      var response = yield this._command('watch-project', directoryPath);
+      if (response.warning) {
+        logger.error('watchman warning: ', response.warning);
+      }
+      return response;
+    })
+  }, {
+    key: '_clock',
+    value: _asyncToGenerator(function* (directoryPath) {
+      var _ref4 = yield this._command('clock', directoryPath);
 
-  async _watchProject(directoryPath: string): Promise<any> {
-    const watchmanVersion = await this._watchmanVersionPromise;
-    if (!watchmanVersion || watchmanVersion < '3.1.0') {
-      throw new Error('Watchman version: ' + watchmanVersion + ' does not support watch-project');
+      var clock = _ref4.clock;
+
+      return clock;
+    })
+  }, {
+    key: 'version',
+    value: _asyncToGenerator(function* () {
+      var _ref5 = yield this._command('version');
+
+      var version = _ref5.version;
+
+      return version;
+    })
+  }, {
+    key: '_subscribe',
+    value: function _subscribe(watchRoot, subscriptionName, options) {
+      return this._command('subscribe', watchRoot, subscriptionName, options);
     }
-    const response = await this._command('watch-project', directoryPath);
-    if (response.warning) {
-      logger.error('watchman warning: ', response.warning);
+
+    /*
+     * Promisify calls to watchman client.
+     */
+  }, {
+    key: '_command',
+    value: function _command() {
+      var _this4 = this;
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return new Promise(function (resolve, reject) {
+        _this4._clientPromise.then(function (client) {
+          client.command(args, function (error, response) {
+            return error ? reject(error) : resolve(response);
+          });
+        }).catch(reject);
+      });
     }
-    return response;
-  }
+  }]);
 
-  async _clock(directoryPath: string): Promise<string> {
-    const {clock} = await this._command('clock', directoryPath);
-    return clock;
-  }
-
-  async version(): Promise<string> {
-    const {version} = await this._command('version');
-    return version;
-  }
-
-  _subscribe(
-    watchRoot: string,
-    subscriptionName: ?string,
-    options: WatchmanSubscriptionOptions,
-  ): Promise<WatchmanSubscription> {
-    return this._command('subscribe', watchRoot, subscriptionName, options);
-  }
-
-  /*
-   * Promisify calls to watchman client.
-   */
-  _command(...args: Array<any>): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this._clientPromise.then(client => {
-        client.command(args, (error, response) =>
-          (error ? reject(error) : resolve(response)),
-        );
-      }).catch(reject);
-    });
-  }
-}
+  return WatchmanClient;
+})();
 
 module.exports = WatchmanClient;

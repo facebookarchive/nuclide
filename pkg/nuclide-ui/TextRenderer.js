@@ -1,5 +1,7 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.TextRenderer = TextRenderer;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,14 +11,22 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+var _reactForAtom;
 
-import type {EvaluationResult} from '../nuclide-debugger/lib/types';
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
+}
 
-export function TextRenderer(evaluationResult: EvaluationResult): ?React.Element<any> {
-  const {type, value} = evaluationResult;
+function TextRenderer(evaluationResult) {
+  var type = evaluationResult.type;
+  var value = evaluationResult.value;
+
   if (type === 'text') {
-    return <span>{value}</span>;
+    return (_reactForAtom || _load_reactForAtom()).React.createElement(
+      'span',
+      null,
+      value
+    );
   } else {
     return null;
   }

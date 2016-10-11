@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +8,50 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteMessage} from './bootloader';
+var _assert;
 
-import invariant from 'assert';
-import child_process from 'child_process';
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
 
-process.on('message', (message: RemoteMessage) => {
-  const {id, file, method, args} = message;
+var _child_process;
+
+function _load_child_process() {
+  return _child_process = _interopRequireDefault(require('child_process'));
+}
+
+process.on('message', function (message) {
+  var id = message.id;
+  var file = message.file;
+  var method = message.method;
+  var args = message.args;
 
   // $FlowIgnore
-  const exports = require(file);
-  const service = method != null ? exports[method] : exports;
+  var exports = require(file);
+  var service = method != null ? exports[method] : exports;
 
-  const sendSuccessResponse = result => {
-    invariant(process.send != null);
+  var sendSuccessResponse = function sendSuccessResponse(result) {
+    (0, (_assert || _load_assert()).default)(process.send != null);
     process.send({
-      id,
-      result,
+      id: id,
+      result: result
     });
   };
 
-  const sendErrorResponse = err => {
-    invariant(process.send != null && err != null);
+  var sendErrorResponse = function sendErrorResponse(err) {
+    (0, (_assert || _load_assert()).default)(process.send != null && err != null);
     process.send({
-      id,
+      id: id,
       error: {
         message: err.message || err,
-        stack: err.stack || null,
-      },
+        stack: err.stack || null
+      }
     });
   };
 
   // Invoke the service.
-  let output;
-  let error;
+  var output = undefined;
+  var error = undefined;
   try {
     output = service.apply(null, args || []);
   } catch (e) {
@@ -58,22 +67,21 @@ process.on('message', (message: RemoteMessage) => {
   }
 });
 
-process.on('uncaughtException', err => {
+process.on('uncaughtException', function (err) {
   // eslint-disable-next-line no-console
   console.error('uncaughtException:', err);
   process.exit(1);
 });
 // Properly terminate if the parent server crashes.
-process.on('disconnect', () => {
+process.on('disconnect', function () {
   process.exit();
 });
-process.on('exit', () => {
+process.on('exit', function () {
   // Hack: kill all child processes.
   // $FlowIgnore: Private method.
-  process._getActiveHandles()
-    .forEach(handle => {
-      if (handle instanceof child_process.ChildProcess) {
-        handle.kill();
-      }
-    });
+  process._getActiveHandles().forEach(function (handle) {
+    if (handle instanceof (_child_process || _load_child_process()).default.ChildProcess) {
+      handle.kill();
+    }
+  });
 });

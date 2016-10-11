@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,23 +10,68 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HackSearchPosition} from './HackService';
-import type {HHSearchPosition} from './types';
+exports.parseQueryString = parseQueryString;
 
-import {findHackConfigDir} from './hack-config';
+var executeQuery = _asyncToGenerator(function* (filePath, queryString_) {
+  var hackRoot = yield (0, (_hackConfig || _load_hackConfig()).findHackConfigDir)(filePath);
+  if (hackRoot == null) {
+    return [];
+  }
 
-import {
-  callHHClient,
-} from './HackHelpers';
+  var _parseQueryString = parseQueryString(queryString_);
 
-const pendingSearchPromises: Map<string, Promise<any>> = new Map();
+  var queryString = _parseQueryString.queryString;
+  var searchPostfix = _parseQueryString.searchPostfix;
 
-export function parseQueryString(
-  queryString_: string,
-): {searchPostfix: ?string, queryString: string} {
-  let queryString;
-  let searchPostfix;
+  if (queryString === '') {
+    return [];
+  }
+
+  // `pendingSearchPromises` is used to temporally cache search result promises.
+  // So, when a matching search query is done in parallel, it will wait and resolve
+  // with the original search call.
+  var searchPromise = pendingSearchPromises.get(queryString);
+  if (!searchPromise) {
+    searchPromise = (0, (_HackHelpers || _load_HackHelpers()).callHHClient)(
+    /* args */['--search' + (searchPostfix || ''), queryString],
+    /* errorStream */false,
+    /* processInput */null,
+    /* file */filePath);
+    pendingSearchPromises.set(queryString, searchPromise);
+  }
+
+  var searchResponse = null;
+  try {
+    searchResponse = yield searchPromise;
+  } finally {
+    pendingSearchPromises.delete(queryString);
+  }
+
+  return convertSearchResults(hackRoot, searchResponse);
+});
+
+exports.executeQuery = executeQuery;
+exports.convertSearchResults = convertSearchResults;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+var _hackConfig;
+
+function _load_hackConfig() {
+  return _hackConfig = require('./hack-config');
+}
+
+var _HackHelpers;
+
+function _load_HackHelpers() {
+  return _HackHelpers = require('./HackHelpers');
+}
+
+var pendingSearchPromises = new Map();
+
+function parseQueryString(queryString_) {
+  var queryString = undefined;
+  var searchPostfix = undefined;
   switch (queryString_[0]) {
     case '@':
       searchPostfix = '-function';
@@ -45,61 +91,20 @@ export function parseQueryString(
       break;
   }
   return {
-    searchPostfix,
-    queryString,
+    searchPostfix: searchPostfix,
+    queryString: queryString
   };
 }
 
-export async function executeQuery(
-  filePath: NuclideUri,
-  queryString_: string,
-): Promise<Array<HackSearchPosition>> {
-  const hackRoot = await findHackConfigDir(filePath);
-  if (hackRoot == null) {
-    return [];
-  }
-
-  const {queryString, searchPostfix} = parseQueryString(queryString_);
-  if (queryString === '') {
-    return [];
-  }
-
-  // `pendingSearchPromises` is used to temporally cache search result promises.
-  // So, when a matching search query is done in parallel, it will wait and resolve
-  // with the original search call.
-  let searchPromise = pendingSearchPromises.get(queryString);
-  if (!searchPromise) {
-    searchPromise = callHHClient(
-        /* args */ ['--search' + (searchPostfix || ''), queryString],
-        /* errorStream */ false,
-        /* processInput */ null,
-        /* file */ filePath,
-    );
-    pendingSearchPromises.set(queryString, searchPromise);
-  }
-
-  let searchResponse: ?Array<HHSearchPosition> = null;
-  try {
-    searchResponse = ((await searchPromise): any);
-  } finally {
-    pendingSearchPromises.delete(queryString);
-  }
-
-  return convertSearchResults(hackRoot, searchResponse);
-}
-
-export function convertSearchResults(
-  hackRoot: NuclideUri,
-  searchResponse: ?Array<HHSearchPosition>,
-): Array<HackSearchPosition> {
+function convertSearchResults(hackRoot, searchResponse) {
   if (searchResponse == null) {
     return [];
   }
 
-  const searchResult = searchResponse;
-  const result: Array<HackSearchPosition> = [];
-  for (const entry of searchResult) {
-    const resultFile = entry.filename;
+  var searchResult = searchResponse;
+  var result = [];
+  for (var entry of searchResult) {
+    var resultFile = entry.filename;
     if (!resultFile.startsWith(hackRoot)) {
       // Filter out files out of repo results, e.g. hh internal files.
       continue;
@@ -111,7 +116,7 @@ export function convertSearchResults(
       path: resultFile,
       length: entry.char_end - entry.char_start + 1,
       scope: entry.scope,
-      additionalInfo: entry.desc,
+      additionalInfo: entry.desc
     });
   }
 

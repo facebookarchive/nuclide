@@ -1,5 +1,11 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.generateProxy = generateProxy;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,49 +15,53 @@
  * the root directory of this source tree.
  */
 
-import * as t from 'babel-core/lib/types';
-import generate from 'babel-core/lib/generation';
+var _babelCoreLibTypes;
 
-import type {
-  Definitions,
-  FunctionType,
-  NamedType,
-  Type,
-  InterfaceDefinition,
-  Parameter,
-} from './types';
+function _load_babelCoreLibTypes() {
+  return _babelCoreLibTypes = _interopRequireWildcard(require('babel-core/lib/types'));
+}
 
-const thenIdent = t.identifier('then');
+var _babelCoreLibGeneration;
 
-const observableIdentifier = t.identifier('Observable');
-const idIdentifier = t.identifier('id');
+function _load_babelCoreLibGeneration() {
+  return _babelCoreLibGeneration = _interopRequireDefault(require('babel-core/lib/generation'));
+}
 
-const moduleDotExportsExpression =
-  t.memberExpression(t.identifier('module'), t.identifier('exports'));
-const clientIdentifier = t.identifier('_client');
+var thenIdent = (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('then');
+
+var observableIdentifier = (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('Observable');
+var idIdentifier = (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('id');
+
+var moduleDotExportsExpression = (_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('module'), (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('exports'));
+var clientIdentifier = (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('_client');
 
 // Functions that are implemented at the connection layer.
-const callRemoteFunctionExpression =
-  t.memberExpression(clientIdentifier, t.identifier('callRemoteFunction'));
-const callRemoteMethodExpression =
-  t.memberExpression(clientIdentifier, t.identifier('callRemoteMethod'));
-const createRemoteObjectExpression =
-  t.memberExpression(clientIdentifier, t.identifier('createRemoteObject'));
-const disposeRemoteObjectExpression =
-  t.memberExpression(clientIdentifier, t.identifier('disposeRemoteObject'));
+var callRemoteFunctionExpression = (_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(clientIdentifier, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('callRemoteFunction'));
+var callRemoteMethodExpression = (_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(clientIdentifier, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('callRemoteMethod'));
+var createRemoteObjectExpression = (_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(clientIdentifier, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('createRemoteObject'));
+var disposeRemoteObjectExpression = (_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(clientIdentifier, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('disposeRemoteObject'));
 
-const remoteModule = t.identifier('remoteModule');
-const emptyObject = t.objectExpression([]);
+var remoteModule = (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('remoteModule');
+var emptyObject = (_babelCoreLibTypes || _load_babelCoreLibTypes()).objectExpression([]);
 
-const clientDotMarshalExpression
-  = t.memberExpression(clientIdentifier, t.identifier('marshal'));
-const clientDotUnmarshalExpression
-  = t.memberExpression(clientIdentifier, t.identifier('unmarshal'));
-const marshalCall = (...args) => t.callExpression(clientDotMarshalExpression, args);
-const unmarshalCall = (...args) => t.callExpression(clientDotUnmarshalExpression, args);
+var clientDotMarshalExpression = (_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(clientIdentifier, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('marshal'));
+var clientDotUnmarshalExpression = (_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(clientIdentifier, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('unmarshal'));
+var marshalCall = function marshalCall() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
 
-const clientDotMarshalArgsExpression
-  = t.memberExpression(clientIdentifier, t.identifier('marshalArguments'));
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression(clientDotMarshalExpression, args);
+};
+var unmarshalCall = function unmarshalCall() {
+  for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+    args[_key2] = arguments[_key2];
+  }
+
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression(clientDotUnmarshalExpression, args);
+};
+
+var clientDotMarshalArgsExpression = (_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(clientIdentifier, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('marshalArguments'));
 // const clientDotUnmarshalArgsExpression
 //   = t.memberExpression(clientIdentifier, t.identifier('unmarshalArguments'));
 
@@ -61,12 +71,9 @@ const clientDotMarshalArgsExpression
  * @param argumentTypes - An array of the types of the function's arguments.
  * @returns An expression representing a promise that resolves to an array of the arguments.
  */
-const marshalArgsCall = params => t.callExpression(clientDotMarshalArgsExpression, [
-  t.callExpression(
-    t.memberExpression(t.identifier('Array'), t.identifier('from')),
-    [t.identifier('arguments')]),
-  objectToLiteral(params),
-]);
+var marshalArgsCall = function marshalArgsCall(params) {
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression(clientDotMarshalArgsExpression, [(_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('Array'), (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('from')), [(_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('arguments')]), objectToLiteral(params)]);
+};
 
 // const unmarshalArgsCall = params => t.callExpression(clientDotUnmarshalArgsExpression, [
 //   t.arguments,
@@ -74,42 +81,25 @@ const marshalArgsCall = params => t.callExpression(clientDotMarshalArgsExpressio
 // ]);
 
 // Generates `trackOperationTiming(eventName, () => { return operation; })`
-const trackOperationTimingCall = (eventName, operation) =>
-  t.callExpression(
-    t.identifier('trackOperationTiming'), [t.literal(eventName),
-      t.arrowFunctionExpression([], t.blockStatement([
-        t.returnStatement(operation),
-      ])),
-    ],
-  );
+var trackOperationTimingCall = function trackOperationTimingCall(eventName, operation) {
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('trackOperationTiming'), [(_babelCoreLibTypes || _load_babelCoreLibTypes()).literal(eventName), (_babelCoreLibTypes || _load_babelCoreLibTypes()).arrowFunctionExpression([], (_babelCoreLibTypes || _load_babelCoreLibTypes()).blockStatement([(_babelCoreLibTypes || _load_babelCoreLibTypes()).returnStatement(operation)]))]);
+};
 
 // Generates `Object.defineProperty(module.exports, name, {value: …})`
-const objectDefinePropertyCall = (name, value) => t.callExpression(
-  t.memberExpression(t.identifier('Object'), t.identifier('defineProperty')),
-  [
-    moduleDotExportsExpression,
-    t.literal(name),
-    t.objectExpression([
-      t.property('init', t.identifier('value'), value),
-    ]),
-  ],
-);
+var objectDefinePropertyCall = function objectDefinePropertyCall(name, value) {
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('Object'), (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('defineProperty')), [moduleDotExportsExpression, (_babelCoreLibTypes || _load_babelCoreLibTypes()).literal(name), (_babelCoreLibTypes || _load_babelCoreLibTypes()).objectExpression([(_babelCoreLibTypes || _load_babelCoreLibTypes()).property('init', (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('value'), value)])]);
+};
 
-const dependenciesNodes = names => {
+var dependenciesNodes = function dependenciesNodes(names) {
   return {
     // let name0, ... nameN;
-    declaration: t.variableDeclaration('let', names.map(name => t.identifier(name))),
+    declaration: (_babelCoreLibTypes || _load_babelCoreLibTypes()).variableDeclaration('let', names.map(function (name) {
+      return (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier(name);
+    })),
     // function() { name0 = arguments[0]; ... nameN = arguments[N]; }
-    injectionCall: t.functionExpression(null, [],
-      t.blockStatement(
-        names.map((name, i) => t.expressionStatement(
-          t.assignmentExpression('=',
-            t.identifier(name),
-            t.memberExpression(t.identifier('arguments'), t.literal(i)),
-          ),
-        )),
-      ),
-    ),
+    injectionCall: (_babelCoreLibTypes || _load_babelCoreLibTypes()).functionExpression(null, [], (_babelCoreLibTypes || _load_babelCoreLibTypes()).blockStatement(names.map(function (name, i) {
+      return (_babelCoreLibTypes || _load_babelCoreLibTypes()).expressionStatement((_babelCoreLibTypes || _load_babelCoreLibTypes()).assignmentExpression('=', (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier(name), (_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('arguments'), (_babelCoreLibTypes || _load_babelCoreLibTypes()).literal(i))));
+    })))
   };
 };
 
@@ -122,41 +112,24 @@ const dependenciesNodes = names => {
  * @param defs - The result of parsing the definition file.
  * @returns The proxy factory method.
  */
-export function generateProxy(
-  serviceName: string,
-  preserveFunctionNames: boolean,
-  defs: Definitions,
-): string {
-  const statements = [];
+
+function generateProxy(serviceName, preserveFunctionNames, defs) {
+  var statements = [];
 
   // Declare remoteModule as empty object.
-  statements.push(
-    t.variableDeclaration('const', [
-      t.variableDeclarator(t.identifier('remoteModule'), emptyObject),
-    ]),
-  );
+  statements.push((_babelCoreLibTypes || _load_babelCoreLibTypes()).variableDeclaration('const', [(_babelCoreLibTypes || _load_babelCoreLibTypes()).variableDeclarator((_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('remoteModule'), emptyObject)]));
 
-  defs.forEach(definition => {
-    const name = definition.name;
+  defs.forEach(function (definition) {
+    var name = definition.name;
     switch (definition.kind) {
       case 'function':
-        const functionName = preserveFunctionNames ? name : `${serviceName}/${name}`;
+        var functionName = preserveFunctionNames ? name : serviceName + '/' + name;
         // Generate a remote proxy for each module-level function.
-        statements.push(t.expressionStatement(
-          t.assignmentExpression('=',
-            t.memberExpression(remoteModule, t.identifier(name)),
-            generateFunctionProxy(functionName, definition.type),
-          ),
-        ));
+        statements.push((_babelCoreLibTypes || _load_babelCoreLibTypes()).expressionStatement((_babelCoreLibTypes || _load_babelCoreLibTypes()).assignmentExpression('=', (_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(remoteModule, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier(name)), generateFunctionProxy(functionName, definition.type))));
         break;
       case 'interface':
         // Generate a remote proxy for each remotable interface.
-        statements.push(t.expressionStatement(
-          t.assignmentExpression('=',
-            t.memberExpression(remoteModule, t.identifier(name)),
-            generateInterfaceProxy(definition),
-          ),
-        ));
+        statements.push((_babelCoreLibTypes || _load_babelCoreLibTypes()).expressionStatement((_babelCoreLibTypes || _load_babelCoreLibTypes()).assignmentExpression('=', (_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(remoteModule, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier(name)), generateInterfaceProxy(definition))));
         break;
       case 'alias':
         // nothing
@@ -165,29 +138,24 @@ export function generateProxy(
   });
 
   // Return the remote module.
-  statements.push(t.returnStatement(remoteModule));
+  statements.push((_babelCoreLibTypes || _load_babelCoreLibTypes()).returnStatement(remoteModule));
 
   // Node module dependencies are added via the `inject` function, instead of
   // requiring them. This eliminates having to worry about module resolution.
   // In turn, that makes colocating the definition and the constructed proxy
   // easier for internal and external services.
-  const deps = dependenciesNodes(['Observable', 'trackOperationTiming']);
+  var deps = dependenciesNodes(['Observable', 'trackOperationTiming']);
 
   // Wrap the remoteModule construction in a function that takes a RpcConnection
   // object as an argument.
-  const func = t.arrowFunctionExpression([clientIdentifier], t.blockStatement(statements));
-  const assignment = t.assignmentExpression('=', moduleDotExportsExpression, func);
-  const program = t.program([
-    // !!!This module is not transpiled!!!
-    t.expressionStatement(t.literal('use strict')),
-    deps.declaration,
-    t.expressionStatement(assignment),
-    t.expressionStatement(objectDefinePropertyCall('inject', deps.injectionCall)),
-    t.expressionStatement(objectDefinePropertyCall('defs', objectToLiteral(defs))),
-  ]);
+  var func = (_babelCoreLibTypes || _load_babelCoreLibTypes()).arrowFunctionExpression([clientIdentifier], (_babelCoreLibTypes || _load_babelCoreLibTypes()).blockStatement(statements));
+  var assignment = (_babelCoreLibTypes || _load_babelCoreLibTypes()).assignmentExpression('=', moduleDotExportsExpression, func);
+  var program = (_babelCoreLibTypes || _load_babelCoreLibTypes()).program([
+  // !!!This module is not transpiled!!!
+  (_babelCoreLibTypes || _load_babelCoreLibTypes()).expressionStatement((_babelCoreLibTypes || _load_babelCoreLibTypes()).literal('use strict')), deps.declaration, (_babelCoreLibTypes || _load_babelCoreLibTypes()).expressionStatement(assignment), (_babelCoreLibTypes || _load_babelCoreLibTypes()).expressionStatement(objectDefinePropertyCall('inject', deps.injectionCall)), (_babelCoreLibTypes || _load_babelCoreLibTypes()).expressionStatement(objectDefinePropertyCall('defs', objectToLiteral(defs)))]);
 
   // Use Babel to generate code from the AST.
-  return generate(program).code;
+  return (0, (_babelCoreLibGeneration || _load_babelCoreLibGeneration()).default)(program).code;
 }
 
 /**
@@ -196,30 +164,21 @@ export function generateProxy(
  * @returns The proxy function (as an arrow function) that should be assigned to
  *   a property of the remote module.
  */
-function generateFunctionProxy(name: string, funcType: FunctionType): any {
+function generateFunctionProxy(name, funcType) {
   // _client.callRemoteFunction(name, kind, args)
-  const callExpression = t.callExpression(callRemoteFunctionExpression, [
-    t.literal(name),
-    t.literal(funcType.returnType.kind),
-    t.identifier('args'),
-  ]);
+  var callExpression = (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression(callRemoteFunctionExpression, [(_babelCoreLibTypes || _load_babelCoreLibTypes()).literal(name), (_babelCoreLibTypes || _load_babelCoreLibTypes()).literal(funcType.returnType.kind), (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('args')]);
 
   // Promise.all(...).then(args => { return ...)
-  const argumentsPromise = marshalArgsCall(funcType.argumentTypes);
-  const marshalArgsAndCall = thenPromise(argumentsPromise, t.arrowFunctionExpression(
-    [t.identifier('args')],
-    t.blockStatement([
-      t.returnStatement(callExpression),
-    ]),
-  ));
+  var argumentsPromise = marshalArgsCall(funcType.argumentTypes);
+  var marshalArgsAndCall = thenPromise(argumentsPromise, (_babelCoreLibTypes || _load_babelCoreLibTypes()).arrowFunctionExpression([(_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('args')], (_babelCoreLibTypes || _load_babelCoreLibTypes()).blockStatement([(_babelCoreLibTypes || _load_babelCoreLibTypes()).returnStatement(callExpression)])));
 
-  const result = generateUnmarshalResult(funcType.returnType, marshalArgsAndCall);
+  var result = generateUnmarshalResult(funcType.returnType, marshalArgsAndCall);
 
   // function(arg0, ... argN) { return ... }
-  const args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
-  return t.functionExpression(null, args, t.blockStatement(
-    [t.returnStatement(result)],
-  ));
+  var args = funcType.argumentTypes.map(function (arg, i) {
+    return (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('arg' + i);
+  });
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).functionExpression(null, args, (_babelCoreLibTypes || _load_babelCoreLibTypes()).blockStatement([(_babelCoreLibTypes || _load_babelCoreLibTypes()).returnStatement(result)]));
 }
 
 /**
@@ -227,18 +186,12 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
  * @param def - The InterfaceDefinition object that encodes all if the interface's operations.
  * @returns An anonymous ClassExpression node that can be assigned to a module property.
  */
-function generateInterfaceProxy(def: InterfaceDefinition): any {
-  const methodDefinitions = [];
+function generateInterfaceProxy(def) {
+  var methodDefinitions = [];
 
   // Generate proxies for static methods.
-  def.staticMethods.forEach((funcType, methodName) => {
-    methodDefinitions.push(t.methodDefinition(
-      t.identifier(methodName),
-      generateFunctionProxy(`${def.name}/${methodName}`, funcType),
-      'method',
-      false,
-      true,
-    ));
+  def.staticMethods.forEach(function (funcType, methodName) {
+    methodDefinitions.push((_babelCoreLibTypes || _load_babelCoreLibTypes()).methodDefinition((_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier(methodName), generateFunctionProxy(def.name + '/' + methodName, funcType), 'method', false, true));
   });
 
   // Generate constructor proxy.
@@ -247,24 +200,24 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
   }
 
   // Generate proxies for instance methods.
-  const thisType: NamedType = {
+  var thisType = {
     kind: 'named',
     location: def.location,
-    name: def.name,
+    name: def.name
   };
-  def.instanceMethods.forEach((funcType, methodName) => {
+  def.instanceMethods.forEach(function (funcType, methodName) {
     // dispose method is generated custom at the end
     if (methodName === 'dispose') {
       return;
     }
-    const methodDefinition = generateRemoteDispatch(methodName, thisType, funcType);
+    var methodDefinition = generateRemoteDispatch(methodName, thisType, funcType);
     methodDefinitions.push(methodDefinition);
   });
 
   // Generate the dispose method.
   methodDefinitions.push(generateDisposeMethod());
 
-  return t.classExpression(null, t.classBody(methodDefinitions), null);
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).classExpression(null, (_babelCoreLibTypes || _load_babelCoreLibTypes()).classBody(methodDefinitions), null);
 }
 
 /**
@@ -273,29 +226,23 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
  * @param constructorArgs - The types of the arguments to the constructor.
  * @returns A MethodDefinition node that can be added to a ClassBody.
  */
-function generateRemoteConstructor(className: string, constructorArgs: Array<Parameter>) {
+function generateRemoteConstructor(className, constructorArgs) {
 
   // arg0, .... argN
-  const args = constructorArgs.map((arg, i) => t.identifier(`arg${i}`));
+  var args = constructorArgs.map(function (arg, i) {
+    return (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('arg' + i);
+  });
   // [arg0, ... argN]
-  const argsArray = t.arrayExpression(args);
+  var argsArray = (_babelCoreLibTypes || _load_babelCoreLibTypes()).arrayExpression(args);
   // [argType0, ... argTypeN]
-  const argTypes = t.arrayExpression(constructorArgs.map(objectToLiteral));
+  var argTypes = (_babelCoreLibTypes || _load_babelCoreLibTypes()).arrayExpression(constructorArgs.map(objectToLiteral));
 
   // client.createRemoteObject(className, this, [arg0, arg1, .... argN], [argType0 ... argTypeN])
-  const rpcCallExpression = t.callExpression(
-    createRemoteObjectExpression,
-    [
-      t.literal(className),
-      t.thisExpression(),
-      argsArray,
-      argTypes,
-    ],
-  );
+  var rpcCallExpression = (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression(createRemoteObjectExpression, [(_babelCoreLibTypes || _load_babelCoreLibTypes()).literal(className), (_babelCoreLibTypes || _load_babelCoreLibTypes()).thisExpression(), argsArray, argTypes]);
 
   // constructor(arg0, arg1, ..., argN) { ... }
-  const constructor = t.FunctionExpression(null, args, t.blockStatement([rpcCallExpression]));
-  return t.methodDefinition(t.identifier('constructor'), constructor, 'constructor', false, false);
+  var constructor = (_babelCoreLibTypes || _load_babelCoreLibTypes()).FunctionExpression(null, args, (_babelCoreLibTypes || _load_babelCoreLibTypes()).blockStatement([rpcCallExpression]));
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).methodDefinition((_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('constructor'), constructor, 'constructor', false, false);
 }
 
 /**
@@ -304,91 +251,63 @@ function generateRemoteConstructor(className: string, constructorArgs: Array<Par
  * @param funcType - The type information for the function.
  * @returns A MethodDefinition node that can be added to a ClassBody
  */
-function generateRemoteDispatch(methodName: string, thisType: NamedType, funcType: FunctionType) {
+function generateRemoteDispatch(methodName, thisType, funcType) {
   // _client.callRemoteMethod(this, methodName, returnType, args)
-  const remoteMethodCall = t.callExpression(callRemoteMethodExpression, [
-    idIdentifier,
-    t.literal(methodName),
-    t.literal(funcType.returnType.kind),
-    t.identifier('args')]);
+  var remoteMethodCall = (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression(callRemoteMethodExpression, [idIdentifier, (_babelCoreLibTypes || _load_babelCoreLibTypes()).literal(methodName), (_babelCoreLibTypes || _load_babelCoreLibTypes()).literal(funcType.returnType.kind), (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('args')]);
 
   // _client.marshal(this, thisType).then(id => { return ... })
-  const idThenCall = thenPromise(
-    generateTransformStatement(
-      t.thisExpression(),
-      thisType,
-      true,
-    ),
-    t.arrowFunctionExpression([idIdentifier], t.blockStatement([
-      t.returnStatement(remoteMethodCall)]),
-    ),
-  );
+  var idThenCall = thenPromise(generateTransformStatement((_babelCoreLibTypes || _load_babelCoreLibTypes()).thisExpression(), thisType, true), (_babelCoreLibTypes || _load_babelCoreLibTypes()).arrowFunctionExpression([idIdentifier], (_babelCoreLibTypes || _load_babelCoreLibTypes()).blockStatement([(_babelCoreLibTypes || _load_babelCoreLibTypes()).returnStatement(remoteMethodCall)])));
 
   // Promise.all(...).then(args => { return ... })
-  const argumentsPromise = marshalArgsCall(funcType.argumentTypes);
-  const marshallThenCall = thenPromise(argumentsPromise, t.arrowFunctionExpression(
-    [t.identifier('args')],
-    t.blockStatement([
-      t.returnStatement(idThenCall),
-    ]),
-  ));
+  var argumentsPromise = marshalArgsCall(funcType.argumentTypes);
+  var marshallThenCall = thenPromise(argumentsPromise, (_babelCoreLibTypes || _load_babelCoreLibTypes()).arrowFunctionExpression([(_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('args')], (_babelCoreLibTypes || _load_babelCoreLibTypes()).blockStatement([(_babelCoreLibTypes || _load_babelCoreLibTypes()).returnStatement(idThenCall)])));
 
   // methodName(arg0, ... argN) { return ... }
-  const funcTypeArgs = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
-  const result = generateUnmarshalResult(funcType.returnType, marshallThenCall);
-  const funcExpression = t.functionExpression(null, funcTypeArgs, t.blockStatement([
-    // Wrap in trackOperationTiming if result returns a promise.
-    t.returnStatement(funcType.returnType.kind === 'promise'
-      ? trackOperationTimingCall(`${thisType.name}.${methodName}`, result)
-      : result,
-    )]),
-  );
+  var funcTypeArgs = funcType.argumentTypes.map(function (arg, i) {
+    return (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('arg' + i);
+  });
+  var result = generateUnmarshalResult(funcType.returnType, marshallThenCall);
+  var funcExpression = (_babelCoreLibTypes || _load_babelCoreLibTypes()).functionExpression(null, funcTypeArgs, (_babelCoreLibTypes || _load_babelCoreLibTypes()).blockStatement([
+  // Wrap in trackOperationTiming if result returns a promise.
+  (_babelCoreLibTypes || _load_babelCoreLibTypes()).returnStatement(funcType.returnType.kind === 'promise' ? trackOperationTimingCall(thisType.name + '.' + methodName, result) : result)]));
 
-  return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).methodDefinition((_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier(methodName), funcExpression, 'method', false, false);
 }
 
-function generateUnmarshalResult(returnType: Type, rpcCallExpression) {
+function generateUnmarshalResult(returnType, rpcCallExpression) {
   switch (returnType.kind) {
     case 'void':
       return rpcCallExpression;
     case 'promise':
-      const promiseTransformer = generateValueTransformer(returnType.type);
+      var promiseTransformer = generateValueTransformer(returnType.type);
       return thenPromise(rpcCallExpression, promiseTransformer);
     case 'observable':
       // rpcCallExpression is a call which returns Promise<Observable<unmarshalled result>>
 
       // Observable.fromPromise(rpcCallExpression)
-      const callObservable = t.callExpression(
-            t.memberExpression(observableIdentifier, t.identifier('fromPromise')),
-            [rpcCallExpression]);
+      var callObservable = (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(observableIdentifier, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('fromPromise')), [rpcCallExpression]);
       // ... .flatMap(id => id)
-      const unmarshalledValues = t.callExpression(
-        t.memberExpression(callObservable, t.identifier('concatMap')),
-        [t.arrowFunctionExpression([idIdentifier], idIdentifier)]);
+      var unmarshalledValues = (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(callObservable, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('concatMap')), [(_babelCoreLibTypes || _load_babelCoreLibTypes()).arrowFunctionExpression([idIdentifier], idIdentifier)]);
 
       // Map the events through the appropriate marshaller. We use concatMap instead of
       // flatMap to ensure that the order doesn't change, in case one event takes especially long
       // to marshal.
       //
       // ... .concatMap(value => _client.unmarshal(value, returnType))
-      const observableTransformer = generateValueTransformer(returnType.type);
-      const unmarshalledObservable = t.callExpression(
-        t.memberExpression(unmarshalledValues, t.identifier('concatMap')), [observableTransformer]);
+      var observableTransformer = generateValueTransformer(returnType.type);
+      var unmarshalledObservable = (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(unmarshalledValues, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('concatMap')), [observableTransformer]);
 
       // And finally, convert to a ConnectableObservable with publish.
-      return t.callExpression(
-        t.memberExpression(unmarshalledObservable, t.identifier('publish')), []);
+      return (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(unmarshalledObservable, (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('publish')), []);
     default:
-      throw new Error(`Unkown return type ${returnType.kind}.`);
+      throw new Error('Unkown return type ' + returnType.kind + '.');
   }
 }
 
 // value => _client.unmarshal(value, type)
-function generateValueTransformer(type: Type) {
-  const value = t.identifier('value');
-  return t.arrowFunctionExpression([value], t.blockStatement([
-    t.returnStatement(generateTransformStatement(value, type, false)),
-  ]));
+function generateValueTransformer(type) {
+  var value = (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('value');
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).arrowFunctionExpression([value], (_babelCoreLibTypes || _load_babelCoreLibTypes()).blockStatement([(_babelCoreLibTypes || _load_babelCoreLibTypes()).returnStatement(generateTransformStatement(value, type, false))]));
 }
 
 /**
@@ -398,12 +317,10 @@ function generateValueTransformer(type: Type) {
  */
 function generateDisposeMethod() {
   // return _client.disposeRemoteObject(this);
-  const returnStatement = t.returnStatement(
-    t.callExpression(disposeRemoteObjectExpression, [t.thisExpression()]));
+  var returnStatement = (_babelCoreLibTypes || _load_babelCoreLibTypes()).returnStatement((_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression(disposeRemoteObjectExpression, [(_babelCoreLibTypes || _load_babelCoreLibTypes()).thisExpression()]));
 
   // dispose() { ... }
-  return t.methodDefinition(t.identifier('dispose'),
-    t.functionExpression(null, [], t.blockStatement([returnStatement])), 'method', false, false);
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).methodDefinition((_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('dispose'), (_babelCoreLibTypes || _load_babelCoreLibTypes()).functionExpression(null, [], (_babelCoreLibTypes || _load_babelCoreLibTypes()).blockStatement([returnStatement])), 'method', false, false);
 }
 
 /**
@@ -414,11 +331,11 @@ function generateDisposeMethod() {
  * @param marshal {boolean} - If true, then we are trying to marshal the value. If false, then
  *   we are trying to unmarshal.
  */
-function generateTransformStatement(id: any, type: Type, marshal: boolean): any {
+function generateTransformStatement(id, type, marshal) {
   // The first argument is the value to be marshalled or unmarshalled.
   // The second argument is the type object, which encodes all of the information required
   // to marshal / unmarshal the value.
-  const convertArgs = [id, objectToLiteral(type)];
+  var convertArgs = [id, objectToLiteral(type)];
 
   // If the type is parameterized, we send the parameters as an optional fourth argument.
   if (type.param) {
@@ -435,39 +352,32 @@ function generateTransformStatement(id: any, type: Type, marshal: boolean): any 
  * @param obj - The object to convert.
  * @returns A babel AST node.
  */
-function objectToLiteral(obj: any): any {
-  if (
-    typeof obj === 'string' ||
-    typeof obj === 'number' ||
-    typeof obj === 'boolean' ||
-    obj === null
-  ) {
+function objectToLiteral(obj) {
+  if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean' || obj === null) {
     // abc, 123, true, false, null
-    return t.literal(obj);
+    return (_babelCoreLibTypes || _load_babelCoreLibTypes()).literal(obj);
   } else if (obj === undefined) {
     // undefined
-    return t.identifier('undefined');
+    return (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('undefined');
   } else if (Array.isArray(obj)) {
     // [...]
-    return t.arrayExpression(obj.map(elem => objectToLiteral(elem)));
+    return (_babelCoreLibTypes || _load_babelCoreLibTypes()).arrayExpression(obj.map(function (elem) {
+      return objectToLiteral(elem);
+    }));
   } else if (obj instanceof Map) {
-    return t.newExpression(
-      t.identifier('Map'), obj.size
-        // new Map([...])
-        ? [objectToLiteral(Array.from(obj.entries()))]
-        // new Map()
-        : null,
-    );
+    return (_babelCoreLibTypes || _load_babelCoreLibTypes()).newExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier('Map'), obj.size
+    // new Map([...])
+    ? [objectToLiteral(Array.from(obj.entries()))]
+    // new Map()
+    : null);
   } else if (typeof obj === 'object') {
     // {a: 1, b: 2}
-    return t.objectExpression(
-      Object.keys(obj).map(key =>
-        t.property('init', t.identifier(key), objectToLiteral(obj[key])),
-      ),
-    );
+    return (_babelCoreLibTypes || _load_babelCoreLibTypes()).objectExpression(Object.keys(obj).map(function (key) {
+      return (_babelCoreLibTypes || _load_babelCoreLibTypes()).property('init', (_babelCoreLibTypes || _load_babelCoreLibTypes()).identifier(key), objectToLiteral(obj[key]));
+    }));
   }
 
-  throw new Error(`Cannot convert unknown type ${typeof obj} to literal.`);
+  throw new Error('Cannot convert unknown type ' + typeof obj + ' to literal.');
 }
 
 /**
@@ -476,13 +386,13 @@ function objectToLiteral(obj: any): any {
  * @param functionExpression - A function to pass as an argument to `.then`
  * @returns A CallExpression node that `.then`s on the provided promise.
  */
-function thenPromise(promiseExpression, functionExpression): any {
-  return t.callExpression(t.memberExpression(promiseExpression, thenIdent),
-    [functionExpression]);
+function thenPromise(promiseExpression, functionExpression) {
+  return (_babelCoreLibTypes || _load_babelCoreLibTypes()).callExpression((_babelCoreLibTypes || _load_babelCoreLibTypes()).memberExpression(promiseExpression, thenIdent), [functionExpression]);
 }
 
 /** Export private functions for unit-testing. */
-export const __test__ = {
-  generateTransformStatement,
-  objectToLiteral,
+var __test__ = {
+  generateTransformStatement: generateTransformStatement,
+  objectToLiteral: objectToLiteral
 };
+exports.__test__ = __test__;

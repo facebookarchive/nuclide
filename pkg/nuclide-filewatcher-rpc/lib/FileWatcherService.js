@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,117 +10,134 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type WatchmanSubscription from '../../nuclide-watchman-helpers/lib/WatchmanSubscription';
-import type {FileChange} from '../../nuclide-watchman-helpers/lib/WatchmanClient';
-import type {ConnectableObservable} from 'rxjs';
+exports.watchFile = watchFile;
+exports.watchDirectory = watchDirectory;
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {Observable} from 'rxjs';
-import fsPromise from '../../commons-node/fsPromise';
-import {getLogger} from '../../nuclide-logging';
-import {WatchmanClient} from '../../nuclide-watchman-helpers';
+var getRealPath = _asyncToGenerator(function* (entityPath, isFile) {
+  var stat = undefined;
+  try {
+    stat = yield (_commonsNodeFsPromise || _load_commonsNodeFsPromise()).default.stat(entityPath);
+  } catch (e) {
+    // Atom watcher behavior compatibility.
+    throw new Error('Can\'t watch a non-existing entity: ' + entityPath);
+  }
+  if (stat.isFile() !== isFile) {
+    (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().warn('FileWatcherService: expected ' + entityPath + ' to be a ' + (isFile ? 'file' : 'directory'));
+  }
+  return yield (_commonsNodeFsPromise || _load_commonsNodeFsPromise()).default.realpath(entityPath);
+});
 
-export type WatchResult = {
-  path: NuclideUri,
-  type: string,
-};
+exports.watchDirectoryRecursive = watchDirectoryRecursive;
 
-type WatchEvent = 'change' | 'delete';
+var unwatchDirectoryRecursive = _asyncToGenerator(function* (directoryPath) {
+  yield getWatchmanClient().unwatch(directoryPath);
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs;
+
+function _load_rxjsBundlesRxMinJs() {
+  return _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+}
+
+var _commonsNodeFsPromise;
+
+function _load_commonsNodeFsPromise() {
+  return _commonsNodeFsPromise = _interopRequireDefault(require('../../commons-node/fsPromise'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _nuclideWatchmanHelpers;
+
+function _load_nuclideWatchmanHelpers() {
+  return _nuclideWatchmanHelpers = require('../../nuclide-watchman-helpers');
+}
 
 // Cache an observable for each watched entity (file or directory).
 // Multiple watches for the same entity can share the same observable.
-const entityObservable: Map<string, Observable<WatchResult>> = new Map();
+var entityObservable = new Map();
 
 // In addition, expose the observer behind each observable so we can
 // dispatch events from the root subscription.
-const entityObserver: Map<string, rxjs$IObserver<WatchEvent>> = new Map();
+var entityObserver = new Map();
 
-let watchmanClient: ?WatchmanClient = null;
-function getWatchmanClient(): WatchmanClient {
+var watchmanClient = null;
+function getWatchmanClient() {
   if (watchmanClient == null) {
-    watchmanClient = new WatchmanClient();
+    watchmanClient = new (_nuclideWatchmanHelpers || _load_nuclideWatchmanHelpers()).WatchmanClient();
   }
   return watchmanClient;
 }
 
-export function watchFile(filePath: NuclideUri): ConnectableObservable<WatchResult> {
+function watchFile(filePath) {
   return watchEntity(filePath, true).publish();
 }
 
-export function watchDirectory(directoryPath: NuclideUri): ConnectableObservable<WatchResult> {
+function watchDirectory(directoryPath) {
   return watchEntity(directoryPath, false).publish();
 }
 
-function watchEntity(
-  entityPath: string,
-  isFile: boolean,
-): Observable<WatchResult> {
-  return Observable.fromPromise(
-    getRealPath(entityPath, isFile),
-  ).flatMap(realPath => {
-    let observable = entityObservable.get(realPath);
+function watchEntity(entityPath, isFile) {
+  return (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.fromPromise(getRealPath(entityPath, isFile)).flatMap(function (realPath) {
+    var observable = entityObservable.get(realPath);
     if (observable != null) {
       return observable;
     }
-    observable = Observable.create(observer => {
+    observable = (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.create(function (observer) {
       entityObserver.set(realPath, observer);
-      return () => {
+      return function () {
         entityObserver.delete(realPath);
         entityObservable.delete(realPath);
       };
-    }).map(type => ({path: realPath, type}))
-      .share();
+    }).map(function (type) {
+      return { path: realPath, type: type };
+    }).share();
     entityObservable.set(realPath, observable);
     return observable;
   });
 }
 
-async function getRealPath(entityPath: string, isFile: boolean): Promise<string> {
-  let stat;
-  try {
-    stat = await fsPromise.stat(entityPath);
-  } catch (e) {
-    // Atom watcher behavior compatibility.
-    throw new Error(`Can't watch a non-existing entity: ${entityPath}`);
-  }
-  if (stat.isFile() !== isFile) {
-    getLogger().warn(
-      `FileWatcherService: expected ${entityPath} to be a ${isFile ? 'file' : 'directory'}`,
-    );
-  }
-  return await fsPromise.realpath(entityPath);
-}
-
-export function watchDirectoryRecursive(
-  directoryPath: NuclideUri,
-): ConnectableObservable<string> {
-  const client = getWatchmanClient();
+function watchDirectoryRecursive(directoryPath) {
+  var client = getWatchmanClient();
   if (client.hasSubscription(directoryPath)) {
-    return Observable.of('EXISTING').publish();
+    return (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.of('EXISTING').publish();
   }
-  return Observable.fromPromise(
-    client.watchDirectoryRecursive(directoryPath),
-  ).flatMap(watcher => {
+  return (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.fromPromise(client.watchDirectoryRecursive(directoryPath)).flatMap(function (watcher) {
     // Listen for watcher changes to route them to watched files and directories.
-    watcher.on('change', entries => {
+    watcher.on('change', function (entries) {
       onWatcherChange(watcher, entries);
     });
 
-    return Observable.create(observer => {
+    return (_rxjsBundlesRxMinJs || _load_rxjsBundlesRxMinJs()).Observable.create(function (observer) {
       // Notify success watcher setup.
       observer.next('SUCCESS');
 
-      return () => unwatchDirectoryRecursive(directoryPath);
+      return function () {
+        return unwatchDirectoryRecursive(directoryPath);
+      };
     });
   }).publish();
 }
 
-function onWatcherChange(subscription: WatchmanSubscription, entries: Array<FileChange>): void {
-  const directoryChanges = new Set();
-  entries.forEach(entry => {
-    const entryPath = nuclideUri.join(subscription.root, entry.name);
-    const observer = entityObserver.get(entryPath);
+function onWatcherChange(subscription, entries) {
+  var directoryChanges = new Set();
+  entries.forEach(function (entry) {
+    var entryPath = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.join(subscription.root, entry.name);
+    var observer = entityObserver.get(entryPath);
     if (observer != null) {
       // TODO(most): handle `rename`, if needed.
       if (!entry.exists) {
@@ -132,18 +150,14 @@ function onWatcherChange(subscription: WatchmanSubscription, entries: Array<File
     // A file watch event can also be considered a directory change
     // for the parent directory if a file was created or deleted.
     if (entry.new || !entry.exists) {
-      directoryChanges.add(nuclideUri.dirname(entryPath));
+      directoryChanges.add((_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.dirname(entryPath));
     }
   });
 
-  directoryChanges.forEach(watchedDirectoryPath => {
-    const observer = entityObserver.get(watchedDirectoryPath);
+  directoryChanges.forEach(function (watchedDirectoryPath) {
+    var observer = entityObserver.get(watchedDirectoryPath);
     if (observer != null) {
       observer.next('change');
     }
   });
-}
-
-async function unwatchDirectoryRecursive(directoryPath: string): Promise<void> {
-  await getWatchmanClient().unwatch(directoryPath);
 }

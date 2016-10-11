@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.getConfig = getConfig;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +13,22 @@
  * the root directory of this source tree.
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
-import {getCategoryLogger} from '../../nuclide-logging';
+var _commonsAtomFeatureConfig;
 
-const DEBUGGER_LOGGER_CATEGORY = 'nuclide-lldb-client-debugger';
+function _load_commonsAtomFeatureConfig() {
+  return _commonsAtomFeatureConfig = _interopRequireDefault(require('../../commons-atom/featureConfig'));
+}
 
-export default getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+var _nuclideLogging;
 
-export function getConfig(): any {
-  return (featureConfig.get('nuclide-debugger-native'): any);
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var DEBUGGER_LOGGER_CATEGORY = 'nuclide-lldb-client-debugger';
+
+exports.default = (0, (_nuclideLogging || _load_nuclideLogging()).getCategoryLogger)(DEBUGGER_LOGGER_CATEGORY);
+
+function getConfig() {
+  return (_commonsAtomFeatureConfig || _load_commonsAtomFeatureConfig()).default.get('nuclide-debugger-native');
 }

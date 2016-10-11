@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,16 @@
  * the root directory of this source tree.
  */
 
-import type {FileNotifier} from './rpc-types';
+var initialize = _asyncToGenerator(function* () {
+  return new (_FileCache || _load_FileCache()).FileCache();
+});
 
-import {FileCache} from './FileCache';
+exports.initialize = initialize;
 
-export async function initialize(): Promise<FileNotifier> {
-  return new FileCache();
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+var _FileCache;
+
+function _load_FileCache() {
+  return _FileCache = require('./FileCache');
 }

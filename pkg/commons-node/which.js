@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +14,17 @@
  * the root directory of this source tree.
  */
 
-import {checkOutput} from './process';
-import os from 'os';
+var _process;
+
+function _load_process() {
+  return _process = require('./process');
+}
+
+var _os;
+
+function _load_os() {
+  return _os = _interopRequireDefault(require('os'));
+}
 
 /**
  * Provides a cross-platform way to check whether a binary is available.
@@ -18,12 +32,13 @@ import os from 'os';
  * We ran into problems with the npm `which` package (the nature of which I unfortunately don't
  * remember) so we can use this for now.
  */
-export default async function which(command: string): Promise<?string> {
-  const whichCommand = process.platform === 'win32' ? 'where' : 'which';
+exports.default = _asyncToGenerator(function* (command) {
+  var whichCommand = process.platform === 'win32' ? 'where' : 'which';
   try {
-    const result = await checkOutput(whichCommand, [command]);
-    return result.stdout.split(os.EOL)[0];
+    var result = yield (0, (_process || _load_process()).checkOutput)(whichCommand, [command]);
+    return result.stdout.split((_os || _load_os()).default.EOL)[0];
   } catch (e) {
     return null;
   }
-}
+});
+module.exports = exports.default;

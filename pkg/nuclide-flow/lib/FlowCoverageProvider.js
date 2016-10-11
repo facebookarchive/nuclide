@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,37 +10,49 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FlowCoverageResult} from '../../nuclide-flow-rpc';
+var getCoverage = _asyncToGenerator(function* (path) {
+  var flowService = yield (0, (_FlowServiceFactory || _load_FlowServiceFactory()).getFlowServiceByNuclideUri)(path);
+  (0, (_assert || _load_assert()).default)(flowService != null);
 
-import invariant from 'assert';
-import {Range} from 'atom';
-
-import {getFlowServiceByNuclideUri} from './FlowServiceFactory';
-
-export async function getCoverage(path: NuclideUri): Promise<?CoverageResult> {
-  const flowService = await getFlowServiceByNuclideUri(path);
-  invariant(flowService != null);
-
-  const flowCoverage: ?FlowCoverageResult = await flowService.flowGetCoverage(path);
+  var flowCoverage = yield flowService.flowGetCoverage(path);
   return flowCoverageToCoverage(flowCoverage);
+});
+
+exports.getCoverage = getCoverage;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
 }
 
-function flowCoverageToCoverage(flowCoverage: ?FlowCoverageResult): ?CoverageResult {
+var _atom;
+
+function _load_atom() {
+  return _atom = require('atom');
+}
+
+var _FlowServiceFactory;
+
+function _load_FlowServiceFactory() {
+  return _FlowServiceFactory = require('./FlowServiceFactory');
+}
+
+function flowCoverageToCoverage(flowCoverage) {
   if (flowCoverage == null) {
     return null;
   }
 
   return {
     percentage: flowCoverage.percentage,
-    uncoveredRegions: flowCoverage.uncoveredRanges.map(
-      flowRange => ({
-        range: new Range(
-          [flowRange.start.line, flowRange.start.column],
-          [flowRange.end.line, flowRange.end.column],
-        ),
-      }),
-    ),
+    uncoveredRegions: flowCoverage.uncoveredRanges.map(function (flowRange) {
+      return {
+        range: new (_atom || _load_atom()).Range([flowRange.start.line, flowRange.start.column], [flowRange.end.line, flowRange.end.column])
+      };
+    })
   };
 }

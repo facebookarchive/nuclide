@@ -1,5 +1,12 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,51 +16,56 @@
  * the root directory of this source tree.
  */
 
-import {VERSION_TIMEOUT_MS} from './FlowConstants';
+var _FlowConstants;
 
-type VersionWithTimestamp = {
-  version: ?string,
-  receivedTime: number,
-};
+function _load_FlowConstants() {
+  return _FlowConstants = require('./FlowConstants');
+}
 
 /*
  * Queries Flow for its version and caches the results. The version is a best guess: it is not 100%
  * guaranteed to be reliable due to caching, but will nearly always be correct.
  */
-export class FlowVersion {
-  _lastVersion: ?VersionWithTimestamp;
 
-  _versionFn: () => Promise<?string>;
+var FlowVersion = (function () {
+  function FlowVersion(versionFn) {
+    _classCallCheck(this, FlowVersion);
 
-  constructor(
-    versionFn: () => Promise<?string>,
-  ) {
     this._versionFn = versionFn;
     this._lastVersion = null;
   }
 
-  invalidateVersion(): void {
-    this._lastVersion = null;
-  }
-
-  async getVersion(): Promise<?string> {
-    const lastVersion = this._lastVersion;
-    if (lastVersion == null) {
-      return await this._queryAndSetVersion();
+  _createClass(FlowVersion, [{
+    key: 'invalidateVersion',
+    value: function invalidateVersion() {
+      this._lastVersion = null;
     }
-    const msSinceReceived = Date.now() - lastVersion.receivedTime;
-    if (msSinceReceived >= VERSION_TIMEOUT_MS) {
-      return await this._queryAndSetVersion();
-    }
-    return lastVersion.version;
-  }
+  }, {
+    key: 'getVersion',
+    value: _asyncToGenerator(function* () {
+      var lastVersion = this._lastVersion;
+      if (lastVersion == null) {
+        return yield this._queryAndSetVersion();
+      }
+      var msSinceReceived = Date.now() - lastVersion.receivedTime;
+      if (msSinceReceived >= (_FlowConstants || _load_FlowConstants()).VERSION_TIMEOUT_MS) {
+        return yield this._queryAndSetVersion();
+      }
+      return lastVersion.version;
+    })
+  }, {
+    key: '_queryAndSetVersion',
+    value: _asyncToGenerator(function* () {
+      var version = yield this._versionFn();
+      this._lastVersion = {
+        version: version,
+        receivedTime: Date.now()
+      };
+      return version;
+    })
+  }]);
 
-  async _queryAndSetVersion(): Promise<?string> {
-    const version = await this._versionFn();
-    this._lastVersion = {
-      version,
-      receivedTime: Date.now(),
-    };
-    return version;
-  }
-}
+  return FlowVersion;
+})();
+
+exports.FlowVersion = FlowVersion;

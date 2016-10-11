@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,67 +10,182 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
-import {Block} from './Block';
-import {Icon} from './Icon';
-import {
-  TreeList,
-  TreeItem,
-  NestedTreeItem,
-} from './Tree';
+var _reactForAtom;
 
-const BasicTreeExample = (): React.Element<any> => (
-  <div>
-    Trees
-    <Block>
-      <TreeList>
-        <TreeItem>TreeItem 1</TreeItem>
-        <TreeItem>TreeItem 2</TreeItem>
-        <NestedTreeItem title={<span>NestedTreeItem 1</span>} selected={true}>
-          <TreeItem>TreeItem 3</TreeItem>
-          <TreeItem>TreeItem 4</TreeItem>
-        </NestedTreeItem>
-        <NestedTreeItem title={<span>NestedTreeItem 2</span>} collapsed={true} />
-      </TreeList>
-    </Block>
-  </div>
-);
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
+}
 
-const AtomStyleguideTreeExample = (): React.Element<any> => (
-  <Block>
-    <TreeList showArrows={true}>
-      <NestedTreeItem
-        title={<Icon icon="file-directory">A Directory</Icon>}>
-          <NestedTreeItem
-            collapsed={false}
-            title={<Icon icon="file-directory">Nested Directory</Icon>}>
-            <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
-          </NestedTreeItem>
-          <NestedTreeItem
-            collapsed={true}
-            title={<Icon icon="file-directory">Collapsed Nested Directory</Icon>}>
-            <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
-          </NestedTreeItem>
-          <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
-          <TreeItem selected={true}><Icon icon="file-text">File three .selected!</Icon></TreeItem>
-      </NestedTreeItem>
-      <TreeItem><Icon icon="file-text">.icon-file-text</Icon></TreeItem>
-      <TreeItem><Icon icon="file-symlink-file">.icon-file-symlink-file</Icon></TreeItem>
-    </TreeList>
-  </Block>
-);
+var _Block;
 
-export const TreeExamples = {
+function _load_Block() {
+  return _Block = require('./Block');
+}
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('./Icon');
+}
+
+var _Tree;
+
+function _load_Tree() {
+  return _Tree = require('./Tree');
+}
+
+var BasicTreeExample = function BasicTreeExample() {
+  return (_reactForAtom || _load_reactForAtom()).React.createElement(
+    'div',
+    null,
+    'Trees',
+    (_reactForAtom || _load_reactForAtom()).React.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      (_reactForAtom || _load_reactForAtom()).React.createElement(
+        (_Tree || _load_Tree()).TreeList,
+        null,
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          (_Tree || _load_Tree()).TreeItem,
+          null,
+          'TreeItem 1'
+        ),
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          (_Tree || _load_Tree()).TreeItem,
+          null,
+          'TreeItem 2'
+        ),
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          (_Tree || _load_Tree()).NestedTreeItem,
+          { title: (_reactForAtom || _load_reactForAtom()).React.createElement(
+              'span',
+              null,
+              'NestedTreeItem 1'
+            ), selected: true },
+          (_reactForAtom || _load_reactForAtom()).React.createElement(
+            (_Tree || _load_Tree()).TreeItem,
+            null,
+            'TreeItem 3'
+          ),
+          (_reactForAtom || _load_reactForAtom()).React.createElement(
+            (_Tree || _load_Tree()).TreeItem,
+            null,
+            'TreeItem 4'
+          )
+        ),
+        (_reactForAtom || _load_reactForAtom()).React.createElement((_Tree || _load_Tree()).NestedTreeItem, { title: (_reactForAtom || _load_reactForAtom()).React.createElement(
+            'span',
+            null,
+            'NestedTreeItem 2'
+          ), collapsed: true })
+      )
+    )
+  );
+};
+
+var AtomStyleguideTreeExample = function AtomStyleguideTreeExample() {
+  return (_reactForAtom || _load_reactForAtom()).React.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    (_reactForAtom || _load_reactForAtom()).React.createElement(
+      (_Tree || _load_Tree()).TreeList,
+      { showArrows: true },
+      (_reactForAtom || _load_reactForAtom()).React.createElement(
+        (_Tree || _load_Tree()).NestedTreeItem,
+        {
+          title: (_reactForAtom || _load_reactForAtom()).React.createElement(
+            (_Icon || _load_Icon()).Icon,
+            { icon: 'file-directory' },
+            'A Directory'
+          ) },
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          (_Tree || _load_Tree()).NestedTreeItem,
+          {
+            collapsed: false,
+            title: (_reactForAtom || _load_reactForAtom()).React.createElement(
+              (_Icon || _load_Icon()).Icon,
+              { icon: 'file-directory' },
+              'Nested Directory'
+            ) },
+          (_reactForAtom || _load_reactForAtom()).React.createElement(
+            (_Tree || _load_Tree()).TreeItem,
+            null,
+            (_reactForAtom || _load_reactForAtom()).React.createElement(
+              (_Icon || _load_Icon()).Icon,
+              { icon: 'file-text' },
+              'File one'
+            )
+          )
+        ),
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          (_Tree || _load_Tree()).NestedTreeItem,
+          {
+            collapsed: true,
+            title: (_reactForAtom || _load_reactForAtom()).React.createElement(
+              (_Icon || _load_Icon()).Icon,
+              { icon: 'file-directory' },
+              'Collapsed Nested Directory'
+            ) },
+          (_reactForAtom || _load_reactForAtom()).React.createElement(
+            (_Tree || _load_Tree()).TreeItem,
+            null,
+            (_reactForAtom || _load_reactForAtom()).React.createElement(
+              (_Icon || _load_Icon()).Icon,
+              { icon: 'file-text' },
+              'File one'
+            )
+          )
+        ),
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          (_Tree || _load_Tree()).TreeItem,
+          null,
+          (_reactForAtom || _load_reactForAtom()).React.createElement(
+            (_Icon || _load_Icon()).Icon,
+            { icon: 'file-text' },
+            'File one'
+          )
+        ),
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          (_Tree || _load_Tree()).TreeItem,
+          { selected: true },
+          (_reactForAtom || _load_reactForAtom()).React.createElement(
+            (_Icon || _load_Icon()).Icon,
+            { icon: 'file-text' },
+            'File three .selected!'
+          )
+        )
+      ),
+      (_reactForAtom || _load_reactForAtom()).React.createElement(
+        (_Tree || _load_Tree()).TreeItem,
+        null,
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          (_Icon || _load_Icon()).Icon,
+          { icon: 'file-text' },
+          '.icon-file-text'
+        )
+      ),
+      (_reactForAtom || _load_reactForAtom()).React.createElement(
+        (_Tree || _load_Tree()).TreeItem,
+        null,
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          (_Icon || _load_Icon()).Icon,
+          { icon: 'file-symlink-file' },
+          '.icon-file-symlink-file'
+        )
+      )
+    )
+  );
+};
+
+var TreeExamples = {
   sectionName: 'Trees',
   description: 'Expandable, hierarchical lists.',
-  examples: [
-    {
-      title: 'Basic Tree',
-      component: BasicTreeExample,
-    },
-    {
-      title: 'Reproducing the Atom style guide example:',
-      component: AtomStyleguideTreeExample,
-    },
-  ],
+  examples: [{
+    title: 'Basic Tree',
+    component: BasicTreeExample
+  }, {
+    title: 'Reproducing the Atom style guide example:',
+    component: AtomStyleguideTreeExample
+  }]
 };
+exports.TreeExamples = TreeExamples;

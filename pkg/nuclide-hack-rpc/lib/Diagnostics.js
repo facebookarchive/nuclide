@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +10,28 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileDiagnosticMessage,
-  DiagnosticProviderUpdate,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {
-  SingleHackMessage,
-  HackDiagnostic,
-  HackDiagnosticsResult,
-} from './rpc-types';
+exports.hackMessageToDiagnosticMessage = hackMessageToDiagnosticMessage;
+exports.convertDiagnostics = convertDiagnostics;
 
-import {Range} from 'simple-text-buffer';
-import invariant from 'assert';
-import {logger} from './hack-config';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _hackConfig;
+
+function _load_hackConfig() {
+  return _hackConfig = require('./hack-config');
+}
 
 /**
  * Currently, a diagnostic from Hack is an object with a "message" property.
@@ -39,37 +49,32 @@ import {logger} from './hack-config';
  * with which the usage disagrees. Note that these could occur in different
  * files.
  */
-function extractRange(message: SingleHackMessage): atom$Range {
+function extractRange(message) {
   // It's unclear why the 1-based to 0-based indexing works the way that it
   // does, but this has the desired effect in the UI, in practice.
-  return new Range(
-    [message.line - 1, message.start - 1],
-    [message.line - 1, message.end],
-  );
+  return new (_simpleTextBuffer || _load_simpleTextBuffer()).Range([message.line - 1, message.start - 1], [message.line - 1, message.end]);
 }
 
 // A trace object is very similar to an error object.
-function hackMessageToTrace(traceError: SingleHackMessage): Object {
+function hackMessageToTrace(traceError) {
   return {
     type: 'Trace',
     text: traceError.descr,
     filePath: traceError.path,
-    range: extractRange(traceError),
+    range: extractRange(traceError)
   };
 }
 
-export function hackMessageToDiagnosticMessage(
-  hackMessages: HackDiagnostic,
-): FileDiagnosticMessage {
-  const causeMessage = hackMessages[0];
-  invariant(causeMessage.path != null);
-  const diagnosticMessage: FileDiagnosticMessage = {
+function hackMessageToDiagnosticMessage(hackMessages) {
+  var causeMessage = hackMessages[0];
+  (0, (_assert || _load_assert()).default)(causeMessage.path != null);
+  var diagnosticMessage = {
     scope: 'file',
-    providerName: `Hack: ${hackMessages[0].code}`,
+    providerName: 'Hack: ' + hackMessages[0].code,
     type: 'Error',
     text: causeMessage.descr,
     filePath: causeMessage.path,
-    range: extractRange(causeMessage),
+    range: extractRange(causeMessage)
   };
 
   // When the message is an array with multiple elements, the second element
@@ -81,25 +86,24 @@ export function hackMessageToDiagnosticMessage(
   return diagnosticMessage;
 }
 
-const DIAGNOSTICS_LIMIT = 10000;
+var DIAGNOSTICS_LIMIT = 10000;
 
-export function convertDiagnostics(
-  result: HackDiagnosticsResult,
-): DiagnosticProviderUpdate {
+function convertDiagnostics(result) {
   // Prevent too many diagnostics from killing the Atom process.
-  const diagnostics = result.errors.slice(0, DIAGNOSTICS_LIMIT);
+  var diagnostics = result.errors.slice(0, DIAGNOSTICS_LIMIT);
   if (diagnostics.length !== result.errors.length) {
-    logger.logError(`Too many Hack Errors. Found ${result.errors.length}. Truncating.`);
+    (_hackConfig || _load_hackConfig()).logger.logError('Too many Hack Errors. Found ' + result.errors.length + '. Truncating.');
   }
 
   // Convert array messages to Error Objects with Traces.
-  const fileDiagnostics = diagnostics.map(
-    diagnostic => hackMessageToDiagnosticMessage(diagnostic.message));
+  var fileDiagnostics = diagnostics.map(function (diagnostic) {
+    return hackMessageToDiagnosticMessage(diagnostic.message);
+  });
 
-  const filePathToMessages = new Map();
-  for (const diagnostic of fileDiagnostics) {
-    const path = diagnostic.filePath;
-    let diagnosticArray = filePathToMessages.get(path);
+  var filePathToMessages = new Map();
+  for (var diagnostic of fileDiagnostics) {
+    var path = diagnostic.filePath;
+    var diagnosticArray = filePathToMessages.get(path);
     if (!diagnosticArray) {
       diagnosticArray = [];
       filePathToMessages.set(path, diagnosticArray);
@@ -107,5 +111,5 @@ export function convertDiagnostics(
     diagnosticArray.push(diagnostic);
   }
 
-  return {filePathToMessages};
+  return { filePathToMessages: filePathToMessages };
 }

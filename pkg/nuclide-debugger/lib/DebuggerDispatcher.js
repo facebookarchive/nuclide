@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,189 +10,21 @@
  * the root directory of this source tree.
  */
 
-import type {
-  NuclideDebuggerProvider,
-  NuclideEvaluationExpressionProvider,
-} from '../../nuclide-debugger-interfaces/service';
-import type {
-  DebuggerInstance,
-} from '../../nuclide-debugger-base';
-import type {
-  Callstack,
-  ControlButtonSpecification,
-  DebuggerModeType,
-  ExpansionResult,
-  ExpressionResult,
-  GetPropertiesResult,
-  NuclideThreadData,
-  ThreadItem,
-} from './types';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-import Dispatcher from '../../commons-node/Dispatcher';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export type DebuggerAction =
-  {
-    actionType: 'SET_DEBUGGER_INSTANCE',
-    data: ?DebuggerInstance,
-  } |
-  {
-    actionType: 'SET_ERROR',
-    data: ?string,
-  } |
-  {
-    actionType: 'SET_PROCESS_SOCKET',
-    data: ?string,
-  } |
-  {
-    actionType: 'DEBUGGER_MODE_CHANGE',
-    data: DebuggerModeType,
-  } |
-  {
-    actionType: 'ADD_DEBUGGER_PROVIDER',
-    data: NuclideDebuggerProvider,
-  } |
-  {
-    actionType: 'REMOVE_DEBUGGER_PROVIDER',
-    data: NuclideDebuggerProvider,
-  } |
-  {
-    actionType: 'UPDATE_CONNECTIONS',
-    data: Array<string>,
-  } |
-  {
-    actionType: 'ADD_EVALUATION_EXPRESSION_PROVIDER',
-    data: NuclideEvaluationExpressionProvider,
-  } |
-  {
-    actionType: 'REMOVE_EVALUATION_EXPRESSION_PROVIDER',
-    data: NuclideEvaluationExpressionProvider,
-  } |
-  {
-    actionType: 'ADD_WATCH_EXPRESSION',
-    data: {expression: string},
-  } |
-  {
-    actionType: 'REMOVE_WATCH_EXPRESSION',
-    data: {index: number},
-  } |
-  {
-    actionType: 'UPDATE_WATCH_EXPRESSION',
-    data: {index: number, newExpression: string},
-  } |
-  {
-    actionType: 'TRIGGER_DEBUGGER_ACTION',
-    data: {actionId: string},
-  } |
-  {
-    actionType: 'ADD_REGISTER_EXECUTOR',
-    data: () => IDisposable,
-  } |
-  {
-    actionType: 'REMOVE_REGISTER_EXECUTOR',
-    data: () => IDisposable
-  } |
-  {
-    actionType: 'REGISTER_CONSOLE',
-    data: {},
-  } |
-  {
-    actionType: 'UNREGISTER_CONSOLE',
-    data: {},
-  } |
-  {
-    actionType: 'UPDATE_CALLSTACK',
-    data: {callstack: Callstack},
-  } |
-  {
-    actionType: 'OPEN_SOURCE_LOCATION',
-    data: {sourceURL: string, lineNumber: number},
-  } |
-  {
-    actionType: 'CLEAR_INTERFACE',
-    data: {},
-  } |
-  {
-    actionType: 'SET_SELECTED_CALLFRAME_LINE',
-    data: {options: ?{sourceURL: string, lineNumber: number}},
-  } |
-  {
-    actionType: 'ADD_BREAKPOINT',
-    data: {path: string, line: number},
-  } |
-  {
-    actionType: 'UPDATE_BREAKPOINT_CONDITION',
-    data: {breakpointId: number, condition: string},
-  } |
-  {
-    actionType: 'UPDATE_BREAKPOINT_ENABLED',
-    data: {breakpointId: number, enabled: boolean},
-  } |
-  {
-    actionType: 'DELETE_BREAKPOINT',
-    data: {path: string, line: number},
-  } |
-  {
-    actionType: 'DELETE_ALL_BREAKPOINTS',
-    data: {},
-  } |
-  {
-    actionType: 'TOGGLE_BREAKPOINT',
-    data: {path: string, line: number},
-  } |
-  {
-    actionType: 'DELETE_BREAKPOINT_IPC',
-    data: {path: string, line: number},
-  } |
-  {
-    actionType: 'BIND_BREAKPOINT_IPC',
-    data: {path: string, line: number, condition: string, enabled: boolean},
-  } |
-  {
-    actionType: 'UPDATE_LOCALS',
-    data: {locals: ExpansionResult},
-  } |
-  {
-    actionType: 'TOGGLE_PAUSE_ON_EXCEPTION',
-    data: boolean,
-  } |
-  {
-    actionType: 'TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION',
-    data: boolean,
-  } |
-  {
-    actionType: 'UPDATE_THREADS',
-    data: {threadData: NuclideThreadData},
-  } |
-  {
-    actionType: 'UPDATE_THREAD',
-    data: {thread: ThreadItem},
-  } |
-  {
-    actionType: 'UPDATE_STOP_THREAD',
-    data: {id: number},
-  } |
-  {
-    actionType: 'NOTIFY_THREAD_SWITCH',
-    data: {sourceURL: string, lineNumber: number, message: string},
-  } |
-  {
-    actionType: 'TOGGLE_SINGLE_THREAD_STEPPING',
-    data: boolean,
-  } |
-  {
-    actionType: 'RECEIVED_EXPRESSION_EVALUATION_RESPONSE',
-    data: {id: number, response: ExpressionResult},
-  } |
-  {
-    actionType: 'RECEIVED_GET_PROPERTIES_RESPONSE',
-    data: {id: number, response: GetPropertiesResult},
-  } |
-  {
-    actionType: 'ADD_CUSTOM_CONTROL_BUTTONS',
-    data: Array<ControlButtonSpecification>,
-  };
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-export const ActionTypes = Object.freeze({
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _commonsNodeDispatcher;
+
+function _load_commonsNodeDispatcher() {
+  return _commonsNodeDispatcher = _interopRequireDefault(require('../../commons-node/Dispatcher'));
+}
+
+var ActionTypes = Object.freeze({
   SET_DEBUGGER_INSTANCE: 'SET_DEBUGGER_INSTANCE',
   SET_ERROR: 'SET_ERROR',
   SET_PROCESS_SOCKET: 'SET_PROCESS_SOCKET',
@@ -231,10 +64,23 @@ export const ActionTypes = Object.freeze({
   TOGGLE_SINGLE_THREAD_STEPPING: 'TOGGLE_SINGLE_THREAD_STEPPING',
   RECEIVED_EXPRESSION_EVALUATION_RESPONSE: 'RECEIVED_EXPRESSION_EVALUATION_RESPONSE',
   RECEIVED_GET_PROPERTIES_RESPONSE: 'RECEIVED_GET_PROPERTIES_RESPONSE',
-  ADD_CUSTOM_CONTROL_BUTTONS: 'ADD_CUSTOM_CONTROL_BUTTONS',
+  ADD_CUSTOM_CONTROL_BUTTONS: 'ADD_CUSTOM_CONTROL_BUTTONS'
 });
 
+exports.ActionTypes = ActionTypes;
 // Flow hack: Every DebuggerAction actionType must be in ActionTypes.
-(('': $PropertyType<DebuggerAction, 'actionType'>): $Keys<typeof ActionTypes>);
+'';
 
-export default class DebuggerDispatcher extends Dispatcher<DebuggerAction> {}
+var DebuggerDispatcher = (function (_default) {
+  _inherits(DebuggerDispatcher, _default);
+
+  function DebuggerDispatcher() {
+    _classCallCheck(this, DebuggerDispatcher);
+
+    _get(Object.getPrototypeOf(DebuggerDispatcher.prototype), 'constructor', this).apply(this, arguments);
+  }
+
+  return DebuggerDispatcher;
+})((_commonsNodeDispatcher || _load_commonsNodeDispatcher()).default);
+
+exports.default = DebuggerDispatcher;

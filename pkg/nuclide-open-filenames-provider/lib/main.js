@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,16 @@
  * the root directory of this source tree.
  */
 
-import type {Provider} from '../../nuclide-quick-open/lib/types';
+exports.registerProvider = registerProvider;
 
-import OpenFileNameProvider from './OpenFileNameProvider';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function registerProvider(): Provider {
-  return OpenFileNameProvider;
+var _OpenFileNameProvider;
+
+function _load_OpenFileNameProvider() {
+  return _OpenFileNameProvider = _interopRequireDefault(require('./OpenFileNameProvider'));
+}
+
+function registerProvider() {
+  return (_OpenFileNameProvider || _load_OpenFileNameProvider()).default;
 }

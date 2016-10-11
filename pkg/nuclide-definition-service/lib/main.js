@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,76 +10,103 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {Definition, DefinitionQueryResult} from './rpc-types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {Disposable} from 'atom';
-import invariant from 'assert';
-import ProviderRegistry from '../../commons-atom/ProviderRegistry';
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeDefinitionProvider = consumeDefinitionProvider;
+exports.provideDefinitionService = provideDefinitionService;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _atom;
+
+function _load_atom() {
+  return _atom = require('atom');
+}
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _commonsAtomProviderRegistry;
+
+function _load_commonsAtomProviderRegistry() {
+  return _commonsAtomProviderRegistry = _interopRequireDefault(require('../../commons-atom/ProviderRegistry'));
+}
 
 // Provides definitions for a set of language grammars.
-export type DefinitionProvider = {
-  name: string,
-  // If there are multiple providers for a given grammar, the one with the highest priority will be
-  // used.
-  priority: number,
-  grammarScopes: Array<string>,
-  getDefinition: (editor: TextEditor, position: atom$Point) => Promise<?DefinitionQueryResult>,
-  // filename is any file/path in the project containing id.
-  getDefinitionById: (filename: NuclideUri, id: string) => Promise<?Definition>,
-};
-
-export type DefinitionService = {
-  getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult>,
-};
 
 // Provides definitions given a file & position.
 // Relies on per-language(grammar) providers to provide results.
-export class Service {
-  _providers: ProviderRegistry<DefinitionProvider>;
 
-  constructor() {
-    this._providers = new ProviderRegistry();
+var Service = (function () {
+  function Service() {
+    _classCallCheck(this, Service);
+
+    this._providers = new (_commonsAtomProviderRegistry || _load_commonsAtomProviderRegistry()).default();
   }
 
-  dispose() {
+  _createClass(Service, [{
+    key: 'dispose',
+    value: function dispose() {}
+  }, {
+    key: 'getDefinition',
+    value: _asyncToGenerator(function* (editor, position) {
+      var provider = this._providers.getProviderForEditor(editor);
+      return provider == null ? null : (yield provider.getDefinition(editor, position));
+    })
+  }, {
+    key: 'consumeDefinitionProvider',
+    value: function consumeDefinitionProvider(provider) {
+      var _this = this;
 
-  }
+      this._providers.addProvider(provider);
+      return new (_atom || _load_atom()).Disposable(function () {
+        _this._providers.removeProvider(provider);
+      });
+    }
+  }]);
 
-  async getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult> {
-    const provider = this._providers.getProviderForEditor(editor);
-    return provider == null ? null : await provider.getDefinition(editor, position);
-  }
+  return Service;
+})();
 
-  consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
-    this._providers.addProvider(provider);
-    return new Disposable(() => { this._providers.removeProvider(provider); });
-  }
-}
+exports.Service = Service;
 
-let activation: ?Service = null;
+var activation = null;
 
-export function activate(state: Object | void) {
+function activate(state) {
   if (activation == null) {
     activation = new Service(state);
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
-  invariant(activation != null);
+function consumeDefinitionProvider(provider) {
+  (0, (_assert || _load_assert()).default)(activation != null);
   return activation.consumeDefinitionProvider(provider);
 }
 
-export function provideDefinitionService(): DefinitionService {
-  invariant(activation != null);
+function provideDefinitionService() {
+  (0, (_assert || _load_assert()).default)(activation != null);
   return {
-    getDefinition: activation.getDefinition.bind(activation),
+    getDefinition: activation.getDefinition.bind(activation)
   };
 }
+
+// If there are multiple providers for a given grammar, the one with the highest priority will be
+// used.
+
+// filename is any file/path in the project containing id.

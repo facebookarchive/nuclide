@@ -1,5 +1,17 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+exports.isGkEnabled = isGkEnabled;
+exports.onceGkInitialized = onceGkInitialized;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,31 +21,55 @@
  * the root directory of this source tree.
  */
 
-import once from './once';
-import {Disposable} from 'event-kit';
+var _once;
+
+function _load_once() {
+  return _once = _interopRequireDefault(require('./once'));
+}
+
+var _eventKit;
+
+function _load_eventKit() {
+  return _eventKit = require('event-kit');
+}
 
 /**
  * Get the actual Gatekeeper constructor or stub the relevant methods for OSS
  * friendliness.
  */
-const getGatekeeper = once(() => {
-  let Gatekeeper;
+var getGatekeeper = (0, (_once || _load_once()).default)(function () {
+  var Gatekeeper = undefined;
   try {
     // $FlowFB
     Gatekeeper = require('./fb-gatekeeper').Gatekeeper;
   } catch (e) {
-    Gatekeeper = class {
-      isGkEnabled(): ?boolean {
-        return null;
+    Gatekeeper = (function () {
+      function _class() {
+        _classCallCheck(this, _class);
       }
-      asyncIsGkEnabled(): Promise<?boolean> {
-        return Promise.resolve();
-      }
-      onceGkInitialized(callback: () => mixed): IDisposable {
-        process.nextTick(() => { callback(); });
-        return new Disposable();
-      }
-    };
+
+      _createClass(_class, [{
+        key: 'isGkEnabled',
+        value: function isGkEnabled() {
+          return null;
+        }
+      }, {
+        key: 'asyncIsGkEnabled',
+        value: function asyncIsGkEnabled() {
+          return Promise.resolve();
+        }
+      }, {
+        key: 'onceGkInitialized',
+        value: function onceGkInitialized(callback) {
+          process.nextTick(function () {
+            callback();
+          });
+          return new (_eventKit || _load_eventKit()).Disposable();
+        }
+      }]);
+
+      return _class;
+    })();
   }
   return new Gatekeeper();
 });
@@ -41,30 +77,23 @@ const getGatekeeper = once(() => {
 /**
  * Check a GK. Silently return false on error.
  */
-export default async function passesGK(
-  name: string,
-  timeout?: number,
-): Promise<boolean> {
+exports.default = _asyncToGenerator(function* (name, timeout) {
   try {
-    return (await getGatekeeper().asyncIsGkEnabled(name, timeout)) === true;
+    return (yield getGatekeeper().asyncIsGkEnabled(name, timeout)) === true;
   } catch (e) {
     return false;
   }
-}
+});
 
 /**
  * Synchronous GK check. There is no guarantee that GKs have loaded. This
  * should be used inside a `onceGkInitialized`.
  */
-export function isGkEnabled(
-  name: string,
-): ?boolean {
+
+function isGkEnabled(name) {
   return getGatekeeper().isGkEnabled(name);
 }
 
-export function onceGkInitialized(
-  callback: () => mixed,
-  timeout?: number,
-): IDisposable {
+function onceGkInitialized(callback, timeout) {
   return getGatekeeper().onceGkInitialized(callback, timeout);
 }

@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.default = scheduleIdleCallback;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -21,26 +25,23 @@
  * `requestIdleCallback` for so much time to become available.
  */
 
-import invariant from 'assert';
+var _assert;
 
-type RequestIdleCallback = (
-  cb: (deadline: {didTimeout: boolean, timeRemaining: () => number}) => void,
-  opts?: {timeout: number},
-) => number;
-type CancelIdleCallback = (id: number) => void ;
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
 
-const requestIdleCallback: RequestIdleCallback = global.requestIdleCallback;
-const cancelIdleCallback: CancelIdleCallback = global.cancelIdleCallback;
+var requestIdleCallback = global.requestIdleCallback;
+var cancelIdleCallback = global.cancelIdleCallback;
 
-export default function scheduleIdleCallback(
-  callback_: () => void,
-  afterRemainingTime?: 30 | 40 | 49 = 49,
-): IDisposable {
-  let callback = callback_;
-  let id;
+function scheduleIdleCallback(callback_) {
+  var afterRemainingTime = arguments.length <= 1 || arguments[1] === undefined ? 49 : arguments[1];
+
+  var callback = callback_;
+  var id = undefined;
   function fn(deadline) {
     if (deadline.timeRemaining() >= afterRemainingTime) {
-      invariant(callback != null);
+      (0, (_assert || _load_assert()).default)(callback != null);
       callback(deadline);
       id = callback = null;
     } else {
@@ -49,11 +50,13 @@ export default function scheduleIdleCallback(
   }
   id = requestIdleCallback(fn);
   return {
-    dispose() {
+    dispose: function dispose() {
       if (id != null) {
         cancelIdleCallback(id);
         id = callback = null;
       }
-    },
+    }
   };
 }
+
+module.exports = exports.default;

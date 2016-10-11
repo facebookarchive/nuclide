@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,70 +10,121 @@
  * the root directory of this source tree.
  */
 
-import type {BookmarkInfo} from '../../nuclide-hg-rpc/lib/HgService';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {AtomInput} from '../../nuclide-ui/AtomInput';
-import {Button} from '../../nuclide-ui/Button';
-import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
-import {CompositeDisposable} from 'atom';
-import {React, ReactDOM} from 'react-for-atom';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-type Props = {
-  bookmark: BookmarkInfo,
-  onCancel: () => mixed,
-  onRename: (bookmark: BookmarkInfo, nextName: string, repo: atom$Repository) => mixed,
-  repository: atom$Repository,
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export default class RenameBookmarkModal extends React.Component {
-  _disposables: CompositeDisposable;
-  props: Props;
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  constructor(props: Props): void {
-    super(props);
-    this._disposables = new CompositeDisposable();
-    (this: any)._handleRenameClick = this._handleRenameClick.bind(this);
-  }
+var _nuclideUiAtomInput;
 
-  componentDidMount(): void {
-    this._disposables.add(
-      atom.commands.add(ReactDOM.findDOMNode(this), 'core:confirm', this._handleRenameClick),
-    );
-    this.refs.atomTextEditor.focus();
-  }
-
-  componentWillUnmount(): void {
-    this._disposables.dispose();
-  }
-
-  _handleRenameClick(): void {
-    this.props.onRename(
-      this.props.bookmark,
-      this.refs.atomTextEditor.getText(),
-      this.props.repository,
-    );
-  }
-
-  render(): React.Element<any> {
-    return (
-      <div>
-        <h6 style={{marginTop: 0}}><strong>Rename bookmark</strong></h6>
-        <label>New name for bookmark '{this.props.bookmark.bookmark}':</label>
-        <AtomInput
-          initialValue={this.props.bookmark.bookmark}
-          ref="atomTextEditor"
-        />
-        <div style={{display: 'flex', flexDirection: 'row-reverse'}}>
-          <ButtonGroup size="SMALL">
-            <Button onClick={this.props.onCancel}>
-              Cancel
-            </Button>
-            <Button buttonType="PRIMARY" onClick={this._handleRenameClick}>
-              Rename
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
-    );
-  }
+function _load_nuclideUiAtomInput() {
+  return _nuclideUiAtomInput = require('../../nuclide-ui/AtomInput');
 }
+
+var _nuclideUiButton;
+
+function _load_nuclideUiButton() {
+  return _nuclideUiButton = require('../../nuclide-ui/Button');
+}
+
+var _nuclideUiButtonGroup;
+
+function _load_nuclideUiButtonGroup() {
+  return _nuclideUiButtonGroup = require('../../nuclide-ui/ButtonGroup');
+}
+
+var _atom;
+
+function _load_atom() {
+  return _atom = require('atom');
+}
+
+var _reactForAtom;
+
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
+}
+
+var RenameBookmarkModal = (function (_React$Component) {
+  _inherits(RenameBookmarkModal, _React$Component);
+
+  function RenameBookmarkModal(props) {
+    _classCallCheck(this, RenameBookmarkModal);
+
+    _get(Object.getPrototypeOf(RenameBookmarkModal.prototype), 'constructor', this).call(this, props);
+    this._disposables = new (_atom || _load_atom()).CompositeDisposable();
+    this._handleRenameClick = this._handleRenameClick.bind(this);
+  }
+
+  _createClass(RenameBookmarkModal, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      this._disposables.add(atom.commands.add((_reactForAtom || _load_reactForAtom()).ReactDOM.findDOMNode(this), 'core:confirm', this._handleRenameClick));
+      this.refs.atomTextEditor.focus();
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this._disposables.dispose();
+    }
+  }, {
+    key: '_handleRenameClick',
+    value: function _handleRenameClick() {
+      this.props.onRename(this.props.bookmark, this.refs.atomTextEditor.getText(), this.props.repository);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      return (_reactForAtom || _load_reactForAtom()).React.createElement(
+        'div',
+        null,
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          'h6',
+          { style: { marginTop: 0 } },
+          (_reactForAtom || _load_reactForAtom()).React.createElement(
+            'strong',
+            null,
+            'Rename bookmark'
+          )
+        ),
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          'label',
+          null,
+          'New name for bookmark \'',
+          this.props.bookmark.bookmark,
+          '\':'
+        ),
+        (_reactForAtom || _load_reactForAtom()).React.createElement((_nuclideUiAtomInput || _load_nuclideUiAtomInput()).AtomInput, {
+          initialValue: this.props.bookmark.bookmark,
+          ref: 'atomTextEditor'
+        }),
+        (_reactForAtom || _load_reactForAtom()).React.createElement(
+          'div',
+          { style: { display: 'flex', flexDirection: 'row-reverse' } },
+          (_reactForAtom || _load_reactForAtom()).React.createElement(
+            (_nuclideUiButtonGroup || _load_nuclideUiButtonGroup()).ButtonGroup,
+            { size: 'SMALL' },
+            (_reactForAtom || _load_reactForAtom()).React.createElement(
+              (_nuclideUiButton || _load_nuclideUiButton()).Button,
+              { onClick: this.props.onCancel },
+              'Cancel'
+            ),
+            (_reactForAtom || _load_reactForAtom()).React.createElement(
+              (_nuclideUiButton || _load_nuclideUiButton()).Button,
+              { buttonType: 'PRIMARY', onClick: this._handleRenameClick },
+              'Rename'
+            )
+          )
+        )
+      );
+    }
+  }]);
+
+  return RenameBookmarkModal;
+})((_reactForAtom || _load_reactForAtom()).React.Component);
+
+exports.default = RenameBookmarkModal;
+module.exports = exports.default;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +10,29 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import {isDirKey, keyToPath, keyToName} from './FileTreeHelpers';
-import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _FileTreeHelpers;
+
+function _load_FileTreeHelpers() {
+  return _FileTreeHelpers = require('./FileTreeHelpers');
+}
+
+var _nuclideHgRpcLibHgConstants;
+
+function _load_nuclideHgRpcLibHgConstants() {
+  return _nuclideHgRpcLibHgConstants = require('../../nuclide-hg-rpc/lib/hg-constants');
+}
 
 /**
  * This is a support class for FileTreeNode.
@@ -38,217 +55,201 @@ import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
  * stored.
  *
  */
-export class MomoizedFieldsDeriver {
-  _uri: NuclideUri;
-  _rootUri: NuclideUri;
 
-  // These properties do not depend on the conf instance and can be calculated right away.
-  _isRoot: boolean;
-  _name: string;
-  _isContainer: boolean;
-  _relativePath: NuclideUri;
-  _localPath: NuclideUri;
-  _splitPath: Array<string>;
+var MomoizedFieldsDeriver = (function () {
+  function MomoizedFieldsDeriver(uri, rootUri) {
+    _classCallCheck(this, MomoizedFieldsDeriver);
 
-  _getRepo: (conf: StoreConfigData) => ?atom$Repository;
-  _getIsIgnored: (conf: StoreConfigData) => boolean;
-  _getVcsStatusCode: (conf: StoreConfigData) => StatusCodeNumberValue;
-  _getCheckedStatus: (conf: StoreConfigData) => NodeCheckedStatus;
-  _getContainedInWorkingSet: (conf: StoreConfigData) => boolean;
-  _getContainedInOpenFilesWorkingSet: (conf: StoreConfigData) => boolean;
-  _getShouldBeShown: (conf: StoreConfigData) => boolean;
-  _getShouldBeSoftened: (conf: StoreConfigData) => boolean;
-
-  constructor(uri: NuclideUri, rootUri: NuclideUri) {
     this._uri = uri;
     this._rootUri = rootUri;
 
     this._isRoot = uri === rootUri;
-    this._name = keyToName(uri);
-    this._isContainer = isDirKey(uri);
+    this._name = (0, (_FileTreeHelpers || _load_FileTreeHelpers()).keyToName)(uri);
+    this._isContainer = (0, (_FileTreeHelpers || _load_FileTreeHelpers()).isDirKey)(uri);
     this._relativePath = uri.slice(rootUri.length);
-    this._localPath = keyToPath(nuclideUri.isRemote(uri) ? nuclideUri.parse(uri).pathname : uri);
-    this._splitPath = nuclideUri.split(uri);
+    this._localPath = (0, (_FileTreeHelpers || _load_FileTreeHelpers()).keyToPath)((_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.isRemote(uri) ? (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.parse(uri).pathname : uri);
+    this._splitPath = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.split(uri);
 
     this._getRepo = memoize(this._repoGetter.bind(this));
     this._getVcsStatusCode = memoize(this._vcsStatusCodeGetter.bind(this));
     this._getIsIgnored = memoize(this._isIgnoredGetter.bind(this));
     this._getCheckedStatus = memoize(this._checkedStatusGetter.bind(this));
     this._getContainedInWorkingSet = memoize(this._containedInWorkingSetGetter.bind(this));
-    this._getContainedInOpenFilesWorkingSet = memoize(
-      this._containedInOpenFilesWorkingSetGetter.bind(this),
-    );
+    this._getContainedInOpenFilesWorkingSet = memoize(this._containedInOpenFilesWorkingSetGetter.bind(this));
     this._getShouldBeShown = memoize(this._shouldBeShownGetter.bind(this));
     this._getShouldBeSoftened = memoize(this._shouldBeSoftenedGetter.bind(this));
   }
 
-  _repoGetter(conf: StoreConfigData, store: Object): ?atom$Repository {
-    if (store.reposByRoot !== conf.reposByRoot) {
-      store.reposByRoot = conf.reposByRoot;
+  _createClass(MomoizedFieldsDeriver, [{
+    key: '_repoGetter',
+    value: function _repoGetter(conf, store) {
+      if (store.reposByRoot !== conf.reposByRoot) {
+        store.reposByRoot = conf.reposByRoot;
 
-      store.repo = store.reposByRoot[this._rootUri];
+        store.repo = store.reposByRoot[this._rootUri];
+      }
+
+      return store.repo;
     }
+  }, {
+    key: '_vcsStatusCodeGetter',
+    value: function _vcsStatusCodeGetter(conf, store) {
+      if (store.vcsStatuses !== conf.vcsStatuses) {
+        store.vcsStatuses = conf.vcsStatuses;
 
-    return store.repo;
-  }
+        var rootVcsStatuses = store.vcsStatuses.get(this._rootUri) || {};
+        store.vcsStatusCode = rootVcsStatuses[this._uri] || (_nuclideHgRpcLibHgConstants || _load_nuclideHgRpcLibHgConstants()).StatusCodeNumber.CLEAN;
+      }
 
-  _vcsStatusCodeGetter(conf: StoreConfigData, store: Object): StatusCodeNumberValue {
-    if (store.vcsStatuses !== conf.vcsStatuses) {
-      store.vcsStatuses = conf.vcsStatuses;
-
-      const rootVcsStatuses = store.vcsStatuses.get(this._rootUri) || {};
-      store.vcsStatusCode = rootVcsStatuses[this._uri] || StatusCodeNumber.CLEAN;
+      return store.vcsStatusCode;
     }
+  }, {
+    key: '_isIgnoredGetter',
+    value: function _isIgnoredGetter(conf, store) {
+      var repo = this._getRepo(conf);
+      if (store.repo !== repo) {
+        store.repo = repo;
 
-    return store.vcsStatusCode;
-  }
+        store.isIgnored = store.repo != null && store.repo.isProjectAtRoot() && store.repo.isPathIgnored(this._uri);
+      }
 
-  _isIgnoredGetter(conf: StoreConfigData, store: Object): boolean {
-    const repo = this._getRepo(conf);
-    if (store.repo !== repo) {
-      store.repo = repo;
-
-      store.isIgnored = store.repo != null &&
-        store.repo.isProjectAtRoot() &&
-        store.repo.isPathIgnored(this._uri);
+      return store.isIgnored;
     }
+  }, {
+    key: '_checkedStatusGetter',
+    value: function _checkedStatusGetter(conf, store) {
+      if (store.editedWorkingSet !== conf.editedWorkingSet) {
+        store.editedWorkingSet = conf.editedWorkingSet;
 
-    return store.isIgnored;
-  }
-
-  _checkedStatusGetter(conf: StoreConfigData, store: Object): NodeCheckedStatus {
-    if (store.editedWorkingSet !== conf.editedWorkingSet) {
-      store.editedWorkingSet = conf.editedWorkingSet;
-
-      if (store.editedWorkingSet.isEmpty()) {
-        store.checkedStatus = 'clear';
-      } else {
-        if (this._isContainer) {
-          if (store.editedWorkingSet.containsFileBySplitPath(this._splitPath)) {
-            store.checkedStatus = 'checked';
-          } else if (store.editedWorkingSet.containsDirBySplitPath(this._splitPath)) {
-            store.checkedStatus = 'partial';
-          } else {
-            store.checkedStatus = 'clear';
-          }
+        if (store.editedWorkingSet.isEmpty()) {
+          store.checkedStatus = 'clear';
         } else {
-          store.checkedStatus =
-            store.editedWorkingSet.containsFileBySplitPath(this._splitPath) ? 'checked' : 'clear';
+          if (this._isContainer) {
+            if (store.editedWorkingSet.containsFileBySplitPath(this._splitPath)) {
+              store.checkedStatus = 'checked';
+            } else if (store.editedWorkingSet.containsDirBySplitPath(this._splitPath)) {
+              store.checkedStatus = 'partial';
+            } else {
+              store.checkedStatus = 'clear';
+            }
+          } else {
+            store.checkedStatus = store.editedWorkingSet.containsFileBySplitPath(this._splitPath) ? 'checked' : 'clear';
+          }
         }
       }
+
+      return store.checkedStatus;
     }
+  }, {
+    key: '_containedInWorkingSetGetter',
+    value: function _containedInWorkingSetGetter(conf, store) {
+      if (store.workingSet !== conf.workingSet) {
+        store.workingSet = conf.workingSet;
 
-    return store.checkedStatus;
-  }
-
-  _containedInWorkingSetGetter(conf: StoreConfigData, store: Object): boolean {
-    if (store.workingSet !== conf.workingSet) {
-      store.workingSet = conf.workingSet;
-
-      store.containedInWorkingSet = this._isContainer ?
-        store.workingSet.containsDirBySplitPath(this._splitPath) :
-        store.workingSet.containsFileBySplitPath(this._splitPath);
-    }
-
-    return store.containedInWorkingSet;
-  }
-
-  _containedInOpenFilesWorkingSetGetter(conf: StoreConfigData, store: Object): boolean {
-    if (store.openFilesWorkingSet !== conf.openFilesWorkingSet) {
-      store.openFilesWorkingSet = conf.openFilesWorkingSet;
-
-      if (store.openFilesWorkingSet.isEmpty()) {
-        store.containedInOpenFilesWorkingSet = false;
-      } else {
-        store.containedInOpenFilesWorkingSet = this._isContainer ?
-          store.openFilesWorkingSet.containsDirBySplitPath(this._splitPath) :
-          store.openFilesWorkingSet.containsFileBySplitPath(this._splitPath);
+        store.containedInWorkingSet = this._isContainer ? store.workingSet.containsDirBySplitPath(this._splitPath) : store.workingSet.containsFileBySplitPath(this._splitPath);
       }
+
+      return store.containedInWorkingSet;
     }
+  }, {
+    key: '_containedInOpenFilesWorkingSetGetter',
+    value: function _containedInOpenFilesWorkingSetGetter(conf, store) {
+      if (store.openFilesWorkingSet !== conf.openFilesWorkingSet) {
+        store.openFilesWorkingSet = conf.openFilesWorkingSet;
 
-    return store.containedInOpenFilesWorkingSet;
-  }
-
-  _shouldBeShownGetter(conf: StoreConfigData, store: Object): boolean {
-    const isIgnored = this._getIsIgnored(conf);
-    const containedInWorkingSet = this._getContainedInWorkingSet(conf);
-    const containedInOpenFilesWorkingSet = this._getContainedInOpenFilesWorkingSet(conf);
-
-    if (store.isIgnored !== isIgnored ||
-      store.excludeVcsIgnoredPaths !== conf.excludeVcsIgnoredPaths ||
-      store.hideIgnoredNames !== conf.hideIgnoredNames ||
-      store.ignoredPatterns !== conf.ignoredPatterns ||
-      store.isEditingWorkingSet !== conf.isEditingWorkingSet ||
-      store.containedInWorkingSet !== containedInWorkingSet ||
-      store.containedInOpenFilesWorkingSet !== containedInOpenFilesWorkingSet
-    ) {
-      store.isIgnored = isIgnored;
-      store.excludeVcsIgnoredPaths = conf.excludeVcsIgnoredPaths;
-      store.hideIgnoredNames = conf.hideIgnoredNames;
-      store.ignoredPatterns = conf.ignoredPatterns;
-      store.isEditingWorkingSet = conf.isEditingWorkingSet;
-      store.containedInWorkingSet = containedInWorkingSet;
-      store.containedInOpenFilesWorkingSet = containedInOpenFilesWorkingSet;
-
-      if (store.isIgnored && store.excludeVcsIgnoredPaths) {
-        store.shouldBeShown = false;
-      } else if (store.hideIgnoredNames && store.ignoredPatterns.some(p => p.match(this._uri))) {
-        store.shouldBeShown = false;
-      } else if (store.isEditingWorkingSet) {
-        store.shouldBeShown = true;
-      } else {
-        store.shouldBeShown = store.containedInWorkingSet || store.containedInOpenFilesWorkingSet;
+        if (store.openFilesWorkingSet.isEmpty()) {
+          store.containedInOpenFilesWorkingSet = false;
+        } else {
+          store.containedInOpenFilesWorkingSet = this._isContainer ? store.openFilesWorkingSet.containsDirBySplitPath(this._splitPath) : store.openFilesWorkingSet.containsFileBySplitPath(this._splitPath);
+        }
       }
+
+      return store.containedInOpenFilesWorkingSet;
     }
+  }, {
+    key: '_shouldBeShownGetter',
+    value: function _shouldBeShownGetter(conf, store) {
+      var _this = this;
 
-    return store.shouldBeShown;
-  }
+      var isIgnored = this._getIsIgnored(conf);
+      var containedInWorkingSet = this._getContainedInWorkingSet(conf);
+      var containedInOpenFilesWorkingSet = this._getContainedInOpenFilesWorkingSet(conf);
 
-  _shouldBeSoftenedGetter(conf: StoreConfigData, store: Object): boolean {
-    const containedInWorkingSet = this._getContainedInWorkingSet(conf);
-    const containedInOpenFilesWorkingSet = this._getContainedInOpenFilesWorkingSet(conf);
+      if (store.isIgnored !== isIgnored || store.excludeVcsIgnoredPaths !== conf.excludeVcsIgnoredPaths || store.hideIgnoredNames !== conf.hideIgnoredNames || store.ignoredPatterns !== conf.ignoredPatterns || store.isEditingWorkingSet !== conf.isEditingWorkingSet || store.containedInWorkingSet !== containedInWorkingSet || store.containedInOpenFilesWorkingSet !== containedInOpenFilesWorkingSet) {
+        store.isIgnored = isIgnored;
+        store.excludeVcsIgnoredPaths = conf.excludeVcsIgnoredPaths;
+        store.hideIgnoredNames = conf.hideIgnoredNames;
+        store.ignoredPatterns = conf.ignoredPatterns;
+        store.isEditingWorkingSet = conf.isEditingWorkingSet;
+        store.containedInWorkingSet = containedInWorkingSet;
+        store.containedInOpenFilesWorkingSet = containedInOpenFilesWorkingSet;
 
-    if (store.isEditingWorkingSet !== conf.isEditingWorkingSet ||
-      store.containedInWorkingSet !== containedInWorkingSet ||
-      store.containedInOpenFilesWorkingSet !== containedInOpenFilesWorkingSet
-    ) {
-      store.isEditingWorkingSet = conf.isEditingWorkingSet;
-      store.containedInWorkingSet = containedInWorkingSet;
-      store.containedInOpenFilesWorkingSet = containedInOpenFilesWorkingSet;
-
-      if (store.isEditingWorkingSet) {
-        store.shouldBeSoftened = false;
-      } else {
-        store.shouldBeSoftened =
-          !store.containedInWorkingSet && store.containedInOpenFilesWorkingSet;
+        if (store.isIgnored && store.excludeVcsIgnoredPaths) {
+          store.shouldBeShown = false;
+        } else if (store.hideIgnoredNames && store.ignoredPatterns.some(function (p) {
+          return p.match(_this._uri);
+        })) {
+          store.shouldBeShown = false;
+        } else if (store.isEditingWorkingSet) {
+          store.shouldBeShown = true;
+        } else {
+          store.shouldBeShown = store.containedInWorkingSet || store.containedInOpenFilesWorkingSet;
+        }
       }
+
+      return store.shouldBeShown;
     }
+  }, {
+    key: '_shouldBeSoftenedGetter',
+    value: function _shouldBeSoftenedGetter(conf, store) {
+      var containedInWorkingSet = this._getContainedInWorkingSet(conf);
+      var containedInOpenFilesWorkingSet = this._getContainedInOpenFilesWorkingSet(conf);
 
-    return store.shouldBeSoftened;
-  }
+      if (store.isEditingWorkingSet !== conf.isEditingWorkingSet || store.containedInWorkingSet !== containedInWorkingSet || store.containedInOpenFilesWorkingSet !== containedInOpenFilesWorkingSet) {
+        store.isEditingWorkingSet = conf.isEditingWorkingSet;
+        store.containedInWorkingSet = containedInWorkingSet;
+        store.containedInOpenFilesWorkingSet = containedInOpenFilesWorkingSet;
 
-  buildDerivedFields(conf: StoreConfigData): Object {
-    return {
-      isRoot: this._isRoot,
-      name: this._name,
-      isContainer: this._isContainer,
-      relativePath: this._relativePath,
-      localPath: this._localPath,
+        if (store.isEditingWorkingSet) {
+          store.shouldBeSoftened = false;
+        } else {
+          store.shouldBeSoftened = !store.containedInWorkingSet && store.containedInOpenFilesWorkingSet;
+        }
+      }
 
-      repo: this._getRepo(conf),
-      vcsStatusCode: this._getVcsStatusCode(conf),
-      isIgnored: this._getIsIgnored(conf),
-      checkedStatus: this._getCheckedStatus(conf),
-      shouldBeShown: this._getShouldBeShown(conf),
-      shouldBeSoftened: this._getShouldBeSoftened(conf),
-    };
-  }
+      return store.shouldBeSoftened;
+    }
+  }, {
+    key: 'buildDerivedFields',
+    value: function buildDerivedFields(conf) {
+      return {
+        isRoot: this._isRoot,
+        name: this._name,
+        isContainer: this._isContainer,
+        relativePath: this._relativePath,
+        localPath: this._localPath,
+
+        repo: this._getRepo(conf),
+        vcsStatusCode: this._getVcsStatusCode(conf),
+        isIgnored: this._getIsIgnored(conf),
+        checkedStatus: this._getCheckedStatus(conf),
+        shouldBeShown: this._getShouldBeShown(conf),
+        shouldBeSoftened: this._getShouldBeSoftened(conf)
+      };
+    }
+  }]);
+
+  return MomoizedFieldsDeriver;
+})();
+
+exports.MomoizedFieldsDeriver = MomoizedFieldsDeriver;
+
+function memoize(getter) {
+  var store = {};
+
+  return function (conf) {
+    return getter(conf, store);
+  };
 }
 
-function memoize<T>(
-  getter: (conf: StoreConfigData, store: Object) => T,
-): (conf: StoreConfigData) => T {
-  const store = {};
-
-  return conf => getter(conf, store);
-}
+// These properties do not depend on the conf instance and can be calculated right away.

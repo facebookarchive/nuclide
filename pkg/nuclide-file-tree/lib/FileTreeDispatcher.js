@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,194 +10,23 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
-import type {WorkingSet} from '../../nuclide-working-sets-common';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import Dispatcher from '../../commons-node/Dispatcher';
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-export type FileTreeAction =
-  {
-    actionType: 'COLLAPSE_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'COLLAPSE_NODE_DEEP',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'DELETE_SELECTED_NODES',
-  } |
-  {
-    actionType: 'EXPAND_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'SET_EXCLUDE_VCS_IGNORED_PATHS',
-    excludeVcsIgnoredPaths: boolean,
-  } |
-  {
-    actionType: 'EXPAND_NODE_DEEP',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'SET_CWD',
-    rootKey: ?NuclideUri,
-  } |
-  {
-    actionType: 'SET_HIDE_IGNORED_NAMES',
-    hideIgnoredNames: boolean,
-  } |
-  {
-    actionType: 'SET_IGNORED_NAMES',
-    ignoredNames: Array<string>,
-  } |
-  {
-    actionType: 'SET_ROOT_KEYS',
-    rootKeys: Array<NuclideUri>,
-  } |
-  {
-    actionType: 'SET_TRACKED_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'CLEAR_TRACKED_NODE',
-  } |
-  {
-    actionType: 'MOVE_TO_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'SET_DROP_TARGET_NODE',
-  } |
-  {
-    actionType: 'SET_USE_PREVIEW_TABS',
-    usePreviewTabs: boolean,
-  } |
-  {
-    actionType: 'SET_USE_PREFIX_NAV',
-    usePrefixNav: boolean,
-  } |
-  {
-    actionType: 'SET_VCS_STATUSES', // VCS = version control system
-    rootKey: NuclideUri,
-    vcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue}
-  } |
-  {
-    actionType: 'SET_REPOSITORIES',
-    // Immutable.Set<atom$Repository>, but since we don't have typedefs for immutable let's just be
-    // honest here.
-    repositories: any,
-  } |
-  {
-    actionType: 'SET_WORKING_SET',
-    workingSet: WorkingSet,
-  } |
-  {
-    actionType: 'SET_OPEN_FILES_WORKING_SET',
-    openFilesWorkingSet: WorkingSet,
-  } |
-  {
-    actionType: 'SET_WORKING_SETS_STORE',
-    workingSetsStore: ?WorkingSetsStore,
-  } |
-  {
-    actionType: 'START_EDITING_WORKING_SET',
-    editedWorkingSet: WorkingSet,
-  } |
-  {
-    actionType: 'FINISH_EDITING_WORKING_SET',
-  } |
-  {
-    actionType: 'CHECK_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'UNCHECK_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'SET_DRAG_HOVERED_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'UNHOVER_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'SET_SELECTED_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'SET_FOCUSED_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'ADD_SELECTED_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'UNSELECT_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'RANGE_SELECT_TO_NODE',
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'RANGE_SELECT_UP',
-  } |
-  {
-    actionType: 'RANGE_SELECT_DOWN',
-  } |
-  {
-    actionType: 'MOVE_SELECTION_UP',
-  } |
-  {
-    actionType: 'MOVE_SELECTION_DOWN',
-  } |
-  {
-    actionType: 'MOVE_SELECTION_TO_TOP',
-  } |
-  {
-    actionType: 'MOVE_SELECTION_TO_BOTTOM',
-  } |
-  {
-    actionType: 'ENSURE_CHILD_NODE',
-    nodeKey: NuclideUri,
-  } |
-  {
-    actionType: 'CLEAR_FILTER',
-  } |
-  {
-    actionType: 'SET_OPEN_FILES_EXPANDED',
-    openFilesExpanded: boolean,
-  } |
-  {
-    actionType: 'SET_UNCOMMITTED_CHANGES_EXPANDED',
-    uncommittedChangesExpanded: boolean,
-  } |
-  {
-    actionType: 'INVALIDATE_REMOVED_FOLDER',
-  };
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-export const ActionTypes = Object.freeze({
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _commonsNodeDispatcher;
+
+function _load_commonsNodeDispatcher() {
+  return _commonsNodeDispatcher = _interopRequireDefault(require('../../commons-node/Dispatcher'));
+}
+
+var ActionTypes = Object.freeze({
   COLLAPSE_NODE: 'COLLAPSE_NODE',
   COLLAPSE_NODE_DEEP: 'COLLAPSE_NODE_DEEP',
   DELETE_SELECTED_NODES: 'DELETE_SELECTED_NODES',
@@ -239,19 +69,39 @@ export const ActionTypes = Object.freeze({
   CLEAR_FILTER: 'CLEAR_FILTER',
   SET_OPEN_FILES_EXPANDED: 'SET_OPEN_FILES_EXPANDED',
   SET_UNCOMMITTED_CHANGES_EXPANDED: 'SET_UNCOMMITTED_CHANGES_EXPANDED',
-  INVALIDATE_REMOVED_FOLDER: 'INVALIDATE_REMOVED_FOLDER',
+  INVALIDATE_REMOVED_FOLDER: 'INVALIDATE_REMOVED_FOLDER'
 });
 
+exports.ActionTypes = ActionTypes;
 // Flow hack: Every FileTreeAction actionType must be in ActionTypes.
-(('': $PropertyType<FileTreeAction, 'actionType'>): $Keys<typeof ActionTypes>);
+'';
 
-let instance: ?FileTreeDispatcher;
+var instance = undefined;
 
-export default class FileTreeDispatcher extends Dispatcher<FileTreeAction> {
-  static getInstance(): FileTreeDispatcher {
-    if (!instance) {
-      instance = new FileTreeDispatcher();
-    }
-    return instance;
+var FileTreeDispatcher = (function (_default) {
+  _inherits(FileTreeDispatcher, _default);
+
+  function FileTreeDispatcher() {
+    _classCallCheck(this, FileTreeDispatcher);
+
+    _get(Object.getPrototypeOf(FileTreeDispatcher.prototype), 'constructor', this).apply(this, arguments);
   }
-}
+
+  _createClass(FileTreeDispatcher, null, [{
+    key: 'getInstance',
+    value: function getInstance() {
+      if (!instance) {
+        instance = new FileTreeDispatcher();
+      }
+      return instance;
+    }
+  }]);
+
+  return FileTreeDispatcher;
+})((_commonsNodeDispatcher || _load_commonsNodeDispatcher()).default);
+
+exports.default = FileTreeDispatcher;
+// VCS = version control system
+
+// Immutable.Set<atom$Repository>, but since we don't have typedefs for immutable let's just be
+// honest here.

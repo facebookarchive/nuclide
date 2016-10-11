@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,74 +10,16 @@
  * the root directory of this source tree.
  */
 
-import type {ServerConnectionConfiguration} from './ServerConnection';
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-import crypto from 'crypto';
-import invariant from 'assert';
-import {getLogger} from '../../nuclide-logging';
-import keytarWrapper from './keytarWrapper';
+exports.getConnectionConfig = getConnectionConfig;
+exports.setConnectionConfig = setConnectionConfig;
 
-const CONFIG_DIR = 'nuclide-connections';
-
-const logger = getLogger();
-
-/**
- * Version of ServerConnectionConfiguration that uses string instead of Buffer for fields so it can
- * be translated directly to/from JSON.
- */
-type SerializableServerConnectionConfiguration = {
-  host: string,
-  port: number,
-  certificateAuthorityCertificate?: string,
-  clientCertificate?: string,
-  clientKey?: string,
-};
-
-// Insecure configs are used for testing only.
-function isInsecure(config: ServerConnectionConfiguration): boolean {
-  return config.clientKey == null && config.clientCertificate == null
-      && config.certificateAuthorityCertificate == null;
-}
-
-function getStorageKey(host: string): string {
-  return `${CONFIG_DIR}:${host}`;
-}
-
-export function getConnectionConfig(host: string): ?ServerConnectionConfiguration {
-  const storedConfig = window.localStorage.getItem(getStorageKey(host));
-  if (storedConfig == null) {
-    return null;
-  }
-  try {
-    return decryptConfig(JSON.parse(storedConfig));
-  } catch (e) {
-    logger.error(`The configuration file for ${host} is corrupted.`, e);
-    return null;
-  }
-}
-
-export function setConnectionConfig(config: ServerConnectionConfiguration): void {
-  // Don't attempt to store insecure connections.
-  // Insecure connections are used for testing and will fail the encryption call below.
-  if (isInsecure(config)) {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(
-      getStorageKey(config.host),
-      JSON.stringify(encryptConfig(config)),
-    );
-  } catch (e) {
-    logger.error(`Failed to store configuration file for ${config.host}.`, e);
-  }
-}
-
-export async function clearConnectionConfig(host: string): Promise<void> {
+var clearConnectionConfig = _asyncToGenerator(function* (host) {
   try {
     window.localStorage.removeItem(getStorageKey(host));
   } catch (e) {
-    logger.error(`Failed to clear configuration for ${host}.`, e);
+    logger.error('Failed to clear configuration for ' + host + '.', e);
   }
 }
 
@@ -85,30 +28,114 @@ export async function clearConnectionConfig(host: string): Promise<void> {
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
  * @return returns the passed in config with the clientKey encrypted.
  */
-function encryptConfig(
-  remoteProjectConfig: ServerConnectionConfiguration,
-): SerializableServerConnectionConfiguration {
-  const sha1 = crypto.createHash('sha1');
-  sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
-  const sha1sum = sha1.digest('hex');
+);
 
-  const {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
-  invariant(clientKey);
-  const realClientKey = clientKey.toString(); // Convert from Buffer to string.
-  const {salt, password, encryptedString} = encryptString(realClientKey);
-  keytarWrapper.replacePassword('nuclide.remoteProjectConfig', sha1sum, password);
+exports.clearConnectionConfig = clearConnectionConfig;
 
-  const clientKeyWithSalt = encryptedString + '.' + salt;
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-  invariant(certificateAuthorityCertificate);
-  invariant(clientCertificate);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _crypto;
+
+function _load_crypto() {
+  return _crypto = _interopRequireDefault(require('crypto'));
+}
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _keytarWrapper;
+
+function _load_keytarWrapper() {
+  return _keytarWrapper = _interopRequireDefault(require('./keytarWrapper'));
+}
+
+var CONFIG_DIR = 'nuclide-connections';
+
+var logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
+
+/**
+ * Version of ServerConnectionConfiguration that uses string instead of Buffer for fields so it can
+ * be translated directly to/from JSON.
+ */
+
+// Insecure configs are used for testing only.
+function isInsecure(config) {
+  return config.clientKey == null && config.clientCertificate == null && config.certificateAuthorityCertificate == null;
+}
+
+function getStorageKey(host) {
+  return CONFIG_DIR + ':' + host;
+}
+
+function getConnectionConfig(host) {
+  var storedConfig = window.localStorage.getItem(getStorageKey(host));
+  if (storedConfig == null) {
+    return null;
+  }
+  try {
+    return decryptConfig(JSON.parse(storedConfig));
+  } catch (e) {
+    logger.error('The configuration file for ' + host + ' is corrupted.', e);
+    return null;
+  }
+}
+
+function setConnectionConfig(config) {
+  // Don't attempt to store insecure connections.
+  // Insecure connections are used for testing and will fail the encryption call below.
+  if (isInsecure(config)) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(getStorageKey(config.host), JSON.stringify(encryptConfig(config)));
+  } catch (e) {
+    logger.error('Failed to store configuration file for ' + config.host + '.', e);
+  }
+}
+
+function encryptConfig(remoteProjectConfig) {
+  var sha1 = (_crypto || _load_crypto()).default.createHash('sha1');
+  sha1.update(remoteProjectConfig.host + ':' + remoteProjectConfig.port);
+  var sha1sum = sha1.digest('hex');
+
+  var certificateAuthorityCertificate = remoteProjectConfig.certificateAuthorityCertificate;
+  var clientCertificate = remoteProjectConfig.clientCertificate;
+  var clientKey = remoteProjectConfig.clientKey;
+
+  (0, (_assert || _load_assert()).default)(clientKey);
+  var realClientKey = clientKey.toString(); // Convert from Buffer to string.
+
+  var _encryptString = encryptString(realClientKey);
+
+  var salt = _encryptString.salt;
+  var password = _encryptString.password;
+  var encryptedString = _encryptString.encryptedString;
+
+  (_keytarWrapper || _load_keytarWrapper()).default.replacePassword('nuclide.remoteProjectConfig', sha1sum, password);
+
+  var clientKeyWithSalt = encryptedString + '.' + salt;
+
+  (0, (_assert || _load_assert()).default)(certificateAuthorityCertificate);
+  (0, (_assert || _load_assert()).default)(clientCertificate);
 
   return {
     host: remoteProjectConfig.host,
     port: remoteProjectConfig.port,
     certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
     clientCertificate: clientCertificate.toString(),
-    clientKey: clientKeyWithSalt,
+    clientKey: clientKeyWithSalt
   };
 }
 
@@ -117,83 +144,83 @@ function encryptConfig(
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
  * @return returns the passed in config with the clientKey encrypted.
  */
-function decryptConfig(
-  remoteProjectConfig: SerializableServerConnectionConfiguration,
-): ServerConnectionConfiguration {
-  const sha1 = crypto.createHash('sha1');
-  sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
-  const sha1sum = sha1.digest('hex');
+function decryptConfig(remoteProjectConfig) {
+  var sha1 = (_crypto || _load_crypto()).default.createHash('sha1');
+  sha1.update(remoteProjectConfig.host + ':' + remoteProjectConfig.port);
+  var sha1sum = sha1.digest('hex');
 
-  const password = keytarWrapper.getPassword('nuclide.remoteProjectConfig', sha1sum);
+  var password = (_keytarWrapper || _load_keytarWrapper()).default.getPassword('nuclide.remoteProjectConfig', sha1sum);
 
   if (!password) {
     throw new Error('Cannot find password for encrypted client key');
   }
 
-  const {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
-  invariant(clientKey);
-  const [encryptedString, salt] = clientKey.split('.');
+  var certificateAuthorityCertificate = remoteProjectConfig.certificateAuthorityCertificate;
+  var clientCertificate = remoteProjectConfig.clientCertificate;
+  var clientKey = remoteProjectConfig.clientKey;
+
+  (0, (_assert || _load_assert()).default)(clientKey);
+
+  var _clientKey$split = clientKey.split('.');
+
+  var _clientKey$split2 = _slicedToArray(_clientKey$split, 2);
+
+  var encryptedString = _clientKey$split2[0];
+  var salt = _clientKey$split2[1];
 
   if (!encryptedString || !salt) {
     throw new Error('Cannot decrypt client key');
   }
 
-  const restoredClientKey = decryptString(encryptedString, password, salt);
+  var restoredClientKey = decryptString(encryptedString, password, salt);
   //  "nolint" is to suppress ArcanistPrivateKeyLinter errors
-  if (!restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')) { /* nolint */
-    getLogger().error(
-      `decrypted client key did not start with expected header: ${restoredClientKey}`);
+  if (!restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')) {
+    /* nolint */
+    (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error('decrypted client key did not start with expected header: ' + restoredClientKey);
   }
 
-  invariant(certificateAuthorityCertificate);
-  invariant(clientCertificate);
+  (0, (_assert || _load_assert()).default)(certificateAuthorityCertificate);
+  (0, (_assert || _load_assert()).default)(clientCertificate);
   return {
     host: remoteProjectConfig.host,
     port: remoteProjectConfig.port,
     certificateAuthorityCertificate: new Buffer(certificateAuthorityCertificate),
     clientCertificate: new Buffer(clientCertificate),
-    clientKey: new Buffer(restoredClientKey),
+    clientKey: new Buffer(restoredClientKey)
   };
 }
 
-function decryptString(text: string, password: string, salt: string): string {
-  const decipher = crypto.createDecipheriv(
-      'aes-128-cbc',
-      new Buffer(password, 'base64'),
-      new Buffer(salt, 'base64'));
+function decryptString(text, password, salt) {
+  var decipher = (_crypto || _load_crypto()).default.createDecipheriv('aes-128-cbc', new Buffer(password, 'base64'), new Buffer(salt, 'base64'));
 
   // $FlowFixMe
-  let decryptedString = decipher.update(text, 'base64', 'utf8');
+  var decryptedString = decipher.update(text, 'base64', 'utf8');
   // $FlowFixMe
   decryptedString += decipher.final('utf8');
 
   return decryptedString;
 }
 
-function encryptString(text: string): {password: string, salt: string, encryptedString: string} {
-  const password = crypto.randomBytes(16).toString('base64');
-  const salt = crypto.randomBytes(16).toString('base64');
+function encryptString(text) {
+  var password = (_crypto || _load_crypto()).default.randomBytes(16).toString('base64');
+  var salt = (_crypto || _load_crypto()).default.randomBytes(16).toString('base64');
 
-  const cipher = crypto.createCipheriv(
-    'aes-128-cbc',
-    new Buffer(password, 'base64'),
-    new Buffer(salt, 'base64'));
+  var cipher = (_crypto || _load_crypto()).default.createCipheriv('aes-128-cbc', new Buffer(password, 'base64'), new Buffer(salt, 'base64'));
 
-  let encryptedString = cipher.update(
-    text,
-    /* input_encoding */ 'utf8',
-    /* output_encoding */ 'base64',
-  );
+  var encryptedString = cipher.update(text,
+  /* input_encoding */'utf8',
+  /* output_encoding */'base64');
   encryptedString += cipher.final('base64');
 
   return {
-    password,
-    salt,
-    encryptedString,
+    password: password,
+    salt: salt,
+    encryptedString: encryptedString
   };
 }
 
-export const __test__ = {
-  decryptString,
-  encryptString,
+var __test__ = {
+  decryptString: decryptString,
+  encryptString: encryptString
 };
+exports.__test__ = __test__;

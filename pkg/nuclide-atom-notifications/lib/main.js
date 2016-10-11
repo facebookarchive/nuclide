@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,39 +10,62 @@
  * the root directory of this source tree.
  */
 
-import type {Level, OutputService} from '../../nuclide-console/lib/types';
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-import {CompositeDisposable} from 'atom';
-import createPackage from '../../commons-atom/createPackage';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-class Activation {
-  _disposables: CompositeDisposable;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  constructor() {
-    this._disposables = new CompositeDisposable();
-  }
+var _atom;
 
-  consumeOutputService(api: OutputService): void {
-    const messages = observableFromSubscribeFunction(
-      atom.notifications.onDidAddNotification.bind(atom.notifications),
-    )
-      .map(notification => ({
-        // TODO (matthewwithanm): Add timestamp once nuclide-console supports it.
-        // TODO (matthewwithanm): Show notification description/details.
-        text: notification.getMessage(),
-        level: getLevel(notification.getType()),
-      }));
-
-    this._disposables.add(api.registerOutputProvider({id: 'Atom', messages}));
-  }
-
-  dispose() {
-    this._disposables.dispose();
-  }
+function _load_atom() {
+  return _atom = require('atom');
 }
 
-function getLevel(atomNotificationType: string): Level {
+var _commonsAtomCreatePackage;
+
+function _load_commonsAtomCreatePackage() {
+  return _commonsAtomCreatePackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+var _commonsNodeEvent;
+
+function _load_commonsNodeEvent() {
+  return _commonsNodeEvent = require('../../commons-node/event');
+}
+
+var Activation = (function () {
+  function Activation() {
+    _classCallCheck(this, Activation);
+
+    this._disposables = new (_atom || _load_atom()).CompositeDisposable();
+  }
+
+  _createClass(Activation, [{
+    key: 'consumeOutputService',
+    value: function consumeOutputService(api) {
+      var messages = (0, (_commonsNodeEvent || _load_commonsNodeEvent()).observableFromSubscribeFunction)(atom.notifications.onDidAddNotification.bind(atom.notifications)).map(function (notification) {
+        return {
+          // TODO (matthewwithanm): Add timestamp once nuclide-console supports it.
+          // TODO (matthewwithanm): Show notification description/details.
+          text: notification.getMessage(),
+          level: getLevel(notification.getType())
+        };
+      });
+
+      this._disposables.add(api.registerOutputProvider({ id: 'Atom', messages: messages }));
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
+
+  return Activation;
+})();
+
+function getLevel(atomNotificationType) {
   switch (atomNotificationType) {
     case 'error':
     case 'fatal':
@@ -57,4 +81,5 @@ function getLevel(atomNotificationType: string): Level {
   }
 }
 
-export default createPackage(Activation);
+exports.default = (0, (_commonsAtomCreatePackage || _load_commonsAtomCreatePackage()).default)(Activation);
+module.exports = exports.default;

@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,24 +10,37 @@
  * the root directory of this source tree.
  */
 
-import type {DatatipService} from '../../nuclide-datatip/lib/types';
+exports.activate = activate;
+exports.consumeDatatipService = consumeDatatipService;
+exports.deactivate = deactivate;
 
-import invariant from 'assert';
-import UnicodeDatatipManager from './UnicodeDatatipManager';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-let unicodeEscapesManager: ?UnicodeDatatipManager = null;
+var _assert;
 
-export function activate(state: ?Object) {
-  unicodeEscapesManager = new UnicodeDatatipManager();
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
 }
 
-export function consumeDatatipService(service: DatatipService): IDisposable {
-  invariant(unicodeEscapesManager != null);
+var _UnicodeDatatipManager;
+
+function _load_UnicodeDatatipManager() {
+  return _UnicodeDatatipManager = _interopRequireDefault(require('./UnicodeDatatipManager'));
+}
+
+var unicodeEscapesManager = null;
+
+function activate(state) {
+  unicodeEscapesManager = new (_UnicodeDatatipManager || _load_UnicodeDatatipManager()).default();
+}
+
+function consumeDatatipService(service) {
+  (0, (_assert || _load_assert()).default)(unicodeEscapesManager != null);
   return unicodeEscapesManager.consumeDatatipService(service);
 }
 
-export function deactivate() {
-  invariant(unicodeEscapesManager != null);
+function deactivate() {
+  (0, (_assert || _load_assert()).default)(unicodeEscapesManager != null);
   unicodeEscapesManager.dispose();
   unicodeEscapesManager = null;
 }

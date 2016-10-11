@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +10,41 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import {arrayCompact} from '../../commons-node/collection';
-import repositoryContainsPath from './repositoryContainsPath';
+exports.default = repositoryForPath;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _commonsNodeCollection;
+
+function _load_commonsNodeCollection() {
+  return _commonsNodeCollection = require('../../commons-node/collection');
+}
+
+var _repositoryContainsPath;
+
+function _load_repositoryContainsPath() {
+  return _repositoryContainsPath = _interopRequireDefault(require('./repositoryContainsPath'));
+}
 
 /**
  * @param aPath The NuclideUri of a file or directory for which you want to find
  *   a Repository it belongs to.
  * @return A Git or Hg repository the path belongs to, if any.
  */
-export default function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
+
+function repositoryForPath(aPath) {
   // Calling atom.project.repositoryForDirectory gets the real path of the directory,
   // which requires a round-trip to the server for remote paths.
   // Instead, this function keeps filtering local.
-  const repositories = arrayCompact(atom.project.getRepositories());
-  return repositories.find(
-    repo => {
-      try {
-        return repositoryContainsPath(repo, aPath);
-      } catch (e) {
-        // The repo type is not supported.
-        return false;
-      }
-    },
-  );
+  var repositories = (0, (_commonsNodeCollection || _load_commonsNodeCollection()).arrayCompact)(atom.project.getRepositories());
+  return repositories.find(function (repo) {
+    try {
+      return (0, (_repositoryContainsPath || _load_repositoryContainsPath()).default)(repo, aPath);
+    } catch (e) {
+      // The repo type is not supported.
+      return false;
+    }
+  });
 }
+
+module.exports = exports.default;

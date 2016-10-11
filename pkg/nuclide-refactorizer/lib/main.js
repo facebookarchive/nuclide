@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+/*
+ * WARNING: This package is still experimental and in early development. Use it at your own risk.
+ */
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,71 +20,38 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
-/*
- * WARNING: This package is still experimental and in early development. Use it at your own risk.
- */
+var _atom;
 
-import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
-
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-
-import createPackage from '../../commons-atom/createPackage';
-
-export type RenameRefactorKind = 'rename';
-
-// Will be a union type when we add more
-export type RefactorKind = RenameRefactorKind;
-
-export type RenameRefactoring = {
-  kind: RenameRefactorKind,
-  symbolAtPoint: {
-    text: string,
-    range: atom$Range,
-  },
-};
-
-// Will be a union type when we add more
-export type AvailableRefactoring = RenameRefactoring;
-
-export type RenameRequest = {
-  kind: RenameRefactorKind,
-  editor: atom$TextEditor,
-  symbolAtPoint: {
-    text: string,
-    range: atom$Range,
-  },
-  newName: string,
-};
-
-export type RefactorRequest = RenameRequest;
-
-export type RefactorResponse = {
-  edits: Map<NuclideUri, Array<TextEdit>>,
-};
-
-export type RefactorProvider = {
-  priority: number,
-  grammarScopes: Array<string>,
-
-  refactoringsAtPoint(
-    editor: atom$TextEditor,
-    point: atom$Point,
-  ): Promise<Array<AvailableRefactoring>>,
-  refactor(request: RefactorRequest): Promise<?RefactorResponse>,
-};
-
-class Activation {
-  _disposables: CompositeDisposable;
-
-  constructor() {
-    this._disposables = new CompositeDisposable();
-  }
-
-  dispose() {
-    this._disposables.dispose();
-  }
+function _load_atom() {
+  return _atom = require('atom');
 }
 
+var _commonsAtomCreatePackage;
 
-export default createPackage(Activation);
+function _load_commonsAtomCreatePackage() {
+  return _commonsAtomCreatePackage = _interopRequireDefault(require('../../commons-atom/createPackage'));
+}
+
+// Will be a union type when we add more
+
+// Will be a union type when we add more
+
+var Activation = (function () {
+  function Activation() {
+    _classCallCheck(this, Activation);
+
+    this._disposables = new (_atom || _load_atom()).CompositeDisposable();
+  }
+
+  _createClass(Activation, [{
+    key: 'dispose',
+    value: function dispose() {
+      this._disposables.dispose();
+    }
+  }]);
+
+  return Activation;
+})();
+
+exports.default = (0, (_commonsAtomCreatePackage || _load_commonsAtomCreatePackage()).default)(Activation);
+module.exports = exports.default;

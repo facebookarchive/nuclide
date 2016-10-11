@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,8 +10,10 @@
  * the root directory of this source tree.
  */
 
-import {HgRepositoryClient} from './HgRepositoryClient';
+var _HgRepositoryClient;
 
-export {
-  HgRepositoryClient,
-};
+function _load_HgRepositoryClient() {
+  return _HgRepositoryClient = require('./HgRepositoryClient');
+}
+
+exports.HgRepositoryClient = (_HgRepositoryClient || _load_HgRepositoryClient()).HgRepositoryClient;

@@ -1,5 +1,32 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var getHackRoot = _asyncToGenerator(function* (filePath) {
+  return yield (_commonsNodeFsPromise || _load_commonsNodeFsPromise()).default.findNearestFile('.hhconfig', filePath);
+});
+
+var setRootDirectoryUri = _asyncToGenerator(function* (directoryUri) {
+  var hackRootDirectory = yield getHackRoot(directoryUri);
+  (_utils || _load_utils()).default.log('setRootDirectoryUri: from ' + directoryUri + ' to ' + (0, (_commonsNodeString || _load_commonsNodeString()).maybeToString)(hackRootDirectory));
+  // TODO: make xdebug_includes.php path configurable from hhconfig.
+  var hackDummyRequestFilePath = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.join(hackRootDirectory ? hackRootDirectory : '', '/scripts/xdebug_includes.php');
+
+  // Use hackDummyRequestFilePath if possible.
+  if (yield (_commonsNodeFsPromise || _load_commonsNodeFsPromise()).default.exists(hackDummyRequestFilePath)) {
+    (0, (_config || _load_config()).getConfig)().dummyRequestFilePath = hackDummyRequestFilePath;
+  }
+});
+
+exports.setRootDirectoryUri = setRootDirectoryUri;
+exports.sendDummyRequest = sendDummyRequest;
+exports.isDummyConnection = isDummyConnection;
+exports.failConnection = failConnection;
+exports.isCorrectConnection = isCorrectConnection;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,71 +36,80 @@
  * the root directory of this source tree.
  */
 
-import logger from './utils';
-import {getConfig} from './config';
-import {launchScriptForDummyConnection, uriToPath} from './helpers';
-import fsPromise from '../../commons-node/fsPromise';
-import {maybeToString} from '../../commons-node/string';
-import nuclideUri from '../../commons-node/nuclideUri';
+var _utils;
 
-import type {Socket} from 'net';
-
-async function getHackRoot(filePath: string): Promise<?string> {
-  return await fsPromise.findNearestFile('.hhconfig', filePath);
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
 }
 
-export async function setRootDirectoryUri(directoryUri: string): Promise<void> {
-  const hackRootDirectory = await getHackRoot(directoryUri);
-  logger.log(`setRootDirectoryUri: from ${directoryUri} to ${maybeToString(hackRootDirectory)}`);
-  // TODO: make xdebug_includes.php path configurable from hhconfig.
-  const hackDummyRequestFilePath = nuclideUri.join(
-    (hackRootDirectory ? hackRootDirectory : ''),
-    '/scripts/xdebug_includes.php',
-  );
+var _config;
 
-  // Use hackDummyRequestFilePath if possible.
-  if (await fsPromise.exists(hackDummyRequestFilePath)) {
-    getConfig().dummyRequestFilePath = hackDummyRequestFilePath;
-  }
+function _load_config() {
+  return _config = require('./config');
 }
 
-export function sendDummyRequest(): child_process$ChildProcess {
-  return launchScriptForDummyConnection(getConfig().dummyRequestFilePath);
+var _helpers;
+
+function _load_helpers() {
+  return _helpers = require('./helpers');
 }
 
-export function isDummyConnection(message: Object): boolean {
-  const attributes = message.init.$;
-  return attributes.fileuri.endsWith(getConfig().dummyRequestFilePath);
+var _commonsNodeFsPromise;
+
+function _load_commonsNodeFsPromise() {
+  return _commonsNodeFsPromise = _interopRequireDefault(require('../../commons-node/fsPromise'));
 }
 
-export function failConnection(socket: Socket, errorMessage: string): void {
-  logger.log(errorMessage);
+var _commonsNodeString;
+
+function _load_commonsNodeString() {
+  return _commonsNodeString = require('../../commons-node/string');
+}
+
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+function sendDummyRequest() {
+  return (0, (_helpers || _load_helpers()).launchScriptForDummyConnection)((0, (_config || _load_config()).getConfig)().dummyRequestFilePath);
+}
+
+function isDummyConnection(message) {
+  var attributes = message.init.$;
+  return attributes.fileuri.endsWith((0, (_config || _load_config()).getConfig)().dummyRequestFilePath);
+}
+
+function failConnection(socket, errorMessage) {
+  (_utils || _load_utils()).default.log(errorMessage);
   socket.end();
   socket.destroy();
 }
 
-export function isCorrectConnection(message: Object): boolean {
-  const {pid, idekeyRegex, scriptRegex} = getConfig();
+function isCorrectConnection(message) {
+  var _ref = (0, (_config || _load_config()).getConfig)();
+
+  var pid = _ref.pid;
+  var idekeyRegex = _ref.idekeyRegex;
+  var scriptRegex = _ref.scriptRegex;
+
   if (!message || !message.init || !message.init.$) {
-    logger.logError('Incorrect init');
+    (_utils || _load_utils()).default.logError('Incorrect init');
     return false;
   }
 
-  const init = message.init;
+  var init = message.init;
   if (!init.engine || !init.engine || !init.engine[0] || init.engine[0]._ !== 'xdebug') {
-    logger.logError('Incorrect engine');
+    (_utils || _load_utils()).default.logError('Incorrect engine');
     return false;
   }
 
-  const attributes = init.$;
-  if (attributes.xmlns !== 'urn:debugger_protocol_v1'
-    || attributes['xmlns:xdebug'] !== 'http://xdebug.org/dbgp/xdebug'
-    || attributes.language !== 'PHP') {
-    logger.logError('Incorrect attributes');
+  var attributes = init.$;
+  if (attributes.xmlns !== 'urn:debugger_protocol_v1' || attributes['xmlns:xdebug'] !== 'http://xdebug.org/dbgp/xdebug' || attributes.language !== 'PHP') {
+    (_utils || _load_utils()).default.logError('Incorrect attributes');
     return false;
   }
 
-  return (!pid || attributes.appid === String(pid)) &&
-    (!idekeyRegex || new RegExp(idekeyRegex).test(attributes.idekey)) &&
-    (!scriptRegex || new RegExp(scriptRegex).test(uriToPath(attributes.fileuri)));
+  return (!pid || attributes.appid === String(pid)) && (!idekeyRegex || new RegExp(idekeyRegex).test(attributes.idekey)) && (!scriptRegex || new RegExp(scriptRegex).test((0, (_helpers || _load_helpers()).uriToPath)(attributes.fileuri)));
 }

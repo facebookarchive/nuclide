@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,75 +10,105 @@
  * the root directory of this source tree.
  */
 
-import typeof * as PythonService from '../../nuclide-python-rpc';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+var _createDecoratedClass = (function () { function defineProperties(target, descriptors, initializers) { for (var i = 0; i < descriptors.length; i++) { var descriptor = descriptors[i]; var decorators = descriptor.decorators; var key = descriptor.key; delete descriptor.key; delete descriptor.decorators; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor || descriptor.initializer) descriptor.writable = true; if (decorators) { for (var f = 0; f < decorators.length; f++) { var decorator = decorators[f]; if (typeof decorator === 'function') { descriptor = decorator(target, key, descriptor) || descriptor; } else { throw new TypeError('The decorator for method ' + descriptor.key + ' is of the invalid type ' + typeof decorator); } } if (descriptor.initializer !== undefined) { initializers[key] = descriptor; continue; } } Object.defineProperty(target, key, descriptor); } } return function (Constructor, protoProps, staticProps, protoInitializers, staticInitializers) { if (protoProps) defineProperties(Constructor.prototype, protoProps, protoInitializers); if (staticProps) defineProperties(Constructor, staticProps, staticInitializers); return Constructor; }; })();
 
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
-import {getAtomProjectRootPath} from '../../commons-atom/projects';
-import loadingNotification from '../../commons-atom/loading-notification';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {Range, Point} from 'simple-text-buffer';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
-export default class ReferenceHelpers {
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-  @trackTiming('python.get-references')
-  static async getReferences(
-    editor: TextEditor,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn> {
-    const src = editor.getPath();
-    if (!src) {
-      return null;
-    }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-    // Choose the project root as baseUri, or if no project exists,
-    // use the dirname of the src file.
-    const baseUri = getAtomProjectRootPath(src) || nuclideUri.dirname(src);
+var _nuclideRemoteConnection;
 
-    const contents = editor.getText();
-    const line = position.row;
-    const column = position.column;
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-    const service: ?PythonService = await getServiceByNuclideUri('PythonService', src);
-    if (!service) {
-      return null;
-    }
+var _nuclideAnalytics;
 
-    const result = await loadingNotification(
-      service.getReferences(
-        src,
-        contents,
-        line,
-        column,
-      ),
-      'Loading references from Jedi server...',
-    );
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
 
-    if (!result || result.length === 0) {
-      return {type: 'error', message: 'No usages were found.'};
-    }
+var _commonsAtomProjects;
 
-    const symbolName = result[0].text;
+function _load_commonsAtomProjects() {
+  return _commonsAtomProjects = require('../../commons-atom/projects');
+}
 
-    // Process this into the format nuclide-find-references expects.
-    const references = result.map(ref => {
-      return {
-        uri: ref.file,
-        name: ref.parentName,
-        range: new Range(
-          new Point(ref.line, ref.column),
-          new Point(ref.line, ref.column + ref.text.length),
-        ),
-      };
-    });
+var _commonsAtomLoadingNotification;
 
-    return {
-      type: 'data',
-      baseUri,
-      referencedSymbolName: symbolName,
-      references,
-    };
+function _load_commonsAtomLoadingNotification() {
+  return _commonsAtomLoadingNotification = _interopRequireDefault(require('../../commons-atom/loading-notification'));
+}
+
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
+
+var ReferenceHelpers = (function () {
+  function ReferenceHelpers() {
+    _classCallCheck(this, ReferenceHelpers);
   }
 
-}
+  _createDecoratedClass(ReferenceHelpers, null, [{
+    key: 'getReferences',
+    decorators: [(0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('python.get-references')],
+    value: _asyncToGenerator(function* (editor, position) {
+      var src = editor.getPath();
+      if (!src) {
+        return null;
+      }
+
+      // Choose the project root as baseUri, or if no project exists,
+      // use the dirname of the src file.
+      var baseUri = (0, (_commonsAtomProjects || _load_commonsAtomProjects()).getAtomProjectRootPath)(src) || (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.dirname(src);
+
+      var contents = editor.getText();
+      var line = position.row;
+      var column = position.column;
+
+      var service = yield (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('PythonService', src);
+      if (!service) {
+        return null;
+      }
+
+      var result = yield (0, (_commonsAtomLoadingNotification || _load_commonsAtomLoadingNotification()).default)(service.getReferences(src, contents, line, column), 'Loading references from Jedi server...');
+
+      if (!result || result.length === 0) {
+        return { type: 'error', message: 'No usages were found.' };
+      }
+
+      var symbolName = result[0].text;
+
+      // Process this into the format nuclide-find-references expects.
+      var references = result.map(function (ref) {
+        return {
+          uri: ref.file,
+          name: ref.parentName,
+          range: new (_simpleTextBuffer || _load_simpleTextBuffer()).Range(new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(ref.line, ref.column), new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(ref.line, ref.column + ref.text.length))
+        };
+      });
+
+      return {
+        type: 'data',
+        baseUri: baseUri,
+        referencedSymbolName: symbolName,
+        references: references
+      };
+    })
+  }]);
+
+  return ReferenceHelpers;
+})();
+
+exports.default = ReferenceHelpers;
+module.exports = exports.default;

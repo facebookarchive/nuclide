@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,63 +8,76 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import invariant from 'assert';
-import {GRAMMARS} from './constants';
-import {goToLocation} from '../../commons-atom/go-to-location';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+var _commonsNodeNuclideUri;
 
-const EXTENSIONS = new Set([
-  'ml',
-  'mli',
-]);
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _commonsAtomGoToLocation;
+
+function _load_commonsAtomGoToLocation() {
+  return _commonsAtomGoToLocation = require('../../commons-atom/go-to-location');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var EXTENSIONS = new Set(['ml', 'mli']);
 
 module.exports = {
   priority: 20,
   providerName: 'nuclide-ocaml',
-  async getSuggestionForWord(
-    textEditor: atom$TextEditor,
-    text: string,
-    range: atom$Range,
-  ): Promise<?HyperclickSuggestion> {
+  getSuggestionForWord: _asyncToGenerator(function* (textEditor, text, range) {
 
-    if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
+    if (!(_constants || _load_constants()).GRAMMARS.has(textEditor.getGrammar().scopeName)) {
       return null;
     }
 
-    const file = textEditor.getPath();
+    var file = textEditor.getPath();
 
     if (file == null) {
       return null;
     }
 
-    let kind = 'ml';
-    const extension = nuclideUri.extname(file);
+    var kind = 'ml';
+    var extension = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.extname(file);
     if (EXTENSIONS.has(extension)) {
       kind = extension;
     }
 
-    const instance = await getServiceByNuclideUri('MerlinService', file);
-    invariant(instance);
-    const start = range.start;
+    var instance = yield (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('MerlinService', file);
+    (0, (_assert || _load_assert()).default)(instance);
+    var start = range.start;
 
     return {
-      range,
-      async callback() {
-        await instance.pushNewBuffer(file, textEditor.getText());
-        const location = await instance.locate(
-          file,
-          start.row,
-          start.column,
-          kind);
+      range: range,
+      callback: _asyncToGenerator(function* () {
+        yield instance.pushNewBuffer(file, textEditor.getText());
+        var location = yield instance.locate(file, start.row, start.column, kind);
         if (!location) {
           return;
         }
 
-        goToLocation(location.file, location.pos.line - 1, location.pos.col);
-      },
+        (0, (_commonsAtomGoToLocation || _load_commonsAtomGoToLocation()).goToLocation)(location.file, location.pos.line - 1, location.pos.col);
+      })
     };
-  },
+  })
 };

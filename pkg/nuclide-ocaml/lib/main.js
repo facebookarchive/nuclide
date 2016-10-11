@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,57 +10,95 @@
  * the root directory of this source tree.
  */
 
-import type {LinterProvider} from '../../nuclide-diagnostics-common';
-import type {OutlineProvider} from '../../nuclide-outline-view/lib/main';
-import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint/lib/types';
+exports.getHyperclickProvider = getHyperclickProvider;
+exports.createAutocompleteProvider = createAutocompleteProvider;
+exports.provideLinter = provideLinter;
+exports.provideOutlines = provideOutlines;
+exports.createTypeHintProvider = createTypeHintProvider;
 
-import {trackOperationTiming} from '../../nuclide-analytics';
-import HyperclickProvider from './HyperclickProvider';
-import AutoComplete from './AutoComplete';
-import {GRAMMARS} from './constants';
-import MerlinLinterProvider from './LinterProvider';
-import {getOutline} from './OutlineProvider';
-import TypeHintProvider from './TypeHintProvider';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export function getHyperclickProvider() {
-  return HyperclickProvider;
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
 }
 
-export function createAutocompleteProvider(): mixed {
-  const getSuggestions = request => {
-    return trackOperationTiming(
-      'nuclide-ocaml:getAutocompleteSuggestions',
-      () => AutoComplete.getAutocompleteSuggestions(request));
+var _HyperclickProvider;
+
+function _load_HyperclickProvider() {
+  return _HyperclickProvider = _interopRequireDefault(require('./HyperclickProvider'));
+}
+
+var _AutoComplete;
+
+function _load_AutoComplete() {
+  return _AutoComplete = _interopRequireDefault(require('./AutoComplete'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _LinterProvider;
+
+function _load_LinterProvider() {
+  return _LinterProvider = _interopRequireDefault(require('./LinterProvider'));
+}
+
+var _OutlineProvider;
+
+function _load_OutlineProvider() {
+  return _OutlineProvider = require('./OutlineProvider');
+}
+
+var _TypeHintProvider;
+
+function _load_TypeHintProvider() {
+  return _TypeHintProvider = _interopRequireDefault(require('./TypeHintProvider'));
+}
+
+function getHyperclickProvider() {
+  return (_HyperclickProvider || _load_HyperclickProvider()).default;
+}
+
+function createAutocompleteProvider() {
+  var getSuggestions = function getSuggestions(request) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackOperationTiming)('nuclide-ocaml:getAutocompleteSuggestions', function () {
+      return (_AutoComplete || _load_AutoComplete()).default.getAutocompleteSuggestions(request);
+    });
   };
   return {
     selector: '.source.ocaml',
     inclusionPriority: 1,
     disableForSelector: '.source.ocaml .comment',
-    getSuggestions,
+    getSuggestions: getSuggestions
   };
 }
 
-export function provideLinter(): LinterProvider {
-  return MerlinLinterProvider;
+function provideLinter() {
+  return (_LinterProvider || _load_LinterProvider()).default;
 }
 
-export function provideOutlines(): OutlineProvider {
+function provideOutlines() {
   return {
-    grammarScopes: Array.from(GRAMMARS),
+    grammarScopes: Array.from((_constants || _load_constants()).GRAMMARS),
     priority: 1,
     name: 'OCaml',
-    getOutline,
+    getOutline: (_OutlineProvider || _load_OutlineProvider()).getOutline
   };
 }
 
-export function createTypeHintProvider(): TypeHintProviderType {
-  const typeHintProvider = new TypeHintProvider();
-  const typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
+function createTypeHintProvider() {
+  var typeHintProvider = new (_TypeHintProvider || _load_TypeHintProvider()).default();
+  var typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
 
   return {
     inclusionPriority: 1,
     providerName: 'nuclide-ocaml',
-    selector: Array.from(GRAMMARS).join(', '),
-    typeHint,
+    selector: Array.from((_constants || _load_constants()).GRAMMARS).join(', '),
+    typeHint: typeHint
   };
 }

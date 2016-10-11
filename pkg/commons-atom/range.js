@@ -1,5 +1,8 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.wordAtPosition = wordAtPosition;
+exports.trimRange = trimRange;
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +12,25 @@
  * the root directory of this source tree.
  */
 
-import {Range} from 'atom';
-import {wordAtPositionFromBuffer} from '../commons-node/range';
+var _atom;
 
-export function wordAtPosition(
-  editor: atom$TextEditor,
-  position: atom$PointObject,
-  wordRegex_: ?RegExp,
-): ?{wordMatch: Array<string>, range: atom$Range} {
-  let wordRegex = wordRegex_;
+function _load_atom() {
+  return _atom = require('atom');
+}
+
+var _commonsNodeRange;
+
+function _load_commonsNodeRange() {
+  return _commonsNodeRange = require('../commons-node/range');
+}
+
+function wordAtPosition(editor, position, wordRegex_) {
+  var wordRegex = wordRegex_;
   if (!wordRegex) {
     wordRegex = editor.getLastCursor().wordRegExp();
   }
-  const buffer = editor.getBuffer();
-  return wordAtPositionFromBuffer(buffer, position, wordRegex);
+  var buffer = editor.getBuffer();
+  return (0, (_commonsNodeRange || _load_commonsNodeRange()).wordAtPositionFromBuffer)(buffer, position, wordRegex);
 }
 
 /**
@@ -36,20 +44,27 @@ export function wordAtPosition(
  *   defaults to first non-whitespace character
  * @return atom$Range  the trimmed range
  */
-export function trimRange(
-  editor: atom$TextEditor,
-  rangeToTrim: atom$Range,
-  stopRegex: RegExp = /\S/,
-): atom$Range {
-  const buffer = editor.getBuffer();
-  let {start, end} = rangeToTrim;
-  buffer.scanInRange(stopRegex, rangeToTrim, ({range, stop}) => {
+
+function trimRange(editor, rangeToTrim) {
+  var stopRegex = arguments.length <= 2 || arguments[2] === undefined ? /\S/ : arguments[2];
+
+  var buffer = editor.getBuffer();
+  var start = rangeToTrim.start;
+  var end = rangeToTrim.end;
+
+  buffer.scanInRange(stopRegex, rangeToTrim, function (_ref) {
+    var range = _ref.range;
+    var stop = _ref.stop;
+
     start = range.start;
     stop();
   });
-  buffer.backwardsScanInRange(stopRegex, rangeToTrim, ({range, stop}) => {
+  buffer.backwardsScanInRange(stopRegex, rangeToTrim, function (_ref2) {
+    var range = _ref2.range;
+    var stop = _ref2.stop;
+
     end = range.end;
     stop();
   });
-  return new Range(start, end);
+  return new (_atom || _load_atom()).Range(start, end);
 }

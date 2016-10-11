@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +10,25 @@
  * the root directory of this source tree.
  */
 
-import type {Fix} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {Diagnostic} from '../../nuclide-flow-rpc';
+exports.default = flowMessageToFix;
 
-import invariant from 'assert';
-import {extractRange} from './flowDiagnosticsCommon';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export default function flowMessageToFix(diagnostic: Diagnostic): ?Fix {
-  for (const extractionFunction of fixExtractionFunctions) {
-    const fix = extractionFunction(diagnostic);
+var _assert;
+
+function _load_assert() {
+  return _assert = _interopRequireDefault(require('assert'));
+}
+
+var _flowDiagnosticsCommon;
+
+function _load_flowDiagnosticsCommon() {
+  return _flowDiagnosticsCommon = require('./flowDiagnosticsCommon');
+}
+
+function flowMessageToFix(diagnostic) {
+  for (var extractionFunction of fixExtractionFunctions) {
+    var fix = extractionFunction(diagnostic);
     if (fix != null) {
       return fix;
     }
@@ -26,54 +37,50 @@ export default function flowMessageToFix(diagnostic: Diagnostic): ?Fix {
   return null;
 }
 
-const fixExtractionFunctions: Array<(diagnostic: Diagnostic) => ?Fix> = [
-  unusedSuppressionFix,
-  namedImportTypo,
-];
+var fixExtractionFunctions = [unusedSuppressionFix, namedImportTypo];
 
-function unusedSuppressionFix(diagnostic: Diagnostic): ?Fix {
+function unusedSuppressionFix(diagnostic) {
   // Automatically remove unused suppressions:
-  if (diagnostic.messageComponents.length === 2 &&
-      diagnostic.messageComponents[0].descr === 'Error suppressing comment' &&
-      diagnostic.messageComponents[1].descr === 'Unused suppression') {
-    const oldRange = extractRange(diagnostic.messageComponents[0]);
-    invariant(oldRange != null);
+  if (diagnostic.messageComponents.length === 2 && diagnostic.messageComponents[0].descr === 'Error suppressing comment' && diagnostic.messageComponents[1].descr === 'Unused suppression') {
+    var oldRange = (0, (_flowDiagnosticsCommon || _load_flowDiagnosticsCommon()).extractRange)(diagnostic.messageComponents[0]);
+    (0, (_assert || _load_assert()).default)(oldRange != null);
     return {
       newText: '',
-      oldRange,
-      speculative: true,
+      oldRange: oldRange,
+      speculative: true
     };
   }
 
   return null;
 }
 
-function namedImportTypo(diagnostic: Diagnostic): ?Fix {
+function namedImportTypo(diagnostic) {
   if (diagnostic.messageComponents.length !== 2) {
     return null;
   }
 
-  const firstComponent = diagnostic.messageComponents[0];
-  const secondComponent = diagnostic.messageComponents[1];
+  var firstComponent = diagnostic.messageComponents[0];
+  var secondComponent = diagnostic.messageComponents[1];
   if (!/^Named import from module `[^`]*`$/.test(firstComponent.descr)) {
     return null;
   }
 
-  const regex = /^This module has no named export called `([^`]*)`. Did you mean `([^`]*)`\?$/;
-  const match = regex.exec(secondComponent.descr);
+  var regex = /^This module has no named export called `([^`]*)`. Did you mean `([^`]*)`\?$/;
+  var match = regex.exec(secondComponent.descr);
   if (match == null) {
     return null;
   }
 
-  const oldText = match[1];
-  const newText = match[2];
-  const oldRange = extractRange(diagnostic.messageComponents[0]);
-  invariant(oldRange != null);
+  var oldText = match[1];
+  var newText = match[2];
+  var oldRange = (0, (_flowDiagnosticsCommon || _load_flowDiagnosticsCommon()).extractRange)(diagnostic.messageComponents[0]);
+  (0, (_assert || _load_assert()).default)(oldRange != null);
 
   return {
-    oldText,
-    newText,
-    oldRange,
-    speculative: true,
+    oldText: oldText,
+    newText: newText,
+    oldRange: oldRange,
+    speculative: true
   };
 }
+module.exports = exports.default;

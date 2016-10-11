@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,36 +18,37 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
+var _classnames;
 
-type Props = {
-  /** Valid octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon: atom$Octicon,
-  className?: string,
-  /** Optional text content to render next to the icon. */
-  children?: string,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _reactForAtom;
+
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
+}
 
 /**
  * Renders an icon with optional text next to it.
  */
-export const Icon = (props: Props) => {
-  const {
-    icon,
-    children,
-    className,
-    ...remainingProps,
-  } = props;
-  const newClassName = classnames(
-    className,
-    {
-      [`icon icon-${icon}`]: icon != null,
-    },
-  );
-  return (
-    <span className={newClassName} {...remainingProps}>
-      {children}
-    </span>
+var Icon = function Icon(props) {
+  var icon = props.icon;
+  var children = props.children;
+  var className = props.className;
+
+  var remainingProps = _objectWithoutProperties(props, ['icon', 'children', 'className']);
+
+  var newClassName = (0, (_classnames || _load_classnames()).default)(className, _defineProperty({}, 'icon icon-' + icon, icon != null));
+  return (_reactForAtom || _load_reactForAtom()).React.createElement(
+    'span',
+    _extends({ className: newClassName }, remainingProps),
+    children
   );
 };
+exports.Icon = Icon;
+
+/** Valid octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
+
+/** Optional text content to render next to the icon. */

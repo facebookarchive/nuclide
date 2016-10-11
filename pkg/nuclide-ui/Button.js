@@ -1,5 +1,14 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,91 +18,96 @@
  * the root directory of this source tree.
  */
 
-import classnames from 'classnames';
-import {React} from 'react-for-atom';
-import {maybeToString} from '../commons-node/string';
-import addTooltip from './add-tooltip';
+var _classnames;
 
-export type ButtonType = 'PRIMARY' | 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
-export type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
-type ButtonNodeName = 'button' | 'a';
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-type Props = {
-  /** Octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
-  icon?: atom$Octicon,
-  /** Optional specifier for special buttons, e.g. primary, info, success or error buttons. */
-  buttonType?: ButtonType,
-  selected?: boolean,
-  /**  */
-  size?: ButtonSize,
-  className?: string,
-  /** The button's content; generally a string. */
-  children?: mixed,
-  /** Allows specifying an element other than `button` to be used as the wrapper node. */
-  wrapperElement?: ButtonNodeName,
-  tooltip?: atom$TooltipsAddOptions
-};
+var _reactForAtom;
 
-export const ButtonSizes = Object.freeze({
+function _load_reactForAtom() {
+  return _reactForAtom = require('react-for-atom');
+}
+
+var _commonsNodeString;
+
+function _load_commonsNodeString() {
+  return _commonsNodeString = require('../commons-node/string');
+}
+
+var _addTooltip;
+
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('./add-tooltip'));
+}
+
+var ButtonSizes = Object.freeze({
   EXTRA_SMALL: 'EXTRA_SMALL',
   SMALL: 'SMALL',
-  LARGE: 'LARGE',
+  LARGE: 'LARGE'
 });
 
-export const ButtonTypes = Object.freeze({
+exports.ButtonSizes = ButtonSizes;
+var ButtonTypes = Object.freeze({
   PRIMARY: 'PRIMARY',
   INFO: 'INFO',
   SUCCESS: 'SUCCESS',
   WARNING: 'WARNING',
-  ERROR: 'ERROR',
+  ERROR: 'ERROR'
 });
 
-const ButtonSizeClassnames = Object.freeze({
+exports.ButtonTypes = ButtonTypes;
+var ButtonSizeClassnames = Object.freeze({
   EXTRA_SMALL: 'btn-xs',
   SMALL: 'btn-sm',
-  LARGE: 'btn-lg',
+  LARGE: 'btn-lg'
 });
 
-const ButtonTypeClassnames = Object.freeze({
+var ButtonTypeClassnames = Object.freeze({
   PRIMARY: 'btn-primary',
   INFO: 'btn-info',
   SUCCESS: 'btn-success',
   WARNING: 'btn-warning',
-  ERROR: 'btn-error',
+  ERROR: 'btn-error'
 });
 
 /**
  * Generic Button wrapper.
  */
-export const Button = (props: Props) => {
-  const {
-    icon,
-    buttonType,
-    selected,
-    size,
-    children,
-    className,
-    wrapperElement,
-    tooltip,
-    ...remainingProps,
-  } = props;
-  const sizeClassname = size == null ? '' : ButtonSizeClassnames[size] || '';
-  const buttonTypeClassname = buttonType == null ? '' : ButtonTypeClassnames[buttonType] || '';
-  const ref = tooltip ? addTooltip(tooltip) : null;
-  const newClassName = classnames(
-    className,
-    'btn',
-    {
-      [`icon icon-${maybeToString(icon)}`]: icon != null,
-      [sizeClassname]: size != null,
-      selected,
-      [buttonTypeClassname]: buttonType != null,
-    },
-  );
-  const Wrapper = wrapperElement == null ? 'button' : wrapperElement;
-  return (
-    <Wrapper className={newClassName} ref={ref} {...remainingProps}>
-      {children}
-    </Wrapper>
+var Button = function Button(props) {
+  var _ref;
+
+  var icon = props.icon;
+  var buttonType = props.buttonType;
+  var selected = props.selected;
+  var size = props.size;
+  var children = props.children;
+  var className = props.className;
+  var wrapperElement = props.wrapperElement;
+  var tooltip = props.tooltip;
+
+  var remainingProps = _objectWithoutProperties(props, ['icon', 'buttonType', 'selected', 'size', 'children', 'className', 'wrapperElement', 'tooltip']);
+
+  var sizeClassname = size == null ? '' : ButtonSizeClassnames[size] || '';
+  var buttonTypeClassname = buttonType == null ? '' : ButtonTypeClassnames[buttonType] || '';
+  var ref = tooltip ? (0, (_addTooltip || _load_addTooltip()).default)(tooltip) : null;
+  var newClassName = (0, (_classnames || _load_classnames()).default)(className, 'btn', (_ref = {}, _defineProperty(_ref, 'icon icon-' + (0, (_commonsNodeString || _load_commonsNodeString()).maybeToString)(icon), icon != null), _defineProperty(_ref, sizeClassname, size != null), _defineProperty(_ref, 'selected', selected), _defineProperty(_ref, buttonTypeClassname, buttonType != null), _ref));
+  var Wrapper = wrapperElement == null ? 'button' : wrapperElement;
+  return (_reactForAtom || _load_reactForAtom()).React.createElement(
+    Wrapper,
+    _extends({ className: newClassName, ref: ref }, remainingProps),
+    children
   );
 };
+exports.Button = Button;
+
+/** Octicon icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
+
+/** Optional specifier for special buttons, e.g. primary, info, success or error buttons. */
+
+/**  */
+
+/** The button's content; generally a string. */
+
+/** Allows specifying an element other than `button` to be used as the wrapper node. */

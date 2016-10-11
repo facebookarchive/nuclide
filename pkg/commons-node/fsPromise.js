@@ -1,61 +1,6 @@
-'use babel';
-/* @flow */
-
-/*
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- */
-
-import fs from 'fs-plus';
-import globLib from 'glob';
-import mkdirpLib from 'mkdirp';
-import nuclideUri from '../commons-node/nuclideUri';
-import rimraf from 'rimraf';
-import temp from 'temp';
-import {asyncExecute} from './process';
-
-/**
- * Create a temp directory with given prefix. The caller is responsible for cleaning up the
- *   drectory.
- * @param prefix optinal prefix for the temp directory name.
- * @return path to a temporary directory.
- */
-function tempdir(prefix: string = ''): Promise<string> {
-  return new Promise((resolve, reject) => {
-    temp.mkdir(prefix, (err, dirPath) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(dirPath);
-      }
-    });
-  });
-}
-
-/**
- * @return path to a temporary file. The caller is responsible for cleaning up
- *     the file.
- */
-function tempfile(options: any): Promise<string> {
-  return new Promise((resolve, reject) => {
-    temp.open(options, (err, info) => {
-      if (err) {
-        reject(err);
-      } else {
-        fs.close(info.fd, closeErr => {
-          if (closeErr) {
-            reject(closeErr);
-          } else {
-            resolve(info.path);
-          }
-        });
-      }
-    });
-  });
-}
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /**
  * Searches upward through the filesystem from pathToDirectory to find a file with
@@ -65,23 +10,24 @@ function tempfile(options: any): Promise<string> {
  *   not a file.
  * @return directory that contains the nearest file or null.
  */
-async function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
+
+var findNearestFile = _asyncToGenerator(function* (fileName, pathToDirectory) {
   // TODO(5586355): If this becomes a bottleneck, we should consider memoizing
   // this function. The downside would be that if someone added a closer file
   // with fileName to pathToFile (or deleted the one that was cached), then we
   // would have a bug. This would probably be pretty rare, though.
-  let currentPath = nuclideUri.resolve(pathToDirectory);
+  var currentPath = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.resolve(pathToDirectory);
   for (;;) {
-    const fileToFind = nuclideUri.join(currentPath, fileName);
+    var fileToFind = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.join(currentPath, fileName);
     // eslint-disable-next-line babel/no-await-in-loop
-    const hasFile = await exists(fileToFind);
+    var hasFile = yield exists(fileToFind);
     if (hasFile) {
       return currentPath;
     }
-    if (nuclideUri.isRoot(currentPath)) {
+    if ((_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.isRoot(currentPath)) {
       return null;
     }
-    currentPath = nuclideUri.dirname(currentPath);
+    currentPath = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.dirname(currentPath);
   }
 }
 
@@ -94,40 +40,25 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
  * @param stopOnMissing Stop searching when we reach a directory without fileName.
  * @return directory that contains the furthest file or null.
  */
-async function findFurthestFile(
-  fileName: string,
-  pathToDirectory: string,
-  stopOnMissing: boolean = false,
-): Promise<?string> {
-  let currentPath = nuclideUri.resolve(pathToDirectory);
-  let result = null;
+);
+
+var findFurthestFile = _asyncToGenerator(function* (fileName, pathToDirectory) {
+  var stopOnMissing = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+
+  var currentPath = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.resolve(pathToDirectory);
+  var result = null;
   for (;;) {
-    const fileToFind = nuclideUri.join(currentPath, fileName);
+    var fileToFind = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.join(currentPath, fileName);
     // eslint-disable-next-line babel/no-await-in-loop
-    const hasFile = await exists(fileToFind);
-    if ((!hasFile && stopOnMissing) || nuclideUri.isRoot(currentPath)) {
+    var hasFile = yield exists(fileToFind);
+    if (!hasFile && stopOnMissing || (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.isRoot(currentPath)) {
       return result;
     } else if (hasFile) {
       result = currentPath;
     }
-    currentPath = nuclideUri.dirname(currentPath);
+    currentPath = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.dirname(currentPath);
   }
-}
-
-function getCommonAncestorDirectory(filePaths: Array<string>): string {
-  let commonDirectoryPath = nuclideUri.dirname(filePaths[0]);
-  while (filePaths.some(filePath => !filePath.startsWith(commonDirectoryPath))) {
-    commonDirectoryPath = nuclideUri.dirname(commonDirectoryPath);
-  }
-  return commonDirectoryPath;
-}
-
-
-function exists(filePath: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    fs.exists(filePath, resolve);
-  });
-}
+});
 
 /**
  * Runs the equivalent of `mkdir -p` with the given path.
@@ -136,13 +67,14 @@ function exists(filePath: string): Promise<boolean> {
  * directories were created for some prefix of the given path.
  * @return true if the path was created; false if it already existed.
  */
-async function mkdirp(filePath: string): Promise<boolean> {
-  const isExistingDirectory = await exists(filePath);
+
+var mkdirp = _asyncToGenerator(function* (filePath) {
+  var isExistingDirectory = yield exists(filePath);
   if (isExistingDirectory) {
     return false;
   } else {
-    return new Promise((resolve, reject) => {
-      mkdirpLib(filePath, err => {
+    return new Promise(function (resolve, reject) {
+      (0, (_mkdirp || _load_mkdirp()).default)(filePath, function (err) {
         if (err) {
           reject(err);
         } else {
@@ -156,22 +88,17 @@ async function mkdirp(filePath: string): Promise<boolean> {
 /**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
-function rmdir(filePath: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    rimraf(filePath, err => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
+);
 
 /** @return true only if we are sure directoryPath is on NFS. */
-async function isNfs(entityPath: string): Promise<boolean> {
+
+var isNfs = _asyncToGenerator(function* (entityPath) {
   if (process.platform === 'linux' || process.platform === 'darwin') {
-    const {stdout, exitCode} = await asyncExecute('stat', ['-f', '-L', '-c', '%T', entityPath]);
+    var _ref = yield (0, (_process || _load_process()).asyncExecute)('stat', ['-f', '-L', '-c', '%T', entityPath]);
+
+    var stdout = _ref.stdout;
+    var exitCode = _ref.exitCode;
+
     if (exitCode === 0) {
       return stdout.trim() === 'nfs';
     } else {
@@ -181,11 +108,11 @@ async function isNfs(entityPath: string): Promise<boolean> {
     // TODO Handle other platforms (windows?): t9917576.
     return false;
   }
-}
+});
 
-async function glob(pattern: string, options?: Object): Promise<Array<string>> {
-  return await new Promise((resolve, reject) => {
-    globLib(pattern, options, (err: ?Error, files: Array<string>) => {
+var glob = _asyncToGenerator(function* (pattern, options) {
+  return yield new Promise(function (resolve, reject) {
+    (0, (_glob || _load_glob()).default)(pattern, options, function (err, files) {
       if (err) {
         reject(err);
       } else {
@@ -193,13 +120,13 @@ async function glob(pattern: string, options?: Object): Promise<Array<string>> {
       }
     });
   });
-}
+});
 
-async function isNonNfsDirectory(directoryPath: string): Promise<boolean> {
+var isNonNfsDirectory = _asyncToGenerator(function* (directoryPath) {
   try {
-    const stats = await stat(directoryPath);
+    var stats = yield stat(directoryPath);
     if (stats.isDirectory()) {
-      return !(await isNfs(directoryPath));
+      return !(yield isNfs(directoryPath));
     } else {
       return false;
     }
@@ -216,31 +143,157 @@ async function isNonNfsDirectory(directoryPath: string): Promise<boolean> {
  * with the same functionality, but returns a Promise rather than taking a callback. This isn't
  * quite as efficient as Q's implementation of denodeify, but it's considerably less code.
  */
-function _denodeifyFsMethod(methodName: string): () => Promise<any> {
-  return function(...args): Promise<any> {
-    const method = fs[methodName];
-    return new Promise((resolve, reject) => {
-      method.apply(fs, args.concat([
-        (err, result) => (err ? reject(err) : resolve(result)),
-      ]));
+);
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var _fsPlus;
+
+function _load_fsPlus() {
+  return _fsPlus = _interopRequireDefault(require('fs-plus'));
+}
+
+var _glob;
+
+function _load_glob() {
+  return _glob = _interopRequireDefault(require('glob'));
+}
+
+var _mkdirp;
+
+function _load_mkdirp() {
+  return _mkdirp = _interopRequireDefault(require('mkdirp'));
+}
+
+var _commonsNodeNuclideUri;
+
+function _load_commonsNodeNuclideUri() {
+  return _commonsNodeNuclideUri = _interopRequireDefault(require('../commons-node/nuclideUri'));
+}
+
+var _rimraf;
+
+function _load_rimraf() {
+  return _rimraf = _interopRequireDefault(require('rimraf'));
+}
+
+var _temp;
+
+function _load_temp() {
+  return _temp = _interopRequireDefault(require('temp'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('./process');
+}
+
+/**
+ * Create a temp directory with given prefix. The caller is responsible for cleaning up the
+ *   drectory.
+ * @param prefix optinal prefix for the temp directory name.
+ * @return path to a temporary directory.
+ */
+function tempdir() {
+  var prefix = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+
+  return new Promise(function (resolve, reject) {
+    (_temp || _load_temp()).default.mkdir(prefix, function (err, dirPath) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(dirPath);
+      }
+    });
+  });
+}
+
+/**
+ * @return path to a temporary file. The caller is responsible for cleaning up
+ *     the file.
+ */
+function tempfile(options) {
+  return new Promise(function (resolve, reject) {
+    (_temp || _load_temp()).default.open(options, function (err, info) {
+      if (err) {
+        reject(err);
+      } else {
+        (_fsPlus || _load_fsPlus()).default.close(info.fd, function (closeErr) {
+          if (closeErr) {
+            reject(closeErr);
+          } else {
+            resolve(info.path);
+          }
+        });
+      }
+    });
+  });
+}
+
+function getCommonAncestorDirectory(filePaths) {
+  var commonDirectoryPath = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.dirname(filePaths[0]);
+  while (filePaths.some(function (filePath) {
+    return !filePath.startsWith(commonDirectoryPath);
+  })) {
+    commonDirectoryPath = (_commonsNodeNuclideUri || _load_commonsNodeNuclideUri()).default.dirname(commonDirectoryPath);
+  }
+  return commonDirectoryPath;
+}
+
+function exists(filePath) {
+  return new Promise(function (resolve, reject) {
+    (_fsPlus || _load_fsPlus()).default.exists(filePath, resolve);
+  });
+}function rmdir(filePath) {
+  return new Promise(function (resolve, reject) {
+    (0, (_rimraf || _load_rimraf()).default)(filePath, function (err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+}function _denodeifyFsMethod(methodName) {
+  return function () {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    var method = (_fsPlus || _load_fsPlus()).default[methodName];
+    return new Promise(function (resolve, reject) {
+      method.apply((_fsPlus || _load_fsPlus()).default, args.concat([function (err, result) {
+        return err ? reject(err) : resolve(result);
+      }]));
     });
   };
 }
 
-const stat = _denodeifyFsMethod('stat');
+var stat = _denodeifyFsMethod('stat');
 
-export default {
-  tempdir,
-  tempfile,
-  findNearestFile,
-  findFurthestFile,
-  getCommonAncestorDirectory,
-  exists,
-  mkdirp,
-  rmdir,
-  isNfs,
-  glob,
-  isNonNfsDirectory,
+exports.default = {
+  tempdir: tempdir,
+  tempfile: tempfile,
+  findNearestFile: findNearestFile,
+  findFurthestFile: findFurthestFile,
+  getCommonAncestorDirectory: getCommonAncestorDirectory,
+  exists: exists,
+  mkdirp: mkdirp,
+  rmdir: rmdir,
+  isNfs: isNfs,
+  glob: glob,
+  isNonNfsDirectory: isNonNfsDirectory,
 
   copy: _denodeifyFsMethod('copy'),
   chmod: _denodeifyFsMethod('chmod'),
@@ -252,8 +305,9 @@ export default {
   realpath: _denodeifyFsMethod('realpath'),
   rename: _denodeifyFsMethod('rename'),
   move: _denodeifyFsMethod('move'),
-  stat,
+  stat: stat,
   symlink: _denodeifyFsMethod('symlink'),
   unlink: _denodeifyFsMethod('unlink'),
-  writeFile: _denodeifyFsMethod('writeFile'),
+  writeFile: _denodeifyFsMethod('writeFile')
 };
+module.exports = exports.default;
