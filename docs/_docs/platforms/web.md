@@ -17,19 +17,18 @@ Nuclide makes web developers more productive in this process.
 [HHVM](http://docs.hhvm.com), Hack offers quick development and testing with the comfort of
 [type safety](https://docs.hhvm.com/hack/typechecker/introduction). Nuclide enhances this by
 utilizing Hack's information to deliver developer productivity features such as
-[autocomplete](/docs/languages/hack/#features__autocomplete) and
+[Autocomplete](/docs/languages/hack/#features__autocomplete) and
 [inline error checking](/docs/languages/hack/#features__code-diagnostics).
 
-If you are a [PHP](http://php.net) developer, Nuclide has
-[support](/docs/languages/other/#php) for that as well.
+If you are a [PHP](http://php.net) developer, Nuclide has [support](/docs/languages/other/#php) for that as well.
 
 ## Client-side Development
 
 [Flow](/docs/languages/flow) has first-class support in Nuclide. Flow gives you
 [type safety](http://flowtype.org) as you develop, and Nuclide uses the information provided by
 Flow to enhance developer productivity. This includes
-[jump to definition](/docs/languages/flow/#jump-to-definition) and
-[type hints](/docs/languages/flow/#type-hints).
+[Jump to Definition](/docs/languages/flow/#jump-to-definition) and
+[Type Hinting](/docs/languages/flow/#type-hinting).
 
 If you are a [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) developer,
 Nuclide has [support](/docs/languages/other/#javascript) for that as well.
