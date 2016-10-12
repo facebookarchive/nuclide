@@ -20,13 +20,12 @@ cross-platform development in [React Native](/docs/platforms/react-native).
 
 When you open an [Objective-C](/docs/languages/objective-c/) file (e.g., `.h`, `.m`, `.mm`), you
 automatically get support for default [features](/docs/languages/objective-c/#default-features) such
-as
-[automatic bracket completion](/docs/languages/objective-c/#default-features__automatic-bracket-completion).
+as [Automatic Square Bracket Completion](/docs/languages/objective-c/#default-features__automatic-square-bracket-completion).
 
-However, if you are compiling your project with [Buck](http://buckbuild.com), you get richer
+However, if you compile your project with [Buck](http://buckbuild.com), you get richer
 [features](/docs/languages/objective-c/#buck-enabled-features) such as
-[autocomplete](/docs/languages/objective-c/#buck-enabled-features__autocomplete) and
-[jump to definition](/docs/languages/objective-c/#buck-enabled-features__jump-to-definition).
+[Autocomplete](/docs/languages/objective-c/#buck-enabled-features__autocomplete) and
+[Jump to Definition](/docs/languages/objective-c/#buck-enabled-features__jump-to-definition).
 
 ![](/static/images/docs/platform-ios-native-autocomplete.png)
 
@@ -38,7 +37,7 @@ You can also use the command-line tools such as `xcodebuild`, etc.
 ### Buck Integration
 
 Nuclide supports the [Buck](https://buckbuild.com/) build system. See the
-[Buck guide](/docs/features/buck) for how to build, run and debug iOS apps.
+[Buck guide](/docs/features/buck) for how to build, run, and debug iOS apps.
 
 ## Debugging
 
@@ -50,7 +49,7 @@ Debugging native [Objective-C](/docs/languages/objective-c/) iOS applications is
 ## Simulator Logs
 
 When running your iOS project in the iOS simulator, you can open and view the simulator logs
-directly within Nuclide. From the [command palette](/docs/editor/basics/#command-palette), search
+directly within Nuclide. From the [Command Palette](/docs/editor/basics/#command-palette), search
 for `Nuclide iOS Simulator Logs: Start`.
 
 ![](/static/images/docs/platform-ios-toggle-simulator.png)
