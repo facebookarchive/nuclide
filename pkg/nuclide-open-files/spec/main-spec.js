@@ -90,11 +90,45 @@ describe('nuclide-open-files', () => {
       });
     });
 
+    it('open with delayed load sends initial open event after load', () => {
+      const buffer = new TextBuffer({filePath: 'f1'});
+      runs(() => {
+        // simulates an open
+        atom.project.addBuffer(buffer);
+
+        // simulates a load ...
+        buffer.setText('contents1');
+
+        // close
+        buffer.destroy();
+      });
+      waitsFor(() => eventCount >= 2);
+
+      waitsForPromise(async () => {
+        expect(await finishEvents()).toEqual([
+          {
+            kind: 'open',
+            filePath: 'f1',
+            changeCount: 2,
+            contents: 'contents1',
+          },
+          {
+            kind: 'close',
+            filePath: 'f1',
+            changeCount: 2,
+          },
+        ]);
+      });
+    });
+
     it('edit', () => {
       const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
       runs(() => {
         atom.project.addBuffer(buffer);
+      });
+      waitsFor(() => eventCount >= 1);
 
+      runs(() => {
         buffer.append('42');
 
         buffer.destroy();
@@ -137,7 +171,9 @@ describe('nuclide-open-files', () => {
       const buffer = new TextBuffer({filePath: 'f1', text: 'contents1'});
       runs(() => {
         atom.project.addBuffer(buffer);
-
+      });
+      waitsFor(() => eventCount >= 1);
+      runs(() => {
         buffer.setPath('f2');
 
         buffer.destroy();

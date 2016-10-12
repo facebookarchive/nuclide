@@ -41,6 +41,7 @@ export class BufferSubscription {
   _subscriptions: CompositeDisposable;
   _serverVersion: number;
   _lastAttemptedSync: number;
+  _sentOpen: boolean;
 
   constructor(notifiers: NotifiersByConnection, buffer: atom$TextBuffer) {
     this._notifiers = notifiers;
@@ -48,6 +49,7 @@ export class BufferSubscription {
     this._notifier = null;
     this._serverVersion = -1;
     this._lastAttemptedSync = -1;
+    this._sentOpen = false;
 
     const subscriptions = new CompositeDisposable();
 
@@ -55,6 +57,7 @@ export class BufferSubscription {
       if (this._notifier == null) {
         return;
       }
+
       // Must inspect the buffer before awaiting on the notifier
       // to avoid race conditions
       const filePath = this._buffer.getPath();
@@ -63,25 +66,53 @@ export class BufferSubscription {
 
       invariant(this._notifier != null);
       const notifier = await this._notifier;
-      this.sendEvent({
-        kind: 'edit',
-        fileVersion: {
-          notifier,
-          filePath,
-          version,
-        },
-        oldRange: event.oldRange,
-        newRange: event.newRange,
-        oldText: event.oldText,
-        newText: event.newText,
-      });
+      if (this._sentOpen) {
+        this.sendEvent({
+          kind: 'edit',
+          fileVersion: {
+            notifier,
+            filePath,
+            version,
+          },
+          oldRange: event.oldRange,
+          newRange: event.newRange,
+          oldText: event.oldText,
+          newText: event.newText,
+        });
+      } else {
+        this._sendOpenByNotifier(notifier);
+      }
     }));
 
     this._subscriptions = subscriptions;
 
     this._oldPath = this._buffer.getPath();
     this._notifier = this._notifiers.get(this._buffer);
-    this.sendOpen();
+
+    // This prevents the open message from sending when the file is initially empty.
+    // Sadly there's no reliable 'is loaded' event from Atom.
+    // TODO: Could watch onDidReload() which will catch the case where an empty file is opened
+    // after startup, leaving the only failure the reopening of empty files at startup.
+    if (this._buffer.getText() !== '' && this._notifier != null) {
+      this._notifier.then(notifier => this._sendOpenByNotifier(notifier));
+    }
+  }
+
+  _sendOpenByNotifier(notifier: FileNotifier): void {
+    const filePath = this._buffer.getPath();
+    invariant(filePath != null);
+    const version = this._buffer.changeCount;
+
+    this._sentOpen = true;
+    this.sendEvent({
+      kind: 'open',
+      fileVersion: {
+        notifier,
+        filePath,
+        version,
+      },
+      contents: this._buffer.getText(),
+    });
   }
 
   async sendEvent(event: FileEvent) {
@@ -90,7 +121,7 @@ export class BufferSubscription {
       await event.fileVersion.notifier.onEvent(event);
       this.updateServerVersion(event.fileVersion.version);
     } catch (e) {
-      logger.error(`Error sending file event: ${JSON.stringify(event)}`, e);
+      logger.error(`Error sending file event: ${eventToString(event)}`, e);
 
       if (event.fileVersion.filePath === this._buffer.getPath()) {
         logger.error('Attempting file resync');
@@ -148,10 +179,10 @@ export class BufferSubscription {
             await notifier.onEvent(syncEvent);
             this.updateServerVersion(resyncVersion);
 
-            logger.error(`Successful resync event: ${JSON.stringify(syncEvent)}`);
+            logger.error(`Successful resync event: ${eventToString(syncEvent)}`);
           } catch (syncError) {
             logger.error(
-              `Error sending file sync event: ${JSON.stringify(syncEvent)}`,
+              `Error sending file sync event: ${eventToString(syncEvent)}`,
               syncError);
 
             // continue trying until either the file is closed,
@@ -168,31 +199,6 @@ export class BufferSubscription {
     }
   }
 
-  async sendOpen(): Promise<void> {
-    if (this._notifier == null) {
-      return;
-    }
-
-    // Must inspect the buffer before awaiting on the notifier
-    // to avoid race conditions
-    const filePath = this._buffer.getPath();
-    invariant(filePath != null);
-    const version = this._buffer.changeCount;
-    const contents = this._buffer.getText();
-
-    invariant(this._notifier != null);
-    const notifier = await this._notifier;
-    this.sendEvent({
-      kind: 'open',
-      fileVersion: {
-        notifier,
-        filePath,
-        version,
-      },
-      contents,
-    });
-  }
-
   sendClose() {
     // Use different retry policy for close messages.
     if (this._oldPath != null) {
@@ -205,4 +211,11 @@ export class BufferSubscription {
     this._notifier = null;
     this._subscriptions.dispose();
   }
+}
+
+function eventToString(event: FileEvent): string {
+  const jsonable = {...event};
+  jsonable.fileVersion = {...event.fileVersion};
+  jsonable.fileVersion.notifier = null;
+  return JSON.stringify(jsonable);
 }
