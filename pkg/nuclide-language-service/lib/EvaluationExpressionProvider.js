@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/service';
+import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {LanguageService} from './LanguageService';
 
 import {trackOperationTiming} from '../../nuclide-analytics';

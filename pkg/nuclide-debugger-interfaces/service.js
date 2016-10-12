@@ -12,15 +12,11 @@ import type {
   DebuggerLaunchAttachProvider,
 } from '../nuclide-debugger-base';
 import type {NuclideUri} from '../commons-node/nuclideUri';
+import type {NuclideEvaluationExpression} from './rpc-types';
 
 export type NuclideDebuggerProvider = {
   name: string,
   getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider,
-};
-
-export type NuclideEvaluationExpression = {
-  range: atom$Range,
-  expression: string,
 };
 
 export type NuclideEvaluationExpressionProvider = {
