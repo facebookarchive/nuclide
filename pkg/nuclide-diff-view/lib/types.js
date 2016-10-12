@@ -128,6 +128,7 @@ export type AppState = {
   commit: CommitState,
   cwdApi: ?CwdApi,
   fileDiff: FileDiffState,
+  isLoadingFileDiff: boolean,
   publish: PublishState,
   repositories: Map<HgRepositoryClient, RepositoryState>,
   shouldRebaseOnAmend: boolean,
@@ -195,10 +196,17 @@ export type UpdateSelectedFilesAction = {
   },
 };
 
-export type UpadateLoadingSelectedFilesAction = {
+export type UpdateLoadingSelectedFilesAction = {
   type: 'UPDATE_LOADING_SELECTED_FILES',
   payload: {
     repository: HgRepositoryClient,
+    isLoading: boolean,
+  },
+};
+
+export type UpdateLoadingFileDiffAction = {
+  type: 'UPDATE_LOADING_FILE_DIFF',
+  payload: {
     isLoading: boolean,
   },
 };
@@ -327,7 +335,8 @@ export type Action = AddRepositoryAction
   | UpdateFileDiffAction
   | UpdateFileUiElementsAction
   | UpdateHeadToForkBaseRevisions
-  | UpadateLoadingSelectedFilesAction
+  | UpdateLoadingFileDiffAction
+  | UpdateLoadingSelectedFilesAction
   | UpdatePublishStateAction
   | UpdateSelectedFilesAction
 ;
@@ -338,6 +347,6 @@ export type RepositoryAction =
   | SetCompareIdAction
   | UpdateDirtyFilesAction
   | UpdateHeadToForkBaseRevisions
-  | UpadateLoadingSelectedFilesAction
+  | UpdateLoadingSelectedFilesAction
   | UpdateSelectedFilesAction
 ;

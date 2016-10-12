@@ -146,9 +146,10 @@ export function fileDiff(
 ): FileDiffState {
   switch (action.type) {
     case ActionTypes.UPDATE_FILE_DIFF:
+      const {fileDiff: diff} = action.payload;
       return {
-        ...state,
-        ...action.payload.fileDiff,
+        ...diff,
+        uiElements: diff.uiElements || state.uiElements,
       };
     case ActionTypes.UPDATE_FILE_UI_ELEMENTS:
       return {
@@ -157,6 +158,17 @@ export function fileDiff(
       };
   }
   return state || getEmptyFileDiffState();
+}
+
+export function isLoadingFileDiff(
+  state: boolean,
+  action: Action,
+): boolean {
+  switch (action.type) {
+    case ActionTypes.UPDATE_LOADING_FILE_DIFF:
+      return action.payload.isLoading;
+  }
+  return state || false;
 }
 
 export function shouldRebaseOnAmend(

@@ -240,6 +240,7 @@ class Activation {
           headCommitMessage,
           dirtyFileChanges: activeRepositoryState.dirtyFiles,
           selectedFileChanges: activeRepositoryState.selectedFiles,
+          isLoadingFileDiff: state.isLoadingFileDiff,
           isLoadingSelectedFiles: activeRepositoryState.isLoadingSelectedFiles,
           showNonHgRepos: true,
           revisionsState: headRevision == null ? null : {

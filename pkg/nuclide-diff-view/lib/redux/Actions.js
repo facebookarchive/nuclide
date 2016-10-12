@@ -39,7 +39,8 @@ import type {
   UpdateFileDiffAction,
   UpdateFileUiElementsAction,
   UpdateHeadToForkBaseRevisions,
-  UpadateLoadingSelectedFilesAction,
+  UpdateLoadingFileDiffAction,
+  UpdateLoadingSelectedFilesAction,
   UpdatePublishStateAction,
   UpdateSelectedFilesAction,
 } from '../types';
@@ -129,7 +130,7 @@ export function updateSelectedFiles(
 export function updateLoadingSelectedFiles(
   repository: HgRepositoryClient,
   isLoading: boolean,
-): UpadateLoadingSelectedFilesAction {
+): UpdateLoadingSelectedFilesAction {
   return {
     type: ActionTypes.UPDATE_LOADING_SELECTED_FILES,
     payload: {
@@ -318,6 +319,17 @@ export function removeUiProvider(
     type: ActionTypes.REMOVE_UI_PROVIDER,
     payload: {
       uiProvider,
+    },
+  };
+}
+
+export function updateLoadingFileDiff(
+  isLoading: boolean,
+): UpdateLoadingFileDiffAction {
+  return {
+    type: ActionTypes.UPDATE_LOADING_FILE_DIFF,
+    payload: {
+      isLoading,
     },
   };
 }

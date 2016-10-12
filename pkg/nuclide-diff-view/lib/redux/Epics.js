@@ -63,6 +63,7 @@ import {getLogger} from '../../../nuclide-logging';
 
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
 const CHANGE_DEBOUNCE_DELAY_MS = 10;
+const FILESYSTEM_REVISION_TITLE = 'Filesystem / Editor';
 
 function trackComplete<T>(eventName: string, operation: Observable<T>): Observable<T> {
   // Start the timer when the observable is subscribed.
@@ -237,7 +238,6 @@ export function updateActiveRepositoryEpic(
       (revisions, diffOption, compareId) => ({revisions, diffOption, compareId}),
     ).filter(({revisions}) => getHeadRevision(revisions) != null)
     .switchMap(({revisions, compareId, diffOption}) => {
-      // TODO(most): Add loading states.
       return Observable.concat(
         compareId != null && revisions.find(rev => rev.id === compareId) == null
           ? Observable.of(Actions.setCompareId(repository, null))
@@ -372,14 +372,15 @@ export function diffFileEpic(
       (revisions, diffOption, compareId) => ({revisions, diffOption, compareId}),
     ).filter(({revisions}) => getHeadRevision(revisions) != null)
     .switchMap(({revisions, diffOption, compareId}) => {
-      // TODO(most): Add loading states.
       const headToForkBaseRevisions = getHeadToForkBaseRevisions(revisions);
-      return getHgDiff(hgRepository, filePath, headToForkBaseRevisions, diffOption, compareId)
-        .catch(error => {
-          notifyInternalError(error);
-          return Observable.empty();
-        });
-    }).switchMap((hgDiff: HgDiffState) =>
+      return Observable.of(null).concat(
+        getHgDiff(hgRepository, filePath, headToForkBaseRevisions, diffOption, compareId)
+          .catch(error => {
+            notifyInternalError(error);
+            return Observable.empty();
+          }),
+      );
+    }).switchMap((hgDiff: ?HgDiffState) =>
       // Load the buffer to use its contents as the new contents.
       Observable.fromPromise(loadBufferForUri(filePath))
         .map(() => hgDiff),
@@ -389,21 +390,38 @@ export function diffFileEpic(
       bufferChangeModifed,
 
       Observable.combineLatest(fetchHgDiff, Observable.merge(bufferReloads, bufferChanges))
-        .switchMap(([{committedContents, revisionInfo}]) => {
+        .switchMap(([hgDiff]) => {
+          if (hgDiff == null) {
+            return Observable.of(
+              Actions.updateLoadingFileDiff(true),
+              // Clear Diff UI State.
+              Actions.updateFileDiff({
+                filePath,
+                fromRevisionTitle: '...',
+                toRevisionTitle: FILESYSTEM_REVISION_TITLE,
+                newContents: '',
+                oldContents: '',
+                uiElements: [],
+              }),
+            );
+          }
+
+          const {committedContents, revisionInfo} = hgDiff;
           const newContents = buffer.getText();
           const oldContents = committedContents;
 
           return Observable.concat(
+            Observable.of(Actions.updateLoadingFileDiff(false)),
+
             Observable.of(Actions.updateFileDiff({
               filePath,
               fromRevisionTitle: formatFileDiffRevisionTitle(revisionInfo),
               newContents,
               oldContents,
-              toRevisionTitle: 'Filesystem / Editor',
+              toRevisionTitle: FILESYSTEM_REVISION_TITLE,
             })),
 
-            // TODO(most): Add loading indicators.
-            // TODO(most): Clear prior comments state on diff file switches.
+            // TODO(most): Add loading indicators for comments.
             // $FlowFixMe flow doesn't have a good way to express that operator.
             Observable.combineLatest(
               ...store.getState().uiProviders.map(uiProvider =>

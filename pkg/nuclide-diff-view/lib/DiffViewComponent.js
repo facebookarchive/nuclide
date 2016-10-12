@@ -70,6 +70,7 @@ type EditorState = {
 
 type State = {
   filePath: NuclideUri,
+  isLoadingFileDiff: boolean,
   oldEditorState: EditorState,
   newEditorState: EditorState,
   diffSections: Array<DiffSection>,
@@ -129,6 +130,7 @@ function getInitialState(): State {
   return {
     diffSections: [],
     filePath: '',
+    isLoadingFileDiff: false,
     middleScrollOffsetLineNumber: 0,
     mode: DiffMode.BROWSE_MODE,
     newEditorState: initialEditorState(),
@@ -395,12 +397,18 @@ export default class DiffViewComponent extends React.Component {
   }
 
   _renderEditors(): void {
-    const {filePath, oldEditorState: oldState, newEditorState: newState} = this.state;
+    const {
+      filePath,
+      isLoadingFileDiff,
+      oldEditorState: oldState,
+      newEditorState: newState,
+    } = this.state;
     const oldEditorComponent = ReactDOM.render(
         <DiffViewEditorPane
           headerTitle={oldState.revisionTitle}
           textBuffer={this._readonlyBuffer}
           filePath={filePath}
+          isLoading={isLoadingFileDiff}
           offsets={oldState.offsets}
           highlightedLines={oldState.highlightedLines}
           textContent={oldState.text}
@@ -419,6 +427,7 @@ export default class DiffViewComponent extends React.Component {
           headerTitle={newState.revisionTitle}
           textBuffer={textBuffer}
           filePath={filePath}
+          isLoading={isLoadingFileDiff}
           offsets={newState.offsets}
           highlightedLines={newState.highlightedLines}
           inlineElements={newState.inlineElements}
@@ -563,6 +572,7 @@ export default class DiffViewComponent extends React.Component {
   _updateLineDiffState(fileState: DiffViewStateType): void {
     const {
       filePath,
+      isLoadingFileDiff,
       oldContents,
       newContents,
       inlineComponents,
@@ -614,6 +624,7 @@ export default class DiffViewComponent extends React.Component {
     this.setState({
       diffSections,
       filePath,
+      isLoadingFileDiff,
       offsetLineCount,
       newEditorState,
       oldEditorState,

@@ -19,9 +19,17 @@ import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import invariant from 'assert';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Observable} from 'rxjs';
+import classnames from 'classnames';
+import {
+  LoadingSpinner,
+  LoadingSpinnerSizes,
+} from '../../nuclide-ui/LoadingSpinner';
+
+const SPINNER_DELAY = 50;
 
 type Props = {
   filePath: NuclideUri,
+  isLoading: boolean,
   textBuffer: atom$TextBuffer,
   offsets: OffsetMap,
   highlightedLines: {
@@ -98,8 +106,21 @@ export default class DiffViewEditorPane extends React.Component {
   }
 
   render(): React.Element<any> {
+    const {isLoading} = this.props;
+    const rootClassName = classnames({
+      'nuclide-diff-editor-container': true,
+      'nuclide-diff-view-editor-loading': isLoading,
+    });
+
+    const loadingIndicator = isLoading
+      ? <div className="nuclide-diff-view-pane-loading-indicator">
+          <LoadingSpinner delay={SPINNER_DELAY} size={LoadingSpinnerSizes.LARGE} />
+        </div>
+      : null;
+
     return (
-      <div className="nuclide-diff-editor-container">
+      <div className={rootClassName}>
+        {loadingIndicator}
         <div className="nuclide-diff-editor-wrapper">
           <AtomTextEditor
             _alwaysUpdate={true}
