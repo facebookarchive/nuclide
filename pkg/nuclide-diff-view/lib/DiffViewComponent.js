@@ -361,7 +361,7 @@ export default class DiffViewComponent extends React.Component {
       isLoadingSelectedFiles,
       selectedFileChanges,
     } = diffModel.getState();
-    const rootPaths = activeRepository != null ? [activeRepository.getProjectDirectory()] : [];
+    const rootPaths = activeRepository != null ? [activeRepository.getWorkingDirectory()] : [];
 
     let spinnerElement = null;
     if (isLoadingSelectedFiles) {
