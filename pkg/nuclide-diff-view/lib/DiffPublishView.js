@@ -160,6 +160,7 @@ export default class DiffPublishView extends React.Component {
       return (
         <AtomTextEditor
           ref="publishUpdates"
+          softWrapped={true}
           textBuffer={this._textBuffer}
           readOnly={true}
           syncTextContents={false}
@@ -172,6 +173,7 @@ export default class DiffPublishView extends React.Component {
       return (
         <AtomTextEditor
           ref="message"
+          softWrapped={true}
           readOnly={isBusy}
           syncTextContents={false}
           gutterHidden={true}
