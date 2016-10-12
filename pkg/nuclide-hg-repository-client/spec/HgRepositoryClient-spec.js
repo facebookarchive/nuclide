@@ -78,58 +78,6 @@ describe('HgRepositoryClient', () => {
     });
   });
 
-  describe('::getStatuses', () => {
-    beforeEach(() => {
-      // Test setup: Mock out the dependency on HgRepository::_updateStatuses, and set up the cache
-      // state.
-      const mockFetchedStatuses = {[PATH_1]: StatusCodeId.ADDED};
-      spyOn(repo, '_updateStatuses').andCallFake((paths, options) => {
-        const statuses = new Map();
-        paths.forEach(filePath => {
-          statuses.set(filePath, mockFetchedStatuses[filePath]);
-        });
-        return Promise.resolve(statuses);
-      });
-      repo._hgStatusCache = {
-        [PATH_2]: StatusCodeId.IGNORED,
-        [PATH_3]: StatusCodeId.MODIFIED,
-      };
-    });
-
-    it('returns statuses from the cache when possible, and only fetches the status for cache'
-      + ' misses.', () => {
-      const hgStatusOptions = {hgStatusOption: HgStatusOption.ALL_STATUSES};
-      waitsForPromise(async () => {
-        const statusMap = await repo.getStatuses([PATH_1, PATH_2], hgStatusOptions);
-        expect(repo._updateStatuses).toHaveBeenCalledWith([PATH_1], hgStatusOptions);
-        expect(statusMap).toEqual(new Map([
-          [PATH_1, StatusCodeNumber.ADDED],
-          [PATH_2, StatusCodeNumber.IGNORED],
-        ]));
-      });
-    });
-
-    it('when reading from the cache, it respects the hgStatusOption.', () => {
-      waitsForPromise(async () => {
-        const statusMap = await repo.getStatuses(
-            [PATH_2, PATH_3], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
-        expect(repo._updateStatuses).not.toHaveBeenCalled();
-        expect(statusMap).toEqual(new Map([
-          [PATH_3, StatusCodeNumber.MODIFIED],
-        ]));
-      });
-
-      waitsForPromise(async () => {
-        const statusMap = await repo.getStatuses(
-            [PATH_2, PATH_3], {hgStatusOption: HgStatusOption.ONLY_IGNORED});
-        expect(repo._updateStatuses).not.toHaveBeenCalled();
-        expect(statusMap).toEqual(new Map([
-          [PATH_2, StatusCodeNumber.IGNORED],
-        ]));
-      });
-    });
-  });
-
   describe('::_updateStatuses', () => {
     const nonIgnoredOption = {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED};
     const onlyIgnoredOption = {hgStatusOption: HgStatusOption.ONLY_IGNORED};
@@ -230,20 +178,6 @@ describe('HgRepositoryClient', () => {
       + ' ::onDidChangeStatus.', () => {
       const callbackSpyForStatuses = jasmine.createSpy('::onDidChangeStatuses spy');
       repo.onDidChangeStatuses(callbackSpyForStatuses);
-      const callbackSpyForStatus = jasmine.createSpy('::onDidChangeStatus spy');
-      repo.onDidChangeStatus(callbackSpyForStatus);
-
-      // File existed in the cache, and its status changed.
-      const expectedChangeEvent1 = {
-        path: PATH_1,
-        pathStatus: StatusCodeNumber.ADDED,
-      };
-
-      // File did not exist in the cache, and its status is modified.
-      const expectedChangeEvent2 = {
-        path: PATH_7,
-        pathStatus: StatusCodeNumber.MODIFIED,
-      };
 
       waitsForPromise(async () => {
         // We must pass in the updated filenames to catch the case when a cached status turns to
@@ -251,13 +185,6 @@ describe('HgRepositoryClient', () => {
         await repo._updateStatuses(
           [PATH_1, PATH_2, PATH_6, PATH_7], {hgStatusOption: HgStatusOption.ALL_STATUSES});
         expect(callbackSpyForStatuses.calls.length).toBe(1);
-        expect(callbackSpyForStatus.calls.length).toBe(2);
-        // PATH_2 existed in the cache, and its status did not change, so it shouldn't generate an
-        // event.
-        // PATH_6 did not exist in the cache, but its status is clean, so it shouldn't generate an
-        // event.
-        expect(callbackSpyForStatus).toHaveBeenCalledWith(expectedChangeEvent1);
-        expect(callbackSpyForStatus).toHaveBeenCalledWith(expectedChangeEvent2);
       });
     });
   });
@@ -623,38 +550,6 @@ describe('HgRepositoryClient', () => {
         expect(repo._hgDiffCache[testPathToRemove1]).not.toBeDefined();
         expect(repo._hgDiffCache[testPathToRemove2]).not.toBeDefined();
       });
-    });
-  });
-
-  describe('::getDirectoryStatus', () => {
-    const testDir = createFilePath('subDirectory');
-    const subDirectory = nuclideUri.join(testDir, 'dir1');
-    const subSubDirectory = nuclideUri.join(subDirectory, 'dir2');
-
-    it('marks a directory as modified only if it is in the modified directories cache.', () => {
-      // Force the state of the hgStatusCache.
-      repo._modifiedDirectoryCache = new Map();
-      repo._modifiedDirectoryCache.set(nuclideUri.ensureTrailingSeparator(testDir), 1);
-      repo._modifiedDirectoryCache.set(nuclideUri.ensureTrailingSeparator(subDirectory), 1);
-
-      expect(repo.getDirectoryStatus(testDir)).toBe(StatusCodeNumber.MODIFIED);
-      expect(repo.getDirectoryStatus(subDirectory)).toBe(StatusCodeNumber.MODIFIED);
-      expect(repo.getDirectoryStatus(subSubDirectory)).toBe(StatusCodeNumber.CLEAN);
-    });
-
-    it('handles a null or undefined input "path" but handles paths with those names.', () => {
-      const dir_called_null = createFilePath('null');
-      const dir_called_undefined = createFilePath('undefined');
-
-      // Force the state of the cache.
-      repo._modifiedDirectoryCache = new Map();
-      repo._modifiedDirectoryCache.set(nuclideUri.ensureTrailingSeparator(dir_called_null), 1);
-      repo._modifiedDirectoryCache.set(nuclideUri.ensureTrailingSeparator(dir_called_undefined), 1);
-
-      expect(repo.getDirectoryStatus(null)).toBe(StatusCodeNumber.CLEAN);
-      expect(repo.getDirectoryStatus(undefined)).toBe(StatusCodeNumber.CLEAN);
-      expect(repo.getDirectoryStatus(dir_called_null)).toBe(StatusCodeNumber.MODIFIED);
-      expect(repo.getDirectoryStatus(dir_called_undefined)).toBe(StatusCodeNumber.MODIFIED);
     });
   });
 

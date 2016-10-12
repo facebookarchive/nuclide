@@ -37,8 +37,6 @@ import {
 } from '../../nuclide-hg-rpc/lib/hg-constants';
 import {serializeAsyncCall} from '../../commons-node/promise';
 import debounce from '../../commons-node/debounce';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
 import {Observable} from 'rxjs';
 import LRU from 'lru-cache';
 import featureConfig from '../../commons-atom/featureConfig';
@@ -70,18 +68,6 @@ type HgRepositoryOptions = {
 
 const DID_CHANGE_CONFLICT_STATE = 'did-change-conflict-state';
 export const MAX_INDIVIDUAL_CHANGED_PATHS = 1;
-
-function filterForOnlyNotIgnored(code: StatusCodeIdValue): boolean {
-  return (code !== StatusCodeId.IGNORED);
-}
-
-function filterForOnlyIgnored(code: StatusCodeIdValue): boolean {
-  return (code === StatusCodeId.IGNORED);
-}
-
-function filterForAllStatues() {
-  return true;
-}
 
 export type RevisionStatuses = Map<number, RevisionStatusDisplay>;
 
@@ -137,8 +123,6 @@ export class HgRepositoryClient {
   _emitter: Emitter;
   _subscriptions: UniversalDisposable;
   _hgStatusCache: {[filePath: NuclideUri]: StatusCodeIdValue};
-  // Map of directory path to the number of modified files within that directory.
-  _modifiedDirectoryCache: Map<string, number>;
   _hgDiffCache: {[filePath: NuclideUri]: DiffInfo};
   _hgDiffCacheFilesUpdating: Set<NuclideUri>;
   _hgDiffCacheFilesToClear: Set<NuclideUri>;
@@ -175,7 +159,6 @@ export class HgRepositoryClient {
     );
 
     this._hgStatusCache = {};
-    this._modifiedDirectoryCache = new Map();
 
     this._hgDiffCache = {};
     this._hgDiffCacheFilesUpdating = new Set();
@@ -513,18 +496,8 @@ export class HgRepositoryClient {
            (this._projectDirectory.getPath() === filePath);
   }
 
-  // For now, this method only reflects the status of "modified" directories.
-  // Tracking directory status isn't straightforward, as Hg only tracks files.
-  // http://mercurial.selenic.com/wiki/FAQ#FAQ.2FCommonProblems.I_tried_to_check_in_an_empty_directory_and_it_failed.21
-  // TODO: Make this method reflect New and Ignored statuses.
+  // non-used stub.
   getDirectoryStatus(directoryPath: ?string): StatusCodeNumberValue {
-    if (!directoryPath) {
-      return StatusCodeNumber.CLEAN;
-    }
-    const directoryPathWithSeparator = nuclideUri.normalizeDir(directoryPath);
-    if (this._modifiedDirectoryCache.has(directoryPathWithSeparator)) {
-      return StatusCodeNumber.MODIFIED;
-    }
     return StatusCodeNumber.CLEAN;
   }
 
@@ -589,43 +562,6 @@ export class HgRepositoryClient {
    *
    */
 
-  /**
-   * Recommended method to use to get the status of files in this repo.
-   * @param paths An array of file paths to get the status for. If a path is not in the
-   *   project, it will be ignored.
-   * See HgService::getStatuses for more information.
-   */
-  async getStatuses(
-    paths: Array<string>,
-    options?: HgStatusCommandOptions,
-  ): Promise<Map<NuclideUri, StatusCodeNumberValue>> {
-    const statusMap = new Map();
-    const isRelavantStatus = this._getPredicateForRelevantStatuses(options);
-
-    // Check the cache.
-    // Note: If paths is empty, a full `hg status` will be run, which follows the spec.
-    const pathsWithCacheMiss = [];
-    paths.forEach(filePath => {
-      const statusId = this._hgStatusCache[filePath];
-      if (statusId) {
-        if (!isRelavantStatus(statusId)) {
-          return;
-        }
-        statusMap.set(filePath, StatusCodeIdToNumber[statusId]);
-      } else {
-        pathsWithCacheMiss.push(filePath);
-      }
-    });
-
-    // Fetch any uncached statuses.
-    if (pathsWithCacheMiss.length) {
-      const newStatusInfo = await this._updateStatuses(pathsWithCacheMiss, options);
-      newStatusInfo.forEach((status, filePath) => {
-        statusMap.set(filePath, StatusCodeIdToNumber[status]);
-      });
-    }
-    return statusMap;
-  }
 
   /**
    * Fetches the statuses for the given file paths, and updates the cache and
@@ -647,25 +583,15 @@ export class HgRepositoryClient {
     const statusMapPathToStatusId = await this._service.fetchStatuses(pathsInRepo, options);
 
     const queriedFiles = new Set(pathsInRepo);
-    const statusChangeEvents = [];
     statusMapPathToStatusId.forEach((newStatusId, filePath) => {
-
       const oldStatus = this._hgStatusCache[filePath];
       if (oldStatus && (oldStatus !== newStatusId) ||
           !oldStatus && (newStatusId !== StatusCodeId.CLEAN)) {
-        statusChangeEvents.push({
-          path: filePath,
-          pathStatus: StatusCodeIdToNumber[newStatusId],
-        });
         if (newStatusId === StatusCodeId.CLEAN) {
           // Don't bother keeping 'clean' files in the cache.
           delete this._hgStatusCache[filePath];
-          this._removeAllParentDirectoriesFromCache(filePath);
         } else {
           this._hgStatusCache[filePath] = newStatusId;
-          if (newStatusId === StatusCodeId.MODIFIED) {
-            this._addAllParentDirectoriesToCache(filePath);
-          }
         }
       }
       queriedFiles.delete(filePath);
@@ -689,68 +615,20 @@ export class HgRepositoryClient {
       // If HgStatusOption.ALL_STATUSES was passed and a file does not appear in
       // the results, it must mean the file was removed from the filesystem.
       queriedFiles.forEach(filePath => {
-        const cachedStatusId = this._hgStatusCache[filePath];
         delete this._hgStatusCache[filePath];
-        if (cachedStatusId === StatusCodeId.MODIFIED) {
-          this._removeAllParentDirectoriesFromCache(filePath);
-        }
       });
     } else {
       queriedFiles.forEach(filePath => {
         const cachedStatusId = this._hgStatusCache[filePath];
         if (cachedStatusId !== StatusCodeId.IGNORED) {
           delete this._hgStatusCache[filePath];
-          if (cachedStatusId === StatusCodeId.MODIFIED) {
-            this._removeAllParentDirectoriesFromCache(filePath);
-          }
         }
       });
     }
 
-    // Emit change events only after the cache has been fully updated.
-    statusChangeEvents.forEach(event => {
-      this._emitter.emit('did-change-status', event);
-    });
     this._emitter.emit('did-change-statuses');
-
     return statusMapPathToStatusId;
   }
-
-  _addAllParentDirectoriesToCache(filePath: NuclideUri) {
-    addAllParentDirectoriesToCache(
-      this._modifiedDirectoryCache,
-      filePath,
-      this._projectDirectory.getParent().getPath(),
-    );
-  }
-
-  _removeAllParentDirectoriesFromCache(filePath: NuclideUri) {
-    removeAllParentDirectoriesFromCache(
-      this._modifiedDirectoryCache,
-      filePath,
-      this._projectDirectory.getParent().getPath(),
-    );
-  }
-
-  /**
-   * Helper function for ::getStatuses.
-   * Returns a filter for whether or not the given status code should be
-   * returned, given the passed-in options for ::getStatuses.
-   */
-  _getPredicateForRelevantStatuses(
-    options: ?HgStatusCommandOptions,
-  ): (code: StatusCodeIdValue) => boolean {
-    const hgStatusOption = this._getStatusOption(options);
-
-    if (hgStatusOption === HgStatusOption.ONLY_IGNORED) {
-      return filterForOnlyIgnored;
-    } else if (hgStatusOption === HgStatusOption.ALL_STATUSES) {
-      return filterForAllStatues;
-    } else {
-      return filterForOnlyNotIgnored;
-    }
-  }
-
 
   /**
    *
@@ -967,7 +845,6 @@ export class HgRepositoryClient {
 
   async _refreshStatusesOfAllFilesInCache(): Promise<void> {
     this._hgStatusCache = {};
-    this._modifiedDirectoryCache = new Map();
     const pathsInDiffCache = Object.keys(this._hgDiffCache);
     this._hgDiffCache = {};
     // We should get the modified status of all files in the repo that is
@@ -1058,7 +935,7 @@ export class HgRepositoryClient {
   async refreshStatus(): Promise<void> {
     const repoRoot = this.getWorkingDirectory();
     const repoProjects = atom.project.getPaths().filter(projPath => projPath.startsWith(repoRoot));
-    await this.getStatuses(repoProjects, {
+    await this._updateStatuses(repoProjects, {
       hgStatusOption: HgStatusOption.ONLY_NON_IGNORED,
     });
   }

@@ -148,7 +148,7 @@ export async function promptToCleanDirtyChanges(
     'Running `hg status` to check dirty changes to Add/Amend/Revert',
     {dismissable: true},
   );
-  await repository.getStatuses([repository.getProjectDirectory()]);
+  await repository.refreshStatus();
   checkingStatusNotification.dismiss();
 
   const dirtyFileChanges = getDirtyFileChanges(repository);
