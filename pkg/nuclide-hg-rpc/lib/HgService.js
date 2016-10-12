@@ -19,7 +19,6 @@ import {WatchmanClient} from '../../nuclide-watchman-helpers';
 
 import {
   AmendMode,
-  HgStatusOption,
   MergeConflictStatus,
   StatusCodeId,
 } from './hg-constants';
@@ -42,6 +41,7 @@ import {
   getEditMergeConfigs,
   hgAsyncExecute,
   hgObserveExecution,
+  hgRunCommand,
 } from './hg-utils';
 import fsPromise from '../../commons-node/fsPromise';
 import debounce from '../../commons-node/debounce';
@@ -95,8 +95,6 @@ export type MergeConflictStatusValue = 'both changed' | 'deleted in theirs' | 'd
  * to ::isStatusNew/::isStatusModified to be interpreted.
  */
 export type StatusCodeNumberValue = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-
-export type HgStatusOptionValue = 1 | 2 | 3;
 
 export type LineDiff = {
   oldStart: number,
@@ -155,10 +153,6 @@ export type RevisionFileChanges = {
   deleted: Array<NuclideUri>,
   copied: Array<RevisionFileCopy>,
   modified: Array<NuclideUri>,
-};
-
-export type HgStatusCommandOptions = {
-  hgStatusOption: HgStatusOptionValue,
 };
 
 export type VcsLogEntry = {
@@ -263,46 +257,28 @@ export class HgService {
    * Section: File and Repository Status
    */
 
-  /**
-   * Shells out of the `hg status` to get the statuses of the paths. All paths
-   * are presumed to be within the repo. (If any single path is not within the repo,
-   * this method will return an empty map.)
-   * @param options An Object with the following fields:
-   *   * `hgStatusOption`: an HgStatusOption
-   */
-  async fetchStatuses(
-    filePaths: Array<NuclideUri>,
-    options: ?any,
-  ): Promise<Map<NuclideUri, StatusCodeIdValue>> {
-    const statusMap = new Map();
-
-    let args = ['status', '-Tjson'];
-    if (options && ('hgStatusOption' in options)) {
-      if (options.hgStatusOption === HgStatusOption.ONLY_IGNORED) {
-        args.push('--ignored');
-      } else if (options.hgStatusOption === HgStatusOption.ALL_STATUSES) {
-        args.push('--all');
-      }
-    }
-    args = args.concat(filePaths);
+   /**
+    * Shells out of the `hg status` to get the statuses of the paths.
+    */
+  fetchStatuses(): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
     const execOptions = {
       cwd: this._workingDirectory,
     };
-    let output;
-    try {
-      output = await this._hgAsyncExecute(args, execOptions);
-    } catch (e) {
-      return statusMap;
-    }
+    const args = ['status', '-Tjson'];
 
-    const statuses = JSON.parse(output.stdout);
-    statuses.forEach(status => {
-      statusMap.set(
-        nuclideUri.join(this._workingDirectory, status.path),
-        status.status,
-      );
-    });
-    return statusMap;
+    return hgRunCommand(args, execOptions)
+      .map(stdout => {
+        const statusMap = new Map();
+        const statuses = JSON.parse(stdout);
+        for (const status of statuses) {
+          statusMap.set(
+            nuclideUri.join(this._workingDirectory, status.path),
+            status.status,
+          );
+        }
+        return statusMap;
+      })
+      .publish();
   }
 
   async _subscribeToWatchman(): Promise<void> {

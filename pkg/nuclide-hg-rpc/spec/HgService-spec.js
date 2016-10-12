@@ -14,7 +14,6 @@ import {HgService} from '../lib/HgService';
 import {
   AmendMode,
   StatusCodeId,
-  HgStatusOption,
   MergeConflictStatus,
 } from '../lib/hg-constants';
 import invariant from 'assert';
@@ -40,87 +39,6 @@ describe('HgService', () => {
 
   beforeEach(() => {
     hgService = new TestHgService(TEST_WORKING_DIRECTORY);
-  });
-
-  describe('::_fetchStatuses', () => {
-    const testPaths = [PATH_1, PATH_2];
-    // We relativize the paths to mimic hg's behavior.
-    const testHgStatusOutput = {
-      stdout: JSON.stringify([
-        {
-          path: relativize(PATH_1),
-          status: StatusCodeId.MODIFIED,
-        },
-        {
-          path: relativize(PATH_2),
-          status: StatusCodeId.ADDED,
-        },
-      ]),
-    };
-
-    it('parses the "hg status" output and returns a Map of the results.', () => {
-      invariant(hgService);
-      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, execOptions) => {
-        return Promise.resolve(testHgStatusOutput);
-      });
-      waitsForPromise(async () => {
-        invariant(hgService);
-        const statusMap = await hgService.fetchStatuses(testPaths);
-        expect(statusMap.get(PATH_1)).toBe(StatusCodeId.MODIFIED);
-        expect(statusMap.get(PATH_2)).toBe(StatusCodeId.ADDED);
-      });
-    });
-
-    describe('when called with a hgStatusOption', () => {
-      it('fetches only non-ignored status if no option is passed.', () => {
-        invariant(hgService);
-        spyOn(hgService, '_hgAsyncExecute').andCallFake((args, execOptions) => {
-          expect(args).toEqual(['status', '-Tjson'].concat(testPaths));
-          return Promise.resolve(testHgStatusOutput);
-        });
-        waitsForPromise(async () => {
-          invariant(hgService);
-          await hgService.fetchStatuses(testPaths);
-        });
-      });
-
-      it('fetches only non-ignored status if the "ONLY_NON_IGNORED" option is passed.', () => {
-        invariant(hgService);
-        spyOn(hgService, '_hgAsyncExecute').andCallFake((args, execOptions) => {
-          expect(args).toEqual(['status', '-Tjson'].concat(testPaths));
-          return Promise.resolve(testHgStatusOutput);
-        });
-        waitsForPromise(async () => {
-          invariant(hgService);
-          await hgService.fetchStatuses(
-              testPaths, {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
-        });
-      });
-
-      it('fetches only ignored status if the "ONLY_IGNORED" option is passed.', () => {
-        invariant(hgService);
-        spyOn(hgService, '_hgAsyncExecute').andCallFake((args, execOptions) => {
-          expect(args).toEqual(['status', '-Tjson', '--ignored'].concat(testPaths));
-          return Promise.resolve(testHgStatusOutput);
-        });
-        waitsForPromise(async () => {
-          invariant(hgService);
-          await hgService.fetchStatuses(testPaths, {hgStatusOption: HgStatusOption.ONLY_IGNORED});
-        });
-      });
-
-      it('fetches all status if the "ALL_STATUSES" option is passed.', () => {
-        invariant(hgService);
-        spyOn(hgService, '_hgAsyncExecute').andCallFake((args, execOptions) => {
-          expect(args).toEqual(['status', '-Tjson', '--all'].concat(testPaths));
-          return Promise.resolve(testHgStatusOutput);
-        });
-        waitsForPromise(async () => {
-          invariant(hgService);
-          await hgService.fetchStatuses(testPaths, {hgStatusOption: HgStatusOption.ALL_STATUSES});
-        });
-      });
-    });
   });
 
   describe('::createBookmark', () => {

@@ -14,7 +14,6 @@
 import type {
   AmendModeValue,
   CommitPhaseType,
-  HgStatusOptionValue,
   MergeConflictStatusValue,
   StatusCodeIdValue,
   StatusCodeNumberValue,
@@ -59,15 +58,6 @@ const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = 
   [StatusCodeId.UNRESOLVED]: StatusCodeNumber.UNRESOLVED,
 };
 
-const HgStatusOption = Object.freeze({
-  ONLY_NON_IGNORED: 1,  // only the output of `hg status`
-  ONLY_IGNORED: 2,      // only the output of `hg status --ignored`
-  ALL_STATUSES: 3,      // the output of `hg status --all`
-});
-
-// This is to work around flow's missing support of enums.
-(HgStatusOption: {[key: string]: HgStatusOptionValue});
-
 const MergeConflictStatus = Object.freeze({
   BOTH_CHANGED: 'both changed',
   DELETED_IN_THEIRS: 'deleted in theirs',
@@ -101,7 +91,6 @@ module.exports = {
   AmendMode,
   CommitPhase,
   HEAD_REVISION_EXPRESSION,
-  HgStatusOption,
   MergeConflictStatus,
   StatusCodeId,
   StatusCodeIdToNumber,

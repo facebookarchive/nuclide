@@ -14,8 +14,6 @@ import type {
   BookmarkInfo,
   HgService,
   DiffInfo,
-  HgStatusCommandOptions,
-  HgStatusOptionValue,
   LineDiff,
   RevisionInfo,
   MergeConflict,
@@ -30,17 +28,14 @@ import type {LRUCache} from 'lru-cache';
 import {Emitter} from 'atom';
 import RevisionsCache from './RevisionsCache';
 import {
-  StatusCodeId,
   StatusCodeIdToNumber,
   StatusCodeNumber,
-  HgStatusOption,
 } from '../../nuclide-hg-rpc/lib/hg-constants';
-import {serializeAsyncCall} from '../../commons-node/promise';
-import debounce from '../../commons-node/debounce';
 import {Observable} from 'rxjs';
 import LRU from 'lru-cache';
 import featureConfig from '../../commons-atom/featureConfig';
 import {observeBufferOpen, observeBufferCloseOrRename} from '../../commons-atom/buffer';
+import {getLogger} from '../../nuclide-logging';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
 
@@ -67,7 +62,6 @@ type HgRepositoryOptions = {
  */
 
 const DID_CHANGE_CONFLICT_STATE = 'did-change-conflict-state';
-export const MAX_INDIVIDUAL_CHANGED_PATHS = 1;
 
 export type RevisionStatuses = Map<number, RevisionStatusDisplay>;
 
@@ -112,6 +106,7 @@ import type {RemoteDirectory} from '../../nuclide-remote-connection';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import invariant from 'assert';
+import {objectFromMap} from '../../commons-node/collection';
 
 export class HgRepositoryClient {
   _path: string;
@@ -132,7 +127,6 @@ export class HgRepositoryClient {
   _fileContentsAtRevisionIds: LRUCache<string, Map<NuclideUri, string>>;
 
   _activeBookmark: ?string;
-  _serializedRefreshStatusesCache: () => ?Promise<void>;
   _isInConflict: boolean;
   _isDestroyed: boolean;
 
@@ -163,11 +157,6 @@ export class HgRepositoryClient {
     this._hgDiffCache = {};
     this._hgDiffCacheFilesUpdating = new Set();
     this._hgDiffCacheFilesToClear = new Set();
-
-    this._serializedRefreshStatusesCache = debounce(
-      serializeAsyncCall(this._refreshStatusesOfAllFilesInCache.bind(this)),
-      STATUS_DEBOUNCE_DELAY_MS,
-    );
 
     const diffStatsSubscription = featureConfig
       .observeAsStream('nuclide-hg-repository.enableDiffStats')
@@ -202,22 +191,6 @@ export class HgRepositoryClient {
 
     this._subscriptions.add(diffStatsSubscription);
 
-    // Regardless of how frequently the service sends file change updates,
-    // Only one batched status update can be running at any point of time.
-    const toUpdateChangedPaths = [];
-    const serializedUpdateChangedPaths = debounce(
-      serializeAsyncCall(() => {
-        // Send a batched update and clear the pending changes.
-        return this._updateChangedPaths(toUpdateChangedPaths.splice(0));
-      }),
-      STATUS_DEBOUNCE_DELAY_MS,
-    );
-    const onFilesChanges = (changedPaths: Array<NuclideUri>) => {
-      toUpdateChangedPaths.push(...changedPaths);
-      // Will trigger an update immediately if no other async call is active.
-      // Otherwise, will schedule an async call when it's done.
-      serializedUpdateChangedPaths();
-    };
     this._initializationPromise = this._service.waitForWatchmanSubscriptions();
     this._initializationPromise.catch(error => {
       atom.notifications.addWarning('Mercurial: failed to subscribe to watchman!');
@@ -229,6 +202,23 @@ export class HgRepositoryClient {
     const allBookmarChanges = this._service.observeBookmarksDidChange().refCount();
     const conflictStateChanges = this._service.observeHgConflictStateDidChange().refCount();
 
+    const statusChangesSubscription = Observable.merge(
+      fileChanges,
+      repoStateChanges,
+    ).debounceTime(STATUS_DEBOUNCE_DELAY_MS)
+    .startWith(null)
+    .switchMap(() =>
+      this._service.fetchStatuses()
+        .refCount()
+        .catch(error => {
+          getLogger().error('HgService cannot fetch statuses', error);
+          return Observable.empty();
+        }),
+    ).subscribe(statuses => {
+      this._hgStatusCache = objectFromMap(statuses);
+      this._emitter.emit('did-change-statuses');
+    });
+
     const shouldRevisionsUpdate = Observable.merge(
       fileChanges,
       repoStateChanges,
@@ -238,8 +228,7 @@ export class HgRepositoryClient {
     );
 
     this._subscriptions.add(
-      fileChanges.subscribe(onFilesChanges),
-      repoStateChanges.subscribe(this._serializedRefreshStatusesCache),
+      statusChangesSubscription,
       activeBookmarkChanges.subscribe(this.fetchActiveBookmark.bind(this)),
       allBookmarChanges.subscribe(() => { this._emitter.emit('did-change-bookmarks'); }),
       conflictStateChanges.subscribe(this._conflictStateChanged.bind(this)),
@@ -555,81 +544,6 @@ export class HgRepositoryClient {
     return status === StatusCodeNumber.IGNORED;
   }
 
-
-  /**
-   *
-   * Section: Reading Hg Status (async methods)
-   *
-   */
-
-
-  /**
-   * Fetches the statuses for the given file paths, and updates the cache and
-   * sends out change events as appropriate.
-   * @param filePaths An array of file paths to update the status for. If a path
-   *   is not in the project, it will be ignored.
-   */
-  async _updateStatuses(
-    filePaths: Array<string>,
-    options: ?HgStatusCommandOptions,
-  ): Promise<Map<NuclideUri, StatusCodeIdValue>> {
-    const pathsInRepo = filePaths.filter(filePath => {
-      return this._isPathRelevant(filePath);
-    });
-    if (pathsInRepo.length === 0) {
-      return new Map();
-    }
-
-    const statusMapPathToStatusId = await this._service.fetchStatuses(pathsInRepo, options);
-
-    const queriedFiles = new Set(pathsInRepo);
-    statusMapPathToStatusId.forEach((newStatusId, filePath) => {
-      const oldStatus = this._hgStatusCache[filePath];
-      if (oldStatus && (oldStatus !== newStatusId) ||
-          !oldStatus && (newStatusId !== StatusCodeId.CLEAN)) {
-        if (newStatusId === StatusCodeId.CLEAN) {
-          // Don't bother keeping 'clean' files in the cache.
-          delete this._hgStatusCache[filePath];
-        } else {
-          this._hgStatusCache[filePath] = newStatusId;
-        }
-      }
-      queriedFiles.delete(filePath);
-    });
-
-    // If the statuses were fetched for only changed (`hg status`) or
-    // ignored ('hg status --ignored`) files, a queried file may not be
-    // returned in the response. If it wasn't returned, this means its status
-    // may have changed, in which case it should be removed from the hgStatusCache.
-    // Note: we don't know the real updated status of the file, so don't send a change event.
-    // TODO (jessicalin) Can we make the 'pathStatus' field in the change event optional?
-    // Then we can send these events.
-    const hgStatusOption = this._getStatusOption(options);
-    if (hgStatusOption === HgStatusOption.ONLY_IGNORED) {
-      queriedFiles.forEach(filePath => {
-        if (this._hgStatusCache[filePath] === StatusCodeId.IGNORED) {
-          delete this._hgStatusCache[filePath];
-        }
-      });
-    } else if (hgStatusOption === HgStatusOption.ALL_STATUSES) {
-      // If HgStatusOption.ALL_STATUSES was passed and a file does not appear in
-      // the results, it must mean the file was removed from the filesystem.
-      queriedFiles.forEach(filePath => {
-        delete this._hgStatusCache[filePath];
-      });
-    } else {
-      queriedFiles.forEach(filePath => {
-        const cachedStatusId = this._hgStatusCache[filePath];
-        if (cachedStatusId !== StatusCodeId.IGNORED) {
-          delete this._hgStatusCache[filePath];
-        }
-      });
-    }
-
-    this._emitter.emit('did-change-statuses');
-    return statusMapPathToStatusId;
-  }
-
   /**
    *
    * Section: Retrieving Diffs (parity with GitRepository)
@@ -817,49 +731,6 @@ export class HgRepositoryClient {
    *
    */
 
-  /**
-   * Updates the cache in response to any number of (non-.hgignore) files changing.
-   * @param update The changed file paths.
-   */
-  async _updateChangedPaths(changedPaths: Array<NuclideUri>): Promise<void> {
-    const relevantChangedPaths = changedPaths.filter(this._isPathRelevant.bind(this));
-    if (relevantChangedPaths.length === 0) {
-      return;
-    } else if (relevantChangedPaths.length <= MAX_INDIVIDUAL_CHANGED_PATHS) {
-      // Update the statuses individually.
-      await this._updateStatuses(
-        relevantChangedPaths,
-        {hgStatusOption: HgStatusOption.ALL_STATUSES},
-      );
-      await this._updateDiffInfo(
-        relevantChangedPaths.filter(filePath => this._hgDiffCache[filePath]),
-      );
-    } else {
-      // This is a heuristic to improve performance. Many files being changed may
-      // be a sign that we are picking up changes that were created in an automated
-      // way -- so in addition, there may be many batches of changes in succession.
-      // The refresh is serialized, so it is safe to call it multiple times in succession.
-      await this._serializedRefreshStatusesCache();
-    }
-  }
-
-  async _refreshStatusesOfAllFilesInCache(): Promise<void> {
-    this._hgStatusCache = {};
-    const pathsInDiffCache = Object.keys(this._hgDiffCache);
-    this._hgDiffCache = {};
-    // We should get the modified status of all files in the repo that is
-    // under the HgRepositoryClient's project directory, because when Hg
-    // modifies the repo, it doesn't necessarily only modify files that were
-    // previously modified.
-    await this._updateStatuses(
-      [this.getProjectDirectory()],
-      {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
-    );
-    if (pathsInDiffCache.length > 0) {
-      await this._updateDiffInfo(pathsInDiffCache);
-    }
-  }
-
 
   /**
    *
@@ -930,14 +801,6 @@ export class HgRepositoryClient {
 
   getHeadCommitMessage(): Promise<?string> {
     return this._service.getHeadCommitMessage();
-  }
-
-  async refreshStatus(): Promise<void> {
-    const repoRoot = this.getWorkingDirectory();
-    const repoProjects = atom.project.getPaths().filter(projPath => projPath.startsWith(repoRoot));
-    await this._updateStatuses(repoProjects, {
-      hgStatusOption: HgStatusOption.ONLY_NON_IGNORED,
-    });
   }
 
   /**
@@ -1017,13 +880,6 @@ export class HgRepositoryClient {
 
   rebase(destination: string, source?: string): Observable<ProcessMessage> {
     return this._service.rebase(destination, source).refCount();
-  }
-
-  _getStatusOption(options: ?HgStatusCommandOptions): ?HgStatusOptionValue {
-    if (options == null) {
-      return null;
-    }
-    return options.hgStatusOption;
   }
 
   _clearClientCache(): void {

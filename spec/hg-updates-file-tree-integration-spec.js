@@ -43,12 +43,13 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       // Set up repo and handles to file tree DOM nodes
       repoPath = await generateHgRepo1Fixture();
       await context.setProject(repoPath);
-      repoRemotePath = context.getProjectRelativePath(repoPath);
+      repoRemotePath = context.getProjectRelativePath('');
       hgRepository = ((repositoryForPath(repoRemotePath): any): HgRepositoryClient);
       invariant(hgRepository != null,
         'HgRepositoryClient should recognize the project directory as a mercurial project');
       // For later use in creating a bookmark stemming from firstRevision
       firstRevision = await hgRepository.getBaseRevision();
+      await waitsForRepositoryReady(repoRemotePath);
     });
   });
   // This is the Mercurial history being built in this test.
@@ -81,8 +82,6 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       // Make a change
       const filename = nuclideUri.join(repoPath, 'test.txt');
       await fsPromise.writeFile(filename, 'editing test.txt', 'utf8');
-
-      await waitsForRepositoryReady(repoRemotePath);
     });
 
     waitsFor('file tree *directories* to update as modified', () => {
@@ -103,8 +102,6 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
 
     waitsForPromise({label: 'commit edited file'}, async () => {
       await hgRepository.commit('edited test.txt').toArray().toPromise();
-
-      await waitsForRepositoryReady(repoRemotePath);
     });
 
     waitsFor('file tree to remove all modified status', () => {
@@ -121,9 +118,7 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       const filename = nuclideUri.join(repoPath, 'new.txt');
       await fsPromise.writeFile(filename, 'adding text to new file: new.txt', 'utf8');
       // Add it to mercurial
-      await hgRepository.addAll([repoPath]);
-
-      await waitsForRepositoryReady(repoRemotePath);
+      await hgRepository.addAll([context.getProjectRelativePath('new.txt')]);
     });
 
     waitsFor('file tree to add and color the new file', () => {
@@ -141,8 +136,6 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
 
       // Amend commit
       await hgRepository.amend('forgot to add new.txt', AmendMode.CLEAN).toArray().toPromise();
-
-      await waitsForRepositoryReady(repoRemotePath);
     });
 
     waitsFor('file tree to remove *added* status after amend', () => {
@@ -173,8 +166,6 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       await hgRepository.createBookmark('other', firstRevision.hash);
       // update to that bookmark
       await hgRepository.checkoutReference('other', false);
-
-      await waitsForRepositoryReady(repoRemotePath);
     });
 
     waitsFor('file tree to update after updating to `other` bookmark', () => {
@@ -194,8 +185,6 @@ describeRemotableTest('Mercurial File Changes Tree Integration Tests', (context:
       await hgRepository.commit('add other.txt').toArray().toPromise();
       // Update to 'new' bookmark to see if file tree updates list of files
       await hgRepository.checkoutReference('new', false);
-
-      await waitsForRepositoryReady(repoRemotePath);
     });
 
     waitsFor('file tree to update after updating back to `new` bookmark', () => {

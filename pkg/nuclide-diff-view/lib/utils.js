@@ -144,13 +144,6 @@ export async function promptToCleanDirtyChanges(
   commitMessage: ?string,
   shouldRebaseOnAmend: boolean,
 ): Promise<?{allowUntracked: boolean, amended: boolean}> {
-  const checkingStatusNotification = atom.notifications.addInfo(
-    'Running `hg status` to check dirty changes to Add/Amend/Revert',
-    {dismissable: true},
-  );
-  await repository.refreshStatus();
-  checkingStatusNotification.dismiss();
-
   const dirtyFileChanges = getDirtyFileChanges(repository);
 
   let shouldAmend = false;

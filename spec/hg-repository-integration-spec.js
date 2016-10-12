@@ -42,7 +42,6 @@ describe('Mercurial Repository Integration Tests', () => {
 
   it('adds opens and removes project without errors', () => {
     waitsForPromise(async () => {
-      spyOn(console, 'error');
       // Copy mercurial project to temporary directory.
       const repoPath = await generateHgRepo1Fixture();
       // Add this directory as a new project in atom.
@@ -57,8 +56,6 @@ describe('Mercurial Repository Integration Tests', () => {
       expect(repository.getPath().endsWith('/.hg')).toBe(true);
       // Remove project
       atom.project.removePath(repoPath);
-      // eslint-disable-next-line no-console
-      expect(console.error).not.toHaveBeenCalled();
     });
   });
 

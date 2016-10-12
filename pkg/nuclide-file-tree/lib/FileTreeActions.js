@@ -456,7 +456,6 @@ class FileTreeActions {
     if ((repo.getType() !== 'hg' && repo.getType() !== 'git') || repo.isDestroyed()) {
       return;
     }
-    await repo.refreshStatus();
     const statusCodeForPath = this._getCachedPathStatuses(repo);
 
     for (const rootKeyForRepo of rootKeysForRepository.get(repo)) {

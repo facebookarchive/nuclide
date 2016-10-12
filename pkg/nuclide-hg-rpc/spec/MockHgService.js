@@ -23,8 +23,8 @@ export default class MockHgService {
   fetchStatuses(
     filePaths: Array<NuclideUri>,
     options: ?any,
-  ): Promise<Map<string, StatusCodeIdValue>> {
-    return Promise.resolve(new Map());
+  ): ConnectableObservable<Map<string, StatusCodeIdValue>> {
+    return new Subject().publish();
   }
 
   observeFilesDidChange(): ConnectableObservable<Array<NuclideUri>> {
