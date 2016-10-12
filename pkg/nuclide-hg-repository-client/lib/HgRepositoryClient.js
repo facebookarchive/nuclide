@@ -38,6 +38,7 @@ import {observeBufferOpen, observeBufferCloseOrRename} from '../../commons-atom/
 import {getLogger} from '../../nuclide-logging';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
+const REVISION_DEBOUNCE_DELAY = 300;
 
 export type RevisionStatusDisplay = {
   name: string,
@@ -201,6 +202,7 @@ export class HgRepositoryClient {
     const activeBookmarkChanges = this._service.observeActiveBookmarkDidChange().refCount();
     const allBookmarChanges = this._service.observeBookmarksDidChange().refCount();
     const conflictStateChanges = this._service.observeHgConflictStateDidChange().refCount();
+    const commitChanges = this._service.observeHgCommitsDidChange().refCount();
 
     const statusChangesSubscription = Observable.merge(
       fileChanges,
@@ -220,12 +222,11 @@ export class HgRepositoryClient {
     });
 
     const shouldRevisionsUpdate = Observable.merge(
-      fileChanges,
-      repoStateChanges,
       activeBookmarkChanges,
       allBookmarChanges,
-      // TODO(most): There are still missing cases when users strip commits.
-    );
+      commitChanges,
+      repoStateChanges,
+    ).debounceTime(REVISION_DEBOUNCE_DELAY);
 
     this._subscriptions.add(
       statusChangesSubscription,

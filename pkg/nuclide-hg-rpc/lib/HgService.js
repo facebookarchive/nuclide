@@ -16,6 +16,7 @@ import type {HgExecOptions} from './hg-exec-types';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
+import fs from 'fs';
 
 import {
   AmendMode,
@@ -210,9 +211,11 @@ export class HgService {
   _hgActiveBookmarkDidChangeObserver: Subject<any>;
   _hgBookmarksDidChangeObserver: Subject<any>;
   _hgRepoStateDidChangeObserver: Subject<any>;
+  _hgRepoCommitsDidChangeObserver: Subject<void>;
   _watchmanSubscriptionPromise: Promise<void>;
   _hgConflictStateDidChangeObserver: Subject<boolean>;
   _debouncedCheckConflictChange: () => void;
+  _hgStoreDirWatcher: ?fs.FSWatcher;
 
   constructor(workingDirectory: string) {
     this._workingDirectory = workingDirectory;
@@ -221,6 +224,7 @@ export class HgService {
     this._hgBookmarksDidChangeObserver = new Subject();
     this._hgRepoStateDidChangeObserver = new Subject();
     this._hgConflictStateDidChangeObserver = new Subject();
+    this._hgRepoCommitsDidChangeObserver = new Subject();
     this._isInConflict = false;
     this._debouncedCheckConflictChange = debounce(
       () => {
@@ -241,6 +245,10 @@ export class HgService {
     this._hgActiveBookmarkDidChangeObserver.complete();
     this._hgBookmarksDidChangeObserver.complete();
     this._hgConflictStateDidChangeObserver.complete();
+    if (this._hgStoreDirWatcher != null) {
+      this._hgStoreDirWatcher.close();
+      this._hgStoreDirWatcher = null;
+    }
     await this._cleanUpWatchman();
   }
 
@@ -364,6 +372,22 @@ export class HgService {
     );
     logger.debug(`Watchman subscription ${WATCHMAN_HG_DIR_STATE} established.`);
 
+    // Those files' changes indicate a commit-changing action has been applied to the repository,
+    // Watchman currently (v4.7) ignores `.hg/store` file updates.
+    // Hence, we here use node's filesystem watchers instead.
+    const hgStoreDirectory = nuclideUri.join(workingDirectory, '.hg', 'store');
+    const commitChangeIndicators = ['00changelog.i', 'obsstore', 'inhibit'];
+    try {
+      this._hgStoreDirWatcher = fs.watch(hgStoreDirectory, (event, fileName) => {
+        if (commitChangeIndicators.indexOf(fileName) === -1) {
+          this._commitsDidChange();
+        }
+      });
+      getLogger().debug('Node watcher created for .hg/store.');
+    } catch (error) {
+      getLogger().error('Error when creating node watcher for hg store', error);
+    }
+
     primarySubscribtion.on('change', this._filesDidChange.bind(this));
     hgActiveBookmarkSubscription.on('change', this._hgActiveBookmarkDidChange.bind(this));
     hgBookmarksSubscription.on('change', this._hgBookmarksDidChange.bind(this));
@@ -390,6 +414,10 @@ export class HgService {
     const workingDirectory = this._workingDirectory;
     const changedFiles = fileChanges.map(change => nuclideUri.join(workingDirectory, change.name));
     this._filesDidChangeObserver.next(changedFiles);
+  }
+
+  _commitsDidChange(): void {
+    this._hgRepoCommitsDidChangeObserver.next();
   }
 
   _checkMergeDirectoryExists(): Promise<boolean> {
@@ -433,6 +461,14 @@ export class HgService {
    */
   observeFilesDidChange(): ConnectableObservable<Array<NuclideUri>> {
     return this._filesDidChangeObserver.publish();
+  }
+
+  /**
+   * Observes that a Mercurial repository commits state have changed
+   * (e.g. commit, amend, histedit, strip, rebase) that would require refetching from the service.
+   */
+  observeHgCommitsDidChange(): ConnectableObservable<void> {
+    return this._hgRepoCommitsDidChangeObserver.publish();
   }
 
   /**

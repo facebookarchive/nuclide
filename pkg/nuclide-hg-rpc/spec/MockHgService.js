@@ -39,6 +39,10 @@ export default class MockHgService {
     return new Subject().publish();
   }
 
+  observeHgCommitsDidChange(): ConnectableObservable<void> {
+    return new Subject().publish();
+  }
+
   deleteBookmark(name: string): Promise<void> {
     return Promise.resolve();
   }
