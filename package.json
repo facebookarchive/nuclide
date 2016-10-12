@@ -110,7 +110,7 @@
   },
   "optionalDependencies": {},
   "engines": {
-    "atom": ">=1.10.2",
+    "atom": ">=1.11.1",
     "node": ">=5.10.0"
   },
   "private": true,
