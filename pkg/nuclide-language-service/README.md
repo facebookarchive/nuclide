@@ -14,7 +14,7 @@ Nuclide including:
 - code formatting
 - debugger expression evaluation
 
-# Overview
+## Overview
 
 Nuclide's language services are designed to provide rich language integration for both local files
 as well as for remote files. Enabling remote editing impacts the design of Nuclide's language services.
@@ -34,7 +34,7 @@ Creating a new language service includes:
 - Adding a new package to Nuclide which creates an instance of `AtomLanguageService` during activation,
   and creates instances of the new `LanguageService` for each new `ServerConnection`.
 
-# Implementing the `LanguageService` Interface
+## Implementing the `LanguageService` Interface
 
 The `LanguageService` interface is a 'nuclide-rpc' compatible interface which provides a low level
 API for providing language analysis. The API contains methods for all of the available Nuclide
@@ -45,7 +45,7 @@ Add an implementation of the `LanguageService` interface to your new package.
 Likely your language service will not provide every service. For services that
 are unavailable for your language just provide an implementation which throws an exception.
 
-## Using `FileVersion` and `getBufferAtVersion` For File Contents
+### Using `FileVersion` and `getBufferAtVersion` For File Contents
 
 Most of the APIs in the `LanguageService` interface require a file name and the contents of the file
 to perform their operation. Including the entire file contents in each language service request would
@@ -68,13 +68,13 @@ the race the `getAutocompleteSuggestions` will make a request for an outdated ve
 When this occurs `getBufferAtVersion` will throw. Just let this exception propagate to the caller
 as the request is outdated as well and a later request will come for the newer buffer version.
 
-### `stripped-text-buffer`
+#### `stripped-text-buffer`
 
 Note that these `TextBuffer` objects in the NuclideServer process are stripped down from the full
 Atom versions. They cannot save/load from disk, or use the marker portions of the TextBuffer API.
 The source for the stripped TextBuffer is in the `simple-text-buffer` npm package if you need details.
 
-## An Example API implementation
+### An Example API implementation
 
 Let's take a look at an example API and what a typical implementation might look like. We'll use the
 
@@ -127,7 +127,7 @@ getCoverage(
 }
 ```
 
-# Adding Your Server package to the Nuclide Server
+## Adding Your Server package to the Nuclide Server
 
 Once you have an implementation of the `LanguageService` interface in your new package, add it to the
 nuclide server:
@@ -136,7 +136,7 @@ nuclide server:
   - The implementation entry is the path to your `LanguageService` implementation.
   - Assign your package a unique service name. Typically: `<my-language>Service`
 
-# Enabling Your New Language in Nuclide
+## Enabling Your New Language in Nuclide
 
 Once you have the `LanguageService` interface implemented for your new language create an Atom
 package for your language named `nuclide-<my-language>`. In the package's `activate` method
@@ -208,7 +208,7 @@ export class MyLanguageService {
 }
 ```
 
-# Supporting Multiple Connections
+## Supporting Multiple Connections
 
 A single NuclideServer process can be connected to from multiple Atom processes. A new Atom process
 is created for each top level Atom window.
@@ -218,7 +218,7 @@ In the example code above, each connected Atom process will call `initialize` an
 Each Atom process could open and edit the same file. Your language service could receive requests
 for language services for the same file with wildly different content from 2 connections.
 
-# Tracking Multiple Opened Files with Observable File Events
+## Tracking Multiple Opened Files with Observable File Events
 
 The `FileVersion` abstraction makes it easy to get the text for the file containing the request.
 However, the user may have multiple files open and edited at a given time. The language service
@@ -273,6 +273,6 @@ export class MyLanguageService {
 }
 ```
 
-# Observable Diagnostics
+## Observable Diagnostics
 
 TODO
