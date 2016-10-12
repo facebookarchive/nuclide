@@ -36,6 +36,7 @@ import type {
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
+import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import invariant from 'assert';
@@ -67,6 +68,7 @@ import {
 } from './Diagnostics';
 import {executeQuery} from './SymbolSearch';
 import {FileCache} from '../../nuclide-open-files-rpc';
+import {getEvaluationExpression} from './EvaluationExpression';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 
@@ -389,6 +391,15 @@ export class HackLanguageService {
       throw new Error(`Error formatting hack source: ${response.error_message}`);
     }
     return response.result;
+  }
+
+  async getEvaluationExpression(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?NuclideEvaluationExpression> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    return getEvaluationExpression(filePath, buffer, position);
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
