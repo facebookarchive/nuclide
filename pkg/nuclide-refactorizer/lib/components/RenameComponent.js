@@ -1,0 +1,66 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+import type {
+  Store,
+  RenamePhase,
+} from '../types';
+
+import {React} from 'react-for-atom';
+
+import {AtomInput} from '../../../nuclide-ui/AtomInput';
+import {Button} from '../../../nuclide-ui/Button';
+
+import * as Actions from '../refactorActions';
+
+type Props = {
+  phase: RenamePhase,
+  store: Store,
+};
+
+type State = {
+  newName: string,
+};
+
+export class RenameComponent extends React.Component {
+  props: Props;
+  state: State;
+
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      newName: this.props.phase.symbolAtPoint.text,
+    };
+  }
+
+  render(): React.Element<any> {
+    return (<div>
+      <AtomInput
+        initialValue={this.props.phase.symbolAtPoint.text}
+        onDidChange={text => this.setState({newName: text})}
+        onConfirm={() => this._runRename()}
+      />
+      <Button onClick={() => this._runRename()}>Rename</Button>
+    </div>);
+  }
+
+  _runRename(): void {
+    const {newName} = this.state;
+    const {symbolAtPoint, editor} = this.props.phase;
+    const refactoring = {
+      kind: 'rename',
+      newName,
+      symbolAtPoint,
+      editor,
+    };
+    this.props.store.dispatch(Actions.execute(this.props.phase.provider, refactoring));
+  }
+}
