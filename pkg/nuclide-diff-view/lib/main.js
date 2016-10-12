@@ -517,8 +517,10 @@ class Activation {
    * be rendered inline.
    * A uiProvider must have a method composeUiElements with the following spec:
    * @param filePath The path of the file the diff view is opened for
-   * @return An array of InlineComments (defined above) to be rendered into the
-   *         diff view
+   * @param oldContents the contents of the compare-to text editor.
+   * @param newContents the current filesystem status / edited contents.
+   * @return An Observable of array of inline elements (defined above) to be rendered
+   *         into the diff view
    */
   consumeUIProvider(provider: UIProvider): IDisposable {
     this._actionCreators.addUiProvider(provider);

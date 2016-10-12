@@ -13,7 +13,7 @@ import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {RevisionStatuses} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {Subject} from 'rxjs';
+import type {Observable, Subject} from 'rxjs';
 
 import {React} from 'react-for-atom';
 
@@ -83,7 +83,11 @@ export type UIElement = {
 };
 
 export type UIProvider = {
-  composeUiElements: (directoryPath: NuclideUri, filePath: NuclideUri) => Promise<Array<UIElement>>,
+  composeUiElements: (
+    filePath: NuclideUri,
+    oldContents: string,
+    newContents: string,
+  ) => Observable<Array<UIElement>>,
 };
 
 // Redux store types.
