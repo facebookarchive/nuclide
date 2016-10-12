@@ -114,7 +114,7 @@ export class ServiceRegistry {
               definition.location,
               (object, context: ObjectRegistry) => context.marshal(name, object),
               (objectId, context: ObjectRegistry) =>
-                context.unmarshal(objectId, context.getService(service.name)[name]));
+                context.unmarshal(objectId, name, context.getService(service.name)[name]));
 
             // Register all of the static methods as remote functions.
             definition.staticMethods.forEach((funcType, funcName) => {

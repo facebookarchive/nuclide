@@ -44,7 +44,7 @@ export class ObjectRegistry {
   _subscriptions: Map<number, rxjs$ISubscription>;
   _delta: number;
   // These members handle remote objects.
-  _proxiesById: Map<number, Object>;
+  _proxiesById: Map<number, ObjectRegistration>;
   // null means the proxy has been disposed.
   _idsByProxy: Map<Object, ?Promise<number>>;
   // Maps service name to proxy
@@ -82,12 +82,13 @@ export class ObjectRegistry {
     return service;
   }
 
-  unmarshal(id: number, proxyClass?: Function): RemoteObject {
+  unmarshal(id: number, interfaceName?: string, proxyClass?: Function): RemoteObject {
     if (this._isLocalId(id)) {
       return this._unmarshalLocalObject(id);
     } else {
       invariant(proxyClass != null);
-      return this._unmarshalRemoteObject(id, proxyClass);
+      invariant(interfaceName != null);
+      return this._unmarshalRemoteObject(id, interfaceName, proxyClass);
     }
   }
 
@@ -95,28 +96,34 @@ export class ObjectRegistry {
     return this._getRegistration(id).object;
   }
 
-  _unmarshalRemoteObject(remoteId: number, proxyClass: Function): RemoteObject {
+  _unmarshalRemoteObject(
+    remoteId: number,
+    interfaceName: string,
+    proxyClass: Function,
+  ): RemoteObject {
     const existingProxy = this._proxiesById.get(remoteId);
     if (existingProxy != null) {
-      return existingProxy;
+      return existingProxy.object;
     }
     invariant(proxyClass != null);
 
     // Generate the proxy by manually setting the prototype of the proxy to be the
     // prototype of the remote proxy constructor.
     const newProxy = Object.create(proxyClass.prototype);
-    this.addProxy(newProxy, Promise.resolve(remoteId));
+    this.addProxy(newProxy, interfaceName, Promise.resolve(remoteId));
     return newProxy;
   }
 
-  _getRegistration(remoteId: number): ObjectRegistration {
-    const result = this._registrationsById.get(remoteId);
+  _getRegistration(id: number): ObjectRegistration {
+    const result = (this._isLocalId(id))
+      ? this._registrationsById.get(id)
+      : this._proxiesById.get(id);
     invariant(result != null);
     return result;
   }
 
-  getInterface(remoteId: number): string {
-    return this._getRegistration(remoteId).interface;
+  getInterface(id: number): string {
+    return this._getRegistration(id).interface;
   }
 
   async disposeObject(remoteId: number): Promise<void> {
@@ -223,13 +230,17 @@ export class ObjectRegistry {
     }
   }
 
-  async addProxy(proxy: Object, idPromise: Promise<number>): Promise<void> {
+  async addProxy(proxy: Object, interfaceName: string, idPromise: Promise<number>): Promise<void> {
     invariant(!this._idsByProxy.has(proxy));
     this._idsByProxy.set(proxy, idPromise);
 
     const id = await idPromise;
     invariant(!this._proxiesById.has(id));
-    this._proxiesById.set(id, proxy);
+    this._proxiesById.set(id, {
+      interface: interfaceName,
+      remoteId: id,
+      object: proxy,
+    });
   }
 
   _isRemoteObject(object: Object): boolean {

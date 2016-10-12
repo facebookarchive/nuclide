@@ -45,7 +45,7 @@ import {
   decodeError,
 } from './messages';
 import {builtinLocation, voidType} from './builtin-types';
-import {startTracking} from '../../nuclide-analytics';
+import {startTracking, trackOperationTiming} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -302,7 +302,7 @@ export class RpcConnection<TransportType: Transport> {
         `Creating instance of ${interfaceName}`,
       );
     })();
-    this._objectRegistry.addProxy(thisArg, idPromise);
+    this._objectRegistry.addProxy(thisArg, interfaceName, idPromise);
   }
 
   /**
@@ -337,72 +337,77 @@ export class RpcConnection<TransportType: Transport> {
     returnType: ReturnType,
     timeoutMessage: string,
   ): any {
-    switch (returnType) {
-      case 'void':
-        this._transport.send(JSON.stringify(message));
-        return; // No values to return.
-      case 'promise':
-        // Listen for a single message, and resolve or reject a promise on that message.
-        return new Promise((resolve, reject) => {
+    const operation = () => {
+      switch (returnType) {
+        case 'void':
           this._transport.send(JSON.stringify(message));
-          this._calls.set(message.id, new Call(
-            message,
-            timeoutMessage,
-            resolve,
-            reject,
-            () => {
-              this._calls.delete(message.id);
-            },
-          ));
-        });
-      case 'observable': {
-        const id = message.id;
-        invariant(!this._subscriptions.has(id));
+          return; // No values to return.
+        case 'promise':
+          // Listen for a single message, and resolve or reject a promise on that message.
+          return new Promise((resolve, reject) => {
+            this._transport.send(JSON.stringify(message));
+            this._calls.set(message.id, new Call(
+              message,
+              timeoutMessage,
+              resolve,
+              reject,
+              () => {
+                this._calls.delete(message.id);
+              },
+            ));
+          });
+        case 'observable': {
+          const id = message.id;
+          invariant(!this._subscriptions.has(id));
 
-        const sendSubscribe = () => {
-          this._transport.send(JSON.stringify(message));
-        };
-        const sendUnsubscribe = () => {
-          if (!this._transport.isClosed()) {
-            this._transport.send(JSON.stringify(createUnsubscribeMessage(id)));
-          }
-        };
-        let hadSubscription = false;
-        const observable = Observable.create(observer => {
-          // Only allow a single subscription. This will be the common case,
-          // and adding this restriction allows disposing of the observable
-          // on the remote side after the initial subscription is complete.
-          if (hadSubscription) {
-            throw new Error('Attempt to re-connect with a remote Observable.');
-          }
-          hadSubscription = true;
-
-          const subscription = new Subscription(message, observer);
-          this._subscriptions.set(id, subscription);
-          sendSubscribe();
-
-          // Observable dispose function, which is called on subscription dispose, on stream
-          // completion, and on stream error.
-          return {
-            unsubscribe: () => {
-              if (!this._subscriptions.has(id)) {
-                // guard against multiple unsubscribe calls
-                return;
-              }
-              this._subscriptions.delete(id);
-
-              sendUnsubscribe();
-            },
+          const sendSubscribe = () => {
+            this._transport.send(JSON.stringify(message));
           };
-        });
+          const sendUnsubscribe = () => {
+            if (!this._transport.isClosed()) {
+              this._transport.send(JSON.stringify(createUnsubscribeMessage(id)));
+            }
+          };
+          let hadSubscription = false;
+          const observable = Observable.create(observer => {
+            // Only allow a single subscription. This will be the common case,
+            // and adding this restriction allows disposing of the observable
+            // on the remote side after the initial subscription is complete.
+            if (hadSubscription) {
+              throw new Error('Attempt to re-connect with a remote Observable.');
+            }
+            hadSubscription = true;
 
-        // Conversion to ConnectableObservable happens in the generated
-        // proxies.
-        return observable;
+            const subscription = new Subscription(message, observer);
+            this._subscriptions.set(id, subscription);
+            sendSubscribe();
+
+            // Observable dispose function, which is called on subscription dispose, on stream
+            // completion, and on stream error.
+            return {
+              unsubscribe: () => {
+                if (!this._subscriptions.has(id)) {
+                  // guard against multiple unsubscribe calls
+                  return;
+                }
+                this._subscriptions.delete(id);
+
+                sendUnsubscribe();
+              },
+            };
+          });
+
+          // Conversion to ConnectableObservable happens in the generated
+          // proxies.
+          return observable;
+        }
+        default:
+          throw new Error(`Unkown return type: ${returnType}.`);
       }
-      default:
-        throw new Error(`Unkown return type: ${returnType}.`);
-    }
+    };
+    return trackOperationTiming(
+      trackingIdOfMessageAndNetwork(this._objectRegistry, message),
+      operation);
   }
 
   _returnPromise(
@@ -736,6 +741,10 @@ function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage):
     default:
       throw new Error(`Unknown message type ${message.type}`);
   }
+}
+
+function trackingIdOfMessageAndNetwork(registry: ObjectRegistry, message: RequestMessage): string {
+  return trackingIdOfMessage(registry, message) + ':plus-network';
 }
 
 /**

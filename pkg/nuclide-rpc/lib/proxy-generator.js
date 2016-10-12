@@ -73,16 +73,6 @@ const marshalArgsCall = params => t.callExpression(clientDotMarshalArgsExpressio
 //   objectToLiteral(params),
 // ]);
 
-// Generates `trackOperationTiming(eventName, () => { return operation; })`
-const trackOperationTimingCall = (eventName, operation) =>
-  t.callExpression(
-    t.identifier('trackOperationTiming'), [t.literal(eventName),
-      t.arrowFunctionExpression([], t.blockStatement([
-        t.returnStatement(operation),
-      ])),
-    ],
-  );
-
 // Generates `Object.defineProperty(module.exports, name, {value: …})`
 const objectDefinePropertyCall = (name, value) => t.callExpression(
   t.memberExpression(t.identifier('Object'), t.identifier('defineProperty')),
@@ -171,7 +161,7 @@ export function generateProxy(
   // requiring them. This eliminates having to worry about module resolution.
   // In turn, that makes colocating the definition and the constructed proxy
   // easier for internal and external services.
-  const deps = dependenciesNodes(['Observable', 'trackOperationTiming']);
+  const deps = dependenciesNodes(['Observable']);
 
   // Wrap the remoteModule construction in a function that takes a RpcConnection
   // object as an argument.
@@ -337,11 +327,7 @@ function generateRemoteDispatch(methodName: string, thisType: NamedType, funcTyp
   const funcTypeArgs = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
   const result = generateUnmarshalResult(funcType.returnType, marshallThenCall);
   const funcExpression = t.functionExpression(null, funcTypeArgs, t.blockStatement([
-    // Wrap in trackOperationTiming if result returns a promise.
-    t.returnStatement(funcType.returnType.kind === 'promise'
-      ? trackOperationTimingCall(`${thisType.name}.${methodName}`, result)
-      : result,
-    )]),
+    t.returnStatement(result)]),
   );
 
   return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);

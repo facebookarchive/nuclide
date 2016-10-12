@@ -1,6 +1,6 @@
 "use strict";
 
-let Observable, trackOperationTiming;
+let Observable;
 
 module.exports = _client => {
   const remoteModule = {};
@@ -73,28 +73,26 @@ module.exports = _client => {
       }])
     }
     len() {
-      return trackOperationTiming("Vector2.len", () => {
-        return _client.marshalArguments(Array.from(arguments), []).then(args => {
-          return _client.marshal(this, {
-            kind: "named",
-            location: {
-              type: "source",
-              fileName: "InterfaceService.def",
-              line: 1
-            },
-            name: "Vector2"
-          }).then(id => {
-            return _client.callRemoteMethod(id, "len", "promise", args);
-          });
-        }).then(value => {
-          return _client.unmarshal(value, {
-            location: {
-              type: "source",
-              fileName: "InterfaceService.def",
-              line: 4
-            },
-            kind: "number"
-          });
+      return _client.marshalArguments(Array.from(arguments), []).then(args => {
+        return _client.marshal(this, {
+          kind: "named",
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 1
+          },
+          name: "Vector2"
+        }).then(id => {
+          return _client.callRemoteMethod(id, "len", "promise", args);
+        });
+      }).then(value => {
+        return _client.unmarshal(value, {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 4
+          },
+          kind: "number"
         });
       });
     }
@@ -145,38 +143,36 @@ module.exports = _client => {
 
   remoteModule.Iface = class {
     p(arg0) {
-      return trackOperationTiming("Iface.p", () => {
-        return _client.marshalArguments(Array.from(arguments), [{
-          name: "a",
-          type: {
-            location: {
-              type: "source",
-              fileName: "InterfaceService.def",
-              line: 31
-            },
-            kind: "number"
-          }
-        }]).then(args => {
-          return _client.marshal(this, {
-            kind: "named",
-            location: {
-              type: "source",
-              fileName: "InterfaceService.def",
-              line: 30
-            },
-            name: "Iface"
-          }).then(id => {
-            return _client.callRemoteMethod(id, "p", "promise", args);
-          });
-        }).then(value => {
-          return _client.unmarshal(value, {
-            location: {
-              type: "source",
-              fileName: "InterfaceService.def",
-              line: 31
-            },
-            kind: "number"
-          });
+      return _client.marshalArguments(Array.from(arguments), [{
+        name: "a",
+        type: {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 31
+          },
+          kind: "number"
+        }
+      }]).then(args => {
+        return _client.marshal(this, {
+          kind: "named",
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 30
+          },
+          name: "Iface"
+        }).then(id => {
+          return _client.callRemoteMethod(id, "p", "promise", args);
+        });
+      }).then(value => {
+        return _client.unmarshal(value, {
+          location: {
+            type: "source",
+            fileName: "InterfaceService.def",
+            line: 31
+          },
+          kind: "number"
         });
       });
     }
@@ -229,7 +225,6 @@ module.exports = _client => {
 Object.defineProperty(module.exports, "inject", {
   value: function () {
     Observable = arguments[0];
-    trackOperationTiming = arguments[1];
   }
 });
 Object.defineProperty(module.exports, "defs", {

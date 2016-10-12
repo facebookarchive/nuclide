@@ -1,6 +1,6 @@
 "use strict";
 
-let Observable, trackOperationTiming;
+let Observable;
 
 module.exports = _client => {
   const remoteModule = {};
@@ -152,7 +152,6 @@ module.exports = _client => {
 Object.defineProperty(module.exports, "inject", {
   value: function () {
     Observable = arguments[0];
-    trackOperationTiming = arguments[1];
   }
 });
 Object.defineProperty(module.exports, "defs", {

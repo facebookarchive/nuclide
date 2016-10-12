@@ -19,7 +19,6 @@ import {parseServiceDefinition} from './service-parser';
 
 // Proxy dependencies
 import {Observable} from 'rxjs';
-import {trackOperationTiming} from '../../nuclide-analytics';
 
 import type {
   ReturnKind,
@@ -90,7 +89,7 @@ export function createProxyFactory(
     }
 
     const m = loadCodeAsModule(code, filename);
-    m.exports.inject(Observable, trackOperationTiming);
+    m.exports.inject(Observable);
 
     proxiesCache.set(definitionPath, m.exports);
   }
