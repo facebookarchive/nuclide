@@ -16,6 +16,7 @@ import {asyncExecute} from '../../commons-node/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import {getHackExecOptions} from './hack-config';
 import {Point, Range} from 'simple-text-buffer';
+import {trackOperationTiming} from '../../nuclide-analytics';
 
 const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
 const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
@@ -42,46 +43,53 @@ export async function callHHClient(
   }
   const {hackRoot, hackCommand} = hackExecOptions;
 
-  invariant(hhPromiseQueue);
-  return hhPromiseQueue.submit(async (resolve, reject) => {
-    // Append args on the end of our commands.
-    const defaults = ['--json', '--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
+  return trackOperationTiming(
+    trackingIdOfHackArgs(args) + ':plus-queue',
+    () => {
+      invariant(hhPromiseQueue);
+      return hhPromiseQueue.submit(async (resolve, reject) => {
+        // Append args on the end of our commands.
+        const defaults =
+          ['--json', '--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
 
-    const allArgs = defaults.concat(args);
-    allArgs.push(hackRoot);
+        const allArgs = defaults.concat(args);
+        allArgs.push(hackRoot);
 
-    let execResult = null;
-    try {
-      logger.logTrace(`Calling Hack: ${hackCommand} with ${allArgs.toString()}`);
-      execResult = await asyncExecute(hackCommand, allArgs, {stdin: processInput});
-    } catch (err) {
-      reject(err);
-      return;
-    }
-    const {stdout, stderr} = execResult;
-    if (stderr.indexOf(HH_SERVER_INIT_MESSAGE) !== -1) {
-      reject(new Error(`${HH_SERVER_INIT_MESSAGE}: try: \`arc build\` or try again later!`));
-      return;
-    } else if (stderr.startsWith(HH_SERVER_BUSY_MESSAGE)) {
-      reject(new Error(`${HH_SERVER_BUSY_MESSAGE}: try: \`arc build\` or try again later!`));
-      return;
-    }
+        let execResult = null;
+        try {
+          logger.logTrace(`Calling Hack: ${hackCommand} with ${allArgs.toString()}`);
+          execResult = await trackOperationTiming(
+            trackingIdOfHackArgs(args),
+            () => asyncExecute(hackCommand, allArgs, {stdin: processInput}));
+        } catch (err) {
+          reject(err);
+          return;
+        }
+        const {stdout, stderr} = execResult;
+        if (stderr.indexOf(HH_SERVER_INIT_MESSAGE) !== -1) {
+          reject(new Error(`${HH_SERVER_INIT_MESSAGE}: try: \`arc build\` or try again later!`));
+          return;
+        } else if (stderr.startsWith(HH_SERVER_BUSY_MESSAGE)) {
+          reject(new Error(`${HH_SERVER_BUSY_MESSAGE}: try: \`arc build\` or try again later!`));
+          return;
+        }
 
-    const output = errorStream ? stderr : stdout;
-    logger.logTrace(`Hack output for ${allArgs.toString()}: ${output}`);
-    try {
-      const result = JSON.parse(output);
-      invariant(result.hackRoot === undefined);
-      // result may be an array, so don't return a new object.
-      result.hackRoot = hackRoot;
-      resolve(result);
-    } catch (err) {
-      const errorMessage = `hh_client error, args: [${args.join(',')}]
+        const output = errorStream ? stderr : stdout;
+        logger.logTrace(`Hack output for ${allArgs.toString()}: ${output}`);
+        try {
+          const result = JSON.parse(output);
+          invariant(result.hackRoot === undefined);
+          // result may be an array, so don't return a new object.
+          result.hackRoot = hackRoot;
+          resolve(result);
+        } catch (err) {
+          const errorMessage = `hh_client error, args: [${args.join(',')}]
 stdout: ${stdout}, stderr: ${stderr}`;
-      logger.logError(errorMessage);
-      reject(new Error(errorMessage));
-    }
-  });
+          logger.logError(errorMessage);
+          reject(new Error(errorMessage));
+        }
+      });
+    });
 }
 
 export function hackRangeToAtomRange(position: HackRange): atom$Range {
@@ -100,3 +108,9 @@ export function atomPointOfHackRangeStart(position: HackRange): atom$Point {
 }
 
 export const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+
+function trackingIdOfHackArgs(args: Array<string>): string {
+  const command = args.length === 0 ? '--diagnostics' : args[0];
+  invariant(command.startsWith('--'));
+  return 'hh_client:' + command.substr(2);
+}
