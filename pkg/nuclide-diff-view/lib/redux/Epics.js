@@ -155,6 +155,21 @@ function getCompareIdChanges(
   }).startWith(initialRepositoryState.compareRevisionId);
 }
 
+function isValidCompareRevisions(
+  revisions: Array<RevisionInfo>,
+  compareId: ?number,
+): boolean {
+  return getHeadRevision(revisions) != null && isValidCompareId(revisions, compareId);
+}
+
+function isValidCompareId(
+  revisions: Array<RevisionInfo>,
+  compareId: ?number,
+): boolean {
+  const headToForkBase = getHeadToForkBaseRevisions(revisions);
+  return compareId == null || headToForkBase.find(revision => revision.id === compareId) != null;
+}
+
 function observeActiveRepository(
   actions: ActionsObservable<Action>,
   store: Store,
@@ -236,13 +251,9 @@ export function updateActiveRepositoryEpic(
     const selectedFileUpdates = Observable.combineLatest(
       revisionChanges, diffOptionChanges, compareIdChanges, statusChanges,
       (revisions, diffOption, compareId) => ({revisions, diffOption, compareId}),
-    ).filter(({revisions}) => getHeadRevision(revisions) != null)
+    ).filter(({revisions, compareId}) => isValidCompareRevisions(revisions, compareId))
     .switchMap(({revisions, compareId, diffOption}) => {
       return Observable.concat(
-        compareId != null && revisions.find(rev => rev.id === compareId) == null
-          ? Observable.of(Actions.setCompareId(repository, null))
-          : Observable.empty(),
-
         Observable.of(Actions.updateLoadingSelectedFiles(repository, true)),
         getSelectedFileChanges(
           repository,
@@ -259,6 +270,10 @@ export function updateActiveRepositoryEpic(
       );
     });
 
+    const compareIdInvalidations = Observable.combineLatest(revisionChanges, compareIdChanges)
+      .filter(([revisions, compareId]) => !isValidCompareId(revisions, compareId))
+      .map(() => Actions.setCompareId(repository, null));
+
     const revisionStateUpdates = Observable.combineLatest(revisionChanges, revisionStatusChanges)
       .filter(([revisions]) => getHeadRevision(revisions) != null)
       .map(([revisions, revisionStatuses]) =>
@@ -270,6 +285,7 @@ export function updateActiveRepositoryEpic(
       );
 
     return Observable.merge(
+      compareIdInvalidations,
       selectedFileUpdates,
       revisionStateUpdates,
     );
@@ -370,7 +386,7 @@ export function diffFileEpic(
       diffOptionChanges,
       compareIdChanges,
       (revisions, diffOption, compareId) => ({revisions, diffOption, compareId}),
-    ).filter(({revisions}) => getHeadRevision(revisions) != null)
+    ).filter(({revisions, compareId}) => isValidCompareRevisions(revisions, compareId))
     .switchMap(({revisions, diffOption, compareId}) => {
       const headToForkBaseRevisions = getHeadToForkBaseRevisions(revisions);
       return Observable.of(null).concat(
