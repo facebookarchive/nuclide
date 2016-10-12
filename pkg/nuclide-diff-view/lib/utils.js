@@ -411,7 +411,7 @@ export function getHgDiff(
   return repository.fetchFileContentAtRevision(filePath, `${compareCommitId}`)
     // If the file didn't exist on the previous revision,
     // Return the no such file at revision message.
-    .catch(error => Observable.of((error.message: string) || ''))
+    .catch(error => Observable.of(''))
     .map(committedContents => ({
       committedContents,
       revisionInfo,
