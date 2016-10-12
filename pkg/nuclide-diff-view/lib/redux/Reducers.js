@@ -17,6 +17,7 @@ import type {
   PublishState,
   RepositoryAction,
   RepositoryState,
+  UIProvider,
 } from '../types';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
 import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
@@ -184,4 +185,18 @@ export function cwdApi(
       return action.payload.cwdApi;
   }
   return state || null;
+}
+
+export function uiProviders(
+  state: Array<UIProvider>,
+  action: Action,
+): Array<UIProvider> {
+  switch (action.type) {
+    case ActionTypes.ADD_UI_PROVIDER:
+      return state.concat(action.payload.uiProvider);
+    case ActionTypes.REMOVE_UI_PROVIDER:
+      const {uiProvider} = action.payload;
+      return state.filter(provider => provider !== uiProvider);
+  }
+  return state || [];
 }

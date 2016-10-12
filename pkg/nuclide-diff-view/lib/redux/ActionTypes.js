@@ -10,12 +10,14 @@
  */
 
 export const ADD_REPOSITORY = 'ADD_REPOSITORY';
+export const ADD_UI_PROVIDER = 'ADD_UI_PROVIDER';
 export const CLOSE_VIEW = 'CLOSE_VIEW';
 export const COMMIT = 'COMMIT';
 export const DIFF_FILE = 'DIFF_FILE';
 export const OPEN_VIEW = 'OPEN_VIEW';
 export const PUBLISH_DIFF = 'PUBLISH_DIFF';
 export const REMOVE_REPOSITORY = 'REMOVE_REPOSITORY';
+export const REMOVE_UI_PROVIDER = 'REMOVE_UI_PROVIDER';
 export const SET_COMMIT_MODE = 'SET_COMMIT_MODE';
 export const SET_COMPARE_ID = 'SET_COMPARE_ID';
 export const SET_CWD_API = 'SET_CWD_API';

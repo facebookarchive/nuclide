@@ -170,18 +170,15 @@ function addActivePathCommands(
 class Activation {
 
   _subscriptions: UniversalDisposable;
-  _cwdApi: ?CwdApi;
   _diffViewModel: ?DiffViewModel;
   _diffViewElement: ?DiffViewElement;
   _diffViewComponent: ?React.Component<DiffViewComponent, any, any>;
   _tryTriggerNuxService: ?TriggerNux;
-  _uiProviders: Array<UIProvider>;
 
   _store: Store;
   _actionCreators: BoundActionCreators;
 
   constructor(rawState: ?SerializedDiffViewState) {
-    this._uiProviders = [];
     this._subscriptions = new UniversalDisposable();
 
     const initialState = createEmptyAppState();
@@ -384,7 +381,6 @@ class Activation {
     let diffViewModel = this._diffViewModel;
     if (diffViewModel == null) {
       diffViewModel = new DiffViewModel(this._actionCreators);
-      diffViewModel.setUiProviders(this._uiProviders);
       this._subscriptions.add(diffViewModel);
       this._diffViewModel = diffViewModel;
     }
@@ -524,16 +520,18 @@ class Activation {
    * @return An array of InlineComments (defined above) to be rendered into the
    *         diff view
    */
-  consumeUIProvider(provider: UIProvider) {
-    this._uiProviders.push(provider);
-    if (this._diffViewModel != null) {
-      this._diffViewModel.setUiProviders(this._uiProviders);
-    }
-    return;
+  consumeUIProvider(provider: UIProvider): IDisposable {
+    this._actionCreators.addUiProvider(provider);
+    let pkg = this;
+    this._subscriptions.add(new Disposable(() => { pkg = null; }));
+    return new Disposable(() => {
+      if (pkg != null) {
+        pkg._actionCreators.removeUiProvider(provider);
+      }
+    });
   }
 
   consumeCwdApi(api: CwdApi): IDisposable {
-    this._cwdApi = api;
     this._actionCreators.setCwdApi(api);
     let pkg = this;
     this._subscriptions.add(() => { pkg = null; });

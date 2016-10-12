@@ -12,6 +12,7 @@
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {
   AddRepositoryAction,
+  AddUiProviderAction,
   CloseViewAction,
   CommitAction,
   CommitModeType,
@@ -24,11 +25,13 @@ import type {
   PublishDiffAction,
   PublishState,
   RemoveRepositoryAction,
+  RemoveUiProviderAction,
   SetCommitModeAction,
   SetCompareIdAction,
   SetCwdApiAction,
   SetShouldReabaseOnAmendAction,
   SetViewModeAction,
+  UIProvider,
   UpdateActiveRepositoryAction,
   UpdateCommitStateAction,
   UpdateDirtyFilesAction,
@@ -278,6 +281,28 @@ export function publishDiff(
       message,
       publishUpdates,
       repository,
+    },
+  };
+}
+
+export function addUiProvider(
+  uiProvider: UIProvider,
+): AddUiProviderAction {
+  return {
+    type: ActionTypes.ADD_UI_PROVIDER,
+    payload: {
+      uiProvider,
+    },
+  };
+}
+
+export function removeUiProvider(
+  uiProvider: UIProvider,
+): RemoveUiProviderAction {
+  return {
+    type: ActionTypes.REMOVE_UI_PROVIDER,
+    payload: {
+      uiProvider,
     },
   };
 }

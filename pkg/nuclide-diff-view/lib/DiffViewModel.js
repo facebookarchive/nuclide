@@ -20,7 +20,6 @@ import type {
   PublishModeType,
   PublishModeStateType,
   DiffModeType,
-  UIProvider,
   UIElement,
 } from './types';
 import type {
@@ -105,7 +104,6 @@ export type State = {
 export default class DiffViewModel {
 
   _emitter: Emitter;
-  _uiProviders: Array<UIProvider>;
   _state: State;
   _publishUpdates: Subject<any>;
   _actionCreators: BoundActionCreators;
@@ -113,7 +111,6 @@ export default class DiffViewModel {
   constructor(actionCreators: BoundActionCreators) {
     this._actionCreators = actionCreators;
     this._emitter = new Emitter();
-    this._uiProviders = [];
     this._publishUpdates = new Subject();
     this._state = getInitialState();
   }
@@ -197,10 +194,6 @@ export default class DiffViewModel {
 
   onDidUpdateState(callback: () => mixed): IDisposable {
     return this._emitter.on(DID_UPDATE_STATE_EVENT, callback);
-  }
-
-  setUiProviders(uiProviders: Array<UIProvider>): void {
-    this._uiProviders = uiProviders;
   }
 
   commit(message: string): void {

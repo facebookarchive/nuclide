@@ -125,6 +125,7 @@ export type AppState = {
   publish: PublishState,
   repositories: Map<HgRepositoryClient, RepositoryState>,
   shouldRebaseOnAmend: boolean,
+  uiProviders: Array<UIProvider>,
   viewMode: DiffModeType,
 };
 
@@ -279,13 +280,29 @@ export type PublishDiffAction = {
   },
 };
 
+export type AddUiProviderAction = {
+  type: 'ADD_UI_PROVIDER',
+  payload: {
+    uiProvider: UIProvider,
+  },
+};
+
+export type RemoveUiProviderAction = {
+  type: 'REMOVE_UI_PROVIDER',
+  payload: {
+    uiProvider: UIProvider,
+  },
+};
+
 export type Action = AddRepositoryAction
+  | AddUiProviderAction
   | CloseViewAction
   | CommitAction
   | DiffFileAction
   | OpenViewAction
   | PublishDiffAction
   | RemoveRepositoryAction
+  | RemoveUiProviderAction
   | SetCommitModeAction
   | SetCompareIdAction
   | SetCwdApiAction

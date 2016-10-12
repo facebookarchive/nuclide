@@ -89,6 +89,7 @@ export function createEmptyAppState(): AppState {
     publish: getEmptyPublishState(),
     repositories: getEmptyRepositoriesState(),
     shouldRebaseOnAmend: getEmptyRebaseOnAmendState(),
+    uiProviders: [],
     viewMode: getEmptyViewModeState(),
   };
 }
