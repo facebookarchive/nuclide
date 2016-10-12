@@ -58,7 +58,7 @@ export class WorkingSet {
 
   constructor(uris: Array<NuclideUri> = []) {
     try {
-      this._uris = dedupeUris(uris);
+      this._uris = dedupeUris(uris.filter(uri => !nuclideUri.isBrokenDeserializedUri(uri)));
       this._root = this._buildDirTree(this._uris);
     } catch (e) {
       logger.error(
