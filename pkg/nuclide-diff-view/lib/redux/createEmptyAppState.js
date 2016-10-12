@@ -54,6 +54,7 @@ export function getEmptyFileDiffState(): FileDiffState {
     newContents: '',
     oldContents: '',
     toRevisionTitle: 'No file selected',
+    uiElements: [],
   };
 }
 

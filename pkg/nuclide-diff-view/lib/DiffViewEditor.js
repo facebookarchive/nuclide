@@ -50,9 +50,9 @@ export default class DiffViewEditor {
       const range = [[bufferRow - 1, 0], [bufferRow - 1, 0]];
       const marker = this._editor.markBufferRange(range, {invalidate: 'never'});
       this._editor.decorateMarker(marker, {
-        type: 'block',
+        type: 'overlay',
         item: container,
-        position: 'after',
+        position: 'tail',
       });
       return marker;
     });

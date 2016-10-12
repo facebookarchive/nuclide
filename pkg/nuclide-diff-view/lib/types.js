@@ -80,6 +80,7 @@ export type DiffSection = {
 export type UIElement = {
   node: React.Element<any>,
   bufferRow: number,
+  inNewEditor: boolean,
 };
 
 export type UIProvider = {
@@ -119,6 +120,7 @@ export type FileDiffState = {
   newContents: string,
   oldContents: string,
   toRevisionTitle: string,
+  uiElements?: Array<UIElement>,
 };
 
 export type AppState = {
@@ -230,6 +232,13 @@ export type UpdateFileDiffAction = {
   },
 };
 
+export type UpdateFileUiElementsAction = {
+  type: 'UPDATE_FILE_UI_ELEMENTS',
+  payload: {
+    uiElements: Array<UIElement>,
+  },
+};
+
 export type SetViewModeAction = {
   type: 'SET_VIEW_MODE',
   payload: {
@@ -316,6 +325,7 @@ export type Action = AddRepositoryAction
   | UpdateCommitStateAction
   | UpdateDirtyFilesAction
   | UpdateFileDiffAction
+  | UpdateFileUiElementsAction
   | UpdateHeadToForkBaseRevisions
   | UpadateLoadingSelectedFilesAction
   | UpdatePublishStateAction

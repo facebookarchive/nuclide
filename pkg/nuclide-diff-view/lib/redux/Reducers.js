@@ -146,7 +146,15 @@ export function fileDiff(
 ): FileDiffState {
   switch (action.type) {
     case ActionTypes.UPDATE_FILE_DIFF:
-      return action.payload.fileDiff;
+      return {
+        ...state,
+        ...action.payload.fileDiff,
+      };
+    case ActionTypes.UPDATE_FILE_UI_ELEMENTS:
+      return {
+        ...state,
+        uiElements: action.payload.uiElements,
+      };
   }
   return state || getEmptyFileDiffState();
 }

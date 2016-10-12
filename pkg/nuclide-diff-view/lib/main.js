@@ -227,6 +227,7 @@ class Activation {
           filePath: fileDiff.filePath,
           oldContents: fileDiff.oldContents,
           newContents: fileDiff.newContents,
+          inlineComponents: fileDiff.uiElements || [],
           compareRevisionInfo: null,
           viewMode: state.viewMode,
           commitMessage: commit.message,

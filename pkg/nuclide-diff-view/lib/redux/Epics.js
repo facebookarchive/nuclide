@@ -9,7 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {Action, DiffOptionType, Store} from '../types';
+import type {
+  Action,
+  DiffOptionType,
+  HgDiffState,
+  Store,
+  UIElement,
+} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
 import type {HgRepositoryClient} from '../../../nuclide-hg-repository-client';
@@ -53,6 +59,7 @@ import {getPhabricatorRevisionFromCommitMessage} from '../../../nuclide-arcanist
 import {notifyInternalError} from '../notifications';
 import {startTracking, track} from '../../../nuclide-analytics';
 import nuclideUri from '../../../commons-node/nuclideUri';
+import {getLogger} from '../../../nuclide-logging';
 
 const UPDATE_STATUS_DEBOUNCE_MS = 50;
 const CHANGE_DEBOUNCE_DELAY_MS = 10;
@@ -372,7 +379,7 @@ export function diffFileEpic(
           notifyInternalError(error);
           return Observable.empty();
         });
-    }).switchMap(hgDiff =>
+    }).switchMap((hgDiff: HgDiffState) =>
       // Load the buffer to use its contents as the new contents.
       Observable.fromPromise(loadBufferForUri(filePath))
         .map(() => hgDiff),
@@ -382,13 +389,36 @@ export function diffFileEpic(
       bufferChangeModifed,
 
       Observable.combineLatest(fetchHgDiff, Observable.merge(bufferReloads, bufferChanges))
-        .map(([{committedContents, revisionInfo}]) => Actions.updateFileDiff({
-          filePath,
-          fromRevisionTitle: formatFileDiffRevisionTitle(revisionInfo),
-          newContents: buffer.getText(),
-          oldContents: committedContents,
-          toRevisionTitle: 'Filesystem / Editor',
-        }))
+        .switchMap(([{committedContents, revisionInfo}]) => {
+          const newContents = buffer.getText();
+          const oldContents = committedContents;
+
+          return Observable.concat(
+            Observable.of(Actions.updateFileDiff({
+              filePath,
+              fromRevisionTitle: formatFileDiffRevisionTitle(revisionInfo),
+              newContents,
+              oldContents,
+              toRevisionTitle: 'Filesystem / Editor',
+            })),
+
+            // TODO(most): Add loading indicators.
+            // TODO(most): Clear prior comments state on diff file switches.
+            // $FlowFixMe flow doesn't have a good way to express that operator.
+            Observable.combineLatest(
+              ...store.getState().uiProviders.map(uiProvider =>
+                  uiProvider.composeUiElements(filePath, oldContents, newContents)
+                    .catch(error => {
+                      getLogger().error('Diff View UI Provider Error:', error);
+                      return Observable.empty();
+                    }),
+                ),
+            ).switchMap((uiElementsArrays: Array<Array<UIElement>>) => {
+              const flattenedUiElements = [].concat(...uiElementsArrays);
+              return Observable.of(Actions.updateFileUiElements(filePath, flattenedUiElements));
+            }),
+          );
+        })
         .takeUntil(Observable.merge(
           observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer)),
           deactiveRepsitory,

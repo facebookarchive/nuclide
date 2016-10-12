@@ -31,11 +31,13 @@ import type {
   SetCwdApiAction,
   SetShouldReabaseOnAmendAction,
   SetViewModeAction,
+  UIElement,
   UIProvider,
   UpdateActiveRepositoryAction,
   UpdateCommitStateAction,
   UpdateDirtyFilesAction,
   UpdateFileDiffAction,
+  UpdateFileUiElementsAction,
   UpdateHeadToForkBaseRevisions,
   UpadateLoadingSelectedFilesAction,
   UpdatePublishStateAction,
@@ -194,6 +196,19 @@ export function updateFileDiff(
     type: ActionTypes.UPDATE_FILE_DIFF,
     payload: {
       fileDiff,
+    },
+  };
+}
+
+export function updateFileUiElements(
+  filePath: NuclideUri,
+  uiElements: Array<UIElement>,
+): UpdateFileUiElementsAction {
+  return {
+    type: ActionTypes.UPDATE_FILE_UI_ELEMENTS,
+    payload: {
+      filePath,
+      uiElements,
     },
   };
 }
