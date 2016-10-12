@@ -56,7 +56,6 @@ const diagnosticsConfig = getConfig().useIdeConnection
 const atomConfig: AtomLanguageServiceConfig = {
   name: 'Hack',
   grammars: HACK_GRAMMARS,
-  identifierRegexp: /\$\w+/gi,
   highlights: {
     version: '0.0.0',
     priority: 1,

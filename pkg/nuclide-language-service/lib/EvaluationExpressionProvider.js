@@ -14,7 +14,7 @@ import type {LanguageService} from './LanguageService';
 
 import {trackOperationTiming} from '../../nuclide-analytics';
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import {wordAtPosition} from '../../commons-atom/range';
+import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type EvaluationExpressionConfig = {
   version: string,
@@ -24,20 +24,17 @@ export type EvaluationExpressionConfig = {
 export class EvaluationExpressionProvider<T: LanguageService> {
   selector: string;
   name: string;
-  identifierRegexp: RegExp;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
     selector: string,
-    identifierRegexp: RegExp,
     analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
     this.selector = selector;
-    this.identifierRegexp = identifierRegexp;
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
   }
@@ -45,7 +42,6 @@ export class EvaluationExpressionProvider<T: LanguageService> {
   static register(
     name: string,
     selector: string,
-    identifierRegexp: RegExp,
     config: EvaluationExpressionConfig,
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
@@ -55,7 +51,6 @@ export class EvaluationExpressionProvider<T: LanguageService> {
       new EvaluationExpressionProvider(
         name,
         selector,
-        identifierRegexp,
         config.analyticsEventName,
         connectionToLanguageService,
       ));
@@ -65,24 +60,15 @@ export class EvaluationExpressionProvider<T: LanguageService> {
     editor: atom$TextEditor,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
-    return trackOperationTiming(this._analyticsEventName, () => {
-      // TODO: Replace RegExp with AST-based, more accurate approach.
-      const extractedIdentifier = wordAtPosition(editor, position, this.identifierRegexp);
-      if (extractedIdentifier == null) {
-        return Promise.resolve(null);
+    return trackOperationTiming(this._analyticsEventName, async () => {
+      const fileVersion = await getFileVersionOfEditor(editor);
+      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+      if (languageService == null || fileVersion == null) {
+        return null;
       }
-      const {
-        range,
-        wordMatch,
-      } = extractedIdentifier;
-      const [expression] = wordMatch;
-      if (expression == null) {
-        return Promise.resolve(null);
-      }
-      return Promise.resolve({
-        expression,
-        range,
-      });
+
+      return await (await languageService).getEvaluationExpression(
+        fileVersion, position);
     });
   }
 }

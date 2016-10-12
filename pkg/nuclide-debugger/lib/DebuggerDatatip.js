@@ -59,10 +59,9 @@ function getEvaluationExpression(
       break;
     }
   }
-  const expressionGetter = matchingProvider === null
-    ? defaultGetEvaluationExpression
-    : matchingProvider.getEvaluationExpression;
-  return expressionGetter(editor, position);
+  return matchingProvider === null
+    ? defaultGetEvaluationExpression(editor, position)
+    : matchingProvider.getEvaluationExpression(editor, position);
 }
 
 export async function debuggerDatatip(

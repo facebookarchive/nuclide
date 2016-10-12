@@ -24,6 +24,7 @@ import type {
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
+import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
 // A remotable version of atom$AutocompleteSuggestion
 export type Completion = {
@@ -90,6 +91,11 @@ export interface LanguageService {
     fileVersion: FileVersion,
     range: atom$Range,
   ): Promise<string>,
+
+  getEvaluationExpression(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?NuclideEvaluationExpression>,
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri>,
 

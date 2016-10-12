@@ -172,7 +172,6 @@ export function activate() {
     {
       name: 'MyLanguage',
       grammars: ['source.mylanguage'],
-      identifierRegexp: /\$\w+/gi,
       outlines: {
         version: '0.0.0',
         priority: 1,

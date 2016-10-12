@@ -40,7 +40,6 @@ import {registerDiagnostics} from './DiagnosticsProvider';
 export type AtomLanguageServiceConfig = {
   name: string,
   grammars: Array<string>,
-  identifierRegexp: RegExp,
   highlights?: CodeHighlightConfig,
   outlines?: OutlineViewConfig,
   coverage?: TypeCoverageConfig,
@@ -129,7 +128,6 @@ export class AtomLanguageService<T: LanguageService> {
       this._subscriptions.add(EvaluationExpressionProvider.register(
         this._config.name,
         this._selector(),
-        this._config.identifierRegexp,
         evaluationExpressionConfig,
         this._connectionToLanguageService));
     }
