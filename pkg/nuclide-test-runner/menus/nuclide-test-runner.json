@@ -9,6 +9,10 @@
             {
               "command": "nuclide-test-runner:toggle-panel",
               "label": "Toggle"
+            },
+            {
+              "command": "nuclide-test-runner:run-tests",
+              "label": "Run tests"
             }
           ]
         }

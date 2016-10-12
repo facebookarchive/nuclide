@@ -60,6 +60,15 @@ class Activation {
         },
       ),
     );
+    this._disposables.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-test-runner:run-tests',
+        () => {
+          this._getController().runTests();
+        },
+      ),
+    );
     // Listen for run events on files in the file tree
     this._disposables.add(
       atom.commands.add(

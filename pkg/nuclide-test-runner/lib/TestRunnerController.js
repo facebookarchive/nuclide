@@ -114,6 +114,8 @@ export default class TestRunnerController {
    * @return A Promise that resolves when testing has succesfully started.
    */
   async runTests(path?: string): Promise<void> {
+    this._runningTest = true;
+
     // If the test runner panel is not rendered yet, ensure it is rendered before continuing.
     if (this._testRunnerPanel == null || !this._state.panelVisible) {
       await new Promise((resolve, reject) => {
@@ -254,7 +256,6 @@ export default class TestRunnerController {
   }
 
   _handleClickRun(event: SyntheticMouseEvent): void {
-    this._runningTest = true;
     // Don't pass a reference to `runTests` directly because the callback receives a mouse event as
     // its argument. `runTests` needs to be called with no arguments.
     this.runTests();
