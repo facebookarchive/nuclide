@@ -325,6 +325,7 @@ module.exports = {
     'nuclide-internal/license-header': 1,
     'nuclide-internal/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
     'nuclide-internal/no-re-export-type': 1,
+    'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
     'nuclide-internal/prefer-nuclide-uri': 1,
     'nuclide-internal/prefer-types-only-header': 1,
     'nuclide-internal/type-alias-semi': 1,
