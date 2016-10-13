@@ -11,54 +11,7 @@
 
 import {flowStatusOutputToDiagnostics} from '../lib/diagnosticsParser';
 
-const oldOutput = {
-  version: 'big long string',
-  passed: false,
-  errors: [
-    {
-      operation: {
-        endline: 13,
-        end: 12,
-        path: '/flow-test/src/test.js',
-        line: 13,
-        descr: 'assignment of property `bar`',
-        start: 5,
-      },
-      kind: 'infer',
-      message: [
-        {
-          end: 17,
-          path: '/flow-test/src/test.js',
-          endline: 13,
-          start: 16,
-          level: 'error',
-          line: 13,
-          descr: 'object literal',
-        },
-        {
-          endline: 0,
-          end: 0,
-          path: '',
-          descr: 'This type is incompatible with',
-          line: 0,
-          level: 'error',
-          start: 1,
-        },
-        {
-          line: 10,
-          descr: 'union: object type(s)',
-          start: 8,
-          level: 'error',
-          endline: 10,
-          path: '/flow-test/src/test.js',
-          end: 10,
-        },
-      ],
-    },
-  ],
-};
-
-const newOutput = {
+const flowOutput = {
   passed: false,
   flowVersion: '0.23.0',
   errors: [
@@ -181,11 +134,7 @@ const expected = {
 };
 
 describe('flowStatusOutputToDiagnostics', () => {
-  it('converts the old status output', () => {
-    expect(flowStatusOutputToDiagnostics('/flow-test', oldOutput)).toEqual(expected);
-  });
-
-  it('converts the new status output', () => {
-    expect(flowStatusOutputToDiagnostics('/flow-test', newOutput)).toEqual(expected);
+  it('converts the flow status output', () => {
+    expect(flowStatusOutputToDiagnostics('/flow-test', flowOutput)).toEqual(expected);
   });
 });

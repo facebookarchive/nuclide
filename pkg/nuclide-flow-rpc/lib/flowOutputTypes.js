@@ -10,59 +10,24 @@
 
 /* FLOW STATUS */
 
-// Types for the old `flow status` output -- v0.22 and below
-
-export type OldFlowStatusOutput = {
-  passed: boolean,
-  // This is not actually the Flow version; instead it is a build ID or something.
-  version?: string,
-  errors: Array<OldFlowStatusError>,
-};
-
-export type OldFlowStatusError = {
-  kind: string,
-  operation?: OldFlowStatusErrorOperation,
-  message: Array<OldFlowStatusErrorMessageComponent>,
-};
-
-export type OldBaseFlowStatusErrorMessageComponent = {
-  // If there is no path component, this is the empty string. We should make it null instead, in
-  // that case (t8644340)
-  path: string,
-  descr: string,
-  line: number,
-  start: number,
-  end: number,
-  endline: number,
-};
-
-export type OldFlowStatusErrorMessageComponent = OldBaseFlowStatusErrorMessageComponent & {
-  level: 'error' | 'warning',
-};
-
-// Same as FlowStatusErrorMessageComponent, except without the 'level' field.
-export type OldFlowStatusErrorOperation = OldBaseFlowStatusErrorMessageComponent;
-
-// New types for `flow status` v0.23.0 (or possibly v0.24.0, it has yet to be finalized)
-
-export type NewFlowStatusOutput = {
+export type FlowStatusOutput = {
   passed: boolean,
   flowVersion: string,
-  errors: Array<NewFlowStatusError>,
+  errors: Array<FlowStatusError>,
 };
 
-export type NewFlowStatusError = {
+export type FlowStatusError = {
   level: 'error' | 'warning',
   // e.g. parse, infer, maybe others?
   kind: string,
-  message: Array<NewFlowStatusErrorMessageComponent>,
-  operation?: NewFlowStatusErrorMessageComponent,
+  message: Array<FlowStatusErrorMessageComponent>,
+  operation?: FlowStatusErrorMessageComponent,
   extra?: Array<{
-    message: Array<NewFlowStatusErrorMessageComponent>,
+    message: Array<FlowStatusErrorMessageComponent>,
   }>,
 };
 
-export type NewFlowStatusErrorMessageComponent = {
+export type FlowStatusErrorMessageComponent = {
   descr: string,
   loc?: FlowLoc,
   // The old path, line, etc. fields also currently exist here, but they are deprecated in favor of
