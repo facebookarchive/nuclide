@@ -243,21 +243,17 @@ export class FlowRoot {
       args.push('--raw');
     }
 
-    let output;
+    let result;
     try {
-      const result = await this._process.execFlow(args, options);
-      if (!result) {
-        return null;
-      }
-      output = result.stdout;
-      if (output === '') {
-        // if there is a syntax error, Flow returns the JSON on stderr while
-        // still returning a 0 exit code (t8018595)
-        output = result.stderr;
-      }
+      result = await this._process.execFlow(args, options);
     } catch (e) {
+      result = null;
+    }
+    if (!result) {
       return null;
     }
+    const output = result.stdout;
+
     let json;
     try {
       json = parseJSON(args, output);
@@ -266,14 +262,7 @@ export class FlowRoot {
     }
     const type = json.type;
     const rawType = json.raw_type;
-    if (!type || type === '(unknown)' || type === '') {
-      if (type === '') {
-        // This should not happen. The Flow team believes it's an error in Flow
-        // if it does. I'm leaving the condition here because it used to happen
-        // before the switch to JSON and I'd rather log something than have the
-        // user experience regress in case I'm wrong.
-        logger.error('Received empty type hint from `flow type-at-pos`');
-      }
+    if (!type || type === '(unknown)') {
       return null;
     }
     return {type, rawType};
