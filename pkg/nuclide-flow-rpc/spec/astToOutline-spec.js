@@ -11,6 +11,8 @@
 
 import type {FlowOutlineTree} from '..';
 
+import {addMatchers} from '../../nuclide-test-helpers';
+
 import {astToOutline} from '../lib/astToOutline';
 
 import classASTOld from './fixtures/class-ast-old';
@@ -536,26 +538,30 @@ const expectedTypesOutline = [
 ];
 
 describe('astToOutline', () => {
+  beforeEach(function() {
+    addMatchers(this);
+  });
+
   it('should provide a class outline', () => {
     // Old version
-    expect(astToOutline(classASTOld)).toEqual(expectedClassOutline);
+    expect(astToOutline(classASTOld)).diffJson(expectedClassOutline);
     // Newer, introduced AssignmentPattern for default function args
-    expect(astToOutline(classAST33)).toEqual(expectedClassOutline);
+    expect(astToOutline(classAST33)).diffJson(expectedClassOutline);
   });
 
   it('should provide an outline for miscellaneous top-level statements', () => {
-    expect(astToOutline(toplevelAST)).toEqual(expectedToplevelOutline);
+    expect(astToOutline(toplevelAST)).diffJson(expectedToplevelOutline);
   });
 
   it('should provide an outline for Jasmine specs', () => {
-    expect(astToOutline(jasmineAST)).toEqual(expectedJasmineOutline);
+    expect(astToOutline(jasmineAST)).diffJson(expectedJasmineOutline);
   });
 
   it('should provide an outline for module.exports', () => {
-    expect(astToOutline(exportsAST)).toEqual(expectedExportsOutline);
+    expect(astToOutline(exportsAST)).diffJson(expectedExportsOutline);
   });
 
   it('should provide an outline for type declarations', () => {
-    expect(astToOutline(typesAST)).toEqual(expectedTypesOutline);
+    expect(astToOutline(typesAST)).diffJson(expectedTypesOutline);
   });
 });
