@@ -97,6 +97,7 @@ export class FileTreeStore {
   _usePrefixNav: boolean;
   _isLoadingMap: Immutable.Map<NuclideUri, Promise<void>>;
   _repositories: Immutable.Set<atom$Repository>;
+  _fileChanges: Immutable.Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>;
 
   _dispatcher: FileTreeDispatcher;
   _emitter: Emitter;
@@ -128,6 +129,7 @@ export class FileTreeStore {
     this._emitter = new Emitter();
     this._dispatcher.register(this._onDispatch.bind(this));
     this._logger = getLogger();
+    this._fileChanges = new Immutable.Map();
 
     this._usePrefixNav = false;
     this._isLoadingMap = new Immutable.Map();
@@ -338,7 +340,6 @@ export class FileTreeStore {
         this._setIgnoredNames(payload.ignoredNames);
         break;
       case ActionTypes.SET_VCS_STATUSES:
-        this._setFileChanges(payload.rootKey, payload.vcsStatuses);
         this._setVcsStatuses(payload.rootKey, payload.vcsStatuses);
         break;
       case ActionTypes.SET_REPOSITORIES:
@@ -636,8 +637,8 @@ export class FileTreeStore {
     return this.roots.isEmpty();
   }
 
-  getFileChanges(): Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>> {
-    return this._conf.fileChanges;
+  getFileChanges(): Immutable.Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>> {
+    return this._fileChanges;
   }
 
   _invalidateRemovedFolder(): void {
@@ -648,15 +649,13 @@ export class FileTreeStore {
       // This causes the map to first flush out the repo and then again try to add the
       // repo but the files now don't exist causing an undefined value to be added.
       // Adding check to prevent this from happening.
-      const fileChangesForPath = this._conf.fileChanges.get(standardizedPath);
+      const fileChangesForPath = this._fileChanges.get(standardizedPath);
       if (fileChangesForPath != null) {
         updatedFileChanges.set(standardizedPath, fileChangesForPath);
       }
     });
 
-    this._updateConf(conf => {
-      conf.fileChanges = updatedFileChanges;
-    });
+    this._fileChanges = new Immutable.Map(updatedFileChanges);
   }
 
   _setFileChanges(
@@ -669,15 +668,20 @@ export class FileTreeStore {
       fileChanges.set(filePath, HgStatusToFileChangeStatus[statusCode]);
     });
 
-    this._updateConf(conf => {
-      conf.fileChanges = conf.fileChanges.set(rootKey, fileChanges);
-    });
+    this._fileChanges = this._fileChanges.set(rootKey, fileChanges);
   }
 
   _setVcsStatuses(
     rootKey: NuclideUri,
     vcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
   ): void {
+    // We use file changes for populating the uncommitted list, this is different as compared
+    // to what is computed in the vcsStatuses in that it does not need the exact path but just
+    // the root folder present in atom and the file name and its status. Another difference is
+    // in the terms used for status change, while uncommitted changes needs the HgStatusChange
+    // codes the file tree doesn't.
+    this._setFileChanges(rootKey, vcsStatuses);
+
     // We can't build on the child-derived properties to maintain vcs statuses in the entire
     // tree, since the reported VCS status may be for a node that is not yet present in the
     // fetched tree, and so it it can't affect its parents statuses. To have the roots colored
