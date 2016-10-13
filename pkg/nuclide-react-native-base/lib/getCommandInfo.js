@@ -71,7 +71,7 @@ async function getCommandFromReactNative(dir: string): Promise<?CommandInfo> {
     return null;
   }
   const filePath = nuclideUri.join(projectRoot, 'package.json');
-  const content = await fsPromise.readFile(filePath);
+  const content = await fsPromise.readFile(filePath, 'utf8');
   const parsed = JSON.parse(content);
   const isReactNative = parsed.name === 'react-native';
 
@@ -95,7 +95,7 @@ async function getCommandFromBuck(dir: string): Promise<?CommandInfo> {
 
   // TODO(matthewwithanm): Move this to BuckUtils?
   const filePath = nuclideUri.join(projectRoot, '.buckConfig');
-  const content = await fsPromise.readFile(filePath);
+  const content = await fsPromise.readFile(filePath, 'utf8');
   const parsed = ini.parse(`scope = global\n${content}`);
   const section = parsed['react-native'];
   if (section == null || section.server == null) {

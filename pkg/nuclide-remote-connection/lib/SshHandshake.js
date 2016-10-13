@@ -395,7 +395,7 @@ export class SshHandshake {
                 }
 
                 let serverInfo: any = null;
-                const serverInfoJson = await fsPromise.readFile(localTempFile);
+                const serverInfoJson = await fsPromise.readFile(localTempFile, 'utf8');
                 try {
                   serverInfo = JSON.parse(serverInfoJson);
                 } catch (e) {

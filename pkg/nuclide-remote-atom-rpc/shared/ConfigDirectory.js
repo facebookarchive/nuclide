@@ -108,7 +108,7 @@ async function getServerInfos(configDirectory: NuclideUri): Promise<Array<Server
   const entries = await fs.readdir(configDirectory);
   return arrayCompact(await Promise.all(entries.map(async entry => {
     const subdir = nuclideUri.join(configDirectory, entry);
-    const info = JSON.parse(await fs.readFile(nuclideUri.join(subdir, SERVER_INFO_FILE)));
+    const info = JSON.parse(await fs.readFile(nuclideUri.join(subdir, SERVER_INFO_FILE), 'utf8'));
     if (info.commandPort != null && info.family != null) {
       return info;
     } else {

@@ -259,6 +259,7 @@ async function _loadBuckConfig(rootPath: string): Promise<BuckConfig> {
   const header = 'scope = global\n';
   const buckConfigContent = await fsPromise.readFile(
     nuclideUri.join(rootPath, '.buckconfig'),
+    'utf8',
   );
   return ini.parse(header + buckConfigContent);
 }

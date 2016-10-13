@@ -19,6 +19,7 @@ describe('_findAvailableDevice', () => {
     waitsForPromise(async () => {
       const simctlOutput = await fsPromise.readFile(
         nuclideUri.join(__dirname, 'fixtures', 'simctl-output.json'),
+        'utf8',
       );
       const {devices} = JSON.parse(simctlOutput);
       const device = _findAvailableDevice(devices);

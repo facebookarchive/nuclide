@@ -191,7 +191,7 @@ export default class ClangFlagsManager {
     }
 
     try {
-      const contents = await fsPromise.readFile(dbFile);
+      const contents = await fsPromise.readFile(dbFile, 'utf8');
       const data = JSON.parse(contents);
       invariant(data instanceof Array);
       await Promise.all(data.map(async entry => {

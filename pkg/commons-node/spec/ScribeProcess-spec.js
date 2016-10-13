@@ -20,7 +20,7 @@ describe('scribe_cat test suites', () => {
 
   async function getContentOfScribeCategory(
     category: string,
-  ): Promise<Array<mixed>> {
+  ): Promise<Array<string>> {
     const categoryFilePath = nuclideUri.join(tempDir, category);
     const content = await fsPromise.readFile(categoryFilePath);
     const result = content.toString().split('\n')
