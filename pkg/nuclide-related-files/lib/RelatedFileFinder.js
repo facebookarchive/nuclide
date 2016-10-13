@@ -29,25 +29,45 @@ export default class RelatedFileFinder {
    * Returns the related files and the given file's index in that array.
    * The given file must be in the related files array.
    * @param filePath The filepath for which to get related files.
+   * @param fileTypeWhiteList the set of file types that we are looking for;
+   *      If this set is empty, all file types will be listed; the original
+   *      filePath should always be in the result
    * @return The related files and the given path's index into it.
    */
   static async find(
     filePath: NuclideUri,
+    fileTypeWhitelist?: Set<string> = new Set(),
   ): Promise<{relatedFiles: Array<string>, index: number}> {
     const dirName = nuclideUri.dirname(filePath);
     const prefix = getPrefix(filePath);
-
     const service = getServiceByNuclideUri('FileSystemService', filePath);
     invariant(service);
     const listing = await service.readdir(nuclideUri.getPath(dirName));
-    const relatedFiles = listing
+    // Here the filtering logic:
+    // first get all files with the same prefix -> filelist,
+    // get all the files that matches the whitelist -> wlFilelist;
+    // check the wlFilelist: if empty, use filelist
+    const filelist = listing
       .filter(otherFilePath => {
         return otherFilePath.stats.isFile() && !otherFilePath.file.endsWith('~') &&
           getPrefix(otherFilePath.file) === prefix;
-      })
-      .map(otherFilePath => nuclideUri.join(dirName, otherFilePath.file))
-      .sort();
+      });
+    let wlFilelist = fileTypeWhitelist.size <= 0 ? filelist :
+      filelist.filter(otherFilePath => {
+        return fileTypeWhitelist.has(nuclideUri.extname(otherFilePath.file));
+      });
+    if (wlFilelist.length <= 0) {
+      // no files in white list
+      wlFilelist = filelist;
+    }
 
+    const relatedFiles = wlFilelist
+      .map(otherFilePath => nuclideUri.join(dirName, otherFilePath.file));
+
+    if (relatedFiles.indexOf(filePath) < 0) {
+      relatedFiles.push(filePath);
+    }
+    relatedFiles.sort();
     return {
       relatedFiles,
       index: relatedFiles.indexOf(filePath),

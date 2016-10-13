@@ -64,7 +64,8 @@ export default class JumpToRelatedFile {
    * before the current one alphabetically.
    */
   async getNextRelatedFile(path: string): Promise<string> {
-    const {relatedFiles, index} = await RelatedFileFinder.find(path);
+    const {relatedFiles, index} = await RelatedFileFinder.find(
+      path, this._getFileTypeWhitelist());
     if (index === -1) {
       return path;
     }
@@ -76,11 +77,18 @@ export default class JumpToRelatedFile {
    * after the current one alphabetically.
    */
   async getPreviousRelatedFile(path: string): Promise<string> {
-    const {relatedFiles, index} = await RelatedFileFinder.find(path);
+    const {relatedFiles, index} = await RelatedFileFinder.find(
+      path, this._getFileTypeWhitelist());
     if (index === -1) {
       return path;
     }
     return relatedFiles[(index + 1) % relatedFiles.length];
+  }
+
+  _getFileTypeWhitelist(): Set<string> {
+    const fileTypeWhitelist: Array<string> =
+      (featureConfig.get('nuclide-related-files.fileTypeWhitelist'): any);
+    return new Set(fileTypeWhitelist);
   }
 
   _open(path: string) {
