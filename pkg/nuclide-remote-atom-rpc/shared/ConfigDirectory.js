@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
+import {arrayCompact} from '../../commons-node/collection';
 import fs from '../../commons-node/fsPromise';
 import userInfo from '../../commons-node/userInfo';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -105,7 +106,7 @@ export async function getServer(): Promise<?ServerInfo> {
 
 async function getServerInfos(configDirectory: NuclideUri): Promise<Array<ServerInfo>> {
   const entries = await fs.readdir(configDirectory);
-  return (await Promise.all(entries.map(async entry => {
+  return arrayCompact(await Promise.all(entries.map(async entry => {
     const subdir = nuclideUri.join(configDirectory, entry);
     const info = JSON.parse(await fs.readFile(nuclideUri.join(subdir, SERVER_INFO_FILE)));
     if (info.commandPort != null && info.family != null) {
@@ -113,7 +114,7 @@ async function getServerInfos(configDirectory: NuclideUri): Promise<Array<Server
     } else {
       return null;
     }
-  }))).filter(serverInfo => serverInfo != null);
+  })));
 }
 
 function findPathToConfigDirectory(clearDirectory: boolean): Promise<?string> {

@@ -17,7 +17,7 @@
 
 import mv from 'mv';
 import fs from 'fs';
-import fsPlus from 'fs-plus';
+import {arrayCompact} from '../../../commons-node/collection';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import fsPromise from '../../../commons-node/fsPromise';
 
@@ -119,13 +119,12 @@ export async function readdir(path: string): Promise<Array<FileWithStats>> {
         const stats = await fsPromise.stat(fullpath);
         return {file, stats, isSymbolicLink: true};
       } catch (error) {
-        return {file, stats: undefined, isSymbolicLink: true, error};
+        return null;
       }
     }
   }));
   // TODO: Return entries directly and change client to handle error.
-  return entries
-    .filter(entry => entry.error === undefined)
+  return arrayCompact(entries)
     .map(entry => {
       return {file: entry.file, stats: entry.stats, isSymbolicLink: entry.isSymbolicLink};
     });
@@ -174,11 +173,7 @@ export async function copy(sourcePath: string, destinationPath: string): Promise
   if (isExistingFile) {
     return false;
   }
-  await new Promise((resolve, reject) => {
-    fsPlus.copy(sourcePath, destinationPath, error => {
-      error ? reject(error) : resolve();
-    });
-  });
+  await fsPromise.copy(sourcePath, destinationPath);
   await copyFilePermissions(sourcePath, destinationPath);
   return true;
 }
@@ -297,7 +292,7 @@ async function copyFilePermissions(sourcePath: string, destinationPath: string):
  * TODO: move to nuclide-commons and rename to writeFileAtomic
  */
 export async function writeFile(path: string, data: string,
-    options: ?{encoding?: string, mode?: number, flag?:string}): Promise<void> {
+    options?: {encoding?: string, mode?: number, flag?:string}): Promise<void> {
 
   let complete = false;
   const tempFilePath = await fsPromise.tempfile('nuclide');
