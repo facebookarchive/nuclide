@@ -27,10 +27,17 @@ import {Range} from 'atom';
 
 import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 import nuclideUri from '../../commons-node/nuclideUri';
+import {Deferred, nextTick} from '../../commons-node/promise';
 import {expectObservableToStartWith} from '../../nuclide-test-helpers';
 
-import {getStore} from '../lib/refactorStore';
+import {
+  getStore,
+  getErrors,
+} from '../lib/refactorStore';
 import * as Actions from '../lib/refactorActions';
+
+// sentinel value
+const NO_ERROR = {};
 
 // This tests the integration of the reducers and epics
 describe('refactorStore', () => {
@@ -42,6 +49,15 @@ describe('refactorStore', () => {
   let provider: RefactorProvider = (null: any);
   let refactoringsAtPointReturn: Promise<Array<AvailableRefactoring>> = (null: any);
   let refactorReturn: Promise<?RefactorResponse> = (null: any);
+
+  let lastError: mixed = null;
+  function expectNoUncaughtErrors(): void {
+    // expect(lastError).toBe(NO_ERROR) results in 'obj.hasOwnProperty is not a function' in some
+    // cases...
+    expect(lastError === NO_ERROR).toBeTruthy();
+  }
+
+  let errorSubscription: rxjs$ISubscription = (null: any);
 
   const waitForPhase = (phaseType: string) => {
     return currentState
@@ -60,6 +76,9 @@ describe('refactorStore', () => {
   };
 
   beforeEach(() => {
+    lastError = NO_ERROR;
+    errorSubscription = getErrors().subscribe(error => { lastError = error; });
+
     provider = {
       grammarScopes: ['text.plain', 'text.plain.null-grammar'],
       priority: 1,
@@ -91,6 +110,10 @@ describe('refactorStore', () => {
     // proceeding.
     currentState = new BehaviorSubject(store.getState());
     stateStream.subscribe(currentState);
+  });
+
+  afterEach(() => {
+    errorSubscription.unsubscribe();
   });
 
   it('starts closed', () => {
@@ -159,6 +182,85 @@ describe('refactorStore', () => {
           store.dispatch(Actions.execute(provider, rename));
           await waitForClose();
           expect(openEditor.getText()).toEqual('bar\nbar\nbar\n');
+        });
+      });
+
+      it('tolerates a provider returning available refactorings after a close action', () => {
+        waitsForPromise(async () => {
+          const deferred = new Deferred();
+          refactoringsAtPointReturn = deferred.promise;
+          store.dispatch(Actions.open());
+          await waitForPhase('get-refactorings');
+          store.dispatch(Actions.close());
+          await waitForClose();
+          deferred.resolve([]);
+          await nextTick();
+          expectNoUncaughtErrors();
+        });
+      });
+
+      it('tolerates a provider returning refactor results after a close action', () => {
+        waitsForPromise(async () => {
+          const deferred = new Deferred();
+          refactoringsAtPointReturn = Promise.resolve([
+            TEST_FILE_RENAME,
+          ]);
+          refactorReturn = deferred.promise;
+          store.dispatch(Actions.open());
+          await waitForPhase('pick');
+          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+          await waitForPhase('rename');
+          const rename: RenameRequest = {
+            kind: 'rename',
+            symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+            editor: openEditor,
+            newName: 'bar',
+          };
+          store.dispatch(Actions.execute(provider, rename));
+          await waitForPhase('execute');
+          store.dispatch(Actions.close());
+          await waitForClose();
+          deferred.resolve({
+            edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
+          });
+          await nextTick();
+          expectNoUncaughtErrors();
+        });
+      });
+
+      // TODO also test the method actually throwing, as well as returning a rejected promise.
+      it('tolerates a provider throwing in refactoringsAtPoint', () => {
+        waitsForPromise(async () => {
+          refactoringsAtPointReturn = Promise.reject();
+          store.dispatch(Actions.open());
+          await waitForPhase('get-refactorings');
+          await waitForClose();
+          await nextTick();
+          expectNoUncaughtErrors();
+        });
+      });
+
+      // TODO also test the method actually throwing, as well as returning a rejected promise.
+      it('tolerates a provider throwing in refactor', () => {
+        waitsForPromise(async () => {
+          refactoringsAtPointReturn = Promise.resolve([
+            TEST_FILE_RENAME,
+          ]);
+          refactorReturn = Promise.reject();
+          store.dispatch(Actions.open());
+          await waitForPhase('pick');
+          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+          await waitForPhase('rename');
+          const rename: RenameRequest = {
+            kind: 'rename',
+            symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+            editor: openEditor,
+            newName: 'bar',
+          };
+          store.dispatch(Actions.execute(provider, rename));
+          await waitForClose();
+          await nextTick();
+          expectNoUncaughtErrors();
         });
       });
     });

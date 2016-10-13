@@ -11,7 +11,11 @@
 
 import type {ActionsObservable, Epic} from '../../commons-node/redux-observable';
 import type ProviderRegistry from '../../commons-atom/ProviderRegistry';
-import type {RefactorAction, RefactorState} from './types';
+import type {
+  RefactorAction,
+  RefactorState,
+  ExecuteAction,
+} from './types';
 import type {RefactorProvider} from '..';
 
 import invariant from 'assert';
@@ -19,67 +23,31 @@ import {Observable} from 'rxjs';
 
 import applyTextEdits from '../../nuclide-textedit';
 
+import * as Actions from './refactorActions';
+
 export function getEpics(
   providers: ProviderRegistry<RefactorProvider>,
 ): Array<Epic<RefactorAction, RefactorState>> {
   return [
-    function getRefactorings(
+    function getRefactoringsEpic(
       actions: ActionsObservable<RefactorAction>,
     ): Observable<RefactorAction> {
-      // TODO cancel if another action comes along
       return actions
         .ofType('open')
-        .switchMap(async () => {
-          const editor = atom.workspace.getActiveTextEditor();
-          if (editor == null) {
-            return {
-              type: 'got-refactorings',
-              error: true,
-            };
-          }
-          const cursor = editor.getLastCursor();
-          const provider = providers.getProviderForEditor(editor);
-          if (provider == null) {
-            return {
-              type: 'got-refactorings',
-              error: true,
-            };
-          }
-          const availableRefactorings =
-            await provider.refactoringsAtPoint(editor, cursor.getBufferPosition());
-          return {
-            type: 'got-refactorings',
-            payload: {
-              editor,
-              provider,
-              availableRefactorings,
-            },
-          };
+        .switchMap(() => {
+          return Observable.fromPromise(getRefactorings(providers)).takeUntil(actions);
         });
     },
 
-    function executeRefactoring(
+    function executeRefactoringEpic(
       actions: ActionsObservable<RefactorAction>,
     ): Observable<RefactorAction> {
       return actions
         .ofType('execute')
-        .switchMap(async action => {
+        .switchMap(action => {
           // Flow doesn't understand the implications of ofType :(
           invariant(action.type === 'execute');
-          const {refactoring, provider} = action.payload;
-          const response = await provider.refactor(refactoring);
-          invariant(response != null);
-          const editor = atom.workspace.getActiveTextEditor();
-          invariant(editor != null);
-          const path = editor.getPath();
-          invariant(path != null);
-          // TODO also apply edits to other files
-          const fileEdits = response.edits.get(path);
-          invariant(fileEdits != null);
-          applyTextEdits(path, ...fileEdits);
-          return {
-            type: 'close',
-          };
+          return Observable.fromPromise(executeRefactoring(action)).takeUntil(actions);
         });
     },
 
@@ -92,10 +60,55 @@ export function getEpics(
         // TODO provide some feedback to the user that an error has occurred
         .map(action => {
           invariant(action.error);
-          return {
-            type: 'close',
-          };
+          return Actions.close();
         });
     },
   ];
+}
+
+async function getRefactorings(
+  providers: ProviderRegistry<RefactorProvider>,
+): Promise<RefactorAction> {
+  const editor = atom.workspace.getActiveTextEditor();
+  if (editor == null) {
+    return Actions.gotRefactoringsError();
+  }
+  const cursor = editor.getLastCursor();
+  const provider = providers.getProviderForEditor(editor);
+  if (provider == null) {
+    return Actions.gotRefactoringsError();
+  }
+  try {
+    const availableRefactorings =
+      await provider.refactoringsAtPoint(editor, cursor.getBufferPosition());
+    return Actions.gotRefactorings(editor, provider, availableRefactorings);
+  } catch (e) {
+    return Actions.gotRefactoringsError();
+  }
+}
+
+async function executeRefactoring(
+  action: ExecuteAction,
+): Promise<RefactorAction> {
+  const {refactoring, provider} = action.payload;
+  let response;
+  try {
+    response = await provider.refactor(refactoring);
+  } catch (e) {
+    // TODO use an error action here
+    return Actions.close();
+  }
+  // TODO do something sane if the provider returns null
+  invariant(response != null);
+  const editor = atom.workspace.getActiveTextEditor();
+  // TODO handle it if the editor has gone away
+  invariant(editor != null);
+  const path = editor.getPath();
+  // TODO handle editors with no path
+  invariant(path != null);
+  // TODO also apply edits to other files
+  const fileEdits = response.edits.get(path);
+  invariant(fileEdits != null);
+  applyTextEdits(path, ...fileEdits);
+  return Actions.close();
 }
