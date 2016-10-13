@@ -12,7 +12,7 @@
 import classnames from 'classnames';
 import {React} from 'react-for-atom';
 
-type HighlightColor = 'info' | 'success' | 'warning' | 'error';
+export type HighlightColor = 'default' | 'info' | 'success' | 'warning' | 'error';
 
 type Props = {
   className?: string,
@@ -21,6 +21,7 @@ type Props = {
 };
 
 export const HighlightColors = Object.freeze({
+  default: 'default',
   info: 'info',
   success: 'success',
   warning: 'warning',
@@ -42,7 +43,7 @@ export const Highlight = (props: Props) => {
     children,
     ...remainingProps,
   } = props;
-  const colorClassName = color == null ? 'highlight' : HighlightColorClassNames[color];
+  const colorClassName = HighlightColorClassNames[color == null ? 'default' : color];
   const newClassName = classnames(colorClassName, className);
   return <span className={newClassName} {...remainingProps}>{children}</span>;
 };
