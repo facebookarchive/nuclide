@@ -8,7 +8,6 @@
  * @flow
  */
 
-
 export type HackParameterDetails = {
   name: string,
   type: string,

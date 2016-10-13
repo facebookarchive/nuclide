@@ -19,7 +19,7 @@ import type {
 import type {
   HackSearchPosition,
   HackLanguageService,
-} from '../../nuclide-hack-rpc/lib/HackService';
+} from '../../nuclide-hack-rpc/lib/HackService-types';
 
 import {isFileInHackProject, getHackLanguageForUri} from './HackLanguage';
 import nuclideUri from '../../commons-node/nuclideUri';

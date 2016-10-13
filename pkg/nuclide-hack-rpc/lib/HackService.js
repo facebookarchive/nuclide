@@ -16,6 +16,10 @@ import type {
   HackCompletionsResult,
   HackDiagnosticsResult,
 } from './rpc-types';
+import type {
+  HackLanguageService,
+  HackSearchPosition,
+} from './HackService-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
@@ -34,7 +38,7 @@ import type {
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {ConnectableObservable} from 'rxjs';
+import type {Observable} from 'rxjs';
 import type {Completion} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
@@ -52,7 +56,6 @@ import {
   logger,
 } from './hack-config';
 import {getHackProcess, observeConnections} from './HackProcess';
-import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {convertDefinitions} from './Definitions';
 import {
   hackRangeToAtomRange,
@@ -69,18 +72,9 @@ import {
 import {executeQuery} from './SymbolSearch';
 import {FileCache} from '../../nuclide-open-files-rpc';
 import {getEvaluationExpression} from './EvaluationExpression';
+import {ServerLanguageService} from '../../nuclide-language-service-rpc';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
-
-export type HackSearchPosition = {
-  path: NuclideUri,
-  line: number,
-  column: number,
-  name: string,
-  length: number,
-  scope: string,
-  additionalInfo: string,
-};
 
 export type HackTypeAtPosResult = {
   type: ?string,
@@ -107,10 +101,46 @@ export async function initialize(
   setHackCommand(hackCommand);
   logger.setLogLevel(logLevel);
   await getHackCommand();
-  return new HackLanguageService(useIdeConnection, fileNotifier);
+  return new HackLanguageServiceImpl(useIdeConnection, fileNotifier);
 }
 
-export class HackLanguageService {
+class HackLanguageServiceImpl extends ServerLanguageService {
+  _useIdeConnection: boolean;
+
+  constructor(useIdeConnection: boolean, fileNotifier: FileNotifier) {
+    super(fileNotifier, new HackLanguageAnalyzer(useIdeConnection, fileNotifier));
+    this._useIdeConnection = useIdeConnection;
+  }
+
+  async getAutocompleteSuggestions(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    activatedManually: boolean,
+  ): Promise<Array<Completion>> {
+    if (this._useIdeConnection) {
+      const process = await getHackProcess(this._fileCache, fileVersion.filePath);
+      if (process == null) {
+        return [];
+      } else {
+        return process.getAutocompleteSuggestions(fileVersion, position, activatedManually);
+      }
+    } else {
+      return super.getAutocompleteSuggestions(fileVersion, position, activatedManually);
+    }
+  }
+
+  /**
+   * Performs a Hack symbol search in the specified directory.
+   */
+  executeQuery(
+    rootDirectory: NuclideUri,
+    queryString: string,
+  ): Promise<Array<HackSearchPosition>> {
+    return executeQuery(rootDirectory, queryString);
+  }
+}
+
+class HackLanguageAnalyzer {
   _useIdeConnection: boolean;
   _fileCache: FileCache;
 
@@ -121,10 +151,9 @@ export class HackLanguageService {
   }
 
   async getDiagnostics(
-    fileVersion: FileVersion,
+    filePath: NuclideUri,
+    buffer: atom$TextBuffer,
   ): Promise<?DiagnosticProviderUpdate> {
-    const filePath = fileVersion.filePath;
-
     const hhResult: ?HackDiagnosticsResult = (await retryLimit(
       () => callHHClient(
         /* args */ [],
@@ -143,7 +172,7 @@ export class HackLanguageService {
     return convertDiagnostics(hhResult);
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+  observeDiagnostics(): Observable<FileDiagnosticUpdate> {
     logger.logTrace('observeDiagnostics');
     invariant(this._useIdeConnection);
     return observeConnections(this._fileCache)
@@ -154,50 +183,38 @@ export class HackLanguageService {
           messages: diagnostics.errors.map(diagnostic =>
             hackMessageToDiagnosticMessage(diagnostic.message)),
         }));
-      })
-      .publish();
+      });
   }
 
   async getAutocompleteSuggestions(
-    fileVersion: FileVersion,
+    filePath: NuclideUri,
+    buffer: atom$TextBuffer,
     position: atom$Point,
     activatedManually: boolean,
   ): Promise<Array<Completion>> {
-    if (this._useIdeConnection) {
-      const process = await getHackProcess(this._fileCache, fileVersion.filePath);
-      if (process == null) {
-        return [];
-      } else {
-        return process.getAutocompleteSuggestions(fileVersion, position, activatedManually);
-      }
-    } else {
-      const filePath = fileVersion.filePath;
-      const buffer = await getBufferAtVersion(fileVersion);
-      const contents = buffer.getText();
-      const offset = buffer.characterIndexForPosition(position);
+    const contents = buffer.getText();
+    const offset = buffer.characterIndexForPosition(position);
 
-      const replacementPrefix = findHackPrefix(buffer, position);
-      if (replacementPrefix === '' && !hasPrefix(buffer, position)) {
-        return [];
-      }
-
-      const markedContents = markFileForCompletion(contents, offset);
-      const result: ?HackCompletionsResult = (await callHHClient(
-        /* args */ ['--auto-complete'],
-        /* errorStream */ false,
-        /* processInput */ markedContents,
-        /* file */ filePath,
-      ): any);
-      return convertCompletions(contents, offset, replacementPrefix, result);
+    const replacementPrefix = findHackPrefix(buffer, position);
+    if (replacementPrefix === '' && !hasPrefix(buffer, position)) {
+      return [];
     }
+
+    const markedContents = markFileForCompletion(contents, offset);
+    const result: ?HackCompletionsResult = (await callHHClient(
+      /* args */ ['--auto-complete'],
+      /* errorStream */ false,
+      /* processInput */ markedContents,
+      /* file */ filePath,
+    ): any);
+    return convertCompletions(contents, offset, replacementPrefix, result);
   }
 
   async getDefinition(
-    fileVersion: FileVersion,
+    filePath: NuclideUri,
+    buffer: atom$TextBuffer,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
     const contents = buffer.getText();
 
     const result: ?Array<HackDefinition> = (await callHHClient(
@@ -249,11 +266,10 @@ export class HackLanguageService {
   }
 
   async findReferences(
-    fileVersion: FileVersion,
+    filePath: NuclideUri,
+    buffer: atom$TextBuffer,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
     const contents = buffer.getText();
 
     const result: ?HackReferencesResult = (await callHHClient(
@@ -271,16 +287,6 @@ export class HackLanguageService {
     return convertReferences(result, projectRoot);
   }
 
-  /**
-   * Performs a Hack symbol search in the specified directory.
-   */
-  executeQuery(
-    rootDirectory: NuclideUri,
-    queryString: string,
-  ): Promise<Array<HackSearchPosition>> {
-    return executeQuery(rootDirectory, queryString);
-  }
-
   async getCoverage(
     filePath: NuclideUri,
   ): Promise<?CoverageResult> {
@@ -295,10 +301,9 @@ export class HackLanguageService {
   }
 
   async getOutline(
-    fileVersion: FileVersion,
+    filePath: NuclideUri,
+    buffer: atom$TextBuffer,
   ): Promise<?Outline> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
     const contents = buffer.getText();
 
     const result: ?HackIdeOutline = (await callHHClient(
@@ -314,9 +319,11 @@ export class HackLanguageService {
     return outlineFromHackIdeOutline(result);
   }
 
-  async typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
+  async typeHint(
+    filePath: NuclideUri,
+    buffer: atom$TextBuffer,
+    position: atom$Point,
+  ): Promise<?TypeHint> {
     const contents = buffer.getText();
 
     const match = getIdentifierAndRange(buffer, position);
@@ -343,11 +350,10 @@ export class HackLanguageService {
   }
 
   async highlight(
-    fileVersion: FileVersion,
+    filePath: NuclideUri,
+    buffer: atom$TextBuffer,
     position: atom$Point,
   ): Promise<Array<atom$Range>> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
     const contents = buffer.getText();
 
     const id = getIdentifierAtPosition(buffer, position);
@@ -367,11 +373,10 @@ export class HackLanguageService {
   }
 
   async formatSource(
-    fileVersion: FileVersion,
+    filePath: NuclideUri,
+    buffer: atom$TextBuffer,
     range: atom$Range,
   ): Promise<string> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
     const contents = buffer.getText();
     const startOffset = buffer.characterIndexForPosition(range.start) + 1;
     const endOffset = buffer.characterIndexForPosition(range.end) + 1;
@@ -394,11 +399,10 @@ export class HackLanguageService {
   }
 
   async getEvaluationExpression(
-    fileVersion: FileVersion,
+    filePath: NuclideUri,
+    buffer: atom$TextBuffer,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
-    const filePath = fileVersion.filePath;
-    const buffer = await getBufferAtVersion(fileVersion);
     return getEvaluationExpression(filePath, buffer, position);
   }
 

@@ -92,6 +92,13 @@ class HackProcess extends RpcProcess {
         switch (fileEvent.kind) {
           case 'open':
             service.didOpenFile(filePath, version, fileEvent.contents);
+            // TODO: Remove this once hack handles the initial contents in the open message.
+            service.didChangeFile(
+              filePath,
+              version,
+              [{
+                text: fileEvent.contents,
+              }]);
             break;
           case 'close':
             service.didCloseFile(filePath);

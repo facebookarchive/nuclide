@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HackSearchPosition} from './HackService';
+import type {HackSearchPosition} from './HackService-types';
 import type {HHSearchPosition} from './types';
 
 import {findHackConfigDir} from './hack-config';

@@ -27,46 +27,28 @@ Atom/NuclideServer design handles both local and remote requests.
 
 The `AtomLanguageService` class implements all of the code in the Atom process for integrating a new
 language into the Atom UI. It communicates to the NuclideServer via the `LanguageService` interface.
-An instance of the `LanguageService` interface provides the language specific analysis.
+The `LanguageService` interface is typically implemented by the `ServerLanguageService` class.
+The `ServerLanguageService` then defers to an implementation of the `LanguageAnalyzer` interface
+which implements the language specific analysis.
 
-Creating a new language service includes:
-- Adding a new remote package which can create instances of the `LanguageService` RPC interface.
+TODO: Add Picture
+
+Creating a new language service requires defining 2 packages:
+- Adding a new remote package which implements the `LanguageAnalyzer` interface.
 - Adding a new package to Nuclide which creates an instance of `AtomLanguageService` during activation,
-  and creates instances of the new `LanguageService` for each new `ServerConnection`.
+  and creates instances of the `LanguageService` (typically by using a `ServerLanguageService` which
+  defers to a `LanguageAnalyzer`) for each new remote `ServerConnection`.
 
-## Implementing the `LanguageService` Interface
+## Implementing the `LanguageAnalyzer` Interface
 
-The `LanguageService` interface is a 'nuclide-rpc' compatible interface which provides a low level
-API for providing language analysis. The API contains methods for all of the available Nuclide
-language services. Add a new package to the `pkg` directory named `nuclide-<new-language>-rpc`.
+Add a new npm package to the `pkg` directory named `nuclide-<new-language>-rpc`.
 The `-rpc` suffix indicates that the package runs on the server.
 
-Add an implementation of the `LanguageService` interface to your new package.
+Add an implementation of the `LanguageAnalyzer` interface to your new package.
+The `LanguageAnalyzer` interface is a low level API for providing language analysis.
+The API contains methods for all of the available Nuclide language services.
 Likely your language service will not provide every service. For services that
 are unavailable for your language just provide an implementation which throws an exception.
-
-### Using `FileVersion` and `getBufferAtVersion` For File Contents
-
-Most of the APIs in the `LanguageService` interface require a file name and the contents of the file
-to perform their operation. Including the entire file contents in each language service request would
-be extremely inefficient. Instead, the current file state is sent in a `FileVersion` object.
-
-The `FileVersion` object just contains the file name, version number and notifier. We'll come back
-to the notifier in a bit. Note that the version number is internal to the Atom process. Each time
-the file is edited (on each keystroke) in the Atom process the version number is incremented.
-
-The `getBufferAtVersion` function in the `nuclide-open-files` package maps from a `FileVersion`
-to an Atom compatible `TextBuffer`. This `TextBuffer` is a copy of the one in the Atom process.
-It can be used to access the current file contents, map from Atom `Point` and `Range` objects to and
-from the file contents. See the documentation at http://atom.io for details.
-
-When the user types several characters in quick succession each character will send an edit to the
-server. The first character will likely invoke language service APIs (in particular for
-`getAutocompleteSuggestions`). As the autocomplete request is processed, there is a race between the
-later edits and the `getBufferAtVersion` call made by autocomplete implementation. If the edit wins
-the race the `getAutocompleteSuggestions` will make a request for an outdated version of the file.
-When this occurs `getBufferAtVersion` will throw. Just let this exception propagate to the caller
-as the request is outdated as well and a later request will come for the newer buffer version.
 
 #### `stripped-text-buffer`
 
@@ -74,13 +56,16 @@ Note that these `TextBuffer` objects in the NuclideServer process are stripped d
 Atom versions. They cannot save/load from disk, or use the marker portions of the TextBuffer API.
 The source for the stripped TextBuffer is in the `simple-text-buffer` npm package if you need details.
 
-### An Example API implementation
+TODO: Add StrippedTextBuffer type annotation once we have property variance from flow.
+
+### An Example `LanguageAnalyzer` API implementation
 
 Let's take a look at an example API and what a typical implementation might look like. We'll use the
 
 ```js
 getDefinition(
-  fileVersion: FileVersion,
+  filePath: NuclideUri,
+  buffer: atom$TextBuffer,
   position: atom$Point,
 ): Promise<?DefinitionQueryResult>,
 ```
@@ -89,15 +74,10 @@ API in our example. A typical implementation might look like:
 
 ```js
 async getDefinition(
-  fileVersion: FileVersion,
+  filePath: NuclideUri,
+  buffer: atom$TextBuffer,
   position: atom$Point,
 ): Promise<?DefinitionQueryResult> {
-  const filePath = fileVersion.filePath;
-
-  // Get the file contents for this request
-  // This will throw if the request is out of date...
-  // ... that's ok, we'll just let the exception rip.
-  const buffer = await getBufferAtVersion(fileVersion);
   const contents = buffer.getText();
 
   // Call the external language analysis process ...
@@ -116,21 +96,25 @@ async getDefinition(
 }
 ```
 
-Remember that if you cannot provide a given service for your language, just have the implementation
+If you cannot provide a given service for your language, just have the implementation
 throw an Error:
 
 ```js
 getCoverage(
   filePath: NuclideUri,
+  buffer: atom$TextBuffer,
 ): Promise<?CoverageResult> {
   throw new Error('No type coverage information available');
 }
 ```
 
+Methods in your `LanguageAnalyzer` will only be called if the feature is enabled in the config
+provided to your `AtomLanguageService`, so these unimplemented methods will not be called.
+
 ## Adding Your Server package to the Nuclide Server
 
-Once you have an implementation of the `LanguageService` interface in your new package, add it to the
-nuclide server:
+Once you have an implementation of the `LanguageAnalyzer` interface in your new package, add it to the
+nuclide server's set of RPC services:
 
 - Add an entry in `pkg/nuclide-server/services-3.json` for your new package.
   - The implementation entry is the path to your `LanguageService` implementation.
@@ -138,7 +122,7 @@ nuclide server:
 
 ## Enabling Your New Language in Nuclide
 
-Once you have the `LanguageService` interface implemented for your new language create an Atom
+Once you have the `LanguageAnalyzer` interface implemented for your new language create an Atom
 package for your language named `nuclide-<my-language>`. In the package's `activate` method
 create a new instance of the `AtomLanguageService` for your new language. Creating an `AtomLanguageService`
 requires 2 things: a factory for your `LanguageService` implementation and an `AtomLanguageServiceConfig`
@@ -158,12 +142,13 @@ let languageService = null;
 async function languageServiceFactory(connection: ?ServerConnection): Promise<LanguageService> {
   const remoteService: MyLanguageService = getServiceByConnection('MyLanguageService', connection);
 
-  // Get my custom configuration, from atom's config object
-  const config = getConfig();
+    // Get the connection specific FileCache ...
+    const fileNotifier = await getNotifierByConnection(connection);
 
-  // Create the remote LanguageService
-  return remoteService.initialize(
-    config);
+    // Create the remote LanguageService
+    return remoteService.initialize(
+      fileNotifier,
+      config);
 }
 
 export function activate() {
@@ -194,26 +179,29 @@ And the nuclide-my-language-rpc implementation would be:
 ```js
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
+import {ServerLanguageService} from '../../nuclide-language-service-rpc';
+
 export async function initialize(
+  fileNotifier: FileNotifier,
   config: MyLanguageConfig,
 ): Promise<LanguageService> {
-  return new MyLanguageService(config);
+  return new ServerLanguageService(fileNotifier, new MyLanguageService(config));
 }
 
-export class MyLanguageService {
+class MyLanguageAnalyzer {
   constructor(config: MyLanguageConfig) { ... }
 
-  // Implementation of the LanguageService interface goes here
+  // Implementation of the LanguageAnalyzer interface goes here
   // ...
 }
 ```
 
 ## Supporting Multiple Connections
 
-A single NuclideServer process can be connected to from multiple Atom processes. A new Atom process
+A single NuclideServer process can be connected to multiple Atom processes. A new Atom process
 is created for each top level Atom window.
 In the example code above, each connected Atom process will call `initialize` and create their own
-`MyLanguageService` instance.
+`MyLanguageAnalyzer` instance.
 
 Each Atom process could open and edit the same file. Your language service could receive requests
 for language services for the same file with wildly different content from 2 connections.
@@ -260,15 +248,15 @@ export async function initialize(
   // The fileNotifier from Atom is always an instance of FileCache.
   invariant(fileNotifier instanceof FileCache);
   const fileCache = (fileNotifier: FileCache);
-  return new MyLanguageService(
+  return new ServerLanguageService(fileNotifier, new MyLanguageService(
     fileCache,
-    config);
+    config));
 }
 
-export class MyLanguageService {
+export class MyLanguageAnalyzer {
   constructor(fileCache: FileCache, config: MyLanguageConfig) { ... }
 
-  // Implementation of the LanguageService interface goes here
+  // Implementation of the LanguageAnalyzer interface goes here
   // ...
 }
 ```

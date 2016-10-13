@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
-import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService';
+import type {HackLanguageService} from '../../nuclide-hack-rpc/lib/HackService-types';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,

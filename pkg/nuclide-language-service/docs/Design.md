@@ -10,23 +10,28 @@
 
 ![Language Service Design](./design.jpg)
 
-### File Synchronization
+### Using `FileVersion` and `getBufferAtVersion` For File Contents
 
-The `nuclide-open-files` package lives in the Atom process and synchronizes all open atom$TextBuffers
-to its server process `nuclide-open-files-rpc`. The server version of atom$TextBuffer has the marker
-and file synchronization code stripped out. In particular it no longer has a getPath() member.
-This reduces dependencies on per-platform binaries.
+Most of the APIs in the `LanguageService` interface require a file name and the contents of the file
+to perform their operation. Including the entire file contents in each language service request would
+be extremely inefficient. Instead, the current file state is sent in a `FileVersion` object.
 
-When an Atom service wants to send a request to the Nuclide Server regarding the current contents of
-a file it calls the `getFileVersionOfEditor` API from the `nuclide-open-files` package which
-yields a `FileVersion` value. A `FileVersion` is just a filename and version number. Every time
-an atom$TextBuffer is edited, its internal changecount(aka version number) is incremented.
+The `FileVersion` object just contains the file name, version number and notifier. We'll come back
+to the notifier in a bit. Note that the version number is internal to the Atom process. Each time
+the file is edited (on each keystroke) in the Atom process the version number is incremented.
 
-A `FileVersion` value may be used in nuclide-rpc calls to the server. On the server a `FileVersion`
-can be mapped back to an atom$TextBuffer via `getBufferAtVersion`. If a user is typing quickly,
-a `FileVersion` may be outdated on the server by the time `getBufferAtVersion` is called. When this
-occurs, `getBufferAtVersion` fails, and the calling operation can be safely aborted as the user's
-request is outdated.
+The `getBufferAtVersion` function in the `nuclide-open-files` package maps from a `FileVersion`
+to an Atom compatible `TextBuffer`. This `TextBuffer` is a copy of the one in the Atom process.
+It can be used to access the current file contents, map from Atom `Point` and `Range` objects to and
+from the file contents. See the documentation at http://atom.io for details.
+
+When the user types several characters in quick succession each character will send an edit to the
+server. The first character will likely invoke language service APIs (in particular for
+`getAutocompleteSuggestions`). As the autocomplete request is processed, there is a race between the
+later edits and the `getBufferAtVersion` call made by autocomplete implementation. If the edit wins
+the race the `getAutocompleteSuggestions` will make a request for an outdated version of the file.
+When this occurs `getBufferAtVersion` will throw. Just let this exception propagate to the caller
+as the request is outdated as well and a later request will come for the newer buffer version.
 
 ### AtomLanguageService
 

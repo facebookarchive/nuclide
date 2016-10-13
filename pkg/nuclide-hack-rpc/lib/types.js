@@ -9,7 +9,7 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HackSearchPosition} from './HackService';
+import type {HackSearchPosition} from './HackService-types';
 
 export type HHSearchPosition = {
   filename: string,
