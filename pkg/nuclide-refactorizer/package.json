@@ -8,5 +8,8 @@
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
-  }
+  },
+  "activationHooks": [
+    "nuclide_refactoring:gk:nuclide"
+  ]
 }
