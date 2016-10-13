@@ -23,6 +23,7 @@ import {observePanes} from './observePanes';
 import {syncPaneItemVisibility} from './syncPaneItemVisibility';
 import * as PanelLocationIds from './PanelLocationIds';
 import {Panel} from './ui/Panel';
+import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import {React} from 'react-for-atom';
 import {BehaviorSubject, Observable, Scheduler} from 'rxjs';
@@ -102,16 +103,37 @@ export class PanelLocation extends SimpleModel<State> {
       ),
 
       // Add a tab bar to any panes created in the container.
+      // TODO: Account for the disabling of the atom-tabs package. We assume that it will be
+      //   activated, but that isn't necessarily true. Continuing to use the atom-tabs logic while
+      //   avoiding that assumption will likely mean a change to atom-tabs that makes it more
+      //   generic.
       paneContainer.observePanes(pane => {
         const tabBarView = document.createElement('ul', 'atom-tabs');
 
-        // This should always be true. Unless they don't have atom-tabs installed or something. Do
-        // we need to wait for activation of atom-tabs?
-        if (typeof tabBarView.initialize !== 'function') { return; }
+        const initializeTabBar = () => {
+          invariant(typeof tabBarView.initialize === 'function');
+          tabBarView.initialize(pane);
+          const paneElement = atom.views.getView(pane);
+          paneElement.insertBefore(tabBarView, paneElement.firstChild);
+        };
 
-        tabBarView.initialize(pane);
-        const paneElement = atom.views.getView(pane);
-        paneElement.insertBefore(tabBarView, paneElement.firstChild);
+        // It's possible that the tabs package may not have activated yet (and therefore that the
+        // atom-tabs element won't have been upgraded). If that's the case, wait for it to do so and
+        // then initialize the tab bar.
+        if (typeof tabBarView.initialize === 'function') {
+          initializeTabBar();
+        } else {
+          const disposables = new UniversalDisposable(
+            atom.packages.onDidActivatePackage(pkg => {
+              if (typeof tabBarView.initialize === 'function') {
+                initializeTabBar();
+                disposables.dispose();
+              }
+            }),
+            pane.onDidDestroy(() => { disposables.dispose(); }),
+          );
+        }
+
       }),
 
       // If you add an item to a panel (e.g. by drag & drop), make the panel visible.
