@@ -1,4 +1,4 @@
-ios_resource(
+apple_resource(
 name='test_target123',
   dirs = [],
   files = [],

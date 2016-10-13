@@ -1,10 +1,10 @@
-ios_resource(
+apple_resource(
   name = 'Target1',
   dirs = [],
   files = [],
 )
 
-ios_resource(
+apple_resource(
  name =   "w3ird_target-name",
   dirs = [],
   files = [],

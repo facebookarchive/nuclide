@@ -1,4 +1,4 @@
-ios_resource(
+apple_resource(
  name =   "target-v.1",
   dirs = [],
   files = [],
