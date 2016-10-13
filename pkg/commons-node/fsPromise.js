@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import fs from 'fs-plus';
+import fs from 'fs';
+import fsPlus from 'fs-plus';
 import globLib from 'glob';
 import mkdirpLib from 'mkdirp';
 import nuclideUri from '../commons-node/nuclideUri';
@@ -25,11 +26,11 @@ import {asyncExecute} from './process';
  */
 function tempdir(prefix: string = ''): Promise<string> {
   return new Promise((resolve, reject) => {
-    temp.mkdir(prefix, (err, dirPath) => {
-      if (err) {
-        reject(err);
+    temp.mkdir(prefix, (err, result) => {
+      if (err == null) {
+        resolve(result);
       } else {
-        resolve(dirPath);
+        reject(err);
       }
     });
   });
@@ -156,13 +157,13 @@ async function mkdirp(filePath: string): Promise<boolean> {
 /**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
-function rmdir(filePath: string): Promise<any> {
+function rmdir(filePath: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    rimraf(filePath, err => {
-      if (err) {
-        reject(err);
+    rimraf(filePath, (err, result) => {
+      if (err == null) {
+        resolve(result);
       } else {
-        resolve();
+        reject(err);
       }
     });
   });
@@ -183,13 +184,13 @@ async function isNfs(entityPath: string): Promise<boolean> {
   }
 }
 
-async function glob(pattern: string, options?: Object): Promise<Array<string>> {
-  return await new Promise((resolve, reject) => {
-    globLib(pattern, options, (err: ?Error, files: Array<string>) => {
-      if (err) {
-        reject(err);
+function glob(pattern: string, options?: Object): Promise<Array<string>> {
+  return new Promise((resolve, reject) => {
+    globLib(pattern, options, (err, result) => {
+      if (err == null) {
+        resolve(result);
       } else {
-        resolve(files);
+        reject(err);
       }
     });
   });
@@ -212,22 +213,197 @@ async function isNonNfsDirectory(directoryPath: string): Promise<boolean> {
 }
 
 /**
- * Takes a method from Node's fs module and returns a "denodeified" equivalent, i.e., an adapter
- * with the same functionality, but returns a Promise rather than taking a callback. This isn't
- * quite as efficient as Q's implementation of denodeify, but it's considerably less code.
+ * Promisified wrappers around fs-plus functions.
  */
-function _denodeifyFsMethod(methodName: string): () => Promise<any> {
-  return function(...args): Promise<any> {
-    const method = fs[methodName];
-    return new Promise((resolve, reject) => {
-      method.apply(fs, args.concat([
-        (err, result) => (err ? reject(err) : resolve(result)),
-      ]));
+
+function copy(source: string, dest: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fsPlus.copy(source, dest, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
     });
-  };
+  });
 }
 
-const stat = _denodeifyFsMethod('stat');
+function move(source: string, dest: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fsPlus.move(source, dest, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+/**
+ * TODO: the fs-plus `writeFile` implementation runs `mkdirp` first.
+ * We should use `fs.writeFile` and have callsites explicitly opt-in to this behaviour.
+ */
+function writeFile(
+  filename: string,
+  data: Buffer | string,
+  options?: Object | string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fsPlus.writeFile(filename, data, options, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+/**
+ * Promisified wrappers around fs functions.
+ */
+
+function chmod(path: string, mode: number | string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.chmod(path, mode, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function lstat(path: string): Promise<fs.Stats> {
+  return new Promise((resolve, reject) => {
+    fs.lstat(path, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function mkdir(path: string, mode?: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.mkdir(path, mode, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+// `fs.readFile` returns a Buffer unless an encoding is specified.
+// This workaround is adapted from the Flow declarations.
+type ReadFileType =
+  ((filename: string, encoding: string) => Promise<string>) &
+  ((filename: string, options: { encoding: string, flag?: string }) => Promise<string>) &
+  ((filename: string) => Promise<Buffer>) &
+  ((filename: string, options: { flag?: string }) => Promise<Buffer>);
+
+const readFile: ReadFileType = (function() {
+  return new Promise((resolve, reject) => {
+    // $FlowIssue: spread operator doesn't preserve any-type
+    fs.readFile(...arguments, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}: any);
+
+function readdir(path: string): Promise<Array<string>> {
+  return new Promise((resolve, reject) => {
+    fs.readdir(path, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function readlink(path: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    fs.readlink(path, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function realpath(path: string, cache?: Object): Promise<string> {
+  return new Promise((resolve, reject) => {
+    fs.realpath(path, cache, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function rename(oldPath: string, newPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.rename(oldPath, newPath, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function stat(path: string): Promise<fs.Stats> {
+  return new Promise((resolve, reject) => {
+    fs.stat(path, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function symlink(source: string, dest: string, type?: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.symlink(source, dest, type, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function unlink(path: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.unlink(path, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
 
 export default {
   tempdir,
@@ -242,18 +418,19 @@ export default {
   glob,
   isNonNfsDirectory,
 
-  copy: _denodeifyFsMethod('copy'),
-  chmod: _denodeifyFsMethod('chmod'),
-  lstat: _denodeifyFsMethod('lstat'),
-  mkdir: _denodeifyFsMethod('mkdir'),
-  readdir: _denodeifyFsMethod('readdir'),
-  readFile: _denodeifyFsMethod('readFile'),
-  readlink: _denodeifyFsMethod('readlink'),
-  realpath: _denodeifyFsMethod('realpath'),
-  rename: _denodeifyFsMethod('rename'),
-  move: _denodeifyFsMethod('move'),
+  copy,
+  move,
+  writeFile,
+
+  chmod,
+  lstat,
+  mkdir,
+  readFile,
+  readdir,
+  readlink,
+  realpath,
+  rename,
   stat,
-  symlink: _denodeifyFsMethod('symlink'),
-  unlink: _denodeifyFsMethod('unlink'),
-  writeFile: _denodeifyFsMethod('writeFile'),
+  symlink,
+  unlink,
 };
