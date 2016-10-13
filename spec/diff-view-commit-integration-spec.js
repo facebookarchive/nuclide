@@ -247,7 +247,7 @@ describe('Diff View Commit Mode Integration Test', () => {
 
     waitsFor('load amend message', () => {
       modeButtons = commitModeContainer.querySelectorAll('.btn');
-      return modeButtons.length === 2 && modeButtons[1].textContent === 'Commit';
+      return modeButtons.length === 2 && modeButtons[1].textContent === 'Amend';
     });
 
     runs(() => {

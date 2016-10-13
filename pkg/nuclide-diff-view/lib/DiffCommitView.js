@@ -75,17 +75,25 @@ export default class DiffCommitView extends React.Component {
   }
 
   _getToolbar(): Toolbar {
-    const {commitModeState} = this.props;
+    const {commitModeState, commitMode} = this.props;
     let message;
     switch (commitModeState) {
       case CommitModeState.AWAITING_COMMIT:
-        message = 'Committing...';
+        if (commitMode === CommitMode.AMEND) {
+          message = 'Amending...';
+        } else {
+          message = 'Committing...';
+        }
         break;
       case CommitModeState.LOADING_COMMIT_MESSAGE:
         message = 'Loading...';
         break;
       case CommitModeState.READY:
-        message = 'Commit';
+        if (commitMode === CommitMode.AMEND) {
+          message = 'Amend';
+        } else {
+          message = 'Commit';
+        }
         break;
       default:
         message = 'Unknown Commit State!';
