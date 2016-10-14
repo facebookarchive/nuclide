@@ -198,10 +198,6 @@ class WatchmanClient {
 
     if (--subscription.subscriptionCount === 0) {
       await this._unsubscribe(subscription.path, subscription.name);
-      // Don't delete the watcher if there are other users for it.
-      if (!subscription.pathFromSubscriptionRootToSubscriptionPath) {
-        await this._deleteWatcher(entryPath);
-      }
       this._deleteSubscription(entryPath);
     }
   }
@@ -223,10 +219,6 @@ class WatchmanClient {
   async _watchList(): Promise<Array<string>> {
     const {roots} = await this._command('watch-list');
     return roots;
-  }
-
-  _deleteWatcher(entryPath: string): Promise<any> {
-    return this._command('watch-del', entryPath);
   }
 
   _unsubscribe(subscriptionPath: string, subscriptionName: string): Promise<any> {

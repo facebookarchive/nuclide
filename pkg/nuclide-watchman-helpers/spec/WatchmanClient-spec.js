@@ -127,7 +127,7 @@ describe('WatchmanClient test suite', () => {
   });
 
   describe('cleanup watchers after unwatch', () => {
-    it('unwatch cleans up watchman watchlist resources', () => {
+    it('unwatch cleans up watchman subscriptions resources', () => {
       waitsForPromise(async () => {
         const dirRealPath = fs.realpathSync(dirPath);
         await client.watchDirectoryRecursive(dirPath);
@@ -136,8 +136,10 @@ describe('WatchmanClient test suite', () => {
         // $FlowIssue
         client.dispose = () => {};
         await client.unwatch(dirPath);
-        const afterCleanupWatchList = await client._watchList();
-        expect(afterCleanupWatchList.indexOf(dirRealPath)).toBe(-1);
+        expect(client.hasSubscription(dirPath)).toBeFalsy();
+        // Didn't remove it from the watched directories.
+        const noWatchListCleanup = await client._watchList();
+        expect(noWatchListCleanup.indexOf(dirRealPath)).not.toBe(-1);
       });
     });
   });
@@ -162,7 +164,6 @@ describe('WatchmanClient test suite', () => {
         } = await client._watchProject(nestedDirPath);
         expect(watchRoot).toBe(dirRealPath);
         expect(relativePath).toBe('nested');
-        await client._deleteWatcher(watchRoot);
       });
     });
 
