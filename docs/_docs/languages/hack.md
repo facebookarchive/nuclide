@@ -157,32 +157,9 @@ The **Path to your PHP runtime** setting should indicate the location of HHVM on
 
 ### Debugging: HHVM Toolbar
 
-Nuclide provides an HHVM toolbar. You can launch the toolbar from the [Nuclide toolbar](/docs/features/toolbar/#buttons) or from the
-[Command Palette](/docs/editor/basics/#command-palette) with `Nuclide HHVM Toolbar: Toggle`.
+The [Task Runner toolbar](/docs/features/task-runner) is one way to debug Hack or PHP projects.  To open the Task Runner toolbar, click on the **Toggle Task Runner Toolbar** button in the [Nuclide toolbar](/docs/features/toolbar/#buttons) or search for `Nuclide Task Runner: Toggle HHVM Toolbar` in the [Command Palette](/docs/editor/basics/#command-palette).
 
-> You must have a Hack or PHP file open to successfully launch the toolbar.
-
-![](/static/images/docs/feature-debugger-languages-hack-php-hhvm-toolbar.png)
-
-You can choose between debugging a webserver or a script.
-
-![](/static/images/docs/feature-debugger-languages-hack-php-hhvm-toolbar-webserver-script.png)
-
-Set [breakpoints](/docs/features/debugger/#basics__breakpoints) in your code.
-
-Once you decide the type of debugging you plan to do, click **Attach** (webserver) or **Launch** (script). This opens the
-Debugger Controls and stops at the first breakpoint.
-
-You can then follow the [basic debugging information](/docs/features/debugger/#basics) provided
-above and use the additional features of the Output Window, Evaluation and other HHVM-specific
-debugging settings as described below to debug your code.
-
-![](/static/images/docs/feature-debugger-languages-hack-debugging.png)
-
-In both the script and server launching/attaching scenarios, the line at which you've set a
-breakpoint will highlight in blue when the breakpoint is hit. When this happens, execution of your
-code is paused and you can use the Debugger Controls to step, evaluate expressions, inspect the current
-call stack, etc.
+See the [Task Runner HHVM guide](/docs/features/task-runner/#hhvm-debug-toolbar) for instructions on debugging Hack or PHP projects.
 
 ### Debugging: Command-Line
 

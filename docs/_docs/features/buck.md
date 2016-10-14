@@ -22,31 +22,32 @@ in Nuclide.
 
 If you have multiple projects open, or if your Buck project is a subdirectory
 of one of your project roots, you'll need to mark the Buck project root as the
-*Current Working Root*. You can do this by right clicking on the root folder
-in the file tree and selecting `Set as Current Working Root`.
+*Current Working Root*. You can do this by right-clicking on the root folder
+in the file tree and selecting **Set to Current Working Root**.
 
 There are a few ways to trigger Buck commands from Nuclide:
 
 ### Via the Task Runner
 
-Buck tasks live in the Task Runner toolbar.
+Buck tasks live in the [Task Runner toolbar](/docs/features/task-runner).
 
-1. Press the Task Runner icon (play button) from the toolbar. Alternatively,
-   from the Nuclide menu press `Nuclide > Task Runner > Toggle Toolbar Visibility`.
-2. Choose any of the Buck tasks from the Task Runner toolbar's dropdown.
+Click the **Toggle Task Runner Toolbar** button (i.e., the play icon) from the [Nuclide toolbar](/docs/features/toolbar). Alternatively,
+   got to `Nuclide | Task Runner | Toggle Toolbar Visibility`.
+
+Choose any of the Buck tasks from the Task Runner toolbar's drop-down menu.
 
 <img src="/static/images/docs/feature-buck-task-runner.png" width="495" />
 
 ### Via the Nuclide menu
 
-The Nuclide top-level menu contains a `Buck` submenu:
+The top-level Nuclide menu contains a **Buck** submenu.
 
 <img src="/static/images/docs/feature-buck-nuclide-menu.png" width="435" />
 
 ### Via Atom's Command Palette
 
-Open the Command Palette (`cmd-shift-p` or `ctrl-shift-p` on Linux/Windows)
-and type "buck":
+Open the [Command Palette](/docs/editor/basics/#command-palette) (`Cmd-Shift-P` or `Ctrl-Shift-P` on Linux/Windows)
+and type "buck" in the text box:
 
 <img src="/static/images/docs/feature-buck-command-palette.png" width="568" />
 
@@ -63,95 +64,9 @@ and type "buck":
 
 ## Workflows
 
-Nuclide supports the following Buck workflows, matching the corresponding Buck command-line tasks.
+Nuclide supports Buck workflows matching the corresponding Buck command-line tasks via the [Task Runner toolbar](/docs/features/task-runner).  See the [Task Runner Buck guide](/docs/features/task-runner/#buck) for more information on the following Buck workflows:
 
-- [Build](#build)
-- [Run](#run)
-- [Test](#test)
-- [Debug](#debug)
-
-### Build
-
-The "Build" task invokes [`buck build`](https://buckbuild.com/command/build.html),
-displaying build output in the Console.
-
-In the Task Runner toolbar textbox, type in the name of the build target exactly
-as you would specify to Buck on the command line, i.e. `//path/to/dir:target_name#flavor`.
-
-Note that the usual leading `//` is optional.
-
-<img src="/static/images/docs/feature-buck-build.png" />
-
-Pressing the Settings (gear) button will bring up a dialog where you can provide extra flags to Buck.
-
-<img src="/static/images/docs/feature-buck-build-settings.png" width="625" />
-
-Upon pressing build, output will appear in a new Console pane. Build progress
-will be displayed via a blue progress bar below the toolbar, and also periodically
-via messages in the Console.
-
-Press the stop button at any time to cancel an ongoing build.
-
-<img src="/static/images/docs/feature-buck-build-console.png" />
-
-In addition to showing up in the console, C++ compilation errors will additionally
-be surfaced in [Diagnostics](/docs/editor/basics/#code-diagnostics).
-Buck diagnostics will be cleared upon triggering a new build.
-
-<img src="/static/images/docs/feature-buck-build-diagnostics.png" />
-
-### Run
-
-The "Run" task is only enabled for iOS and Android application targets
-(`apple_bundle`, `android_binary`, and `apk_genrule` rules). It invokes
-[`buck install --run`](https://buckbuild.com/command/install.html)
-and builds, installs, and then runs the app.
-Build output will be reported as documented in the [Build workflow](#build).
-
-<img src="/static/images/docs/feature-buck-run.png" />
-
-For iOS rules, the simulator type can be explicitly provided via the toolbar dropdown. <br />
-The `React Native Server Mode` checkbox optionally starts the React Native packager
-and debugging server while the app installs.
-
-### Test
-
-The "Test" task invokes [`buck test`](https://buckbuild.com/command/test.html),
-building and running valid test targets (e.g. `cxx_test`).
-Build output will be reported as documented in the [Build workflow](#build).
-
-### Debug
-
-The "Debug" task is only enabled for the following target types:
-
-- iOS applications (`apple_bundle`)
-- C++ unit tests (`cxx_test`)
-- C++ binaries (`cxx_binary`)
-
-The [LLDB debugger](/docs/languages/cpp/#debugging) is invoked after a
-successful build in all three cases, but with slight variations.
-
-*iOS Applications*
-
-For iOS applications, the "Debug" task invokes
-[`buck install --run --wait-for-debugger`](https://buckbuild.com/command/install.html)
-and then attaches LLDB to the simulator process once the app starts.
-
-As with the "Run" task, the simulator type can be selected from a dropdown.
-`React Native Server Mode` must be checked for React Native apps to enable
-JavaScript debugging.
-
-*C++ unit tests*
-
-For C++ unit tests, LLDB is launched against the unit test binary
-with the `args` and `env` parameters
-[specified by the `cxx_test` target](https://buckbuild.com/rule/cxx_test.html)
-after a successful `buck build`.
-
-*C++ binaries*
-
-For C++ binaries, LLDB is launched directly against the output binary
-after a successful `buck build`.
-Extra launch arguments can be specified using the Settings (gear) button:
-
-<img src="/static/images/docs/feature-buck-debug.png" width="564" />
+- [Build](/docs/features/task-runner/#buck__build)
+- [Run](/docs/features/task-runner/#buck__run)
+- [Test](/docs/features/task-runner/#buck__test)
+- [Debug](/docs/features/task-runner/#buck__debug)

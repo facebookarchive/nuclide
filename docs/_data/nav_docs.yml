@@ -11,6 +11,7 @@
   items:
   - id: feature-remote
   - id: feature-debugger
+  - id: feature-task-runner
   - id: feature-hg
   - id: feature-toolbar
   - id: feature-quick-open

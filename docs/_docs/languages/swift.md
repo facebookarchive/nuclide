@@ -50,41 +50,17 @@ settings.
 
 Swift integration in Nuclide provides you with productivity features such as:
 
-- [Building a Swift package](#features__building-a-swift-package)
-- [Running a Swift package's tests](#features__running-a-swift-packages-tests)
+- [Building and Testing Swift packages](#features__building-and-testing-swift-packages)
 - [Autocomplete](#features__autocomplete)
 
-### Building a Swift package
+### Building and Testing Swift packages
 
-1. Click the **Toggle Task Runner Toolbar** button on the [Nuclide toolbar](/docs/features/toolbar/#buttons) (or use the [Command Palette](/docs/editor/basics/#command-palette) to issue the **Nuclide Task Runner: Toggle Swift Toolbar** command) to display options for building a Swift package.<br /><br />
-![](/static/images/docs/language-swift-build-toolbar.png)
+The [Task Runner toolbar](/docs/features/task-runner) is used to build and test Swift packages.  To open the Task Runner toolbar, click on the **Toggle Task Runner Toolbar** button in the [Nuclide toolbar](/docs/features/toolbar/#buttons) or search for `Nuclide Task Runner: Toggle Swift Toolbar` in the [Command Palette](/docs/editor/basics/#command-palette).
 
-2. Select **Build** from the Swift Task drop-down menu.
-3. Enter the path to a Swift package's root directory, then click the **Build** button to build the package. (This path is entered automatically if your project root is set to
-a Swift package root.) Build output is displayed in the [Console](/docs/features/debugger/#basics__evaluation) below the [Editing Area](/docs/editor/basics/#editing-area).
-
-![](/static/images/docs/language-swift-build-output.png)
-
-You can customize build settings, such as whether to build the package in a "Debug" or "Release" configuration, by clicking the gear icon to the right
-of the Swift Task toolbar.
-
-![](/static/images/docs/language-swift-build-toolbar-settings.png)
-
-### Running a Swift package's tests
-
-1. Select **Test** from the Swift Task drop-down menu to display options for running a Swift package's tests.<br /><br />
-![](/static/images/docs/language-swift-test-toolbar.png)
-
-2. Enter the path to a Swift package's root directory, then click the **Test** button to run the package's tests. (This path is entered automatically if your project root is set
-to a Swift package root.) Test output is displayed in the [Console](/docs/features/debugger/#basics__evaluation) below the [Editing Area](/docs/editor/basics/#editing-area).
-
-![](/static/images/docs/language-swift-test-output.png)
-
-Clicking the gear icon to the right of the Swift Task toolbar displays additional settings for running your Swift package's tests.
+See the [Task Runner Swift guide](/docs/features/task-runner/#swift) for how to build and test Swift packages.
 
 ### Autocomplete
 
-Once you have [built your Swift package](#features__building-a-swift-package) via the Swift Task Runner toolbar,
-Nuclide will be able to provide autocompletion suggestions for Swift source code.
+Once you have [built your Swift package](#features__building-a-swift-package) via the [Task Runner's](/docs/features/task-runner) [Swift toolbar](/docs/features/task-runner/#swift), Nuclide will be able to provide autocompletion suggestions for Swift source code.
 
 ![](/static/images/docs/language-swift-autocompletion.png)
