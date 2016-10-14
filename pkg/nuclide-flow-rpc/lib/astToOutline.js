@@ -90,6 +90,7 @@ function itemToTree(item: any): ?FlowOutlineTree {
         ...extent,
       };
     case 'ExportDeclaration':
+    case 'ExportNamedDeclaration':
       const tree = itemToTree(item.declaration);
       if (tree == null) {
         return null;

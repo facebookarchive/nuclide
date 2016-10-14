@@ -16,11 +16,15 @@ import {addMatchers} from '../../nuclide-test-helpers';
 import {astToOutline} from '../lib/astToOutline';
 
 import classASTOld from './fixtures/class-ast-old';
-import classAST33 from './fixtures/class-ast-v0.33';
-import jasmineAST from './fixtures/jasmine-ast';
-import toplevelAST from './fixtures/toplevel-ast';
-import exportsAST from './fixtures/exports-ast';
-import typesAST from './fixtures/types-ast';
+import classAST34 from './fixtures/class-ast-v0.34';
+import jasmineASTOld from './fixtures/jasmine-ast-old';
+import jasmineAST34 from './fixtures/jasmine-ast-v0.34';
+import toplevelASTOld from './fixtures/toplevel-ast-old';
+import toplevelAST34 from './fixtures/toplevel-ast-v0.34';
+import exportsASTOld from './fixtures/exports-ast-old';
+import exportsAST34 from './fixtures/exports-ast-v0.34';
+import typesASTOld from './fixtures/types-ast-old';
+import typesAST34 from './fixtures/types-ast-v0.34';
 
 const expectedClassOutline = [
   {
@@ -545,23 +549,28 @@ describe('astToOutline', () => {
   it('should provide a class outline', () => {
     // Old version
     expect(astToOutline(classASTOld)).diffJson(expectedClassOutline);
-    // Newer, introduced AssignmentPattern for default function args
-    expect(astToOutline(classAST33)).diffJson(expectedClassOutline);
+    // Newer, introduced AssignmentPattern for default function args (v0.33), made a bunch of other
+    // changes (v0.34)
+    expect(astToOutline(classAST34)).diffJson(expectedClassOutline);
   });
 
   it('should provide an outline for miscellaneous top-level statements', () => {
-    expect(astToOutline(toplevelAST)).diffJson(expectedToplevelOutline);
+    expect(astToOutline(toplevelASTOld)).diffJson(expectedToplevelOutline);
+    expect(astToOutline(toplevelAST34)).diffJson(expectedToplevelOutline);
   });
 
   it('should provide an outline for Jasmine specs', () => {
-    expect(astToOutline(jasmineAST)).diffJson(expectedJasmineOutline);
+    expect(astToOutline(jasmineASTOld)).diffJson(expectedJasmineOutline);
+    expect(astToOutline(jasmineAST34)).diffJson(expectedJasmineOutline);
   });
 
   it('should provide an outline for module.exports', () => {
-    expect(astToOutline(exportsAST)).diffJson(expectedExportsOutline);
+    expect(astToOutline(exportsASTOld)).diffJson(expectedExportsOutline);
+    expect(astToOutline(exportsAST34)).diffJson(expectedExportsOutline);
   });
 
   it('should provide an outline for type declarations', () => {
-    expect(astToOutline(typesAST)).diffJson(expectedTypesOutline);
+    expect(astToOutline(typesASTOld)).diffJson(expectedTypesOutline);
+    expect(astToOutline(typesAST34)).diffJson(expectedTypesOutline);
   });
 });
