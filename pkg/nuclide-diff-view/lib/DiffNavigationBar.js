@@ -19,9 +19,9 @@ import {DiffSectionStatus} from './constants';
 import {React} from 'react-for-atom';
 
 type DiffNavigationBarProps = {
-  elementHeight: number,
   diffSections: Array<DiffSection>,
-  offsetLineCount: number,
+  navigationScale: number,
+  pixelRangeForDiffSection: (diffSection: DiffSection) => {top: number, bottom: number},
   onNavigateToDiffSection: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
 };
 
@@ -34,14 +34,19 @@ export default class DiffNavigationBar extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {elementHeight, offsetLineCount} = this.props;
-    const jumpTargets = this.props.diffSections.map(diffSection => {
+    const {
+      diffSections,
+      pixelRangeForDiffSection,
+      navigationScale,
+    } = this.props;
+
+    const jumpTargets = diffSections.map(diffSection => {
       return (
         <NavigatonBarJumpTarget
-          containerHeight={elementHeight}
+          navigationScale={navigationScale}
           diffSection={diffSection}
-          key={diffSection.offsetLineNumber}
-          offsetLineCount={offsetLineCount}
+          key={diffSection.status + diffSection.lineNumber}
+          pixelRangeForDiffSection={pixelRangeForDiffSection}
           onClick={this._handleClick}
         />
       );
@@ -73,9 +78,9 @@ function sectionStatusToClassName(statusType: DiffSectionStatusType): string {
 }
 
 type NavigatonBarJumpTargetProps = {
-  containerHeight: number,
+  navigationScale: number,
   diffSection: DiffSection,
-  offsetLineCount: number,
+  pixelRangeForDiffSection: (diffSection: DiffSection) => {top: number, bottom: number},
   onClick: (diffSectionStatus: DiffSectionStatusType, lineNumber: number) => any,
 };
 
@@ -88,14 +93,12 @@ class NavigatonBarJumpTarget extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {diffSection, offsetLineCount, containerHeight} = this.props;
+    const {diffSection, pixelRangeForDiffSection, navigationScale} = this.props;
     const lineChangeClass = sectionStatusToClassName(diffSection.status);
-    const {offsetLineNumber, lineCount} = diffSection;
-    const targetTop = Math.ceil(containerHeight * offsetLineNumber / offsetLineCount);
-    const targetHeight = Math.ceil(lineCount * containerHeight / offsetLineCount);
+    const {top, bottom} = pixelRangeForDiffSection(diffSection);
     const targetStyle = {
-      top: `${targetTop}px`,
-      height: `${targetHeight}px`,
+      top: `${top * navigationScale}px`,
+      height: `${(bottom - top) * navigationScale}px`,
     };
     const targetClassName = classnames({
       'nuclide-diff-view-navigation-target': true,

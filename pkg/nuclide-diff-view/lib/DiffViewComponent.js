@@ -37,7 +37,6 @@ import DiffPublishView from './DiffPublishView';
 import {
   computeDiff,
   computeDiffSections,
-  getOffsetLineCount,
 } from './diff-utils';
 import createPaneContainer from '../../commons-atom/create-pane-container';
 import {bufferForUri} from '../../commons-atom/text-editor';
@@ -78,7 +77,6 @@ type State = {
   // `offsetOf(lineNumer(scrollTop + scrollHeight /2))`
   // That helps derive which diff section are we on, next and previous sections.
   middleScrollOffsetLineNumber: number,
-  offsetLineCount: number,
   toolbarVisible: boolean,
 };
 
@@ -134,7 +132,6 @@ function getInitialState(): State {
     middleScrollOffsetLineNumber: 0,
     mode: DiffMode.BROWSE_MODE,
     newEditorState: initialEditorState(),
-    offsetLineCount: 0,
     oldEditorState: initialEditorState(),
     toolbarVisible: true,
   };
@@ -174,6 +171,7 @@ export default class DiffViewComponent extends React.Component {
     (this: any)._onChangeMode = this._onChangeMode.bind(this);
     (this: any)._onSwitchToEditor = this._onSwitchToEditor.bind(this);
     (this: any)._onDidChangeScrollTop = this._onDidChangeScrollTop.bind(this);
+    (this: any)._pixelRangeForDiffSection = this._pixelRangeForDiffSection.bind(this);
     this._readonlyBuffer = new TextBuffer();
     this._subscriptions = new CompositeDisposable();
   }
@@ -457,13 +455,21 @@ export default class DiffViewComponent extends React.Component {
   }
 
   _renderNavigation(): void {
-    const {diffSections, offsetLineCount} = this.state;
+    const {diffSections} = this.state;
     const navigationPaneElement = this._getPaneElement(this._navigationPane);
+    const oldEditorElement = this._oldEditorComponent.getEditorDomElement();
+    const newEditorElement = this._newEditorComponent.getEditorDomElement();
+    const diffViewHeight = Math.max(
+      oldEditorElement.getScrollHeight(),
+      newEditorElement.getScrollHeight(),
+      1, // Protect against zero scroll height while initializring editors.
+    );
     const component = ReactDOM.render(
       <DiffNavigationBar
-        elementHeight={navigationPaneElement.clientHeight}
         diffSections={diffSections}
-        offsetLineCount={offsetLineCount}
+        navigationScale={navigationPaneElement.clientHeight / diffViewHeight}
+        editorLineHeight={oldEditorElement.getModel().getLineHeightInPixels()}
+        pixelRangeForDiffSection={this._pixelRangeForDiffSection}
         onNavigateToDiffSection={this._handleNavigateToDiffSection}
       />,
       navigationPaneElement,
@@ -487,6 +493,19 @@ export default class DiffViewComponent extends React.Component {
       + textEditor.getLineHeightInPixels() / 2
       - textEditorElement.clientHeight / 2;
     textEditorElement.setScrollTop(scrollTop);
+  }
+
+  _pixelRangeForDiffSection(
+    diffSection: DiffSection,
+  ): {top: number, bottom: number} {
+    const {status, lineNumber, lineCount} = diffSection;
+    const textEditorElement = this._diffSectionStatusToEditorElement(status);
+    const lineHeight = textEditorElement.getModel().getLineHeightInPixels();
+    return {
+      top: textEditorElement.pixelPositionForBufferPosition([lineNumber, 0]).top,
+      bottom: textEditorElement.pixelPositionForBufferPosition([lineNumber + lineCount - 1, 0]).top
+        + lineHeight,
+    };
   }
 
   _diffSectionStatusToEditorElement(
@@ -614,18 +633,10 @@ export default class DiffViewComponent extends React.Component {
       newLineOffsets,
     );
 
-    const offsetLineCount = getOffsetLineCount(
-      oldContents,
-      oldLineOffsets,
-      newContents,
-      newLineOffsets,
-    );
-
     this.setState({
       diffSections,
       filePath,
       isLoadingFileDiff,
-      offsetLineCount,
       newEditorState,
       oldEditorState,
     });
