@@ -130,7 +130,7 @@ export class DebuggerSteppingComponent extends React.Component {
             className="nuclide-debugger-exception-checkbox"
             onChange={() => actions.toggleSingleThreadStepping(!singleThreadStepping)}
             checked={singleThreadStepping}
-            label={'Enable Single Thread Stepping'}
+            label={'Single Thread Stepping'}
           />
           : null
         }
