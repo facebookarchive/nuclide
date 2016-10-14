@@ -16,10 +16,10 @@ which allows you to build native [iOS](/docs/platforms/ios) applications directl
 
 By installing [Xcode](https://developer.apple.com/xcode/), you will have full access to Objective-C.
 
-> Linux does not have Xcode, However, there are ways to compile Objective-C programs on Linux using
+> Linux does not have Xcode, however, there are ways to compile Objective-C programs on Linux using
 > `gobjc`, [`gnustep`](http://www.gnustep.org/), etc.
 
-However, to get full [feature list](#buck-enabled-features) for Objective-C support, you must
+However, to get the full [feature list](#buck-enabled-features) for Objective-C support, you must
 compile your Objective-C program with [Buck](http://buckbuild.com).
 
 ## Default Features
@@ -27,13 +27,13 @@ compile your Objective-C program with [Buck](http://buckbuild.com).
 Objective-C's integration into Nuclide provides you with productivity features out-of-the-box such
 as:
 
-* [Automatic Bracket Completion](#default-features__automatic-bracket-completion)
+* [Automatic Square Bracket Completion](#default-features__automatic-square-bracket-completion)
 * [Automatic Colon Indenting](#default-features__automatic-colon-indenting)
 
-### Automatic Bracket Completion
+### Automatic Square Bracket Completion
 
-If you forget to put a starting bracket at the end of your target or selector, one will be inserted
-for you automatically if you add the ending bracket. And this will work for any number of bracket
+If you forget to put a starting bracket at the front of your target or selector, one will be inserted
+for you automatically if you add the ending bracket. This will work for any number of bracket
 levels deep.
 
 For example, if you add an ending bracket here...
@@ -44,9 +44,12 @@ For example, if you add an ending bracket here...
 
 ![](/static/images/docs/language-objc-after-bracket-insert.png)
 
-To enable this setting, go to the Nuclide Settings page either by the
-[toolbar](/docs/features/toolbar) or by the menu via `Package | Settings View | Open | Packages`,
-and enable automatic bracket completion.
+To enable this setting:
+
+1. Open the [Nuclide Settings](/docs/editor/basics/#preferences-pane) tab either by pressing `Cmd+,` (`Ctrl-,` on Linux) or by going to `Package | Settings View | Open`.  
+2. Select **Packages** from the list at the left, and search for `nuclide`.  
+3. Click on the **Settings** button for the `nuclide` package.  
+4. Scroll down until you find `nuclide-objc`, and select the **Enable Automatic Square Bracket Completion** checkbox.
 
 ![](/static/images/docs/language-objc-auto-bracket-completion-setting.png)
 
@@ -65,8 +68,7 @@ If you start a `:` at the beginning of the next line after the method declaratio
 
 ## Buck-enabled Features
 
-The following features require that your Objective-C project is compiled with
-[Buck](http://buckbuild.com).
+The following features require that your Objective-C project is compiled with [Buck](http://buckbuild.com).
 
 > You can also generate a `compile_commands.json` file with the
 > [`json-compilation-databse` reporter](https://github.com/facebook/xctool#included-reporters)
@@ -79,20 +81,17 @@ The following features require that your Objective-C project is compiled with
 * [Autocomplete](#buck-enabled-features__autocomplete)
 * [Jump to Definition](#buck-enabled-features__jump-to-definition)
 
-> The [Buck toolbar](/docs/features/buck) allows you to
-> build and run your Buck-enabled programs.
+> The [Buck toolbar](/docs/features/buck) allows you to build and run your Buck-enabled programs.
 
 ### Code Diagnostics
 
-If you write code that will cause `clang` errors or warnings, Nuclide's code diagnostics will show
+If you write code that will cause `clang` errors or warnings, Nuclide's Code Diagnostics will show
 you the error. You can see the error in two places: inline within the
-[main text editor](/docs/editor/basics/#editing-area) and in the
-[code diagnostics](/docs/editor/basics/#status-bar__code-diagnostics) pane.
+[Editing Area](/docs/editor/basics/#editing-area), and in the [Code Diagnostics](/docs/editor/basics/#status-bar__code-diagnostics) pane below.
 
 ![](/static/images/docs/language-objc-code-diagnostics.png)
 
-Hover over the sideways red triangle in the [gutter](/docs/editor/basics/#gutter) to see the
-`clang` error inline.
+Hover over the sideways red triangle in the [gutter](/docs/editor/basics/#gutter) to see the `clang` error inline.
 
 ![](/static/images/docs/language-objc-lint-gutter.png)
 
@@ -102,12 +101,13 @@ Hovering over an Objective-C object will provide you the type of that object inl
 
 ![](/static/images/docs/language-objc-typehint.png)
 
-You can also pin type hints to the [main editor](/docs/editor/basics/#editing-area) so that they
-are always visible.
+In fact, you can even pin that type hint so that it always displays. Just click on the pin icon when hovering over a variable to pin it.
 
 ![](/static/images/docs/language-objc-pinned-typehint.png)
 
-> Pinned type hints can be moved around and placed anywhere in the editing window.
+Click the `x` icon of a pinned type hint to remove it.
+
+> Pinned type hints can be moved anywhere within the editor.
 
 ### Autocomplete
 
@@ -123,9 +123,9 @@ enabled.
 
 Nuclide provides a jump to definition/symbol feature for Objective-C programs.
 
-For example, if you want to go to the definition of `initWithHelloString`, you will hover over
-`initWithHelloString` and either press `cmd-<mouse click>` (`ctrl-<mouse click>`) or
-`cmd-option-Enter` (`ctrl-alt-Enter` on Linux).
+For example, if you want to go to the definition of `initWithHelloString:`, hover over
+`initWithHelloString:` and either press `Cmd-<mouse click>` (`Ctrl-<mouse click>` on Linux) or
+`Cmd-Option-Enter` (`Ctrl-Alt-Enter` on Linux).
 
 ![](/static/images/docs/language-objc-jump-to-definition-link.png)
 
@@ -133,26 +133,24 @@ For example, if you want to go to the definition of `initWithHelloString`, you w
 
 ### Jump Between Header and Implementation
 
-Using `cmd-option-n` (`ctrl-alt-n` on Linux), you can jump between header (e.g., `.h`) and
-implementation files (`.cpp`).
+Using `Cmd-Option-N` (`Ctrl-Alt-N` on Linux), you can jump between the header (i.e., `.h`) and
+the implementation (i.e., `.cpp` or `.m`) files.
 
 ## Debugging
 
 Nuclide has support for both [iOS](/docs/platforms/ios) debugging through
 [React Native](/docs/platforms/react-native/#debugging) and [Buck](http://buckbuild.com)
-for native Objective-C (e.g., `.m` files) applications.
+for native Objective-C applications (i.e., `.m` files).
 
 > Debugging Swift applications is currently not supported.
 
 See the [Buck guide](/docs/features/buck) for how to build, run and debug iOS apps.
 
-> Optimally it would be nice to run the application directly from Xcode and attach to the
+> Optimally, it would be nice to run the application directly from Xcode and attach to the
 > simulator process associated with that Xcode project. However, due to `lldb` process conflict
 > issues, this is currently not possible.
 
 ### LLDB Commands
 
 Native iOS debugging uses [LLDB](http://lldb.llvm.org/) as its debugging backend. You can run LLDB
-commands directly in the Nuclide debugger [console](#basics__evaluation).
-
-![](/static/images/docs/feature-debugger-languages-ios-console.png)
+commands directly in the Nuclide Debugger's [Console](/docs/features/debugger#basics__evaluation).
