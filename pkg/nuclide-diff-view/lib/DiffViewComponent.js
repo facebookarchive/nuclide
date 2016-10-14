@@ -73,11 +73,7 @@ type State = {
   oldEditorState: EditorState,
   newEditorState: EditorState,
   diffSections: Array<DiffSection>,
-  // The offset of the scroll line number, being:
-  // `offsetOf(lineNumer(scrollTop + scrollHeight /2))`
-  // That helps derive which diff section are we on, next and previous sections.
-  middleScrollOffsetLineNumber: number,
-  toolbarVisible: boolean,
+  selectedDiffSectionIndex: number,
 };
 
 function initialEditorState(): EditorState {
@@ -129,11 +125,10 @@ function getInitialState(): State {
     diffSections: [],
     filePath: '',
     isLoadingFileDiff: false,
-    middleScrollOffsetLineNumber: 0,
     mode: DiffMode.BROWSE_MODE,
     newEditorState: initialEditorState(),
     oldEditorState: initialEditorState(),
-    toolbarVisible: true,
+    selectedDiffSectionIndex: -1,
   };
 }
 
@@ -541,16 +536,16 @@ export default class DiffViewComponent extends React.Component {
     const {
       diffSections,
       filePath,
-      middleScrollOffsetLineNumber,
       newEditorState,
       oldEditorState,
+      selectedDiffSectionIndex,
     } = this.state;
     return (
       <div className="nuclide-diff-view-container">
         <DiffViewToolbar
           diffSections={diffSections}
           filePath={filePath}
-          middleScrollOffsetLineNumber={middleScrollOffsetLineNumber}
+          selectedDiffSectionIndex={selectedDiffSectionIndex}
           newRevisionTitle={newEditorState.revisionTitle}
           oldRevisionTitle={oldEditorState.revisionTitle}
           onSwitchMode={this._onChangeMode}
@@ -573,16 +568,36 @@ export default class DiffViewComponent extends React.Component {
   }
 
   _onDidChangeScrollTop(): void {
-    const textEditorElement = this._oldEditorComponent.getEditorDomElement();
-    const textEditor = textEditorElement.getModel();
-    const linePixels = textEditor.getLineHeightInPixels();
-    const middleVerticalScroll = Math.floor(
-      textEditorElement.getScrollTop()
-      + textEditorElement.clientHeight / 2
-      - linePixels / 2,
-    );
-    const middleScrollOffsetLineNumber = middleVerticalScroll / linePixels;
-    this.setState({middleScrollOffsetLineNumber});
+    const editorElements = [
+      this._oldEditorComponent.getEditorDomElement(),
+      this._newEditorComponent.getEditorDomElement(),
+    ];
+
+    const elementsScrollCenter = editorElements.map(editorElement => {
+      const scrollTop = editorElement.getScrollTop();
+      return scrollTop + editorElement.clientHeight / 2;
+    });
+
+    let selectedDiffSectionIndex = -1;
+
+    const {diffSections} = this.state;
+    // TODO(most): Pre-compute the positions of the diff sections.
+    // Q: when to invalidate (line edits, UI elements & diff reloads, ..etc.)
+    for (let sectionIndex = 0; sectionIndex < diffSections.length; sectionIndex++) {
+      const {status, lineNumber} = diffSections[sectionIndex];
+      const textEditorElement = this._diffSectionStatusToEditorElement(status);
+      const sectionPixelTop = textEditorElement
+        .pixelPositionForBufferPosition([lineNumber, 0]).top;
+
+      const sectionEditorIndex = editorElements.indexOf(textEditorElement);
+      const sectionEditorScrollCenter = elementsScrollCenter[sectionEditorIndex];
+
+      if (sectionEditorScrollCenter >= sectionPixelTop) {
+        selectedDiffSectionIndex = sectionIndex;
+      }
+    }
+
+    this.setState({selectedDiffSectionIndex});
   }
 
   /**

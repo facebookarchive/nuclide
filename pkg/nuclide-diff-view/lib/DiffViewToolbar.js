@@ -24,7 +24,7 @@ import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
 type Props = {
   diffSections: Array<DiffSection>,
   filePath: NuclideUri,
-  middleScrollOffsetLineNumber: number,
+  selectedDiffSectionIndex: number,
   newRevisionTitle: ?string,
   oldRevisionTitle: ?string,
   onSwitchToEditor: () => mixed,
@@ -113,21 +113,20 @@ export default class DiffViewToolbar extends React.Component {
   }
 
   _getPreviousDiffSection(): ?DiffSection {
-    const {diffSections, middleScrollOffsetLineNumber} = this.props;
-    let previousSection = null;
-    for (let i = diffSections.length - 1; i >= 0; i--) {
-      if (diffSections[i].offsetLineNumber < middleScrollOffsetLineNumber) {
-        previousSection = diffSections[i];
-        break;
-      }
+    const {diffSections, selectedDiffSectionIndex} = this.props;
+    const previousSectionIndex = selectedDiffSectionIndex - 1;
+    if (previousSectionIndex < 0) {
+      return null;
     }
-    return previousSection;
+    return diffSections[previousSectionIndex];
   }
 
   _getNextDiffSection(): ?DiffSection {
-    const {diffSections, middleScrollOffsetLineNumber} = this.props;
-    return diffSections.find(diffSection =>
-      diffSection.offsetLineNumber > middleScrollOffsetLineNumber,
-    );
+    const {diffSections, selectedDiffSectionIndex} = this.props;
+    const nextSectionIndex = selectedDiffSectionIndex + 1;
+    if (nextSectionIndex >= diffSections.length) {
+      return null;
+    }
+    return diffSections[nextSectionIndex];
   }
 }

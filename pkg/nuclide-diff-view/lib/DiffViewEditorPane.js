@@ -24,8 +24,10 @@ import {
   LoadingSpinner,
   LoadingSpinnerSizes,
 } from '../../nuclide-ui/LoadingSpinner';
+import {observableFromSubscribeFunction} from '../../commons-node/event';
 
-const SPINNER_DELAY = 50;
+const SPINNER_DELAY_MS = 50;
+const DEBOUNCE_SCROLL_MS = 50;
 
 type Props = {
   filePath: NuclideUri,
@@ -86,7 +88,11 @@ export default class DiffViewEditorPane extends React.Component {
 
     if (this.props.onDidChangeScrollTop != null) {
       editorSubscriptions.add(
-        editorDomElement.onDidChangeScrollTop(this.props.onDidChangeScrollTop),
+        // Debounce for smooth scrolling without hogging the CPU.
+        observableFromSubscribeFunction(
+          editorDomElement.onDidChangeScrollTop.bind(editorDomElement),
+        ).debounceTime(DEBOUNCE_SCROLL_MS)
+        .subscribe(this.props.onDidChangeScrollTop),
       );
     }
 
@@ -114,7 +120,7 @@ export default class DiffViewEditorPane extends React.Component {
 
     const loadingIndicator = isLoading
       ? <div className="nuclide-diff-view-pane-loading-indicator">
-          <LoadingSpinner delay={SPINNER_DELAY} size={LoadingSpinnerSizes.LARGE} />
+          <LoadingSpinner delay={SPINNER_DELAY_MS} size={LoadingSpinnerSizes.LARGE} />
         </div>
       : null;
 
