@@ -12,11 +12,8 @@
 import type {NuclideUri} from '../commons-node/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-hg-git-bridge/lib/constants';
 
-import classnames from 'classnames';
 import {
  FileChangeStatus,
- FileChangeStatusToPrefix,
- FileChangeStatusToTextColor,
  RevertibleStatusCodes,
 } from '../nuclide-hg-git-bridge/lib/constants';
 import invariant from 'assert';
@@ -25,97 +22,7 @@ import {React} from 'react-for-atom';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {addPath, revertPath} from '../nuclide-hg-repository/lib/actions';
-
-type ChangedFilesProps = {
-  fileChanges: Map<NuclideUri, FileChangeStatusValue>,
-  rootPath: NuclideUri,
-  commandPrefix: string,
-  selectedFile: ?NuclideUri,
-  hideEmptyFolders: boolean,
-  shouldShowFolderName: boolean,
-  onFileChosen: (filePath: NuclideUri) => void,
-};
-
-type ChangedFilesState = {
-  isCollapsed: boolean,
-};
-
-class ChangedFilesView extends React.Component {
-  props: ChangedFilesProps;
-  state: ChangedFilesState;
-
-  constructor(props: ChangedFilesProps) {
-    super(props);
-    this.state = {
-      isCollapsed: false,
-    };
-  }
-
-  _getFileClassname(file: NuclideUri, fileChangeValue: FileChangeStatusValue): string {
-    const {selectedFile} = this.props;
-    return classnames(
-      'list-item', {
-        selected: file === selectedFile,
-      },
-      FileChangeStatusToTextColor[fileChangeValue],
-    );
-  }
-
-  render(): ?React.Element<any> {
-    const {fileChanges, commandPrefix} = this.props;
-    if (fileChanges.size === 0 && this.props.hideEmptyFolders) {
-      return null;
-    }
-
-    const rootClassName = classnames('list-nested-item', {
-      collapsed: this.state.isCollapsed,
-    });
-
-    const fileClassName = classnames(
-      'icon',
-      'icon-file-text',
-      'nuclide-file-changes-file-entry',
-      `${commandPrefix}-file-entry`,
-    );
-
-    return (
-      <ul className="list-tree has-collapsable-children">
-        <li className={rootClassName}>
-          {this.props.shouldShowFolderName ?
-            <div
-              className="list-item"
-              key={this.props.rootPath}
-              onClick={() => this.setState({isCollapsed: !this.state.isCollapsed})}>
-              <span
-                className="icon icon-file-directory nuclide-file-changes-root-entry"
-                data-path={this.props.rootPath}>
-                {nuclideUri.basename(this.props.rootPath)}
-              </span>
-            </div> :
-            null
-          }
-          <ul className="list-tree has-flat-children">
-            {Array.from(fileChanges.entries()).map(
-              ([filePath, fileChangeValue]) =>
-                <li
-                  data-path={filePath}
-                  className={this._getFileClassname(filePath, fileChangeValue)}
-                  key={filePath}
-                  onClick={() => this.props.onFileChosen(filePath)}>
-                  <span
-                    className={fileClassName}
-                    data-path={filePath}
-                    data-root={this.props.rootPath}>
-                    {FileChangeStatusToPrefix[fileChangeValue]}{nuclideUri.basename(filePath)}
-                  </span>
-                </li>,
-            )}
-          </ul>
-        </li>
-      </ul>
-    );
-  }
-}
+import ChangedFilesList from './ChangedFilesList';
 
 type Props = {
   fileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
@@ -242,7 +149,7 @@ export class MultiRootChangedFilesView extends React.Component {
     return (
       <div className="nuclide-ui-multi-root-file-tree-container">
         {Array.from(this.props.fileChanges.entries()).map(([root, fileChanges]) =>
-          <ChangedFilesView
+          <ChangedFilesList
             key={root}
             fileChanges={fileChanges}
             rootPath={root}
