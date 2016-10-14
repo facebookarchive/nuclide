@@ -22,7 +22,9 @@ import {waitsForRepositoryReady} from './utils/diff-view-utils';
 
 const NO_FILE_SELECTED_TITLE = 'No file selected...No file selected';
 
-describe('Diff View Commit Mode Integration Test', () => {
+// TODO(t13905062) Fix this test
+// eslint-disable-next-line jasmine/no-disabled-tests
+xdescribe('Diff View Commit Mode Integration Test', () => {
 
   let repoPath: string = (null: any);
   let filePath: string = (null: any);
