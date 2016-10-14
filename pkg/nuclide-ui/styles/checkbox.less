@@ -19,78 +19,13 @@
  * [1] https://github.com/atom/settings-view/blob/v0.232.6/styles/settings-view.less#L113
  */
 .nuclide-ui-checkbox[type="checkbox"] {
-  -webkit-appearance: none;
-  display: inline-block;
-  position: relative;
-  font-size: inherit;
-  margin: 0;
-  vertical-align: sub;
-  width: 1.5em;
-  height: 1.5em;
-  cursor: pointer;
-  outline: 0;
-  border-radius: @component-border-radius;
-  background-color: @text-color-subtle;
 
   &[disabled] {
     opacity: @disabled-opacity;
   }
 
-  &:focus {
-    box-shadow: 0 0 0 1px @base-border-color;
-  }
+}
 
-  &:active {
-    background-color: @background-color-success;
-  }
-
-  &:before,
-  &:after {
-    content: "";
-    position: absolute;
-    top: 1.1em;
-    left: .6em;
-    height: .16em;
-    min-height: 2px;
-    border-radius: 1px;
-    background-color: @base-background-color;
-    transform-origin: 0% 0%;
-    opacity: 0;
-  }
-  &:before {
-    width: .45em;
-    transform: rotate(225deg) scale(0);
-  }
-  &:after {
-    width: .9em;
-    margin: -1px;
-    transform: rotate(-45deg) scale(0);
-  }
-
-  &:checked {
-    background-color: @background-color-success;
-    &:active {
-      background-color: @text-color-subtle;
-    }
-    &:before,
-    &:after {
-      opacity: 1;
-    }
-    &:before {
-      transform: rotate(225deg) scale(1);
-    }
-    &:after {
-      transform: rotate(-45deg) scale(1);
-    }
-  }
-
-  &:indeterminate {
-    background-color: @background-color-warning;
-    &:after {
-      left: 0.4em;
-      opacity: 1;
-      top: 0.8em;
-      transform: rotate(0deg) scale(1);
-    }
-  }
+.nuclide-ui-checkbox-label-text {
+  vertical-align: middle;
 }

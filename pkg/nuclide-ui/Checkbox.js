@@ -89,13 +89,15 @@ export class Checkbox extends React.PureComponent {
         onClick={onClick}>
         <input
           checked={checked}
-          className="nuclide-ui-checkbox"
+          className="input-checkbox nuclide-ui-checkbox"
           disabled={disabled}
           onChange={this._onChange}
           ref="input"
           type="checkbox"
         />
-        {' '}{label}
+        <span className="nuclide-ui-checkbox-label-text">
+          {' '}{label}
+        </span>
       </label>
     );
   }

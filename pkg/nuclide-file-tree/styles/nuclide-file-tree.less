@@ -1,4 +1,5 @@
 @import "ui-variables";
+@import "syntax-variables";
 
 .list-tree.has-collapsable-children .list-nested-item > .list-item.loading:before {
   content: "\f087"; // 'sync' icon, spinning arrows
@@ -34,6 +35,27 @@
       position: absolute;
     }
   }
+
+  .nuclide-ui-checkbox[type="checkbox"] {
+    &:indeterminate {
+      background-color: @text-color-warning;
+    }
+    &:checked,
+    &:active {
+      background-color: @background-color-success;
+    }
+
+    // Note: Atom applies transitions to the checkmarks, but when applied to
+    // hundreds of checkboxes simultaneously as is the case in the
+    // 'nuclide-file-tree' package w/Working Sets, they are too expensive to
+    // paint. The followings styles intentionally omit transitions.
+    &,
+    &:before,
+    &:after {
+      transition: none;
+    }
+  }
+
 }
 
 .nuclide-file-tree-filter {
