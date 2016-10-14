@@ -27,14 +27,16 @@ import type {PhabricatorRevisionInfo} from '../../nuclide-arcanist-rpc/lib/utils
 import {
   DiffMode,
   DiffOption,
+} from './constants';
+import {
   FileChangeStatus,
   FileChangeStatusToPrefix,
-  HgStatusToFileChangeStatus,
-} from './constants';
+} from '../../commons-node/vcs';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getPhabricatorRevisionFromCommitMessage} from '../../nuclide-arcanist-rpc/lib/utils';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import {bufferUntil} from '../../commons-node/observable';
+import {getDirtyFileChanges} from '../../commons-node/vcs';
 import {getLogger} from '../../nuclide-logging';
 import {Observable, Subject} from 'rxjs';
 import stripAnsi from 'strip-ansi';
@@ -285,20 +287,6 @@ export function getHeadToForkBaseRevisions(revisions: Array<RevisionInfo>): Arra
     headToForkBaseRevisions.unshift(parentRevision);
   }
   return headToForkBaseRevisions;
-}
-
-export function getDirtyFileChanges(
-  repository: HgRepositoryClient,
-): Map<NuclideUri, FileChangeStatusValue> {
-  const dirtyFileChanges = new Map();
-  const statuses = repository.getAllPathStatuses();
-  for (const filePath in statuses) {
-    const changeStatus = HgStatusToFileChangeStatus[statuses[filePath]];
-    if (changeStatus != null) {
-      dirtyFileChanges.set(filePath, changeStatus);
-    }
-  }
-  return dirtyFileChanges;
 }
 
 function fetchFileChangesForRevisions(

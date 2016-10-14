@@ -27,6 +27,7 @@ import * as Actions from './Actions';
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
+import {observeStatusChanges} from '../../../commons-node/vcs';
 import {
   CommitMode,
   CommitModeState,
@@ -38,7 +39,6 @@ import {
   createPhabricatorRevision,
   formatFileDiffRevisionTitle,
   getAmendMode,
-  getDirtyFileChanges,
   getHeadRevision,
   getHeadToForkBaseRevisions,
   getHgDiff,
@@ -61,7 +61,6 @@ import {startTracking, track} from '../../../nuclide-analytics';
 import nuclideUri from '../../../commons-node/nuclideUri';
 import {getLogger} from '../../../nuclide-logging';
 
-const UPDATE_STATUS_DEBOUNCE_MS = 50;
 const CHANGE_DEBOUNCE_DELAY_MS = 10;
 const FILESYSTEM_REVISION_TITLE = 'Filesystem / Editor';
 
@@ -112,15 +111,6 @@ function notifyCwdMismatch(
   return actionSubject.asObservable().takeUntil(
     observableFromSubscribeFunction(notification.onDidDismiss.bind(notification)),
   );
-}
-
-function observeStatusChanges(repository: HgRepositoryClient): Observable<null> {
-  return observableFromSubscribeFunction(
-    repository.onDidChangeStatuses.bind(repository),
-  )
-  .debounceTime(UPDATE_STATUS_DEBOUNCE_MS)
-  .map(() => null)
-  .startWith(null);
 }
 
 function getDiffOptionChanges(
@@ -210,7 +200,7 @@ export function addRepositoryEpic(
     const {repository} = action.payload;
 
     return observeStatusChanges(repository)
-      .map(() => Actions.updateDirtyFiles(repository, getDirtyFileChanges(repository)))
+      .map(dirtyFileChanges => Actions.updateDirtyFiles(repository, dirtyFileChanges))
       .takeUntil(observableFromSubscribeFunction(repository.onDidDestroy.bind(repository)))
       .concat(Observable.of(Actions.removeRepository(repository)));
   });

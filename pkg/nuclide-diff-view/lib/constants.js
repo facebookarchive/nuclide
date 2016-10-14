@@ -10,35 +10,14 @@
  */
 
 import type {
-  StatusCodeNumberValue,
-} from '../../nuclide-hg-rpc/lib/HgService';
-
-import type {
   CommitModeType,
   CommitModeStateType,
   DiffModeType,
   DiffSectionStatusType,
-  FileChangeStatusValue,
   PublishModeType,
   PublishModeStateType,
   DiffOptionType,
 } from './types';
-
-import {
-  hgConstants,
-} from '../../nuclide-hg-rpc';
-
-const {StatusCodeNumber: HgStatusCodeNumber} = hgConstants;
-
-export const FileChangeStatus = Object.freeze({
-  ADDED: 1,
-  MODIFIED: 2,
-  MISSING: 3,
-  REMOVED: 4,
-  UNTRACKED: 5,
-});
-
-(FileChangeStatus: { [key: string]: FileChangeStatusValue });
 
 export const DiffMode = Object.freeze({
   BROWSE_MODE: '1. Browse',
@@ -92,24 +71,6 @@ export const PublishModeState = Object.freeze({
 
 // This is to work around flow's missing support of enums.
 (PublishModeState: { [key: string]: PublishModeStateType });
-
-export const HgStatusToFileChangeStatus
-  : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = Object.freeze({
-    [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
-    [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
-    [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,
-    [HgStatusCodeNumber.REMOVED]: FileChangeStatus.REMOVED,
-    [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED,
-  },
-);
-
-export const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = Object.freeze({
-  [FileChangeStatus.ADDED]: '[A] ',
-  [FileChangeStatus.MODIFIED]: '[M] ',
-  [FileChangeStatus.MISSING]: '[!] ',
-  [FileChangeStatus.REMOVED]: '[D] ',
-  [FileChangeStatus.UNTRACKED]: '[?] ',
-});
 
 export const NON_MERCURIAL_REPO_DISPLAY_NAME = '[X] Non-Mercurial Repository';
 
