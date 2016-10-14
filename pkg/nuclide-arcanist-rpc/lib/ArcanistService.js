@@ -221,6 +221,14 @@ export function execArcPull(
   return observeProcess(() => safeSpawn('arc', args, options)).publish();
 }
 
+export function execArcLand(
+  cwd: NuclideUri,
+): ConnectableObservable<ProcessMessage> {
+  const args = ['land'];
+  const options = {cwd};
+  return observeProcess(() => safeSpawn('arc', args, options)).publish();
+}
+
 async function execArcLint(
   cwd: string,
   filePaths: Array<NuclideUri>,
