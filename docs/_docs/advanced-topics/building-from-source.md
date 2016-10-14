@@ -18,17 +18,16 @@ those willing to live on the bleeding edge, you can install Nuclide from source.
 You must have the [general prerequisites](/docs/editor/setup#mac__prerequisites) installed. In
 addition, you must have
 
-- Xcode (for command line tools)
+- Xcode (for Command Line Tools)
 - **Node 5.10.0** or greater
-- Atom Shell Commands (open Atom and choose the `Atom | Install Shell Commands` menu item) installed as well.
+- Atom Shell Commands (open Atom and go to `Atom | Install Shell Commands`) installed as well.
 
 > Xcode can be installed from the App Store. Installation can take a *long, long* time. So be patient.
 
 > To install Node, the easiest way is to
 > [download the latest released Node package](https://nodejs.org) and go through the installer.
 
-You can verify all the appropriate dependencies. All the following should be on your `$PATH`
-(usually `usr/bin` or `usr/local/bin`).
+You can verify all the appropriate dependencies. All the following should be in your `$PATH` environment variable (usually `usr/bin` or `usr/local/bin`).
 
 ```bash
 $ git --version
@@ -45,8 +44,8 @@ python 2.7.10
 git 2.5.4
 ```
 
-> Don't worry about the `apm` versions of `npm`, etc. Those are internal to `atom`. Used on your
-system are the ones associated with `node --version`, etc.
+> Don't worry about the `apm` versions of `npm`, etc. Those are internal to `atom`. Your
+system uses ones associated with `node --version`, etc.
 
 ### Building
 
@@ -63,12 +62,12 @@ $ npm install
 $ apm link
 ```
 
-Verify the installation by:
+Verify the installation:
 
 1. Open Atom.
 2. Go to `Atom | Preferences`.
-3. Click on `Packages`.
-4. Verify `nuclide` as one of the packages.
+3. Click on **Packages**.
+4. Verify `nuclide` is one of the packages.
 
 ## Linux
 
@@ -79,8 +78,7 @@ addition, you must have **Node 5.10.0** installed as well.
 
 To install Node, see [Node.js's download page](https://nodejs.org/en/download/) for steps that work best for your setup.
 
-You can verify all the appropriate dependencies. All the following should be on your `$PATH`
-(usually `usr/bin` or `usr/local/bin`).
+You can verify all the appropriate dependencies. All the following should be in your `$PATH` environment variable (usually `usr/bin` or `usr/local/bin`).
 
 ```bash
 $ git --version
@@ -97,8 +95,8 @@ python 2.7.6
 git 1.9.1
 ```
 
-Don't worry about the `apm` versions of `npm`, etc. Those are internal to `atom`. Used on your
-system are the ones associated with `node --version`, etc.
+>Don't worry about the `apm` versions of `npm`, etc. Those are internal to `atom`. Your
+system uses the ones associated with `node --version`, etc.
 
 ### Building
 
@@ -115,12 +113,12 @@ $ npm install
 $ apm link
 ```
 
-Verify the installation by:
+Verify the installation:
 
 1. Open Atom.
 2. Go to `File | Preferences`.
-3. Click on `Packages`.
-4. Verify `nuclide` as one of the packages.
+3. Click on **Packages**.
+4. Verify `nuclide` is one of the packages.
 
 ## Windows
 
@@ -131,7 +129,7 @@ Building Nuclide from source is not currently supported on Windows.
 
 ## Development Mode
 
-If you have another version of Nuclide installed (e.g., the official apm package), but you also want to run Nuclide from source, you can `apm link --dev` and then run Nuclide via `atom --dev`. This will allow something similar to a production and development installation of Nuclide. 
+If you have another version of Nuclide installed (e.g., the official `apm` package), but you also want to run Nuclide from source, you can `apm link --dev` then run Nuclide via `atom --dev`. This will allow something similar to a production and development installation of Nuclide.
 
 When you open Atom in development mode, either with the `atom --dev` from the command line or with
 the `View | Developer | Open in Dev Mode...` command from within the Atom menus, your linked version
