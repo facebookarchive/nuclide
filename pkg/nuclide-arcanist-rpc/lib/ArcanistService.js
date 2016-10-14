@@ -229,6 +229,15 @@ export function execArcLand(
   return observeProcess(() => safeSpawn('arc', args, options)).publish();
 }
 
+export function execArcPatch(
+  cwd: NuclideUri,
+  differentialRevision: string,
+): ConnectableObservable<ProcessMessage> {
+  const args = ['patch', differentialRevision];
+  const options = {cwd};
+  return observeProcess(() => safeSpawn('arc', args, options)).publish();
+}
+
 async function execArcLint(
   cwd: string,
   filePaths: Array<NuclideUri>,
