@@ -62,9 +62,12 @@ def parse_args():
                               action='append', help='Launch arguments.')
     launch_group.add_argument('--launch_environment_variables', '-env',
                               type=str,
-                              help='Comma-separated environment variables')
+                              help='Comma-separated environment variables.')
     launch_group.add_argument('--working_directory', '-cwd', type=str,
                               help='Working directory for the executable.')
+    launch_group.add_argument('--stdin_filepath', '-stdin',
+                              type=str,
+                              help='Redirect stdin for the process to this file.')
     arguments = parser.parse_args()
 
     # Prefer arguments from JSON.
@@ -127,6 +130,8 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
             if arguments.executable_path else None
         working_directory = os.path.expanduser(str(arguments.working_directory)) \
             if arguments.working_directory else None
+        stdin_filepath = os.path.expanduser(str(arguments.stdin_filepath)) \
+            if arguments.stdin_filepath else None
         target = debugger.CreateTarget(
             executable_path,    # filename
             None,               # target_triple
@@ -140,7 +145,7 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
             listener,
             argument_list,
             environment_variables,
-            None,      # stdin_path
+            stdin_filepath,
             None,      # stdout_path
             None,      # stderr_path
             working_directory,

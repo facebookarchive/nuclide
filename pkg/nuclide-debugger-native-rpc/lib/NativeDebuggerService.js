@@ -36,6 +36,7 @@ export type LaunchTargetInfo = {
   arguments: Array<string>,
   environmentVariables: Array<string>,
   workingDirectory: string,
+  stdinFilePath?: string,
   basepath?: string
 };
 
@@ -55,6 +56,7 @@ type LaunchInfoArgsType = {
   launch_arguments: Array<string>,
   launch_environment_variables: Array<string>,
   working_directory: string,
+  stdin_filepath: string,
   basepath: string,
 };
 
@@ -151,6 +153,7 @@ export class NativeDebuggerService {
       launch_arguments: launchInfo.arguments,
       launch_environment_variables: launchInfo.environmentVariables,
       working_directory: launchInfo.workingDirectory,
+      stdin_filepath: launchInfo.stdinFilePath ? launchInfo.stdinFilePath : '',
       basepath: launchInfo.basepath ? launchInfo.basepath : this._config.buckConfigRootFile,
     };
     await this._startDebugging(inferiorArguments);

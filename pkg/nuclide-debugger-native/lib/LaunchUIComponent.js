@@ -77,16 +77,23 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
           placeholderText="Working directory for the launched executable"
           onConfirm={this._handleLaunchClick}
         />
+        <label>Stdin file: </label>
+        <AtomInput
+          ref="stdinFilePath"
+          tabIndex="15"
+          placeholderText="Redirect stdin to this file"
+          onConfirm={this._handleLaunchClick}
+        />
         <div style={{display: 'flex', flexDirection: 'row-reverse'}}>
           <ButtonGroup>
             <Button
-              tabIndex="16"
+              tabIndex="17"
               onClick={this._cancelClick}>
               Cancel
             </Button>
             <Button
               buttonType={ButtonTypes.PRIMARY}
-              tabIndex="15"
+              tabIndex="16"
               onClick={this._handleLaunchClick}>
               Launch
             </Button>
@@ -110,12 +117,13 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
     const launchEnvironmentVariables = shellParse(
       this.refs.launchEnvironmentVariables.getText());
     const launchWorkingDirectory = this.refs.launchWorkingDirectory.getText().trim();
-    // TODO: fill other fields from UI.
+    const stdinFilePath = this.refs.stdinFilePath.getText().trim();
     const launchTarget = {
       executablePath: launchExecutable,
       arguments: launchArguments,
       environmentVariables: launchEnvironmentVariables,
       workingDirectory: launchWorkingDirectory,
+      stdinFilePath,
     };
     // Fire and forget.
     this.props.actions.launchDebugger(launchTarget);
