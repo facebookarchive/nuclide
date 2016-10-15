@@ -125,7 +125,10 @@ class HackLanguageServiceImpl extends ServerLanguageService {
         return process.getAutocompleteSuggestions(fileVersion, position, activatedManually);
       }
     } else {
-      return super.getAutocompleteSuggestions(fileVersion, position, activatedManually);
+      // Babel workaround: w/o the es2015-classes transform, async functions can't call `super`.
+      // https://github.com/babel/babel/issues/3930
+      return ServerLanguageService.prototype.getAutocompleteSuggestions
+        .call(this, fileVersion, position, activatedManually);
     }
   }
 

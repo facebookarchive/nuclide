@@ -148,7 +148,9 @@ export default class NuclideTextBuffer extends TextBuffer {
 
   async updateCachedDiskContents(flushCache?: boolean, callback?: () => mixed): Promise<void> {
     try {
-      await super.updateCachedDiskContents(flushCache, callback);
+      // Babel workaround: w/o the es2015-classes transform, async functions can't call `super`.
+      // https://github.com/babel/babel/issues/3930
+      await TextBuffer.prototype.updateCachedDiskContents.call(this, flushCache, callback);
       this._exists = true;
     } catch (e) {
       this._exists = false;
