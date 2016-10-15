@@ -1,0 +1,18 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "Refactorizer",
+          "submenu": [
+            {
+              "label": "Refactor",
+              "command": "nuclide-refactorizer:refactorize"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -9,16 +9,28 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
 /*
  * WARNING: This package is still experimental and in early development. Use it at your own risk.
  */
 
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 
+import type {
+  Store,
+} from './types';
+
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
+import {Disposable} from 'atom';
+import {React, ReactDOM} from 'react-for-atom';
+
+import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 import createPackage from '../../commons-atom/createPackage';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
+
+import * as Actions from './refactorActions';
+import {getStore} from './refactorStore';
+import {MainRefactorComponent} from './components/MainRefactorComponent';
 
 export type RenameRefactorKind = 'rename';
 
@@ -64,16 +76,55 @@ export type RefactorProvider = {
 };
 
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
+  _store: Store;
+  _providerRegistry: ProviderRegistry<RefactorProvider>;
 
   constructor() {
-    this._disposables = new CompositeDisposable();
+    this._providerRegistry = new ProviderRegistry();
+
+    this._store = getStore(this._providerRegistry);
+
+    let panel = null;
+    this._disposables = new UniversalDisposable(
+      this._store.subscribe(() => {
+        const state = this._store.getState();
+        if (state.type === 'open') {
+          if (panel == null) {
+            const element = document.createElement('div');
+            panel = atom.workspace.addModalPanel({item: element});
+          }
+          ReactDOM.render(
+            <MainRefactorComponent
+              appState={state}
+              store={this._store}
+            />,
+            panel.getItem(),
+          );
+        } else {
+          if (panel != null) {
+            ReactDOM.unmountComponentAtNode(panel.getItem());
+            panel.destroy();
+            panel = null;
+          }
+        }
+      }),
+      atom.commands.add('atom-workspace', 'nuclide-refactorizer:refactorize', () => {
+        this._store.dispatch(Actions.open());
+      }),
+    );
   }
 
   dispose() {
     this._disposables.dispose();
   }
-}
 
+  consumeRefactorProvider(provider: RefactorProvider): IDisposable {
+    this._providerRegistry.addProvider(provider);
+    return new Disposable(() => {
+      this._providerRegistry.removeProvider(provider);
+    });
+  }
+}
 
 export default createPackage(Activation);

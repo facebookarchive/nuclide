@@ -20,7 +20,8 @@ import type {
 } from '..';
 
 export type Store = {
-  subscribe(fn: () => mixed): void, // TODO probably not void
+  // Returns unsubscribe function
+  subscribe(fn: () => mixed): (() => void),
   dispatch(action: RefactorAction): void,
   getState(): RefactorState,
 };

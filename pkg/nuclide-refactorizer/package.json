@@ -9,6 +9,13 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "consumedServices": {
+    "nuclide-refactor": {
+      "versions": {
+        "0.0.0": "consumeRefactorProvider"
+      }
+    }
+  },
   "activationHooks": [
     "nuclide_refactoring:gk:nuclide"
   ]
