@@ -17,6 +17,9 @@
 
 // jasmine-node test runner with Atom test globals and babel transpiling support.
 
+// Load nuclide-node-transpiler to start transpiling.
+require('../../nuclide-node-transpiler');
+
 // Set this up before we call jasmine-node. jasmine-node does this same trick,
 // but neglects to respect the exit code, so we beat it the to the punch.
 process.once('exit', code => {
@@ -31,9 +34,6 @@ process.once('exit', code => {
   }
   process.exit(code);
 });
-
-// Load nuclide-node-transpiler to start transpiling.
-require('../../nuclide-node-transpiler');
 
 // Load waitsForPromise into global.
 global.waitsForPromise = require('../lib/waitsForPromise');

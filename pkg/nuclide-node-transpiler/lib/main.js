@@ -12,9 +12,12 @@
 // If babel-core is not available, then this is a production build, so don't
 // bother loading the require hook.
 
+let hasBabel = false;
 try {
-  require.resolve('babel-core');
-  require('./require-hook');
+  hasBabel = Boolean(require.resolve('babel-core'));
 } catch (err) {
-  // nothing to do...
+}
+
+if (hasBabel) {
+  require('./require-hook');
 }
