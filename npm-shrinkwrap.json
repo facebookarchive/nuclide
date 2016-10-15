@@ -151,9 +151,9 @@
       "resolved": "https://registry.npmjs.org/async/-/async-0.2.10.tgz"
     },
     "atom-grammar-test": {
-      "version": "0.6.2",
-      "from": "atom-grammar-test@0.6.2",
-      "resolved": "https://registry.npmjs.org/atom-grammar-test/-/atom-grammar-test-0.6.2.tgz",
+      "version": "0.6.3",
+      "from": "atom-grammar-test@0.6.3",
+      "resolved": "https://registry.npmjs.org/atom-grammar-test/-/atom-grammar-test-0.6.3.tgz",
       "dev": true
     },
     "atom-package-deps": {
@@ -177,9 +177,9 @@
       "resolved": "https://registry.npmjs.org/aws-sign2/-/aws-sign2-0.6.0.tgz"
     },
     "aws4": {
-      "version": "1.4.1",
+      "version": "1.5.0",
       "from": "aws4@>=1.2.1 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aws4/-/aws4-1.4.1.tgz"
+      "resolved": "https://registry.npmjs.org/aws4/-/aws4-1.5.0.tgz"
     },
     "babel-code-frame": {
       "version": "6.16.0",
@@ -228,9 +228,9 @@
       "dev": true,
       "dependencies": {
         "babylon": {
-          "version": "6.11.4",
+          "version": "6.12.0",
           "from": "babylon@>=6.0.18 <7.0.0",
-          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.11.4.tgz",
+          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.12.0.tgz",
           "dev": true
         }
       }
@@ -374,9 +374,9 @@
       "dev": true,
       "dependencies": {
         "babylon": {
-          "version": "6.11.4",
+          "version": "6.12.0",
           "from": "babylon@>=6.11.0 <7.0.0",
-          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.11.4.tgz",
+          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.12.0.tgz",
           "dev": true
         },
         "globals": {
@@ -503,9 +503,9 @@
       "resolved": "https://registry.npmjs.org/cheerio/-/cheerio-0.22.0.tgz"
     },
     "chevrotain": {
-      "version": "0.6.3",
-      "from": "chevrotain@>=0.6.0 <0.7.0",
-      "resolved": "https://registry.npmjs.org/chevrotain/-/chevrotain-0.6.3.tgz",
+      "version": "0.8.1",
+      "from": "chevrotain@>=0.8.0 <0.9.0",
+      "resolved": "https://registry.npmjs.org/chevrotain/-/chevrotain-0.8.1.tgz",
       "dev": true
     },
     "circular-json": {
@@ -698,7 +698,7 @@
         "esprima-fb": {
           "version": "15001.1001.0-dev-harmony-fb",
           "from": "esprima-fb@~15001.1001.0-dev-harmony-fb",
-          "resolved": "https://registry.npmjs.org/esprima-fb/-/esprima-fb-15001.1001.0-dev-harmony-fb.tgz",
+          "resolved": "http://registry.npmjs.org/esprima-fb/-/esprima-fb-15001.1001.0-dev-harmony-fb.tgz",
           "dev": true
         },
         "yargs": {
@@ -751,9 +751,9 @@
       "resolved": "https://registry.npmjs.org/diff/-/diff-3.0.0.tgz"
     },
     "doctrine": {
-      "version": "1.4.0",
+      "version": "1.5.0",
       "from": "doctrine@>=1.2.2 <2.0.0",
-      "resolved": "https://registry.npmjs.org/doctrine/-/doctrine-1.4.0.tgz",
+      "resolved": "https://registry.npmjs.org/doctrine/-/doctrine-1.5.0.tgz",
       "dev": true
     },
     "dom-serializer": {
@@ -869,9 +869,9 @@
       "dev": true,
       "dependencies": {
         "globals": {
-          "version": "9.10.0",
+          "version": "9.12.0",
           "from": "globals@>=9.2.0 <10.0.0",
-          "resolved": "https://registry.npmjs.org/globals/-/globals-9.10.0.tgz",
+          "resolved": "https://registry.npmjs.org/globals/-/globals-9.12.0.tgz",
           "dev": true
         },
         "user-home": {
@@ -1080,9 +1080,9 @@
       "resolved": "https://registry.npmjs.org/form-data/-/form-data-1.0.1.tgz",
       "dependencies": {
         "async": {
-          "version": "2.0.1",
+          "version": "2.1.1",
           "from": "async@>=2.0.1 <3.0.0",
-          "resolved": "https://registry.npmjs.org/async/-/async-2.0.1.tgz"
+          "resolved": "https://registry.npmjs.org/async/-/async-2.1.1.tgz"
         }
       }
     },
@@ -1259,9 +1259,9 @@
       "resolved": "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.4.13.tgz"
     },
     "ignore": {
-      "version": "3.1.5",
+      "version": "3.2.0",
       "from": "ignore@>=3.1.5 <4.0.0",
-      "resolved": "https://registry.npmjs.org/ignore/-/ignore-3.1.5.tgz",
+      "resolved": "https://registry.npmjs.org/ignore/-/ignore-3.2.0.tgz",
       "dev": true
     },
     "immutable": {
@@ -1276,9 +1276,9 @@
       "dev": true
     },
     "inflight": {
-      "version": "1.0.5",
+      "version": "1.0.6",
       "from": "inflight@>=1.0.4 <2.0.0",
-      "resolved": "https://registry.npmjs.org/inflight/-/inflight-1.0.5.tgz"
+      "resolved": "https://registry.npmjs.org/inflight/-/inflight-1.0.6.tgz"
     },
     "inherits": {
       "version": "2.0.3",
@@ -1500,9 +1500,9 @@
       "resolved": "https://registry.npmjs.org/jsprim/-/jsprim-1.3.1.tgz"
     },
     "jsx-ast-utils": {
-      "version": "1.3.1",
+      "version": "1.3.2",
       "from": "jsx-ast-utils@>=1.3.1 <2.0.0",
-      "resolved": "https://registry.npmjs.org/jsx-ast-utils/-/jsx-ast-utils-1.3.1.tgz",
+      "resolved": "https://registry.npmjs.org/jsx-ast-utils/-/jsx-ast-utils-1.3.2.tgz",
       "dev": true
     },
     "kind-of": {
@@ -2051,7 +2051,7 @@
         "esprima-fb": {
           "version": "15001.1001.0-dev-harmony-fb",
           "from": "esprima-fb@~15001.1001.0-dev-harmony-fb",
-          "resolved": "https://registry.npmjs.org/esprima-fb/-/esprima-fb-15001.1001.0-dev-harmony-fb.tgz",
+          "resolved": "http://registry.npmjs.org/esprima-fb/-/esprima-fb-15001.1001.0-dev-harmony-fb.tgz",
           "dev": true
         }
       }
@@ -2194,9 +2194,9 @@
       "dev": true,
       "dependencies": {
         "babylon": {
-          "version": "6.11.4",
+          "version": "6.12.0",
           "from": "babylon@>=6.7.0 <7.0.0",
-          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.11.4.tgz",
+          "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.12.0.tgz",
           "dev": true
         },
         "resolve": {
