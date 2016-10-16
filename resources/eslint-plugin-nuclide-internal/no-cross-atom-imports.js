@@ -16,6 +16,11 @@ const resolveFrom = require('resolve-from');
 const path = require('path');
 const fs = require('fs');
 
+const KNOWN_ATOM_BUILTIN_PACKAGES = new Set([
+  'atom',
+  'electron',
+]);
+
 module.exports = function(context) {
   const filename = context.getFilename();
   const dirname = path.dirname(filename);
@@ -34,6 +39,16 @@ module.exports = function(context) {
   // packageType: Node & testRunner: npm
 
   function getCrossImportPackage(id) {
+    // npm packages can't require Atom builtins.
+    if (KNOWN_ATOM_BUILTIN_PACKAGES.has(id)) {
+      if (ownPackage.nuclide &&
+          ownPackage.nuclide.testRunner === 'npm') {
+        return {type: 'NO_NPM_TO_ATOM_BUILTIN', name: id};
+      } else {
+        return null;
+      }
+    }
+
     const resolved = resolveFrom(dirname, id);
     // Exclude modules that are not found or not ours.
     if (resolved == null || resolved.includes('/node_modules/')) {
@@ -53,14 +68,14 @@ module.exports = function(context) {
     // Nothing can require into an Atom package
     if (resolvedPackage.nuclide &&
         resolvedPackage.nuclide.packageType === 'Atom') {
-      return {type: 'NO_ATOM', pkg: resolvedPackage};
+      return {type: 'NO_ATOM', name: resolvedPackage.name};
     }
     // npm packages can only require other npm packages.
     if (ownPackage.nuclide &&
         ownPackage.nuclide.testRunner === 'npm' &&
         resolvedPackage.nuclide &&
         resolvedPackage.nuclide.testRunner === 'apm') {
-      return {type: 'NO_NPM_TO_APM', pkg: resolvedPackage};
+      return {type: 'NO_NPM_TO_APM', name: resolvedPackage.name};
     }
 
     return null;
@@ -72,10 +87,12 @@ module.exports = function(context) {
         ? 'Atom package "{{name}}" is not {{action}} from other packages.' :
       result.type === 'NO_NPM_TO_APM'
         ? 'apm package "{{name}}" is not {{action}} from an npm package.' :
+      result.type === 'NO_NPM_TO_ATOM_BUILTIN'
+        ? 'Atom builtin package "{{name}}" is not {{action}} from an npm package.' :
       null;
     context.report({
       node,
-      data: {name: result.pkg.name, action},
+      data: {name: result.name, action},
       message,
     });
   }

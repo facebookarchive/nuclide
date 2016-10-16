@@ -12,6 +12,7 @@
 import type {PredefinedTransformer} from '../../nuclide-rpc';
 
 import nuclideUri from '../../commons-node/nuclideUri';
+// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {Range as AtomRange, Point as AtomPoint} from 'atom';
 import {Range as ServerRange, Point as ServerPoint} from 'simple-text-buffer';
 

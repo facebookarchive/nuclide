@@ -26,6 +26,27 @@ const ruleTester = new RuleTester({
 ruleTester.run('no-cross-atom-imports', rule, {
   valid: [
     //--------------------------------------------------------------------------
+    // atom-1 => atom builtin
+    //--------------------------------------------------------------------------
+
+    {
+      code: 'require("atom");',
+      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+    },
+    {
+      code: 'import "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+    },
+    {
+      code: 'export {} from "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+    },
+    {
+      code: 'export * from "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+    },
+
+    //--------------------------------------------------------------------------
     // atom-1 => atom-1
     //--------------------------------------------------------------------------
 
@@ -226,6 +247,27 @@ ruleTester.run('no-cross-atom-imports', rule, {
     {
       code: 'export * from "../nuclide-fake-node-apm-package-1/package.json";',
       filename: path.join(__dirname, 'nuclide-fake-atom-package-1/index.js'),
+    },
+
+    //--------------------------------------------------------------------------
+    // node-apm-1 => atom builtin
+    //--------------------------------------------------------------------------
+
+    {
+      code: 'require("atom");',
+      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+    },
+    {
+      code: 'import "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+    },
+    {
+      code: 'export {} from "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
+    },
+    {
+      code: 'export * from "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-node-apm-package-1/index.js'),
     },
 
     //--------------------------------------------------------------------------
@@ -594,6 +636,23 @@ ruleTester.run('no-cross-atom-imports', rule, {
     },
 
     //--------------------------------------------------------------------------
+    // node-npm-1 => atom builtin (type)
+    //--------------------------------------------------------------------------
+
+    {
+      code: 'import type x from "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+    },
+    {
+      code: 'import typeof x from "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+    },
+    {
+      code: 'export type {} from "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+    },
+
+    //--------------------------------------------------------------------------
     // node-npm-1 => node-apm-1 (type)
     //--------------------------------------------------------------------------
 
@@ -834,6 +893,51 @@ ruleTester.run('no-cross-atom-imports', rule, {
 
   ],
   invalid: [
+
+    //--------------------------------------------------------------------------
+    // node-npm-1 => atom builtin
+    //--------------------------------------------------------------------------
+
+    {
+      code: 'require("atom");',
+      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      errors: [
+        {
+          message: 'Atom builtin package "atom" is not requireable from an npm package.',
+          type: 'CallExpression',
+        },
+      ],
+    },
+    {
+      code: 'import "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      errors: [
+        {
+          message: 'Atom builtin package "atom" is not importable from an npm package.',
+          type: 'ImportDeclaration',
+        },
+      ],
+    },
+    {
+      code: 'export {} from "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      errors: [
+        {
+          message: 'Atom builtin package "atom" is not exportable from an npm package.',
+          type: 'ExportNamedDeclaration',
+        },
+      ],
+    },
+    {
+      code: 'export * from "atom";',
+      filename: path.join(__dirname, 'nuclide-fake-node-npm-package-1/index.js'),
+      errors: [
+        {
+          message: 'Atom builtin package "atom" is not exportable from an npm package.',
+          type: 'ExportAllDeclaration',
+        },
+      ],
+    },
 
     //--------------------------------------------------------------------------
     // node-npm-1 => node-apm-1
