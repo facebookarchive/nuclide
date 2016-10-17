@@ -21,7 +21,7 @@ import {setConnectionConfig, clearConnectionConfig} from './RemoteConnectionConf
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';
 import {RemoteDirectory} from './RemoteDirectory';
-import {getAtomSideMarshalers} from '../../nuclide-marshalers-common';
+import {getAtomSideMarshalers} from '../../nuclide-marshalers-atom';
 
 import {Emitter} from 'atom';
 import nuclideUri from '../../commons-node/nuclideUri';

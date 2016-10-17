@@ -12,8 +12,6 @@
 import type {PredefinedTransformer} from '../../nuclide-rpc';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {Range as AtomRange, Point as AtomPoint} from 'atom';
 import {Range as ServerRange, Point as ServerPoint} from 'simple-text-buffer';
 
 export function getRemoteNuclideUriMarshalers(hostname: string): PredefinedTransformer {
@@ -36,40 +34,6 @@ export const localNuclideUriMarshalers: PredefinedTransformer =
       return remotePath;
     },
   };
-
-const jsonToAtomPoint = json => new AtomPoint(json.row, json.column);
-const jsonToAtomRange = json =>
-  new AtomRange(jsonToAtomPoint(json.start), jsonToAtomPoint(json.end));
-
-export function getAtomSideMarshalers(hostname: string): Array<PredefinedTransformer> {
-  return [
-    getRemoteNuclideUriMarshalers(hostname),
-    {
-      typeName: 'atom$Point',
-      marshaller: point => point,
-      unmarshaller: jsonToAtomPoint,
-    },
-    {
-      typeName: 'atom$Range',
-      marshaller: range => range,
-      unmarshaller: jsonToAtomRange,
-    },
-  ];
-}
-
-export const getAtomSideLoopbackMarshalers: Array<PredefinedTransformer> = [
-  localNuclideUriMarshalers,
-  {
-    typeName: 'atom$Point',
-    marshaller: point => point,
-    unmarshaller: jsonToAtomPoint,
-  },
-  {
-    typeName: 'atom$Range',
-    marshaller: range => range,
-    unmarshaller: jsonToAtomRange,
-  },
-];
 
 const jsonToServerPoint = json => new ServerPoint(json.row, json.column);
 const jsonToServerRange = json =>

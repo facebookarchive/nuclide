@@ -23,9 +23,11 @@ import {
 } from '../../nuclide-rpc';
 import {isRunningInTest} from '../../commons-node/system-info';
 import {
-  getAtomSideLoopbackMarshalers,
   getServerSideMarshalers,
 } from '../../nuclide-marshalers-common';
+import {
+  getAtomSideLoopbackMarshalers,
+} from '../../nuclide-marshalers-atom';
 
 let localRpcClient: ?RpcConnection<Transport> = null;
 let knownLocalRpc = false;
