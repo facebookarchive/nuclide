@@ -21,7 +21,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 
 import {denodeify} from '../../commons-node/promise';
 
-import {buildTempDirTree} from './helpers/buildTempDirTree';
+import {buildTempDirTree} from './helpers/BuildTempDirTree';
 
 import tempModule from 'temp';
 tempModule.track();

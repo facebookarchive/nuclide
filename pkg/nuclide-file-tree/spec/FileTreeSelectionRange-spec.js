@@ -19,7 +19,7 @@ import {DEFAULT_CONF} from '../lib/FileTreeStore';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 
 import {denodeify} from '../../commons-node/promise';
-import {buildTempDirTree} from './helpers/buildTempDirTree';
+import {buildTempDirTree} from './helpers/BuildTempDirTree';
 import tempModule from 'temp';
 tempModule.track();
 const tempCleanup = denodeify(tempModule.cleanup);
