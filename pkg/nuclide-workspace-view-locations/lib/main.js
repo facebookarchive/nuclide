@@ -40,6 +40,18 @@ class Activation {
     this._disposables.dispose();
   }
 
+  _toggleVisibility(id: PanelLocationId): void {
+    const location = this._panelLocations.get(id);
+    if (location == null) {
+      // We haven't created the panel yet. Store the visibility value so we can use it once we
+      // do.
+      const prevVisibility = this._initialPanelVisibility.get(id);
+      this._initialPanelVisibility.set(id, !prevVisibility);
+    } else {
+      location.toggle();
+    }
+  }
+
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     this._disposables.add(
       api.registerLocation({id: 'pane', create: () => new PaneLocation()}),
@@ -57,6 +69,13 @@ class Activation {
           return location;
         },
       })),
+      ...PanelLocationIds.map(id => (
+        atom.commands.add(
+          'atom-workspace',
+          `nuclide-workspace-views:toggle-${id}`,
+          () => { this._toggleVisibility(id); },
+        )
+      )),
     );
   }
 
@@ -76,17 +95,7 @@ class Activation {
           ? Boolean(this._initialPanelVisibility.get(id))
           : location.isVisible();
       },
-      toggle: () => {
-        const location = this._panelLocations.get(id);
-        if (location == null) {
-          // We haven't created the panel yet. Store the visibility value so we can use it once we
-          // do.
-          const prevVisibility = this._initialPanelVisibility.get(id);
-          this._initialPanelVisibility.set(id, !prevVisibility);
-        } else {
-          location.toggle();
-        }
-      },
+      toggle: () => { this._toggleVisibility(id); },
     }));
   }
 
