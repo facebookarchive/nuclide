@@ -1,5 +1,33 @@
 # Nuclide Changelog
 
+## v0.176.0
+
+### Highlights
+
+* Reduce the number of calls to `hg` asking for commit info to only when a change (commit, strip, rebase, amend, histedit) is applied. Makes React Native experience better!
+* Test runner now defines a keyboard bindable command for Test/Re-Test action. (Thanks Stepan!)
+
+### General
+
+* A handful of bug fixes for Atom 1.12 beta.
+* Display remote “Opening...” and “Saving...” notification less often.
+* HHVM debug toolbar availability now depends on the Current Working Root.
+
+### C++ Debugger
+
+* Add C++ debugger redirect stdin file during launch.
+* Resolve "~" in launch arguments into home directory for C++ debugger launch.
+
+### Flow
+
+* Drop support for Flow v0.22 and below.
+* Update outline view for the upcoming Flow v0.34's AST changes.
+
+### Related Files
+
+* Allow Related-Files feature to specify which file types to switch between.
+
+
 ## v0.175.0
 
 ### Highlights
