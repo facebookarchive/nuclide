@@ -142,8 +142,11 @@ export class PanelLocation extends SimpleModel<State> {
         .map(() => this._paneContainer.getPaneItems().length)
         .pairwise()
         .subscribe(([prev, next]) => {
-          // If there are more items now than there were before, show the panel.
-          if (next > prev) {
+          // If the last item is removed, hide the panel.
+          if (next === 0) {
+            this.setState({visible: false});
+          } else if (next > prev) {
+            // If there are more items now than there were before, show the panel.
             this.setState({visible: true});
           }
         }),
@@ -168,23 +171,14 @@ export class PanelLocation extends SimpleModel<State> {
         .observeOn(Scheduler.async)
         .subscribe(showDropAreas => { this.setState({showDropAreas}); }),
 
-        // Render whenever the state changes. Note that state is shared between this instance and
-        // the pane container, so we have to watch it as well.
         // $FlowIssue: We need to teach flow about Symbol.observable.
-        Observable.merge(paneItemChanges, Observable.from(this)).subscribe(() => {
-          this._render();
+        Observable.from(this).subscribe(state => {
+          this._panelRenderer.render({
+            visible: state.showDropAreas || state.visible,
+          });
         }),
 
     );
-  }
-
-  _render() {
-    // Only show the panel if it's supposed to be visible *and* there are items to show in it
-    // (even if `core.destroyEmptyPanes` is `false`).
-    const shouldBeVisible =
-      this.state.showDropAreas
-      || (this.state.visible && this._paneContainer.getPaneItems().length > 0);
-    this._panelRenderer.render({visible: shouldBeVisible});
   }
 
   _createItem(): Object {
