@@ -548,7 +548,13 @@ export class TypeRegistry {
         // Check if the source object has this key.
         if (obj != null && obj.hasOwnProperty(name)) {
           try {
-            const value = this._marshal(context, originalValue, prop.type);
+            let value;
+            // Optional props can be explicitly set to `undefined`
+            if (originalValue === undefined && prop.optional) {
+              value = undefined;
+            } else {
+              value = this._marshal(context, originalValue, prop.type);
+            }
             if (value instanceof Promise) {
               return value.then(result => (newObj[name] = result), annotateErrorAndThrow);
             } else {

@@ -114,11 +114,18 @@ describe('EchoServer', () => {
   it('Echoes an Object.', () => {
     const a = null;
     const b = new Buffer('testBuffer');
+    const c = undefined;
 
     waitsForPromise(async () => {
       const results = await service.echoObject({a, b});
       expect(results.a).toBe(null);
       expect(results.b.equals(b)).toBe(true);
+
+      const results2 = await service.echoObject({a, b, c});
+      // hasOwnProperty('c') evaluates to false since JSON doesn't serialize undefined.
+      // This is an imperfection in the service framework.
+      expect(results2.hasOwnProperty('c')).toBeFalsy();
+      expect(results2.c).toBeUndefined();
     });
   });
   it('Echoes a Set.', () => {

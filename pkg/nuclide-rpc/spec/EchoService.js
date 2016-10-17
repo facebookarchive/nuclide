@@ -53,7 +53,9 @@ export async function echoBuffer(arg: Buffer): Promise<Buffer> {
 export async function echoArrayOfArrayOfDate(arg: Array<Array<Date>>): Promise<Array<Array<Date>>> {
   return arg;
 }
-export async function echoObject(arg: {a: ?string, b: Buffer}): Promise<{a: ?string, b: Buffer}> {
+export async function echoObject(
+  arg: {a: ?string, b: Buffer, c?: string},
+): Promise<{a: ?string, b: Buffer, c?: string}> {
   return arg;
 }
 export async function echoSet(arg: Set<string>): Promise<Set<string>> {
