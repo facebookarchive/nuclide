@@ -99,6 +99,6 @@ export default class HhvmBuildSystem {
   }
 
   setProjectRoot(projectRoot: ?Directory): void {
-    // TODO: ProjectStore should use the CWD rather than the current file.
+    this._projectStore.setProjectRoot(projectRoot == null ? null : projectRoot.getPath());
   }
 }

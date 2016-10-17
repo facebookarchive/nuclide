@@ -11,42 +11,48 @@
 
 import type {DebugMode} from './types';
 
+import {Emitter} from 'atom';
+import {BehaviorSubject} from 'rxjs';
+
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
-import {CompositeDisposable, Emitter} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
+import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {ProjectType} from './types';
 
 class ProjectStore {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _emitter: Emitter;
   _currentFilePath: string;
+  _projectRoot: BehaviorSubject<?string>;
   _projectType: ProjectType;
   _debugMode: DebugMode;
   _filePathsToScriptCommand: Map<string, string>;
 
   constructor() {
-    this._disposables = new CompositeDisposable();
     this._emitter = new Emitter();
     this._currentFilePath = '';
+    this._projectRoot = new BehaviorSubject();
     this._projectType = 'Other';
     this._debugMode = 'webserver';
     this._filePathsToScriptCommand = new Map();
-    this._monitorActiveEditorChange();
+
+    const onDidChange = this._onDidChangeActivePaneItem.bind(this);
+    this._disposables = new UniversalDisposable(
+      this._projectRoot
+        .switchMap(root => this._isFileHHVMProject(root))
+        .subscribe(isHHVM => {
+          this._projectType = isHHVM ? 'Hhvm' : 'Other';
+          this._emitter.emit('change');
+        }),
+      atom.workspace.onDidStopChangingActivePaneItem(onDidChange),
+    );
+    onDidChange();
   }
 
-  _monitorActiveEditorChange() {
-    // For the current active editor, and any update to the active editor,
-    // decide whether the toolbar should be displayed.
-    const callback = this._onDidChangeActivePaneItem.bind(this);
-    this._disposables.add(atom.workspace.onDidStopChangingActivePaneItem(callback));
-    callback();
-  }
-
-  async _onDidChangeActivePaneItem(): Promise<any> {
+  _onDidChangeActivePaneItem(): void {
     const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (!activeTextEditor) {
       return;
@@ -58,15 +64,15 @@ class ProjectStore {
     }
     this._currentFilePath = fileName;
     this._emitter.emit('change');
-
-    const newProjectType = await this._isFileHHVMProject(fileName) ? 'Hhvm' : 'Other';
-    this._projectType = newProjectType;
-    this._emitter.emit('change');
   }
 
   @trackTiming('toolbar.isFileHHVMProject')
-  async _isFileHHVMProject(fileUri: NuclideUri): Promise<boolean> {
-    return nuclideUri.isRemote(fileUri) && (await isFileInHackProject(fileUri));
+  async _isFileHHVMProject(fileUri: ?string): Promise<boolean> {
+    return (
+      fileUri != null &&
+      nuclideUri.isRemote(fileUri) &&
+      await isFileInHackProject(fileUri)
+    );
   }
 
   getLastScriptCommand(filePath: string): string {
@@ -87,6 +93,10 @@ class ProjectStore {
 
   getCurrentFilePath(): string {
     return this._currentFilePath;
+  }
+
+  setProjectRoot(root: ?string): void {
+    this._projectRoot.next(root);
   }
 
   getProjectType(): ProjectType {
@@ -112,8 +122,9 @@ class ProjectStore {
     // getHostname throws for non-remote paths.
     // Technically this shouldn't be visible for non-remote paths, but the UI
     // can sometimes display the toolbar anyway.
-    if (nuclideUri.isRemote(filePath)) {
-      return nuclideUri.getHostname(filePath);
+    const rootPath = this._projectRoot.getValue();
+    if (rootPath != null && nuclideUri.isRemote(rootPath)) {
+      return nuclideUri.getHostname(rootPath);
     }
     return '';
   }
