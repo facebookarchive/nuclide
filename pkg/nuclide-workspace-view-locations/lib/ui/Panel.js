@@ -30,7 +30,9 @@ export class Panel extends React.Component {
       return this.props.initialSize;
     }
 
-    const activePaneItem = this.props.paneContainer.getActivePaneItem();
+    // The item may not have been activated yet. If that's the case, just use the first item.
+    const activePaneItem =
+      this.props.paneContainer.getActivePaneItem() || this.props.paneContainer.getPaneItems()[0];
     if (activePaneItem != null) {
       return getPreferredInitialSize(activePaneItem, this.props.position);
     }
