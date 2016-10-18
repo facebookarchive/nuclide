@@ -53,20 +53,30 @@ export class OpenFilesListComponent extends React.PureComponent {
     }
   }
 
-  _onClick(entry: OpenFileEntry, event: SyntheticEvent): void {
+  _onClick(entry: OpenFileEntry, event: SyntheticMouseEvent): void {
     if (event.defaultPrevented) {
       return;
     }
 
     const uri = entry.uri;
+
+    if (event.button === 1) {
+      this._closeFile(uri);
+      return;
+    }
+
     track('filetree-open-from-open-files', {uri});
     atom.workspace.open(uri, {searchAllPanes: true});
   }
 
   _onCloseClick(entry: OpenFileEntry, event: SyntheticEvent): void {
     const uri = entry.uri;
-    track('filetree-close-from-open-files', {uri});
     event.preventDefault();
+    this._closeFile(uri);
+  }
+
+  _closeFile(uri: NuclideUri): void {
+    track('filetree-close-from-open-files', {uri});
     atom.workspace.getPanes().forEach(pane => {
       pane.getItems().filter(item => item.getPath && item.getPath() === uri).forEach(item => {
         pane.destroyItem(item);
