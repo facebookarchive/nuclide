@@ -96,5 +96,11 @@ ruleTester.run('atom-commands', rule, {
         type: 'Literal',
       }],
     },
+    {
+      code: 'atom.commands.add(atom.views.getView(atom.workspace), f(), cb)',
+      errors: [{
+        error: rule.WORKSPACE_VIEW_LOOKUP_ERROR + ' (bad_command)',
+      }],
+    },
   ],
 });

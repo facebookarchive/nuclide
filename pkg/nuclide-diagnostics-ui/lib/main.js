@@ -205,13 +205,13 @@ function tableConsumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUp
   };
 
   subscriptions.add(atom.commands.add(
-    atom.views.getView(atom.workspace),
+    'atom-workspace',
     'nuclide-diagnostics-ui:toggle-table',
     toggleTable,
   ));
 
   subscriptions.add(atom.commands.add(
-    atom.views.getView(atom.workspace),
+    'atom-workspace',
     'nuclide-diagnostics-ui:show-table',
     showTable,
   ));
@@ -240,7 +240,7 @@ function addAtomCommands(diagnosticUpdater: ObservableDiagnosticUpdater): void {
   invariant(subscriptions != null);
 
   subscriptions.add(atom.commands.add(
-    atom.views.getView(atom.workspace),
+    'atom-workspace',
     'nuclide-diagnostics-ui:fix-all-in-current-file',
     fixAllInCurrentFile,
   ));
@@ -270,22 +270,22 @@ class KeyboardShortcuts {
           this._index = null;
         }),
       atom.commands.add(
-        atom.views.getView(atom.workspace),
+        'atom-workspace',
         'nuclide-diagnostics-ui:go-to-first-diagnostic',
         first,
       ),
       atom.commands.add(
-        atom.views.getView(atom.workspace),
+        'atom-workspace',
         'nuclide-diagnostics-ui:go-to-last-diagnostic',
         last,
       ),
       atom.commands.add(
-        atom.views.getView(atom.workspace),
+        'atom-workspace',
         'nuclide-diagnostics-ui:go-to-next-diagnostic',
         () => { this._index == null ? first() : this.setIndex(this._index + 1); },
       ),
       atom.commands.add(
-        atom.views.getView(atom.workspace),
+        'atom-workspace',
         'nuclide-diagnostics-ui:go-to-previous-diagnostic',
         () => { this._index == null ? last() : this.setIndex(this._index - 1); },
       ),

@@ -21,6 +21,9 @@ const MISSING_MENU_ITEM_ERROR = 'All workspace-level Atom commands ' +
 const COMMAND_LITERAL_ERROR = 'Please use literals for Atom commands. ' +
   'This improves readability and makes command names easily greppable.';
 
+const WORKSPACE_VIEW_LOOKUP_ERROR = 'Prefer the string "atom-workspace" to calling'
+  + ' `atom.views.getView()`.';
+
 // Commands with these prefixes will be whitelisted.
 const WHITELISTED_PREFIXES = [
   'core:',
@@ -146,7 +149,12 @@ module.exports = function(context) {
     if (firstValue == null) {
       // Another common pattern for atom.commands.add. Be lazy and just get the string..
       const stringValue = context.getSourceCode().getText(args[0]);
-      if (stringValue.replace(/\s/g, '') !== 'atom.views.getView(atom.workspace)') {
+      if (stringValue.replace(/\s/g, '') === 'atom.views.getView(atom.workspace)') {
+        context.report({
+          node: node.callee,
+          message: WORKSPACE_VIEW_LOOKUP_ERROR,
+        });
+      } else {
         return;
       }
     } else if (firstValue !== 'atom-workspace') {
@@ -220,3 +228,4 @@ module.exports = function(context) {
 // For testing
 exports.MISSING_MENU_ITEM_ERROR = MISSING_MENU_ITEM_ERROR;
 exports.COMMAND_LITERAL_ERROR = COMMAND_LITERAL_ERROR;
+exports.WORKSPACE_VIEW_LOOKUP_ERROR = WORKSPACE_VIEW_LOOKUP_ERROR;

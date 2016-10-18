@@ -59,7 +59,7 @@ export function activate() {
     disposables.add(watcher);
 
     disposables.add(atom.commands.add(
-      atom.views.getView(atom.workspace),
+      'atom-workspace',
       'nuclide-flow:restart-flow-server',
       allowFlowServerRestart,
     ));

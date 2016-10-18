@@ -40,7 +40,7 @@ class Activation {
     this._disposables = new CompositeDisposable();
     this._tunnelVision = new DistractionFreeMode(state);
     this._disposables.add(atom.commands.add(
-      atom.views.getView(atom.workspace),
+      'atom-workspace',
       'nuclide-distraction-free-mode:toggle',
       () => {
         track('distraction-free-mode:toggle');
