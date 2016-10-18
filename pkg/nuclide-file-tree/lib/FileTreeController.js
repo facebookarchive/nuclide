@@ -21,6 +21,7 @@ import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
 import Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import os from 'os';
 import {shell} from 'electron';
@@ -414,7 +415,12 @@ class FileTreeController {
 
     const rootPaths = nodes.filter(node => node.isRoot);
     if (rootPaths.size === 0) {
-      const selectedPaths = nodes.map(node => FileTreeHelpers.keyToPath(node.uri));
+      const selectedPaths = nodes.map(node => {
+        const nodePath = FileTreeHelpers.keyToPath(node.uri);
+        const parentOfRoot = nuclideUri.dirname(node.rootUri);
+
+        return nuclideUri.relative(parentOfRoot, nodePath);
+      });
       const message = 'Are you sure you want to delete the following ' +
           (nodes.size > 1 ? 'items?' : 'item?');
       atom.confirm({
