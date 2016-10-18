@@ -14,7 +14,7 @@
 
 module.exports = {
   rules: {
-    'command-menu-items': require('./command-menu-items'),
+    'atom-commands': require('./atom-commands'),
     'consistent-import-name': require('./consistent-import-name'),
     'import-type-style': require('./import-type-style'),
     'license-header': require('./license-header'),
@@ -26,7 +26,7 @@ module.exports = {
     'type-alias-semi': require('./type-alias-semi'),
   },
   rulesConfig: {
-    'command-menu-items': 0,
+    'atom-commands': 0,
     'consistent-import-name': 0,
     'import-type-style': 0,
     'license-header': 0,

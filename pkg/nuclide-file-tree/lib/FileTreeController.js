@@ -71,7 +71,7 @@ class FileTreeController {
       atom.commands.add('atom-workspace', {
         // Pass undefined so the default parameter gets used.
         // NOTE: This is specifically for use in Diff View, so don't expose a menu item.
-        // eslint-disable-next-line nuclide-internal/command-menu-items
+        // eslint-disable-next-line nuclide-internal/atom-commands
         'nuclide-file-tree:reveal-text-editor': this._revealTextEditor.bind(this),
         // This command is to workaround the initialization order problem between the
         // nuclide-remote-projects and nuclide-file-tree packages.
@@ -86,7 +86,7 @@ class FileTreeController {
         // to force the file-tree reflect the actual state of the projects.
         // Ideally, we'd like a service dependency between the two packages, but I (advinskyt) don't
         // see it happening any time soon.
-        // eslint-disable-next-line nuclide-internal/command-menu-items
+        // eslint-disable-next-line nuclide-internal/atom-commands
         'nuclide-file-tree:force-refresh-roots': this._updateRootDirectories.bind(this),
         'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
         'nuclide-file-tree:recursive-collapse-all': this._collapseAll.bind(this),

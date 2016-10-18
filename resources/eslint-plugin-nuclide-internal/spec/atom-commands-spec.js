@@ -13,12 +13,12 @@
 /* eslint-disable babel/func-params-comma-dangle, prefer-object-spread/prefer-object-spread */
 
 const path = require('path');
-const rule = require('../command-menu-items');
+const rule = require('../atom-commands');
 const RuleTester = require('eslint').RuleTester;
 
 const ruleTester = new RuleTester();
 
-ruleTester.run('command-menu-items', rule, {
+ruleTester.run('atom-commands', rule, {
   valid: [
     {code: 'atom.commands.add.test("atom-workspace", "command", cb)'},
     // ignores non-workspace commands

@@ -45,7 +45,7 @@ export class LaunchAttachActions {
     (this: any)._handleLaunchAttachDialogToggle = this._handleLaunchAttachDialogToggle.bind(this);
     this._subscriptions = new UniversalDisposable(
       atom.commands.add('atom-workspace', {
-        // eslint-disable-next-line nuclide-internal/command-menu-items
+        // eslint-disable-next-line nuclide-internal/atom-commands
         'nuclide-debugger:toggle-launch-attach': this._handleLaunchAttachDialogToggle,
       }),
       () => {
