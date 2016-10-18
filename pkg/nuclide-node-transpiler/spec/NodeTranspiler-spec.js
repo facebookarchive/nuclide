@@ -52,41 +52,6 @@ console.log('NodeTranspiler.shouldCompile on Buffers and strings');
 //---
 
 (() => {
-  console.log('NodeTranspiler#getConfigDigest with fake babel');
-
-  const fakeBabel1 = {
-    version: '5.8.38',
-    transform() { throw new Error('This should not have been called.'); },
-  };
-  const nodeTranspiler1 =
-    new NodeTranspiler(fakeBabel1.version, () => fakeBabel1);
-
-  const fakeBabel2 = {
-    version: '5.0.0',
-    transform() { throw new Error('This should not have been called.'); },
-  };
-  const nodeTranspiler2a =
-    new NodeTranspiler(fakeBabel2.version, () => fakeBabel2);
-  const nodeTranspiler2b =
-    new NodeTranspiler(fakeBabel2.version, () => fakeBabel2);
-
-  assert.notEqual(
-    nodeTranspiler1.getConfigDigest(),
-    nodeTranspiler2a.getConfigDigest()
-  );
-
-  assert.notEqual(
-    nodeTranspiler1.getConfigDigest(),
-    nodeTranspiler2b.getConfigDigest()
-  );
-
-  assert.equal(
-    nodeTranspiler2a.getConfigDigest(),
-    nodeTranspiler2b.getConfigDigest()
-  );
-})();
-
-(() => {
   console.log('NodeTranspiler#getConfigDigest with real babel');
 
   const realBabel = require('babel-core');
@@ -136,39 +101,6 @@ console.log('NodeTranspiler.shouldCompile on Buffers and strings');
   const c2 = {exports: {}};
   vm.runInNewContext(out2, c2);
   assert.equal(c2.exports.Foo.bar, 'qux');
-})();
-
-(() => {
-  console.log('NodeTranspiler#transform with external babel');
-
-  const filename = require.resolve('./fixtures/modern-syntax');
-  const babelMock = {
-    version: '5.0.0',
-    transform(src, _filename) {
-      assert.ok(typeof src === 'string');
-      return {code: src.toUpperCase()};
-    },
-  };
-  const nodeTranspiler =
-    new NodeTranspiler(babelMock.version, () => babelMock);
-
-  // nodeTranspiler.transform(buffer) => babel.transform(string)
-
-  const bufferSrc = fs.readFileSync(filename);
-  assert.ok(Buffer.isBuffer(bufferSrc));
-
-  const expectedSrc = bufferSrc.toString().toUpperCase();
-
-  const out1 = nodeTranspiler.transform(bufferSrc, filename);
-  assert.equal(out1, expectedSrc);
-
-  // nodeTranspiler.transform(string) => babel.transform(string)
-
-  const stringSrc = bufferSrc.toString();
-  assert.ok(typeof stringSrc === 'string');
-
-  const out2 = nodeTranspiler.transform(stringSrc, filename);
-  assert.ok(out2, expectedSrc);
 })();
 
 //---

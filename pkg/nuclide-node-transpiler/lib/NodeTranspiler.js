@@ -19,7 +19,6 @@
 //  * Nuclide specific configuration, that must be shared among several
 //    independent transpile systems.
 //  * Lazy-loading of expensive libs like babel.
-//  * Support for externally loaded babel.
 //------------------------------------------------------------------------------
 
 const assert = require('assert');
@@ -80,16 +79,9 @@ class NodeTranspiler {
     return PREFIXES.some(prefix => start.startsWith(prefix));
   }
 
-  constructor(babelVersion, getBabel) {
-    if (babelVersion) {
-      assert(typeof babelVersion === 'string');
-      assert(typeof getBabel === 'function');
-      this._babelVersion = babelVersion;
-      this._getBabel = getBabel;
-    } else {
-      this._babelVersion = require('babel-core/package.json').version;
-      this._getBabel = () => require('babel-core');
-    }
+  constructor() {
+    this._babelVersion = require('babel-core/package.json').version;
+    this._getBabel = () => require('babel-core');
     this._babel = null;
     this._cacheDir = null;
     this._configDigest = null;

@@ -18,32 +18,48 @@
  * `"use babel"`.
  */
 
-const assert = require('assert');
+const Module = require('module');
 const fs = require('fs');
+const path = require('path');
+
+const basedir = path.join(__dirname, '../../../');
+const builtinJsExt = Module._extensions['.js'];
 
 const NodeTranspiler = require('./NodeTranspiler');
 const nodeTranspiler = new NodeTranspiler();
 
-// Make sure we can add the require() hook.
-const jsExtension = Object.getOwnPropertyDescriptor(require.extensions, '.js');
-
-// In Atom, this is false - prevent accidental unnecessary use.
-assert(jsExtension.writable);
-
-Object.defineProperty(require.extensions, '.js', {
-  enumerable: true,
-  writable: false,
-  value: function transpiler_require_hook(_module, filename) {
+function transpiler_require_hook(_module, filename) {
+  let moduleExports;
+  // TODO(asuarez): Once "use babel" is removed, `shouldCompile` can be made
+  // to handle paths.
+  if (filename.startsWith(basedir) && !filename.includes('node_modules')) {
     // Keep src as a buffer so calculating its digest with crypto is fast.
     const src = fs.readFileSync(filename);
-
     let output;
     if (NodeTranspiler.shouldCompile(src)) {
       output = nodeTranspiler.transformWithCache(src, filename);
     } else {
       output = src.toString();
     }
+    moduleExports = _module._compile(output, filename);
+  } else {
+    moduleExports = builtinJsExt(_module, filename);
+  }
+  return moduleExports;
+}
 
-    return _module._compile(output, filename);
-  },
-});
+/**
+ * Atom sets `require.extensions['.js']` as not writable (maybe to prevent
+ * sloppy code from attaching a require hook that doesn't filter by path?). To
+ * workaround that, we create a new `Module._extensions` object instead, with
+ * our custom hook. Keeping the iteration order of this object is really
+ * important because it determines the file extension lookup priority.
+ */
+Module._extensions = Object.keys(Module._extensions).reduce((acc, ext) => {
+  const desc = Object.getOwnPropertyDescriptor(Module._extensions, ext);
+  if (ext === '.js') {
+    desc.value = transpiler_require_hook;
+  }
+  Object.defineProperty(acc, ext, desc);
+  return acc;
+}, {});
