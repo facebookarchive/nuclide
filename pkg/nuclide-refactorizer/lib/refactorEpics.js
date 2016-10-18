@@ -98,8 +98,10 @@ async function executeRefactoring(
     // TODO use an error action here
     return Actions.close();
   }
-  // TODO do something sane if the provider returns null
-  invariant(response != null);
+  if (response == null) {
+    // TODO use an error action here
+    return Actions.close();
+  }
   const editor = atom.workspace.getActiveTextEditor();
   // TODO handle it if the editor has gone away
   invariant(editor != null);

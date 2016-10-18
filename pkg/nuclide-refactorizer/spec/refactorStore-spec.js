@@ -263,6 +263,29 @@ describe('refactorStore', () => {
           expectNoUncaughtErrors();
         });
       });
+
+      it('tolerates a provider returning null from refactor', () => {
+        waitsForPromise(async () => {
+          refactoringsAtPointReturn = Promise.resolve([
+            TEST_FILE_RENAME,
+          ]);
+          refactorReturn = Promise.resolve(null);
+          store.dispatch(Actions.open());
+          await waitForPhase('pick');
+          store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
+          await waitForPhase('rename');
+          const rename: RenameRequest = {
+            kind: 'rename',
+            symbolAtPoint: TEST_FILE_SYMBOL_AT_POINT,
+            editor: openEditor,
+            newName: 'bar',
+          };
+          store.dispatch(Actions.execute(provider, rename));
+          await waitForClose();
+          await nextTick();
+          expectNoUncaughtErrors();
+        });
+      });
     });
   });
 });
