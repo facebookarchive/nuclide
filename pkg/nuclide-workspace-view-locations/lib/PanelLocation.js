@@ -109,12 +109,22 @@ export class PanelLocation extends SimpleModel<State> {
       //   generic.
       paneContainer.observePanes(pane => {
         const tabBarView = document.createElement('ul', 'atom-tabs');
+        tabBarView.classList.add('nuclide-workspace-views-panel-location-tabs');
 
         const initializeTabBar = () => {
           invariant(typeof tabBarView.initialize === 'function');
           tabBarView.initialize(pane);
           const paneElement = atom.views.getView(pane);
           paneElement.insertBefore(tabBarView, paneElement.firstChild);
+
+          const hideButtonWrapper = document.createElement('div');
+          hideButtonWrapper.className =
+            'nuclide-workspace-views-panel-location-tabs-hide-button-wrapper';
+          const hideButton = document.createElement('div');
+          hideButton.className = 'nuclide-workspace-views-panel-location-tabs-hide-button';
+          hideButton.onclick = () => { this.setState({visible: false}); };
+          hideButtonWrapper.appendChild(hideButton);
+          tabBarView.appendChild(hideButtonWrapper);
         };
 
         // It's possible that the tabs package may not have activated yet (and therefore that the

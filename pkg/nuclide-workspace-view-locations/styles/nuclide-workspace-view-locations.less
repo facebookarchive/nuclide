@@ -1,4 +1,94 @@
 @import 'ui-variables';
+@import 'syntax-variables';
+@import 'octicon-mixins';
+
+// From one-light-ui
+.ui-syntax-color() { @syntax-background-color: hsl(220,1%,98%); } .ui-syntax-color(); // fallback color
+@ui-syntax-color: @syntax-background-color;
+@ui-s-h: hue(@ui-syntax-color);
+.ui-hue() when (@ui-s-h = 0) { @ui-hue: 220; } // Use blue hue when no saturation
+.ui-hue() when (@ui-s-h > 0) { @ui-hue: @ui-s-h; }
+.ui-hue();
+@accent-luma: luma(hsl(@ui-hue, 50%, 50%)); // get lightness of current hue
+@accent-color: mix(hsv(@ui-hue, 60%, 60%), hsl(@ui-hue, 100%, 68%), @accent-luma * 2); // mix hsv + hsl (favor hsl for dark, hsv for light colors)
+@accent-text-color: contrast(@accent-color, hsl(@ui-hue,100%,16%), #fff, 40%);
+
+.nuclide-workspace-views-panel-location-tabs-hide-button-wrapper {
+  display: flex;
+  flex: 1;
+  order: 9999;
+  min-width: 45px;
+  justify-content: flex-end;
+  align-items: center;
+
+  // Chosen so as to line up with the buttons in the ToolbarRight component.
+  padding-right: 12.5px;
+}
+
+// Hide the button in all of the tab bars except the top right pane. We add a
+// button to each pane's tab bar so that we don't have to constantly recalculate
+// the top-right one in JS as the user rearranges the panes. An alternative
+// would be to only add a single button to the pane, however that would make it
+// difficult (or impossible) to vertically align the button correctly.
+atom-pane-axis.horizontal > :not(:last-child),
+atom-pane-axis.vertical > :not(:first-child) {
+  .nuclide-workspace-views-panel-location-tabs-hide-button-wrapper {
+    display: none;
+  }
+}
+
+.nuclide-workspace-views-panel-location-tabs-hide-button {
+  .octicon('chevron-down', 12px);
+
+  &::before {
+    .panel-top & { content: '\f0a2'; }
+    .panel-left & { content: '\f0a4'; }
+    .panel-bottom & { content: '\f0a3'; }
+    .panel-right & { content: '\f078'; }
+  }
+
+  // Adapted from atom/tabs and one-light-ui
+  cursor: default;
+  font-size: 1em;
+  width: 1.5em;
+  height: 1.5em;
+  line-height: 1.5;
+  border-radius: @component-border-radius;
+  overflow: hidden;
+  transform: scale(0);
+  transition: transform .08s;
+  &:hover {
+    color: @accent-text-color;
+    background-color: @accent-color;
+  }
+  &:active {
+    background-color: fade(@accent-color, 50%);
+  }
+  &::before {
+    position: absolute;
+    width: 1.5em; // same as parent
+    height: 1.5em; // same as parent
+    line-height: 1.5; // same as parent
+    text-align: center;
+    pointer-events: none;
+
+    // Blow it up and scale it down again. This is done to increase the weight.
+    font-size: 4em;
+    transform: translate(-37.5%, -37.5%) scale(0.33);
+  }
+}
+
+.nuclide-workspace-views-panel {
+  display: flex;
+  flex: 1;
+
+  // Adapted from atom/tabs and one-light-ui
+  &:hover .nuclide-workspace-views-panel-location-tabs-hide-button {
+    transform: scale(1);
+    transition-duration: 0.16s;
+  }
+
+}
 
 // Custom tabs --------------
 
