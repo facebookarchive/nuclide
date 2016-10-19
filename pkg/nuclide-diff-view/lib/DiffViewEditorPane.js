@@ -16,7 +16,6 @@ import {arrayEqual, mapEqual} from '../../commons-node/collection';
 import {React} from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
-import invariant from 'assert';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Observable} from 'rxjs';
 import classnames from 'classnames';
@@ -48,21 +47,16 @@ type Props = {
 export default class DiffViewEditorPane extends React.Component {
   props: Props;
 
-  _diffViewEditor: ?DiffViewEditor;
+  _diffViewEditor: DiffViewEditor;
   _subscriptions: UniversalDisposable;
   _editorSubscriptions: ?UniversalDisposable;
-  // TODO(most): move async code out of the view and deprecate the usage of `_isMounted`.
-  // All view changes should be pushed from the model/store through subscriptions.
-  _isMounted: boolean;
 
   constructor(props: Props) {
     super(props);
     this._subscriptions = new UniversalDisposable();
-    this._isMounted = false;
   }
 
   componentDidMount(): void {
-    this._isMounted = true;
     this._setupDiffEditor();
   }
 
@@ -104,11 +98,7 @@ export default class DiffViewEditorPane extends React.Component {
 
   componentWillUnmount(): void {
     this._subscriptions.dispose();
-    if (this._diffViewEditor != null) {
-      this._diffViewEditor.destroy();
-      this._diffViewEditor = null;
-    }
-    this._isMounted = false;
+    this._diffViewEditor.destroy();
   }
 
   render(): React.Element<any> {
@@ -173,25 +163,18 @@ export default class DiffViewEditorPane extends React.Component {
   }
 
   _setTextContent(filePath: string, text: string): void {
-    invariant(this._diffViewEditor);
     this._diffViewEditor.setFileContents(filePath, text);
   }
 
   _setHighlightedLines(highlightedLines: HighlightedLines): void {
-    invariant(this._diffViewEditor);
     this._diffViewEditor.setHighlightedLines(highlightedLines.added, highlightedLines.removed);
   }
 
   _setOffsets(offsets: OffsetMap): void {
-    invariant(this._diffViewEditor);
     this._diffViewEditor.setOffsets(offsets);
   }
 
   _renderComponentsInline(elements: Array<UIElement>): void {
-    if (!this._isMounted || elements.length === 0) {
-      return;
-    }
-    invariant(this._diffViewEditor, 'diffViewEditor has not been setup yet.');
     this._diffViewEditor.setUIElements(elements);
   }
 
